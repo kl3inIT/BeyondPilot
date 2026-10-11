@@ -1,7 +1,7 @@
 "use client";
 
 import { useStore } from "@tanstack/react-form";
-import { ArrowLeftIcon, AsteriskIcon, CircleAlertIcon, CircleDotIcon } from "lucide-react";
+import { AsteriskIcon, CircleAlertIcon, CircleDotIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -11,6 +11,7 @@ import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { useAppForm } from "@/components/form/app-form";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
@@ -225,56 +226,53 @@ function EmailTemplateEditor({
         </div>
       )}
 
-      <Link
-        href={siteRoutes.adminEmailTemplates}
-        className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:underline"
-      >
-        <ArrowLeftIcon aria-hidden="true" className="size-4" />
-        {t("back")}
-      </Link>
-
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="flex flex-col gap-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">{name}</h1>
-            {current.edited && <Badge variant="outline">{t("edited")}</Badge>}
-          </div>
-          {description && <p className="text-sm text-muted-foreground">{description}</p>}
-          {current.edited && current.updatedBy && current.updatedAt && (
-            <p className="text-xs text-muted-foreground">
-              {t("lastEdited", {
-                name: current.updatedBy,
-                when: format.dateTime(new Date(current.updatedAt), {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                }),
-              })}{" "}
-              <Link
-                href={siteRoutes.adminAuditLog}
-                className="font-medium text-primary underline-offset-4 hover:underline"
-              >
-                {t("viewAudit")}
-              </Link>
-            </p>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {current.edited && (
-            <Button prominence="tertiary" size="sm" onClick={() => setResetting("asking")}>
-              {t("reset")}
-            </Button>
-          )}
-          <TestSend
-            defaultTo={operatorEmail}
-            pending={testing}
-            disabled={problems.length > 0}
-            onSend={(to) => void test(to)}
-          />
-          {problems.length > 0 && (
-            <p className="w-full text-xs text-muted-foreground">{t("testAfterFix")}</p>
-          )}
-        </div>
-      </div>
+      <AdminPageHeader
+        back={{ href: siteRoutes.adminEmailTemplates, label: t("back") }}
+        title={name}
+        badges={current.edited && <Badge variant="outline">{t("edited")}</Badge>}
+        lead={
+          (description || (current.edited && current.updatedBy && current.updatedAt)) && (
+            <div className="flex flex-col gap-1">
+              {description && <p>{description}</p>}
+              {current.edited && current.updatedBy && current.updatedAt && (
+                <p className="text-xs">
+                  {t("lastEdited", {
+                    name: current.updatedBy,
+                    when: format.dateTime(new Date(current.updatedAt), {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    }),
+                  })}{" "}
+                  <Link
+                    href={siteRoutes.adminAuditLog}
+                    className="font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    {t("viewAudit")}
+                  </Link>
+                </p>
+              )}
+            </div>
+          )
+        }
+        actions={
+          <>
+            {current.edited && (
+              <Button prominence="tertiary" size="sm" onClick={() => setResetting("asking")}>
+                {t("reset")}
+              </Button>
+            )}
+            <TestSend
+              defaultTo={operatorEmail}
+              pending={testing}
+              disabled={problems.length > 0}
+              onSend={(to) => void test(to)}
+            />
+            {problems.length > 0 && (
+              <p className="w-full text-xs text-muted-foreground">{t("testAfterFix")}</p>
+            )}
+          </>
+        }
+      />
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-5">

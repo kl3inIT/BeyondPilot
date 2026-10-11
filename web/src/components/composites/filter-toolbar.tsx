@@ -31,8 +31,11 @@ type Filter = {
   /** The parameter of the URL the select writes. */
   key: string;
   label: string;
-  /** The words of the select when the filter is off: "All statuses". */
-  all: string;
+  /**
+   * The words of the select when the filter is off: "All statuses". A filter without them is never off: it
+   * always holds one of its options, and its parser's default is the one the URL leaves out (a period).
+   */
+  all?: string;
   options: { value: string; label: string }[];
 };
 
@@ -43,8 +46,13 @@ type TextFilter = {
 };
 
 type FilterToolbarProps = {
-  /** The list's description of its URL. It holds `q` and `page` beside one parameter per filter. */
+  /** The list's description of its URL. It holds `q` beside one parameter per filter and those of `resets`. */
   parsers: UseQueryStatesKeysMap;
+  /**
+   * The parameters that say where in the list the reader is, which any change of the search or a filter takes
+   * off: `page` for a list paged by number, `before` and `after` for one paged by cursor.
+   */
+  resets?: string[];
   searchLabel: string;
   /** The words of the button that takes the search and every filter off. */
   clearLabel: string;
@@ -53,6 +61,11 @@ type FilterToolbarProps = {
   filters: Filter[];
   textFilters?: TextFilter[];
 };
+
+/** The value a parser falls back to when the URL leaves its parameter out. */
+function defaultOf(parsers: UseQueryStatesKeysMap, key: string) {
+  return (parsers[key] as { defaultValue?: unknown } | undefined)?.defaultValue ?? null;
+}
 
 /**
  * The search field and filters above a list are the URL: live search waits 300 ms, submitted search
@@ -64,6 +77,7 @@ function FilterToolbar({
   searchLabel,
   clearLabel,
   searchBehavior = "live",
+  resets = ["page"],
   filters,
   textFilters = [],
 }: FilterToolbarProps) {
@@ -79,6 +93,8 @@ function FilterToolbar({
   const writing = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [typedFilters, setTypedFilters] = useState<Record<string, string | null>>({});
   const filterWriting = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  // Back to the start of the list.
+  const start = Object.fromEntries(resets.map((key) => [key, null]));
 
   useEffect(
     () => () => {
@@ -99,7 +115,7 @@ function FilterToolbar({
     clearTimeout(writing.current);
     const write = () => {
       setTyped(null);
-      setSearch({ q: text, page: null });
+      setSearch({ q: text, ...start });
     };
     if (text) {
       setTyped(text);
@@ -114,7 +130,7 @@ function FilterToolbar({
     clearTimeout(writing.current);
     const query = typed ?? String(values.q ?? "");
     setTyped(null);
-    setSearch({ q: query, page: null });
+    setSearch({ q: query, ...start });
   }
 
   function clear() {
@@ -133,7 +149,7 @@ function FilterToolbar({
     if (!text) {
       filterWriting.current.delete(key);
       setTypedFilters((current) => ({ ...current, [key]: null }));
-      setSearch({ [key]: null, page: null });
+      setSearch({ [key]: null, ...start });
       return;
     }
 
@@ -143,7 +159,7 @@ function FilterToolbar({
       setTimeout(() => {
         setTypedFilters((current) => ({ ...current, [key]: null }));
         filterWriting.current.delete(key);
-        setSearch({ [key]: text, page: null });
+        setSearch({ [key]: text, ...start });
       }, SEARCH_DELAY_MS),
     );
   }
@@ -164,7 +180,11 @@ function FilterToolbar({
 
   const narrowed =
     Boolean(values.q) ||
-    filters.some((filter) => values[filter.key] != null) ||
+    filters.some((filter) =>
+      filter.all === undefined
+        ? values[filter.key] !== defaultOf(parsers, filter.key)
+        : values[filter.key] != null,
+    ) ||
     textFilters.some((filter) => String(values[filter.key] ?? "").trim() !== "");
 
   return (
@@ -235,14 +255,20 @@ function FilterToolbar({
             </InputGroup>
           ))}
           {filters.map((filter) => {
-            const items = [{ value: ALL, label: filter.all }, ...filter.options];
+            const items =
+              filter.all === undefined
+                ? filter.options
+                : [{ value: ALL, label: filter.all }, ...filter.options];
             return (
               <Select
                 key={filter.key}
                 items={items}
                 value={String(values[filter.key] ?? ALL)}
                 onValueChange={(value) =>
-                  setSearch({ [filter.key]: value === ALL ? null : value, page: null })
+                  setSearch({
+                    [filter.key]: value === ALL && filter.all !== undefined ? null : value,
+                    ...start,
+                  })
                 }
               >
                 <SelectTrigger

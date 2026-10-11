@@ -5,7 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Button } from "@/components/actions/button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import type { AdminProgramSummary } from "@/lib/api/generated";
@@ -108,10 +108,11 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex items-start justify-between gap-4">
-        <AdminPageTitle destination="programs">{t("title")}</AdminPageTitle>
-        <NewProgramDialog locale={locale} />
-      </div>
+      <AdminPageHeader
+        destination="programs"
+        title={t("title")}
+        actions={<NewProgramDialog locale={locale} />}
+      />
       <ProgramsToolbar counts={list.counts} total={list.total} />
 
       {/* From 768px: a table. The window gives way to the days on narrower desktops. */}

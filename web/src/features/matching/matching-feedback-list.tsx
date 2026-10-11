@@ -1,7 +1,7 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 
 import { TextButton } from "@/components/actions/text-button";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { DataTableFooter } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import type { MatchingDisagreement, MatchingFeedbackList } from "@/lib/api/generated";
@@ -76,11 +76,13 @@ async function MatchingFeedbackPage({
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <AdminPageTitle destination="aiMatching">{title("title")}</AdminPageTitle>
-      <MatchingAdminTabs current="feedback" />
-      <p className="text-sm text-muted-foreground">
-        {nobody ? t("empty") : t("agreed", { a: feedback.agreements, n: feedback.answers })}
-      </p>
+      <AdminPageHeader
+        destination="aiMatching"
+        title={title("title")}
+        lead={nobody ? t("empty") : t("agreed", { a: feedback.agreements, n: feedback.answers })}
+      >
+        <MatchingAdminTabs current="feedback" />
+      </AdminPageHeader>
 
       {feedback.total > 0 && (
         <>

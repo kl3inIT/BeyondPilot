@@ -284,6 +284,11 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - The browser sees one origin. Spring's paths (`/api`, `/login`, `/logout`, `/oauth2`, `/ott`) are rewritten to `BEYONDPILOT_API_ORIGIN` during development and routed by a reverse proxy when deployed.
 - The session lives only in httpOnly cookies; tokens are never stored in browser storage.
 
+### Admin page frame
+
+- The top of every admin page is `AdminPageHeader`, in one order: the way back for a page below a destination, then the title with what the record is now (a status, a badge) and one line of lead on the left and the page's actions on the right, the primary one last, then the page's tabs. A top-level page names its destination, whose icon leads the title as the sidebar shows it; on a phone the bar above shows that title instead.
+- The search and filters of a list sit under the header and are always `FilterToolbar`, which keeps them in the URL as [Lists](#lists) describes. When a list needs what the toolbar lacks, such as a period that is never off or a cursor to drop on a change, the toolbar gains it for every list; a page never writes a toolbar of its own.
+
 ### Lists
 
 - A list's search, filters and page are the URL, written through nuqs with `shallow: false` so a change asks the server again. A value at its default is left out of the URL. Changing the search or a filter returns to page 1. A search field waits 300 ms after the last keystroke.

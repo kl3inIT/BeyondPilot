@@ -786,6 +786,7 @@
       "metaTitle": "Tài khoản · BeyondPilot",
       "title": "Tài khoản",
       "search": "Tìm theo tên hoặc email",
+      "clear": "Xóa",
       "filters": {
         "status": {
           "label": "Trạng thái",
@@ -873,6 +874,7 @@
       "metaTitle": "Nhật ký thao tác · BeyondPilot",
       "title": "Nhật ký thao tác",
       "search": "Tìm người hoặc tài khoản",
+      "clear": "Xóa",
       "filters": {
         "period": {
           "label": "Khoảng thời gian"
@@ -1652,7 +1654,7 @@
       "overdueNotice": "{count} yêu cầu đã chờ câu trả lời quá 3 ngày.",
       "overdue": "Chờ quá 3 ngày",
       "search": "Tìm theo giải pháp",
-      "searchButton": "Tìm",
+      "clear": "Xóa",
       "filter": {
         "label": "Lọc theo trạng thái",
         "all": "Tất cả"

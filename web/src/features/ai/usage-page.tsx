@@ -11,7 +11,7 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "@/i18n/navigation";
@@ -50,11 +50,7 @@ async function UsageHeader({
   ] as const;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <AdminPageTitle destination="aiUsage">{t("title")}</AdminPageTitle>
-        <UsagePeriodSwitch />
-      </div>
+    <AdminPageHeader destination="aiUsage" title={t("title")} actions={<UsagePeriodSwitch />}>
       <nav aria-label={t("tabs.label")} className="border-b">
         <ul className="flex gap-4 md:gap-6">
           {tabs.map((tab) => (
@@ -74,7 +70,7 @@ async function UsageHeader({
           ))}
         </ul>
       </nav>
-    </div>
+    </AdminPageHeader>
   );
 }
 

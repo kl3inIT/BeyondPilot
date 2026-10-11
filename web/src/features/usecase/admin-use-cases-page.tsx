@@ -8,7 +8,7 @@ import { DataTableRows } from "@/components/composites/data-table-view";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { ListFooter } from "@/components/composites/list-footer";
 import { ReviewStatus } from "@/components/composites/review-status";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -143,10 +143,11 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <LiveRefresh />
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <AdminPageTitle destination="useCases">{t("title")}</AdminPageTitle>
-        <Button href={siteRoutes.adminUseCasesNew}>{t("create")}</Button>
-      </div>
+      <AdminPageHeader
+        destination="useCases"
+        title={t("title")}
+        actions={<Button href={siteRoutes.adminUseCasesNew}>{t("create")}</Button>}
+      />
       <AdminUseCasesToolbar organizations={organizations} />
 
       {/* From 768px: a table. The Updated column gives way first. */}

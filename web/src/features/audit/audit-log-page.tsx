@@ -6,7 +6,7 @@ import { Button } from "@/components/actions/button";
 import { DataTableEmpty, DataTablePager } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Person } from "@/components/composites/person";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import type { AuditEvent, AuditEventList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -113,7 +113,7 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <AdminPageTitle destination="auditLog">{t("title")}</AdminPageTitle>
+      <AdminPageHeader destination="auditLog" title={t("title")} />
       <AuditLogToolbar />
 
       {/* From 768px: a table. The time is exact to the second, with its year, on every width. */}

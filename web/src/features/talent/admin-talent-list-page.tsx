@@ -10,7 +10,7 @@ import { ListFooter } from "@/components/composites/list-footer";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { Person } from "@/components/composites/person";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -83,13 +83,14 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        <div className="flex flex-col gap-1">
-          <AdminPageTitle destination="talent">{t("title")}</AdminPageTitle>
-          <p className="text-sm text-muted-foreground">{t("lead")}</p>
-        </div>
-        <TextButton href={siteRoutes.adminTalentReported}>{t("reported.link")}</TextButton>
-      </div>
+      <AdminPageHeader
+        destination="talent"
+        title={t("title")}
+        lead={t("lead")}
+        actions={
+          <TextButton href={siteRoutes.adminTalentReported}>{t("reported.link")}</TextButton>
+        }
+      />
       <TalentToolbar />
 
       {/* From 768px: a table. The Headline column gives way first. */}

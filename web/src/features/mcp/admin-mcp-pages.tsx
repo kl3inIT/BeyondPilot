@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import type { AppHosts, McpSettings } from "@/lib/api/generated";
@@ -34,11 +34,7 @@ async function McpAdminHeader({ current, counts }: { current: McpTab; counts: Mc
   ] as const;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1">
-        <AdminPageTitle destination="mcp">{t("title")}</AdminPageTitle>
-        <p className="text-sm text-muted-foreground">{t("lead")}</p>
-      </div>
+    <AdminPageHeader destination="mcp" title={t("title")} lead={t("lead")}>
       <nav aria-label={t("tabs.label")} className="border-b">
         <ul className="flex gap-4 overflow-x-auto md:gap-6">
           {tabs.map((tab) => (
@@ -61,7 +57,7 @@ async function McpAdminHeader({ current, counts }: { current: McpTab; counts: Mc
           ))}
         </ul>
       </nav>
-    </div>
+    </AdminPageHeader>
   );
 }
 

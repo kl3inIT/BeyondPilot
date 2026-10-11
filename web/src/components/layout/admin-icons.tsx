@@ -44,19 +44,28 @@ const adminIcons = {
 type AdminDestination = keyof typeof adminIcons;
 
 /**
- * The title of a top-level admin page, after its destination's icon as the sidebar shows it, so the page and the
- * highlighted item read as one place. A page below a destination keeps a plain title and its way back. On a narrow
- * screen the bar above the page already shows this title, so here it stays for assistive technology only.
+ * The title of an admin page. A top-level page names its destination and its title comes after that destination's
+ * icon, as the sidebar shows it, so the page and the highlighted item read as one place; on a narrow screen the bar
+ * above the page already shows this title, so here it stays for assistive technology only. A page below a
+ * destination has a plain title, which every width shows.
  */
 function AdminPageTitle({
   destination,
   className,
   children,
 }: {
-  destination: AdminDestination;
+  destination?: AdminDestination;
   className?: string;
   children: React.ReactNode;
 }) {
+  if (!destination) {
+    return (
+      <h1 className={cn("min-w-0 text-2xl font-semibold tracking-tight break-words", className)}>
+        {children}
+      </h1>
+    );
+  }
+
   const Icon = adminIcons[destination];
   return (
     <h1

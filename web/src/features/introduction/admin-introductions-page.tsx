@@ -6,18 +6,16 @@ import { Button } from "@/components/actions/button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Status } from "@/components/composites/status";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Input } from "@/components/ui/input";
 import type { AdminIntroduction, AdminIntroductionList } from "@/lib/api/generated";
-import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
 import {
   adminIntroductionsSearch,
-  introductionStatuses,
   type AdminIntroductionsSearch,
 } from "./admin-introductions-search";
+import { AdminIntroductionsToolbar } from "./admin-introductions-toolbar";
 
 const address = createSerializer(adminIntroductionsSearch);
 
@@ -84,10 +82,8 @@ function AdminIntroductionsPage({ introductions, search }: AdminIntroductionsPag
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-col gap-1">
-        <AdminPageTitle destination="introductions">{t("title")}</AdminPageTitle>
-        <p className="text-sm text-muted-foreground">{t("lead")}</p>
-      </div>
+      <AdminPageHeader destination="introductions" title={t("title")} lead={t("lead")} />
+      <AdminIntroductionsToolbar />
 
       {introductions.overdue > 0 && (
         <Alert variant="destructive">
@@ -96,41 +92,6 @@ function AdminIntroductionsPage({ introductions, search }: AdminIntroductionsPag
           </AlertDescription>
         </Alert>
       )}
-
-      <div className="flex flex-wrap items-center gap-3">
-        <form
-          action={siteRoutes.adminIntroductions}
-          method="get"
-          role="search"
-          className="flex gap-2"
-        >
-          {search.status && <input type="hidden" name="status" value={search.status} />}
-          <Input
-            type="search"
-            name="q"
-            defaultValue={search.q}
-            maxLength={100}
-            aria-label={t("search")}
-            placeholder={t("search")}
-            className="h-8 w-64"
-          />
-          <Button type="submit" prominence="secondary" size="sm">
-            {t("searchButton")}
-          </Button>
-        </form>
-        <nav aria-label={t("filter.label")} className="flex flex-wrap gap-1.5 text-sm">
-          {[null, ...introductionStatuses].map((status) => (
-            <Link
-              key={status ?? "all"}
-              href={address(siteRoutes.adminIntroductions, { q: search.q, status, page: 1 })}
-              aria-current={search.status === status ? "page" : undefined}
-              className="rounded-md border px-2.5 py-1 text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 aria-[current=page]:bg-muted aria-[current=page]:font-medium aria-[current=page]:text-foreground"
-            >
-              {t(status ? `status.${status}` : "filter.all")}
-            </Link>
-          ))}
-        </nav>
-      </div>
 
       {introductions.items.length > 0 ? (
         <ul className="overflow-hidden rounded-lg border">
