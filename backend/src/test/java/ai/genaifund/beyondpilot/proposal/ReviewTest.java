@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -249,6 +250,50 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<List<String>>read(history, "$.history[*].kind")).containsExactly("submitted", "decided");
 		assertThat(JsonPath.<List<String>>read(history, "$.history[*].reason")).contains("The strongest in Claiming.");
 		assertThat(auditOf(form.programId())).contains("proposal.decide", "proposal.release");
+	}
+
+	@Test
+	void theEmailsOfAReleaseAreKeptAsTheyAreWrittenUntilTheRelease() {
+		Form form = program("drafted-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		criteriaOf(form, "Practical impact");
+		String judge = judge(form, "drafter@review.test");
+		Applicant chosen = applicant(form, "chosen@drafted.test", "Drafted Builder");
+		String release = REVIEW + form.programId() + "/release";
+		String draft = release + "/draft";
+
+		// Until someone writes, the emails are the starting point in the words of the program.
+		assertThat(JsonPath.<String>read(body(get(operator, release).expectStatus().isOk()), "$.emails.shortlistedSubject"))
+			.isEqualTo("You're shortlisted for Drafted challenge");
+
+		// Only an operator writes them, and what is written is there when the page is opened again.
+		put(judge, draft, emails()).expectStatus().isForbidden();
+		Map<String, String> halfWritten = new HashMap<>(emails());
+		halfWritten.put("notSelectedMessage", "");
+		put(operator, draft, halfWritten).expectStatus().isOk();
+		String kept = body(get(operator, release).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(kept, "$.emails.shortlistedSubject")).isEqualTo("Shortlisted: Released challenge");
+		assertThat(JsonPath.<String>read(kept, "$.emails.notSelectedMessage")).isEmpty();
+		assertThat(mail.latestSubjectTo("chosen@drafted.test")).isNotEqualTo("Shortlisted: Released challenge");
+
+		// A later save replaces the earlier one; a subject longer than an email's is refused.
+		put(operator, draft, emails()).expectStatus().isOk();
+		Map<String, String> tooLong = new HashMap<>(emails());
+		tooLong.put("shortlistedSubject", "s".repeat(201));
+		put(operator, draft, tooLong).expectStatus().isBadRequest();
+		assertThat(JsonPath.<String>read(body(get(operator, release).expectStatus().isOk()), "$.emails.notSelectedMessage"))
+			.isEqualTo("Hi {organization},\n\nNot this time.");
+
+		// Once released, the emails are the ones sent and can no longer be written.
+		post(operator, REVIEW + form.programId() + "/decisions", decision(List.of(chosen.id()), "shortlisted"))
+			.expectStatus()
+			.isOk();
+		close(form);
+		Map<String, String> sent = new HashMap<>(emails());
+		sent.put("shortlistedSubject", "Sent: Drafted challenge");
+		post(operator, release, sent).expectStatus().isOk();
+		assertProblem(put(operator, draft, emails()), 409, "PROPOSAL_RELEASED");
+		assertThat(JsonPath.<String>read(body(get(operator, release).expectStatus().isOk()), "$.emails.shortlistedSubject"))
+			.isEqualTo("Sent: Drafted challenge");
 	}
 
 	@Test

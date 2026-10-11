@@ -3799,7 +3799,7 @@ export type RejectSolution = {
  */
 export type Release = {
     /**
-     * The emails as they were sent, or a starting point until then.
+     * The emails as they were sent; until then, as an operator last wrote them, or a starting point.
      */
     emails: ReleaseEmails;
     head: ReviewHead;
@@ -3814,6 +3814,16 @@ export type Release = {
      */
     undecided: Array<ReleaseItem>;
     withdrawn: number;
+};
+
+/**
+ * The email of each group as it is being written. A subject or a message may be empty until the release.
+ */
+export type ReleaseDraftRequest = {
+    notSelectedMessage: string;
+    notSelectedSubject: string;
+    shortlistedMessage: string;
+    shortlistedSubject: string;
 };
 
 /**
@@ -10421,6 +10431,49 @@ export type ReleaseOutcomesResponses = {
 };
 
 export type ReleaseOutcomesResponse = ReleaseOutcomesResponses[keyof ReleaseOutcomesResponses];
+
+export type KeepReleaseDraftData = {
+    body: ReleaseDraftRequest;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/release/draft';
+};
+
+export type KeepReleaseDraftErrors = {
+    /**
+     * A subject or a message is longer than it may be.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+    /**
+     * The outcomes were released.
+     */
+    409: Problem;
+};
+
+export type KeepReleaseDraftError = KeepReleaseDraftErrors[keyof KeepReleaseDraftErrors];
+
+export type KeepReleaseDraftResponses = {
+    /**
+     * The emails as kept.
+     */
+    200: ReleaseEmails;
+};
+
+export type KeepReleaseDraftResponse = KeepReleaseDraftResponses[keyof KeepReleaseDraftResponses];
 
 export type ListReviewersData = {
     body?: never;

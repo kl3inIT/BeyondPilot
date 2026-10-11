@@ -5925,6 +5925,17 @@
       "withdrawn": "{count} đơn đã rút sẽ không nhận email.",
       "sentTitle": "Email đã gửi",
       "emailsTitle": "Email cho từng nhóm",
+      "draft": {
+        "unsaved": "Chưa lưu",
+        "saved": "Đã lưu {time}",
+        "failed": "Chưa lưu được. Sẽ thử lại khi bạn sửa tiếp.",
+        "leave": {
+          "title": "Rời trang khi chưa lưu xong?",
+          "lead": "Thay đổi gần nhất của email chưa được lưu và sẽ mất.",
+          "leave": "Rời trang",
+          "stay": "Ở lại"
+        }
+      },
       "subject": "Tiêu đề",
       "message": "Nội dung",
       "placeholders": "{organization} và {solution} được điền theo từng người nộp.",
