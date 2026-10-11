@@ -6,7 +6,7 @@ import { readProposalForm } from "@/features/proposal/proposal-queries";
 import { ProposalSentPage } from "@/features/proposal/proposal-sent-page";
 import { getPathname } from "@/i18n/navigation";
 import { requireAccount } from "@/lib/auth/session";
-import { useCaseProposeRoute as proposeRoute } from "@/lib/site";
+import { proposeToUseCaseRoute as proposeRoute } from "@/lib/site";
 
 export async function generateMetadata({
   params,

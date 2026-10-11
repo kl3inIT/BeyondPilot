@@ -14,6 +14,7 @@ import type {
 } from "@/lib/api/generated";
 
 import type { ProposalValues, Step } from "./proposal-draft";
+import { catalogHref, catalogRowProps, ProposalSolutionRow } from "./proposal-solution-list";
 
 type ProposalReviewStepProps = {
   organization: ProposingOrganization;
@@ -74,9 +75,14 @@ function ProposalReviewStep({
 
       <Section step="solutions" title={t("steps.solutions")} onEdit={onEdit}>
         {solutions.length > 0 ? (
-          <ul className="flex flex-col gap-1 text-sm">
+          <ul className="flex flex-col gap-2">
             {solutions.map((solution) => (
-              <li key={solution.id}>{solution.name}</li>
+              <li key={solution.id}>
+                <ProposalSolutionRow
+                  {...catalogRowProps(solution, organization.logoFileId)}
+                  href={catalogHref(solution)}
+                />
+              </li>
             ))}
           </ul>
         ) : (

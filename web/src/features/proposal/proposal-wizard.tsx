@@ -16,6 +16,7 @@ import { WizardShell } from "@/features/usecase/wizard-shell";
 import { TalentForm } from "@/features/talent/talent-form";
 import {
   saveUseCaseProposal,
+  getUseCaseProposalForm,
   sendUseCaseProposal,
   type ProposingOrganization,
   type SolutionSummary,
@@ -23,7 +24,11 @@ import {
   type UseCaseProposalForm,
 } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
-import { useCaseProposeRoute as proposeRoute, useCaseRoute as briefRoute } from "@/lib/site";
+import {
+  proposalViewRoute,
+  proposeToUseCaseRoute as proposeRoute,
+  briefRoute,
+} from "@/lib/site";
 
 import {
   bodyOf,
@@ -60,6 +65,10 @@ type ProposalWizardProps = {
  * The six steps in which a member of an approved organization writes a proposal to a use case. What is
  * written is saved as it changes, so nothing is lost and anyone of the organization can pick the draft
  * up; the last step reviews it and sends it.
+ *
+ * The same steps edit a proposal that was sent, while its edit window is open. Every save of a sent
+ * proposal must be complete, so nothing is saved as it changes: the last step saves all the changes at
+ * once.
  */
 function ProposalWizard({
   useCaseId,
@@ -73,6 +82,8 @@ function ProposalWizard({
   const notify = useNotify();
   const router = useRouter();
   const format = useFormatter();
+  const editing = form.proposal?.status === "sent";
+  const editableUntil = form.proposal?.editableUntil ?? null;
 
   const [values, setValues] = useState<ProposalValues>(() => valuesOf(form.proposal));
   const [catalog, setCatalog] = useState(solutions);
@@ -85,6 +96,7 @@ function ProposalWizard({
   const [checked, setChecked] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [sending, setSending] = useState(false);
+  const [edited, setEdited] = useState(false);
 
   const latest = useRef(values);
   const version = useRef<number | null>(form.proposal?.version ?? null);
@@ -124,6 +136,10 @@ function ProposalWizard({
   /** Saves what is waiting and says whether it is saved. */
   const flush = useCallback((): Promise<boolean> => {
     clearTimeout(timer.current);
+    if (editing) {
+      // A sent proposal is saved only by Save changes, never partway.
+      return Promise.resolve(!stopped.current);
+    }
     chain.current = chain.current.then(async () => {
       if (stopped.current) {
         return false;
@@ -131,7 +147,7 @@ function ProposalWizard({
       return dirty.current ? saveOnce() : true;
     });
     return chain.current;
-  }, [saveOnce]);
+  }, [saveOnce, editing]);
 
   const change = useCallback(
     (patch: Partial<ProposalValues>) => {
@@ -142,10 +158,13 @@ function ProposalWizard({
       latest.current = next;
       dirty.current = true;
       setValues(next);
+      setEdited(true);
       clearTimeout(timer.current);
-      timer.current = setTimeout(() => void flush(), AUTOSAVE_MS);
+      if (!editing) {
+        timer.current = setTimeout(() => void flush(), AUTOSAVE_MS);
+      }
     },
-    [flush],
+    [flush, editing],
   );
 
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -186,7 +205,40 @@ function ProposalWizard({
 
   async function leave() {
     if (await flush()) {
-      router.push(briefRoute(useCaseId));
+      // Cancelling an edit drops what was changed and returns to the proposal as sent.
+      dirty.current = false;
+      router.push(editing ? proposalViewRoute(useCaseId) : briefRoute(useCaseId));
+    }
+  }
+
+  /** Saves every change to the sent proposal at once, then returns to it. */
+  async function saveChanges() {
+    setSending(true);
+    try {
+      const { data } = await saveUseCaseProposal({
+        path: { useCaseId },
+        body: bodyOf(latest.current, version.current),
+      });
+      version.current = data.proposal?.version ?? version.current;
+      dirty.current = false;
+      stopped.current = true;
+      notify.success("UseCaseProposal.wizard.edit.saved");
+      router.push(proposalViewRoute(useCaseId));
+    } catch (error) {
+      const code = codeOfProposalError(error);
+      if (code === "PROPOSAL_CHANGED_MEANWHILE") {
+        stopped.current = true;
+        setChanged(true);
+      } else if (code === "PROPOSAL_EDIT_WINDOW_CLOSED") {
+        // The window ended while the form was open: the page reads the proposal and shows it as sent.
+        dirty.current = false;
+        notify.error(describeProposalError(error));
+        router.refresh();
+      } else {
+        notify.error(describeProposalError(error));
+      }
+    } finally {
+      setSending(false);
     }
   }
 
@@ -204,6 +256,13 @@ function ProposalWizard({
       stopped.current = true;
       router.push(`${proposeRoute(useCaseId)}/sent`);
     } catch (error) {
+      // The proposal may have gone out although the answer did not arrive: if it did, it is sent.
+      const reread = await getUseCaseProposalForm({ path: { useCaseId } }).catch(() => null);
+      if (reread?.data.proposal?.status === "sent") {
+        stopped.current = true;
+        router.push(`${proposeRoute(useCaseId)}/sent`);
+        return;
+      }
       notify.error(describeProposalError(error));
     } finally {
       setSending(false);
@@ -216,7 +275,11 @@ function ProposalWizard({
     timeZone: "Asia/Ho_Chi_Minh",
   });
 
-  const saveStatus = (
+  const saveStatus = editing ? (
+    <span role="status" className="text-xs text-muted-foreground">
+      {edited ? t("edit.unsaved") : t("edit.pristine")}
+    </span>
+  ) : (
     <span
       role="status"
       className={cn(
@@ -246,13 +309,28 @@ function ProposalWizard({
       current={step}
       done={done}
       onStep={(name) => void go(name)}
-      notes={[t("saveNote", { name: organization.name })]}
+      notes={[editing ? t("edit.note") : t("saveNote", { name: organization.name })]}
     >
+      {editing && editableUntil && (
+        <Alert>
+          <AlertTitle>{t("edit.title")}</AlertTitle>
+          <AlertDescription>
+            {t("edit.banner", {
+              until: format.dateTime(new Date(editableUntil), {
+                dateStyle: "medium",
+                timeStyle: "short",
+                timeZone: "Asia/Ho_Chi_Minh",
+              }),
+            })}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {changed && (
         <Alert variant="destructive">
           <AlertTitle>{t("changed")}</AlertTitle>
           <div className="mt-2">
-            <Button prominence="secondary" size="sm" onClick={() => router.refresh()}>
+            <Button prominence="secondary" size="sm" onClick={() => window.location.reload()}>
               {t("reload")}
             </Button>
           </div>
@@ -264,7 +342,9 @@ function ProposalWizard({
       ) : (
         <div className="flex flex-col gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}`)}</h1>
-          <p className="text-base text-muted-foreground">{t(`leads.${step}`)}</p>
+          <p className="text-base text-muted-foreground">
+            {editing && step === "review" ? t("edit.reviewLead") : t(`leads.${step}`)}
+          </p>
         </div>
       )}
 
@@ -273,6 +353,7 @@ function ProposalWizard({
       {step === "solutions" && (
         <ProposalSolutionsStep
           catalog={catalog}
+          organizationLogoFileId={organization.logoFileId}
           onCatalog={setCatalog}
           ids={values.solutionIds}
           onIds={(solutionIds) => change({ solutionIds })}
@@ -280,6 +361,12 @@ function ProposalWizard({
           onApproach={(approach) => change({ approach })}
           checked={checked}
         />
+      )}
+
+      {step === "profile" && editing && (
+        <Alert>
+          <AlertDescription>{t("edit.profileHint")}</AlertDescription>
+        </Alert>
       )}
 
       {step === "profile" && (
@@ -348,19 +435,21 @@ function ProposalWizard({
               </AlertDescription>
             </Alert>
           )}
-          <Tick
-            label={t("review.confirm")}
-            checked={confirmed}
-            onCheckedChange={setConfirmed}
-            disabled={missing.length > 0}
-          />
+          {!editing && (
+            <Tick
+              label={t("review.confirm")}
+              checked={confirmed}
+              onCheckedChange={setConfirmed}
+              disabled={missing.length > 0}
+            />
+          )}
         </>
       )}
 
       {step !== "profile" && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
           <Button prominence="tertiary" size="lg" disabled={sending} onClick={() => void leave()}>
-            {t("saveAndReturn")}
+            {editing ? t("edit.cancel") : t("saveAndReturn")}
           </Button>
           <div className="flex items-center gap-3">
             {stepIndex > 0 && (
@@ -377,10 +466,12 @@ function ProposalWizard({
               <Button
                 size="lg"
                 pending={sending}
-                disabled={missing.length > 0 || !confirmed || changed}
-                onClick={() => void send()}
+                disabled={
+                  missing.length > 0 || (!editing && !confirmed) || changed || (editing && !edited)
+                }
+                onClick={() => void (editing ? saveChanges() : send())}
               >
-                {t("send")}
+                {editing ? t("edit.save") : t("send")}
               </Button>
             ) : (
               <Button size="lg" onClick={() => void next()}>

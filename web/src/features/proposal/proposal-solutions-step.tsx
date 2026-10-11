@@ -6,24 +6,20 @@ import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
-import { DataTable } from "@/components/composites/data-table";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  SolutionListingCell,
-  SolutionNameCell,
-  SolutionReviewCell,
-} from "@/features/solution/solution-row-cells";
 import { listMySolutions, type SolutionSummary } from "@/lib/api/generated";
 
 import { addSolutions, maxApproach, removeSolution } from "./proposal-draft";
 import { ProposalSolutionEditorDialog } from "./proposal-solution-editor-dialog";
 import { ProposalSolutionPicker } from "./proposal-solution-picker";
+import { catalogHref, catalogRowProps, ProposalSolutionRow } from "./proposal-solution-list";
 
 type ProposalSolutionsStepProps = {
   /** What the organization offers, as it was last read. */
   catalog: SolutionSummary[];
+  /** The organization's logo, shown for a solution that has none of its own. */
+  organizationLogoFileId?: string | null;
   onCatalog: (solutions: SolutionSummary[]) => void;
   ids: string[];
   onIds: (ids: string[]) => void;
@@ -34,12 +30,13 @@ type ProposalSolutionsStepProps = {
 };
 
 /**
- * The solutions of the organization the proposal offers, in a table as the Solutions tab draws them,
+ * The solutions of the organization the proposal offers, as cards,
  * and how they solve the use case. Solutions are added from a popup; a new one is written in the
  * editor, in a dialog over this page.
  */
 function ProposalSolutionsStep({
   catalog,
+  organizationLogoFileId,
   onCatalog,
   ids,
   onIds,
@@ -48,7 +45,6 @@ function ProposalSolutionsStep({
   checked,
 }: ProposalSolutionsStepProps) {
   const t = useTranslations("UseCaseProposal.wizard.solutions");
-  const columns = useTranslations("Solution.mine.columns");
   const format = useFormatter();
   const [picking, setPicking] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
@@ -89,45 +85,26 @@ function ProposalSolutionsStep({
             <p className="text-sm text-muted-foreground">{t("empty.lead")}</p>
           </div>
         ) : (
-          <DataTable>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{columns("solution")}</TableHead>
-                <TableHead className="w-36">{columns("status")}</TableHead>
-                <TableHead className="w-44">{columns("listing")}</TableHead>
-                <TableHead className="w-12">
-                  <span className="sr-only">{columns("actions")}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((solution) => (
-                <TableRow key={solution.id}>
-                  <TableCell className="max-w-0">
-                    <SolutionNameCell solution={solution} />
-                  </TableCell>
-                  <TableCell>
-                    <SolutionReviewCell solution={solution} />
-                  </TableCell>
-                  <TableCell>
-                    <SolutionListingCell solution={solution} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-end">
-                      <IconButton
-                        prominence="tertiary"
-                        size="sm"
-                        aria-label={t("remove", { name: solution.name })}
-                        onClick={() => onIds(removeSolution(ids, solution.id))}
-                      >
-                        <Trash2Icon aria-hidden="true" />
-                      </IconButton>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </DataTable>
+          <ul className="flex flex-col gap-2">
+            {rows.map((solution) => (
+              <li key={solution.id} className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <ProposalSolutionRow
+                    {...catalogRowProps(solution, organizationLogoFileId)}
+                    href={catalogHref(solution)}
+                  />
+                </div>
+                <IconButton
+                  prominence="tertiary"
+                  size="sm"
+                  aria-label={t("remove", { name: solution.name })}
+                  onClick={() => onIds(removeSolution(ids, solution.id))}
+                >
+                  <Trash2Icon aria-hidden="true" />
+                </IconButton>
+              </li>
+            ))}
+          </ul>
         )}
         {checked && ids.length === 0 && (
           <p role="alert" className="text-sm text-destructive">
@@ -160,6 +137,7 @@ function ProposalSolutionsStep({
         onOpenChange={setPicking}
         chosen={ids}
         known={catalog}
+        organizationLogoFileId={organizationLogoFileId}
         onPick={(picked, all) => {
           onCatalog(all);
           onIds(picked);

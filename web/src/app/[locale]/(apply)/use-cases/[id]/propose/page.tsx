@@ -9,7 +9,7 @@ import { readMySolutions } from "@/features/solution/solution-queries";
 import { readMyTalent } from "@/features/talent/talent-queries";
 import { getPathname } from "@/i18n/navigation";
 import { requireAccount } from "@/lib/auth/session";
-import { useCaseProposeRoute as proposeRoute } from "@/lib/site";
+import { proposalViewRoute, proposeToUseCaseRoute as proposeRoute } from "@/lib/site";
 
 export async function generateMetadata({
   params,
@@ -42,16 +42,15 @@ export default async function ProposeRoute({
   if (!form.organization.approved) {
     return <ProposalBlocked useCaseId={id} reason="notApproved" />;
   }
-  if (form.proposal?.status === "sent") {
-    redirect(getPathname({ href: `${proposeRoute(id)}/sent`, locale: await getLocale() }));
+  // A sent proposal opens for editing while its window is open, and is only read after it.
+  if (form.proposal?.status === "sent" && !form.proposal.editableUntil) {
+    redirect(getPathname({ href: proposalViewRoute(id), locale: await getLocale() }));
   }
 
   const [solutions, talent] = await Promise.all([readMySolutions(), readMyTalent()]);
 
   return (
     <ProposalWizard
-      // A proposal read again after another member saved starts afresh, with the version it holds.
-      key={form.proposal?.version ?? "new"}
       useCaseId={id}
       form={form}
       organization={form.organization}

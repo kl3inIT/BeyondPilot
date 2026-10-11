@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { DataTable } from "@/components/composites/data-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -15,13 +14,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CreateSolution } from "@/features/solution/create-solution";
-import {
-  SolutionListingCell,
-  SolutionNameCell,
-  SolutionReviewCell,
-} from "@/features/solution/solution-row-cells";
+import { catalogRowProps, ProposalSolutionRow } from "./proposal-solution-list";
 import { useNotify } from "@/hooks/use-notify";
 import { listMySolutions, type SolutionSummary } from "@/lib/api/generated";
 
@@ -32,6 +26,8 @@ type ProposalSolutionPickerProps = {
   chosen: string[];
   /** The organization's solutions as the wizard last read them, shown while the list is read again. */
   known: SolutionSummary[];
+  /** The organization's logo, shown for a solution that has none of its own. */
+  organizationLogoFileId?: string | null;
   /** Called with the solutions to offer, in the order shown, and the list as it was read. */
   onPick: (ids: string[], solutions: SolutionSummary[]) => void;
   /** Called with a draft just created, to open its editor. */
@@ -40,7 +36,7 @@ type ProposalSolutionPickerProps = {
 
 /**
  * The popup in which the member picks the organization's solutions for the proposal. Any solution may
- * be added, whatever its review says, and a new one may be started from here.
+ * be added, and a new one may be started from here.
  */
 function ProposalSolutionPicker({ open, onOpenChange, ...rest }: ProposalSolutionPickerProps) {
   return (
@@ -55,9 +51,15 @@ function ProposalSolutionPicker({ open, onOpenChange, ...rest }: ProposalSolutio
 type PickerBodyProps = Omit<ProposalSolutionPickerProps, "open">;
 
 /** The content of the popup; it is made each time the popup opens, so it starts from what is chosen. */
-function PickerBody({ onOpenChange, chosen, known, onPick, onCreated }: PickerBodyProps) {
+function PickerBody({
+  onOpenChange,
+  chosen,
+  known,
+  organizationLogoFileId,
+  onPick,
+  onCreated,
+}: PickerBodyProps) {
   const t = useTranslations("UseCaseProposal.wizard.solutions.pick");
-  const columns = useTranslations("Solution.mine.columns");
   const notify = useNotify();
   const [items, setItems] = useState<SolutionSummary[]>(known);
   const [loading, setLoading] = useState(true);
@@ -107,51 +109,26 @@ function PickerBody({ onOpenChange, chosen, known, onPick, onCreated }: PickerBo
         <DialogDescription className="sr-only">{t("lead")}</DialogDescription>
       </DialogHeader>
       <div className="max-h-96 overflow-y-auto">
-        <DataTable>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-10">
-                <span className="sr-only">{t("select")}</span>
-              </TableHead>
-              <TableHead>{columns("solution")}</TableHead>
-              <TableHead className="w-36">{columns("status")}</TableHead>
-              <TableHead className="w-44">{columns("listing")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        {items.length === 0 ? (
+          <div className="flex justify-center p-6 text-sm">
+            {loading ? <Spinner /> : <span className="text-muted-foreground">{t("empty")}</span>}
+          </div>
+        ) : (
+          <ul className="flex flex-col gap-2">
             {items.map((solution) => (
-              <TableRow key={solution.id}>
-                <TableCell>
-                  <Checkbox
-                    aria-label={t("choose", { name: solution.name })}
-                    checked={selected.includes(solution.id)}
-                    onCheckedChange={(next) => toggle(solution.id, next === true)}
-                  />
-                </TableCell>
-                <TableCell className="max-w-0">
-                  <SolutionNameCell solution={solution} />
-                </TableCell>
-                <TableCell>
-                  <SolutionReviewCell solution={solution} />
-                </TableCell>
-                <TableCell>
-                  <SolutionListingCell solution={solution} />
-                </TableCell>
-              </TableRow>
+              <li key={solution.id} className="flex items-center gap-3">
+                <Checkbox
+                  aria-label={t("choose", { name: solution.name })}
+                  checked={selected.includes(solution.id)}
+                  onCheckedChange={(next) => toggle(solution.id, next === true)}
+                />
+                <div className="min-w-0 flex-1">
+                  <ProposalSolutionRow {...catalogRowProps(solution, organizationLogoFileId)} />
+                </div>
+              </li>
             ))}
-            {items.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center">
-                  {loading ? (
-                    <Spinner />
-                  ) : (
-                    <span className="text-muted-foreground">{t("empty")}</span>
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </DataTable>
+          </ul>
+        )}
       </div>
       <p className="flex flex-wrap items-center gap-x-1 text-xs text-muted-foreground">
         {t("note")}
