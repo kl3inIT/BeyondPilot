@@ -6602,6 +6602,10 @@ export type ListAccountsData = {
          */
         role?: 'user' | 'operator';
         /**
+         * The order: `name` by the name, or the address when there is none, `lastSignIn` by the last sign-in, `created` by when the account was made; `-` before a key turns it round, and an account that never signed in comes last either way. Without it, the latest sign-in first, then the newest account.
+         */
+        sort?: 'name' | '-name' | 'lastSignIn' | '-lastSignIn' | 'created' | '-created';
+        /**
          * The page, counted from 1.
          */
         page?: number;
@@ -8104,6 +8108,10 @@ export type ListEmailSuppressionsData = {
          */
         q?: string | null;
         /**
+         * The order: `address` alphabetically, `since` by when the address was suppressed; `-` before a key turns it round. Without it, the most recently suppressed first.
+         */
+        sort?: 'address' | '-address' | 'since' | '-since';
+        /**
          * The page, counted from 1.
          */
         page?: number | null;
@@ -8623,6 +8631,10 @@ export type ListAdminOrganizationsData = {
          * Only organizations of this review status; `in_review` also selects an approved one with an open claim, `approved` leaves out those taken down, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.
          */
         status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended' | 'merged';
+        /**
+         * The order: `name` by the name, `received` by when its open claim arrived, or when the organization was created when none is open, `members` by how many people belong to it; `-` before a key turns it round. Without it, those a decision waits on first, then the most recently received.
+         */
+        sort?: 'name' | '-name' | 'received' | '-received' | 'members' | '-members';
         /**
          * The page, counted from 1.
          */
@@ -9484,6 +9496,10 @@ export type ListMyOrganizationMembersData = {
     body?: never;
     path?: never;
     query?: {
+        /**
+         * The order: `role` owners before members, `joined` by when the person joined; `-` before a key turns it round. Without it, owners first, then in the order they joined.
+         */
+        sort?: 'role' | '-role' | 'joined' | '-joined';
         /**
          * The page, counted from 1.
          */
@@ -11760,6 +11776,10 @@ export type ListAdminSolutionsData = {
          */
         featured?: boolean | null;
         /**
+         * The order: `name` by the name, `submitted` by when it was last sent for review; `-` before a key turns it round, and one never sent comes last either way. Without it, those with something waiting for review first, the longest wait on top.
+         */
+        sort?: 'name' | '-name' | 'submitted' | '-submitted';
+        /**
          * The page, counted from 1.
          */
         page?: number;
@@ -12803,6 +12823,10 @@ export type ListAdminTalentData = {
          */
         featured?: boolean | null;
         /**
+         * The order: `name` by the name, `submitted` by when it was last sent for review; `-` before a key turns it round, and one never sent comes last either way. Without it, those waiting for review first, the longest wait on top.
+         */
+        sort?: 'name' | '-name' | 'submitted' | '-submitted';
+        /**
          * The page, counted from 1.
          */
         page?: number;
@@ -13554,6 +13578,10 @@ export type ListAdminUseCasesData = {
          * Only use cases featured when true, only those not featured when false.
          */
         featured?: boolean | null;
+        /**
+         * The order: `title` by the title, `closes` by the close date, `updated` by the last change; `-` before a key turns it round, and one without a title or a close date comes last either way. Without it, the newest first.
+         */
+        sort?: 'title' | '-title' | 'closes' | '-closes' | 'updated' | '-updated';
         /**
          * The page, counted from 1.
          */
