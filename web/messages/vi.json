@@ -6508,7 +6508,8 @@
     },
     "filter": {
       "label": "Lọc theo yêu cầu",
-      "any": "Bất kỳ"
+      "any": "Bất kỳ",
+      "showing": "Đang hiện {count}/{total} giải pháp đáp ứng “{need}”."
     },
     "tabs": {
       "label": "Giải pháp theo quyết định của bạn",
