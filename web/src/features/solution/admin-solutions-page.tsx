@@ -75,11 +75,16 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     waiting: solution.status === "in_review" || solution.deploymentsAwaitingReview > 0,
   }));
 
-  const narrowed = search.status !== null || search.industry !== null || search.featured !== null;
+  const narrowed =
+    search.organizationId !== null ||
+    search.status !== null ||
+    search.industry !== null ||
+    search.featured !== null;
   const filtered = search.q.trim() !== "" || narrowed;
   const empty =
     rows.length > 0 ? null : search.q.trim() === "" &&
       search.status === "in_review" &&
+      search.organizationId === null &&
       search.industry === null &&
       search.featured === null ? (
       <DataTableEmpty icon={<BoxesIcon aria-hidden="true" />} title={t("queueEmpty.title")}>
@@ -120,7 +125,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
             </TextButton>
           ))}
       </div>
-      <SolutionsToolbar list="admin" />
+      <SolutionsToolbar list="admin" organizationOptions={solutions.organizations} />
 
       {/* From 768px: a table. The sender gives way first, then the organization joins the solution. */}
       <DataTable className="hidden md:block">
