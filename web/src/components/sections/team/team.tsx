@@ -32,7 +32,12 @@ const members: Member[] = [
     tint: "bg-peach text-peach-foreground",
     linkedin: "https://www.linkedin.com/in/nhatnhu/",
   },
-  { id: "ducAnh", name: "Nguyễn Đức Anh", tint: "bg-mint text-mint-foreground" },
+  {
+    id: "ducAnh",
+    name: "Nguyễn Đức Anh",
+    tint: "bg-mint text-mint-foreground",
+    linkedin: "https://www.linkedin.com/in/nguyen-duc-anh-7b0064362/",
+  },
   {
     id: "nhatAnh",
     name: "Phạm Nhật Anh",
