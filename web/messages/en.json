@@ -786,6 +786,7 @@
       "metaTitle": "Accounts · BeyondPilot",
       "title": "Accounts",
       "search": "Search by name or email",
+      "clear": "Clear",
       "filters": {
         "status": {
           "label": "Status",
@@ -873,6 +874,7 @@
       "metaTitle": "Audit log · BeyondPilot",
       "title": "Audit log",
       "search": "Search people or accounts",
+      "clear": "Clear",
       "filters": {
         "period": {
           "label": "Period"
@@ -1652,7 +1654,7 @@
       "overdueNotice": "{count, plural, one {# request has} other {# requests have}} waited more than 3 days for an answer.",
       "overdue": "Waiting over 3 days",
       "search": "Search by solution",
-      "searchButton": "Search",
+      "clear": "Clear",
       "filter": {
         "label": "Filter by state",
         "all": "All"

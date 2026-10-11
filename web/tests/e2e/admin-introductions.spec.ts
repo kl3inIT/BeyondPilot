@@ -37,7 +37,8 @@ test.describe("admin introductions", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/introductions");
 
-    await page.getByRole("link", { name: "Replied" }).click();
+    await page.getByRole("combobox", { name: "Filter by state" }).click();
+    await page.getByRole("option", { name: "Replied" }).click();
     await expect(page).toHaveURL(/status=replied/);
     await expect(page.getByText("Do you coach agents in Vietnamese?")).toBeVisible();
     await expect(page.getByText("3 requests")).toHaveCount(0);
