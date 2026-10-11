@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { CodeList } from "@/components/composites/code-list";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicSolutionSummary } from "@/lib/api/generated";
@@ -40,6 +41,9 @@ function SolutionCard({ solution }: { solution: PublicSolutionSummary }) {
             />
           ) : (
             <ImageIcon className="size-6" aria-hidden="true" />
+          )}
+          {solution.featured && (
+            <FeaturedBadge className="absolute top-2 right-2">{t("featured")}</FeaturedBadge>
           )}
         </div>
         <SolutionLogo

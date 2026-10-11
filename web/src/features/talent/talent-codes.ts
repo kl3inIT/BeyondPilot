@@ -55,3 +55,6 @@ export const talentRejections = ["incomplete", "unverifiable", "inappropriate", 
 
 /** The statuses operators see; a draft is its person's alone. */
 export const reviewedStatuses = ["in_review", "needs_changes", "approved", "suspended"] as const;
+
+/** What the operators' list narrows to: the featured profiles, or those that are not. */
+export const featuredChoices = ["true", "false"] as const;

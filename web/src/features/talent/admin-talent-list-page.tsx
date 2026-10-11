@@ -6,6 +6,7 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { Person } from "@/components/composites/person";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
@@ -40,7 +41,12 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
     name: profile.name,
     person: <Person name={profile.name} email={profile.email} />,
     headline: profile.headline ?? "",
-    status: <ReviewStatus state={reviewState(profile)}>{word(reviewState(profile))}</ReviewStatus>,
+    status: (
+      <span className="flex flex-col items-start gap-0.5">
+        <ReviewStatus state={reviewState(profile)}>{word(reviewState(profile))}</ReviewStatus>
+        {profile.featuredAt && <FeaturedBadge>{t("feature.featured")}</FeaturedBadge>}
+      </span>
+    ),
     // A record that waits says for how long; a decided one keeps the day it was sent.
     submitted: !profile.submittedAt
       ? ""
@@ -50,9 +56,11 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
     waiting: profile.status === "in_review",
   }));
 
-  const filtered = search.q.trim() !== "" || search.status !== null;
+  const filtered = search.q.trim() !== "" || search.status !== null || search.featured !== null;
   const empty =
-    rows.length > 0 ? null : search.q.trim() === "" && search.status === "in_review" ? (
+    rows.length > 0 ? null : search.q.trim() === "" &&
+      search.status === "in_review" &&
+      search.featured === null ? (
       <DataTableEmpty icon={<UsersIcon aria-hidden="true" />} title={t("queueEmpty.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.admin}>
           {t("queueEmpty.home")}

@@ -34,6 +34,9 @@ test.describe("solutions directory", () => {
       card("Policy Chat").getByRole("link", { name: "By Pocket Policy" }),
     ).toHaveAttribute("href", "/organizations/pocket-policy");
     await expect(card("Policy Chat").getByText("1 customer deployment")).toBeVisible();
+    // The one solution GenAI Fund features says so on its card, with a star and the word.
+    await expect(card("Policy Chat").getByText("Featured", { exact: true })).toBeVisible();
+    await expect(page.locator("[data-featured]")).toHaveCount(1);
     await expect(card("Clinic Triage").getByText("No customer case published")).toBeVisible();
     // A card names three capabilities and counts the rest.
     await expect(card("Claims Vision").getByText("+1 more")).toBeVisible();

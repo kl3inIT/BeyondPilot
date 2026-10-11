@@ -28,6 +28,14 @@ test.describe("talent directory", () => {
     await expect(shownPeople(page)).toHaveText(["Linh Nguyễn", "Arif Hidayat", "Đạt Phan"]);
     await expect(page.getByText("Showing 3 of 3")).toBeVisible();
     await expect(page.getByText("ML engineer · Indonesia")).toBeVisible();
+    // The one profile GenAI Fund features says so on its card, with a star and the word.
+    await expect(
+      page
+        .getByRole("article")
+        .filter({ hasText: "Arif Hidayat" })
+        .getByText("Featured", { exact: true }),
+    ).toBeVisible();
+    await expect(page.locator("[data-featured]")).toHaveCount(1);
     await expect(
       page.getByRole("link", { name: "Create a talent profile" }).first(),
     ).toHaveAttribute("href", "/workspace/talent");

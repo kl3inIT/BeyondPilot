@@ -955,6 +955,8 @@
           "reject": "Refused or sent back a solution",
           "take_down": "Took a solution down",
           "restore": "Restored a solution",
+          "feature": "Featured a solution",
+          "unfeature": "Stopped featuring a solution",
           "deployment_approve": "Approved a customer deployment",
           "deployment_reject": "Sent a customer deployment back",
           "enrich": "Filled a solution from public sources",
@@ -973,6 +975,8 @@
           "request_changes": "Sent a talent profile back",
           "remove": "Took a talent profile down",
           "restore": "Restored a talent profile",
+          "feature": "Featured a talent profile",
+          "unfeature": "Stopped featuring a talent profile",
           "delete": "Deleted a talent profile"
         },
         "proposal": {
@@ -990,6 +994,8 @@
           "draft": "Moved a use case back to Draft",
           "approve": "Approved a use case",
           "send_back": "Sent a use case back",
+          "feature": "Featured a use case",
+          "unfeature": "Stopped featuring a use case",
           "set_programs": "Set the programs of a use case"
         },
         "email": {
@@ -1075,6 +1081,8 @@
           "reject": "Rejected the solution <resource></resource>",
           "take_down": "Took the solution <resource></resource> down",
           "restore": "Restored the solution <resource></resource>",
+          "feature": "Featured the solution <resource></resource>",
+          "unfeature": "Stopped featuring the solution <resource></resource>",
           "deployment_approve": "Approved the customer deployment <resource></resource>",
           "deployment_reject": "Sent the customer deployment <resource></resource> back",
           "enrich": "Filled the solution <resource></resource> from public sources",
@@ -1093,6 +1101,8 @@
           "request_changes": "Sent back the talent profile of <resource></resource>",
           "remove": "Took the talent profile of <resource></resource> down",
           "restore": "Restored the talent profile of <resource></resource>",
+          "feature": "Featured the talent profile of <resource></resource>",
+          "unfeature": "Stopped featuring the talent profile of <resource></resource>",
           "delete": "Deleted the talent profile of <resource></resource>"
         },
         "proposal": {
@@ -1110,6 +1120,8 @@
           "draft": "Moved the use case <resource></resource> back to Draft",
           "approve": "Approved the use case <resource></resource>",
           "send_back": "Sent the use case <resource></resource> back",
+          "feature": "Featured the use case <resource></resource>",
+          "unfeature": "Stopped featuring the use case <resource></resource>",
           "set_programs": "Set the programs of the use case <resource></resource>"
         },
         "email": {
@@ -1425,6 +1437,13 @@
       },
       "count": "{count, plural, one {# solution} other {# solutions}}",
       "open": "Open",
+      "feature": {
+        "featured": "Featured",
+        "since": "Featured {day}",
+        "feature": "Feature",
+        "unfeature": "Stop featuring",
+        "hint": "A featured solution comes first when the public directory opens, until a reader searches, filters or sorts; its card says Featured."
+      },
       "review": {
         "open": "Review",
         "approve": "Approve",
@@ -1468,6 +1487,7 @@
         "senderUnknown": "Not recorded",
         "sent": "Sent",
         "directory": "Directory",
+        "order": "Opening view",
         "listed": "Listed once approved",
         "deploymentsWaiting": "{count, plural, one {# customer deployment waits for review} other {# customer deployments wait for review}}",
         "sentBack": "Sent back:",
@@ -1563,6 +1583,13 @@
       },
       "count": "{count, plural, one {# profile} other {# profiles}}",
       "open": "Open",
+      "feature": {
+        "featured": "Featured",
+        "since": "Featured {day}",
+        "feature": "Feature",
+        "unfeature": "Stop featuring",
+        "hint": "A featured profile comes first when the public directory opens, until a reader searches, filters or sorts; its card says Featured."
+      },
       "review": {
         "open": "Review",
         "approve": "Approve and list",
@@ -1687,6 +1714,12 @@
           "label": "Status",
           "all": "All statuses"
         },
+        "featured": {
+          "label": "Featured",
+          "all": "Featured or not",
+          "yes": "Featured",
+          "no": "Not featured"
+        },
         "organization": {
           "label": "Organization",
           "all": "Organization"
@@ -1768,6 +1801,18 @@
         "review": "Review use case",
         "view": "Open use case",
         "organisation": "View organization"
+      },
+      "feature": {
+        "featured": "Featured",
+        "since": "Featured {day}",
+        "feature": "Feature",
+        "unfeature": "Stop featuring",
+        "hint": "A featured use case comes first when the public list opens, until a reader searches, filters or sorts; its card says Featured.",
+        "title": "Featured",
+        "done": {
+          "featured": "{name} is featured.",
+          "unfeatured": "{name} is no longer featured."
+        }
       },
       "errors": {
         "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
@@ -4176,7 +4221,9 @@
       "linkCopied": "Link copied",
       "sentBack": "{name} sent back with what to change.",
       "takenDown": "{name} is taken down.",
-      "restored": "{name} is back."
+      "restored": "{name} is back.",
+      "featured": "{name} is featured.",
+      "unfeatured": "{name} is no longer featured."
     },
     "directory": {
       "metaTitle": "AI solutions · BeyondPilot",
@@ -4203,7 +4250,8 @@
       "ownLead": "This is your organization's solution, as others see it.",
       "ownEdit": "Edit this solution",
       "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}",
-      "backing": "Confirmed by GenAI Fund:"
+      "backing": "Confirmed by GenAI Fund:",
+      "featured": "Featured"
     },
     "filters": {
       "search": "Search by name or summary",
@@ -4224,6 +4272,12 @@
       "status": {
         "label": "Status",
         "all": "All statuses"
+      },
+      "featured": {
+        "label": "Featured",
+        "all": "Featured or not",
+        "yes": "Featured",
+        "no": "Not featured"
       },
       "clear": "Clear filters"
     },
@@ -4788,7 +4842,9 @@
       "sentBack": "{name} is sent back.",
       "takenDown": "{name} is taken down.",
       "restored": "{name} is back in the directory.",
-      "deleted": "Your talent profile is deleted."
+      "deleted": "Your talent profile is deleted.",
+      "featured": "{name} is featured.",
+      "unfeatured": "{name} is no longer featured."
     },
     "directory": {
       "metaTitle": "AI talent · BeyondPilot",
@@ -4813,7 +4869,8 @@
       "edit": "Edit your profile",
       "noProject": "No project published yet",
       "projects": "{count, plural, one {# project} other {# projects}}",
-      "view": "View profile"
+      "view": "View profile",
+      "featured": "Featured"
     },
     "filters": {
       "search": "Search by name, skill or project",
@@ -4825,6 +4882,12 @@
       "status": {
         "label": "Status",
         "all": "All statuses"
+      },
+      "featured": {
+        "label": "Featured",
+        "all": "Featured or not",
+        "yes": "Featured",
+        "no": "Not featured"
       },
       "clear": "Clear filters"
     },
@@ -6308,6 +6371,7 @@
       "none": "Open, no deadline"
     },
     "posted": "Posted {when}",
+    "featured": "Featured",
     "view": "View use case",
     "detail": {
       "by": "{organization} · Posted {when}",

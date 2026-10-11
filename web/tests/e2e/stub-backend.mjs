@@ -397,6 +397,8 @@ createServer((request, response) => {
           title: "Claims triage",
           status: "approved",
           closesAt: "2026-12-31T16:59:00Z",
+          // An operator featured it.
+          featuredAt: "2026-10-08T03:00:00Z",
           updatedAt: "2026-10-07T03:00:00Z",
         },
         {
@@ -409,6 +411,7 @@ createServer((request, response) => {
           title: "Inventory counting",
           status: "draft",
           closesAt: null,
+          featuredAt: null,
           updatedAt: "2026-10-06T03:00:00Z",
         },
       ],

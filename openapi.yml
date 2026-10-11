@@ -890,6 +890,8 @@ paths:
           - solution.take_down
           - solution.restore
           - solution.back
+          - solution.feature
+          - solution.unfeature
           - solution.deployment_approve
           - solution.deployment_reject
           - solution.enrich
@@ -898,6 +900,8 @@ paths:
           - use_case.draft
           - use_case.approve
           - use_case.send_back
+          - use_case.feature
+          - use_case.unfeature
           - use_case.set_programs
           - introduction.reply
           - introduction.decline
@@ -909,6 +913,8 @@ paths:
           - talent.request_changes
           - talent.remove
           - talent.restore
+          - talent.feature
+          - talent.unfeature
           - talent.delete
           - proposal.criteria_update
           - proposal.reviewer_invite
@@ -6927,6 +6933,15 @@ paths:
           - string
           - "null"
           pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|climate_sustainability|marketing_advertising|legal|hr_workforce|other
+      - description: "Only solutions featured when true, only those not featured when\
+          \ false."
+        in: query
+        name: featured
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -7095,6 +7110,43 @@ paths:
       - session: []
       summary: "Write what GenAI Fund says of a solution: who backs its company, its\
         \ programme and its funding"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/feature:
+    post:
+      operationId: featureSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The solution is featured; one featured already keeps its place.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+      security:
+      - session: []
+      summary: "Feature a solution: it comes first in the opening view of the public\
+        \ directory"
       tags:
       - Solution administration
   /api/solution/admin/solutions/{id}/reject:
@@ -7301,6 +7353,42 @@ paths:
       - session: []
       summary: "Take an approved solution out of the directory and matching, with\
         \ a reason"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/unfeature:
+    post:
+      operationId: unfeatureSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The solution is not featured.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+      security:
+      - session: []
+      summary: Stop featuring a solution
       tags:
       - Solution administration
   /api/solution/deployments:
@@ -8084,6 +8172,15 @@ paths:
           - approved
           - suspended
           pattern: in_review|needs_changes|approved|suspended
+      - description: "Only profiles featured when true, only those not featured when\
+          \ false."
+        in: query
+        name: featured
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -8203,6 +8300,43 @@ paths:
       security:
       - session: []
       summary: Approve a talent profile that waits for review
+      tags:
+      - Talent administration
+  /api/talent/admin/profiles/{id}/feature:
+    post:
+      operationId: featureTalent
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The profile is featured; one featured already keeps its place.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted talent profile.
+      security:
+      - session: []
+      summary: "Feature a talent profile: it comes first in the opening view of the\
+        \ public directory"
       tags:
       - Talent administration
   /api/talent/admin/profiles/{id}/restore:
@@ -8356,6 +8490,42 @@ paths:
       security:
       - session: []
       summary: "Take an approved talent profile down from the public, with a reason"
+      tags:
+      - Talent administration
+  /api/talent/admin/profiles/{id}/unfeature:
+    post:
+      operationId: unfeatureTalent
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The profile is not featured.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted talent profile.
+      security:
+      - session: []
+      summary: Stop featuring a talent profile
       tags:
       - Talent administration
   /api/talent/admin/reported-enquiries:
@@ -8881,6 +9051,15 @@ paths:
           - string
           - "null"
           format: uuid
+      - description: "Only use cases featured when true, only those not featured when\
+          \ false."
+        in: query
+        name: featured
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -9046,6 +9225,43 @@ paths:
       summary: Approve a use case in review and publish it
       tags:
       - Use case administration
+  /api/usecase/admin/use-cases/{id}/feature:
+    post:
+      operationId: featureAdminUseCase
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The use case is featured; one featured already keeps its place.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+      security:
+      - session: []
+      summary: "Feature a use case: it comes first in the opening view of the public\
+        \ list"
+      tags:
+      - Use case administration
   /api/usecase/admin/use-cases/{id}/programs:
     put:
       operationId: setAdminUseCasePrograms
@@ -9154,6 +9370,42 @@ paths:
       security:
       - session: []
       summary: Send a use case in review back with what to change
+      tags:
+      - Use case administration
+  /api/usecase/admin/use-cases/{id}/unfeature:
+    post:
+      operationId: unfeatureAdminUseCase
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The use case is not featured.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+      security:
+      - session: []
+      summary: Stop featuring a use case
       tags:
       - Use case administration
   /api/usecase/mine:
@@ -10226,6 +10478,12 @@ components:
           type: integer
           format: int32
           description: How many of its customer deployments wait for review.
+        featuredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator featured it; null while it is not featured.
         id:
           type: string
           format: uuid
@@ -10310,6 +10568,12 @@ components:
         email:
           type: string
           description: The address of the account the profile belongs to.
+        featuredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator featured it; null while it is not featured.
         profile:
           $ref: "#/components/schemas/TalentProfile"
       required:
@@ -10465,6 +10729,12 @@ components:
           type:
           - string
           - "null"
+        featuredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator featured it; null while it is not featured.
         hideOrganizationName:
           type: boolean
         id:
@@ -10613,6 +10883,12 @@ components:
           - string
           - "null"
           format: date-time
+        featuredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator featured it; null while it is not featured.
         id:
           type: string
           format: uuid
@@ -11497,6 +11773,8 @@ components:
           - solution.take_down
           - solution.restore
           - solution.back
+          - solution.feature
+          - solution.unfeature
           - solution.deployment_approve
           - solution.deployment_reject
           - solution.enrich
@@ -11505,6 +11783,8 @@ components:
           - use_case.draft
           - use_case.approve
           - use_case.send_back
+          - use_case.feature
+          - use_case.unfeature
           - use_case.set_programs
           - introduction.reply
           - introduction.decline
@@ -11516,6 +11796,8 @@ components:
           - talent.request_changes
           - talent.remove
           - talent.restore
+          - talent.feature
+          - talent.unfeature
           - talent.delete
           - proposal.criteria_update
           - proposal.reviewer_invite
@@ -16236,6 +16518,9 @@ components:
           type: integer
           format: int32
           description: How many approved customer deployments it lists.
+        featured:
+          type: boolean
+          description: Whether GenAI Fund features it; its card says so.
         focusAreas:
           type: array
           items:
@@ -16276,6 +16561,7 @@ components:
           - "null"
       required:
       - customerDeployments
+      - featured
       - focusAreas
       - industries
       - name
@@ -16401,6 +16687,9 @@ components:
           - string
           - "null"
           description: ISO 3166-1 alpha-2.
+        featured:
+          type: boolean
+          description: Whether GenAI Fund features the profile; its card says so.
         headline:
           type:
           - string
@@ -16436,6 +16725,7 @@ components:
         slug:
           type: string
       required:
+      - featured
       - name
       - projectCount
       - roles
@@ -16606,6 +16896,9 @@ components:
           enum:
           - USD
           - VND
+        featured:
+          type: boolean
+          description: Whether GenAI Fund features it; its card says so.
         goal:
           type: string
           description: The outcomes the organization expects.
@@ -16651,6 +16944,7 @@ components:
       - budgetMembersOnly
       - budgetToBeDetermined
       - currency
+      - featured
       - goal
       - id
       - industry
@@ -19320,6 +19614,12 @@ components:
           type: array
           items:
             type: string
+        featuredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator featured it; null while it is not featured.
         focusAreas:
           type: array
           items:
@@ -20122,6 +20422,12 @@ components:
         email:
           type: string
           description: The address of the account the profile belongs to.
+        featuredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator featured it; null while it is not featured.
         headline:
           type:
           - string

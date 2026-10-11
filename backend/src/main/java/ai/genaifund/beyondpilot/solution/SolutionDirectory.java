@@ -42,6 +42,9 @@ public class SolutionDirectory {
 
 	static final int PAGE_SIZE = 12;
 
+	/** The order the public directory opens with, the only one the featured solutions lead. */
+	private static final String OPENING_SORT = "newest";
+
 	private final SolutionRepository solutions;
 
 	private final CustomerDeploymentRepository deployments;
@@ -65,7 +68,11 @@ public class SolutionDirectory {
 		this.storage = storage;
 	}
 
-	/** One page of the directory the request selects, in the order it asks for. */
+	/**
+	 * One page of the directory the request selects, in the order it asks for. In the view the directory opens with,
+	 * where the reader has searched for nothing, chosen no filter and reads the newest first, the featured solutions
+	 * come first; as soon as the reader searches, filters or picks another order, the list is ordered by that alone.
+	 */
 	@Transactional(readOnly = true)
 	public PublicSolutionListResponse list(PublicSolutionListRequest request) {
 		String text = SolutionViews.text(request.q());
@@ -79,8 +86,10 @@ public class SolutionDirectory {
 			}
 			organizationId = organization.get().id();
 		}
+		boolean opening = text == null && request.industry() == null && request.focusArea() == null
+				&& request.maturity() == null && organizationId == null && OPENING_SORT.equals(request.sort());
 		List<SolutionQueryRepository.Row> rows = solutionList.publicPage(text, request.industry(),
-				request.focusArea(), request.maturity(), organizationId, request.sort(), PAGE_SIZE,
+				request.focusArea(), request.maturity(), organizationId, request.sort(), opening, PAGE_SIZE,
 				(long) (page - 1) * PAGE_SIZE);
 		Map<UUID, OrganizationName> names = organizations
 			.approvedNames(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
@@ -88,7 +97,8 @@ public class SolutionDirectory {
 			OrganizationName organization = names.get(row.organizationId());
 			return new PublicSolutionSummaryResponse(row.slug(), row.name(), organization.name(), organization.slug(),
 					organization.country(), row.summary(), row.maturity(), row.focusAreas(), row.industries(),
-					shownLogo(row.logoFileId(), organization.logoFileId()), row.coverFileId(), row.backing(), row.deployments());
+					shownLogo(row.logoFileId(), organization.logoFileId()), row.coverFileId(), row.backing(), row.deployments(),
+					row.featuredAt() != null);
 		}).toList(), page, PAGE_SIZE, solutionList.publicCount(text, request.industry(), request.focusArea(),
 				request.maturity(), organizationId));
 	}
