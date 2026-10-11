@@ -2,7 +2,6 @@ import { ArrowUpRightIcon, MessageSquareTextIcon, SearchIcon, SparklesIcon } fro
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 
-import { PreviewBadge } from "@/components/sections/preview-badge";
 import { Section } from "@/components/ui/section";
 
 const steps = [
@@ -58,7 +57,6 @@ function AgentJourney() {
             <div className="flex items-center gap-3 border-b bg-muted px-5 py-3.5">
               <SparklesIcon className="size-4 shrink-0 text-primary" />
               <p className="min-w-0 flex-1 truncate text-sm font-semibold">{t("demo.title")}</p>
-              <PreviewBadge>{h("previewLabel")}</PreviewBadge>
             </div>
             <div className="flex flex-col gap-5 p-4 md:p-6">
               <div className="flex flex-col gap-2.5">

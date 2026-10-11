@@ -3,8 +3,6 @@ import { LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 
-import { PreviewBadge } from "@/components/sections/preview-badge";
-
 const tabs = ["all", "solutions", "useCases", "programs"] as const;
 
 /**
@@ -31,7 +29,6 @@ const kindInk = {
  */
 function SearchPreview({ className }: { className?: string }) {
   const t = useTranslations("Home.hero.preview");
-  const h = useTranslations("Home");
 
   return (
     <div
@@ -50,7 +47,6 @@ function SearchPreview({ className }: { className?: string }) {
             <LockIcon className="size-3 shrink-0" />
             <span className="truncate">{t("address")}</span>
           </p>
-          <PreviewBadge>{h("previewLabel")}</PreviewBadge>
         </div>
         <ul className="flex gap-5 border-b px-4 pt-3.5 text-sm font-medium md:px-5">
           {tabs.map((tab, index) => (
