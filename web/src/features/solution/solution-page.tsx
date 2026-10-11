@@ -231,10 +231,16 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
         </BreadcrumbList>
       </Breadcrumb>
 
-      {!solution.listed && (
+      {!solution.approved ? (
         <Alert>
-          <AlertDescription>{t("unlisted")}</AlertDescription>
+          <AlertDescription>{t("sharedByLink")}</AlertDescription>
         </Alert>
+      ) : (
+        !solution.listed && (
+          <Alert>
+            <AlertDescription>{t("unlisted")}</AlertDescription>
+          </Alert>
+        )
       )}
 
       {editHref && (
