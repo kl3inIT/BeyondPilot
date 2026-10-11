@@ -12,6 +12,12 @@ type Member = { id: string; name: string; photo: string; linkedin?: string };
 const PORTRAIT_QUALITY = 90;
 
 /**
+ * Twice the width a portrait is drawn at in each layout. At the drawn width a screen of ordinary density gets a
+ * 256px file, which breaks up as soon as the page is zoomed.
+ */
+const PORTRAIT_SIZES = "(min-width: 1024px) 480px, (min-width: 768px) 60vw, 90vw";
+
+/**
  * The people building BeyondPilot, with the role each of them has agreed to and the portrait each
  * of them supplied. A member without a public profile shows no LinkedIn link.
  */
@@ -77,10 +83,10 @@ function Team() {
               <Image
                 src={`/team/${photo}.jpg`}
                 alt=""
-                width={810}
-                height={1080}
+                width={1086}
+                height={1448}
                 quality={PORTRAIT_QUALITY}
-                sizes="(min-width: 1024px) 240px, (min-width: 768px) 30vw, 45vw"
+                sizes={PORTRAIT_SIZES}
                 className="aspect-3/4 w-full rounded-2xl object-cover"
               />
               <h3 className="mt-4 text-lg font-medium">{name}</h3>
