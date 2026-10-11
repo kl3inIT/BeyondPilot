@@ -522,6 +522,10 @@ export type AdminUseCase = {
      * The programs it belongs to, by name.
      */
     programs: Array<UseCaseProgram>;
+    /**
+     * How many days after sending a proposal its organization may still edit it; 0 allows no edit after sending.
+     */
+    proposalEditDays: number;
     publishedAt?: string | null;
     requirements: Array<UseCaseRequirement>;
     /**
@@ -1409,6 +1413,10 @@ export type CreateUseCase = {
      * The programs it belongs to; none when absent.
      */
     programIds?: Array<string> | null;
+    /**
+     * How many days after sending a proposal its organization may still edit it; 0 allows no edit after sending. 7 when absent.
+     */
+    proposalEditDays?: number | null;
     /**
      * True to publish at once, false to save a draft for the organization.
      */
@@ -3350,13 +3358,24 @@ export type ProgramSummary = {
 };
 
 /**
- * A solution a proposal offers, as its review stands now.
+ * A solution a proposal offers.
  */
 export type ProposalSolution = {
     id: string;
+    /**
+     * Its logo, or its organization's when it has none; read at /api/storage/files/{id}.
+     */
+    logoFileId?: string | null;
     name: string;
-    status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'rejected';
+    /**
+     * The address of its public page at /solutions/{slug}; set only while it is approved and not taken down.
+     */
+    slug?: string | null;
     summary?: string | null;
+    /**
+     * Opens its page at /solutions/shared/{viewKey} for whoever holds the link, whatever its review says.
+     */
+    viewKey: string;
 };
 
 /**
@@ -3451,6 +3470,10 @@ export type PublicOrganization = {
  * An approved solution as anyone with its address reads it, listed or not.
  */
 export type PublicSolution = {
+    /**
+     * Whether it is approved and not taken down. False only on a shared page read by its key.
+     */
+    approved: boolean;
     /**
      * What GenAI Fund says of it; null when it has said nothing.
      */
@@ -3724,6 +3747,10 @@ export type PublicUseCase = {
      */
     organizationName?: string | null;
     problemStatement?: string | null;
+    /**
+     * How many days after sending a proposal its organization may still edit it; 0 allows no edit after sending.
+     */
+    proposalEditDays?: number | null;
     publishedAt: string;
     targetUsers?: string | null;
     technologies: Array<string>;
@@ -3823,6 +3850,10 @@ export type ReceivedIntroductions = {
 export type ReceivedUseCaseProposal = {
     approach?: string | null;
     deck?: AttachedFile | null;
+    /**
+     * When the sending organization last edited the proposal after sending it; null while it is as sent.
+     */
+    editedAt?: string | null;
     id: string;
     /**
      * Read at /api/storage/files/{id}.
@@ -3844,6 +3875,10 @@ export type ReceivedUseCaseProposalSummary = {
      * The primary contact.
      */
     contactName?: string | null;
+    /**
+     * When the sending organization last edited the proposal after sending it; null while it is as sent.
+     */
+    editedAt?: string | null;
     id: string;
     /**
      * Read at /api/storage/files/{id}.
@@ -5373,6 +5408,10 @@ export type SolutionSummary = {
     deploymentsAwaitingReview: number;
     id: string;
     listed: boolean;
+    /**
+     * Its own logo; read at /api/storage/files/{id}.
+     */
+    logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     /**
      * What a review needs and it lacks, in the order of the editor: any of summary, maturity, industries, focusAreas, logo and cover. Empty when it can be sent for review.
@@ -5397,6 +5436,10 @@ export type SolutionSummary = {
      */
     suspensionReason?: 'misleading_information' | 'not_an_ai_solution' | 'unverifiable' | 'breaks_the_rules' | 'other';
     updatedAt: string;
+    /**
+     * The key its shared page is read by, at /solutions/shared/{viewKey}.
+     */
+    viewKey: string;
 };
 
 /**
@@ -5767,7 +5810,19 @@ export type UseCaseProgram = {
 export type UseCaseProposal = {
     approach?: string | null;
     deck?: AttachedFile | null;
+    /**
+     * While a sent proposal may still be edited, until when; null for a draft, and once the time to edit has ended or the use case has closed.
+     */
+    editableUntil?: string | null;
+    /**
+     * When the proposal was last edited after sending; null while it is as sent.
+     */
+    editedAt?: string | null;
     id: string;
+    /**
+     * The sender's talent profile as it was when the proposal was sent; null for a draft.
+     */
+    sender?: SenderProfile | null;
     sentAt?: string | null;
     /**
      * The solutions offered, in the order shown.
@@ -12381,6 +12436,33 @@ export type ListSolutionsResponses = {
 };
 
 export type ListSolutionsResponse = ListSolutionsResponses[keyof ListSolutionsResponses];
+
+export type GetSharedSolutionData = {
+    body?: never;
+    path: {
+        viewKey: string;
+    };
+    query?: never;
+    url: '/api/solution/solutions/shared/{viewKey}';
+};
+
+export type GetSharedSolutionErrors = {
+    /**
+     * No solution has this key.
+     */
+    404: Problem;
+};
+
+export type GetSharedSolutionError = GetSharedSolutionErrors[keyof GetSharedSolutionErrors];
+
+export type GetSharedSolutionResponses = {
+    /**
+     * The solution.
+     */
+    200: PublicSolution;
+};
+
+export type GetSharedSolutionResponse = GetSharedSolutionResponses[keyof GetSharedSolutionResponses];
 
 export type GetSolutionData = {
     body?: never;
