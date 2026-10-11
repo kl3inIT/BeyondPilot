@@ -24,9 +24,8 @@ test.describe("use cases", () => {
     const withoutLogo = page.getByRole("listitem").filter({ hasText: "Lumen Health" });
     await expect(withoutLogo.getByText("LH", { exact: true })).toBeVisible();
     await expect(first.getByText("USD 15,000–40,000")).toBeVisible();
-    // The one use case GenAI Fund features says so on its card, with a star and the word.
-    await expect(first.getByText("Featured", { exact: true })).toBeVisible();
-    await expect(page.locator("[data-featured]")).toHaveCount(1);
+    // A featured use case leads the list, but no card says it is featured.
+    await expect(page.locator("[data-featured]")).toHaveCount(0);
     await expect(first.getByText("Apply by Dec 31, 2026")).toBeVisible();
     await expect(first.getByText("23:59 ICT")).toBeVisible();
     await expect(
