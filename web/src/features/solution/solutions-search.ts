@@ -23,9 +23,10 @@ export const companySearch = { more: parseAsInteger.withDefault(0) };
 
 export const loadCompanySearch = createLoader(companySearch);
 
-/** What narrows the operators' list of solutions: `?q=&status=&industry=&page=`. */
+/** What narrows the operators' list of solutions: `?q=&organizationId=&status=&industry=&page=`. */
 export const adminSolutionsSearch = {
   q: parseAsString.withDefault(""),
+  organizationId: parseAsString,
   status: parseAsStringLiteral(reviewedStatuses),
   industry: parseAsStringLiteral(industries),
   page: parseAsInteger.withDefault(1),

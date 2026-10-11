@@ -50,6 +50,17 @@ test.describe("admin solutions", () => {
     await page.goto("/admin/solutions");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Solutions");
+    const organization = page.getByRole("combobox", { name: "Organization" });
+    await expect(organization).toHaveText("All organizations");
+    await organization.click();
+    await expect(page.getByRole("option", { name: "Pocket Policy" })).toBeVisible();
+    await page.getByRole("option", { name: "Pocket Policy" }).click();
+    await expect(page).toHaveURL(/organizationId=8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03/);
+    await expect(shownSolutions(page)).toHaveCount(5);
+    await organization.click();
+    await page.getByRole("option", { name: "All organizations" }).click();
+    await expect(page).toHaveURL("/admin/solutions");
+
     // Each record opens from its row's ⋯ menu; the name itself is the link.
     await expect(shownSolutions(page)).toHaveCount(5);
     await expect(
@@ -63,7 +74,7 @@ test.describe("admin solutions", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("search and the status are the address, and the server answers them", async ({
+  test("search submits by Enter or its button while the status stays in the address", async ({
     page,
     context,
     baseURL,
@@ -77,7 +88,12 @@ test.describe("admin solutions", () => {
     await expect(shownSolutions(page)).toHaveCount(2);
     await expect(page.getByText("2 solutions")).toBeVisible();
 
-    await page.getByRole("searchbox", { name: "Search by solution or organization" }).fill("quote");
+    const search = page.getByRole("searchbox", { name: "Search by solution or organization" });
+    await search.fill("quote");
+    await expect(page).toHaveURL(/status=in_review/);
+    await expect(shownSolutions(page)).toHaveCount(2);
+
+    await search.press("Enter");
     await expect(page).toHaveURL(/[?&]q=quote/);
     await expect(page.locator('[data-slot="empty-title"]:visible')).toHaveText(
       "No solution matches",
@@ -86,6 +102,16 @@ test.describe("admin solutions", () => {
     await page.getByRole("link", { name: "Clear search and filter" }).click();
     await expect(page).toHaveURL("/admin/solutions");
     await expect(shownSolutions(page)).toHaveCount(5);
+
+    await search.fill("claims");
+    await expect(page).toHaveURL("/admin/solutions");
+    await expect(shownSolutions(page)).toHaveCount(5);
+    await page.getByRole("button", { name: "Search by solution or organization" }).click();
+    await expect(page).toHaveURL(/[?&]q=claims/);
+    await expect(shownSolutions(page)).toHaveCount(1);
+
+    await page.getByRole("link", { name: "Clear search and filter" }).click();
+    await expect(page).toHaveURL("/admin/solutions");
 
     // A solution taken down is found under its own status.
     await page.getByRole("combobox", { name: "Status" }).click();

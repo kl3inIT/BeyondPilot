@@ -294,12 +294,16 @@ class SolutionTest {
 	@Test
 	void theOperatorsListFindsASolutionByItsOrganizationNarrowsByIndustryAndNamesWhoSentIt() {
 		String founder = approvedOwner("founder@harbour.test", "Harbour Analytics");
+		String otherFounder = approvedOwner("founder@northwind.test", "Northwind Claims");
+		UUID harbourOrganization = organizationOf(founder);
+		UUID northwindOrganization = organizationOf(otherFounder);
 		long waiting = JsonPath
 			.<Number>read(body(get(operator, ADMIN).expectStatus().isOk()), "$.awaitingReview")
 			.longValue();
 		Map<String, Object> forLogistics = described("Quay Desk", 0);
 		forLogistics.put("industries", List.of("logistics"));
 		UUID id = submitted(founder, "Quay Desk", forLogistics);
+		approved(otherFounder, "Harbour Claims");
 
 		// The name of the solution does not hold the text; the name of its organization does.
 		String byOrganization = body(get(operator, ADMIN + "?q=HARBOUR").expectStatus().isOk());
@@ -307,6 +311,21 @@ class SolutionTest {
 		assertThat(JsonPath.<String>read(byOrganization, "$.items[0].organizationName")).isEqualTo("Harbour Analytics");
 		assertThat(JsonPath.<String>read(byOrganization, "$.items[0].submittedBy")).isEqualTo("founder@harbour.test");
 		assertThat(JsonPath.<Number>read(byOrganization, "$.awaitingReview").longValue()).isEqualTo(waiting + 1);
+		assertThat(names(operator, ADMIN + "?q=harbour")).contains("Quay Desk", "Harbour Claims");
+		String all = body(get(operator, ADMIN).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(all, "$.organizations[*].id"))
+			.contains(harbourOrganization.toString(), northwindOrganization.toString());
+		assertThat(JsonPath.<List<String>>read(all, "$.organizations[*].name"))
+			.contains("Harbour Analytics", "Northwind Claims");
+
+		String filteredByOrganization = body(get(operator, ADMIN + "?q=harbour&organizationId=" + harbourOrganization)
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<String>>read(filteredByOrganization, "$.items[*].name"))
+			.containsExactly("Quay Desk");
+		assertThat(JsonPath.<Integer>read(filteredByOrganization, "$.total")).isEqualTo(1);
+		assertThat(names(operator, ADMIN + "?q=harbour&organizationId=" + northwindOrganization))
+			.containsExactly("Harbour Claims");
 
 		assertThat(names(operator, ADMIN + "?q=quay&industry=logistics")).containsExactly("Quay Desk");
 		assertThat(names(operator, ADMIN + "?q=quay&industry=insurance")).isEmpty();

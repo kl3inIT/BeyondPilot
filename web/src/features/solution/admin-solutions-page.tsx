@@ -71,7 +71,8 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     waiting: solution.status === "in_review" || solution.deploymentsAwaitingReview > 0,
   }));
 
-  const narrowed = search.status !== null || search.industry !== null;
+  const narrowed =
+    search.organizationId !== null || search.status !== null || search.industry !== null;
   const filtered = search.q.trim() !== "" || narrowed;
   const empty =
     rows.length > 0 ? null : search.q.trim() === "" &&
@@ -115,7 +116,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
             </TextButton>
           ))}
       </div>
-      <SolutionsToolbar list="admin" />
+      <SolutionsToolbar list="admin" organizationOptions={solutions.organizations} />
 
       {/* From 768px: a table. The sender gives way first, then the organization joins the solution. */}
       <DataTable className="hidden md:block">

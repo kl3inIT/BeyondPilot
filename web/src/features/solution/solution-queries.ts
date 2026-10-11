@@ -128,6 +128,7 @@ export async function readAdminSolutions(search: AdminSolutionsSearch): Promise<
     ...(await sessionRequest()),
     query: {
       q: text(search.q),
+      organizationId: search.organizationId ?? undefined,
       status: search.status ?? undefined,
       industry: search.industry ?? undefined,
       page: Math.max(1, search.page),

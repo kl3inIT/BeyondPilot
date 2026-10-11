@@ -30,9 +30,10 @@ public class SolutionQueryRepository {
 			""";
 
 	private static final String ADMIN_FILTER = """
-			where status <> 'draft'
-			  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\'
-			       or organization_id = any(cast(:organizationIds as uuid[])))
+		where status <> 'draft'
+		  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\'
+		       or organization_id = any(cast(:organizationIds as uuid[])))
+		  and (cast(:organizationId as uuid) is null or organization_id = :organizationId)
 			  and (cast(:status as text) is null
 			       or (:status = 'suspended' and suspended_at is not null)
 			       or (:status = 'approved' and status = 'approved' and suspended_at is null)
@@ -98,25 +99,28 @@ public class SolutionQueryRepository {
 	/**
 	 * One page for operators, drafts left out: those with something waiting for review first, the solution itself or
 	 * one of its customer deployments, the longest wait on top. The text matches the solution's name, or the
-	 * solution belongs to one of {@code organizationIds}, the organizations the caller found by that text.
+	 * solution belongs to one of {@code organizationIds}, the organizations the caller found by that text. The
+	 * organization filter selects one exact organization.
 	 */
-	public List<Row> adminPage(@Nullable String text, List<UUID> organizationIds, @Nullable String status,
-			@Nullable String industry, int limit, long offset) {
+	public List<Row> adminPage(@Nullable String text, List<UUID> organizationIds, @Nullable UUID organizationId,
+			@Nullable String status, @Nullable String industry, int limit,
+			long offset) {
 		return adminFiltered(ROW + ADMIN_FILTER + """
 				order by case when status = 'in_review' or exists (
 				             select 1 from solution_customer_deployment d
 				             where d.solution_id = solution.id and d.status = 'in_review') then 0 else 1 end,
 				         submitted_at, id
 				limit :limit offset :offset
-				""", text, organizationIds, status, industry).param("limit", limit)
+				""", text, organizationIds, organizationId, status, industry).param("limit", limit)
 			.param("offset", offset)
 			.query(SolutionQueryRepository::row)
 			.list();
 	}
 
-	public long adminCount(@Nullable String text, List<UUID> organizationIds, @Nullable String status,
-			@Nullable String industry) {
-		return adminFiltered("select count(*) from solution\n" + ADMIN_FILTER, text, organizationIds, status, industry)
+	public long adminCount(@Nullable String text, List<UUID> organizationIds, @Nullable UUID organizationId,
+			@Nullable String status, @Nullable String industry) {
+		return adminFiltered("select count(*) from solution\n" + ADMIN_FILTER, text, organizationIds, organizationId,
+				status, industry)
 			.query(Long.class)
 			.single();
 	}
@@ -135,6 +139,13 @@ public class SolutionQueryRepository {
 				""").query(Long.class).single();
 	}
 
+	/** The organizations with at least one submitted solution, for the operators' organization filter. */
+	public List<UUID> adminOrganizationIds() {
+		return jdbc.sql("select distinct organization_id from solution where status <> 'draft' order by organization_id")
+			.query(UUID.class)
+			.list();
+	}
+
 	/** The orders of the public directory. The value is never the caller's text: it is chosen here by its name. */
 	private static String publicOrder(@Nullable String sort) {
 		return "newest".equals(sort) ? "order by decided_at desc nulls last, id" : "order by lower(name), id";
@@ -151,13 +162,15 @@ public class SolutionQueryRepository {
 	}
 
 	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, List<UUID> organizationIds,
-			@Nullable String status, @Nullable String industry) {
+			@Nullable UUID organizationId, @Nullable String status,
+			@Nullable String industry) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
 			// A PostgreSQL array literal: an identifier holds no character that needs quoting.
 			.param("organizationIds",
 					organizationIds.stream().map(UUID::toString).collect(Collectors.joining(",", "{", "}")),
 					Types.VARCHAR)
+			.param("organizationId", organizationId, Types.OTHER)
 			.param("status", status, Types.VARCHAR)
 			.param("industry", industry, Types.VARCHAR);
 	}

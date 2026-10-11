@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.solution.dto;
 
+import java.util.UUID;
+
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -11,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 public record AdminSolutionListRequest(
 		@Parameter(description = "Solutions whose name, or whose organization's name, contains this, ignoring case.") @Size(
 				max = 100) @Nullable String q,
+		@Parameter(description = "Only solutions offered by this organization.") @Nullable UUID organizationId,
 		@Parameter(
 				description = "Only solutions of this review status, or `suspended` for those taken down; `approved` "
 						+ "leaves out those taken down. Drafts are never listed.",

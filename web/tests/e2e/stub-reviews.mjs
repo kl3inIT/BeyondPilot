@@ -367,10 +367,12 @@ const talent = [
 function page(url, records, statusOf, textOf, summaryOf) {
   const text = (url.searchParams.get("q") ?? "").toLowerCase();
   const status = url.searchParams.get("status");
+  const organizationId = url.searchParams.get("organizationId");
   const items = records.filter(
     // A merged record is listed only when merged ones are asked for, as the backend lists it.
     (record) =>
       (status ? statusOf(record) === status : statusOf(record) !== "merged") &&
+      (!organizationId || record.organizationId === organizationId) &&
       (!text || textOf(record).toLowerCase().includes(text)),
   );
   return { items: items.map(summaryOf), page: 1, pageSize: 25, total: items.length };
@@ -551,6 +553,14 @@ export function answerReview(url, account) {
         : path === "/api/solution/admin/solutions"
           ? {
               ...found,
+              organizations: [
+                ...new Map(
+                  records.map((record) => [
+                    record.organizationId,
+                    { id: record.organizationId, name: record.organizationName },
+                  ]),
+                ).values(),
+              ].sort((left, right) => left.name.localeCompare(right.name)),
               awaitingReview: records.filter((record) => record.status === "in_review").length,
               deploymentsAwaitingReview: records
                 .flatMap((record) => record.customerDeployments)

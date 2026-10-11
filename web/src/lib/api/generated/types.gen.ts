@@ -378,6 +378,10 @@ export type AdminSolutionList = {
     deploymentsAwaitingReview: number;
     items: Array<AdminSolutionSummary>;
     /**
+     * Organizations with at least one submitted solution, for the organization filter.
+     */
+    organizations: Array<AdminSolutionOrganizationOption>;
+    /**
      * The page returned, counted from 1.
      */
     page: number;
@@ -386,6 +390,11 @@ export type AdminSolutionList = {
      * How many solutions match, over all pages.
      */
     total: number;
+};
+
+export type AdminSolutionOrganizationOption = {
+    id: string;
+    name: string;
 };
 
 /**
@@ -11170,6 +11179,10 @@ export type ListAdminSolutionsData = {
          * Solutions whose name, or whose organization's name, contains this, ignoring case.
          */
         q?: string | null;
+        /**
+         * Only solutions offered by this organization.
+         */
+        organizationId?: string | null;
         /**
          * Only solutions of this review status, or `suspended` for those taken down; `approved` leaves out those taken down. Drafts are never listed.
          */

@@ -4209,6 +4209,10 @@
       "search": "Search by name or summary",
       "toggle": "Filters",
       "adminSearch": "Search by solution or organization",
+      "organization": {
+        "label": "Organization",
+        "all": "All organizations"
+      },
       "industry": {
         "label": "Industry",
         "all": "All industries"
