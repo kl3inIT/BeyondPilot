@@ -6910,6 +6910,15 @@ paths:
           - "null"
           maxLength: 100
           minLength: 0
+      - description: Only solutions offered by this organization.
+        in: query
+        name: organizationId
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: uuid
       - description: "Only solutions of this review status, or `suspended` for those\
           \ taken down; `approved` leaves out those taken down. Drafts are never listed."
         in: query
@@ -10452,6 +10461,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AdminSolutionSummary"
+        organizations:
+          type: array
+          description: "Organizations with at least one submitted solution, for the\
+            \ organization filter."
+          items:
+            $ref: "#/components/schemas/AdminSolutionOrganizationOption"
         page:
           type: integer
           format: int32
@@ -10467,9 +10482,21 @@ components:
       - awaitingReview
       - deploymentsAwaitingReview
       - items
+      - organizations
       - page
       - pageSize
       - total
+    AdminSolutionOrganizationOption:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+      - id
+      - name
     AdminSolutionSummary:
       type: object
       description: One solution in the operators' list.
