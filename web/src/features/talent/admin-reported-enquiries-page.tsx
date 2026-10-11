@@ -1,10 +1,10 @@
-import { ArrowLeftIcon, InboxIcon } from "lucide-react";
+import { InboxIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
-import { TextButton } from "@/components/actions/text-button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentEnquiryList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -34,14 +34,11 @@ function AdminReportedEnquiriesPage({
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <TextButton href={siteRoutes.adminTalent} className="self-start">
-        <ArrowLeftIcon aria-hidden="true" />
-        {t("back")}
-      </TextButton>
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="max-w-2xl text-sm text-muted-foreground">{t("lead")}</p>
-      </div>
+      <AdminPageHeader
+        back={{ href: siteRoutes.adminTalent, label: t("back") }}
+        title={t("title")}
+        lead={t("lead")}
+      />
       {enquiries.items.length === 0 ? (
         <div className="rounded-lg border bg-background">
           <DataTableEmpty icon={<InboxIcon aria-hidden="true" />} title={t("empty.title")} />

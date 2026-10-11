@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useNotify } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
@@ -199,10 +200,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
         if (step === "review") void publish();
       }}
     >
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("lead")}</p>
-      </div>
+      <AdminPageHeader title={t("title")} lead={t("lead")} />
 
       <div className="grid items-start gap-8 xl:grid-cols-3">
         <main className="flex min-w-0 flex-col gap-5 rounded-3xl border bg-background p-6 md:p-10 xl:col-span-2">

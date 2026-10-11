@@ -1,13 +1,12 @@
-import { ArrowLeftIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { TextButton } from "@/components/actions/text-button";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -81,47 +80,38 @@ function AdminOrganizationPage({ detail, tab, page, size }: AdminOrganizationPag
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div>
-        <TextButton href={siteRoutes.adminOrganizations}>
-          <ArrowLeftIcon aria-hidden="true" />
-          {t("back")}
-        </TextButton>
-      </div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <OrganizationMark name={organization.name} logoFileId={organization.logoFileId} />
-          <div className="flex min-w-0 flex-col gap-1">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <h1 className="text-2xl font-semibold tracking-tight break-words">
-                {organization.name}
-              </h1>
-              <ReviewStatus state={state} appearance="pill">
-                {s(state)}
-              </ReviewStatus>
-            </div>
-            <p className="text-sm text-muted-foreground">{kind.join(" · ")}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {state === "approved" && (
-            <Button
-              prominence="secondary"
-              href={`${siteRoutes.organizations}/${organization.slug}`}
-            >
-              {t("viewPage")}
-            </Button>
-          )}
-          {state === "in_review" && <OrganizationReviewButton organization={organization} />}
-          {!merged && (
-            <AdminOrganizationMenu
-              organization={organization}
-              canTakeDown={state === "approved"}
-              members={detail.members.length}
-              invitations={detail.invitations.length}
-            />
-          )}
-        </div>
-      </div>
+      <AdminPageHeader
+        back={{ href: siteRoutes.adminOrganizations, label: t("back") }}
+        media={<OrganizationMark name={organization.name} logoFileId={organization.logoFileId} />}
+        title={organization.name}
+        badges={
+          <ReviewStatus state={state} appearance="pill">
+            {s(state)}
+          </ReviewStatus>
+        }
+        lead={kind.join(" · ")}
+        actions={
+          <>
+            {state === "approved" && (
+              <Button
+                prominence="secondary"
+                href={`${siteRoutes.organizations}/${organization.slug}`}
+              >
+                {t("viewPage")}
+              </Button>
+            )}
+            {state === "in_review" && <OrganizationReviewButton organization={organization} />}
+            {!merged && (
+              <AdminOrganizationMenu
+                organization={organization}
+                canTakeDown={state === "approved"}
+                members={detail.members.length}
+                invitations={detail.invitations.length}
+              />
+            )}
+          </>
+        }
+      />
 
       {state === "rejected" && (
         <p className="rounded-lg border bg-muted p-3 text-sm">
