@@ -19,8 +19,7 @@ public record AdminSolutionListRequest(
 								regexp = "in_review|needs_changes|approved|rejected|suspended") @Nullable String status,
 		@Parameter(description = "Only solutions for this industry.") @Pattern(
 				regexp = SolutionCodes.INDUSTRY) @Nullable String industry,
-		@Parameter(description = "Only solutions pinned to the top of the public directory when true, only those not "
-				+ "pinned when false.") @Nullable Boolean pinned,
+		@Parameter(description = "Only solutions featured when true, only those not featured when false.") @Nullable Boolean featured,
 		@Parameter(description = "The page, counted from 1.",
 				schema = @Schema(type = "integer", format = "int32", defaultValue = "1", minimum = "1")) @Min(1) @Nullable Integer page) {
 }

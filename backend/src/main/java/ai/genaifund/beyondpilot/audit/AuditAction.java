@@ -91,10 +91,10 @@ public enum AuditAction {
 	/** An operator wrote what GenAI Fund says of a solution: who backs its company, its programme, its funding. */
 	SOLUTION_BACK("solution.back"),
 
-	/** An operator pinned a solution to the top of the public directory. */
-	SOLUTION_PIN("solution.pin"),
+	/** An operator featured a solution: it comes first in the opening view of the public directory. */
+	SOLUTION_FEATURE("solution.feature"),
 
-	SOLUTION_UNPIN("solution.unpin"),
+	SOLUTION_UNFEATURE("solution.unfeature"),
 
 	/** An operator approved what an organization tells about a customer of a solution. */
 	SOLUTION_DEPLOYMENT_APPROVE("solution.deployment_approve"),
@@ -122,6 +122,11 @@ public enum AuditAction {
 	USE_CASE_APPROVE("use_case.approve", "organization"),
 
 	USE_CASE_SEND_BACK("use_case.send_back", "organization"),
+
+	/** An operator featured a use case: it comes first in the opening view of the public list. */
+	USE_CASE_FEATURE("use_case.feature", "organization"),
+
+	USE_CASE_UNFEATURE("use_case.unfeature", "organization"),
 
 	/** An operator set the programs a use case belongs to. */
 	USE_CASE_SET_PROGRAMS("use_case.set_programs", "organization"),
@@ -153,10 +158,10 @@ public enum AuditAction {
 	/** An operator put a profile that was taken down back in the public. */
 	TALENT_RESTORE("talent.restore"),
 
-	/** An operator pinned a profile to the top of the public directory. */
-	TALENT_PIN("talent.pin"),
+	/** An operator featured a profile: it comes first in the opening view of the public directory. */
+	TALENT_FEATURE("talent.feature"),
 
-	TALENT_UNPIN("talent.unpin"),
+	TALENT_UNFEATURE("talent.unfeature"),
 
 	/** The person deleted their own profile. */
 	TALENT_DELETE("talent.delete"),

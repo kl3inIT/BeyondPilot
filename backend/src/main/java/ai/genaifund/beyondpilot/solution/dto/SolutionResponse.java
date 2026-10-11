@@ -55,8 +55,7 @@ public record SolutionResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIR
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether it appears in the public directory once approved.") boolean listed,
 		@Schema(types = { "string", "null" }, format = "date-time",
-				description = "When an operator pinned it to the top of the public directory; null while it is not "
-						+ "pinned.") @Nullable Instant pinnedAt,
+				description = "When an operator featured it; null while it is not featured.") @Nullable Instant featuredAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether it has what a submission needs: a summary, a maturity, a focus area, an industry, "
 						+ "a logo and a cover.") boolean complete,

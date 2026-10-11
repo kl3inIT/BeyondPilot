@@ -116,28 +116,28 @@ class AdminTalentController {
 		talent.takeDown(actor, id, request);
 	}
 
-	@PostMapping("/{id}/pin")
+	@PostMapping("/{id}/feature")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "pinTalent",
-			summary = "Pin a talent profile to the top of the public directory, before the order a reader chooses",
+	@Operation(operationId = "featureTalent",
+			summary = "Feature a talent profile: it comes first in the opening view of the public directory",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "The profile is pinned; one pinned already keeps its place.",
+	@ApiResponse(responseCode = "204", description = "The profile is featured; one featured already keeps its place.",
 			content = @Content)
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void pin(@CurrentActor Actor actor, @PathVariable UUID id) {
-		talent.pin(actor, id);
+	void feature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		talent.feature(actor, id);
 	}
 
-	@PostMapping("/{id}/unpin")
+	@PostMapping("/{id}/unfeature")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "unpinTalent", summary = "Unpin a talent profile from the top of the public directory",
+	@Operation(operationId = "unfeatureTalent", summary = "Stop featuring a talent profile",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "The profile is not pinned.", content = @Content)
+	@ApiResponse(responseCode = "204", description = "The profile is not featured.", content = @Content)
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void unpin(@CurrentActor Actor actor, @PathVariable UUID id) {
-		talent.unpin(actor, id);
+	void unfeature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		talent.unfeature(actor, id);
 	}
 
 	@PostMapping("/{id}/restore")

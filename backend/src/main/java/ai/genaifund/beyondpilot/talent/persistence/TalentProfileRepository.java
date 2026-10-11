@@ -23,19 +23,20 @@ public interface TalentProfileRepository extends JpaRepository<TalentProfile, UU
 	Optional<TalentProfile> findForUpdate(UUID id);
 
 	/**
-	 * Pins a profile that is not pinned, in one statement, so two operators who pin it together pin it once and the
-	 * first time stays. It leaves the version alone: the owner's save in another tab is not refused for it.
-	 * @return 1 when it was pinned now, 0 when it was pinned already
+	 * Features a profile that is not featured, in one statement, so two operators who feature it together feature it
+	 * once and the first time stays. It leaves the version alone: the owner's save in another tab is not refused for
+	 * it.
+	 * @return 1 when it was featured now, 0 when it was featured already
 	 */
 	@Modifying
-	@Query(value = "update talent_profile set pinned_at = :at where id = :id and pinned_at is null", nativeQuery = true)
-	int pin(UUID id, Instant at);
+	@Query(value = "update talent_profile set featured_at = :at where id = :id and featured_at is null", nativeQuery = true)
+	int feature(UUID id, Instant at);
 
-	/** Unpins a pinned profile; 1 when it was unpinned now, 0 when it was not pinned. */
+	/** Stops featuring a profile; 1 when it was featured until now, 0 when it was not featured. */
 	@Modifying
-	@Query(value = "update talent_profile set pinned_at = null where id = :id and pinned_at is not null",
+	@Query(value = "update talent_profile set featured_at = null where id = :id and featured_at is not null",
 			nativeQuery = true)
-	int unpin(UUID id);
+	int unfeature(UUID id);
 
 	/** The profile of an account, locked the same way. */
 	@Lock(LockModeType.PESSIMISTIC_WRITE)

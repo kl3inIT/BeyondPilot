@@ -152,28 +152,28 @@ class AdminSolutionsController {
 		solutions.takeDown(actor, id, request);
 	}
 
-	@PostMapping("/{id}/pin")
+	@PostMapping("/{id}/feature")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "pinSolution",
-			summary = "Pin a solution to the top of the public directory, before the order a reader chooses",
+	@Operation(operationId = "featureSolution",
+			summary = "Feature a solution: it comes first in the opening view of the public directory",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "The solution is pinned; one pinned already keeps its place.",
+	@ApiResponse(responseCode = "204", description = "The solution is featured; one featured already keeps its place.",
 			content = @Content)
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void pin(@CurrentActor Actor actor, @PathVariable UUID id) {
-		solutions.pin(actor, id);
+	void feature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		solutions.feature(actor, id);
 	}
 
-	@PostMapping("/{id}/unpin")
+	@PostMapping("/{id}/unfeature")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "unpinSolution", summary = "Unpin a solution from the top of the public directory",
+	@Operation(operationId = "unfeatureSolution", summary = "Stop featuring a solution",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "The solution is not pinned.", content = @Content)
+	@ApiResponse(responseCode = "204", description = "The solution is not featured.", content = @Content)
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void unpin(@CurrentActor Actor actor, @PathVariable UUID id) {
-		solutions.unpin(actor, id);
+	void unfeature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		solutions.unfeature(actor, id);
 	}
 
 	@PostMapping("/{id}/restore")

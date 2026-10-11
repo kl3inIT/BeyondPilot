@@ -24,7 +24,8 @@ public class UseCaseQueryRepository {
 	private static final String FILTER = "where (cast(:pattern as text) is null or lower(title) like :pattern escape '\\'\n"
 			+ "       or organization_id::text = any(:matching))\n"
 			+ "  and (cast(:organization as text) is null or organization_id::text = :organization)\n"
-			+ "  and (cast(:status as text) is null or " + STATUS_AT_NOW + " = :status)\n";
+			+ "  and (cast(:status as text) is null or " + STATUS_AT_NOW + " = :status)\n"
+			+ "  and (cast(:featured as boolean) is null or (featured_at is not null) = :featured)\n";
 
 	private final JdbcClient jdbc;
 
@@ -44,28 +45,28 @@ public class UseCaseQueryRepository {
 
 	/** What the operators' list shows of one use case; the organization is named by its own module. */
 	public record Row(UUID id, UUID organizationId, @Nullable String title, String status, @Nullable Instant closesAt,
-			Instant updatedAt) {
+			@Nullable Instant featuredAt, Instant updatedAt) {
 	}
 
 	/** One page, the newest first. */
 	public List<Row> page(@Nullable String text, List<UUID> matching, @Nullable UUID organization, @Nullable String status,
-			Instant now, int limit, long offset) {
+			@Nullable Boolean featured, Instant now, int limit, long offset) {
 		return filtered("select id, organization_id, title, " + STATUS_AT_NOW
-				+ " as status, closes_at, updated_at from use_case\n" + FILTER
+				+ " as status, closes_at, featured_at, updated_at from use_case\n" + FILTER
 				+ "order by created_at desc, id limit :limit offset :offset", text, matching, organization, status,
-				now)
+				featured, now)
 			.param("limit", limit)
 			.param("offset", offset)
 			.query((row, index) -> new Row(row.getObject("id", UUID.class), row.getObject("organization_id", UUID.class),
 					row.getString("title"), row.getString("status"), instantOf(row.getTimestamp("closes_at")),
-					row.getTimestamp("updated_at").toInstant()))
+					instantOf(row.getTimestamp("featured_at")), row.getTimestamp("updated_at").toInstant()))
 			.list();
 	}
 
 	/** How many use cases match, over all pages. */
 	public long count(@Nullable String text, List<UUID> matching, @Nullable UUID organization, @Nullable String status,
-			Instant now) {
-		return filtered("select count(*) from use_case\n" + FILTER, text, matching, organization, status, now)
+			@Nullable Boolean featured, Instant now) {
+		return filtered("select count(*) from use_case\n" + FILTER, text, matching, organization, status, featured, now)
 			.query(Long.class)
 			.single();
 	}
@@ -86,15 +87,18 @@ public class UseCaseQueryRepository {
 	public record PublicRow(UUID id, UUID organizationId, boolean hideOrganizationName, String title, String industry,
 			String goal, List<String> technologies, @Nullable Long budgetMin, @Nullable Long budgetMax, String currency,
 			boolean budgetToBeDetermined, boolean budgetMembersOnly, @Nullable Integer timelineMinWeeks,
-			@Nullable Integer timelineMaxWeeks, @Nullable Instant closesAt, Instant publishedAt) {
+			@Nullable Integer timelineMaxWeeks, @Nullable Instant closesAt, Instant publishedAt,
+			@Nullable Instant featuredAt) {
 	}
 
 	/**
 	 * One page of the public list; {@code sort} is newest, deadline or budget. A budget in đồng orders as its value in
-	 * US dollars at {@code vndPerUsd}, which no reader sees.
+	 * US dollars at {@code vndPerUsd}, which no reader sees. With {@code featuredFirst} the featured use cases come
+	 * before the others, the earliest featured on top.
 	 */
 	public List<PublicRow> publicPage(@Nullable String text, List<UUID> matching, @Nullable List<String> industries,
-			@Nullable UUID program, String sort, long vndPerUsd, Instant now, int limit, long offset) {
+			@Nullable UUID program, String sort, boolean featuredFirst, long vndPerUsd, Instant now, int limit,
+			long offset) {
 		String order = switch (sort) {
 			case "deadline" -> "closes_at nulls last, id";
 			// A budget for members only is not a number a visitor sees, so it does not order the list either.
@@ -104,8 +108,8 @@ public class UseCaseQueryRepository {
 		};
 		return publicFiltered("select id, organization_id, hide_organization_name, title, industry, expected_outcomes, "
 				+ "technologies, budget_min, budget_max, currency, budget_to_be_determined, budget_members_only, "
-				+ "timeline_min_weeks, timeline_max_weeks, closes_at, published_at from use_case\n" + PUBLIC_FILTER
-				+ "order by " + order + " limit :limit offset :offset", text, matching, industries, program, now)
+				+ "timeline_min_weeks, timeline_max_weeks, closes_at, published_at, featured_at from use_case\n"
+				+ PUBLIC_FILTER + "order by " + (featuredFirst ? "featured_at asc nulls last, " : "") + order + " limit :limit offset :offset", text, matching, industries, program, now)
 			.param("vndPerUsd", vndPerUsd)
 			.param("limit", limit)
 			.param("offset", offset)
@@ -116,7 +120,7 @@ public class UseCaseQueryRepository {
 					longOf(row, "budget_max"), row.getString("currency"), row.getBoolean("budget_to_be_determined"),
 					row.getBoolean("budget_members_only"), row.getObject("timeline_min_weeks", Integer.class),
 					row.getObject("timeline_max_weeks", Integer.class), instantOf(row.getTimestamp("closes_at")),
-					row.getTimestamp("published_at").toInstant()))
+					row.getTimestamp("published_at").toInstant(), instantOf(row.getTimestamp("featured_at"))))
 			.list();
 	}
 
@@ -152,12 +156,13 @@ public class UseCaseQueryRepository {
 	}
 
 	private JdbcClient.StatementSpec filtered(String sql, @Nullable String text, List<UUID> matching,
-			@Nullable UUID organization, @Nullable String status, Instant now) {
+			@Nullable UUID organization, @Nullable String status, @Nullable Boolean featured, Instant now) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
 			.param("matching", matching.stream().map(UUID::toString).toArray(String[]::new))
 			.param("organization", organization == null ? null : organization.toString(), Types.VARCHAR)
 			.param("status", status, Types.VARCHAR)
+			.param("featured", featured, Types.BOOLEAN)
 			.param("now", Timestamp.from(now));
 	}
 

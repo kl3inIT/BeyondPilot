@@ -163,12 +163,12 @@ public class Solution {
 	private boolean listed = true;
 
 	/**
-	 * When an operator pinned the solution to the top of the public directory; null while it is not pinned. Only
-	 * {@code SolutionRepository.pin} and {@code unpin} write it, so a save of the entity never changes it and pinning
-	 * leaves the version a save sends alone.
+	 * When an operator featured the solution; null while it is not featured. Only {@code SolutionRepository.feature} and
+	 * {@code unfeature} write it, so a save of the entity never changes it and featuring leaves the version a save
+	 * sends alone.
 	 */
 	@Column(insertable = false, updatable = false)
-	private @Nullable Instant pinnedAt;
+	private @Nullable Instant featuredAt;
 
 	@Column(nullable = false, updatable = false)
 	private UUID createdByAccountId;
@@ -576,8 +576,8 @@ public class Solution {
 		return listed;
 	}
 
-	public @Nullable Instant getPinnedAt() {
-		return pinnedAt;
+	public @Nullable Instant getFeaturedAt() {
+		return featuredAt;
 	}
 
 	public long getVersion() {

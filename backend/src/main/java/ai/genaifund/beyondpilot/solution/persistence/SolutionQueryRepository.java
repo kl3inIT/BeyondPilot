@@ -38,12 +38,12 @@ public class SolutionQueryRepository {
 			       or (:status = 'approved' and status = 'approved' and suspended_at is null)
 			       or (:status not in ('suspended', 'approved') and status = :status))
 			  and (cast(:industry as text) is null or industries @> array[cast(:industry as text)])
-			  and (cast(:pinned as boolean) is null or (pinned_at is not null) = :pinned)
+			  and (cast(:featured as boolean) is null or (featured_at is not null) = :featured)
 			""";
 
 	private static final String ROW = """
 			select id, organization_id, slug, name, summary, focus_areas, industries, maturity, status, suspended_at,
-			       listed, pinned_at, submitted_at, submitted_by_account_id, updated_at, logo_file_id,
+			       listed, featured_at, submitted_at, submitted_by_account_id, updated_at, logo_file_id,
 			       cover_file_id,
 			       coalesce(program, backed_by) as backing,
 			       (select count(*) from solution_customer_deployment d
@@ -72,20 +72,21 @@ public class SolutionQueryRepository {
 	/** One solution in a list, with how many of its customer deployments are approved and how many wait for review. */
 	public record Row(UUID id, UUID organizationId, String slug, String name, @Nullable String summary,
 			List<String> focusAreas, List<String> industries, @Nullable String maturity, String status,
-			@Nullable Instant suspendedAt, boolean listed, @Nullable Instant pinnedAt,
+			@Nullable Instant suspendedAt, boolean listed, @Nullable Instant featuredAt,
 			@Nullable Instant submittedAt, @Nullable UUID submittedByAccountId, Instant updatedAt,
 			@Nullable UUID logoFileId, @Nullable UUID coverFileId, @Nullable String backing, int deployments,
 			int deploymentsAwaiting) {
 	}
 
 	/**
-	 * One page of the public directory: the pinned solutions the filters select first, the earliest pinned on top,
-	 * then the others by name or with the most recently approved first.
+	 * One page of the public directory, by name or with the most recently approved first. With {@code featuredFirst}
+	 * the featured solutions come before the others, the earliest featured on top.
 	 */
 	public List<Row> publicPage(@Nullable String text, @Nullable String industry, @Nullable String focusArea,
-			@Nullable String maturity, @Nullable UUID organizationId, @Nullable String sort, int limit, long offset) {
-		return publicFiltered(ROW + PUBLIC_FILTER + publicOrder(sort) + " limit :limit offset :offset", text, industry,
-				focusArea, maturity, organizationId)
+			@Nullable String maturity, @Nullable UUID organizationId, @Nullable String sort, boolean featuredFirst,
+			int limit, long offset) {
+		return publicFiltered(ROW + PUBLIC_FILTER + publicOrder(sort, featuredFirst) + " limit :limit offset :offset",
+				text, industry, focusArea, maturity, organizationId)
 			.param("limit", limit)
 			.param("offset", offset)
 			.query(SolutionQueryRepository::row)
@@ -106,23 +107,23 @@ public class SolutionQueryRepository {
 	 * solution belongs to one of {@code organizationIds}, the organizations the caller found by that text.
 	 */
 	public List<Row> adminPage(@Nullable String text, List<UUID> organizationIds, @Nullable String status,
-			@Nullable String industry, @Nullable Boolean pinned, int limit, long offset) {
+			@Nullable String industry, @Nullable Boolean featured, int limit, long offset) {
 		return adminFiltered(ROW + ADMIN_FILTER + """
 				order by case when status = 'in_review' or exists (
 				             select 1 from solution_customer_deployment d
 				             where d.solution_id = solution.id and d.status = 'in_review') then 0 else 1 end,
 				         submitted_at, id
 				limit :limit offset :offset
-				""", text, organizationIds, status, industry, pinned).param("limit", limit)
+				""", text, organizationIds, status, industry, featured).param("limit", limit)
 			.param("offset", offset)
 			.query(SolutionQueryRepository::row)
 			.list();
 	}
 
 	public long adminCount(@Nullable String text, List<UUID> organizationIds, @Nullable String status,
-			@Nullable String industry, @Nullable Boolean pinned) {
+			@Nullable String industry, @Nullable Boolean featured) {
 		return adminFiltered("select count(*) from solution\n" + ADMIN_FILTER, text, organizationIds, status, industry,
-				pinned)
+				featured)
 			.query(Long.class)
 			.single();
 	}
@@ -142,11 +143,11 @@ public class SolutionQueryRepository {
 	}
 
 	/**
-	 * The orders of the public directory, each after the pinned solutions. The value is never the caller's text: it is
-	 * chosen here by its name.
+	 * The orders of the public directory, after the featured solutions when asked. The value is never the caller's
+	 * text: it is chosen here by its name.
 	 */
-	private static String publicOrder(@Nullable String sort) {
-		return "order by pinned_at asc nulls last, "
+	private static String publicOrder(@Nullable String sort, boolean featuredFirst) {
+		return "order by " + (featuredFirst ? "featured_at asc nulls last, " : "")
 				+ ("newest".equals(sort) ? "decided_at desc nulls last, id" : "lower(name), id");
 	}
 
@@ -161,7 +162,7 @@ public class SolutionQueryRepository {
 	}
 
 	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, List<UUID> organizationIds,
-			@Nullable String status, @Nullable String industry, @Nullable Boolean pinned) {
+			@Nullable String status, @Nullable String industry, @Nullable Boolean featured) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
 			// A PostgreSQL array literal: an identifier holds no character that needs quoting.
@@ -170,7 +171,7 @@ public class SolutionQueryRepository {
 					Types.VARCHAR)
 			.param("status", status, Types.VARCHAR)
 			.param("industry", industry, Types.VARCHAR)
-			.param("pinned", pinned, Types.BOOLEAN);
+			.param("featured", featured, Types.BOOLEAN);
 	}
 
 	private static Row row(ResultSet row, int index) throws SQLException {
@@ -179,7 +180,7 @@ public class SolutionQueryRepository {
 				row.getString("slug"), row.getString("name"), row.getString("summary"),
 				strings(row.getArray("focus_areas")), strings(row.getArray("industries")), row.getString("maturity"),
 				row.getString("status"), instant(row.getTimestamp("suspended_at")), row.getBoolean("listed"),
-				instant(row.getTimestamp("pinned_at")),
+				instant(row.getTimestamp("featured_at")),
 				submittedAt == null ? null : submittedAt.toInstant(),
 				row.getObject("submitted_by_account_id", UUID.class), row.getTimestamp("updated_at").toInstant(),
 				row.getObject("logo_file_id", UUID.class), row.getObject("cover_file_id", UUID.class),
