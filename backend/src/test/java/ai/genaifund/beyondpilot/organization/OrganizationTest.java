@@ -952,6 +952,71 @@ class OrganizationTest {
 	}
 
 	@Test
+	void aRequestFollowsWhoDecidesItWhenAnOperatorGivesOrTakesTheLastOwner() {
+		String record = API + "/admin/organizations/" + JsonPath.<String>read(body(post(operator,
+				API + "/admin/organizations", Map.of("name", "Handed Around", "type", "company"))
+			.expectStatus()
+			.isCreated()), "$.organization.id");
+		post(operator, record + "/invitations", Map.of("email", "keeper@gmail.com", "role", "member")).expectStatus()
+			.isNoContent();
+		String keeper = signIn("keeper@gmail.com");
+		post(keeper, API + "/invitations/" + JsonPath.<String>read(mine(keeper), "$.invitations[0].id") + "/accept",
+				null)
+			.expectStatus()
+			.isNoContent();
+		String keeperRole = record + "/members/" + idOf("keeper@gmail.com") + "/role";
+		String asker = signIn("asker@gmail.com");
+		post(asker, record.replace("/admin", "") + "/join", Map.of()).expectStatus().isOk();
+		// A member is not an owner: the request is a claim, which GenAI Fund decides.
+		String claim = JsonPath.read(body(get(operator, record).expectStatus().isOk()), "$.claims[0].id");
+
+		put(operator, keeperRole, Map.of("role", "owner")).expectStatus().isNoContent();
+
+		// The organization has an owner now, who decides it; GenAI Fund no longer does.
+		assertThat(JsonPath.<Boolean>read(mine(asker), "$.request.claim")).isFalse();
+		assertThat(JsonPath.<List<String>>read(members(keeper), "$.requests[*].id")).containsExactly(claim);
+		assertThat(JsonPath.<List<Object>>read(body(get(operator, record).expectStatus().isOk()), "$.claims"))
+			.isEmpty();
+		assertProblem(post(operator, API + "/admin/claims/" + claim + "/approve", Map.of()), 404,
+				"ORGANIZATION_REQUEST_NOT_FOUND");
+
+		put(operator, keeperRole, Map.of("role", "member")).expectStatus().isNoContent();
+
+		// Without an owner nobody but GenAI Fund can decide it, so it is a claim again.
+		assertThat(JsonPath.<Boolean>read(mine(asker), "$.request.claim")).isTrue();
+		put(operator, keeperRole, Map.of("role", "owner")).expectStatus().isNoContent();
+		post(operator, record + "/members/" + idOf("keeper@gmail.com") + "/remove", null).expectStatus()
+			.isNoContent();
+		assertThat(JsonPath.<List<String>>read(body(get(operator, record).expectStatus().isOk()), "$.claims[*].id"))
+			.containsExactly(claim);
+		post(operator, API + "/admin/claims/" + claim + "/approve", Map.of()).expectStatus().isNoContent();
+		assertThat(JsonPath.<String>read(mine(asker), "$.role")).isEqualTo("owner");
+	}
+
+	@Test
+	void aMergeKeepsTheLiveInvitationOfAnAddressWhoseInvitationToTheKeptOrganizationLapsed() {
+		String duplicateOwner = signIn("founder@lapse-duplicate.test");
+		UUID duplicate = approved(duplicateOwner, "Lapse Duplicate");
+		String keptOwner = signIn("founder@lapse-kept.test");
+		UUID kept = approved(keptOwner, "Lapse Kept");
+		post(keptOwner, API + "/mine/invitations", Map.of("email", "waiting@gmail.com", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		jdbc.sql("update organization_invitation set expires_at = now() - interval '1 minute' where organization_id = ?")
+			.param(kept)
+			.update();
+		post(duplicateOwner, API + "/mine/invitations", Map.of("email", "waiting@gmail.com", "role", "member"))
+			.expectStatus()
+			.isNoContent();
+
+		post(operator, API + "/admin/organizations/" + duplicate + "/merge", Map.of("intoId", kept)).expectStatus()
+			.isNoContent();
+
+		assertThat(JsonPath.<List<String>>read(mine(signIn("waiting@gmail.com")), "$.invitations[*].organizationName"))
+			.containsExactly("Lapse Kept");
+	}
+
+	@Test
 	void theOperatorsListPutsThoseWaitingFirstAndIsNarrowedBySearchAndStatus() {
 		approved(signIn("founder@listed-done.test"), "Listed Done");
 		create(signIn("founder@listed-wait.test"), "Listed Waiting");

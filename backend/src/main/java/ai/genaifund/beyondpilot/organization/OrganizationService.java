@@ -431,8 +431,8 @@ public class OrganizationService {
 	/**
 	 * Decides a request to join the caller's organization, and tells the person.
 	 * @param approve true makes the person a member; false declines
-	 * @throws OrganizationException when the caller is not an owner, the request is not open, or the person joined
-	 * another organization in the meantime
+	 * @throws OrganizationException when the caller is not an owner, the request is not open or was withdrawn in the
+	 * meantime, or the person joined another organization in the meantime
 	 */
 	@Transactional
 	public void decideRequest(Actor actor, UUID requestId, boolean approve) {
@@ -445,7 +445,10 @@ public class OrganizationService {
 			throw new OrganizationException(OrganizationErrorCode.ALREADY_MEMBER,
 					"Account " + request.accountId() + " joined another organization before request " + requestId);
 		}
-		memberships.closeRequest(requestId, approve ? "approved" : "declined", owner.accountId());
+		if (!memberships.closeRequest(requestId, approve ? "approved" : "declined", owner.accountId())) {
+			// Withdrawn since it was read: the person is not added, and nothing is sent.
+			throw requestNotFound(requestId);
+		}
 		Person asker = identity.people(List.of(request.accountId())).get(request.accountId());
 		if (asker != null) {
 			email.sendOrganizationRequestDecision(asker.email(), organization.getName(), false, approve);

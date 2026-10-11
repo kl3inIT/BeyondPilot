@@ -247,6 +247,17 @@ public class MembershipRepository {
 	}
 
 	/**
+	 * Hands the open requests to an organization to GenAI Fund, once it has no owner left: nobody else can decide
+	 * them.
+	 */
+	public void requestsBecomeClaims(UUID organizationId) {
+		jdbc.sql("""
+				update organization_join_request set claim = true
+				where organization_id = ? and status = 'pending' and not claim
+				""").param(organizationId).update();
+	}
+
+	/**
 	 * Moves the people of a merged organization to the one kept, each as a member who sees once where they came from.
 	 */
 	public void moveMembers(UUID from, UUID into) {
@@ -273,13 +284,13 @@ public class MembershipRepository {
 	/**
 	 * Moves the open invitations of a merged organization to the one kept, each to join as a member: the duplicate's
 	 * owners never decide who owns the kept organization. An address the kept organization already invited keeps that
-	 * invitation, and the merged one is revoked; a lapsed one is closed.
+	 * invitation, and the merged one is revoked; a lapsed one of either is closed first, so it holds no place.
 	 */
 	public void moveOpenInvitations(UUID from, UUID into) {
 		jdbc.sql("""
 				update organization_invitation set status = 'expired', decided_at = now()
-				where organization_id = ? and status = 'pending' and expires_at <= now()
-				""").param(from).update();
+				where organization_id in (?, ?) and status = 'pending' and expires_at <= now()
+				""").params(from, into).update();
 		jdbc.sql("""
 				update organization_invitation moved set status = 'revoked', decided_at = now()
 				where moved.organization_id = :from and moved.status = 'pending'
