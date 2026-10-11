@@ -198,10 +198,8 @@ function DataTableView<TData extends RowData>({
       : false,
     state: { sorting, rowSelection },
     onRowSelectionChange: (updater: Updater<RowSelectionState>) => {
-      const next = Object.keys(functionalUpdate(updater, rowSelection));
-      // Rows of other pages stay selected; the update speaks only for the rows of this one.
-      const here = new Set(data.map(getRowId));
-      setPicked((current) => [...current.filter((id) => !here.has(id)), ...next]);
+      // The update carries the whole selection, rows of other pages included: it replaces it.
+      setPicked(Object.keys(functionalUpdate(updater, rowSelection)));
     },
   });
 

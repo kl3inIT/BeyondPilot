@@ -6059,7 +6059,7 @@
           "not_selected": {
             "title": "Đánh dấu {count} đơn không được chọn?",
             "lead": "Mỗi đơn chuyển sang Không được chọn. Chưa ai nhận email cho tới khi công bố kết quả.",
-            "confirm": "Đánh dấu {count} đơn"
+            "confirm": "Đánh dấu {count} đơn không được chọn"
           },
           "note": "Quyết định vẫn đổi lại được cho tới khi công bố kết quả.",
           "cancel": "Huỷ"
