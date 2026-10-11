@@ -39,7 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * What operators do with solutions and their customer deployments: read those that were sent for review, approve one,
- * send one back with what to change, refuse one for good with a reason, and take an approved one down and restore it.
+ * send one back with what to change, refuse one for good with a reason, take an approved one down and restore it, and
+ * feature one in the public directory.
  * Every operation first checks that the caller is an operator now, every decision is recorded in the audit trail in
  * the transaction of the change, and the members of the organization are told of a decision on a solution by email.
  * A draft is its organization's alone and is never shown here.
@@ -97,7 +98,7 @@ public class SolutionAdministration {
 		int page = request.page() == null ? 1 : request.page();
 		List<UUID> named = text == null ? List.of() : organizations.named(text);
 		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(text, named, request.organizationId(),
-				request.status(), request.industry(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+				request.status(), request.industry(), request.featured(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		Map<UUID, OrganizationName> optionNames = organizations.names(solutionList.adminOrganizationIds());
@@ -116,7 +117,8 @@ public class SolutionAdministration {
 			.map(row -> SolutionViews.adminSummary(row, name(names, row.organizationId()),
 					sender(senders, row.submittedByAccountId())))
 			.toList(), organizationOptions, page, PAGE_SIZE,
-			solutionList.adminCount(text, named, request.organizationId(), request.status(), request.industry()),
+			solutionList.adminCount(text, named, request.organizationId(), request.status(), request.industry(),
+					request.featured()),
 			solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview());
 	}
 
@@ -260,6 +262,39 @@ public class SolutionAdministration {
 	}
 
 	/**
+	 * Features a solution: it comes first in the opening view of the public directory, where the reader has searched
+	 * for nothing, chosen no filter and reads the newest first, the earliest featured on top; its card says Featured
+	 * wherever the directory shows it. Any solution that was sent for review can be featured. A solution keeps being featured through every decision, so one
+	 * featured before it is public comes first from the moment it is. Featuring one that is featured already changes
+	 * nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when no submitted solution has this identifier
+	 */
+	@Transactional
+	public void feature(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Solution solution = solutions.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
+		if (solutions.feature(id, Instant.now()) == 1) {
+			record(AuditAction.SOLUTION_FEATURE, operator, solution, Map.of());
+		}
+	}
+
+	/**
+	 * Stops featuring a solution, which goes back to its place among the others. On one that is not featured it changes
+	 * nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when no submitted solution has this identifier
+	 */
+	@Transactional
+	public void unfeature(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Solution solution = solutions.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
+		if (solutions.unfeature(id) == 1) {
+			record(AuditAction.SOLUTION_UNFEATURE, operator, solution, Map.of());
+		}
+	}
+
+	/**
 	 * Approves a customer deployment that waits for review, which shows it with its solution.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws SolutionException when the deployment does not exist or does not wait for review
@@ -358,7 +393,8 @@ public class SolutionAdministration {
 	@Transactional(readOnly = true)
 	public SolutionsAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
-		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(null, List.of(), null, "in_review", null, limit,
+		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(null, List.of(), null, "in_review", null, null,
+				limit,
 				0);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());

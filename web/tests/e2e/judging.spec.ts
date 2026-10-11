@@ -101,6 +101,11 @@ test.describe("judging applications", () => {
       "href",
       `/api/proposal/review/applications/${plainCoverId}/files/f0000000-0000-4000-8000-000000000001`,
     );
+    // The demo the applicant gave opens in a tab of its own, away from the review.
+    const demo = page.getByRole("link", { name: "https://plaincover.example/demo" });
+    await expect(demo).toHaveAttribute("href", "https://plaincover.example/demo");
+    await expect(demo).toHaveAttribute("target", "_blank");
+    await expect(demo).toHaveAttribute("rel", "noopener noreferrer");
     const scores = page.getByRole("region", { name: "Judges' scores" });
     await expect(scores).toContainText("Minh Anh Le");
     await expect(scores).toContainText("on version 1");

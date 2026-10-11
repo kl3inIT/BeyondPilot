@@ -112,9 +112,10 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 
 - **A version with a snapshot.** Each submission increments `submissions` and writes `proposal_version` with that
   number. The snapshot holds the applicant (email, contact), the organization (id, name, type, country, team size,
-  website, team background), the solution (id, name, summary, problems solved, maturity), the materials (deck,
-  built-with, traction) and each answer with its question's label and kind, and the file for a file answer. A later
-  change to a profile leaves the snapshot as it was.
+  website, team background), the solution (id, name, summary, problems solved, maturity, `demoUrl`), the materials
+  (deck, built-with, traction) and each answer with its question's label and kind, and the file for a file answer. A
+  later change to a profile leaves the snapshot as it was. A snapshot taken before submissions kept the demo link has
+  no `demoUrl` key in its solution, which reads as no link.
 - **The account keeps the country and the phone number.** A submission passes them to
   `IdentityService.reachAtIfUnknown`, which fills the ones the account does not hold yet, so the next form starts
   from them.
@@ -197,6 +198,9 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 - **Only submitted applications** are reviewed, each as its last version's snapshot; drafts and withdrawals are
   counted, not listed. The list is ordered by `submitted_at`, earliest first, and shows the answer to the program's
   first `single_choice` question; a `multi_choice` answer is read on the application, not in the list.
+- **What every reviewer reads.** The submission as its snapshot holds it, with the link to the product's demo
+  (`submitted.demoUrl`) when the solution had one at submission; the application page shows it under the solution and
+  opens it in a new tab. The list and the CSV download do not carry it.
 - **What a judge reads.** Their own assessment and its mean; never anyone else's score, an average across judges, the
   decision or the decision history.
 - **What an operator reads.** Every assessment with its author, role (`reviewer` for a joined judge, `operator`

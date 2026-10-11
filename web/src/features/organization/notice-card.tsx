@@ -12,12 +12,13 @@ type NoticeCardProps = {
 
 /**
  * One matter that waits for the reader, with what it is, where it stands and what can be done about
- * it: the review of the organization, who may join by email domain.
+ * it: the review of the organization, who may join by email domain. In a narrow column the badge
+ * sits above the title and the actions under the foot.
  */
 function NoticeCard({ titleAs: Title, title, description, badge, foot, actions }: NoticeCardProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border bg-card p-5">
-      <div className="flex items-start justify-between gap-3">
+    <div className="@container flex flex-col gap-4 rounded-2xl border bg-card p-5">
+      <div className="flex flex-col-reverse items-start gap-2 @md:flex-row @md:justify-between @md:gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <Title className="text-base font-semibold break-words">{title}</Title>
           {description && (
@@ -26,7 +27,7 @@ function NoticeCard({ titleAs: Title, title, description, badge, foot, actions }
         </div>
         {badge}
       </div>
-      <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-t pt-4 @md:flex-row @md:items-center @md:justify-between">
         <p className="text-sm font-medium">{foot}</p>
         {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}
       </div>

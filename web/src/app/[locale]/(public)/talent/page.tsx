@@ -22,6 +22,14 @@ export default async function TalentRoute({ params, searchParams }: PageProps<"/
 
   const [talent, account] = await Promise.all([readTalent(search), getCurrentAccount()]);
   const hasProfile = account ? Boolean((await readMyTalent()).profile) : false;
+  // When the search and filters match nobody, the newest people are offered instead.
+  const filtered = search.q.trim() !== "" || search.role !== null;
+  const others =
+    filtered && talent.total === 0
+      ? (await readTalent({ ...search, q: "", role: null, page: 1 })).items.slice(0, 3)
+      : [];
 
-  return <TalentDirectoryPage talent={talent} search={search} hasProfile={hasProfile} />;
+  return (
+    <TalentDirectoryPage talent={talent} search={search} hasProfile={hasProfile} others={others} />
+  );
 }

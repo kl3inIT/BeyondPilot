@@ -110,6 +110,58 @@ test.describe("programs", () => {
       "href",
       applyUrl,
     );
+    // What the campaign's earlier page said: the client, the month after demo day, the support, the
+    // myths and its questions, each reached from the page's navigation.
+    const nav = page.getByRole("navigation", { name: "On this page" });
+    for (const [name, id] of [
+      ["Tasco", "client"],
+      ["Pilot month", "pilot"],
+      ["Support", "support"],
+      ["Myths", "myths"],
+    ]) {
+      await expect(nav.getByRole("link", { name, exact: true })).toHaveAttribute("href", `#${id}`);
+      await expect(page.locator(`#${id}`).getByRole("heading", { level: 2 })).toBeVisible();
+    }
+    const client = page.locator("#client");
+    await expect(client.getByRole("listitem").filter({ hasText: "HNX: HUT" })).toBeVisible();
+    await expect(
+      client.getByRole("heading", { name: "Why Tasco is doing this at all" }),
+    ).toBeVisible();
+    await expect(
+      page.locator("#directions").getByRole("heading", { name: "Why efficiency matters here" }),
+    ).toBeVisible();
+    await expect(timeline.getByRole("heading", { level: 3 })).toHaveText([
+      "Start on day one",
+      "How selection works",
+    ]);
+    const pilot = page.locator("#pilot");
+    await expect(pilot.getByRole("heading", { level: 3 })).toHaveText([
+      "Selection and scoping conversation",
+      "Scope lock",
+      "Build",
+      "Integrate and checkpoint",
+      "Test and evaluate",
+      "Tasco decides",
+      "Good to know",
+    ]);
+    await expect(pilot.getByRole("term").filter({ hasText: "Done when" })).toHaveCount(5);
+    await expect(
+      page.locator("#submit").getByRole("heading", { name: "Design requirements" }),
+    ).toBeVisible();
+    await expect(page.locator("#support").getByRole("listitem")).toHaveCount(4);
+    const myths = page.locator("#myths");
+    await expect(myths.getByRole("listitem")).toHaveCount(5);
+    await expect(myths.getByText("There is no RFP here.", { exact: false })).toBeVisible();
+    const faq = page.locator("#faq");
+    await expect(faq.getByRole("button")).toHaveCount(13);
+    await faq.getByRole("button", { name: "Is there prize money?" }).click();
+    await expect(faq.getByText("What's on offer is a customer.", { exact: false })).toBeVisible();
+    // The navigation wraps: the page is never wider than the screen.
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+    ).toBe(true);
     if (isMobile) {
       // On a phone the card to apply comes before the challenge.
       const card = await page

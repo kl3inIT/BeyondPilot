@@ -448,7 +448,7 @@ public class ReviewService {
 		return new ReviewApplicationResponse.Submitted(snapshot.applicant().email(), snapshot.applicant().contact(),
 				organization.name(), organization.type(), organization.country(), organization.teamSize(),
 				organization.website(), organization.teamBackground(), solution.name(), solution.summary(),
-				solution.problemsSolved(), solution.maturity(), materials.deck(),
+				solution.problemsSolved(), solution.maturity(), solution.demoUrl(), materials.deck(),
 				materials.builtWith() == null ? List.of() : materials.builtWith(), materials.traction(),
 				snapshot.answers()
 					.stream()
@@ -485,8 +485,9 @@ public class ReviewService {
 				@Nullable String website, @Nullable String teamBackground) {
 		}
 
+		/** @param demoUrl absent from a snapshot taken before submissions kept it, which reads as none */
 		record Solution(UUID id, String name, @Nullable String summary, @Nullable String problemsSolved,
-				@Nullable String maturity) {
+				@Nullable String maturity, @Nullable String demoUrl) {
 		}
 
 		record Materials(@Nullable AttachedFileResponse deck, @Nullable List<String> builtWith,

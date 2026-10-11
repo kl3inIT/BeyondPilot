@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -440,6 +441,81 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
+	void anOperatorFeaturesUseCasesWhichLeadOnlyTheViewTheListOpensWith() {
+		String tag = UUID.randomUUID().toString().substring(0, 8);
+		UUID organization = organization("Featuring Bank " + tag);
+		String first = created(useCase(organization, "First " + tag, true));
+		Map<String, Object> insurance = useCase(organization, "Second " + tag, true);
+		insurance.put("industry", "insurance");
+		String second = created(insurance);
+		created(useCase(organization, "Third " + tag, true));
+		String draft = created(useCase(organization, "Draft " + tag, false));
+		String closed = created(useCase(organization, "Closed " + tag, true));
+		jdbc.sql("update use_case set closes_at = now() - interval '1 day' where id = ?")
+			.param(UUID.fromString(closed))
+			.update();
+		// What a reader gets once they search, filter or pick another order, before anything is featured.
+		List<String> chosen = List.of("?q=" + tag, "?q=" + tag + "&sort=deadline", "?industry=insurance",
+				"?sort=deadline", "?sort=budget");
+		List<List<String>> before = chosen.stream().map(this::publicTitles).toList();
+		int total = JsonPath.<Number>read(body(client.get().uri(DIRECTORY).exchange().expectStatus().isOk()), "$.total")
+			.intValue();
+
+		String user = TestSignIn.session(client, mail, "featuring@usecase.test");
+		assertProblem(post(user, USE_CASES + "/" + first + "/feature", Map.of()), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(user, USE_CASES + "/" + first + "/unfeature", Map.of()), 403, "IDENTITY_OPERATOR_REQUIRED");
+		post(null, USE_CASES + "/" + first + "/feature", Map.of()).expectStatus().isUnauthorized();
+		assertProblem(post(operator, USE_CASES + "/" + UUID.randomUUID() + "/feature", Map.of()), 404,
+				"USECASE_NOT_FOUND");
+
+		// The one featured first stays on top of the one featured after it. Featured again, nothing new is recorded.
+		for (String id : List.of(first, second, draft, closed, first)) {
+			post(operator, USE_CASES + "/" + id + "/feature", Map.of()).expectStatus().isNoContent();
+		}
+
+		// The opening view: no search, no filter, the newest first. One closed or not published stays out, featured or not.
+		String opening = body(client.get().uri(DIRECTORY).exchange().expectStatus().isOk());
+		assertThat(tagged(JsonPath.read(opening, "$.items[*].title"), tag)).containsExactly("First " + tag,
+				"Second " + tag, "Third " + tag);
+		assertThat(JsonPath.<List<Boolean>>read(opening, "$.items[*].featured"))
+			.isSortedAccordingTo(Comparator.reverseOrder());
+		assertThat(JsonPath.<Number>read(opening, "$.total").intValue()).isEqualTo(total);
+		assertThat(publicTitles("?page=2")).doesNotContain("First " + tag, "Second " + tag);
+		assertThat(tagged(publicTitles("?sort=newest"), tag)).containsExactly("First " + tag, "Second " + tag,
+				"Third " + tag);
+
+		// A search, a filter or another order is ordered by that alone, as it was before.
+		for (int index = 0; index < chosen.size(); index++) {
+			assertThat(publicTitles(chosen.get(index))).as(chosen.get(index)).isEqualTo(before.get(index));
+		}
+		String searched = body(client.get().uri(DIRECTORY + "?q=" + tag).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(searched, "$.items[*].title")).containsExactly("Third " + tag,
+				"Second " + tag, "First " + tag);
+		// Its card says it is featured wherever the list shows it.
+		assertThat(JsonPath.<List<String>>read(searched, "$.items[?(@.featured == true)].title"))
+			.containsExactly("Second " + tag, "First " + tag);
+
+		// The operators' list marks them and narrows to the featured ones, or to the others, whatever their status.
+		assertThat(titles("?q=" + tag + "&featured=true")).containsExactlyInAnyOrder("First " + tag, "Second " + tag,
+				"Draft " + tag, "Closed " + tag);
+		assertThat(titles("?q=" + tag + "&featured=false")).containsExactly("Third " + tag);
+		get(operator, USE_CASES + "?q=" + tag + "&featured=true").expectBody()
+			.jsonPath("$.items[0].featuredAt")
+			.isNotEmpty();
+		// Another change to the use case leaves it featured.
+		put(operator, USE_CASES + "/" + first + "/programs", Map.<String, Object>of("programIds", List.of())).expectStatus().isOk();
+		get(operator, USE_CASES + "/" + first).expectBody().jsonPath("$.featuredAt").isNotEmpty();
+
+		// No longer featured, a use case goes back to its place; a second time changes and records nothing.
+		post(operator, USE_CASES + "/" + first + "/unfeature", Map.of()).expectStatus().isNoContent();
+		post(operator, USE_CASES + "/" + first + "/unfeature", Map.of()).expectStatus().isNoContent();
+		assertThat(tagged(publicTitles(""), tag)).containsExactly("Second " + tag, "Third " + tag, "First " + tag);
+		get(operator, USE_CASES + "/" + first).expectBody().jsonPath("$.featuredAt").isEmpty();
+		assertThat(eventsOf(first)).extracting(event -> event.get("action"))
+			.containsExactly("use_case.create", "use_case.feature", "use_case.set_programs", "use_case.unfeature");
+	}
+
+	@Test
 	void theFormOffersOnlyApprovedOrganizations() {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		organization("Offered First " + tag);
@@ -589,6 +665,22 @@ class UseCaseAdministrationTest {
 
 	private RestTestClient.ResponseSpec get(String session, String uri) {
 		return client.get().uri(uri).cookie(TestSignIn.SESSION_COOKIE, session).exchange();
+	}
+
+	/** The identifier of the use case an operator creates from this brief. */
+	private String created(Map<String, Object> brief) {
+		return JsonPath.read(body(post(operator, USE_CASES, brief).expectStatus().isCreated()), "$.id");
+	}
+
+	/** The titles of one page of the public list, in the order they came. */
+	private List<String> publicTitles(String query) {
+		return JsonPath.read(body(client.get().uri(DIRECTORY + query).exchange().expectStatus().isOk()),
+				"$.items[*].title");
+	}
+
+	/** Those of the titles that carry the tag of one test, in the order they came. */
+	private static List<String> tagged(List<String> titles, String tag) {
+		return titles.stream().filter(title -> title.endsWith(tag)).toList();
 	}
 
 	private List<String> titles() {

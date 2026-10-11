@@ -101,6 +101,14 @@ public class TalentProfile {
 	@Column(nullable = false)
 	private boolean listed = true;
 
+	/**
+	 * When an operator featured the profile; null while it is not featured. Only {@code TalentProfileRepository.feature} and
+	 * {@code unfeature} write it, so a save of the entity never changes it and featuring leaves the version a save
+	 * sends alone.
+	 */
+	@Column(insertable = false, updatable = false)
+	private @Nullable Instant featuredAt;
+
 	@Version
 	private long version;
 
@@ -320,6 +328,10 @@ public class TalentProfile {
 
 	public boolean isListed() {
 		return listed;
+	}
+
+	public @Nullable Instant getFeaturedAt() {
+		return featuredAt;
 	}
 
 	public long getVersion() {

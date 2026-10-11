@@ -34,6 +34,8 @@ test.describe("solutions directory", () => {
       card("Policy Chat").getByRole("link", { name: "By Pocket Policy" }),
     ).toHaveAttribute("href", "/organizations/pocket-policy");
     await expect(card("Policy Chat").getByText("1 customer deployment")).toBeVisible();
+    // A featured solution leads the list, but no card says it is featured.
+    await expect(page.locator("[data-featured]")).toHaveCount(0);
     await expect(card("Clinic Triage").getByText("No customer case published")).toBeVisible();
     // A card names three capabilities and counts the rest.
     await expect(card("Claims Vision").getByText("+1 more")).toBeVisible();

@@ -16,6 +16,7 @@ import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import com.jayway.jsonpath.JsonPath;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,6 +126,11 @@ abstract class ApplicationsHttpTest {
 
 		/** A solution of the caller's organization with everything an application needs. */
 	UUID completeSolution(String session, String email, String name) {
+		return completeSolution(session, email, name, null);
+	}
+
+	/** A complete solution, with the link to its demo when one is given. */
+	UUID completeSolution(String session, String email, String name, @Nullable String demoUrl) {
 		String draft = body(post(session, "/api/solution/mine", Map.of("name", name)).expectStatus().isCreated());
 		Map<String, Object> solution = new HashMap<>();
 		solution.put("name", name);
@@ -137,6 +143,7 @@ abstract class ApplicationsHttpTest {
 		solution.put("imageFileIds", List.of());
 		solution.put("deployment", List.of());
 		solution.put("maturity", "pilot");
+		solution.put("demoUrl", demoUrl);
 		solution.put("listed", true);
 		solution.put("version", JsonPath.<Integer>read(draft, "$.version"));
 		String id = JsonPath.read(draft, "$.id");

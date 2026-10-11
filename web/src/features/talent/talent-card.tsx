@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { PublicTalentSummary } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 import { TalentPhoto } from "./talent-photo";
 import { TalentSkills } from "./talent-skills";
@@ -17,7 +18,14 @@ import { TalentSkills } from "./talent-skills";
  * whole card leads to the profile through the name's link; the footer says so, and the count of
  * further skills sits above the link and opens the full list.
  */
-function TalentCard({ person }: { person: PublicTalentSummary }) {
+function TalentCard({
+  person,
+  linked = true,
+}: {
+  person: PublicTalentSummary;
+  /** False for a preview of a profile that has no public page yet: no link, no footer. */
+  linked?: boolean;
+}) {
   const t = useTranslations("Talent.directory");
   const role = useVocabulary("talentRole");
   const stage = useVocabulary("projectStage");
@@ -31,7 +39,13 @@ function TalentCard({ person }: { person: PublicTalentSummary }) {
   const lead = person.leadProject;
 
   return (
-    <article className="relative flex min-w-0 flex-1 flex-col gap-4 rounded-2xl border bg-card p-5 transition-colors hover:border-ring has-[h2>a:focus-visible]:border-ring has-[h2>a:focus-visible]:ring-3 has-[h2>a:focus-visible]:ring-ring/50">
+    <article
+      className={cn(
+        "relative flex min-w-0 flex-1 flex-col gap-4 rounded-2xl border bg-card p-5",
+        linked &&
+          "transition-colors hover:border-ring has-[h2>a:focus-visible]:border-ring has-[h2>a:focus-visible]:ring-3 has-[h2>a:focus-visible]:ring-ring/50",
+      )}
+    >
       <div className="flex items-center gap-3">
         <TalentPhoto
           name={person.name}
@@ -41,12 +55,16 @@ function TalentCard({ person }: { person: PublicTalentSummary }) {
         />
         <div className="flex min-w-0 flex-col gap-0.5">
           <h2 className="truncate font-medium">
-            <Link
-              href={`${siteRoutes.talent}/${person.slug}`}
-              className="outline-none after:absolute after:inset-0 after:rounded-2xl"
-            >
-              {person.name}
-            </Link>
+            {linked ? (
+              <Link
+                href={`${siteRoutes.talent}/${person.slug}`}
+                className="outline-none after:absolute after:inset-0 after:rounded-2xl"
+              >
+                {person.name}
+              </Link>
+            ) : (
+              person.name
+            )}
           </h2>
           {kind && <p className="line-clamp-2 text-xs font-medium text-muted-foreground">{kind}</p>}
         </div>
@@ -71,13 +89,15 @@ function TalentCard({ person }: { person: PublicTalentSummary }) {
           <p className="text-xs text-muted-foreground">{t("noProject")}</p>
         )}
       </div>
-      <p
-        aria-hidden="true"
-        className="-mx-5 -mb-5 flex items-center justify-end gap-1 border-t px-5 py-3 text-sm font-medium text-primary"
-      >
-        {t("view")}
-        <ArrowUpRightIcon className="size-4" />
-      </p>
+      {linked && (
+        <p
+          aria-hidden="true"
+          className="-mx-5 -mb-5 flex items-center justify-end gap-1 border-t px-5 py-3 text-sm font-medium text-primary"
+        >
+          {t("view")}
+          <ArrowUpRightIcon className="size-4" />
+        </p>
+      )}
     </article>
   );
 }

@@ -19,6 +19,8 @@ public record TalentSummaryResponse(@Schema(requiredMode = Schema.RequiredMode.R
 		@Schema(types = { "string", "null" }, format = "date-time",
 				description = "When it was taken down; null while it is not.") @Nullable Instant suspendedAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean listed,
+		@Schema(types = { "string", "null" }, format = "date-time",
+				description = "When an operator featured it; null while it is not featured.") @Nullable Instant featuredAt,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant submittedAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt) {
 }

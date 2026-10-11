@@ -121,6 +121,7 @@ function application(operator) {
       summary: "A plain-language explainer inside the purchase flow.",
       problemsSolved: "First-time car owners buy cover without knowing what it excludes.",
       maturity: "production",
+      demoUrl: "https://plaincover.example/demo",
       deck: {
         fileId: "f0000000-0000-4000-8000-000000000001",
         fileName: "plain-cover-deck.pdf",
