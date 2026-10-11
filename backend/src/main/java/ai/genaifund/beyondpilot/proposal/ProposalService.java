@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -80,6 +81,9 @@ public class ProposalService {
 	private static final Pattern WEB_ADDRESS = Pattern.compile("^https://\\S+$");
 
 	private static final TypeReference<Map<String, String>> ANSWERS = new TypeReference<>() {
+	};
+
+	private static final TypeReference<List<String>> CHOICES = new TypeReference<>() {
 	};
 
 	private final ProposalRepository proposals;
@@ -363,6 +367,7 @@ public class ProposalService {
 			}
 			String answer = switch (question.kind()) {
 				case "single_choice" -> question.options().contains(value) ? value : null;
+				case "multi_choice" -> choices(question, value);
 				case "confirm" -> "true".equals(value) ? value : null;
 				case "link" -> value.strip().length() <= LINK && WEB_ADDRESS.matcher(value.strip()).matches()
 						? value.strip() : null;
@@ -376,6 +381,26 @@ public class ProposalService {
 			answers.put(key, answer);
 		}
 		return answers;
+	}
+
+	/**
+	 * The answer to a question that takes several choices, as it is kept: a JSON array of the options chosen, in the
+	 * order the question offers them. Every answer is text, so the answers read as they always did. Null when the value
+	 * is not a list of one or more of the question's options, each exactly as written and named once.
+	 */
+	private @Nullable String choices(ApplicationForm.Question question, String value) {
+		List<String> chosen;
+		try {
+			chosen = json.readValue(value, CHOICES);
+		}
+		catch (JacksonException malformed) {
+			return null;
+		}
+		if (chosen == null || chosen.isEmpty() || chosen.stream().anyMatch(Objects::isNull)
+				|| chosen.stream().distinct().count() != chosen.size() || !question.options().containsAll(chosen)) {
+			return null;
+		}
+		return json.writeValueAsString(question.options().stream().filter(chosen::contains).toList());
 	}
 
 	private @Nullable String file(Actor actor, String value, @Nullable String kept) {
@@ -467,7 +492,7 @@ public class ProposalService {
 
 	private SolutionOptionResponse option(OfferedSolution solution) {
 		return new SolutionOptionResponse(solution.id(), solution.name(), solution.summary(),
-				solution.problemsSolved(), solution.maturity(), complete(solution));
+				solution.problemsSolved(), solution.maturity(), solution.demoUrl(), complete(solution));
 	}
 
 	private @Nullable AttachedFileResponse deck(Proposal proposal) {
@@ -499,6 +524,7 @@ public class ProposalService {
 		solutionCopy.put("summary", solution.summary());
 		solutionCopy.put("problemsSolved", solution.problemsSolved());
 		solutionCopy.put("maturity", solution.maturity());
+		solutionCopy.put("demoUrl", solution.demoUrl());
 		snapshot.put("solution", solutionCopy);
 		Map<String, Object> materials = new LinkedHashMap<>();
 		materials.put("deck", deck(proposal));

@@ -180,6 +180,11 @@ function PublishButton({ program, dirty, blocked, save, className }: PublishButt
           onConfirm={() => void publish()}
         >
           <AddressBox slug={program.slug} />
+          {program.applications && program.questionCount === 0 && (
+            <p className="rounded-lg border border-warning bg-warning/10 px-4 py-3 text-sm">
+              {t("confirm.noQuestions")}
+            </p>
+          )}
         </ConfirmDialog>
       )}
     </>

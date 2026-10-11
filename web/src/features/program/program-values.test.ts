@@ -27,6 +27,7 @@ const program: AdminProgram = {
     outcomesDueOn: "2026-10-16",
     allowUpdatesUntilClose: true,
   },
+  questionCount: 0,
   keyDates: [
     {
       title: "Briefing with Tasco's business team",

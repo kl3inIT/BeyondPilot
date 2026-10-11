@@ -46,7 +46,8 @@ Constraints in the database:
 - **Values.** `type` is one of `enterprise_challenge`, `open_innovation_call`, `accelerator`, `hackathon`,
   `buildathon`, `grant`, `venture_building`, `pitch_competition`, `event_series`, `event`. `status` is `draft` or
   `published`. `page_kind` is `standard`, `custom` or `external`. A question's `kind` is `short_text`, `long_text`,
-  `single_choice`, `file`, `link` or `confirm`, and its `max_length` is 1 to 4000. `shortlist_size` is positive.
+  `single_choice`, `multi_choice`, `file`, `link` or `confirm` (`program_question_kind_check`, widened in V74), and its
+  `max_length` is 1 to 4000. `shortlist_size` is positive.
 
 ## Drafts and publishing
 
@@ -54,7 +55,8 @@ Constraints in the database:
   Only operators see a draft.
 - **What blocks publishing.** A program needs a `summary`, a cover and both `startsOn` and `endsOn`. The program read
   for editing lists what is missing as `publishIssues` (`summary`, `cover`, `dates`, in that order), and `publish`
-  checks the same list again and refuses with `PROGRAM_NOT_READY_TO_PUBLISH` while it is not empty.
+  checks the same list again and refuses with `PROGRAM_NOT_READY_TO_PUBLISH` while it is not empty. It also gives
+  `questionCount`, so that publishing a program whose form asks nothing is asked again; no question is not a block.
 - **Publish.** Sets `status` to `published`. The first publication sets `published_at`, which never changes again.
 - **Unpublish.** Sets `status` back to `draft` and keeps everything else, the address included.
 - **Repeats.** Publishing a published program, or unpublishing a draft, changes nothing, records nothing and publishes
@@ -113,7 +115,8 @@ application window, key dates and events, all or nothing.
 - **Questions.** `PUT .../{id}/questions` replaces the list in the order sent, at most 20, under the same lock and
   version check as a save. A question sent with the `id` of one of this program's questions keeps it; any other gets a
   new one.
-  - A `single_choice` question's options are stripped and deduplicated, and fewer than two are refused with
+  - A question answered from choices is `single_choice`, which takes one of them, or `multi_choice`, which takes
+    several. Its options are stripped and deduplicated, at most twenty, and fewer than two are refused with
     `PROGRAM_CHOICES_REQUIRED`; other kinds store no options.
   - `maxLength` is kept only for `short_text` and `long_text`; null takes the form's default.
   - Once `opensAt` has passed, the questions are fixed: a save is refused with `PROGRAM_QUESTIONS_FIXED`, and the read
@@ -164,7 +167,9 @@ The operators' list shows each program's phase whatever its status.
 
 Every operation of `ProgramAdministration` first calls `IdentityService.requireOperator`, so a caller who is not an
 operator now (or whose account is disabled) is refused with `403` `IDENTITY_OPERATOR_REQUIRED`, and a caller without a
-session with `401`. The operators' list returns every program in any status, newest created first, without paging.
+session with `401`. The operators' list returns every program in any status without paging, by the phase it is in now: open for
+applications, then running, coming up and done. Inside a phase the latest to start is first, and a program with no
+start day comes before those, newest created first.
 
 ## Audit
 
@@ -223,6 +228,6 @@ The contract is `openapi.yml`.
 | `PROGRAM_KEY_DATE_OUT_OF_ORDER` | 400    | A key date ends before it starts                                                 |
 | `PROGRAM_EVENT_OUT_OF_ORDER`    | 400    | An event ends before it starts                                                   |
 | `PROGRAM_EXTERNAL_URL_REQUIRED` | 400    | `external` page kind without `externalUrl`                                       |
-| `PROGRAM_CHOICES_REQUIRED`      | 400    | A `single_choice` question with fewer than two distinct options                  |
+| `PROGRAM_CHOICES_REQUIRED`      | 400    | A `single_choice` or `multi_choice` question with fewer than two options         |
 | `PROGRAM_NOT_READY_TO_PUBLISH`  | 400    | Publishing while `publishIssues` is not empty                                    |
 | `PROGRAM_COVER_NOT_USABLE`      | 400    | The cover is not a stored `program_image` of the caller, or is another program's |

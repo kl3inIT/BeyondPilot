@@ -48,8 +48,8 @@ final class SolutionViews {
 				solution.getImageFileIds().stream().flatMap(fileId -> image(fileId, storage).stream()).toList(),
 				solution.getStatus(),
 				solution.getDecisionReason(), solution.getDecisionMessage(), solution.getSuspendedAt(),
-				solution.getSuspensionReason(), solution.getSuspensionMessage(), solution.isListed(), solution.isComplete(),
-				solution.getSubmittedAt(), submittedBy, solution.getVersion(), solution.getUpdatedAt(),
+				solution.getSuspensionReason(), solution.getSuspensionMessage(), solution.isListed(),
+				solution.getFeaturedAt(), solution.isComplete(), solution.getSubmittedAt(), submittedBy, solution.getVersion(), solution.getUpdatedAt(),
 				deployments.stream().map(SolutionViews::deployment).toList());
 	}
 
@@ -117,7 +117,7 @@ final class SolutionViews {
 			@Nullable String submittedBy) {
 		return new AdminSolutionSummaryResponse(row.id(), row.organizationId(), organizationName, row.slug(),
 				row.name(), row.summary(), row.logoFileId(), row.industries(), row.maturity(), row.status(),
-				row.suspendedAt(), row.listed(), row.submittedAt(), submittedBy, row.updatedAt(),
+				row.suspendedAt(), row.listed(), row.featuredAt(), row.submittedAt(), submittedBy, row.updatedAt(),
 				row.deploymentsAwaiting());
 	}
 

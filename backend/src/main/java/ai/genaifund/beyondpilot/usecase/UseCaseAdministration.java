@@ -110,15 +110,15 @@ public class UseCaseAdministration {
 		List<UUID> matching = text == null ? List.of()
 				: organizations.approvedOrganizations(text, ORGANIZATION_LIMIT).stream().map(OrganizationName::id).toList();
 		List<UseCaseQueryRepository.Row> rows = useCaseList.page(text, matching, request.organizationId(),
-				request.status(), now, PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+				request.status(), request.featured(), now, PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(UseCaseQueryRepository.Row::organizationId).collect(Collectors.toSet()));
 		List<AdminUseCaseSummaryResponse> items = rows.stream()
 			.map(row -> new AdminUseCaseSummaryResponse(row.id(), organization(row.organizationId(), names),
-					row.title(), row.status(), row.closesAt(), row.updatedAt()))
+					row.title(), row.status(), row.closesAt(), row.featuredAt(), row.updatedAt()))
 			.toList();
 		return new AdminUseCaseListResponse(items, page, PAGE_SIZE,
-				useCaseList.count(text, matching, request.organizationId(), request.status(), now),
+				useCaseList.count(text, matching, request.organizationId(), request.status(), request.featured(), now),
 				useCaseList.inReview(now));
 	}
 
@@ -270,6 +270,48 @@ public class UseCaseAdministration {
 		return response(actor, useCase, organization(useCase.getOrganizationId(), names), Instant.now());
 	}
 
+	/**
+	 * Features a use case: it comes first in the opening view of the public list, where the reader has searched
+	 * for nothing, chosen no filter and reads the newest first, the earliest featured on top; its card says Featured
+	 * wherever the list shows it. Any use case can be featured, whatever its status; one that is closed or not published stays out of the public list all the same. A use case keeps being featured through every decision, so one
+	 * featured before it is public comes first from the moment it is. Featuring one that is featured already changes
+	 * nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when the use case does not exist
+	 */
+	@Transactional
+	public void feature(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		UseCase useCase = useCases.findById(id)
+			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No use case " + id));
+		if (useCases.feature(id, Instant.now()) == 1) {
+			recordFeatured(AuditAction.USE_CASE_FEATURE, operator, useCase);
+		}
+	}
+
+	/**
+	 * Stops featuring a use case, which goes back to its place among the others. On one that is not featured it changes
+	 * nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when the use case does not exist
+	 */
+	@Transactional
+	public void unfeature(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		UseCase useCase = useCases.findById(id)
+			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No use case " + id));
+		if (useCases.unfeature(id) == 1) {
+			recordFeatured(AuditAction.USE_CASE_UNFEATURE, operator, useCase);
+		}
+	}
+
+	private void recordFeatured(AuditAction action, Operator operator, UseCase useCase) {
+		audit.record(new AuditRecord(action,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource(USE_CASE, useCase.getId().toString(), titleOf(useCase)),
+				Map.of("organization", useCase.getOrganizationId().toString())));
+	}
+
 	private UseCase awaitingReview(UUID id, Instant now) {
 		return decidable(id, now, UseCase.IN_REVIEW);
 	}
@@ -354,7 +396,8 @@ public class UseCaseAdministration {
 				useCase.isBudgetMembersOnly(),
 				useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(), useCase.getProposalEditDays(),
 				useCase.isHideOrganizationName(),
-				useCase.getPublishedAt(), useCase.getClosesAt(), useCase.getVersion(), useCase.getCreatedAt(),
+				useCase.getPublishedAt(), useCase.getClosesAt(), useCase.getFeaturedAt(), useCase.getVersion(),
+				useCase.getCreatedAt(),
 				useCase.getUpdatedAt(), useCase.getSubmittedAt(), named.get(useCase.getCreatedByAccountId()),
 				sender == null ? null : named.get(sender), useCase.getReviewedAt(),
 				reviewer == null ? null : named.get(reviewer), useCase.getReviewNote(),
@@ -406,10 +449,10 @@ public class UseCaseAdministration {
 	public UseCasesAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
 		Instant now = Instant.now();
-		List<UseCaseQueryRepository.Row> rows = useCaseList.page(null, List.of(), null, "in_review", now, limit, 0);
+		List<UseCaseQueryRepository.Row> rows = useCaseList.page(null, List.of(), null, "in_review", null, now, limit, 0);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(UseCaseQueryRepository.Row::organizationId).collect(Collectors.toSet()));
-		return new UseCasesAwaitingReview(useCaseList.count(null, List.of(), null, "in_review", now), rows.stream()
+		return new UseCasesAwaitingReview(useCaseList.count(null, List.of(), null, "in_review", null, now), rows.stream()
 			.map(row -> new UseCasesAwaitingReview.Item(row.id(), row.title(),
 					names.containsKey(row.organizationId()) ? names.get(row.organizationId()).name() : null,
 					row.updatedAt()))

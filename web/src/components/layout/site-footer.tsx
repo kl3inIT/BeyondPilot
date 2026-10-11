@@ -31,6 +31,7 @@ function SiteFooter() {
       title: t("footer.company"),
       links: [
         { href: siteRoutes.howItWorks, label: t("nav.howItWorks") },
+        { href: siteRoutes.about, label: t("footer.aboutUs") },
         { href: genaiFundLinks.about, label: t("footer.about"), external: true },
       ],
     },

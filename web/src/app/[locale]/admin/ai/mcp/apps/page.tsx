@@ -30,7 +30,12 @@ export default async function McpAppsRoute({ params }: PageProps<"/[locale]/admi
       throw error;
     },
   );
-  const counts = { tools: settings.tools.length, apps: apps.length };
+  const counts = {
+    tools: settings.tools.length,
+    apps: apps.length,
+    operatorApps: apps.filter((app) => app.operator).length,
+    userApps: apps.filter((app) => !app.operator).length,
+  };
 
   return <McpAppsPage apps={apps} counts={counts} />;
 }

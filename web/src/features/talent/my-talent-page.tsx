@@ -3,37 +3,47 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
-import { Status } from "@/components/composites/status";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVocabulary } from "@/i18n/vocabulary";
-import type { MyTalent, TalentEnquiry, TalentProfile } from "@/lib/api/generated";
+import type { MyTalent, TalentProfile } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { NoticeCard } from "@/features/organization/notice-card";
 
 import { DeleteTalentProfile } from "./delete-talent-profile";
-import { TalentEnquiryActions } from "./talent-enquiry-actions";
+import { TalentCard } from "./talent-card";
+import { talentSections } from "./talent-codes";
 import { TalentForm } from "./talent-form";
+import { TalentInbox } from "./talent-inbox";
 import { TalentPreview } from "./talent-preview";
+import { TalentView } from "./talent-view";
 
 type MyTalentPageProps = {
   mine: MyTalent;
   /** The name of the caller's account, to start a new profile with. */
   accountName: string;
+  /** True when the caller asked to edit a profile that is in review or approved. */
+  editing: boolean;
 };
 
 /**
- * My talent profile, as the Figma frame "My talent profile — edit, draft saved" draws it: the title
- * with where the profile stands and when it was saved, a preview of the saved page, the decision of
- * GenAI Fund when there is one, then two tabs: the editor and the enquiries people sent through it.
- * A person without a profile sees the same editor, empty.
+ * My talent profile, as the Figma frames "My talent profile — edit, draft saved" and "… approved,
+ * listed in the directory" draw it, across the width of the page. A profile still being written,
+ * sent back or taken down opens in the editor: the list of its sections, the form, and beside it
+ * where the profile stands and how it shows in the directory. A profile in review or approved reads
+ * as people see it, with where it stands, its enquiries and the way to edit it beside it. The
+ * enquiries people sent have their own tab.
  */
-function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
+function MyTalentPage({ mine, accountName, editing }: MyTalentPageProps) {
   const t = useTranslations("Talent.mine");
   const word = useVocabulary("talentStatus");
   const format = useFormatter();
   const profile = mine.profile ?? null;
   const waiting = mine.enquiries.filter((enquiry) => enquiry.status === "pending").length;
+  const settled =
+    profile !== null &&
+    (reviewState(profile) === "in_review" || reviewState(profile) === "approved");
+  const reading = settled && !editing;
   const state = profile && [
     word(reviewState(profile)),
     t("saved", {
@@ -42,26 +52,26 @@ function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
         timeStyle: "short",
       }),
     }),
-    // The decision card below says who sees a profile in review or approved.
+    // The decision card beside the profile says who sees a profile in review or approved.
     ...(profile.status === "approved" || profile.status === "in_review" ? [] : [t("seen.onlyYou")]),
   ];
 
   return (
-    <div className="flex flex-1 justify-center bg-muted px-5 pt-10 pb-16 md:px-8 md:pt-14 md:pb-24 lg:px-16">
-      <div className="flex w-full max-w-220 flex-col gap-6">
+    <div className="flex flex-1 flex-col bg-muted">
+      <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-6 px-5 pt-8 pb-16 md:px-8 md:pt-12 md:pb-24 xl:px-16 desktop:px-20">
         <div className="flex flex-col gap-2.5">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <h1 className="text-3xl leading-none font-semibold tracking-title md:text-5xl md:leading-none">
               {t("title")}
             </h1>
-            {profile && <TalentPreview profile={profile} />}
+            {settled && editing && (
+              <TextButton href={siteRoutes.talentProfile}>{t("back")}</TextButton>
+            )}
           </div>
           <p className="text-sm text-muted-foreground">
             {state ? state.join(" · ") : t("leadNew")}
           </p>
         </div>
-
-        {profile && <Decision profile={profile} />}
 
         <Tabs defaultValue="profile">
           <TabsList variant="underline" aria-label={t("tabs.label")}>
@@ -75,18 +85,58 @@ function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
           </TabsList>
           {/* Kept mounted, so unsaved changes survive a look at the enquiries. */}
           <TabsContent value="profile" keepMounted>
-            <div className="mt-4 flex flex-col gap-6">
-              {/* The key gives a saved profile a fresh form, so it holds the new version. */}
-              <TalentForm
-                key={profile ? `${profile.version}-${profile.status}` : "new"}
-                profile={profile}
-                suggestedName={accountName}
-              />
-              {profile && <DeleteTalentProfile />}
+            <div className="mt-6">
+              {profile && reading ? (
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-start xl:gap-8">
+                  <div className="min-w-0 flex-1">
+                    <TalentView profile={profile} />
+                  </div>
+                  <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24 lg:w-80 lg:shrink-0">
+                    <Decision profile={profile} />
+                    {profile.status === "approved" && <EnquiriesCard waiting={waiting} />}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Button prominence="secondary" href={`${siteRoutes.talentProfile}?edit=1`}>
+                        {t("edit")}
+                      </Button>
+                      <DeleteTalentProfile />
+                    </div>
+                  </aside>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:gap-8">
+                  <SectionNav />
+                  <div className="flex min-w-0 flex-1 flex-col gap-6">
+                    {/* The key gives a saved profile a fresh form, so it holds the new version. */}
+                    <TalentForm
+                      key={profile ? `${profile.version}-${profile.status}` : "new"}
+                      profile={profile}
+                      suggestedName={accountName}
+                      aside={
+                        profile && (
+                          <>
+                            {reviewState(profile) !== "draft" && (
+                              // On a narrow screen the decision comes before the form.
+                              <div className="max-lg:-order-1">
+                                <Decision profile={profile} />
+                              </div>
+                            )}
+                            <PreviewCard profile={profile} />
+                          </>
+                        )
+                      }
+                    />
+                    {profile && (
+                      <div className="border-t pt-6">
+                        <DeleteTalentProfile />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </TabsContent>
           <TabsContent value="enquiries">
-            <div className="mt-4 flex flex-col gap-3">
+            <div className="mt-6 flex flex-col gap-3">
               <h2 className="text-lg font-semibold">
                 {t("inbox.title")}
                 {waiting > 0 && (
@@ -96,11 +146,7 @@ function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
                 )}
               </h2>
               {mine.enquiries.length > 0 ? (
-                <ul className="overflow-hidden rounded-2xl border bg-card">
-                  {mine.enquiries.map((enquiry) => (
-                    <EnquiryItem key={enquiry.id} enquiry={enquiry} />
-                  ))}
-                </ul>
+                <TalentInbox enquiries={mine.enquiries} />
               ) : (
                 <p className="rounded-2xl border border-dashed bg-card p-6 text-sm text-muted-foreground">
                   {t("inbox.none")}
@@ -111,6 +157,94 @@ function MyTalentPage({ mine, accountName }: MyTalentPageProps) {
         </Tabs>
       </div>
     </div>
+  );
+}
+
+/** The sections of the form, to jump to; on a wide screen only, where it stays beside the form. */
+function SectionNav() {
+  const t = useTranslations("Talent");
+  const sections = [
+    [talentSections.profile, t("form.title")],
+    [talentSections.basics, t("form.sections.basics")],
+    [talentSections.skills, t("form.sections.skills")],
+    [talentSections.projects, t("form.projects.title")],
+    [talentSections.links, t("form.sections.links")],
+    [talentSections.visibility, t("form.sections.visibility")],
+  ] as const;
+
+  return (
+    <nav
+      aria-label={t("mine.nav.label")}
+      className="max-xl:hidden xl:sticky xl:top-24 xl:w-52 xl:shrink-0"
+    >
+      <ul className="flex flex-col gap-0.5">
+        {sections.map(([id, label]) => (
+          <li key={id}>
+            <a
+              href={`#${id}`}
+              className="block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors outline-none hover:bg-card hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              {label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+/** The saved profile as its card in the directory shows it, without a link before it is public. */
+function PreviewCard({ profile }: { profile: TalentProfile }) {
+  const t = useTranslations("Talent.mine.previewCard");
+
+  return (
+    <section
+      aria-labelledby="talent-preview-card"
+      className="flex flex-col gap-3 rounded-2xl border bg-card p-5"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="talent-preview-card" className="text-sm font-semibold">
+          {t("title")}
+        </h2>
+        <TalentPreview profile={profile} />
+      </div>
+      <TalentCard
+        linked={false}
+        person={{
+          slug: profile.slug,
+          name: profile.name,
+          headline: profile.headline,
+          photoFileId: profile.photoFileId,
+          roles: profile.roles,
+          skills: profile.skills,
+          city: profile.city,
+          country: profile.country,
+          projectCount: profile.projects.length,
+          leadProject: profile.projects[0] ?? null,
+          // The owner's profile does not say whether GenAI Fund features it, so the preview never claims it.
+          featured: false,
+        }}
+      />
+      <p className="text-xs text-muted-foreground">{t("note")}</p>
+    </section>
+  );
+}
+
+/** How many enquiries wait for an answer, and what an answer shares. */
+function EnquiriesCard({ waiting }: { waiting: number }) {
+  const t = useTranslations("Talent.mine.enquiriesCard");
+
+  return (
+    <section
+      aria-labelledby="talent-enquiries-card"
+      className="flex flex-col gap-2 rounded-2xl border bg-card p-5"
+    >
+      <h2 id="talent-enquiries-card" className="text-base font-semibold">
+        {t("title")}
+      </h2>
+      <p className="text-sm font-medium">{t("waiting", { count: waiting })}</p>
+      <p className="text-sm text-muted-foreground">{t("lead")}</p>
+    </section>
   );
 }
 
@@ -180,58 +314,6 @@ function Decision({ profile }: { profile: TalentProfile }) {
     );
   }
   return null;
-}
-
-const tones = {
-  pending: "warning",
-  accepted: "success",
-  declined: "neutral",
-  reported: "neutral",
-  closed: "neutral",
-} as const;
-
-/**
- * One message: who wrote, from where and about what, where it stands, and the answers while it
- * waits. The sender's address shows only once the caller accepted.
- */
-function EnquiryItem({ enquiry }: { enquiry: TalentEnquiry }) {
-  const t = useTranslations("Talent.mine.inbox");
-  const topic = useVocabulary("enquiryTopic");
-  const format = useFormatter();
-  const date = (value: string) => format.dateTime(new Date(value), { dateStyle: "medium" });
-  const name = enquiry.senderName ?? t("someone");
-
-  return (
-    <li className="flex flex-col gap-3 p-5 not-last:border-b">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="grid min-w-0 gap-0.5 text-sm">
-          <span className="font-medium">
-            {enquiry.senderOrganization
-              ? t("from", { name, organization: enquiry.senderOrganization })
-              : name}
-          </span>
-          <span className="text-muted-foreground">{topic(enquiry.topic)}</span>
-        </div>
-        <Status tone={tones[enquiry.status]}>{t(`status.${enquiry.status}`)}</Status>
-      </div>
-      <p className="text-sm whitespace-pre-line">{enquiry.message}</p>
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
-        <span>
-          {t("sent", { date: date(enquiry.createdAt) })}
-          {enquiry.closesAt && ` · ${t("closes", { date: date(enquiry.closesAt) })}`}
-          {enquiry.status !== "pending" &&
-            enquiry.answeredAt &&
-            ` · ${t("answered", { date: date(enquiry.answeredAt) })}`}
-        </span>
-        {enquiry.status === "pending" && <TalentEnquiryActions id={enquiry.id} />}
-        {enquiry.status === "accepted" && enquiry.senderEmail && (
-          <TextButton href={`mailto:${enquiry.senderEmail}`} size="sm">
-            {t("write", { email: enquiry.senderEmail })}
-          </TextButton>
-        )}
-      </div>
-    </li>
-  );
 }
 
 export { MyTalentPage };

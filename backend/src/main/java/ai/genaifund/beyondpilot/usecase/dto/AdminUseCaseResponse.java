@@ -38,6 +38,8 @@ public record AdminUseCaseResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean hideOrganizationName,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant publishedAt,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant closesAt,
+		@Schema(types = { "string", "null" }, format = "date-time",
+				description = "When an operator featured it; null while it is not featured.") @Nullable Instant featuredAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) long version,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt,

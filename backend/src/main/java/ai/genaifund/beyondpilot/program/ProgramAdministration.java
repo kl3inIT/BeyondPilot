@@ -341,7 +341,8 @@ public class ProgramAdministration {
 		Set<UUID> known = program.getQuestions().stream().map(ProgramQuestion::id).collect(Collectors.toSet());
 		List<ProgramQuestion> questions = new ArrayList<>();
 		for (ProgramQuestionEntry entry : request.questions()) {
-			boolean choice = ProgramQuestion.SINGLE_CHOICE.equals(entry.kind());
+			boolean choice = ProgramQuestion.SINGLE_CHOICE.equals(entry.kind())
+					|| ProgramQuestion.MULTI_CHOICE.equals(entry.kind());
 			List<String> options = choice
 					? entry.options().stream().map(String::strip).distinct().toList() : List.of();
 			if (choice && options.size() < 2) {
@@ -387,6 +388,7 @@ public class ProgramAdministration {
 				opensAt == null || closesAt == null ? null
 						: new ProgramApplications(opensAt, closesAt, program.getShortlistSize(),
 								program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose()),
+				program.getQuestions().size(),
 				program.getMilestones()
 					.stream()
 					.map(milestone -> new ProgramKeyDate(milestone.title(), milestone.startsAt(), milestone.endsAt(),

@@ -139,8 +139,10 @@ export async function readAdminSolutions(search: AdminSolutionsSearch): Promise<
     ...(await sessionRequest()),
     query: {
       q: text(search.q),
+      organizationId: search.organizationId ?? undefined,
       status: search.status ?? undefined,
       industry: search.industry ?? undefined,
+      featured: search.featured === null ? undefined : search.featured === "true",
       page: Math.max(1, search.page),
     },
   });

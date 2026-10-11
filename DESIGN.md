@@ -167,7 +167,7 @@ A cool azure system with a sky light, three directory accents and the status rol
 
 - **Ink** (`colors.ink`, token `foreground`): headings and body text.
 - **Paper** (`colors.paper`, token `background`/`card`): cards and white sections.
-- **Cool Paper** (`colors.cool-paper`, token `muted`/`secondary`): the page and alternating sections (hero, Programs and events, Founders).
+- **Cool Paper** (`colors.cool-paper`, token `muted`/`secondary`): the page and alternating sections (hero, Programs and events, the network).
 - **Quiet Text** (`colors.quiet-text`, token `muted-foreground`): metadata, captions, supporting copy.
 - **Wash** (`colors.wash`, token `accent`): hover fills and the quiet "Done" stage.
 - **Hairline** (`colors.hairline`, token `border`) and **Field Line** (`colors.field-line`, token `input`): borders, dividers, outlines.
@@ -213,18 +213,18 @@ A cool azure system with a sky light, three directory accents and the status rol
 
 ## Layout
 
-A 1312px column with 64px gutters on desktop, 32px on tablet (1024) and 20px on mobile (390). Sections breathe at 72–112px vertically on desktop and 56px on mobile, alternating Cool Paper and Paper so the page reads as distinct floors. Nothing is cut at the screen edge on mobile: past programs stack vertically, the directory shows one card and a "See all …" link, founders become a two-column grid of avatar rows, and the network's panels stack in one column. Navigation collapses to a menu button below 768px that opens a full-screen menu with one hint line per destination. Text never has a fixed width, because Vietnamese runs 20–30% longer.
+A 1312px column with 64px gutters on desktop, 32px on tablet (1024) and 20px on mobile (390). Sections breathe at 72–112px vertically on desktop and 56px on mobile, alternating Cool Paper and Paper so the page reads as distinct floors. Nothing is cut at the screen edge on mobile: past programs stack vertically, the directory shows one card and a "See all …" link, and the network's panels keep their full width while the logos wrap. Navigation collapses to a menu button below 768px that opens a full-screen menu with one hint line per destination. Text never has a fixed width, because Vietnamese runs 20–30% longer.
 
 ### Landing structure
 
 1. Header: five destinations (AI Solutions, AI Talent, Use Cases & Projects, Events & Programs, How It Works), the language menu, Sign in and Get started (the ink-coloured `inverse` action).
-2. Hero: live-challenge pill, eyebrow, display headline whose second line takes the azure-to-violet gradient, lead, one search, the two actions and "Backed by GenAI Fund", beside a real screenshot of the search results, on the aurora (`aurora-*` tokens).
-3. Ecosystem strip: a compact row of enterprise logos from GenAI Fund programs, never labelled as customers.
-4. Five ways to explore: photo cards for solutions, talent, use cases, events and programs.
+2. Hero: live-challenge pill, display headline whose second line takes the azure-to-violet gradient, lead, one search, the two actions and "Backed by GenAI Fund", beside a real screenshot of the search results, on the aurora (`aurora-*` tokens).
+3. Ecosystem strip: a compact row of five enterprise logos (Tasco, Shinhan Future's Lab, Coca-Cola, KFC, Guardian), never labelled as customers.
+4. Five ways to explore: cards for solutions, talent, use cases, events and programs, each listing real entries with the logo or cover of who is behind them; no decorative icons.
 5. How it works: three steps on sky, lilac and peach tints.
 6. Featured opportunity: the live challenge card, a deep-to-bright azure panel (`panel-*` tokens) beside its facts and actions.
-7. Core team and GenAI Fund backing, then the ecosystem founders as a separate muted section.
-8. FAQ, the final call to action on the aurora tints, then the footer.
+7. "The network behind every program" (GenAI Fund's backing sits on its ink panel after the featured opportunity; the team is on the About page, reached from the footer, set in type and hairlines without cards or portraits): one full-width panel each for enterprises, technology partners, and government and institutions, a wall of logos in their own colours, on the panel by day; at night the panel falls away and each wall stands on a light plate (`logo-plate`) under its heading so no mark loses its colours, closed by an "And many more" line. The ecosystem founders are not on the landing page; they open the AI talent directory.
+8. FAQ, the final call to action on a wash of sky, lilac and peach with the ink-coloured `inverse` action, then the footer.
 
 ## Elevation & Depth
 

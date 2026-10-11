@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "BeyondPilot",
-    "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của BeyondPilot giúp doanh nghiệp và nhà phát triển AI tìm giải pháp AI, nhân lực AI, bài toán doanh nghiệp, sự kiện và chương trình."
+    "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. BeyondPilot giúp doanh nghiệp và nhà phát triển AI tìm giải pháp AI, nhân lực AI, bài toán doanh nghiệp, sự kiện và chương trình."
   },
   "Site": {
     "brand": "BeyondPilot",
@@ -54,6 +54,7 @@
       "platform": "Nền tảng",
       "company": "Công ty",
       "about": "Về GenAI Fund",
+      "aboutUs": "Về BeyondPilot",
       "contact": "Liên hệ",
       "linkedin": "GenAI Fund trên LinkedIn",
       "facebook": "GenAI Fund trên Facebook",
@@ -92,26 +93,18 @@
   },
   "Home": {
     "hero": {
-      "eyebrow": "Áp dụng AI, có trợ lý dẫn đường.",
       "titleStart": "Bước tiếp theo của bạn với",
       "titleEnd": "AI bắt đầu từ đây.",
-      "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của chúng tôi giúp bạn tìm giải pháp AI, tìm chuyên gia, khám phá các bài toán doanh nghiệp thực tế và kết nối với sự kiện, chương trình giúp bạn tiến lên.",
+      "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. Chúng tôi giúp bạn tìm giải pháp AI, tìm chuyên gia, khám phá các bài toán doanh nghiệp thực tế và kết nối với sự kiện, chương trình giúp bạn tiến lên.",
       "searchLabel": "Tìm giải pháp AI, nhân lực, bài toán, sự kiện và chương trình",
       "searchPlaceholder": "Bạn muốn đạt được điều gì với AI?",
       "searchPlaceholderShort": "Mục tiêu AI của bạn",
       "primaryCta": "Khám phá BeyondPilot",
       "secondaryCta": "Xem cách hoạt động",
       "searchSubmit": "Tìm",
-      "promptsLabel": "Ví dụ tìm kiếm",
-      "prompts": {
-        "claims": "Tìm giải pháp AI cho bồi thường bảo hiểm",
-        "talent": "Tìm nhân lực AI cho dự án của tôi",
-        "projects": "Xem dự án doanh nghiệp đang tìm giải pháp",
-        "programs": "Tìm chương trình AI cho startup của tôi"
-      },
       "preview": {
-        "alt": "Bản xem trước sản phẩm: kết quả tìm “insurance claims” trên BeyondPilot, gồm giải pháp AI, một bài toán và một chương trình",
-        "address": "beyondpilot.ai/search?q=insurance+claims",
+        "alt": "Bản xem trước sản phẩm: kết quả tìm “AI agents” trên BeyondPilot, gồm giải pháp AI, một bài toán và một chương trình",
+        "address": "beyondpilot.ai/search?q=ai+agents",
         "tabs": {
           "all": "Tất cả",
           "solutions": "Giải pháp AI",
@@ -123,25 +116,25 @@
           "useCase": "Bài toán",
           "program": "Chương trình"
         },
-        "papaya": {
-          "title": "Papaya",
-          "summary": "Đọc hồ sơ y tế phức tạp bằng chuỗi nhiều LLM, rồi hỗ trợ giám định viên quyết định các hồ sơ bồi thường thông thường.",
-          "meta": "Ngân hàng & tài chính · Cloud SaaS · Việt Nam"
+        "revve": {
+          "title": "Revve AI",
+          "summary": "AI agent luôn túc trực để gọi điện, nhắn tin, gửi email và chat từ lần nhấp đầu tiên đến khi tái tục, tăng doanh thu mà không cần thêm nhân sự.",
+          "meta": "AI agent · AI hội thoại · Đang vận hành"
         },
-        "infall": {
-          "title": "Infall Insurtech",
-          "summary": "OCR dùng AI cùng bộ máy quyết định và bồi thường, tự động hoá hồ sơ từ tiếp nhận đến chi trả.",
-          "meta": "Y tế · Ngân hàng & tài chính · Việt Nam"
+        "shieldbase": {
+          "title": "Shieldbase",
+          "summary": "Hệ điều hành AI cho doanh nghiệp, tự động hoá việc tra cứu tri thức và quy trình, có sẵn bảo mật và quản trị dữ liệu.",
+          "meta": "Bảo mật AI · Tìm kiếm & tri thức · Singapore"
         },
-        "renewal": {
-          "title": "AI for Insurance: Scaling Compulsory Motor Insurance Renewal",
-          "summary": "Của Tasco. Tìm, tiếp cận và chuyển đổi khách hàng đến hạn tái tục với ít thao tác thủ công hơn.",
-          "meta": "Ô tô & di chuyển"
+        "claims": {
+          "title": "AI-Powered Claim & Payment Automation",
+          "summary": "Của Coca-Cola Beverages Vietnam. Gửi, đối soát và hoàn trả các khoản claim thương mại nhanh hơn, ít tranh chấp hơn cho đội bán hàng.",
+          "meta": "Hàng tiêu dùng"
         },
-        "challenge": {
-          "title": "AI for Insurance Challenge × Tasco",
-          "summary": "Xây dựng một pilot AI cùng đội kinh doanh của Tasco. Có thể được xem xét đầu tư tối đa 100.000 USD.",
-          "meta": "Thử thách doanh nghiệp · Hạn nộp 15/10"
+        "fasttrack": {
+          "title": "FastTrack AI Accelerator",
+          "summary": "Do GenAI Fund vận hành và được NVIDIA Inception Program tăng tốc, dành cho startup xây dựng AI cho doanh nghiệp.",
+          "meta": "Chương trình tăng tốc · Việt Nam"
         }
       },
       "scopes": {
@@ -162,10 +155,10 @@
         "title": "Giải pháp AI",
         "description": "Tìm sản phẩm và nhà cung cấp đáp ứng nhu cầu kinh doanh của bạn.",
         "action": "Khám phá giải pháp",
-        "item1Title": "Papaya",
-        "item1Meta": "Xử lý hồ sơ bồi thường · Việt Nam",
-        "item2Title": "Infall Insurtech",
-        "item2Meta": "Tự động hoá bồi thường toàn trình · Việt Nam"
+        "item1Title": "Revve AI",
+        "item1Meta": "AI agent · AI hội thoại",
+        "item2Title": "Shieldbase",
+        "item2Meta": "Bảo mật AI · Tìm kiếm & tri thức · Singapore"
       },
       "talent": {
         "title": "Nhân lực AI",
@@ -175,7 +168,11 @@
         "skill1": "Machine learning",
         "skill2": "Ứng dụng LLM",
         "skill3": "Thị giác máy tính",
-        "skill4": "Kỹ thuật dữ liệu"
+        "skill4": "Kỹ thuật dữ liệu",
+        "skill5": "AI agent",
+        "skill6": "RAG",
+        "skill7": "Voice agent",
+        "skill8": "MLOps"
       },
       "useCases": {
         "title": "Bài toán & Dự án",
@@ -224,24 +221,19 @@
         "title": "Tiến lên",
         "description": "Lập danh sách rút gọn nhà cung cấp, kết nối với nhân lực, gửi đề xuất hoặc tham gia chương trình."
       },
-      "step": "Bước {number}",
       "demo": {
-        "title": "Trợ lý BeyondPilot",
-        "need": "Nhu cầu của bạn",
-        "needQuote": "“Chúng tôi muốn tự động hoá xử lý hồ sơ bảo hiểm tại Việt Nam.”",
-        "matters": "Điều quan trọng",
-        "matter1": "Loại tài liệu",
-        "matter2": "Hỗ trợ tiếng Việt",
-        "matter3": "Yêu cầu triển khai",
-        "options": "Lựa chọn phù hợp",
-        "option1Title": "Papaya",
-        "option1Why": "Đọc hồ sơ bồi thường y tế phức tạp bằng chuỗi nhiều LLM. Phát triển tại Việt Nam.",
-        "option2Title": "Infall Insurtech",
-        "option2Why": "OCR cùng bộ máy quyết định và bồi thường, đã có các hãng bảo hiểm Việt Nam là khách hàng.",
+        "start": "Bắt đầu từ",
+        "start1": "Tìm trong danh bạ",
+        "start2": "Đăng một bài toán",
+        "options": "Giải pháp có trên BeyondPilot",
+        "option1Title": "Revve AI",
+        "option1Why": "AI agent luôn túc trực để gọi điện, nhắn tin, gửi email và chat với khách hàng.",
+        "option2Title": "Shieldbase",
+        "option2Why": "Hệ điều hành AI cho doanh nghiệp, có sẵn bảo mật và quản trị dữ liệu.",
         "next": "Bước tiếp theo",
         "introduce": "Yêu cầu giới thiệu",
-        "shortlist": "So sánh và lập danh sách rút gọn",
-        "alt": "một hành trình ví dụ. Nhu cầu “tự động hoá xử lý hồ sơ bảo hiểm tại Việt Nam” được làm rõ thành loại tài liệu, hỗ trợ tiếng Việt và yêu cầu triển khai; hai giải pháp phù hợp được gợi ý là Papaya và Infall Insurtech; bước tiếp theo là yêu cầu giới thiệu. So sánh và lập danh sách rút gọn sắp ra mắt."
+        "shortlist": "Lưu giải pháp phù hợp",
+        "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là yêu cầu giới thiệu hoặc lưu các giải pháp được ghép với một bài toán."
       }
     },
     "challenge": {
@@ -249,30 +241,11 @@
       "description": "Tasco và GenAI Fund đang tìm các giải pháp AI cho những bài toán vận hành thực tế của ngành bảo hiểm Việt Nam. Ứng tuyển trực tiếp qua trang thử thách.",
       "partners": "Cùng Microsoft for Startups và Notion"
     },
-    "team": {
-      "eyebrow": "Đội ngũ",
-      "title": "Đội ngũ xây dựng BeyondPilot",
-      "description": "Chúng tôi xây dựng BeyondPilot để doanh nghiệp và nhà phát triển AI dễ tìm thấy nhau hơn và tiến tới triển khai thực tế.",
-      "role": "Full-stack engineer",
-      "linkedin": "LinkedIn",
-      "linkedinLabel": "{name} trên LinkedIn (mở trong tab mới)",
-      "backing": {
-        "title": "Được GenAI Fund đầu tư",
-        "description": "BeyondPilot là startup AI có sản phẩm riêng, được GenAI Fund đầu tư. Chương trình và hệ sinh thái doanh nghiệp của GenAI Fund là nơi nhiều cơ hội trên BeyondPilot xuất phát. Các founder trong mạng lưới GenAI Fund là một phần của hệ sinh thái đó, không phải đội ngũ vận hành BeyondPilot."
-      },
-      "partnerTitle": "Đối tác phát triển",
-      "partnerDescription": "Đội kỹ sư xây dựng sản phẩm cùng BeyondPilot."
-    },
-    "founders": {
-      "eyebrow": "Trong mạng lưới GenAI Fund",
-      "title": "Các founder đang xây dựng trong hệ sinh thái",
-      "description": "Các founder startup trong mạng lưới GenAI Fund. Họ là đồng nghiệp trong hệ sinh thái, không phải thành viên đội ngũ BeyondPilot."
-    },
     "faq": {
       "eyebrow": "Hỏi đáp",
       "title": "Câu hỏi thường gặp",
       "whatQ": "BeyondPilot là gì?",
-      "whatA": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của BeyondPilot giúp bạn tìm giải pháp AI, tìm nhân lực AI, khám phá bài toán và dự án của doanh nghiệp, và kết nối với sự kiện, chương trình AI.",
+      "whatA": "BeyondPilot là startup AI được GenAI Fund đầu tư. BeyondPilot giúp bạn tìm giải pháp AI, tìm nhân lực AI, khám phá bài toán và dự án của doanh nghiệp, và kết nối với sự kiện, chương trình AI.",
       "whoQ": "BeyondPilot dành cho ai?",
       "whoA": "Doanh nghiệp đang tìm giải pháp và nhà phát triển AI, các công ty và startup AI có sản phẩm để giới thiệu, và chuyên gia AI đang tìm dự án.",
       "findQ": "BeyondPilot giúp tôi tìm giải pháp hoặc nhân lực AI phù hợp như thế nào?",
@@ -290,10 +263,10 @@
       "action": "Khám phá BeyondPilot"
     },
     "previewLabel": "Bản xem trước sản phẩm",
-    "comingSoon": "Sắp ra mắt",
     "network": {
+      "more": "Và nhiều đối tác khác",
       "title": "Mạng lưới đứng sau mỗi chương trình",
-      "description": "Doanh nghiệp, công ty công nghệ và cơ quan nhà nước đã tham gia các chương trình của GenAI Fund trong năm 2025 và 2026.",
+      "description": "Doanh nghiệp, công ty công nghệ và cơ quan nhà nước mà GenAI Fund hợp tác trong khu vực.",
       "roles": {
         "enterprises": {
           "title": "Doanh nghiệp",
@@ -306,13 +279,6 @@
         "government": {
           "title": "Cơ quan nhà nước và tổ chức",
           "description": "Mở cửa vào thị trường trong khu vực"
-        },
-        "investors": {
-          "title": "Nhà đầu tư và cộng đồng",
-          "description": "Đồng hành cùng đội xây dựng sản phẩm"
-        },
-        "press": {
-          "title": "Báo chí"
         }
       }
     }
@@ -715,7 +681,8 @@
             "title": "Công bố {name}?",
             "lead": "Chương trình sẽ lên danh sách chương trình, và ai có link đều mở được trang.",
             "note": "Từ giờ địa chỉ cố định, để link mọi người đã chia sẻ vẫn dùng được.",
-            "cancel": "Huỷ"
+            "cancel": "Huỷ",
+            "noQuestions": "Form nộp đơn chưa có câu hỏi riêng nào: người nộp chỉ điền thông tin của mình, nhóm và giải pháp. Có thể thêm câu hỏi cho tới khi mở nhận đơn."
           },
           "done": "Đã công bố {name}.",
           "notReady": "Chương trình vẫn còn thiếu những mục trong danh sách ở trên.",
@@ -772,6 +739,7 @@
           "short_text": "Trả lời ngắn",
           "long_text": "Trả lời dài",
           "single_choice": "Chọn một",
+          "multi_choice": "Chọn nhiều",
           "file": "File PDF",
           "link": "Đường link",
           "confirm": "Xác nhận"
@@ -807,8 +775,11 @@
         "errors": {
           "PROGRAM_QUESTIONS_FIXED": "Đợt nhận đơn đã mở, nên không đổi câu hỏi được nữa.",
           "PROGRAM_CHANGED_MEANWHILE": "Có người vừa sửa chương trình này. Tải lại rồi sửa lại.",
-          "PROGRAM_CHOICES_REQUIRED": "Câu hỏi chọn một cần ít nhất hai lựa chọn."
-        }
+          "PROGRAM_CHOICES_REQUIRED": "Câu hỏi trả lời bằng lựa chọn cần ít nhất hai lựa chọn."
+        },
+        "locks": "Câu hỏi bị khoá khi mở nhận đơn lúc {opens}: từ lúc đó không đổi được nữa.",
+        "locksUnset": "Câu hỏi bị khoá khi mở nhận đơn. Chưa đặt ngày mở: đặt ở Cài đặt.",
+        "fixedStill": "Người nộp trả lời đúng các câu này. Trang, hạn nộp và giám khảo của chương trình vẫn đổi được."
       }
     },
     "accounts": {
@@ -954,6 +925,8 @@
           "reject": "Từ chối hoặc trả lại giải pháp",
           "take_down": "Gỡ giải pháp xuống",
           "restore": "Khôi phục giải pháp",
+          "feature": "Đặt một giải pháp nổi bật",
+          "unfeature": "Bỏ nổi bật một giải pháp",
           "deployment_approve": "Duyệt triển khai khách hàng",
           "deployment_reject": "Trả lại triển khai khách hàng",
           "enrich": "Bổ sung solution từ nguồn công khai",
@@ -972,6 +945,8 @@
           "request_changes": "Đã yêu cầu sửa một hồ sơ nhân lực",
           "remove": "Đã gỡ xuống một hồ sơ nhân lực",
           "restore": "Khôi phục một hồ sơ nhân lực",
+          "feature": "Đặt một hồ sơ nhân lực nổi bật",
+          "unfeature": "Bỏ nổi bật một hồ sơ nhân lực",
           "delete": "Đã xoá một hồ sơ nhân lực"
         },
         "proposal": {
@@ -989,6 +964,8 @@
           "draft": "Chuyển một use case về bản nháp",
           "approve": "Duyệt một use case",
           "send_back": "Gửi lại một use case",
+          "feature": "Đặt một use case nổi bật",
+          "unfeature": "Bỏ nổi bật một use case",
           "set_programs": "Đặt chương trình cho một use case"
         },
         "email": {
@@ -1074,6 +1051,8 @@
           "reject": "Từ chối giải pháp <resource></resource>",
           "take_down": "Gỡ giải pháp <resource></resource> xuống",
           "restore": "Khôi phục giải pháp <resource></resource>",
+          "feature": "Đặt giải pháp <resource></resource> nổi bật",
+          "unfeature": "Bỏ nổi bật giải pháp <resource></resource>",
           "deployment_approve": "Duyệt triển khai khách hàng <resource></resource>",
           "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>",
           "enrich": "Bổ sung solution <resource></resource> từ nguồn công khai",
@@ -1092,6 +1071,8 @@
           "request_changes": "Đã yêu cầu sửa hồ sơ nhân lực của <resource></resource>",
           "remove": "Đã gỡ xuống hồ sơ nhân lực của <resource></resource>",
           "restore": "Khôi phục hồ sơ nhân lực của <resource></resource>",
+          "feature": "Đặt hồ sơ nhân lực của <resource></resource> nổi bật",
+          "unfeature": "Bỏ nổi bật hồ sơ nhân lực của <resource></resource>",
           "delete": "Đã xoá hồ sơ nhân lực của <resource></resource>"
         },
         "proposal": {
@@ -1109,6 +1090,8 @@
           "draft": "Đã chuyển use case <resource></resource> về bản nháp",
           "approve": "Đã duyệt use case <resource></resource>",
           "send_back": "Đã gửi lại use case <resource></resource>",
+          "feature": "Đã đặt use case <resource></resource> nổi bật",
+          "unfeature": "Đã bỏ nổi bật use case <resource></resource>",
           "set_programs": "Đã đặt chương trình cho use case <resource></resource>"
         },
         "email": {
@@ -1424,6 +1407,13 @@
       },
       "count": "{count} giải pháp",
       "open": "Mở",
+      "feature": {
+        "featured": "Nổi bật",
+        "since": "Nổi bật từ {day}",
+        "feature": "Đặt nổi bật",
+        "unfeature": "Bỏ nổi bật",
+        "hint": "Giải pháp nổi bật hiện đầu tiên khi mở danh mục công khai, cho đến khi người đọc tìm kiếm, lọc hoặc sắp xếp; thẻ của nó ghi Nổi bật."
+      },
       "review": {
         "open": "Duyệt",
         "approve": "Duyệt",
@@ -1467,6 +1457,7 @@
         "senderUnknown": "Chưa ghi nhận",
         "sent": "Thời điểm gửi",
         "directory": "Danh mục",
+        "order": "Trang mở đầu",
         "listed": "Sẽ hiện khi được duyệt",
         "deploymentsWaiting": "{count} triển khai khách hàng chờ duyệt",
         "sentBack": "Đã trả lại:",
@@ -1562,6 +1553,13 @@
       },
       "count": "{count} hồ sơ",
       "open": "Mở",
+      "feature": {
+        "featured": "Nổi bật",
+        "since": "Nổi bật từ {day}",
+        "feature": "Đặt nổi bật",
+        "unfeature": "Bỏ nổi bật",
+        "hint": "Hồ sơ nổi bật hiện đầu tiên khi mở danh mục công khai, cho đến khi người đọc tìm kiếm, lọc hoặc sắp xếp; thẻ của nó ghi Nổi bật."
+      },
       "review": {
         "open": "Duyệt",
         "approve": "Duyệt và hiển thị",
@@ -1686,6 +1684,12 @@
           "label": "Trạng thái",
           "all": "Mọi trạng thái"
         },
+        "featured": {
+          "label": "Nổi bật",
+          "all": "Nổi bật hoặc không",
+          "yes": "Nổi bật",
+          "no": "Không nổi bật"
+        },
         "organization": {
           "label": "Tổ chức",
           "all": "Tổ chức"
@@ -1772,6 +1776,18 @@
         "review": "Duyệt use case",
         "view": "Mở use case",
         "organisation": "Xem tổ chức"
+      },
+      "feature": {
+        "featured": "Nổi bật",
+        "since": "Nổi bật từ {day}",
+        "feature": "Đặt nổi bật",
+        "unfeature": "Bỏ nổi bật",
+        "hint": "Use case nổi bật hiện đầu tiên khi mở danh sách công khai, cho đến khi người đọc tìm kiếm, lọc hoặc sắp xếp; thẻ của nó ghi Nổi bật.",
+        "title": "Nổi bật",
+        "done": {
+          "featured": "Đã đặt {name} nổi bật.",
+          "unfeatured": "Đã bỏ nổi bật {name}."
+        }
       },
       "errors": {
         "USECASE_NOT_AWAITING_REVIEW": "Use case này không còn ở trạng thái đang duyệt. Trạng thái đã được đọc lại.",
@@ -1965,7 +1981,7 @@
       "chat": {
         "tasks": {
           "heading": "Model theo tác vụ",
-          "lead": "Lựa chọn được lưu ngay.",
+          "lead": "Thay đổi được lưu sau khi bạn xác nhận.",
           "name": {
             "matching": "Ghép nối"
           },
@@ -1993,6 +2009,13 @@
           "noModels": {
             "title": "Chưa có model để chọn",
             "lead": "Bật một model ở một kết nối bên dưới, rồi chọn nó ở đây."
+          },
+          "confirm": {
+            "title": "Đổi model cho {task}?",
+            "lead": "Mọi lượt {task} từ giờ dùng model này. Kết quả của các lượt trước giữ nguyên.",
+            "choice": "{model} · suy luận {effort}",
+            "save": "Đổi",
+            "cancel": "Huỷ"
           }
         },
         "connections": {
@@ -2707,6 +2730,26 @@
           "goToNext": "Sang trang sau",
           "page": "Trang {page}"
         }
+      },
+      "confirm": {
+        "turnOff": "Tắt",
+        "remove": "Gỡ",
+        "cancel": "Huỷ",
+        "userOff": {
+          "title": "Tắt server cho người dùng?",
+          "lead": "Từ giờ server trả 404: {count, plural, =0 {hiện không có ứng dụng nào kết nối.} other {# ứng dụng đang kết nối sẽ ngừng hoạt động.}}",
+          "note": "Bật lại ở đây khi bạn muốn mọi người kết nối."
+        },
+        "toolOff": {
+          "title": "Tắt {tool}?",
+          "lead": "Ứng dụng trên {server} sẽ không thấy tool này nữa, và lệnh gọi tới nó bị từ chối. {count, plural, =0 {Hiện không có ứng dụng nào kết nối server đó.} other {Hiện có # ứng dụng đang kết nối server đó.}}"
+        },
+        "hostRemove": {
+          "title": "Gỡ {host}?",
+          "labelled": "Ứng dụng từ {host} không còn được coi là đã xem xét: khi kết nối, màn hình đồng ý sẽ gắn nhãn Chưa xem xét.",
+          "refused": "Ứng dụng từ {host} sẽ không kết nối được nữa, vì đang không cho phép ứng dụng từ host khác.",
+          "apps": "Ứng dụng từ host này: {apps}."
+        }
       }
     },
     "email": {
@@ -3214,6 +3257,17 @@
         "lastSaved": "{name} lưu lần cuối, {when}.",
         "neverSaved": "Chưa lưu lần nào.",
         "save": "Lưu cài đặt",
+        "confirm": {
+          "title": "Đổi cách gửi email?",
+          "lead": "Mã đăng nhập được gửi qua email. Nếu cài đặt này không chạy, không ai đăng nhập được, kể cả bạn.",
+          "provider": "Nhà cung cấp: {from} → {to}",
+          "credentials": "Khoá, tài khoản hoặc máy chủ mới cho {provider}",
+          "address": "Địa chỉ gửi: {from} → {to}",
+          "untested": "Chưa gửi thử với cài đặt này. Nút Gửi thử, cạnh nút Lưu, thử cài đặt mà không lưu.",
+          "tested": "Đã gửi thử với cài đặt này lúc {when}. Hãy kiểm tra thư đã tới trước khi lưu.",
+          "save": "Lưu thay đổi",
+          "back": "Quay lại"
+        },
         "leave": {
           "title": "Rời trang mà không lưu?",
           "lead": "Những thay đổi trên trang này chưa được lưu và sẽ mất.",
@@ -3223,6 +3277,7 @@
       },
       "checks": {
         "title": "Thiết lập",
+        "titleFor": "Thiết lập {provider}",
         "done": "Xong {done}/{total}",
         "lead": "Nhà cung cấp nói gì về việc gửi từ {domain}, kiểm lúc {when}.",
         "again": "Kiểm tra lại",
@@ -3691,7 +3746,7 @@
       "websiteHint": "Người làm độc lập có thể dùng website portfolio.",
       "foundedYear": "Năm thành lập",
       "foundedYearHint": "Với người làm độc lập, là năm bắt đầu hoạt động.",
-      "foundedYearInvalid": "Nhập năm gồm bốn chữ số, ví dụ 2021.",
+      "foundedYearInvalid": "Nhập năm gồm bốn chữ số, không sau năm nay, ví dụ 2021.",
       "descriptionRequired": "Hãy mô tả tổ chức bằng vài câu ngắn.",
       "logo": {
         "label": "Logo",
@@ -4181,7 +4236,9 @@
       "linkCopied": "Đã sao chép liên kết",
       "sentBack": "Đã trả lại {name} kèm nội dung cần sửa.",
       "takenDown": "Đã gỡ {name} xuống.",
-      "restored": "Đã khôi phục {name}."
+      "restored": "Đã khôi phục {name}.",
+      "featured": "Đã đặt {name} nổi bật.",
+      "unfeatured": "Đã bỏ nổi bật {name}."
     },
     "directory": {
       "metaTitle": "Giải pháp AI · BeyondPilot",
@@ -4214,6 +4271,10 @@
       "search": "Tìm theo tên hoặc mô tả",
       "toggle": "Bộ lọc",
       "adminSearch": "Tìm theo giải pháp hoặc tổ chức",
+      "organization": {
+        "label": "Tổ chức",
+        "all": "Mọi tổ chức"
+      },
       "industry": {
         "label": "Ngành",
         "all": "Mọi ngành"
@@ -4229,6 +4290,12 @@
       "status": {
         "label": "Trạng thái",
         "all": "Mọi trạng thái"
+      },
+      "featured": {
+        "label": "Nổi bật",
+        "all": "Nổi bật hoặc không",
+        "yes": "Nổi bật",
+        "no": "Không nổi bật"
       },
       "clear": "Xóa bộ lọc"
     },
@@ -4794,12 +4861,18 @@
       "sentBack": "Đã yêu cầu {name} sửa hồ sơ.",
       "takenDown": "Đã gỡ {name} xuống.",
       "restored": "Đã khôi phục {name}.",
-      "deleted": "Đã xoá hồ sơ nhân lực của bạn."
+      "deleted": "Đã xoá hồ sơ nhân lực của bạn.",
+      "featured": "Đã đặt {name} nổi bật.",
+      "unfeatured": "Đã bỏ nổi bật {name}."
     },
     "directory": {
       "metaTitle": "Nhân lực AI · BeyondPilot",
       "title": "Nhân lực AI",
       "lead": "Kỹ sư và người xây dựng triển khai AI cho doanh nghiệp.",
+      "founders": {
+        "title": "Founder trong mạng lưới GenAI Fund",
+        "description": "Các founder startup mà GenAI Fund hậu thuẫn và đồng hành."
+      },
       "create": "Tạo hồ sơ nhân lực",
       "count": "Hiển thị {shown}/{total}",
       "total": "{count} người",
@@ -4819,7 +4892,23 @@
       "edit": "Sửa hồ sơ của bạn",
       "noProject": "Chưa có dự án nào",
       "projects": "{count} dự án",
-      "view": "Xem hồ sơ"
+      "view": "Xem hồ sơ",
+      "steps": {
+        "title": "AI talent hoạt động thế nào",
+        "create": {
+          "title": "1. Tạo hồ sơ của bạn",
+          "body": "Tiêu đề, vai trò bạn đảm nhận, kỹ năng và các dự án bạn đã triển khai. Bản nháp chỉ mình bạn xem."
+        },
+        "review": {
+          "title": "2. GenAI Fund duyệt hồ sơ",
+          "body": "Kiểm tra đây là người thật và công việc thật, thường trong một hoặc hai ngày làm việc."
+        },
+        "reach": {
+          "title": "3. Doanh nghiệp liên hệ bạn tại đây",
+          "body": "Yêu cầu liên hệ đi qua BeyondPilot. Email của bạn chỉ được chia sẻ khi bạn chấp nhận."
+        }
+      },
+      "others": "Các nhân lực AI khác bạn có thể xem"
     },
     "filters": {
       "search": "Tìm theo tên, kỹ năng hoặc dự án",
@@ -4831,6 +4920,12 @@
       "status": {
         "label": "Trạng thái",
         "all": "Mọi trạng thái"
+      },
+      "featured": {
+        "label": "Nổi bật",
+        "all": "Nổi bật hoặc không",
+        "yes": "Nổi bật",
+        "no": "Không nổi bật"
       },
       "clear": "Xóa bộ lọc"
     },
@@ -4926,7 +5021,7 @@
         "listed": "Đã duyệt và hiển thị trong danh mục",
         "unlisted": "Đã duyệt nhưng đang ẩn khỏi danh mục",
         "open": "Mở hồ sơ công khai",
-        "unlistedLead": "Chọn “Hiển thị trong danh mục” bên dưới để hiển thị lại; không cần duyệt lại.",
+        "unlistedLead": "Sửa hồ sơ và chọn “Hiển thị trong danh mục” để hiển thị lại; không cần duyệt lại.",
         "foot": "Thay đổi bạn lưu hiển thị trên trang ngay, không cần duyệt lại."
       },
       "inbox": {
@@ -4961,7 +5056,9 @@
           "confirm": "Báo cáo",
           "cancel": "Giữ lại"
         },
-        "none": "Chưa có lời nhắn nào."
+        "none": "Chưa có lời nhắn nào.",
+        "choose": "Chọn một yêu cầu để đọc.",
+        "list": "Yêu cầu đã nhận"
       },
       "sentBack": {
         "title": "Cần sửa: {reason}",
@@ -4990,6 +5087,20 @@
         "label": "Hồ sơ talent của bạn",
         "profile": "Hồ sơ",
         "enquiries": "Lời nhắn"
+      },
+      "nav": {
+        "label": "Các phần của hồ sơ"
+      },
+      "edit": "Sửa hồ sơ",
+      "back": "Quay lại hồ sơ của bạn",
+      "previewCard": {
+        "title": "Cách hồ sơ hiển thị trong AI talent",
+        "note": "Theo bản đã lưu gần nhất. Địa chỉ email của bạn không bao giờ được hiển thị."
+      },
+      "enquiriesCard": {
+        "title": "Yêu cầu liên hệ",
+        "waiting": "{count, plural, =0 {Không có yêu cầu nào đang chờ bạn.} other {# yêu cầu đang chờ bạn trả lời.}}",
+        "lead": "Thông tin liên hệ chỉ được chia sẻ khi bạn chấp nhận; yêu cầu không được trả lời sẽ đóng sau 14 ngày."
       }
     },
     "form": {
@@ -5217,13 +5328,17 @@
     "nav": {
       "label": "Trên trang này",
       "challenge": "Tổng quan",
+      "client": "Tasco",
       "who": "Ai được nộp",
       "win": "Bạn nhận được gì",
       "directions": "Hướng gợi ý",
       "use-cases": "Use case",
       "timeline": "Dòng thời gian",
+      "pilot": "Tháng thử nghiệm",
       "submit": "Cần nộp gì",
+      "support": "Hỗ trợ",
       "judges": "Giám khảo",
+      "myths": "Ngộ nhận",
       "faq": "Hỏi đáp"
     },
     "useCases": {
@@ -5262,6 +5377,25 @@
       "constraint": {
         "title": "Một ràng buộc cứng",
         "text": "Không giảm phí, không hoàn tiền, không ưu đãi giá trá hình. Mục tiêu là trải nghiệm tốt hơn, không phải mua kết quả. Mọi thứ khác đều mở."
+      }
+    },
+    "client": {
+      "title": "Đây không phải một đối tác doanh nghiệp giả định",
+      "lead": "Tasco là một trong những tập đoàn đa ngành lớn của Việt Nam, niêm yết trên Sở Giao dịch Chứng khoán Hà Nội. Nếu bạn từng lái xe qua một trạm thu phí ở Việt Nam, bạn đã dùng thứ họ xây dựng.",
+      "group": "Tập đoàn hoạt động xuyên suốt vòng đời của chiếc xe và người chủ xe: phân phối và bán lẻ ô tô, thu phí điện tử qua VETC, bảo hiểm, cứu hộ, dịch vụ sau bán hàng, chăm sóc xe và hạ tầng sạc. Mạng lưới showroom và trung tâm dịch vụ trên toàn quốc phân phối Geely và Lynk & Co, với Mitsui là cổ đông chiến lược của Tasco Auto.",
+      "ecosystem": "Bảo hiểm nằm bên trong hệ sinh thái đó chứ không đứng bên cạnh. Vì vậy Tasco nhìn được toàn bộ hành trình của khách hàng — chiếc xe, con đường, trung tâm dịch vụ, lần bồi thường — thay vì chỉ thấy hợp đồng bảo hiểm.",
+      "businesses": {
+        "retail": "Bán lẻ ô tô",
+        "tolling": "Thu phí điện tử (VETC)",
+        "insurance": "Bảo hiểm",
+        "roadside": "Cứu hộ",
+        "care": "Sau bán hàng và chăm sóc xe",
+        "charging": "Hạ tầng sạc"
+      },
+      "why": {
+        "title": "Vì sao Tasco làm việc này",
+        "ambition": "Tham vọng của Tasco là thay đổi cảm nhận về bảo hiểm của người dân Việt Nam: sự bảo vệ dễ mua, không thể làm mất, dễ hiểu và dễ yêu cầu bồi thường. Hàng triệu tài xế đang giữ một sản phẩm họ buộc phải có mà chưa ai làm cho nó đáng để muốn có.",
+        "building": "Đó là thứ bạn sẽ xây dựng. Không phải một tính năng — mà là chính trải nghiệm."
       }
     },
     "who": {
@@ -5351,11 +5485,77 @@
           "title": "Một hướng hoàn toàn khác",
           "text": "Kết hợp các hướng, hoặc mang đến hướng chưa ai nghĩ tới."
         }
+      },
+      "efficiency": {
+        "title": "Vì sao hiệu quả lại quan trọng ở đây",
+        "cost": "Mỗi điểm vướng trong hành trình này đều khiến ai đó tốn tiền, và chi phí ấy cuối cùng nằm trong giá của sự bảo vệ. Khi toàn bộ quy trình thật sự hiệu quả hơn — và giàu hơn về dữ liệu trực tiếp mà khách hàng đã đồng ý chia sẻ — một điều tốt hơn trở nên khả thi: bảo hiểm rẻ hơn, sát với từng người hơn, và thật sự đáng để giữ.",
+        "prize": "Đó mới là phần thưởng. Không phải một ứng dụng bóng bẩy hơn — mà là một thoả thuận tốt hơn cho người mua."
       }
     },
     "timeline": {
       "title": "Dòng thời gian",
-      "lead": "Ba tuần, sáu mốc cố định. Giai đoạn xây dựng mở cùng ngày với việc nhận đơn."
+      "lead": "Ba tuần, sáu mốc cố định. Giai đoạn xây dựng mở cùng ngày với việc nhận đơn.",
+      "start": {
+        "title": "Bắt đầu từ ngày đầu tiên",
+        "text": "Giai đoạn xây dựng mở ngày 23 tháng 9 — cùng ngày mở nhận đơn. Đề bài bằng văn bản, phần hỏi đáp và mẫu bài nộp được công bố ngay từ ngày đầu. Buổi briefing ngày 7 tháng 10 là buổi đào sâu giữa chặng cùng Tasco, không phải hiệu lệnh xuất phát. Đội nào chờ tới buổi đó sẽ mất hai trong ba tuần."
+      },
+      "selection": {
+        "title": "Cách tuyển chọn",
+        "text": "GenAI Fund sàng lọc mọi bài nộp và chọn mười đội trình bày. Giám khảo và đội Tasco chấm điểm trực tiếp tại demo day. Không bài nộp nào phải nằm chờ cả tuần."
+      }
+    },
+    "pilot": {
+      "title": "Thắng chưa phải là hết. Đây là tháng tiếp theo.",
+      "lead": "Phần lớn chương trình dừng ở chiếc cúp và để lại câu “các bước tiếp theo sẽ trao đổi sau”. Đây là tháng thực tế, để bạn tính trước nguồn lực trước khi nộp đơn.",
+      "bring": "Mang theo",
+      "done": "Hoàn thành khi",
+      "steps": {
+        "selection": {
+          "when": "23 thg 10 – 1 thg 11",
+          "title": "Tuyển chọn và trao đổi phạm vi",
+          "text": "Tasco xác nhận những đội họ muốn đi tiếp. Bạn trình bày giải pháp và phương án thương mại với ban lãnh đạo và những người sẽ vận hành giải pháp. Thoả thuận bảo mật hai chiều được ký.",
+          "bring": "Bản demo và đề xuất thương mại một trang",
+          "done": "Hai bên đồng ý chạy thử nghiệm"
+        },
+        "week1": {
+          "when": "Tuần 1 · 3–7 thg 11",
+          "title": "Chốt phạm vi",
+          "text": "Bạn và Tasco thống nhất ranh giới chính xác: use case nào, người dùng nào, hệ thống nào, chỉ số thành công nào. Quyền truy cập dữ liệu và các phê duyệt được yêu cầu ngay ở bước này, không để về sau.",
+          "bring": "Yêu cầu tích hợp và dữ liệu của bạn, bằng văn bản",
+          "done": "Bản phạm vi một trang được hai bên ký"
+        },
+        "week2": {
+          "when": "Tuần 2 · 10–14 thg 11",
+          "title": "Xây dựng",
+          "text": "Bạn xây dựng theo bối cảnh thật của Tasco trong môi trường sandbox, có một người phụ trách nghiệp vụ được chỉ định sẵn sàng hỗ trợ.",
+          "bring": "Thời gian của đội kỹ thuật",
+          "done": "Luồng công việc chính chạy trọn vẹn trên dữ liệu thử"
+        },
+        "week3": {
+          "when": "Tuần 3 · 17–21 thg 11",
+          "title": "Tích hợp và rà soát giữa chặng",
+          "text": "Kết nối các hệ thống đã thống nhất và tổ chức buổi rà soát giữa chặng. Phần nào chưa chạy được ở mốc này sẽ không vào tuần 4.",
+          "bring": "Bản demo chạy được theo các chỉ số đã thống nhất",
+          "done": "Buổi rà soát giữa chặng đạt"
+        },
+        "week4": {
+          "when": "Tuần 4 · 24–28 thg 11",
+          "title": "Kiểm thử và đánh giá",
+          "text": "Đội của Tasco tự chạy giải pháp theo các chỉ số của tuần 1, với người dùng vận hành thật ở những nơi được phê duyệt. Bạn được xem kết quả — không phải một phán quyết sau cánh cửa đóng kín.",
+          "bring": "Hỗ trợ và sửa lỗi trong lúc kiểm thử",
+          "done": "Kết quả được ghi lại theo từng chỉ số"
+        },
+        "decision": {
+          "when": "Chậm nhất 5 thg 12",
+          "title": "Tasco quyết định",
+          "text": "Một trong ba kết quả, bằng văn bản: mở rộng thành thử nghiệm trên môi trường thật kèm điều khoản thương mại, kéo dài với phạm vi điều chỉnh, hoặc dừng lại, kèm lý do. Dù kết quả nào, bạn vẫn giữ các kết quả thử nghiệm."
+        }
+      },
+      "format": "Ý nghĩa của mô hình 90 ngày là câu trả lời “không” đến đủ nhanh để còn hữu ích.",
+      "note": {
+        "title": "Nên biết",
+        "text": "Việc bước vào thử nghiệm là quyết định của Tasco, đưa ra sau demo day. Một tháng là mục tiêu cho một thử nghiệm có phạm vi chặt — phạm vi rộng hơn sẽ kéo dài hơn, và phạm vi được hai bên thống nhất trong tuần 1 trước khi bất kỳ ai cam kết. Các mốc ngày linh hoạt theo lịch của doanh nghiệp."
+      }
     },
     "submit": {
       "title": "Cần nộp gì",
@@ -5392,7 +5592,36 @@
         "experience": "Trải nghiệm khách hàng",
         "sustainability": "Bền vững khi vận hành",
         "clarity": "Rõ ràng về triển khai"
+      },
+      "assumptions": "Hãy nêu rõ các giả định về dữ liệu, tích hợp và sự đồng ý. Đó không phải một ô tuân thủ cần đánh dấu — đó là một phần làm nên độ tin cậy của đề xuất, và các tiêu chí có tính điểm cho điều này.",
+      "design": {
+        "title": "Yêu cầu thiết kế",
+        "text": "Đề xuất nên tránh giảm phí, hoàn tiền hay ưu đãi giá trá hình; truyền thông chính xác, không tạo sự khẩn cấp giả; giải thích các giả định về truy cập dữ liệu, sự đồng ý và quyền riêng tư; tính đến nhu cầu theo mùa; và chỉ ra chỗ nào cần nhân viên rà soát.",
+        "more": "Yêu cầu chi tiết có trong bản đề bài dành cho người tham gia và được trao đổi trong buổi briefing."
       }
+    },
+    "support": {
+      "title": "Bạn không phải xây dựng trong mù mờ",
+      "lead": "Các buổi briefing, workshop và tài nguyên từ đối tác giúp bạn xây dựng thứ Tasco có thể đánh giá.",
+      "items": {
+        "briefing": {
+          "title": "Briefing nghiệp vụ và hỏi đáp mở",
+          "text": "Hiểu hành trình và thực tế vận hành phía sau, từ chính những người đang vận hành."
+        },
+        "workshops": {
+          "title": "Workshop kỹ thuật và kinh doanh",
+          "text": "Mài sắc giải pháp cùng mentor và các đối tác công nghệ."
+        },
+        "mentors": {
+          "title": "Tiếp cận mentor",
+          "text": "Hướng dẫn về kinh doanh và kỹ thuật trong suốt giai đoạn xây dựng."
+        },
+        "credits": {
+          "title": "Tín dụng và công cụ từ đối tác",
+          "text": "Khám phá tài nguyên qua các chương trình đối tác, gồm quyền lợi Microsoft for Startups cho đội đủ điều kiện."
+        }
+      },
+      "conditions": "Tín dụng và công cụ từ đối tác, việc vào thử nghiệm, đầu tư và mọi hợp tác tiếp theo phụ thuộc vào kết quả tuyển chọn, điều kiện tham gia, thẩm định và điều khoản của đối tác hoặc doanh nghiệp liên quan. Một số workshop của đối tác có thể diễn ra trực tiếp; lịch được gửi tới người tham gia."
     },
     "judges": {
       "title": "Những người chấm bài của bạn",
@@ -5408,9 +5637,45 @@
         "manuja": "Head of AI and Data, Manulife"
       }
     },
+    "myths": {
+      "title": "Năm điều người ta hiểu sai về thử thách này",
+      "lead": "Có lẽ bạn từng thất vọng vì một chương trình trông giống thế này. Dễ hiểu thôi. Đây là sự thật.",
+      "assume": "Điều người ta nghĩ",
+      "truth": "Sự thật",
+      "items": {
+        "rnd": {
+          "myth": "“Đây là R&D miễn phí cho Tasco.”",
+          "truth": "Bạn giữ tài sản trí tuệ của mình. Thoả thuận bảo mật hai chiều được ký trước mọi thử nghiệm, và phạm vi được hai bên thống nhất trong tuần 1 — trước khi bạn cam kết thời gian của đội kỹ thuật."
+        },
+        "procurement": {
+          "myth": "“Tôi sẽ chẳng bao giờ qua được khâu mua sắm.”",
+          "truth": "Ở đây không có RFP. Những người đặt đề bài và nắm ngân sách chính là những người chấm bài của bạn — toàn bộ cách làm là vậy."
+        },
+        "insurance": {
+          "myth": "“Tôi không rành bảo hiểm.”",
+          "truth": "Phần lớn bài nộp mạnh không bắt đầu từ đó. Đề bài bằng văn bản, buổi briefing ngày 7 tháng 10 và một người phụ trách nghiệp vụ được chỉ định sẽ lấp khoảng trống ấy. Bạn mang giải pháp tới."
+        },
+        "weeks": {
+          "myth": "“Ba tuần không đủ để xây dựng được gì.”",
+          "truth": "Giai đoạn xây dựng mở từ ngày 23 tháng 9, không phải ngày 7 tháng 10. Và không ai đòi phần mềm chạy thật — hãy cho thấy cái gì chạy được và mở rộng ra sao."
+        },
+        "prize": {
+          "myth": "“Không có giải tiền mặt — vậy được gì?”",
+          "truth": "Một khách hàng doanh nghiệp có tên tuổi, một thị trường, và khoản đầu tư tới 100.000 USD có thể được cân nhắc cho các đội đi hết giai đoạn thử nghiệm."
+        }
+      }
+    },
     "faq": {
       "title": "Câu hỏi thường gặp",
       "items": {
+        "motor": {
+          "q": "Tôi có bắt buộc phải làm về bảo hiểm bắt buộc xe cơ giới không?",
+          "a": "Không. Phạm vi là mở: bất kỳ giải pháp AI nào làm trải nghiệm bảo hiểm tốt hơn cho người dùng. Chúng tôi công bố hành trình bảo hiểm bắt buộc xe cơ giới như một ví dụ mẫu vì nó chạm tới gần như mọi tài xế ở Việt Nam — không phải vì đó là giới hạn."
+        },
+        "wontConsider": {
+          "q": "Có điều gì Tasco sẽ không xem xét không?",
+          "a": "Một ràng buộc cứng: không giảm phí, không hoàn tiền, không ưu đãi giá trá hình. Mục tiêu là trải nghiệm tốt hơn, không phải mua kết quả. Mọi thứ khác đều mở — hãy đưa ra lập luận của bạn."
+        },
         "startup": {
           "q": "Tôi có cần là startup không?",
           "a": "Không. Cá nhân, nhóm sinh viên, startup, ISV, đơn vị tích hợp hệ thống và đội ngũ doanh nghiệp đều nộp được. Bạn được chấm theo giải pháp, không theo công ty đứng sau."
@@ -5419,6 +5684,26 @@
           "q": "Tôi có nộp được sản phẩm đã ra thị trường không?",
           "a": "Được — và các bài như vậy thường làm tốt, vì bạn cho thấy được thứ chạy được ngay từ ngày đầu. Hãy cho biết cái gì đã có và bạn sẽ xây hay điều chỉnh gì cho Tasco."
         },
+        "win": {
+          "q": "Thực sự tôi được gì?",
+          "a": "Các đội Tasco chọn sẽ vào một tháng thử nghiệm cùng những người sẽ vận hành giải pháp, và các đội đi hết giai đoạn thử nghiệm có thể được cân nhắc đầu tư tới 100.000 USD. Thứ nhận về là một khách hàng doanh nghiệp có tên tuổi và một chỗ đứng ở Việt Nam, không phải chiếc cúp. (Đầu tư tuỳ thuộc vào kết quả tuyển chọn, thẩm định và thoả thuận cuối cùng.)"
+        },
+        "prizeMoney": {
+          "q": "Có tiền thưởng không?",
+          "a": "Không. Nếu bạn tìm giải tiền mặt, đây không phải chương trình phù hợp — và chúng tôi muốn bạn biết điều đó hôm nay hơn là vào ngày 15 tháng 10. Thứ được trao là một khách hàng."
+        },
+        "senior": {
+          "q": "Tôi có thật sự được gặp người cấp cao không?",
+          "a": "Có. Ban lãnh đạo Tasco và những người vận hành mảng bảo hiểm đặt đề bài này và có mặt tại demo day. Bạn không trình bày với một nhóm đổi mới rồi họ phải đi xin ý kiến người khác."
+        },
+        "data": {
+          "q": "Tôi có được dùng dữ liệu khách hàng thật không?",
+          "a": "Hãy coi như không. Mọi tài nguyên phát triển đều cần được phê duyệt. Hãy nêu các giả định về dữ liệu, tích hợp và sự đồng ý trong bài nộp — đó là một phần làm nên độ tin cậy của đề xuất, và tiêu chí chấm có tính điểm rõ ràng cho điều này."
+        },
+        "before": {
+          "q": "Buổi briefing diễn ra ngày 7 tháng 10. Trước đó tôi nên làm gì?",
+          "a": "Xây dựng. Giai đoạn xây dựng mở ngày 23 tháng 9, cùng ngày mở nhận đơn, và đề bài bằng văn bản, phần hỏi đáp và mẫu bài nộp được công bố ngay từ ngày đầu. Buổi briefing là buổi đào sâu giữa chặng cùng đội Tasco — không phải hiệu lệnh xuất phát. Đội nào chờ tới buổi đó sẽ mất hai trong ba tuần."
+        },
         "ip": {
           "q": "Ai sở hữu tài sản trí tuệ của tôi?",
           "a": "Bạn. Một thoả thuận bảo mật hai chiều được ký trước khi bắt đầu thử nghiệm. Điều khoản thương mại do bạn và Tasco thoả thuận trực tiếp, trước khi bắt đầu làm."
@@ -5426,6 +5711,10 @@
         "vietnam": {
           "q": "Tôi có cần ở Việt Nam hay nói tiếng Việt không?",
           "a": "Không. Nộp đơn, buổi briefing và demo day diễn ra bằng tiếng Anh, trực tuyến. Nếu vào giai đoạn thử nghiệm, bạn cần người làm việc được với đội Tasco theo giờ Việt Nam."
+        },
+        "pilot": {
+          "q": "Thử nghiệm gồm những gì và kéo dài bao lâu?",
+          "a": "Một tháng: chốt phạm vi, xây dựng, tích hợp, kiểm thử theo các chỉ số đã thống nhất, rồi một quyết định bằng văn bản: mở rộng, kéo dài hoặc dừng. Kế hoạch từng tuần có trên trang này. Việc bước vào thử nghiệm là quyết định của Tasco sau demo day, và phạm vi rộng hơn sẽ kéo dài hơn một tháng — phạm vi được hai bên thống nhất trước khi bất kỳ ai cam kết."
         },
         "hearBack": {
           "q": "Khi nào tôi nhận được kết quả?",
@@ -5560,7 +5849,8 @@
       "choose": "Chọn một",
       "uploaded": "File đã tải lên",
       "required": "Trả lời câu hỏi này.",
-      "confirmRequired": "Xác nhận để tiếp tục."
+      "confirmRequired": "Xác nhận để tiếp tục.",
+      "choicesRequired": "Chọn ít nhất một lựa chọn."
     },
     "review": {
       "blocks": {
@@ -5918,6 +6208,7 @@
       "summary": "Giải pháp làm gì",
       "problemsSolved": "Vấn đề giải quyết",
       "maturity": "Giai đoạn",
+      "demoUrl": "Demo sản phẩm",
       "builtWith": "Xây dựng bằng",
       "traction": "Kết quả đạt được",
       "confirmed": "Đã xác nhận",
@@ -5962,10 +6253,19 @@
       "message": "Nội dung",
       "placeholders": "{organization} và {solution} được điền theo từng người nộp.",
       "confirmLabel": "Công bố",
-      "checked": "Tôi đã kiểm tra cả hai danh sách. Kết quả đã gửi thì không thu hồi được.",
       "release": "Công bố cho {count} người nộp",
       "notReady": "Chưa thể công bố",
-      "done": "Đã công bố kết quả. Email đang được gửi tới từng người nộp."
+      "done": "Đã công bố kết quả. Email đang được gửi tới từng người nộp.",
+      "checkFirst": "Kiểm tra cả hai danh sách trước khi công bố: kết quả đã gửi thì không thu hồi được.",
+      "fillFirst": "Viết tiêu đề và nội dung cho cả hai nhóm để công bố.",
+      "confirm": {
+        "title": "Gửi email cho {count} người nộp ngay bây giờ?",
+        "lead": "Mỗi người nộp nhận email của nhóm mình và thấy kết quả ở Đơn của tôi.",
+        "group": "{group}: {count} người nộp",
+        "note": "Không thể hoàn tác: email đã gửi đi thì không thu hồi được.",
+        "send": "Công bố và gửi",
+        "cancel": "Chưa gửi"
+      }
     },
     "reviewers": {
       "metaTitle": "Giám khảo",
@@ -6363,6 +6663,22 @@
         }
       ]
     }
+  },
+  "About": {
+    "metaTitle": "Giới thiệu",
+    "metaDescription": "Đội ngũ xây dựng BeyondPilot và cách GenAI Fund đứng sau sản phẩm.",
+    "eyebrow": "Đội ngũ",
+    "title": "Đội ngũ xây dựng BeyondPilot",
+    "description": "Chúng tôi xây dựng BeyondPilot để doanh nghiệp và nhà phát triển AI dễ tìm thấy nhau hơn và tiến tới triển khai thực tế.",
+    "role": "Full-stack engineer",
+    "linkedin": "LinkedIn",
+    "linkedinLabel": "{name} trên LinkedIn (mở trong tab mới)",
+    "backing": {
+      "title": "Được GenAI Fund đầu tư",
+      "description": "BeyondPilot là startup AI có sản phẩm riêng, được GenAI Fund đầu tư. Chương trình và hệ sinh thái doanh nghiệp của GenAI Fund là nơi nhiều cơ hội trên BeyondPilot xuất phát. Các founder trong mạng lưới GenAI Fund là một phần của hệ sinh thái đó, không phải đội ngũ vận hành BeyondPilot."
+    },
+    "partnerTitle": "Đối tác phát triển",
+    "partnerDescription": "Đội kỹ sư xây dựng sản phẩm cùng BeyondPilot."
   },
   "HowItWorks": {
     "metaTitle": "Cách hoạt động",

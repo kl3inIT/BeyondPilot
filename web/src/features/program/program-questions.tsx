@@ -1,7 +1,14 @@
 "use client";
 
 import { revalidateLogic } from "@tanstack/react-form";
-import { ArrowDownIcon, ArrowUpIcon, LockIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  ClockIcon,
+  LockIcon,
+  PlusIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -21,6 +28,7 @@ import {
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
+import { cn } from "@/lib/utils";
 import {
   saveProgramQuestions,
   type ProgramQuestion,
@@ -29,8 +37,22 @@ import {
 
 import { programFormatter } from "./program-format";
 
-const kinds = ["short_text", "long_text", "single_choice", "file", "link", "confirm"] as const;
+const kinds = [
+  "short_text",
+  "long_text",
+  "single_choice",
+  "multi_choice",
+  "file",
+  "link",
+  "confirm",
+] as const;
 type Kind = (typeof kinds)[number];
+
+/** Whether a question of this kind is answered from choices the operator writes. */
+const offersChoices = (kind: Kind) => kind === "single_choice" || kind === "multi_choice";
+
+/** How long before the opening the line that says when the questions lock stands out. */
+const LOCK_WARNING_MS = 48 * 60 * 60 * 1000;
 
 /** The most choices a question offers and the most questions a form asks (the backend's bounds). */
 const MAX_CHOICES = 20;
@@ -42,7 +64,8 @@ type Draft = Omit<ProgramQuestion, "id"> & { id?: string | null };
 /**
  * The questions a program's application form asks, after what every application holds. They are
  * edited one at a time in a dialog, ordered here, and saved together; once the applications open
- * they are fixed, since an answer names its question.
+ * they are fixed, since an answer names its question. The page says when that happens before it
+ * does, and stands it out in the last two days.
  */
 function ProgramQuestionsEditor({ programId, initial }: { programId: string; initial: Questions }) {
   const t = useTranslations("Admin.programs.questions");
@@ -52,7 +75,17 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
   const [questions, setQuestions] = useState<Draft[]>(initial.questions);
   const [editing, setEditing] = useState<{ index: number | null } | null>(null);
   const [pending, setPending] = useState(false);
+  const [now] = useState(() => Date.now());
   const dirty = JSON.stringify(questions) !== JSON.stringify(initial.questions);
+  const opens = initial.opensAt ? new Date(initial.opensAt) : null;
+  const when = (date: Date) =>
+    format.dateTime(date, {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    });
 
   function move(index: number, by: number) {
     const next = [...questions];
@@ -91,20 +124,26 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
         <p className="max-w-2xl text-sm text-muted-foreground">{t("lead")}</p>
       </div>
 
-      {initial.fixed && (
-        <p className="flex items-start gap-2 rounded-xl border bg-muted p-4 text-sm" role="status">
+      {initial.fixed ? (
+        <div
+          className="flex items-start gap-2 rounded-xl border bg-muted p-4 text-sm"
+          role="status"
+        >
           <LockIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          {t("fixed", {
-            opened: initial.opensAt
-              ? format.dateTime(new Date(initial.opensAt), {
-                  day: "numeric",
-                  month: "short",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hourCycle: "h23",
-                })
-              : "",
-          })}
+          <div className="flex flex-col gap-1">
+            <p>{t("fixed", { opened: opens ? when(opens) : "" })}</p>
+            <p className="text-muted-foreground">{t("fixedStill")}</p>
+          </div>
+        </div>
+      ) : (
+        <p
+          className={cn(
+            "flex items-start gap-2 rounded-xl border p-4 text-sm",
+            opens && opens.getTime() - now < LOCK_WARNING_MS && "border-warning bg-warning/10",
+          )}
+        >
+          <ClockIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          {opens ? t("locks", { opens: when(opens) }) : t("locksUnset")}
         </p>
       )}
 
@@ -125,7 +164,7 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
                 <span className="text-xs text-muted-foreground">
                   {[
                     t(`kinds.${question.kind}`),
-                    question.kind === "single_choice"
+                    offersChoices(question.kind)
                       ? t("choiceCount", { count: question.options.length })
                       : null,
                     question.required ? null : t("optional"),
@@ -241,7 +280,7 @@ function QuestionDialog({
       options: z.array(z.string()),
       maxLength: z.string().regex(/^\d*$/, say("invalid")),
     })
-    .refine((question) => question.kind !== "single_choice" || question.options.length >= 2, {
+    .refine((question) => !offersChoices(question.kind) || question.options.length >= 2, {
       message: t("choicesRequired"),
       path: ["options"],
     });
@@ -264,7 +303,7 @@ function QuestionDialog({
         label: question.label.trim(),
         help: question.help.trim() || null,
         required: question.required,
-        options: question.kind === "single_choice" ? question.options : [],
+        options: offersChoices(question.kind) ? question.options : [],
         maxLength: text && question.maxLength ? Number(question.maxLength) : null,
       });
     },
@@ -311,7 +350,7 @@ function QuestionDialog({
           <form.Subscribe selector={(state) => state.values.kind}>
             {(kind) => (
               <>
-                {kind === "single_choice" && (
+                {offersChoices(kind) && (
                   <form.Field name="options">
                     {(field) => (
                       <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>

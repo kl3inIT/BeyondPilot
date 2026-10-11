@@ -1,19 +1,12 @@
 "use client";
 
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { IconButton } from "@/components/actions/icon-button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { publicFileUrl } from "@/lib/storage/upload";
+
+import { SolutionImageDialog } from "./solution-image-dialog";
 
 type SolutionGalleryProps = {
   /** What the solution is called, to name its images for a reader who cannot see them. */
@@ -38,8 +31,6 @@ function SolutionGallery({ name, coverFileId, imageFileIds }: SolutionGalleryPro
   // Without a cover the images stand alone, each a small tile.
   const small = coverFileId ? files.slice(1) : files;
   const offset = coverFileId ? 1 : 0;
-  const step = (by: number) =>
-    setOpen((current) => (current === null ? null : (current + by + count) % count));
 
   return (
     <div data-slot="solution-gallery" className="flex flex-col gap-3">
@@ -86,42 +77,12 @@ function SolutionGallery({ name, coverFileId, imageFileIds }: SolutionGalleryPro
         </ul>
       )}
 
-      <Dialog open={open !== null} onOpenChange={(next) => (next ? undefined : setOpen(null))}>
-        <DialogContent className="sm:max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>{t("title", { name })}</DialogTitle>
-            <DialogDescription>
-              {t("position", { position: (open ?? 0) + 1, count })}
-            </DialogDescription>
-          </DialogHeader>
-          {open !== null && (
-            <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-              <Image
-                src={publicFileUrl(files[open])}
-                alt={t("image", { name, position: open + 1, count })}
-                fill
-                sizes="(min-width: 896px) 864px, 100vw"
-                unoptimized
-                className="object-contain"
-              />
-            </div>
-          )}
-          {count > 1 && (
-            <div className="flex justify-center gap-2">
-              <IconButton
-                prominence="secondary"
-                aria-label={t("previous")}
-                onClick={() => step(-1)}
-              >
-                <ChevronLeftIcon aria-hidden="true" />
-              </IconButton>
-              <IconButton prominence="secondary" aria-label={t("next")} onClick={() => step(1)}>
-                <ChevronRightIcon aria-hidden="true" />
-              </IconButton>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <SolutionImageDialog
+        name={name}
+        imageFileIds={files}
+        openIndex={open}
+        onOpenIndexChange={setOpen}
+      />
     </div>
   );
 }

@@ -8,6 +8,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 		description = "One page of submitted solutions: those waiting for review first, the longest wait on top.")
 public record AdminSolutionListResponse(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<AdminSolutionSummaryResponse> items,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Organizations with at least one submitted solution, for the organization filter.")
+		List<AdminSolutionOrganizationOptionResponse> organizations,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The page returned, counted from 1.") int page,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int pageSize,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

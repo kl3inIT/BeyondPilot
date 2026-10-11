@@ -28,6 +28,15 @@ import { deadlineText, programFormatter, renderedAt } from "../program-format";
 import { ProgramBreadcrumb } from "../program-page";
 import { ApplyCard, DraftBanner, Timeline, timelineOf } from "../program-parts";
 import { ProgramUseCases } from "../program-use-cases";
+import {
+  Argument,
+  Myths,
+  Note,
+  PilotMonth,
+  SectionHead,
+  Support,
+  TascoClient,
+} from "./tasco-parts";
 
 const pains = [
   ["paper", FileTextIcon],
@@ -92,28 +101,37 @@ const judges = [
   ],
 ] as const;
 
-const faqs = ["startup", "inMarket", "ip", "vietnam", "hearBack"] as const;
+const faqs = [
+  "motor",
+  "wontConsider",
+  "startup",
+  "inMarket",
+  "win",
+  "prizeMoney",
+  "senior",
+  "data",
+  "before",
+  "ip",
+  "vietnam",
+  "pilot",
+  "hearBack",
+] as const;
 
 const sections = [
   "challenge",
+  "client",
   "who",
   "win",
   "directions",
   "use-cases",
   "timeline",
+  "pilot",
   "submit",
+  "support",
   "judges",
+  "myths",
   "faq",
 ] as const;
-
-function SectionHead({ title, lead }: { title: string; lead?: string }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-2xl font-semibold tracking-title md:text-3xl">{title}</h2>
-      {lead && <p className="max-w-3xl text-muted-foreground">{lead}</p>}
-    </div>
-  );
-}
 
 /** The card to apply, the brief and the note under it. */
 async function ApplyRail({
@@ -209,8 +227,8 @@ async function TascoPage({ program }: { program: Program }) {
           </ul>
         </header>
 
-        <nav aria-label={t("nav.label")} className="overflow-x-auto border-b">
-          <ul className="flex gap-6 text-sm whitespace-nowrap">
+        <nav aria-label={t("nav.label")} className="border-b">
+          <ul className="flex flex-wrap gap-x-6 text-sm">
             {sections
               .filter((section) => section !== "use-cases" || useCases.items.length > 0)
               .map((section) => (
@@ -256,6 +274,8 @@ async function TascoPage({ program }: { program: Program }) {
                 </div>
               </div>
             </section>
+
+            <TascoClient />
 
             <section id="who" className="flex scroll-mt-6 flex-col gap-5">
               <SectionHead title={t("who.title")} lead={t("who.lead")} />
@@ -313,6 +333,10 @@ async function TascoPage({ program }: { program: Program }) {
                   </ul>
                 </div>
               ))}
+              <Argument
+                title={t("directions.efficiency.title")}
+                paragraphs={[t("directions.efficiency.cost"), t("directions.efficiency.prize")]}
+              />
             </section>
 
             {useCases.items.length > 0 && (
@@ -325,8 +349,12 @@ async function TascoPage({ program }: { program: Program }) {
 
             <section id="timeline" className="flex scroll-mt-6 flex-col gap-5">
               <SectionHead title={t("timeline.title")} lead={t("timeline.lead")} />
+              <Note title={t("timeline.start.title")} text={t("timeline.start.text")} />
               <Timeline steps={steps} now={now} />
+              <Note title={t("timeline.selection.title")} text={t("timeline.selection.text")} />
             </section>
+
+            <PilotMonth />
 
             <section id="submit" className="flex scroll-mt-6 flex-col gap-6">
               <SectionHead title={t("submit.title")} lead={t("submit.lead")} />
@@ -355,8 +383,16 @@ async function TascoPage({ program }: { program: Program }) {
                     </li>
                   ))}
                 </ul>
+                <p className="max-w-3xl text-sm text-muted-foreground">{t("submit.assumptions")}</p>
+              </div>
+              <div className="flex max-w-3xl flex-col gap-2">
+                <h3 className="font-semibold">{t("submit.design.title")}</h3>
+                <p className="text-sm text-muted-foreground">{t("submit.design.text")}</p>
+                <p className="text-sm text-muted-foreground">{t("submit.design.more")}</p>
               </div>
             </section>
+
+            <Support />
 
             <section id="judges" className="flex scroll-mt-6 flex-col gap-5">
               <SectionHead title={t("judges.title")} />
@@ -393,9 +429,11 @@ async function TascoPage({ program }: { program: Program }) {
               </ul>
             </section>
 
+            <Myths />
+
             <section id="faq" className="flex scroll-mt-6 flex-col gap-4">
               <SectionHead title={t("faq.title")} />
-              <Accordion defaultValue={["startup"]}>
+              <Accordion defaultValue={["motor"]}>
                 {faqs.map((id) => (
                   <AccordionItem key={id} value={id}>
                     <AccordionTrigger>{t(`faq.items.${id}.q`)}</AccordionTrigger>

@@ -1,12 +1,14 @@
 import { CheckIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { ReviewStatus } from "@/components/composites/review-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AdminUseCase } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
 
 import { AdminUseCaseDecision } from "./admin-use-case-decision";
+import { AdminUseCaseFeature } from "./admin-use-case-feature";
 import { AdminUseCaseReview } from "./admin-use-case-review";
 import { LiveRefresh } from "./live-refresh";
 import { UseCaseTabs } from "./use-case-tabs";
@@ -23,6 +25,7 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
   const t = useTranslations("Admin.useCases.detail");
   const statusLabel = useTranslations("Admin.useCases.status");
   const d = useTranslations("Admin.useCases.decision");
+  const f = useTranslations("Admin.useCases.feature");
   const format = useFormatter();
   const locale = useLocale();
 
@@ -104,6 +107,9 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
           <ReviewStatus appearance="pill" state={status}>
             {statusLabel(status)}
           </ReviewStatus>
+          {useCase.featuredAt && (
+            <FeaturedBadge>{f("since", { day: day(useCase.featuredAt) })}</FeaturedBadge>
+          )}
         </div>
       </div>
 
@@ -136,6 +142,23 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
               </CardContent>
             </Card>
           )}
+
+          <Card size="lg">
+            <CardHeader>
+              <CardTitle>{f("title")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-start gap-4">
+                <p className="text-sm text-muted-foreground">{f("hint")}</p>
+                <AdminUseCaseFeature
+                  id={useCase.id}
+                  title={title}
+                  featured={Boolean(useCase.featuredAt)}
+                  appearance="button"
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           <Card size="lg">
             <CardHeader>

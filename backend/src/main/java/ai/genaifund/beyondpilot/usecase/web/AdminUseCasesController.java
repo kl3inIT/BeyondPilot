@@ -129,6 +129,30 @@ class AdminUseCasesController {
 		return useCases.setPrograms(actor, id, request);
 	}
 
+	@PostMapping("/use-cases/{id}/feature")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "featureAdminUseCase",
+			summary = "Feature a use case: it comes first in the opening view of the public list",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The use case is featured; one featured already keeps its place.",
+			content = @Content)
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void feature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		useCases.feature(actor, id);
+	}
+
+	@PostMapping("/use-cases/{id}/unfeature")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "unfeatureAdminUseCase", summary = "Stop featuring a use case",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The use case is not featured.", content = @Content)
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void unfeature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		useCases.unfeature(actor, id);
+	}
+
 	@GetMapping(path = "/organizations", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listUseCaseOrganizations",
 			summary = "The organizations a use case can be written for",

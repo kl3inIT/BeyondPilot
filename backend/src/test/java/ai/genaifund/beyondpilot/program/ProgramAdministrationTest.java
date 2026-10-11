@@ -132,6 +132,28 @@ class ProgramAdministrationTest {
 	}
 
 	@Test
+	void theListPutsTheProgramTakingApplicationsBeforeTheOnesThatAreOver() {
+		String open = created("Open now", "listed-open-now");
+		String done = created("Over", "listed-over");
+		String comingUp = created("Coming up", "listed-coming-up");
+		Map<String, Object> taking = program(0, "Open now", "listed-open-now");
+		taking.put("startsOn", "2020-01-01");
+		taking.put("endsOn", "2999-12-31");
+		taking.put("applications", applications("2020-01-01T00:00:00Z", "2999-12-01T00:00:00Z", "2999-12-15"));
+		save(operator, open, taking).expectStatus().isOk();
+		Map<String, Object> over = program(0, "Over", "listed-over");
+		over.put("startsOn", "2020-01-01");
+		over.put("endsOn", "2020-01-02");
+		save(operator, done, over).expectStatus().isOk();
+		Map<String, Object> later = program(0, "Coming up", "listed-coming-up");
+		later.put("startsOn", "2999-01-01");
+		later.put("endsOn", "2999-01-02");
+		save(operator, comingUp, later).expectStatus().isOk();
+
+		assertThat(slugs()).containsSubsequence("listed-open-now", "listed-coming-up", "listed-over");
+	}
+
+	@Test
 	void anAddressBelongsToOneProgram() {
 		create(operator, "First", "taken-address", "event").expectStatus().isCreated();
 
@@ -469,12 +491,14 @@ class ProgramAdministrationTest {
 				Map.of("version", 0, "questions",
 						List.of(question("long_text", "How does your solution address the challenge?", List.of()),
 								question("single_choice", "Direction", List.of("Buying", " Claiming ", "Claiming")),
-								question("confirm", "I've read the one hard constraint.", List.of()))))
+								question("confirm", "I've read the one hard constraint.", List.of()),
+								question("multi_choice", "Challenge areas", List.of("Claims", " Pricing ", "Pricing")))))
 			.expectStatus()
 			.isOk());
 		assertThat(JsonPath.<List<String>>read(saved, "$.questions[*].kind")).containsExactly("long_text",
-				"single_choice", "confirm");
+				"single_choice", "confirm", "multi_choice");
 		assertThat(JsonPath.<List<String>>read(saved, "$.questions[1].options")).containsExactly("Buying", "Claiming");
+		assertThat(JsonPath.<List<String>>read(saved, "$.questions[3].options")).containsExactly("Claims", "Pricing");
 		String direction = JsonPath.read(saved, "$.questions[1].id");
 		int version = JsonPath.read(saved, "$.version");
 
@@ -491,12 +515,15 @@ class ProgramAdministrationTest {
 		assertProblem(save(operator, questions,
 				Map.of("version", version, "questions", List.of(question("single_choice", "One way", List.of("Only"))))),
 				400, "PROGRAM_CHOICES_REQUIRED");
+		assertProblem(save(operator, questions, Map.of("version", version, "questions",
+				List.of(question("multi_choice", "Any way", List.of("Only", " Only "))))), 400, "PROGRAM_CHOICES_REQUIRED");
 
 		// Once the applications open, an answer may already name a question.
 		Map<String, Object> open = program(version, "Asks", "asks");
 		open.put("applications", applications("2026-01-01T00:00:00Z", "2099-01-01T00:00:00Z", "2099-01-10"));
 		String opened = body(save(operator, uri, open).expectStatus().isOk());
 		version = JsonPath.read(opened, "$.version");
+		assertThat(JsonPath.<Integer>read(opened, "$.questionCount")).isEqualTo(1);
 		assertThat(JsonPath.<Boolean>read(body(get(operator, questions).expectStatus().isOk()), "$.fixed")).isTrue();
 		assertProblem(save(operator, questions, Map.of("version", version, "questions", List.of())), 409,
 				"PROGRAM_QUESTIONS_FIXED");

@@ -91,6 +91,8 @@ test.describe("judging applications", () => {
     await page.goto(`${admin}/applications/${plainCoverId}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Plain Cover");
     await expect(page.getByText("2 of 3")).toBeVisible();
+    // An answer of several choices reads as the choices, one a line.
+    await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
     await expect(
       page
         .getByRole("link", { name: "plain-cover-deck.pdf" })
@@ -99,6 +101,11 @@ test.describe("judging applications", () => {
       "href",
       `/api/proposal/review/applications/${plainCoverId}/files/f0000000-0000-4000-8000-000000000001`,
     );
+    // The demo the applicant gave opens in a tab of its own, away from the review.
+    const demo = page.getByRole("link", { name: "https://plaincover.example/demo" });
+    await expect(demo).toHaveAttribute("href", "https://plaincover.example/demo");
+    await expect(demo).toHaveAttribute("target", "_blank");
+    await expect(demo).toHaveAttribute("rel", "noopener noreferrer");
     const scores = page.getByRole("region", { name: "Judges' scores" });
     await expect(scores).toContainText("Minh Anh Le");
     await expect(scores).toContainText("on version 1");
@@ -157,6 +164,7 @@ test.describe("judging applications", () => {
 
     await page.goto(`${reviews}/${plainCoverId}`);
     await expect(page.getByText("Only you and GenAI Fund read this.")).toBeVisible();
+    await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
     await expect(page.getByRole("region", { name: "Judges' scores" })).toHaveCount(0);
     await expect(page.getByRole("region", { name: "Decision" })).toHaveCount(0);
     // The judge has scored one and declared a conflict on another, so the one on show is the last
@@ -203,7 +211,7 @@ test.describe("judging applications", () => {
     expect(calls[0].body).toEqual({ email: "new.judge@tasco.example" });
   });
 
-  test("an operator releases the outcomes after saying both lists were checked", async ({
+  test("an operator releases the outcomes after a question that names how many each email reaches", async ({
     page,
     context,
     baseURL,
@@ -213,13 +221,16 @@ test.describe("judging applications", () => {
     await page.goto(`${admin}/release`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Release outcomes");
     await expect(page.getByText("1 withdrawn application gets no email.")).toBeVisible();
-    const release = page.getByRole("button", { name: "Release to 3 applicants" });
-    await expect(release).toBeDisabled();
+    await expect(page.getByRole("heading", { name: /^Shortlisted/ })).toBeVisible();
     await settled(page);
     await expectNoSeriousA11yViolations(page);
 
-    await page.getByRole("checkbox").click();
-    await release.click();
+    await page.getByRole("button", { name: "Release to 3 applicants" }).click();
+    const ask = page.getByRole("alertdialog", { name: "Email 3 applicants now?" });
+    await expect(ask).toContainText("Shortlisted: 2 applicants");
+    await expect(ask).toContainText("Not selected: 1 applicant");
+    expect(calls).toHaveLength(0);
+    await ask.getByRole("button", { name: "Release and send" }).click();
     await expect.poll(() => calls.length).toBe(1);
     expect(calls[0].body).toMatchObject({
       shortlistedSubject: "You're shortlisted for AI for Insurance Challenge × Tasco",

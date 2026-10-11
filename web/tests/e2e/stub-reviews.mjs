@@ -276,6 +276,8 @@ const solutions = [
   }),
   solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e03", "Policy Chat", "approved", {
     maturity: "production",
+    // An operator featured it.
+    featuredAt: day,
     customerDeployments: [
       deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f01", "Claims line at Bảo An", "in_review"),
       deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f02", "Renewals at Mekong Life", "approved", {
@@ -340,6 +342,8 @@ const talent = [
   },
   {
     email: "arif@openkitchen.example",
+    // An operator featured it.
+    featuredAt: day,
     profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a03", "Arif Hidayat", "approved", {
       headline: "ML engineer",
       roles: ["ml_engineer"],
@@ -363,15 +367,19 @@ const talent = [
   },
 ];
 
-/** One page of a list, narrowed as the operators' lists narrow: by text and by status. */
+/** One page of a list, narrowed as the operators' lists narrow: by text, by status and by featured or not. */
 function page(url, records, statusOf, textOf, summaryOf) {
   const text = (url.searchParams.get("q") ?? "").toLowerCase();
   const status = url.searchParams.get("status");
+  const organizationId = url.searchParams.get("organizationId");
+  const featured = url.searchParams.get("featured");
   const items = records.filter(
     // A merged record is listed only when merged ones are asked for, as the backend lists it.
     (record) =>
       (status ? statusOf(record) === status : statusOf(record) !== "merged") &&
-      (!text || textOf(record).toLowerCase().includes(text)),
+      (!organizationId || record.organizationId === organizationId) &&
+      (!text || textOf(record).toLowerCase().includes(text)) &&
+      (featured === null || Boolean(record.featuredAt) === (featured === "true")),
   );
   return { items: items.map(summaryOf), page: 1, pageSize: 25, total: items.length };
 }
@@ -483,6 +491,7 @@ const lists = {
       slug,
       status,
       suspendedAt: record.suspendedAt ?? null,
+      featuredAt: record.featuredAt ?? null,
       organizationName,
       summary,
       maturity,
@@ -511,6 +520,7 @@ const lists = {
     textOf: (record) => `${record.profile.name} ${record.email}`,
     summaryOf: ({
       email,
+      featuredAt = null,
       profile: { id, name, slug, status, headline, suspendedAt = null, ...record },
     }) => ({
       id,
@@ -518,6 +528,7 @@ const lists = {
       slug,
       status,
       suspendedAt,
+      featuredAt,
       headline,
       email,
       listed: record.listed,
@@ -551,6 +562,14 @@ export function answerReview(url, account) {
         : path === "/api/solution/admin/solutions"
           ? {
               ...found,
+              organizations: [
+                ...new Map(
+                  records.map((record) => [
+                    record.organizationId,
+                    { id: record.organizationId, name: record.organizationName },
+                  ]),
+                ).values(),
+              ].sort((left, right) => left.name.localeCompare(right.name)),
               awaitingReview: records.filter((record) => record.status === "in_review").length,
               deploymentsAwaitingReview: records
                 .flatMap((record) => record.customerDeployments)

@@ -50,6 +50,19 @@ test.describe("admin solutions", () => {
     await page.goto("/admin/solutions");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Solutions");
+    const organization = page.getByRole("combobox", { name: "Organization" });
+    await expect(organization.locator('[data-slot="select-value"]')).toHaveText(
+      "All organizations",
+    );
+    await organization.click();
+    await expect(page.getByRole("option", { name: "Pocket Policy" })).toBeVisible();
+    await page.getByRole("option", { name: "Pocket Policy" }).click();
+    await expect(page).toHaveURL(/organizationId=8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03/);
+    await expect(shownSolutions(page)).toHaveCount(5);
+    await organization.click();
+    await page.getByRole("option", { name: "All organizations" }).click();
+    await expect(page).toHaveURL("/admin/solutions");
+
     // Each record opens from its row's ⋯ menu; the name itself is the link.
     await expect(shownSolutions(page)).toHaveCount(5);
     await expect(
@@ -63,7 +76,7 @@ test.describe("admin solutions", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("search and the status are the address, and the server answers them", async ({
+  test("search submits by Enter or its button while the status stays in the address", async ({
     page,
     context,
     baseURL,
@@ -77,7 +90,12 @@ test.describe("admin solutions", () => {
     await expect(shownSolutions(page)).toHaveCount(2);
     await expect(page.getByText("2 solutions")).toBeVisible();
 
-    await page.getByRole("searchbox", { name: "Search by solution or organization" }).fill("quote");
+    const search = page.getByRole("searchbox", { name: "Search by solution or organization" });
+    await search.fill("quote");
+    await expect(page).toHaveURL(/status=in_review/);
+    await expect(shownSolutions(page)).toHaveCount(2);
+
+    await search.press("Enter");
     await expect(page).toHaveURL(/[?&]q=quote/);
     await expect(page.locator('[data-slot="empty-title"]:visible')).toHaveText(
       "No solution matches",
@@ -86,6 +104,16 @@ test.describe("admin solutions", () => {
     await page.getByRole("link", { name: "Clear search and filter" }).click();
     await expect(page).toHaveURL("/admin/solutions");
     await expect(shownSolutions(page)).toHaveCount(5);
+
+    await search.fill("claims");
+    await expect(page).toHaveURL("/admin/solutions");
+    await expect(shownSolutions(page)).toHaveCount(5);
+    await page.getByRole("button", { name: "Search by solution or organization" }).click();
+    await expect(page).toHaveURL(/[?&]q=claims/);
+    await expect(shownSolutions(page)).toHaveCount(1);
+
+    await page.getByRole("button", { name: "Clear filters", exact: true }).click();
+    await expect(page).toHaveURL("/admin/solutions");
 
     // A solution taken down is found under its own status.
     await page.getByRole("combobox", { name: "Status" }).click();
@@ -332,6 +360,66 @@ test.describe("admin solutions", () => {
     // The record stays, and the decision can be made again.
     await expect(page).toHaveURL(`/admin/solutions/${claimsCopilot}`);
     await expect(page.getByRole("button", { name: "Approve" })).toBeEnabled();
+  });
+
+  test("a featured solution is marked, the list narrows to the featured ones, and its row stops featuring it", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto("/admin/solutions");
+
+    // The badge is a star and the word, on the one solution that is featured.
+    await expect(
+      page.locator("[data-featured]:visible").filter({ hasText: "Featured" }),
+    ).toHaveCount(1);
+    // Checked on the page as it arrived: right after a filter navigated, axe once found no document title in CI.
+    await expectNoSeriousA11yViolations(page);
+    await page.getByRole("combobox", { name: "Featured" }).click();
+    await page.getByRole("option", { name: "Featured", exact: true }).click();
+    await expect(page).toHaveURL("/admin/solutions?featured=true");
+    await expect(shownSolutions(page)).toHaveCount(1);
+
+    await page.getByRole("button", { name: "Open Policy Chat" }).click();
+    await page.getByRole("menuitem", { name: "Stop featuring" }).click();
+
+    await expect(page.getByText("Policy Chat is no longer featured.")).toBeVisible();
+    expect(decisions).toEqual([
+      { call: `POST /api/solution/admin/solutions/${policyChat}/unfeature`, body: null },
+    ]);
+
+    await page.getByRole("combobox", { name: "Featured" }).click();
+    await page.getByRole("option", { name: "Not featured" }).click();
+    await expect(page).toHaveURL("/admin/solutions?featured=false");
+    await expect(shownSolutions(page)).toHaveCount(4);
+  });
+
+  test("a solution is featured from its record, and no longer, whatever its review says", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+
+    // One that waits for review is featured all the same: it leads the directory once it is public.
+    await page.goto(`/admin/solutions/${claimsCopilot}`);
+    await expect(page.locator("[data-featured]")).toHaveCount(0);
+    await page.getByRole("button", { name: "Feature", exact: true }).click();
+    await expect(page.getByText("Claims Copilot is featured.")).toBeVisible();
+
+    await page.goto(`/admin/solutions/${policyChat}`);
+    await expect(page.locator("[data-featured]")).toHaveText("Featured Oct 1, 2026");
+    await expectNoSeriousA11yViolations(page);
+    await page.getByRole("button", { name: "Stop featuring" }).click();
+    await expect(page.getByText("Policy Chat is no longer featured.")).toBeVisible();
+
+    expect(decisions).toEqual([
+      { call: `POST /api/solution/admin/solutions/${claimsCopilot}/feature`, body: null },
+      { call: `POST /api/solution/admin/solutions/${policyChat}/unfeature`, body: null },
+    ]);
   });
 
   test("a rejected solution's record says why and offers no decision", async ({

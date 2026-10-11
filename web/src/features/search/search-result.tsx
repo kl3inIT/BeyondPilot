@@ -128,14 +128,7 @@ function TalentResult({ item }: { item: SearchItem }) {
 
   return (
     <Row
-      picture={
-        <TalentPhoto
-          name={item.title}
-          photoFileId={item.photoFileId}
-          size={48}
-          className="size-12 text-sm"
-        />
-      }
+      picture={<TalentPhoto name={item.title} photoFileId={item.photoFileId} size="xl" />}
       title={item.title}
       href={`${siteRoutes.talent}/${item.slug}`}
       subtitle={subtitle}

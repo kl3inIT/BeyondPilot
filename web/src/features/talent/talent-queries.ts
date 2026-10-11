@@ -70,6 +70,7 @@ export async function readAdminTalentList(search: AdminTalentSearch): Promise<Ad
     query: {
       q: text(search.q),
       status: search.status ?? undefined,
+      featured: search.featured === null ? undefined : search.featured === "true",
       page: Math.max(1, search.page),
     },
   });

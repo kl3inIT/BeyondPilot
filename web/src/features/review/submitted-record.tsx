@@ -2,6 +2,7 @@ import { FileTextIcon, LinkIcon } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import type { AttachedFile, SubmittedApplication } from "@/lib/api/generated";
+import { chosenOptions } from "@/lib/chosen-options";
 
 type Row = [string, React.ReactNode];
 
@@ -53,6 +54,7 @@ async function SubmittedRecord({
     code?: string | null,
   ) => (!code ? none : words.has(`${set}.${code}`) ? words(`${set}.${code}`) : code);
   const contact = submitted.contact;
+  const demo = submitted.demoUrl ? webAddress(submitted.demoUrl) : null;
 
   const files: {
     label: string;
@@ -125,6 +127,25 @@ async function SubmittedRecord({
         [t("summary"), submitted.summary ?? none],
         [t("problemsSolved"), submitted.problemsSolved ?? none],
         [t("maturity"), word("maturity", submitted.maturity)],
+        ...(submitted.demoUrl
+          ? [
+              [
+                t("demoUrl"),
+                demo ? (
+                  <a
+                    href={demo}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:underline"
+                  >
+                    {submitted.demoUrl}
+                  </a>
+                ) : (
+                  submitted.demoUrl
+                ),
+              ] as Row,
+            ]
+          : []),
         [t("builtWith"), submitted.builtWith.join(", ") || none],
         [t("traction"), submitted.traction ?? none],
       ],
@@ -139,7 +160,12 @@ async function SubmittedRecord({
       title: t("blocks.questions"),
       rows: answered.map((answer): Row => [
         answer.label,
-        answer.kind === "confirm" ? t("confirmed") : answer.value,
+        answer.kind === "confirm"
+          ? t("confirmed")
+          : answer.kind === "multi_choice"
+            ? // One choice a line: a choice may hold a comma of its own.
+              chosenOptions(answer.value).join("\n") || none
+            : answer.value,
       ]),
     });
   }

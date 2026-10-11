@@ -5,6 +5,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -294,19 +295,39 @@ class SolutionTest {
 	@Test
 	void theOperatorsListFindsASolutionByItsOrganizationNarrowsByIndustryAndNamesWhoSentIt() {
 		String founder = approvedOwner("founder@harbour.test", "Harbour Analytics");
+		String otherFounder = approvedOwner("founder@northwind.test", "Northwind Claims");
+		UUID harbourOrganization = organizationOf(founder);
+		UUID northwindOrganization = organizationOf(otherFounder);
 		long waiting = JsonPath
 			.<Number>read(body(get(operator, ADMIN).expectStatus().isOk()), "$.awaitingReview")
 			.longValue();
 		Map<String, Object> forLogistics = described("Quay Desk", 0);
 		forLogistics.put("industries", List.of("logistics"));
 		UUID id = submitted(founder, "Quay Desk", forLogistics);
+		approved(otherFounder, "Harbour Claims");
 
 		// The name of the solution does not hold the text; the name of its organization does.
 		String byOrganization = body(get(operator, ADMIN + "?q=HARBOUR").expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(byOrganization, "$.items[*].name")).containsExactly("Quay Desk");
+		assertThat(JsonPath.<List<String>>read(byOrganization, "$.items[*].name"))
+			.containsExactly("Quay Desk", "Harbour Claims");
 		assertThat(JsonPath.<String>read(byOrganization, "$.items[0].organizationName")).isEqualTo("Harbour Analytics");
 		assertThat(JsonPath.<String>read(byOrganization, "$.items[0].submittedBy")).isEqualTo("founder@harbour.test");
 		assertThat(JsonPath.<Number>read(byOrganization, "$.awaitingReview").longValue()).isEqualTo(waiting + 1);
+		assertThat(names(operator, ADMIN + "?q=harbour")).contains("Quay Desk", "Harbour Claims");
+		String all = body(get(operator, ADMIN).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(all, "$.organizations[*].id"))
+			.contains(harbourOrganization.toString(), northwindOrganization.toString());
+		assertThat(JsonPath.<List<String>>read(all, "$.organizations[*].name"))
+			.contains("Harbour Analytics", "Northwind Claims");
+
+		String filteredByOrganization = body(get(operator, ADMIN + "?q=harbour&organizationId=" + harbourOrganization)
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<String>>read(filteredByOrganization, "$.items[*].name"))
+			.containsExactly("Quay Desk");
+		assertThat(JsonPath.<Integer>read(filteredByOrganization, "$.total")).isEqualTo(1);
+		assertThat(names(operator, ADMIN + "?q=harbour&organizationId=" + northwindOrganization))
+			.containsExactly("Harbour Claims");
 
 		assertThat(names(operator, ADMIN + "?q=quay&industry=logistics")).containsExactly("Quay Desk");
 		assertThat(names(operator, ADMIN + "?q=quay&industry=insurance")).isEmpty();
@@ -413,6 +434,130 @@ class SolutionTest {
 		assertThat(names(operator, ADMIN + "?q=removed desk&status=approved")).containsExactly("Removed Desk");
 		assertThat(mail.latestSubjectTo("founder@removed.test")).isEqualTo("Removed Desk is back on BeyondPilot");
 		assertThat(events(id)).containsExactly("solution.approve", "solution.take_down", "solution.restore");
+	}
+
+	@Test
+	void featuredSolutionsLeadOnlyTheViewTheDirectoryOpensWith() {
+		String founder = approvedOwner("founder@featured.test", "Featured Co");
+		UUID[] desks = new UUID[5];
+		for (int number = 1; number <= 4; number++) {
+			Map<String, Object> description = described("Numbat Desk %02d".formatted(number), 0);
+			if (number == 1) {
+				description.put("industries", List.of("banking_finance"));
+			}
+			desks[number] = approved(founder, "Numbat Desk %02d".formatted(number), description);
+		}
+		String organization = JsonPath.read(
+				body(client.get().uri(DIRECTORY + "?q=numbat desk").exchange().expectStatus().isOk()),
+				"$.items[0].organizationSlug");
+		// What a reader gets once they search, filter or pick another order, before anything is featured.
+		List<String> chosen = List.of("?q=numbat desk&sort=newest", "?q=numbat desk&sort=name", "?q=numbat desk",
+				"?industry=banking_finance&sort=newest", "?focusArea=document_processing&sort=newest",
+				"?maturity=pilot&sort=newest", "?organization=" + organization + "&sort=newest", "?sort=name", "");
+		List<List<String>> before = chosen.stream().map(query -> names(DIRECTORY + query)).toList();
+		int total = JsonPath.read(body(client.get().uri(DIRECTORY + "?sort=newest").exchange().expectStatus().isOk()),
+				"$.total");
+
+		// The one featured first stays on top of the one featured after it, whatever their approvals say.
+		post(operator, ADMIN + "/" + desks[2] + "/feature", null).expectStatus().isNoContent();
+		post(operator, ADMIN + "/" + desks[1] + "/feature", null).expectStatus().isNoContent();
+
+		// The opening view: no search, no filter, the newest first.
+		String opening = body(client.get().uri(DIRECTORY + "?sort=newest").exchange().expectStatus().isOk());
+		assertThat(numbats(JsonPath.read(opening, "$.items[*].name"))).containsExactly("Numbat Desk 02",
+				"Numbat Desk 01", "Numbat Desk 04", "Numbat Desk 03");
+		// Every featured solution of the page comes before every other one.
+		assertThat(JsonPath.<List<Boolean>>read(opening, "$.items[*].featured"))
+			.isSortedAccordingTo(Comparator.reverseOrder());
+		// They are counted once and do not come again on a later page.
+		assertThat(JsonPath.<Integer>read(opening, "$.total")).isEqualTo(total);
+		assertThat(names(DIRECTORY + "?sort=newest&page=2")).doesNotContain("Numbat Desk 02", "Numbat Desk 01");
+
+		// A search, a filter or another order is ordered by that alone, as it was before.
+		for (int index = 0; index < chosen.size(); index++) {
+			assertThat(names(DIRECTORY + chosen.get(index))).as(chosen.get(index)).isEqualTo(before.get(index));
+		}
+		assertThat(names(DIRECTORY + "?q=numbat desk&sort=newest")).containsExactly("Numbat Desk 04", "Numbat Desk 03",
+				"Numbat Desk 02", "Numbat Desk 01");
+		// Its card says it is featured wherever the list shows it.
+		assertThat(JsonPath.<List<String>>read(
+				body(client.get().uri(DIRECTORY + "?q=numbat desk&sort=name").exchange().expectStatus().isOk()),
+				"$.items[?(@.featured == true)].name"))
+			.containsExactly("Numbat Desk 01", "Numbat Desk 02");
+
+		// No longer featured, a solution goes back to its place.
+		post(operator, ADMIN + "/" + desks[2] + "/unfeature", null).expectStatus().isNoContent();
+		assertThat(numbats(names(DIRECTORY + "?sort=newest"))).containsExactly("Numbat Desk 01", "Numbat Desk 04",
+				"Numbat Desk 03", "Numbat Desk 02");
+	}
+
+	@Test
+	void onlyAnOperatorFeaturesASolutionWhichStaysFeaturedThroughWhatItsOwnersAndGenAiFundDo() {
+		String founder = approvedOwner("founder@pinner.test", "Pinner Co");
+		approved(founder, "Bilby Alpha");
+		UUID chosen = approved(founder, "Bilby Zulu");
+		UUID waiting = submitted(founder, "Bilby Waiting");
+		UUID draft = create(founder, "Bilby Draft");
+
+		assertProblem(post(founder, ADMIN + "/" + chosen + "/feature", null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(founder, ADMIN + "/" + chosen + "/unfeature", null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		client.post().uri(ADMIN + "/" + chosen + "/feature").header(TestSignIn.CSRF_HEADER, "1").exchange().expectStatus()
+			.isUnauthorized();
+		// A draft is its organization's alone, and what does not exist cannot be featured.
+		assertProblem(post(operator, ADMIN + "/" + draft + "/feature", null), 404, "SOLUTION_NOT_FOUND");
+		assertProblem(post(operator, ADMIN + "/" + UUID.randomUUID() + "/unfeature", null), 404, "SOLUTION_NOT_FOUND");
+		assertThat(featured("?q=bilby")).isEmpty();
+
+		// What its owners read before is still what they save: featuring is not a change of theirs.
+		String before = body(get(founder, MINE + "/" + chosen).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(before, "$.featuredAt")).isNull();
+		post(operator, ADMIN + "/" + chosen + "/feature", null).expectStatus().isNoContent();
+		String record = body(get(operator, ADMIN + "/" + chosen).expectStatus().isOk());
+		String featuredAt = JsonPath.read(record, "$.featuredAt");
+		assertThat(featuredAt).isNotNull();
+		// Featured again, it keeps the time it was featured and nothing new is recorded.
+		post(operator, ADMIN + "/" + chosen + "/feature", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<String>read(body(get(operator, ADMIN + "/" + chosen).expectStatus().isOk()), "$.featuredAt"))
+			.isEqualTo(featuredAt);
+		assertThat(events(chosen)).containsExactly("solution.approve", "solution.feature");
+		// A search is ordered by what the reader chose; the card says which one is featured.
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Alpha", "Bilby Zulu");
+		assertThat(featured("?q=bilby")).containsExactly("Bilby Zulu");
+
+		Map<String, Object> change = keeping(before, described("Bilby Zulu", versionOf(before)));
+		change.put("summary", "Reads claim files faster.");
+		put(founder, MINE + "/" + chosen, change).expectStatus().isOk();
+		assertThat(featured("?q=bilby")).containsExactly("Bilby Zulu");
+
+		// The operators' list marks it and narrows to the featured ones, or to the others.
+		String onlyFeatured = body(get(operator, ADMIN + "?q=bilby&featured=true").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(onlyFeatured, "$.items[*].name")).containsExactly("Bilby Zulu");
+		assertThat(JsonPath.<Integer>read(onlyFeatured, "$.total")).isEqualTo(1);
+		assertThat(JsonPath.<String>read(onlyFeatured, "$.items[0].featuredAt")).isEqualTo(featuredAt);
+		assertThat(names(operator, ADMIN + "?q=bilby&featured=false")).containsExactlyInAnyOrder("Bilby Waiting",
+				"Bilby Alpha");
+
+		// A solution that is not public is featured all the same, and is shown as featured from the moment it is.
+		post(operator, ADMIN + "/" + waiting + "/feature", null).expectStatus().isNoContent();
+		assertThat(featured("?q=bilby")).containsExactly("Bilby Zulu");
+		post(operator, ADMIN + "/" + waiting + "/approve", null).expectStatus().isNoContent();
+		assertThat(featured("?q=bilby")).containsExactly("Bilby Waiting", "Bilby Zulu");
+		// Taken down, it leaves the directory and stays featured; restored, it is back as it was.
+		post(operator, ADMIN + "/" + chosen + "/take-down", Map.of("reason", "unverifiable")).expectStatus()
+			.isNoContent();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Alpha", "Bilby Waiting");
+		assertThat(names(operator, ADMIN + "?q=bilby&featured=true")).containsExactlyInAnyOrder("Bilby Zulu",
+				"Bilby Waiting");
+		post(operator, ADMIN + "/" + chosen + "/restore", null).expectStatus().isNoContent();
+		assertThat(featured("?q=bilby")).containsExactly("Bilby Waiting", "Bilby Zulu");
+
+		post(operator, ADMIN + "/" + chosen + "/unfeature", null).expectStatus().isNoContent();
+		post(operator, ADMIN + "/" + chosen + "/unfeature", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<Object>read(body(get(operator, ADMIN + "/" + chosen).expectStatus().isOk()), "$.featuredAt"))
+			.isNull();
+		assertThat(featured("?q=bilby")).containsExactly("Bilby Waiting");
+		assertThat(events(chosen)).containsExactly("solution.approve", "solution.feature", "solution.take_down",
+				"solution.restore", "solution.unfeature");
 	}
 
 	@Test
@@ -1101,6 +1246,17 @@ class SolutionTest {
 		UUID id = submitted(session, name, description);
 		post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isNoContent();
 		return id;
+	}
+
+	/** Those of the names that are the solutions of the featuring test, in the order they came. */
+	private static List<String> numbats(List<String> names) {
+		return names.stream().filter(name -> name.startsWith("Numbat Desk")).toList();
+	}
+
+	/** The names of the solutions a page of the directory marks as featured, in the order they came. */
+	private List<String> featured(String query) {
+		return JsonPath.read(body(client.get().uri(DIRECTORY + query).exchange().expectStatus().isOk()),
+				"$.items[?(@.featured == true)].name");
 	}
 
 	private List<String> names(String path) {

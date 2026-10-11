@@ -153,7 +153,9 @@ test.describe("workspace organization", () => {
     await expect(page.getByText("Select a country.")).toBeVisible();
     // The website, the year and the description are asked as the mockup asks them.
     await expect(page.getByText("Enter a full address that starts with https://")).toBeVisible();
-    await expect(page.getByText("Enter a four-digit year, such as 2021.")).toBeVisible();
+    await expect(
+      page.getByText("Enter a four-digit year no later than this year, such as 2021."),
+    ).toBeVisible();
     await expect(page.getByText("Describe the organization in a few words.")).toBeVisible();
     // The first field that lacks something is where the person continues.
     await expect(page.getByLabel("Organization name")).toBeFocused();

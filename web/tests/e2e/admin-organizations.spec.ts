@@ -742,7 +742,9 @@ test.describe("admin organizations", () => {
     await page.getByRole("option", { name: "10–49 people" }).click();
     await dialog.getByLabel("Year founded").fill("20x9");
     await dialog.getByRole("button", { name: "Add organization" }).click();
-    await expect(dialog.getByText("Enter a four-digit year, such as 2021.")).toBeVisible();
+    await expect(
+      dialog.getByText("Enter a four-digit year no later than this year, such as 2021."),
+    ).toBeVisible();
     expect(decisions).toEqual([]);
 
     await dialog.getByLabel("Year founded").fill("2019");

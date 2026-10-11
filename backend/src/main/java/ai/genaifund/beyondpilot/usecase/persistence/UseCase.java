@@ -114,6 +114,14 @@ public class UseCase {
 	@Column(nullable = false)
 	private int proposalEditDays = DEFAULT_PROPOSAL_EDIT_DAYS;
 
+	/**
+	 * When an operator featured the use case; null while it is not featured. Only {@code UseCaseRepository.feature} and
+	 * {@code unfeature} write it, so a save of the entity never changes it and featuring leaves the version a save
+	 * sends alone.
+	 */
+	@Column(insertable = false, updatable = false)
+	private @Nullable Instant featuredAt;
+
 	@Column(nullable = false, updatable = false)
 	private UUID createdByAccountId;
 
@@ -454,5 +462,8 @@ public class UseCase {
 
 	public Instant getUpdatedAt() {
 		return updatedAt;
+	}
+	public @Nullable Instant getFeaturedAt() {
+		return featuredAt;
 	}
 }

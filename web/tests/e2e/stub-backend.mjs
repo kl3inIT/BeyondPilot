@@ -397,6 +397,8 @@ createServer((request, response) => {
           title: "Claims triage",
           status: "approved",
           closesAt: "2026-12-31T16:59:00Z",
+          // An operator featured it.
+          featuredAt: "2026-10-08T03:00:00Z",
           updatedAt: "2026-10-07T03:00:00Z",
         },
         {
@@ -409,6 +411,7 @@ createServer((request, response) => {
           title: "Inventory counting",
           status: "draft",
           closesAt: null,
+          featuredAt: null,
           updatedAt: "2026-10-06T03:00:00Z",
         },
       ],
@@ -553,6 +556,15 @@ createServer((request, response) => {
                   help: null,
                   required: true,
                   options: ["Buying", "Carrying", "Claiming"],
+                  maxLength: null,
+                },
+                {
+                  id: "5f0c1d2e-3a4b-4c5d-8e6f-7a8b9c0d1e02",
+                  kind: "multi_choice",
+                  label: "Challenge areas",
+                  help: null,
+                  required: true,
+                  options: ["Claims", "Pricing", "Fraud"],
                   maxLength: null,
                 },
               ]

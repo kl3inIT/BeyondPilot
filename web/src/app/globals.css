@@ -67,6 +67,7 @@
   --color-mint-foreground: var(--mint-foreground);
   --color-peach: var(--peach);
   --color-peach-foreground: var(--peach-foreground);
+  --color-lilac: var(--lilac);
   --color-rose: var(--rose);
   --color-rose-foreground: var(--rose-foreground);
   --color-panel-deep: var(--panel-deep);
@@ -75,6 +76,8 @@
   --color-aurora-azure: var(--aurora-azure);
   --color-aurora-sky: var(--aurora-sky);
   --color-aurora-peach: var(--aurora-peach);
+  --color-headline-violet: var(--headline-violet);
+  --color-logo-plate: var(--logo-plate);
   --color-highlight: var(--highlight);
   --color-highlight-line: var(--highlight-line);
   /* Elevations of the landing (DESIGN.md › Elevation & Depth), all in the --elevation colour. */

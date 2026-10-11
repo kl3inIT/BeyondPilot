@@ -76,7 +76,7 @@ Invariants, checked on the server:
 
 ## Data
 
-Migration `V74__proposal_create_use_case_proposals.sql` (the next free version on `main` when this was written; renumber on merge if another change took it).
+Migration `V78__proposal_create_use_case_proposals.sql` (the next free version on `main` when this was written; renumber on merge if another change took it).
 
 ```sql
 create table use_case_proposal (
@@ -117,7 +117,7 @@ create table use_case_proposal_solution (
 );
 ```
 
-A second migration, `V75__usecase_add_proposal_edit_days.sql`, adds `use_case.proposal_edit_days integer not null default 7 check (proposal_edit_days between 0 and 90)`; the module `usecase` owns it, GenAI Fund sets it when it creates a use case, and the use case an organization writes itself gets the default. `UseCaseTarget` and the public use case carry it as `proposalEditDays`, so the public page can say that proposals can be edited for that many days after sending.
+A second migration, `V79__usecase_add_proposal_edit_days.sql`, adds `use_case.proposal_edit_days integer not null default 7 check (proposal_edit_days between 0 and 90)`; the module `usecase` owns it, GenAI Fund sets it when it creates a use case, and the use case an organization writes itself gets the default. `UseCaseTarget` and the public use case carry it as `proposalEditDays`, so the public page can say that proposals can be edited for that many days after sending.
 
 The snapshot is the profile without the rate band and without whether it is listed: the proposal shows what the sender chose to say about themselves, nothing the profile keeps private.
 

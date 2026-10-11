@@ -17,8 +17,11 @@ import { AddressField, AppSteps } from "./connect-panel";
 
 type McpTab = "setup" | "tools" | "apps" | "activity";
 
-/** How many tools the servers have and how many apps are connected, which the tabs show. */
-type McpCounts = { tools: number; apps: number };
+/**
+ * How many tools the servers have and how many apps are connected, which the tabs show, and how
+ * many of those apps use each server, which a question before switching one off says.
+ */
+type McpCounts = { tools: number; apps: number; operatorApps: number; userApps: number };
 
 /** The head of Admin › AI › MCP: its title and its tabs. */
 async function McpAdminHeader({ current, counts }: { current: McpTab; counts: McpCounts }) {
@@ -114,7 +117,7 @@ async function McpSetupPage({
         />
       </SettingsSection>
       <SettingsSection title={t("user.title")} lead={t("user.lead")}>
-        <UserServerSwitch enabled={settings.userServerEnabled} />
+        <UserServerSwitch enabled={settings.userServerEnabled} apps={counts.userApps} />
         <AddressField address={settings.userServerAddress} label={t("address")} />
       </SettingsSection>
       <SettingsSection title={t("hosts.title")} lead={t("hosts.lead")}>
@@ -133,7 +136,7 @@ async function McpSetupPage({
                   </span>
                 )}
               </div>
-              <RemoveHost host={host.host} />
+              <RemoveHost host={host.host} apps={host.apps} othersAllowed={hosts.allowOtherHosts} />
             </li>
           ))}
         </ul>
@@ -185,9 +188,11 @@ async function McpToolsPage({ settings, counts }: { settings: McpSettings; count
                   </div>
                   <ToolSwitch
                     server={tool.server}
+                    serverName={t(`${server}.title`)}
                     name={tool.name}
                     enabled={tool.enabled}
                     label={t("switch", { tool: tool.name })}
+                    apps={server === "operator" ? counts.operatorApps : counts.userApps}
                   />
                 </li>
               ))}
