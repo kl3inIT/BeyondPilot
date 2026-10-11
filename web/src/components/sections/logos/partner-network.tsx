@@ -127,7 +127,8 @@ const network: Role[] = [
 
 /**
  * "The network behind every program": one full-width panel per role, a wall of each organisation's
- * logo in its own colours, on a panel that turns into a light plate at night (DESIGN.md › Landing structure).
+ * logo in its own colours, on the panel by day; at night the panel falls away and the wall stands on
+ * a light plate under its heading (DESIGN.md › Landing structure).
  */
 function PartnerNetwork() {
   const t = useTranslations("Home.network");
@@ -141,25 +142,20 @@ function PartnerNetwork() {
           </h2>
           <p className="max-w-2xl text-lg text-muted-foreground">{t("description")}</p>
         </div>
-        <div className="flex flex-col gap-3 md:gap-4 xl:gap-5">
+        <div className="flex flex-col gap-3 md:gap-4 xl:gap-5 dark:gap-10">
           {network.map(({ role, organisations }) => (
             <section
               key={role}
               aria-labelledby={`network-${role}`}
-              className="flex flex-col gap-5 rounded-2xl border bg-card p-5 md:gap-7 md:p-7 xl:p-8 dark:border-transparent dark:bg-logo-plate"
+              className="flex flex-col gap-5 rounded-2xl border bg-card p-5 md:gap-7 md:p-7 xl:p-8 dark:border-0 dark:bg-transparent dark:p-0"
             >
               <div className="flex flex-col gap-1">
-                <h3
-                  id={`network-${role}`}
-                  className="text-xl font-semibold md:text-2xl dark:text-background"
-                >
+                <h3 id={`network-${role}`} className="text-xl font-semibold md:text-2xl">
                   {t(`roles.${role}.title`)}
                 </h3>
-                <p className="text-base text-muted-foreground dark:text-background/70">
-                  {t(`roles.${role}.description`)}
-                </p>
+                <p className="text-base text-muted-foreground">{t(`roles.${role}.description`)}</p>
               </div>
-              <ul className="flex flex-wrap items-center gap-x-6 gap-y-5 md:gap-x-10 md:gap-y-7">
+              <ul className="flex flex-wrap items-center gap-x-6 gap-y-5 md:gap-x-10 md:gap-y-7 dark:rounded-2xl dark:bg-logo-plate dark:p-5 dark:md:p-7">
                 {organisations.map(({ file, name, width, shape }) => (
                   <li key={file}>
                     <Image
