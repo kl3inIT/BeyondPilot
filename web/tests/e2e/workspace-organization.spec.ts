@@ -617,6 +617,11 @@ test.describe("workspace organization", () => {
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);
+
+    // Opened on its own page, the last tab is in view without anyone scrolling the row.
+    await page.goto((await tabs.last().getAttribute("href"))!);
+    await expect(tabs.last()).toHaveAttribute("aria-current", "page");
+    await expect(tabs.last()).toBeInViewport();
   });
 
   test("the last owner cannot leave, in the words of the refusal's code", async ({
