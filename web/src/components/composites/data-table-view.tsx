@@ -267,7 +267,7 @@ function DataTableView<TData extends RowData>({
                         onClick={() =>
                           sortBy(header.column.id, header.column.columnDef.meta?.descFirst ?? false)
                         }
-                        className="-mx-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-medium outline-none hover:bg-background/60 focus-visible:ring-2 focus-visible:ring-ring"
+                        className="inline-flex min-h-6 items-center gap-1.5 rounded-md font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <table.FlexRender header={header} />
                         {direction === null ? (
