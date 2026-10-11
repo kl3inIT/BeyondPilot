@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useId, useState, useTransition } from "react";
 
 import { Switch } from "@/components/ui/switch";
 import { useNotify } from "@/hooks/use-notify";
@@ -29,6 +29,8 @@ function JoinAccess({ emailDomain, autoJoin }: JoinAccessProps) {
   const titleId = useId();
   const toggleId = useId();
   const [pending, setPending] = useState(false);
+  // The switch shows what the server last said, so it waits until the page has read the change.
+  const [refreshing, startRefresh] = useTransition();
   const state = autoJoin ? "on" : "off";
 
   async function toggle() {
@@ -36,7 +38,7 @@ function JoinAccess({ emailDomain, autoJoin }: JoinAccessProps) {
     try {
       await changeOrganizationAutoJoin({ body: { autoJoin: !autoJoin } });
       notify.success(autoJoin ? "Organization.done.autoJoinOff" : "Organization.done.autoJoinOn");
-      router.refresh();
+      startRefresh(() => router.refresh());
     } catch (error) {
       notify.error(organizationError(error));
     } finally {
@@ -64,7 +66,7 @@ function JoinAccess({ emailDomain, autoJoin }: JoinAccessProps) {
           aria-labelledby={toggleId}
           aria-describedby={titleId}
           checked={autoJoin}
-          disabled={pending}
+          disabled={pending || refreshing}
           onCheckedChange={toggle}
           className="origin-right scale-150"
         />

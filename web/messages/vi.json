@@ -3717,7 +3717,8 @@
       "note": {
         "create": "Nếu làm việc một mình, hãy tạo tổ chức cho riêng bạn.",
         "request": "Một chủ sở hữu của {name} sẽ quyết định.",
-        "requestDomain": "Email của bạn không thuộc {domain} nên một chủ sở hữu của {name} sẽ quyết định."
+        "requestDomain": "Email của bạn không thuộc {domain} nên một chủ sở hữu của {name} sẽ quyết định.",
+        "requestOnDomain": "Email của bạn thuộc {domain}. Một chủ sở hữu của {name} sẽ duyệt yêu cầu của bạn."
       },
       "ask": {
         "request": {
@@ -4723,7 +4724,8 @@
         "declined": "Đã từ chối"
       },
       "empty": {
-        "title": "Chưa có yêu cầu giới thiệu"
+        "title": "Chưa có yêu cầu giới thiệu",
+        "description": "Yêu cầu sẽ hiện ở đây khi có người muốn được giới thiệu với một giải pháp của bạn."
       },
       "actions": {
         "reply": "Trả lời",

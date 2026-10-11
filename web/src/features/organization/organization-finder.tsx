@@ -192,7 +192,10 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
         <p className="text-xs text-muted-foreground">
           {only?.way === "request"
             ? only.emailDomain
-              ? t("note.requestDomain", { domain: only.emailDomain, name: only.name })
+              ? t(only.onDomain ? "note.requestOnDomain" : "note.requestDomain", {
+                  domain: only.emailDomain,
+                  name: only.name,
+                })
               : t("note.request", { name: only.name })
             : t("note.create")}
         </p>

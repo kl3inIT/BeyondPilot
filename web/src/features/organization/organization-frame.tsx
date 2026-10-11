@@ -10,7 +10,6 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { MyOrganization, Organization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -19,6 +18,7 @@ import { NoticeCard } from "./notice-card";
 import { OrganizationAction } from "./organization-action";
 import { websiteHost } from "./organization-format";
 import { OrganizationMark } from "./organization-mark";
+import { OrganizationTabs } from "./organization-tabs";
 
 type OrganizationTab = "profile" | "members" | "solutions" | "introductions" | "useCases";
 
@@ -97,18 +97,27 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
               {organization.name}
             </h1>
           </div>
-          <ul aria-label={t("facts")} className="flex flex-wrap gap-2">
+          <ul aria-label={t("facts")} className="flex gap-x-3 md:flex-wrap md:gap-2">
             <Fact icon={Building2Icon}>{typeName(organization.type)}</Fact>
             {country && <Fact icon={MapPinIcon}>{country}</Fact>}
             {host && organization.website ? (
               <Fact icon={GlobeIcon}>
-                <TextButton href={organization.website} target="_blank" rel="noreferrer">
-                  {host}
+                <TextButton
+                  href={organization.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="min-w-0 shrink"
+                >
+                  <span className="truncate">{host}</span>
                   <ArrowUpRightIcon aria-hidden="true" />
                 </TextButton>
               </Fact>
             ) : (
-              organization.emailDomain && <Fact icon={GlobeIcon}>{organization.emailDomain}</Fact>
+              organization.emailDomain && (
+                <Fact icon={GlobeIcon}>
+                  <span className="truncate">{organization.emailDomain}</span>
+                </Fact>
+              )
             )}
           </ul>
         </div>
@@ -206,32 +215,20 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
           />
         )}
 
-        <nav aria-label={t("tabs.label")} className="flex items-end gap-5 border-b">
-          {tabs.map((tab) => (
-            <Link
-              key={tab.key}
-              href={tab.href}
-              aria-current={tab.key === current ? "page" : undefined}
-              className="group -mb-px flex items-center gap-1.5 border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
-            >
-              {tab.label}
-              {tab.count !== undefined && (
-                <span className="text-xs group-aria-[current=page]:text-primary">{tab.count}</span>
-              )}
-            </Link>
-          ))}
-        </nav>
-
+        <OrganizationTabs label={t("tabs.label")} tabs={tabs} current={current} />
         {children}
       </div>
     </div>
   );
 }
 
-/** One thing the organization is, as a chip under its name: its kind, its country, its website. */
+/**
+ * One thing the organization is, under its name: its kind, its country, its website. A chip from
+ * 768px; on a phone plain text on one line, where the last one gives way when they do not fit.
+ */
 function Fact({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
   return (
-    <li className="flex h-8 items-center gap-1.5 rounded-full border bg-card px-3 text-sm font-medium">
+    <li className="flex min-w-0 shrink-0 items-center gap-1.5 text-sm font-medium last:shrink md:h-8 md:rounded-full md:border md:bg-card md:px-3">
       <Icon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
       {children}
     </li>

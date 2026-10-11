@@ -324,8 +324,9 @@ class OrganizationTest {
 			.isNoContent();
 		String colleague = signIn("colleague@domain.test");
 
-		// It is off until an owner turns it on.
+		// It is off until an owner turns it on; the colleague is still told the domain is theirs.
 		assertThat(JsonPath.<String>read(mine(colleague), "$.suggestion.way")).isEqualTo("request");
+		assertThat(JsonPath.<Boolean>read(mine(colleague), "$.suggestion.onDomain")).isTrue();
 		assertProblem(put(colleague, API + "/mine/auto-join", Map.of("autoJoin", true)), 403,
 				"ORGANIZATION_MEMBERSHIP_REQUIRED");
 		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
@@ -396,9 +397,9 @@ class OrganizationTest {
 		UUID id = approved(signIn("founder@asked.test"), "Asked Co");
 		String outsider = signIn("outsider@elsewhere.test");
 
-		assertThat(JsonPath.<String>read(
-				body(get(outsider, API + "/organizations?q=asked").expectStatus().isOk()), "$.items[0].way"))
-			.isEqualTo("request");
+		String asked = body(get(outsider, API + "/organizations?q=asked").expectStatus().isOk());
+		assertThat(JsonPath.<String>read(asked, "$.items[0].way")).isEqualTo("request");
+		assertThat(JsonPath.<Boolean>read(asked, "$.items[0].onDomain")).isFalse();
 		assertThat(outcome(post(outsider, API + "/organizations/" + id + "/join", Map.of()))).isEqualTo("requested");
 		assertProblem(post(outsider, API + "/organizations", creation("Elsewhere")), 409,
 				"ORGANIZATION_REQUEST_PENDING");
