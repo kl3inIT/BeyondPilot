@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 
 import { Link } from "@/i18n/navigation";
-import { siteRoutes } from "@/lib/site";
+import { genaiFundLinks, siteRoutes } from "@/lib/site";
 
 type BrandLockupProps = {
   /** The header and menu show the logo alone; the footer adds "Funded by GenAI Fund" under it. */
@@ -44,20 +44,27 @@ function BrandLockup({ showBackedBy = true }: BrandLockupProps) {
       {showBackedBy && (
         <p className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           {t("backedBy")}
-          <Image
-            src="/brand/genaifund-logo.png"
-            alt={t("genaiFund")}
-            width={1200}
-            height={252}
-            className="h-5.25 w-auto dark:hidden"
-          />
-          <Image
-            src="/brand/genaifund-logo-white.png"
-            alt={t("genaiFund")}
-            width={1200}
-            height={254}
-            className="hidden h-5.25 w-auto dark:block"
-          />
+          <a
+            href={genaiFundLinks.site}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-sm outline-none hover:opacity-80 focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <Image
+              src="/brand/genaifund-logo.png"
+              alt={t("genaiFund")}
+              width={1200}
+              height={252}
+              className="h-5.25 w-auto dark:hidden"
+            />
+            <Image
+              src="/brand/genaifund-logo-white.png"
+              alt={t("genaiFund")}
+              width={1200}
+              height={254}
+              className="hidden h-5.25 w-auto dark:block"
+            />
+          </a>
         </p>
       )}
     </div>

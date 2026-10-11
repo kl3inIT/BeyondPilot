@@ -8,7 +8,7 @@ import { SearchPreview } from "@/components/sections/hero/search-preview";
 import { Glow } from "@/components/ui/glow";
 import { Section } from "@/components/ui/section";
 import { getPathname } from "@/i18n/navigation";
-import { siteRoutes } from "@/lib/site";
+import { genaiFundLinks, siteRoutes } from "@/lib/site";
 
 const rise =
   "animate-in ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 motion-reduce:animate-none";
@@ -93,20 +93,27 @@ function Hero() {
             )}
           >
             {s("backedBy")}
-            <Image
-              src="/brand/genaifund-logo.png"
-              alt={s("genaiFund")}
-              width={1200}
-              height={252}
-              className="h-5.25 w-auto dark:hidden"
-            />
-            <Image
-              src="/brand/genaifund-logo-white.png"
-              alt={s("genaiFund")}
-              width={1200}
-              height={254}
-              className="hidden h-5.25 w-auto dark:block"
-            />
+            <a
+              href={genaiFundLinks.site}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-sm outline-none hover:opacity-80 focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <Image
+                src="/brand/genaifund-logo.png"
+                alt={s("genaiFund")}
+                width={1200}
+                height={252}
+                className="h-5.25 w-auto dark:hidden"
+              />
+              <Image
+                src="/brand/genaifund-logo-white.png"
+                alt={s("genaiFund")}
+                width={1200}
+                height={254}
+                className="hidden h-5.25 w-auto dark:block"
+              />
+            </a>
           </p>
         </div>
         <SearchPreview className={cn(rise, "delay-340 lg:w-140 lg:shrink-0")} />
