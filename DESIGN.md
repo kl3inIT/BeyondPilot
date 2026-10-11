@@ -220,7 +220,7 @@ A 1312px column with 64px gutters on desktop, 32px on tablet (1024) and 20px on 
 1. Header: five destinations (AI Solutions, AI Talent, Use Cases & Projects, Events & Programs, How It Works), the language menu, Sign in and Get started (the ink-coloured `inverse` action).
 2. Hero: live-challenge pill, display headline whose second line takes the azure-to-violet gradient, lead, one search, the two actions and "Backed by GenAI Fund", beside a real screenshot of the search results, on the aurora (`aurora-*` tokens).
 3. Ecosystem strip: a compact row of five enterprise logos (Tasco, Shinhan Future's Lab, Coca-Cola, KFC, Guardian), never labelled as customers.
-4. Five ways to explore: photo cards for solutions, talent, use cases, events and programs.
+4. Five ways to explore: cards for solutions, talent, use cases, events and programs, each listing real entries with the logo or cover of who is behind them; no decorative icons.
 5. How it works: three steps on sky, lilac and peach tints.
 6. Featured opportunity: the live challenge card, a deep-to-bright azure panel (`panel-*` tokens) beside its facts and actions.
 7. Core team and GenAI Fund backing, then "The network behind every program": one full-width panel each for enterprises, technology partners, and government and institutions, a wall of logos in their own colours, on the panel by day; at night the panel falls away and each wall stands on a light plate (`logo-plate`) under its heading so no mark loses its colours, closed by an "And many more" line. The ecosystem founders are not on the landing page; they open the AI talent directory.
