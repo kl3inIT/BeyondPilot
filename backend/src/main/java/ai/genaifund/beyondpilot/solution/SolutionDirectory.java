@@ -143,7 +143,7 @@ public class SolutionDirectory {
 
 	private static OfferedSolution offered(Solution solution) {
 		return new OfferedSolution(solution.getId(), solution.getOrganizationId(), solution.getName(),
-				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity());
+				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity(), solution.getDemoUrl());
 	}
 
 	/**
