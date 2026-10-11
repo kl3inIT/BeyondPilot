@@ -4250,8 +4250,7 @@
       "ownLead": "Đây là giải pháp của tổ chức bạn, như người khác thấy.",
       "ownEdit": "Sửa giải pháp này",
       "deployments": "{count} triển khai khách hàng",
-      "backing": "GenAI Fund xác nhận:",
-      "featured": "Nổi bật"
+      "backing": "GenAI Fund xác nhận:"
     },
     "filters": {
       "search": "Tìm theo tên hoặc mô tả",
@@ -4869,8 +4868,7 @@
       "edit": "Sửa hồ sơ của bạn",
       "noProject": "Chưa có dự án nào",
       "projects": "{count} dự án",
-      "view": "Xem hồ sơ",
-      "featured": "Nổi bật"
+      "view": "Xem hồ sơ"
     },
     "filters": {
       "search": "Tìm theo tên, kỹ năng hoặc dự án",
@@ -6371,7 +6369,6 @@
       "none": "Đang mở, không có hạn"
     },
     "posted": "Đăng {when}",
-    "featured": "Nổi bật",
     "view": "Xem bài toán",
     "detail": {
       "by": "{organization} · Đăng {when}",
