@@ -42,12 +42,7 @@ function TalentPreview({ profile }: { profile: TalentProfile }) {
         <DialogContent className="max-h-svh overflow-y-auto sm:max-w-3xl">
           <DialogHeader>
             <div className="flex items-center gap-4">
-              <TalentPhoto
-                name={profile.name}
-                photoFileId={profile.photoFileId}
-                size={64}
-                className="size-16 text-lg"
-              />
+              <TalentPhoto name={profile.name} photoFileId={profile.photoFileId} size="2xl" />
               <div className="flex min-w-0 flex-col gap-1">
                 <DialogTitle>{profile.name}</DialogTitle>
                 {kind && <p className="text-sm text-muted-foreground">{kind}</p>}

@@ -54,3 +54,5 @@ The alternatives were:
 Facet and kind restrictions must be applied before the semantic candidate-pool limit. Counts and page results use the same eligibility rules, including public visibility and closed-use-case exclusion. Search defaults to relevance; an explicitly selected directory sort remains supported. Programs keep phase groups and upcoming events when browsing without a query; a query shows a paged, ranked set of program cards.
 
 The web retains the existing domain cards and their real data, not per-result detail requests or invented defaults. Search/filter/size changes clear the page; the selected size remains available even when its result set now fits on one page. A cursor list with only a size control renders no empty pagination navigation.
+
+Search-backed paging stays within the existing search API's 50-page window; the UI clamps an out-of-window requested page and does not generate links beyond it. Integrating the latest `main` also retains its organization filter/options on Admin Solutions alongside the selected page size.

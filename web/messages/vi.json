@@ -4230,6 +4230,10 @@
       "search": "Tìm giải pháp AI",
       "toggle": "Bộ lọc",
       "adminSearch": "Tìm theo giải pháp hoặc tổ chức",
+      "organization": {
+        "label": "Tổ chức",
+        "all": "Mọi tổ chức"
+      },
       "industry": {
         "label": "Ngành",
         "all": "Mọi ngành"

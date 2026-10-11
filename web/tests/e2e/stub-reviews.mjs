@@ -375,6 +375,7 @@ function page(url, records, statusOf, textOf, summaryOf, countryOf) {
   const text = (url.searchParams.get("q") ?? "").toLowerCase();
   const status = url.searchParams.get("status");
   const country = url.searchParams.get("country");
+  const organizationId = url.searchParams.get("organizationId");
   const featured = url.searchParams.get("featured");
   const size = Number(url.searchParams.get("size")) || 25;
   const number = Number(url.searchParams.get("page")) || 1;
@@ -382,6 +383,7 @@ function page(url, records, statusOf, textOf, summaryOf, countryOf) {
     // A merged record is listed only when merged ones are asked for, as the backend lists it.
     (record) =>
       (status ? statusOf(record) === status : statusOf(record) !== "merged") &&
+      (!organizationId || record.organizationId === organizationId) &&
       (!text || textOf(record).toLowerCase().includes(text)) &&
       (!country || countryOf?.(record) === country) &&
       (featured === null || Boolean(record.featuredAt) === (featured === "true")),
@@ -574,6 +576,14 @@ export function answerReview(url, account) {
         : path === "/api/solution/admin/solutions"
           ? {
               ...found,
+              organizations: [
+                ...new Map(
+                  records.map((record) => [
+                    record.organizationId,
+                    { id: record.organizationId, name: record.organizationName },
+                  ]),
+                ).values(),
+              ].sort((left, right) => left.name.localeCompare(right.name)),
               awaitingReview: records.filter((record) => record.status === "in_review").length,
               deploymentsAwaitingReview: records
                 .flatMap((record) => record.customerDeployments)

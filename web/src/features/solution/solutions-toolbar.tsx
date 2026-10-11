@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { FilterToolbar } from "@/components/composites/filter-toolbar";
 import { useVocabulary } from "@/i18n/vocabulary";
+import type { AdminSolutionList } from "@/lib/api/generated";
 
 import { industries, featuredChoices, reviewedStatuses } from "./solution-codes";
 import { SolutionsFilters } from "./solutions-filters";
@@ -15,7 +16,7 @@ type SolutionsToolbarProps =
       /** How much of the list shows, already worded; absent when nothing matches. */
       count: string | null;
     }
-  | { list: "admin" };
+  | { list: "admin"; organizationOptions: AdminSolutionList["organizations"] };
 
 /**
  * Search and filters of a list of solutions: the public directory's facets, or the operators' status,
@@ -35,7 +36,14 @@ function SolutionsToolbar(props: SolutionsToolbarProps) {
       parsers={adminSolutionsSearch}
       searchLabel={t("adminSearch")}
       clearLabel={t("clear")}
+      searchBehavior="submit"
       filters={[
+        {
+          key: "organizationId",
+          label: t("organization.label"),
+          all: t("organization.all"),
+          options: props.organizationOptions.map(({ id, name }) => ({ value: id, label: name })),
+        },
         {
           key: "status",
           label: t("status.label"),

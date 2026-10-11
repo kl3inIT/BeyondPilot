@@ -47,12 +47,7 @@ function TalentCard({
       )}
     >
       <div className="flex items-center gap-3">
-        <TalentPhoto
-          name={person.name}
-          photoFileId={person.photoFileId}
-          size={48}
-          className="size-12 text-sm ring-2 ring-talent/40 ring-offset-2 ring-offset-card"
-        />
+        <TalentPhoto name={person.name} photoFileId={person.photoFileId} size="xl" ringed />
         <div className="flex min-w-0 flex-col gap-0.5">
           <h2 className="truncate font-medium">
             {linked ? (

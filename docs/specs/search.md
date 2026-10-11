@@ -133,6 +133,7 @@ Rules of the results:
 - **The query is never logged.**
 - **Directories share the engine.** Solutions, Talent, Use Cases and Programs call this API when `q` is nonblank, with their kind, filters, order and page size. Without a query they keep their normal browse endpoints and featured/default ordering.
 - **Filters precede ranking.** Kind and facet eligibility apply before the nearest-vector candidate limit, not after a globally capped result set. Counts and page items agree for the selected kind. Public visibility and closed-use-case exclusion still apply.
+- **Bounded paging.** Search-backed directories use the API's existing 50-page window: out-of-window requested pages clamp to 50 and pagination never offers page 51. Browse-only directories retain their domain pagination.
 
 ## Ranking
 

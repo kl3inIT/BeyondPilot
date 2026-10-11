@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.solution;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -18,6 +19,7 @@ import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListResponse;
+import ai.genaifund.beyondpilot.solution.dto.AdminSolutionOrganizationOptionResponse;
 import ai.genaifund.beyondpilot.solution.dto.RejectCustomerDeploymentRequest;
 import ai.genaifund.beyondpilot.solution.dto.RejectSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SendBackSolutionRequest;
@@ -96,10 +98,17 @@ public class SolutionAdministration {
 		int page = request.page() == null ? 1 : request.page();
 		int size = request.size() == null ? PAGE_SIZE : request.size();
 		List<UUID> named = text == null ? List.of() : organizations.named(text);
-		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(text, named, request.status(),
-				request.industry(), request.featured(), size, (long) (page - 1) * size);
+		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(text, named, request.organizationId(),
+				request.status(), request.industry(), request.featured(), size, (long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
+		Map<UUID, OrganizationName> optionNames = organizations.names(solutionList.adminOrganizationIds());
+		List<AdminSolutionOrganizationOptionResponse> organizationOptions = optionNames.values()
+			.stream()
+			.map(name -> new AdminSolutionOrganizationOptionResponse(name.id(), name.name()))
+			.sorted(Comparator.comparing(AdminSolutionOrganizationOptionResponse::name, String.CASE_INSENSITIVE_ORDER)
+				.thenComparing(AdminSolutionOrganizationOptionResponse::id))
+			.toList();
 		Map<UUID, Person> senders = identity.people(rows.stream()
 			.map(SolutionQueryRepository.Row::submittedByAccountId)
 			.filter(Objects::nonNull)
@@ -108,9 +117,10 @@ public class SolutionAdministration {
 		return new AdminSolutionListResponse(rows.stream()
 			.map(row -> SolutionViews.adminSummary(row, name(names, row.organizationId()),
 					sender(senders, row.submittedByAccountId())))
-			.toList(), page, size,
-				solutionList.adminCount(text, named, request.status(), request.industry(), request.featured()),
-				solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview());
+			.toList(), organizationOptions, page, size,
+			solutionList.adminCount(text, named, request.organizationId(), request.status(), request.industry(),
+					request.featured()),
+			solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview());
 	}
 
 	/**
@@ -384,7 +394,8 @@ public class SolutionAdministration {
 	@Transactional(readOnly = true)
 	public SolutionsAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
-		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(null, List.of(), "in_review", null, null, limit,
+		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(null, List.of(), null, "in_review", null, null,
+				limit,
 				0);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
