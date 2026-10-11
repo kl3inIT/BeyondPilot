@@ -4,8 +4,8 @@ import { useTranslations } from "next-intl";
 import { debounce, useQueryStates } from "nuqs";
 import { useTransition } from "react";
 
-import { DirectorySearch } from "@/components/composites/directory-search";
 import { DirectorySortSelect } from "@/components/composites/directory-sort";
+import { DirectoryToolbar } from "@/components/composites/directory-toolbar";
 import {
   Select,
   SelectContent,
@@ -22,9 +22,13 @@ import { programsPublicSearch, publicPhases } from "./programs-public-search";
 /** The value of the tab and the select that narrow nothing; the URL then has no parameter. */
 const ALL = "all";
 
+/** How long the search waits after the last keystroke before it asks the server. */
+const SEARCH_DELAY_MS = 300;
+
 /**
- * The phase tabs and the type filter of the programs list. They are the URL: a change writes it and
- * the server renders the list again.
+ * The search, the type filter and the phase tabs of the programs list. They are the URL: a change
+ * writes it and the server renders the list again. Only a search has an order to choose; without one
+ * the order stays in its place, switched off, so nothing moves when a person starts typing.
  */
 function ProgramsPublicFilters({
   counts,
@@ -38,6 +42,7 @@ function ProgramsPublicFilters({
     shallow: false,
     startTransition,
   });
+  const searching = Boolean(search.q.trim());
   const typeItems = [
     { value: ALL, label: t("filters.allTypes") },
     ...programTypes.map((value) => ({ value, label: types(value) })),
@@ -45,15 +50,18 @@ function ProgramsPublicFilters({
 
   return (
     <div className="flex flex-col gap-3 border-b">
-      <div className="flex flex-col gap-3 pb-3 md:flex-row md:items-center">
-        <DirectorySearch
-          label={t("search")}
-          value={search.q}
-          loading={loading}
-          onChange={(q) =>
-            setSearch({ q, page: null }, { limitUrlUpdates: q ? debounce(300) : undefined })
-          }
-        />
+      <DirectoryToolbar
+        search={{
+          label: t("search"),
+          value: search.q,
+          loading,
+          onChange: (q) =>
+            setSearch(
+              { q, page: null },
+              { limitUrlUpdates: q ? debounce(SEARCH_DELAY_MS) : undefined },
+            ),
+        }}
+      >
         <Select
           items={typeItems}
           value={search.type ?? ALL}
@@ -61,7 +69,7 @@ function ProgramsPublicFilters({
             setSearch({ type: programTypes.find((type) => type === value) ?? null, page: null })
           }
         >
-          <SelectTrigger size="lg" aria-label={t("filters.type")} className="w-full md:w-52">
+          <SelectTrigger size="lg" aria-label={t("filters.type")} className="w-full md:w-60">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -74,14 +82,13 @@ function ProgramsPublicFilters({
             </SelectGroup>
           </SelectContent>
         </Select>
-        {search.q.trim() && (
-          <DirectorySortSelect
-            searching
-            value={search.sort === "relevance" ? null : search.sort}
-            onChange={(sort) => setSearch({ sort, page: null })}
-          />
-        )}
-      </div>
+        <DirectorySortSelect
+          searching={searching}
+          disabled={!searching}
+          value={searching && search.sort !== "relevance" ? search.sort : null}
+          onChange={(sort) => setSearch({ sort, page: null })}
+        />
+      </DirectoryToolbar>
       <Tabs
         value={search.phase ?? ALL}
         onValueChange={(value) =>
@@ -93,7 +100,7 @@ function ProgramsPublicFilters({
           {publicPhases.map((phase) => (
             <TabsTrigger key={phase} value={phase}>
               {t(`filters.${phase}`)}
-              {!search.q.trim() && counts[phase] > 0 && (
+              {!searching && counts[phase] > 0 && (
                 <span className="text-muted-foreground tabular-nums">{counts[phase]}</span>
               )}
             </TabsTrigger>
