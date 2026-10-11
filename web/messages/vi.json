@@ -175,7 +175,11 @@
         "skill1": "Machine learning",
         "skill2": "Ứng dụng LLM",
         "skill3": "Thị giác máy tính",
-        "skill4": "Kỹ thuật dữ liệu"
+        "skill4": "Kỹ thuật dữ liệu",
+        "skill5": "AI agent",
+        "skill6": "RAG",
+        "skill7": "Voice agent",
+        "skill8": "MLOps"
       },
       "useCases": {
         "title": "Bài toán & Dự án",

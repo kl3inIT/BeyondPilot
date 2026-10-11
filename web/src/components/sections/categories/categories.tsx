@@ -47,7 +47,7 @@ const categories = [
 ] as const;
 
 const rows = [1, 2] as const;
-const skills = [1, 2, 3, 4] as const;
+const skills = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 
 /**
  * Five ways into the product's directories and the program list, three cards over two (Figma

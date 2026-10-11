@@ -9,13 +9,13 @@ const tabs = ["all", "solutions", "useCases", "programs"] as const;
 
 /**
  * Listings a search for "AI agents" returns, one of each kind the site lists for it, each with the
- * logo of who is behind it. `ink` marks a logo on transparent that turns to one light ink at night.
+ * logo of who is behind it. `plain` marks a logo on transparent, which needs room inside its tile.
  */
 const results = [
-  { id: "revve", kind: "solution", logo: "/landing/logo-revve.jpeg", ink: false },
-  { id: "shieldbase", kind: "solution", logo: "/landing/logo-shieldbase.png", ink: false },
-  { id: "claims", kind: "useCase", logo: "/partners/network/coca-cola.png", ink: true },
-  { id: "fasttrack", kind: "program", logo: "/landing/logo-nvidia.png", ink: true },
+  { id: "revve", kind: "solution", logo: "/landing/logo-revve.jpeg", plain: false },
+  { id: "shieldbase", kind: "solution", logo: "/landing/logo-shieldbase.png", plain: false },
+  { id: "claims", kind: "useCase", logo: "/partners/network/coca-cola.png", plain: true },
+  { id: "fasttrack", kind: "program", logo: "/landing/logo-nvidia.png", plain: true },
 ] as const;
 
 const kindInk = {
@@ -69,15 +69,15 @@ function SearchPreview({ className }: { className?: string }) {
           ))}
         </ul>
         <ul className="divide-y">
-          {results.map(({ id, kind, logo, ink }) => (
+          {results.map(({ id, kind, logo, plain }) => (
             <li key={id} className="flex gap-4 px-4 py-4 md:px-5">
-              <span className="relative size-10 shrink-0 overflow-hidden rounded-lg border bg-card">
+              <span className="relative size-10 shrink-0 overflow-hidden rounded-lg border bg-card dark:bg-logo-plate">
                 <Image
                   src={logo}
                   alt=""
                   fill
                   sizes="40px"
-                  className={cn("object-contain", ink && "p-1 dark:brightness-0 dark:invert")}
+                  className={cn("object-contain", plain && "p-1")}
                 />
               </span>
               <div className="flex min-w-0 flex-col gap-1">

@@ -175,7 +175,11 @@
         "skill1": "Machine learning",
         "skill2": "LLM applications",
         "skill3": "Computer vision",
-        "skill4": "Data engineering"
+        "skill4": "Data engineering",
+        "skill5": "AI agents",
+        "skill6": "RAG",
+        "skill7": "Voice agents",
+        "skill8": "MLOps"
       },
       "useCases": {
         "title": "Use Cases & Projects",

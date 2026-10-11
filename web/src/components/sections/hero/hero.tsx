@@ -41,7 +41,10 @@ function Hero() {
             {t("eyebrow")}
           </p>
           <h1 className="mt-5 animate-in text-5xl font-semibold delay-180 ease-entrance animation-duration-800 fill-mode-both slide-in-from-bottom-4 motion-reduce:animate-none lg:text-display lg:tracking-display">
-            {t("titleStart")} {t("titleEnd")}
+            {t("titleStart")}{" "}
+            <span className="bg-linear-90 from-primary to-headline-violet bg-clip-text text-transparent">
+              {t("titleEnd")}
+            </span>
           </h1>
           <p
             className={cn(

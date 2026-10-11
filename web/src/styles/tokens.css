@@ -61,6 +61,7 @@
   --mint-foreground: #0a6b45;
   --peach: #fdeada;
   --peach-foreground: #9a4b0c;
+  --lilac: #ddd6fc;
   --rose: #fde3ea;
   --rose-foreground: #a81e47;
   /* The featured challenge panel (Figma "Challenge photo"): a deep to bright azure. */
@@ -71,6 +72,10 @@
   --aurora-azure: #5cc7fa;
   --aurora-sky: #b3e0fb;
   --aurora-peach: #ffc29e;
+  /* Where the hero headline's gradient ends, after `primary`. */
+  --headline-violet: #7b6cf2;
+  /* The ground partner logos stand on at night, so each keeps its own colours. */
+  --logo-plate: #f6f9fc;
   /* Colour of every shadow (the shadow-* elevations in app/globals.css): ink by day. */
   --elevation: oklch(0.219 0.043 253.881);
   /*
@@ -134,6 +139,7 @@
   --mint-foreground: #ddf5e8;
   --peach: #43260e;
   --peach-foreground: #fdeada;
+  --lilac: #2c2557;
   --rose: #47162a;
   --rose-foreground: #fde3ea;
   --panel-deep: #00305f;
@@ -142,5 +148,6 @@
   --aurora-azure: #1b5f86;
   --aurora-sky: #17466b;
   --aurora-peach: #7a4527;
+  --headline-violet: #a99dff;
   --elevation: oklch(0.12 0.02 256);
 }

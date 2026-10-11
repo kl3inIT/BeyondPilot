@@ -9,10 +9,9 @@ const logoHeight = { wordmark: 22, long: 24, medium: 28, stacked: 36, emblem: 48
 
 /**
  * A logo's height follows its shape, so a long wordmark and a stacked mark carry the same weight
- * on the panel: the longer the mark, the lower it sits. At night the logos turn to one light ink,
- * because several marks are dark on transparent.
+ * on the panel: the longer the mark, the lower it sits.
  */
-const logo = cva("w-auto dark:brightness-0 dark:invert", {
+const logo = cva("w-auto", {
   variants: {
     shape: {
       wordmark: "h-4.5 md:h-5.5",
@@ -125,7 +124,7 @@ const network: Role[] = [
 
 /**
  * "The network behind every program": one full-width panel per role, a wall of each organisation's
- * logo in its own colours straight on the panel (DESIGN.md › Landing structure).
+ * logo in its own colours, straight on the panel by day and on a light plate at night (DESIGN.md › Landing structure).
  */
 function PartnerNetwork() {
   const t = useTranslations("Home.network");
@@ -152,7 +151,7 @@ function PartnerNetwork() {
                 </h3>
                 <p className="text-sm text-muted-foreground">{t(`roles.${role}.description`)}</p>
               </div>
-              <ul className="flex flex-wrap items-center gap-x-6 gap-y-5 md:gap-x-10 md:gap-y-7">
+              <ul className="flex flex-wrap items-center gap-x-6 gap-y-5 md:gap-x-10 md:gap-y-7 dark:rounded-xl dark:bg-logo-plate dark:p-5">
                 {organisations.map(({ file, name, width, shape }) => (
                   <li key={file}>
                     <Image

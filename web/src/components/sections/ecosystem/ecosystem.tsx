@@ -24,7 +24,7 @@ function Ecosystem() {
         </h2>
         <ul
           aria-label={t("listLabel")}
-          className="flex flex-wrap items-center gap-x-10 gap-y-6 lg:flex-1 lg:justify-between"
+          className="flex flex-wrap items-center gap-x-10 gap-y-6 lg:flex-1 lg:justify-between dark:rounded-2xl dark:bg-logo-plate dark:px-6 dark:py-4"
         >
           {organisations.map(({ file, name, width, height }) => (
             <li key={file}>
@@ -34,7 +34,7 @@ function Ecosystem() {
                 width={width}
                 height={112}
                 sizes="180px"
-                className={`${height} w-auto dark:brightness-0 dark:invert`}
+                className={`${height} w-auto`}
               />
             </li>
           ))}
