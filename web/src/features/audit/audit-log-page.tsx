@@ -3,10 +3,10 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTable, DataTableEmpty, DataTablePager } from "@/components/composites/data-table";
+import { DataTableEmpty, DataTablePager } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { Person } from "@/components/composites/person";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AuditEvent, AuditEventList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -113,33 +113,27 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
       <AuditLogToolbar />
 
       {/* From 768px: a table. The time is exact to the second, with its year, on every width. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("columns.time")}</TableHead>
-            <TableHead>{t("columns.person")}</TableHead>
-            <TableHead>{t("columns.activity")}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>
-                <time dateTime={row.at} className="text-muted-foreground">
-                  {row.time}
-                </time>
-              </TableCell>
-              <TableCell>{row.person}</TableCell>
-              <TableCell>{row.activity}</TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={3}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+      <DataTableRows
+        className="hidden md:flex"
+        columns={[
+          { id: "time", header: t("columns.time"), layout: { nowrap: true } },
+          { id: "person", header: t("columns.person") },
+          { id: "activity", header: t("columns.activity") },
+        ]}
+        rows={rows.map((row) => ({
+          id: row.id,
+          cells: {
+            time: (
+              <time dateTime={row.at} className="text-muted-foreground">
+                {row.time}
+              </time>
+            ),
+            person: row.person,
+            activity: row.activity,
+          },
+        }))}
+        empty={empty}
+      />
 
       {/* Below 768px: one stacked row per event, never a table scrolled sideways. */}
       <ul className="overflow-hidden rounded-lg border md:hidden">
