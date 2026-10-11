@@ -1,6 +1,7 @@
-import { ArrowLeftIcon, BanIcon, CircleAlertIcon } from "lucide-react";
+import { BanIcon, CircleAlertIcon } from "lucide-react";
 import { getFormatter, getTranslations } from "next-intl/server";
 
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Link } from "@/i18n/navigation";
 import type { EmailMessage } from "@/lib/api/generated";
 import { adminEmailTemplateRoute, siteRoutes } from "@/lib/site";
@@ -71,26 +72,13 @@ async function EmailMessagePage({ message }: { message: EmailMessage }) {
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <Link
-        href={siteRoutes.adminEmailActivity}
-        className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:underline"
-      >
-        <ArrowLeftIcon aria-hidden="true" className="size-4" />
-        {t("message.back")}
-      </Link>
-
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight break-words">{message.subject}</h1>
-            <EmailStatusLabel status={message.status} />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {t("message.lead", { kind: kindName, recipient: message.recipient })}
-          </p>
-        </div>
-        <EmailMessageActions message={message} />
-      </div>
+      <AdminPageHeader
+        back={{ href: siteRoutes.adminEmailActivity, label: t("message.back") }}
+        title={message.subject}
+        badges={<EmailStatusLabel status={message.status} />}
+        lead={t("message.lead", { kind: kindName, recipient: message.recipient })}
+        actions={<EmailMessageActions message={message} />}
+      />
 
       {message.suppression && (
         <div className="flex items-start gap-3 rounded-lg border px-4 py-3">
