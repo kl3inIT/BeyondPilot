@@ -19,14 +19,16 @@ export function isApproved(organization: { status: string; suspendedAt?: string 
 export const MAX_DESCRIPTION = 280;
 /** The most industries the backend takes. */
 export const MAX_INDUSTRIES = 5;
-/** The years the backend takes for when an organization started. */
+/** The earliest year the backend takes for when an organization started. */
 const FIRST_YEAR = 1800;
-const LAST_YEAR = 2100;
 
-/** The year written in the field when it is one the backend takes; otherwise null. */
-export function yearOf(text: string): number | null {
+/**
+ * The year written in the field when it is one the backend takes, from 1800 to this year; otherwise
+ * null.
+ */
+export function yearOf(text: string, thisYear = new Date().getFullYear()): number | null {
   const year = Number(text);
-  return /^\d{4}$/.test(text.trim()) && year >= FIRST_YEAR && year <= LAST_YEAR ? year : null;
+  return /^\d{4}$/.test(text.trim()) && year >= FIRST_YEAR && year <= thisYear ? year : null;
 }
 
 const DOMAIN = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;

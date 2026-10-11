@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.Year;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -139,6 +141,11 @@ class OrganizationTest {
 			String problem = body(post(session, path, request).expectStatus().isBadRequest());
 			assertThat(JsonPath.<List<String>>read(problem, "$.errors[*].pointer")).contains("#/" + broken.getKey());
 		}
+		// A year that has not come yet is refused too.
+		Map<String, Object> early = new HashMap<>(creation("Facts Co"));
+		early.put("foundedYear", Year.now(ZoneId.of("Asia/Ho_Chi_Minh")).getValue() + 1);
+		String refused = body(post(session, path, early).expectStatus().isBadRequest());
+		assertThat(JsonPath.<List<String>>read(refused, "$.errors[*].pointer")).contains("#/foundedYear");
 
 		Map<String, Object> request = new HashMap<>(creation("Facts Co"));
 		request.remove("jobTitle");

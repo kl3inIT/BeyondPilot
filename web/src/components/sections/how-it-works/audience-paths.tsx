@@ -45,21 +45,23 @@ function AudiencePaths() {
         <ul className="grid gap-4 md:grid-cols-3">
           {paths.map(({ id, href, photo, tint, ink }) => (
             <li key={id} className="flex">
-              <article className={cn("flex w-full flex-col gap-3 rounded-2xl p-3 pb-6", tint)}>
+              <article className={cn("flex w-full flex-col overflow-hidden rounded-2xl", tint)}>
                 <Image
                   src={`/landing/how-it-works/${photo}.jpg`}
                   alt=""
                   width={432}
                   height={280}
                   sizes="(min-width: 768px) 30vw, 100vw"
-                  className="h-30 w-full rounded-xl object-cover"
+                  className="aspect-3/2 w-full object-cover"
                 />
-                <h3 className="text-2xl font-semibold">{t(`${id}.title`)}</h3>
-                <p className="flex-1 text-base text-foreground/80">{t(`${id}.description`)}</p>
-                <TextButton href={href} size="lg" className={cn("self-start", ink)}>
-                  {t(`${id}.action`)}
-                  <ArrowRightIcon aria-hidden="true" />
-                </TextButton>
+                <div className="flex flex-1 flex-col gap-3 p-6">
+                  <h3 className="text-2xl font-semibold">{t(`${id}.title`)}</h3>
+                  <p className="flex-1 text-base text-foreground/80">{t(`${id}.description`)}</p>
+                  <TextButton href={href} size="lg" className={cn("self-start", ink)}>
+                    {t(`${id}.action`)}
+                    <ArrowRightIcon aria-hidden="true" />
+                  </TextButton>
+                </div>
               </article>
             </li>
           ))}

@@ -1,18 +1,26 @@
 import { cn } from "cn";
 import { LockIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-import { PreviewBadge } from "@/components/sections/preview-badge";
+import Image from "next/image";
 
 const tabs = ["all", "solutions", "useCases", "programs"] as const;
 
-/** Listings a search for "insurance claims" returns, one of each kind the site lists for it. */
+/**
+ * Listings a search for "AI agents" returns, one of each kind the site lists for it, each with the
+ * logo of who is behind it. `plain` marks a logo on transparent, which needs room inside its tile.
+ */
 const results = [
-  { id: "papaya", kind: "solution", monogram: "PA", ink: "text-solution" },
-  { id: "infall", kind: "solution", monogram: "IN", ink: "text-solution" },
-  { id: "renewal", kind: "useCase", monogram: "TA", ink: "text-use-case" },
-  { id: "challenge", kind: "program", monogram: "AI", ink: "text-primary" },
+  { id: "revve", kind: "solution", logo: "/landing/logo-revve.jpeg", plain: false },
+  { id: "shieldbase", kind: "solution", logo: "/landing/logo-shieldbase.png", plain: false },
+  { id: "claims", kind: "useCase", logo: "/partners/network/coca-cola.png", plain: true },
+  { id: "fasttrack", kind: "program", logo: "/landing/logo-nvidia.png", plain: true },
 ] as const;
+
+const kindInk = {
+  solution: "text-solution",
+  useCase: "text-use-case",
+  program: "text-primary",
+} as const;
 
 /**
  * What a search returns, drawn in the page rather than shown as a screenshot so it stays legible
@@ -21,7 +29,6 @@ const results = [
  */
 function SearchPreview({ className }: { className?: string }) {
   const t = useTranslations("Home.hero.preview");
-  const h = useTranslations("Home");
 
   return (
     <div
@@ -40,7 +47,6 @@ function SearchPreview({ className }: { className?: string }) {
             <LockIcon className="size-3 shrink-0" />
             <span className="truncate">{t("address")}</span>
           </p>
-          <PreviewBadge>{h("previewLabel")}</PreviewBadge>
         </div>
         <ul className="flex gap-5 border-b px-4 pt-3.5 text-sm font-medium md:px-5">
           {tabs.map((tab, index) => (
@@ -59,18 +65,19 @@ function SearchPreview({ className }: { className?: string }) {
           ))}
         </ul>
         <ul className="divide-y">
-          {results.map(({ id, kind, monogram, ink }) => (
+          {results.map(({ id, kind, logo, plain }) => (
             <li key={id} className="flex gap-4 px-4 py-4 md:px-5">
-              <span
-                className={cn(
-                  "flex size-10 shrink-0 items-center justify-center rounded-lg border bg-card text-sm font-semibold",
-                  ink,
-                )}
-              >
-                {monogram}
+              <span className="relative size-10 shrink-0 overflow-hidden rounded-lg border bg-card dark:bg-logo-plate">
+                <Image
+                  src={logo}
+                  alt=""
+                  fill
+                  sizes="40px"
+                  className={cn("object-contain", plain && "p-1")}
+                />
               </span>
               <div className="flex min-w-0 flex-col gap-1">
-                <p className={cn("text-xs font-semibold", ink)}>{t(`kinds.${kind}`)}</p>
+                <p className={cn("text-xs font-semibold", kindInk[kind])}>{t(`kinds.${kind}`)}</p>
                 <p className="text-copy font-medium">{t(`${id}.title`)}</p>
                 <p className="line-clamp-2 text-sm text-foreground">{t(`${id}.summary`)}</p>
                 <p className="text-xs text-muted-foreground">{t(`${id}.meta`)}</p>

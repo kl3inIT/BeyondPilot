@@ -6,14 +6,13 @@ import { Section } from "@/components/ui/section";
 /** Every file is 112px tall; `height` is the height it is drawn at, by the shape of the mark. */
 const organisations = [
   { file: "tasco", name: "Tasco", width: 779, height: "h-5" },
-  { file: "vnggames", name: "VNGGames", width: 792, height: "h-5" },
-  { file: "fpt", name: "FPT", width: 185, height: "h-9" },
+  { file: "shinhan", name: "Shinhan Future's Lab", width: 999, height: "h-5" },
+  { file: "coca-cola", name: "Coca-Cola Beverages Vietnam", width: 201, height: "h-12" },
   { file: "kfc", name: "KFC Vietnam", width: 234, height: "h-9" },
-  { file: "gotyme", name: "GoTyme Bank", width: 332, height: "h-9" },
-  { file: "the-anam", name: "The Anam", width: 114, height: "h-12" },
+  { file: "guardian", name: "Guardian", width: 423, height: "h-7" },
 ] as const;
 
-/** Enterprises that took part in GenAI Fund programs, shown as the ecosystem and never as customers. */
+/** Enterprises GenAI Fund works with, shown as the ecosystem and never as customers. */
 function Ecosystem() {
   const t = useTranslations("Home.ecosystem");
 
@@ -25,7 +24,7 @@ function Ecosystem() {
         </h2>
         <ul
           aria-label={t("listLabel")}
-          className="flex flex-wrap items-center gap-x-10 gap-y-6 lg:flex-1 lg:justify-between"
+          className="flex flex-wrap items-center gap-x-10 gap-y-6 lg:flex-1 lg:justify-between dark:rounded-2xl dark:bg-logo-plate dark:px-6 dark:py-4"
         >
           {organisations.map(({ file, name, width, height }) => (
             <li key={file}>
@@ -34,8 +33,8 @@ function Ecosystem() {
                 alt={name}
                 width={width}
                 height={112}
-                sizes="160px"
-                className={`${height} w-auto dark:brightness-0 dark:invert`}
+                sizes="180px"
+                className={`${height} w-auto`}
               />
             </li>
           ))}

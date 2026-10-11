@@ -32,7 +32,7 @@ public record CreateOrganizationRequest(
 				description = "What it does and for whom, in at most 280 characters.") @NotBlank @Size(
 						max = 280) String description,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The year it started; for an independent builder, the year the practice did.") @NotNull @Min(1800) @Max(2100) Integer foundedYear,
+				description = "The year it started; for an independent builder, the year the practice did.") @NotNull @Min(1800) @Max(2100) @NotAfterThisYear Integer foundedYear,
 		@Schema(types = { "string", "null" },
 				description = "A logo the caller uploaded for an organization; null for none.") @Nullable UUID logoFileId,
 		@Schema(types = { "string", "null" },
