@@ -139,6 +139,7 @@ export function submittedView(email, organization) {
         summary: "A chat assistant that tells a driver what is covered.",
         problemsSolved: "Drivers wait on a hotline after a minor accident.",
         maturity: "pilot",
+        demoUrl: "https://claimcopilot.example/demo",
         complete: true,
       },
     ],
