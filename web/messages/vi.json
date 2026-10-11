@@ -154,10 +154,10 @@
         "title": "Giải pháp AI",
         "description": "Tìm sản phẩm và nhà cung cấp đáp ứng nhu cầu kinh doanh của bạn.",
         "action": "Khám phá giải pháp",
-        "item1Title": "Papaya",
-        "item1Meta": "Xử lý hồ sơ bồi thường · Việt Nam",
-        "item2Title": "Infall Insurtech",
-        "item2Meta": "Tự động hoá bồi thường toàn trình · Việt Nam"
+        "item1Title": "Revve AI",
+        "item1Meta": "AI agent · AI hội thoại",
+        "item2Title": "Shieldbase",
+        "item2Meta": "Bảo mật AI · Tìm kiếm & tri thức · Singapore"
       },
       "talent": {
         "title": "Nhân lực AI",
@@ -224,20 +224,20 @@
       "demo": {
         "title": "Trợ lý BeyondPilot",
         "need": "Nhu cầu của bạn",
-        "needQuote": "“Chúng tôi muốn tự động hoá xử lý hồ sơ bảo hiểm tại Việt Nam.”",
+        "needQuote": "“Chúng tôi muốn AI trả lời khách hàng trên mọi kênh mà dữ liệu không rời khỏi công ty.”",
         "matters": "Điều quan trọng",
-        "matter1": "Loại tài liệu",
-        "matter2": "Hỗ trợ tiếng Việt",
+        "matter1": "Kênh khách hàng",
+        "matter2": "Bảo mật dữ liệu",
         "matter3": "Yêu cầu triển khai",
         "options": "Lựa chọn phù hợp",
-        "option1Title": "Papaya",
-        "option1Why": "Đọc hồ sơ bồi thường y tế phức tạp bằng chuỗi nhiều LLM. Phát triển tại Việt Nam.",
-        "option2Title": "Infall Insurtech",
-        "option2Why": "OCR cùng bộ máy quyết định và bồi thường, đã có các hãng bảo hiểm Việt Nam là khách hàng.",
+        "option1Title": "Revve AI",
+        "option1Why": "AI agent luôn túc trực để gọi điện, nhắn tin, gửi email và chat với khách hàng.",
+        "option2Title": "Shieldbase",
+        "option2Why": "Hệ điều hành AI cho doanh nghiệp, có sẵn bảo mật và quản trị dữ liệu.",
         "next": "Bước tiếp theo",
         "introduce": "Yêu cầu giới thiệu",
         "shortlist": "So sánh và lập danh sách rút gọn",
-        "alt": "một hành trình ví dụ. Nhu cầu “tự động hoá xử lý hồ sơ bảo hiểm tại Việt Nam” được làm rõ thành loại tài liệu, hỗ trợ tiếng Việt và yêu cầu triển khai; hai giải pháp phù hợp được gợi ý là Papaya và Infall Insurtech; bước tiếp theo là yêu cầu giới thiệu. So sánh và lập danh sách rút gọn sắp ra mắt."
+        "alt": "một hành trình ví dụ. Nhu cầu “AI trả lời khách hàng trên mọi kênh mà dữ liệu không rời khỏi công ty” được làm rõ thành kênh khách hàng, bảo mật dữ liệu và yêu cầu triển khai; hai giải pháp phù hợp được gợi ý là Revve AI và Shieldbase; bước tiếp theo là yêu cầu giới thiệu. So sánh và lập danh sách rút gọn sắp ra mắt."
       }
     },
     "challenge": {

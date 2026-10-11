@@ -18,8 +18,8 @@ const categories = [
     href: siteRoutes.solutions,
     shows: "items",
     marks: [
-      { src: "/landing/logo-papaya.png", plain: false },
-      { src: "/landing/logo-infall.png", plain: false },
+      { src: "/landing/logo-revve.jpeg", plain: false },
+      { src: "/landing/logo-shieldbase.png", plain: false },
     ],
   },
   { id: "talent", href: siteRoutes.talent, shows: "skills", marks: [] },

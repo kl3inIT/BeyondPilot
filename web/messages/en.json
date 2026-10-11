@@ -154,10 +154,10 @@
         "title": "AI Solutions",
         "description": "Discover products and providers that address your business needs.",
         "action": "Explore solutions",
-        "item1Title": "Papaya",
-        "item1Meta": "Claims document processing · Vietnam",
-        "item2Title": "Infall Insurtech",
-        "item2Meta": "End-to-end claims automation · Vietnam"
+        "item1Title": "Revve AI",
+        "item1Meta": "AI agents · Conversational AI",
+        "item2Title": "Shieldbase",
+        "item2Meta": "AI security · Search & knowledge · Singapore"
       },
       "talent": {
         "title": "AI Talent",
@@ -224,20 +224,20 @@
       "demo": {
         "title": "BeyondPilot agent",
         "need": "Your need",
-        "needQuote": "“We want to automate insurance document processing in Vietnam.”",
+        "needQuote": "“We want AI to answer our customers on every channel, without our data leaving the company.”",
         "matters": "What matters",
-        "matter1": "Document types",
-        "matter2": "Vietnamese language support",
+        "matter1": "Customer channels",
+        "matter2": "Data privacy",
         "matter3": "Deployment needs",
         "options": "Relevant options",
-        "option1Title": "Papaya",
-        "option1Why": "Reads complex medical claim documents with a multi-LLM pipeline. Built in Vietnam.",
-        "option2Title": "Infall Insurtech",
-        "option2Why": "OCR, decision and claim engines that Vietnamese insurers list as customers.",
+        "option1Title": "Revve AI",
+        "option1Why": "Always-on AI agents that call, text, email and chat with customers.",
+        "option2Title": "Shieldbase",
+        "option2Why": "An AI operating system for the enterprise, with data privacy and governance built in.",
         "next": "Next step",
         "introduce": "Request an introduction",
         "shortlist": "Compare and shortlist",
-        "alt": "an example journey. A need, “automate insurance document processing in Vietnam”, is narrowed to document types, Vietnamese language support and deployment needs; two relevant solutions are suggested, Papaya and Infall Insurtech; the next step is to request an introduction. Comparing and shortlisting is coming soon."
+        "alt": "an example journey. A need, “AI to answer our customers on every channel, without our data leaving the company”, is narrowed to customer channels, data privacy and deployment needs; two relevant solutions are suggested, Revve AI and Shieldbase; the next step is to request an introduction. Comparing and shortlisting is coming soon."
       }
     },
     "challenge": {
