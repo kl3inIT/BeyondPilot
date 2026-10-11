@@ -4869,10 +4869,6 @@
       "metaTitle": "Nhân lực AI · BeyondPilot",
       "title": "Nhân lực AI",
       "lead": "Kỹ sư và người xây dựng triển khai AI cho doanh nghiệp.",
-      "founders": {
-        "title": "Founder trong mạng lưới GenAI Fund",
-        "description": "Các founder startup mà GenAI Fund hậu thuẫn và đồng hành."
-      },
       "create": "Tạo hồ sơ nhân lực",
       "count": "Hiển thị {shown}/{total}",
       "total": "{count} người",

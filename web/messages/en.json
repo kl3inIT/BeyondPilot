@@ -4869,10 +4869,6 @@
       "metaTitle": "AI talent · BeyondPilot",
       "title": "AI talent",
       "lead": "Engineers and builders who deploy AI for businesses.",
-      "founders": {
-        "title": "Founders in the GenAI Fund network",
-        "description": "Startup founders GenAI Fund backs and works with."
-      },
       "create": "Create a talent profile",
       "count": "Showing {shown} of {total}",
       "total": "{count, plural, one {# person} other {# people}}",
