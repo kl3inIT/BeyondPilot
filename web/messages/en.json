@@ -2850,6 +2850,9 @@
         "resend": {
           "name": "Resend"
         },
+        "brevo": {
+          "name": "Brevo"
+        },
         "smtp": {
           "name": "SMTP"
         }
@@ -3129,6 +3132,7 @@
         "errors": {
           "address": "Write one email address.",
           "port": "Write a port number.",
+          "token": "Write 32 to 256 letters, digits or any of . _ ~ + / = -",
           "changed": "Someone saved the settings while you were editing. Reload the page and save again.",
           "incomplete": "The provider needs more: fill in the fields marked as required.",
           "encryption": "The server has no encryption key, so it cannot keep secrets. Ask whoever runs it.",
@@ -3165,6 +3169,10 @@
           "apiKey": "API key",
           "apiKeyHint": "A key with sending access, starting with re_, from resend.com › API Keys."
         },
+        "brevo": {
+          "apiKey": "API key",
+          "apiKeyHint": "A v3 API key, starting with xkeysib-, from Brevo › SMTP & API › API keys."
+        },
         "smtp": {
           "host": "Server",
           "port": "Port",
@@ -3187,6 +3195,9 @@
           "resendEndpointHint": "In Resend › Webhooks, add this address with the events email.delivered, email.bounced and email.complained.",
           "resendSecret": "Signing secret",
           "resendSecretHint": "Without the webhook's secret, reports are refused.",
+          "brevoEndpointHint": "Add a transactional webhook in Brevo with this address, the events delivered, hard bounce, invalid email, blocked and spam, and the token below as its bearer token.",
+          "brevoToken": "Webhook token",
+          "brevoTokenHint": "At least 32 letters or digits of your own, the same as the webhook's bearer token in Brevo; without it, reports are refused.",
           "configurationSet": "Configuration set",
           "configurationSetHint": "The SES configuration set that sends its events to the SNS topic below.",
           "sesEndpointHint": "Subscribe this address to the SNS topic over HTTPS.",
@@ -3215,15 +3226,18 @@
         "limits": {
           "permission_missing": {
             "ses": "This IAM user may send but not read the account or the domain. Add ses:GetAccount and ses:GetEmailIdentity to its policy to see the checks.",
-            "resend": "This API key may only send, so it cannot read the domain. Your email still leaves; check the domain at resend.com › Domains."
+            "resend": "This API key may only send, so it cannot read the domain. Your email still leaves; check the domain at resend.com › Domains.",
+            "brevo": "This API key may not read the domain. Your email still leaves; check the domain in Brevo › Senders, domains, IPs › Domains."
           },
           "credentials_refused": {
             "ses": "AWS refused the access key. Check its ID and secret, and that the user is active.",
-            "resend": "Resend refused the API key. Create a new one at resend.com › API Keys."
+            "resend": "Resend refused the API key. Create a new one at resend.com › API Keys.",
+            "brevo": "Brevo refused the API key. Create a new one in Brevo › SMTP & API › API keys."
           },
           "unreachable": {
             "ses": "Amazon SES did not answer. Check again in a minute.",
-            "resend": "Resend did not answer. Check again in a minute."
+            "resend": "Resend did not answer. Check again in a minute.",
+            "brevo": "Brevo did not answer. Check again in a minute."
           }
         },
         "steps": {

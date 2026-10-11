@@ -104,7 +104,7 @@ class ResendEmailAdapterTest {
 		server.start();
 		String url = "http://127.0.0.1:" + server.getAddress().getPort();
 		return new ResendEmailAdapter(new NotificationProperties(null, "http://localhost:3000",
-				new NotificationProperties.Resend(url)));
+				new NotificationProperties.Resend(url), new NotificationProperties.Brevo("https://api.brevo.com/v3")));
 	}
 
 }

@@ -57,6 +57,25 @@ public sealed interface EmailConnection {
 
 	}
 
+	/** Brevo, reached with an API key. */
+	record BrevoConnection(String apiKey) implements EmailConnection {
+
+		public BrevoConnection {
+			Objects.requireNonNull(apiKey, "apiKey must not be null");
+		}
+
+		@Override
+		public EmailProvider provider() {
+			return EmailProvider.BREVO;
+		}
+
+		@Override
+		public String toString() {
+			return "BrevoConnection[]";
+		}
+
+	}
+
 	/**
 	 * Any SMTP server.
 	 * @param username null when the server takes mail without signing in

@@ -17,11 +17,12 @@ import org.jspecify.annotations.Nullable;
  */
 @Schema(name = "SaveEmailSettings", description = "Who delivers email and as whom. An empty secret keeps the stored one while what it belongs to is unchanged.")
 public record SaveEmailSettingsRequest(
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "ses", "resend", "smtp" }) @NotNull @Pattern(regexp = "ses|resend|smtp") String provider,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "ses", "resend", "smtp", "brevo" }) @NotNull @Pattern(regexp = "ses|resend|smtp|brevo") String provider,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 80) String fromName,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Email @Size(max = 254) String fromAddress,
 		@Schema(types = { "string", "null" }) @Email @Size(max = 254) @Nullable String replyTo,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Valid Smtp smtp, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Valid Ses ses, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Valid Resend resend,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Valid Brevo brevo,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The version the settings were read at.") long version) {
 
 	@Schema(name = "SaveEmailSmtpSettings")
@@ -43,6 +44,11 @@ public record SaveEmailSettingsRequest(
 	@Schema(name = "SaveEmailResendSettings")
 	public record Resend(@Schema(types = { "string", "null" }, description = "Empty to keep the stored one.") @Size(max = 256) @Nullable String apiKey,
 			@Schema(types = { "string", "null" }, description = "The secret Resend signs its webhooks with; empty to keep the stored one.") @Size(max = 256) @Nullable String webhookSecret) {
+	}
+
+	@Schema(name = "SaveEmailBrevoSettings")
+	public record Brevo(@Schema(types = { "string", "null" }, description = "Empty to keep the stored one.") @Size(max = 256) @Nullable String apiKey,
+			@Schema(types = { "string", "null" }, description = "The bearer token Brevo's webhook presents: 32 to 256 letters, digits or any of . _ ~ + / = -; empty to keep the stored one.") @Pattern(regexp = "|[A-Za-z0-9._~+/=-]{32,256}") @Nullable String webhookToken) {
 	}
 
 }

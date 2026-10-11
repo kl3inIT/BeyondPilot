@@ -2,7 +2,8 @@
 
 BeyondPilot's email: what it sends, in which words, through which provider, and what became of each message. Operators
 run it from Admin › Email. It is decided in [ADR 0005](../decisions/0005-operators-run-email-delivery.md) and
-delivered by [BEY-68](../increments/completed/bey-68-email-delivery/design.md). The code is the `notification`
+delivered by [BEY-68](../increments/completed/bey-68-email-delivery/design.md); Brevo was added by
+[BEY-128](../increments/active/bey-128-brevo-email/design.md). The code is the `notification`
 application module, `backend/src/main/java/ai/genaifund/beyondpilot/notification`. Its checks are in the
 [test matrix](../tests/notification.md).
 
@@ -18,7 +19,8 @@ application module, `backend/src/main/java/ai/genaifund/beyondpilot/notification
   - `adapter`: the providers.
   - `persistence`: SQL and the two JPA entities.
   - `web` and `dto`: the HTTP contract.
-- **Persistence.** One migration, `V41__notification_create_email.sql`, creates every table:
+- **Persistence.** `V41__notification_create_email.sql` creates every table, and `V73__notification_add_brevo.sql`
+  adds Brevo to the providers and its two secrets to the settings:
   - `email_settings`: one row, `id = 1`.
   - `email_template`: an operator's wording of a kind.
   - `email_message`: the queue and the log.
@@ -40,15 +42,15 @@ meaning.
   - a quote: the layout shows it after the text, as written, and templates do not use it.
 - **Groups.** Each kind belongs to an `EmailGroup`, which is where the screen lists it.
 
-| Group           | Kinds                                                                                                                                                                                                                      | Sent through `EmailService`                                                                                                                              |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sign_in`       | `sign_in_code`                                                                                                                                                                                                             | `sendSignInCode`, package-private, called by `SignInCodeMail`                                                                                            |
-| `organizations` | `organization_invitation`, `organization_approved`, `organization_refused`, `organization_sent_back`, `organization_request_approved`, `organization_request_declined`, `organization_taken_down`, `organization_restored`, `organization_merged` | `sendOrganizationInvitation`, `sendOrganizationDecision`, `sendOrganizationSentBack`, `sendOrganizationRequestDecision`, `sendOrganizationSuspension`, `sendOrganizationMerged`    |
-| `applications`  | `application_received`, `reviewer_invitation`, `application_outcome`                                                                                                                                                       | `sendApplicationReceived`, `sendReviewerInvitation`, `sendApplicationOutcome`                                                                            |
-| `introductions` | `introduction_request`, `introduction_made`, `introduction_declined`                                                                                                                                                       | `sendIntroductionRequest`, `sendIntroduction`, `sendIntroductionDeclined`                                                                                |
-| `solutions`     | `solution_approved`, `solution_sent_back`, `solution_rejected`, `solution_taken_down`, `solution_restored`                                                                                                                 | `sendSolutionDecision`                                                                                                                                   |
-| `use_cases`     | `use_case_approved`, `use_case_sent_back`                                                                                                                                                                                  | `sendUseCaseDecision`                                                                                                                                    |
-| `talent`        | `talent_approved`, `talent_changes_requested`, `talent_removed`, `talent_restored`, `talent_enquiry`, `talent_enquiry_reminder`, `talent_introduction`, `talent_enquiry_declined`, `talent_enquiry_closed`                 | `sendTalentDecision`, `sendTalentEnquiry`, `sendTalentEnquiryReminder`, `sendTalentIntroduction`, `sendTalentEnquiryDeclined`, `sendTalentEnquiryClosed` |
+| Group           | Kinds                                                                                                                                                                                                                                             | Sent through `EmailService`                                                                                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sign_in`       | `sign_in_code`                                                                                                                                                                                                                                    | `sendSignInCode`, package-private, called by `SignInCodeMail`                                                                                                                   |
+| `organizations` | `organization_invitation`, `organization_approved`, `organization_refused`, `organization_sent_back`, `organization_request_approved`, `organization_request_declined`, `organization_taken_down`, `organization_restored`, `organization_merged` | `sendOrganizationInvitation`, `sendOrganizationDecision`, `sendOrganizationSentBack`, `sendOrganizationRequestDecision`, `sendOrganizationSuspension`, `sendOrganizationMerged` |
+| `applications`  | `application_received`, `reviewer_invitation`, `application_outcome`                                                                                                                                                                              | `sendApplicationReceived`, `sendReviewerInvitation`, `sendApplicationOutcome`                                                                                                   |
+| `introductions` | `introduction_request`, `introduction_made`, `introduction_declined`                                                                                                                                                                              | `sendIntroductionRequest`, `sendIntroduction`, `sendIntroductionDeclined`                                                                                                       |
+| `solutions`     | `solution_approved`, `solution_sent_back`, `solution_rejected`, `solution_taken_down`, `solution_restored`                                                                                                                                        | `sendSolutionDecision`                                                                                                                                                          |
+| `use_cases`     | `use_case_approved`, `use_case_sent_back`                                                                                                                                                                                                         | `sendUseCaseDecision`                                                                                                                                                           |
+| `talent`        | `talent_approved`, `talent_changes_requested`, `talent_removed`, `talent_restored`, `talent_enquiry`, `talent_enquiry_reminder`, `talent_introduction`, `talent_enquiry_declined`, `talent_enquiry_closed`                                        | `sendTalentDecision`, `sendTalentEnquiry`, `sendTalentEnquiryReminder`, `sendTalentIntroduction`, `sendTalentEnquiryDeclined`, `sendTalentEnquiryClosed`                        |
 
 **`application_outcome` cannot be edited.** An operator writes its subject and message for each release of outcomes.
 The message is plain text, and its line breaks are kept.
@@ -146,21 +148,22 @@ The message is plain text, and its line breaks are kept.
   - `SignInCodeMail` is a synchronous `@EventListener`, not an `@ApplicationModuleListener`, so the code never reaches
     the event publication registry.
 - **Logging.** Events are named `notification.email.sent`, `retrying`, `failed`, `skipped`, `expired`, `purged`,
-  `reported`, `test_sent` and `test_failed`. They carry the message id, kind, provider and `error_code`, never the
+  `reported`, `report_not_taken`, `test_sent` and `test_failed`. They carry the message id, kind, provider and `error_code`, never the
   recipient or the content.
 
 ## Providers
 
-`EmailProvider` is `ses`, `resend` or `smtp`. `EmailAdapterRegistry` resolves the `EmailAdapter` for each one, and
+`EmailProvider` is `ses`, `resend`, `smtp` or `brevo`. `EmailAdapterRegistry` resolves the `EmailAdapter` for each one, and
 startup fails when a provider has no adapter, or has two
 ([interchangeable implementations](../conventions.md#interchangeable-implementations-strategy-behind-a-registry)).
 The provider used is the one saved in `email_settings`. Nothing about delivery comes from the environment.
 
-| Provider   | Adapter              | Sends with                                                                                                                                                 | Message id                | Reports delivery |
-| ---------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ---------------- |
-| Amazon SES | `SesEmailAdapter`    | AWS SDK `SesV2Client` in the region of the settings. It tags `kind` and uses the configuration set when one is set                                         | SES's `messageId`         | yes              |
-| Resend     | `ResendEmailAdapter` | Resend Java SDK at `beyondpilot.notification.resend.api-url` (default `https://api.resend.com`). It tags `kind`, and the message id is the idempotency key | Resend's id               | yes              |
-| SMTP       | `SmtpEmailAdapter`   | Spring `JavaMailSenderImpl` with `starttls` (required), `tls` (`smtps`) or `none`, server identity checked unless `none`, 10-second timeouts               | `<messageId@beyondpilot>` | no               |
+| Provider   | Adapter              | Sends with                                                                                                                                                        | Message id                                      | Reports delivery |
+| ---------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ---------------- |
+| Amazon SES | `SesEmailAdapter`    | AWS SDK `SesV2Client` in the region of the settings. It tags `kind` and uses the configuration set when one is set                                                | SES's `messageId`                               | yes              |
+| Resend     | `ResendEmailAdapter` | Resend Java SDK at `beyondpilot.notification.resend.api-url` (default `https://api.resend.com`). It tags `kind`, and the message id is the idempotency key        | Resend's id                                     | yes              |
+| SMTP       | `SmtpEmailAdapter`   | Spring `JavaMailSenderImpl` with `starttls` (required), `tls` (`smtps`) or `none`, server identity checked unless `none`, 10-second timeouts                      | `<messageId@beyondpilot>`                       | no               |
+| Brevo      | `BrevoEmailAdapter`  | Brevo Java SDK (`com.brevo:brevo`) at `beyondpilot.notification.brevo.api-url` (default `https://api.brevo.com/v3`), `POST /smtp/email` with the `api-key` header | Brevo's `messageId`, without its angle brackets | yes              |
 
 - **Errors.** Each adapter maps the provider's errors to a `DeliveryFailure`:
   - 401 or 403 is `authentication`;
@@ -168,6 +171,11 @@ The provider used is the one saved in `email_settings`. Nothing about delivery c
   - a 5xx error or an unreachable provider is `unavailable`;
   - any other refusal is `rejected`;
   - an SMTP recipient the server refuses is `invalid_recipient`.
+- **Brevo and retries.** Brevo is given no idempotency key. The key it documents (`idempotencyKey`, for batch sends)
+  answers a repeated request with an error and no message id, so a send retried after a lost answer would be logged as
+  refused although it left. Such a retry is therefore delivered twice.
+- **Brevo's message id.** The send answer writes it as `<…@…>` and the examples of Brevo's reports write it without
+  the brackets. It is stored, and matched, without them.
 - **Clients.** An adapter keeps one client for the last connection it was given, and builds a new one when the
   connection changes.
 
@@ -177,12 +185,12 @@ The provider used is the one saved in `email_settings`. Nothing about delivery c
 
 - the provider and the sender (`from_name`, `from_address`, `reply_to`);
 - each provider's connection;
-- the SES events topic and the Resend webhook secret;
+- the SES events topic, the Resend webhook secret and the Brevo webhook token;
 - the appearance (`accent_color`, `footer`);
 - `version`, and who changed the row last.
 
-**Secrets.** `smtp_password`, `ses_secret_access_key`, `resend_api_key` and `resend_webhook_secret` are sealed by
-`SecretBox`:
+**Secrets.** `smtp_password`, `ses_secret_access_key`, `resend_api_key`, `resend_webhook_secret`, `brevo_api_key` and
+`brevo_webhook_token` are sealed by `SecretBox`:
 
 - each field is encrypted on its own with AES-256-GCM (`AesGcmBytesEncryptor`) and a random IV;
 - the key is `beyondpilot.notification.encryption-key` (`BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY`), 32 bytes in Base64.
@@ -191,7 +199,8 @@ The provider used is the one saved in `email_settings`. Nothing about delivery c
   - a save that brings a secret fails with `NOTIFICATION_ENCRYPTION_KEY_MISSING`;
   - a provider whose secret cannot be opened does not send.
 
-The API never returns a secret, only `passwordSet`, `secretAccessKeySet`, `apiKeySet` and `webhookSecretSet`. The
+The API never returns a secret, only `passwordSet`, `secretAccessKeySet`, `apiKeySet`, `webhookSecretSet` and
+`webhookTokenSet`. The
 `toString` of every connection, request and reporting record leaves secrets out.
 
 **Rules for saving:**
@@ -206,7 +215,10 @@ The API never returns a secret, only `passwordSet`, `secretAccessKeySet`, `apiKe
   `NOTIFICATION_SETTINGS_INCOMPLETE`:
   - SMTP needs a host and a port, and a password when there is a username;
   - SES needs a region, an access key id and a secret;
-  - Resend needs an API key.
+  - Resend needs an API key;
+  - Brevo needs an API key.
+- **Brevo's webhook token.** It is what an operator makes up and sets as the bearer token of the webhook in Brevo: 32
+  to 256 characters out of letters, digits and `. _ ~ + / = -`. Anything else is a validation error.
 - **Optimistic concurrency.** Settings and appearance are saved against the `version` they were read at. A stale
   version fails with `NOTIFICATION_SETTINGS_CHANGED`.
 - **Ready to send.** `DeliverySettings.delivery()` is empty unless a provider and a sender address are set and the
@@ -232,24 +244,29 @@ part of the from address after `@`, in lower case. Nothing in the answer is stor
     record `v=spf1 include:amazonses.com ~all`.
 - **Resend.** It finds the domain among the account's domains, reads its status, and lists each record Resend reports
   with its own state.
+- **Brevo.** It reads `GET /senders/domains/{domain}`:
+  - `verified` is `domain_verified` and `authenticated` is `dkim`; false is `pending`, because Brevo says only found
+    or not;
+  - the three records are listed in the order `brevo_code`, `dkim`, `dmarc`, each with whether Brevo found it;
+  - a 404 or a 400 means the domain is not added: `domain_added` is `failed`.
 - **SMTP.** It has no API to ask: no checks and no records. The test email is the check.
-- **DMARC.** For SES and Resend, a `TXT` record `_dmarc` with `v=DMARC1; p=none;` (state `unknown`) is added when the
-  provider lists none.
+- **DMARC.** For every provider but SMTP, a `TXT` record `_dmarc` with `v=DMARC1; p=none;` (state `unknown`) is added
+  when the provider lists none. Brevo lists its own, with a state.
 - **Hosts.** A record's host is written relative to the domain, with `@` for the domain itself.
 - **Limits.** When the provider cannot be asked everything, `limit` says why:
   - `permission_missing`: a key or user that may only send, such as Resend's restricted key or a user without SES read
-    rights;
-  - `credentials_refused`;
+    rights; for Brevo, a 403;
+  - `credentials_refused`; for Brevo, a 401;
   - `unreachable`.
 
   The checks the provider did answer are kept.
 
 ## Delivery reports and suppressions
 
-Providers post reports to `POST /api/notification/email/events/resend` and `POST /api/notification/email/events/ses`.
-These paths are open without a session and are exempt from the CSRF header check (`CsrfHeaderFilter.PROVIDER_REPORTS`).
-Nothing in a report is read before its signature is checked. A report that does not verify fails with
-`NOTIFICATION_EVENT_REFUSED`.
+Providers post reports to `POST /api/notification/email/events/resend`, `…/events/ses` and `…/events/brevo`. These
+paths are open without a session and are exempt from the CSRF header check (`CsrfHeaderFilter.PROVIDER_REPORTS`).
+Nothing in a report is read before its signature, or for Brevo its token, is checked. A report that does not verify
+fails with `NOTIFICATION_EVENT_REFUSED`.
 
 - **Resend.**
   - The Svix signature is verified with the stored webhook secret. With no secret stored, every report is refused.
@@ -266,6 +283,18 @@ Nothing in a report is read before its signature is checked. A report that does 
     the SNS host. When that GET fails, the result is `NOTIFICATION_SUBSCRIPTION_NOT_CONFIRMED` and SNS asks again.
   - **Events.** `Delivery`, `Bounce` (`Permanent` is a bounce; anything else is a soft bounce) and `Complaint` are
     applied.
+- **Brevo.** Brevo signs nothing, so the webhook is recognised by its bearer token.
+  - **Token.** The `Authorization` header must be `Bearer` followed by the stored webhook token, compared in constant
+    time. With no token stored, with no header or with another scheme, every report is refused.
+  - **Events.** `delivered` is a delivery; `hard_bounce`, `invalid_email` and `blocked` are a bounce, which suppresses
+    the address; `spam` is a complaint. Every other event, `soft_bounce` included, is ignored.
+  - **Message.** `message-id` names the message, with or without angle brackets. `ts_event`, seconds since the epoch,
+    is when it happened.
+  - **Once.** Brevo numbers no report, so a report is identified as `brevo:<event>:<message id>`: each kind of report
+    counts once for a message.
+  - **Batches.** A webhook set to batch sends a list, and each entry is applied.
+  - **Retries.** Brevo sends a report again only after a 429. A failure of the database while a report is taken is
+    therefore answered with `NOTIFICATION_REPORT_NOT_TAKEN` (429) instead of a 500.
 - **Applying a report** (`DeliveryReports`):
   - **Unknown messages.** A report about a message BeyondPilot does not know, matched by provider and provider
     message id, is ignored.
@@ -341,8 +370,8 @@ Every path below requires a session and an operator: `IdentityService.requireOpe
 
 | Method and path                   | Contract                                                                                                                                                      |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /settings`                   | `EmailSettings`, with no secrets; includes the events URLs `<siteUrl>/api/notification/email/events/ses` and `/resend`                                        |
-| `PUT /settings`                   | Saves provider, sender, connections, SES events topic and Resend webhook secret against `version`; records `email.settings_update`                            |
+| `GET /settings`                   | `EmailSettings`, with no secrets; includes the events URLs `<siteUrl>/api/notification/email/events/ses`, `/resend` and `/brevo`                              |
+| `PUT /settings`                   | Saves provider, sender, connections, SES events topic, Resend webhook secret and Brevo webhook token against `version`; records `email.settings_update`       |
 | `PUT /settings/appearance`        | Saves accent colour and footer against `version`; records `email.appearance_update`                                                                           |
 | `POST /settings/test?to=`         | Sends a test through the settings in the body                                                                                                                 |
 | `GET /settings/checks`            | The setup checklist and DNS records of the saved provider                                                                                                     |
@@ -393,6 +422,7 @@ server.
 | `NOTIFICATION_SUPPRESSION_EXISTS`         | `CONFLICT`            |
 | `NOTIFICATION_EVENT_REFUSED`              | `NOT_PERMITTED`       |
 | `NOTIFICATION_SUBSCRIPTION_NOT_CONFIRMED` | `SERVICE_UNAVAILABLE` |
+| `NOTIFICATION_REPORT_NOT_TAKEN`           | `LIMIT_EXCEEDED`      |
 
 ## Audit actions
 
@@ -419,5 +449,6 @@ before it is sent. The actor is the operator. No secret is a detail.
 | `encryption-key` | `BEYONDPILOT_NOTIFICATION_ENCRYPTION_KEY` | Seals provider secrets; empty by default, which means no secret is stored or read                                                                |
 | `site-url`       | `BEYONDPILOT_SITE_URL`                    | Required. Logo and site links in emails, and the events URLs; `http://localhost:3000` by default, with no default under the `production` profile |
 | `resend.api-url` | none                                      | Resend's API, `https://api.resend.com` by default                                                                                                |
+| `brevo.api-url`  | none                                      | Brevo's API with its version, `https://api.brevo.com/v3` by default                                                                              |
 
 A fresh database sends no email until an operator chooses a provider ([ADR 0005](../decisions/0005-operators-run-email-delivery.md)).

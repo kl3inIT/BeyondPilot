@@ -67,6 +67,7 @@ dependencies {
 	implementation(libs.jmustache)
 	implementation(libs.commonmark)
 	implementation(libs.resend.java)
+	implementation(libs.brevo)
 	developmentOnly(libs.spring.boot.docker.compose)
 	runtimeOnly(libs.postgresql)
 	testImplementation(libs.spring.boot.starter.actuator.test)

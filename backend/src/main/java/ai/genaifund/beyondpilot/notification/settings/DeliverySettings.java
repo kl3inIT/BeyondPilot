@@ -63,9 +63,11 @@ public class DeliverySettings {
 	 * @param resendWebhookSecret the secret Resend signs with, opened; null when none is stored or it cannot be read
 	 * @param sesRegion the region whose SNS certificates sign SES reports; null when none is set
 	 * @param sesEventsTopicArn the only SNS topic whose reports are accepted; null when none is set
+	 * @param brevoWebhookToken the token Brevo's webhook presents, opened; null when none is stored or it cannot be
+	 * read
 	 */
 	public record Reporting(@Nullable String resendWebhookSecret, @Nullable String sesRegion,
-			@Nullable String sesEventsTopicArn) {
+			@Nullable String sesEventsTopicArn, @Nullable String brevoWebhookToken) {
 
 		@Override
 		public String toString() {
@@ -78,7 +80,7 @@ public class DeliverySettings {
 	public Reporting reporting() {
 		EmailSettings row = settings.current();
 		return new Reporting(secrets.open(row.getResendWebhookSecret()).orElse(null), row.getSesRegion(),
-				row.getSesEventsTopicArn());
+				row.getSesEventsTopicArn(), secrets.open(row.getBrevoWebhookToken()).orElse(null));
 	}
 
 	/** What the layout of every email takes from the settings and the site. */
@@ -113,6 +115,7 @@ public class DeliverySettings {
 						secret.get(), row.getSesConfigurationSet()));
 			}
 			case RESEND -> secrets.open(row.getResendApiKey()).map(EmailConnection.ResendConnection::new);
+			case BREVO -> secrets.open(row.getBrevoApiKey()).map(EmailConnection.BrevoConnection::new);
 		};
 	}
 

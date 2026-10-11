@@ -35,6 +35,9 @@ tags:
   name: My talent profile
 - description: The use cases operators write and read.
   name: Use case administration
+- description: "Reports of delivery, bounces and complaints, sent by the email provider\
+    \ and checked by signature or token."
+  name: Email delivery events
 - description: "What operators do in the Chat tab of Admin › AI › Providers: connect\
     \ chat providers, enable their models and choose the model each task uses."
   name: AI administration
@@ -47,9 +50,6 @@ tags:
   name: My solutions
 - description: The accounts operators manage.
   name: Accounts
-- description: "Reports of delivery, bounces and complaints, sent by the email provider\
-    \ and checked by signature."
-  name: Email delivery events
 - description: The public directory of approved AI solutions.
   name: Solutions
 - description: The requests for an introduction operators read.
@@ -3229,6 +3229,34 @@ paths:
       summary: Send a draft with sample values as a test
       tags:
       - Email administration
+  /api/notification/email/events/brevo:
+    post:
+      operationId: receiveBrevoEvent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        "204":
+          description: "The report was taken, or it concerns no email of BeyondPilot."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The report's signature or token does not check, or it is not\
+            \ from the configured provider."
+        "429":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The report could not be recorded now; Brevo sends it again.
+      summary: "A webhook of Brevo, recognised by the bearer token set on it"
+      tags:
+      - Email delivery events
   /api/notification/email/events/resend:
     post:
       operationId: receiveResendEvent
@@ -3246,8 +3274,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The report's signature does not check, or it is not from the\
-            \ configured provider."
+          description: "The report's signature or token does not check, or it is not\
+            \ from the configured provider."
       summary: "A webhook of Resend, signed with the webhook secret"
       tags:
       - Email delivery events
@@ -3271,8 +3299,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The report's signature does not check, or it is not from the\
-            \ configured provider."
+          description: "The report's signature or token does not check, or it is not\
+            \ from the configured provider."
         "503":
           content:
             application/problem+json:
@@ -12491,6 +12519,20 @@ components:
       - available
       - reasoningEffort
       - version
+    EmailBrevoSettings:
+      type: object
+      properties:
+        apiKeySet:
+          type: boolean
+        eventsUrl:
+          type: string
+          description: The endpoint to give Brevo's webhook.
+        webhookTokenSet:
+          type: boolean
+      required:
+      - apiKeySet
+      - eventsUrl
+      - webhookTokenSet
     EmailCounts:
       type: object
       description: "What became of the emails of the period, filtered by kind but\
@@ -12613,6 +12655,7 @@ components:
           - ses
           - resend
           - smtp
+          - brevo
         providerMessageId:
           type:
           - string
@@ -12803,6 +12846,8 @@ components:
       properties:
         accentColor:
           type: string
+        brevo:
+          $ref: "#/components/schemas/EmailBrevoSettings"
         encryptionReady:
           type: boolean
           description: Whether the server holds the key that encrypts secrets; without
@@ -12827,6 +12872,7 @@ components:
           - ses
           - resend
           - smtp
+          - brevo
         ready:
           type: boolean
           description: "Whether email can leave now: a provider is chosen and everything\
@@ -12857,6 +12903,7 @@ components:
           description: Send it back with a change; a change made meanwhile is refused.
       required:
       - accentColor
+      - brevo
       - encryptionReady
       - footer
       - ready
@@ -12897,6 +12944,7 @@ components:
           - ses
           - resend
           - smtp
+          - brevo
         records:
           type: array
           description: The DNS records the domain must hold.
@@ -17725,6 +17773,23 @@ components:
       - accentColor
       - footer
       - version
+    SaveEmailBrevoSettings:
+      type: object
+      properties:
+        apiKey:
+          type:
+          - string
+          - "null"
+          description: Empty to keep the stored one.
+          maxLength: 256
+          minLength: 0
+        webhookToken:
+          type:
+          - string
+          - "null"
+          description: "The bearer token Brevo's webhook presents: 32 to 256 letters,\
+            \ digits or any of . _ ~ + / = -; empty to keep the stored one."
+          pattern: "|[A-Za-z0-9._~+/=-]{32,256}"
     SaveEmailResendSettings:
       type: object
       properties:
@@ -17782,6 +17847,8 @@ components:
       description: Who delivers email and as whom. An empty secret keeps the stored
         one while what it belongs to is unchanged.
       properties:
+        brevo:
+          $ref: "#/components/schemas/SaveEmailBrevoSettings"
         fromAddress:
           type: string
           format: email
@@ -17797,7 +17864,8 @@ components:
           - ses
           - resend
           - smtp
-          pattern: ses|resend|smtp
+          - brevo
+          pattern: ses|resend|smtp|brevo
         replyTo:
           type:
           - string
@@ -17816,6 +17884,7 @@ components:
           format: int64
           description: The version the settings were read at.
       required:
+      - brevo
       - fromAddress
       - fromName
       - provider

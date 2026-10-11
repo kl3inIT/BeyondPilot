@@ -145,6 +145,22 @@ test.describe("admin email", () => {
       "true",
     );
 
+    // Brevo signs no report, so its webhook carries a token: one too short to guard anything is not sent.
+    await page.getByRole("radio", { name: /Brevo/ }).check();
+    await expect(page.getByLabel("Address for the provider")).toHaveValue(
+      "https://beyondpilot.vadan.app/api/notification/email/events/brevo",
+    );
+    await page.getByRole("textbox", { name: /Webhook token/ }).fill("too-short");
+    await page.getByRole("button", { name: "Save settings" }).click();
+    await expect(page.getByRole("textbox", { name: "API key" })).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    await expect(page.getByRole("textbox", { name: /Webhook token/ })).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+
     await page.getByRole("radio", { name: /SMTP/ }).check();
     await expect(page.getByRole("textbox", { name: "Server" })).toBeVisible();
     await expectNoSeriousA11yViolations(page);

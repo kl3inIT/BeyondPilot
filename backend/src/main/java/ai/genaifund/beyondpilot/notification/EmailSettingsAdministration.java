@@ -118,9 +118,10 @@ public class EmailSettingsAdministration {
 				blankToNull(request.replyTo()), blankToNull(request.smtp().host()), request.smtp().port(),
 				blankToNull(request.smtp().username()), kept.smtpPassword(), request.smtp().security(),
 				blankToNull(request.ses().region()), blankToNull(request.ses().accessKeyId()), kept.sesSecretAccessKey(),
-				blankToNull(request.ses().configurationSet()), kept.resendApiKey());
+				blankToNull(request.ses().configurationSet()), kept.resendApiKey(), kept.brevoApiKey());
 		row.reportWith(blankToNull(request.ses().eventsTopicArn()),
-				secret(request.resend().webhookSecret(), row.getResendWebhookSecret()));
+				secret(request.resend().webhookSecret(), row.getResendWebhookSecret()),
+				secret(request.brevo().webhookToken(), row.getBrevoWebhookToken()));
 		row.changedBy(operator.accountId(), operator.label(), Instant.now());
 		EmailSettings saved = settings.saveAndFlush(row);
 		record(AuditAction.EMAIL_SETTINGS_UPDATE, operator, Map.of("provider", request.provider()));
@@ -208,7 +209,8 @@ public class EmailSettingsAdministration {
 				&& Objects.equals(row.getSesAccessKeyId(), blankToNull(request.ses().accessKeyId()));
 		return new Secrets(secret(request.smtp().password(), sameSmtp ? row.getSmtpPassword() : null),
 				secret(request.ses().secretAccessKey(), sameSes ? row.getSesSecretAccessKey() : null),
-				secret(request.resend().apiKey(), row.getResendApiKey()));
+				secret(request.resend().apiKey(), row.getResendApiKey()),
+				secret(request.brevo().apiKey(), row.getBrevoApiKey()));
 	}
 
 	private byte @Nullable [] secret(@Nullable String given, byte @Nullable [] stored) {
@@ -245,6 +247,8 @@ public class EmailSettingsAdministration {
 					yield new EmailConnection.SesConnection(ses.region(), ses.accessKeyId().strip(), secret,
 							blankToNull(ses.configurationSet()));
 				}
+				case "brevo" -> new EmailConnection.BrevoConnection(
+						secrets.open(kept.brevoApiKey()).orElseThrow(() -> incomplete("brevo")));
 				default -> new EmailConnection.ResendConnection(
 						secrets.open(kept.resendApiKey()).orElseThrow(() -> incomplete("resend")));
 			};
@@ -264,6 +268,8 @@ public class EmailSettingsAdministration {
 						appearance.siteUrl() + "/api/notification/email/events/ses"),
 				new EmailSettingsResponse.Resend(row.getResendApiKey() != null, row.getResendWebhookSecret() != null,
 						appearance.siteUrl() + "/api/notification/email/events/resend"),
+				new EmailSettingsResponse.Brevo(row.getBrevoApiKey() != null, row.getBrevoWebhookToken() != null,
+						appearance.siteUrl() + "/api/notification/email/events/brevo"),
 				delivery.delivery().isPresent(),
 				secrets.open(), appearance.accentColor(), appearance.footer(), row.getUpdatedByLabel(),
 				row.getUpdatedBy() == null ? null : row.getUpdatedAt(), row.getVersion());
@@ -285,7 +291,7 @@ public class EmailSettingsAdministration {
 	}
 
 	private record Secrets(byte @Nullable [] smtpPassword, byte @Nullable [] sesSecretAccessKey,
-			byte @Nullable [] resendApiKey) {
+			byte @Nullable [] resendApiKey, byte @Nullable [] brevoApiKey) {
 	}
 
 }

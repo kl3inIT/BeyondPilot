@@ -18,10 +18,14 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 @ConfigurationProperties("beyondpilot.notification")
 public record NotificationProperties(@Nullable String encryptionKey, @NotBlank String siteUrl,
-		@DefaultValue @Valid Resend resend) {
+		@DefaultValue @Valid Resend resend, @DefaultValue @Valid Brevo brevo) {
 
 	/** @param apiUrl where Resend's API answers */
 	public record Resend(@DefaultValue("https://api.resend.com") @NotBlank String apiUrl) {
+	}
+
+	/** @param apiUrl where Brevo's API answers, with its version */
+	public record Brevo(@DefaultValue("https://api.brevo.com/v3") @NotBlank String apiUrl) {
 	}
 
 }
