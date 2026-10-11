@@ -83,6 +83,8 @@ type DataTableFooterProps = {
   pages: number;
   /** The address of a page, already carrying the search and filters; the link adds the locale. */
   href: (page: number) => string;
+  /** The control that sets how many records a page holds, when the list offers one. */
+  sizer?: React.ReactNode;
   labels: {
     /** The name of the paging navigation for assistive technology. */
     navigation: string;
@@ -95,57 +97,61 @@ type DataTableFooterProps = {
 };
 
 /**
- * Under a list: how many records match, and the registry pagination when they fill more than one
- * page. A way that does not exist, back from the first page or on from the last, is not offered.
+ * Under a list: how many records match, how many a page holds, and the registry pagination when
+ * they fill more than one page. A way that does not exist, back from the first page or on from the
+ * last, is not offered.
  */
-function DataTableFooter({ count, page, pages, href, labels }: DataTableFooterProps) {
+function DataTableFooter({ count, page, pages, href, sizer, labels }: DataTableFooterProps) {
   return (
     <div
       data-slot="data-table-footer"
       className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
     >
       <p className="text-sm text-muted-foreground">{count}</p>
-      {pages > 1 && (
-        <Pagination aria-label={labels.navigation} className="mx-0 w-auto">
-          <PaginationContent>
-            {page > 1 && (
-              <PaginationItem>
-                <PaginationPrevious
-                  href={href(page - 1)}
-                  text={labels.previous}
-                  aria-label={labels.goToPrevious}
-                />
-              </PaginationItem>
-            )}
-            {pagesAround(page, pages).map((entry, index) =>
-              entry === "gap" ? (
-                <PaginationItem key={`gap-${index}`}>
-                  <PaginationEllipsis />
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        {sizer}
+        {pages > 1 && (
+          <Pagination aria-label={labels.navigation} className="mx-0 w-auto">
+            <PaginationContent>
+              {page > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious
+                    href={href(page - 1)}
+                    text={labels.previous}
+                    aria-label={labels.goToPrevious}
+                  />
                 </PaginationItem>
-              ) : (
-                <PaginationItem key={entry}>
-                  <PaginationLink
-                    href={href(entry)}
-                    isActive={entry === page}
-                    aria-label={labels.page(entry)}
-                  >
-                    {entry}
-                  </PaginationLink>
+              )}
+              {pagesAround(page, pages).map((entry, index) =>
+                entry === "gap" ? (
+                  <PaginationItem key={`gap-${index}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={entry}>
+                    <PaginationLink
+                      href={href(entry)}
+                      isActive={entry === page}
+                      aria-label={labels.page(entry)}
+                    >
+                      {entry}
+                    </PaginationLink>
+                  </PaginationItem>
+                ),
+              )}
+              {page < pages && (
+                <PaginationItem>
+                  <PaginationNext
+                    href={href(page + 1)}
+                    text={labels.next}
+                    aria-label={labels.goToNext}
+                  />
                 </PaginationItem>
-              ),
-            )}
-            {page < pages && (
-              <PaginationItem>
-                <PaginationNext
-                  href={href(page + 1)}
-                  text={labels.next}
-                  aria-label={labels.goToNext}
-                />
-              </PaginationItem>
-            )}
-          </PaginationContent>
-        </Pagination>
-      )}
+              )}
+            </PaginationContent>
+          </Pagination>
+        )}
+      </div>
     </div>
   );
 }
@@ -155,6 +161,8 @@ type DataTablePagerProps = {
   previous?: string;
   /** The address of the page towards its end; absent on the last page. */
   next?: string;
+  /** The control that sets how many records a page holds, when the list offers one. */
+  sizer?: React.ReactNode;
   labels: Pick<
     DataTableFooterProps["labels"],
     "navigation" | "previous" | "next" | "goToPrevious" | "goToNext"
@@ -163,33 +171,39 @@ type DataTablePagerProps = {
 
 /**
  * Under a list that only grows and is read from its newest end: the way to the page before and
- * after, without a count or page numbers, because a total would move under the reader. Nothing is
- * drawn for a list that fits one page.
+ * after, without a count or page numbers, because a total would move under the reader. Without a
+ * page-size control, nothing is drawn for a list that fits one page.
  */
-function DataTablePager({ previous, next, labels }: DataTablePagerProps) {
-  if (!previous && !next) {
+function DataTablePager({ previous, next, sizer, labels }: DataTablePagerProps) {
+  if (!previous && !next && !sizer) {
     return null;
   }
   return (
-    <div data-slot="data-table-pager" className="flex justify-end">
-      <Pagination aria-label={labels.navigation} className="mx-0 w-auto">
-        <PaginationContent>
-          {previous && (
-            <PaginationItem>
-              <PaginationPrevious
-                href={previous}
-                text={labels.previous}
-                aria-label={labels.goToPrevious}
-              />
-            </PaginationItem>
-          )}
-          {next && (
-            <PaginationItem>
-              <PaginationNext href={next} text={labels.next} aria-label={labels.goToNext} />
-            </PaginationItem>
-          )}
-        </PaginationContent>
-      </Pagination>
+    <div
+      data-slot="data-table-pager"
+      className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2"
+    >
+      {sizer}
+      {(previous || next) && (
+        <Pagination aria-label={labels.navigation} className="mx-0 w-auto">
+          <PaginationContent>
+            {previous && (
+              <PaginationItem>
+                <PaginationPrevious
+                  href={previous}
+                  text={labels.previous}
+                  aria-label={labels.goToPrevious}
+                />
+              </PaginationItem>
+            )}
+            {next && (
+              <PaginationItem>
+                <PaginationNext href={next} text={labels.next} aria-label={labels.goToNext} />
+              </PaginationItem>
+            )}
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 }

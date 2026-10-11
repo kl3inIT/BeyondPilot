@@ -64,13 +64,7 @@ function TalentPhotoUpload({ name, value, onChange }: TalentPhotoUploadProps) {
 
   return (
     <div className="flex items-center gap-4">
-      <TalentPhoto
-        name={name}
-        photoFileId={value}
-        size={72}
-        alt={t("alt")}
-        className="size-18 text-xl"
-      />
+      <TalentPhoto name={name} photoFileId={value} alt={t("alt")} size="3xl" />
       <div className="flex flex-col gap-2">
         <input
           ref={input}

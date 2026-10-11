@@ -106,8 +106,8 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
     actions: <AdminOrganizationRowActions organization={organization} />,
   }));
 
-  const queue = search.q.trim() === "" && search.status === "in_review";
-  const filtered = search.q.trim() !== "" || search.status !== null;
+  const queue = search.q.trim() === "" && search.status === "in_review" && search.country === null;
+  const filtered = search.q.trim() !== "" || search.status !== null || search.country !== null;
   const empty =
     rows.length > 0 ? null : queue ? (
       <DataTableEmpty icon={<Building2Icon aria-hidden="true" />} title={t("queueEmpty.title")}>
@@ -131,7 +131,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
         <AdminPageTitle destination="organizations">{t("title")}</AdminPageTitle>
         <AdminCreateOrganization />
       </div>
-      <AdminOrganizationsToolbar />
+      <AdminOrganizationsToolbar countries={organizations.countries} />
 
       {/* From 768px: a table. Who asked and when give way first, so the name keeps its room. */}
       <DataTable className="hidden md:block">

@@ -7,6 +7,7 @@ import { readReportedTalentEnquiries } from "@/features/talent/talent-queries";
 import { ApiError } from "@/lib/api/client";
 import { requireRole } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
+import { loadReportedEnquiriesSearch } from "@/features/talent/talent-search";
 
 export async function generateMetadata({
   params,
@@ -24,8 +25,8 @@ export default async function AdminReportedEnquiriesRoute({
   const { locale } = await params;
   setRequestLocale(locale);
   await requireRole("operator", siteRoutes.adminTalentReported);
-  const page = Number((await searchParams).page) || 1;
-  const enquiries = await readReportedTalentEnquiries(page).catch((error: unknown) => {
+  const { page, size } = await loadReportedEnquiriesSearch(searchParams);
+  const enquiries = await readReportedTalentEnquiries(page, size).catch((error: unknown) => {
     // The role was withdrawn, or the session ended, between the check above and this read.
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
       notFound();
@@ -33,5 +34,5 @@ export default async function AdminReportedEnquiriesRoute({
     throw error;
   });
 
-  return <AdminReportedEnquiriesPage enquiries={enquiries} />;
+  return <AdminReportedEnquiriesPage enquiries={enquiries} size={size} />;
 }

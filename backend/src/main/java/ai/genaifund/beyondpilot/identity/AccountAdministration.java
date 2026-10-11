@@ -52,10 +52,11 @@ public class AccountAdministration {
 		operator(actor);
 		String text = request.q() == null || request.q().isBlank() ? null : request.q().strip();
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		return new AccountListResponse(
-				accountList.page(text, request.status(), request.role(), properties.operatorEmails(), PAGE_SIZE,
-						(long) (page - 1) * PAGE_SIZE),
-				page, PAGE_SIZE, accountList.count(text, request.status(), request.role()));
+				accountList.page(text, request.status(), request.role(), properties.operatorEmails(), size,
+						(long) (page - 1) * size),
+				page, size, accountList.count(text, request.status(), request.role()));
 	}
 
 	/**

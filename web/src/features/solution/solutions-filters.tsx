@@ -45,10 +45,7 @@ function FacetSelect({ label, all, options, value, onChange }: FacetSelectProps)
 
   return (
     <Select items={items} value={value} onValueChange={onChange}>
-      <SelectTrigger
-        aria-label={label}
-        className="h-11 w-full data-[size=default]:h-11 md:w-42 xl:shrink-0"
-      >
+      <SelectTrigger aria-label={label} size="lg" className="w-full md:w-42 xl:shrink-0">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -92,7 +89,7 @@ function SolutionsFilters({ count }: SolutionsFiltersProps) {
   return (
     <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-4">
       <DirectorySearch
-        className="h-11 xl:max-w-none xl:min-w-56 xl:flex-1"
+        className="xl:max-w-none xl:min-w-56 xl:flex-1"
         label={t("search")}
         value={search.q}
         loading={loading}
@@ -164,7 +161,7 @@ function SolutionsFilters({ count }: SolutionsFiltersProps) {
             </p>
           )}
           <DirectorySortSelect
-            className="h-11 data-[size=default]:h-11"
+            searching={Boolean(search.q.trim())}
             value={search.sort}
             onChange={(sort) => setSearch({ sort, page: null })}
           />

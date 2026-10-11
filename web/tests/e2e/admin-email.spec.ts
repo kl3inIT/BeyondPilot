@@ -216,7 +216,9 @@ test.describe("admin email", () => {
 
     const setup = page.getByRole("region", { name: "Setup" });
     await expect(setup).toContainText("What the provider says about sending from beyondpilot.ai");
-    await expect(setup.getByRole("heading", { level: 2 })).toHaveText("Setup · 4 of 6 done");
+    await expect(setup.getByRole("heading", { level: 2 })).toHaveText(
+      "Setup of Amazon SES · 4 of 6 done",
+    );
     await expect(setup).toContainText("Sandbox: only verified addresses receive email");
     await expect(setup).toContainText("Waiting for the DKIM records");
     await expect(setup).toContainText("The domain is verified");
@@ -224,6 +226,25 @@ test.describe("admin email", () => {
     await expect(records.filter({ hasText: "a1b2c3._domainkey" })).toHaveCount(1);
     await expect(setup.getByText("v=DMARC1; p=none;").filter({ visible: true })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
+
+    // Email leaves now, so a save that changes how it leaves is asked again, naming the change.
+    const saves: string[] = [];
+    await page.route("**/api/notification/admin/email/settings", async (route) => {
+      if (route.request().method() !== "GET") {
+        saves.push(route.request().method());
+      }
+      await route.fallback();
+    });
+    await page.getByRole("radio", { name: /Resend/ }).check();
+    await page.getByRole("textbox", { name: "API key" }).fill("re_test_key_for_the_question");
+    await page.getByRole("button", { name: "Save settings" }).click();
+    const ask = page.getByRole("alertdialog", { name: "Change how email is sent?" });
+    await expect(ask).toContainText("nobody can sign in, you included");
+    await expect(ask).toContainText("Provider: Amazon SES → Resend");
+    await expect(ask).toContainText("No test was sent with these settings.");
+    await ask.getByRole("button", { name: "Back" }).click();
+    await expect(ask).toHaveCount(0);
+    expect(saves).toEqual([]);
   });
 
   test("a test goes to the address written, the operator's own unless changed", async ({

@@ -580,6 +580,10 @@ public class Solution {
 		return featuredAt;
 	}
 
+	public @Nullable Instant getDecidedAt() {
+		return decidedAt;
+	}
+
 	public long getVersion() {
 		return version;
 	}

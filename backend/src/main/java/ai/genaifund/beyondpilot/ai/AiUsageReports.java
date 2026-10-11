@@ -101,8 +101,9 @@ public class AiUsageReports {
 		Instant from = start(request.period() == null ? "today" : request.period(), now);
 		Filter filter = new Filter(from, now, request.task(), request.provider(), request.model(), request.outcome());
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 
-		List<AiUsageCallListResponse.Item> items = usage.page(filter, PAGE_SIZE, (long) (page - 1) * PAGE_SIZE)
+		List<AiUsageCallListResponse.Item> items = usage.page(filter, size, (long) (page - 1) * size)
 			.stream()
 			.map(call -> new AiUsageCallListResponse.Item(call.id(), call.occurredAt(), call.task(),
 					call.providerName(), call.modelName(), call.outcome(),
@@ -110,7 +111,7 @@ public class AiUsageReports {
 					call.errorStatus(), call.inputTokens(), call.outputTokens(), call.cacheReadTokens(),
 					call.durationMs(), call.cost(), call.subjectType(), call.subjectId()))
 			.toList();
-		return new AiUsageCallListResponse(items, page, PAGE_SIZE, usage.count(filter),
+		return new AiUsageCallListResponse(items, page, size, usage.count(filter),
 				usage.named(from, now, By.TASK), usage.named(from, now, By.PROVIDER), usage.named(from, now, By.MODEL));
 	}
 

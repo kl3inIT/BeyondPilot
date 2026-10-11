@@ -681,7 +681,8 @@
             "title": "Publish {name}?",
             "lead": "It goes on the programs list, and anyone with the link can open its page.",
             "note": "From now on its address is fixed, so links people share keep working.",
-            "cancel": "Cancel"
+            "cancel": "Cancel",
+            "noQuestions": "Its application form asks no question of its own yet: applicants give only themselves, their team and their solution. Questions can be added until applications open."
           },
           "done": "{name} is published.",
           "notReady": "The program still lacks what the list above names.",
@@ -775,7 +776,10 @@
           "PROGRAM_QUESTIONS_FIXED": "Applications have opened, so the questions can no longer change.",
           "PROGRAM_CHANGED_MEANWHILE": "Someone else changed this program in the meantime. Reload and make your changes again.",
           "PROGRAM_CHOICES_REQUIRED": "A question answered by a choice needs at least two choices."
-        }
+        },
+        "locks": "The questions lock when applications open on {opens}: from then on they can no longer change.",
+        "locksUnset": "The questions lock when applications open. No opening is set yet: set it under Settings.",
+        "fixedStill": "Applicants answer them as they are. The program's page, its closing date and its judges can still change."
       }
     },
     "accounts": {
@@ -1172,6 +1176,10 @@
         "status": {
           "label": "Status",
           "all": "All statuses"
+        },
+        "country": {
+          "label": "Country",
+          "all": "All countries"
         }
       },
       "status": {
@@ -1971,7 +1979,7 @@
       "chat": {
         "tasks": {
           "heading": "Models by task",
-          "lead": "A choice is saved at once.",
+          "lead": "A change is saved once you confirm it.",
           "name": {
             "matching": "Matching"
           },
@@ -1999,6 +2007,13 @@
           "noModels": {
             "title": "No model to choose yet",
             "lead": "Enable a model on a connection below, then choose it here."
+          },
+          "confirm": {
+            "title": "Change the model for {task}?",
+            "lead": "Every {task} run from now on uses it. What earlier runs gave stays as it is.",
+            "choice": "{model} · reasoning {effort}",
+            "save": "Change",
+            "cancel": "Cancel"
           }
         },
         "connections": {
@@ -2713,6 +2728,26 @@
           "goToNext": "Go to the next page",
           "page": "Page {page}"
         }
+      },
+      "confirm": {
+        "turnOff": "Turn off",
+        "remove": "Remove",
+        "cancel": "Cancel",
+        "userOff": {
+          "title": "Turn the user server off?",
+          "lead": "It answers 404 from now on: {count, plural, =0 {no app is connected to it now.} one {# connected app stops working.} other {# connected apps stop working.}}",
+          "note": "Turn it on again here when you want people to connect."
+        },
+        "toolOff": {
+          "title": "Turn {tool} off?",
+          "lead": "Apps on the {server} no longer see it, and a call to it is refused. {count, plural, =0 {No app is connected to that server now.} one {# app is connected to it now.} other {# apps are connected to it now.}}"
+        },
+        "hostRemove": {
+          "title": "Remove {host}?",
+          "labelled": "Apps from {host} are no longer reviewed: when they connect, the consent screen labels them Not reviewed.",
+          "refused": "Apps from {host} can no longer connect, since apps from other hosts are not allowed.",
+          "apps": "Apps from this host: {apps}."
+        }
       }
     },
     "email": {
@@ -3220,6 +3255,17 @@
         "lastSaved": "Last saved by {name}, {when}.",
         "neverSaved": "Not saved yet.",
         "save": "Save settings",
+        "confirm": {
+          "title": "Change how email is sent?",
+          "lead": "Sign-in codes go out by email. If these settings do not work, nobody can sign in, you included.",
+          "provider": "Provider: {from} → {to}",
+          "credentials": "A new key, login or server for {provider}",
+          "address": "Sender address: {from} → {to}",
+          "untested": "No test was sent with these settings. Send test, beside Save, tries them without saving.",
+          "tested": "A test with these settings was sent at {when}. Check that it arrived before you save.",
+          "save": "Save the change",
+          "back": "Back"
+        },
         "leave": {
           "title": "Leave without saving?",
           "lead": "Your changes on this page are not saved and will be lost.",
@@ -3229,6 +3275,7 @@
       },
       "checks": {
         "title": "Setup",
+        "titleFor": "Setup of {provider}",
         "done": "{done} of {total} done",
         "lead": "What the provider says about sending from {domain}, checked at {when}.",
         "again": "Check again",
@@ -3328,6 +3375,9 @@
   },
   "Lists": {
     "loadMore": "Load more",
+    "pageSize": {
+      "label": "Per page"
+    },
     "pagination": {
       "label": "Pages",
       "previous": "Previous",
@@ -3338,6 +3388,7 @@
     },
     "sort": {
       "label": "Sort by",
+      "relevance": "Relevance",
       "newest": "Newest",
       "name": "Name A–Z"
     }
@@ -4219,9 +4270,13 @@
       "backing": "Confirmed by GenAI Fund:"
     },
     "filters": {
-      "search": "Search by name or summary",
+      "search": "Search AI solutions",
       "toggle": "Filters",
       "adminSearch": "Search by solution or organization",
+      "organization": {
+        "label": "Organization",
+        "all": "All organizations"
+      },
       "industry": {
         "label": "Industry",
         "all": "All industries"
@@ -4857,7 +4912,7 @@
       "others": "Other AI talent you could look at"
     },
     "filters": {
-      "search": "Search by name, skill or project",
+      "search": "Search AI talent",
       "adminSearch": "Search by name or email",
       "role": {
         "label": "Role",
@@ -5220,6 +5275,7 @@
     "metaTitle": "Programs and events · BeyondPilot",
     "title": "Programs and events",
     "lead": "Enterprise challenges, open innovation calls, build weeks and meetups that GenAI Fund runs with its partners across Southeast Asia.",
+    "search": "Search programs and events",
     "filters": {
       "label": "Programs by phase",
       "all": "All",
@@ -6199,10 +6255,19 @@
       "message": "Message",
       "placeholders": "{organization} and {solution} are filled in for each applicant.",
       "confirmLabel": "Release",
-      "checked": "I've checked both lists. An outcome can't be recalled once it's sent.",
       "release": "{count, plural, one {Release to # applicant} other {Release to # applicants}}",
       "notReady": "Not ready to release",
-      "done": "Outcomes released. Every applicant is being emailed."
+      "done": "Outcomes released. Every applicant is being emailed.",
+      "checkFirst": "Check both lists before you release: an outcome can't be recalled once it's sent.",
+      "fillFirst": "Write a subject and a message for both groups to release.",
+      "confirm": {
+        "title": "{count, plural, one {Email # applicant now?} other {Email # applicants now?}}",
+        "lead": "Every applicant gets the email of their group and sees their result on My applications.",
+        "group": "{group}: {count, plural, one {# applicant} other {# applicants}}",
+        "note": "This cannot be undone: an email that has left cannot be recalled.",
+        "send": "Release and send",
+        "cancel": "Not yet"
+      }
     },
     "reviewers": {
       "metaTitle": "Reviewers",
@@ -6337,6 +6402,7 @@
     "search": "Search use cases",
     "sort": {
       "label": "Sort by",
+      "relevance": "Relevance",
       "newest": "Newest",
       "deadline": "Closing soonest",
       "budget": "Highest budget"

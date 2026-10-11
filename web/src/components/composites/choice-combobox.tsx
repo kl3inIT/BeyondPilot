@@ -22,6 +22,7 @@ type ChoiceComboboxProps = {
   /** The name of the field for assistive technology, usually its label. */
   label: string;
   placeholder?: string;
+  size?: "sm" | "lg";
   /** What the list says when the typed text matches nothing. */
   emptyLabel: string;
   /** The name of the button that takes a chosen option off, given the option's label. */
@@ -41,6 +42,7 @@ function ChoiceCombobox({
   id,
   label,
   placeholder,
+  size = "sm",
   emptyLabel,
   removeLabel,
   options,
@@ -64,7 +66,7 @@ function ChoiceCombobox({
       onValueChange={onValueChange}
       itemToStringLabel={labelOf}
     >
-      <ComboboxChips ref={anchor} className="w-full">
+      <ComboboxChips ref={anchor} size={size} className="w-full">
         <ComboboxValue>
           {(chosen: string[]) => (
             <>

@@ -73,6 +73,7 @@ function Copyable({ value, label }: { value: string; label: string }) {
  */
 function EmailSetupChecklist() {
   const t = useTranslations("Admin.email.checks");
+  const names = useTranslations("Admin.email.providers");
   const format = useFormatter();
   const [setup, setSetup] = useState<EmailSetup | null>(null);
   const [failed, setFailed] = useState(false);
@@ -108,7 +109,7 @@ function EmailSetupChecklist() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-0.5">
           <h2 id="email-checks" className="text-base font-medium">
-            {t("title")}
+            {setup ? t("titleFor", { provider: names(`${setup.provider}.name`) }) : t("title")}
             {setup && setup.checks.length > 0 && (
               <span className="font-normal text-muted-foreground">
                 {" · "}

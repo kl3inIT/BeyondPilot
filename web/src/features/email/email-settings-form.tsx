@@ -16,6 +16,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { z } from "zod";
 
+import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import {
@@ -207,6 +208,9 @@ function CopyField({
  * Admin › Email › Settings: who email comes from and which provider delivers it. A secret is
  * written, never read back: a stored one shows as saved, and an empty field keeps it. Send a test
  * tries the settings on the form, saved or not, by sending to the operator's own address.
+ *
+ * Sign-in codes go out by email, so a save that changes how email leaves, while it leaves, is
+ * asked again first: settings that do not work would keep everyone out, the operator included.
  */
 function EmailSettingsForm({
   settings,
@@ -223,6 +227,10 @@ function EmailSettingsForm({
   const router = useRouter();
   const [current, setCurrent] = useState(settings);
   const [testing, setTesting] = useState(false);
+  // The values a test was last sent with, and when: the question before saving says so.
+  const [tested, setTested] = useState<{ values: string; at: Date } | null>(null);
+  const [asking, setAsking] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const secretMissing = (stored: boolean, value: string) => !stored && value === "";
   const schema = z
@@ -324,6 +332,66 @@ function EmailSettingsForm({
   const values = useStore(form.store, (state) => state.values);
   const dirty = useStore(form.store, (state) => state.isDirty);
 
+  /** What the form changes in how email leaves, each said as one line. */
+  function changes(next: Values) {
+    const lines: string[] = [];
+    const saved = current.provider;
+    if (saved && next.provider !== saved) {
+      lines.push(
+        t("confirm.provider", {
+          from: names(`${saved}.name`),
+          to: names(`${next.provider}.name`),
+        }),
+      );
+    } else if (credentialsChanged(next)) {
+      lines.push(t("confirm.credentials", { provider: names(`${next.provider}.name`) }));
+    }
+    if (current.fromAddress && next.fromAddress.trim() !== current.fromAddress) {
+      lines.push(t("confirm.address", { from: current.fromAddress, to: next.fromAddress.trim() }));
+    }
+    return lines;
+  }
+
+  /** Whether the saved provider is given another key, login or server. */
+  function credentialsChanged(next: Values) {
+    switch (next.provider) {
+      case "resend":
+        return next.resend.apiKey !== "";
+      case "brevo":
+        return next.brevo.apiKey !== "";
+      case "ses":
+        return next.ses.secretAccessKey !== "" || !sesSecretKept(next);
+      case "smtp":
+        return (
+          next.smtp.password !== "" ||
+          next.smtp.security !== current.smtp.security ||
+          (current.smtp.passwordSet && !smtpPasswordKept(next)) ||
+          next.smtp.host.trim() !== (current.smtp.host ?? "")
+        );
+    }
+  }
+
+  async function submit() {
+    if (current.ready && changes(form.state.values).length > 0) {
+      const errors = await form.validateAllFields("submit");
+      if (errors.length === 0 && form.state.isValid) {
+        setAsking(true);
+        return;
+      }
+    }
+    await form.handleSubmit();
+  }
+
+  async function confirm() {
+    setSaving(true);
+    try {
+      await form.handleSubmit();
+    } finally {
+      setSaving(false);
+      setAsking(false);
+    }
+  }
+
   async function test(to: string) {
     const errors = await form.validateAllFields("submit");
     if (errors.length > 0 || !form.state.isValid) {
@@ -336,6 +404,7 @@ function EmailSettingsForm({
         query: { to },
       });
       if (data.sent) {
+        setTested({ values: JSON.stringify(form.state.values), at: new Date() });
         notify.success("Admin.email.settings.testSent", { email: data.recipient });
       } else {
         notify.error(testFailures[data.failure ?? "unavailable"]);
@@ -364,7 +433,7 @@ function EmailSettingsForm({
       className="flex flex-col gap-8"
       onSubmit={(event) => {
         event.preventDefault();
-        void form.handleSubmit();
+        void submit();
       }}
     >
       {!current.encryptionReady && (
@@ -726,6 +795,37 @@ function EmailSettingsForm({
           </form.AppForm>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={asking}
+        onOpenChange={setAsking}
+        title={t("confirm.title")}
+        description={t("confirm.lead")}
+        note={
+          tested && tested.values === JSON.stringify(values)
+            ? t("confirm.tested", {
+                when: format.dateTime(tested.at, {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hourCycle: "h23",
+                }),
+              })
+            : t("confirm.untested")
+        }
+        confirmLabel={t("confirm.save")}
+        cancelLabel={t("confirm.back")}
+        tone="danger"
+        pending={saving}
+        onConfirm={() => void confirm()}
+      >
+        <ul className="flex flex-col gap-1 rounded-lg border bg-muted/40 px-4 py-3 text-sm">
+          {changes(values).map((line) => (
+            <li key={line} className="break-words">
+              {line}
+            </li>
+          ))}
+        </ul>
+      </ConfirmDialog>
 
       <LeaveGuard
         active={dirty}

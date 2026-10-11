@@ -30,7 +30,12 @@ export default async function McpToolsRoute({ params }: PageProps<"/[locale]/adm
       throw error;
     },
   );
-  const counts = { tools: settings.tools.length, apps: apps.length };
+  const counts = {
+    tools: settings.tools.length,
+    apps: apps.length,
+    operatorApps: apps.filter((app) => app.operator).length,
+    userApps: apps.filter((app) => !app.operator).length,
+  };
 
   return <McpToolsPage settings={settings} counts={counts} />;
 }

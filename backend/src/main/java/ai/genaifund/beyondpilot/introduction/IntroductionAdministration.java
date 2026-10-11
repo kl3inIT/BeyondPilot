@@ -53,9 +53,10 @@ public class IntroductionAdministration {
 		identity.requireOperator(actor);
 		String text = request.q() == null || request.q().isBlank() ? null : request.q().strip();
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		Instant overdueBefore = Instant.now().minus(OVERDUE_AFTER);
-		List<IntroductionRepository.Request> rows = requests.adminPage(text, request.status(), PAGE_SIZE,
-				(long) (page - 1) * PAGE_SIZE);
+		List<IntroductionRepository.Request> rows = requests.adminPage(text, request.status(), size,
+				(long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations.names(rows.stream()
 			.flatMap(row -> Stream.of(row.providerOrganizationId(), row.senderOrganizationId()))
 			.distinct()
@@ -69,7 +70,7 @@ public class IntroductionAdministration {
 					row.message(), row.status(),
 					IntroductionRepository.PENDING.equals(row.status()) && row.createdAt().isBefore(overdueBefore),
 					row.createdAt(), row.answeredAt());
-		}).toList(), page, PAGE_SIZE, requests.adminCount(text, request.status()),
+		}).toList(), page, size, requests.adminCount(text, request.status()),
 				requests.pendingBefore(overdueBefore));
 	}
 

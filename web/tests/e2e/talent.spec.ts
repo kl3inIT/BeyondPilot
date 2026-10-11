@@ -44,7 +44,7 @@ test.describe("talent directory", () => {
   }) => {
     await page.goto("/talent");
 
-    await page.getByRole("searchbox", { name: "Search by name, skill or project" }).fill("ocr");
+    await page.getByRole("searchbox", { name: "Search AI talent" }).fill("ocr");
     await expect(page).toHaveURL(/[?&]q=ocr/);
     await expect(shownPeople(page)).toHaveText(["Arif Hidayat"]);
     await expect(page.getByText("Showing 1 of 1")).toBeVisible();
@@ -59,10 +59,12 @@ test.describe("talent directory", () => {
     await expect(shownPeople(page)).toHaveText(["Arif Hidayat", "Đạt Phan", "Linh Nguyễn"]);
 
     await page.goto("/talent");
-    await page.getByRole("button", { name: "ML engineer" }).click();
+    await page.getByRole("combobox", { name: "Role" }).click();
+    await page.getByRole("option", { name: "ML engineer", exact: true }).click();
     await expect(page).toHaveURL(/[?&]role=ml_engineer/);
     await expect(shownPeople(page)).toHaveText(["Arif Hidayat"]);
-    await page.getByRole("button", { name: "All talent" }).click();
+    await page.getByRole("combobox", { name: "Role" }).click();
+    await page.getByRole("option", { name: "All talent", exact: true }).click();
     await expect(shownPeople(page)).toHaveCount(3);
 
     await page.goto("/talent?q=nobody");

@@ -1,5 +1,6 @@
 import { ArrowLeftIcon, InboxIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { createSerializer } from "nuqs/server";
 
 import { TextButton } from "@/components/actions/text-button";
 import { DataTableEmpty } from "@/components/composites/data-table";
@@ -8,12 +9,23 @@ import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentEnquiryList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { reportedEnquiriesSearch } from "./talent-search";
+
+const address = createSerializer(reportedEnquiriesSearch);
+
 /**
  * Admin › Talent › Reported messages: what the people behind talent profiles reported as unwanted,
  * the most recently reported first, with who sent each message and to whom. Operators read them;
  * the sender was told the message was declined.
  */
-function AdminReportedEnquiriesPage({ enquiries }: { enquiries: AdminTalentEnquiryList }) {
+function AdminReportedEnquiriesPage({
+  enquiries,
+  size,
+}: {
+  enquiries: AdminTalentEnquiryList;
+  /** The page size the URL holds; none is the list's own. */
+  size: number | null;
+}) {
   const t = useTranslations("Admin.talent.reported");
   const topic = useVocabulary("enquiryTopic");
   const format = useFormatter();
@@ -64,7 +76,7 @@ function AdminReportedEnquiriesPage({ enquiries }: { enquiries: AdminTalentEnqui
         page={enquiries.page}
         pageSize={enquiries.pageSize}
         total={enquiries.total}
-        href={(page) => `${siteRoutes.adminTalentReported}?page=${page}`}
+        href={(page) => address(siteRoutes.adminTalentReported, { page, size })}
       />
     </div>
   );

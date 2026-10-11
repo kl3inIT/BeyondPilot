@@ -12,6 +12,7 @@ import { FeaturedFounders } from "./featured-founders";
 import { TalentCard } from "./talent-card";
 import { TalentFilters } from "./talent-filters";
 import { talentSearch, type TalentSearch } from "./talent-search";
+import { gridPageSizes, maxSearchPage } from "@/lib/page-size";
 
 const address = createSerializer(talentSearch);
 
@@ -26,7 +27,7 @@ type TalentDirectoryPageProps = {
 
 /**
  * AI talent: the public directory of the people GenAI Fund approved, on the template the directories
- * of use cases and solutions share. The list arrives already read; search, the role chips, the sort
+ * of use cases and solutions share. The list arrives already read; search, the role filter, the sort
  * and paging are the URL. The featured founders open the first page of the unfiltered list.
  */
 function TalentDirectoryPage({ talent, search, hasProfile, others }: TalentDirectoryPageProps) {
@@ -88,13 +89,15 @@ function TalentDirectoryPage({ talent, search, hasProfile, others }: TalentDirec
               )}
             </>
           )}
-          {talent.total > talent.pageSize && (
+          {(search.size !== null || talent.total > Math.min(gridPageSizes[0], talent.pageSize)) && (
             <ListFooter
               count={t("total", { count: talent.total })}
               page={talent.page}
               pageSize={talent.pageSize}
               total={talent.total}
               href={(page) => address(siteRoutes.talent, { ...search, page })}
+              sizes={gridPageSizes}
+              maxPages={search.q.trim() ? maxSearchPage : undefined}
             />
           )}
         </>

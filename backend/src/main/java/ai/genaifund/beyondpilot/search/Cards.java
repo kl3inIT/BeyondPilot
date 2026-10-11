@@ -56,6 +56,32 @@ final class Cards {
 
 	static final String CURRENCY = "currency";
 
+	static final String PUBLISHED_AT = "publishedAt";
+
+	static final String CREATED_AT = "createdAt";
+
+	static final String FEATURED = "featured";
+
+	static final String BACKING = "backing";
+
+	static final String PROJECT_COUNT = "projectCount";
+
+	static final String LEAD_PROJECT_TITLE = "leadProjectTitle";
+
+	static final String LEAD_PROJECT_STAGE = "leadProjectStage";
+
+	static final String BUDGET_MEMBERS_ONLY = "budgetMembersOnly";
+
+	static final String BUDGET_USD = "budgetUsd";
+
+	static final String TECHNOLOGIES = "technologies";
+
+	static final String TIMELINE_MIN_WEEKS = "timelineMinWeeks";
+
+	static final String TIMELINE_MAX_WEEKS = "timelineMaxWeeks";
+
+	static final String ORGANIZATION_LOGO = "organizationLogoFileId";
+
 	private Cards() {
 	}
 

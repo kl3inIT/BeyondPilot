@@ -1,57 +1,11 @@
-import { cva, type VariantProps } from "class-variance-authority";
 import { ExternalLinkIcon } from "lucide-react";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { Solution, SolutionImage } from "@/lib/api/generated";
-import { publicFileUrl } from "@/lib/storage/upload";
 
-const pictureVariants = cva(
-  "relative block h-14 overflow-hidden rounded-lg border bg-muted outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-  {
-    variants: {
-      shape: {
-        square: "w-14",
-        wide: "w-25",
-      },
-    },
-  },
-);
-
-type PictureProps = Required<VariantProps<typeof pictureVariants>> & {
-  image: SolutionImage;
-  /** What the image is to the solution: its logo, its cover, or its place under the cover. */
-  caption: string;
-  /** The words for opening it, which name the file. */
-  label: string;
-};
-
-/** One image of a solution in a review, small, opening the file itself in a new tab. */
-function Picture({ image, caption, label, shape }: PictureProps) {
-  return (
-    <li className="flex flex-col items-center gap-1">
-      <a
-        href={publicFileUrl(image.fileId)}
-        target="_blank"
-        rel="noreferrer"
-        aria-label={label}
-        className={pictureVariants({ shape })}
-      >
-        <Image
-          src={publicFileUrl(image.fileId)}
-          alt=""
-          fill
-          sizes="100px"
-          unoptimized
-          className={shape === "wide" ? "object-cover" : "object-contain"}
-        />
-      </a>
-      <span className="text-xs text-muted-foreground">{caption}</span>
-    </li>
-  );
-}
+import { SolutionRecordImages } from "./solution-record-images";
 
 /** What a review reads of a solution. */
 type SolutionRecordProps = {
@@ -102,8 +56,18 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
       </TextButton>
     ) : null;
   const waiting = solution.customerDeployments.filter((item) => item.status === "in_review").length;
-  const pictured = solution.logo || solution.cover || solution.images.length > 0;
   const open = (image: SolutionImage) => t("openImage", { name: image.fileName });
+  const picture = (image: SolutionImage, caption: string, shape: "square" | "wide") => ({
+    fileId: image.fileId,
+    caption,
+    label: open(image),
+    shape,
+  });
+  const pictures = [
+    ...(solution.logo ? [picture(solution.logo, t("logo"), "square")] : []),
+    ...(solution.cover ? [picture(solution.cover, t("cover"), "wide")] : []),
+    ...solution.images.map((image, index) => picture(image, String(index + 1), "square")),
+  ];
 
   const groups: {
     title: string;
@@ -136,36 +100,10 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
     },
     {
       title: t("evidence"),
-      lead: pictured && (
+      lead: pictures.length > 0 && (
         <div className="mt-3 flex flex-col gap-2">
           <h3 className="text-sm text-muted-foreground">{t("images")}</h3>
-          <ul className="flex flex-wrap gap-2">
-            {solution.logo && (
-              <Picture
-                image={solution.logo}
-                caption={t("logo")}
-                label={open(solution.logo)}
-                shape="square"
-              />
-            )}
-            {solution.cover && (
-              <Picture
-                image={solution.cover}
-                caption={t("cover")}
-                label={open(solution.cover)}
-                shape="wide"
-              />
-            )}
-            {solution.images.map((image, index) => (
-              <Picture
-                key={image.fileId}
-                image={image}
-                caption={String(index + 1)}
-                label={open(image)}
-                shape="square"
-              />
-            ))}
-          </ul>
+          <SolutionRecordImages name={solution.name} images={pictures} />
         </div>
       ),
       rows: [

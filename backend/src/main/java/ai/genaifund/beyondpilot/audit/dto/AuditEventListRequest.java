@@ -4,6 +4,9 @@ import java.time.Instant;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
@@ -20,7 +23,10 @@ public record AuditEventListRequest(
 		@Parameter(description = "The `older` cursor of a page: the events before it. Used when both cursors are given.") @Pattern(
 				regexp = CURSOR) @Nullable String before,
 		@Parameter(description = "The `newer` cursor of a page: the events after it.") @Pattern(
-				regexp = CURSOR) @Nullable String after) {
+				regexp = CURSOR) @Nullable String after,
+		@Parameter(description = "How many items a page holds; the list's own page size when absent.",
+				schema = @Schema(type = "integer", format = "int32", minimum = "1", maximum = "100")) @Min(1) @Max(
+						100) @Nullable Integer size) {
 
 	/** Microseconds since the epoch and the event's identifier: the place of one event in the order of the log. */
 	static final String CURSOR = "\\d{1,18}_[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}";

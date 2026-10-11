@@ -5,17 +5,9 @@ import { useState } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
 import { Status } from "@/components/composites/status";
-import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
-import {
-  Item,
-  ItemActions,
-  ItemContent,
-  ItemDescription,
-  ItemGroup,
-  ItemTitle,
-} from "@/components/ui/item";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { TalentEnquiry } from "@/lib/api/generated";
+import { cn } from "@/lib/utils";
 
 import { TalentEnquiryActions } from "./talent-enquiry-actions";
 
@@ -43,45 +35,46 @@ function TalentInbox({ enquiries }: { enquiries: TalentEnquiry[] }) {
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-2 xl:gap-6">
-      <ItemGroup aria-label={t("list")}>
+      <ul aria-label={t("list")} className="overflow-hidden rounded-2xl border bg-card">
         {enquiries.map((enquiry) => {
           const name = enquiry.senderName ?? t("someone");
           const active = enquiry.id === chosen;
           return (
-            <div key={enquiry.id} role="listitem">
-              <Item
-                variant={active ? "muted" : "outline"}
+            <li key={enquiry.id} className="not-last:border-b">
+              <button
+                type="button"
                 aria-current={active ? "true" : undefined}
                 onClick={() => setChosen(enquiry.id)}
-                render={<button type="button" />}
+                className={cn(
+                  "flex w-full flex-col gap-1.5 px-5 py-4 text-left transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset",
+                  active && "bg-accent hover:bg-accent",
+                )}
               >
-                <ItemContent className="min-w-0">
-                  <ItemTitle>
+                <span className="flex items-start justify-between gap-3">
+                  <span className="min-w-0 truncate text-sm font-medium">
                     {enquiry.senderOrganization
                       ? t("from", { name, organization: enquiry.senderOrganization })
                       : name}
-                  </ItemTitle>
-                  <ItemDescription>{topic(enquiry.topic)}</ItemDescription>
-                </ItemContent>
-                <ItemActions className="flex-col items-end">
+                  </span>
                   <Status tone={tones[enquiry.status]}>{t(`status.${enquiry.status}`)}</Status>
-                  <span className="text-sm text-muted-foreground tabular-nums">
+                </span>
+                <span className="flex justify-between gap-3 text-sm text-muted-foreground">
+                  <span className="truncate">{topic(enquiry.topic)}</span>
+                  <span className="shrink-0 tabular-nums">
                     {format.dateTime(new Date(enquiry.createdAt), { dateStyle: "medium" })}
                   </span>
-                </ItemActions>
-              </Item>
-            </div>
+                </span>
+              </button>
+            </li>
           );
         })}
-      </ItemGroup>
+      </ul>
       {open ? (
         <EnquiryDetail key={open.id} enquiry={open} />
       ) : (
-        <Empty>
-          <EmptyHeader>
-            <EmptyDescription>{t("choose")}</EmptyDescription>
-          </EmptyHeader>
-        </Empty>
+        <p className="rounded-2xl border border-dashed bg-card p-6 text-sm text-muted-foreground">
+          {t("choose")}
+        </p>
       )}
     </div>
   );

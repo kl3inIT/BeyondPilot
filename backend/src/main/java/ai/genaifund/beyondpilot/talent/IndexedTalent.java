@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.talent;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,5 +12,6 @@ import org.jspecify.annotations.Nullable;
  */
 public record IndexedTalent(UUID id, String slug, String name, @Nullable String headline, @Nullable String bio,
 		List<String> roles, List<String> skills, List<String> industries, @Nullable String country,
-		@Nullable String city, @Nullable String worksAt, @Nullable UUID photoFileId) {
+		@Nullable String city, @Nullable String worksAt, @Nullable UUID photoFileId, @Nullable Instant publishedAt,
+		int projectCount, @Nullable String leadProjectTitle, @Nullable String leadProjectStage, boolean featured) {
 }

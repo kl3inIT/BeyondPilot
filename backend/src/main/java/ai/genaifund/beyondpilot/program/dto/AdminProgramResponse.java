@@ -37,6 +37,8 @@ public record AdminProgramResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(types = { "string", "null" }, format = "uuid",
 				description = "The cover, read at the public address of stored files.") @Nullable UUID coverFileId,
 		@Schema(description = "Null for a program that takes no applications here.") @Nullable ProgramApplications applications,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "How many questions the application form asks after what every application holds; they are fixed once applications open.") int questionCount,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<ProgramKeyDate> keyDates,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<ProgramEventEntry> events,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

@@ -15,11 +15,12 @@ An operator reviews many solutions in a row. The two screens make that slower th
 
 ## What changes
 
-1. **Search and filters of the queue.** The text matches the solution's name or its organization's name. The list narrows by industry. The response carries how many solutions wait for review, whatever the filters, for the label of the tab.
+1. **Search and filters of the queue.** The text matches the solution's name or its organization's name and is submitted by Enter or the trailing search button; typing alone leaves the current results unchanged. The list narrows by an organization dropdown, industry and status; the organization filter is independent of the free-text search and selects an exact organization. The response carries the organizations that have submitted solutions and how many solutions wait for review, whatever the filters, for the label of the tab.
 2. **Who sent it.** A solution records the account that submitted it. The queue and the record name that person.
 3. **The queue.** Beside the title, how many solutions wait, which is also the way to only those. Filters for status and industry. Columns: solution with a one-line summary, organization, status, sent by, submitted. The way into a record is a button at the end of its row, large enough to hit.
 4. **The record.** What the solution says, as labelled rows in three groups (`Basics`, `Who it is for`, `Evidence`), with `Not published yet` where its owners gave nothing. The decision is a panel beside the record that stays in view while it scrolls: status, organization, who sent it, when, whether it is listed, then `Approve` and `Send back`.
 5. **Customer deployments at the decision.** The panel says how many deployments wait and leads to them.
+6. **Images in the record.** Selecting a logo, cover or evidence thumbnail opens it in an in-page viewer, so a reviewer can inspect the image without leaving the admin record.
 
 ## Decisions
 
@@ -27,9 +28,11 @@ An operator reviews many solutions in a row. The two screens make that slower th
 - **`submitted_by_account_id` is a new nullable column.** The audit trail records decisions, not submissions, and the account that created a draft is not always the one that sends it. Solutions submitted before this change keep the column empty and show the sender as unknown. Nothing is guessed from `created_by_account_id`.
 - **The operators' list gets its own summary record.** `SolutionSummaryResponse` also serves an organization's own list, which has no use for the sender or the organization's name beyond what it already has. `AdminSolutionSummaryResponse` carries the sender and the industries; the organization's list is unchanged.
 - **One count, not one per status.** The number that matters is what waits. Counts for approved and rejected would add two queries to every page for a number nobody acts on.
+- **The organization filter is a dropdown of organizations with submitted solutions.** The general search already matches organization names, so a second text box would duplicate it. The dropdown sends an organization ID for exact matching, while the search, status and industry continue to compose in the URL.
 - **A count and the existing filters, not tabs.** The list already narrows by status through the shared filter toolbar, which the other review lists use too. Tabs would be a second control for the same parameter.
 - **The decision panel replaces the header buttons, it does not add a second set.** One place to decide, in view at every scroll position from 1024px; under that width it stands above the record, where the buttons were.
 - **A new record component, not a change to `SolutionView`.** `SolutionView` also shows a solution to a member who may not edit it, where an empty field has nothing to say. `SolutionRecord` is the review's reading: every field, filled or not.
+- **An in-page image viewer, shared with the public gallery.** The record keeps its compact thumbnails; opening one shows the full image in a dialog with the same navigation and accessible labels as the public solution gallery.
 
 ## Not in this increment
 
@@ -39,4 +42,4 @@ An operator reviews many solutions in a row. The two screens make that slower th
 ## Known limits
 
 - The count of what waits covers solutions, not customer deployments that wait on an approved solution. The queue still sorts those first.
-- A search by organization name reads the matching organizations first. With thousands of organizations sharing a word the list of identifiers is long; a join inside one module would need the two tables to share an owner.
+- The dropdown lists organizations that have at least one submitted solution; organizations with only drafts are not filter options.

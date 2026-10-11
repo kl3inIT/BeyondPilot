@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.usecase;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -151,7 +153,13 @@ public class UseCaseDirectory {
 					organization == null ? null : organization.name(), useCase.getIndustry(),
 					useCase.getTechnologies(), useCase.getExpectedOutcomes(),
 					hidden ? null : useCase.getBudgetMin(), hidden ? null : useCase.getBudgetMax(),
-					useCase.getCurrency(), useCase.isBudgetToBeDetermined(), hidden, useCase.getClosesAt());
+					useCase.getCurrency(), useCase.isBudgetToBeDetermined(), hidden, useCase.getClosesAt(),
+					useCase.getPublishedAt(), hidden || useCase.getBudgetMax() == null ? null
+							: BigDecimal.valueOf(useCase.getBudgetMax()).divide(
+									BigDecimal.valueOf("VND".equals(useCase.getCurrency()) ? properties.vndPerUsd() : 1),
+									MathContext.DECIMAL128),
+					useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(),
+					organization == null ? null : organization.logoFileId(), useCase.getFeaturedAt() != null);
 		}).toList();
 	}
 
@@ -165,6 +173,7 @@ public class UseCaseDirectory {
 	public PublicUseCaseListResponse list(PublicUseCaseListRequest request) {
 		String text = request.q() == null || request.q().isBlank() ? null : request.q().strip();
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		String sort = request.sort() == null ? OPENING_SORT : request.sort();
 		Instant now = Instant.now();
 		UUID program = null;
@@ -172,7 +181,7 @@ public class UseCaseDirectory {
 			Optional<ProgramName> named = programs.named(request.program());
 			if (named.isEmpty() || !named.get().published()) {
 				// A program a visitor cannot see features nothing for them.
-				return new PublicUseCaseListResponse(List.of(), page, PAGE_SIZE, 0);
+				return new PublicUseCaseListResponse(List.of(), page, size, 0);
 			}
 			program = named.get().id();
 		}
@@ -184,13 +193,13 @@ public class UseCaseDirectory {
 		boolean opening = text == null && (request.industry() == null || request.industry().isEmpty())
 				&& program == null && OPENING_SORT.equals(sort);
 		List<UseCaseQueryRepository.PublicRow> rows = useCaseList.publicPage(text, matching, request.industry(), program,
-				sort, opening, properties.vndPerUsd(), now, PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+				sort, opening, properties.vndPerUsd(), now, size, (long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations.names(rows.stream()
 			.filter(row -> !row.hideOrganizationName())
 			.map(UseCaseQueryRepository.PublicRow::organizationId)
 			.collect(Collectors.toSet()));
 		List<PublicUseCaseSummaryResponse> items = rows.stream().map(row -> summary(row, names)).toList();
-		return new PublicUseCaseListResponse(items, page, PAGE_SIZE,
+		return new PublicUseCaseListResponse(items, page, size,
 				useCaseList.publicCount(text, matching, request.industry(), program, now));
 	}
 

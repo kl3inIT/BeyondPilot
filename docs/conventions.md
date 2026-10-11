@@ -288,8 +288,10 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 
 - A list's search, filters and page are the URL, written through nuqs with `shallow: false` so a change asks the server again. A value at its default is left out of the URL. Changing the search or a filter returns to page 1. A search field waits 300 ms after the last keystroke.
 - The Server Component of the page reads the list with those parameters; nothing about a list is kept in browser state that the URL does not hold. A write goes to Spring from the browser and ends in `router.refresh()`.
-- The API pages from 1 and answers `items`, `page`, `pageSize` and `total`; a page past the end is empty, not an error.
+- The API pages from 1 and answers `items`, `page`, `pageSize` and `total`; a page past the end is empty, not an error. A list request takes an optional `size` from 1 to 100; absent, the list keeps its own page size, and `pageSize` answers the size used.
 - Under a list sits the count of what matches and, when it fills more than one page, the registry `pagination` with page links; a way that does not exist is not offered.
+- A list that holds more than its smallest page offers its page size beside the pagination (`PageSizeSelect`): 10, 25, 50 and 100 for a table, 12, 24 and 48 for a directory of cards. The size is the URL (`size`), and changing it returns to the start of the list.
+- A search field has one size per surface: `DirectorySearch` at 48px in a public directory, the registry `input-group` at 32px in an admin toolbar.
 - A list that only grows and is read from its newest end, such as a log, is paged by cursor instead: the address carries `before` or `after`, and under the list sit Previous and Next without a count or page numbers.
 - An empty list and a search that finds nothing are different states. The second keeps the header row and offers one action that clears the search and the filters.
 - Row actions sit in a menu at the end of the row. A destructive action comes last, after a divider, in the destructive colour; an action that opens a dialog ends with an ellipsis. The dialog names who or what it concerns, what will happen and how it is undone.

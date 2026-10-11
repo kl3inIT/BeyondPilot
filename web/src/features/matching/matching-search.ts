@@ -1,7 +1,8 @@
 import { createLoader, createSerializer, parseAsInteger, parseAsString } from "nuqs/server";
+import { pageSize } from "@/lib/page-size";
 
 /** Which page of the disagreements Admin › AI › Matching shows, as the URL holds it: `?page=`. */
-const matchingFeedbackSearch = { page: parseAsInteger.withDefault(1) };
+const matchingFeedbackSearch = { page: parseAsInteger.withDefault(1), size: pageSize };
 
 export const loadMatchingFeedbackSearch = createLoader(matchingFeedbackSearch);
 

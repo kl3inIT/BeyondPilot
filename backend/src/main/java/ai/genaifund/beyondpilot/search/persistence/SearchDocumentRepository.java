@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.search.dto.SearchRequest;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
@@ -43,26 +44,50 @@ public class SearchDocumentRepository {
 			with input as (
 			    select %s as query, search_unaccent(:text) as text
 			),
+			eligible as not materialized (
+			    select d.* from search_document d
+			    where (d.listed or not :listedOnly)
+			      and (cast(:kind as text) is null or d.kind = :kind)
+			      and (d.kind <> 'use_case' or d.facets ->> 'closesAt' is null
+			           or cast(d.facets ->> 'closesAt' as timestamptz) > now())
+			      and (cast(:industries as jsonb) = '[]'::jsonb or exists (
+			           select 1 from jsonb_array_elements_text(cast(:industries as jsonb)) industry
+			           where jsonb_exists(d.facets -> 'industries', industry)))
+			      and (cast(:focusArea as text) is null or jsonb_exists(d.facets -> 'focusAreas', :focusArea))
+			      and (cast(:maturity as text) is null or d.facets ->> 'maturity' = :maturity)
+			      and (cast(:role as text) is null or jsonb_exists(d.facets -> 'roles', :role))
+			      and (cast(:type as text) is null or d.facets ->> 'type' = :type)
+			      and (cast(:phase as text) is null or (d.kind = 'program' and
+			           case
+			             when d.ends_on < (now() at time zone 'Asia/Ho_Chi_Minh')::date then 'done'
+			             when cast(d.facets ->> 'applicationsOpenAt' as timestamptz) <= now()
+			               and cast(d.facets ->> 'applicationsCloseAt' as timestamptz) > now() then 'open'
+			             when cast(d.facets ->> 'applicationsOpenAt' as timestamptz) > now()
+			               or d.starts_on > (now() at time zone 'Asia/Ho_Chi_Minh')::date then 'upcoming'
+			             else 'open'
+			           end = :phase))
+			),
 			by_text as (
 			    select d.kind, d.item_id,
 			           row_number() over (order by ts_rank_cd(d.search_vector, input.query) desc, d.item_id) as position
-			    from search_document d cross join input
-			    where d.search_vector @@ input.query and (d.listed or not :listedOnly)
+			    from eligible d cross join input
+			    where d.search_vector @@ input.query
 			),
 			by_title as (
 			    select d.kind, d.item_id,
 			           row_number() over (order by word_similarity(input.text, search_unaccent(d.title)) desc,
 			                              d.item_id) as position
-			    from search_document d cross join input
+			    from eligible d cross join input
 			    where word_similarity(input.text, search_unaccent(d.title)) >= :similarity
-			      and (d.listed or not :listedOnly)
+			),
+			meaning_candidates as %s (
+			    select kind, item_id, embedding from eligible
+			    where cast(:vector as vector) is not null and embedding is not null and embedding_model = :model
 			),
 			by_meaning as (
 			    select kind, item_id, row_number() over (order by distance, item_id) as position
 			    from (select d.kind, d.item_id, d.embedding <=> cast(:vector as vector) as distance
-			          from search_document d
-			          where cast(:vector as vector) is not null and d.embedding is not null
-			            and d.embedding_model = :model and (d.listed or not :listedOnly)
+			          from meaning_candidates d
 			          order by d.embedding <=> cast(:vector as vector)
 			          limit :pool) nearest
 			    where distance <= :maxDistance
@@ -70,10 +95,6 @@ public class SearchDocumentRepository {
 			matched as (
 			    select ranked.kind, ranked.item_id, sum(1.0 / (:fusionK + ranked.position)) as score
 			    from (select * from by_text union all select * from by_title union all select * from by_meaning) ranked
-			    join search_document d on d.kind = ranked.kind and d.item_id = ranked.item_id
-			    -- A use case stops taking proposals at its close date and leaves the results then, not at the repair.
-			    where d.kind <> 'use_case' or d.facets ->> 'closesAt' is null
-			       or cast(d.facets ->> 'closesAt' as timestamptz) > now()
 			    group by ranked.kind, ranked.item_id
 			)
 			""";
@@ -377,10 +398,10 @@ public class SearchDocumentRepository {
 	 * How many items of each kind match the query; a kind with none is absent.
 	 * @param listedOnly whether to leave out what only matching may use, as every query serving a visitor does
 	 */
-	public Map<String, Long> counts(String query, @Nullable Meaning meaning, boolean listedOnly) {
+	public Map<String, Long> counts(SearchRequest request, @Nullable Meaning meaning, boolean listedOnly) {
 		Map<String, Long> counts = new LinkedHashMap<>();
-		matching(MATCHES.formatted(terms(query)) + "select kind, count(*) as total from matched group by kind", query,
-				meaning, listedOnly)
+		matching(matches(request) + "select kind, count(*) as total from matched group by kind",
+				request, meaning, listedOnly)
 			.query((row, number) -> Map.entry(row.getString("kind"), row.getLong("total")))
 			.list()
 			.forEach(entry -> counts.put(entry.getKey(), entry.getValue()));
@@ -388,18 +409,15 @@ public class SearchDocumentRepository {
 	}
 
 	/**
-	 * One page of the items matching the query, best first.
-	 * @param kind the kind to keep, or null for every kind
+	 * One page of the matching items in the requested order.
 	 */
-	public List<Hit> page(String query, @Nullable Meaning meaning, @Nullable String kind, boolean listedOnly, int limit,
-			int offset) {
-		String sql = MATCHES.formatted(terms(query)) + RESULT + """
+	public List<Hit> page(SearchRequest request, @Nullable Meaning meaning, boolean listedOnly, int limit, int offset) {
+		String sql = matches(request) + RESULT + """
 				from matched m join search_document d on d.kind = m.kind and d.item_id = m.item_id cross join input
-				where cast(:kind as text) is null or d.kind = :kind
-				order by m.score desc, d.title, d.item_id
+				order by %s
 				limit :limit offset :offset
-				""";
-		return matching(sql, query, meaning, listedOnly).param("kind", kind, Types.VARCHAR)
+				""".formatted(order(request));
+		return matching(sql, request, meaning, listedOnly)
 			.param("limit", limit)
 			.param("offset", offset)
 			.query((row, number) -> hit(row))
@@ -410,8 +428,8 @@ public class SearchDocumentRepository {
 	 * The best items of each kind, at most {@code perKind} of each: the kinds in the order of their best item, each
 	 * kind's items best first.
 	 */
-	public List<Hit> bestOfEachKind(String query, @Nullable Meaning meaning, boolean listedOnly, int perKind) {
-		String sql = MATCHES.formatted(terms(query)) + RESULT + """
+	public List<Hit> bestOfEachKind(SearchRequest request, @Nullable Meaning meaning, boolean listedOnly, int perKind) {
+		String sql = matches(request) + RESULT + """
 				from (select kind, item_id, score,
 				             row_number() over (partition by kind order by score desc, item_id) as place,
 				             max(score) over (partition by kind) as kind_best
@@ -420,9 +438,36 @@ public class SearchDocumentRepository {
 				where m.place <= :perKind
 				order by m.kind_best desc, m.kind, m.score desc, d.title, d.item_id
 				""";
-		return matching(sql, query, meaning, listedOnly).param("perKind", perKind)
+		return matching(sql, request, meaning, listedOnly).param("perKind", perKind)
 			.query((row, number) -> hit(row))
 			.list();
+	}
+
+	private static String matches(SearchRequest request) {
+		boolean scoped = request.kind() != null || (request.industry() != null && !request.industry().isEmpty())
+				|| request.focusArea() != null || request.maturity() != null || request.role() != null
+				|| request.type() != null || request.phase() != null;
+		// A scoped exact pool cannot lose eligible items to the global HNSW graph's candidate limit.
+		return MATCHES.formatted(terms(request.q()), scoped ? "materialized" : "not materialized");
+	}
+
+	private static String order(SearchRequest request) {
+		String sort = request.sort();
+		if ("name".equals(sort)) {
+			return "lower(d.title), d.item_id";
+		}
+		if ("newest".equals(sort)) {
+			return PROGRAM.equals(request.kind())
+					? "d.starts_on desc nulls last, cast(d.facets ->> 'createdAt' as timestamptz) desc, d.item_id"
+					: "cast(d.facets ->> 'publishedAt' as timestamptz) desc nulls last, d.item_id";
+		}
+		if ("deadline".equals(sort)) {
+			return "cast(d.facets ->> 'closesAt' as timestamptz) nulls last, d.item_id";
+		}
+		if ("budget".equals(sort)) {
+			return "cast(d.facets ->> 'budgetUsd' as numeric) desc nulls last, d.item_id";
+		}
+		return "m.score desc, d.title, d.item_id";
 	}
 
 	private Hit hit(ResultSet row) throws SQLException {
@@ -459,7 +504,9 @@ public class SearchDocumentRepository {
 		return at == source.length() ? out.toString() : source;
 	}
 
-	private JdbcClient.StatementSpec matching(String sql, String query, @Nullable Meaning meaning, boolean listedOnly) {
+	private JdbcClient.StatementSpec matching(String sql, SearchRequest request, @Nullable Meaning meaning,
+			boolean listedOnly) {
+		String query = request.q();
 		JdbcClient.StatementSpec statement = jdbc.sql(sql)
 			.param("text", query)
 			.param("vector", meaning == null ? null : vector(meaning.vector()), Types.VARCHAR)
@@ -467,6 +514,13 @@ public class SearchDocumentRepository {
 			.param("pool", meaning == null ? 0 : meaning.pool())
 			.param("maxDistance", meaning == null ? 0.0 : 1.0 - meaning.minSimilarity())
 			.param("listedOnly", listedOnly)
+			.param("kind", request.kind(), Types.VARCHAR)
+			.param("industries", json.writeValueAsString(request.industry() == null ? List.of() : request.industry()))
+			.param("focusArea", request.focusArea(), Types.VARCHAR)
+			.param("maturity", request.maturity(), Types.VARCHAR)
+			.param("role", request.role(), Types.VARCHAR)
+			.param("type", request.type(), Types.VARCHAR)
+			.param("phase", request.phase(), Types.VARCHAR)
 			.param("similarity", TITLE_SIMILARITY)
 			.param("headline", "StartSel=\"" + MARK_START + "\", StopSel=\"" + MARK_END + "\", HighlightAll=true")
 			.param("fusionK", FUSION_K);

@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, CircleAlertIcon } from "lucide-react";
+import { ArrowLeftIcon, InfoIcon } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { TextButton } from "@/components/actions/text-button";
@@ -82,28 +82,31 @@ async function ReleasePage({ release }: { release: Release }) {
         </Alert>
       ) : (
         blocked && (
-          <Alert variant="destructive">
-            <CircleAlertIcon aria-hidden="true" />
+          <Alert>
+            <InfoIcon aria-hidden="true" />
             <AlertTitle>{blocked}</AlertTitle>
             <AlertDescription>{t("blocked.why")}</AlertDescription>
           </Alert>
         )
       )}
 
-      <div className="grid gap-6 lg:grid-cols-5 lg:items-start">
-        <div className="flex flex-col gap-4 lg:col-span-3">
+      <div className="grid gap-6 xl:grid-cols-5 xl:items-start">
+        <div className="flex flex-col gap-4 xl:col-span-3">
           {groups.map((group) => (
             <section
               key={group.key}
               aria-labelledby={`group-${group.key}`}
               className="overflow-hidden rounded-lg border bg-card"
             >
-              <div className="flex items-center gap-3 bg-muted px-4 py-3">
+              <h2
+                id={`group-${group.key}`}
+                className="flex items-center gap-3 bg-muted px-4 py-3 text-sm font-normal"
+              >
                 <Badge variant={group.variant}>{group.title}</Badge>
-                <h2 id={`group-${group.key}`} className="text-sm text-muted-foreground">
+                <span className="text-muted-foreground">
                   {t("count", { count: group.items.length })}
-                </h2>
-              </div>
+                </span>
+              </h2>
               {group.items.length === 0 ? (
                 <p className="px-4 py-3 text-sm text-muted-foreground">{t("emptyGroup")}</p>
               ) : (
@@ -147,7 +150,7 @@ async function ReleasePage({ release }: { release: Release }) {
             </p>
           )}
         </div>
-        <div className="lg:sticky lg:top-4 lg:col-span-2">
+        <div className="xl:sticky xl:top-4 xl:col-span-2">
           <ReleaseForm
             programId={head.programId}
             emails={release.emails}
