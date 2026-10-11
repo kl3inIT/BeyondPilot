@@ -72,7 +72,8 @@ abstract class ApplicationsHttpTest {
 				List.of(question("long_text", "How does your solution address the challenge?", List.of()),
 						question("single_choice", "Direction", List.of("Buying", "Carrying", "Claiming")),
 						question("file", "Your proposal", List.of()),
-						question("confirm", "I've read the one hard constraint.", List.of()))))
+						question("confirm", "I've read the one hard constraint.", List.of()),
+						question("multi_choice", "Challenge areas", List.of("Claims", "Pricing", "Fraud")))))
 			.expectStatus()
 			.isOk());
 		List<String> ids = JsonPath.read(asked, "$.questions[*].id");
@@ -103,7 +104,8 @@ abstract class ApplicationsHttpTest {
 		put(operator, uri, program).expectStatus().isOk();
 		post(operator, uri + "/publish", null).expectStatus().isNoContent();
 		return new Form(UUID.fromString(JsonPath.read(created, "$.id")), API + "/programs/" + slug + "/application", UUID.fromString(ids.get(0)),
-				UUID.fromString(ids.get(1)), UUID.fromString(ids.get(2)), UUID.fromString(ids.get(3)));
+				UUID.fromString(ids.get(1)), UUID.fromString(ids.get(2)), UUID.fromString(ids.get(3)),
+				UUID.fromString(ids.get(4)));
 	}
 
 	/** Moves a program's close into the past, as if its applications had closed a minute ago. */
@@ -157,6 +159,8 @@ abstract class ApplicationsHttpTest {
 		answers.put(form.direction().toString(), "Claiming");
 		answers.put(form.proposalFile().toString(), file(uploader).toString());
 		answers.put(form.confirmation().toString(), "true");
+		// Several choices are one text, a JSON array of the options chosen.
+		answers.put(form.areas().toString(), "[\"Claims\",\"Pricing\"]");
 		return answers;
 	}
 
@@ -279,7 +283,8 @@ abstract class ApplicationsHttpTest {
 	}
 
 	/** A program's application form: where it is read and saved, and its four questions. */
-	record Form(UUID programId, String path, UUID approach, UUID direction, UUID proposalFile, UUID confirmation) {
+	record Form(UUID programId, String path, UUID approach, UUID direction, UUID proposalFile, UUID confirmation,
+			UUID areas) {
 	}
 
 	/**

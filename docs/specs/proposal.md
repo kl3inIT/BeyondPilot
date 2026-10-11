@@ -64,9 +64,16 @@ was delivered by [BEY-37](../increments/completed/bey-37-proposal/design.md), re
 - **Version.** A save of an existing application must send the `version` the form read; a missing or different value
   is refused with `PROPOSAL_CHANGED_MEANWHILE`. The row is locked for the save (`PESSIMISTIC_WRITE`).
 - **Answers fit their question.** Only answers to the program's questions are kept, blank ones dropped:
-  `single_choice` must be one of the options, `confirm` must be `true`, `link` an `https://` address of at most 500
-  characters, text at most the question's `maxLength` (otherwise 300 for `short_text`, 2000 for other text), `file`
-  the identifier of a file. Anything else is `PROPOSAL_ANSWER_INVALID`.
+  `single_choice` must be one of the options, `multi_choice` a list of them, `confirm` must be `true`, `link` an
+  `https://` address of at most 500 characters, text at most the question's `maxLength` (otherwise 300 for
+  `short_text`, 2000 for other text), `file` the identifier of a file. Anything else is `PROPOSAL_ANSWER_INVALID`.
+- **Several choices are one text.** `answers` maps a question's identifier to text, in the request, in the row and
+  in the answer, whatever the question's kind. The answer to a `multi_choice` question is a JSON array of the options
+  chosen, written as text: `"[\"Claims\",\"Pricing\"]"`. It names one or more of the question's options, each exactly
+  as the question writes it and once; anything else, an empty list included, is `PROPOSAL_ANSWER_INVALID`. It is kept
+  in the order the question offers its options, whatever order it was sent in. A form that has nothing chosen sends
+  no answer, which is what a required question refuses at submission. A snapshot keeps the same text as the answer's
+  `value`, with `kind` `multi_choice`, and the review reads it from there.
 - **Files.** A new deck or file answer must be a stored file of purpose `application_file` uploaded by the caller
   (`StorageService.stored`); otherwise storage refuses it (`STORAGE_FILE_NOT_FOUND`). A file the application already
   names stays without the check. `application_file` accepts PDF only and is never public.
@@ -189,7 +196,7 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 
 - **Only submitted applications** are reviewed, each as its last version's snapshot; drafts and withdrawals are
   counted, not listed. The list is ordered by `submitted_at`, earliest first, and shows the answer to the program's
-  first `single_choice` question.
+  first `single_choice` question; a `multi_choice` answer is read on the application, not in the list.
 - **What a judge reads.** Their own assessment and its mean; never anyone else's score, an average across judges, the
   decision or the decision history.
 - **What an operator reads.** Every assessment with its author, role (`reviewer` for a joined judge, `operator`

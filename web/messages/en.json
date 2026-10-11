@@ -772,6 +772,7 @@
           "short_text": "Short answer",
           "long_text": "Long answer",
           "single_choice": "One choice",
+          "multi_choice": "Several choices",
           "file": "PDF file",
           "link": "Link",
           "confirm": "Confirmation"
@@ -5592,7 +5593,8 @@
       "choose": "Choose one",
       "uploaded": "Uploaded file",
       "required": "Answer this question.",
-      "confirmRequired": "Confirm this to continue."
+      "confirmRequired": "Confirm this to continue.",
+      "choicesRequired": "Choose at least one."
     },
     "review": {
       "blocks": {

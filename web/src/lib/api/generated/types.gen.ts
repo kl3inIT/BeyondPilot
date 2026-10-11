@@ -1918,7 +1918,7 @@ export type ExportApplicationsRequest = {
 export type FormQuestion = {
     help?: string | null;
     id: string;
-    kind: 'short_text' | 'long_text' | 'single_choice' | 'file' | 'link' | 'confirm';
+    kind: 'short_text' | 'long_text' | 'single_choice' | 'multi_choice' | 'file' | 'link' | 'confirm';
     label: string;
     /**
      * The longest answer the form takes.
@@ -3288,14 +3288,14 @@ export type ProgramQuestion = {
      * Null for a new question; an answer names its question by it.
      */
     id?: string | null;
-    kind: 'short_text' | 'long_text' | 'single_choice' | 'file' | 'link' | 'confirm';
+    kind: 'short_text' | 'long_text' | 'single_choice' | 'multi_choice' | 'file' | 'link' | 'confirm';
     label: string;
     /**
      * The longest answer to a text question; null takes the form's default.
      */
     maxLength?: number | null;
     /**
-     * The choices of a single_choice question, two to twenty; empty otherwise.
+     * The choices of a single_choice or multi_choice question, two to twenty; empty otherwise.
      */
     options: Array<string>;
     required: boolean;
@@ -4209,7 +4209,7 @@ export type SaveAiProvider = {
  */
 export type SaveApplication = {
     /**
-     * The answers to the program's questions by question identifier. A file is named by its identifier, a confirmation is "true".
+     * The answers to the program's questions by question identifier. A file is named by its identifier, a confirmation is "true", and several choices are a JSON array of the options chosen, such as ["Claims","Pricing"].
      */
     answers: {
         [key: string]: string;

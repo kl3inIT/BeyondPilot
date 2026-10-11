@@ -23,7 +23,10 @@ import {
   FieldContent,
   FieldDescription,
   FieldError,
+  FieldGroup,
   FieldLabel,
+  FieldLegend,
+  FieldSet,
   FieldTitle,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -47,6 +50,7 @@ import {
   type FormQuestion,
   type Me,
 } from "@/lib/api/generated";
+import { answerOfChosen, chosenOptions } from "@/lib/chosen-options";
 import { focusField } from "@/lib/focus-field";
 import { myApplicationRoute, programRoute, siteRoutes } from "@/lib/site";
 
@@ -1156,6 +1160,45 @@ function StepQuestions({
             </Field>
           );
         }
+        if (question.kind === "multi_choice") {
+          const chosen = chosenOptions(value);
+          return (
+            <FieldSet
+              key={question.id}
+              id={id}
+              aria-describedby={question.help ? `${id}-hint` : undefined}
+            >
+              <FieldLegend variant="label">
+                {question.label} {!question.required && <Optional />}
+              </FieldLegend>
+              {help}
+              <FieldGroup data-slot="checkbox-group">
+                {question.options.map((option, position) => (
+                  <Field key={option} orientation="horizontal">
+                    <Checkbox
+                      id={`${id}-${position}`}
+                      checked={chosen.includes(option)}
+                      onCheckedChange={(checked) =>
+                        answer(
+                          question.id,
+                          // Kept in the order the question offers them, whatever order they were ticked in.
+                          answerOfChosen(
+                            question.options.filter((other) =>
+                              other === option ? checked : chosen.includes(other),
+                            ),
+                          ),
+                        )
+                      }
+                      aria-invalid={bad(id)}
+                    />
+                    <FieldLabel htmlFor={`${id}-${position}`}>{option}</FieldLabel>
+                  </Field>
+                ))}
+              </FieldGroup>
+              <Required show={bad(id)}>{t("choicesRequired")}</Required>
+            </FieldSet>
+          );
+        }
         return (
           <Field key={question.id} data-invalid={bad(id)}>
             <FieldLabel htmlFor={id}>{label}</FieldLabel>
@@ -1294,7 +1337,10 @@ function StepReview({
                   : question.kind === "file"
                     ? (view.application?.files[question.id]?.fileName ??
                       (value ? t("uploaded") : none))
-                    : value || none;
+                    : question.kind === "multi_choice"
+                      ? // One choice a line: a choice may hold a comma of its own.
+                        chosenOptions(value).join("\n") || none
+                      : value || none;
               return [question.label, shown];
             }),
           },
