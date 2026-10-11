@@ -101,13 +101,6 @@
       "primaryCta": "Khám phá BeyondPilot",
       "secondaryCta": "Xem cách hoạt động",
       "searchSubmit": "Tìm",
-      "promptsLabel": "Ví dụ tìm kiếm",
-      "prompts": {
-        "claims": "Tìm giải pháp AI cho bồi thường bảo hiểm",
-        "talent": "Tìm nhân lực AI cho dự án của tôi",
-        "projects": "Xem dự án doanh nghiệp đang tìm giải pháp",
-        "programs": "Tìm chương trình AI cho startup của tôi"
-      },
       "preview": {
         "alt": "Bản xem trước sản phẩm: kết quả tìm “AI agents” trên BeyondPilot, gồm giải pháp AI, một bài toán và một chương trình",
         "address": "beyondpilot.ai/search?q=ai+agents",

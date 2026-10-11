@@ -7,16 +7,14 @@ import { Button } from "@/components/actions/button";
 import { SearchPreview } from "@/components/sections/hero/search-preview";
 import { Glow } from "@/components/ui/glow";
 import { Section } from "@/components/ui/section";
-import { getPathname, Link } from "@/i18n/navigation";
+import { getPathname } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
 const rise =
   "animate-in ease-entrance animation-duration-800 fill-mode-both fade-in slide-in-from-bottom-4 motion-reduce:animate-none";
 
-const prompts = ["claims", "talent", "projects", "programs"] as const;
-
 /**
- * The agent's promise, one search with example prompts and a preview of what it returns, on the
+ * The agent's promise, one search and a preview of what it returns, on the
  * aurora (Figma "Landing v2 / Hero"). Text rises in on load, one line after another; the heading
  * rises without fading, because a browser skips an invisible element when it measures the largest
  * paint, and the heading is that paint.
@@ -78,24 +76,6 @@ function Hero() {
               {t("searchSubmit")}
             </Button>
           </form>
-          <ul
-            aria-label={t("promptsLabel")}
-            className={cn(rise, "mt-4 flex max-w-150 flex-wrap gap-2 delay-380")}
-          >
-            {prompts.map((prompt) => (
-              <li
-                key={prompt}
-                className={cn(prompt !== "claims" && prompt !== "talent" && "hidden md:block")}
-              >
-                <Link
-                  href={{ pathname: siteRoutes.search, query: { q: t(`prompts.${prompt}`) } }}
-                  className="hit-area flex items-center rounded-full border bg-card px-3 py-1 text-xs font-medium outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
-                  {t(`prompts.${prompt}`)}
-                </Link>
-              </li>
-            ))}
-          </ul>
           <div
             className={cn(rise, "mt-8 flex w-full flex-col gap-3 delay-420 sm:w-auto sm:flex-row")}
           >

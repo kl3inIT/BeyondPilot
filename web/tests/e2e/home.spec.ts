@@ -46,13 +46,6 @@ test.describe("home page", () => {
     ).toHaveCount(0);
   });
 
-  test("an example prompt runs the search", async ({ page }) => {
-    await page.goto("/");
-
-    await page.getByRole("link", { name: "Find an AI solution for insurance claims" }).click();
-    await expect(page).toHaveURL(/\/search\?q=Find/);
-  });
-
   test("the five categories lead to their directories", async ({ page }) => {
     await page.goto("/");
 

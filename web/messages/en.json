@@ -101,13 +101,6 @@
       "primaryCta": "Explore BeyondPilot",
       "secondaryCta": "See how it works",
       "searchSubmit": "Search",
-      "promptsLabel": "Example searches",
-      "prompts": {
-        "claims": "Find an AI solution for insurance claims",
-        "talent": "Find AI talent for my project",
-        "projects": "Explore enterprise projects seeking solutions",
-        "programs": "Discover AI programs for my startup"
-      },
       "preview": {
         "alt": "Product preview: BeyondPilot search results for “AI agents”, listing AI solutions, a use case and a program",
         "address": "beyondpilot.ai/search?q=ai+agents",
