@@ -83,6 +83,18 @@ function sortingOf(sort: string): SortingState {
   return [{ id: desc ? sort.slice(1) : sort, desc }];
 }
 
+/**
+ * What a column draws for a header or a cell. TanStack's own renderer mounts a function as a
+ * component, so a function made anew at each render, as the columns of a Server Component's table
+ * are, would unmount what its cells hold: an open menu would close. Calling it keeps the cell.
+ */
+function drawn<TContext>(
+  template: string | ((context: TContext) => React.ReactNode) | undefined,
+  context: TContext,
+): React.ReactNode {
+  return typeof template === "function" ? template(context) : template;
+}
+
 type DataTableSelection<TData> = {
   /** Whether a row may be selected; a row that may not shows its box disabled. */
   canSelect?: (row: TData) => boolean;
@@ -269,7 +281,7 @@ function DataTableView<TData extends RowData>({
                         }
                         className="inline-flex min-h-6 items-center gap-1.5 rounded-md font-medium outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <table.FlexRender header={header} />
+                        {drawn(header.column.columnDef.header, header.getContext())}
                         {direction === null ? (
                           <ArrowUpDownIcon
                             aria-hidden="true"
@@ -282,7 +294,7 @@ function DataTableView<TData extends RowData>({
                         )}
                       </button>
                     ) : (
-                      <table.FlexRender header={header} />
+                      drawn(header.column.columnDef.header, header.getContext())
                     )}
                   </TableHead>
                 );
@@ -313,7 +325,7 @@ function DataTableView<TData extends RowData>({
                     cell.column.columnDef.meta?.top && "align-top",
                   )}
                 >
-                  <table.FlexRender cell={cell} />
+                  {drawn(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
             </TableRow>
