@@ -174,7 +174,11 @@ def build(export: Path, out: Path) -> dict:
             if not clean(row[column]):
                 continue
             stated = json.loads(row[column])
-            source = export / "files" / stated["path"]
+            # The path comes from the export: a file outside its files folder is never read.
+            files_root = (export / "files").resolve()
+            source = (files_root / stated["path"]).resolve()
+            if not source.is_relative_to(files_root):
+                raise SystemExit(f"A {kind} path leaves the export's files folder; nothing was written.")
             if not source.is_file() or source.stat().st_size == 0 or not stated["name"].lower().endswith(".pdf"):
                 counts[f"{kind} file not usable, left out"] += 1
                 continue
