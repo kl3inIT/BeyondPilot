@@ -32,8 +32,7 @@ public record AdminCreateOrganizationRequest(
 		@Schema(types = { "string", "null" },
 				description = "What it does and for whom, in at most 280 characters.") @Size(
 						max = 280) @Nullable String description,
-		@Schema(types = { "integer", "null" }, description = "The year it started.") @Min(1800) @Max(
-				2100) @Nullable Integer foundedYear,
+		@Schema(types = { "integer", "null" }, description = "The year it started.") @Min(1800) @Max(2100) @NotAfterThisYear @Nullable Integer foundedYear,
 		@Schema(types = { "string", "null" },
 				description = "A logo the caller uploaded for an organization; null for none.") @Nullable UUID logoFileId,
 		@Schema(types = { "string", "null" }, example = "tasco.com.vn",

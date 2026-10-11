@@ -30,12 +30,14 @@ export default async function MyOrganizationRoute({
   const mine = await readMyOrganization();
   const { organization } = mine;
 
-  // A person without an organization meets the ways in, on their own frame without the site's navigation.
+  // A person without an organization meets the ways in, under the site's header like every other page.
   if (!organization) {
     return (
-      <OrganizationEntryFrame>
-        <OrganizationEntry mine={mine} finding={(await searchParams).find !== undefined} />
-      </OrganizationEntryFrame>
+      <WorkspaceFrame>
+        <OrganizationEntryFrame>
+          <OrganizationEntry mine={mine} finding={(await searchParams).find !== undefined} />
+        </OrganizationEntryFrame>
+      </WorkspaceFrame>
     );
   }
 

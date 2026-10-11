@@ -8,6 +8,7 @@ import { ListFooter } from "@/components/composites/list-footer";
 import type { PublicTalentList, PublicTalentSummary } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { FeaturedFounders } from "./featured-founders";
 import { TalentCard } from "./talent-card";
 import { TalentFilters } from "./talent-filters";
 import { talentSearch, type TalentSearch } from "./talent-search";
@@ -26,7 +27,7 @@ type TalentDirectoryPageProps = {
 /**
  * AI talent: the public directory of the people GenAI Fund approved, on the template the directories
  * of use cases and solutions share. The list arrives already read; search, the role chips, the sort
- * and paging are the URL.
+ * and paging are the URL. The featured founders open the first page of the unfiltered list.
  */
 function TalentDirectoryPage({ talent, search, hasProfile, others }: TalentDirectoryPageProps) {
   const t = useTranslations("Talent.directory");
@@ -41,6 +42,8 @@ function TalentDirectoryPage({ talent, search, hasProfile, others }: TalentDirec
         </h1>
         <p className="max-w-180 text-base text-muted-foreground md:text-lg">{t("lead")}</p>
       </header>
+
+      {!filtered && search.page === 1 && <FeaturedFounders />}
 
       {talent.total === 0 && !filtered ? (
         <>

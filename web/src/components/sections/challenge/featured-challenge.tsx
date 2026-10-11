@@ -24,7 +24,7 @@ function FeaturedChallenge() {
 
   return (
     <Section>
-      <div className="flex flex-col pb-16 lg:pb-20">
+      <div className="flex flex-col py-16 lg:py-20">
         <p className="text-copy font-semibold text-primary">{t("eyebrow")}</p>
         <article className="mt-5 flex flex-col gap-6 rounded-3xl border bg-card p-4 lg:flex-row lg:gap-10 lg:p-5">
           <div className="flex min-h-72 flex-col justify-between gap-10 rounded-3xl bg-linear-145 from-panel-deep to-panel-bright px-6 pt-6 pb-10 text-panel-foreground lg:min-h-90 lg:w-130 lg:shrink-0 lg:px-8 lg:pt-8 lg:pb-20">

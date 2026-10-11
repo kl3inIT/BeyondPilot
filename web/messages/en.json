@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "BeyondPilot",
-    "description": "BeyondPilot is an AI startup funded by GenAI Fund. Its AI adoption agent helps enterprises and AI builders find AI solutions, AI talent, enterprise use cases, events and programs."
+    "description": "BeyondPilot is an AI startup funded by GenAI Fund. It helps enterprises and AI builders find AI solutions, AI talent, enterprise use cases, events and programs."
   },
   "Site": {
     "brand": "BeyondPilot",
@@ -54,6 +54,7 @@
       "platform": "Platform",
       "company": "Company",
       "about": "About GenAI Fund",
+      "aboutUs": "About BeyondPilot",
       "contact": "Contact",
       "linkedin": "GenAI Fund on LinkedIn",
       "facebook": "GenAI Fund on Facebook",
@@ -92,26 +93,18 @@
   },
   "Home": {
     "hero": {
-      "eyebrow": "AI adoption, guided by an agent.",
       "titleStart": "Your next step in",
       "titleEnd": "AI starts here.",
-      "description": "BeyondPilot is an AI startup funded by GenAI Fund. Our AI adoption agent helps you discover AI solutions, find expert talent, explore real business challenges, and connect with events and programs that move you forward.",
+      "description": "BeyondPilot is an AI startup funded by GenAI Fund. We help you discover AI solutions, find expert talent, explore real business challenges, and connect with events and programs that move you forward.",
       "searchLabel": "Search AI solutions, talent, use cases, events, and programs",
       "searchPlaceholder": "What are you looking to achieve with AI?",
       "searchPlaceholderShort": "Your AI goal",
       "primaryCta": "Explore BeyondPilot",
       "secondaryCta": "See how it works",
       "searchSubmit": "Search",
-      "promptsLabel": "Example searches",
-      "prompts": {
-        "claims": "Find an AI solution for insurance claims",
-        "talent": "Find AI talent for my project",
-        "projects": "Explore enterprise projects seeking solutions",
-        "programs": "Discover AI programs for my startup"
-      },
       "preview": {
-        "alt": "Product preview: BeyondPilot search results for “insurance claims”, listing AI solutions, a use case and a program",
-        "address": "beyondpilot.ai/search?q=insurance+claims",
+        "alt": "Product preview: BeyondPilot search results for “AI agents”, listing AI solutions, a use case and a program",
+        "address": "beyondpilot.ai/search?q=ai+agents",
         "tabs": {
           "all": "All",
           "solutions": "AI solutions",
@@ -123,25 +116,25 @@
           "useCase": "Use case",
           "program": "Program"
         },
-        "papaya": {
-          "title": "Papaya",
-          "summary": "Reads complex medical documents with a multi-LLM pipeline, then helps adjusters decide routine claims.",
-          "meta": "Banking & finance · Cloud SaaS · Vietnam"
+        "revve": {
+          "title": "Revve AI",
+          "summary": "Always-on AI agents that call, text, email and chat from first click to renewal, growing revenue without extra headcount.",
+          "meta": "AI agents · Conversational AI · In production"
         },
-        "infall": {
-          "title": "Infall Insurtech",
-          "summary": "AI-driven OCR with decision and claim engines that automate claims from intake to payout.",
-          "meta": "Healthcare · Banking & finance · Vietnam"
+        "shieldbase": {
+          "title": "Shieldbase",
+          "summary": "An AI operating system for the enterprise that automates knowledge retrieval and workflows, with data privacy and governance built in.",
+          "meta": "AI security · Search & knowledge · Singapore"
         },
-        "renewal": {
-          "title": "AI for Insurance: Scaling Compulsory Motor Insurance Renewal",
-          "summary": "By Tasco. Find, reach and convert renewal-eligible customers with less manual effort.",
-          "meta": "Automotive & mobility"
+        "claims": {
+          "title": "AI-Powered Claim & Payment Automation",
+          "summary": "By Coca-Cola Beverages Vietnam. Submit, validate and reimburse trade claims faster, with fewer disputes for sales teams.",
+          "meta": "Consumer goods"
         },
-        "challenge": {
-          "title": "AI for Insurance Challenge × Tasco",
-          "summary": "Build an AI pilot with Tasco’s business team. Up to US$100,000 considered for investment.",
-          "meta": "Enterprise challenge · Submissions close 15 Oct"
+        "fasttrack": {
+          "title": "FastTrack AI Accelerator",
+          "summary": "Powered by GenAI Fund and accelerated by the NVIDIA Inception Program, for startups building enterprise AI.",
+          "meta": "Accelerator · Vietnam"
         }
       },
       "scopes": {
@@ -162,10 +155,10 @@
         "title": "AI Solutions",
         "description": "Discover products and providers that address your business needs.",
         "action": "Explore solutions",
-        "item1Title": "Papaya",
-        "item1Meta": "Claims document processing · Vietnam",
-        "item2Title": "Infall Insurtech",
-        "item2Meta": "End-to-end claims automation · Vietnam"
+        "item1Title": "Revve AI",
+        "item1Meta": "AI agents · Conversational AI",
+        "item2Title": "Shieldbase",
+        "item2Meta": "AI security · Search & knowledge · Singapore"
       },
       "talent": {
         "title": "AI Talent",
@@ -175,7 +168,11 @@
         "skill1": "Machine learning",
         "skill2": "LLM applications",
         "skill3": "Computer vision",
-        "skill4": "Data engineering"
+        "skill4": "Data engineering",
+        "skill5": "AI agents",
+        "skill6": "RAG",
+        "skill7": "Voice agents",
+        "skill8": "MLOps"
       },
       "useCases": {
         "title": "Use Cases & Projects",
@@ -224,24 +221,19 @@
         "title": "Move forward",
         "description": "Shortlist providers, connect with talent, submit a proposal, or join a program."
       },
-      "step": "Step {number}",
       "demo": {
-        "title": "BeyondPilot agent",
-        "need": "Your need",
-        "needQuote": "“We want to automate insurance document processing in Vietnam.”",
-        "matters": "What matters",
-        "matter1": "Document types",
-        "matter2": "Vietnamese language support",
-        "matter3": "Deployment needs",
-        "options": "Relevant options",
-        "option1Title": "Papaya",
-        "option1Why": "Reads complex medical claim documents with a multi-LLM pipeline. Built in Vietnam.",
-        "option2Title": "Infall Insurtech",
-        "option2Why": "OCR, decision and claim engines that Vietnamese insurers list as customers.",
+        "start": "Start from",
+        "start1": "Search the directory",
+        "start2": "Publish a use case",
+        "options": "Solutions listed on BeyondPilot",
+        "option1Title": "Revve AI",
+        "option1Why": "Always-on AI agents that call, text, email and chat with customers.",
+        "option2Title": "Shieldbase",
+        "option2Why": "An AI operating system for the enterprise, with data privacy and governance built in.",
         "next": "Next step",
         "introduce": "Request an introduction",
-        "shortlist": "Compare and shortlist",
-        "alt": "an example journey. A need, “automate insurance document processing in Vietnam”, is narrowed to document types, Vietnamese language support and deployment needs; two relevant solutions are suggested, Papaya and Infall Insurtech; the next step is to request an introduction. Comparing and shortlisting is coming soon."
+        "shortlist": "Shortlist matched solutions",
+        "alt": "an example of the three steps. Start by searching the directory or publishing a use case; the solutions listed on BeyondPilot include Revve AI and Shieldbase; the next step is to request an introduction or shortlist the solutions matched to a use case."
       }
     },
     "challenge": {
@@ -249,30 +241,11 @@
       "description": "Tasco and GenAI Fund are looking for AI solutions to real operating problems in Vietnamese insurance. Apply directly through the challenge page.",
       "partners": "With Microsoft for Startups and Notion"
     },
-    "team": {
-      "eyebrow": "Team",
-      "title": "The team building BeyondPilot",
-      "description": "We’re building BeyondPilot to make it easier for enterprises and AI builders to find each other and move toward practical deployment.",
-      "role": "Full-stack engineer",
-      "linkedin": "LinkedIn",
-      "linkedinLabel": "{name} on LinkedIn (opens in a new tab)",
-      "backing": {
-        "title": "Funded by GenAI Fund",
-        "description": "BeyondPilot is an AI startup with its own product, funded by GenAI Fund. GenAI Fund’s programs and enterprise ecosystem are where many of the opportunities on BeyondPilot come from. Founders from the wider GenAI Fund network are part of that ecosystem, not the BeyondPilot operating team."
-      },
-      "partnerTitle": "Development partner",
-      "partnerDescription": "The engineering team building the product with BeyondPilot."
-    },
-    "founders": {
-      "eyebrow": "In the GenAI Fund network",
-      "title": "Founders building across the ecosystem",
-      "description": "Startup founders from the GenAI Fund network. They are ecosystem peers, not members of the BeyondPilot team."
-    },
     "faq": {
       "eyebrow": "FAQ",
       "title": "Frequently asked questions",
       "whatQ": "What is BeyondPilot?",
-      "whatA": "BeyondPilot is an AI startup funded by GenAI Fund. Its AI adoption agent helps you discover AI solutions, find AI talent, explore enterprise use cases and projects, and connect with AI events and programs.",
+      "whatA": "BeyondPilot is an AI startup funded by GenAI Fund. It helps you discover AI solutions, find AI talent, explore enterprise use cases and projects, and connect with AI events and programs.",
       "whoQ": "Who is BeyondPilot for?",
       "whoA": "Enterprises looking for AI solutions and builders, AI companies and startups with something to offer, and AI specialists looking for projects.",
       "findQ": "How does BeyondPilot help me find relevant AI solutions or talent?",
@@ -290,10 +263,10 @@
       "action": "Explore BeyondPilot"
     },
     "previewLabel": "Product preview",
-    "comingSoon": "Coming soon",
     "network": {
+      "more": "And many more",
       "title": "The network behind every program",
-      "description": "Enterprises, technology companies and public institutions that took part in GenAI Fund programs in 2025 and 2026.",
+      "description": "Enterprises, technology companies and public institutions GenAI Fund works with across the region.",
       "roles": {
         "enterprises": {
           "title": "Enterprises",
@@ -306,13 +279,6 @@
         "government": {
           "title": "Government and institutions",
           "description": "They open doors across the region"
-        },
-        "investors": {
-          "title": "Investors and community",
-          "description": "They back the builders"
-        },
-        "press": {
-          "title": "In the press"
         }
       }
     }
@@ -3731,7 +3697,7 @@
       "websiteHint": "Independent builders can use their portfolio website.",
       "foundedYear": "Year founded",
       "foundedYearHint": "For an independent builder, the year the practice started.",
-      "foundedYearInvalid": "Enter a four-digit year, such as 2021.",
+      "foundedYearInvalid": "Enter a four-digit year no later than this year, such as 2021.",
       "descriptionRequired": "Describe the organization in a few words.",
       "logo": {
         "label": "Logo",
@@ -4849,6 +4815,10 @@
       "metaTitle": "AI talent · BeyondPilot",
       "title": "AI talent",
       "lead": "Engineers and builders who deploy AI for businesses.",
+      "founders": {
+        "title": "Founders in the GenAI Fund network",
+        "description": "Startup founders GenAI Fund backs and works with."
+      },
       "create": "Create a talent profile",
       "count": "Showing {shown} of {total}",
       "total": "{count, plural, one {# person} other {# people}}",
@@ -6631,6 +6601,22 @@
         }
       ]
     }
+  },
+  "About": {
+    "metaTitle": "About",
+    "metaDescription": "The team building BeyondPilot and how GenAI Fund stands behind it.",
+    "eyebrow": "Team",
+    "title": "The team building BeyondPilot",
+    "description": "We’re building BeyondPilot to make it easier for enterprises and AI builders to find each other and move toward practical deployment.",
+    "role": "Full-stack engineer",
+    "linkedin": "LinkedIn",
+    "linkedinLabel": "{name} on LinkedIn (opens in a new tab)",
+    "backing": {
+      "title": "Funded by GenAI Fund",
+      "description": "BeyondPilot is an AI startup with its own product, funded by GenAI Fund. GenAI Fund’s programs and enterprise ecosystem are where many of the opportunities on BeyondPilot come from. Founders from the wider GenAI Fund network are part of that ecosystem, not the BeyondPilot operating team."
+    },
+    "partnerTitle": "Development partner",
+    "partnerDescription": "The engineering team building the product with BeyondPilot."
   },
   "HowItWorks": {
     "metaTitle": "How it works",

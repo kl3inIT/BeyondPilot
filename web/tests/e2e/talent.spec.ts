@@ -28,8 +28,10 @@ test.describe("talent directory", () => {
     await expect(shownPeople(page)).toHaveText(["Linh Nguyễn", "Arif Hidayat", "Đạt Phan"]);
     await expect(page.getByText("Showing 3 of 3")).toBeVisible();
     await expect(page.getByText("ML engineer · Indonesia")).toBeVisible();
-    // The one profile GenAI Fund features says so on its card, with a star and the word.
-    // A featured profile leads the list, but no card says it is featured.
+    const founders = page.getByRole("region", { name: "Founders in the GenAI Fund network" });
+    await expect(founders.getByRole("listitem")).toHaveCount(8);
+    await expect(founders.getByText("CEO & Co-Founder · Shieldbase")).toBeVisible();
+    // Featured profiles lead the list, but public cards do not disclose operator curation.
     await expect(page.locator("[data-featured]")).toHaveCount(0);
     await expect(
       page.getByRole("link", { name: "Create a talent profile" }).first(),
@@ -46,6 +48,9 @@ test.describe("talent directory", () => {
     await expect(page).toHaveURL(/[?&]q=ocr/);
     await expect(shownPeople(page)).toHaveText(["Arif Hidayat"]);
     await expect(page.getByText("Showing 1 of 1")).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Founders in the GenAI Fund network" }),
+    ).toHaveCount(0);
 
     await page.goto("/talent?role=forward_deployed_engineer&sort=name");
     await expect(shownPeople(page)).toHaveText(["Linh Nguyễn"]);
