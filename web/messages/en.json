@@ -4594,6 +4594,7 @@
         "logo": "Add a logo.",
         "cover": "Add a cover image."
       },
+      "stepIncomplete": "Fill in the marked fields to continue.",
       "deck": {
         "empty": "Upload the deck",
         "limits": "PDF, up to 100 MB",
@@ -4619,7 +4620,7 @@
         "deploymentsWaiting": "{count} waiting for review",
         "deploymentsSentBack": "{count} sent back",
         "customerDeployments": "Customer deployments",
-        "listed": "List this solution in the public directory.",
+        "listed": "Show this solution in the public directory.",
         "readiness": {
           "missing": "Before you send it for review, add:",
           "ready": "Ready to send for review",
@@ -4633,15 +4634,13 @@
           "confirm": "Send for review",
           "cancel": "Keep editing"
         },
-        "delete": "Delete draft…",
-        "confirmDelete": {
-          "title": "Delete {name}?",
-          "lead": "This cannot be undone.",
-          "confirm": "Delete draft",
-          "cancel": "Cancel"
-        },
         "images": "{count, plural, one {# image} other {# images}}",
-        "listedHint": "Turned off, anyone with the link can still open it."
+        "listedHint": "If you turn this off, it is not listed in the directory, but anyone with its link can still open it.",
+        "preview": {
+          "title": "Preview",
+          "unlisted": "This card is not shown in the directory while the option below is off."
+        },
+        "confirmAccurate": "I confirm that the information above is accurate."
       },
       "leave": {
         "title": "Leave without saving?",

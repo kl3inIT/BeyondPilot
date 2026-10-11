@@ -4594,6 +4594,7 @@
         "logo": "Hãy thêm logo.",
         "cover": "Hãy thêm ảnh bìa."
       },
+      "stepIncomplete": "Hãy điền các trường được đánh dấu để tiếp tục.",
       "deck": {
         "empty": "Tải tài liệu giới thiệu lên",
         "limits": "PDF, tối đa 100 MB",
@@ -4633,15 +4634,13 @@
           "confirm": "Gửi duyệt",
           "cancel": "Sửa tiếp"
         },
-        "delete": "Xóa bản nháp…",
-        "confirmDelete": {
-          "title": "Xóa {name}?",
-          "lead": "Không thể hoàn tác.",
-          "confirm": "Xóa bản nháp",
-          "cancel": "Hủy"
-        },
         "images": "{count} ảnh",
-        "listedHint": "Khi tắt, ai có liên kết vẫn mở được."
+        "listedHint": "Nếu tắt, giải pháp không xuất hiện trong danh mục, nhưng ai có liên kết vẫn mở được.",
+        "preview": {
+          "title": "Xem trước",
+          "unlisted": "Thẻ này không hiện trong danh mục khi tùy chọn bên dưới đang tắt."
+        },
+        "confirmAccurate": "Tôi xác nhận các thông tin trên là chính xác."
       },
       "leave": {
         "title": "Rời trang mà không lưu?",
