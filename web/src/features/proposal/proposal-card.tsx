@@ -1,8 +1,7 @@
 import { useTranslations } from "next-intl";
 
-import { DataTable } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { Badge } from "@/components/ui/badge";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ProposalTeamMember } from "@/lib/api/generated";
 
 type CardProps = {
@@ -65,26 +64,22 @@ function ProposalTeamList({ team }: { team: ProposalTeamMember[] }) {
   return (
     <>
       {/* From 768px: a table. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("person")}</TableHead>
-            <TableHead>{t("role")}</TableHead>
-            <TableHead className="w-36">
-              <span className="sr-only">{t("primary")}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {people.map((person) => (
-            <TableRow key={person.id}>
-              <TableCell className="max-w-0">{person.who}</TableCell>
-              <TableCell>{person.role}</TableCell>
-              <TableCell>{person.primary}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </DataTable>
+      <DataTableRows
+        className="hidden md:flex"
+        columns={[
+          { id: "person", header: t("person"), layout: { fill: true } },
+          { id: "role", header: t("role") },
+          {
+            id: "primary",
+            header: <span className="sr-only">{t("primary")}</span>,
+            layout: { width: "md" },
+          },
+        ]}
+        rows={people.map((person) => ({
+          id: person.id,
+          cells: { person: person.who, role: person.role, primary: person.primary },
+        }))}
+      />
       {/* Below 768px: stacked, never a table scrolled sideways. */}
       <ul className="flex flex-col divide-y md:hidden">
         {people.map((person) => (

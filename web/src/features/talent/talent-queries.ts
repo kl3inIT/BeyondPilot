@@ -1,3 +1,4 @@
+import { knownSort } from "@/lib/list-sort";
 import { ApiError } from "@/lib/api/client";
 import {
   getAdminTalent,
@@ -18,6 +19,7 @@ import { sessionRequest } from "@/lib/auth/session";
 import { maxSearchPage } from "@/lib/page-size";
 
 import type { AdminTalentSearch, TalentSearch } from "./talent-search";
+import { adminTalentSortKeys } from "./talent-search";
 
 /** The longest search the backend takes. */
 const MAX_SEARCH = 100;
@@ -111,6 +113,7 @@ export async function readAdminTalentList(search: AdminTalentSearch): Promise<Ad
       q: text(search.q),
       status: search.status ?? undefined,
       featured: search.featured === null ? undefined : search.featured === "true",
+      sort: knownSort(search.sort, adminTalentSortKeys),
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },

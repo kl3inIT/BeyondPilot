@@ -3,17 +3,17 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTable, DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
+import { DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { Person } from "@/components/composites/person";
 import { Status } from "@/components/composites/status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { Badge } from "@/components/ui/badge";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AccountList, AccountSummary, Me } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { AccountRowActions } from "./account-row-actions";
-import { accountsSearch, type AccountsSearch } from "./accounts-search";
+import { accountsSearch, type AccountsSearch, accountSortKeys } from "./accounts-search";
 import { AccountsToolbar } from "./accounts-toolbar";
 import { PageSizeSelect } from "@/components/composites/page-size-select";
 
@@ -100,45 +100,34 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
       <AccountsToolbar />
 
       {/* From 768px: a table. The Created column gives way first. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("columns.account")}</TableHead>
-            <TableHead>{t("columns.role")}</TableHead>
-            <TableHead>{t("columns.status")}</TableHead>
-            <TableHead>{t("columns.lastSignIn")}</TableHead>
-            <TableHead className="hidden xl:table-cell">{t("columns.created")}</TableHead>
-            <TableHead>
-              <span className="sr-only">{t("columns.actions")}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.account.id}>
-              <TableCell>{row.person}</TableCell>
-              <TableCell>{row.role}</TableCell>
-              <TableCell>{row.status}</TableCell>
-              <TableCell>
-                <span className={row.disabled ? "text-muted-foreground" : undefined}>
-                  {row.lastSignIn}
-                </span>
-              </TableCell>
-              <TableCell className="hidden xl:table-cell">
-                <span className="text-muted-foreground">{row.created}</span>
-              </TableCell>
-              <TableCell>
-                <div className="flex justify-end">{row.actions}</div>
-              </TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={6}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+      <DataTableRows
+        sortKeys={accountSortKeys}
+        className="hidden md:flex"
+        columns={[
+          { id: "name", header: t("columns.account") },
+          { id: "role", header: t("columns.role") },
+          { id: "status", header: t("columns.status") },
+          { id: "lastSignIn", header: t("columns.lastSignIn"), layout: { descFirst: true } },
+          { id: "created", header: t("columns.created"), layout: { from: "xl", descFirst: true } },
+          { id: "actions", header: <span className="sr-only">{t("columns.actions")}</span> },
+        ]}
+        rows={rows.map((row) => ({
+          id: row.account.id,
+          cells: {
+            name: row.person,
+            role: row.role,
+            status: row.status,
+            lastSignIn: (
+              <span className={row.disabled ? "text-muted-foreground" : undefined}>
+                {row.lastSignIn}
+              </span>
+            ),
+            created: <span className="text-muted-foreground">{row.created}</span>,
+            actions: <div className="flex justify-end">{row.actions}</div>,
+          },
+        }))}
+        empty={empty}
+      />
 
       {/* Below 768px: one stacked row per account, never a table scrolled sideways. */}
       <ul className="overflow-hidden rounded-lg border md:hidden">

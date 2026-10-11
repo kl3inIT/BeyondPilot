@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { readMembers, readMyOrganization } from "@/features/organization/organization-queries";
 import { OrganizationSolutionsPage } from "@/features/solution/organization-solutions-page";
+import { loadOrganizationSolutionsSearch } from "@/features/solution/organization-solutions-search";
 import { readMySolutions } from "@/features/solution/solution-queries";
 import { getPathname } from "@/i18n/navigation";
 import { readUseCaseCount } from "@/features/usecase/my-use-case-queries";
@@ -21,14 +22,16 @@ export async function generateMetadata({
 
 export default async function OrganizationSolutionsRoute({
   params,
+  searchParams,
 }: PageProps<"/[locale]/workspace/organization/solutions">) {
   const { locale } = await params;
   setRequestLocale(locale);
   await requireAccount(siteRoutes.workspaceSolutions);
-  const [mine, solutions, members] = await Promise.all([
+  const [mine, solutions, members, search] = await Promise.all([
     readMyOrganization(),
     readMySolutions(),
     readMembers(),
+    loadOrganizationSolutionsSearch(searchParams),
   ]);
   const { organization } = mine;
   if (!organization) {
@@ -43,6 +46,7 @@ export default async function OrganizationSolutionsRoute({
       solutions={solutions}
       members={members?.total ?? 0}
       useCases={useCases}
+      search={search}
     />
   );
 }

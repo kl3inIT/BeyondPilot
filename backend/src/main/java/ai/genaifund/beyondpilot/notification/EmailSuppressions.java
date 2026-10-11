@@ -40,7 +40,7 @@ public class EmailSuppressions {
 	}
 
 	/**
-	 * One page of the addresses the request selects, newest first.
+	 * One page of the addresses the request selects, in the order it asks for; newest first without one.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 */
 	@Transactional(readOnly = true)
@@ -49,7 +49,8 @@ public class EmailSuppressions {
 		int page = request.page() == null ? 1 : request.page();
 		int size = request.size() == null ? PAGE_SIZE : request.size();
 		return new EmailSuppressionListResponse(
-				suppressions.page(request.reason(), request.q(), (page - 1) * size, size), page, size,
+				suppressions.page(request.reason(), request.q(), request.sort(), (page - 1) * size, size), page,
+				size,
 				suppressions.count(request.reason(), request.q()));
 	}
 

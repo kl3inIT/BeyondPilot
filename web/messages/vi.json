@@ -3397,6 +3397,14 @@
       "relevance": "Mức độ phù hợp",
       "newest": "Mới nhất",
       "name": "Tên A–Z"
+    },
+    "table": {
+      "selection": "Các dòng đã chọn",
+      "selected": "Đã chọn {count}",
+      "selectPage": "Chọn mọi dòng của trang này",
+      "selectOne": "Chọn {name}",
+      "selectMatching": "Chọn cả {count} kết quả khớp",
+      "clear": "Bỏ chọn"
     }
   },
   "Vocabulary": {
@@ -6049,13 +6057,22 @@
       "kind": "Nộp với tư cách",
       "allKinds": "Nộp với tư cách: tất cả",
       "selection": {
-        "label": "Đơn đã chọn",
-        "count": "Đã chọn {count}",
         "shortlist": "Vào vòng trong",
         "notSelected": "Không được chọn",
-        "clear": "Bỏ chọn",
-        "all": "Chọn mọi đơn đang hiển thị",
-        "one": "Chọn {name}"
+        "confirm": {
+          "shortlisted": {
+            "title": "Cho {count} đơn vào vòng trong?",
+            "lead": "Mỗi đơn chuyển sang Vào vòng trong. Chưa ai nhận email cho tới khi công bố kết quả.",
+            "confirm": "Cho {count} đơn vào vòng trong"
+          },
+          "not_selected": {
+            "title": "Đánh dấu {count} đơn không được chọn?",
+            "lead": "Mỗi đơn chuyển sang Không được chọn. Chưa ai nhận email cho tới khi công bố kết quả.",
+            "confirm": "Đánh dấu {count} đơn không được chọn"
+          },
+          "note": "Quyết định vẫn đổi lại được cho tới khi công bố kết quả.",
+          "cancel": "Huỷ"
+        }
       },
       "decided": {
         "shortlisted": "Đã đưa {count} đơn vào vòng trong.",
@@ -6170,7 +6187,11 @@
       "save": "Lưu đánh giá",
       "conflict": "Tôi có xung đột lợi ích với người nộp này",
       "saved": "Đã lưu đánh giá.",
-      "conflictSaved": "Đã ghi nhận xung đột. Điểm của bạn không được tính."
+      "conflictSaved": "Đã ghi nhận xung đột. Điểm của bạn không được tính.",
+      "bar": {
+        "progress": "Đã chấm {scored}/{total}",
+        "score": "Chấm điểm"
+      }
     },
     "decision": {
       "title": "Quyết định",

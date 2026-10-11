@@ -48,9 +48,13 @@ public class EmailSuppressionRepository {
 			.optional();
 	}
 
-	/** One page, newest first. */
-	public List<EmailSuppressionResponse> page(@Nullable String reason, @Nullable String text, int offset, int limit) {
-		return jdbc.sql(SELECT + FILTER + " order by s.created_at desc, s.address limit :limit offset :offset")
+	/**
+	 * One page in the order {@code sort} names; without one, newest first.
+	 * @param sort {@code address} or {@code since}, with {@code -} before it for the reverse
+	 */
+	public List<EmailSuppressionResponse> page(@Nullable String reason, @Nullable String text, @Nullable String sort,
+			int offset, int limit) {
+		return jdbc.sql(SELECT + FILTER + " order by " + order(sort) + " limit :limit offset :offset")
 			.param("reason", reason, Types.VARCHAR)
 			.param("pattern", containing(text), Types.VARCHAR)
 			.param("limit", limit)
@@ -92,6 +96,21 @@ public class EmailSuppressionRepository {
 		return jdbc.sql("delete from email_suppression where address = :address")
 			.param("address", lower(address))
 			.update() == 1;
+	}
+
+	/**
+	 * The order a sort key names, with the address, which is unique, last so that pages do not overlap. The SQL is
+	 * chosen here by the key, never taken from the caller's text; an unknown key keeps the default order.
+	 */
+	private static String order(@Nullable String sort) {
+		boolean descending = sort != null && sort.startsWith("-");
+		String key = sort == null ? "" : sort.substring(descending ? 1 : 0);
+		String direction = descending ? " desc" : "";
+		return switch (key) {
+			case "address" -> "s.address" + direction;
+			case "since" -> "s.created_at" + direction + ", s.address";
+			default -> "s.created_at desc, s.address";
+		};
 	}
 
 	private EmailSuppressionResponse suppression(ResultSet row, int index) throws SQLException {

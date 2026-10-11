@@ -1,8 +1,9 @@
 import { FileTextIcon, SearchXIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
 import { applyFormatter } from "@/features/apply/apply-format";
 import { programFormatter } from "@/features/program/program-format";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -10,9 +11,11 @@ import type { ReviewApplicationItem, ReviewApplications } from "@/lib/api/genera
 import { adminProgramReleaseRoute } from "@/lib/site";
 
 import { ExportApplications } from "./export-applications";
-import { narrowApplications, type ReviewSearch } from "./review-search";
+import { listApplications, reviewSearch, type ReviewSearch } from "./review-search";
 import { ReviewTable, type ReviewRow } from "./review-table";
 import { ReviewToolbar } from "./review-toolbar";
+
+const address = createSerializer(reviewSearch);
 
 type ReviewApplicationsPageProps = {
   data: ReviewApplications;
@@ -24,13 +27,15 @@ type ReviewApplicationsPageProps = {
 };
 
 /**
- * A program's submitted applications to review, the earliest first. An operator reads GenAI Fund's
- * decisions and every judge's average and decides on several at once; a judge reads their own
- * scores. Drafts and withdrawn applications are counted under the list, never listed. An operator
- * downloads the applications the list shows, and reads under it how many have a score.
+ * A program's submitted applications to review, sorted by a column header and paged. An operator
+ * reads GenAI Fund's decisions and every judge's average, the highest first once any is scored, and
+ * decides on several at once; a judge reads their own scores, the earliest submitted first. Drafts
+ * and withdrawn applications are counted under the list, never listed. An operator downloads the
+ * applications the search matches, and reads under the list how many have a score.
  */
 function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplicationsPageProps) {
   const t = useTranslations("Review.list");
+  const pages = useTranslations("Lists.pagination");
   const locale = useLocale();
   const type = useVocabulary("organizationType");
   const country = useCountryName();
@@ -39,7 +44,8 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
   /** "3 Oct", the day of an instant in Vietnam time. */
   const day = (at: string) => dates.dateTime(new Date(at), { day: "numeric", month: "short" });
   const { head } = data;
-  const { shown, counts } = narrowApplications(data.items, search);
+  const list = listApplications(data.items, search, head.operator);
+  const { ordered: shown, counts } = list;
 
   function status(item: ReviewApplicationItem): ReviewRow["status"] {
     if (item.own && !head.operator) {
@@ -65,7 +71,7 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
       : { label: t("average", { value: item.average.toFixed(1) }), variant: "info" };
   }
 
-  const rows: ReviewRow[] = shown.map((item) => ({
+  const rows: ReviewRow[] = list.rows.map((item) => ({
     id: item.id,
     href: `${base}/${item.id}`,
     solution: item.solutionName,
@@ -141,6 +147,9 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
         <ReviewTable
           programId={head.programId}
           rows={rows}
+          matching={shown.filter((item) => !item.own).map((item) => item.id)}
+          sortKeys={list.sortKeys}
+          defaultSort={list.defaultSort}
           choiceLabel={head.choice?.label ?? null}
           operator={head.operator}
           released={Boolean(head.releasedAt)}
@@ -158,15 +167,30 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
           description={t("empty.description")}
         />
       )}
-      <p className="text-sm text-muted-foreground">
-        {t("footer", { shown: rows.length, drafts: data.drafts, withdrawn: data.withdrawn })}
-        {head.operator &&
-          data.items.length > 0 &&
-          ` · ${t("footerScored", {
-            scored: data.items.filter((item) => (item.scored ?? 0) > 0).length,
-            total: data.items.length,
-          })}`}
-      </p>
+      <DataTableFooter
+        count={[
+          t("footer", { shown: shown.length, drafts: data.drafts, withdrawn: data.withdrawn }),
+          ...(head.operator && data.items.length > 0
+            ? [
+                t("footerScored", {
+                  scored: data.items.filter((item) => (item.scored ?? 0) > 0).length,
+                  total: data.items.length,
+                }),
+              ]
+            : []),
+        ].join(" · ")}
+        page={list.page}
+        pages={list.pages}
+        href={(number) => `${base}${address({ ...search, page: number })}`}
+        labels={{
+          navigation: pages("label"),
+          previous: pages("previous"),
+          next: pages("next"),
+          goToPrevious: pages("goToPrevious"),
+          goToNext: pages("goToNext"),
+          page: (number) => pages("page", { page: number }),
+        }}
+      />
     </div>
   );
 }

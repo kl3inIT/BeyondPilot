@@ -3,10 +3,10 @@ import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { Badge } from "@/components/ui/badge";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
 import type { AdminProgramSummary } from "@/lib/api/generated";
 import { adminProgramRoute, siteRoutes } from "@/lib/site";
@@ -115,61 +115,59 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
       <ProgramsToolbar counts={list.counts} total={list.total} />
 
       {/* From 768px: a table. The window gives way to the days on narrower desktops. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("columns.program")}</TableHead>
-            <TableHead>{t("columns.status")}</TableHead>
-            <TableHead>{t("columns.runs")}</TableHead>
-            <TableHead className="hidden lg:table-cell">{t("columns.window")}</TableHead>
-            <TableHead>
-              <span className="sr-only">{t("columns.open")}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.program.id} className="relative">
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <Thumbnail program={row.program} alt="" />
-                  <div className="flex min-w-0 flex-col gap-0.5">
-                    {/* The name is the row's link; it covers the whole row for the pointer. */}
-                    <Link
-                      href={row.href}
-                      className="font-medium outline-none after:absolute after:inset-0 focus-visible:underline"
-                    >
-                      {row.program.name}
-                    </Link>
-                    <span className="text-xs text-muted-foreground">
-                      {[row.kind, row.program.partnerName].filter(Boolean).join(" · ")}
-                    </span>
-                  </div>
+      {/* Each row is the containing block of its link's overlay, so the overlay covers that row only. */}
+      <DataTableRows
+        className="hidden md:flex"
+        rowLinks
+        sortKeys={list.sortKeys}
+        defaultSort={list.defaultSort}
+        columns={[
+          { id: "program", header: t("columns.program") },
+          { id: "status", header: t("columns.status") },
+          { id: "runs", header: t("columns.runs"), layout: { descFirst: true } },
+          { id: "window", header: t("columns.window"), layout: { from: "lg" } },
+          {
+            id: "open",
+            header: <span className="sr-only">{t("columns.open")}</span>,
+            layout: { width: "action" },
+          },
+        ]}
+        rows={rows.map((row) => ({
+          id: row.program.id,
+          cells: {
+            program: (
+              <div className="flex items-center gap-3">
+                <Thumbnail program={row.program} alt="" />
+                <div className="flex min-w-0 flex-col gap-0.5">
+                  {/* The name is the row's link; it covers the whole row for the pointer. */}
+                  <Link
+                    href={row.href}
+                    className="font-medium outline-none after:absolute after:inset-0 focus-visible:underline"
+                  >
+                    {row.program.name}
+                  </Link>
+                  <span className="text-xs text-muted-foreground">
+                    {[row.kind, row.program.partnerName].filter(Boolean).join(" · ")}
+                  </span>
                 </div>
-              </TableCell>
-              <TableCell>{row.state}</TableCell>
-              <TableCell>
-                <span className={row.program.startsOn ? undefined : "text-muted-foreground"}>
-                  {row.runs}
-                </span>
-              </TableCell>
-              <TableCell className="hidden lg:table-cell">
-                <span className={row.quietWindow ? "text-muted-foreground" : undefined}>
-                  {row.window}
-                </span>
-              </TableCell>
-              <TableCell className="w-8">
-                <ChevronRightIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-              </TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={5}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+              </div>
+            ),
+            status: row.state,
+            runs: (
+              <span className={row.program.startsOn ? undefined : "text-muted-foreground"}>
+                {row.runs}
+              </span>
+            ),
+            window: (
+              <span className={row.quietWindow ? "text-muted-foreground" : undefined}>
+                {row.window}
+              </span>
+            ),
+            open: <ChevronRightIcon className="size-4 text-muted-foreground" aria-hidden="true" />,
+          },
+        }))}
+        empty={empty}
+      />
 
       {/* Below 768px: one card a program. */}
       <ul className="flex flex-col gap-3 md:hidden">

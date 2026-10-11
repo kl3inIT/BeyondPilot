@@ -3397,6 +3397,14 @@
       "relevance": "Relevance",
       "newest": "Newest",
       "name": "Name A–Z"
+    },
+    "table": {
+      "selection": "Selected rows",
+      "selected": "{count} selected",
+      "selectPage": "Select every row on this page",
+      "selectOne": "Select {name}",
+      "selectMatching": "Select all {count} that match",
+      "clear": "Clear selection"
     }
   },
   "Vocabulary": {
@@ -6049,13 +6057,22 @@
       "kind": "Applying as",
       "allKinds": "Applying as: all",
       "selection": {
-        "label": "Selected applications",
-        "count": "{count, plural, one {# selected} other {# selected}}",
         "shortlist": "Shortlist",
         "notSelected": "Not selected",
-        "clear": "Clear selection",
-        "all": "Select every application shown",
-        "one": "Select {name}"
+        "confirm": {
+          "shortlisted": {
+            "title": "Shortlist {count} applications?",
+            "lead": "Each one moves to Shortlisted. Nobody is emailed until the outcomes are released.",
+            "confirm": "Shortlist {count}"
+          },
+          "not_selected": {
+            "title": "Mark {count} applications not selected?",
+            "lead": "Each one moves to Not selected. Nobody is emailed until the outcomes are released.",
+            "confirm": "Mark {count} not selected"
+          },
+          "note": "A decision can change again until the outcomes are released.",
+          "cancel": "Cancel"
+        }
       },
       "decided": {
         "shortlisted": "{count, plural, one {# application shortlisted.} other {# applications shortlisted.}}",
@@ -6170,7 +6187,11 @@
       "save": "Save assessment",
       "conflict": "I have a conflict with this applicant",
       "saved": "Assessment saved.",
-      "conflictSaved": "Conflict recorded. Your score is left out."
+      "conflictSaved": "Conflict recorded. Your score is left out.",
+      "bar": {
+        "progress": "Scored {scored} of {total}",
+        "score": "Score"
+      }
     },
     "decision": {
       "title": "Decision",

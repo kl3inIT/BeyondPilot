@@ -1,6 +1,7 @@
-import { createLoader, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
 import type { ReviewApplicationItem } from "@/lib/api/generated";
+import { listSort, sortParam, type ListSort } from "@/lib/list-sort";
 
 /** The tabs of the list: GenAI Fund's decisions for an operator, the caller's own work for a judge. */
 export const operatorTabs = ["all", "undecided", "shortlisted", "not_selected"] as const;
@@ -10,15 +11,25 @@ const tabs = [...new Set([...operatorTabs, ...judgeTabs])] as const;
 /** Who applies, as the list narrows it. */
 export const applicantKinds = ["independent_builder", "builder_team", "company"] as const;
 
+/** The columns the list sorts by. The score is the judges' mean, which only an operator reads. */
+export const reviewSortKeys = ["applicant", "submitted", "score"] as const;
+export type ReviewSortKey = (typeof reviewSortKeys)[number];
+
+/** How many applications a page of the list holds. */
+export const REVIEW_PAGE_SIZE = 50;
+
 /**
- * What narrows a program's applications, as the URL holds it: `?tab=&q=&choice=&kind=`. A program
- * takes tens of applications, so the page reads them all and narrows them here.
+ * What narrows a program's applications, as the URL holds it: `?tab=&q=&choice=&kind=&sort=&page=`.
+ * A program takes up to a few hundred applications, so the page reads them all and narrows, sorts
+ * and pages them on the server, never in the browser.
  */
 export const reviewSearch = {
   tab: parseAsStringLiteral(tabs).withDefault("all"),
   q: parseAsString.withDefault(""),
   choice: parseAsString,
   kind: parseAsStringLiteral(applicantKinds),
+  sort: parseAsString.withDefault(""),
+  page: parseAsInteger.withDefault(1),
 };
 
 export const loadReviewSearch = createLoader(reviewSearch);
@@ -49,8 +60,72 @@ function inTab(item: ReviewApplicationItem, tab: Tab) {
   }
 }
 
+/**
+ * The order when the URL names none: for an operator, the highest mean first once any application
+ * has a score, since choosing the best is what the list is for; until then, and for a judge, the
+ * earliest submitted first.
+ */
+export function defaultReviewSort(
+  items: ReviewApplicationItem[],
+  operator: boolean,
+): ListSort<ReviewSortKey> {
+  return operator && items.some((item) => item.average != null)
+    ? { key: "score", desc: true }
+    : { key: "submitted", desc: false };
+}
+
+/** Compares two applications by one key; an application without a score is last either way. */
+function compare(
+  a: ReviewApplicationItem,
+  b: ReviewApplicationItem,
+  sort: ListSort<ReviewSortKey>,
+) {
+  const turn = sort.desc ? -1 : 1;
+  switch (sort.key) {
+    case "applicant":
+      return turn * a.solutionName.localeCompare(b.solutionName);
+    case "submitted":
+      return turn * a.submittedAt.localeCompare(b.submittedAt);
+    case "score":
+      if (a.average == null || b.average == null) {
+        return a.average == null ? (b.average == null ? 0 : 1) : -1;
+      }
+      return turn * (a.average - b.average);
+  }
+}
+
+/**
+ * The applications the search selects in its order, the page of them to show, and how many each
+ * tab holds whatever the search. Applications that compare equal keep the order they were
+ * submitted in.
+ */
+export function listApplications(
+  items: ReviewApplicationItem[],
+  search: ReviewSearch,
+  operator: boolean,
+) {
+  const fallback = defaultReviewSort(items, operator);
+  const keys = operator ? reviewSortKeys : reviewSortKeys.filter((key) => key !== "score");
+  const sort = listSort(search.sort, keys, fallback);
+  const { shown, counts } = narrowApplications(items, search);
+  const ordered = [...shown].sort(
+    (a, b) => compare(a, b, sort) || a.submittedAt.localeCompare(b.submittedAt),
+  );
+  const pages = Math.max(1, Math.ceil(ordered.length / REVIEW_PAGE_SIZE));
+  const page = Math.min(Math.max(1, search.page), pages);
+  return {
+    ordered,
+    rows: ordered.slice((page - 1) * REVIEW_PAGE_SIZE, page * REVIEW_PAGE_SIZE),
+    page,
+    pages,
+    counts,
+    sortKeys: keys,
+    defaultSort: sortParam(fallback),
+  };
+}
+
 /** The applications the search selects, and how many each tab holds whatever the search. */
-export function narrowApplications(items: ReviewApplicationItem[], search: ReviewSearch) {
+function narrowApplications(items: ReviewApplicationItem[], search: ReviewSearch) {
   const counts = Object.fromEntries(
     tabs.map((tab) => [tab, items.filter((item) => inTab(item, tab)).length]),
   ) as Record<Tab, number>;

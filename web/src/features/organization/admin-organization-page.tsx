@@ -4,12 +4,11 @@ import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
-import { DataTable } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { Badge } from "@/components/ui/badge";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganization } from "@/lib/api/generated";
@@ -312,30 +311,29 @@ function AdminMembers({
       ) : (
         <>
           {/* From 768px: a table. */}
-          <DataTable className="hidden bg-background md:block">
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("columns.member")}</TableHead>
-                <TableHead className="w-30">{t("columns.role")}</TableHead>
-                <TableHead className="w-32">{t("columns.joined")}</TableHead>
-                <TableHead className="w-12">
-                  <span className="sr-only">{t("columns.actions")}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.key}>
-                  <TableCell>{row.person}</TableCell>
-                  <TableCell>{row.role}</TableCell>
-                  <TableCell>{row.joined}</TableCell>
-                  <TableCell>
-                    <div className="flex justify-end">{row.actions}</div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </DataTable>
+          <DataTableRows
+            className="hidden md:flex"
+            surface
+            columns={[
+              { id: "member", header: t("columns.member") },
+              { id: "role", header: t("columns.role"), layout: { width: "sm" } },
+              { id: "joined", header: t("columns.joined"), layout: { width: "sm" } },
+              {
+                id: "actions",
+                header: <span className="sr-only">{t("columns.actions")}</span>,
+                layout: { width: "action" },
+              },
+            ]}
+            rows={rows.map((row) => ({
+              id: row.key,
+              cells: {
+                member: row.person,
+                role: row.role,
+                joined: row.joined,
+                actions: <div className="flex justify-end">{row.actions}</div>,
+              },
+            }))}
+          />
 
           {/* Below 768px: one stacked row per person, never a table scrolled sideways. */}
           <ul className="overflow-hidden rounded-lg border bg-background md:hidden">

@@ -37,6 +37,7 @@ export default async function AdminTalentRoute({
     q: "",
     status: "in_review",
     featured: null,
+    sort: "",
     page: 1,
     size: null,
   });

@@ -1,7 +1,9 @@
+import { knownSort } from "@/lib/list-sort";
 import { listAccounts, type AccountList } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 
 import type { AccountsSearch } from "./accounts-search";
+import { accountSortKeys } from "./accounts-search";
 
 /** The longest search the backend takes. */
 const MAX_SEARCH = 100;
@@ -18,6 +20,7 @@ export async function readAccounts(search: AccountsSearch): Promise<AccountList>
       q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
       status: search.status ?? undefined,
       role: search.role ?? undefined,
+      sort: knownSort(search.sort, accountSortKeys),
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },

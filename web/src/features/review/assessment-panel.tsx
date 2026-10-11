@@ -111,8 +111,9 @@ function AssessmentPanel({
 
   return (
     <section
+      id="assessment"
       aria-labelledby="assessment-title"
-      className="flex flex-col gap-4 rounded-lg border bg-card p-5"
+      className="flex scroll-mt-4 flex-col gap-4 rounded-lg border bg-card p-5"
     >
       <div className="flex flex-col gap-1">
         <h2 id="assessment-title" className="text-base font-semibold">
@@ -217,6 +218,29 @@ function AssessmentPanel({
               onClick={() => save(true)}
             >
               {t("conflict")}
+            </Button>
+          )}
+        </div>
+      )}
+      {/* Below 1024px the panel sits under the application: a bar keeps the scoring in reach. */}
+      {!released && criteria.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-20 flex items-center gap-3 border-t bg-background px-4 py-3 lg:hidden">
+          <span className="flex-1 text-sm tabular-nums">
+            {t("bar.progress", { scored: scored.length, total: criteria.length })}
+          </span>
+          {complete ? (
+            <Button size="sm" pending={pending === "save"} onClick={() => save(false)}>
+              {nextHref ? t("saveAndNext") : t("save")}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              prominence="secondary"
+              onClick={() =>
+                document.getElementById("assessment")?.scrollIntoView({ block: "start" })
+              }
+            >
+              {t("bar.score")}
             </Button>
           )}
         </div>
