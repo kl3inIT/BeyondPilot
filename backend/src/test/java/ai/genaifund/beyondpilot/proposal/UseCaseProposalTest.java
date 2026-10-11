@@ -34,7 +34,6 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Boolean>read(empty, "$.organization.approved")).isTrue();
 		assertThat(JsonPath.<String>read(empty, "$.useCase.title")).isEqualTo("Voice-enabled navigation");
 		assertThat(JsonPath.<Object>read(empty, "$.proposal")).isNull();
-		assertThat(JsonPath.<List<String>>read(empty, "$.solutions[*].name")).containsExactly("Claim Copilot");
 		assertThat(JsonPath.<List<String>>read(empty, "$.members[*].email"))
 			.containsExactlyInAnyOrder("founder@sends.test", "colleague@sends.test");
 		assertThat(JsonPath.<List<Boolean>>read(empty, "$.members[?(@.email=='founder@sends.test')].self"))
@@ -90,7 +89,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			String list = body(get(reader, path + "s").expectStatus().isOk());
 			assertThat(JsonPath.<List<String>>read(list, "$.items[*].organizationName"))
 				.containsExactly("Team sends.test");
-			assertThat(JsonPath.<List<String>>read(list, "$.items[*].solutionName")).containsExactly("Claim Copilot");
+			assertThat(JsonPath.<List<String>>read(list, "$.items[*].solutionNames[*]")).containsExactly("Claim Copilot");
 			assertThat(JsonPath.<List<String>>read(list, "$.items[*].contactName"))
 				.hasSize(1);
 		}
@@ -239,6 +238,30 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.single()).isZero();
 	}
 
+	@Test
+	void aProposalOffersSeveralSolutionsWhateverTheirReview() {
+		Provider provider = provider("offers.test");
+		Poster poster = poster("posts-offers.test");
+		String path = path(publishedUseCase(poster.organization, "Offers"));
+		UUID bare = UUID.fromString(JsonPath.<String>read(
+				body(post(provider.founder, "/api/solution/mine", Map.of("name", "Bare Desk")).expectStatus().isCreated()),
+				"$.id"));
+		UUID unknown = UUID.randomUUID();
+
+		Map<String, Object> two = draft(provider.solution, "Both.", null, List.of(), null);
+		two.put("solutionIds", List.of(bare, provider.solution));
+		String saved = body(put(provider.founder, path, two).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(saved, "$.proposal.solutions[*].name"))
+			.containsExactly("Bare Desk", "Claim Copilot");
+		assertThat(JsonPath.<List<String>>read(saved, "$.proposal.solutions[*].status")).containsOnly("draft");
+
+		Map<String, Object> twice = draft(null, null, null, List.of(), proposalVersion(saved));
+		twice.put("solutionIds", List.of(bare, bare));
+		assertProblem(put(provider.founder, path, twice), 400, "PROPOSAL_SOLUTION_NOT_FOUND");
+		twice.put("solutionIds", List.of(unknown));
+		assertProblem(put(provider.founder, path, twice), 400, "PROPOSAL_SOLUTION_NOT_FOUND");
+	}
+
 	/** An organization, approved or not, with a founder, a colleague and a complete solution. */
 	private Provider provider(String domain) {
 		return provider(domain, true);
@@ -321,7 +344,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 	private static Map<String, Object> draft(UUID solution, String approach, UUID deck, List<Map<String, Object>> team,
 			Long version) {
 		Map<String, Object> request = new HashMap<>();
-		request.put("solutionId", solution);
+		request.put("solutionIds", solution == null ? List.of() : List.of(solution));
 		request.put("approach", approach);
 		request.put("deckFileId", deck);
 		request.put("team", new ArrayList<>(team));

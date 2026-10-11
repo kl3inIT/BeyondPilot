@@ -10,7 +10,7 @@ import org.jspecify.annotations.Nullable;
 @Schema(name = "UseCaseProposal", description = "An organization's proposal to a use case as its members see it: the working copy, or the proposal as sent.")
 public record UseCaseProposalResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "draft", "sent" }) String status,
-		@Schema(types = { "string", "null" }, format = "uuid") @Nullable UUID solutionId,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The solutions offered, in the order shown.") List<ProposalSolutionResponse> solutions,
 		@Schema(types = { "string", "null" }) @Nullable String approach,
 		@Schema(types = { "object", "null" }) @Nullable AttachedFileResponse deck,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<ProposalTeamMemberResponse> team,

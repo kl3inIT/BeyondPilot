@@ -41,8 +41,6 @@ public class UseCaseProposal {
 
 	private @Nullable UUID sentByAccountId;
 
-	private @Nullable UUID solutionId;
-
 	private @Nullable String approach;
 
 	private @Nullable UUID deckFileId;
@@ -85,9 +83,8 @@ public class UseCaseProposal {
 	 * Keeps what the form holds now. The time it is kept is written too, so every save moves the version on, even one
 	 * that only changes the team, which another table holds.
 	 */
-	public void write(@Nullable UUID solutionId, @Nullable String approach, @Nullable UUID deckFileId,
+	public void write(@Nullable String approach, @Nullable UUID deckFileId,
 			@Nullable UUID primaryContactAccountId, Instant at) {
-		this.solutionId = solutionId;
 		this.approach = approach;
 		this.deckFileId = deckFileId;
 		this.primaryContactAccountId = primaryContactAccountId;
@@ -124,10 +121,6 @@ public class UseCaseProposal {
 
 	public @Nullable UUID getSentByAccountId() {
 		return sentByAccountId;
-	}
-
-	public @Nullable UUID getSolutionId() {
-		return solutionId;
 	}
 
 	public @Nullable String getApproach() {

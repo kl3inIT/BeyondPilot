@@ -19,6 +19,7 @@ import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.proposal.dto.AttachedFileResponse;
+import ai.genaifund.beyondpilot.proposal.dto.ProposalSolutionResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ProposalTeamMemberResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ProposalUseCaseResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ProposingOrganizationResponse;
@@ -27,7 +28,6 @@ import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalSummaryRespo
 import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.SaveUseCaseProposalRequest;
 import ai.genaifund.beyondpilot.proposal.dto.SenderProfileResponse;
-import ai.genaifund.beyondpilot.proposal.dto.SolutionOptionResponse;
 import ai.genaifund.beyondpilot.proposal.dto.TeamCandidateResponse;
 import ai.genaifund.beyondpilot.proposal.dto.TeamMemberRequest;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalCountResponse;
@@ -38,7 +38,8 @@ import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposal;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalMember;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalMemberRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalRepository;
-import ai.genaifund.beyondpilot.solution.OfferedSolution;
+import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalSolution;
+import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalSolutionRepository;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
@@ -72,6 +73,8 @@ public class UseCaseProposals {
 
 	private final UseCaseProposalMemberRepository teams;
 
+	private final UseCaseProposalSolutionRepository offers;
+
 	private final UseCaseDirectory useCases;
 
 	private final OrganizationDirectory organizations;
@@ -87,10 +90,11 @@ public class UseCaseProposals {
 	private final JsonMapper json;
 
 	UseCaseProposals(UseCaseProposalRepository proposals, UseCaseProposalMemberRepository teams,
-			UseCaseDirectory useCases, OrganizationDirectory organizations, SolutionDirectory solutions,
+			UseCaseProposalSolutionRepository offers, UseCaseDirectory useCases, OrganizationDirectory organizations, SolutionDirectory solutions,
 			TalentSnapshots talent, IdentityService identity, StorageService storage, JsonMapper json) {
 		this.proposals = proposals;
 		this.teams = teams;
+		this.offers = offers;
 		this.useCases = useCases;
 		this.organizations = organizations;
 		this.solutions = solutions;
@@ -101,7 +105,7 @@ public class UseCaseProposals {
 	}
 
 	/**
-	 * The form for the caller: the use case, their organization with its solutions and members, and their
+	 * The form for the caller: the use case, their organization with its members, and their
 	 * organization's proposal when one was saved.
 	 * @throws ProposalException when the use case is unknown or no longer takes proposals, or the caller's organization
 	 * posted it
@@ -116,7 +120,7 @@ public class UseCaseProposals {
 	}
 
 	/**
-	 * Keeps what the form holds, making the proposal on the first save. A draft may be partial; the team may name only
+	 * Keeps what the form holds, making the proposal on the first save. A draft may be partial; it may offer solutions of the organization, whatever their review says, each once; the team may name only
 	 * members of the organization, each once, with at most one primary contact.
 	 * @throws ProposalException when the use case no longer takes proposals, the caller has no approved organization
 	 * or it posted the use case, the proposal was sent or changed since the form read it, or something does not fit
@@ -143,10 +147,7 @@ public class UseCaseProposals {
 			}
 		}
 
-		UUID solutionId = request.solutionId();
-		if (solutionId != null) {
-			ownSolution(membership, solutionId);
-		}
+		List<UseCaseProposalSolution> offered = offered(proposal.getId(), membership, request.solutionIds());
 		UUID deck = request.deckFileId();
 		if (deck != null && !deck.equals(proposal.getDeckFileId())) {
 			// A new PDF is one the caller uploaded for an application; the one the proposal names stays.
@@ -158,13 +159,16 @@ public class UseCaseProposals {
 
 		if (!created) {
 			teams.deleteAllOf(proposal.getId());
+			offers.deleteAllOf(proposal.getId());
 			// The delete runs as its own statement; the proposal is read again, still locked, and written.
 			proposal = proposals.findForUpdate(proposal.getId()).orElseThrow();
 		}
-		proposal.write(solutionId, text(request.approach()), deck, primary, Instant.now());
+		proposal.write(text(request.approach()), deck, primary, Instant.now());
 		proposals.saveAndFlush(proposal);
 		teams.saveAll(team);
+		offers.saveAll(offered);
 		teams.flush();
+		offers.flush();
 		return form(actor, target, membership, proposal);
 	}
 
@@ -186,11 +190,9 @@ public class UseCaseProposals {
 			throw refused(ProposalErrorCode.ALREADY_SENT, id);
 		}
 
-		UUID solutionId = proposal.getSolutionId();
-		if (solutionId == null) {
+		if (offers.findByProposalIdOrderByPosition(id).isEmpty()) {
 			throw refused(ProposalErrorCode.SOLUTION_REQUIRED, id);
 		}
-		ownSolution(membership, solutionId);
 		if (blank(proposal.getApproach())) {
 			throw refused(ProposalErrorCode.APPROACH_REQUIRED, id);
 		}
@@ -235,7 +237,7 @@ public class UseCaseProposals {
 				UseCaseProposal.SENT);
 		Map<UUID, OrganizationName> names = organizations
 			.names(sent.stream().map(UseCaseProposal::getOrganizationId).distinct().toList());
-		Map<UUID, OfferedSolution> offered = offered(sent);
+		Map<UUID, List<UseCaseProposalSolution>> offeredBy = offersOf(sent);
 		Map<UUID, List<UseCaseProposalMember>> teamsOf = teamsOf(sent);
 		Map<UUID, Person> people = identity.people(teamsOf.values()
 			.stream()
@@ -245,12 +247,14 @@ public class UseCaseProposals {
 			.toList());
 		List<ReceivedUseCaseProposalSummaryResponse> items = sent.stream().map(proposal -> {
 			OrganizationName organization = names.get(proposal.getOrganizationId());
-			OfferedSolution solution = proposal.getSolutionId() == null ? null : offered.get(proposal.getSolutionId());
+			List<String> solutionNames = solutionsOf(offeredBy.getOrDefault(proposal.getId(), List.of())).stream()
+				.map(ProposalSolutionResponse::name)
+				.toList();
 			Person contact = proposal.getPrimaryContactAccountId() == null ? null
 					: people.get(proposal.getPrimaryContactAccountId());
 			return new ReceivedUseCaseProposalSummaryResponse(proposal.getId(),
 					organization == null ? "" : organization.name(),
-					organization == null ? null : organization.logoFileId(), solution == null ? null : solution.name(),
+					organization == null ? null : organization.logoFileId(), solutionNames,
 					contact == null ? null : label(contact), Objects.requireNonNull(proposal.getSentAt()));
 		}).toList();
 		return new ReceivedUseCaseProposalsResponse(useCase(target), items);
@@ -267,13 +271,11 @@ public class UseCaseProposals {
 		UseCaseTarget target = useCases.target(proposal.getUseCaseId()).orElseThrow(() -> notFound(id));
 		OrganizationName organization = organizations.names(List.of(proposal.getOrganizationId()))
 			.get(proposal.getOrganizationId());
-		UUID solutionId = proposal.getSolutionId();
-		OfferedSolution solution = solutionId == null ? null : solutions.offered(solutionId).orElse(null);
 		SenderProfileResponse sender = proposal.getTalent() == null ? null
 				: json.readValue(proposal.getTalent(), SenderProfileResponse.class);
 		return new ReceivedUseCaseProposalResponse(proposal.getId(), useCase(target),
 				organization == null ? "" : organization.name(), organization == null ? null : organization.logoFileId(),
-				solution == null ? null : solution.name(), solution == null ? null : solution.summary(),
+				solutions(proposal),
 				proposal.getApproach(), sender, team(proposal), deck(proposal),
 				Objects.requireNonNull(proposal.getSentAt()));
 	}
@@ -360,7 +362,7 @@ public class UseCaseProposals {
 	private UseCaseProposalFormResponse form(Actor actor, UseCaseTarget target, @Nullable Membership membership,
 			@Nullable UseCaseProposal proposal) {
 		if (membership == null) {
-			return new UseCaseProposalFormResponse(useCase(target), null, List.of(), List.of(), null);
+			return new UseCaseProposalFormResponse(useCase(target), null, List.of(), null);
 		}
 		UUID organizationId = membership.organizationId();
 		OrganizationName name = organizations.names(List.of(organizationId)).get(organizationId);
@@ -373,18 +375,14 @@ public class UseCaseProposals {
 					person.accountId().equals(actor.accountId())))
 			.sorted(Comparator.comparing(candidate -> label(candidate.name(), candidate.email()).toLowerCase()))
 			.toList();
-		List<SolutionOptionResponse> offered = solutions.offeredBy(organizationId)
-			.stream()
-			.map(UseCaseProposals::option)
-			.toList();
 		return new UseCaseProposalFormResponse(useCase(target),
 				new ProposingOrganizationResponse(organizationId, membership.organizationName(),
 						name == null ? null : name.logoFileId(), membership.approved()),
-				offered, members, proposal == null ? null : response(proposal));
+				members, proposal == null ? null : response(proposal));
 	}
 
 	private UseCaseProposalResponse response(UseCaseProposal proposal) {
-		return new UseCaseProposalResponse(proposal.getId(), proposal.getStatus(), proposal.getSolutionId(),
+		return new UseCaseProposalResponse(proposal.getId(), proposal.getStatus(), solutions(proposal),
 				proposal.getApproach(), deck(proposal), team(proposal), proposal.getSentAt(), proposal.getVersion(),
 				proposal.getUpdatedAt());
 	}
@@ -434,27 +432,44 @@ public class UseCaseProposals {
 			.collect(Collectors.groupingBy(UseCaseProposalMember::getProposalId));
 	}
 
-	private Map<UUID, OfferedSolution> offered(List<UseCaseProposal> sent) {
-		return sent.stream()
-			.map(UseCaseProposal::getSolutionId)
-			.filter(Objects::nonNull)
-			.distinct()
-			.map(solutions::offered)
+	/** The solutions a save names, checked: each once, each of the caller's organization, whatever its review says. */
+	private List<UseCaseProposalSolution> offered(UUID proposalId, Membership membership, List<UUID> named) {
+		Set<UUID> seen = new HashSet<>();
+		List<UseCaseProposalSolution> offered = new ArrayList<>();
+		for (UUID solutionId : named) {
+			if (!seen.add(solutionId)) {
+				throw new ProposalException(ProposalErrorCode.SOLUTION_NOT_FOUND,
+						"Proposal " + proposalId + " names solution " + solutionId + " twice");
+			}
+			solutions.offered(solutionId)
+				.filter(found -> found.organizationId().equals(membership.organizationId()))
+				.orElseThrow(() -> new ProposalException(ProposalErrorCode.SOLUTION_NOT_FOUND,
+						"Solution " + solutionId + " is not of organization " + membership.organizationId()));
+			offered.add(new UseCaseProposalSolution(proposalId, solutionId, offered.size()));
+		}
+		return offered;
+	}
+
+	private Map<UUID, List<UseCaseProposalSolution>> offersOf(List<UseCaseProposal> sent) {
+		if (sent.isEmpty()) {
+			return Map.of();
+		}
+		return offers.findByProposalIdInOrderByPosition(sent.stream().map(UseCaseProposal::getId).toList())
+			.stream()
+			.collect(Collectors.groupingBy(UseCaseProposalSolution::getProposalId));
+	}
+
+	private List<ProposalSolutionResponse> solutions(UseCaseProposal proposal) {
+		return solutionsOf(offers.findByProposalIdOrderByPosition(proposal.getId()));
+	}
+
+	private List<ProposalSolutionResponse> solutionsOf(List<UseCaseProposalSolution> offered) {
+		return offered.stream()
+			.map(offer -> solutions.offered(offer.getSolutionId()))
 			.flatMap(Optional::stream)
-			.collect(Collectors.toMap(OfferedSolution::id, solution -> solution));
-	}
-
-	private OfferedSolution ownSolution(Membership membership, UUID solutionId) {
-		return solutions.offered(solutionId)
-			.filter(found -> found.organizationId().equals(membership.organizationId()))
-			.orElseThrow(() -> new ProposalException(ProposalErrorCode.SOLUTION_NOT_FOUND,
-					"Solution " + solutionId + " is not of organization " + membership.organizationId()));
-	}
-
-	private static SolutionOptionResponse option(OfferedSolution solution) {
-		return new SolutionOptionResponse(solution.id(), solution.name(), solution.summary(), solution.problemsSolved(),
-				solution.maturity(), !blank(solution.summary()) && !blank(solution.problemsSolved())
-						&& solution.maturity() != null);
+			.map(solution -> new ProposalSolutionResponse(solution.id(), solution.name(), solution.summary(),
+					solution.status()))
+			.toList();
 	}
 
 	private @Nullable AttachedFileResponse deck(UseCaseProposal proposal) {

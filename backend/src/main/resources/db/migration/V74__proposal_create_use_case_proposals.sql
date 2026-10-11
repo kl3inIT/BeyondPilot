@@ -7,7 +7,6 @@ create table use_case_proposal (
     organization_id            uuid        not null references organization (id),
     created_by_account_id      uuid        not null references identity_account (id),
     sent_by_account_id         uuid references identity_account (id),
-    solution_id                uuid references solution (id),
     approach                   text,
     deck_file_id               uuid references storage_file (id),
     -- One of the members below; the service keeps it so, since the member rows are replaced with each save.
@@ -35,3 +34,14 @@ create table use_case_proposal_member (
     role        text    not null default '',
     primary key (proposal_id, account_id)
 );
+
+-- The solutions of the provider organization the proposal offers, whatever their review says: a draft or a solution
+-- that is not listed can be offered too. Deleting a draft solution takes it off the proposals that offered it.
+create table use_case_proposal_solution (
+    proposal_id uuid    not null references use_case_proposal (id) on delete cascade,
+    solution_id uuid    not null references solution (id) on delete cascade,
+    position    integer not null,
+    primary key (proposal_id, solution_id)
+);
+
+create index use_case_proposal_solution_solution_idx on use_case_proposal_solution (solution_id);

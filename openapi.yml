@@ -16109,6 +16109,31 @@ components:
       - slug
       - type
       - upcomingEvents
+    ProposalSolution:
+      type: object
+      description: "A solution a proposal offers, as its review stands now."
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+          - draft
+          - in_review
+          - needs_changes
+          - approved
+          - rejected
+        summary:
+          type:
+          - string
+          - "null"
+      required:
+      - id
+      - name
+      - status
     ProposalTeamMember:
       type: object
       description: "One person a proposal names, with the role typed for it."
@@ -17032,14 +17057,10 @@ components:
         sentAt:
           type: string
           format: date-time
-        solutionName:
-          type:
-          - string
-          - "null"
-        solutionSummary:
-          type:
-          - string
-          - "null"
+        solutions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProposalSolution"
         team:
           type: array
           items:
@@ -17050,6 +17071,7 @@ components:
       - id
       - organizationName
       - sentAt
+      - solutions
       - team
       - useCase
     ReceivedUseCaseProposalSummary:
@@ -17075,14 +17097,16 @@ components:
         sentAt:
           type: string
           format: date-time
-        solutionName:
-          type:
-          - string
-          - "null"
+        solutionNames:
+          type: array
+          description: The names of the solutions offered.
+          items:
+            type: string
       required:
       - id
       - organizationName
       - sentAt
+      - solutionNames
     ReceivedUseCaseProposals:
       type: object
       description: "The proposals a use case received, the latest first."
@@ -19144,7 +19168,7 @@ components:
           type:
           - string
           - "null"
-          description: How the solution solves this use case.
+          description: How the solutions solve this use case.
           maxLength: 2000
           minLength: 0
         deckFileId:
@@ -19153,12 +19177,15 @@ components:
           - "null"
           format: uuid
           description: A PDF the caller uploaded for an application.
-        solutionId:
-          type:
-          - string
-          - "null"
-          format: uuid
-          description: A solution of the caller's organization.
+        solutionIds:
+          type: array
+          description: "Solutions of the caller's organization, whatever their review\
+            \ says, in the order shown."
+          items:
+            type: string
+            format: uuid
+          maxItems: 10
+          minItems: 0
         team:
           type: array
           description: "The people named, in the order shown; at most one is primary."
@@ -19174,6 +19201,7 @@ components:
           description: The version the form read; null when the proposal does not
             exist yet.
       required:
+      - solutionIds
       - team
     SearchCounts:
       type: object
@@ -20929,11 +20957,11 @@ components:
           - string
           - "null"
           format: date-time
-        solutionId:
-          type:
-          - string
-          - "null"
-          format: uuid
+        solutions:
+          type: array
+          description: "The solutions offered, in the order shown."
+          items:
+            $ref: "#/components/schemas/ProposalSolution"
         status:
           type: string
           enum:
@@ -20953,6 +20981,7 @@ components:
             \ is refused."
       required:
       - id
+      - solutions
       - status
       - team
       - updatedAt
@@ -20984,7 +21013,7 @@ components:
     UseCaseProposalForm:
       type: object
       description: "What the proposal form needs: the use case, the caller's organization\
-        \ with its solutions and members, and the proposal if one was saved."
+        \ with its members, and the proposal if one was saved."
       properties:
         members:
           type: array
@@ -21002,15 +21031,10 @@ components:
           - "null"
           $ref: "#/components/schemas/UseCaseProposal"
           description: Null until something was saved.
-        solutions:
-          type: array
-          items:
-            $ref: "#/components/schemas/SolutionOption"
         useCase:
           $ref: "#/components/schemas/ProposalUseCase"
       required:
       - members
-      - solutions
       - useCase
     UseCaseRequirement:
       type: object
