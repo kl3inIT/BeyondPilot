@@ -132,6 +132,28 @@ class ProgramAdministrationTest {
 	}
 
 	@Test
+	void theListPutsTheProgramTakingApplicationsBeforeTheOnesThatAreOver() {
+		String open = created("Open now", "listed-open-now");
+		String done = created("Over", "listed-over");
+		String comingUp = created("Coming up", "listed-coming-up");
+		Map<String, Object> taking = program(0, "Open now", "listed-open-now");
+		taking.put("startsOn", "2020-01-01");
+		taking.put("endsOn", "2999-12-31");
+		taking.put("applications", applications("2020-01-01T00:00:00Z", "2999-12-01T00:00:00Z", "2999-12-15"));
+		save(operator, open, taking).expectStatus().isOk();
+		Map<String, Object> over = program(0, "Over", "listed-over");
+		over.put("startsOn", "2020-01-01");
+		over.put("endsOn", "2020-01-02");
+		save(operator, done, over).expectStatus().isOk();
+		Map<String, Object> later = program(0, "Coming up", "listed-coming-up");
+		later.put("startsOn", "2999-01-01");
+		later.put("endsOn", "2999-01-02");
+		save(operator, comingUp, later).expectStatus().isOk();
+
+		assertThat(slugs()).containsSubsequence("listed-open-now", "listed-coming-up", "listed-over");
+	}
+
+	@Test
 	void anAddressBelongsToOneProgram() {
 		create(operator, "First", "taken-address", "event").expectStatus().isCreated();
 
