@@ -164,7 +164,9 @@ The operators' list shows each program's phase whatever its status.
 
 Every operation of `ProgramAdministration` first calls `IdentityService.requireOperator`, so a caller who is not an
 operator now (or whose account is disabled) is refused with `403` `IDENTITY_OPERATOR_REQUIRED`, and a caller without a
-session with `401`. The operators' list returns every program in any status, newest created first, without paging.
+session with `401`. The operators' list returns every program in any status without paging, by the phase it is in now: open for
+applications, then running, coming up and done. Inside a phase the latest to start is first, and a program with no
+start day comes before those, newest created first.
 
 ## Audit
 
