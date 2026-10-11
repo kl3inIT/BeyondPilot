@@ -14,8 +14,8 @@ const options = [
 /**
  * How a visitor goes through BeyondPilot, in three steps, beside the same steps drawn on the ink of
  * the challenge cover (Figma "Landing v2 / HowItWorks"). The drawing shows only what the product has:
- * its two ways in, two real listings and the introduction request. It is one image to assistive
- * technology, and what is not built yet says so.
+ * its two ways in, two real listings, the introduction request and the shortlist of a use case's
+ * matches. It is one image to assistive technology.
  */
 function AgentJourney() {
   const t = useTranslations("Home.agentJourney");
@@ -87,11 +87,8 @@ function AgentJourney() {
                 <span className="flex h-8 items-center justify-center rounded-full bg-panel-foreground px-3.5 text-sm font-semibold text-panel-deep">
                   {t("demo.introduce")}
                 </span>
-                <span className="flex items-center gap-2 self-start rounded-full border border-dashed border-panel-foreground/40 px-3 py-1.5 text-xs font-medium text-panel-foreground/80 sm:self-auto">
+                <span className="flex h-8 items-center justify-center rounded-full border border-panel-foreground/40 px-3.5 text-sm font-medium">
                   {t("demo.shortlist")}
-                  <span className="rounded-full bg-panel-foreground/15 px-2 py-0.5 font-semibold">
-                    {h("comingSoon")}
-                  </span>
                 </span>
               </div>
             </div>

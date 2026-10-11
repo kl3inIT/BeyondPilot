@@ -142,7 +142,7 @@ export const contactEmail = "team@beyondpilot.ai";
 
 export const genaiFundLinks = {
   site: "https://genaifund.ai",
-  about: "https://genaifund.ai/our-team/",
+  about: "https://genaifund.ai/team/",
   events: "https://genaifund.ai/blog/",
   newsletter: "https://genaifund.ai/blog/",
   linkedin: "https://www.linkedin.com/company/genai-fund/",

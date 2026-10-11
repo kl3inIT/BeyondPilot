@@ -13,6 +13,7 @@ test.describe("about page", () => {
     ).toBeVisible();
     await expect(page.getByRole("heading", { name: "Development partner" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Funded by GenAI Fund" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Nguyễn Đức Anh on LinkedIn" })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
   });
 

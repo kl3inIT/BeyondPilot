@@ -232,8 +232,8 @@
         "option2Why": "An AI operating system for the enterprise, with data privacy and governance built in.",
         "next": "Next step",
         "introduce": "Request an introduction",
-        "shortlist": "Compare and shortlist",
-        "alt": "an example of the three steps. Start by searching the directory or publishing a use case; the solutions listed on BeyondPilot include Revve AI and Shieldbase; the next step is to request an introduction. Comparing and shortlisting is coming soon."
+        "shortlist": "Shortlist matched solutions",
+        "alt": "an example of the three steps. Start by searching the directory or publishing a use case; the solutions listed on BeyondPilot include Revve AI and Shieldbase; the next step is to request an introduction or shortlist the solutions matched to a use case."
       }
     },
     "challenge": {
@@ -263,7 +263,6 @@
       "action": "Explore BeyondPilot"
     },
     "previewLabel": "Product preview",
-    "comingSoon": "Coming soon",
     "network": {
       "more": "And many more",
       "title": "The network behind every program",

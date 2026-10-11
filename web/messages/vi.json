@@ -232,8 +232,8 @@
         "option2Why": "Hệ điều hành AI cho doanh nghiệp, có sẵn bảo mật và quản trị dữ liệu.",
         "next": "Bước tiếp theo",
         "introduce": "Yêu cầu giới thiệu",
-        "shortlist": "So sánh và lập danh sách rút gọn",
-        "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là yêu cầu giới thiệu. So sánh và lập danh sách rút gọn sắp ra mắt."
+        "shortlist": "Lưu giải pháp phù hợp",
+        "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là yêu cầu giới thiệu hoặc lưu các giải pháp được ghép với một bài toán."
       }
     },
     "challenge": {
@@ -263,7 +263,6 @@
       "action": "Khám phá BeyondPilot"
     },
     "previewLabel": "Bản xem trước sản phẩm",
-    "comingSoon": "Sắp ra mắt",
     "network": {
       "more": "Và nhiều đối tác khác",
       "title": "Mạng lưới đứng sau mỗi chương trình",
