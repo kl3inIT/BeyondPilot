@@ -333,6 +333,36 @@ class EmailAdministrationTest {
 	}
 
 	@Test
+	void theSuppressedAddressesSortByTheKeyTheyAreGivenAndRefuseAnUnknownOne() {
+		for (String address : List.of("b@sorted-suppression.test", "c@sorted-suppression.test",
+				"a@sorted-suppression.test")) {
+			post(operator, API + "/suppressions", Map.of("address", address)).expectStatus().isCreated();
+		}
+		jdbc.sql("""
+				update email_suppression set created_at = now() - case address
+				    when 'b@sorted-suppression.test' then interval '3 days'
+				    when 'c@sorted-suppression.test' then interval '1 day'
+				    else interval '2 days' end
+				where address like '%@sorted-suppression.test'
+				""").update();
+
+		assertThat(suppressed("&sort=address")).containsExactly("a@sorted-suppression.test",
+				"b@sorted-suppression.test", "c@sorted-suppression.test");
+		assertThat(suppressed("&sort=-address")).containsExactly("c@sorted-suppression.test",
+				"b@sorted-suppression.test", "a@sorted-suppression.test");
+		assertThat(suppressed("&sort=since")).containsExactly("b@sorted-suppression.test",
+				"a@sorted-suppression.test", "c@sorted-suppression.test");
+		assertThat(suppressed("")).isEqualTo(suppressed("&sort=-since"))
+			.containsExactly("c@sorted-suppression.test", "a@sorted-suppression.test", "b@sorted-suppression.test");
+		assertProblem(get(operator, API + "/suppressions?sort=reason"), 400, "REQUEST_INVALID");
+	}
+
+	private List<String> suppressed(String query) {
+		return JsonPath.read(body(get(operator, API + "/suppressions?q=@sorted-suppression" + query).expectStatus()
+			.isOk()), "$.items[*].address");
+	}
+
+	@Test
 	void aSignedResendReportBouncesTheEmailAndSuppressesTheAddressOnce() throws Exception {
 		String read = body(get(operator, API + "/settings").expectStatus().isOk());
 		Map<String, Object> resend = settings("resend", version(read), smtp(null), ses(null, null, null), "re_test_key");
