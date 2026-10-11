@@ -122,11 +122,14 @@ public class OrganizationQueryRepository {
 	}
 
 	/**
-	 * One page for operators: those a decision waits on first, a new organization or a claim, then the newest.
+	 * One page for operators in the order {@code sort} names; without one, those a decision waits on first, a new
+	 * organization or a claim, then the newest.
 	 * @param status a review status, or {@code suspended} for those taken down; {@code in_review} also selects an
 	 * organization with an open claim; none selects every one but the merged
+	 * @param sort {@code name}, {@code received} or {@code members}, with {@code -} before it for the reverse
 	 */
-	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, int limit, long offset) {
+	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, @Nullable String sort, int limit,
+			long offset) {
 		return adminFiltered("""
 				select o.id, o.slug, o.name, o.logo_file_id, o.type, o.country, o.status, o.suspended_at, o.created_by_account_id,
 				       o.created_at,
@@ -135,11 +138,7 @@ public class OrganizationQueryRepository {
 				               where m.organization_id = o.id and m.role = 'owner') as owned,
 				       c.id as claim_id, c.account_id as claimant_account_id, c.created_at as claimed_at,
 				       k.name as merged_into_name
-				""" + ADMIN_SOURCE + """
-				order by case when o.status = 'in_review' or c.id is not null then 0 else 1 end,
-				         coalesce(c.created_at, o.created_at) desc, o.id
-				limit :limit offset :offset
-				""", text, status).param("limit", limit).param("offset", offset).query((row, index) -> {
+				""" + ADMIN_SOURCE + "order by " + adminOrder(sort) + "\nlimit :limit offset :offset\n", text, status).param("limit", limit).param("offset", offset).query((row, index) -> {
 			Timestamp claimedAt = row.getTimestamp("claimed_at");
 			Timestamp suspendedAt = row.getTimestamp("suspended_at");
 			return new AdminRow(row.getObject("id", UUID.class), row.getString("slug"), row.getString("name"),
@@ -153,6 +152,23 @@ public class OrganizationQueryRepository {
 
 	public long adminCount(@Nullable String text, @Nullable String status) {
 		return adminFiltered("select count(*)\n" + ADMIN_SOURCE, text, status).query(Long.class).single();
+	}
+
+	/**
+	 * The order a sort key names, with the identifier last so that pages do not overlap. The SQL is chosen here by the
+	 * key, never taken from the caller's text; an unknown key keeps the default order.
+	 */
+	private static String adminOrder(@Nullable String sort) {
+		boolean descending = sort != null && sort.startsWith("-");
+		String key = sort == null ? "" : sort.substring(descending ? 1 : 0);
+		String direction = descending ? " desc" : "";
+		return switch (key) {
+			case "name" -> "lower(o.name)" + direction + ", o.id";
+			case "received" -> "coalesce(c.created_at, o.created_at)" + direction + ", o.id";
+			case "members" -> "members" + direction + ", lower(o.name), o.id";
+			default -> "case when o.status = 'in_review' or c.id is not null then 0 else 1 end, "
+					+ "coalesce(c.created_at, o.created_at) desc, o.id";
+		};
 	}
 
 	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, @Nullable String status) {

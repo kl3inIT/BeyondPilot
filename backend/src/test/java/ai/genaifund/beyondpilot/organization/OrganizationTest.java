@@ -1057,6 +1057,70 @@ class OrganizationTest {
 	}
 
 	@Test
+	void theOperatorsListSortsByTheKeyItIsGivenAndRefusesAnUnknownOne() {
+		UUID beta = approved(signIn("founder@sorted-beta.test"), "Sorted Beta");
+		approved(signIn("founder@sorted-alpha.test"), "Sorted Alpha");
+		create(signIn("founder@sorted-gamma.test"), "Sorted Gamma");
+		signIn("second@sorted-beta.test");
+		jdbc.sql("insert into organization_member (organization_id, account_id, role) values (?, ?, 'member')")
+			.params(beta, idOf("second@sorted-beta.test"))
+			.update();
+		jdbc.sql("""
+				update organization set created_at = now() - case name when 'Sorted Alpha' then interval '3 days'
+				                                                       when 'Sorted Beta' then interval '1 day'
+				                                                       else interval '2 days' end
+				where name like 'Sorted %'
+				""").update();
+
+		assertThat(adminNames("&sort=name")).containsExactly("Sorted Alpha", "Sorted Beta", "Sorted Gamma");
+		assertThat(adminNames("&sort=-name")).containsExactly("Sorted Gamma", "Sorted Beta", "Sorted Alpha");
+		assertThat(adminNames("&sort=received")).containsExactly("Sorted Alpha", "Sorted Gamma", "Sorted Beta");
+		assertThat(adminNames("&sort=-received")).containsExactly("Sorted Beta", "Sorted Gamma", "Sorted Alpha");
+		// Equal counts keep the order of the name.
+		assertThat(adminNames("&sort=-members")).containsExactly("Sorted Beta", "Sorted Alpha", "Sorted Gamma");
+		// Without a key, the one waiting for review first, then the most recently received.
+		assertThat(adminNames("")).containsExactly("Sorted Gamma", "Sorted Beta", "Sorted Alpha");
+		assertProblem(get(operator, API + "/admin/organizations?sort=newest"), 400, "REQUEST_INVALID");
+	}
+
+	@Test
+	void theMembersAreSortedByTheKeyTheyAreGiven() {
+		String founder = signIn("founder@member-sort.test");
+		UUID id = approved(founder, "Member Sort Co", "member-sort.test");
+		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
+		for (String person : List.of("early", "late")) {
+			assertThat(outcome(post(signIn(person + "@member-sort.test"), API + "/organizations/" + id + "/join",
+					Map.of()))).isEqualTo("joined");
+		}
+		jdbc.sql("""
+				update organization_member set created_at = now() - case account_id when ? then interval '1 day'
+				                                                                    when ? then interval '3 days'
+				                                                                    else interval '2 days' end
+				where organization_id = ?
+				""").params(idOf("founder@member-sort.test"), idOf("early@member-sort.test"), id).update();
+
+		assertThat(memberEmails(founder, "joined")).containsExactly("early@member-sort.test",
+				"late@member-sort.test", "founder@member-sort.test");
+		assertThat(memberEmails(founder, "-joined")).containsExactly("founder@member-sort.test",
+				"late@member-sort.test", "early@member-sort.test");
+		assertThat(memberEmails(founder, "-role")).containsExactly("early@member-sort.test", "late@member-sort.test",
+				"founder@member-sort.test");
+		assertThat(JsonPath.<List<String>>read(members(founder), "$.members[*].email")).containsExactly(
+				"founder@member-sort.test", "early@member-sort.test", "late@member-sort.test");
+		assertProblem(get(founder, API + "/mine/members?sort=name"), 400, "REQUEST_INVALID");
+	}
+
+	private List<String> adminNames(String query) {
+		return JsonPath.read(body(get(operator, API + "/admin/organizations?q=sorted" + query).expectStatus().isOk()),
+				"$.items[*].name");
+	}
+
+	private List<String> memberEmails(String session, String sort) {
+		return JsonPath.read(body(get(session, API + "/mine/members?sort=" + sort).expectStatus().isOk()),
+				"$.members[*].email");
+	}
+
+	@Test
 	void nobodySignedInReachesOrganizations() {
 		client.get().uri(API + "/mine").exchange().expectStatus().isUnauthorized();
 		client.get().uri(API + "/admin/organizations").exchange().expectStatus().isUnauthorized();
