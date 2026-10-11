@@ -21,7 +21,14 @@ import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/actions/button";
 import { DataTable } from "@/components/composites/data-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
 /**
@@ -40,7 +47,9 @@ type DataTableColumnMeta = {
   /** A fixed width: `action` holds one icon button, `sm` 8rem, `md` 9rem, `lg` 14rem. */
   width?: "action" | "sm" | "md" | "lg";
   /** Shown only from this width on: a column the table does without when narrower. */
-  from?: "sm" | "md" | "lg" | "xl";
+  from?: "sm" | "md" | "lg" | "xl" | "2xl";
+  /** Its cells start at the top of a row that other cells make tall. */
+  top?: boolean;
   /** Its first click sorts the largest or latest first, as for a score or a date. */
   descFirst?: boolean;
 };
@@ -99,6 +108,12 @@ type DataTableViewProps<TData extends RowData> = {
   selection?: DataTableSelection<TData>;
   /** What the table shows in place of rows: an empty list or a search that found nothing. */
   empty?: React.ReactNode;
+  /** The name of the table for assistive technology, when no heading beside it names it. */
+  caption?: string;
+  /** A cell of each row holds a link stretched over the row, so the row is its frame. */
+  rowLinks?: boolean;
+  /** The table stands on a tinted ground and is white itself. */
+  surface?: boolean;
   className?: string;
 };
 
@@ -117,6 +132,9 @@ function DataTableView<TData extends RowData>({
   defaultSort = "",
   selection,
   empty,
+  caption,
+  rowLinks,
+  surface,
   className,
 }: DataTableViewProps<TData>) {
   const t = useTranslations("Lists.table");
@@ -212,7 +230,8 @@ function DataTableView<TData extends RowData>({
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <DataTable>
+      <DataTable className={cn(rowLinks && "[&_tbody_tr]:relative", surface && "bg-background")}>
+        {caption && <TableCaption className="sr-only">{caption}</TableCaption>}
         <TableHeader>
           {table.getHeaderGroups().map((group) => (
             <TableRow key={group.id}>
@@ -235,6 +254,8 @@ function DataTableView<TData extends RowData>({
                       header.column.columnDef.meta?.from === "md" && "hidden md:table-cell",
                       header.column.columnDef.meta?.from === "lg" && "hidden lg:table-cell",
                       header.column.columnDef.meta?.from === "xl" && "hidden xl:table-cell",
+                      header.column.columnDef.meta?.from === "2xl" && "hidden 2xl:table-cell",
+                      header.column.columnDef.meta?.top && "align-top",
                     )}
                     aria-sort={
                       direction === null ? undefined : direction ? "descending" : "ascending"
@@ -288,6 +309,8 @@ function DataTableView<TData extends RowData>({
                     cell.column.columnDef.meta?.from === "md" && "hidden md:table-cell",
                     cell.column.columnDef.meta?.from === "lg" && "hidden lg:table-cell",
                     cell.column.columnDef.meta?.from === "xl" && "hidden xl:table-cell",
+                    cell.column.columnDef.meta?.from === "2xl" && "hidden 2xl:table-cell",
+                    cell.column.columnDef.meta?.top && "align-top",
                   )}
                 >
                   <table.FlexRender cell={cell} />
