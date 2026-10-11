@@ -237,7 +237,7 @@ test.describe("admin talent", () => {
     expect((await page.goto("/admin/talent/no-such-record"))?.status()).toBe(404);
   });
 
-  test("a pinned profile is marked and the list narrows to the pinned ones", async ({
+  test("a featured profile is marked and the list narrows to the featured ones", async ({
     page,
     context,
     baseURL,
@@ -245,23 +245,23 @@ test.describe("admin talent", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/talent");
 
-    // The mark is a pin and the word, on the one profile that is pinned.
+    // The badge is a star and the word, on the one profile that is featured.
     await expect(
-      page.locator('[data-slot="pinned-mark"]:visible').filter({ hasText: "Pinned" }),
+      page.locator("[data-featured]:visible").filter({ hasText: "Featured" }),
     ).toHaveCount(1);
-    await page.getByRole("combobox", { name: "Pinned" }).click();
-    await page.getByRole("option", { name: "Pinned", exact: true }).click();
-    await expect(page).toHaveURL("/admin/talent?pinned=true");
+    await page.getByRole("combobox", { name: "Featured" }).click();
+    await page.getByRole("option", { name: "Featured", exact: true }).click();
+    await expect(page).toHaveURL("/admin/talent?featured=true");
     await expect(shownProfiles(page)).toHaveText(["Arif Hidayat"]);
     await expectNoSeriousA11yViolations(page);
 
-    await page.getByRole("combobox", { name: "Pinned" }).click();
-    await page.getByRole("option", { name: "Not pinned" }).click();
-    await expect(page).toHaveURL("/admin/talent?pinned=false");
+    await page.getByRole("combobox", { name: "Featured" }).click();
+    await page.getByRole("option", { name: "Not featured" }).click();
+    await expect(page).toHaveURL("/admin/talent?featured=false");
     await expect(shownProfiles(page)).toHaveCount(4);
   });
 
-  test("a profile is pinned and unpinned from its record, whatever its review says", async ({
+  test("a profile is featured from its record, and no longer, whatever its review says", async ({
     page,
     context,
     baseURL,
@@ -269,21 +269,21 @@ test.describe("admin talent", () => {
     await signInAs(context, "operator", baseURL!);
     const decisions = await answerDecisions(page, decisionsPath, 204);
 
-    // One sent back for changes is pinned all the same: the pin counts once it is public.
+    // One sent back for changes is featured all the same: it leads the directory once it is public.
     await page.goto(`/admin/talent/${siti}`);
-    await expect(page.locator('[data-slot="pinned-mark"]')).toHaveCount(0);
-    await page.getByRole("button", { name: "Pin to the top" }).click();
-    await expect(page.getByText("Siti Rahma is pinned to the top of the directory.")).toBeVisible();
+    await expect(page.locator("[data-featured]")).toHaveCount(0);
+    await page.getByRole("button", { name: "Feature", exact: true }).click();
+    await expect(page.getByText("Siti Rahma is featured.")).toBeVisible();
 
     await page.goto(`/admin/talent/${arif}`);
-    await expect(page.locator('[data-slot="pinned-mark"]')).toHaveText("Pinned Oct 1, 2026");
+    await expect(page.locator("[data-featured]")).toHaveText("Featured Oct 1, 2026");
     await expectNoSeriousA11yViolations(page);
-    await page.getByRole("button", { name: "Unpin" }).click();
-    await expect(page.getByText("Arif Hidayat is no longer pinned.")).toBeVisible();
+    await page.getByRole("button", { name: "Stop featuring" }).click();
+    await expect(page.getByText("Arif Hidayat is no longer featured.")).toBeVisible();
 
     expect(decisions).toEqual([
-      { call: `POST /api/talent/admin/profiles/${siti}/pin`, body: null },
-      { call: `POST /api/talent/admin/profiles/${arif}/unpin`, body: null },
+      { call: `POST /api/talent/admin/profiles/${siti}/feature`, body: null },
+      { call: `POST /api/talent/admin/profiles/${arif}/unfeature`, body: null },
     ]);
   });
 

@@ -1,6 +1,7 @@
 import { ArrowUpRightIcon, FolderKanbanIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -50,6 +51,9 @@ function TalentCard({ person }: { person: PublicTalentSummary }) {
           </h2>
           {kind && <p className="line-clamp-2 text-xs font-medium text-muted-foreground">{kind}</p>}
         </div>
+        {person.featured && (
+          <FeaturedBadge className="ml-auto self-start">{t("featured")}</FeaturedBadge>
+        )}
       </div>
       {person.headline && <p className="line-clamp-2 text-sm">{person.headline}</p>}
       {person.skills.length > 0 && <TalentSkills skills={person.skills} />}

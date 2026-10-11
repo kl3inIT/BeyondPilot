@@ -6,7 +6,7 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
-import { PinnedMark } from "@/components/composites/pinned-mark";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import {
@@ -24,7 +24,7 @@ import type { AdminSolutionList, AdminSolutionSummary } from "@/lib/api/generate
 import { siteRoutes } from "@/lib/site";
 
 import { SolutionLogo } from "./solution-logo";
-import { SolutionPin } from "./solution-pin";
+import { SolutionFeature } from "./solution-feature";
 import { adminSolutionsSearch, type AdminSolutionsSearch } from "./solutions-search";
 import { SolutionsToolbar } from "./solutions-toolbar";
 
@@ -63,7 +63,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
             {t("deploymentsWaiting", { count: solution.deploymentsAwaitingReview })}
           </span>
         )}
-        {solution.pinnedAt && <PinnedMark>{t("pin.pinned")}</PinnedMark>}
+        {solution.featuredAt && <FeaturedBadge>{t("feature.featured")}</FeaturedBadge>}
       </span>
     ),
     // A record that waits says for how long; a decided one keeps the day it was sent.
@@ -75,13 +75,13 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     waiting: solution.status === "in_review" || solution.deploymentsAwaitingReview > 0,
   }));
 
-  const narrowed = search.status !== null || search.industry !== null || search.pinned !== null;
+  const narrowed = search.status !== null || search.industry !== null || search.featured !== null;
   const filtered = search.q.trim() !== "" || narrowed;
   const empty =
     rows.length > 0 ? null : search.q.trim() === "" &&
       search.status === "in_review" &&
       search.industry === null &&
-      search.pinned === null ? (
+      search.featured === null ? (
       <DataTableEmpty icon={<BoxesIcon aria-hidden="true" />} title={t("queueEmpty.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.admin}>
           {t("queueEmpty.home")}
@@ -222,8 +222,8 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
 }
 
 /**
- * What the ⋯ menu of one row offers: the review page, the organization's own page, and pinning the
- * solution to the top of the public directory.
+ * What the ⋯ menu of one row offers: the review page, the organization's own page, and featuring the
+ * solution in the public directory.
  */
 function RowMenu({ solution }: { solution: AdminSolutionSummary }) {
   const t = useTranslations("Admin.solutions");
@@ -254,7 +254,7 @@ function RowMenu({ solution }: { solution: AdminSolutionSummary }) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <SolutionPin solution={solution} appearance="item" />
+          <SolutionFeature solution={solution} appearance="item" />
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

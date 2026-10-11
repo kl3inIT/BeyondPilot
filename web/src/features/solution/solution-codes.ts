@@ -55,5 +55,5 @@ export const reviewedStatuses = [
   "suspended",
 ] as const;
 
-/** What the operators' list narrows to by pin: the pinned solutions, or those that are not. */
-export const pinnedChoices = ["true", "false"] as const;
+/** What the operators' list narrows to: the featured solutions, or those that are not. */
+export const featuredChoices = ["true", "false"] as const;

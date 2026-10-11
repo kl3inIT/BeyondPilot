@@ -2,7 +2,7 @@ import { ArrowLeftIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
-import { PinnedMark } from "@/components/composites/pinned-mark";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { QueueNext } from "@/components/composites/queue-next";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -11,7 +11,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { CustomerDeploymentsReview } from "./customer-deployments-review";
 import { SolutionBacking } from "./solution-backing";
-import { SolutionPin } from "./solution-pin";
+import { SolutionFeature } from "./solution-feature";
 import { SolutionRecord } from "./solution-record";
 import { SolutionReview } from "./solution-review";
 
@@ -26,7 +26,7 @@ type AdminSolutionPageProps = {
 
 function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
   const t = useTranslations("Admin.solutions.detail");
-  const pin = useTranslations("Admin.solutions.pin");
+  const feature = useTranslations("Admin.solutions.feature");
   const status = useVocabulary("reviewStatus");
   const reason = useVocabulary("solutionRejection");
   const takedown = useVocabulary("solutionTakedown");
@@ -74,16 +74,16 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
           t(solution.listed ? "listed" : "unlisted")
         ),
     },
-    ...(solution.pinnedAt
+    ...(solution.featuredAt
       ? [
           {
             label: t("order"),
             value: (
-              <PinnedMark>
-                {pin("since", {
-                  day: format.dateTime(new Date(solution.pinnedAt), { dateStyle: "medium" }),
+              <FeaturedBadge>
+                {feature("since", {
+                  day: format.dateTime(new Date(solution.featuredAt), { dateStyle: "medium" }),
                 })}
-              </PinnedMark>
+              </FeaturedBadge>
             ),
           },
         ]
@@ -164,7 +164,7 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
               />
             )}
             <div className="border-t pt-4">
-              <SolutionPin key={solution.id} solution={solution} appearance="button" />
+              <SolutionFeature key={solution.id} solution={solution} appearance="button" />
             </div>
           </aside>
           <SolutionBacking key={solution.id} solution={solution} />

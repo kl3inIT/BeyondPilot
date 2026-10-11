@@ -1,6 +1,6 @@
 "use client";
 
-import { PinIcon, PinOffIcon } from "lucide-react";
+import { StarIcon, StarOffIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -8,26 +8,26 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
-import { pinSolution, unpinSolution, type AdminSolutionSummary } from "@/lib/api/generated";
+import { featureSolution, unfeatureSolution, type AdminSolutionSummary } from "@/lib/api/generated";
 
 import { solutionError } from "./solution-errors";
 
-type SolutionPinProps = {
-  solution: Pick<AdminSolutionSummary, "id" | "name" | "pinnedAt">;
+type SolutionFeatureProps = {
+  solution: Pick<AdminSolutionSummary, "id" | "name" | "featuredAt">;
   /** A button on the solution's record, or an item of its row's menu in the list. */
   appearance: "button" | "item";
 };
 
 /**
- * Pins a solution to the top of the public directory, or unpins it. Nobody is emailed and nothing
- * else about the solution changes, so it asks for no confirmation: the other press undoes it.
+ * Features a solution, or stops featuring it. Nobody is emailed and nothing else about the solution
+ * changes, so it asks for no confirmation: the other press undoes it.
  */
-function SolutionPin({ solution, appearance }: SolutionPinProps) {
-  const t = useTranslations("Admin.solutions.pin");
+function SolutionFeature({ solution, appearance }: SolutionFeatureProps) {
+  const t = useTranslations("Admin.solutions.feature");
   const notify = useNotify();
   const router = useRouter();
   const [pending, setPending] = useState(false);
-  const pinned = Boolean(solution.pinnedAt);
+  const featured = Boolean(solution.featuredAt);
 
   async function toggle() {
     if (pending) {
@@ -35,8 +35,8 @@ function SolutionPin({ solution, appearance }: SolutionPinProps) {
     }
     setPending(true);
     try {
-      await (pinned ? unpinSolution : pinSolution)({ path: { id: solution.id } });
-      notify.success(pinned ? "Solution.done.unpinned" : "Solution.done.pinned", {
+      await (featured ? unfeatureSolution : featureSolution)({ path: { id: solution.id } });
+      notify.success(featured ? "Solution.done.unfeatured" : "Solution.done.featured", {
         name: solution.name,
       });
       router.refresh();
@@ -50,7 +50,7 @@ function SolutionPin({ solution, appearance }: SolutionPinProps) {
   if (appearance === "item") {
     return (
       <DropdownMenuItem disabled={pending} onClick={() => void toggle()}>
-        {t(pinned ? "unpin" : "pin")}
+        {t(featured ? "unfeature" : "feature")}
       </DropdownMenuItem>
     );
   }
@@ -63,12 +63,12 @@ function SolutionPin({ solution, appearance }: SolutionPinProps) {
         pending={pending}
         onClick={() => void toggle()}
       >
-        {pinned ? <PinOffIcon aria-hidden="true" /> : <PinIcon aria-hidden="true" />}
-        {t(pinned ? "unpin" : "pin")}
+        {featured ? <StarOffIcon aria-hidden="true" /> : <StarIcon aria-hidden="true" />}
+        {t(featured ? "unfeature" : "feature")}
       </Button>
       <p className="text-xs text-muted-foreground">{t("hint")}</p>
     </div>
   );
 }
 
-export { SolutionPin };
+export { SolutionFeature };

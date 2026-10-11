@@ -27,8 +27,8 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
   const t = await getTranslations("Admin");
   const [organizations, solutions, talent] = await Promise.all([
     readAdminOrganizations({ q: "", status: "in_review", page: 1 }),
-    readAdminSolutions({ q: "", status: "in_review", industry: null, pinned: null, page: 1 }),
-    readAdminTalentList({ q: "", status: "in_review", pinned: null, page: 1 }),
+    readAdminSolutions({ q: "", status: "in_review", industry: null, featured: null, page: 1 }),
+    readAdminTalentList({ q: "", status: "in_review", featured: null, page: 1 }),
   ]);
   const queues = [
     {

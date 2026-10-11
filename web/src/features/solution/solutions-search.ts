@@ -6,7 +6,7 @@ import {
   focusAreas,
   industries,
   maturities,
-  pinnedChoices,
+  featuredChoices,
   reviewedStatuses,
 } from "./solution-codes";
 
@@ -29,12 +29,12 @@ export const companySearch = { more: parseAsInteger.withDefault(0) };
 
 export const loadCompanySearch = createLoader(companySearch);
 
-/** What narrows the operators' list of solutions: `?q=&status=&industry=&pinned=&page=`. */
+/** What narrows the operators' list of solutions: `?q=&status=&industry=&featured=&page=`. */
 export const adminSolutionsSearch = {
   q: parseAsString.withDefault(""),
   status: parseAsStringLiteral(reviewedStatuses),
   industry: parseAsStringLiteral(industries),
-  pinned: parseAsStringLiteral(pinnedChoices),
+  featured: parseAsStringLiteral(featuredChoices),
   page: parseAsInteger.withDefault(1),
 };
 

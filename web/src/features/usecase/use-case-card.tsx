@@ -1,6 +1,7 @@
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { Badge } from "@/components/ui/badge";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { Link } from "@/i18n/navigation";
@@ -60,6 +61,7 @@ function UseCaseCard({
         <p className="text-xs text-muted-foreground uppercase md:text-sm">{organizationName}</p>
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{industryName(useCase.industry)}</Badge>
+          {useCase.featured && <FeaturedBadge>{t("featured")}</FeaturedBadge>}
         </div>
 
         <p className="line-clamp-2 hidden pt-1 text-sm md:block">

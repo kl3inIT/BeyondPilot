@@ -6,7 +6,7 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
-import { PinnedMark } from "@/components/composites/pinned-mark";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { Person } from "@/components/composites/person";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
@@ -44,7 +44,7 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
     status: (
       <span className="flex flex-col items-start gap-0.5">
         <ReviewStatus state={reviewState(profile)}>{word(reviewState(profile))}</ReviewStatus>
-        {profile.pinnedAt && <PinnedMark>{t("pin.pinned")}</PinnedMark>}
+        {profile.featuredAt && <FeaturedBadge>{t("feature.featured")}</FeaturedBadge>}
       </span>
     ),
     // A record that waits says for how long; a decided one keeps the day it was sent.
@@ -56,11 +56,11 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
     waiting: profile.status === "in_review",
   }));
 
-  const filtered = search.q.trim() !== "" || search.status !== null || search.pinned !== null;
+  const filtered = search.q.trim() !== "" || search.status !== null || search.featured !== null;
   const empty =
     rows.length > 0 ? null : search.q.trim() === "" &&
       search.status === "in_review" &&
-      search.pinned === null ? (
+      search.featured === null ? (
       <DataTableEmpty icon={<UsersIcon aria-hidden="true" />} title={t("queueEmpty.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.admin}>
           {t("queueEmpty.home")}

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { FilterToolbar } from "@/components/composites/filter-toolbar";
 import { useVocabulary } from "@/i18n/vocabulary";
 
-import { industries, pinnedChoices, reviewedStatuses } from "./solution-codes";
+import { industries, featuredChoices, reviewedStatuses } from "./solution-codes";
 import { SolutionsFilters } from "./solutions-filters";
 import { adminSolutionsSearch } from "./solutions-search";
 
@@ -19,7 +19,7 @@ type SolutionsToolbarProps =
 
 /**
  * Search and filters of a list of solutions: the public directory's facets, or the operators' status,
- * industry and pin.
+ * industry and featured.
  */
 function SolutionsToolbar(props: SolutionsToolbarProps) {
   const t = useTranslations("Solution.filters");
@@ -49,12 +49,12 @@ function SolutionsToolbar(props: SolutionsToolbarProps) {
           options: industries.map((value) => ({ value, label: industry(value) })),
         },
         {
-          key: "pinned",
-          label: t("pinned.label"),
-          all: t("pinned.all"),
-          options: pinnedChoices.map((value) => ({
+          key: "featured",
+          label: t("featured.label"),
+          all: t("featured.all"),
+          options: featuredChoices.map((value) => ({
             value,
-            label: t(value === "true" ? "pinned.yes" : "pinned.no"),
+            label: t(value === "true" ? "featured.yes" : "featured.no"),
           })),
         },
       ]}

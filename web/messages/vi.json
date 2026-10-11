@@ -955,8 +955,8 @@
           "reject": "Từ chối hoặc trả lại giải pháp",
           "take_down": "Gỡ giải pháp xuống",
           "restore": "Khôi phục giải pháp",
-          "pin": "Ghim một giải pháp lên đầu",
-          "unpin": "Bỏ ghim một giải pháp",
+          "feature": "Đặt một giải pháp nổi bật",
+          "unfeature": "Bỏ nổi bật một giải pháp",
           "deployment_approve": "Duyệt triển khai khách hàng",
           "deployment_reject": "Trả lại triển khai khách hàng",
           "enrich": "Bổ sung solution từ nguồn công khai",
@@ -975,8 +975,8 @@
           "request_changes": "Đã yêu cầu sửa một hồ sơ nhân lực",
           "remove": "Đã gỡ xuống một hồ sơ nhân lực",
           "restore": "Khôi phục một hồ sơ nhân lực",
-          "pin": "Ghim một hồ sơ nhân lực lên đầu",
-          "unpin": "Bỏ ghim một hồ sơ nhân lực",
+          "feature": "Đặt một hồ sơ nhân lực nổi bật",
+          "unfeature": "Bỏ nổi bật một hồ sơ nhân lực",
           "delete": "Đã xoá một hồ sơ nhân lực"
         },
         "proposal": {
@@ -994,6 +994,8 @@
           "draft": "Chuyển một use case về bản nháp",
           "approve": "Duyệt một use case",
           "send_back": "Gửi lại một use case",
+          "feature": "Đặt một use case nổi bật",
+          "unfeature": "Bỏ nổi bật một use case",
           "set_programs": "Đặt chương trình cho một use case"
         },
         "email": {
@@ -1079,8 +1081,8 @@
           "reject": "Từ chối giải pháp <resource></resource>",
           "take_down": "Gỡ giải pháp <resource></resource> xuống",
           "restore": "Khôi phục giải pháp <resource></resource>",
-          "pin": "Ghim giải pháp <resource></resource> lên đầu danh mục",
-          "unpin": "Bỏ ghim giải pháp <resource></resource>",
+          "feature": "Đặt giải pháp <resource></resource> nổi bật",
+          "unfeature": "Bỏ nổi bật giải pháp <resource></resource>",
           "deployment_approve": "Duyệt triển khai khách hàng <resource></resource>",
           "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>",
           "enrich": "Bổ sung solution <resource></resource> từ nguồn công khai",
@@ -1099,8 +1101,8 @@
           "request_changes": "Đã yêu cầu sửa hồ sơ nhân lực của <resource></resource>",
           "remove": "Đã gỡ xuống hồ sơ nhân lực của <resource></resource>",
           "restore": "Khôi phục hồ sơ nhân lực của <resource></resource>",
-          "pin": "Ghim hồ sơ nhân lực của <resource></resource> lên đầu danh mục",
-          "unpin": "Bỏ ghim hồ sơ nhân lực của <resource></resource>",
+          "feature": "Đặt hồ sơ nhân lực của <resource></resource> nổi bật",
+          "unfeature": "Bỏ nổi bật hồ sơ nhân lực của <resource></resource>",
           "delete": "Đã xoá hồ sơ nhân lực của <resource></resource>"
         },
         "proposal": {
@@ -1118,6 +1120,8 @@
           "draft": "Đã chuyển use case <resource></resource> về bản nháp",
           "approve": "Đã duyệt use case <resource></resource>",
           "send_back": "Đã gửi lại use case <resource></resource>",
+          "feature": "Đã đặt use case <resource></resource> nổi bật",
+          "unfeature": "Đã bỏ nổi bật use case <resource></resource>",
           "set_programs": "Đã đặt chương trình cho use case <resource></resource>"
         },
         "email": {
@@ -1433,12 +1437,12 @@
       },
       "count": "{count} giải pháp",
       "open": "Mở",
-      "pin": {
-        "pinned": "Đã ghim",
-        "since": "Đã ghim {day}",
-        "pin": "Ghim lên đầu",
-        "unpin": "Bỏ ghim",
-        "hint": "Giải pháp được ghim hiện đầu tiên trong danh mục công khai, trước thứ tự người đọc chọn."
+      "feature": {
+        "featured": "Nổi bật",
+        "since": "Nổi bật từ {day}",
+        "feature": "Đặt nổi bật",
+        "unfeature": "Bỏ nổi bật",
+        "hint": "Giải pháp nổi bật hiện đầu tiên khi mở danh mục công khai, cho đến khi người đọc tìm kiếm, lọc hoặc sắp xếp; thẻ của nó ghi Nổi bật."
       },
       "review": {
         "open": "Duyệt",
@@ -1483,7 +1487,7 @@
         "senderUnknown": "Chưa ghi nhận",
         "sent": "Thời điểm gửi",
         "directory": "Danh mục",
-        "order": "Thứ tự",
+        "order": "Trang mở đầu",
         "listed": "Sẽ hiện khi được duyệt",
         "deploymentsWaiting": "{count} triển khai khách hàng chờ duyệt",
         "sentBack": "Đã trả lại:",
@@ -1579,12 +1583,12 @@
       },
       "count": "{count} hồ sơ",
       "open": "Mở",
-      "pin": {
-        "pinned": "Đã ghim",
-        "since": "Đã ghim {day}",
-        "pin": "Ghim lên đầu",
-        "unpin": "Bỏ ghim",
-        "hint": "Hồ sơ được ghim hiện đầu tiên trong danh mục công khai, trước thứ tự người đọc chọn."
+      "feature": {
+        "featured": "Nổi bật",
+        "since": "Nổi bật từ {day}",
+        "feature": "Đặt nổi bật",
+        "unfeature": "Bỏ nổi bật",
+        "hint": "Hồ sơ nổi bật hiện đầu tiên khi mở danh mục công khai, cho đến khi người đọc tìm kiếm, lọc hoặc sắp xếp; thẻ của nó ghi Nổi bật."
       },
       "review": {
         "open": "Duyệt",
@@ -1710,6 +1714,12 @@
           "label": "Trạng thái",
           "all": "Mọi trạng thái"
         },
+        "featured": {
+          "label": "Nổi bật",
+          "all": "Nổi bật hoặc không",
+          "yes": "Nổi bật",
+          "no": "Không nổi bật"
+        },
         "organization": {
           "label": "Tổ chức",
           "all": "Tổ chức"
@@ -1791,6 +1801,18 @@
         "review": "Duyệt use case",
         "view": "Mở use case",
         "organisation": "Xem tổ chức"
+      },
+      "feature": {
+        "featured": "Nổi bật",
+        "since": "Nổi bật từ {day}",
+        "feature": "Đặt nổi bật",
+        "unfeature": "Bỏ nổi bật",
+        "hint": "Use case nổi bật hiện đầu tiên khi mở danh sách công khai, cho đến khi người đọc tìm kiếm, lọc hoặc sắp xếp; thẻ của nó ghi Nổi bật.",
+        "title": "Nổi bật",
+        "done": {
+          "featured": "Đã đặt {name} nổi bật.",
+          "unfeatured": "Đã bỏ nổi bật {name}."
+        }
       },
       "errors": {
         "USECASE_NOT_AWAITING_REVIEW": "Use case này không còn ở trạng thái đang duyệt. Trạng thái đã được đọc lại.",
@@ -4200,8 +4222,8 @@
       "sentBack": "Đã trả lại {name} kèm nội dung cần sửa.",
       "takenDown": "Đã gỡ {name} xuống.",
       "restored": "Đã khôi phục {name}.",
-      "pinned": "Đã ghim {name} lên đầu danh mục.",
-      "unpinned": "Đã bỏ ghim {name}."
+      "featured": "Đã đặt {name} nổi bật.",
+      "unfeatured": "Đã bỏ nổi bật {name}."
     },
     "directory": {
       "metaTitle": "Giải pháp AI · BeyondPilot",
@@ -4228,7 +4250,8 @@
       "ownLead": "Đây là giải pháp của tổ chức bạn, như người khác thấy.",
       "ownEdit": "Sửa giải pháp này",
       "deployments": "{count} triển khai khách hàng",
-      "backing": "GenAI Fund xác nhận:"
+      "backing": "GenAI Fund xác nhận:",
+      "featured": "Nổi bật"
     },
     "filters": {
       "search": "Tìm theo tên hoặc mô tả",
@@ -4250,11 +4273,11 @@
         "label": "Trạng thái",
         "all": "Mọi trạng thái"
       },
-      "pinned": {
-        "label": "Ghim",
-        "all": "Ghim hoặc không",
-        "yes": "Đã ghim",
-        "no": "Chưa ghim"
+      "featured": {
+        "label": "Nổi bật",
+        "all": "Nổi bật hoặc không",
+        "yes": "Nổi bật",
+        "no": "Không nổi bật"
       },
       "clear": "Xóa bộ lọc"
     },
@@ -4820,8 +4843,8 @@
       "takenDown": "Đã gỡ {name} xuống.",
       "restored": "Đã khôi phục {name}.",
       "deleted": "Đã xoá hồ sơ nhân lực của bạn.",
-      "pinned": "Đã ghim {name} lên đầu danh mục.",
-      "unpinned": "Đã bỏ ghim {name}."
+      "featured": "Đã đặt {name} nổi bật.",
+      "unfeatured": "Đã bỏ nổi bật {name}."
     },
     "directory": {
       "metaTitle": "Nhân lực AI · BeyondPilot",
@@ -4846,7 +4869,8 @@
       "edit": "Sửa hồ sơ của bạn",
       "noProject": "Chưa có dự án nào",
       "projects": "{count} dự án",
-      "view": "Xem hồ sơ"
+      "view": "Xem hồ sơ",
+      "featured": "Nổi bật"
     },
     "filters": {
       "search": "Tìm theo tên, kỹ năng hoặc dự án",
@@ -4859,11 +4883,11 @@
         "label": "Trạng thái",
         "all": "Mọi trạng thái"
       },
-      "pinned": {
-        "label": "Ghim",
-        "all": "Ghim hoặc không",
-        "yes": "Đã ghim",
-        "no": "Chưa ghim"
+      "featured": {
+        "label": "Nổi bật",
+        "all": "Nổi bật hoặc không",
+        "yes": "Nổi bật",
+        "no": "Không nổi bật"
       },
       "clear": "Xóa bộ lọc"
     },
@@ -6168,6 +6192,7 @@
       "none": "Đang mở, không có hạn"
     },
     "posted": "Đăng {when}",
+    "featured": "Nổi bật",
     "view": "Xem bài toán",
     "detail": {
       "by": "{organization} · Đăng {when}",
