@@ -13,7 +13,7 @@ public record EmailMessageResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String kind, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String subject, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String html, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String text,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "queued", "sent", "delivered", "bounced", "complained", "failed", "skipped" }) String status,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int attempts,
-		@Schema(types = { "string", "null" }, allowableValues = { "ses", "resend", "smtp" }) @Nullable String provider,
+		@Schema(types = { "string", "null" }, allowableValues = { "ses", "resend", "smtp", "brevo" }) @Nullable String provider,
 		@Schema(types = { "string", "null" }) @Nullable String providerMessageId,
 		@Schema(types = { "string", "null" }) @Nullable String lastError, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<Event> events,
 		@Schema(types = { "object", "null" }, description = "Why the address is not sent to; null when it is.") @Nullable EmailSuppressionResponse suppression,

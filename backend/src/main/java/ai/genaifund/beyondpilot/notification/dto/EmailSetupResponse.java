@@ -9,7 +9,7 @@ import org.jspecify.annotations.Nullable;
 @Schema(name = "EmailSetup",
 		description = "What the saved provider says about whether email from the sender's domain can leave, read from its API just now.")
 public record EmailSetupResponse(
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "ses", "resend", "smtp" }) String provider,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "ses", "resend", "smtp", "brevo" }) String provider,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The domain of the sender's address.") String domain,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant checkedAt,
 		@Schema(types = { "string", "null" }, allowableValues = { "permission_missing", "credentials_refused", "unreachable" },

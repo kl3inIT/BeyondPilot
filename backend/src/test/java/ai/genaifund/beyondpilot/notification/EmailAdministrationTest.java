@@ -368,6 +368,59 @@ class EmailAdministrationTest {
 	}
 
 	@Test
+	void aBrevoReportIsTakenOnlyWithTheWebhooksTokenAndBouncesTheEmailOnce() {
+		String token = Base64.getUrlEncoder().withoutPadding().encodeToString(random(32));
+		String payload = """
+				{"event":"hard_bounce","email":"gone@brevo.test","id":42,"date":"2026-10-11 10:00:00",
+				 "ts":1791712800,"message-id":"<202610110800.12345678901@smtp-relay.mailin.fr>","ts_event":1791709200,
+				 "subject":"Hello","reason":"no such user","tags":[]}""";
+		// Until a token is stored every report is refused, whatever it presents.
+		assertProblem(brevoEvent(payload, "Bearer " + token), 403, "NOTIFICATION_EVENT_REFUSED");
+		String read = body(get(operator, API + "/settings").expectStatus().isOk());
+		Map<String, Object> brevo = settings("brevo", version(read), smtp(null), ses(null, null, null), null);
+		@SuppressWarnings("unchecked")
+		Map<String, Object> keys = (Map<String, Object>) brevo.get("brevo");
+		keys.put("apiKey", "brevo-key-of-the-test");
+		keys.put("webhookToken", "too-short");
+		put(operator, API + "/settings", brevo).expectStatus().isBadRequest();
+		keys.put("webhookToken", token);
+
+		String saved = body(put(operator, API + "/settings", brevo).expectStatus().isOk());
+
+		assertThat(JsonPath.<Boolean>read(saved, "$.brevo.apiKeySet")).isTrue();
+		assertThat(JsonPath.<Boolean>read(saved, "$.brevo.webhookTokenSet")).isTrue();
+		assertThat(JsonPath.<String>read(saved, "$.brevo.eventsUrl")).endsWith("/api/notification/email/events/brevo");
+		assertThat(JsonPath.<Boolean>read(saved, "$.ready")).isTrue();
+		assertThat(saved).doesNotContain(token).doesNotContain("brevo-key-of-the-test");
+		byte[] stored = jdbc.sql("select brevo_webhook_token from email_settings").query(byte[].class).single();
+		assertThat(new String(stored, UTF_8)).doesNotContain(token);
+		UUID message = UUID.randomUUID();
+		jdbc.sql("""
+				insert into email_message (id, kind, recipient, subject, html, text, status, provider, provider_message_id)
+				values (?, 'talent_enquiry', 'Gone@Brevo.test', 'Hello', '<p>Hello</p>', 'Hello', 'sent', 'brevo',
+				        '202610110800.12345678901@smtp-relay.mailin.fr')
+				""").param(message).update();
+
+		// Brevo sends a report again after a 429 of ours: the second counts for nothing.
+		brevoEvent(payload, "Bearer " + token).expectStatus().isNoContent();
+		brevoEvent(payload, "Bearer " + token).expectStatus().isNoContent();
+		// A report of something BeyondPilot does not keep, such as an opening, is taken and ignored.
+		brevoEvent(payload.replace("hard_bounce", "unique_opened"), "Bearer " + token).expectStatus().isNoContent();
+
+		String logged = body(get(operator, API + "/messages/" + message).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(logged, "$.status")).isEqualTo("bounced");
+		assertThat(JsonPath.<String>read(logged, "$.provider")).isEqualTo("brevo");
+		assertThat(JsonPath.<List<String>>read(logged, "$.events[*].type")).containsExactly("bounced");
+		assertThat(JsonPath.<String>read(logged, "$.events[0].occurredAt")).startsWith("2026-10-11T");
+		assertThat(JsonPath.<String>read(logged, "$.suppression.reason")).isEqualTo("bounce");
+		// Another token, no token and another scheme are refused before the report is read.
+		String other = Base64.getUrlEncoder().withoutPadding().encodeToString(random(32));
+		assertProblem(brevoEvent(payload, "Bearer " + other), 403, "NOTIFICATION_EVENT_REFUSED");
+		assertProblem(brevoEvent(payload, null), 403, "NOTIFICATION_EVENT_REFUSED");
+		assertProblem(brevoEvent(payload, "Basic " + token), 403, "NOTIFICATION_EVENT_REFUSED");
+	}
+
+	@Test
 	void anSnsReportIsRefusedWithoutItsTopicOrAValidSignature() {
 		String unsigned = """
 				{"Type":"Notification","MessageId":"m1","TopicArn":"arn:aws:sns:ap-southeast-1:123456789012:beyondpilot-email",
@@ -399,6 +452,20 @@ class EmailAdministrationTest {
 			.exchange();
 	}
 
+	private RestTestClient.ResponseSpec brevoEvent(String payload, String authorization) {
+		RestTestClient.RequestBodySpec request = client.post().uri("/api/notification/email/events/brevo");
+		if (authorization != null) {
+			request = request.header("Authorization", authorization);
+		}
+		return request.contentType(MediaType.APPLICATION_JSON).body(payload).exchange();
+	}
+
+	private static byte[] random(int length) {
+		byte[] bytes = new byte[length];
+		new SecureRandom().nextBytes(bytes);
+		return bytes;
+	}
+
 	private RestTestClient.ResponseSpec snsEvent(String payload) {
 		return client.post()
 			.uri("/api/notification/email/events/ses")
@@ -418,6 +485,7 @@ class EmailAdministrationTest {
 		Map<String, Object> resend = new HashMap<>();
 		resend.put("apiKey", resendKey);
 		body.put("resend", resend);
+		body.put("brevo", new HashMap<>());
 		body.put("version", version);
 		return body;
 	}

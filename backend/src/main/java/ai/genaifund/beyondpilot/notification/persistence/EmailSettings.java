@@ -54,6 +54,10 @@ public class EmailSettings {
 
 	private byte @Nullable [] resendWebhookSecret;
 
+	private byte @Nullable [] brevoApiKey;
+
+	private byte @Nullable [] brevoWebhookToken;
+
 	private @Nullable String accentColor;
 
 	private @Nullable String footer;
@@ -80,7 +84,7 @@ public class EmailSettings {
 			@Nullable String smtpHost, @Nullable Integer smtpPort, @Nullable String smtpUsername,
 			byte @Nullable [] smtpPassword, String smtpSecurity, @Nullable String sesRegion,
 			@Nullable String sesAccessKeyId, byte @Nullable [] sesSecretAccessKey, @Nullable String sesConfigurationSet,
-			byte @Nullable [] resendApiKey) {
+			byte @Nullable [] resendApiKey, byte @Nullable [] brevoApiKey) {
 		this.provider = provider;
 		this.fromName = fromName;
 		this.fromAddress = fromAddress;
@@ -95,15 +99,18 @@ public class EmailSettings {
 		this.sesSecretAccessKey = sesSecretAccessKey;
 		this.sesConfigurationSet = sesConfigurationSet;
 		this.resendApiKey = resendApiKey;
+		this.brevoApiKey = brevoApiKey;
 	}
 
 	/**
-	 * Sets how the providers' reports are recognised: the SNS topic Amazon SES reports to and the secret Resend signs
-	 * with, sealed. A null secret is cleared.
+	 * Sets how the providers' reports are recognised: the SNS topic Amazon SES reports to, the secret Resend signs
+	 * with and the token Brevo's webhook presents, both sealed. A null secret is cleared.
 	 */
-	public void reportWith(@Nullable String sesEventsTopicArn, byte @Nullable [] resendWebhookSecret) {
+	public void reportWith(@Nullable String sesEventsTopicArn, byte @Nullable [] resendWebhookSecret,
+			byte @Nullable [] brevoWebhookToken) {
 		this.sesEventsTopicArn = sesEventsTopicArn;
 		this.resendWebhookSecret = resendWebhookSecret;
+		this.brevoWebhookToken = brevoWebhookToken;
 	}
 
 	public void appearWith(String accentColor, String footer) {
@@ -180,6 +187,14 @@ public class EmailSettings {
 
 	public byte @Nullable [] getResendWebhookSecret() {
 		return resendWebhookSecret;
+	}
+
+	public byte @Nullable [] getBrevoApiKey() {
+		return brevoApiKey;
+	}
+
+	public byte @Nullable [] getBrevoWebhookToken() {
+		return brevoWebhookToken;
 	}
 
 	public @Nullable String getAccentColor() {

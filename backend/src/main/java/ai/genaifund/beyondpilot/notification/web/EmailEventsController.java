@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,13 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Where providers report what became of sent email. These addresses take no session and no CSRF header: the provider
- * calls them, and each report's signature is checked before anything in it is read.
+ * calls them, and each report's signature or token is checked before anything in it is read.
  */
 @RestController
 @RequestMapping("/api/notification/email/events")
 @Tag(name = "Email delivery events",
-		description = "Reports of delivery, bounces and complaints, sent by the email provider and checked by signature.")
-@ApiResponse(responseCode = "403", description = "The report's signature does not check, or it is not from the configured provider.",
+		description = "Reports of delivery, bounces and complaints, sent by the email provider and checked by signature or token.")
+@ApiResponse(responseCode = "403", description = "The report's signature or token does not check, or it is not from the configured provider.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 				schema = @Schema(ref = EmailEventsController.PROBLEM)))
 class EmailEventsController {
@@ -51,6 +52,19 @@ class EmailEventsController {
 		Map<String, String> named = new HashMap<>();
 		headers.forEach((name, values) -> named.put(name.toLowerCase(Locale.ROOT), values.getFirst()));
 		intake.resend(named, payload);
+	}
+
+	@PostMapping(path = "/brevo", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "receiveBrevoEvent", summary = "A webhook of Brevo, recognised by the bearer token set on it")
+	@ApiResponse(responseCode = "204", description = "The report was taken, or it concerns no email of BeyondPilot.",
+			content = @Content)
+	@ApiResponse(responseCode = "429", description = "The report could not be recorded now; Brevo sends it again.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void brevo(
+			@Parameter(hidden = true) @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) @Nullable String authorization,
+			@RequestBody String payload) {
+		intake.brevo(authorization, payload);
 	}
 
 	@PostMapping(path = "/ses", consumes = { MediaType.TEXT_PLAIN_VALUE, MediaType.APPLICATION_JSON_VALUE })

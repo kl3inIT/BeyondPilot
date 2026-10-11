@@ -10,7 +10,9 @@ public enum EmailProvider {
 
 	RESEND("resend"),
 
-	SMTP("smtp");
+	SMTP("smtp"),
+
+	BREVO("brevo");
 
 	private final String value;
 

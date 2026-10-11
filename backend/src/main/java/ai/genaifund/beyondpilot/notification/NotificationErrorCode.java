@@ -51,7 +51,10 @@ public enum NotificationErrorCode implements ErrorCode {
 			"The report could not be verified as coming from the configured provider."),
 
 	SUBSCRIPTION_NOT_CONFIRMED("NOTIFICATION_SUBSCRIPTION_NOT_CONFIRMED", ErrorCategory.SERVICE_UNAVAILABLE,
-			"The subscription could not be confirmed now. Amazon SNS will ask again.");
+			"The subscription could not be confirmed now. Amazon SNS will ask again."),
+
+	REPORT_NOT_TAKEN("NOTIFICATION_REPORT_NOT_TAKEN", ErrorCategory.LIMIT_EXCEEDED,
+			"The report could not be taken now. Send it again later.");
 
 	private final String code;
 	private final ErrorCategory category;
