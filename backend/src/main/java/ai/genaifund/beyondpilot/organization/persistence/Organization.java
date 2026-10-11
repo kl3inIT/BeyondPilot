@@ -222,6 +222,11 @@ public class Organization {
 		return IN_REVIEW.equals(status);
 	}
 
+	/** Refused for good: nothing is decided about it any more, and it lets nobody in. */
+	public boolean isRejected() {
+		return REJECTED.equals(status);
+	}
+
 	public boolean isSentBack() {
 		return NEEDS_CHANGES.equals(status);
 	}

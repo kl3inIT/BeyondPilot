@@ -149,9 +149,7 @@ function OrganizationSolutionsPage({
               description={
                 solutions.editable ? undefined : t(waiting ? "afterApproval" : "empty.member")
               }
-            >
-              {solutions.editable && <CreateSolution />}
-            </DataTableEmpty>
+            />
           </div>
         ) : (
           <>

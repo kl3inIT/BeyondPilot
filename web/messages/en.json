@@ -499,7 +499,7 @@
       "programs": "Programs",
       "accounts": "Accounts",
       "auditLog": "Audit log",
-      "organizations": "Organisations",
+      "organizations": "Organizations",
       "solutions": "AI solutions",
       "talent": "AI talent",
       "introductions": "Introductions",
@@ -1186,8 +1186,8 @@
       }
     },
     "organizations": {
-      "metaTitle": "Organisations · BeyondPilot",
-      "title": "Organisations",
+      "metaTitle": "Organizations · BeyondPilot",
+      "title": "Organizations",
       "search": "Search by name or email domain",
       "filters": {
         "status": {
@@ -1204,7 +1204,7 @@
         "merged": "Merged"
       },
       "columns": {
-        "organization": "Organisation",
+        "organization": "Organization",
         "request": "Request",
         "status": "Status",
         "received": "Received",
@@ -1232,7 +1232,7 @@
         "title": "No organization matches",
         "clear": "Clear search and filter"
       },
-      "count": "{count, plural, one {# organisation} other {# organisations}}",
+      "count": "{count, plural, one {# organization} other {# organizations}}",
       "create": {
         "open": "Add organization",
         "title": "Add an organization",
@@ -1679,7 +1679,7 @@
       "metaTitle": "Use cases · BeyondPilot",
       "title": "Use cases",
       "create": "Create use case",
-      "search": "Search by title or organisation",
+      "search": "Search by title or organization",
       "clear": "Clear search",
       "filters": {
         "status": {
@@ -1687,8 +1687,8 @@
           "all": "All statuses"
         },
         "organization": {
-          "label": "Organisation",
-          "all": "Organisation"
+          "label": "Organization",
+          "all": "Organization"
         }
       },
       "status": {
@@ -1705,7 +1705,7 @@
       },
       "columns": {
         "useCase": "Use case",
-        "organization": "Organisation",
+        "organization": "Organization",
         "status": "Status",
         "closes": "Proposals close",
         "updated": "Updated",
@@ -1725,9 +1725,9 @@
         "title": "Create a use case",
         "lead": "The audit log records it as created by GenAI Fund.",
         "organization": "Create this use case for",
-        "organizationPlaceholder": "Choose an organisation",
-        "organizationHint": "Only approved organisations are listed.",
-        "thisOrganization": "the organisation",
+        "organizationPlaceholder": "Choose an organization",
+        "organizationHint": "Only approved organizations are listed.",
+        "thisOrganization": "the organization",
         "publishSubmit": "Publish use case",
         "review": {
           "title": "Review and publish",
@@ -1739,7 +1739,7 @@
         "errors": {
           "fix": "Check this step",
           "budgetOutOfOrder": "The maximum is below the minimum.",
-          "USECASE_ORGANIZATION_NOT_ELIGIBLE": "This organisation is not an approved enterprise.",
+          "USECASE_ORGANIZATION_NOT_ELIGIBLE": "This organization is not an approved enterprise.",
           "USECASE_CLOSES_IN_THE_PAST": "Choose a day after today.",
           "USECASE_BUDGET_INCOMPLETE": "Give both amounts, or mark the budget to be determined.",
           "USECASE_BUDGET_OUT_OF_ORDER": "The maximum is below the minimum.",
@@ -1759,14 +1759,14 @@
           },
           "hint": "PDF, Word, Excel, PowerPoint, CSV or text files, or PNG, JPEG or WebP images: up to {count} files, {size} each."
         },
-        "publishNoteUnnamed": "Publishing makes this use case visible immediately, without the organisation’s name."
+        "publishNoteUnnamed": "Publishing makes this use case visible immediately, without the organization’s name."
       },
       "untitled": "Untitled use case",
       "actions": {
         "open": "Actions for {name}",
         "review": "Review use case",
         "view": "Open use case",
-        "organisation": "View organisation"
+        "organisation": "View organization"
       },
       "errors": {
         "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
@@ -2366,7 +2366,7 @@
         },
         "memberRunsPerDay": {
           "label": "Runs a member may start, per use case per day",
-          "hint": "Counted for all members of the organisation together."
+          "hint": "Counted for all members of the organization together."
         },
         "runsPerDay": {
           "label": "Runs per day, whole platform",
@@ -3572,7 +3572,7 @@
     "rejected": {
       "title": "GenAI Fund did not approve {name}",
       "reason": "Reason: {reason}.",
-      "foot": "This decision is final. Write to GenAI Fund if you think it is wrong."
+      "foot": "This decision is final. Write to GenAI Fund if you think it is wrong. To create or join another organization, leave this one on the Members tab."
     },
     "errors": {
       "ORGANIZATION_NOT_FOUND": "This organization no longer exists.",
@@ -3906,7 +3906,7 @@
         "in_review": "Sent {date}",
         "approved": "In the directory · closes {date}",
         "needs_changes": "Open it to see what GenAI Fund asked for",
-        "draft": "Visible to your organisation only",
+        "draft": "Visible to your organization only",
         "closed": "Closed {date}"
       },
       "columns": {
@@ -3941,8 +3941,8 @@
         "draft": "“{name}” is a draft again."
       },
       "errors": {
-        "USECASE_NOT_FOUND": "This organisation has no such use case.",
-        "USECASE_ENTERPRISE_REQUIRED": "Only the members of an approved organisation can write its use cases.",
+        "USECASE_NOT_FOUND": "This organization has no such use case.",
+        "USECASE_ENTERPRISE_REQUIRED": "Only the members of an approved organization can write its use cases.",
         "USECASE_CHANGED_MEANWHILE": "Someone saved this use case in the meantime. Reload it to see their changes.",
         "USECASE_NOT_EDITABLE": "This use case cannot be edited now: it waits for GenAI Fund, or its deadline has passed.",
         "USECASE_INCOMPLETE": "Fill in every section before sending the use case.",
@@ -4100,7 +4100,7 @@
         "title": "Sent for approval",
         "rows": {
           "useCase": "Use case",
-          "organization": "Organisation",
+          "organization": "Organization",
           "status": "Status",
           "sent": "Sent",
           "closes": "Proposals close"

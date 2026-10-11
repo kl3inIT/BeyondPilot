@@ -479,9 +479,10 @@ public class OrganizationService {
 
 	/**
 	 * Takes a person out of the organization. An owner removes anyone; a member removes only themselves, which is
-	 * leaving.
+	 * leaving. A refused organization lets its last owner go: nothing is decided about it any more, and staying would
+	 * keep the person out of every other organization.
 	 * @throws OrganizationException when the caller may not, the person does not belong to the organization, or the
-	 * removal would leave it without an owner
+	 * removal would leave an organization that was not refused without an owner
 	 */
 	@Transactional
 	public void remove(Actor actor, UUID accountId) {
@@ -492,7 +493,7 @@ public class OrganizationService {
 		}
 		Organization organization = organizations.findForUpdate(caller.organizationId()).orElseThrow();
 		Member target = memberOf(organization, accountId);
-		if (target.isOwner()) {
+		if (target.isOwner() && !organization.isRejected()) {
 			requireAnotherOwner(organization);
 		}
 		memberships.remove(organization.getId(), accountId);
