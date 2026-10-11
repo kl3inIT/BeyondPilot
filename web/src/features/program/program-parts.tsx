@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Button } from "@/components/actions/button";
 import { Link } from "@/i18n/navigation";
 import type { Program } from "@/lib/api/generated";
-import { adminProgramRoute, programApplyUrl } from "@/lib/site";
+import { adminProgramRoute, programApplyRoute } from "@/lib/site";
 
 import { ProgramCountdown } from "./program-countdown";
 import {
@@ -109,7 +109,7 @@ export async function ApplyCard({
   const [t, locale] = await Promise.all([getTranslations("Program.page"), getLocale()]);
   const format = programFormatter(locale);
   const applications = program.applications;
-  const apply = programApplyUrl(program.slug);
+  const apply = programApplyRoute(program.slug);
   const open = program.phase === "open" && applications;
   const next = steps.filter((step) => Date.parse(step.at) >= now).slice(0, 5);
 

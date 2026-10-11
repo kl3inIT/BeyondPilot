@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
 
-const applyUrl = "https://beyondpilot.genaifund.ai/insurance-ai-tasco/apply";
+const applyUrl = "/programs/insurance-ai-tasco/apply";
 
 test.describe("programs", () => {
   test.use({ locale: "en-US", timezoneId: "Europe/Paris" });

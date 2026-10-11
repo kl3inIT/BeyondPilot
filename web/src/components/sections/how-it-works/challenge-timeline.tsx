@@ -4,7 +4,7 @@ import Image from "next/image";
 
 import { Button } from "@/components/actions/button";
 import { Section } from "@/components/ui/section";
-import { liveCampaignUrl } from "@/lib/site";
+import { liveCampaignSlug, programRoute } from "@/lib/site";
 
 /** Product screens of the challenge, each on the tint its number chip carries. */
 const stations = [
@@ -83,7 +83,7 @@ function ChallengeTimeline() {
               </div>
             ))}
           </dl>
-          <Button size="2xl" prominence="secondary" href={liveCampaignUrl}>
+          <Button size="2xl" prominence="secondary" href={programRoute(liveCampaignSlug)}>
             {c("readBrief")}
           </Button>
         </div>

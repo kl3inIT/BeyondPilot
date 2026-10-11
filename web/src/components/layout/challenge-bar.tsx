@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 import { useSyncExternalStore } from "react";
 
 import { Badge } from "@/components/ui/badge";
-import { usePathname } from "@/i18n/navigation";
-import { liveCampaignDeadline, liveCampaignUrl, siteRoutes } from "@/lib/site";
+import { Link, usePathname } from "@/i18n/navigation";
+import { liveCampaignDeadline, liveCampaignSlug, programRoute, siteRoutes } from "@/lib/site";
 
 /** Tells React once, at the deadline, so a page left open drops the bar when submissions close. */
 function subscribe(onChange: () => void) {
@@ -39,8 +39,8 @@ function ChallengeBar() {
   }
 
   return (
-    <a
-      href={liveCampaignUrl}
+    <Link
+      href={programRoute(liveCampaignSlug)}
       className="group relative z-50 flex min-h-11 items-center justify-center gap-x-3 gap-y-1 bg-foreground px-5 py-2 text-sm text-background outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset md:px-8"
     >
       <Badge variant="success">{t("live")}</Badge>
@@ -58,7 +58,7 @@ function ChallengeBar() {
           aria-hidden="true"
         />
       </span>
-    </a>
+    </Link>
   );
 }
 

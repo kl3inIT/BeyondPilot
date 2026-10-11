@@ -21,7 +21,7 @@ test.describe("how it works page", () => {
     await expect(page.getByRole("heading", { name: "Frequently asked questions" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Read the brief" })).toHaveAttribute(
       "href",
-      "https://beyondpilot.genaifund.ai/insurance-ai-tasco",
+      "/programs/insurance-ai-tasco",
     );
   });
 

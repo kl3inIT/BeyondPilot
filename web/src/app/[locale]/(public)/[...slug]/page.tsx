@@ -5,7 +5,7 @@ import { setRequestLocale } from "next-intl/server";
 import { use } from "react";
 
 import { Button } from "@/components/actions/button";
-import { comingSoonPaths, liveCampaignUrl, siteRoutes } from "@/lib/site";
+import { comingSoonPaths, liveCampaignSlug, programRoute, siteRoutes } from "@/lib/site";
 
 // Planned pages share one coming-soon screen; any other unknown path is the localized not-found page.
 export default function PlaceholderPage({ params }: PageProps<"/[locale]/[...slug]">) {
@@ -27,7 +27,7 @@ function ComingSoon() {
       <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("title")}</h1>
       <p className="text-muted-foreground">{t("description")}</p>
       <div className="flex flex-wrap gap-3">
-        <Button href={liveCampaignUrl}>
+        <Button href={programRoute(liveCampaignSlug)}>
           {c("applyNow")}
           <ArrowRightIcon aria-hidden="true" />
         </Button>

@@ -4,7 +4,12 @@ import { Button } from "@/components/actions/button";
 import { CampaignCountdown } from "@/components/sections/events/campaign-countdown";
 import { Badge } from "@/components/ui/badge";
 import { Section } from "@/components/ui/section";
-import { liveCampaignDeadline, liveCampaignUrl, programApplyUrl } from "@/lib/site";
+import {
+  liveCampaignDeadline,
+  liveCampaignSlug,
+  programApplyRoute,
+  programRoute,
+} from "@/lib/site";
 
 const facts = [
   { label: "notified", value: "notifiedWhen" },
@@ -48,10 +53,10 @@ function FeaturedChallenge() {
               ))}
             </dl>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <Button size="lg" href={programApplyUrl("insurance-ai-tasco")}>
+              <Button size="lg" href={programApplyRoute(liveCampaignSlug)}>
                 {c("applyNow")}
               </Button>
-              <Button size="lg" prominence="secondary" href={liveCampaignUrl}>
+              <Button size="lg" prominence="secondary" href={programRoute(liveCampaignSlug)}>
                 {c("readBrief")}
               </Button>
             </div>
