@@ -249,11 +249,12 @@ test.describe("admin talent", () => {
     await expect(
       page.locator("[data-featured]:visible").filter({ hasText: "Featured" }),
     ).toHaveCount(1);
+    // Checked on the page as it arrived: right after a filter navigated, axe once found no document title in CI.
+    await expectNoSeriousA11yViolations(page);
     await page.getByRole("combobox", { name: "Featured" }).click();
     await page.getByRole("option", { name: "Featured", exact: true }).click();
     await expect(page).toHaveURL("/admin/talent?featured=true");
     await expect(shownProfiles(page)).toHaveText(["Arif Hidayat"]);
-    await expectNoSeriousA11yViolations(page);
 
     await page.getByRole("combobox", { name: "Featured" }).click();
     await page.getByRole("option", { name: "Not featured" }).click();

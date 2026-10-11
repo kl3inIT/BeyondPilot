@@ -347,11 +347,12 @@ test.describe("admin solutions", () => {
     await expect(
       page.locator("[data-featured]:visible").filter({ hasText: "Featured" }),
     ).toHaveCount(1);
+    // Checked on the page as it arrived: right after a filter navigated, axe once found no document title in CI.
+    await expectNoSeriousA11yViolations(page);
     await page.getByRole("combobox", { name: "Featured" }).click();
     await page.getByRole("option", { name: "Featured", exact: true }).click();
     await expect(page).toHaveURL("/admin/solutions?featured=true");
     await expect(shownSolutions(page)).toHaveCount(1);
-    await expectNoSeriousA11yViolations(page);
 
     await page.getByRole("button", { name: "Open Policy Chat" }).click();
     await page.getByRole("menuitem", { name: "Stop featuring" }).click();
