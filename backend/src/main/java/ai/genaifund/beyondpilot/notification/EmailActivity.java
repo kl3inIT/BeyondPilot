@@ -69,21 +69,22 @@ public class EmailActivity {
 	public EmailMessageListResponse list(Actor actor, EmailMessageListRequest request) {
 		identity.requireOperator(actor);
 		String text = request.q() == null || request.q().isBlank() ? null : request.q().strip();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		EmailMessageListResponse.Counts counts = log.counts(request.from(), request.kind());
 		if (request.before() == null && request.after() != null) {
 			Place place = Place.of(request.after());
 			List<EmailMessageSummaryResponse> found = log.newer(request.from(), request.kind(), request.status(), text,
-					place.at(), place.id(), PAGE_SIZE + 1);
-			List<EmailMessageSummaryResponse> page = found.subList(0, Math.min(found.size(), PAGE_SIZE)).reversed();
-			return new EmailMessageListResponse(page, found.size() > PAGE_SIZE ? cursor(page.getFirst()) : null,
+					place.at(), place.id(), size + 1);
+			List<EmailMessageSummaryResponse> page = found.subList(0, Math.min(found.size(), size)).reversed();
+			return new EmailMessageListResponse(page, found.size() > size ? cursor(page.getFirst()) : null,
 					page.isEmpty() ? null : cursor(page.getLast()), counts);
 		}
 		Place place = request.before() == null ? null : Place.of(request.before());
 		List<EmailMessageSummaryResponse> found = log.older(request.from(), request.kind(), request.status(), text,
-				place == null ? null : place.at(), place == null ? null : place.id(), PAGE_SIZE + 1);
-		List<EmailMessageSummaryResponse> page = found.subList(0, Math.min(found.size(), PAGE_SIZE));
+				place == null ? null : place.at(), place == null ? null : place.id(), size + 1);
+		List<EmailMessageSummaryResponse> page = found.subList(0, Math.min(found.size(), size));
 		return new EmailMessageListResponse(page, place == null || page.isEmpty() ? null : cursor(page.getFirst()),
-				found.size() > PAGE_SIZE ? cursor(page.getLast()) : null, counts);
+				found.size() > size ? cursor(page.getLast()) : null, counts);
 	}
 
 	/**

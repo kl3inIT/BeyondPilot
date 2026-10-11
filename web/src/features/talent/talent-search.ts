@@ -3,6 +3,7 @@ import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } fro
 import { directorySorts } from "@/lib/directory-sort";
 
 import { reviewedStatuses, talentRoles } from "./talent-codes";
+import { pageSize } from "@/lib/page-size";
 
 /**
  * What narrows the public directory of talent, as the URL holds it:
@@ -13,6 +14,7 @@ export const talentSearch = {
   role: parseAsStringLiteral(talentRoles),
   sort: parseAsStringLiteral(directorySorts).withDefault(directorySorts[0]),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadTalentSearch = createLoader(talentSearch);
@@ -24,8 +26,14 @@ export const adminTalentSearch = {
   q: parseAsString.withDefault(""),
   status: parseAsStringLiteral(reviewedStatuses),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadAdminTalentSearch = createLoader(adminTalentSearch);
+
+/** Which page of the reported messages operators read, as the URL holds it: `?page=&size=`. */
+export const reportedEnquiriesSearch = { page: parseAsInteger.withDefault(1), size: pageSize };
+
+export const loadReportedEnquiriesSearch = createLoader(reportedEnquiriesSearch);
 
 export type AdminTalentSearch = Awaited<ReturnType<typeof loadAdminTalentSearch>>;

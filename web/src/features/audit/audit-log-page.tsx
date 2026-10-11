@@ -12,6 +12,10 @@ import { siteRoutes } from "@/lib/site";
 
 import { auditLogSearch, type AuditLogSearch } from "./audit-log-search";
 import { AuditLogToolbar } from "./audit-log-toolbar";
+import { PageSizeSelect } from "@/components/composites/page-size-select";
+
+/** How many entries a page of the log holds until the reader chooses. */
+const LOG_PAGE_SIZE = 50;
 
 const address = createSerializer(auditLogSearch);
 
@@ -160,6 +164,7 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
       <DataTablePager
         previous={events.newer ? pageHref({ after: events.newer }) : undefined}
         next={events.older ? pageHref({ before: events.older }) : undefined}
+        sizer={<PageSizeSelect size={search.size ?? LOG_PAGE_SIZE} />}
         labels={{
           navigation: t("pagination.label"),
           previous: t("pagination.previous"),

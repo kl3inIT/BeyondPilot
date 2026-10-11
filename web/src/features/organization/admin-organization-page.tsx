@@ -31,8 +31,9 @@ import { OrganizationProfileEditor } from "./organization-profile-editor";
 import { OrganizationProfileView } from "./organization-profile-view";
 import { OrganizationReviewButton } from "./organization-review";
 import { RestoreButton } from "./organization-take-down";
+import { tablePageSizes } from "@/lib/page-size";
 
-/** How many members a page of the Members tab holds. */
+/** How many members a page of the Members tab holds until the reader chooses. */
 const MEMBERS_PAGE_SIZE = 10;
 
 const address = createSerializer(adminOrganizationSearch);
@@ -42,6 +43,8 @@ type AdminOrganizationPageProps = {
   tab: AdminOrganizationTab;
   /** The page of members, counted from 1. */
   page: number;
+  /** How many members a page holds, as the URL holds it; none is the tab's own. */
+  size: number | null;
 };
 
 /**
@@ -50,7 +53,7 @@ type AdminOrganizationPageProps = {
  * organization, a claim on one nobody owns), takes an approved organization down or restores it, and
  * merges a duplicate into the one to keep. A merged one only says where it went.
  */
-function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps) {
+function AdminOrganizationPage({ detail, tab, page, size }: AdminOrganizationPageProps) {
   const t = useTranslations("Admin.organizations.detail");
   const s = useTranslations("Organization.status");
   const typeName = useVocabulary("organizationType");
@@ -227,7 +230,7 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
         // The key gives a saved organization a fresh editor, reading the new version.
         <OrganizationProfileEditor key={organization.version} organization={organization} admin />
       ) : (
-        <AdminMembers detail={detail} page={page} record={record} />
+        <AdminMembers detail={detail} page={page} size={size} record={record} />
       )}
     </div>
   );
@@ -237,36 +240,37 @@ function AdminOrganizationPage({ detail, tab, page }: AdminOrganizationPageProps
 function AdminMembers({
   detail,
   page,
+  size,
   record,
 }: {
   detail: AdminOrganization;
   page: number;
+  size: number | null;
   record: string;
 }) {
   const t = useTranslations("Admin.organizations.people");
   const format = useFormatter();
   const { organization, members, invitations } = detail;
   const total = members.length;
-  const lastPage = Math.max(1, Math.ceil(total / MEMBERS_PAGE_SIZE));
+  const pageSize = size ?? MEMBERS_PAGE_SIZE;
+  const lastPage = Math.max(1, Math.ceil(total / pageSize));
   const current = Math.min(Math.max(1, page), lastPage);
   const owners = members.filter((member) => member.role === "owner").length;
   const day = (at: string) => format.dateTime(new Date(at), { dateStyle: "medium" });
 
-  const people = members
-    .slice((current - 1) * MEMBERS_PAGE_SIZE, current * MEMBERS_PAGE_SIZE)
-    .map((member) => ({
-      key: member.accountId,
-      person: <Person name={member.name ?? null} email={member.email} />,
-      role: <MemberRole role={member.role} />,
-      joined: <span className="text-muted-foreground">{day(member.joinedAt)}</span>,
-      actions: (
-        <AdminMemberActions
-          organizationId={organization.id}
-          member={member}
-          onlyOwner={member.role === "owner" && owners === 1}
-        />
-      ),
-    }));
+  const people = members.slice((current - 1) * pageSize, current * pageSize).map((member) => ({
+    key: member.accountId,
+    person: <Person name={member.name ?? null} email={member.email} />,
+    role: <MemberRole role={member.role} />,
+    joined: <span className="text-muted-foreground">{day(member.joinedAt)}</span>,
+    actions: (
+      <AdminMemberActions
+        organizationId={organization.id}
+        member={member}
+        onlyOwner={member.role === "owner" && owners === 1}
+      />
+    ),
+  }));
   // The open invitations are not paged: they close the list, on its last page.
   const invited = (current === lastPage ? invitations : []).map((invitation) => ({
     key: invitation.id,
@@ -351,13 +355,13 @@ function AdminMembers({
         </>
       )}
       {/* The summary under the title has the count; the footer is for a list of several pages. */}
-      {total > MEMBERS_PAGE_SIZE && (
+      {total > tablePageSizes[0] && (
         <ListFooter
           count={t("summary.members", { count: total })}
           page={current}
-          pageSize={MEMBERS_PAGE_SIZE}
+          pageSize={pageSize}
           total={total}
-          href={(next) => address(record, { tab: "members", page: next })}
+          href={(next) => address(record, { tab: "members", page: next, size })}
         />
       )}
     </section>

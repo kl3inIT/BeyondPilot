@@ -761,6 +761,15 @@ paths:
           format: int32
           default: 1
           minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
       responses:
         "200":
           content:
@@ -982,6 +991,15 @@ paths:
           - string
           - "null"
           pattern: "\\d{1,18}_[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
       responses:
         "200":
           content:
@@ -1054,6 +1072,15 @@ paths:
           type: integer
           format: int32
           default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
           minimum: 1
       responses:
         "200":
@@ -1551,6 +1578,15 @@ paths:
           format: int32
           default: 1
           minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
       responses:
         "200":
           content:
@@ -1759,6 +1795,15 @@ paths:
           type: integer
           format: int32
           default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
           minimum: 1
       responses:
         "200":
@@ -2313,6 +2358,15 @@ paths:
           format: int32
           default: 1
           minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
       responses:
         "200":
           content:
@@ -2463,6 +2517,15 @@ paths:
           - string
           - "null"
           pattern: "\\d{1,18}_[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
       responses:
         "200":
           content:
@@ -2823,6 +2886,15 @@ paths:
           - integer
           - "null"
           format: int32
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
           minimum: 1
       responses:
         "200":
@@ -3434,6 +3506,15 @@ paths:
           - suspended
           - merged
           pattern: in_review|needs_changes|approved|rejected|suspended|merged
+      - description: "Only organizations in this country, ISO 3166-1 alpha-2."
+        in: query
+        name: country
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "[A-Z]{2}"
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -3442,6 +3523,15 @@ paths:
           type: integer
           format: int32
           default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
           minimum: 1
       responses:
         "200":
@@ -4455,6 +4545,15 @@ paths:
           type: integer
           format: int32
           default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
           minimum: 1
       responses:
         "200":
@@ -6349,6 +6448,15 @@ paths:
           default: 1
           maximum: 50
           minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
       responses:
         "200":
           content:
@@ -6936,6 +7044,15 @@ paths:
           format: int32
           default: 1
           minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
       responses:
         "200":
           content:
@@ -7325,6 +7442,15 @@ paths:
           - "null"
           format: int32
           maximum: 1000
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
           minimum: 1
       responses:
         "200":
@@ -7821,6 +7947,15 @@ paths:
           format: int32
           default: 1
           minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
       responses:
         "200":
           content:
@@ -8092,6 +8227,15 @@ paths:
           type: integer
           format: int32
           default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
           minimum: 1
       responses:
         "200":
@@ -8370,6 +8514,15 @@ paths:
           type: integer
           format: int32
           default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
           minimum: 1
       responses:
         "200":
@@ -8704,6 +8857,15 @@ paths:
           format: int32
           default: 1
           minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
       responses:
         "200":
           content:
@@ -8889,6 +9051,15 @@ paths:
           type: integer
           format: int32
           default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
           minimum: 1
       responses:
         "200":
@@ -9464,6 +9635,15 @@ paths:
           format: int32
           default: 1
           minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
       - description: Only use cases of the published program at this address.
         in: query
         name: program
@@ -9840,6 +10020,12 @@ components:
       description: "One page of organizations: those waiting for review first, then\
         \ the newest."
       properties:
+        countries:
+          type: array
+          description: "The countries the list can be narrowed by: those an organization\
+            \ is in, ISO 3166-1 alpha-2, in order."
+          items:
+            type: string
         items:
           type: array
           items:
@@ -9856,6 +10042,7 @@ components:
           format: int64
           description: "How many organizations match, over all pages."
       required:
+      - countries
       - items
       - page
       - pageSize

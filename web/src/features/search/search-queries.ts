@@ -23,6 +23,7 @@ export async function readSearch(params: SearchParams): Promise<SearchResults | 
       q,
       kind: params.kind ?? undefined,
       page: params.kind ? Math.min(Math.max(1, params.page), MAX_PAGE) : undefined,
+      size: params.kind ? (params.size ?? undefined) : undefined,
     },
   });
   return data;

@@ -144,6 +144,30 @@ test.describe("admin organizations", () => {
     await expect(shownOrganizations(page)).toHaveCount(6);
   });
 
+  test("the country and the page size are the address, and a new size starts the list again", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/organizations");
+
+    // Only the countries organizations are in are offered.
+    await page.getByRole("combobox", { name: "Country" }).click();
+    await expect(page.getByRole("option")).toHaveText(["All countries", "Singapore", "Vietnam"]);
+    await page.getByRole("option", { name: "Singapore" }).click();
+    await expect(page).toHaveURL(/country=SG/);
+    await expect(shownOrganizations(page)).toHaveCount(1);
+
+    await page.goto("/admin/organizations?size=2&page=2");
+    await expect(shownOrganizations(page)).toHaveCount(2);
+    await page.getByRole("combobox", { name: "Per page" }).click();
+    await page.getByRole("option", { name: "10", exact: true }).click();
+    await expect(page).toHaveURL(/[?&]size=10/);
+    await expect(page).not.toHaveURL(/page=/);
+    await expect(shownOrganizations(page)).toHaveCount(6);
+  });
+
   test("an organization that waits is approved from its row", async ({
     page,
     context,

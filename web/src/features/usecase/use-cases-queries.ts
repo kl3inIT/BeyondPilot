@@ -22,6 +22,7 @@ export async function readUseCases(search: UseCasesSearch): Promise<UseCaseList>
       industry: search.industry.length === 0 ? undefined : search.industry,
       sort: search.sort,
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;

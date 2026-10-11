@@ -1,4 +1,5 @@
 import { createLoader, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { pageSize } from "@/lib/page-size";
 
 /** How far back the log looks; `week` is the default and `all` has no bound. */
 export const auditPeriods = ["day", "week", "month", "all"] as const;
@@ -108,6 +109,7 @@ export const auditLogSearch = {
   q: parseAsString.withDefault(""),
   before: parseAsString,
   after: parseAsString,
+  size: pageSize,
 };
 
 export const loadAuditLogSearch = createLoader(auditLogSearch);

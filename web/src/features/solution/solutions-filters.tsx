@@ -92,7 +92,7 @@ function SolutionsFilters({ count }: SolutionsFiltersProps) {
   return (
     <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:gap-4">
       <DirectorySearch
-        className="h-11 xl:max-w-none xl:min-w-56 xl:flex-1"
+        className="xl:max-w-none xl:min-w-56 xl:flex-1"
         label={t("search")}
         value={search.q}
         loading={loading}

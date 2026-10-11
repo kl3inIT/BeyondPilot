@@ -254,8 +254,8 @@ class SearchPassagesTest {
 				"Underwriting for insurance carriers.", READ_AS_TEXT)));
 		embeddings.embedPending();
 
-		assertThat(search.search(new SearchRequest("insurance", SOLUTION, 1)).items()).isEmpty();
-		assertThat(search.search(new SearchRequest("bảo hiểm", SOLUTION, 1)).items()).isEmpty();
+		assertThat(search.search(new SearchRequest("insurance", SOLUTION, 1, null)).items()).isEmpty();
+		assertThat(search.search(new SearchRequest("bảo hiểm", SOLUTION, 1, null)).items()).isEmpty();
 	}
 
 	@Test

@@ -42,16 +42,17 @@ public class TalentDirectory {
 	public PublicTalentListResponse list(PublicTalentListRequest request) {
 		String text = TalentViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		TalentQueryRepository.PublicFilter filter = new TalentQueryRepository.PublicFilter(text, request.role(),
 				request.country(), request.industry(), request.engagement());
 		return new PublicTalentListResponse(profileList
-			.publicPage(filter, request.sort(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE)
+			.publicPage(filter, request.sort(), size, (long) (page - 1) * size)
 			.stream()
 			.map(row -> new PublicTalentSummaryResponse(row.slug(), row.name(), row.headline(), row.country(),
 					row.city(), row.roles(), row.skills(), row.photoFileId(), row.projectCount(),
 					row.leadTitle() == null ? null
 							: new TalentProjectDto(row.leadTitle(), null, null, null, row.leadStage())))
-			.toList(), page, PAGE_SIZE, profileList.publicCount(filter));
+			.toList(), page, size, profileList.publicCount(filter));
 	}
 
 	/** An approved, listed profile as search indexes it; empty for any other, or when the profile is gone. */

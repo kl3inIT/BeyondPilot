@@ -1159,6 +1159,10 @@
         "status": {
           "label": "Trạng thái",
           "all": "Mọi trạng thái"
+        },
+        "country": {
+          "label": "Quốc gia",
+          "all": "Mọi quốc gia"
         }
       },
       "status": {
@@ -3282,6 +3286,9 @@
   },
   "Lists": {
     "loadMore": "Xem thêm",
+    "pageSize": {
+      "label": "Mỗi trang"
+    },
     "pagination": {
       "label": "Các trang",
       "previous": "Trước",

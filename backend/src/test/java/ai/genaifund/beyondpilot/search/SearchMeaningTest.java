@@ -186,7 +186,7 @@ class SearchMeaningTest {
 	}
 
 	private List<String> titles(String query) {
-		return search.search(new SearchRequest(query, SOLUTION, 1)).items().stream().map(SearchItem::title).toList();
+		return search.search(new SearchRequest(query, SOLUTION, 1, null)).items().stream().map(SearchItem::title).toList();
 	}
 
 	private UUID save(String title, String summary) {

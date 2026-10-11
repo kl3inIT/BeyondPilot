@@ -23,6 +23,7 @@ export async function readAdminUseCases(search: AdminUseCasesSearch): Promise<Ad
       status: search.status ?? undefined,
       organizationId: search.organization ?? undefined,
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;

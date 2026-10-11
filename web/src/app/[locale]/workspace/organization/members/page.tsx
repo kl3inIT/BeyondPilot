@@ -27,8 +27,8 @@ export default async function OrganizationMembersRoute({
   const { locale } = await params;
   setRequestLocale(locale);
   await requireAccount(siteRoutes.workspaceMembers);
-  const { page } = await loadOrganizationMembersSearch(searchParams);
-  const [mine, members] = await Promise.all([readMyOrganization(), readMembers(page)]);
+  const { page, size } = await loadOrganizationMembersSearch(searchParams);
+  const [mine, members] = await Promise.all([readMyOrganization(), readMembers(page, size)]);
   const { organization } = mine;
   // A person without an organization has no members to read; the first page offers the ways in.
   if (!organization || !members) {
@@ -46,6 +46,7 @@ export default async function OrganizationMembersRoute({
       members={members}
       solutions={solutions?.items.length ?? null}
       useCases={useCases}
+      size={size}
     />
   );
 }

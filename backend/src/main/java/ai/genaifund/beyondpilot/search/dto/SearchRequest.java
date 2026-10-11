@@ -21,5 +21,8 @@ public record SearchRequest(
 						regexp = "program|solution|talent|use_case") @Nullable String kind,
 		@Parameter(description = "The page, counted from 1.",
 				schema = @Schema(type = "integer", format = "int32", defaultValue = "1", minimum = "1",
-						maximum = "50")) @Min(1) @Max(50) @Nullable Integer page) {
+						maximum = "50")) @Min(1) @Max(50) @Nullable Integer page,
+		@Parameter(description = "How many items a page holds; the list's own page size when absent.",
+				schema = @Schema(type = "integer", format = "int32", minimum = "1", maximum = "100")) @Min(1) @Max(
+						100) @Nullable Integer size) {
 }

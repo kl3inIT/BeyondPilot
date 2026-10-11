@@ -12,6 +12,7 @@ import { FeaturedFounders } from "./featured-founders";
 import { TalentCard } from "./talent-card";
 import { TalentFilters } from "./talent-filters";
 import { talentSearch, type TalentSearch } from "./talent-search";
+import { gridPageSizes } from "@/lib/page-size";
 
 const address = createSerializer(talentSearch);
 
@@ -74,6 +75,7 @@ function TalentDirectoryPage({ talent, search, hasProfile }: TalentDirectoryPage
               pageSize={talent.pageSize}
               total={talent.total}
               href={(page) => address(siteRoutes.talent, { ...search, page })}
+              sizes={gridPageSizes}
             />
           )}
         </>

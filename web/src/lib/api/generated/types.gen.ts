@@ -198,6 +198,10 @@ export type AdminOrganization = {
  * One page of organizations: those waiting for review first, then the newest.
  */
 export type AdminOrganizationList = {
+    /**
+     * The countries the list can be narrowed by: those an organization is in, ISO 3166-1 alpha-2, in order.
+     */
+    countries: Array<string>;
     items: Array<AdminOrganizationSummary>;
     /**
      * The page returned, counted from 1.
@@ -6118,6 +6122,10 @@ export type ListAiUsageCallsData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/ai/admin/usage/calls';
 };
@@ -6206,6 +6214,10 @@ export type ListAuditEventsData = {
          * The `newer` cursor of a page: the events after it.
          */
         after?: string | null;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/audit/events';
 };
@@ -6256,6 +6268,10 @@ export type ListAccountsData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/identity/accounts';
 };
@@ -6727,6 +6743,10 @@ export type ListAdminIntroductionsData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/introduction/admin/introductions';
 };
@@ -6917,6 +6937,10 @@ export type ListMatchingFeedbackData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/matching/admin/feedback';
 };
@@ -7337,6 +7361,10 @@ export type ListMcpCallsData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/mcp/admin/calls';
 };
@@ -7456,6 +7484,10 @@ export type ListEmailMessagesData = {
          * The `newer` cursor of a page: the emails after it.
          */
         after?: string | null;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/notification/admin/email/messages';
 };
@@ -7758,6 +7790,10 @@ export type ListEmailSuppressionsData = {
          * The page, counted from 1.
          */
         page?: number | null;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/notification/admin/email/suppressions';
 };
@@ -8275,9 +8311,17 @@ export type ListAdminOrganizationsData = {
          */
         status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended' | 'merged';
         /**
+         * Only organizations in this country, ISO 3166-1 alpha-2.
+         */
+        country?: string | null;
+        /**
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/organization/admin/organizations';
 };
@@ -9139,6 +9183,10 @@ export type ListMyOrganizationMembersData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/organization/mine/members';
 };
@@ -10696,6 +10744,10 @@ export type SearchData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/search';
 };
@@ -11182,6 +11234,10 @@ export type ListAdminSolutionsData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/solution/admin/solutions';
 };
@@ -11505,6 +11561,10 @@ export type ListCustomerDeploymentsData = {
          * The page, from 1.
          */
         page?: number | null;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/solution/deployments';
 };
@@ -11896,6 +11956,10 @@ export type ListSolutionsData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/solution/solutions';
 };
@@ -12124,6 +12188,10 @@ export type ListAdminTalentData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/talent/admin/profiles';
 };
@@ -12361,6 +12429,10 @@ export type ListReportedTalentEnquiriesData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/talent/admin/reported-enquiries';
 };
@@ -12652,6 +12724,10 @@ export type ListTalentData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/talent/profiles';
 };
@@ -12802,6 +12878,10 @@ export type ListAdminUseCasesData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
     };
     url: '/api/usecase/admin/use-cases';
 };
@@ -13259,6 +13339,10 @@ export type ListUseCasesData = {
          * The page, counted from 1.
          */
         page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
         /**
          * Only use cases of the published program at this address.
          */

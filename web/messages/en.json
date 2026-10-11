@@ -1159,6 +1159,10 @@
         "status": {
           "label": "Status",
           "all": "All statuses"
+        },
+        "country": {
+          "label": "Country",
+          "all": "All countries"
         }
       },
       "status": {
@@ -3282,6 +3286,9 @@
   },
   "Lists": {
     "loadMore": "Load more",
+    "pageSize": {
+      "label": "Per page"
+    },
     "pagination": {
       "label": "Pages",
       "previous": "Previous",

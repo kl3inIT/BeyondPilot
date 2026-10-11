@@ -39,6 +39,7 @@ export async function readTalent(search: TalentSearch): Promise<PublicTalentList
       role: search.role ?? undefined,
       sort: search.sort,
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;
@@ -71,16 +72,20 @@ export async function readAdminTalentList(search: AdminTalentSearch): Promise<Ad
       q: text(search.q),
       status: search.status ?? undefined,
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;
 }
 
 /** One page of the messages people reported, for the operator behind this request. Server only. */
-export async function readReportedTalentEnquiries(page: number): Promise<AdminTalentEnquiryList> {
+export async function readReportedTalentEnquiries(
+  page: number,
+  size: number | null,
+): Promise<AdminTalentEnquiryList> {
   const { data } = await listReportedTalentEnquiries({
     ...(await sessionRequest()),
-    query: { page: Math.max(1, page) },
+    query: { page: Math.max(1, page), size: size ?? undefined },
   });
   return data;
 }

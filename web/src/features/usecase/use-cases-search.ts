@@ -7,6 +7,7 @@ import {
 } from "nuqs/server";
 
 import { useCaseIndustries } from "./admin-use-case-codes";
+import { pageSize } from "@/lib/page-size";
 
 /** The orders the list offers; the first is the default and is left out of the URL. */
 export const useCaseSorts = ["newest", "deadline", "budget"] as const;
@@ -20,6 +21,7 @@ export const useCasesSearch = {
   industry: parseAsArrayOf(parseAsStringLiteral(useCaseIndustries)).withDefault([]),
   sort: parseAsStringLiteral(useCaseSorts).withDefault("newest"),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadUseCasesSearch = createLoader(useCasesSearch);

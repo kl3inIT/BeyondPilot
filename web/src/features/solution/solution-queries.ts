@@ -44,6 +44,7 @@ export async function readSolutions(search: SolutionsSearch): Promise<PublicSolu
       maturity: search.maturity ?? undefined,
       sort: search.sort,
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;
@@ -131,6 +132,7 @@ export async function readAdminSolutions(search: AdminSolutionsSearch): Promise<
       status: search.status ?? undefined,
       industry: search.industry ?? undefined,
       page: Math.max(1, search.page),
+      size: search.size ?? undefined,
     },
   });
   return data;

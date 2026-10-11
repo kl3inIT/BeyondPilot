@@ -11,6 +11,7 @@ import { siteRoutes } from "@/lib/site";
 import { SolutionCard } from "./solution-card";
 import { solutionsSearch, type SolutionsSearch } from "./solutions-search";
 import { SolutionsToolbar } from "./solutions-toolbar";
+import { gridPageSizes } from "@/lib/page-size";
 
 const address = createSerializer(solutionsSearch);
 
@@ -74,6 +75,7 @@ function SolutionsPage({ solutions, search }: SolutionsPageProps) {
           pageSize={solutions.pageSize}
           total={solutions.total}
           href={(page) => address(siteRoutes.solutions, { ...search, page })}
+          sizes={gridPageSizes}
         />
       )}
 

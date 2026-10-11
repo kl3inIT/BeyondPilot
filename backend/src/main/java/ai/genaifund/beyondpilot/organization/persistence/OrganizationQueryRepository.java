@@ -38,6 +38,7 @@ public class OrganizationQueryRepository {
 			       or (:status = 'approved' and o.status = 'approved' and o.suspended_at is null)
 			       or (:status not in ('suspended', 'approved') and o.status = :status)
 			       or (:status = 'in_review' and c.id is not null))
+			  and (cast(:country as text) is null or o.country = :country)
 			""";
 
 	private final JdbcClient jdbc;
@@ -126,7 +127,8 @@ public class OrganizationQueryRepository {
 	 * @param status a review status, or {@code suspended} for those taken down; {@code in_review} also selects an
 	 * organization with an open claim; none selects every one but the merged
 	 */
-	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, int limit, long offset) {
+	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, @Nullable String country,
+			int limit, long offset) {
 		return adminFiltered("""
 				select o.id, o.slug, o.name, o.logo_file_id, o.type, o.country, o.status, o.suspended_at, o.created_by_account_id,
 				       o.created_at,
@@ -139,7 +141,7 @@ public class OrganizationQueryRepository {
 				order by case when o.status = 'in_review' or c.id is not null then 0 else 1 end,
 				         coalesce(c.created_at, o.created_at) desc, o.id
 				limit :limit offset :offset
-				""", text, status).param("limit", limit).param("offset", offset).query((row, index) -> {
+				""", text, status, country).param("limit", limit).param("offset", offset).query((row, index) -> {
 			Timestamp claimedAt = row.getTimestamp("claimed_at");
 			Timestamp suspendedAt = row.getTimestamp("suspended_at");
 			return new AdminRow(row.getObject("id", UUID.class), row.getString("slug"), row.getString("name"),
@@ -151,14 +153,26 @@ public class OrganizationQueryRepository {
 		}).list();
 	}
 
-	public long adminCount(@Nullable String text, @Nullable String status) {
-		return adminFiltered("select count(*)\n" + ADMIN_SOURCE, text, status).query(Long.class).single();
+	public long adminCount(@Nullable String text, @Nullable String status, @Nullable String country) {
+		return adminFiltered("select count(*)\n" + ADMIN_SOURCE, text, status, country).query(Long.class)
+			.single();
 	}
 
-	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, @Nullable String status) {
+	/** The countries the operators' list can be narrowed by: those an organization that is not merged is in. */
+	public List<String> adminCountries() {
+		return jdbc.sql("""
+				select distinct country from organization
+				where country is not null and status <> 'merged'
+				order by country
+				""").query(String.class).list();
+	}
+
+	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, @Nullable String status,
+			@Nullable String country) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
-			.param("status", status, Types.VARCHAR);
+			.param("status", status, Types.VARCHAR)
+			.param("country", country, Types.VARCHAR);
 	}
 
 	private static final String MATCHES = """

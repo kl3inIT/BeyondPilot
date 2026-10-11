@@ -26,9 +26,9 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
   await requireRole("operator", siteRoutes.admin);
   const t = await getTranslations("Admin");
   const [organizations, solutions, talent] = await Promise.all([
-    readAdminOrganizations({ q: "", status: "in_review", page: 1 }),
-    readAdminSolutions({ q: "", status: "in_review", industry: null, page: 1 }),
-    readAdminTalentList({ q: "", status: "in_review", page: 1 }),
+    readAdminOrganizations({ q: "", status: "in_review", country: null, page: 1, size: null }),
+    readAdminSolutions({ q: "", status: "in_review", industry: null, page: 1, size: null }),
+    readAdminTalentList({ q: "", status: "in_review", page: 1, size: null }),
   ]);
   const queues = [
     {

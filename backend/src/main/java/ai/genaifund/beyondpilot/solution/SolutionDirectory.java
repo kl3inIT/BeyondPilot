@@ -70,18 +70,19 @@ public class SolutionDirectory {
 	public PublicSolutionListResponse list(PublicSolutionListRequest request) {
 		String text = SolutionViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		UUID organizationId = null;
 		if (request.organization() != null) {
 			Optional<OrganizationName> organization = organizations.approvedAt(request.organization());
 			if (organization.isEmpty()) {
 				// An address no approved organization has selects nothing.
-				return new PublicSolutionListResponse(List.of(), page, PAGE_SIZE, 0);
+				return new PublicSolutionListResponse(List.of(), page, size, 0);
 			}
 			organizationId = organization.get().id();
 		}
 		List<SolutionQueryRepository.Row> rows = solutionList.publicPage(text, request.industry(),
-				request.focusArea(), request.maturity(), organizationId, request.sort(), PAGE_SIZE,
-				(long) (page - 1) * PAGE_SIZE);
+				request.focusArea(), request.maturity(), organizationId, request.sort(), size,
+				(long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
 			.approvedNames(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		return new PublicSolutionListResponse(rows.stream().filter(row -> names.containsKey(row.organizationId())).map(row -> {
@@ -89,7 +90,7 @@ public class SolutionDirectory {
 			return new PublicSolutionSummaryResponse(row.slug(), row.name(), organization.name(), organization.slug(),
 					organization.country(), row.summary(), row.maturity(), row.focusAreas(), row.industries(),
 					shownLogo(row.logoFileId(), organization.logoFileId()), row.coverFileId(), row.backing(), row.deployments());
-		}).toList(), page, PAGE_SIZE, solutionList.publicCount(text, request.industry(), request.focusArea(),
+		}).toList(), page, size, solutionList.publicCount(text, request.industry(), request.focusArea(),
 				request.maturity(), organizationId));
 	}
 
@@ -325,13 +326,14 @@ public class SolutionDirectory {
 	@Transactional(readOnly = true)
 	public PublicCustomerDeploymentListResponse deployments(PublicCustomerDeploymentListRequest request) {
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		Optional<OrganizationName> organization = organizations.approvedAt(request.organization());
 		if (organization.isEmpty()) {
-			return new PublicCustomerDeploymentListResponse(List.of(), page, PAGE_SIZE, 0);
+			return new PublicCustomerDeploymentListResponse(List.of(), page, size, 0);
 		}
 		UUID organizationId = organization.get().id();
 		List<CustomerDeployment> found = deployments.findPublicByOrganization(organizationId,
-				PageRequest.of(page - 1, PAGE_SIZE));
+				PageRequest.of(page - 1, size));
 		Map<UUID, Solution> used = solutions
 			.findAllById(found.stream().map(CustomerDeployment::getSolutionId).distinct().toList())
 			.stream()
@@ -340,7 +342,7 @@ public class SolutionDirectory {
 				found.stream()
 					.map(deployment -> SolutionViews.publicDeployment(deployment, used.get(deployment.getSolutionId())))
 					.toList(),
-				page, PAGE_SIZE, deployments.countPublicByOrganization(organizationId));
+				page, size, deployments.countPublicByOrganization(organizationId));
 	}
 
 	private static SolutionException notFound(String slug) {

@@ -93,9 +93,10 @@ public class SolutionAdministration {
 		identity.requireOperator(actor);
 		String text = SolutionViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		List<UUID> named = text == null ? List.of() : organizations.named(text);
 		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(text, named, request.status(),
-				request.industry(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+				request.industry(), size, (long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		Map<UUID, Person> senders = identity.people(rows.stream()
@@ -106,7 +107,7 @@ public class SolutionAdministration {
 		return new AdminSolutionListResponse(rows.stream()
 			.map(row -> SolutionViews.adminSummary(row, name(names, row.organizationId()),
 					sender(senders, row.submittedByAccountId())))
-			.toList(), page, PAGE_SIZE, solutionList.adminCount(text, named, request.status(), request.industry()),
+			.toList(), page, size, solutionList.adminCount(text, named, request.status(), request.industry()),
 				solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview());
 	}
 

@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.ai.dto;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -18,5 +19,8 @@ public record AiUsageCallListRequest(
 		@Parameter(description = "Only calls that ended this way.",
 				schema = @Schema(allowableValues = { "ok", "failed" })) @Pattern(regexp = "ok|failed") @Nullable String outcome,
 		@Parameter(description = "The page, counted from 1.",
-				schema = @Schema(type = "integer", format = "int32", defaultValue = "1", minimum = "1")) @Min(1) @Nullable Integer page) {
+				schema = @Schema(type = "integer", format = "int32", defaultValue = "1", minimum = "1")) @Min(1) @Nullable Integer page,
+		@Parameter(description = "How many items a page holds; the list's own page size when absent.",
+				schema = @Schema(type = "integer", format = "int32", minimum = "1", maximum = "100")) @Min(1) @Max(
+						100) @Nullable Integer size) {
 }

@@ -112,9 +112,9 @@ function AdminIntroductionsPage({ introductions, search }: AdminIntroductionsPag
             maxLength={100}
             aria-label={t("search")}
             placeholder={t("search")}
-            className="w-64"
+            className="h-8 w-64"
           />
-          <Button type="submit" prominence="secondary">
+          <Button type="submit" prominence="secondary" size="sm">
             {t("searchButton")}
           </Button>
         </form>

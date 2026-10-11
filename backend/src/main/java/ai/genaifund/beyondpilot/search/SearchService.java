@@ -43,6 +43,7 @@ public class SearchService {
 		String query = request.q().strip();
 		String kind = request.kind();
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		// By meaning as well as by words, when a model is configured and answers; by words alone otherwise.
 		Meaning meaning = embeddings.of(query).orElse(null);
 		Map<String, Long> counts = index.counts(query, meaning, true);
@@ -50,7 +51,7 @@ public class SearchService {
 		Instant now = Instant.now();
 		// Every kind at once is the best few of each, the kinds in the order of their best item; one kind is paged.
 		List<Hit> hits = kind == null ? index.bestOfEachKind(query, meaning, true, PER_KIND)
-				: index.page(query, meaning, kind, true, PAGE_SIZE, (page - 1) * PAGE_SIZE);
+				: index.page(query, meaning, kind, true, size, (page - 1) * size);
 		List<SearchItem> items = hits.stream()
 			.map(hit -> item(hit, now))
 			.toList();
@@ -59,7 +60,7 @@ public class SearchService {
 						counts.getOrDefault(SearchDocumentRepository.SOLUTION, 0L),
 						counts.getOrDefault(SearchDocumentRepository.TALENT, 0L),
 						counts.getOrDefault(SearchDocumentRepository.USE_CASE, 0L)),
-				items, page, PAGE_SIZE, kind == null ? all : counts.getOrDefault(kind, 0L));
+				items, page, size, kind == null ? all : counts.getOrDefault(kind, 0L));
 	}
 
 	/**

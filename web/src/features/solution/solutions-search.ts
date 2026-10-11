@@ -3,6 +3,7 @@ import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } fro
 import { directorySorts } from "@/lib/directory-sort";
 
 import { focusAreas, industries, maturities, reviewedStatuses } from "./solution-codes";
+import { pageSize } from "@/lib/page-size";
 
 /** What narrows the public directory, as the URL holds it: `?q=&industry=&focusArea=&maturity=&sort=&page=`. */
 export const solutionsSearch = {
@@ -12,6 +13,7 @@ export const solutionsSearch = {
   maturity: parseAsStringLiteral(maturities),
   sort: parseAsStringLiteral(directorySorts).withDefault(directorySorts[0]),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadSolutionsSearch = createLoader(solutionsSearch);
@@ -29,6 +31,7 @@ export const adminSolutionsSearch = {
   status: parseAsStringLiteral(reviewedStatuses),
   industry: parseAsStringLiteral(industries),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadAdminSolutionsSearch = createLoader(adminSolutionsSearch);

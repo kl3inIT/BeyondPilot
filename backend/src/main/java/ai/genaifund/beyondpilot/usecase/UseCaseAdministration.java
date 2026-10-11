@@ -106,18 +106,19 @@ public class UseCaseAdministration {
 		identity.requireOperator(actor);
 		String text = text(request.q());
 		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? PAGE_SIZE : request.size();
 		Instant now = Instant.now();
 		List<UUID> matching = text == null ? List.of()
 				: organizations.approvedOrganizations(text, ORGANIZATION_LIMIT).stream().map(OrganizationName::id).toList();
 		List<UseCaseQueryRepository.Row> rows = useCaseList.page(text, matching, request.organizationId(),
-				request.status(), now, PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+				request.status(), now, size, (long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(UseCaseQueryRepository.Row::organizationId).collect(Collectors.toSet()));
 		List<AdminUseCaseSummaryResponse> items = rows.stream()
 			.map(row -> new AdminUseCaseSummaryResponse(row.id(), organization(row.organizationId(), names),
 					row.title(), row.status(), row.closesAt(), row.updatedAt()))
 			.toList();
-		return new AdminUseCaseListResponse(items, page, PAGE_SIZE,
+		return new AdminUseCaseListResponse(items, page, size,
 				useCaseList.count(text, matching, request.organizationId(), request.status(), now),
 				useCaseList.inReview(now));
 	}

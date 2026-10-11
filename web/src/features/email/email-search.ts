@@ -1,4 +1,5 @@
 import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { pageSize } from "@/lib/page-size";
 
 /** How far back the log looks; `week` is the default and `all` has no bound. */
 export const emailPeriods = ["day", "week", "month", "all"] as const;
@@ -67,6 +68,7 @@ export const emailActivitySearch = {
   q: parseAsString.withDefault(""),
   before: parseAsString,
   after: parseAsString,
+  size: pageSize,
 };
 
 export const loadEmailActivitySearch = createLoader(emailActivitySearch);
@@ -78,6 +80,7 @@ export const emailSuppressionsSearch = {
   reason: parseAsStringLiteral(suppressionReasons),
   q: parseAsString.withDefault(""),
   page: parseAsInteger.withDefault(1),
+  size: pageSize,
 };
 
 export const loadEmailSuppressionsSearch = createLoader(emailSuppressionsSearch);

@@ -11,6 +11,8 @@ import { UseCaseCard } from "./use-case-card";
 import type { UseCaseList } from "./use-cases-queries";
 import { useCasesSearch, type UseCasesSearch } from "./use-cases-search";
 import { UseCasesToolbar } from "./use-cases-toolbar";
+import { PageSizeSelect } from "@/components/composites/page-size-select";
+import { tablePageSizes } from "@/lib/page-size";
 
 const address = createSerializer(useCasesSearch);
 
@@ -61,6 +63,7 @@ async function UseCasesPage({ useCases, search }: UseCasesPageProps) {
           page={useCases.page}
           pages={pages}
           href={pageHref}
+          sizer={useCases.total > tablePageSizes[0] && <PageSizeSelect size={useCases.pageSize} />}
           labels={{
             navigation: t("pagination.label"),
             previous: t("pagination.previous"),

@@ -1,6 +1,8 @@
 import { useTranslations } from "next-intl";
 
 import { DataTableFooter } from "@/components/composites/data-table";
+import { PageSizeSelect } from "@/components/composites/page-size-select";
+import { tablePageSizes } from "@/lib/page-size";
 
 type ListFooterProps = {
   /** How many records match, already worded: "8 solutions". */
@@ -8,12 +10,24 @@ type ListFooterProps = {
   page: number;
   pageSize: number;
   total: number;
-  /** The address of a page, already carrying the search and filters. */
+  /** The address of a page, already carrying the search, the filters and the page size. */
   href: (page: number) => string;
+  /** The page sizes offered: those of a table unless the list is a grid of cards. */
+  sizes?: readonly number[];
 };
 
-/** The footer of a paged list with the wording every list shares for its paging. */
-function ListFooter({ count, page, pageSize, total, href }: ListFooterProps) {
+/**
+ * The footer of a paged list with the wording every list shares for its paging. The page size is
+ * offered once the list holds more than its smallest page.
+ */
+function ListFooter({
+  count,
+  page,
+  pageSize,
+  total,
+  href,
+  sizes = tablePageSizes,
+}: ListFooterProps) {
   const t = useTranslations("Lists.pagination");
 
   return (
@@ -22,6 +36,7 @@ function ListFooter({ count, page, pageSize, total, href }: ListFooterProps) {
       page={page}
       pages={Math.max(1, Math.ceil(total / pageSize))}
       href={href}
+      sizer={total > sizes[0] && <PageSizeSelect size={pageSize} sizes={sizes} />}
       labels={{
         navigation: t("label"),
         previous: t("previous"),

@@ -363,17 +363,30 @@ const talent = [
   },
 ];
 
-/** One page of a list, narrowed as the operators' lists narrow: by text and by status. */
-function page(url, records, statusOf, textOf, summaryOf) {
+/**
+ * One page of a list, narrowed as the operators' lists narrow: by text, by status and, where the
+ * records have one, by country. It holds as many items as the address asks for.
+ */
+function page(url, records, statusOf, textOf, summaryOf, countryOf) {
   const text = (url.searchParams.get("q") ?? "").toLowerCase();
   const status = url.searchParams.get("status");
+  const country = url.searchParams.get("country");
+  const size = Number(url.searchParams.get("size")) || 25;
+  const number = Number(url.searchParams.get("page")) || 1;
   const items = records.filter(
     // A merged record is listed only when merged ones are asked for, as the backend lists it.
     (record) =>
       (status ? statusOf(record) === status : statusOf(record) !== "merged") &&
-      (!text || textOf(record).toLowerCase().includes(text)),
+      (!text || textOf(record).toLowerCase().includes(text)) &&
+      (!country || countryOf?.(record) === country),
   );
-  return { items: items.map(summaryOf), page: 1, pageSize: 25, total: items.length };
+  return {
+    items: items.slice((number - 1) * size, number * size).map(summaryOf),
+    page: number,
+    pageSize: size,
+    total: items.length,
+    ...(countryOf && { countries: [...new Set(records.map(countryOf).filter(Boolean))].sort() }),
+  };
 }
 
 /** The requests for an introduction, as the operators' list reads them: no address anywhere. */
@@ -441,6 +454,7 @@ const lists = {
   "/api/organization/admin/organizations": {
     records: organizations,
     idOf: (record) => record.organization.id,
+    countryOf: (record) => record.organization.country,
     // An open claim waits for a decision as a new organization does, whatever the review status; one
     // taken down is filtered as `suspended`, not as approved.
     statusOf: (record) =>
@@ -541,9 +555,9 @@ export function answerReview(url, account) {
   if (account?.role !== "operator") {
     return [account ? 403 : 401, {}];
   }
-  const { records, idOf, statusOf, textOf, summaryOf } = lists[path];
+  const { records, idOf, statusOf, textOf, summaryOf, countryOf } = lists[path];
   if (url.pathname === path) {
-    const found = page(url, records, statusOf, textOf, summaryOf);
+    const found = page(url, records, statusOf, textOf, summaryOf, countryOf);
     return [
       200,
       path === "/api/introduction/admin/introductions"

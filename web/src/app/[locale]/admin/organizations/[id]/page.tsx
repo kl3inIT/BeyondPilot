@@ -30,11 +30,11 @@ export default async function AdminOrganizationRoute({
   const { locale, id } = await params;
   setRequestLocale(locale);
   await requireRole("operator", `${siteRoutes.adminOrganizations}/${id}`);
-  const { tab, page } = await loadAdminOrganizationSearch(searchParams);
+  const { tab, page, size } = await loadAdminOrganizationSearch(searchParams);
   const detail = await readAdminOrganization(id);
   if (!detail) {
     notFound();
   }
 
-  return <AdminOrganizationPage detail={detail} tab={tab} page={page} />;
+  return <AdminOrganizationPage detail={detail} tab={tab} page={page} size={size} />;
 }
