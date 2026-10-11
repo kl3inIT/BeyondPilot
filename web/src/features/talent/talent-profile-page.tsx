@@ -86,9 +86,8 @@ function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfi
         <TalentPhoto
           name={profile.name}
           photoFileId={profile.photoFileId}
-          size={96}
           alt={t("photoAlt", { name: profile.name })}
-          className="size-18 text-xl md:size-24 md:text-2xl"
+          size="profile"
         />
         <div className="flex min-w-0 flex-col gap-1">
           <h1 className="text-3xl font-semibold tracking-title text-balance md:text-4xl xl:text-5xl xl:leading-none">

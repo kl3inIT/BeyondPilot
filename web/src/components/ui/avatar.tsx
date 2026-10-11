@@ -2,23 +2,46 @@
 
 import * as React from "react";
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
+
+const avatarVariants = cva(
+  "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
+  {
+    variants: {
+      size: {
+        default: "",
+        sm: "",
+        lg: "",
+        // The sizes of a talent photo; the initials of the accent fallback follow the text size set here.
+        xl: "size-12 text-sm",
+        "2xl": "size-16 text-lg",
+        "3xl": "size-18 text-xl",
+        profile: "size-18 text-xl md:size-24 md:text-2xl",
+      },
+      tone: {
+        default: "",
+        talent: "ring-2 ring-talent/40 ring-offset-2 ring-offset-card",
+      },
+    },
+    defaultVariants: {
+      size: "default",
+      tone: "default",
+    },
+  },
+);
 
 function Avatar({
   className,
   size = "default",
+  tone = "default",
   ...props
-}: AvatarPrimitive.Root.Props & {
-  size?: "default" | "sm" | "lg";
-}) {
+}: AvatarPrimitive.Root.Props & VariantProps<typeof avatarVariants>) {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
       data-size={size}
-      className={cn(
-        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
-        className,
-      )}
+      className={cn(avatarVariants({ size, tone }), className)}
       {...props}
     />
   );
@@ -34,14 +57,28 @@ function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
   );
 }
 
-function AvatarFallback({ className, ...props }: AvatarPrimitive.Fallback.Props) {
+const avatarFallbackVariants = cva("flex size-full items-center justify-center rounded-full", {
+  variants: {
+    variant: {
+      default: "bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs",
+      // A person's own initials in a talent photo, at the size the avatar's text sets.
+      accent: "bg-accent [font-size:inherit] font-semibold text-primary",
+    },
+  },
+  defaultVariants: {
+    variant: "default",
+  },
+});
+
+function AvatarFallback({
+  className,
+  variant = "default",
+  ...props
+}: AvatarPrimitive.Fallback.Props & VariantProps<typeof avatarFallbackVariants>) {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
-      className={cn(
-        "flex size-full items-center justify-center rounded-full bg-muted text-sm text-muted-foreground group-data-[size=sm]/avatar:text-xs",
-        className,
-      )}
+      className={cn(avatarFallbackVariants({ variant }), className)}
       {...props}
     />
   );
