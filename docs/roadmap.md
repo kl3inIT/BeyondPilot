@@ -15,6 +15,7 @@
 
 ## Active
 
+- [BEY-130 — Pinned directory items](increments/active/bey-130-pinned-directory-items/design.md): an operator pins solutions and talent profiles, which then come first in the two public directories, the earliest pinned on top, before the order a reader chooses. Built and tested; waits for a look on staging and for GenAI Fund to say which records to pin.
 - [BEY-128 — Brevo as an email provider](increments/active/bey-128-brevo-email/design.md): a fourth provider beside Amazon SES, Resend and SMTP, with sending through Brevo's transactional API, delivery reports recognised by a bearer token, the setup checklist and its two sealed secrets in Admin › Email › Settings. Waits for a first send and a first report with a real Brevo account.
 - [BEY-39 — Matching](increments/active/bey-39-matching/design.md): for a use case, the solutions already on BeyondPilot that fit, each with what its own material shows per requirement and the sentence that shows it, in GenAI Fund's three buckets; people shortlist, remove and add candidates. Proposed on 9 October 2026 after a probe on two real use cases; waiting for approval.
 - [BEY-92 — AI models](increments/active/bey-92-ai-models/design.md): a new `ai` module where operators connect chat providers (OpenAI, Claude, 9Router, OpenRouter, any OpenAI-compatible endpoint), choose the model each task uses, and every call is recorded with its tokens. Matching (BEY-39) is the first task. Accepted and the screens approved; the backend is being built.
