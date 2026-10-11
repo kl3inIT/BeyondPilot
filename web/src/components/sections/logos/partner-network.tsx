@@ -171,7 +171,7 @@ function PartnerNetwork() {
               </ul>
             </section>
           ))}
-          <p className="pt-2 text-center text-sm font-medium text-muted-foreground">{t("more")}</p>
+          <p className="pt-6 text-center text-xl font-semibold md:pt-8 md:text-2xl">{t("more")}</p>
         </div>
       </div>
     </Section>
