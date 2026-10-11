@@ -6510,7 +6510,8 @@
     },
     "filter": {
       "label": "Filter by requirement",
-      "any": "Any"
+      "any": "Any",
+      "showing": "Showing {count} of {total} that meet “{need}”."
     },
     "tabs": {
       "label": "Solutions by what you decided",
