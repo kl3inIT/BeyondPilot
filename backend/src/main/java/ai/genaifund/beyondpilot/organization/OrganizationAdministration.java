@@ -251,7 +251,8 @@ public class OrganizationAdministration {
 
 	/**
 	 * Makes a member of any organization an owner, or an owner a member. An operator may leave an organization
-	 * without an owner: that is how a page is handed to someone else.
+	 * without an owner: that is how a page is handed to someone else. The open requests follow: GenAI Fund decides
+	 * them while nobody owns the organization, its owners once it has one.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws OrganizationException when the organization does not exist or the person does not belong to it
 	 */
@@ -264,12 +265,14 @@ public class OrganizationAdministration {
 			return;
 		}
 		memberships.changeRole(id, accountId, role);
+		handRequests(id);
 		record(AuditAction.ORGANIZATION_MEMBER_ROLE, operator, organization,
 				Map.of("account", accountId.toString(), "role", role));
 	}
 
 	/**
-	 * Takes a person out of any organization, the last owner included.
+	 * Takes a person out of any organization, the last owner included, after whom GenAI Fund decides its open
+	 * requests.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws OrganizationException when the organization does not exist or the person does not belong to it
 	 */
@@ -279,6 +282,7 @@ public class OrganizationAdministration {
 		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
 		member(organization, accountId);
 		memberships.remove(id, accountId);
+		handRequests(id);
 		record(AuditAction.ORGANIZATION_MEMBER_REMOVE, operator, organization, Map.of("account", accountId.toString()));
 	}
 
@@ -422,8 +426,8 @@ public class OrganizationAdministration {
 	@Transactional
 	public void approveClaim(Actor actor, UUID requestId, ApproveOrganizationRequest request) {
 		Operator operator = identity.requireOperator(actor);
-		JoinRequest claim = openClaim(requestId);
-		Organization organization = organizations.findForUpdate(claim.organizationId()).orElseThrow();
+		Organization organization = claimed(requestId);
+		JoinRequest claim = claimOn(organization, requestId);
 		verifyDomain(organization, request.emailDomain());
 		if (!memberships.add(organization.getId(), claim.accountId(), MembershipRepository.OWNER)) {
 			throw new OrganizationException(OrganizationErrorCode.ALREADY_MEMBER,
@@ -441,8 +445,35 @@ public class OrganizationAdministration {
 	@Transactional
 	public void declineClaim(Actor actor, UUID requestId) {
 		Operator operator = identity.requireOperator(actor);
+		Organization organization = claimed(requestId);
+		closeClaim(operator, organization, claimOn(organization, requestId), false);
+	}
+
+	/** The organization a claim is on, locked; the claim is then read again with {@link #claimOn}. */
+	private Organization claimed(UUID requestId) {
+		return organizations.findForUpdate(openClaim(requestId).organizationId()).orElseThrow();
+	}
+
+	/**
+	 * The claim as it is once its organization is locked. An owner who arrived before the lock made it a request, and
+	 * a merge moved it to the organization kept; either way it is no longer a claim on this one.
+	 */
+	private JoinRequest claimOn(Organization organization, UUID requestId) {
 		JoinRequest claim = openClaim(requestId);
-		closeClaim(operator, organizations.findForUpdate(claim.organizationId()).orElseThrow(), claim, false);
+		if (!claim.organizationId().equals(organization.getId())) {
+			throw requestNotFound(requestId);
+		}
+		return claim;
+	}
+
+	/** Gives the open requests to whoever decides them now: GenAI Fund without an owner, the owners with one. */
+	private void handRequests(UUID organizationId) {
+		if (memberships.owners(organizationId) == 0) {
+			memberships.requestsBecomeClaims(organizationId);
+		}
+		else {
+			memberships.claimsBecomeRequests(organizationId);
+		}
 	}
 
 	/** A request that operators decide; one to an owned organization is its owners' to decide. */
