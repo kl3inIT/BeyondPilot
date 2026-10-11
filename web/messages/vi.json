@@ -681,7 +681,8 @@
             "title": "Công bố {name}?",
             "lead": "Chương trình sẽ lên danh sách chương trình, và ai có link đều mở được trang.",
             "note": "Từ giờ địa chỉ cố định, để link mọi người đã chia sẻ vẫn dùng được.",
-            "cancel": "Huỷ"
+            "cancel": "Huỷ",
+            "noQuestions": "Form nộp đơn chưa có câu hỏi riêng nào: người nộp chỉ điền thông tin của mình, nhóm và giải pháp. Có thể thêm câu hỏi cho tới khi mở nhận đơn."
           },
           "done": "Đã công bố {name}.",
           "notReady": "Chương trình vẫn còn thiếu những mục trong danh sách ở trên.",
@@ -775,7 +776,10 @@
           "PROGRAM_QUESTIONS_FIXED": "Đợt nhận đơn đã mở, nên không đổi câu hỏi được nữa.",
           "PROGRAM_CHANGED_MEANWHILE": "Có người vừa sửa chương trình này. Tải lại rồi sửa lại.",
           "PROGRAM_CHOICES_REQUIRED": "Câu hỏi trả lời bằng lựa chọn cần ít nhất hai lựa chọn."
-        }
+        },
+        "locks": "Câu hỏi bị khoá khi mở nhận đơn lúc {opens}: từ lúc đó không đổi được nữa.",
+        "locksUnset": "Câu hỏi bị khoá khi mở nhận đơn. Chưa đặt ngày mở: đặt ở Cài đặt.",
+        "fixedStill": "Người nộp trả lời đúng các câu này. Trang, hạn nộp và giám khảo của chương trình vẫn đổi được."
       }
     },
     "accounts": {
@@ -1971,7 +1975,7 @@
       "chat": {
         "tasks": {
           "heading": "Model theo tác vụ",
-          "lead": "Lựa chọn được lưu ngay.",
+          "lead": "Thay đổi được lưu sau khi bạn xác nhận.",
           "name": {
             "matching": "Ghép nối"
           },
@@ -1999,6 +2003,13 @@
           "noModels": {
             "title": "Chưa có model để chọn",
             "lead": "Bật một model ở một kết nối bên dưới, rồi chọn nó ở đây."
+          },
+          "confirm": {
+            "title": "Đổi model cho {task}?",
+            "lead": "Mọi lượt {task} từ giờ dùng model này. Kết quả của các lượt trước giữ nguyên.",
+            "choice": "{model} · suy luận {effort}",
+            "save": "Đổi",
+            "cancel": "Huỷ"
           }
         },
         "connections": {
@@ -2713,6 +2724,26 @@
           "goToNext": "Sang trang sau",
           "page": "Trang {page}"
         }
+      },
+      "confirm": {
+        "turnOff": "Tắt",
+        "remove": "Gỡ",
+        "cancel": "Huỷ",
+        "userOff": {
+          "title": "Tắt server cho người dùng?",
+          "lead": "Từ giờ server trả 404: {count, plural, =0 {hiện không có ứng dụng nào kết nối.} other {# ứng dụng đang kết nối sẽ ngừng hoạt động.}}",
+          "note": "Bật lại ở đây khi bạn muốn mọi người kết nối."
+        },
+        "toolOff": {
+          "title": "Tắt {tool}?",
+          "lead": "Ứng dụng trên {server} sẽ không thấy tool này nữa, và lệnh gọi tới nó bị từ chối. {count, plural, =0 {Hiện không có ứng dụng nào kết nối server đó.} other {Hiện có # ứng dụng đang kết nối server đó.}}"
+        },
+        "hostRemove": {
+          "title": "Gỡ {host}?",
+          "labelled": "Ứng dụng từ {host} không còn được coi là đã xem xét: khi kết nối, màn hình đồng ý sẽ gắn nhãn Chưa xem xét.",
+          "refused": "Ứng dụng từ {host} sẽ không kết nối được nữa, vì đang không cho phép ứng dụng từ host khác.",
+          "apps": "Ứng dụng từ host này: {apps}."
+        }
       }
     },
     "email": {
@@ -3220,6 +3251,17 @@
         "lastSaved": "{name} lưu lần cuối, {when}.",
         "neverSaved": "Chưa lưu lần nào.",
         "save": "Lưu cài đặt",
+        "confirm": {
+          "title": "Đổi cách gửi email?",
+          "lead": "Mã đăng nhập được gửi qua email. Nếu cài đặt này không chạy, không ai đăng nhập được, kể cả bạn.",
+          "provider": "Nhà cung cấp: {from} → {to}",
+          "credentials": "Khoá, tài khoản hoặc máy chủ mới cho {provider}",
+          "address": "Địa chỉ gửi: {from} → {to}",
+          "untested": "Chưa gửi thử với cài đặt này. Nút Gửi thử, cạnh nút Lưu, thử cài đặt mà không lưu.",
+          "tested": "Đã gửi thử với cài đặt này lúc {when}. Hãy kiểm tra thư đã tới trước khi lưu.",
+          "save": "Lưu thay đổi",
+          "back": "Quay lại"
+        },
         "leave": {
           "title": "Rời trang mà không lưu?",
           "lead": "Những thay đổi trên trang này chưa được lưu và sẽ mất.",
@@ -3229,6 +3271,7 @@
       },
       "checks": {
         "title": "Thiết lập",
+        "titleFor": "Thiết lập {provider}",
         "done": "Xong {done}/{total}",
         "lead": "Nhà cung cấp nói gì về việc gửi từ {domain}, kiểm lúc {when}.",
         "again": "Kiểm tra lại",
@@ -6199,10 +6242,19 @@
       "message": "Nội dung",
       "placeholders": "{organization} và {solution} được điền theo từng người nộp.",
       "confirmLabel": "Công bố",
-      "checked": "Tôi đã kiểm tra cả hai danh sách. Kết quả đã gửi thì không thu hồi được.",
       "release": "Công bố cho {count} người nộp",
       "notReady": "Chưa thể công bố",
-      "done": "Đã công bố kết quả. Email đang được gửi tới từng người nộp."
+      "done": "Đã công bố kết quả. Email đang được gửi tới từng người nộp.",
+      "checkFirst": "Kiểm tra cả hai danh sách trước khi công bố: kết quả đã gửi thì không thu hồi được.",
+      "fillFirst": "Viết tiêu đề và nội dung cho cả hai nhóm để công bố.",
+      "confirm": {
+        "title": "Gửi email cho {count} người nộp ngay bây giờ?",
+        "lead": "Mỗi người nộp nhận email của nhóm mình và thấy kết quả ở Đơn của tôi.",
+        "group": "{group}: {count} người nộp",
+        "note": "Không thể hoàn tác: email đã gửi đi thì không thu hồi được.",
+        "send": "Công bố và gửi",
+        "cancel": "Chưa gửi"
+      }
     },
     "reviewers": {
       "metaTitle": "Giám khảo",

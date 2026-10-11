@@ -211,7 +211,7 @@ test.describe("judging applications", () => {
     expect(calls[0].body).toEqual({ email: "new.judge@tasco.example" });
   });
 
-  test("an operator releases the outcomes after saying both lists were checked", async ({
+  test("an operator releases the outcomes after a question that names how many each email reaches", async ({
     page,
     context,
     baseURL,
@@ -221,13 +221,16 @@ test.describe("judging applications", () => {
     await page.goto(`${admin}/release`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Release outcomes");
     await expect(page.getByText("1 withdrawn application gets no email.")).toBeVisible();
-    const release = page.getByRole("button", { name: "Release to 3 applicants" });
-    await expect(release).toBeDisabled();
+    await expect(page.getByRole("heading", { name: /^Shortlisted/ })).toBeVisible();
     await settled(page);
     await expectNoSeriousA11yViolations(page);
 
-    await page.getByRole("checkbox").click();
-    await release.click();
+    await page.getByRole("button", { name: "Release to 3 applicants" }).click();
+    const ask = page.getByRole("alertdialog", { name: "Email 3 applicants now?" });
+    await expect(ask).toContainText("Shortlisted: 2 applicants");
+    await expect(ask).toContainText("Not selected: 1 applicant");
+    expect(calls).toHaveLength(0);
+    await ask.getByRole("button", { name: "Release and send" }).click();
     await expect.poll(() => calls.length).toBe(1);
     expect(calls[0].body).toMatchObject({
       shortlistedSubject: "You're shortlisted for AI for Insurance Challenge × Tasco",

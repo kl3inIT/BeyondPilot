@@ -10275,6 +10275,11 @@ components:
             - summary
             - cover
             - dates
+        questionCount:
+          type: integer
+          format: int32
+          description: How many questions the application form asks after what every
+            application holds; they are fixed once applications open.
         slug:
           type: string
           description: The address under /programs.
@@ -10327,6 +10332,7 @@ components:
       - name
       - pageKind
       - publishIssues
+      - questionCount
       - slug
       - slugFixed
       - status

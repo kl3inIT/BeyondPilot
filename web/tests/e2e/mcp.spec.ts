@@ -114,7 +114,26 @@ test.describe("MCP", () => {
     await expect
       .poll(() => switched)
       .toEqual([["/api/mcp/admin/tools/user/fetch", { enabled: true }]]);
+
+    // Turning a tool off stops what connected apps do, so it is asked again first.
+    const operator = page.getByRole("region", { name: "Operators' server" });
+    await operator.getByRole("switch", { name: "Turn search on or off" }).click();
+    const ask = page.getByRole("alertdialog", { name: "Turn search off?" });
+    await expect(ask).toContainText("1 app is connected to it now.");
     await expectNoSeriousA11yViolations(page);
+    await ask.getByRole("button", { name: "Cancel" }).click();
+    expect(switched).toHaveLength(1);
+    await operator.getByRole("switch", { name: "Turn search on or off" }).click();
+    await page
+      .getByRole("alertdialog", { name: "Turn search off?" })
+      .getByRole("button", { name: "Turn off" })
+      .click();
+    await expect
+      .poll(() => switched)
+      .toEqual([
+        ["/api/mcp/admin/tools/user/fetch", { enabled: true }],
+        ["/api/mcp/admin/tools/operator/search", { enabled: false }],
+      ]);
   });
 
   test("someone who is not an operator is not shown the MCP admin", async ({
