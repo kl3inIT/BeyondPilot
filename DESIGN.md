@@ -218,7 +218,7 @@ A 1312px column with 64px gutters on desktop, 32px on tablet (1024) and 20px on 
 ### Landing structure
 
 1. Header: five destinations (AI Solutions, AI Talent, Use Cases & Projects, Events & Programs, How It Works), the language menu, Sign in and Get started (the ink-coloured `inverse` action).
-2. Hero: live-challenge pill, eyebrow, display headline whose second line takes the azure-to-violet gradient, lead, one search, the two actions and "Backed by GenAI Fund", beside a real screenshot of the search results, on the aurora (`aurora-*` tokens).
+2. Hero: live-challenge pill, display headline whose second line takes the azure-to-violet gradient, lead, one search, the two actions and "Backed by GenAI Fund", beside a real screenshot of the search results, on the aurora (`aurora-*` tokens).
 3. Ecosystem strip: a compact row of five enterprise logos (Tasco, Shinhan Future's Lab, Coca-Cola, KFC, Guardian), never labelled as customers.
 4. Five ways to explore: photo cards for solutions, talent, use cases, events and programs.
 5. How it works: three steps on sky, lilac and peach tints.

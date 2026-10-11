@@ -1,5 +1,5 @@
 import { cn } from "cn";
-import { SearchIcon, SparklesIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 
@@ -31,16 +31,7 @@ function Hero() {
       <Glow />
       <div className="relative flex flex-col gap-12 pt-10 pb-4 lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:pt-16">
         <div className="flex min-w-0 flex-col items-start lg:w-150 lg:shrink-0">
-          <p
-            className={cn(
-              rise,
-              "flex items-center gap-2 rounded-full border bg-card px-3.5 py-1.5 text-xs font-semibold text-primary delay-100",
-            )}
-          >
-            <SparklesIcon className="size-3.5" aria-hidden="true" />
-            {t("eyebrow")}
-          </p>
-          <h1 className="mt-5 animate-in text-5xl font-semibold delay-180 ease-entrance animation-duration-800 fill-mode-both slide-in-from-bottom-4 motion-reduce:animate-none lg:text-display lg:tracking-display">
+          <h1 className="animate-in text-5xl font-semibold delay-180 ease-entrance animation-duration-800 fill-mode-both slide-in-from-bottom-4 motion-reduce:animate-none lg:text-display lg:tracking-display">
             {t("titleStart")}{" "}
             <span className="bg-linear-90 from-primary to-headline-violet bg-clip-text text-transparent">
               {t("titleEnd")}
