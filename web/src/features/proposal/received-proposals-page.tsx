@@ -55,7 +55,14 @@ function ReceivedProposalsPage({ proposals }: ReceivedProposalsPageProps) {
       ),
       // Every received proposal is new: there is no decision to tell them apart by yet.
       status: <Status tone="info">{t("status.new")}</Status>,
-      sent: <span className="text-muted-foreground">{day(proposal.sentAt)}</span>,
+      sent: (
+        <span className="text-muted-foreground">
+          {day(proposal.sentAt)}
+          {proposal.editedAt && (
+            <span className="block text-xs">{t("edited", { date: day(proposal.editedAt) })}</span>
+          )}
+        </span>
+      ),
     };
   });
 
@@ -74,8 +81,6 @@ function ReceivedProposalsPage({ proposals }: ReceivedProposalsPageProps) {
                 when: format.dateTime(new Date(useCase.closesAt), {
                   dateStyle: "medium",
                   timeStyle: "short",
-                  hourCycle: "h23",
-                  timeZoneName: "short",
                   timeZone: "Asia/Ho_Chi_Minh",
                 }),
               })}
