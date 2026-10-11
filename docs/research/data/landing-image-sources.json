@@ -1144,6 +1144,24 @@
         "name": "Kimi",
         "role": "technology",
         "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
+      },
+      {
+        "file": "pharmacity.png",
+        "name": "Pharmacity",
+        "role": "enterprises",
+        "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
+      },
+      {
+        "file": "dongtam.png",
+        "name": "Dongtam Group",
+        "role": "enterprises",
+        "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
+      },
+      {
+        "file": "petrovietnam.png",
+        "name": "PetroVietnam",
+        "role": "enterprises",
+        "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
       }
     ],
     "left_out": [

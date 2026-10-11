@@ -55,6 +55,9 @@ const network: Role[] = [
       { file: "vndirect", name: "VNDIRECT", width: 552, shape: "long" },
       { file: "sabeco", name: "SABECO", width: 113, shape: "emblem" },
       { file: "phongvu", name: "Phong Vu", width: 780, shape: "wordmark" },
+      { file: "pharmacity", name: "Pharmacity", width: 331, shape: "stacked" },
+      { file: "dongtam", name: "Dongtam Group", width: 345, shape: "stacked" },
+      { file: "petrovietnam", name: "PetroVietnam", width: 133, shape: "emblem" },
       { file: "prudential", name: "Prudential", width: 240, shape: "stacked" },
       { file: "uob", name: "UOB", width: 395, shape: "medium" },
       { file: "gic", name: "GIC", width: 226, shape: "stacked" },
@@ -167,6 +170,7 @@ function PartnerNetwork() {
               </ul>
             </section>
           ))}
+          <p className="pt-2 text-center text-sm font-medium text-muted-foreground">{t("more")}</p>
         </div>
       </div>
     </Section>
