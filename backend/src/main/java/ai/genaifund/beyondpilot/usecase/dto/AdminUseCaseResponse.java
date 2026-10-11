@@ -33,6 +33,8 @@ public record AdminUseCaseResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean budgetMembersOnly,
 		@Schema(types = { "integer", "null" }) @Nullable Integer timelineMinWeeks,
 		@Schema(types = { "integer", "null" }) @Nullable Integer timelineMaxWeeks,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, minimum = "0", maximum = "90",
+				description = "How many days after sending a proposal its organization may still edit it; 0 allows no edit after sending.") int proposalEditDays,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean hideOrganizationName,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant publishedAt,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant closesAt,

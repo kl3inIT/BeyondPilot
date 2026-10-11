@@ -126,7 +126,9 @@ class UseCaseAdministrationTest {
 			.jsonPath("$.timelineMinWeeks")
 			.isEqualTo(8)
 			.jsonPath("$.hideOrganizationName")
-			.isEqualTo(false);
+			.isEqualTo(false)
+			.jsonPath("$.proposalEditDays")
+			.isEqualTo(7);
 		assertThat(eventsOf(id)).singleElement()
 			.satisfies(event -> assertThat(event).containsEntry("action", "use_case.create")
 				.containsEntry("actor_email", "operator@usecase.test")
@@ -350,6 +352,25 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
+	void anOperatorSetsHowLongASentProposalMayBeEdited() {
+		UUID organization = organization("Window Bank " + UUID.randomUUID());
+		Map<String, Object> brief = useCase(organization, "Edit window set", true);
+		brief.put("proposalEditDays", 30);
+		String created = body(post(operator, USE_CASES, brief).expectStatus().isCreated());
+		assertThat(JsonPath.<Number>read(created, "$.proposalEditDays").intValue()).isEqualTo(30);
+		String id = JsonPath.read(created, "$.id");
+		assertThat(JsonPath.<Number>read(body(get(operator, USE_CASES + "/" + id).expectStatus().isOk()),
+				"$.proposalEditDays").intValue()).isEqualTo(30);
+		String publicDetail = body(client.get().uri(DIRECTORY + "/" + id).exchange().expectStatus().isOk());
+		assertThat(JsonPath.<Number>read(publicDetail, "$.proposalEditDays").intValue()).isEqualTo(30);
+
+		Map<String, Object> none = useCase(organization, "Edit window none", false);
+		none.put("proposalEditDays", 0);
+		assertThat(JsonPath.<Number>read(body(post(operator, USE_CASES, none).expectStatus().isCreated()),
+				"$.proposalEditDays").intValue()).isZero();
+	}
+
+	@Test
 	void aBriefThatCannotStandIsRefused() {
 		UUID organization = organization("Refusing Bank " + UUID.randomUUID());
 
@@ -378,6 +399,12 @@ class UseCaseAdministrationTest {
 		Map<String, Object> unknown = useCase(organization, "Unknown industry", false);
 		unknown.put("industry", "space_mining");
 		post(operator, USE_CASES, unknown).expectStatus().isBadRequest();
+
+		for (int days : new int[] { -1, 91 }) {
+			Map<String, Object> window = useCase(organization, "Edit window " + days, false);
+			window.put("proposalEditDays", days);
+			post(operator, USE_CASES, window).expectStatus().isBadRequest();
+		}
 
 		assertThat(titles()).doesNotContain("Closes yesterday", "Budget upside down", "Budget half given",
 				"Budget both ways", "Timeline upside down", "Unknown industry");

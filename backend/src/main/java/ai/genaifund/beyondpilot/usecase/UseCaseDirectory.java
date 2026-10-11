@@ -83,7 +83,7 @@ public class UseCaseDirectory {
 		return useCases.findById(useCaseId)
 			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
 			.map(useCase -> new UseCaseTarget(useCase.getId(), useCase.getOrganizationId(),
-					Objects.requireNonNull(useCase.getTitle()), useCase.getClosesAt(),
+					Objects.requireNonNull(useCase.getTitle()), useCase.getClosesAt(), useCase.getProposalEditDays(),
 					!UseCase.CLOSED.equals(useCase.statusAt(now)) && organizations
 						.approvedNames(List.of(useCase.getOrganizationId()))
 						.containsKey(useCase.getOrganizationId())));
@@ -231,7 +231,7 @@ public class UseCaseDirectory {
 				useCase.getIntegrationRequirements(), hiddenBudget ? null : useCase.getBudgetMin(),
 				hiddenBudget ? null : useCase.getBudgetMax(), useCase.getCurrency(), useCase.isBudgetToBeDetermined(),
 				hiddenBudget, useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(), useCase.getClosesAt(),
-				publishedAt);
+				useCase.getProposalEditDays(), publishedAt);
 	}
 
 	private static PublicUseCaseSummaryResponse summary(UseCaseQueryRepository.PublicRow row,
