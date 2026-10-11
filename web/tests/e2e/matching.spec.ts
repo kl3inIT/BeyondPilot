@@ -218,10 +218,8 @@ test.describe("solutions matched to a use case", () => {
     await expectNoSeriousA11yViolations(page);
     await picture(page, testInfo, "how-ai-found");
 
-    // The last group shows its header alone until it is opened.
-    await expect(rowName(page, "Docbase")).toHaveCount(0);
-    await expect(lastGroupHeader(page)).toHaveAttribute("aria-expanded", "false");
-    await lastGroupHeader(page).click();
+    // The last group is open from the start, so nothing looks hidden; its header folds it away.
+    await expect(lastGroupHeader(page)).toHaveAttribute("aria-expanded", "true");
     await expect(rowName(page, "Docbase")).toBeVisible();
     // A count of zero is left out.
     await expect(counts(page, "Docbase")).toHaveText("1 partly · 2 no evidence");
@@ -634,7 +632,6 @@ test.describe("solutions matched to a use case", () => {
     if (isMobile) {
       await panel.getByRole("button", { name: "Close" }).click();
     }
-    await lastGroupHeader(page).click();
     await rowName(page, "Docbase").click();
     await expect(panel.getByRole("heading", { level: 2, name: "Docbase" })).toBeVisible();
     await expect(panel.getByText("Found on their website", { exact: true })).toBeVisible();
@@ -728,15 +725,17 @@ test.describe("solutions matched to a use case", () => {
     ).toBeVisible();
     await expect(counts(page, "Staple AI")).toHaveCount(0);
 
-    // The last group: its header alone, then five rows, then all six.
+    // The last group: five rows from the start, then all six; its header folds it away.
     const last = group(page, "Right technology, less proof");
     await expect(last.getByRole("heading", { level: 2 })).toContainText("6");
     await expect(last.getByText("Right technology; part of the requirement shown.")).toBeVisible();
-    await expect(last.getByRole("listitem")).toHaveCount(0);
+    await expect(lastGroupHeader(page)).toHaveAttribute("aria-expanded", "true");
+    await expect(last.getByRole("listitem")).toHaveCount(5);
     await expectNoSeriousA11yViolations(page);
 
     await lastGroupHeader(page).click();
-    await expect(lastGroupHeader(page)).toHaveAttribute("aria-expanded", "true");
+    await expect(last.getByRole("listitem")).toHaveCount(0);
+    await lastGroupHeader(page).click();
     await expect(last.getByRole("listitem")).toHaveCount(5);
     await last.getByRole("button", { name: "Show 1 more" }).click();
     await expect(last.getByRole("listitem")).toHaveCount(6);
@@ -765,6 +764,8 @@ test.describe("solutions matched to a use case", () => {
       "true",
     );
     await filter.getByRole("button", { name: "Check rules 2" }).click();
+    // The page says what the filter did, since the rows on top may be the same ones.
+    await expect(page.getByText(/^Showing 2 of \d+ that meet “Check rules”\./)).toBeVisible();
     await expect(rowName(page, "Staple AI")).toBeVisible();
     await expect(rowName(page, "Sentosa Finance")).toBeVisible();
     await expect(group(page, "Right technology, less proof")).toHaveCount(0);
@@ -839,7 +840,6 @@ test.describe("solutions matched to a use case", () => {
     await page.goto(memberPath);
 
     // The row folds in place into the reasons; nothing is removed without one, and the note is optional.
-    await lastGroupHeader(page).click();
     await page.getByRole("button", { name: "More for Docbase" }).click();
     await page.getByRole("menuitem", { name: "Not a fit…" }).click();
     const picker = page.getByRole("region", { name: "Why is Docbase not a fit?" });

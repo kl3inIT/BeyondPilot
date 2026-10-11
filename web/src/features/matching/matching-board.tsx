@@ -289,15 +289,17 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
   const position = chosenNeed ? chosenNeed.position : null;
   const sections = grouped(withNeed(tab === "shortlist" ? tabs.shortlist : tabs.matches, position));
   const total = sectionNames.reduce((sum, section) => sum + sections[section].length, 0);
-  // The last group folds on the Matches tab, and only under a stronger group: alone, it is the list.
+  // The last group can be folded on the Matches tab, and only under a stronger group: alone, it is the
+  // list. It starts open with its first rows, since a closed group read as "there are only three"; a
+  // filter shows every row it keeps, so that choosing one visibly changes the list.
   const folds = tab === "matches" && sections.direct.length + sections.industry.length > 0;
   const views = Object.fromEntries(
     sectionNames.map((section) => [
       section,
       groupView(section, sections[section].length, {
         folds,
-        opened: opened[section] ?? atWork,
-        all: expanded[section] ?? atWork,
+        opened: opened[section] ?? true,
+        all: expanded[section] ?? (atWork || chosenNeed !== undefined),
       }),
     ]),
   ) as Record<Section, ReturnType<typeof groupView>>;
@@ -672,6 +674,23 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
                   </ToggleGroupItem>
                 ))}
               </ToggleGroup>
+              {chosenNeed && total > 0 && (
+                <p
+                  role="status"
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground"
+                >
+                  {t("filter.showing", {
+                    count: total,
+                    total: (tab === "shortlist" ? tabs.shortlist : tabs.matches).length,
+                    need:
+                      coverage.find((one) => one.position === chosenNeed.position)?.name ??
+                      chosenNeed.statement,
+                  })}
+                  <TextButton size="sm" onClick={() => setNeed(null)}>
+                    {t("empty.clear")}
+                  </TextButton>
+                </p>
+              )}
             </div>
           )}
 
