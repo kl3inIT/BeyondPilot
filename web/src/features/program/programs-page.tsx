@@ -6,7 +6,7 @@ import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import type { ProgramEvent, ProgramSummary } from "@/lib/api/generated";
-import { programApplyUrl, programRoute, siteRoutes } from "@/lib/site";
+import { programApplyRoute, programRoute, siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
 import { ProgramCountdown } from "./program-countdown";
@@ -159,7 +159,7 @@ async function OpenProgram({
   const t = await getTranslations("Programs");
   const applications = program.applications;
   const open = program.phase === "open";
-  const apply = programApplyUrl(program.slug);
+  const apply = programApplyRoute(program.slug);
   const facts = program.upcomingEvents.slice(0, openCardEvents);
 
   return (

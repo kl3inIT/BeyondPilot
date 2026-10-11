@@ -76,17 +76,9 @@ export function adminUseCaseCandidatesRoute(id: string) {
   return `${siteRoutes.adminUseCases}/${id}/candidates`;
 }
 
-/** The application form of a program on BeyondPilot, where an application kept here is opened again. */
+/** The application form of a program on BeyondPilot: where Apply leads, and where an application kept here is opened again. */
 export function programApplyRoute(slug: string) {
   return `${programRoute(slug)}/apply`;
-}
-
-/**
- * Where Apply leads for a program that takes applications: its form on BeyondPilot. The AI for
- * Insurance Challenge keeps its interim form until it closes on 15 October 2026.
- */
-export function programApplyUrl(slug: string): string {
-  return slug === "insurance-ai-tasco" ? `${liveCampaignUrl}/apply` : programApplyRoute(slug);
 }
 
 /** One kind of email's wording in the admin area. */
@@ -138,8 +130,8 @@ export const titleSuffix = " · BeyondPilot";
 /** The address search engines and agents should know; staging and local hosts stay out of their index. */
 export const siteOrigin = "https://beyondpilot.ai";
 
-/** The live campaign runs on GenAI Fund's interim page until campaigns move onto BeyondPilot. */
-export const liveCampaignUrl = "https://beyondpilot.genaifund.ai/insurance-ai-tasco";
+/** The live campaign's program on BeyondPilot, where its page and its application form are. */
+export const liveCampaignSlug = "insurance-ai-tasco";
 
 /** Submissions to the live campaign close at 23:59 Vietnam time (ICT) on 15 October 2026. */
 export const liveCampaignDeadline = "2026-10-15T23:59:00+07:00";

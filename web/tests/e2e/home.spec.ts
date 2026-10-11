@@ -12,7 +12,7 @@ test.describe("home page", () => {
 
     await expect(
       page.getByRole("link", { name: /AI for Insurance Challenge × Tasco.*Apply/ }),
-    ).toHaveAttribute("href", "https://beyondpilot.genaifund.ai/insurance-ai-tasco");
+    ).toHaveAttribute("href", "/programs/insurance-ai-tasco");
     await expect(
       page.getByRole("heading", { level: 1, name: /Your next step in\s+AI starts here/ }),
     ).toBeVisible();

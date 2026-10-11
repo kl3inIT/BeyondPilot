@@ -79,7 +79,7 @@ The folder rules are in [conventions › Frontend › Structure](docs/convention
 | `i18n/`, `proxy.ts`, `../messages/` | Locale routing (`en` without a prefix, `vi` under `/vi`) and the two message catalogs                                                                                                        |
 | `styles/tokens.css`                 | Semantic design tokens, light and dark                                                                                                                                                       |
 
-The home page links its campaign call to action to the interim campaign page that GenAI Fund runs outside this repository.
+The home page links its campaign call to action to the campaign's own program page and application form on BeyondPilot.
 
 ## Identity and authorization
 

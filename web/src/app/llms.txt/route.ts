@@ -1,7 +1,13 @@
 import { getTranslations } from "next-intl/server";
 
 import { faqQuestions } from "@/components/sections/faq/faq-questions";
-import { genaiFundLinks, liveCampaignDeadline, liveCampaignUrl, siteOrigin } from "@/lib/site";
+import {
+  genaiFundLinks,
+  liveCampaignDeadline,
+  liveCampaignSlug,
+  programRoute,
+  siteOrigin,
+} from "@/lib/site";
 
 // The campaign turns to closed at its deadline, so the file is answered at request time.
 export const dynamic = "force-dynamic";
@@ -37,7 +43,7 @@ export async function GET() {
     "",
     "## Programs",
     "",
-    `- [${campaign("name")}](${liveCampaignUrl}): ${campaign("partners")}. ${campaign("question")} ${open ? campaign("closes") : campaign("closed")}. ${campaign("facts.briefing")}: ${campaign("facts.briefingWhen")}. ${campaign("facts.demoDay")}: ${campaign("facts.demoDayWhen")}. ${campaign("facts.investment")}: ${campaign("facts.investmentValue")}.`,
+    `- [${campaign("name")}](${siteOrigin}${programRoute(liveCampaignSlug)}): ${campaign("partners")}. ${campaign("question")} ${open ? campaign("closes") : campaign("closed")}. ${campaign("facts.briefing")}: ${campaign("facts.briefingWhen")}. ${campaign("facts.demoDay")}: ${campaign("facts.demoDayWhen")}. ${campaign("facts.investment")}: ${campaign("facts.investmentValue")}.`,
     "",
     "## Questions and answers",
     "",

@@ -14,7 +14,7 @@ import {
 import { readProgramUseCases } from "@/features/usecase/use-cases-queries";
 import { Link } from "@/i18n/navigation";
 import type { Program } from "@/lib/api/generated";
-import { programApplyUrl, siteRoutes } from "@/lib/site";
+import { programApplyRoute, siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
 import { ProgramCountdown } from "./program-countdown";
@@ -66,7 +66,7 @@ async function ProgramPage({ program }: { program: Program }) {
   const now = renderedAt();
   const steps = await timelineOf(program, format);
   const applications = program.applications;
-  const apply = programApplyUrl(program.slug);
+  const apply = programApplyRoute(program.slug);
   const open = program.phase === "open" && applications;
   const kind = [types(program.type), program.partnerName].filter(Boolean).join(" · ");
   // The card beside the page is for applying and the steps ahead; a program with neither has none.

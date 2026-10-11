@@ -21,7 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { readProgramUseCases } from "@/features/usecase/use-cases-queries";
 import type { Program } from "@/lib/api/generated";
-import { genaiFundLinks, liveCampaignUrl, programApplyUrl } from "@/lib/site";
+import { genaiFundLinks, programApplyRoute } from "@/lib/site";
 
 import { ProgramCountdown } from "../program-countdown";
 import { deadlineText, programFormatter, renderedAt } from "../program-format";
@@ -129,9 +129,6 @@ async function ApplyRail({
   return (
     <>
       <ApplyCard program={program} steps={steps} now={now} />
-      <Button prominence="secondary" href={liveCampaignUrl}>
-        {t("rail.readBrief")}
-      </Button>
       <p className="text-xs text-muted-foreground">{t("rail.note")}</p>
     </>
   );
@@ -152,7 +149,7 @@ async function TascoPage({ program }: { program: Program }) {
   const now = renderedAt();
   const steps = await timelineOf(program, format);
   const applications = program.applications;
-  const apply = programApplyUrl(program.slug);
+  const apply = programApplyRoute(program.slug);
   const open = program.phase === "open" && applications;
 
   return (
