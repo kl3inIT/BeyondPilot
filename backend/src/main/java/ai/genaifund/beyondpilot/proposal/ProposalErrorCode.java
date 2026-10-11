@@ -93,7 +93,46 @@ public enum ProposalErrorCode implements ErrorCode {
 			"The outcomes of this program have been released, so the review can no longer change."),
 
 	OUTCOMES_NOT_READY("PROPOSAL_OUTCOMES_NOT_READY", ErrorCategory.CONFLICT,
-			"Outcomes are released once applications have closed and every application has a decision.");
+			"Outcomes are released once applications have closed and every application has a decision."),
+
+	USE_CASE_NOT_FOUND("PROPOSAL_USE_CASE_NOT_FOUND", ErrorCategory.NOT_FOUND,
+			"There is no such use case."),
+
+	USE_CASE_CLOSED("PROPOSAL_USE_CASE_CLOSED", ErrorCategory.CONFLICT,
+			"This use case no longer takes proposals."),
+
+	OWN_USE_CASE("PROPOSAL_OWN_USE_CASE", ErrorCategory.NOT_PERMITTED,
+			"Your organization posted this use case, so it cannot send a proposal to it."),
+
+	NO_ORGANIZATION("PROPOSAL_NO_ORGANIZATION", ErrorCategory.NOT_PERMITTED,
+			"Join or set up an organization to send a proposal."),
+
+	ORGANIZATION_NOT_APPROVED("PROPOSAL_ORGANIZATION_NOT_APPROVED", ErrorCategory.NOT_PERMITTED,
+			"Your organization can send proposals once GenAI Fund has approved it."),
+
+	PROPOSAL_NOT_FOUND("PROPOSAL_NOT_FOUND", ErrorCategory.NOT_FOUND,
+			"There is no such proposal."),
+
+	ALREADY_SENT("PROPOSAL_ALREADY_SENT", ErrorCategory.CONFLICT,
+			"This proposal was sent, so it can no longer change."),
+
+	APPROACH_REQUIRED("PROPOSAL_APPROACH_REQUIRED", ErrorCategory.VALIDATION,
+			"Say how the solution solves this use case."),
+
+	PROFILE_INCOMPLETE("PROPOSAL_PROFILE_INCOMPLETE", ErrorCategory.VALIDATION,
+			"Complete your profile first: a headline, a role, a skill and a short text about you."),
+
+	TEAM_INVALID("PROPOSAL_TEAM_INVALID", ErrorCategory.VALIDATION,
+			"The team can name only members of your organization, each once, and at most one primary contact."),
+
+	TEAM_INCOMPLETE("PROPOSAL_TEAM_INCOMPLETE", ErrorCategory.VALIDATION,
+			"Name at least one person, give each a role and choose the primary contact."),
+
+	PDF_REQUIRED("PROPOSAL_PDF_REQUIRED", ErrorCategory.VALIDATION,
+			"Add the proposal as a PDF."),
+
+	EDIT_WINDOW_CLOSED("PROPOSAL_EDIT_WINDOW_CLOSED", ErrorCategory.CONFLICT,
+			"This proposal was sent, and the time to edit it has ended.");
 
 	private final String code;
 	private final ErrorCategory category;

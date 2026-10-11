@@ -45,7 +45,8 @@ type AdminDestination = keyof typeof adminIcons;
 
 /**
  * The title of a top-level admin page, after its destination's icon as the sidebar shows it, so the page and the
- * highlighted item read as one place. A page below a destination keeps a plain title and its way back.
+ * highlighted item read as one place. A page below a destination keeps a plain title and its way back. On a narrow
+ * screen the bar above the page already shows this title, so here it stays for assistive technology only.
  */
 function AdminPageTitle({
   destination,
@@ -59,7 +60,10 @@ function AdminPageTitle({
   const Icon = adminIcons[destination];
   return (
     <h1
-      className={cn("flex items-center gap-2.5 text-2xl font-semibold tracking-tight", className)}
+      className={cn(
+        "flex items-center gap-2.5 text-2xl font-semibold tracking-tight max-md:sr-only",
+        className,
+      )}
     >
       <Icon
         aria-hidden="true"

@@ -110,7 +110,7 @@ final class SolutionViews {
 				solution.getSummary(), solution.getMaturity(), solution.getStatus(), solution.getDecisionReason(),
 				solution.getDecisionMessage(), solution.getSuspendedAt(), solution.getSuspensionReason(),
 				solution.getSuspensionMessage(), solution.isListed(), solution.missing(), solution.getSubmittedAt(),
-				solution.getUpdatedAt(), deploymentsAwaiting);
+				solution.getUpdatedAt(), deploymentsAwaiting, solution.getLogoFileId(), solution.getViewKey());
 	}
 
 	static AdminSolutionSummaryResponse adminSummary(SolutionQueryRepository.Row row, String organizationName,

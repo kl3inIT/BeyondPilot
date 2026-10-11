@@ -1763,7 +1763,12 @@
           },
           "hint": "PDF, Word, Excel, PowerPoint, CSV or text files, or PNG, JPEG or WebP images: up to {count} files, {size} each."
         },
-        "publishNoteUnnamed": "Publishing makes this use case visible immediately, without the organization’s name."
+        "publishNoteUnnamed": "Publishing makes this use case visible immediately, without the organization’s name.",
+        "proposalEditDays": {
+          "label": "Days a sent proposal can be edited",
+          "hint": "From 0 to 90 days after a provider sends a proposal. 0 means a sent proposal cannot be edited. Editing also ends when the use case closes.",
+          "invalid": "Enter a whole number of days from 0 to 90."
+        }
       },
       "untitled": "Untitled use case",
       "actions": {
@@ -1839,7 +1844,8 @@
         },
         "readOnly": "Read only: this is what {organization} wrote.",
         "viewDetails": "View details",
-        "backToReview": "Back to review"
+        "backToReview": "Back to review",
+        "proposalEditDays": "{days, plural, =0 {Sent proposals cannot be edited.} one {Sent proposals can be edited for # day after sending.} other {Sent proposals can be edited for # days after sending.}}"
       }
     },
     "ai": {
@@ -4410,7 +4416,8 @@
       },
       "references": {
         "title": "Customer references & case studies"
-      }
+      },
+      "sharedByLink": "Shared by link: this solution has not been published."
     },
     "mine": {
       "metaTitle": "Solutions · BeyondPilot",
@@ -4870,10 +4877,6 @@
       "metaTitle": "AI talent · BeyondPilot",
       "title": "AI talent",
       "lead": "Engineers and builders who deploy AI for businesses.",
-      "founders": {
-        "title": "Founders in the GenAI Fund network",
-        "description": "Startup founders GenAI Fund backs and works with."
-      },
       "create": "Create a talent profile",
       "count": "Showing {shown} of {total}",
       "total": "{count, plural, one {# person} other {# people}}",
@@ -6464,8 +6467,7 @@
         "closes": "Closes {when}",
         "noDeadline": "No closing date",
         "send": "Send a proposal",
-        "save": "Save for later",
-        "note": "A proposal reuses your solution profile."
+        "note": "{days, plural, one {Proposals can be edited for # day after sending.} other {Proposals can be edited for # days after sending.}}"
       }
     },
     "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
@@ -7058,6 +7060,271 @@
       "agreed": "You agreed.",
       "said": "You said: {group}.",
       "counts": "{n, plural, one {# answer} other {# answers}}, {d, plural, one {# disagrees} other {# disagree}}"
+    }
+  },
+  "UseCaseProposal": {
+    "errors": {
+      "PROPOSAL_USE_CASE_NOT_FOUND": "There is no such use case.",
+      "PROPOSAL_USE_CASE_CLOSED": "This use case no longer takes proposals.",
+      "PROPOSAL_OWN_USE_CASE": "Your organization posted this use case, so it cannot send a proposal to it.",
+      "PROPOSAL_NO_ORGANIZATION": "Join or set up an organization to send a proposal.",
+      "PROPOSAL_ORGANIZATION_NOT_APPROVED": "Your organization can send proposals once GenAI Fund has approved it.",
+      "PROPOSAL_NOT_FOUND": "There is no such proposal.",
+      "PROPOSAL_ALREADY_SENT": "This proposal was sent, so it can no longer change.",
+      "PROPOSAL_SOLUTION_REQUIRED": "Choose the solution you send.",
+      "PROPOSAL_SOLUTION_NOT_FOUND": "Choose a solution of your organization.",
+      "PROPOSAL_APPROACH_REQUIRED": "Say how the solution solves this use case.",
+      "PROPOSAL_PROFILE_INCOMPLETE": "Complete your profile first: a headline, a role, a skill and a short text about you.",
+      "PROPOSAL_TEAM_INVALID": "The team can name only members of your organization, each once, and at most one primary contact.",
+      "PROPOSAL_TEAM_INCOMPLETE": "Name at least one person, give each a role and choose the primary contact.",
+      "PROPOSAL_PDF_REQUIRED": "Add the proposal as a PDF.",
+      "PROPOSAL_CHANGED_MEANWHILE": "Someone saved this proposal in the meantime. Reload it to see their changes.",
+      "REQUEST_INVALID": "Something in the proposal is not valid. Check it and try again.",
+      "unknown": "Something went wrong. Try again in a moment.",
+      "PROPOSAL_EDIT_WINDOW_CLOSED": "The time to edit this proposal has ended, so your changes were not saved."
+    },
+    "received": {
+      "column": "Proposals",
+      "none": "No count",
+      "count": "{count, plural, one {# proposal} other {# proposals}}",
+      "viewProposals": "View proposals",
+      "status": {
+        "new": "New"
+      },
+      "tabs": {
+        "label": "Filter proposals",
+        "all": "All",
+        "shortlisted": "Shortlisted",
+        "declined": "Declined"
+      },
+      "list": {
+        "metaTitle": "Proposals received",
+        "back": "Use cases",
+        "closes": "Proposals close {when}",
+        "empty": {
+          "title": "No proposals yet",
+          "description": "Proposals from AI providers appear here as soon as they are sent."
+        },
+        "columns": {
+          "proposal": "Proposal",
+          "status": "Status",
+          "sent": "Sent"
+        }
+      },
+      "detail": {
+        "metaTitle": "Proposal",
+        "back": "Proposals",
+        "decline": "Decline",
+        "shortlist": "Shortlist",
+        "meta": "{useCase} · sent {sent}",
+        "solutions": {
+          "title": "AI solutions",
+          "approach": "Approach",
+          "noApproach": "No approach written."
+        },
+        "sender": {
+          "title": "Sender profile",
+          "name": "Name",
+          "headline": "Headline"
+        },
+        "team": {
+          "title": "Team",
+          "person": "Person",
+          "role": "Role",
+          "primary": "Primary contact"
+        },
+        "file": {
+          "title": "Proposal PDF",
+          "download": "Download PDF",
+          "none": "No PDF attached."
+        },
+        "edited": "Edited {date}"
+      },
+      "edited": "Edited {date}"
+    },
+    "actions": {
+      "proposals": "Proposals",
+      "continue": "Continue your proposal",
+      "sent": "Your organization sent a proposal.",
+      "sentOn": "Your organization sent a proposal on {date}.",
+      "view": "View proposal",
+      "edit": "Edit proposal",
+      "editUntil": "You can edit it until {when}.",
+      "editClosed": {
+        "disabled": "Editing is closed: this use case does not allow editing after sending.",
+        "useCaseClosed": "Editing is closed because the use case has closed.",
+        "windowPassed": "Editing is closed: the time to edit has ended."
+      }
+    },
+    "wizard": {
+      "metaTitle": "Send a proposal · BeyondPilot",
+      "headerTitle": "Proposal",
+      "stepsHeading": "Your proposal",
+      "saveNote": "Only people at {name} can see your draft.",
+      "saving": "Saving…",
+      "notSaved": "Not saved",
+      "saved": "Saved {time}",
+      "changed": "A colleague changed this proposal while you were editing. Reload it to see their changes.",
+      "reload": "Reload",
+      "back": "Back",
+      "continue": "Continue",
+      "saveAndReturn": "Save and return later",
+      "send": "Send proposal",
+      "steps": {
+        "organization": "Organization",
+        "solutions": "AI solutions",
+        "profile": "Your profile",
+        "team": "Team",
+        "pdf": "Proposal PDF",
+        "review": "Review"
+      },
+      "leads": {
+        "organization": "The proposal is sent for your organization.",
+        "solutions": "Choose the AI solutions of your organization that you offer for this use case, and explain how they solve it.",
+        "profile": "Your talent profile.",
+        "team": "Name the people who would work on this use case, the role of each, and who the posting organization should speak to.",
+        "pdf": "Upload one PDF with your proposal: what you would do, how, and in what time.",
+        "review": "Check what you are sending. You cannot change a proposal after you send it."
+      },
+      "organization": {
+        "approved": "Approved by GenAI Fund"
+      },
+      "solutions": {
+        "count": "{count, plural, one {# solution} other {# solutions}}",
+        "add": "Add solution",
+        "empty": {
+          "title": "No solutions yet",
+          "lead": "Add at least one solution of your organization."
+        },
+        "remove": "Remove {name}",
+        "approach": "How the solutions solve this use case",
+        "approachHint": "Say what each solution does for this use case, and what you would adapt.",
+        "needed": {
+          "solution": "Add at least one solution.",
+          "approach": "Explain how the solutions solve this use case."
+        },
+        "editorTitle": "New solution",
+        "editorLead": "Write the solution in four steps. Close the editor to return to your proposal.",
+        "pick": {
+          "title": "Add solutions to this proposal",
+          "lead": "Tick the solutions of your organization to offer.",
+          "select": "Select",
+          "choose": "Offer {name}",
+          "empty": "Your organization has no solutions yet.",
+          "note": "Any solution can be added. Not in the list?",
+          "cancel": "Cancel",
+          "add": "{count, plural, one {Add # solution} other {Add # solutions}}"
+        }
+      },
+      "profile": {
+        "saveAndReturn": "Save and return later",
+        "back": "Back",
+        "continue": "Continue",
+        "readiness": {
+          "missing": "Add these before you continue",
+          "note": "A proposal shows your headline, role, skills and about text to the organization. They keep a copy of it as it is when you send."
+        }
+      },
+      "team": {
+        "count": "{count, plural, one {# member} other {# members}}",
+        "add": "Add member",
+        "empty": {
+          "title": "No team yet",
+          "lead": "Add the people of your organization who would work on this use case."
+        },
+        "columns": {
+          "member": "Member",
+          "role": "Role",
+          "primary": "Primary contact",
+          "actions": "Actions"
+        },
+        "roleOf": "Role of {name}",
+        "primaryOf": "{name} is the primary contact",
+        "remove": "Remove {name}",
+        "rolePlaceholder": "Project lead",
+        "needed": {
+          "member": "Add at least one member.",
+          "role": "Give every member a role."
+        },
+        "dialog": {
+          "title": "Add a team member",
+          "lead": "Choose a person of your organization and type their role in this proposal.",
+          "person": "Person",
+          "role": "Role",
+          "roleRequired": "Enter the role.",
+          "cancel": "Cancel",
+          "submit": "Add member"
+        }
+      },
+      "pdf": {
+        "hint": "One PDF, up to 25 MB.",
+        "needed": "Upload the proposal as a PDF."
+      },
+      "review": {
+        "edit": "Edit",
+        "nothing": "Nothing yet.",
+        "primary": "Primary contact",
+        "missing": "Finish these steps before you send",
+        "confirm": "I confirm that what I am sending is accurate and that I may offer it for my organization."
+      },
+      "blocked": {
+        "organization": "Go to my organization",
+        "backToUseCase": "Back to the use case",
+        "noOrganization": {
+          "title": "You need an organization to send a proposal",
+          "lead": "A proposal is sent for an organization. Create one or join one, then come back."
+        },
+        "notApproved": {
+          "title": "Your organization is not approved yet",
+          "lead": "Only organizations GenAI Fund has approved can send proposals. You can send one once yours is approved."
+        },
+        "own": {
+          "title": "You cannot send a proposal to your own use case",
+          "lead": "This use case was posted by your organization."
+        },
+        "closed": {
+          "title": "This use case no longer takes proposals",
+          "lead": "Its closing date has passed or it is no longer published."
+        }
+      },
+      "sent": {
+        "metaTitle": "Proposal sent · BeyondPilot",
+        "title": "Your proposal was sent",
+        "lead": "The organization that posted the use case can now read it.",
+        "rows": {
+          "useCase": "Use case",
+          "organization": "Sent for",
+          "solutions": "Solutions",
+          "sent": "Sent"
+        },
+        "backToUseCase": "Back to the use case",
+        "moreUseCases": "Find more use cases"
+      },
+      "edit": {
+        "title": "You are editing a sent proposal",
+        "banner": "Your changes are visible to the organization that posted the use case once you save them. Editing closes {until}.",
+        "note": "Nothing is saved until you choose Save changes.",
+        "reviewLead": "Check your changes. They replace what you sent as soon as you save.",
+        "profileHint": "The profile copy sent with the proposal stays as it was when you sent it. Changes to your profile are not copied.",
+        "unsaved": "Changes not saved yet",
+        "pristine": "No changes yet",
+        "save": "Save changes",
+        "cancel": "Cancel",
+        "saved": "Your changes to the proposal were saved."
+      }
+    },
+    "view": {
+      "metaTitle": "Your proposal · BeyondPilot",
+      "back": "Back to the use case",
+      "title": "Your proposal",
+      "edit": "Edit proposal",
+      "meta": "{useCase}",
+      "sent": "Sent {date}",
+      "edited": "Edited {date}",
+      "editUntil": "You can edit it until {when}."
+    },
+    "solutionList": {
+      "newTab": "(opens in a new tab)"
     }
   }
 }
