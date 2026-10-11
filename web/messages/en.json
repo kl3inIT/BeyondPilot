@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "BeyondPilot",
-    "description": "BeyondPilot is an AI startup funded by GenAI Fund. Its AI adoption agent helps enterprises and AI builders find AI solutions, AI talent, enterprise use cases, events and programs."
+    "description": "BeyondPilot is an AI startup funded by GenAI Fund. It helps enterprises and AI builders find AI solutions, AI talent, enterprise use cases, events and programs."
   },
   "Site": {
     "brand": "BeyondPilot",
@@ -95,7 +95,7 @@
     "hero": {
       "titleStart": "Your next step in",
       "titleEnd": "AI starts here.",
-      "description": "BeyondPilot is an AI startup funded by GenAI Fund. Our AI adoption agent helps you discover AI solutions, find expert talent, explore real business challenges, and connect with events and programs that move you forward.",
+      "description": "BeyondPilot is an AI startup funded by GenAI Fund. We help you discover AI solutions, find expert talent, explore real business challenges, and connect with events and programs that move you forward.",
       "searchLabel": "Search AI solutions, talent, use cases, events, and programs",
       "searchPlaceholder": "What are you looking to achieve with AI?",
       "searchPlaceholderShort": "Your AI goal",
@@ -245,7 +245,7 @@
       "eyebrow": "FAQ",
       "title": "Frequently asked questions",
       "whatQ": "What is BeyondPilot?",
-      "whatA": "BeyondPilot is an AI startup funded by GenAI Fund. Its AI adoption agent helps you discover AI solutions, find AI talent, explore enterprise use cases and projects, and connect with AI events and programs.",
+      "whatA": "BeyondPilot is an AI startup funded by GenAI Fund. It helps you discover AI solutions, find AI talent, explore enterprise use cases and projects, and connect with AI events and programs.",
       "whoQ": "Who is BeyondPilot for?",
       "whoA": "Enterprises looking for AI solutions and builders, AI companies and startups with something to offer, and AI specialists looking for projects.",
       "findQ": "How does BeyondPilot help me find relevant AI solutions or talent?",

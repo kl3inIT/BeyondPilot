@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "BeyondPilot",
-    "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của BeyondPilot giúp doanh nghiệp và nhà phát triển AI tìm giải pháp AI, nhân lực AI, bài toán doanh nghiệp, sự kiện và chương trình."
+    "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. BeyondPilot giúp doanh nghiệp và nhà phát triển AI tìm giải pháp AI, nhân lực AI, bài toán doanh nghiệp, sự kiện và chương trình."
   },
   "Site": {
     "brand": "BeyondPilot",
@@ -95,7 +95,7 @@
     "hero": {
       "titleStart": "Bước tiếp theo của bạn với",
       "titleEnd": "AI bắt đầu từ đây.",
-      "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của chúng tôi giúp bạn tìm giải pháp AI, tìm chuyên gia, khám phá các bài toán doanh nghiệp thực tế và kết nối với sự kiện, chương trình giúp bạn tiến lên.",
+      "description": "BeyondPilot là startup AI được GenAI Fund đầu tư. Chúng tôi giúp bạn tìm giải pháp AI, tìm chuyên gia, khám phá các bài toán doanh nghiệp thực tế và kết nối với sự kiện, chương trình giúp bạn tiến lên.",
       "searchLabel": "Tìm giải pháp AI, nhân lực, bài toán, sự kiện và chương trình",
       "searchPlaceholder": "Bạn muốn đạt được điều gì với AI?",
       "searchPlaceholderShort": "Mục tiêu AI của bạn",
@@ -245,7 +245,7 @@
       "eyebrow": "Hỏi đáp",
       "title": "Câu hỏi thường gặp",
       "whatQ": "BeyondPilot là gì?",
-      "whatA": "BeyondPilot là startup AI được GenAI Fund đầu tư. Trợ lý áp dụng AI của BeyondPilot giúp bạn tìm giải pháp AI, tìm nhân lực AI, khám phá bài toán và dự án của doanh nghiệp, và kết nối với sự kiện, chương trình AI.",
+      "whatA": "BeyondPilot là startup AI được GenAI Fund đầu tư. BeyondPilot giúp bạn tìm giải pháp AI, tìm nhân lực AI, khám phá bài toán và dự án của doanh nghiệp, và kết nối với sự kiện, chương trình AI.",
       "whoQ": "BeyondPilot dành cho ai?",
       "whoA": "Doanh nghiệp đang tìm giải pháp và nhà phát triển AI, các công ty và startup AI có sản phẩm để giới thiệu, và chuyên gia AI đang tìm dự án.",
       "findQ": "BeyondPilot giúp tôi tìm giải pháp hoặc nhân lực AI phù hợp như thế nào?",

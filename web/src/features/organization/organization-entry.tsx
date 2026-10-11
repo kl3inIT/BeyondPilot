@@ -21,14 +21,13 @@ type AnswerProps = {
   when: string;
   /** What the person can do about it, at the end of the card. */
   action: React.ReactNode;
-  /** A second way on, under the way back. */
+  /** A second way on, under the card. */
   more?: React.ReactNode;
   note: string;
 };
 
 /** Where a request to get into an organization stands: the organization, what can be done, and why. */
 function Answer({ title, organization, when, action, more, note }: AnswerProps) {
-  const t = useTranslations("Organization.entry");
   const typeName = useVocabulary("organizationType");
   const countryName = useCountryName();
 
@@ -53,12 +52,7 @@ function Answer({ title, organization, when, action, more, note }: AnswerProps) 
         </div>
         {action}
       </div>
-      <div className="flex flex-col gap-4">
-        <Button prominence="secondary" className="w-full" href={siteRoutes.home}>
-          {t("back")}
-        </Button>
-        {more}
-      </div>
+      {more}
       <p className="text-xs text-muted-foreground">{note}</p>
     </div>
   );
