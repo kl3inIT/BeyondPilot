@@ -151,10 +151,11 @@ async function ProgramsPage({
               title={t("open")}
               count={t("programCount", { count: groups.open.length })}
             />
-            {groups.open.map((program) => (
+            {groups.open.map((program, index) => (
               <OpenProgram
                 key={program.slug}
                 program={program}
+                preload={index === 0}
                 kind={types(program.type)}
                 format={format}
               />
@@ -227,10 +228,13 @@ async function OpenProgram({
   program,
   kind,
   format,
+  preload = false,
 }: {
   program: ProgramSummary;
   kind: string;
   format: Format;
+  /** The first card preloads its cover, the largest paint of the page on a phone. */
+  preload?: boolean;
 }) {
   const t = await getTranslations("Programs");
   const applications = program.applications;
@@ -247,6 +251,7 @@ async function OpenProgram({
             alt=""
             fill
             unoptimized
+            preload={preload}
             sizes="(min-width: 1280px) 30rem, 100vw"
             className="object-cover"
           />

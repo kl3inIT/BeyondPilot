@@ -18,9 +18,16 @@ const CAPABILITY_LIMIT = 3;
 /**
  * One solution in the directory: its cover with its logo over the corner, what it is called, who
  * offers it, what it does and its capabilities. The last line is the proof a card can state: how
- * many customer deployments GenAI Fund approved, or that none is published.
+ * many customer deployments GenAI Fund approved, or that none is published. The first card of a list
+ * preloads its cover, which is the largest paint of the page on a phone.
  */
-function SolutionCard({ solution }: { solution: PublicSolutionSummary }) {
+function SolutionCard({
+  solution,
+  preload = false,
+}: {
+  solution: PublicSolutionSummary;
+  preload?: boolean;
+}) {
   const t = useTranslations("Solution.directory");
   const focusArea = useVocabulary("focusArea");
 
@@ -36,6 +43,7 @@ function SolutionCard({ solution }: { solution: PublicSolutionSummary }) {
               fill
               sizes="(min-width: 1280px) 400px, (min-width: 768px) 50vw, 100vw"
               unoptimized
+              preload={preload}
               className="object-cover"
             />
           ) : (
