@@ -5,6 +5,7 @@ import { Button } from "@/components/actions/button";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 type EmailTab = "templates" | "activity" | "suppressions" | "settings";
 
@@ -32,7 +33,8 @@ async function EmailHeader({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-start justify-between gap-4">
+      {/* On a narrow screen the title is in the bar above; without a button the row would be an empty gap. */}
+      <div className={cn("flex items-start justify-between gap-4", !action && "max-md:contents")}>
         <AdminPageTitle destination="email">{t("title")}</AdminPageTitle>
         {action}
       </div>
