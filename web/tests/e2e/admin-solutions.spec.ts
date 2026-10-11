@@ -51,7 +51,9 @@ test.describe("admin solutions", () => {
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Solutions");
     const organization = page.getByRole("combobox", { name: "Organization" });
-    await expect(organization).toHaveText("All organizations");
+    await expect(organization.locator('[data-slot="select-value"]')).toHaveText(
+      "All organizations",
+    );
     await organization.click();
     await expect(page.getByRole("option", { name: "Pocket Policy" })).toBeVisible();
     await page.getByRole("option", { name: "Pocket Policy" }).click();
@@ -110,7 +112,7 @@ test.describe("admin solutions", () => {
     await expect(page).toHaveURL(/[?&]q=claims/);
     await expect(shownSolutions(page)).toHaveCount(1);
 
-    await page.getByRole("link", { name: "Clear search and filter" }).click();
+    await page.getByRole("button", { name: "Clear filters", exact: true }).click();
     await expect(page).toHaveURL("/admin/solutions");
 
     // A solution taken down is found under its own status.
