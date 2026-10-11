@@ -4,6 +4,7 @@ import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
 import { DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { applyFormatter } from "@/features/apply/apply-format";
 import { programFormatter } from "@/features/program/program-format";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -108,31 +109,30 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{head.name}</h1>
-          <p className="text-sm text-muted-foreground">
-            {head.operator ? lead : t("judgeLead", { count: head.criteria.length })}
-          </p>
-        </div>
-        {head.operator && (
-          <div className="flex flex-wrap items-center gap-2">
-            <ExportApplications
-              programId={head.programId}
-              slug={head.slug}
-              applicationIds={narrowed ? shown.map((item) => item.id) : null}
-              disabled={shown.length === 0}
-            />
-            <Button
-              prominence={head.releasedAt ? "secondary" : "primary"}
-              href={adminProgramReleaseRoute(head.programId)}
-            >
-              {head.releasedAt ? t("seeRelease") : t("release")}
-            </Button>
-          </div>
-        )}
-      </div>
-      {tabs}
+      <AdminPageHeader
+        title={head.name}
+        lead={head.operator ? lead : t("judgeLead", { count: head.criteria.length })}
+        actions={
+          head.operator && (
+            <>
+              <ExportApplications
+                programId={head.programId}
+                slug={head.slug}
+                applicationIds={narrowed ? shown.map((item) => item.id) : null}
+                disabled={shown.length === 0}
+              />
+              <Button
+                prominence={head.releasedAt ? "secondary" : "primary"}
+                href={adminProgramReleaseRoute(head.programId)}
+              >
+                {head.releasedAt ? t("seeRelease") : t("release")}
+              </Button>
+            </>
+          )
+        }
+      >
+        {tabs}
+      </AdminPageHeader>
       {head.criteria.length === 0 && (
         <p className="rounded-lg border bg-muted p-3 text-sm">
           {head.operator ? t("noCriteria.operator") : t("noCriteria.judge")}

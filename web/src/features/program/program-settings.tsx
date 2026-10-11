@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/actions/button";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm, type ServerErrors } from "@/components/form/app-form";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import {
   Field,
@@ -202,40 +203,42 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
         void form.handleSubmit();
       }}
     >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex flex-col gap-1">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">{program.name}</h1>
-            <Badge variant={program.status === "published" ? "success" : state.variant}>
-              {program.status === "published" ? t("published") : states("draft")}
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {dirty
-              ? t("unsaved")
-              : program.status === "published"
-                ? t("context.published")
-                : t("context.draft")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* With unsaved changes these move to the bar that stays at the foot of the screen. */}
-          <div className={dirty ? "hidden" : "hidden items-center gap-2 md:flex"}>
-            <form.AppForm>
-              <form.SubmitButton prominence={draft ? "secondary" : "primary"}>
-                {t("save")}
-              </form.SubmitButton>
-            </form.AppForm>
-            {draft && (
-              <PublishButton program={program} dirty={dirty} blocked={blocked} save={save} />
-            )}
-          </div>
-          <Button prominence="secondary" href={programRoute(program.slug)}>
-            {t(draft ? "preview" : "viewPage")}
-          </Button>
-          <ProgramMenu program={program} />
-        </div>
-      </div>
+      <AdminPageHeader
+        title={program.name}
+        badges={
+          <Badge variant={program.status === "published" ? "success" : state.variant}>
+            {program.status === "published" ? t("published") : states("draft")}
+          </Badge>
+        }
+        lead={
+          dirty
+            ? t("unsaved")
+            : program.status === "published"
+              ? t("context.published")
+              : t("context.draft")
+        }
+        actions={
+          <>
+            {/* With unsaved changes these move to the bar that stays at the foot of the screen. */}
+            <div className={dirty ? "hidden" : "hidden items-center gap-2 md:flex"}>
+              <form.AppForm>
+                <form.SubmitButton prominence={draft ? "secondary" : "primary"}>
+                  {t("save")}
+                </form.SubmitButton>
+              </form.AppForm>
+              {draft && (
+                <PublishButton program={program} dirty={dirty} blocked={blocked} save={save} />
+              )}
+            </div>
+            <Button prominence="secondary" href={programRoute(program.slug)}>
+              {t(draft ? "preview" : "viewPage")}
+            </Button>
+            <ProgramMenu program={program} />
+          </>
+        }
+      >
+        {tabs}
+      </AdminPageHeader>
 
       <form.AppForm>
         <form.FormError />
@@ -252,8 +255,6 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
           }
         </form.Subscribe>
       )}
-
-      {tabs}
 
       <div className="flex flex-col gap-8">
         <SettingsSection title={t("basics.title")}>

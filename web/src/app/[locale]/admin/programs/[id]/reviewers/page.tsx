@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { readAdminProgram } from "@/features/program/program-queries";
 import { ProgramTabs } from "@/features/program/program-tabs";
@@ -36,13 +37,16 @@ export default async function ProgramReviewersRoute({
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{program.name}</h1>
-        <Badge variant={program.status === "published" ? "success" : "outline"}>
-          {program.status === "published" ? t("settings.published") : t("state.draft")}
-        </Badge>
-      </div>
-      <ProgramTabs id={id} current="reviewers" applications />
+      <AdminPageHeader
+        title={program.name}
+        badges={
+          <Badge variant={program.status === "published" ? "success" : "outline"}>
+            {program.status === "published" ? t("settings.published") : t("state.draft")}
+          </Badge>
+        }
+      >
+        <ProgramTabs id={id} current="reviewers" applications />
+      </AdminPageHeader>
       <ReviewersPage
         programId={id}
         programName={program.name}
