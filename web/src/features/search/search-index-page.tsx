@@ -15,7 +15,7 @@ import { Button } from "@/components/actions/button";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { HelpPopover } from "@/components/composites/help-popover";
 import { Status } from "@/components/composites/status";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import type { SearchIndex, SearchIndexKind } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -137,13 +137,16 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex items-center justify-between gap-4">
-        <AdminPageTitle destination="searchIndex">{t("title")}</AdminPageTitle>
-        <div className="hidden items-center gap-1 md:flex">
-          {rebuildHelp}
-          <RebuildIndex />
-        </div>
-      </div>
+      <AdminPageHeader
+        destination="searchIndex"
+        title={t("title")}
+        actions={
+          <div className="hidden items-center gap-1 md:flex">
+            {rebuildHelp}
+            <RebuildIndex />
+          </div>
+        }
+      />
 
       <section
         aria-label={t("semantic.label")}

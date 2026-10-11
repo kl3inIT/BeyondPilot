@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { ReviewStatus } from "@/components/composites/review-status";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { UseCaseTabs } from "@/features/usecase/use-case-tabs";
 import type { Matching, MyUseCase } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -33,6 +34,11 @@ function MatchingPage({ area, useCase, matching, selected }: MatchingPageProps) 
   const t = useTranslations("Matching");
   const statusLabel = useTranslations("Admin.useCases.status");
   const admin = area === "admin";
+  const status = (
+    <ReviewStatus appearance="pill" state={useCase.status}>
+      {statusLabel(useCase.status)}
+    </ReviewStatus>
+  );
 
   return (
     <div
@@ -42,30 +48,30 @@ function MatchingPage({ area, useCase, matching, selected }: MatchingPageProps) 
       )}
     >
       <div className={cn("flex w-full flex-col gap-5", !admin && "max-w-300")}>
-        <div className="flex flex-col gap-2">
-          {!admin && (
-            <TextButton href={siteRoutes.workspaceUseCases} className="self-start">
-              <ArrowLeftIcon aria-hidden="true" />
-              {t("head.back", { organization: useCase.organizationName })}
-            </TextButton>
-          )}
-          <h1
-            className={cn(
-              "font-semibold tracking-tight break-words",
-              admin ? "text-2xl" : "text-3xl",
-            )}
+        {admin ? (
+          <AdminPageHeader
+            title={useCase.title ?? t("head.untitled")}
+            badges={status}
+            lead={useCase.organizationName}
           >
-            {useCase.title ?? t("head.untitled")}
-          </h1>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            {admin && <span className="text-muted-foreground">{useCase.organizationName}</span>}
-            <ReviewStatus appearance="pill" state={useCase.status}>
-              {statusLabel(useCase.status)}
-            </ReviewStatus>
-          </div>
-        </div>
+            <UseCaseTabs area={area} id={useCase.id} current="candidates" />
+          </AdminPageHeader>
+        ) : (
+          <>
+            <div className="flex flex-col gap-2">
+              <TextButton href={siteRoutes.workspaceUseCases} className="self-start">
+                <ArrowLeftIcon aria-hidden="true" />
+                {t("head.back", { organization: useCase.organizationName })}
+              </TextButton>
+              <h1 className="text-3xl font-semibold tracking-tight break-words">
+                {useCase.title ?? t("head.untitled")}
+              </h1>
+              <div className="flex flex-wrap items-center gap-2 text-sm">{status}</div>
+            </div>
 
-        <UseCaseTabs area={area} id={useCase.id} current="candidates" />
+            <UseCaseTabs area={area} id={useCase.id} current="candidates" />
+          </>
+        )}
 
         <MatchingBoard matching={matching} selected={selected} />
       </div>
