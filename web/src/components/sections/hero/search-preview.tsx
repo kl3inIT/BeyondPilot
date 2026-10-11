@@ -6,12 +6,12 @@ import { PreviewBadge } from "@/components/sections/preview-badge";
 
 const tabs = ["all", "solutions", "useCases", "programs"] as const;
 
-/** Listings a search for "insurance claims" returns, one of each kind the site lists for it. */
+/** Listings a search for "AI agents" returns, one of each kind the site lists for it. */
 const results = [
-  { id: "papaya", kind: "solution", monogram: "PA", ink: "text-solution" },
-  { id: "infall", kind: "solution", monogram: "IN", ink: "text-solution" },
-  { id: "renewal", kind: "useCase", monogram: "TA", ink: "text-use-case" },
-  { id: "challenge", kind: "program", monogram: "AI", ink: "text-primary" },
+  { id: "revve", kind: "solution", monogram: "RE", ink: "text-solution" },
+  { id: "shieldbase", kind: "solution", monogram: "SH", ink: "text-solution" },
+  { id: "claims", kind: "useCase", monogram: "CC", ink: "text-use-case" },
+  { id: "fasttrack", kind: "program", monogram: "FT", ink: "text-primary" },
 ] as const;
 
 /**

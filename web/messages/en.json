@@ -110,8 +110,8 @@
         "programs": "Discover AI programs for my startup"
       },
       "preview": {
-        "alt": "Product preview: BeyondPilot search results for “insurance claims”, listing AI solutions, a use case and a program",
-        "address": "beyondpilot.ai/search?q=insurance+claims",
+        "alt": "Product preview: BeyondPilot search results for “AI agents”, listing AI solutions, a use case and a program",
+        "address": "beyondpilot.ai/search?q=ai+agents",
         "tabs": {
           "all": "All",
           "solutions": "AI solutions",
@@ -123,25 +123,25 @@
           "useCase": "Use case",
           "program": "Program"
         },
-        "papaya": {
-          "title": "Papaya",
-          "summary": "Reads complex medical documents with a multi-LLM pipeline, then helps adjusters decide routine claims.",
-          "meta": "Banking & finance · Cloud SaaS · Vietnam"
+        "revve": {
+          "title": "Revve AI",
+          "summary": "Always-on AI agents that call, text, email and chat from first click to renewal, growing revenue without extra headcount.",
+          "meta": "AI agents · Conversational AI · In production"
         },
-        "infall": {
-          "title": "Infall Insurtech",
-          "summary": "AI-driven OCR with decision and claim engines that automate claims from intake to payout.",
-          "meta": "Healthcare · Banking & finance · Vietnam"
+        "shieldbase": {
+          "title": "Shieldbase",
+          "summary": "An AI operating system for the enterprise that automates knowledge retrieval and workflows, with data privacy and governance built in.",
+          "meta": "AI security · Search & knowledge · Singapore"
         },
-        "renewal": {
-          "title": "AI for Insurance: Scaling Compulsory Motor Insurance Renewal",
-          "summary": "By Tasco. Find, reach and convert renewal-eligible customers with less manual effort.",
-          "meta": "Automotive & mobility"
+        "claims": {
+          "title": "AI-Powered Claim & Payment Automation",
+          "summary": "By Coca-Cola Beverages Vietnam. Submit, validate and reimburse trade claims faster, with fewer disputes for sales teams.",
+          "meta": "Consumer goods"
         },
-        "challenge": {
-          "title": "AI for Insurance Challenge × Tasco",
-          "summary": "Build an AI pilot with Tasco’s business team. Up to US$100,000 considered for investment.",
-          "meta": "Enterprise challenge · Submissions close 15 Oct"
+        "fasttrack": {
+          "title": "FastTrack AI Accelerator",
+          "summary": "Powered by GenAI Fund and accelerated by the NVIDIA Inception Program, for startups building enterprise AI.",
+          "meta": "Accelerator · Vietnam"
         }
       },
       "scopes": {

@@ -110,8 +110,8 @@
         "programs": "Tìm chương trình AI cho startup của tôi"
       },
       "preview": {
-        "alt": "Bản xem trước sản phẩm: kết quả tìm “insurance claims” trên BeyondPilot, gồm giải pháp AI, một bài toán và một chương trình",
-        "address": "beyondpilot.ai/search?q=insurance+claims",
+        "alt": "Bản xem trước sản phẩm: kết quả tìm “AI agents” trên BeyondPilot, gồm giải pháp AI, một bài toán và một chương trình",
+        "address": "beyondpilot.ai/search?q=ai+agents",
         "tabs": {
           "all": "Tất cả",
           "solutions": "Giải pháp AI",
@@ -123,25 +123,25 @@
           "useCase": "Bài toán",
           "program": "Chương trình"
         },
-        "papaya": {
-          "title": "Papaya",
-          "summary": "Đọc hồ sơ y tế phức tạp bằng chuỗi nhiều LLM, rồi hỗ trợ giám định viên quyết định các hồ sơ bồi thường thông thường.",
-          "meta": "Ngân hàng & tài chính · Cloud SaaS · Việt Nam"
+        "revve": {
+          "title": "Revve AI",
+          "summary": "AI agent luôn túc trực để gọi điện, nhắn tin, gửi email và chat từ lần nhấp đầu tiên đến khi tái tục, tăng doanh thu mà không cần thêm nhân sự.",
+          "meta": "AI agent · AI hội thoại · Đang vận hành"
         },
-        "infall": {
-          "title": "Infall Insurtech",
-          "summary": "OCR dùng AI cùng bộ máy quyết định và bồi thường, tự động hoá hồ sơ từ tiếp nhận đến chi trả.",
-          "meta": "Y tế · Ngân hàng & tài chính · Việt Nam"
+        "shieldbase": {
+          "title": "Shieldbase",
+          "summary": "Hệ điều hành AI cho doanh nghiệp, tự động hoá việc tra cứu tri thức và quy trình, có sẵn bảo mật và quản trị dữ liệu.",
+          "meta": "Bảo mật AI · Tìm kiếm & tri thức · Singapore"
         },
-        "renewal": {
-          "title": "AI for Insurance: Scaling Compulsory Motor Insurance Renewal",
-          "summary": "Của Tasco. Tìm, tiếp cận và chuyển đổi khách hàng đến hạn tái tục với ít thao tác thủ công hơn.",
-          "meta": "Ô tô & di chuyển"
+        "claims": {
+          "title": "AI-Powered Claim & Payment Automation",
+          "summary": "Của Coca-Cola Beverages Vietnam. Gửi, đối soát và hoàn trả các khoản claim thương mại nhanh hơn, ít tranh chấp hơn cho đội bán hàng.",
+          "meta": "Hàng tiêu dùng"
         },
-        "challenge": {
-          "title": "AI for Insurance Challenge × Tasco",
-          "summary": "Xây dựng một pilot AI cùng đội kinh doanh của Tasco. Có thể được xem xét đầu tư tối đa 100.000 USD.",
-          "meta": "Thử thách doanh nghiệp · Hạn nộp 15/10"
+        "fasttrack": {
+          "title": "FastTrack AI Accelerator",
+          "summary": "Do GenAI Fund vận hành và được NVIDIA Inception Program tăng tốc, dành cho startup xây dựng AI cho doanh nghiệp.",
+          "meta": "Chương trình tăng tốc · Việt Nam"
         }
       },
       "scopes": {

@@ -699,7 +699,7 @@
   ],
   "network_logos": {
     "used_in": "The network behind every program (web/public/partners/network/)",
-    "processing": "Rendered 112px tall on transparent in the organisation's own colours. A white ground is lifted off; The Anam's white artwork is redrawn in navy ink; the white lettering of KFC and FPT is cut out so the mark reads in one ink at night. The logos whose source is the Canva design \"Logo walls for GenAI Fund\" (shared by GenAI Fund on 11 October 2026) were taken from that wall, their near-white ground lifted off; the investors, community and press logos stay on file but are not shown.",
+    "processing": "Rendered 112px tall on transparent in the organisation's own colours. A white ground is lifted off; The Anam's white artwork is redrawn in navy ink; the white lettering of KFC and FPT is cut out so the mark reads in one ink at night. The logos whose source is the Canva design \"Logo walls for GenAI Fund\" (shared by GenAI Fund on 11 October 2026) were taken from that wall, their near-white ground lifted off; the investors, community and press logos stay on file but are not shown. Apify, Qoder, Featherless, TinyFish, Kimi and Tencent Cloud are drawn in white on the wall: their white lettering is redrawn in navy ink, and the dark letter inside Kimi's badge is cut out. BytePlus is vector artwork on the wall and was rendered from its paths.",
     "logos": [
       {
         "file": "tasco.png",
@@ -1081,13 +1081,51 @@
         "name": "Startup Island Taiwan",
         "role": "government",
         "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
+      },
+      {
+        "file": "byteplus.png",
+        "name": "BytePlus",
+        "role": "technology",
+        "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
+      },
+      {
+        "file": "tencent-cloud.png",
+        "name": "Tencent Cloud",
+        "role": "technology",
+        "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
+      },
+      {
+        "file": "apify.png",
+        "name": "Apify",
+        "role": "technology",
+        "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
+      },
+      {
+        "file": "qoder.png",
+        "name": "Qoder",
+        "role": "technology",
+        "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
+      },
+      {
+        "file": "featherless.png",
+        "name": "Featherless",
+        "role": "technology",
+        "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
+      },
+      {
+        "file": "tinyfish.png",
+        "name": "TinyFish",
+        "role": "technology",
+        "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
+      },
+      {
+        "file": "kimi.png",
+        "name": "Kimi",
+        "role": "technology",
+        "source_page_url": "https://canva.link/z3ne8fdcdwzkdkb"
       }
     ],
     "left_out": [
-      {
-        "name": "Tencent Cloud",
-        "why": "no usable logo file found"
-      },
       {
         "name": "HackHarvard",
         "why": "no usable logo file found"
