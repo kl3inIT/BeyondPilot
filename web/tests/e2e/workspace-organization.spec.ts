@@ -595,6 +595,34 @@ test.describe("workspace organization", () => {
     ]);
   });
 
+  test("the switch waits until the page has read the change, so a second click cannot repeat the first", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await answerDecisions(page, changesPath, 204);
+    await page.goto("/workspace/organization/members");
+
+    // The page reads itself again after the change; that read is held here.
+    let release = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route("**/workspace/organization/members**", async (route) => {
+      if (route.request().headers()["rsc"]) await held;
+      await route.fallback();
+    });
+
+    const access = page.getByRole("switch", { name: "Join without asking" });
+    await access.click();
+    await expect(
+      page.getByText("Colleagues on your verified domain now join without asking."),
+    ).toBeVisible();
+    await expect(access).toBeDisabled();
+
+    release();
+    await expect(access).toBeEnabled();
+  });
+
   test("the tabs scroll in their row, and the page stays as wide as the screen", async ({
     page,
     context,
