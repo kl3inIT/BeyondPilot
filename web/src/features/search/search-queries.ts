@@ -1,12 +1,10 @@
 import { search, type SearchResults } from "@/lib/api/generated";
+import { maxSearchPage } from "@/lib/page-size";
 
 import type { SearchParams } from "./search-params";
 
 /** The longest query the backend takes. */
 export const MAX_QUERY = 100;
-
-/** The deepest page the backend serves; a person refines the query instead of reading further. */
-const MAX_PAGE = 50;
 
 /**
  * What matches the query: the best few of each kind for the All tab, or one page of a kind. Read
@@ -22,7 +20,7 @@ export async function readSearch(params: SearchParams): Promise<SearchResults | 
     query: {
       q,
       kind: params.kind ?? undefined,
-      page: params.kind ? Math.min(Math.max(1, params.page), MAX_PAGE) : undefined,
+      page: params.kind ? Math.min(Math.max(1, params.page), maxSearchPage) : undefined,
       size: params.kind ? (params.size ?? undefined) : undefined,
     },
   });

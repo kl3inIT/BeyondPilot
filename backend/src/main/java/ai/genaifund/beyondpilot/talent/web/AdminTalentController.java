@@ -116,6 +116,30 @@ class AdminTalentController {
 		talent.takeDown(actor, id, request);
 	}
 
+	@PostMapping("/{id}/feature")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "featureTalent",
+			summary = "Feature a talent profile: it comes first in the opening view of the public directory",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The profile is featured; one featured already keeps its place.",
+			content = @Content)
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void feature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		talent.feature(actor, id);
+	}
+
+	@PostMapping("/{id}/unfeature")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "unfeatureTalent", summary = "Stop featuring a talent profile",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The profile is not featured.", content = @Content)
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void unfeature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		talent.unfeature(actor, id);
+	}
+
 	@PostMapping("/{id}/restore")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(operationId = "restoreTalent",

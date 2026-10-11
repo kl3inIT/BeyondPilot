@@ -37,6 +37,7 @@ export default async function AdminSolutionRoute({
     q: "",
     status: "in_review",
     industry: null,
+    featured: null,
     page: 1,
     size: null,
   });

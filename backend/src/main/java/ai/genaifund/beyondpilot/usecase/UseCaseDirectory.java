@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.usecase;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class UseCaseDirectory {
 
 	static final int PAGE_SIZE = 10;
+
+	/** The order the public list opens with, the only one the featured use cases lead. */
+	private static final String OPENING_SORT = "newest";
 
 	private static final int ORGANIZATION_LIMIT = 50;
 
@@ -148,17 +153,28 @@ public class UseCaseDirectory {
 					organization == null ? null : organization.name(), useCase.getIndustry(),
 					useCase.getTechnologies(), useCase.getExpectedOutcomes(),
 					hidden ? null : useCase.getBudgetMin(), hidden ? null : useCase.getBudgetMax(),
-					useCase.getCurrency(), useCase.isBudgetToBeDetermined(), hidden, useCase.getClosesAt());
+					useCase.getCurrency(), useCase.isBudgetToBeDetermined(), hidden, useCase.getClosesAt(),
+					useCase.getPublishedAt(), hidden || useCase.getBudgetMax() == null ? null
+							: BigDecimal.valueOf(useCase.getBudgetMax()).divide(
+									BigDecimal.valueOf("VND".equals(useCase.getCurrency()) ? properties.vndPerUsd() : 1),
+									MathContext.DECIMAL128),
+					useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(),
+					organization == null ? null : organization.logoFileId(), useCase.getFeaturedAt() != null);
 		}).toList();
 	}
 
-	/** One page of the use cases the parameters select. */
+	/**
+	 * One page of the use cases the parameters select. In the view the list opens with, where the reader has searched
+	 * for nothing, chosen no industry or program and reads the newest first, the featured use cases come first; as
+	 * soon as the reader searches, filters or picks another order, the list is ordered by that alone. A featured use
+	 * case that is closed or not published stays out like any other.
+	 */
 	@Transactional(readOnly = true)
 	public PublicUseCaseListResponse list(PublicUseCaseListRequest request) {
 		String text = request.q() == null || request.q().isBlank() ? null : request.q().strip();
 		int page = request.page() == null ? 1 : request.page();
 		int size = request.size() == null ? PAGE_SIZE : request.size();
-		String sort = request.sort() == null ? "newest" : request.sort();
+		String sort = request.sort() == null ? OPENING_SORT : request.sort();
 		Instant now = Instant.now();
 		UUID program = null;
 		if (request.program() != null) {
@@ -174,8 +190,10 @@ public class UseCaseDirectory {
 					.stream()
 					.map(OrganizationName::id)
 					.toList();
+		boolean opening = text == null && (request.industry() == null || request.industry().isEmpty())
+				&& program == null && OPENING_SORT.equals(sort);
 		List<UseCaseQueryRepository.PublicRow> rows = useCaseList.publicPage(text, matching, request.industry(), program,
-				sort, properties.vndPerUsd(), now, size, (long) (page - 1) * size);
+				sort, opening, properties.vndPerUsd(), now, size, (long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations.names(rows.stream()
 			.filter(row -> !row.hideOrganizationName())
 			.map(UseCaseQueryRepository.PublicRow::organizationId)
@@ -225,7 +243,8 @@ public class UseCaseDirectory {
 		return new PublicUseCaseSummaryResponse(row.id(), row.title(), organization == null ? null : organization.name(),
 				organization == null ? null : organization.logoFileId(), row.industry(), row.goal(), row.technologies(), hidden ? null : row.budgetMin(),
 				hidden ? null : row.budgetMax(), row.currency(), row.budgetToBeDetermined(), row.budgetMembersOnly(),
-				row.timelineMinWeeks(), row.timelineMaxWeeks(), row.closesAt(), row.publishedAt());
+				row.timelineMinWeeks(), row.timelineMaxWeeks(), row.closesAt(), row.publishedAt(),
+				row.featuredAt() != null);
 	}
 
 	private static UseCaseException notFound(UUID id) {

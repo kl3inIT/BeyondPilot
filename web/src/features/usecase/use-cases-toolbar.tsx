@@ -38,7 +38,10 @@ function UseCasesToolbar() {
   const [loading, startTransition] = useTransition();
   const [search, setSearch] = useQueryStates(useCasesSearch, { shallow: false, startTransition });
 
-  const sorts = useCaseSorts.map((sort) => ({ value: sort, label: t(`sort.${sort}`) }));
+  const sorts = [
+    ...(search.q.trim() ? [{ value: "relevance", label: t("sort.relevance") }] : []),
+    ...useCaseSorts.map((sort) => ({ value: sort, label: t(`sort.${sort}`) })),
+  ];
 
   return (
     <div className="flex flex-col gap-4">
@@ -58,6 +61,7 @@ function UseCasesToolbar() {
         <div className="flex items-start gap-2 md:w-72">
           <div className="min-w-0 flex-1">
             <ChoiceCombobox
+              size="lg"
               label={t("industry.label")}
               placeholder={t("industry.placeholder")}
               emptyLabel={t("industry.empty")}
@@ -86,7 +90,7 @@ function UseCasesToolbar() {
           </span>
           <Select
             items={sorts}
-            value={search.sort}
+            value={search.sort ?? (search.q.trim() ? "relevance" : "newest")}
             onValueChange={(value) =>
               setSearch({
                 sort: useCaseSorts.find((sort) => sort === value) ?? null,
@@ -94,7 +98,7 @@ function UseCasesToolbar() {
               })
             }
           >
-            <SelectTrigger size="sm" aria-label={t("sort.label")} className="w-44">
+            <SelectTrigger size="lg" aria-label={t("sort.label")} className="w-44">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

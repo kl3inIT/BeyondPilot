@@ -3,11 +3,14 @@ import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
+import { DataTableFooter } from "@/components/composites/data-table";
+import { PageSizeSelect } from "@/components/composites/page-size-select";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
-import type { ProgramEvent, ProgramSummary } from "@/lib/api/generated";
+import type { ProgramEvent, ProgramSummary, SearchResults } from "@/lib/api/generated";
 import { programApplyRoute, programRoute, siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
+import { gridPageSizes, maxSearchPage } from "@/lib/page-size";
 
 import { ProgramCountdown } from "./program-countdown";
 import {
@@ -20,7 +23,12 @@ import {
   type ProgramFormat,
 } from "./program-format";
 import { ProgramsPublicFilters } from "./programs-public-filters";
-import { openCardEvents, type groupPrograms } from "./programs-public-search";
+import {
+  openCardEvents,
+  serializeProgramsPublicSearch,
+  type ProgramsPublicSearch,
+  type ProgramGroups,
+} from "./programs-public-search";
 
 type Format = ProgramFormat;
 
@@ -44,12 +52,23 @@ function SectionHead({ title, count }: { title: string; count?: string }) {
  * Programs and events: what can be applied to now, what is coming up, and what GenAI Fund has run,
  * by year. A program opens on its page, or on the page somewhere else it lives on.
  */
-async function ProgramsPage({ groups }: { groups: ReturnType<typeof groupPrograms> }) {
+async function ProgramsPage({
+  groups,
+  search,
+  results,
+  ranked,
+}: {
+  groups: ProgramGroups;
+  search: ProgramsPublicSearch;
+  results: SearchResults | null;
+  ranked?: ProgramSummary[];
+}) {
   const [t, types, locale] = await Promise.all([
     getTranslations("Programs"),
     getTranslations("Program.type"),
     getLocale(),
   ]);
+  const pagination = await getTranslations("Lists.pagination");
   const format = programFormatter(locale);
   const comingUp = groups.upcoming.length + groups.events.length;
   const byYear = new Map<number, ProgramSummary[]>();
@@ -57,7 +76,9 @@ async function ProgramsPage({ groups }: { groups: ReturnType<typeof groupProgram
     const year = program.endsOn ? vietnamDay(program.endsOn).getFullYear() : 0;
     byYear.set(year, [...(byYear.get(year) ?? []), program]);
   }
-  const empty = groups.open.length + comingUp + groups.done.length === 0;
+  const empty = results
+    ? ranked?.length === 0
+    : groups.open.length + comingUp + groups.done.length === 0;
 
   return (
     <div className="bg-muted" lang={locale}>
@@ -69,7 +90,62 @@ async function ProgramsPage({ groups }: { groups: ReturnType<typeof groupProgram
 
         <ProgramsPublicFilters counts={groups.counts} />
 
-        {groups.open.length > 0 && (
+        {results && (
+          <>
+            <div className="flex flex-col gap-4">
+              {ranked?.map((program) =>
+                program.phase === "open" || program.phase === "running" ? (
+                  <OpenProgram
+                    key={program.slug}
+                    program={program}
+                    kind={types(program.type)}
+                    format={format}
+                  />
+                ) : (
+                  <ul key={program.slug} className="flex flex-col gap-3">
+                    {program.phase === "upcoming" ? (
+                      <UpcomingProgram
+                        program={program}
+                        kind={types(program.type)}
+                        format={format}
+                      />
+                    ) : (
+                      <DoneProgram program={program} kind={types(program.type)} format={format} />
+                    )}
+                  </ul>
+                ),
+              )}
+            </div>
+            <DataTableFooter
+              count={t("programCount", { count: results.total })}
+              page={results.page}
+              pages={Math.min(
+                maxSearchPage,
+                Math.max(1, Math.ceil(results.total / results.pageSize)),
+              )}
+              href={(page) =>
+                serializeProgramsPublicSearch(siteRoutes.programs, { ...search, page })
+              }
+              sizer={
+                <PageSizeSelect
+                  size={results.pageSize}
+                  total={results.total}
+                  sizes={gridPageSizes}
+                />
+              }
+              labels={{
+                navigation: pagination("label"),
+                previous: pagination("previous"),
+                next: pagination("next"),
+                goToPrevious: pagination("goToPrevious"),
+                goToNext: pagination("goToNext"),
+                page: (page) => pagination("page", { page }),
+              }}
+            />
+          </>
+        )}
+
+        {!results && groups.open.length > 0 && (
           <section className="flex flex-col gap-4" aria-label={t("open")}>
             <SectionHead
               title={t("open")}
@@ -86,7 +162,7 @@ async function ProgramsPage({ groups }: { groups: ReturnType<typeof groupProgram
           </section>
         )}
 
-        {comingUp > 0 && (
+        {!results && comingUp > 0 && (
           <section className="flex flex-col gap-3" aria-label={t("upcoming")}>
             <SectionHead title={t("upcoming")} count={t("itemCount", { count: comingUp })} />
             <ul className="flex flex-col gap-3">
@@ -110,7 +186,7 @@ async function ProgramsPage({ groups }: { groups: ReturnType<typeof groupProgram
           </section>
         )}
 
-        {groups.done.length > 0 && (
+        {!results && groups.done.length > 0 && (
           <section className="flex flex-col gap-4" aria-label={t("done")}>
             <SectionHead title={t("done")} />
             {[...byYear.entries()].map(([year, programs]) => (

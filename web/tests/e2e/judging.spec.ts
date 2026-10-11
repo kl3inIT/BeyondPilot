@@ -91,6 +91,8 @@ test.describe("judging applications", () => {
     await page.goto(`${admin}/applications/${plainCoverId}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Plain Cover");
     await expect(page.getByText("2 of 3")).toBeVisible();
+    // An answer of several choices reads as the choices, one a line.
+    await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
     await expect(
       page
         .getByRole("link", { name: "plain-cover-deck.pdf" })
@@ -99,6 +101,11 @@ test.describe("judging applications", () => {
       "href",
       `/api/proposal/review/applications/${plainCoverId}/files/f0000000-0000-4000-8000-000000000001`,
     );
+    // The demo the applicant gave opens in a tab of its own, away from the review.
+    const demo = page.getByRole("link", { name: "https://plaincover.example/demo" });
+    await expect(demo).toHaveAttribute("href", "https://plaincover.example/demo");
+    await expect(demo).toHaveAttribute("target", "_blank");
+    await expect(demo).toHaveAttribute("rel", "noopener noreferrer");
     const scores = page.getByRole("region", { name: "Judges' scores" });
     await expect(scores).toContainText("Minh Anh Le");
     await expect(scores).toContainText("on version 1");
@@ -157,6 +164,7 @@ test.describe("judging applications", () => {
 
     await page.goto(`${reviews}/${plainCoverId}`);
     await expect(page.getByText("Only you and GenAI Fund read this.")).toBeVisible();
+    await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
     await expect(page.getByRole("region", { name: "Judges' scores" })).toHaveCount(0);
     await expect(page.getByRole("region", { name: "Decision" })).toHaveCount(0);
     // The judge has scored one and declared a conflict on another, so the one on show is the last

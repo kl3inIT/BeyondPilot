@@ -19,7 +19,7 @@ export const useCaseSorts = ["newest", "deadline", "budget"] as const;
 export const useCasesSearch = {
   q: parseAsString.withDefault(""),
   industry: parseAsArrayOf(parseAsStringLiteral(useCaseIndustries)).withDefault([]),
-  sort: parseAsStringLiteral(useCaseSorts).withDefault("newest"),
+  sort: parseAsStringLiteral(useCaseSorts),
   page: parseAsInteger.withDefault(1),
   size: pageSize,
 };

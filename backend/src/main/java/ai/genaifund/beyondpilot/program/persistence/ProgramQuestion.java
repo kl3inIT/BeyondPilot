@@ -12,9 +12,9 @@ import org.jspecify.annotations.Nullable;
 /**
  * One question a program asks its applicants.
  * @param id what an answer names, kept while the question is edited
- * @param kind {@code short_text}, {@code long_text}, {@code single_choice}, {@code file}, {@code link} or
- * {@code confirm}
- * @param options the choices of a {@code single_choice} question, in order; empty otherwise
+ * @param kind {@code short_text}, {@code long_text}, {@code single_choice}, {@code multi_choice}, {@code file},
+ * {@code link} or {@code confirm}
+ * @param options the choices of a {@code single_choice} or {@code multi_choice} question, in order; empty otherwise
  * @param maxLength the longest answer to a text question; null takes the form's default
  */
 @Embeddable
@@ -23,4 +23,6 @@ public record ProgramQuestion(UUID id, String kind, String label, @Nullable Stri
 		@Nullable Integer maxLength) {
 
 	public static final String SINGLE_CHOICE = "single_choice";
+
+	public static final String MULTI_CHOICE = "multi_choice";
 }

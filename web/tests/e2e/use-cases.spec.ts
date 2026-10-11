@@ -24,6 +24,8 @@ test.describe("use cases", () => {
     const withoutLogo = page.getByRole("listitem").filter({ hasText: "Lumen Health" });
     await expect(withoutLogo.getByText("LH", { exact: true })).toBeVisible();
     await expect(first.getByText("USD 15,000–40,000")).toBeVisible();
+    // A featured use case leads the list, but no card says it is featured.
+    await expect(page.locator("[data-featured]")).toHaveCount(0);
     await expect(first.getByText("Apply by Dec 31, 2026")).toBeVisible();
     await expect(first.getByText("23:59 ICT")).toBeVisible();
     await expect(
@@ -94,6 +96,10 @@ test.describe("use cases", () => {
 
     await page.getByRole("button", { name: "Clear all" }).click();
     await expect(page).toHaveURL(/\/use-cases\?q=retail$/);
+    await expect(page.getByRole("main").getByRole("heading", { level: 2 })).toHaveText([
+      "Demand forecasting for a retail chain",
+    ]);
+    await expect(page.getByText("1 use case", { exact: true })).toBeVisible();
   });
 
   test("the order follows the address", async ({ page }) => {

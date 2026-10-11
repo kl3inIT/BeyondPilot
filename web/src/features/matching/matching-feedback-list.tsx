@@ -11,7 +11,6 @@ import { MatchingAdminTabs } from "./matching-admin-tabs";
 import { matchingFeedbackAddress } from "./matching-search";
 import { requirementName } from "./matching-view";
 import { PageSizeSelect } from "@/components/composites/page-size-select";
-import { tablePageSizes } from "@/lib/page-size";
 
 /**
  * Admin › AI › Matching, the Feedback tab: what people said about the groups the AI gave. How many
@@ -164,9 +163,7 @@ async function MatchingFeedbackPage({
             href={(page) =>
               matchingFeedbackAddress(siteRoutes.adminAiMatchingFeedback, { page, size })
             }
-            sizer={
-              feedback.total > tablePageSizes[0] && <PageSizeSelect size={feedback.pageSize} />
-            }
+            sizer={<PageSizeSelect size={feedback.pageSize} total={feedback.total} />}
             labels={{
               navigation: t("pagination.label"),
               previous: t("pagination.previous"),

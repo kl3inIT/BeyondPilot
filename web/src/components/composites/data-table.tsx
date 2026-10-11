@@ -184,24 +184,26 @@ function DataTablePager({ previous, next, sizer, labels }: DataTablePagerProps) 
       className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2"
     >
       {sizer}
-      <Pagination aria-label={labels.navigation} className="mx-0 w-auto">
-        <PaginationContent>
-          {previous && (
-            <PaginationItem>
-              <PaginationPrevious
-                href={previous}
-                text={labels.previous}
-                aria-label={labels.goToPrevious}
-              />
-            </PaginationItem>
-          )}
-          {next && (
-            <PaginationItem>
-              <PaginationNext href={next} text={labels.next} aria-label={labels.goToNext} />
-            </PaginationItem>
-          )}
-        </PaginationContent>
-      </Pagination>
+      {(previous || next) && (
+        <Pagination aria-label={labels.navigation} className="mx-0 w-auto">
+          <PaginationContent>
+            {previous && (
+              <PaginationItem>
+                <PaginationPrevious
+                  href={previous}
+                  text={labels.previous}
+                  aria-label={labels.goToPrevious}
+                />
+              </PaginationItem>
+            )}
+            {next && (
+              <PaginationItem>
+                <PaginationNext href={next} text={labels.next} aria-label={labels.goToNext} />
+              </PaginationItem>
+            )}
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 }

@@ -32,7 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * What operators do with talent profiles: read those that were submitted, approve one, send one back with what to
- * change, take one down from the public and restore it, and read the messages people reported. Every operation first checks that the caller is an
+ * change, take one down from the public and restore it, feature one in the public directory, and read the
+ * messages people reported. Every operation first checks that the caller is an
  * operator now; every decision is recorded in the audit trail in the transaction of the change, and its person is told
  * by email. A draft is its person's alone and is never shown here.
  */
@@ -79,15 +80,15 @@ public class TalentAdministration {
 		String text = TalentViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
 		int size = request.size() == null ? PAGE_SIZE : request.size();
-		List<TalentQueryRepository.Row> rows = profileList.adminPage(text, request.status(), size,
-				(long) (page - 1) * size);
+		List<TalentQueryRepository.Row> rows = profileList.adminPage(text, request.status(), request.featured(),
+				size, (long) (page - 1) * size);
 		Map<UUID, Person> people = identity
 			.people(rows.stream().map(TalentQueryRepository.Row::accountId).toList());
 		return new AdminTalentListResponse(rows.stream()
 			.map(row -> new TalentSummaryResponse(row.id(), row.slug(), row.name(),
 					email(people, row.accountId()), row.headline(), row.status(), row.suspendedAt(), row.listed(),
-					row.submittedAt(), row.updatedAt()))
-			.toList(), page, size, profileList.adminCount(text, request.status()));
+					row.featuredAt(), row.submittedAt(), row.updatedAt()))
+			.toList(), page, size, profileList.adminCount(text, request.status(), request.featured()));
 	}
 
 	/**
@@ -100,7 +101,7 @@ public class TalentAdministration {
 		identity.requireOperator(actor);
 		TalentProfile profile = profiles.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
 		return new AdminTalentResponse(TalentViews.profile(profile, details.projects(id)),
-				email(identity.people(List.of(profile.getAccountId())), profile.getAccountId()));
+				email(identity.people(List.of(profile.getAccountId())), profile.getAccountId()), profile.getFeaturedAt());
 	}
 
 	/**
@@ -185,6 +186,39 @@ public class TalentAdministration {
 	}
 
 	/**
+	 * Features a profile: it comes first in the opening view of the public directory, where the reader has searched
+	 * for nothing, chosen no filter and reads the newest first, the earliest featured on top; its card says Featured
+	 * wherever the directory shows it. Any profile that was sent for review can be featured. A profile keeps being featured through every decision, so one
+	 * featured before it is public comes first from the moment it is. Featuring one that is featured already changes
+	 * nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws TalentException when no submitted profile has this identifier
+	 */
+	@Transactional
+	public void feature(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		TalentProfile profile = profiles.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
+		if (profiles.feature(id, Instant.now()) == 1) {
+			record(AuditAction.TALENT_FEATURE, operator, profile, Map.of());
+		}
+	}
+
+	/**
+	 * Stops featuring a profile, which goes back to its place among the others. On one that is not featured it changes
+	 * nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws TalentException when no submitted profile has this identifier
+	 */
+	@Transactional
+	public void unfeature(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		TalentProfile profile = profiles.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
+		if (profiles.unfeature(id) == 1) {
+			record(AuditAction.TALENT_UNFEATURE, operator, profile, Map.of());
+		}
+	}
+
+	/**
 	 * One page of the messages people reported as unwanted, the newest first, with who sent them and to whom.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 */
@@ -242,8 +276,8 @@ public class TalentAdministration {
 	@Transactional(readOnly = true)
 	public TalentAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
-		return new TalentAwaitingReview(profileList.adminCount(null, "in_review"),
-				profileList.adminPage(null, "in_review", limit, 0)
+		return new TalentAwaitingReview(profileList.adminCount(null, "in_review", null),
+				profileList.adminPage(null, "in_review", null, limit, 0)
 					.stream()
 					.map(row -> new TalentAwaitingReview.Item(row.id(), row.name(), row.headline(), row.submittedAt()))
 					.toList());

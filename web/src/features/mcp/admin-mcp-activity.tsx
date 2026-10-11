@@ -16,7 +16,6 @@ import { EveryConnectedApp } from "./admin-mcp-apps";
 import { McpAdminHeader, type McpCounts } from "./admin-mcp-pages";
 import { mcpActivitySearch, type McpActivitySearch } from "./admin-mcp-search";
 import { PageSizeSelect } from "@/components/composites/page-size-select";
-import { tablePageSizes } from "@/lib/page-size";
 
 const address = createSerializer(mcpActivitySearch);
 
@@ -195,7 +194,7 @@ async function McpActivityPage({
         page={calls.page}
         pages={pages}
         href={pageHref}
-        sizer={calls.total > tablePageSizes[0] && <PageSizeSelect size={calls.pageSize} />}
+        sizer={<PageSizeSelect size={calls.pageSize} total={calls.total} />}
         labels={{
           navigation: t("pagination.label"),
           previous: t("pagination.previous"),

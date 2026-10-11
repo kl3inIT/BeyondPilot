@@ -71,3 +71,6 @@ export const necessities = [
   "required",
   "optional",
 ] as const satisfies readonly UseCaseRequirement["necessity"][];
+
+/** What the operators' list narrows to: the featured use cases, or those that are not. */
+export const featuredChoices = ["true", "false"] as const;

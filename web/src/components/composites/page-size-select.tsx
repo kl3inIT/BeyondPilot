@@ -27,19 +27,25 @@ type PageSizeSelectProps = {
   size: number;
   /** The sizes offered; the size shown is always among them. */
   sizes?: readonly number[];
+  /** Matching records, when known; cursor logs leave this absent. */
+  total?: number;
 };
 
 /**
  * How many items a page of a list holds. It is the URL like the search and the filters: a change
  * writes `size` and returns to the start of the list (docs/conventions.md › Lists).
  */
-function PageSizeSelect({ size, sizes = tablePageSizes }: PageSizeSelectProps) {
+function PageSizeSelect({ size, sizes = tablePageSizes, total }: PageSizeSelectProps) {
   const t = useTranslations("Lists.pageSize");
   const [, startTransition] = useTransition();
-  const [, setSearch] = useQueryStates(parsers, { shallow: false, startTransition });
+  const [search, setSearch] = useQueryStates(parsers, { shallow: false, startTransition });
   const items = [...new Set([...sizes, size])]
     .sort((a, b) => a - b)
     .map((value) => ({ value: String(value), label: String(value) }));
+
+  if (total !== undefined && total <= Math.min(sizes[0], size) && search.size === null) {
+    return null;
+  }
 
   return (
     <div className="flex items-center gap-2 text-sm text-muted-foreground">

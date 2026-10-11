@@ -166,6 +166,16 @@ test.describe("admin organizations", () => {
     await expect(page).toHaveURL(/[?&]size=10/);
     await expect(page).not.toHaveURL(/page=/);
     await expect(shownOrganizations(page)).toHaveCount(6);
+
+    // The size stays changeable after it fits the whole result, and another filter does not hide it.
+    await page.getByRole("combobox", { name: "Per page" }).click();
+    await page.getByRole("option", { name: "25", exact: true }).click();
+    await expect(page).toHaveURL(/[?&]size=25/);
+    await page.getByRole("combobox", { name: "Country" }).click();
+    await page.getByRole("option", { name: "Singapore" }).click();
+    await expect(shownOrganizations(page)).toHaveCount(1);
+    await expect(page.getByRole("combobox", { name: "Per page" })).toBeVisible();
+    await expect(page).toHaveURL(/[?&]size=25/);
   });
 
   test("an organization that waits is approved from its row", async ({

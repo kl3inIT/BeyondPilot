@@ -54,6 +54,7 @@ class ProgramIndexing {
 		Cards.put(facets, Cards.EXTERNAL_URL, program.externalUrl());
 		Cards.put(facets, Cards.OPENS_AT, program.applicationsOpenAt());
 		Cards.put(facets, Cards.CLOSES_AT, program.applicationsCloseAt());
+		Cards.put(facets, Cards.CREATED_AT, program.createdAt());
 		String keywords = Cards.words(List.of(program.type()));
 		return new Document(SearchDocumentRepository.PROGRAM, program.id(), program.slug(), program.name(),
 				program.partnerName(), Objects.requireNonNullElse(program.summary(), ""), keywords,

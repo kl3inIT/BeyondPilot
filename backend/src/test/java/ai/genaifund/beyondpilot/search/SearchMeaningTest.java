@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -44,7 +47,7 @@ import org.springframework.test.context.DynamicPropertySource;
  * along the topics its words name, so which item a query finds is known in advance, the way persistent-agent-runtime
  * tests its hybrid ranking with basis vectors.
  */
-@SpringBootTest
+@SpringBootTest(properties = "beyondpilot.search.embedding.pool=2")
 @Import({ TestcontainersConfiguration.class, SearchMeaningTest.Model.class })
 class SearchMeaningTest {
 
@@ -101,12 +104,103 @@ class SearchMeaningTest {
 	void aQueryFindsWhatItMeansWithoutSharingAWord() {
 		save("Hotline Assist", "Answers inbound customer calls and hands the rest to an agent.");
 		save("ShopSense", "Demand forecasting for retail stores.");
+		UUID person = UUID.randomUUID();
+		index.save(new Document("talent", person, "slug-" + person, "Support Specialist", null,
+				"Answers inbound customer calls and hands the rest to an agent.", "",
+				"Answers inbound customer calls and hands the rest to an agent.", Map.of(), true, null, null));
 		embeddings.embedPending();
 
 		assertThat(titles("chăm sóc khách hàng")).containsExactly("Hotline Assist");
 		assertThat(titles("dự báo bán lẻ")).containsExactly("ShopSense");
 		// Nothing near enough in meaning, and no word in common: no result.
 		assertThat(titles("công thức nấu phở")).isEmpty();
+		var selected = search.search(SearchRequest.builder("chăm sóc khách hàng").kind(SOLUTION).build());
+		assertThat(selected.total()).isEqualTo(1);
+		assertThat(selected.counts().solution()).isEqualTo(1);
+		assertThat(selected.counts().talent()).isEqualTo(1);
+	}
+
+	@Test
+	void directoriesScopeMeaningBeforeThePoolAndKeepFilteredCountsAndPageBoundaries() {
+		// Closer ineligible items must never consume the selected directory's two semantic candidate slots.
+		for (String kind : List.of("solution", "talent", "program", "use_case")) {
+			Map<String, Object> facets = Map.ofEntries(
+					Map.entry("industries", List.of("insurance")), Map.entry("focusAreas", List.of("document_processing")),
+					Map.entry("maturity", "pilot"), Map.entry("roles", List.of("ml_engineer")),
+					Map.entry("type", "hackathon"), Map.entry("publishedAt", "2026-01-01T00:00:00Z"));
+			for (String title : List.of("Zulu " + kind, "Alpha " + kind)) {
+				Map<String, Object> cardFacets = new HashMap<>(facets);
+				String publishedAt = title.startsWith("Zulu") ? "2026-02-01T00:00:00Z" : "2026-01-01T00:00:00Z";
+				cardFacets.put("publishedAt", publishedAt);
+				cardFacets.put("createdAt", publishedAt);
+				if ("use_case".equals(kind)) {
+					cardFacets.put("closesAt", Instant.now().plus(Duration.ofDays(title.startsWith("Zulu") ? 60 : 30)).toString());
+					cardFacets.put("budgetUsd", title.startsWith("Zulu") ? 200 : 100);
+				}
+				UUID id = UUID.randomUUID();
+				index.save(new Document(kind, id, "slug-" + id, title, null, "Answers customer calls for insurance.", "",
+						title + "\nAnswers customer calls for insurance.", cardFacets, true, null, null));
+			}
+			UUID wrongFacet = UUID.randomUUID();
+			index.save(new Document(kind, wrongFacet, "slug-" + wrongFacet, "Distractor " + kind, null,
+					"Customer calls customer calls customer calls.", "", "Customer calls customer calls customer calls.",
+					Map.of("industries", List.of("retail_ecommerce")), true, null, null));
+			Map<String, Object> rejectedValues = switch (kind) {
+				case "solution" -> Map.of("focusAreas", List.of("ai_agents"), "maturity", "prototype");
+				case "talent" -> Map.of("roles", List.of("ai_engineer"));
+				case "program" -> Map.of("type", "event", "applicationsOpenAt",
+						Instant.now().plus(Duration.ofDays(30)).toString());
+				default -> Map.of("closesAt", Instant.now().minus(Duration.ofDays(1)).toString());
+			};
+			for (var rejected : rejectedValues.entrySet()) {
+				Map<String, Object> rejectedFacets = new HashMap<>(facets);
+				rejectedFacets.put(rejected.getKey(), rejected.getValue());
+				UUID id = UUID.randomUUID();
+				index.save(new Document(kind, id, "slug-" + id, "Excluded " + rejected.getKey(), null,
+						"Customer calls customer calls customer calls.", "", "Customer calls customer calls customer calls.",
+						rejectedFacets, true, null, null));
+			}
+			UUID unlisted = UUID.randomUUID();
+			index.save(new Document(kind, unlisted, "slug-" + unlisted, "Unlisted " + kind, null,
+					"Customer calls customer calls customer calls.", "", "Customer calls customer calls customer calls.",
+					facets, false, null, null));
+		}
+		embeddings.embedPending();
+
+		for (String kind : List.of("solution", "talent", "program", "use_case")) {
+			SearchRequest.Builder request = SearchRequest.builder("chăm sóc khách hàng").kind(kind).size(1)
+				.industry(List.of("insurance", "healthcare"));
+			switch (kind) {
+				case "solution" -> request.focusArea("document_processing").maturity("pilot").sort("name");
+				case "talent" -> request.role("ml_engineer").sort("name");
+				case "program" -> request.type("hackathon").phase("open").sort("name");
+				default -> request.sort("newest");
+			}
+			var first = search.search(request.page(1).build());
+			var second = search.search(request.page(2).build());
+			var past = search.search(request.page(3).build());
+
+			assertThat(first.total()).as(kind).isEqualTo(2);
+			assertThat(first.items()).extracting(SearchItem::kind).containsExactly(kind);
+			assertThat(second.total()).isEqualTo(first.total());
+			assertThat(second.items()).hasSize(1).doesNotContainAnyElementsOf(first.items());
+			assertThat(past.total()).isEqualTo(2);
+			assertThat(past.items()).isEmpty();
+			if (!"use_case".equals(kind)) {
+				assertThat(first.items()).extracting(SearchItem::title).containsExactly("Alpha " + kind);
+				if ("program".equals(kind)) {
+					assertThat(first.items()).extracting(SearchItem::phase).containsExactly("running");
+				}
+			}
+			assertThat(search.search(request.page(1).sort("newest").build()).items())
+				.extracting(SearchItem::title).containsExactly("Zulu " + kind);
+			if ("use_case".equals(kind)) {
+				assertThat(search.search(request.sort("deadline").build()).items())
+					.extracting(SearchItem::title).containsExactly("Alpha " + kind);
+				assertThat(search.search(request.sort("budget").build()).items())
+					.extracting(SearchItem::title).containsExactly("Zulu " + kind);
+			}
+		}
 	}
 
 	@Test
@@ -186,7 +280,8 @@ class SearchMeaningTest {
 	}
 
 	private List<String> titles(String query) {
-		return search.search(new SearchRequest(query, SOLUTION, 1, null)).items().stream().map(SearchItem::title).toList();
+		return search.search(SearchRequest.builder(query).kind(SOLUTION).page(1).build())
+			.items().stream().map(SearchItem::title).toList();
 	}
 
 	private UUID save(String title, String summary) {

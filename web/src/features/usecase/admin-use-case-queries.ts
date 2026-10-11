@@ -22,6 +22,7 @@ export async function readAdminUseCases(search: AdminUseCasesSearch): Promise<Ad
       q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
       status: search.status ?? undefined,
       organizationId: search.organization ?? undefined,
+      featured: search.featured === null ? undefined : search.featured === "true",
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },

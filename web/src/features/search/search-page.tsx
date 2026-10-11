@@ -19,14 +19,14 @@ import { cn } from "@/lib/utils";
 import { searchKinds, searchParams, type SearchKind, type SearchParams } from "./search-params";
 import { MAX_QUERY } from "./search-queries";
 import { SearchResult } from "./search-result";
-import { gridPageSizes } from "@/lib/page-size";
+import { gridPageSizes, maxSearchPage } from "@/lib/page-size";
 
 const address = createSerializer(searchParams);
 
 /** The queries offered when nothing matched, or nothing was asked yet: the landing's popular searches. */
 const popular = ["agentic", "document", "insurance", "retail"] as const;
 
-/** Where each kind is browsed and narrowed further; programs are narrowed by type and phase, not by text. */
+/** Where each kind is browsed and narrowed further by its directory filters. */
 const directories: Record<SearchKind, string> = {
   use_case: siteRoutes.useCases,
   program: siteRoutes.programs,
@@ -252,7 +252,7 @@ function KindResults({
       ) : (
         <p className="text-sm text-muted-foreground">{t("pastTheEnd")}</p>
       )}
-      {results.total > gridPageSizes[0] && (
+      {(size !== null || results.total > Math.min(gridPageSizes[0], results.pageSize)) && (
         <ListFooter
           count={t("count", { count: results.total })}
           page={results.page}
@@ -260,6 +260,7 @@ function KindResults({
           total={results.total}
           href={(page) => address(siteRoutes.search, { q, kind, page, size })}
           sizes={gridPageSizes}
+          maxPages={maxSearchPage}
         />
       )}
       <Link

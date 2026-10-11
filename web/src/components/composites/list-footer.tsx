@@ -14,6 +14,8 @@ type ListFooterProps = {
   href: (page: number) => string;
   /** The page sizes offered: those of a table unless the list is a grid of cards. */
   sizes?: readonly number[];
+  /** A bounded search window, when the API does not serve every matching page. */
+  maxPages?: number;
 };
 
 /**
@@ -27,6 +29,7 @@ function ListFooter({
   total,
   href,
   sizes = tablePageSizes,
+  maxPages = Infinity,
 }: ListFooterProps) {
   const t = useTranslations("Lists.pagination");
 
@@ -34,9 +37,9 @@ function ListFooter({
     <DataTableFooter
       count={count}
       page={page}
-      pages={Math.max(1, Math.ceil(total / pageSize))}
+      pages={Math.min(maxPages, Math.max(1, Math.ceil(total / pageSize)))}
       href={href}
-      sizer={total > sizes[0] && <PageSizeSelect size={pageSize} sizes={sizes} />}
+      sizer={<PageSizeSelect size={pageSize} sizes={sizes} total={total} />}
       labels={{
         navigation: t("label"),
         previous: t("previous"),

@@ -152,7 +152,8 @@ public class ProgramService {
 		return new IndexedProgram(program.getId(), program.getSlug(), program.getName(), program.getType().code(),
 				program.getPartnerName(), program.getSummary(), program.getAbout(), program.getCoverFileId(),
 				program.getPageKind() == PageKind.EXTERNAL ? program.getExternalUrl() : null, program.getStartsOn(),
-				program.getEndsOn(), program.getApplicationsOpenAt(), program.getApplicationsCloseAt());
+				program.getEndsOn(), program.getApplicationsOpenAt(), program.getApplicationsCloseAt(),
+				program.getCreatedAt());
 	}
 
 	/**

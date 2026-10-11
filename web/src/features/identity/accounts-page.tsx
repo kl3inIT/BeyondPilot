@@ -16,7 +16,6 @@ import { AccountRowActions } from "./account-row-actions";
 import { accountsSearch, type AccountsSearch } from "./accounts-search";
 import { AccountsToolbar } from "./accounts-toolbar";
 import { PageSizeSelect } from "@/components/composites/page-size-select";
-import { tablePageSizes } from "@/lib/page-size";
 
 const address = createSerializer(accountsSearch);
 
@@ -164,7 +163,7 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
         page={accounts.page}
         pages={pages}
         href={pageHref}
-        sizer={accounts.total > tablePageSizes[0] && <PageSizeSelect size={accounts.pageSize} />}
+        sizer={<PageSizeSelect size={accounts.pageSize} total={accounts.total} />}
         labels={{
           navigation: t("pagination.label"),
           previous: t("pagination.previous"),

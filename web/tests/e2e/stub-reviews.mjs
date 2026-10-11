@@ -276,6 +276,8 @@ const solutions = [
   }),
   solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e03", "Policy Chat", "approved", {
     maturity: "production",
+    // An operator featured it.
+    featuredAt: day,
     customerDeployments: [
       deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f01", "Claims line at Bảo An", "in_review"),
       deployment("be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f02", "Renewals at Mekong Life", "approved", {
@@ -340,6 +342,8 @@ const talent = [
   },
   {
     email: "arif@openkitchen.example",
+    // An operator featured it.
+    featuredAt: day,
     profile: profile("cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a03", "Arif Hidayat", "approved", {
       headline: "ML engineer",
       roles: ["ml_engineer"],
@@ -364,13 +368,14 @@ const talent = [
 ];
 
 /**
- * One page of a list, narrowed as the operators' lists narrow: by text, by status and, where the
- * records have one, by country. It holds as many items as the address asks for.
+ * One page of a list, narrowed as the operators' lists narrow: by text, status, featured and, where
+ * the records have one, country. It holds as many items as the address asks for.
  */
 function page(url, records, statusOf, textOf, summaryOf, countryOf) {
   const text = (url.searchParams.get("q") ?? "").toLowerCase();
   const status = url.searchParams.get("status");
   const country = url.searchParams.get("country");
+  const featured = url.searchParams.get("featured");
   const size = Number(url.searchParams.get("size")) || 25;
   const number = Number(url.searchParams.get("page")) || 1;
   const items = records.filter(
@@ -378,7 +383,8 @@ function page(url, records, statusOf, textOf, summaryOf, countryOf) {
     (record) =>
       (status ? statusOf(record) === status : statusOf(record) !== "merged") &&
       (!text || textOf(record).toLowerCase().includes(text)) &&
-      (!country || countryOf?.(record) === country),
+      (!country || countryOf?.(record) === country) &&
+      (featured === null || Boolean(record.featuredAt) === (featured === "true")),
   );
   return {
     items: items.slice((number - 1) * size, number * size).map(summaryOf),
@@ -497,6 +503,7 @@ const lists = {
       slug,
       status,
       suspendedAt: record.suspendedAt ?? null,
+      featuredAt: record.featuredAt ?? null,
       organizationName,
       summary,
       maturity,
@@ -525,6 +532,7 @@ const lists = {
     textOf: (record) => `${record.profile.name} ${record.email}`,
     summaryOf: ({
       email,
+      featuredAt = null,
       profile: { id, name, slug, status, headline, suspendedAt = null, ...record },
     }) => ({
       id,
@@ -532,6 +540,7 @@ const lists = {
       slug,
       status,
       suspendedAt,
+      featuredAt,
       headline,
       email,
       listed: record.listed,

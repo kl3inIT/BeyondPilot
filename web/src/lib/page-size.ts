@@ -3,6 +3,9 @@ import { createParser } from "nuqs/server";
 /** The most items a page holds; the API refuses more. */
 const MAX_PAGE_SIZE = 100;
 
+/** Search's bounded result window; directory browse endpoints have no such page limit. */
+export const maxSearchPage = 50;
+
 /** The page sizes a table offers. */
 export const tablePageSizes = [10, 25, 50, 100] as const;
 

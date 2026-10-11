@@ -36,17 +36,21 @@ Only organizations carry a country an operator filters by today. A solution and 
 
 One field per surface, not one for the whole product: a public directory and an admin toolbar are read at different densities.
 
-- Public directories (solutions, talent, use cases): `DirectorySearch`, 48px. The use case list moves to it from the admin-sized field, and the solutions list drops its 44px override.
+- Public directories (solutions, talent, use cases and programs): `DirectorySearch`, 48px. Every adjacent select and multi-select uses the shared 48px size variant, including sorting; role choices on Talent move from chips to a select containing the complete role vocabulary. Admin's denser 32px variant remains unchanged.
 - Admin toolbars: the registry `input-group` at 32px, the height of the selects beside it. The introductions list, which had a 40px field and button, takes the same height.
 
 The landing hero and the `/search` page keep their own pill-shaped field with a submit button: they start a search rather than narrow a list.
 
-## Not in this increment: directories searched by meaning
+## Directories searched by meaning
 
-Asked for, and not built here. The directories match `q` against names with `like`; `/api/search` ranks by words and by meaning. Three ways to bring the second into the first:
+Accepted on 11 October 2026 when the requester extended the scope to all four public directories. A nonblank `q` uses `/api/search` restricted to the directory's kind; an empty query keeps the existing directory browse endpoint and its default ordering. This reuses the landing search's hybrid text/title/vector ranking rather than adding another embedding service.
+
+The alternatives were:
 
 1. A directory module calls `search`. Refused: `search` already depends on `solution`, `talent`, `usecase` and `program` to build its index, so the edge would close a cycle that `ModulithArchitectureTest` rejects.
-2. The web asks `/api/search` for the ranked items of a kind and draws those. It needs no new edge, but the directory's own filters (industry, focus area, maturity, role, sort) would not apply to what is drawn.
-3. `search` learns the directory's filters: its index already stores each card's facets, so `/api/search` can take them as parameters and the directory pages read from it whenever `q` is present. This keeps one ranking and the filters, at the cost of the filter vocabulary living in two modules.
+2. The web asks `/api/search` for the ranked items of a kind without extending its contract. Refused: industry, focus area, maturity, role, program type/phase and explicit sorting would not apply.
+3. Extend the existing search contract with the directory facets and ordering. Accepted: it keeps one ranking and applies the existing filters without a reverse module dependency.
 
-Option 3 is the recommendation. It changes which module answers a directory page and so needs an accepted decision before code.
+Facet and kind restrictions must be applied before the semantic candidate-pool limit. Counts and page results use the same eligibility rules, including public visibility and closed-use-case exclusion. Search defaults to relevance; an explicitly selected directory sort remains supported. Programs keep phase groups and upcoming events when browsing without a query; a query shows a paged, ranked set of program cards.
+
+The web retains the existing domain cards and their real data, not per-result detail requests or invented defaults. Search/filter/size changes clear the page; the selected size remains available even when its result set now fits on one page. A cursor list with only a size control renders no empty pagination navigation.

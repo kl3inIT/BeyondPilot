@@ -182,8 +182,8 @@ function OrganizationMembersPage({
           ))}
         </ul>
 
-        {/* The summary beside the title has the count; the footer is for a list of several pages. */}
-        {members.total > tablePageSizes[0] && (
+        {/* Keep the chosen size available even when all members now fit on one page. */}
+        {(size !== null || members.total > Math.min(tablePageSizes[0], members.pageSize)) && (
           <ListFooter
             count={t("summary.members", { count: members.total })}
             page={members.page}

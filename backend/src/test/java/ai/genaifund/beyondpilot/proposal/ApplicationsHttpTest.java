@@ -16,6 +16,7 @@ import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import com.jayway.jsonpath.JsonPath;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +73,8 @@ abstract class ApplicationsHttpTest {
 				List.of(question("long_text", "How does your solution address the challenge?", List.of()),
 						question("single_choice", "Direction", List.of("Buying", "Carrying", "Claiming")),
 						question("file", "Your proposal", List.of()),
-						question("confirm", "I've read the one hard constraint.", List.of()))))
+						question("confirm", "I've read the one hard constraint.", List.of()),
+						question("multi_choice", "Challenge areas", List.of("Claims", "Pricing", "Fraud")))))
 			.expectStatus()
 			.isOk());
 		List<String> ids = JsonPath.read(asked, "$.questions[*].id");
@@ -103,7 +105,8 @@ abstract class ApplicationsHttpTest {
 		put(operator, uri, program).expectStatus().isOk();
 		post(operator, uri + "/publish", null).expectStatus().isNoContent();
 		return new Form(UUID.fromString(JsonPath.read(created, "$.id")), API + "/programs/" + slug + "/application", UUID.fromString(ids.get(0)),
-				UUID.fromString(ids.get(1)), UUID.fromString(ids.get(2)), UUID.fromString(ids.get(3)));
+				UUID.fromString(ids.get(1)), UUID.fromString(ids.get(2)), UUID.fromString(ids.get(3)),
+				UUID.fromString(ids.get(4)));
 	}
 
 	/** Moves a program's close into the past, as if its applications had closed a minute ago. */
@@ -123,6 +126,11 @@ abstract class ApplicationsHttpTest {
 
 		/** A solution of the caller's organization with everything an application needs. */
 	UUID completeSolution(String session, String email, String name) {
+		return completeSolution(session, email, name, null);
+	}
+
+	/** A complete solution, with the link to its demo when one is given. */
+	UUID completeSolution(String session, String email, String name, @Nullable String demoUrl) {
 		String draft = body(post(session, "/api/solution/mine", Map.of("name", name)).expectStatus().isCreated());
 		Map<String, Object> solution = new HashMap<>();
 		solution.put("name", name);
@@ -135,6 +143,7 @@ abstract class ApplicationsHttpTest {
 		solution.put("imageFileIds", List.of());
 		solution.put("deployment", List.of());
 		solution.put("maturity", "pilot");
+		solution.put("demoUrl", demoUrl);
 		solution.put("listed", true);
 		solution.put("version", JsonPath.<Integer>read(draft, "$.version"));
 		String id = JsonPath.read(draft, "$.id");
@@ -157,6 +166,8 @@ abstract class ApplicationsHttpTest {
 		answers.put(form.direction().toString(), "Claiming");
 		answers.put(form.proposalFile().toString(), file(uploader).toString());
 		answers.put(form.confirmation().toString(), "true");
+		// Several choices are one text, a JSON array of the options chosen.
+		answers.put(form.areas().toString(), "[\"Claims\",\"Pricing\"]");
 		return answers;
 	}
 
@@ -279,7 +290,8 @@ abstract class ApplicationsHttpTest {
 	}
 
 	/** A program's application form: where it is read and saved, and its four questions. */
-	record Form(UUID programId, String path, UUID approach, UUID direction, UUID proposalFile, UUID confirmation) {
+	record Form(UUID programId, String path, UUID approach, UUID direction, UUID proposalFile, UUID confirmation,
+			UUID areas) {
 	}
 
 	/**

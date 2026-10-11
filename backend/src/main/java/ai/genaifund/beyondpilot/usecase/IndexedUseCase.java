@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.usecase;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -18,5 +19,7 @@ import org.jspecify.annotations.Nullable;
 public record IndexedUseCase(UUID id, String title, @Nullable String organizationName, @Nullable String industry,
 		List<String> technologies, @Nullable String expectedOutcomes,
 		@Nullable Long budgetMin, @Nullable Long budgetMax, String currency, boolean budgetToBeDetermined,
-		boolean budgetMembersOnly, @Nullable Instant closesAt) {
+		boolean budgetMembersOnly, @Nullable Instant closesAt, @Nullable Instant publishedAt,
+		@Nullable BigDecimal budgetUsd, @Nullable Integer timelineMinWeeks, @Nullable Integer timelineMaxWeeks,
+		@Nullable UUID organizationLogoFileId, boolean featured) {
 }

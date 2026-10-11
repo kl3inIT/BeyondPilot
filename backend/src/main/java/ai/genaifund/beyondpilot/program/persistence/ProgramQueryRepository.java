@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,13 +32,21 @@ public class ProgramQueryRepository {
 		this.jdbc = jdbc;
 	}
 
-	/** Every program in any status, the newest first, each with the phase it would be in at {@code now}. */
+	/** The phases in the order the operators' list shows them: what needs them now, then what comes, then what is over. */
+	private static final List<String> BY_URGENCY = List.of(ProgramPhase.OPEN.code(), ProgramPhase.RUNNING.code(),
+			ProgramPhase.UPCOMING.code(), ProgramPhase.DONE.code());
+
+	/**
+	 * Every program in any status, each with the phase it would be in at {@code now}: those taking applications first,
+	 * then those running, coming up and done. Inside a phase the latest to start is first, and a program with no start
+	 * day comes before those, the newest created first.
+	 */
 	public List<AdminProgramSummaryResponse> all(Instant now) {
 		return jdbc.sql("""
 				select id, slug, name, type, partner_name, cover_file_id, status, starts_on, ends_on, applications_open_at,
 				       applications_close_at, shortlist_size, outcomes_due_on, allow_updates_until_close, updated_at
 				from program
-				order by created_at desc, id
+				order by starts_on desc nulls first, created_at desc, id
 				""").query((row, index) -> {
 			Instant opensAt = instant(row.getTimestamp("applications_open_at"));
 			Instant closesAt = instant(row.getTimestamp("applications_close_at"));
@@ -47,7 +56,7 @@ public class ProgramQueryRepository {
 					row.getString("name"), row.getString("type"), row.getString("partner_name"),
 					row.getObject("cover_file_id", UUID.class), row.getString("status"), ProgramPhase.of(startsOn, endsOn, opensAt, closesAt, now).code(),
 					applications(row, opensAt, closesAt), startsOn, endsOn, row.getTimestamp("updated_at").toInstant());
-		}).list();
+		}).list().stream().sorted(Comparator.comparingInt(program -> BY_URGENCY.indexOf(program.phase()))).toList();
 	}
 
 	/**

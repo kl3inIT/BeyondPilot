@@ -31,6 +31,8 @@ test.describe("talent directory", () => {
     const founders = page.getByRole("region", { name: "Founders in the GenAI Fund network" });
     await expect(founders.getByRole("listitem")).toHaveCount(8);
     await expect(founders.getByText("CEO & Co-Founder · Shieldbase")).toBeVisible();
+    // Featured profiles lead the list, but public cards do not disclose operator curation.
+    await expect(page.locator("[data-featured]")).toHaveCount(0);
     await expect(
       page.getByRole("link", { name: "Create a talent profile" }).first(),
     ).toHaveAttribute("href", "/workspace/talent");
@@ -42,7 +44,7 @@ test.describe("talent directory", () => {
   }) => {
     await page.goto("/talent");
 
-    await page.getByRole("searchbox", { name: "Search by name, skill or project" }).fill("ocr");
+    await page.getByRole("searchbox", { name: "Search AI talent" }).fill("ocr");
     await expect(page).toHaveURL(/[?&]q=ocr/);
     await expect(shownPeople(page)).toHaveText(["Arif Hidayat"]);
     await expect(page.getByText("Showing 1 of 1")).toBeVisible();
@@ -57,10 +59,12 @@ test.describe("talent directory", () => {
     await expect(shownPeople(page)).toHaveText(["Arif Hidayat", "Đạt Phan", "Linh Nguyễn"]);
 
     await page.goto("/talent");
-    await page.getByRole("button", { name: "ML engineer" }).click();
+    await page.getByRole("combobox", { name: "Role" }).click();
+    await page.getByRole("option", { name: "ML engineer", exact: true }).click();
     await expect(page).toHaveURL(/[?&]role=ml_engineer/);
     await expect(shownPeople(page)).toHaveText(["Arif Hidayat"]);
-    await page.getByRole("button", { name: "All talent" }).click();
+    await page.getByRole("combobox", { name: "Role" }).click();
+    await page.getByRole("option", { name: "All talent", exact: true }).click();
     await expect(shownPeople(page)).toHaveCount(3);
 
     await page.goto("/talent?q=nobody");

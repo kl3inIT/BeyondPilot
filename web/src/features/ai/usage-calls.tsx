@@ -13,7 +13,6 @@ import { taskNames, UsageHeader } from "./usage-page";
 import { usageCallsAddress, type UsageCallsSearch } from "./usage-search";
 import { UsageCallsToolbar } from "./usage-switches";
 import { PageSizeSelect } from "@/components/composites/page-size-select";
-import { tablePageSizes } from "@/lib/page-size";
 
 /**
  * Admin › AI › Usage › Calls: every call to a model or an OCR service in the period, newest first:
@@ -239,7 +238,7 @@ async function UsageCallsPage({
         page={calls.page}
         pages={pages}
         href={pageHref}
-        sizer={calls.total > tablePageSizes[0] && <PageSizeSelect size={calls.pageSize} />}
+        sizer={<PageSizeSelect size={calls.pageSize} total={calls.total} />}
         labels={{
           navigation: t("pagination.label"),
           previous: t("pagination.previous"),

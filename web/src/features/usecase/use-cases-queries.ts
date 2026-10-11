@@ -2,9 +2,11 @@ import { ApiError } from "@/lib/api/client";
 import {
   getUseCase,
   listUseCases,
+  search as searchDirectory,
   type PublicUseCase,
   type PublicUseCaseList,
 } from "@/lib/api/generated";
+import { maxSearchPage } from "@/lib/page-size";
 
 import type { UseCasesSearch } from "./use-cases-search";
 
@@ -15,12 +17,48 @@ export type UseCaseList = PublicUseCaseList;
 
 /** One page of the public list. Read without a session and never kept: a decision shows at once. */
 export async function readUseCases(search: UseCasesSearch): Promise<UseCaseList> {
+  const q = search.q.trim().slice(0, MAX_SEARCH);
+  if (q) {
+    const { data } = await searchDirectory({
+      cache: "no-store",
+      query: {
+        q,
+        kind: "use_case",
+        industry: search.industry.length ? search.industry : undefined,
+        sort: search.sort ?? undefined,
+        page: Math.min(maxSearchPage, Math.max(1, search.page)),
+        size: search.size ?? undefined,
+      },
+    });
+    return {
+      ...data,
+      items: data.items.map((item) => ({
+        id: item.slug,
+        title: item.title,
+        goal: item.summary,
+        industry: item.industries[0],
+        technologies: item.technologies,
+        organizationName: item.subtitle,
+        organizationLogoFileId: item.organizationLogoFileId,
+        featured: item.featured!,
+        publishedAt: item.publishedAt!,
+        closesAt: item.closesAt,
+        currency: item.currency!,
+        budgetMin: item.budgetMin,
+        budgetMax: item.budgetMax,
+        budgetMembersOnly: item.budgetMembersOnly!,
+        budgetToBeDetermined: item.budgetToBeDetermined!,
+        timelineMinWeeks: item.timelineMinWeeks,
+        timelineMaxWeeks: item.timelineMaxWeeks,
+      })),
+    };
+  }
   const { data } = await listUseCases({
     cache: "no-store",
     query: {
       q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
       industry: search.industry.length === 0 ? undefined : search.industry,
-      sort: search.sort,
+      sort: search.sort ?? "newest",
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },

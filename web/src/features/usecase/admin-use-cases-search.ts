@@ -1,13 +1,15 @@
 import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
-import { useCaseStatuses } from "./admin-use-case-codes";
 import { pageSize } from "@/lib/page-size";
 
-/** What narrows the operators' list of use cases, as the URL holds it: `?q=&status=&organization=&page=`. */
+import { featuredChoices, useCaseStatuses } from "./admin-use-case-codes";
+
+/** What narrows the operators' list of use cases, as the URL holds it: `?q=&status=&organization=&featured=&page=&size=`. */
 export const adminUseCasesSearch = {
   q: parseAsString.withDefault(""),
   status: parseAsStringLiteral(useCaseStatuses),
   organization: parseAsString,
+  featured: parseAsStringLiteral(featuredChoices),
   page: parseAsInteger.withDefault(1),
   size: pageSize,
 };

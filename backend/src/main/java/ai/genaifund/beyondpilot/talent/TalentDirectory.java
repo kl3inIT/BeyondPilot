@@ -24,6 +24,9 @@ public class TalentDirectory {
 
 	static final int PAGE_SIZE = 12;
 
+	/** The order the public directory opens with, the only one the featured profiles lead. */
+	private static final String OPENING_SORT = "newest";
+
 	private final TalentProfileRepository profiles;
 
 	private final TalentQueryRepository profileList;
@@ -37,7 +40,11 @@ public class TalentDirectory {
 		this.details = details;
 	}
 
-	/** One page of the directory the request selects, in the order it asks for. */
+	/**
+	 * One page of the directory the request selects, in the order it asks for. In the view the directory opens with,
+	 * where the reader has searched for nothing, chosen no filter and reads the newest first, the featured profiles
+	 * come first; as soon as the reader searches, filters or picks another order, the list is ordered by that alone.
+	 */
 	@Transactional(readOnly = true)
 	public PublicTalentListResponse list(PublicTalentListRequest request) {
 		String text = TalentViews.text(request.q());
@@ -45,13 +52,16 @@ public class TalentDirectory {
 		int size = request.size() == null ? PAGE_SIZE : request.size();
 		TalentQueryRepository.PublicFilter filter = new TalentQueryRepository.PublicFilter(text, request.role(),
 				request.country(), request.industry(), request.engagement());
+		boolean opening = text == null && request.role() == null && request.country() == null
+				&& request.industry() == null && request.engagement() == null && OPENING_SORT.equals(request.sort());
 		return new PublicTalentListResponse(profileList
-			.publicPage(filter, request.sort(), size, (long) (page - 1) * size)
+			.publicPage(filter, request.sort(), opening, size, (long) (page - 1) * size)
 			.stream()
 			.map(row -> new PublicTalentSummaryResponse(row.slug(), row.name(), row.headline(), row.country(),
 					row.city(), row.roles(), row.skills(), row.photoFileId(), row.projectCount(),
 					row.leadTitle() == null ? null
-							: new TalentProjectDto(row.leadTitle(), null, null, null, row.leadStage())))
+							: new TalentProjectDto(row.leadTitle(), null, null, null, row.leadStage()),
+					row.featuredAt() != null))
 			.toList(), page, size, profileList.publicCount(filter));
 	}
 
@@ -60,7 +70,7 @@ public class TalentDirectory {
 	public Optional<IndexedTalent> indexed(UUID profileId) {
 		return profiles.findById(profileId)
 			.filter(profile -> profile.isApproved() && profile.isListed())
-			.map(TalentDirectory::indexed);
+			.map(this::indexed);
 	}
 
 	/** An approved, listed profile by its address; empty for any other. For the operators' MCP server's {@code fetch}. */
@@ -68,7 +78,7 @@ public class TalentDirectory {
 	public Optional<IndexedTalent> listed(String slug) {
 		return profiles.findBySlug(slug)
 			.filter(profile -> profile.isApproved() && profile.isListed())
-			.map(TalentDirectory::indexed);
+			.map(this::indexed);
 	}
 
 	/** Every approved, listed profile as search indexes it, for a rebuild of the index. */
@@ -76,14 +86,18 @@ public class TalentDirectory {
 	public List<IndexedTalent> indexedAll() {
 		return profiles.findByStatusAndListedTrueAndSuspendedAtIsNull(TalentProfile.APPROVED)
 			.stream()
-			.map(TalentDirectory::indexed)
+			.map(this::indexed)
 			.toList();
 	}
 
-	private static IndexedTalent indexed(TalentProfile profile) {
+	private IndexedTalent indexed(TalentProfile profile) {
+		List<TalentDetailRepository.Project> projects = details.projects(profile.getId());
+		TalentDetailRepository.Project lead = projects.isEmpty() ? null : projects.getFirst();
 		return new IndexedTalent(profile.getId(), profile.getSlug(), profile.getName(), profile.getHeadline(),
 				profile.getBio(), profile.getRoles(), profile.getSkills(), profile.getIndustries(), profile.getCountry(),
-				profile.getCity(), profile.getWorksAt(), profile.getPhotoFileId());
+				profile.getCity(), profile.getWorksAt(), profile.getPhotoFileId(), profile.getDecidedAt(),
+				projects.size(), lead == null ? null : lead.title(), lead == null ? null : lead.stage(),
+				profile.getFeaturedAt() != null);
 	}
 
 	/**

@@ -19,5 +19,7 @@ public record PublicTalentSummaryResponse(@Schema(requiredMode = Schema.Required
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "How many projects the profile shows.") int projectCount,
 		@Schema(oneOf = TalentProjectDto.class, types = { "object", "null" },
-				description = "The first project the profile shows; null when it shows none.") @Nullable TalentProjectDto leadProject) {
+				description = "The first project the profile shows; null when it shows none.") @Nullable TalentProjectDto leadProject,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Whether GenAI Fund features the profile; its card says so.") boolean featured) {
 }

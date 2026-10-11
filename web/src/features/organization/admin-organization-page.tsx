@@ -355,7 +355,7 @@ function AdminMembers({
         </>
       )}
       {/* The summary under the title has the count; the footer is for a list of several pages. */}
-      {total > tablePageSizes[0] && (
+      {(size !== null || total > Math.min(tablePageSizes[0], pageSize)) && (
         <ListFooter
           count={t("summary.members", { count: total })}
           page={current}

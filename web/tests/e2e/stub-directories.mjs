@@ -153,6 +153,8 @@ const summaryOf = (item) => ({
     "maturity",
   ),
   customerDeployments: deploymentsOf(item.slug).length,
+  // GenAI Fund features one solution; the stub orders nothing by it.
+  featured: item.slug === "policy-chat",
 });
 
 function person(name, more) {
@@ -207,6 +209,8 @@ const personSummaryOf = (item) => ({
   photoFileId: item.photoFileId,
   projectCount: item.projects.length,
   leadProject: item.projects[0] ?? null,
+  // GenAI Fund features one profile; the stub orders nothing by it.
+  featured: item.slug === "arif-hidayat",
 });
 
 const has = (text, ...fields) =>
@@ -217,7 +221,16 @@ function page(url, items) {
     url.searchParams.get("sort") === "name"
       ? items.toSorted((one, other) => one.name.localeCompare(other.name))
       : items;
-  return { items: sorted, page: 1, pageSize: 25, total: sorted.length };
+  const pageNumber = Number(url.searchParams.get("page") ?? "1");
+  const pageSize = Number(
+    url.searchParams.get("size") ?? (url.pathname.endsWith("/deployments") ? "25" : "12"),
+  );
+  return {
+    items: sorted.slice((pageNumber - 1) * pageSize, pageNumber * pageSize),
+    page: pageNumber,
+    pageSize,
+    total: sorted.length,
+  };
 }
 
 /** The published use cases, the most recently published first; the third is anonymous and its budget is hidden. */
@@ -239,6 +252,8 @@ const useCases = [
     timelineMaxWeeks: 12,
     closesAt: "2026-12-31T16:59:00Z",
     publishedAt: "2026-10-02T02:00:00Z",
+    // GenAI Fund features this one; the stub orders nothing by it.
+    featured: true,
   },
   {
     id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0002",
@@ -312,7 +327,14 @@ function pageOfUseCases(url) {
           ? (other.budgetMax ?? 0) - (one.budgetMax ?? 0)
           : other.publishedAt.localeCompare(one.publishedAt),
     );
-  return { items, page: 1, pageSize: 10, total: items.length };
+  const pageNumber = Number(query.get("page") ?? "1");
+  const pageSize = Number(query.get("size") ?? "10");
+  return {
+    items: items.slice((pageNumber - 1) * pageSize, pageNumber * pageSize),
+    page: pageNumber,
+    pageSize,
+    total: items.length,
+  };
 }
 
 /** The use cases an operator attached to a program, by the program's address. */
@@ -381,4 +403,57 @@ export function answerDirectory(url) {
     return [200, page(url, items.map(personSummaryOf))];
   }
   return undefined;
+}
+
+/** Directory-search fixtures keep the public card fields when the page reads the shared search API. */
+export function directorySearchItems(url) {
+  const kind = url.searchParams.get("kind");
+  const listPath = {
+    solution: "/api/solution/solutions",
+    talent: "/api/talent/profiles",
+    use_case: "/api/usecase/use-cases",
+  }[kind];
+  if (!listPath) {
+    return null;
+  }
+  const directory = new URL(url);
+  directory.pathname = listPath;
+  directory.searchParams.delete("page");
+  directory.searchParams.set("size", "100");
+  const [, response] = answerDirectory(directory);
+  return response.items.map((record) => ({
+    kind,
+    slug: record.slug ?? record.id,
+    title: record.name ?? record.title,
+    subtitle: record.organizationName ?? record.headline ?? null,
+    summary: record.summary ?? record.goal ?? record.headline ?? "",
+    snippet: record.summary ?? record.goal ?? record.headline ?? "",
+    organizationSlug: record.organizationSlug ?? null,
+    organizationLogoFileId: record.organizationLogoFileId ?? null,
+    country: record.country ?? null,
+    maturity: record.maturity ?? null,
+    customerDeployments: record.customerDeployments ?? null,
+    industries: record.industries ?? (record.industry ? [record.industry] : []),
+    focusAreas: record.focusAreas ?? [],
+    roles: record.roles ?? [],
+    skills: record.skills ?? [],
+    city: record.city ?? null,
+    photoFileId: record.photoFileId ?? null,
+    featured: record.featured ?? false,
+    coverFileId: solutions.find((entry) => entry.slug === record.slug)?.coverFileId ?? null,
+    backing: null,
+    projectCount: record.projectCount ?? null,
+    leadProjectTitle: record.leadProject?.title ?? null,
+    leadProjectStage: record.leadProject?.stage ?? null,
+    budgetMin: record.budgetMin ?? null,
+    budgetMax: record.budgetMax ?? null,
+    budgetToBeDetermined: record.budgetToBeDetermined ?? null,
+    budgetMembersOnly: record.budgetMembersOnly ?? null,
+    currency: record.currency ?? null,
+    closesAt: record.closesAt ?? null,
+    publishedAt: record.publishedAt ?? null,
+    technologies: record.technologies ?? [],
+    timelineMinWeeks: record.timelineMinWeeks ?? null,
+    timelineMaxWeeks: record.timelineMaxWeeks ?? null,
+  }));
 }
