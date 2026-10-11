@@ -416,6 +416,111 @@ class SolutionTest {
 	}
 
 	@Test
+	void pinnedSolutionsComeFirstInEveryOrderOfTheDirectoryAndOnItsFirstPageOnly() {
+		String founder = approvedOwner("founder@pinned.test", "Pinned Co");
+		UUID[] desks = new UUID[15];
+		for (int number = 1; number <= 14; number++) {
+			Map<String, Object> description = described("Numbat Desk %02d".formatted(number), 0);
+			if (number == 3) {
+				description.put("industries", List.of("banking_finance"));
+			}
+			desks[number] = approved(founder, "Numbat Desk %02d".formatted(number), description);
+		}
+
+		// The one pinned first stays on top of the one pinned after it, whatever their names or approvals say.
+		post(operator, ADMIN + "/" + desks[9] + "/pin", null).expectStatus().isNoContent();
+		post(operator, ADMIN + "/" + desks[3] + "/pin", null).expectStatus().isNoContent();
+
+		String byName = body(client.get().uri(DIRECTORY + "?q=numbat desk&sort=name").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(byName, "$.items[*].name")).containsExactly(numbats(9, 3, 1, 2, 4, 5, 6, 7,
+				8, 10, 11, 12));
+		// The pinned ones are counted once and do not come again on a later page.
+		assertThat(JsonPath.<Integer>read(byName, "$.total")).isEqualTo(14);
+		assertThat(names(DIRECTORY + "?q=numbat desk&sort=name&page=2")).containsExactly(numbats(13, 14));
+		assertThat(names(DIRECTORY + "?q=numbat desk&sort=newest")).containsExactly(numbats(9, 3, 14, 13, 12, 11, 10, 8,
+				7, 6, 5, 4));
+		assertThat(names(DIRECTORY + "?q=numbat desk&sort=newest&page=2")).containsExactly(numbats(2, 1));
+		// With no order asked for, and on the page of its organization, they come first too.
+		assertThat(names(DIRECTORY + "?q=numbat desk")).startsWith(numbats(9, 3));
+		String organization = JsonPath.read(byName, "$.items[0].organizationSlug");
+		assertThat(names(DIRECTORY + "?organization=" + organization)).startsWith(numbats(9, 3));
+		// A filter that leaves a pinned solution out leaves it out.
+		assertThat(names(DIRECTORY + "?q=numbat desk&industry=banking_finance")).containsExactly(numbats(3));
+		assertThat(names(DIRECTORY + "?q=numbat desk 1")).containsExactly(numbats(10, 11, 12, 13, 14));
+
+		// Unpinned, a solution goes back to its place.
+		post(operator, ADMIN + "/" + desks[9] + "/unpin", null).expectStatus().isNoContent();
+		assertThat(names(DIRECTORY + "?q=numbat desk&sort=name")).startsWith(numbats(3, 1, 2, 4));
+	}
+
+	@Test
+	void onlyAnOperatorPinsASolutionAndAPinIsKeptThroughWhatItsOwnersAndGenAiFundDo() {
+		String founder = approvedOwner("founder@pinner.test", "Pinner Co");
+		approved(founder, "Bilby Alpha");
+		UUID pinned = approved(founder, "Bilby Zulu");
+		UUID waiting = submitted(founder, "Bilby Waiting");
+		UUID draft = create(founder, "Bilby Draft");
+
+		assertProblem(post(founder, ADMIN + "/" + pinned + "/pin", null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(founder, ADMIN + "/" + pinned + "/unpin", null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		client.post().uri(ADMIN + "/" + pinned + "/pin").header(TestSignIn.CSRF_HEADER, "1").exchange().expectStatus()
+			.isUnauthorized();
+		// A draft is its organization's alone, and what does not exist cannot be pinned.
+		assertProblem(post(operator, ADMIN + "/" + draft + "/pin", null), 404, "SOLUTION_NOT_FOUND");
+		assertProblem(post(operator, ADMIN + "/" + UUID.randomUUID() + "/unpin", null), 404, "SOLUTION_NOT_FOUND");
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Alpha", "Bilby Zulu");
+
+		// What its owners read before the pin is still what they save: a pin is not a change of theirs.
+		String before = body(get(founder, MINE + "/" + pinned).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(before, "$.pinnedAt")).isNull();
+		post(operator, ADMIN + "/" + pinned + "/pin", null).expectStatus().isNoContent();
+		String record = body(get(operator, ADMIN + "/" + pinned).expectStatus().isOk());
+		String pinnedAt = JsonPath.read(record, "$.pinnedAt");
+		assertThat(pinnedAt).isNotNull();
+		// Pinned again, it keeps the time it was pinned and nothing new is recorded.
+		post(operator, ADMIN + "/" + pinned + "/pin", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<String>read(body(get(operator, ADMIN + "/" + pinned).expectStatus().isOk()), "$.pinnedAt"))
+			.isEqualTo(pinnedAt);
+		assertThat(events(pinned)).containsExactly("solution.approve", "solution.pin");
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Zulu", "Bilby Alpha");
+
+		Map<String, Object> change = keeping(before, described("Bilby Zulu", versionOf(before)));
+		change.put("summary", "Reads claim files faster.");
+		put(founder, MINE + "/" + pinned, change).expectStatus().isOk();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Zulu", "Bilby Alpha");
+
+		// The operators' list marks it and narrows to the pinned ones, or to the others.
+		String onlyPinned = body(get(operator, ADMIN + "?q=bilby&pinned=true").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(onlyPinned, "$.items[*].name")).containsExactly("Bilby Zulu");
+		assertThat(JsonPath.<Integer>read(onlyPinned, "$.total")).isEqualTo(1);
+		assertThat(JsonPath.<String>read(onlyPinned, "$.items[0].pinnedAt")).isEqualTo(pinnedAt);
+		assertThat(names(operator, ADMIN + "?q=bilby&pinned=false")).containsExactlyInAnyOrder("Bilby Waiting",
+				"Bilby Alpha");
+
+		// A solution that is not public is pinned all the same, and comes first from the moment it is public.
+		post(operator, ADMIN + "/" + waiting + "/pin", null).expectStatus().isNoContent();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Zulu", "Bilby Alpha");
+		post(operator, ADMIN + "/" + waiting + "/approve", null).expectStatus().isNoContent();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Zulu", "Bilby Waiting", "Bilby Alpha");
+		// Taken down, it leaves the directory and keeps its pin; restored, it is back where it was.
+		post(operator, ADMIN + "/" + pinned + "/take-down", Map.of("reason", "unverifiable")).expectStatus()
+			.isNoContent();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Waiting", "Bilby Alpha");
+		assertThat(names(operator, ADMIN + "?q=bilby&pinned=true")).containsExactlyInAnyOrder("Bilby Zulu",
+				"Bilby Waiting");
+		post(operator, ADMIN + "/" + pinned + "/restore", null).expectStatus().isNoContent();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Zulu", "Bilby Waiting", "Bilby Alpha");
+
+		post(operator, ADMIN + "/" + pinned + "/unpin", null).expectStatus().isNoContent();
+		post(operator, ADMIN + "/" + pinned + "/unpin", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<Object>read(body(get(operator, ADMIN + "/" + pinned).expectStatus().isOk()), "$.pinnedAt"))
+			.isNull();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Waiting", "Bilby Alpha", "Bilby Zulu");
+		assertThat(events(pinned)).containsExactly("solution.approve", "solution.pin", "solution.take_down",
+				"solution.restore", "solution.unpin");
+	}
+
+	@Test
 	void aSolutionWithoutItsOwnLogoShowsItsOrganizationsToThePublic() {
 		String founder = approvedOwner("founder@logo.test", "Logo Co");
 		approved(founder, "Wombat Own Logo");
@@ -1101,6 +1206,11 @@ class SolutionTest {
 		UUID id = submitted(session, name, description);
 		post(operator, ADMIN + "/" + id + "/approve", null).expectStatus().isNoContent();
 		return id;
+	}
+
+	/** The names of the numbered solutions of the pinning test, in the order given. */
+	private static String[] numbats(int... numbers) {
+		return Arrays.stream(numbers).mapToObj("Numbat Desk %02d"::formatted).toArray(String[]::new);
 	}
 
 	private List<String> names(String path) {

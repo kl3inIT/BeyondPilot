@@ -152,6 +152,30 @@ class AdminSolutionsController {
 		solutions.takeDown(actor, id, request);
 	}
 
+	@PostMapping("/{id}/pin")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "pinSolution",
+			summary = "Pin a solution to the top of the public directory, before the order a reader chooses",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The solution is pinned; one pinned already keeps its place.",
+			content = @Content)
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void pin(@CurrentActor Actor actor, @PathVariable UUID id) {
+		solutions.pin(actor, id);
+	}
+
+	@PostMapping("/{id}/unpin")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "unpinSolution", summary = "Unpin a solution from the top of the public directory",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The solution is not pinned.", content = @Content)
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void unpin(@CurrentActor Actor actor, @PathVariable UUID id) {
+		solutions.unpin(actor, id);
+	}
+
 	@PostMapping("/{id}/restore")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(operationId = "restoreSolution",

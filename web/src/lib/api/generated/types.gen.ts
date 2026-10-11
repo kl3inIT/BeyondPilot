@@ -407,6 +407,10 @@ export type AdminSolutionSummary = {
     name: string;
     organizationId: string;
     organizationName: string;
+    /**
+     * When an operator pinned it to the top of the public directory; null while it is not pinned.
+     */
+    pinnedAt?: string | null;
     slug: string;
     status: 'in_review' | 'needs_changes' | 'approved' | 'rejected';
     submittedAt?: string | null;
@@ -430,6 +434,10 @@ export type AdminTalent = {
      * The address of the account the profile belongs to.
      */
     email: string;
+    /**
+     * When an operator pinned it to the top of the public directory; null while it is not pinned.
+     */
+    pinnedAt?: string | null;
     profile: TalentProfile;
 };
 
@@ -1018,7 +1026,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.pin' | 'solution.unpin' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.pin' | 'talent.unpin' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -5102,6 +5110,10 @@ export type Solution = {
     name: string;
     organizationId: string;
     organizationName: string;
+    /**
+     * When an operator pinned it to the top of the public directory; null while it is not pinned.
+     */
+    pinnedAt?: string | null;
     problemsSolved?: string | null;
     slug: string;
     status: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'rejected';
@@ -5458,6 +5470,10 @@ export type TalentSummary = {
     id: string;
     listed: boolean;
     name: string;
+    /**
+     * When an operator pinned it to the top of the public directory; null while it is not pinned.
+     */
+    pinnedAt?: string | null;
     slug: string;
     /**
      * GenAI Fund's review of the profile.
@@ -6193,7 +6209,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.pin' | 'solution.unpin' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.pin' | 'talent.unpin' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -11179,6 +11195,10 @@ export type ListAdminSolutionsData = {
          */
         industry?: string | null;
         /**
+         * Only solutions pinned to the top of the public directory when true, only those not pinned when false.
+         */
+        pinned?: boolean | null;
+        /**
          * The page, counted from 1.
          */
         page?: number;
@@ -11324,6 +11344,41 @@ export type BackSolutionResponses = {
 };
 
 export type BackSolutionResponse = BackSolutionResponses[keyof BackSolutionResponses];
+
+export type PinSolutionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/pin';
+};
+
+export type PinSolutionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+};
+
+export type PinSolutionError = PinSolutionErrors[keyof PinSolutionErrors];
+
+export type PinSolutionResponses = {
+    /**
+     * The solution is pinned; one pinned already keeps its place.
+     */
+    204: void;
+};
+
+export type PinSolutionResponse = PinSolutionResponses[keyof PinSolutionResponses];
 
 export type RejectSolutionData = {
     body: RejectSolution;
@@ -11492,6 +11547,41 @@ export type TakeDownSolutionResponses = {
 };
 
 export type TakeDownSolutionResponse = TakeDownSolutionResponses[keyof TakeDownSolutionResponses];
+
+export type UnpinSolutionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/unpin';
+};
+
+export type UnpinSolutionErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+};
+
+export type UnpinSolutionError = UnpinSolutionErrors[keyof UnpinSolutionErrors];
+
+export type UnpinSolutionResponses = {
+    /**
+     * The solution is not pinned.
+     */
+    204: void;
+};
+
+export type UnpinSolutionResponse = UnpinSolutionResponses[keyof UnpinSolutionResponses];
 
 export type ListCustomerDeploymentsData = {
     body?: never;
@@ -12121,6 +12211,10 @@ export type ListAdminTalentData = {
          */
         status?: 'in_review' | 'needs_changes' | 'approved' | 'suspended';
         /**
+         * Only profiles pinned to the top of the public directory when true, only those not pinned when false.
+         */
+        pinned?: boolean | null;
+        /**
          * The page, counted from 1.
          */
         page?: number;
@@ -12227,6 +12321,41 @@ export type ApproveTalentResponses = {
 };
 
 export type ApproveTalentResponse = ApproveTalentResponses[keyof ApproveTalentResponses];
+
+export type PinTalentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/admin/profiles/{id}/pin';
+};
+
+export type PinTalentErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted talent profile.
+     */
+    404: Problem;
+};
+
+export type PinTalentError = PinTalentErrors[keyof PinTalentErrors];
+
+export type PinTalentResponses = {
+    /**
+     * The profile is pinned; one pinned already keeps its place.
+     */
+    204: void;
+};
+
+export type PinTalentResponse = PinTalentResponses[keyof PinTalentResponses];
 
 export type RestoreTalentData = {
     body?: never;
@@ -12352,6 +12481,41 @@ export type TakeDownTalentResponses = {
 };
 
 export type TakeDownTalentResponse = TakeDownTalentResponses[keyof TakeDownTalentResponses];
+
+export type UnpinTalentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/talent/admin/profiles/{id}/unpin';
+};
+
+export type UnpinTalentErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted talent profile.
+     */
+    404: Problem;
+};
+
+export type UnpinTalentError = UnpinTalentErrors[keyof UnpinTalentErrors];
+
+export type UnpinTalentResponses = {
+    /**
+     * The profile is not pinned.
+     */
+    204: void;
+};
+
+export type UnpinTalentResponse = UnpinTalentResponses[keyof UnpinTalentResponses];
 
 export type ListReportedTalentEnquiriesData = {
     body?: never;

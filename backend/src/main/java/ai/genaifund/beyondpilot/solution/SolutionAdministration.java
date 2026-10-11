@@ -37,7 +37,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * What operators do with solutions and their customer deployments: read those that were sent for review, approve one,
- * send one back with what to change, refuse one for good with a reason, and take an approved one down and restore it.
+ * send one back with what to change, refuse one for good with a reason, take an approved one down and restore it, and
+ * pin one to the top of the public directory.
  * Every operation first checks that the caller is an operator now, every decision is recorded in the audit trail in
  * the transaction of the change, and the members of the organization are told of a decision on a solution by email.
  * A draft is its organization's alone and is never shown here.
@@ -95,7 +96,7 @@ public class SolutionAdministration {
 		int page = request.page() == null ? 1 : request.page();
 		List<UUID> named = text == null ? List.of() : organizations.named(text);
 		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(text, named, request.status(),
-				request.industry(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
+				request.industry(), request.pinned(), PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		Map<UUID, Person> senders = identity.people(rows.stream()
@@ -106,7 +107,8 @@ public class SolutionAdministration {
 		return new AdminSolutionListResponse(rows.stream()
 			.map(row -> SolutionViews.adminSummary(row, name(names, row.organizationId()),
 					sender(senders, row.submittedByAccountId())))
-			.toList(), page, PAGE_SIZE, solutionList.adminCount(text, named, request.status(), request.industry()),
+			.toList(), page, PAGE_SIZE,
+				solutionList.adminCount(text, named, request.status(), request.industry(), request.pinned()),
 				solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview());
 	}
 
@@ -250,6 +252,38 @@ public class SolutionAdministration {
 	}
 
 	/**
+	 * Pins a solution to the top of the public directory: while the directory shows it, it comes before the solutions
+	 * that are not pinned, in every order a reader chooses, the earliest pinned first. Any solution that was sent for
+	 * review can be pinned, and a pin is kept through every decision, so one pinned before it is public comes first
+	 * from the moment it is. Pinning one that is pinned already changes nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when no submitted solution has this identifier
+	 */
+	@Transactional
+	public void pin(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Solution solution = solutions.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
+		if (solutions.pin(id, Instant.now()) == 1) {
+			record(AuditAction.SOLUTION_PIN, operator, solution, Map.of());
+		}
+	}
+
+	/**
+	 * Unpins a solution, which goes back to its place in the order a reader chooses. Unpinning one that is not pinned
+	 * changes nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when no submitted solution has this identifier
+	 */
+	@Transactional
+	public void unpin(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Solution solution = solutions.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
+		if (solutions.unpin(id) == 1) {
+			record(AuditAction.SOLUTION_UNPIN, operator, solution, Map.of());
+		}
+	}
+
+	/**
 	 * Approves a customer deployment that waits for review, which shows it with its solution.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws SolutionException when the deployment does not exist or does not wait for review
@@ -348,7 +382,8 @@ public class SolutionAdministration {
 	@Transactional(readOnly = true)
 	public SolutionsAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
-		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(null, List.of(), "in_review", null, limit, 0);
+		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(null, List.of(), "in_review", null, null, limit,
+				0);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		return new SolutionsAwaitingReview(solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview(),

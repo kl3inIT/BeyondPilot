@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -312,6 +313,112 @@ class TalentTest {
 	}
 
 	@Test
+	void pinnedProfilesComeFirstInEveryOrderOfTheDirectoryAndOnItsFirstPageOnly() {
+		UUID[] people = new UUID[15];
+		for (int number = 1; number <= 14; number++) {
+			Map<String, Object> description = described("Quoll Person %02d".formatted(number), null);
+			if (number == 3) {
+				description.put("roles", List.of("data_scientist"));
+			}
+			people[number] = approved(signIn("quoll%02d@profile.test".formatted(number)), description);
+		}
+
+		// The one pinned first stays on top of the one pinned after it, whatever their names or approvals say.
+		post(operator, ADMIN + "/" + people[9] + "/pin", null).expectStatus().isNoContent();
+		post(operator, ADMIN + "/" + people[3] + "/pin", null).expectStatus().isNoContent();
+
+		String byName = body(
+				client.get().uri(DIRECTORY + "?q=quoll person&sort=name").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(byName, "$.items[*].name")).containsExactly(quolls(9, 3, 1, 2, 4, 5, 6, 7,
+				8, 10, 11, 12));
+		// The pinned ones are counted once and do not come again on a later page.
+		assertThat(JsonPath.<Integer>read(byName, "$.total")).isEqualTo(14);
+		assertThat(names(DIRECTORY + "?q=quoll person&sort=name&page=2")).containsExactly(quolls(13, 14));
+		assertThat(names(DIRECTORY + "?q=quoll person&sort=newest")).containsExactly(quolls(9, 3, 14, 13, 12, 11, 10,
+				8, 7, 6, 5, 4));
+		assertThat(names(DIRECTORY + "?q=quoll person&sort=newest&page=2")).containsExactly(quolls(2, 1));
+		// With no order asked for they come first too.
+		assertThat(names(DIRECTORY + "?q=quoll person")).startsWith(quolls(9, 3));
+		// A filter that leaves a pinned profile out leaves it out.
+		assertThat(names(DIRECTORY + "?q=quoll person&role=data_scientist")).containsExactly(quolls(3));
+		assertThat(names(DIRECTORY + "?q=quoll person 1")).containsExactly(quolls(10, 11, 12, 13, 14));
+
+		// Unpinned, a profile goes back to its place.
+		post(operator, ADMIN + "/" + people[9] + "/unpin", null).expectStatus().isNoContent();
+		assertThat(names(DIRECTORY + "?q=quoll person&sort=name")).startsWith(quolls(3, 1, 2, 4));
+	}
+
+	@Test
+	void onlyAnOperatorPinsAProfileAndAPinIsKeptThroughWhatItsPersonAndGenAiFundDo() {
+		approved(signIn("bilby.alpha@profile.test"), "Bilby Alpha");
+		String person = signIn("bilby.zulu@profile.test");
+		UUID pinned = approved(person, "Bilby Zulu");
+		UUID waiting = submitted(signIn("bilby.waiting@profile.test"), "Bilby Waiting");
+		String drafter = signIn("bilby.draft@profile.test");
+		UUID draft = UUID.fromString(JsonPath
+			.read(body(put(drafter, MINE, described("Bilby Draft", null)).expectStatus().isOk()), "$.id"));
+
+		assertProblem(post(person, ADMIN + "/" + pinned + "/pin", null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(person, ADMIN + "/" + pinned + "/unpin", null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		client.post().uri(ADMIN + "/" + pinned + "/pin").header(TestSignIn.CSRF_HEADER, "1").exchange().expectStatus()
+			.isUnauthorized();
+		// A draft is its person's alone, and what does not exist cannot be pinned.
+		assertProblem(post(operator, ADMIN + "/" + draft + "/pin", null), 404, "TALENT_PROFILE_NOT_FOUND");
+		assertProblem(post(operator, ADMIN + "/" + UUID.randomUUID() + "/unpin", null), 404,
+				"TALENT_PROFILE_NOT_FOUND");
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Alpha", "Bilby Zulu");
+
+		// What the person read before the pin is still what they save: a pin is not a change of theirs.
+		long version = JsonPath.<Number>read(mine(person), "$.profile.version").longValue();
+		post(operator, ADMIN + "/" + pinned + "/pin", null).expectStatus().isNoContent();
+		String pinnedAt = JsonPath.read(body(get(operator, ADMIN + "/" + pinned).expectStatus().isOk()), "$.pinnedAt");
+		assertThat(pinnedAt).isNotNull();
+		// Pinned again, it keeps the time it was pinned and nothing new is recorded.
+		post(operator, ADMIN + "/" + pinned + "/pin", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<String>read(body(get(operator, ADMIN + "/" + pinned).expectStatus().isOk()), "$.pinnedAt"))
+			.isEqualTo(pinnedAt);
+		assertThat(events(pinned)).containsExactly("talent.approve", "talent.pin");
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Zulu", "Bilby Alpha");
+
+		Map<String, Object> change = described("Bilby Zulu", version);
+		change.put("headline", "Builds claims AI faster");
+		put(person, MINE, change).expectStatus().isOk();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Zulu", "Bilby Alpha");
+
+		// The operators' list marks it and narrows to the pinned ones, or to the others.
+		String onlyPinned = body(get(operator, ADMIN + "?q=bilby&pinned=true").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(onlyPinned, "$.items[*].name")).containsExactly("Bilby Zulu");
+		assertThat(JsonPath.<Integer>read(onlyPinned, "$.total")).isEqualTo(1);
+		assertThat(JsonPath.<String>read(onlyPinned, "$.items[0].pinnedAt")).isEqualTo(pinnedAt);
+		assertThat(JsonPath.<List<String>>read(body(get(operator, ADMIN + "?q=bilby&pinned=false").expectStatus().isOk()),
+				"$.items[*].name"))
+			.containsExactlyInAnyOrder("Bilby Waiting", "Bilby Alpha");
+
+		// A profile that is not public is pinned all the same, and comes first from the moment it is public.
+		post(operator, ADMIN + "/" + waiting + "/pin", null).expectStatus().isNoContent();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Zulu", "Bilby Alpha");
+		post(operator, ADMIN + "/" + waiting + "/approve", null).expectStatus().isNoContent();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Zulu", "Bilby Waiting", "Bilby Alpha");
+		// Taken down, it leaves the directory and keeps its pin; restored, it is back where it was.
+		post(operator, ADMIN + "/" + pinned + "/take-down", Map.of("reason", "unverifiable")).expectStatus()
+			.isNoContent();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Waiting", "Bilby Alpha");
+		assertThat(JsonPath.<List<String>>read(body(get(operator, ADMIN + "?q=bilby&pinned=true").expectStatus().isOk()),
+				"$.items[*].name"))
+			.containsExactlyInAnyOrder("Bilby Zulu", "Bilby Waiting");
+		post(operator, ADMIN + "/" + pinned + "/restore", null).expectStatus().isNoContent();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Zulu", "Bilby Waiting", "Bilby Alpha");
+
+		post(operator, ADMIN + "/" + pinned + "/unpin", null).expectStatus().isNoContent();
+		post(operator, ADMIN + "/" + pinned + "/unpin", null).expectStatus().isNoContent();
+		assertThat(JsonPath.<Object>read(body(get(operator, ADMIN + "/" + pinned).expectStatus().isOk()), "$.pinnedAt"))
+			.isNull();
+		assertThat(names(DIRECTORY + "?q=bilby")).containsExactly("Bilby Waiting", "Bilby Alpha", "Bilby Zulu");
+		assertThat(events(pinned)).containsExactly("talent.approve", "talent.pin", "talent.remove", "talent.restore",
+				"talent.unpin");
+	}
+
+	@Test
 	void aMessageWaitsForThePersonAndSharesNoAddressUntilAccepted() {
 		String person = signIn("numbat@profile.test");
 		approved(person, "Numbat Person");
@@ -563,6 +670,11 @@ class TalentTest {
 	/** The identifiers on the first page of the operators' list narrowed to a status. */
 	private List<String> listed(String status) {
 		return JsonPath.read(body(get(operator, ADMIN + "?status=" + status).expectStatus().isOk()), "$.items[*].id");
+	}
+
+	/** The names of the numbered profiles of the pinning test, in the order given. */
+	private static String[] quolls(int... numbers) {
+		return Arrays.stream(numbers).mapToObj("Quoll Person %02d"::formatted).toArray(String[]::new);
 	}
 
 	private List<String> names(String path) {

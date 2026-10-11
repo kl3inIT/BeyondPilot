@@ -91,6 +91,11 @@ public enum AuditAction {
 	/** An operator wrote what GenAI Fund says of a solution: who backs its company, its programme, its funding. */
 	SOLUTION_BACK("solution.back"),
 
+	/** An operator pinned a solution to the top of the public directory. */
+	SOLUTION_PIN("solution.pin"),
+
+	SOLUTION_UNPIN("solution.unpin"),
+
 	/** An operator approved what an organization tells about a customer of a solution. */
 	SOLUTION_DEPLOYMENT_APPROVE("solution.deployment_approve"),
 
@@ -147,6 +152,11 @@ public enum AuditAction {
 
 	/** An operator put a profile that was taken down back in the public. */
 	TALENT_RESTORE("talent.restore"),
+
+	/** An operator pinned a profile to the top of the public directory. */
+	TALENT_PIN("talent.pin"),
+
+	TALENT_UNPIN("talent.unpin"),
 
 	/** The person deleted their own profile. */
 	TALENT_DELETE("talent.delete"),

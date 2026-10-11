@@ -162,6 +162,14 @@ public class Solution {
 	@Column(nullable = false)
 	private boolean listed = true;
 
+	/**
+	 * When an operator pinned the solution to the top of the public directory; null while it is not pinned. Only
+	 * {@code SolutionRepository.pin} and {@code unpin} write it, so a save of the entity never changes it and pinning
+	 * leaves the version a save sends alone.
+	 */
+	@Column(insertable = false, updatable = false)
+	private @Nullable Instant pinnedAt;
+
 	@Column(nullable = false, updatable = false)
 	private UUID createdByAccountId;
 
@@ -566,6 +574,10 @@ public class Solution {
 
 	public boolean isListed() {
 		return listed;
+	}
+
+	public @Nullable Instant getPinnedAt() {
+		return pinnedAt;
 	}
 
 	public long getVersion() {

@@ -890,6 +890,8 @@ paths:
           - solution.take_down
           - solution.restore
           - solution.back
+          - solution.pin
+          - solution.unpin
           - solution.deployment_approve
           - solution.deployment_reject
           - solution.enrich
@@ -909,6 +911,8 @@ paths:
           - talent.request_changes
           - talent.remove
           - talent.restore
+          - talent.pin
+          - talent.unpin
           - talent.delete
           - proposal.criteria_update
           - proposal.reviewer_invite
@@ -6927,6 +6931,15 @@ paths:
           - string
           - "null"
           pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|climate_sustainability|marketing_advertising|legal|hr_workforce|other
+      - description: "Only solutions pinned to the top of the public directory when\
+          \ true, only those not pinned when false."
+        in: query
+        name: pinned
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -7095,6 +7108,43 @@ paths:
       - session: []
       summary: "Write what GenAI Fund says of a solution: who backs its company, its\
         \ programme and its funding"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/pin:
+    post:
+      operationId: pinSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The solution is pinned; one pinned already keeps its place.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+      security:
+      - session: []
+      summary: "Pin a solution to the top of the public directory, before the order\
+        \ a reader chooses"
       tags:
       - Solution administration
   /api/solution/admin/solutions/{id}/reject:
@@ -7301,6 +7351,42 @@ paths:
       - session: []
       summary: "Take an approved solution out of the directory and matching, with\
         \ a reason"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/unpin:
+    post:
+      operationId: unpinSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The solution is not pinned.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+      security:
+      - session: []
+      summary: Unpin a solution from the top of the public directory
       tags:
       - Solution administration
   /api/solution/deployments:
@@ -8084,6 +8170,15 @@ paths:
           - approved
           - suspended
           pattern: in_review|needs_changes|approved|suspended
+      - description: "Only profiles pinned to the top of the public directory when\
+          \ true, only those not pinned when false."
+        in: query
+        name: pinned
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -8203,6 +8298,43 @@ paths:
       security:
       - session: []
       summary: Approve a talent profile that waits for review
+      tags:
+      - Talent administration
+  /api/talent/admin/profiles/{id}/pin:
+    post:
+      operationId: pinTalent
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The profile is pinned; one pinned already keeps its place.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted talent profile.
+      security:
+      - session: []
+      summary: "Pin a talent profile to the top of the public directory, before the\
+        \ order a reader chooses"
       tags:
       - Talent administration
   /api/talent/admin/profiles/{id}/restore:
@@ -8356,6 +8488,42 @@ paths:
       security:
       - session: []
       summary: "Take an approved talent profile down from the public, with a reason"
+      tags:
+      - Talent administration
+  /api/talent/admin/profiles/{id}/unpin:
+    post:
+      operationId: unpinTalent
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The profile is not pinned.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted talent profile.
+      security:
+      - session: []
+      summary: Unpin a talent profile from the top of the public directory
       tags:
       - Talent administration
   /api/talent/admin/reported-enquiries:
@@ -10258,6 +10426,13 @@ components:
           format: uuid
         organizationName:
           type: string
+        pinnedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator pinned it to the top of the public directory;
+            null while it is not pinned.
         slug:
           type: string
         status:
@@ -10310,6 +10485,13 @@ components:
         email:
           type: string
           description: The address of the account the profile belongs to.
+        pinnedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator pinned it to the top of the public directory;
+            null while it is not pinned.
         profile:
           $ref: "#/components/schemas/TalentProfile"
       required:
@@ -11497,6 +11679,8 @@ components:
           - solution.take_down
           - solution.restore
           - solution.back
+          - solution.pin
+          - solution.unpin
           - solution.deployment_approve
           - solution.deployment_reject
           - solution.enrich
@@ -11516,6 +11700,8 @@ components:
           - talent.request_changes
           - talent.remove
           - talent.restore
+          - talent.pin
+          - talent.unpin
           - talent.delete
           - proposal.criteria_update
           - proposal.reviewer_invite
@@ -19363,6 +19549,13 @@ components:
           format: uuid
         organizationName:
           type: string
+        pinnedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator pinned it to the top of the public directory;
+            null while it is not pinned.
         problemsSolved:
           type:
           - string
@@ -20120,6 +20313,13 @@ components:
           type: boolean
         name:
           type: string
+        pinnedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator pinned it to the top of the public directory;
+            null while it is not pinned.
         slug:
           type: string
         status:

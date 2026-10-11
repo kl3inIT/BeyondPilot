@@ -32,7 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * What operators do with talent profiles: read those that were submitted, approve one, send one back with what to
- * change, take one down from the public and restore it, and read the messages people reported. Every operation first checks that the caller is an
+ * change, take one down from the public and restore it, pin one to the top of the public directory, and read the
+ * messages people reported. Every operation first checks that the caller is an
  * operator now; every decision is recorded in the audit trail in the transaction of the change, and its person is told
  * by email. A draft is its person's alone and is never shown here.
  */
@@ -78,15 +79,15 @@ public class TalentAdministration {
 		identity.requireOperator(actor);
 		String text = TalentViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
-		List<TalentQueryRepository.Row> rows = profileList.adminPage(text, request.status(), PAGE_SIZE,
-				(long) (page - 1) * PAGE_SIZE);
+		List<TalentQueryRepository.Row> rows = profileList.adminPage(text, request.status(), request.pinned(),
+				PAGE_SIZE, (long) (page - 1) * PAGE_SIZE);
 		Map<UUID, Person> people = identity
 			.people(rows.stream().map(TalentQueryRepository.Row::accountId).toList());
 		return new AdminTalentListResponse(rows.stream()
 			.map(row -> new TalentSummaryResponse(row.id(), row.slug(), row.name(),
 					email(people, row.accountId()), row.headline(), row.status(), row.suspendedAt(), row.listed(),
-					row.submittedAt(), row.updatedAt()))
-			.toList(), page, PAGE_SIZE, profileList.adminCount(text, request.status()));
+					row.pinnedAt(), row.submittedAt(), row.updatedAt()))
+			.toList(), page, PAGE_SIZE, profileList.adminCount(text, request.status(), request.pinned()));
 	}
 
 	/**
@@ -99,7 +100,7 @@ public class TalentAdministration {
 		identity.requireOperator(actor);
 		TalentProfile profile = profiles.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
 		return new AdminTalentResponse(TalentViews.profile(profile, details.projects(id)),
-				email(identity.people(List.of(profile.getAccountId())), profile.getAccountId()));
+				email(identity.people(List.of(profile.getAccountId())), profile.getAccountId()), profile.getPinnedAt());
 	}
 
 	/**
@@ -184,6 +185,38 @@ public class TalentAdministration {
 	}
 
 	/**
+	 * Pins a profile to the top of the public directory: while the directory shows it, it comes before the profiles
+	 * that are not pinned, in every order a reader chooses, the earliest pinned first. Any profile that was sent for
+	 * review can be pinned, and a pin is kept through every decision, so one pinned before it is public comes first
+	 * from the moment it is. Pinning one that is pinned already changes nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws TalentException when no submitted profile has this identifier
+	 */
+	@Transactional
+	public void pin(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		TalentProfile profile = profiles.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
+		if (profiles.pin(id, Instant.now()) == 1) {
+			record(AuditAction.TALENT_PIN, operator, profile, Map.of());
+		}
+	}
+
+	/**
+	 * Unpins a profile, which goes back to its place in the order a reader chooses. Unpinning one that is not pinned
+	 * changes nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws TalentException when no submitted profile has this identifier
+	 */
+	@Transactional
+	public void unpin(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		TalentProfile profile = profiles.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
+		if (profiles.unpin(id) == 1) {
+			record(AuditAction.TALENT_UNPIN, operator, profile, Map.of());
+		}
+	}
+
+	/**
 	 * One page of the messages people reported as unwanted, the newest first, with who sent them and to whom.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 */
@@ -240,8 +273,8 @@ public class TalentAdministration {
 	@Transactional(readOnly = true)
 	public TalentAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
-		return new TalentAwaitingReview(profileList.adminCount(null, "in_review"),
-				profileList.adminPage(null, "in_review", limit, 0)
+		return new TalentAwaitingReview(profileList.adminCount(null, "in_review", null),
+				profileList.adminPage(null, "in_review", null, limit, 0)
 					.stream()
 					.map(row -> new TalentAwaitingReview.Item(row.id(), row.name(), row.headline(), row.submittedAt()))
 					.toList());

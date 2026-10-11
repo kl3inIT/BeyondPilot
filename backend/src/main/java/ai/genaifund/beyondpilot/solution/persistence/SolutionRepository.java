@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.solution.persistence;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +13,7 @@ import jakarta.persistence.LockModeType;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface SolutionRepository extends JpaRepository<Solution, UUID> {
@@ -23,6 +25,21 @@ public interface SolutionRepository extends JpaRepository<Solution, UUID> {
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select s from Solution s where s.id = :id")
 	Optional<Solution> findForUpdate(UUID id);
+
+	/**
+	 * Pins a solution that is not pinned, in one statement, so two operators who pin it together pin it once and the
+	 * first time stays. It leaves the version alone: the owner's save in another tab is not refused for it.
+	 * @return 1 when it was pinned now, 0 when it was pinned already
+	 */
+	@Modifying
+	@Query(value = "update solution set pinned_at = :at where id = :id and pinned_at is null", nativeQuery = true)
+	int pin(UUID id, Instant at);
+
+	/** Unpins a pinned solution; 1 when it was unpinned now, 0 when it was not pinned. */
+	@Modifying
+	@Query(value = "update solution set pinned_at = null where id = :id and pinned_at is not null",
+			nativeQuery = true)
+	int unpin(UUID id);
 
 	List<Solution> findByStatusAndSuspendedAtIsNull(String status);
 

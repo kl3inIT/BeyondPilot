@@ -24,6 +24,9 @@ public record AdminSolutionSummaryResponse(@Schema(requiredMode = Schema.Require
 		@Schema(types = { "string", "null" }, format = "date-time",
 				description = "When GenAI Fund took it down, while it is down; its status stays approved.") @Nullable Instant suspendedAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean listed,
+		@Schema(types = { "string", "null" }, format = "date-time",
+				description = "When an operator pinned it to the top of the public directory; null while it is not "
+						+ "pinned.") @Nullable Instant pinnedAt,
 		@Schema(types = { "string", "null" }, format = "date-time") @Nullable Instant submittedAt,
 		@Schema(types = { "string", "null" },
 				description = "Who sent it for review last: their name, or their address until they have one. "
