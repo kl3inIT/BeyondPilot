@@ -492,7 +492,7 @@ public class ProposalService {
 
 	private SolutionOptionResponse option(OfferedSolution solution) {
 		return new SolutionOptionResponse(solution.id(), solution.name(), solution.summary(),
-				solution.problemsSolved(), solution.maturity(), complete(solution));
+				solution.problemsSolved(), solution.maturity(), solution.demoUrl(), complete(solution));
 	}
 
 	private @Nullable AttachedFileResponse deck(Proposal proposal) {
@@ -524,6 +524,7 @@ public class ProposalService {
 		solutionCopy.put("summary", solution.summary());
 		solutionCopy.put("problemsSolved", solution.problemsSolved());
 		solutionCopy.put("maturity", solution.maturity());
+		solutionCopy.put("demoUrl", solution.demoUrl());
 		snapshot.put("solution", solutionCopy);
 		Map<String, Object> materials = new LinkedHashMap<>();
 		materials.put("deck", deck(proposal));

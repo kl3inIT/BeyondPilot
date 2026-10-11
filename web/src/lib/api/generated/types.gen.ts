@@ -5188,6 +5188,7 @@ export type SolutionOption = {
      * Whether it has what an application needs: what it does, the problem it solves and its stage.
      */
     complete: boolean;
+    demoUrl?: string | null;
     id: string;
     maturity?: string | null;
     name: string;
@@ -5276,6 +5277,10 @@ export type SubmittedApplication = {
     contact: ContactDetails;
     country?: string | null;
     deck?: AttachedFile | null;
+    /**
+     * The link to the product's demo the solution held at submission.
+     */
+    demoUrl?: string | null;
     email: string;
     maturity?: string | null;
     organizationName: string;

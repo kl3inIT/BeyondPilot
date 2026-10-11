@@ -341,6 +341,7 @@ test.describe("apply", () => {
     await expect(page).toHaveURL(`/applications/${submittedId}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Claim Copilot");
     await expect(page.getByText("pocket-policy-proposal.pdf")).toBeVisible();
+    await expect(page.getByText("https://claimcopilot.example/demo")).toBeVisible();
     await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
     await expect(page.getByRole("link", { name: "Edit application" })).toHaveAttribute(
       "href",
