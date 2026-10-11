@@ -111,7 +111,23 @@ function AdminOrganizationPage({ detail, tab, page, size }: AdminOrganizationPag
             )}
           </>
         }
-      />
+      >
+        <nav aria-label={t("tabs.label")} className="flex items-end gap-5 border-b">
+          {tabs.map((item) => (
+            <Link
+              key={item.key}
+              href={address(record, { tab: item.key })}
+              aria-current={item.key === tab ? "page" : undefined}
+              className="group -mb-px flex items-center gap-1.5 border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
+            >
+              {item.label}
+              {item.count !== undefined && (
+                <span className="text-xs group-aria-[current=page]:text-primary">{item.count}</span>
+              )}
+            </Link>
+          ))}
+        </nav>
+      </AdminPageHeader>
 
       {state === "rejected" && (
         <p className="rounded-lg border bg-muted p-3 text-sm">
@@ -196,22 +212,6 @@ function AdminOrganizationPage({ detail, tab, page, size }: AdminOrganizationPag
           </ul>
         </section>
       )}
-
-      <nav aria-label={t("tabs.label")} className="flex items-end gap-5 border-b">
-        {tabs.map((item) => (
-          <Link
-            key={item.key}
-            href={address(record, { tab: item.key })}
-            aria-current={item.key === tab ? "page" : undefined}
-            className="group -mb-px flex items-center gap-1.5 border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
-          >
-            {item.label}
-            {item.count !== undefined && (
-              <span className="text-xs group-aria-[current=page]:text-primary">{item.count}</span>
-            )}
-          </Link>
-        ))}
-      </nav>
 
       {tab === "profile" && merged ? (
         <OrganizationProfileView organization={organization} />
