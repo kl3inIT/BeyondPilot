@@ -568,7 +568,7 @@ public class OrganizationService {
 			way = onDomain && found.autoJoin() ? "join" : "request";
 		}
 		return new OrganizationMatchResponse(found.id(), found.name(), found.type(), found.country(),
-				found.emailDomain(), found.logoFileId(), way);
+				found.emailDomain(), onDomain, found.logoFileId(), way);
 	}
 
 	/** A person who belongs nowhere and waits on nothing. */

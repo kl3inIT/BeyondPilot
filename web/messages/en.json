@@ -3717,7 +3717,8 @@
       "note": {
         "create": "If you work alone, create an organization for just you.",
         "request": "An owner of {name} decides.",
-        "requestDomain": "Your email is not on {domain}, so an owner of {name} decides."
+        "requestDomain": "Your email is not on {domain}, so an owner of {name} decides.",
+        "requestOnDomain": "Your email is on {domain}. An owner of {name} approves your request."
       },
       "ask": {
         "request": {

@@ -206,20 +206,25 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
           />
         )}
 
-        <nav aria-label={t("tabs.label")} className="flex items-end gap-5 border-b">
-          {tabs.map((tab) => (
-            <Link
-              key={tab.key}
-              href={tab.href}
-              aria-current={tab.key === current ? "page" : undefined}
-              className="group -mb-px flex items-center gap-1.5 border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
-            >
-              {tab.label}
-              {tab.count !== undefined && (
-                <span className="text-xs group-aria-[current=page]:text-primary">{tab.count}</span>
-              )}
-            </Link>
-          ))}
+        {/* On a phone the tabs are wider than the screen: the row scrolls, the page does not. */}
+        <nav aria-label={t("tabs.label")} className="overflow-x-auto">
+          <div className="flex w-max min-w-full items-end gap-5 border-b">
+            {tabs.map((tab) => (
+              <Link
+                key={tab.key}
+                href={tab.href}
+                aria-current={tab.key === current ? "page" : undefined}
+                className="group -mb-px flex items-center gap-1.5 border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
+              >
+                {tab.label}
+                {tab.count !== undefined && (
+                  <span className="text-xs group-aria-[current=page]:text-primary">
+                    {tab.count}
+                  </span>
+                )}
+              </Link>
+            ))}
+          </div>
         </nav>
 
         {children}

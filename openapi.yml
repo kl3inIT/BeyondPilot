@@ -15000,6 +15000,9 @@ components:
           description: "Its logo, read at /api/storage/files/{id}; null for none."
         name:
           type: string
+        onDomain:
+          type: boolean
+          description: Whether the caller's email address is on that domain.
         type:
           type: string
           enum:
@@ -15020,6 +15023,7 @@ components:
       required:
       - id
       - name
+      - onDomain
       - type
       - way
     OrganizationMember:

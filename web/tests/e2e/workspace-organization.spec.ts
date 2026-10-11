@@ -56,6 +56,7 @@ test.describe("workspace organization", () => {
         type: "company",
         country: "SG",
         emailDomain: "pocketpolicy.example",
+        onDomain: false,
         way: "request",
       },
     ]);
@@ -88,6 +89,35 @@ test.describe("workspace organization", () => {
         body: { message: "I work with Minh." },
       },
     ]);
+  });
+
+  test("a colleague on the domain who still has to ask is told the domain is theirs", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "unnamed", baseURL!);
+    await answerSearch(page, [
+      {
+        id: pocketPolicy,
+        name: "Pocket Policy",
+        type: "company",
+        country: "SG",
+        emailDomain: "pocketpolicy.example",
+        onDomain: true,
+        way: "request",
+      },
+    ]);
+    await page.goto("/workspace/organization");
+
+    await page.getByRole("searchbox", { name: "Company or team name" }).fill("pocket");
+    await expect(
+      page.getByText(
+        "Your email is on pocketpolicy.example. An owner of Pocket Policy approves your request.",
+      ),
+    ).toBeVisible();
+    await expect(page.getByText("Your email is not on", { exact: false })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Request to join" })).toBeVisible();
   });
 
   test("a name nobody has leads to creating the organization", async ({
@@ -563,6 +593,30 @@ test.describe("workspace organization", () => {
       { call: `POST /api/organization/mine/invitations/${invitation}/revoke`, body: null },
       { call: "PUT /api/organization/mine/auto-join", body: { autoJoin: true } },
     ]);
+  });
+
+  test("the tabs scroll in their row, and the page stays as wide as the screen", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await page.goto("/workspace/organization/members");
+
+    const tabs = page
+      .getByRole("navigation")
+      .filter({ has: page.getByRole("link", { name: /^Members/ }) })
+      .getByRole("link");
+    await expect(tabs.first()).toBeVisible();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+    // On a phone the last tab starts off screen and is reached by scrolling the row.
+    await tabs.last().scrollIntoViewIfNeeded();
+    await expect(tabs.last()).toBeInViewport();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
   });
 
   test("the last owner cannot leave, in the words of the refusal's code", async ({

@@ -2942,6 +2942,10 @@ export type OrganizationMatch = {
      */
     logoFileId?: string | null;
     name: string;
+    /**
+     * Whether the caller's email address is on that domain.
+     */
+    onDomain: boolean;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     /**
      * What asking to get in does for this caller: `join` makes them a member at once, `request` asks its owners, `claim` asks GenAI Fund to let them own it, which is the only way into an organization nobody owns.
