@@ -388,6 +388,7 @@ public class ProgramAdministration {
 				opensAt == null || closesAt == null ? null
 						: new ProgramApplications(opensAt, closesAt, program.getShortlistSize(),
 								program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose()),
+				program.getQuestions().size(),
 				program.getMilestones()
 					.stream()
 					.map(milestone -> new ProgramKeyDate(milestone.title(), milestone.startsAt(), milestone.endsAt(),

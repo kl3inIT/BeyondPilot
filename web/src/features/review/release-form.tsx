@@ -6,8 +6,8 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -33,8 +33,8 @@ type ReleaseFormProps = {
 /**
  * The email each group gets, written by the operator, and the release itself. What is typed is
  * saved as the operator goes, so that it is there when the page is opened again; nothing is sent
- * until the release. Releasing asks the operator to say they checked both lists: an email cannot
- * be taken back.
+ * until the release. Releasing asks again, naming how many applicants of each group get their
+ * email: an email cannot be taken back.
  */
 function ReleaseForm({ programId, emails, counts, ready, blocked, released }: ReleaseFormProps) {
   const t = useTranslations("Review.release");
@@ -42,7 +42,7 @@ function ReleaseForm({ programId, emails, counts, ready, blocked, released }: Re
   const router = useRouter();
   const format = useFormatter();
   const [draft, setDraft] = useState(emails);
-  const [checked, setChecked] = useState(false);
+  const [asking, setAsking] = useState(false);
   const [pending, setPending] = useState(false);
   // Whether what is on the screen is on the server too, and when it last got there.
   const [unsaved, setUnsaved] = useState(false);
@@ -88,6 +88,7 @@ function ReleaseForm({ programId, emails, counts, ready, blocked, released }: Re
       await releaseOutcomes({ path: { programId }, body: draft });
       edits.current = 0;
       setUnsaved(false);
+      setAsking(false);
       notify.success("Review.release.done");
       router.refresh();
     } catch (error) {
@@ -124,7 +125,9 @@ function ReleaseForm({ programId, emails, counts, ready, blocked, released }: Re
           readOnly={released}
           onChange={(event) => write({ ...draft, [`${key}Message`]: event.target.value })}
         />
-        <FieldDescription>{t("placeholders")}</FieldDescription>
+        <FieldDescription>
+          {t("placeholders", { organization: "{organization}", solution: "{solution}" })}
+        </FieldDescription>
       </Field>
     </div>
   );
@@ -182,21 +185,37 @@ function ReleaseForm({ programId, emails, counts, ready, blocked, released }: Re
           aria-label={t("confirmLabel")}
           className="flex flex-col gap-3 rounded-lg border bg-card p-5"
         >
-          <label className="flex items-start gap-2 text-sm">
-            <Checkbox
-              checked={checked}
-              disabled={!ready}
-              onCheckedChange={(value) => setChecked(Boolean(value))}
-            />
-            <span>{t("checked")}</span>
-          </label>
-          <Button pending={pending} disabled={!ready || !checked || !filled} onClick={release}>
-            {ready
-              ? t("release", { count: counts.shortlisted + counts.notSelected })
-              : (blocked ?? t("notReady"))}
+          <p className="text-sm text-muted-foreground">
+            {!ready ? (blocked ?? t("notReady")) : filled ? t("checkFirst") : t("fillFirst")}
+          </p>
+          <Button disabled={!ready || !filled} onClick={() => setAsking(true)}>
+            {t("release", { count: counts.shortlisted + counts.notSelected })}
           </Button>
         </section>
       )}
+      <ConfirmDialog
+        open={asking}
+        onOpenChange={setAsking}
+        title={t("confirm.title", { count: counts.shortlisted + counts.notSelected })}
+        description={t("confirm.lead")}
+        note={t("confirm.note")}
+        confirmLabel={t("confirm.send")}
+        cancelLabel={t("confirm.cancel")}
+        tone="danger"
+        pending={pending}
+        onConfirm={() => void release()}
+      >
+        <ul className="flex flex-col gap-2 rounded-lg border bg-muted/40 px-4 py-3 text-sm">
+          {(["shortlisted", "notSelected"] as const).map((key) => (
+            <li key={key} className="flex flex-col">
+              <span className="font-medium">
+                {t("confirm.group", { group: t(`groups.${key}`), count: counts[key] })}
+              </span>
+              <span className="break-words text-muted-foreground">{draft[`${key}Subject`]}</span>
+            </li>
+          ))}
+        </ul>
+      </ConfirmDialog>
       <LeaveGuard
         active={unsaved && !pending && !released}
         title={t("draft.leave.title")}

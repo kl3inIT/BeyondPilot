@@ -523,6 +523,7 @@ class ProgramAdministrationTest {
 		open.put("applications", applications("2026-01-01T00:00:00Z", "2099-01-01T00:00:00Z", "2099-01-10"));
 		String opened = body(save(operator, uri, open).expectStatus().isOk());
 		version = JsonPath.read(opened, "$.version");
+		assertThat(JsonPath.<Integer>read(opened, "$.questionCount")).isEqualTo(1);
 		assertThat(JsonPath.<Boolean>read(body(get(operator, questions).expectStatus().isOk()), "$.fixed")).isTrue();
 		assertProblem(save(operator, questions, Map.of("version", version, "questions", List.of())), 409,
 				"PROGRAM_QUESTIONS_FIXED");

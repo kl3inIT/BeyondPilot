@@ -299,6 +299,10 @@ export type AdminProgram = {
      */
     publishIssues: Array<'summary' | 'cover' | 'dates'>;
     /**
+     * How many questions the application form asks after what every application holds; they are fixed once applications open.
+     */
+    questionCount: number;
+    /**
      * The address under /programs.
      */
     slug: string;

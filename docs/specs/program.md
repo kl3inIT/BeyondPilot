@@ -55,7 +55,8 @@ Constraints in the database:
   Only operators see a draft.
 - **What blocks publishing.** A program needs a `summary`, a cover and both `startsOn` and `endsOn`. The program read
   for editing lists what is missing as `publishIssues` (`summary`, `cover`, `dates`, in that order), and `publish`
-  checks the same list again and refuses with `PROGRAM_NOT_READY_TO_PUBLISH` while it is not empty.
+  checks the same list again and refuses with `PROGRAM_NOT_READY_TO_PUBLISH` while it is not empty. It also gives
+  `questionCount`, so that publishing a program whose form asks nothing is asked again; no question is not a block.
 - **Publish.** Sets `status` to `published`. The first publication sets `published_at`, which never changes again.
 - **Unpublish.** Sets `status` back to `draft` and keeps everything else, the address included.
 - **Repeats.** Publishing a published program, or unpublishing a draft, changes nothing, records nothing and publishes

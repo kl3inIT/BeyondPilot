@@ -37,7 +37,12 @@ export default async function McpActivityRoute({
     }
     throw error;
   });
-  const counts = { tools: settings.tools.length, apps: apps.length };
+  const counts = {
+    tools: settings.tools.length,
+    apps: apps.length,
+    operatorApps: apps.filter((app) => app.operator).length,
+    userApps: apps.filter((app) => !app.operator).length,
+  };
 
   return <McpActivityPage calls={calls} search={search} counts={counts} />;
 }
