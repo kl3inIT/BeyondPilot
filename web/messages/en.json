@@ -220,16 +220,11 @@
         "title": "Move forward",
         "description": "Shortlist providers, connect with talent, submit a proposal, or join a program."
       },
-      "step": "Step {number}",
       "demo": {
-        "title": "BeyondPilot agent",
-        "need": "Your need",
-        "needQuote": "“We want AI to answer our customers on every channel, without our data leaving the company.”",
-        "matters": "What matters",
-        "matter1": "Customer channels",
-        "matter2": "Data privacy",
-        "matter3": "Deployment needs",
-        "options": "Relevant options",
+        "start": "Start from",
+        "start1": "Search the directory",
+        "start2": "Publish a use case",
+        "options": "Solutions listed on BeyondPilot",
         "option1Title": "Revve AI",
         "option1Why": "Always-on AI agents that call, text, email and chat with customers.",
         "option2Title": "Shieldbase",
@@ -237,7 +232,7 @@
         "next": "Next step",
         "introduce": "Request an introduction",
         "shortlist": "Compare and shortlist",
-        "alt": "an example journey. A need, “AI to answer our customers on every channel, without our data leaving the company”, is narrowed to customer channels, data privacy and deployment needs; two relevant solutions are suggested, Revve AI and Shieldbase; the next step is to request an introduction. Comparing and shortlisting is coming soon."
+        "alt": "an example of the three steps. Start by searching the directory or publishing a use case; the solutions listed on BeyondPilot include Revve AI and Shieldbase; the next step is to request an introduction. Comparing and shortlisting is coming soon."
       }
     },
     "challenge": {

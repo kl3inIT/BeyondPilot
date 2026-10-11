@@ -220,16 +220,11 @@
         "title": "Tiến lên",
         "description": "Lập danh sách rút gọn nhà cung cấp, kết nối với nhân lực, gửi đề xuất hoặc tham gia chương trình."
       },
-      "step": "Bước {number}",
       "demo": {
-        "title": "Trợ lý BeyondPilot",
-        "need": "Nhu cầu của bạn",
-        "needQuote": "“Chúng tôi muốn AI trả lời khách hàng trên mọi kênh mà dữ liệu không rời khỏi công ty.”",
-        "matters": "Điều quan trọng",
-        "matter1": "Kênh khách hàng",
-        "matter2": "Bảo mật dữ liệu",
-        "matter3": "Yêu cầu triển khai",
-        "options": "Lựa chọn phù hợp",
+        "start": "Bắt đầu từ",
+        "start1": "Tìm trong danh bạ",
+        "start2": "Đăng một bài toán",
+        "options": "Giải pháp có trên BeyondPilot",
         "option1Title": "Revve AI",
         "option1Why": "AI agent luôn túc trực để gọi điện, nhắn tin, gửi email và chat với khách hàng.",
         "option2Title": "Shieldbase",
@@ -237,7 +232,7 @@
         "next": "Bước tiếp theo",
         "introduce": "Yêu cầu giới thiệu",
         "shortlist": "So sánh và lập danh sách rút gọn",
-        "alt": "một hành trình ví dụ. Nhu cầu “AI trả lời khách hàng trên mọi kênh mà dữ liệu không rời khỏi công ty” được làm rõ thành kênh khách hàng, bảo mật dữ liệu và yêu cầu triển khai; hai giải pháp phù hợp được gợi ý là Revve AI và Shieldbase; bước tiếp theo là yêu cầu giới thiệu. So sánh và lập danh sách rút gọn sắp ra mắt."
+        "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là yêu cầu giới thiệu. So sánh và lập danh sách rút gọn sắp ra mắt."
       }
     },
     "challenge": {
