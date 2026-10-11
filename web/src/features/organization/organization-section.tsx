@@ -13,8 +13,11 @@ type OrganizationSectionProps = {
 function OrganizationSection({ id, title, summary, action, children }: OrganizationSectionProps) {
   return (
     <section aria-labelledby={id} className="flex flex-col gap-3">
-      {/* On a phone the title and the action share a line, and the summary takes the next one. */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/*
+        On a phone the title and the action share a line, and the summary takes the next one. The
+        line is as tall as an action, so that a section without one starts its content no higher.
+      */}
+      <div className="flex min-h-10 flex-wrap items-center gap-2">
         <h2 id={id} className="flex-1 text-lg font-semibold md:flex-none">
           {title}
         </h2>

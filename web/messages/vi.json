@@ -4724,7 +4724,8 @@
         "declined": "Đã từ chối"
       },
       "empty": {
-        "title": "Chưa có yêu cầu giới thiệu"
+        "title": "Chưa có yêu cầu giới thiệu",
+        "description": "Yêu cầu sẽ hiện ở đây khi có người muốn được giới thiệu với một giải pháp của bạn."
       },
       "actions": {
         "reply": "Trả lời",

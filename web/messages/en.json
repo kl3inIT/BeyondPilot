@@ -4724,7 +4724,8 @@
         "declined": "Declined"
       },
       "empty": {
-        "title": "No introductions yet"
+        "title": "No introductions yet",
+        "description": "A request appears here when someone asks to be introduced to one of your solutions."
       },
       "actions": {
         "reply": "Reply",
