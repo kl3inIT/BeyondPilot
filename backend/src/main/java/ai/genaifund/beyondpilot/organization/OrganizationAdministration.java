@@ -427,7 +427,7 @@ public class OrganizationAdministration {
 	public void approveClaim(Actor actor, UUID requestId, ApproveOrganizationRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		Organization organization = claimed(requestId);
-		JoinRequest claim = openClaim(requestId);
+		JoinRequest claim = claimOn(organization, requestId);
 		verifyDomain(organization, request.emailDomain());
 		if (!memberships.add(organization.getId(), claim.accountId(), MembershipRepository.OWNER)) {
 			throw new OrganizationException(OrganizationErrorCode.ALREADY_MEMBER,
@@ -446,15 +446,24 @@ public class OrganizationAdministration {
 	public void declineClaim(Actor actor, UUID requestId) {
 		Operator operator = identity.requireOperator(actor);
 		Organization organization = claimed(requestId);
-		closeClaim(operator, organization, openClaim(requestId), false);
+		closeClaim(operator, organization, claimOn(organization, requestId), false);
+	}
+
+	/** The organization a claim is on, locked; the claim is then read again with {@link #claimOn}. */
+	private Organization claimed(UUID requestId) {
+		return organizations.findForUpdate(openClaim(requestId).organizationId()).orElseThrow();
 	}
 
 	/**
-	 * The organization a claim is on, locked. The claim is read again under the lock: an owner who arrived in between
-	 * made it a request.
+	 * The claim as it is once its organization is locked. An owner who arrived before the lock made it a request, and
+	 * a merge moved it to the organization kept; either way it is no longer a claim on this one.
 	 */
-	private Organization claimed(UUID requestId) {
-		return organizations.findForUpdate(openClaim(requestId).organizationId()).orElseThrow();
+	private JoinRequest claimOn(Organization organization, UUID requestId) {
+		JoinRequest claim = openClaim(requestId);
+		if (!claim.organizationId().equals(organization.getId())) {
+			throw requestNotFound(requestId);
+		}
+		return claim;
 	}
 
 	/** Gives the open requests to whoever decides them now: GenAI Fund without an owner, the owners with one. */
