@@ -33,10 +33,16 @@ type DataTableColumnMeta = {
   fill?: boolean;
   /** Its text stays on one line. */
   nowrap?: boolean;
-  /** Shown from 1024px on: a column the table does without when narrower. */
-  wide?: boolean;
+  /** A number: aligned right. */
+  numeric?: boolean;
   /** As narrow as a checkbox. */
   narrow?: boolean;
+  /** A fixed width: `action` holds one icon button, `sm` 8rem, `md` 9rem, `lg` 14rem. */
+  width?: "action" | "sm" | "md" | "lg";
+  /** Shown only from this width on: a column the table does without when narrower. */
+  from?: "sm" | "md" | "lg" | "xl";
+  /** Its first click sorts the largest or latest first, as for a score or a date. */
+  descFirst?: boolean;
 };
 
 /**
@@ -68,11 +74,6 @@ function sortingOf(sort: string): SortingState {
   return [{ id: desc ? sort.slice(1) : sort, desc }];
 }
 
-function sortOf(sorting: SortingState): string {
-  const [first] = sorting;
-  return first ? `${first.desc ? "-" : ""}${first.id}` : "";
-}
-
 type DataTableSelection<TData> = {
   /** Whether a row may be selected; a row that may not shows its box disabled. */
   canSelect?: (row: TData) => boolean;
@@ -96,6 +97,8 @@ type DataTableViewProps<TData extends RowData> = {
   /** The order when the URL names none, as the server applies it: `-score`. */
   defaultSort?: string;
   selection?: DataTableSelection<TData>;
+  /** What the table shows in place of rows: an empty list or a search that found nothing. */
+  empty?: React.ReactNode;
   className?: string;
 };
 
@@ -113,6 +116,7 @@ function DataTableView<TData extends RowData>({
   sortKeys = [],
   defaultSort = "",
   selection,
+  empty,
   className,
 }: DataTableViewProps<TData>) {
   const t = useTranslations("Lists.table");
@@ -122,6 +126,14 @@ function DataTableView<TData extends RowData>({
     { shallow: false, startTransition },
   );
   const sorting = sortingOf(query.sort || defaultSort);
+
+  /** Sorts by a column: a new one starts its own way round, the current one turns round. */
+  function sortBy(id: string, descFirst: boolean) {
+    const [current] = sorting;
+    const desc = current?.id === id ? !current.desc : descFirst;
+    const next = `${desc ? "-" : ""}${id}`;
+    void setQuery({ sort: next === defaultSort ? null : next, page: null });
+  }
   const [picked, setPicked] = useState<string[]>([]);
 
   // Only rows still in the list count as selected: a filter or a page that drops one drops it here.
@@ -185,10 +197,6 @@ function DataTableView<TData extends RowData>({
       ? (row) => (selection.canSelect ? selection.canSelect(row.original) : true)
       : false,
     state: { sorting, rowSelection },
-    onSortingChange: (updater: Updater<SortingState>) => {
-      const next = sortOf(functionalUpdate(updater, sorting));
-      void setQuery({ sort: next === defaultSort ? null : next, page: null });
-    },
     onRowSelectionChange: (updater: Updater<RowSelectionState>) => {
       const next = Object.keys(functionalUpdate(updater, rowSelection));
       // Rows of other pages stay selected; the update speaks only for the rows of this one.
@@ -219,8 +227,16 @@ function DataTableView<TData extends RowData>({
                     className={cn(
                       header.column.columnDef.meta?.fill && "w-full",
                       header.column.columnDef.meta?.nowrap && "whitespace-nowrap",
-                      header.column.columnDef.meta?.wide && "hidden lg:table-cell",
+                      header.column.columnDef.meta?.numeric && "text-right",
                       header.column.columnDef.meta?.narrow && "w-10",
+                      header.column.columnDef.meta?.width === "action" && "w-12",
+                      header.column.columnDef.meta?.width === "sm" && "w-32",
+                      header.column.columnDef.meta?.width === "md" && "w-36",
+                      header.column.columnDef.meta?.width === "lg" && "w-56",
+                      header.column.columnDef.meta?.from === "sm" && "hidden sm:table-cell",
+                      header.column.columnDef.meta?.from === "md" && "hidden md:table-cell",
+                      header.column.columnDef.meta?.from === "lg" && "hidden lg:table-cell",
+                      header.column.columnDef.meta?.from === "xl" && "hidden xl:table-cell",
                     )}
                     aria-sort={
                       direction === null ? undefined : direction ? "descending" : "ascending"
@@ -229,7 +245,9 @@ function DataTableView<TData extends RowData>({
                     {header.isPlaceholder ? null : sortable ? (
                       <button
                         type="button"
-                        onClick={header.column.getToggleSortingHandler()}
+                        onClick={() =>
+                          sortBy(header.column.id, header.column.columnDef.meta?.descFirst ?? false)
+                        }
                         className="-mx-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1 font-medium outline-none hover:bg-background/60 focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <table.FlexRender header={header} />
@@ -262,8 +280,16 @@ function DataTableView<TData extends RowData>({
                   className={cn(
                     cell.column.columnDef.meta?.fill && "w-full max-w-0",
                     cell.column.columnDef.meta?.nowrap && "whitespace-nowrap",
-                    cell.column.columnDef.meta?.wide && "hidden lg:table-cell",
+                    cell.column.columnDef.meta?.numeric && "text-right",
                     cell.column.columnDef.meta?.narrow && "w-10",
+                    cell.column.columnDef.meta?.width === "action" && "w-12",
+                    cell.column.columnDef.meta?.width === "sm" && "w-32",
+                    cell.column.columnDef.meta?.width === "md" && "w-36",
+                    cell.column.columnDef.meta?.width === "lg" && "w-56",
+                    cell.column.columnDef.meta?.from === "sm" && "hidden sm:table-cell",
+                    cell.column.columnDef.meta?.from === "md" && "hidden md:table-cell",
+                    cell.column.columnDef.meta?.from === "lg" && "hidden lg:table-cell",
+                    cell.column.columnDef.meta?.from === "xl" && "hidden xl:table-cell",
                   )}
                 >
                   <table.FlexRender cell={cell} />
@@ -271,6 +297,11 @@ function DataTableView<TData extends RowData>({
               ))}
             </TableRow>
           ))}
+          {data.length === 0 && empty && (
+            <TableRow>
+              <TableCell colSpan={table.getAllLeafColumns().length}>{empty}</TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </DataTable>
 
@@ -298,4 +329,54 @@ function DataTableView<TData extends RowData>({
   );
 }
 
-export { DataTableView, dataTableColumns, type DataTableColumn };
+/** A column of a table whose cells arrive already drawn: its URL key, header and layout. */
+type DataTableRowsColumn = {
+  id: string;
+  header: React.ReactNode;
+  layout?: DataTableColumnMeta;
+};
+
+/** A row whose cells arrive already drawn, keyed by the id of their column. */
+type DataTableRow = { id: string; cells: Record<string, React.ReactNode> };
+
+/**
+ * `DataTableView` for a Server Component: the page describes its columns in words and draws each
+ * cell itself, since a function cannot cross from the server to the browser. Sorting is the same;
+ * a table that selects rows defines its columns in a client component instead.
+ */
+function DataTableRows({
+  columns,
+  rows,
+  ...props
+}: Omit<DataTableViewProps<DataTableRow>, "columns" | "data" | "getRowId" | "selection"> & {
+  columns: DataTableRowsColumn[];
+  rows: DataTableRow[];
+}) {
+  const column = dataTableColumns<DataTableRow>();
+  return (
+    <DataTableView
+      {...props}
+      data={rows}
+      getRowId={(row) => row.id}
+      columns={column.columns(
+        columns.map((entry) =>
+          column.display({
+            id: entry.id,
+            header: () => entry.header,
+            cell: ({ row }) => row.original.cells[entry.id],
+            meta: entry.layout,
+          }),
+        ),
+      )}
+    />
+  );
+}
+
+export {
+  DataTableRows,
+  DataTableView,
+  dataTableColumns,
+  type DataTableColumn,
+  type DataTableRow,
+  type DataTableRowsColumn,
+};

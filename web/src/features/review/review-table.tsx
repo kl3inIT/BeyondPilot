@@ -124,7 +124,7 @@ function ReviewTable({
       ? [
           column.accessor("choice", {
             header: choiceLabel,
-            meta: { wide: true },
+            meta: { from: "lg" },
             cell: ({ getValue }) => getValue() ?? "—",
           }),
         ]
@@ -138,8 +138,7 @@ function ReviewTable({
           column.accessor("scores", {
             id: "score",
             header: t("columns.scores"),
-            sortDescFirst: true,
-            meta: { nowrap: true },
+            meta: { nowrap: true, descFirst: true },
           }),
         ]
       : []),
