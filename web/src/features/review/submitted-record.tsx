@@ -2,6 +2,7 @@ import { FileTextIcon, LinkIcon } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import type { AttachedFile, SubmittedApplication } from "@/lib/api/generated";
+import { chosenOptions } from "@/lib/chosen-options";
 
 type Row = [string, React.ReactNode];
 
@@ -139,7 +140,12 @@ async function SubmittedRecord({
       title: t("blocks.questions"),
       rows: answered.map((answer): Row => [
         answer.label,
-        answer.kind === "confirm" ? t("confirmed") : answer.value,
+        answer.kind === "confirm"
+          ? t("confirmed")
+          : answer.kind === "multi_choice"
+            ? // One choice a line: a choice may hold a comma of its own.
+              chosenOptions(answer.value).join("\n") || none
+            : answer.value,
       ]),
     });
   }

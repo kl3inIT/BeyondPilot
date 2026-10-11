@@ -42,6 +42,15 @@ export const tascoQuestions = [
     options: [],
     maxLength: 2000,
   },
+  {
+    id: "7c1e0a2b-0000-4000-8000-000000000005",
+    kind: "multi_choice",
+    label: "Challenge areas",
+    help: "Every area your solution works in.",
+    required: true,
+    options: ["Claims", "Pricing, and underwriting", "Fraud"],
+    maxLength: 2000,
+  },
 ];
 
 export function tascoForm() {
@@ -104,6 +113,8 @@ export function submittedView(email, organization) {
         [tascoQuestions[1].id]: "Claims reach a decision without a hotline call.",
         [tascoQuestions[2].id]: "9d8c7b6a-0000-4000-8000-000000000042",
         [tascoQuestions[3].id]: "true",
+        // Several choices are one text: a JSON array of the options chosen.
+        [tascoQuestions[4].id]: JSON.stringify(["Claims", "Pricing, and underwriting"]),
       },
       files: {
         [tascoQuestions[2].id]: {

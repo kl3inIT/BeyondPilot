@@ -555,6 +555,15 @@ createServer((request, response) => {
                   options: ["Buying", "Carrying", "Claiming"],
                   maxLength: null,
                 },
+                {
+                  id: "5f0c1d2e-3a4b-4c5d-8e6f-7a8b9c0d1e02",
+                  kind: "multi_choice",
+                  label: "Challenge areas",
+                  help: null,
+                  required: true,
+                  options: ["Claims", "Pricing", "Fraud"],
+                  maxLength: null,
+                },
               ]
             : [],
         fixed: opensAt !== null && Date.parse(opensAt) <= Date.now(),
