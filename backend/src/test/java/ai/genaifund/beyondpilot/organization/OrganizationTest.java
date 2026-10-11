@@ -258,6 +258,9 @@ class OrganizationTest {
 		String founder = signIn("founder@refused.test");
 		UUID id = create(founder, "Refused Co");
 		String refuse = API + "/admin/organizations/" + id + "/refuse";
+		String leave = API + "/mine/members/" + idOf("founder@refused.test") + "/remove";
+		// While a decision is still coming the organization keeps its owner.
+		assertProblem(post(founder, leave, null), 409, "ORGANIZATION_LAST_OWNER");
 
 		// Missing information is a send back, not a refusal.
 		assertProblem(post(operator, refuse, Map.of("reason", "incomplete")), 400, "REQUEST_INVALID");
@@ -279,6 +282,11 @@ class OrganizationTest {
 			.expectStatus()
 			.isOk();
 		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("rejected");
+
+		// Nothing is decided about it any more, so its last owner may leave it and start again elsewhere.
+		post(founder, leave, null).expectStatus().isNoContent();
+		assertThat(JsonPath.<Object>read(mine(founder), "$.organization")).isNull();
+		post(founder, API + "/organizations", creation("Refused Co Again")).expectStatus().isCreated();
 	}
 
 	@Test

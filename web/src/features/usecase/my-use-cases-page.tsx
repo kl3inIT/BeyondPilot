@@ -91,7 +91,7 @@ function MyUseCasesPage({ mine, useCases, members, solutions }: MyUseCasesPagePr
         id="use-cases-list"
         title={t("title")}
         summary={rows.length > 0 ? summary : undefined}
-        action={<PostUseCase />}
+        action={<PostUseCase size="lg" />}
       >
         {rows.length === 0 ? (
           <div className="rounded-lg border bg-background">

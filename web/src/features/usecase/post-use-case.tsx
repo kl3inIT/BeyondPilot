@@ -17,9 +17,12 @@ import { describeUseCaseError } from "./my-use-case-errors";
  */
 function PostUseCase({
   prominence = "primary",
+  size,
   another = false,
 }: {
   prominence?: "primary" | "secondary";
+  /** As tall as the action of the other sections, where it is one. */
+  size?: "lg";
   /** Worded as one more, after a use case has just been sent. */
   another?: boolean;
 }) {
@@ -40,7 +43,7 @@ function PostUseCase({
   }
 
   return (
-    <Button prominence={prominence} pending={pending} onClick={start}>
+    <Button prominence={prominence} size={size} pending={pending} onClick={start}>
       {t(another ? "postAnother" : "post")}
     </Button>
   );

@@ -3572,7 +3572,7 @@
     "rejected": {
       "title": "GenAI Fund không duyệt {name}",
       "reason": "Lý do: {reason}.",
-      "foot": "Đây là quyết định cuối cùng. Hãy viết cho GenAI Fund nếu bạn cho rằng có nhầm lẫn."
+      "foot": "Đây là quyết định cuối cùng. Hãy viết cho GenAI Fund nếu bạn cho rằng có nhầm lẫn. Để tạo hoặc tham gia tổ chức khác, hãy rời tổ chức này ở tab Thành viên."
     },
     "errors": {
       "ORGANIZATION_NOT_FOUND": "Tổ chức này không còn tồn tại.",

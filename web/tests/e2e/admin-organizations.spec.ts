@@ -93,7 +93,7 @@ test.describe("admin organizations", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/organizations");
 
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Organisations");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Organizations");
     await expect(shownOrganizations(page)).toHaveText([
       "Lumen Health",
       "Open Kitchen",
@@ -102,7 +102,7 @@ test.describe("admin organizations", () => {
       "Quiet Mill",
       "Harbor Bank",
     ]);
-    await expect(page.getByText("6 organisations")).toBeVisible();
+    await expect(page.getByText("6 organizations")).toBeVisible();
     // Each row is in the page twice, as a table row and as a stacked one; the viewport shows one.
     const shown = page.locator(":visible");
     await expect(page.getByText("Company · Singapore · 2 members").and(shown)).toHaveCount(1);
