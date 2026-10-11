@@ -309,6 +309,8 @@ fails with `NOTIFICATION_EVENT_REFUSED`.
   - **Operators.** Operators add (`manual`) and remove addresses. Adding one already suppressed fails with
     `NOTIFICATION_SUPPRESSION_EXISTS`; removing one that is not fails with `NOTIFICATION_SUPPRESSION_NOT_FOUND`.
   - **Listing.** The list is newest first, 25 per page, filtered by `reason` and by `q` (contains, ignoring case).
+    `sort` names another order: `address` or `since`, ascending, or descending with `-` before the key, then by
+    address. Another value is a `400`.
 
 ## Activity
 

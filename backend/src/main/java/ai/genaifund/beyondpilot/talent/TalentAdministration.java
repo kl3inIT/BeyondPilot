@@ -71,7 +71,8 @@ public class TalentAdministration {
 	}
 
 	/**
-	 * One page of the submitted profiles the request selects: those waiting for review first.
+	 * One page of the submitted profiles the request selects, in the order it asks for; without one, those waiting
+	 * for review first.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 */
 	@Transactional(readOnly = true)
@@ -81,7 +82,7 @@ public class TalentAdministration {
 		int page = request.page() == null ? 1 : request.page();
 		int size = request.size() == null ? PAGE_SIZE : request.size();
 		List<TalentQueryRepository.Row> rows = profileList.adminPage(text, request.status(), request.featured(),
-				size, (long) (page - 1) * size);
+				request.sort(), size, (long) (page - 1) * size);
 		Map<UUID, Person> people = identity
 			.people(rows.stream().map(TalentQueryRepository.Row::accountId).toList());
 		return new AdminTalentListResponse(rows.stream()
@@ -277,7 +278,7 @@ public class TalentAdministration {
 	public TalentAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
 		return new TalentAwaitingReview(profileList.adminCount(null, "in_review", null),
-				profileList.adminPage(null, "in_review", null, limit, 0)
+				profileList.adminPage(null, "in_review", null, null, limit, 0)
 					.stream()
 					.map(row -> new TalentAwaitingReview.Item(row.id(), row.name(), row.headline(), row.submittedAt()))
 					.toList());

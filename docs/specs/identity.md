@@ -203,7 +203,9 @@ requires an operator whose account is not disabled (`IDENTITY_OPERATOR_REQUIRED`
 - **Parameters, all optional.** `q` (at most 100 characters) matches the address or the name containing it, ignoring
   case, with `%`, `_` and `\` taken literally; `status` is `active` or `disabled`; `role` is `user` or `operator`;
   `page` counts from 1. A value out of bounds is a `400` `REQUEST_INVALID` problem pointing at each parameter.
-- **Order.** Latest sign-in first; accounts that never completed one come last, newest first, then by id.
+- **Order.** Latest sign-in first; accounts that never completed one come last, newest first, then by id. `sort`
+  names another: `name` (the display name, else the address, ignoring case), `lastSignIn` (never signed in last either
+  way) or `created`, ascending, or descending with `-` before the key, then by id. Another value is a `400`.
 - **Past the end.** A page past the last answers `200` with no items and the true `total`.
 - **Each item** (`AccountSummary`): `id`, `email`, `displayName`, `role`, `status`, `lastSignInAt`, `createdAt`, and
   `configuredOperator`, true when the configuration names the address.

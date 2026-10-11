@@ -14,9 +14,8 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { DataTable } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { Spinner } from "@/components/ui/spinner";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { checkEmailSetup, type EmailSetup } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
 
@@ -183,53 +182,48 @@ function EmailSetupChecklist() {
         <div className="flex flex-col gap-2">
           <h3 className="text-sm font-medium">{t("records.title", { domain: setup.domain })}</h3>
           {/* From 768px: a table. Below it, one stacked record each, never a table scrolled sideways. */}
-          <DataTable className="hidden md:block">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-28">{t("records.status")}</TableHead>
-                <TableHead className="w-20">{t("records.type")}</TableHead>
-                <TableHead>{t("records.host")}</TableHead>
-                <TableHead>{t("records.value")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {setup.records.map((record) => (
-                <TableRow key={`${record.purpose}-${record.type}-${record.host}`}>
-                  <TableCell>
-                    <span className="flex items-center gap-1.5">
-                      <StateIcon state={record.state} />
-                      <span className="text-xs">{t(`records.states.${record.state}`)}</span>
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-mono text-xs">
-                      {record.type}
-                      {record.priority != null && ` ${record.priority}`}
-                    </span>
-                  </TableCell>
-                  <TableCell>
+          <DataTableRows
+            className="hidden md:flex"
+            columns={[
+              { id: "status", header: t("records.status"), layout: { width: "sm" } },
+              { id: "type", header: t("records.type"), layout: { nowrap: true } },
+              { id: "host", header: t("records.host") },
+              { id: "value", header: t("records.value") },
+            ]}
+            rows={setup.records.map((record) => ({
+              id: `${record.purpose}-${record.type}-${record.host}`,
+              cells: {
+                status: (
+                  <span className="flex items-center gap-1.5">
+                    <StateIcon state={record.state} />
+                    <span className="text-xs">{t(`records.states.${record.state}`)}</span>
+                  </span>
+                ),
+                type: (
+                  <span className="font-mono text-xs">
+                    {record.type}
+                    {record.priority != null && ` ${record.priority}`}
+                  </span>
+                ),
+                host: (
+                  <Copyable value={record.host} label={t("records.copy", { what: record.host })} />
+                ),
+                value: (
+                  <span className="flex max-w-md min-w-0 flex-col gap-0.5">
                     <Copyable
-                      value={record.host}
-                      label={t("records.copy", { what: record.host })}
+                      value={record.value}
+                      label={t("records.copy", { what: record.type })}
                     />
-                  </TableCell>
-                  <TableCell>
-                    <span className="flex max-w-md min-w-0 flex-col gap-0.5">
-                      <Copyable
-                        value={record.value}
-                        label={t("records.copy", { what: record.type })}
-                      />
-                      {record.purpose === "dmarc" && record.state === "unknown" && (
-                        <span className="text-xs whitespace-normal text-muted-foreground">
-                          {t("records.dmarc")}
-                        </span>
-                      )}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </DataTable>
+                    {record.purpose === "dmarc" && record.state === "unknown" && (
+                      <span className="text-xs whitespace-normal text-muted-foreground">
+                        {t("records.dmarc")}
+                      </span>
+                    )}
+                  </span>
+                ),
+              },
+            }))}
+          />
           <ul className="flex flex-col divide-y rounded-lg border md:hidden">
             {setup.records.map((record) => (
               <li

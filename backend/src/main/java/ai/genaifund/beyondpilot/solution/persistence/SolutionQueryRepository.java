@@ -106,17 +106,15 @@ public class SolutionQueryRepository {
 	 * One page for operators, drafts left out: those with something waiting for review first, the solution itself or
 	 * one of its customer deployments, the longest wait on top. The text matches the solution's name, or the
 	 * solution belongs to one of {@code organizationIds}, the organizations the caller found by that text. The
-	 * organization filter selects one exact organization.
+	 * organization filter selects one exact organization. A {@code sort} of {@code name} or {@code submitted}, with
+	 * {@code -} before it for the reverse, orders the page by that instead.
 	 */
 	public List<Row> adminPage(@Nullable String text, List<UUID> organizationIds, @Nullable UUID organizationId,
-			@Nullable String status, @Nullable String industry, @Nullable Boolean featured, int limit, long offset) {
-		return adminFiltered(ROW + ADMIN_FILTER + """
-				order by case when status = 'in_review' or exists (
-				             select 1 from solution_customer_deployment d
-				             where d.solution_id = solution.id and d.status = 'in_review') then 0 else 1 end,
-				         submitted_at, id
-				limit :limit offset :offset
-				""", text, organizationIds, organizationId, status, industry, featured).param("limit", limit)
+			@Nullable String status, @Nullable String industry, @Nullable Boolean featured, @Nullable String sort,
+			int limit, long offset) {
+		return adminFiltered(ROW + ADMIN_FILTER + "order by " + adminOrder(sort) + "\nlimit :limit offset :offset\n",
+				text, organizationIds, organizationId, status, industry, featured)
+			.param("limit", limit)
 			.param("offset", offset)
 			.query(SolutionQueryRepository::row)
 			.list();
@@ -158,6 +156,25 @@ public class SolutionQueryRepository {
 	private static String publicOrder(@Nullable String sort, boolean featuredFirst) {
 		return "order by " + (featuredFirst ? "featured_at asc nulls last, " : "")
 				+ ("newest".equals(sort) ? "decided_at desc nulls last, id" : "lower(name), id");
+	}
+
+	/**
+	 * The operators' order a sort key names, with the identifier last so that pages do not overlap. The SQL is chosen
+	 * here by the key, never taken from the caller's text; an unknown key keeps the default order.
+	 */
+	private static String adminOrder(@Nullable String sort) {
+		boolean descending = sort != null && sort.startsWith("-");
+		String key = sort == null ? "" : sort.substring(descending ? 1 : 0);
+		String direction = descending ? " desc" : "";
+		return switch (key) {
+			case "name" -> "lower(name)" + direction + ", id";
+			case "submitted" -> "submitted_at" + direction + " nulls last, id";
+			default -> """
+					case when status = 'in_review' or exists (
+					         select 1 from solution_customer_deployment d
+					         where d.solution_id = solution.id and d.status = 'in_review') then 0 else 1 end,
+					     submitted_at, id""";
+		};
 	}
 
 	private JdbcClient.StatementSpec publicFiltered(String sql, @Nullable String text, @Nullable String industry,

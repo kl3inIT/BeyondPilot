@@ -1,8 +1,8 @@
 import { BoxesIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { OrganizationFrame } from "@/features/organization/organization-frame";
 import { OrganizationSection } from "@/features/organization/organization-section";
 import { Link } from "@/i18n/navigation";
@@ -10,6 +10,10 @@ import type { MyOrganization, MySolutions, Organization } from "@/lib/api/genera
 import { siteRoutes } from "@/lib/site";
 
 import { CreateSolution } from "./create-solution";
+import {
+  sortOrganizationSolutions,
+  type OrganizationSolutionsSearch,
+} from "./organization-solutions-search";
 import { SolutionRowActions } from "./solution-row-actions";
 import { SolutionListingCell, SolutionNameCell, SolutionReviewCell } from "./solution-row-cells";
 
@@ -20,6 +24,8 @@ type OrganizationSolutionsPageProps = {
   members: number;
   /** How many use cases it has, when it is an approved enterprise. */
   useCases: number | null;
+  /** The order of the solutions, from the URL. */
+  search: OrganizationSolutionsSearch;
 };
 
 /**
@@ -32,6 +38,7 @@ function OrganizationSolutionsPage({
   solutions,
   members,
   useCases,
+  search,
 }: OrganizationSolutionsPageProps) {
   const t = useTranslations("Solution.mine");
   const format = useFormatter();
@@ -40,7 +47,8 @@ function OrganizationSolutionsPage({
     (mine.organization.status !== "approved" || !!mine.organization.suspendedAt);
   const day = (instant: string) => format.dateTime(new Date(instant), { dateStyle: "medium" });
 
-  const rows = solutions.items.map((solution) => {
+  const sorted = sortOrganizationSolutions(solutions.items, search);
+  const rows = sorted.items.map((solution) => {
     const editor = `${siteRoutes.workspaceSolutions}/${solution.id}`;
     return {
       id: solution.id,
@@ -95,32 +103,37 @@ function OrganizationSolutionsPage({
         ) : (
           <>
             {/* From 768px: a table. */}
-            <DataTable className="hidden bg-background md:block">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("columns.solution")}</TableHead>
-                  <TableHead className="w-36">{t("columns.status")}</TableHead>
-                  <TableHead className="w-44">{t("columns.listing")}</TableHead>
-                  <TableHead className="w-36">{t("columns.updated")}</TableHead>
-                  <TableHead className="w-12">
-                    <span className="sr-only">{t("columns.actions")}</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="max-w-0">{row.name}</TableCell>
-                    <TableCell>{row.status}</TableCell>
-                    <TableCell>{row.listing}</TableCell>
-                    <TableCell>{row.updated}</TableCell>
-                    <TableCell>
-                      <div className="flex justify-end">{row.actions}</div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </DataTable>
+            <DataTableRows
+              className="hidden md:flex"
+              surface
+              sortKeys={sorted.sortKeys}
+              defaultSort={sorted.defaultSort}
+              columns={[
+                { id: "solution", header: t("columns.solution"), layout: { fill: true } },
+                { id: "status", header: t("columns.status"), layout: { width: "md" } },
+                { id: "listing", header: t("columns.listing"), layout: { width: "md" } },
+                {
+                  id: "updated",
+                  header: t("columns.updated"),
+                  layout: { width: "md", descFirst: true },
+                },
+                {
+                  id: "actions",
+                  header: <span className="sr-only">{t("columns.actions")}</span>,
+                  layout: { width: "action" },
+                },
+              ]}
+              rows={rows.map((row) => ({
+                id: row.id,
+                cells: {
+                  solution: row.name,
+                  status: row.status,
+                  listing: row.listing,
+                  updated: row.updated,
+                  actions: <div className="flex justify-end">{row.actions}</div>,
+                },
+              }))}
+            />
 
             {/* Below 768px: one stacked row per solution, never a table scrolled sideways. */}
             <ul className="overflow-hidden rounded-lg border bg-background md:hidden">

@@ -3,7 +3,8 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { ListFooter } from "@/components/composites/list-footer";
 import { ReviewStatus } from "@/components/composites/review-status";
@@ -17,13 +18,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AdminUseCaseList, UseCaseOrganization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 
 import { AdminUseCaseFeature } from "./admin-use-case-feature";
-import { adminUseCasesSearch, type AdminUseCasesSearch } from "./admin-use-cases-search";
+import {
+  adminUseCaseSortKeys,
+  adminUseCasesSearch,
+  type AdminUseCasesSearch,
+} from "./admin-use-cases-search";
 import { AdminUseCasesToolbar } from "./admin-use-cases-toolbar";
 import { LiveRefresh } from "./live-refresh";
 
@@ -146,39 +150,34 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
       <AdminUseCasesToolbar organizations={organizations} />
 
       {/* From 768px: a table. The Updated column gives way first. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("columns.useCase")}</TableHead>
-            <TableHead className="w-40">{t("columns.organization")}</TableHead>
-            <TableHead className="w-36">{t("columns.status")}</TableHead>
-            <TableHead className="w-36">{t("columns.closes")}</TableHead>
-            <TableHead className="hidden w-32 xl:table-cell">{t("columns.updated")}</TableHead>
-            <TableHead className="w-12">
-              <span className="sr-only">{t("columns.actions")}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell className="max-w-0">{row.title}</TableCell>
-              <TableCell>{row.organization}</TableCell>
-              <TableCell>{row.status}</TableCell>
-              <TableCell>{row.closes}</TableCell>
-              <TableCell className="hidden xl:table-cell">{row.updated}</TableCell>
-              <TableCell>
-                <div className="flex justify-end">{row.actions}</div>
-              </TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={6}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+      <DataTableRows
+        sortKeys={adminUseCaseSortKeys}
+        className="hidden md:flex"
+        columns={[
+          { id: "title", header: t("columns.useCase"), layout: { fill: true } },
+          { id: "organization", header: t("columns.organization"), layout: { width: "md" } },
+          { id: "status", header: t("columns.status"), layout: { width: "md" } },
+          { id: "closes", header: t("columns.closes"), layout: { width: "md" } },
+          { id: "updated", header: t("columns.updated"), layout: { width: "sm", from: "xl" } },
+          {
+            id: "actions",
+            header: <span className="sr-only">{t("columns.actions")}</span>,
+            layout: { width: "action" },
+          },
+        ]}
+        rows={rows.map((row) => ({
+          id: row.id,
+          cells: {
+            title: row.title,
+            organization: row.organization,
+            status: row.status,
+            closes: row.closes,
+            updated: row.updated,
+            actions: <div className="flex justify-end">{row.actions}</div>,
+          },
+        }))}
+        empty={empty}
+      />
 
       {/* Below 768px: one stacked row per use case, never a table scrolled sideways. */}
       <ul className="overflow-hidden rounded-lg border md:hidden">

@@ -345,7 +345,7 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Who belongs to the caller's organization. An owner also reads the open invitations and requests, and how many
+	 * Who belongs to the caller's organization, in the order the request asks for. An owner also reads the open invitations and requests, and how many
 	 * more people they may invite.
 	 * @throws OrganizationException when the caller belongs to no organization
 	 */
@@ -355,7 +355,7 @@ public class OrganizationService {
 		Organization organization = organizations.findById(caller.organizationId()).orElseThrow();
 		int page = list.page() == null ? 1 : list.page();
 		int size = list.size() == null ? MEMBERS_PAGE_SIZE : list.size();
-		List<Member> members = memberships.members(organization.getId(), size,
+		List<Member> members = memberships.members(organization.getId(), list.sort(), size,
 				(long) (page - 1) * size);
 		List<Invitation> invitations = caller.isOwner() ? memberships.openInvitationsOf(organization.getId())
 				: List.of();

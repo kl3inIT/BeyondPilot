@@ -1,3 +1,4 @@
+import { knownSort } from "@/lib/list-sort";
 import { ApiError } from "@/lib/api/client";
 import {
   getAdminSolution,
@@ -22,6 +23,7 @@ import { sessionRequest } from "@/lib/auth/session";
 import { maxSearchPage } from "@/lib/page-size";
 
 import type { AdminSolutionsSearch, SolutionsSearch } from "./solutions-search";
+import { adminSolutionSortKeys } from "./solutions-search";
 
 /** The longest search the backend takes. */
 const MAX_SEARCH = 100;
@@ -181,6 +183,7 @@ export async function readAdminSolutions(search: AdminSolutionsSearch): Promise<
       status: search.status ?? undefined,
       industry: search.industry ?? undefined,
       featured: search.featured === null ? undefined : search.featured === "true",
+      sort: knownSort(search.sort, adminSolutionSortKeys),
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },

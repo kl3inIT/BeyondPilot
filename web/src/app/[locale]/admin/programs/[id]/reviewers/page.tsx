@@ -6,6 +6,7 @@ import { readAdminProgram } from "@/features/program/program-queries";
 import { ProgramTabs } from "@/features/program/program-tabs";
 import { readReviewCriteria, readReviewers } from "@/features/review/review-queries";
 import { ReviewersPage } from "@/features/review/reviewers-page";
+import { loadReviewersSearch } from "@/features/review/reviewers-search";
 import { requireRole } from "@/lib/auth/session";
 import { adminProgramReviewersRoute } from "@/lib/site";
 
@@ -20,15 +21,17 @@ export async function generateMetadata({
 
 export default async function ProgramReviewersRoute({
   params,
+  searchParams,
 }: PageProps<"/[locale]/admin/programs/[id]/reviewers">) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   await requireRole("operator", adminProgramReviewersRoute(id));
-  const [program, reviewers, criteria, t] = await Promise.all([
+  const [program, reviewers, criteria, t, search] = await Promise.all([
     readAdminProgram(id),
     readReviewers(id),
     readReviewCriteria(id),
     getTranslations("Admin.programs"),
+    loadReviewersSearch(searchParams),
   ]);
 
   return (
@@ -45,6 +48,7 @@ export default async function ProgramReviewersRoute({
         programName={program.name}
         reviewers={reviewers}
         criteria={criteria}
+        search={search}
       />
     </div>
   );

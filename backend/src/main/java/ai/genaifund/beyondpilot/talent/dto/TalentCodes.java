@@ -9,6 +9,9 @@ final class TalentCodes {
 
 	static final String SORT = "name|newest";
 
+	/** The operators' list: a key, with {@code -} before it for the reverse. */
+	static final String ADMIN_SORT = "-?(name|submitted)";
+
 	static final String ENGAGEMENT = "full_time|part_time|contract|advisory";
 
 	static final String RATE_BAND = "under_25|25_50|50_100|100_150|150_plus";

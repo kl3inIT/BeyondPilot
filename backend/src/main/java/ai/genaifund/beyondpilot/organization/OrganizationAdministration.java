@@ -85,8 +85,8 @@ public class OrganizationAdministration {
 	}
 
 	/**
-	 * One page of the organizations the request selects: those a decision waits on first, then the newest. Each says
-	 * what waits, a new organization or a claim, and who asked.
+	 * One page of the organizations the request selects, in the order it asks for; without one, those a decision
+	 * waits on first, then the newest. Each says what waits, a new organization or a claim, and who asked.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 */
 	@Transactional(readOnly = true)
@@ -95,8 +95,8 @@ public class OrganizationAdministration {
 		String text = OrganizationViews.text(request.q());
 		int page = request.page() == null ? 1 : request.page();
 		int size = request.size() == null ? PAGE_SIZE : request.size();
-		List<AdminRow> rows = organizationList.adminPage(text, request.status(), request.country(), size,
-				(long) (page - 1) * size);
+		List<AdminRow> rows = organizationList.adminPage(text, request.status(), request.country(), request.sort(),
+				size, (long) (page - 1) * size);
 		Map<UUID, Person> askers = identity.people(rows.stream()
 			.map(OrganizationAdministration::asker)
 			.filter(Objects::nonNull)
@@ -660,7 +660,7 @@ public class OrganizationAdministration {
 	public OrganizationsAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
 		return new OrganizationsAwaitingReview(organizationList.adminCount(null, "in_review", null),
-				organizationList.adminPage(null, "in_review", null, limit, 0)
+				organizationList.adminPage(null, "in_review", null, null, limit, 0)
 					.stream()
 					.map(row -> new OrganizationsAwaitingReview.Item(row.id(), row.name(), row.type(), row.country(),
 							row.createdAt()))

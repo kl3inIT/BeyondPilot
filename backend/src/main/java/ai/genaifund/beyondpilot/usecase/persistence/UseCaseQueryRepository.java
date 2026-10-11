@@ -48,19 +48,37 @@ public class UseCaseQueryRepository {
 			@Nullable Instant featuredAt, Instant updatedAt) {
 	}
 
-	/** One page, the newest first. */
+	/**
+	 * One page in the order {@code sort} names; without one, the newest first.
+	 * @param sort {@code title}, {@code closes} or {@code updated}, with {@code -} before it for the reverse
+	 */
 	public List<Row> page(@Nullable String text, List<UUID> matching, @Nullable UUID organization, @Nullable String status,
-			@Nullable Boolean featured, Instant now, int limit, long offset) {
+			@Nullable Boolean featured, @Nullable String sort, Instant now, int limit, long offset) {
 		return filtered("select id, organization_id, title, " + STATUS_AT_NOW
-				+ " as status, closes_at, featured_at, updated_at from use_case\n" + FILTER
-				+ "order by created_at desc, id limit :limit offset :offset", text, matching, organization, status,
-				featured, now)
+				+ " as status, closes_at, featured_at, updated_at from use_case\n" + FILTER + "order by " + order(sort)
+				+ " limit :limit offset :offset", text, matching, organization, status, featured, now)
 			.param("limit", limit)
 			.param("offset", offset)
 			.query((row, index) -> new Row(row.getObject("id", UUID.class), row.getObject("organization_id", UUID.class),
 					row.getString("title"), row.getString("status"), instantOf(row.getTimestamp("closes_at")),
 					instantOf(row.getTimestamp("featured_at")), row.getTimestamp("updated_at").toInstant()))
 			.list();
+	}
+
+	/**
+	 * The operators' order a sort key names, with the identifier last so that pages do not overlap. The SQL is chosen
+	 * here by the key, never taken from the caller's text; an unknown key keeps the default order.
+	 */
+	private static String order(@Nullable String sort) {
+		boolean descending = sort != null && sort.startsWith("-");
+		String key = sort == null ? "" : sort.substring(descending ? 1 : 0);
+		String direction = descending ? " desc" : "";
+		return switch (key) {
+			case "title" -> "lower(title)" + direction + " nulls last, id";
+			case "closes" -> "closes_at" + direction + " nulls last, id";
+			case "updated" -> "updated_at" + direction + ", id";
+			default -> "created_at desc, id";
+		};
 	}
 
 	/** How many use cases match, over all pages. */

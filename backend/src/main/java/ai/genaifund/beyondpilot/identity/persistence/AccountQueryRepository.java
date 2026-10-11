@@ -29,18 +29,18 @@ public class AccountQueryRepository {
 	}
 
 	/**
-	 * One page, latest sign-in first; accounts that never completed one come last, newest first.
+	 * One page in the order {@code sort} names; without one, latest sign-in first, and accounts that never completed
+	 * one last, newest first.
+	 * @param sort {@code name}, {@code lastSignIn} or {@code created}, with {@code -} before it for the reverse
 	 * @param configuredOperators the lowercase addresses the server configuration names as operators
 	 */
 	public List<AccountSummaryResponse> page(@Nullable String text, @Nullable String status, @Nullable String role,
-			Set<String> configuredOperators, int limit, long offset) {
+			@Nullable String sort, Set<String> configuredOperators, int limit, long offset) {
 		return filtered("""
 				select id, email, display_name, platform_role, status, last_login_at, created_at
 				from identity_account
-				""" + FILTER + """
-				order by last_login_at desc nulls last, created_at desc, id
-				limit :limit offset :offset
-				""", text, status, role).param("limit", limit)
+				""" + FILTER + "order by " + order(sort) + "\nlimit :limit offset :offset\n", text, status, role)
+			.param("limit", limit)
 			.param("offset", offset)
 			.query((row, index) -> new AccountSummaryResponse(row.getObject("id", UUID.class), row.getString("email"),
 					row.getString("display_name"), row.getString("platform_role"), row.getString("status"),
@@ -61,6 +61,22 @@ public class AccountQueryRepository {
 			.param("limit", limit)
 			.query(UUID.class)
 			.list();
+	}
+
+	/**
+	 * The order a sort key names, with the identifier last so that pages do not overlap. The SQL is chosen here by the
+	 * key, never taken from the caller's text; an unknown key keeps the default order.
+	 */
+	private static String order(@Nullable String sort) {
+		boolean descending = sort != null && sort.startsWith("-");
+		String key = sort == null ? "" : sort.substring(descending ? 1 : 0);
+		String direction = descending ? " desc" : "";
+		return switch (key) {
+			case "name" -> "lower(coalesce(display_name, email))" + direction + ", id";
+			case "lastSignIn" -> "last_login_at" + direction + " nulls last, id";
+			case "created" -> "created_at" + direction + ", id";
+			default -> "last_login_at desc nulls last, created_at desc, id";
+		};
 	}
 
 	private JdbcClient.StatementSpec filtered(String sql, @Nullable String text, @Nullable String status,

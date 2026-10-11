@@ -135,6 +135,41 @@ class IdentityAccountsTest {
 	}
 
 	@Test
+	void theListSortsByTheKeyItIsGivenAndRefusesAnUnknownOne() {
+		insert("b@sorted.test", "Bea", "active", "user");
+		insert("c@sorted.test", null, "active", "user");
+		insert("a@sorted.test", "Zed", "active", "user");
+		jdbc.sql("""
+				update identity_account set
+				  last_login_at = case email when 'b@sorted.test' then now() - interval '1 day'
+				                             when 'a@sorted.test' then now() - interval '2 days' end,
+				  created_at = case email when 'b@sorted.test' then now() - interval '3 days'
+				                          when 'c@sorted.test' then now() - interval '2 days'
+				                          else now() - interval '1 day' end
+				where email like '%@sorted.test'
+				""").update();
+
+		// The name, or the address when there is none.
+		assertThat(emails("?q=@sorted.test&sort=name")).containsExactly("b@sorted.test", "c@sorted.test",
+				"a@sorted.test");
+		assertThat(emails("?q=@sorted.test&sort=-name")).containsExactly("a@sorted.test", "c@sorted.test",
+				"b@sorted.test");
+		// An account that never signed in comes last either way.
+		assertThat(emails("?q=@sorted.test&sort=lastSignIn")).containsExactly("a@sorted.test", "b@sorted.test",
+				"c@sorted.test");
+		assertThat(emails("?q=@sorted.test&sort=-lastSignIn")).containsExactly("b@sorted.test", "a@sorted.test",
+				"c@sorted.test");
+		assertThat(emails("?q=@sorted.test&sort=-created")).containsExactly("a@sorted.test", "c@sorted.test",
+				"b@sorted.test");
+		assertThat(emails("?q=@sorted.test")).isEqualTo(emails("?q=@sorted.test&sort=-lastSignIn"));
+		assertThat(JsonPath.<List<String>>read(new String(list("?sort=email").expectStatus()
+			.isBadRequest()
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), UTF_8), "$.errors[*].pointer")).containsExactly("#/sort");
+	}
+
+	@Test
 	void theListIsPagedAndAPagePastTheEndIsEmptyWithTheTrueTotal() {
 		for (int i = 0; i < 30; i++) {
 			insert("person" + i + "@paged.test", null, "active", "user");

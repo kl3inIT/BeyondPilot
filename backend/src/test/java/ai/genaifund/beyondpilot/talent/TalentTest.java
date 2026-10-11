@@ -361,6 +361,39 @@ class TalentTest {
 	}
 
 	@Test
+	void theOperatorsListSortsByTheKeyItIsGivenAndRefusesAnUnknownOne() {
+		// Sent back rather than approved, so that it stays out of the directory other tests read.
+		UUID bravo = submitted(signIn("bandicoot.bravo@profile.test"), "Bandicoot Bravo");
+		post(operator, ADMIN + "/" + bravo + "/send-back", Map.of("reason", "incomplete", "message", "Say more."))
+			.expectStatus()
+			.isNoContent();
+		submitted(signIn("bandicoot.alpha@profile.test"), "Bandicoot Alpha");
+		submitted(signIn("bandicoot.charlie@profile.test"), "Bandicoot Charlie");
+		jdbc.sql("""
+				update talent_profile set submitted_at = now() - case name when 'Bandicoot Bravo' then interval '3 days'
+				                                                           when 'Bandicoot Alpha' then interval '1 day'
+				                                                           else interval '2 days' end
+				where name like 'Bandicoot %'
+				""").update();
+
+		assertThat(adminNames("&sort=name")).containsExactly("Bandicoot Alpha", "Bandicoot Bravo",
+				"Bandicoot Charlie");
+		assertThat(adminNames("&sort=-name")).containsExactly("Bandicoot Charlie", "Bandicoot Bravo",
+				"Bandicoot Alpha");
+		assertThat(adminNames("&sort=submitted")).containsExactly("Bandicoot Bravo", "Bandicoot Charlie",
+				"Bandicoot Alpha");
+		assertThat(adminNames("&sort=-submitted")).containsExactly("Bandicoot Alpha", "Bandicoot Charlie",
+				"Bandicoot Bravo");
+		// Without a key, those waiting for review first, the longest wait on top.
+		assertThat(adminNames("")).containsExactly("Bandicoot Charlie", "Bandicoot Alpha", "Bandicoot Bravo");
+		assertProblem(get(operator, ADMIN + "?sort=newest"), 400, "REQUEST_INVALID");
+	}
+
+	private List<String> adminNames(String query) {
+		return JsonPath.read(body(get(operator, ADMIN + "?q=bandicoot" + query).expectStatus().isOk()), "$.items[*].name");
+	}
+
+	@Test
 	void onlyAnOperatorFeaturesAProfileWhichStaysFeaturedThroughWhatItsPersonAndGenAiFundDo() {
 		approved(signIn("bilby.alpha@profile.test"), apart("Bilby Alpha", null));
 		String person = signIn("bilby.zulu@profile.test");
