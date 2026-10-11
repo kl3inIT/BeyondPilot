@@ -152,6 +152,30 @@ class AdminSolutionsController {
 		solutions.takeDown(actor, id, request);
 	}
 
+	@PostMapping("/{id}/feature")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "featureSolution",
+			summary = "Feature a solution: it comes first in the opening view of the public directory",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The solution is featured; one featured already keeps its place.",
+			content = @Content)
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void feature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		solutions.feature(actor, id);
+	}
+
+	@PostMapping("/{id}/unfeature")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "unfeatureSolution", summary = "Stop featuring a solution",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The solution is not featured.", content = @Content)
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void unfeature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		solutions.unfeature(actor, id);
+	}
+
 	@PostMapping("/{id}/restore")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(operationId = "restoreSolution",

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
+import { answerDecisions } from "./reviews";
 import { answerSignOut, signInAs } from "./session";
 import { serveStoredImages } from "./stored-files";
 
@@ -180,6 +181,47 @@ test.describe("admin", () => {
     const withoutLogo = records.filter({ hasText: "Inventory counting" });
     await expect(withoutLogo.getByText("TA", { exact: true })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
+  });
+
+  test("a featured use case is marked, and an operator features one or stops from the list and the record", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await serveStoredImages(page);
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, "**/api/usecase/admin/use-cases/**", 204);
+    await page.goto("/admin/use-cases");
+
+    // The badge is a star and the word, on the one use case that is featured.
+    await expect(
+      page.locator("[data-featured]:visible").filter({ hasText: "Featured" }),
+    ).toHaveCount(1);
+    await expectNoSeriousA11yViolations(page);
+    await page.getByRole("button", { name: "Actions for Claims triage" }).click();
+    await page.getByRole("menuitem", { name: "Stop featuring" }).click();
+    await expect(page.getByText("Claims triage is no longer featured.")).toBeVisible();
+
+    await page.getByRole("combobox", { name: "Featured" }).click();
+    await page.getByRole("option", { name: "Not featured" }).click();
+    await expect(page).toHaveURL("/admin/use-cases?featured=false");
+
+    // On the record of one that is not featured, the action sits beside what it leads to.
+    await page.goto("/admin/use-cases/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0011");
+    await expect(page.getByText(/comes first when the public list opens/)).toBeVisible();
+    await page.getByRole("button", { name: "Feature", exact: true }).click();
+    await expect(page.getByText(/ is featured\.$/)).toBeVisible();
+
+    expect(decisions).toEqual([
+      {
+        call: "POST /api/usecase/admin/use-cases/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0011/unfeature",
+        body: null,
+      },
+      {
+        call: "POST /api/usecase/admin/use-cases/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0011/feature",
+        body: null,
+      },
+    ]);
   });
 
   test("an operator writes a use case in steps and publishes it immediately", async ({

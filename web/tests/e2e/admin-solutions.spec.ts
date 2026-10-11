@@ -334,6 +334,66 @@ test.describe("admin solutions", () => {
     await expect(page.getByRole("button", { name: "Approve" })).toBeEnabled();
   });
 
+  test("a featured solution is marked, the list narrows to the featured ones, and its row stops featuring it", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+    await page.goto("/admin/solutions");
+
+    // The badge is a star and the word, on the one solution that is featured.
+    await expect(
+      page.locator("[data-featured]:visible").filter({ hasText: "Featured" }),
+    ).toHaveCount(1);
+    // Checked on the page as it arrived: right after a filter navigated, axe once found no document title in CI.
+    await expectNoSeriousA11yViolations(page);
+    await page.getByRole("combobox", { name: "Featured" }).click();
+    await page.getByRole("option", { name: "Featured", exact: true }).click();
+    await expect(page).toHaveURL("/admin/solutions?featured=true");
+    await expect(shownSolutions(page)).toHaveCount(1);
+
+    await page.getByRole("button", { name: "Open Policy Chat" }).click();
+    await page.getByRole("menuitem", { name: "Stop featuring" }).click();
+
+    await expect(page.getByText("Policy Chat is no longer featured.")).toBeVisible();
+    expect(decisions).toEqual([
+      { call: `POST /api/solution/admin/solutions/${policyChat}/unfeature`, body: null },
+    ]);
+
+    await page.getByRole("combobox", { name: "Featured" }).click();
+    await page.getByRole("option", { name: "Not featured" }).click();
+    await expect(page).toHaveURL("/admin/solutions?featured=false");
+    await expect(shownSolutions(page)).toHaveCount(4);
+  });
+
+  test("a solution is featured from its record, and no longer, whatever its review says", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const decisions = await answerDecisions(page, decisionsPath, 204);
+
+    // One that waits for review is featured all the same: it leads the directory once it is public.
+    await page.goto(`/admin/solutions/${claimsCopilot}`);
+    await expect(page.locator("[data-featured]")).toHaveCount(0);
+    await page.getByRole("button", { name: "Feature", exact: true }).click();
+    await expect(page.getByText("Claims Copilot is featured.")).toBeVisible();
+
+    await page.goto(`/admin/solutions/${policyChat}`);
+    await expect(page.locator("[data-featured]")).toHaveText("Featured Oct 1, 2026");
+    await expectNoSeriousA11yViolations(page);
+    await page.getByRole("button", { name: "Stop featuring" }).click();
+    await expect(page.getByText("Policy Chat is no longer featured.")).toBeVisible();
+
+    expect(decisions).toEqual([
+      { call: `POST /api/solution/admin/solutions/${claimsCopilot}/feature`, body: null },
+      { call: `POST /api/solution/admin/solutions/${policyChat}/unfeature`, body: null },
+    ]);
+  });
+
   test("a rejected solution's record says why and offers no decision", async ({
     page,
     context,

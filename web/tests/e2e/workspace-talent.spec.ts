@@ -145,15 +145,19 @@ test.describe("workspace talent profile", () => {
       messages.getByText("We are scoping a claims assistant and would like your view."),
     ).toBeVisible();
     await expect(messages.getByText("1 new")).toBeVisible();
-    await expect(messages.getByText("Hà Lê · Mekong Insurance")).toBeVisible();
+    // The first message that waits opens beside the list.
+    await expect(messages.getByRole("heading", { name: "Hà Lê · Mekong Insurance" })).toBeVisible();
     // A waiting message shows no address; an accepted one gives the way to write.
     await expect(messages.getByText("ha.le@")).toHaveCount(0);
+    await messages.getByRole("button", { name: /Minh Trần/ }).click();
     await expect(
       messages.getByRole("link", { name: "Write to minh.tran@example.com" }),
     ).toHaveAttribute("href", "mailto:minh.tran@example.com");
     await expectNoSeriousA11yViolations(page);
 
+    // An approved profile reads as people see it until the person asks to edit it.
     await page.getByRole("tab", { name: "Profile" }).click();
+    await page.getByRole("link", { name: "Edit profile" }).click();
     const save = page.getByRole("button", { name: "Save changes" });
     await expect(save).toBeDisabled();
     await expect(async () => {
@@ -179,12 +183,12 @@ test.describe("workspace talent profile", () => {
     await page.getByRole("tab", { name: /Enquiries/ }).click();
     const messages = page.getByRole("tabpanel", { name: /Enquiries/ });
 
-    await messages.getByRole("button", { name: "Accept" }).click();
+    await messages.getByRole("button", { name: "Accept", exact: true }).click();
     await expect(
       page.getByText("Accepted. You both have each other's email address now."),
     ).toBeVisible();
 
-    await messages.getByRole("button", { name: "Report" }).click();
+    await messages.getByRole("button", { name: "Report", exact: true }).click();
     const confirm = page.getByRole("alertdialog", { name: "Report this message?" });
     await expect(confirm.getByText("not that you reported it")).toBeVisible();
     await expectNoSeriousA11yViolations(page);

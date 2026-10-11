@@ -26,5 +26,7 @@ public record PublicSolutionSummaryResponse(@Schema(requiredMode = Schema.Requir
 				description = "What GenAI Fund says of it in a line: the programme it was selected for, or else who "
 						+ "backs its company. Null when it has said neither.") @Nullable String backing,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "How many approved customer deployments it lists.") int customerDeployments) {
+				description = "How many approved customer deployments it lists.") int customerDeployments,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Whether GenAI Fund features it; its card says so.") boolean featured) {
 }

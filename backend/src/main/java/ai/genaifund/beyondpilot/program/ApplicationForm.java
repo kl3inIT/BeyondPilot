@@ -25,8 +25,8 @@ public record ApplicationForm(UUID programId, String slug, String name, Instant 
 
 	/**
 	 * One question of the form.
-	 * @param kind {@code short_text}, {@code long_text}, {@code single_choice}, {@code file}, {@code link} or
-	 * {@code confirm}
+	 * @param kind {@code short_text}, {@code long_text}, {@code single_choice}, {@code multi_choice}, {@code file},
+	 * {@code link} or {@code confirm}
 	 * @param maxLength the longest answer to a text question; null takes the form's default
 	 */
 	public record Question(UUID id, String kind, String label, @Nullable String help, boolean required,

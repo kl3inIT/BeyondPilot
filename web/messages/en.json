@@ -738,6 +738,7 @@
           "short_text": "Short answer",
           "long_text": "Long answer",
           "single_choice": "One choice",
+          "multi_choice": "Several choices",
           "file": "PDF file",
           "link": "Link",
           "confirm": "Confirmation"
@@ -920,6 +921,8 @@
           "reject": "Refused or sent back a solution",
           "take_down": "Took a solution down",
           "restore": "Restored a solution",
+          "feature": "Featured a solution",
+          "unfeature": "Stopped featuring a solution",
           "deployment_approve": "Approved a customer deployment",
           "deployment_reject": "Sent a customer deployment back",
           "enrich": "Filled a solution from public sources",
@@ -938,6 +941,8 @@
           "request_changes": "Sent a talent profile back",
           "remove": "Took a talent profile down",
           "restore": "Restored a talent profile",
+          "feature": "Featured a talent profile",
+          "unfeature": "Stopped featuring a talent profile",
           "delete": "Deleted a talent profile"
         },
         "proposal": {
@@ -955,6 +960,8 @@
           "draft": "Moved a use case back to Draft",
           "approve": "Approved a use case",
           "send_back": "Sent a use case back",
+          "feature": "Featured a use case",
+          "unfeature": "Stopped featuring a use case",
           "set_programs": "Set the programs of a use case"
         },
         "email": {
@@ -1040,6 +1047,8 @@
           "reject": "Rejected the solution <resource></resource>",
           "take_down": "Took the solution <resource></resource> down",
           "restore": "Restored the solution <resource></resource>",
+          "feature": "Featured the solution <resource></resource>",
+          "unfeature": "Stopped featuring the solution <resource></resource>",
           "deployment_approve": "Approved the customer deployment <resource></resource>",
           "deployment_reject": "Sent the customer deployment <resource></resource> back",
           "enrich": "Filled the solution <resource></resource> from public sources",
@@ -1058,6 +1067,8 @@
           "request_changes": "Sent back the talent profile of <resource></resource>",
           "remove": "Took the talent profile of <resource></resource> down",
           "restore": "Restored the talent profile of <resource></resource>",
+          "feature": "Featured the talent profile of <resource></resource>",
+          "unfeature": "Stopped featuring the talent profile of <resource></resource>",
           "delete": "Deleted the talent profile of <resource></resource>"
         },
         "proposal": {
@@ -1075,6 +1086,8 @@
           "draft": "Moved the use case <resource></resource> back to Draft",
           "approve": "Approved the use case <resource></resource>",
           "send_back": "Sent the use case <resource></resource> back",
+          "feature": "Featured the use case <resource></resource>",
+          "unfeature": "Stopped featuring the use case <resource></resource>",
           "set_programs": "Set the programs of the use case <resource></resource>"
         },
         "email": {
@@ -1390,6 +1403,13 @@
       },
       "count": "{count, plural, one {# solution} other {# solutions}}",
       "open": "Open",
+      "feature": {
+        "featured": "Featured",
+        "since": "Featured {day}",
+        "feature": "Feature",
+        "unfeature": "Stop featuring",
+        "hint": "A featured solution comes first when the public directory opens, until a reader searches, filters or sorts; its card says Featured."
+      },
       "review": {
         "open": "Review",
         "approve": "Approve",
@@ -1433,6 +1453,7 @@
         "senderUnknown": "Not recorded",
         "sent": "Sent",
         "directory": "Directory",
+        "order": "Opening view",
         "listed": "Listed once approved",
         "deploymentsWaiting": "{count, plural, one {# customer deployment waits for review} other {# customer deployments wait for review}}",
         "sentBack": "Sent back:",
@@ -1528,6 +1549,13 @@
       },
       "count": "{count, plural, one {# profile} other {# profiles}}",
       "open": "Open",
+      "feature": {
+        "featured": "Featured",
+        "since": "Featured {day}",
+        "feature": "Feature",
+        "unfeature": "Stop featuring",
+        "hint": "A featured profile comes first when the public directory opens, until a reader searches, filters or sorts; its card says Featured."
+      },
       "review": {
         "open": "Review",
         "approve": "Approve and list",
@@ -1652,6 +1680,12 @@
           "label": "Status",
           "all": "All statuses"
         },
+        "featured": {
+          "label": "Featured",
+          "all": "Featured or not",
+          "yes": "Featured",
+          "no": "Not featured"
+        },
         "organization": {
           "label": "Organization",
           "all": "Organization"
@@ -1733,6 +1767,18 @@
         "review": "Review use case",
         "view": "Open use case",
         "organisation": "View organization"
+      },
+      "feature": {
+        "featured": "Featured",
+        "since": "Featured {day}",
+        "feature": "Feature",
+        "unfeature": "Stop featuring",
+        "hint": "A featured use case comes first when the public list opens, until a reader searches, filters or sorts; its card says Featured.",
+        "title": "Featured",
+        "done": {
+          "featured": "{name} is featured.",
+          "unfeatured": "{name} is no longer featured."
+        }
       },
       "errors": {
         "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
@@ -4141,7 +4187,9 @@
       "linkCopied": "Link copied",
       "sentBack": "{name} sent back with what to change.",
       "takenDown": "{name} is taken down.",
-      "restored": "{name} is back."
+      "restored": "{name} is back.",
+      "featured": "{name} is featured.",
+      "unfeatured": "{name} is no longer featured."
     },
     "directory": {
       "metaTitle": "AI solutions · BeyondPilot",
@@ -4189,6 +4237,12 @@
       "status": {
         "label": "Status",
         "all": "All statuses"
+      },
+      "featured": {
+        "label": "Featured",
+        "all": "Featured or not",
+        "yes": "Featured",
+        "no": "Not featured"
       },
       "clear": "Clear filters"
     },
@@ -4753,7 +4807,9 @@
       "sentBack": "{name} is sent back.",
       "takenDown": "{name} is taken down.",
       "restored": "{name} is back in the directory.",
-      "deleted": "Your talent profile is deleted."
+      "deleted": "Your talent profile is deleted.",
+      "featured": "{name} is featured.",
+      "unfeatured": "{name} is no longer featured."
     },
     "directory": {
       "metaTitle": "AI talent · BeyondPilot",
@@ -4782,7 +4838,23 @@
       "edit": "Edit your profile",
       "noProject": "No project published yet",
       "projects": "{count, plural, one {# project} other {# projects}}",
-      "view": "View profile"
+      "view": "View profile",
+      "steps": {
+        "title": "How AI talent works",
+        "create": {
+          "title": "1. Create your profile",
+          "body": "Your headline, the roles you take, your skills and the projects you delivered. A draft stays private."
+        },
+        "review": {
+          "title": "2. GenAI Fund reviews it",
+          "body": "A check that it is a real person and real work, usually within one or two working days."
+        },
+        "reach": {
+          "title": "3. Businesses reach you here",
+          "body": "Enquiries come through BeyondPilot. Your email address is shared only when you accept one."
+        }
+      },
+      "others": "Other AI talent you could look at"
     },
     "filters": {
       "search": "Search by name, skill or project",
@@ -4794,6 +4866,12 @@
       "status": {
         "label": "Status",
         "all": "All statuses"
+      },
+      "featured": {
+        "label": "Featured",
+        "all": "Featured or not",
+        "yes": "Featured",
+        "no": "Not featured"
       },
       "clear": "Clear filters"
     },
@@ -4889,7 +4967,7 @@
         "listed": "Approved and listed in the directory",
         "unlisted": "Approved, but hidden from the directory",
         "open": "Open your public profile",
-        "unlistedLead": "Choose “Listed in the directory” below to show it again; no new review.",
+        "unlistedLead": "Edit the profile and choose “Listed in the directory” to show it again; no new review.",
         "foot": "A change you save shows on your page at once, without a new review."
       },
       "inbox": {
@@ -4924,7 +5002,9 @@
           "confirm": "Report",
           "cancel": "Keep it"
         },
-        "none": "No enquiries yet."
+        "none": "No enquiries yet.",
+        "choose": "Choose an enquiry to read it.",
+        "list": "Enquiries received"
       },
       "sentBack": {
         "title": "Sent back: {reason}",
@@ -4953,6 +5033,20 @@
         "label": "Your talent profile",
         "profile": "Profile",
         "enquiries": "Enquiries"
+      },
+      "nav": {
+        "label": "Sections of your profile"
+      },
+      "edit": "Edit profile",
+      "back": "Back to your profile",
+      "previewCard": {
+        "title": "How it shows in AI talent",
+        "note": "As last saved. Your email address is never shown."
+      },
+      "enquiriesCard": {
+        "title": "Enquiries",
+        "waiting": "{count, plural, =0 {No enquiry waits for you.} one {# enquiry waits for your answer.} other {# enquiries wait for your answer.}}",
+        "lead": "Contact details are shared only when you accept; an unanswered enquiry closes after 14 days."
       }
     },
     "form": {
@@ -5180,13 +5274,17 @@
     "nav": {
       "label": "On this page",
       "challenge": "Overview",
+      "client": "Tasco",
       "who": "Who can apply",
       "win": "What you win",
       "directions": "Directions",
       "use-cases": "Use cases",
       "timeline": "Timeline",
+      "pilot": "Pilot month",
       "submit": "What to submit",
+      "support": "Support",
       "judges": "Judges",
+      "myths": "Myths",
       "faq": "FAQ"
     },
     "useCases": {
@@ -5225,6 +5323,25 @@
       "constraint": {
         "title": "One hard constraint",
         "text": "No premium discounts, cashback or disguised price incentives. The point is a better experience, not a bought outcome. Everything else is open."
+      }
+    },
+    "client": {
+      "title": "This is not a hypothetical enterprise partner",
+      "lead": "Tasco is one of Vietnam's major multi-sector groups, listed on the Hanoi Stock Exchange. If you've driven through a toll gate in Vietnam, you've already used something they built.",
+      "group": "The group operates across the entire life of a vehicle and its owner: automotive distribution and retail, electronic toll collection through VETC, insurance, roadside assistance, after-sales service, vehicle care and charging infrastructure. Its nationwide network of showrooms and service centres carries Geely and Lynk & Co, with Mitsui as a strategic shareholder in Tasco Auto.",
+      "ecosystem": "Insurance sits inside that ecosystem rather than beside it. That's why Tasco can see the customer's whole journey — the car, the road, the service centre, the claim — instead of just the policy.",
+      "businesses": {
+        "retail": "Automotive retail",
+        "tolling": "Electronic tolling (VETC)",
+        "insurance": "Insurance",
+        "roadside": "Roadside assistance",
+        "care": "After-sales & vehicle care",
+        "charging": "Charging infrastructure"
+      },
+      "why": {
+        "title": "Why Tasco is doing this at all",
+        "ambition": "Tasco's ambition is to change what insurance feels like for people in Vietnam: protection that's simple to buy, impossible to lose, clear to understand, and straightforward to claim. Millions of drivers currently hold a product they're required to have and nobody has made worth wanting.",
+        "building": "That's the thing you'd be building. Not a feature — the experience itself."
       }
     },
     "who": {
@@ -5314,11 +5431,77 @@
           "title": "Something else entirely",
           "text": "Combine directions, or bring one nobody has thought of."
         }
+      },
+      "efficiency": {
+        "title": "Why efficiency matters here",
+        "cost": "Every piece of friction in this journey costs someone money, and that cost ends up inside the price of protection. Make the end-to-end process genuinely more efficient — and richer in first-party data that customers have agreed to share — and something better becomes possible: insurance that costs less, fits the individual more closely, and is actually worth holding.",
+        "prize": "That's the prize. Not a slicker app — a better deal for the person buying it."
       }
     },
     "timeline": {
       "title": "Timeline",
-      "lead": "Three weeks, six fixed dates. The build period opens the same day as applications."
+      "lead": "Three weeks, six fixed dates. The build period opens the same day as applications.",
+      "start": {
+        "title": "Start on day one",
+        "text": "The build period opens on 23 September — the same day applications do. The written brief, FAQ and submission template are published from day one. The 7 October briefing is a mid-point deep dive with Tasco, not the starting gun. Teams that wait for it lose two of their three weeks."
+      },
+      "selection": {
+        "title": "How selection works",
+        "text": "GenAI Fund screens every submission and selects the ten teams who present. Judges and Tasco's team score live on demo day. No submission sits in a queue for a week."
+      }
+    },
+    "pilot": {
+      "title": "Winning isn't the end of it. Here's the month that follows.",
+      "lead": "Most programmes stop at the trophy and leave “next steps to be discussed”. Here's the actual month, so you can plan the resourcing before you apply.",
+      "bring": "Bring",
+      "done": "Done when",
+      "steps": {
+        "selection": {
+          "when": "23 Oct – 1 Nov",
+          "title": "Selection and scoping conversation",
+          "text": "Tasco confirms which teams it wants to take forward. You present your solution and your commercial case to the leadership team and the business owners who'd run it. Mutual NDA signed.",
+          "bring": "The demo and a one-page commercial proposal",
+          "done": "Both sides agree to run a pilot"
+        },
+        "week1": {
+          "when": "Week 1 · 3–7 Nov",
+          "title": "Scope lock",
+          "text": "You and Tasco agree the exact boundary: which use case, which users, which systems, which success metrics. Data access and approvals are requested here, not later.",
+          "bring": "Your integration and data requirements in writing",
+          "done": "A one-page scope both sides have signed"
+        },
+        "week2": {
+          "when": "Week 2 · 10–14 Nov",
+          "title": "Build",
+          "text": "You build against Tasco's real context in a sandboxed environment, with an assigned business owner on call.",
+          "bring": "Engineering time",
+          "done": "The core workflow runs end to end on test data"
+        },
+        "week3": {
+          "when": "Week 3 · 17–21 Nov",
+          "title": "Integrate and checkpoint",
+          "text": "Connect the agreed systems and hold a mid-point review. Anything not working by this checkpoint doesn't go into week 4.",
+          "bring": "A working demo against the agreed metrics",
+          "done": "The checkpoint review passes"
+        },
+        "week4": {
+          "when": "Week 4 · 24–28 Nov",
+          "title": "Test and evaluate",
+          "text": "Tasco's own team runs the solution against the week-one metrics, with real operational users where approvals allow. You see the results — not a verdict behind closed doors.",
+          "bring": "Support and fixes during testing",
+          "done": "Results are written up against each metric"
+        },
+        "decision": {
+          "when": "By 5 Dec",
+          "title": "Tasco decides",
+          "text": "One of three outcomes, in writing: scale into a production pilot and commercial terms, extend on a revised scope, or stop, with the reasons. You keep the results either way."
+        }
+      },
+      "format": "The point of a 90-day format is that “no” arrives fast enough to be useful.",
+      "note": {
+        "title": "Good to know",
+        "text": "Entering a pilot is Tasco's decision, made after demo day. One month is the target for a tightly scoped pilot — a broader scope runs longer, and the scope is agreed jointly in week 1 before anyone commits. Dates flex with the enterprise's calendar."
+      }
     },
     "submit": {
       "title": "What to submit",
@@ -5355,7 +5538,36 @@
         "experience": "Customer experience",
         "sustainability": "Operational sustainability",
         "clarity": "Implementation clarity"
+      },
+      "assumptions": "State your data, integration and consent assumptions explicitly. That's not a compliance box — it's part of what makes a proposal credible, and the criteria reward it.",
+      "design": {
+        "title": "Design requirements",
+        "text": "Proposals should avoid premium discounts, cashback, or disguised price incentives; use accurate communications without fabricated urgency; explain data access, consent and privacy assumptions; account for seasonal demand; and identify where staff review is needed.",
+        "more": "Detailed requirements are included in the participant brief and discussed during the briefing session."
       }
+    },
+    "support": {
+      "title": "You won't build this blind",
+      "lead": "Briefings, workshops and partner resources to help you build something Tasco can evaluate.",
+      "items": {
+        "briefing": {
+          "title": "Business briefing and open Q&A",
+          "text": "Understand the journey and the operating reality behind it, from the people who run it."
+        },
+        "workshops": {
+          "title": "Technical and business workshops",
+          "text": "Sharpen the solution with mentors and technology partners."
+        },
+        "mentors": {
+          "title": "Mentor access",
+          "text": "Business and technical guidance through the build window."
+        },
+        "credits": {
+          "title": "Partner credits and tools",
+          "text": "Explore resources through partner programmes, including eligible Microsoft for Startups benefits."
+        }
+      },
+      "conditions": "Partner credits, tools, pilot entry, investment and any subsequent engagement depend on selection, eligibility, due diligence and the relevant partner's or enterprise's terms. Selected partner workshops may take place in person; schedules go to participants."
     },
     "judges": {
       "title": "The people scoring your work",
@@ -5371,9 +5583,45 @@
         "manuja": "Head of AI and Data, Manulife"
       }
     },
+    "myths": {
+      "title": "Five things people get wrong about this",
+      "lead": "You've probably been burned by something that looked like this. Fair. Here's what's actually true.",
+      "assume": "What people assume",
+      "truth": "What's actually true",
+      "items": {
+        "rnd": {
+          "myth": "“This is free R&D for Tasco.”",
+          "truth": "You keep your IP. Mutual NDA before any pilot, and the scope is agreed jointly in week 1 — before you commit engineering time."
+        },
+        "procurement": {
+          "myth": "“I'd never get past procurement.”",
+          "truth": "There is no RFP here. The people who set the brief and hold the budget are the people reviewing your work — that's the entire format."
+        },
+        "insurance": {
+          "myth": "“I don't know insurance.”",
+          "truth": "Most strong submissions don't start there. The written brief, the 7 October session and an assigned business owner close that gap. Bring the solution."
+        },
+        "weeks": {
+          "myth": "“Three weeks isn't enough to build anything.”",
+          "truth": "Build opens 23 September, not 7 October. And nobody's asking for production software — show what works and how it scales."
+        },
+        "prize": {
+          "myth": "“No cash prize — so what's the upside?”",
+          "truth": "A named enterprise customer, a market, and investment of up to US$100,000 on the table for teams that come through the pilot."
+        }
+      }
+    },
     "faq": {
       "title": "Questions people ask",
       "items": {
+        "motor": {
+          "q": "Do I have to work on compulsory motor insurance?",
+          "a": "No. The scope is open: any AI solution that makes the insurance experience better for the people using it. We publish the compulsory motor journey as a worked example because it touches nearly every driver in Vietnam — not because it's the boundary."
+        },
+        "wontConsider": {
+          "q": "Is there anything Tasco won't consider?",
+          "a": "One hard constraint: no premium discounts, cashback, or disguised price incentives. The point is a better experience, not a bought outcome. Everything else is open — make the case for it."
+        },
         "startup": {
           "q": "Do I need to be a startup?",
           "a": "No. Solo builders, student teams, startups, ISVs, systems integrators and enterprise teams can all apply. You're judged on the solution, not the company behind it."
@@ -5382,6 +5630,26 @@
           "q": "Can I apply with a product that's already in market?",
           "a": "Yes — and those submissions often do well, because you can show something working on day one. Tell us what already exists and what you'd build or adapt for Tasco."
         },
+        "win": {
+          "q": "What do I actually win?",
+          "a": "Teams Tasco selects go into a one-month pilot with the business owners who'd run the solution, and teams that come through the pilot can be considered for investment of up to US$100,000. The return is a named enterprise customer and a foothold in Vietnam, not a trophy. (Investment is subject to selection, due diligence and final agreement.)"
+        },
+        "prizeMoney": {
+          "q": "Is there prize money?",
+          "a": "No. If a cash prize is what you're after, this isn't the right programme — and we'd rather you know that today than on 15 October. What's on offer is a customer."
+        },
+        "senior": {
+          "q": "Do I actually get in front of anyone senior?",
+          "a": "Yes. Tasco's leadership team and the business owners who run its insurance operation set this brief and are in the room at demo day. You're not presenting to an innovation team that then has to go and ask someone."
+        },
+        "data": {
+          "q": "Will I get real customer data?",
+          "a": "Assume not. Any development resources are subject to approval. State your data, integration and consent assumptions in your submission — that's part of what makes a proposal credible, and the judging criteria reward it explicitly."
+        },
+        "before": {
+          "q": "The briefing is on 7 October. What am I meant to do before then?",
+          "a": "Build. The build period opens on 23 September, the same day applications do, and the written brief, FAQ and submission template are published from day one. The briefing is a mid-point deep dive with Tasco's team — not the starting gun. Teams that wait for it lose two of their three weeks."
+        },
         "ip": {
           "q": "Who owns my IP?",
           "a": "You do. A mutual NDA is signed before any pilot begins. Commercial terms are agreed directly between you and Tasco, before work starts."
@@ -5389,6 +5657,10 @@
         "vietnam": {
           "q": "Do I need to be in Vietnam, or speak Vietnamese?",
           "a": "No. Applications, the briefing and demo day run in English, virtually. If you reach a pilot, you'll need people who can work with Tasco's team on Vietnam time."
+        },
+        "pilot": {
+          "q": "What does the pilot involve, and how long is it?",
+          "a": "One month: scope lock, build, integrate, test against agreed metrics, then a written decision to scale, extend or stop. The week-by-week plan is on this page. Entering it is Tasco's decision after demo day, and a broader scope runs longer than a month — the scope is agreed jointly before anyone commits."
         },
         "hearBack": {
           "q": "When do I hear back?",
@@ -5523,7 +5795,8 @@
       "choose": "Choose one",
       "uploaded": "Uploaded file",
       "required": "Answer this question.",
-      "confirmRequired": "Confirm this to continue."
+      "confirmRequired": "Confirm this to continue.",
+      "choicesRequired": "Choose at least one."
     },
     "review": {
       "blocks": {
@@ -5881,6 +6154,7 @@
       "summary": "What it does",
       "problemsSolved": "Problem it solves",
       "maturity": "Stage",
+      "demoUrl": "Product demo",
       "builtWith": "Built with",
       "traction": "Traction",
       "confirmed": "Confirmed",

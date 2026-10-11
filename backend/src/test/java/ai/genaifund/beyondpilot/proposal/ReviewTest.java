@@ -151,6 +151,9 @@ class ReviewTest extends ApplicationsHttpTest {
 		String again = body(get(operator, one).expectStatus().isOk());
 		assertThat(JsonPath.<Integer>read(again, "$.version")).isEqualTo(2);
 		assertThat(JsonPath.<List<Integer>>read(again, "$.others[*].version")).containsExactly(1);
+		// An answer of several choices is read with its kind, as the applicant's form kept it.
+		assertThat(JsonPath.<List<String>>read(again, "$.submitted.answers[?(@.kind == 'multi_choice')].value"))
+			.containsExactly("[\"Claims\",\"Pricing\"]");
 		assertProblem(get(judge, one + "/files/" + UUID.randomUUID()), 404, "PROPOSAL_APPLICATION_NOT_FOUND");
 		assertThat(auditOf(form.programId())).doesNotContain("proposal.file_open");
 
@@ -162,6 +165,42 @@ class ReviewTest extends ApplicationsHttpTest {
 				from audit_event where action = 'proposal.file_open' and resource_id = ?
 				""").params(form.programId().toString()).query(String.class).list())
 			.containsExactly("scorer@review.test " + first.id() + " " + deck);
+	}
+
+	@Test
+	void reviewersOpenTheDemoLinkASubmissionKept() {
+		Form form = program("demo-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		String judge = judge(form, "viewer@review.test");
+		String session = TestSignIn.session(client, mail, "shown@demo.test");
+		post(session, form.path() + "/organization", Map.of("kind", "individual", "name", "Shown Builder", "country", "VN"))
+			.expectStatus()
+			.isOk();
+		UUID solution = completeSolution(session, "shown@demo.test", "Shown Desk", "https://shown.example/demo");
+		// The applicant reads the link on the solution they apply with.
+		assertThat(JsonPath.<List<String>>read(body(get(session, form.path()).expectStatus().isOk()),
+				"$.solutions[*].demoUrl"))
+			.containsExactly("https://shown.example/demo");
+		submitted(session, "shown@demo.test", form, solution);
+		String with = JsonPath.read(body(get(session, API + "/applications").expectStatus().isOk()), "$.items[0].id");
+		Applicant without = applicant(form, "plain@demo.test", "Plain Builder");
+
+		assertThat(JsonPath.<String>read(body(get(judge, API + "/review/applications/" + with).expectStatus().isOk()),
+				"$.submitted.demoUrl"))
+			.isEqualTo("https://shown.example/demo");
+		assertThat(JsonPath.<String>read(body(get(operator, API + "/review/applications/" + with).expectStatus().isOk()),
+				"$.submitted.demoUrl"))
+			.isEqualTo("https://shown.example/demo");
+		assertThat(JsonPath.<Object>read(
+				body(get(judge, API + "/review/applications/" + without.id()).expectStatus().isOk()), "$.submitted.demoUrl"))
+			.isNull();
+
+		// A submission made before snapshots kept the link holds no such key, and reads as one without a demo.
+		jdbc.sql("update proposal_version set snapshot = snapshot #- '{solution,demoUrl}' where proposal_id = ?")
+			.params(UUID.fromString(with))
+			.update();
+		assertThat(JsonPath.<Object>read(body(get(judge, API + "/review/applications/" + with).expectStatus().isOk()),
+				"$.submitted.demoUrl"))
+			.isNull();
 	}
 
 	@Test

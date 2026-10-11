@@ -6,6 +6,7 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
 import {
@@ -13,15 +14,17 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
-import type { AdminSolutionList } from "@/lib/api/generated";
+import type { AdminSolutionList, AdminSolutionSummary } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { SolutionLogo } from "./solution-logo";
+import { SolutionFeature } from "./solution-feature";
 import { adminSolutionsSearch, type AdminSolutionsSearch } from "./solutions-search";
 import { SolutionsToolbar } from "./solutions-toolbar";
 
@@ -44,7 +47,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
 
   const rows = solutions.items.map((solution) => ({
     id: solution.id,
-    organizationId: solution.organizationId,
+    solution,
     href: `${siteRoutes.adminSolutions}/${solution.id}`,
     name: solution.name,
     logoFileId: solution.logoFileId,
@@ -60,6 +63,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
             {t("deploymentsWaiting", { count: solution.deploymentsAwaitingReview })}
           </span>
         )}
+        {solution.featuredAt && <FeaturedBadge>{t("feature.featured")}</FeaturedBadge>}
       </span>
     ),
     // A record that waits says for how long; a decided one keeps the day it was sent.
@@ -71,12 +75,13 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     waiting: solution.status === "in_review" || solution.deploymentsAwaitingReview > 0,
   }));
 
-  const narrowed = search.status !== null || search.industry !== null;
+  const narrowed = search.status !== null || search.industry !== null || search.featured !== null;
   const filtered = search.q.trim() !== "" || narrowed;
   const empty =
     rows.length > 0 ? null : search.q.trim() === "" &&
       search.status === "in_review" &&
-      search.industry === null ? (
+      search.industry === null &&
+      search.featured === null ? (
       <DataTableEmpty icon={<BoxesIcon aria-hidden="true" />} title={t("queueEmpty.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.admin}>
           {t("queueEmpty.home")}
@@ -164,7 +169,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
               </TableCell>
               <TableCell>
                 <div className="flex justify-end">
-                  <RowMenu id={row.id} name={row.name} organizationId={row.organizationId} />
+                  <RowMenu solution={row.solution} />
                 </div>
               </TableCell>
             </TableRow>
@@ -194,7 +199,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
                   <span className="truncate text-sm text-muted-foreground">{row.organization}</span>
                 </div>
               </div>
-              <RowMenu id={row.id} name={row.name} organizationId={row.organizationId} />
+              <RowMenu solution={row.solution} />
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               {row.status}
@@ -216,17 +221,13 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
   );
 }
 
-/** What the ⋯ menu of one row offers: the review page, and the organization's own page. */
-function RowMenu({
-  id,
-  name,
-  organizationId,
-}: {
-  id: string;
-  name: string;
-  organizationId: string;
-}) {
+/**
+ * What the ⋯ menu of one row offers: the review page, the organization's own page, and featuring the
+ * solution in the public directory.
+ */
+function RowMenu({ solution }: { solution: AdminSolutionSummary }) {
   const t = useTranslations("Admin.solutions");
+  const { id, name, organizationId } = solution;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -250,6 +251,10 @@ function RowMenu({
           >
             {t("actions.organization")}
           </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <SolutionFeature solution={solution} appearance="item" />
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>

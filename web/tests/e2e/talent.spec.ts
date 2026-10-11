@@ -31,6 +31,8 @@ test.describe("talent directory", () => {
     const founders = page.getByRole("region", { name: "Founders in the GenAI Fund network" });
     await expect(founders.getByRole("listitem")).toHaveCount(8);
     await expect(founders.getByText("CEO & Co-Founder · Shieldbase")).toBeVisible();
+    // Featured profiles lead the list, but public cards do not disclose operator curation.
+    await expect(page.locator("[data-featured]")).toHaveCount(0);
     await expect(
       page.getByRole("link", { name: "Create a talent profile" }).first(),
     ).toHaveAttribute("href", "/workspace/talent");

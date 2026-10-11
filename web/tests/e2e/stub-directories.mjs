@@ -153,6 +153,8 @@ const summaryOf = (item) => ({
     "maturity",
   ),
   customerDeployments: deploymentsOf(item.slug).length,
+  // GenAI Fund features one solution; the stub orders nothing by it.
+  featured: item.slug === "policy-chat",
 });
 
 function person(name, more) {
@@ -207,6 +209,8 @@ const personSummaryOf = (item) => ({
   photoFileId: item.photoFileId,
   projectCount: item.projects.length,
   leadProject: item.projects[0] ?? null,
+  // GenAI Fund features one profile; the stub orders nothing by it.
+  featured: item.slug === "arif-hidayat",
 });
 
 const has = (text, ...fields) =>
@@ -239,6 +243,8 @@ const useCases = [
     timelineMaxWeeks: 12,
     closesAt: "2026-12-31T16:59:00Z",
     publishedAt: "2026-10-02T02:00:00Z",
+    // GenAI Fund features this one; the stub orders nothing by it.
+    featured: true,
   },
   {
     id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0002",

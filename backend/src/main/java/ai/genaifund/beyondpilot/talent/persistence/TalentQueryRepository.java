@@ -38,11 +38,12 @@ public class TalentQueryRepository {
 			       or (:status = 'suspended' and suspended_at is not null)
 			       or (:status = 'approved' and status = 'approved' and suspended_at is null)
 			       or (:status not in ('suspended', 'approved') and status = :status))
+			  and (cast(:featured as boolean) is null or (featured_at is not null) = :featured)
 			""";
 
 	private static final String ROW = """
 			select id, account_id, slug, name, headline, roles, skills, country, city, status, suspended_at, listed,
-			       submitted_at, updated_at, photo_file_id,
+			       featured_at, submitted_at, updated_at, photo_file_id,
 			       (select count(*) from talent_project p where p.profile_id = talent_profile.id) as project_count,
 			       (select array[p.title, p.stage] from talent_project p where p.profile_id = talent_profile.id
 			        order by p.position limit 1) as lead_project
@@ -62,7 +63,7 @@ public class TalentQueryRepository {
 	 */
 	public record Row(UUID id, UUID accountId, String slug, String name, @Nullable String headline, List<String> roles,
 			List<String> skills, @Nullable String country, @Nullable String city, String status,
-			@Nullable Instant suspendedAt, boolean listed,
+			@Nullable Instant suspendedAt, boolean listed, @Nullable Instant featuredAt,
 			@Nullable Instant submittedAt, Instant updatedAt, @Nullable UUID photoFileId, int projectCount,
 			@Nullable String leadTitle, @Nullable String leadStage) {
 	}
@@ -72,9 +73,14 @@ public class TalentQueryRepository {
 			@Nullable String industry, @Nullable String engagement) {
 	}
 
-	/** One page of the public directory, by name or with the most recently approved first. */
-	public List<Row> publicPage(PublicFilter filter, @Nullable String sort, int limit, long offset) {
-		return publicFiltered(ROW + PUBLIC_FILTER + publicOrder(sort) + " limit :limit offset :offset", filter)
+	/**
+	 * One page of the public directory, by name or with the most recently approved first. With {@code featuredFirst}
+	 * the featured profiles come before the others, the earliest featured on top.
+	 */
+	public List<Row> publicPage(PublicFilter filter, @Nullable String sort, boolean featuredFirst, int limit,
+			long offset) {
+		return publicFiltered(
+				ROW + PUBLIC_FILTER + publicOrder(sort, featuredFirst) + " limit :limit offset :offset", filter)
 			.param("limit", limit)
 			.param("offset", offset)
 			.query(TalentQueryRepository::row)
@@ -87,21 +93,30 @@ public class TalentQueryRepository {
 	}
 
 	/** One page for operators, drafts left out: those waiting for review first, the longest wait on top. */
-	public List<Row> adminPage(@Nullable String text, @Nullable String status, int limit, long offset) {
+	public List<Row> adminPage(@Nullable String text, @Nullable String status, @Nullable Boolean featured, int limit,
+			long offset) {
 		return adminFiltered(ROW + ADMIN_FILTER + """
 				order by case status when 'in_review' then 0 else 1 end, submitted_at, id
 				limit :limit offset :offset
-				""", text, status).param("limit", limit).param("offset", offset).query(TalentQueryRepository::row).list();
+				""", text, status, featured).param("limit", limit)
+			.param("offset", offset)
+			.query(TalentQueryRepository::row)
+			.list();
 	}
 
-	public long adminCount(@Nullable String text, @Nullable String status) {
-		return adminFiltered("select count(*) from talent_profile\n" + ADMIN_FILTER, text, status).query(Long.class)
+	public long adminCount(@Nullable String text, @Nullable String status, @Nullable Boolean featured) {
+		return adminFiltered("select count(*) from talent_profile\n" + ADMIN_FILTER, text, status, featured)
+			.query(Long.class)
 			.single();
 	}
 
-	/** The orders of the public directory. The value is never the caller's text: it is chosen here by its name. */
-	private static String publicOrder(@Nullable String sort) {
-		return "newest".equals(sort) ? "order by decided_at desc nulls last, id" : "order by lower(name), id";
+	/**
+	 * The orders of the public directory, after the featured profiles when asked. The value is never the caller's
+	 * text: it is chosen here by its name.
+	 */
+	private static String publicOrder(@Nullable String sort, boolean featuredFirst) {
+		return "order by " + (featuredFirst ? "featured_at asc nulls last, " : "")
+				+ ("newest".equals(sort) ? "decided_at desc nulls last, id" : "lower(name), id");
 	}
 
 	private JdbcClient.StatementSpec publicFiltered(String sql, PublicFilter filter) {
@@ -113,21 +128,25 @@ public class TalentQueryRepository {
 			.param("engagement", filter.engagement(), Types.VARCHAR);
 	}
 
-	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, @Nullable String status) {
+	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, @Nullable String status,
+			@Nullable Boolean featured) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
-			.param("status", status, Types.VARCHAR);
+			.param("status", status, Types.VARCHAR)
+			.param("featured", featured, Types.BOOLEAN);
 	}
 
 	private static Row row(ResultSet row, int index) throws SQLException {
 		Timestamp submittedAt = row.getTimestamp("submitted_at");
 		Timestamp suspendedAt = row.getTimestamp("suspended_at");
+		Timestamp featuredAt = row.getTimestamp("featured_at");
 		Array lead = row.getArray("lead_project");
 		String[] leadProject = lead == null ? new String[2] : (String[]) lead.getArray();
 		return new Row(row.getObject("id", UUID.class), row.getObject("account_id", UUID.class), row.getString("slug"),
 				row.getString("name"), row.getString("headline"), strings(row.getArray("roles")),
 				strings(row.getArray("skills")), row.getString("country"), row.getString("city"), row.getString("status"),
-				suspendedAt == null ? null : suspendedAt.toInstant(), row.getBoolean("listed"), submittedAt == null ? null : submittedAt.toInstant(),
+				suspendedAt == null ? null : suspendedAt.toInstant(), row.getBoolean("listed"),
+				featuredAt == null ? null : featuredAt.toInstant(), submittedAt == null ? null : submittedAt.toInstant(),
 				row.getTimestamp("updated_at").toInstant(), row.getObject("photo_file_id", UUID.class),
 				row.getInt("project_count"), leadProject[0], leadProject[1]);
 	}

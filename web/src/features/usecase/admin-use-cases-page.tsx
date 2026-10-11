@@ -4,6 +4,7 @@ import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { ListFooter } from "@/components/composites/list-footer";
 import { ReviewStatus } from "@/components/composites/review-status";
 import { AdminPageTitle } from "@/components/layout/admin-icons";
@@ -12,6 +13,7 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "@/i18n/navigation";
@@ -20,6 +22,7 @@ import type { AdminUseCaseList, UseCaseOrganization } from "@/lib/api/generated"
 import { siteRoutes } from "@/lib/site";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 
+import { AdminUseCaseFeature } from "./admin-use-case-feature";
 import { adminUseCasesSearch, type AdminUseCasesSearch } from "./admin-use-cases-search";
 import { AdminUseCasesToolbar } from "./admin-use-cases-toolbar";
 import { LiveRefresh } from "./live-refresh";
@@ -71,7 +74,12 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
       </div>
     ),
     organization: <span className="text-muted-foreground">{useCase.organization.name}</span>,
-    status: <ReviewStatus state={useCase.status}>{t(`status.${useCase.status}`)}</ReviewStatus>,
+    status: (
+      <span className="flex flex-col items-start gap-1">
+        <ReviewStatus state={useCase.status}>{t(`status.${useCase.status}`)}</ReviewStatus>
+        {useCase.featuredAt && <FeaturedBadge>{t("feature.featured")}</FeaturedBadge>}
+      </span>
+    ),
     closes: <span className="font-medium">{useCase.closesAt ? day(useCase.closesAt) : "—"}</span>,
     updated: <span className="text-muted-foreground">{day(useCase.updatedAt)}</span>,
     actions: (
@@ -98,12 +106,25 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
               {t("actions.organisation")}
             </DropdownMenuItem>
           </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <AdminUseCaseFeature
+              id={useCase.id}
+              title={useCase.title ?? t("untitled")}
+              featured={Boolean(useCase.featuredAt)}
+              appearance="item"
+            />
+          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
   }));
 
-  const filtered = search.q.trim() !== "" || search.status !== null || search.organization !== null;
+  const filtered =
+    search.q.trim() !== "" ||
+    search.status !== null ||
+    search.organization !== null ||
+    search.featured !== null;
   const empty =
     rows.length > 0 ? null : filtered ? (
       <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
