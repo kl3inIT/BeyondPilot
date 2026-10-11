@@ -1,4 +1,4 @@
-import type { UseCaseProposalForm } from "@/lib/api/generated";
+import type { UseCaseProposal, UseCaseProposalForm } from "@/lib/api/generated";
 
 import type { ProposalErrorCode } from "./proposal-errors";
 
@@ -10,7 +10,7 @@ import type { ProposalErrorCode } from "./proposal-errors";
 export type SenderAccess =
   | { kind: "hidden" }
   | { kind: "open"; draft: boolean }
-  | { kind: "sent" }
+  | { kind: "sent"; proposal: UseCaseProposal }
   | { kind: "blocked"; code: ProposalErrorCode };
 
 /** What the form of a use case says the caller may do. */
@@ -22,7 +22,7 @@ export function accessOfForm(form: UseCaseProposalForm): SenderAccess {
     return { kind: "blocked", code: "PROPOSAL_ORGANIZATION_NOT_APPROVED" };
   }
   if (form.proposal?.status === "sent") {
-    return { kind: "sent" };
+    return { kind: "sent", proposal: form.proposal };
   }
   return { kind: "open", draft: form.proposal != null };
 }
@@ -48,4 +48,32 @@ export function accessOfRefusal(
 /** Whether a use case no longer takes proposals because its closing time has passed. */
 export function closedAt(closesAt: string | null | undefined, now: number = Date.now()): boolean {
   return closesAt != null && Date.parse(closesAt) <= now;
+}
+
+/** Why a sent proposal can no longer be edited. */
+export type EditClosedReason = "disabled" | "useCaseClosed" | "windowPassed";
+
+/** Whether the organization may still edit what it sent, until when, or why it may not. */
+export type EditState =
+  { kind: "editable"; until: string } | { kind: "closed"; reason: EditClosedReason };
+
+/**
+ * What the organization may do with a sent proposal. The server decides (`editableUntil` is null when
+ * editing is over); the use case's own facts only tell the reader which reason to give.
+ */
+export function editStateOf(
+  proposal: Pick<UseCaseProposal, "editableUntil">,
+  useCase: { closesAt?: string | null; proposalEditDays?: number | null },
+  now: number = Date.now(),
+): EditState {
+  if (proposal.editableUntil) {
+    return { kind: "editable", until: proposal.editableUntil };
+  }
+  if (useCase.proposalEditDays === 0) {
+    return { kind: "closed", reason: "disabled" };
+  }
+  if (closedAt(useCase.closesAt, now)) {
+    return { kind: "closed", reason: "useCaseClosed" };
+  }
+  return { kind: "closed", reason: "windowPassed" };
 }

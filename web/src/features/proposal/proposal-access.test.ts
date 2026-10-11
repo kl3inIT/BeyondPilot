@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { UseCaseProposalForm } from "@/lib/api/generated";
 
-import { accessOfForm, accessOfRefusal, closedAt } from "./proposal-access";
+import { accessOfForm, accessOfRefusal, closedAt, editStateOf } from "./proposal-access";
 
 const useCase = { id: "u", title: "T" };
 const organization = { id: "o", name: "Org", approved: true };
@@ -37,8 +37,10 @@ describe("accessOfForm", () => {
       kind: "open",
       draft: true,
     });
-    expect(accessOfForm(form({ organization, proposal: { ...draft, status: "sent" } }))).toEqual({
+    const sent = { ...draft, status: "sent" as const };
+    expect(accessOfForm(form({ organization, proposal: sent }))).toEqual({
       kind: "sent",
+      proposal: sent,
     });
   });
 });
@@ -67,5 +69,32 @@ describe("closedAt", () => {
   it("is open before it and without one", () => {
     expect(closedAt("2026-10-12T00:00:00Z", now)).toBe(false);
     expect(closedAt(null, now)).toBe(false);
+  });
+});
+
+describe("editStateOf", () => {
+  const now = Date.parse("2026-10-11T00:00:00Z");
+  const open = { closesAt: "2026-12-01T00:00:00Z", proposalEditDays: 7 };
+
+  it("is editable while the server gives an end", () => {
+    expect(editStateOf({ editableUntil: "2026-10-15T00:00:00Z" }, open, now)).toEqual({
+      kind: "editable",
+      until: "2026-10-15T00:00:00Z",
+    });
+  });
+
+  it("says why editing is over", () => {
+    expect(editStateOf({ editableUntil: null }, { ...open, proposalEditDays: 0 }, now)).toEqual({
+      kind: "closed",
+      reason: "disabled",
+    });
+    expect(editStateOf({}, { ...open, closesAt: "2026-10-01T00:00:00Z" }, now)).toEqual({
+      kind: "closed",
+      reason: "useCaseClosed",
+    });
+    expect(editStateOf({ editableUntil: null }, open, now)).toEqual({
+      kind: "closed",
+      reason: "windowPassed",
+    });
   });
 });

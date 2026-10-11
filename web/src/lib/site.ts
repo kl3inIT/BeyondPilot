@@ -67,8 +67,19 @@ export function useCaseRoute(id: string) {
 }
 
 /** The form in which a provider sends a proposal to a use case; signing in comes first and returns here. */
-export function useCaseProposeRoute(id: string) {
-  return `${useCaseRoute(id)}/propose`;
+/** Named without a `use` prefix: the compiler would treat it as a hook and refuse a call from an event handler. */
+export function proposeToUseCaseRoute(id: string) {
+  return `${siteRoutes.useCases}/${id}/propose`;
+}
+
+/** A use case's public brief, for a call from an event handler (see `proposeToUseCaseRoute`). */
+export function briefRoute(id: string) {
+  return `${siteRoutes.useCases}/${id}`;
+}
+
+/** What a provider's organization sent to a use case, read-only; the way back into editing while that is allowed. */
+export function proposalViewRoute(id: string) {
+  return `${siteRoutes.useCases}/${id}/propose/view`;
 }
 
 /** The proposals a use case received, as the organization that posted it reads them. */
@@ -168,4 +179,14 @@ export const genaiFundLinks = {
 /** One of the signed-in person's applications. */
 export function myApplicationRoute(id: string) {
   return `${siteRoutes.myApplications}/${id}`;
+}
+
+/** The public page of an approved solution. */
+export function solutionRoute(slug: string) {
+  return `${siteRoutes.solutions}/${slug}`;
+}
+
+/** A solution's page for whoever holds the link, whatever its review says; it is not listed anywhere. */
+export function sharedSolutionRoute(viewKey: string) {
+  return `${siteRoutes.solutions}/shared/${viewKey}`;
 }
