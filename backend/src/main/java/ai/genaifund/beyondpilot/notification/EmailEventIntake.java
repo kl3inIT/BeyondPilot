@@ -149,7 +149,8 @@ public class EmailEventIntake {
 	public void brevo(@Nullable String authorization, String payload) {
 		try {
 			String token = settings.reporting().brevoWebhookToken();
-			if (token == null) {
+			// An empty token would equal the empty remainder of a bare "Bearer " header.
+			if (token == null || token.isBlank()) {
 				throw refused("No Brevo webhook token is set");
 			}
 			String scheme = "Bearer ";
