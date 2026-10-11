@@ -3383,6 +3383,14 @@
       "label": "Sắp xếp theo",
       "newest": "Mới nhất",
       "name": "Tên A–Z"
+    },
+    "table": {
+      "selection": "Các dòng đã chọn",
+      "selected": "Đã chọn {count}",
+      "selectPage": "Chọn mọi dòng của trang này",
+      "selectOne": "Chọn {name}",
+      "selectMatching": "Chọn cả {count} kết quả khớp",
+      "clear": "Bỏ chọn"
     }
   },
   "Vocabulary": {

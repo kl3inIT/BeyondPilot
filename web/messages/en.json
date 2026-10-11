@@ -3383,6 +3383,14 @@
       "label": "Sort by",
       "newest": "Newest",
       "name": "Name A–Z"
+    },
+    "table": {
+      "selection": "Selected rows",
+      "selected": "{count} selected",
+      "selectPage": "Select every row on this page",
+      "selectOne": "Select {name}",
+      "selectMatching": "Select all {count} that match",
+      "clear": "Clear selection"
     }
   },
   "Vocabulary": {
