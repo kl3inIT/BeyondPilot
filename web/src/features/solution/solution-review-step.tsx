@@ -76,7 +76,10 @@ function ReviewGroup({ title, rows, missing, onEdit }: ReviewGroupProps) {
 type ReviewStepProps = {
   draft: SolutionDraft;
   change: (patch: Partial<SolutionDraft>) => void;
-  customerDeployments: CustomerDeployment[];
+  /** Null where an operator writes the solution: the organization adds the projects, and this reads none. */
+  customerDeployments: CustomerDeployment[] | null;
+  /** True on the operators' page, where the last step publishes at once instead of asking for a review. */
+  operator: boolean;
   /** The fields a review needs and the draft lacks. */
   missing: ReviewField[];
   /** True when the solution can be sent for review from here; a list of what it lacks then leads. */
@@ -96,6 +99,7 @@ function ReviewStep({
   draft,
   change,
   customerDeployments,
+  operator,
   missing,
   submittable,
   organizationName,
@@ -112,7 +116,7 @@ function ReviewStep({
   const deployment = useVocabulary("deployment");
 
   const counted = (state: CustomerDeployment["status"]) =>
-    customerDeployments.filter((item) => item.status === state).length;
+    (customerDeployments ?? []).filter((item) => item.status === state).length;
   const deploymentCounts = (
     [
       ["deploymentsApproved", counted("approved")],
@@ -188,7 +192,9 @@ function ReviewStep({
         { label: t("fields.deck"), value: draft.deck?.fileName ?? "" },
         { label: t("fields.demoUrl"), value: draft.demoUrl.trim() },
         { label: t("fields.website"), value: draft.website.trim() },
-        { label: t("review.customerDeployments"), value: deploymentCounts },
+        ...(customerDeployments
+          ? [{ label: t("review.customerDeployments"), value: deploymentCounts }]
+          : []),
       ],
     },
   ];
@@ -209,9 +215,11 @@ function ReviewStep({
       </section>
       {submittable && (
         <ReviewReadiness
-          missingTitle={t("review.readiness.missing")}
-          readyTitle={t("review.readiness.ready")}
-          note={t("review.readiness.note")}
+          missingTitle={t(
+            operator ? "review.readiness.missingOperator" : "review.readiness.missing",
+          )}
+          readyTitle={t(operator ? "review.readiness.readyOperator" : "review.readiness.ready")}
+          note={t(operator ? "review.readiness.noteOperator" : "review.readiness.note")}
           missing={missing.map((field) => ({
             id: fieldId(field),
             label: t(`fields.${field}`),

@@ -23,6 +23,7 @@ import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminSolutionList, AdminSolutionSummary } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { CreateAdminSolution } from "./create-admin-solution";
 import { SolutionLogo } from "./solution-logo";
 import { SolutionFeature } from "./solution-feature";
 import { adminSolutionsSearch, type AdminSolutionsSearch } from "./solutions-search";
@@ -113,17 +114,20 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
           <AdminPageTitle destination="solutions">{t("title")}</AdminPageTitle>
           <p className="text-sm text-muted-foreground">{t("lead")}</p>
         </div>
-        {/* How much waits, whatever the list is narrowed to, and the way to only that. */}
-        {solutions.awaitingReview > 0 &&
-          (search.status === "in_review" ? (
-            <span className="text-sm font-medium">
-              {t("awaiting", { count: solutions.awaitingReview })}
-            </span>
-          ) : (
-            <TextButton href={address(siteRoutes.adminSolutions, { status: "in_review" })}>
-              {t("awaiting", { count: solutions.awaitingReview })}
-            </TextButton>
-          ))}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          {/* How much waits, whatever the list is narrowed to, and the way to only that. */}
+          {solutions.awaitingReview > 0 &&
+            (search.status === "in_review" ? (
+              <span className="text-sm font-medium">
+                {t("awaiting", { count: solutions.awaitingReview })}
+              </span>
+            ) : (
+              <TextButton href={address(siteRoutes.adminSolutions, { status: "in_review" })}>
+                {t("awaiting", { count: solutions.awaitingReview })}
+              </TextButton>
+            ))}
+          <CreateAdminSolution />
+        </div>
       </div>
       <SolutionsToolbar list="admin" organizationOptions={solutions.organizations} />
 

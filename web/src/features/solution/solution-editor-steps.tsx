@@ -339,7 +339,8 @@ type EvidenceStepProps = StepProps & {
   solutionId: string;
   /** Where the deck is read, once the solution names the file the editor holds. */
   deckHref: string | undefined;
-  customerDeployments: CustomerDeployment[];
+  /** The projects customers put the solution to work in; null where an operator writes it, since the organization adds them. */
+  customerDeployments: CustomerDeployment[] | null;
   /** A link field was left: from then on, what is wrong with it is said under it. */
   onLinkLeft: (field: LinkField) => void;
   /** An image under the cover finished uploading. */
@@ -456,7 +457,9 @@ function EvidenceStep({
       </EditorField>
       {link("demoUrl", t("fields.demoUrlHint"), <CirclePlayIcon aria-hidden="true" />)}
       {link("website", t("fields.websiteHint"), <LinkIcon aria-hidden="true" />)}
-      <CustomerDeploymentsEditor solutionId={solutionId} deployments={customerDeployments} />
+      {customerDeployments && (
+        <CustomerDeploymentsEditor solutionId={solutionId} deployments={customerDeployments} />
+      )}
     </>
   );
 }

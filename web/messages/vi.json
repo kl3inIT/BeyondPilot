@@ -921,6 +921,8 @@
         },
         "solution": {
           "approve": "Duyệt giải pháp",
+          "create": "Tạo giải pháp",
+          "publish": "Đăng giải pháp",
           "send_back": "Trả lại giải pháp",
           "reject": "Từ chối hoặc trả lại giải pháp",
           "take_down": "Gỡ giải pháp xuống",
@@ -1047,6 +1049,8 @@
         },
         "solution": {
           "approve": "Duyệt giải pháp <resource></resource>",
+          "create": "Tạo giải pháp <resource></resource>",
+          "publish": "Đăng giải pháp <resource></resource>",
           "send_back": "Trả lại giải pháp <resource></resource>",
           "reject": "Từ chối giải pháp <resource></resource>",
           "take_down": "Gỡ giải pháp <resource></resource> xuống",
@@ -1388,6 +1392,19 @@
     },
     "solutions": {
       "metaTitle": "Giải pháp · BeyondPilot",
+      "create": {
+        "action": "Tạo giải pháp",
+        "title": "Tạo giải pháp",
+        "lead": "Bạn viết trong trình soạn rồi đăng ngay, không qua duyệt. Giải pháp thuộc tổ chức bạn chọn.",
+        "organization": "Tổ chức",
+        "organizationPlaceholder": "Chọn tổ chức",
+        "organizationRequired": "Hãy chọn một tổ chức.",
+        "noOrganizations": "Chưa có tổ chức nào được duyệt.",
+        "name": "Tên giải pháp",
+        "nameRequired": "Hãy nhập tên giải pháp.",
+        "cancel": "Hủy",
+        "submit": "Tạo và mở trình soạn"
+      },
       "title": "Giải pháp",
       "lead": "Mọi giải pháp nhà cung cấp đã gửi duyệt.",
       "columns": {
@@ -4213,7 +4230,8 @@
       "SOLUTION_INCOMPLETE": "Hãy điền các trường được đánh dấu trước khi gửi duyệt.",
       "SOLUTION_NOT_SUBMITTABLE": "Giải pháp này đang được duyệt, đã duyệt hoặc đã bị từ chối hẳn.",
       "SOLUTION_NOT_EDITABLE": "Giải pháp này đã bị từ chối hẳn nên không sửa được nữa.",
-      "SOLUTION_NOT_A_DRAFT": "Chỉ xóa được bản nháp.",
+      "SOLUTION_NOT_A_DRAFT": "Giải pháp này không còn là bản nháp.",
+      "SOLUTION_ORGANIZATION_NOT_APPROVED": "Tổ chức này chưa được duyệt nên chưa thể có giải pháp.",
       "SOLUTION_NOT_AWAITING_REVIEW": "Giải pháp này đã được duyệt xong.",
       "SOLUTION_CHANGED_MEANWHILE": "Có người vừa sửa giải pháp này. Hãy tải lại trang rồi thử lại.",
       "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
@@ -4232,6 +4250,7 @@
     "done": {
       "saved": "Đã lưu giải pháp.",
       "submitted": "Đã gửi GenAI Fund duyệt.",
+      "published": "Đã đăng {name}.",
       "deleted": "Đã xóa {name}.",
       "approved": "Đã duyệt {name}.",
       "rejected": "Đã từ chối {name}.",
@@ -4624,7 +4643,17 @@
         "readiness": {
           "missing": "Trước khi gửi duyệt, hãy bổ sung:",
           "ready": "Đã sẵn sàng gửi duyệt",
-          "note": "Việc duyệt thường mất một đến hai ngày làm việc; kết quả hiển thị ngay trên trang này."
+          "note": "Việc duyệt thường mất một đến hai ngày làm việc; kết quả hiển thị ngay trên trang này.",
+          "missingOperator": "Trước khi đăng, hãy bổ sung:",
+          "readyOperator": "Sẵn sàng để đăng",
+          "noteOperator": "Giải pháp được đăng ngay, không qua duyệt."
+        },
+        "publish": "Đăng",
+        "confirmPublish": {
+          "title": "Đăng giải pháp này?",
+          "lead": "Giải pháp xuất hiện trong danh mục ngay, không qua duyệt. Các thành viên của tổ chức sẽ nhận email báo giải pháp đã được duyệt.",
+          "confirm": "Đăng",
+          "cancel": "Sửa tiếp"
         },
         "submit": "Gửi duyệt",
         "resubmit": "Gửi duyệt lại",

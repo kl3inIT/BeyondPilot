@@ -32,7 +32,13 @@ import { useNotify, type MessageKey } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import { ApiError } from "@/lib/api/client";
-import { saveSolution, submitSolution, type Solution } from "@/lib/api/generated";
+import {
+  publishAdminSolution,
+  saveAdminSolutionDraft,
+  saveSolution,
+  submitSolution,
+  type Solution,
+} from "@/lib/api/generated";
 import { rejectedFields } from "@/lib/api/rejected-fields";
 import { focusField } from "@/lib/focus-field";
 import { siteRoutes } from "@/lib/site";
@@ -75,9 +81,15 @@ type Failure = { message: MessageKey; content: string; conflict: boolean };
  */
 function SolutionEditor({
   solution,
+  operator = false,
   onLeave,
 }: {
   solution: Solution;
+  /**
+   * Set on the operators' page: the draft belongs to an organization, an operator writes it and
+   * publishes it at once, with no review, so its calls and its way out are the operators'.
+   */
+  operator?: boolean;
   /**
    * Set when another page holds the editor, such as a dialog of a proposal: every way out of the editor
    * calls it instead of going to the list of solutions.
@@ -120,7 +132,10 @@ function SolutionEditor({
   const focusAfterStep = useRef<string | null>(null);
   const firstStep = useRef(true);
 
-  const list = getPathname({ href: siteRoutes.workspaceSolutions, locale });
+  const list = getPathname({
+    href: operator ? siteRoutes.adminSolutions : siteRoutes.workspaceSolutions,
+    locale,
+  });
   /** Goes where the editor leads when it is done: the list of solutions, or back to what holds it. */
   const leave = () => (onLeave ? onLeave() : router.push(list));
   // A draft and a solution sent back are written step by step and sent for review at the end.
@@ -170,10 +185,13 @@ function SolutionEditor({
   async function send(body: SolutionDraft): Promise<boolean> {
     setSaving(true);
     try {
-      const { data } = await saveSolution({
+      const request = {
         path: { id: solution.id },
         body: toRequest(body, latest.current.version),
-      });
+      };
+      const { data } = operator
+        ? await saveAdminSolutionDraft(request)
+        : await saveSolution(request);
       latest.current = data;
       setServer(data);
       setSavedNow(new Date());
@@ -323,9 +341,16 @@ function SolutionEditor({
         setConfirming(null);
         return;
       }
-      await submitSolution({ path: { id: solution.id } });
-      notify.success("Solution.done.submitted");
-      leave();
+      if (operator) {
+        await publishAdminSolution({ path: { id: solution.id } });
+        notify.success("Solution.done.published", { name: draft.name.trim() });
+        // What was published is read in the record of the review, with the rest of the solutions.
+        router.push(getPathname({ href: `${siteRoutes.adminSolutions}/${solution.id}`, locale }));
+      } else {
+        await submitSolution({ path: { id: solution.id } });
+        notify.success("Solution.done.submitted");
+        leave();
+      }
     } catch (error) {
       notify.error(solutionError(error));
       setConfirming(null);
@@ -691,7 +716,7 @@ function SolutionEditor({
                     solutionId={solution.id}
                     deckHref={deckHref}
                     onImageAdded={addImage}
-                    customerDeployments={solution.customerDeployments}
+                    customerDeployments={operator ? null : solution.customerDeployments}
                     onLinkLeft={(field) => setLeftLinks((current) => new Set(current).add(field))}
                   />
                 )}
@@ -699,7 +724,8 @@ function SolutionEditor({
                   <ReviewStep
                     draft={draft}
                     change={change}
-                    customerDeployments={solution.customerDeployments}
+                    customerDeployments={operator ? null : solution.customerDeployments}
+                    operator={operator}
                     missing={missing}
                     submittable={autosaves}
                     organizationName={server.organizationName}
@@ -752,7 +778,13 @@ function SolutionEditor({
                   disabled={missing.length > 0 || !saveable || !confirmed || pending !== null}
                   onClick={() => setConfirming("submit")}
                 >
-                  {t(server.status === "needs_changes" ? "review.resubmit" : "review.submit")}
+                  {t(
+                    operator
+                      ? "review.publish"
+                      : server.status === "needs_changes"
+                        ? "review.resubmit"
+                        : "review.submit",
+                  )}
                 </Button>
               )}
               {last && !autosaves && !finallyRefused && (
@@ -774,10 +806,10 @@ function SolutionEditor({
         <ConfirmDialog
           open
           onOpenChange={() => setConfirming(null)}
-          title={t("review.confirm.title")}
-          description={t("review.confirm.lead")}
-          confirmLabel={t("review.confirm.confirm")}
-          cancelLabel={t("review.confirm.cancel")}
+          title={t(operator ? "review.confirmPublish.title" : "review.confirm.title")}
+          description={t(operator ? "review.confirmPublish.lead" : "review.confirm.lead")}
+          confirmLabel={t(operator ? "review.confirmPublish.confirm" : "review.confirm.confirm")}
+          cancelLabel={t(operator ? "review.confirmPublish.cancel" : "review.confirm.cancel")}
           pending={pending === "submit"}
           onConfirm={submit}
         />

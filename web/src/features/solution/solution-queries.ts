@@ -1,6 +1,7 @@
 import { ApiError } from "@/lib/api/client";
 import {
   getAdminSolution,
+  getAdminSolutionDraft,
   getMySolution,
   getOrganization,
   getSharedSolution,
@@ -192,6 +193,16 @@ export async function readAdminSolutions(search: AdminSolutionsSearch): Promise<
 export async function readAdminSolution(id: string): Promise<Solution | null> {
   try {
     const { data } = await getAdminSolution({ ...(await sessionRequest()), path: { id } });
+    return data;
+  } catch (error) {
+    return absent(error);
+  }
+}
+
+/** One draft as an operator's editor reads it, or `null`. Server only. */
+export async function readAdminSolutionDraft(id: string): Promise<Solution | null> {
+  try {
+    const { data } = await getAdminSolutionDraft({ ...(await sessionRequest()), path: { id } });
     return data;
   } catch (error) {
     return absent(error);
