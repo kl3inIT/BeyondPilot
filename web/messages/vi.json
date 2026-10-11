@@ -4868,7 +4868,23 @@
       "edit": "Sửa hồ sơ của bạn",
       "noProject": "Chưa có dự án nào",
       "projects": "{count} dự án",
-      "view": "Xem hồ sơ"
+      "view": "Xem hồ sơ",
+      "steps": {
+        "title": "AI talent hoạt động thế nào",
+        "create": {
+          "title": "1. Tạo hồ sơ của bạn",
+          "body": "Tiêu đề, vai trò bạn đảm nhận, kỹ năng và các dự án bạn đã triển khai. Bản nháp chỉ mình bạn xem."
+        },
+        "review": {
+          "title": "2. GenAI Fund duyệt hồ sơ",
+          "body": "Kiểm tra đây là người thật và công việc thật, thường trong một hoặc hai ngày làm việc."
+        },
+        "reach": {
+          "title": "3. Doanh nghiệp liên hệ bạn tại đây",
+          "body": "Yêu cầu liên hệ đi qua BeyondPilot. Email của bạn chỉ được chia sẻ khi bạn chấp nhận."
+        }
+      },
+      "others": "Các nhân lực AI khác bạn có thể xem"
     },
     "filters": {
       "search": "Tìm theo tên, kỹ năng hoặc dự án",
@@ -4981,7 +4997,7 @@
         "listed": "Đã duyệt và hiển thị trong danh mục",
         "unlisted": "Đã duyệt nhưng đang ẩn khỏi danh mục",
         "open": "Mở hồ sơ công khai",
-        "unlistedLead": "Chọn “Hiển thị trong danh mục” bên dưới để hiển thị lại; không cần duyệt lại.",
+        "unlistedLead": "Sửa hồ sơ và chọn “Hiển thị trong danh mục” để hiển thị lại; không cần duyệt lại.",
         "foot": "Thay đổi bạn lưu hiển thị trên trang ngay, không cần duyệt lại."
       },
       "inbox": {
@@ -5016,7 +5032,9 @@
           "confirm": "Báo cáo",
           "cancel": "Giữ lại"
         },
-        "none": "Chưa có lời nhắn nào."
+        "none": "Chưa có lời nhắn nào.",
+        "choose": "Chọn một yêu cầu để đọc.",
+        "list": "Yêu cầu đã nhận"
       },
       "sentBack": {
         "title": "Cần sửa: {reason}",
@@ -5045,6 +5063,20 @@
         "label": "Hồ sơ talent của bạn",
         "profile": "Hồ sơ",
         "enquiries": "Lời nhắn"
+      },
+      "nav": {
+        "label": "Các phần của hồ sơ"
+      },
+      "edit": "Sửa hồ sơ",
+      "back": "Quay lại hồ sơ của bạn",
+      "previewCard": {
+        "title": "Cách hồ sơ hiển thị trong AI talent",
+        "note": "Theo bản đã lưu gần nhất. Địa chỉ email của bạn không bao giờ được hiển thị."
+      },
+      "enquiriesCard": {
+        "title": "Yêu cầu liên hệ",
+        "waiting": "{count, plural, =0 {Không có yêu cầu nào đang chờ bạn.} other {# yêu cầu đang chờ bạn trả lời.}}",
+        "lead": "Thông tin liên hệ chỉ được chia sẻ khi bạn chấp nhận; yêu cầu không được trả lời sẽ đóng sau 14 ngày."
       }
     },
     "form": {

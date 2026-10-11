@@ -23,7 +23,7 @@ type AdminTalentPageProps = {
 
 /**
  * Admin › Talent › one profile, as the Figma frame "Admin — AI talent, review one profile" draws it:
- * who the person is, the decision in a card above the record, then what they wrote.
+ * who the person is, then what they wrote, with the decision in a card beside it that stays in view.
  */
 function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
   const t = useTranslations("Admin.talent.detail");
@@ -67,7 +67,7 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
         />
       </div>
 
-      <div className="flex w-full max-w-220 flex-col gap-8">
+      <div className="flex w-full flex-col gap-8">
         <header className="flex flex-col gap-1.5">
           <h1 className="text-2xl font-semibold tracking-tight">{profile.name}</h1>
           {profile.headline && <p className="text-muted-foreground">{profile.headline}</p>}
@@ -77,74 +77,77 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
           </p>
         </header>
 
-        <section
-          aria-labelledby="talent-decision"
-          className="flex flex-col gap-4 rounded-xl border bg-card p-5"
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex min-w-0 flex-col gap-1">
-              <h2 id="talent-decision" className="text-lg font-semibold">
-                {t(`decision.${state}.title`)}
-              </h2>
-              {/* A profile sent back or taken down says why in the note below. */}
-              {state !== "needs_changes" && state !== "suspended" && (
-                <p className="text-sm text-muted-foreground">{t(`decision.${state}.lead`)}</p>
-              )}
-            </div>
-            <div className="shrink-0 pt-1">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start xl:gap-8">
+          <div className="min-w-0 flex-1 max-lg:order-1">
+            <TalentView profile={profile} />
+          </div>
+          <section
+            aria-labelledby="talent-decision"
+            className="flex flex-col gap-4 rounded-xl border bg-card p-5 lg:sticky lg:top-6 lg:w-88 lg:shrink-0"
+          >
+            <div className="flex flex-col-reverse items-start gap-2">
+              <div className="flex min-w-0 flex-col gap-1">
+                <h2 id="talent-decision" className="text-lg font-semibold">
+                  {t(`decision.${state}.title`)}
+                </h2>
+                {/* A profile sent back or taken down says why in the note below. */}
+                {state !== "needs_changes" && state !== "suspended" && (
+                  <p className="text-sm text-muted-foreground">{t(`decision.${state}.lead`)}</p>
+                )}
+              </div>
               <ReviewStatus state={state}>{status(state)}</ReviewStatus>
             </div>
-          </div>
-          {profile.suspendedAt ? (
-            <p className="rounded-lg bg-muted p-3 text-sm">
-              <span className="font-medium">
-                {t("takenDown", { reason: reason(profile.suspensionReason ?? "other") })}
-              </span>
-              {profile.suspensionMessage && <> {profile.suspensionMessage}</>}
-            </p>
-          ) : (
-            profile.status === "needs_changes" && (
+            {profile.suspendedAt ? (
               <p className="rounded-lg bg-muted p-3 text-sm">
                 <span className="font-medium">
-                  {t("sentBack", { reason: reason(profile.decisionReason ?? "other") })}
+                  {t("takenDown", { reason: reason(profile.suspensionReason ?? "other") })}
                 </span>
-                {profile.decisionMessage && <> {profile.decisionMessage}</>}
+                {profile.suspensionMessage && <> {profile.suspensionMessage}</>}
               </p>
-            )
-          )}
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-            <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
-              {sent && <span>{sent}</span>}
-              {!profile.listed && <span className="text-muted-foreground">{t("unlisted")}</span>}
-              {detail.featuredAt && (
-                <FeaturedBadge>
-                  {feature("since", {
-                    day: format.dateTime(new Date(detail.featuredAt), { dateStyle: "medium" }),
-                  })}
-                </FeaturedBadge>
-              )}
-              {state === "approved" && profile.listed && (
-                <TextButton href={`${siteRoutes.talent}/${profile.slug}`}>{t("public")}</TextButton>
-              )}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <TalentFeature
-                key={profile.id}
-                profile={{ id: profile.id, name: profile.name, featuredAt: detail.featuredAt }}
-              />
-              {(state === "in_review" || state === "approved" || state === "suspended") && (
-                <TalentReview
+            ) : (
+              profile.status === "needs_changes" && (
+                <p className="rounded-lg bg-muted p-3 text-sm">
+                  <span className="font-medium">
+                    {t("sentBack", { reason: reason(profile.decisionReason ?? "other") })}
+                  </span>
+                  {profile.decisionMessage && <> {profile.decisionMessage}</>}
+                </p>
+              )
+            )}
+            <div className="flex flex-col items-start gap-3 border-t pt-4">
+              <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                {sent && <span>{sent}</span>}
+                {!profile.listed && <span className="text-muted-foreground">{t("unlisted")}</span>}
+                {detail.featuredAt && (
+                  <FeaturedBadge>
+                    {feature("since", {
+                      day: format.dateTime(new Date(detail.featuredAt), { dateStyle: "medium" }),
+                    })}
+                  </FeaturedBadge>
+                )}
+                {state === "approved" && profile.listed && (
+                  <TextButton href={`${siteRoutes.talent}/${profile.slug}`}>
+                    {t("public")}
+                  </TextButton>
+                )}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <TalentFeature
                   key={profile.id}
-                  profile={profile}
-                  nextHref={next?.href ?? `${siteRoutes.adminTalent}?status=in_review`}
+                  profile={{ id: profile.id, name: profile.name, featuredAt: detail.featuredAt }}
                 />
-              )}
+                {(state === "in_review" || state === "approved" || state === "suspended") && (
+                  <TalentReview
+                    key={profile.id}
+                    profile={profile}
+                    nextHref={next?.href ?? `${siteRoutes.adminTalent}?status=in_review`}
+                  />
+                )}
+              </div>
             </div>
-          </div>
-          <p className="text-xs text-muted-foreground">{feature("hint")}</p>
-        </section>
-
-        <TalentView profile={profile} />
+            <p className="text-xs text-muted-foreground">{feature("hint")}</p>
+          </section>
+        </div>
       </div>
     </div>
   );

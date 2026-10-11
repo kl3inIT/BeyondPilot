@@ -56,5 +56,15 @@ export const talentRejections = ["incomplete", "unverifiable", "inappropriate", 
 /** The statuses operators see; a draft is its person's alone. */
 export const reviewedStatuses = ["in_review", "needs_changes", "approved", "suspended"] as const;
 
+/** The anchors of the sections of the talent profile form, which the page's section list links to. */
+export const talentSections = {
+  profile: "talent-section-profile",
+  basics: "talent-section-basics",
+  skills: "talent-section-skills",
+  projects: "talent-section-projects",
+  links: "talent-section-links",
+  visibility: "talent-visibility",
+} as const;
+
 /** What the operators' list narrows to: the featured profiles, or those that are not. */
 export const featuredChoices = ["true", "false"] as const;
