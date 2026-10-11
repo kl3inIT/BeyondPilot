@@ -136,6 +136,14 @@ function application(operator) {
           value: "Buying",
           file: null,
         },
+        {
+          questionId: "q0000000-0000-4000-8000-000000000002",
+          label: "Challenge areas",
+          kind: "multi_choice",
+          // Several choices are one text: a JSON array of the options chosen.
+          value: JSON.stringify(["Claims", "Pricing, and underwriting"]),
+          file: null,
+        },
       ],
     },
     reviewStatus: operator ? "under_review" : null,

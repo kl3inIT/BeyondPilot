@@ -29,8 +29,19 @@ import {
 
 import { programFormatter } from "./program-format";
 
-const kinds = ["short_text", "long_text", "single_choice", "file", "link", "confirm"] as const;
+const kinds = [
+  "short_text",
+  "long_text",
+  "single_choice",
+  "multi_choice",
+  "file",
+  "link",
+  "confirm",
+] as const;
 type Kind = (typeof kinds)[number];
+
+/** Whether a question of this kind is answered from choices the operator writes. */
+const offersChoices = (kind: Kind) => kind === "single_choice" || kind === "multi_choice";
 
 /** The most choices a question offers and the most questions a form asks (the backend's bounds). */
 const MAX_CHOICES = 20;
@@ -125,7 +136,7 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
                 <span className="text-xs text-muted-foreground">
                   {[
                     t(`kinds.${question.kind}`),
-                    question.kind === "single_choice"
+                    offersChoices(question.kind)
                       ? t("choiceCount", { count: question.options.length })
                       : null,
                     question.required ? null : t("optional"),
@@ -241,7 +252,7 @@ function QuestionDialog({
       options: z.array(z.string()),
       maxLength: z.string().regex(/^\d*$/, say("invalid")),
     })
-    .refine((question) => question.kind !== "single_choice" || question.options.length >= 2, {
+    .refine((question) => !offersChoices(question.kind) || question.options.length >= 2, {
       message: t("choicesRequired"),
       path: ["options"],
     });
@@ -264,7 +275,7 @@ function QuestionDialog({
         label: question.label.trim(),
         help: question.help.trim() || null,
         required: question.required,
-        options: question.kind === "single_choice" ? question.options : [],
+        options: offersChoices(question.kind) ? question.options : [],
         maxLength: text && question.maxLength ? Number(question.maxLength) : null,
       });
     },
@@ -311,7 +322,7 @@ function QuestionDialog({
           <form.Subscribe selector={(state) => state.values.kind}>
             {(kind) => (
               <>
-                {kind === "single_choice" && (
+                {offersChoices(kind) && (
                   <form.Field name="options">
                     {(field) => (
                       <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>

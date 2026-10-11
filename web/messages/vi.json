@@ -772,6 +772,7 @@
           "short_text": "Trả lời ngắn",
           "long_text": "Trả lời dài",
           "single_choice": "Chọn một",
+          "multi_choice": "Chọn nhiều",
           "file": "File PDF",
           "link": "Đường link",
           "confirm": "Xác nhận"
@@ -807,7 +808,7 @@
         "errors": {
           "PROGRAM_QUESTIONS_FIXED": "Đợt nhận đơn đã mở, nên không đổi câu hỏi được nữa.",
           "PROGRAM_CHANGED_MEANWHILE": "Có người vừa sửa chương trình này. Tải lại rồi sửa lại.",
-          "PROGRAM_CHOICES_REQUIRED": "Câu hỏi chọn một cần ít nhất hai lựa chọn."
+          "PROGRAM_CHOICES_REQUIRED": "Câu hỏi trả lời bằng lựa chọn cần ít nhất hai lựa chọn."
         }
       }
     },
@@ -5553,7 +5554,8 @@
       "choose": "Chọn một",
       "uploaded": "File đã tải lên",
       "required": "Trả lời câu hỏi này.",
-      "confirmRequired": "Xác nhận để tiếp tục."
+      "confirmRequired": "Xác nhận để tiếp tục.",
+      "choicesRequired": "Chọn ít nhất một lựa chọn."
     },
     "review": {
       "blocks": {

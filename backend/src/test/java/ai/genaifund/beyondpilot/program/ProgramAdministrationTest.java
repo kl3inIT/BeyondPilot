@@ -469,12 +469,14 @@ class ProgramAdministrationTest {
 				Map.of("version", 0, "questions",
 						List.of(question("long_text", "How does your solution address the challenge?", List.of()),
 								question("single_choice", "Direction", List.of("Buying", " Claiming ", "Claiming")),
-								question("confirm", "I've read the one hard constraint.", List.of()))))
+								question("confirm", "I've read the one hard constraint.", List.of()),
+								question("multi_choice", "Challenge areas", List.of("Claims", " Pricing ", "Pricing")))))
 			.expectStatus()
 			.isOk());
 		assertThat(JsonPath.<List<String>>read(saved, "$.questions[*].kind")).containsExactly("long_text",
-				"single_choice", "confirm");
+				"single_choice", "confirm", "multi_choice");
 		assertThat(JsonPath.<List<String>>read(saved, "$.questions[1].options")).containsExactly("Buying", "Claiming");
+		assertThat(JsonPath.<List<String>>read(saved, "$.questions[3].options")).containsExactly("Claims", "Pricing");
 		String direction = JsonPath.read(saved, "$.questions[1].id");
 		int version = JsonPath.read(saved, "$.version");
 
@@ -491,6 +493,8 @@ class ProgramAdministrationTest {
 		assertProblem(save(operator, questions,
 				Map.of("version", version, "questions", List.of(question("single_choice", "One way", List.of("Only"))))),
 				400, "PROGRAM_CHOICES_REQUIRED");
+		assertProblem(save(operator, questions, Map.of("version", version, "questions",
+				List.of(question("multi_choice", "Any way", List.of("Only", " Only "))))), 400, "PROGRAM_CHOICES_REQUIRED");
 
 		// Once the applications open, an answer may already name a question.
 		Map<String, Object> open = program(version, "Asks", "asks");

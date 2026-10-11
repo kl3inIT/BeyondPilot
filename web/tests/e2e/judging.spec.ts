@@ -91,6 +91,8 @@ test.describe("judging applications", () => {
     await page.goto(`${admin}/applications/${plainCoverId}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Plain Cover");
     await expect(page.getByText("2 of 3")).toBeVisible();
+    // An answer of several choices reads as the choices, one a line.
+    await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
     await expect(
       page
         .getByRole("link", { name: "plain-cover-deck.pdf" })
@@ -157,6 +159,7 @@ test.describe("judging applications", () => {
 
     await page.goto(`${reviews}/${plainCoverId}`);
     await expect(page.getByText("Only you and GenAI Fund read this.")).toBeVisible();
+    await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
     await expect(page.getByRole("region", { name: "Judges' scores" })).toHaveCount(0);
     await expect(page.getByRole("region", { name: "Decision" })).toHaveCount(0);
     // The judge has scored one and declared a conflict on another, so the one on show is the last
