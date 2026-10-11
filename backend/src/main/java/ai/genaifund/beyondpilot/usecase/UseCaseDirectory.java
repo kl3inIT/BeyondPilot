@@ -73,6 +73,23 @@ public class UseCaseDirectory {
 	}
 
 	/**
+	 * A published use case, for the module that keeps the proposals sent to it; empty for one that is not published.
+	 * It is open while it has not closed and its organization is approved: a closed one stays known, so those who posted
+	 * it still read what it received.
+	 */
+	@Transactional(readOnly = true)
+	public Optional<UseCaseTarget> target(UUID useCaseId) {
+		Instant now = Instant.now();
+		return useCases.findById(useCaseId)
+			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
+			.map(useCase -> new UseCaseTarget(useCase.getId(), useCase.getOrganizationId(),
+					Objects.requireNonNull(useCase.getTitle()), useCase.getClosesAt(),
+					!UseCase.CLOSED.equals(useCase.statusAt(now)) && organizations
+						.approvedNames(List.of(useCase.getOrganizationId()))
+						.containsKey(useCase.getOrganizationId())));
+	}
+
+	/**
 	 * Everything a published use case says, with its attached files, for matching; empty for a use case that is not
 	 * published, or whose organization is not approved or is taken down. One past its close date is still returned:
 	 * its candidates stay readable.
