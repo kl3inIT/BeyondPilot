@@ -2835,6 +2835,9 @@
         "resend": {
           "name": "Resend"
         },
+        "brevo": {
+          "name": "Brevo"
+        },
         "smtp": {
           "name": "SMTP"
         }
@@ -3114,6 +3117,7 @@
         "errors": {
           "address": "Nhập một địa chỉ email.",
           "port": "Nhập số cổng.",
+          "token": "Nhập 32 đến 256 chữ, số hoặc các ký tự . _ ~ + / = -",
           "changed": "Có người đã lưu cài đặt trong lúc bạn sửa. Tải lại trang rồi lưu lại.",
           "incomplete": "Nhà cung cấp cần thêm thông tin: điền các ô bắt buộc.",
           "encryption": "Máy chủ chưa có khóa mã hóa nên không lưu được thông tin bí mật. Báo người vận hành máy chủ.",
@@ -3150,6 +3154,10 @@
           "apiKey": "API key",
           "apiKeyHint": "Một key có quyền gửi, bắt đầu bằng re_, lấy ở resend.com › API Keys."
         },
+        "brevo": {
+          "apiKey": "API key",
+          "apiKeyHint": "Một API key v3, bắt đầu bằng xkeysib-, lấy ở Brevo › SMTP & API › API keys."
+        },
         "smtp": {
           "host": "Máy chủ",
           "port": "Cổng",
@@ -3172,6 +3180,9 @@
           "resendEndpointHint": "Trong Resend › Webhooks, thêm địa chỉ này với các sự kiện email.delivered, email.bounced và email.complained.",
           "resendSecret": "Signing secret",
           "resendSecretHint": "Thiếu secret của webhook thì báo cáo bị từ chối.",
+          "brevoEndpointHint": "Thêm một webhook transactional trong Brevo với địa chỉ này, các sự kiện delivered, hard bounce, invalid email, blocked và spam, và token bên dưới làm bearer token.",
+          "brevoToken": "Token của webhook",
+          "brevoTokenHint": "Ít nhất 32 chữ hoặc số do bạn tự đặt, trùng với bearer token của webhook trong Brevo; thiếu thì báo cáo bị từ chối.",
           "configurationSet": "Configuration set",
           "configurationSetHint": "Configuration set của SES gửi sự kiện tới SNS topic bên dưới.",
           "sesEndpointHint": "Đăng ký địa chỉ này vào SNS topic qua HTTPS.",
@@ -3200,15 +3211,18 @@
         "limits": {
           "permission_missing": {
             "ses": "IAM user này được gửi nhưng không được đọc tài khoản hay domain. Thêm ses:GetAccount và ses:GetEmailIdentity vào policy để xem phần kiểm tra.",
-            "resend": "API key này chỉ được gửi nên không đọc được domain. Email vẫn gửi được; kiểm domain ở resend.com › Domains."
+            "resend": "API key này chỉ được gửi nên không đọc được domain. Email vẫn gửi được; kiểm domain ở resend.com › Domains.",
+            "brevo": "API key này không được đọc domain. Email vẫn gửi được; kiểm domain ở Brevo › Senders, domains, IPs › Domains."
           },
           "credentials_refused": {
             "ses": "AWS từ chối access key. Kiểm ID, secret và user còn hoạt động không.",
-            "resend": "Resend từ chối API key. Tạo key mới ở resend.com › API Keys."
+            "resend": "Resend từ chối API key. Tạo key mới ở resend.com › API Keys.",
+            "brevo": "Brevo từ chối API key. Tạo key mới ở Brevo › SMTP & API › API keys."
           },
           "unreachable": {
             "ses": "Amazon SES không trả lời. Kiểm tra lại sau một phút.",
-            "resend": "Resend không trả lời. Kiểm tra lại sau một phút."
+            "resend": "Resend không trả lời. Kiểm tra lại sau một phút.",
+            "brevo": "Brevo không trả lời. Kiểm tra lại sau một phút."
           }
         },
         "steps": {

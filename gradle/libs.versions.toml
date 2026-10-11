@@ -7,6 +7,7 @@ springdoc = "3.1.1"
 aws-sdk = "2.55.11"
 commonmark = "0.30.0"
 resend = "4.28.0"
+brevo = "1.1.10"
 greenmail = "2.1.14"
 bucket4j = "8.21.0"
 caffeine = "3.3.0"
@@ -43,6 +44,7 @@ aws-sdk-sesv2 = { module = "software.amazon.awssdk:sesv2" }
 jmustache = { module = "com.samskivert:jmustache" }
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 resend-java = { module = "com.resend:resend-java", version.ref = "resend" }
+brevo = { module = "com.brevo:brevo", version.ref = "brevo" }
 bucket4j-core = { module = "com.bucket4j:bucket4j_jdk17-core", version.ref = "bucket4j" }
 mcp-core = { module = "io.modelcontextprotocol.sdk:mcp-core", version.ref = "mcp" }
 mcp-json-jackson3 = { module = "io.modelcontextprotocol.sdk:mcp-json-jackson3", version.ref = "mcp" }

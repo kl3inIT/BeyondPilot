@@ -1517,6 +1517,15 @@ export type DocumentReader = {
     version: number;
 };
 
+export type EmailBrevoSettings = {
+    apiKeySet: boolean;
+    /**
+     * The endpoint to give Brevo's webhook.
+     */
+    eventsUrl: string;
+    webhookTokenSet: boolean;
+};
+
 /**
  * What became of the emails of the period, filtered by kind but not by state or search.
  */
@@ -1572,7 +1581,7 @@ export type EmailMessage = {
     id: string;
     kind: string;
     lastError?: string | null;
-    provider?: 'ses' | 'resend' | 'smtp';
+    provider?: 'ses' | 'resend' | 'smtp' | 'brevo';
     providerMessageId?: string | null;
     recipient: string;
     /**
@@ -1668,6 +1677,7 @@ export type EmailSesSettings = {
  */
 export type EmailSettings = {
     accentColor: string;
+    brevo: EmailBrevoSettings;
     /**
      * Whether the server holds the key that encrypts secrets; without it none can be saved.
      */
@@ -1678,7 +1688,7 @@ export type EmailSettings = {
     /**
      * The provider chosen; null until an operator chooses one, and email waits meanwhile.
      */
-    provider?: 'ses' | 'resend' | 'smtp';
+    provider?: 'ses' | 'resend' | 'smtp' | 'brevo';
     /**
      * Whether email can leave now: a provider is chosen and everything it needs is set.
      */
@@ -1715,7 +1725,7 @@ export type EmailSetup = {
      * Why the provider could not be asked everything; null when it answered.
      */
     limit?: 'permission_missing' | 'credentials_refused' | 'unreachable';
-    provider: 'ses' | 'resend' | 'smtp';
+    provider: 'ses' | 'resend' | 'smtp' | 'brevo';
     /**
      * The DNS records the domain must hold.
      */
@@ -4331,6 +4341,17 @@ export type SaveEmailAppearance = {
     version: number;
 };
 
+export type SaveEmailBrevoSettings = {
+    /**
+     * Empty to keep the stored one.
+     */
+    apiKey?: string | null;
+    /**
+     * The bearer token Brevo's webhook presents: 32 to 256 letters, digits or any of . _ ~ + / = -; empty to keep the stored one.
+     */
+    webhookToken?: string | null;
+};
+
 export type SaveEmailResendSettings = {
     /**
      * Empty to keep the stored one.
@@ -4360,9 +4381,10 @@ export type SaveEmailSesSettings = {
  * Who delivers email and as whom. An empty secret keeps the stored one while what it belongs to is unchanged.
  */
 export type SaveEmailSettings = {
+    brevo: SaveEmailBrevoSettings;
     fromAddress: string;
     fromName: string;
-    provider: 'ses' | 'resend' | 'smtp';
+    provider: 'ses' | 'resend' | 'smtp' | 'brevo';
     replyTo?: string | null;
     resend: SaveEmailResendSettings;
     ses: SaveEmailSesSettings;
@@ -8079,6 +8101,35 @@ export type TestEmailTemplateResponses = {
 
 export type TestEmailTemplateResponse = TestEmailTemplateResponses[keyof TestEmailTemplateResponses];
 
+export type ReceiveBrevoEventData = {
+    body: string;
+    path?: never;
+    query?: never;
+    url: '/api/notification/email/events/brevo';
+};
+
+export type ReceiveBrevoEventErrors = {
+    /**
+     * The report's signature or token does not check, or it is not from the configured provider.
+     */
+    403: Problem;
+    /**
+     * The report could not be recorded now; Brevo sends it again.
+     */
+    429: Problem;
+};
+
+export type ReceiveBrevoEventError = ReceiveBrevoEventErrors[keyof ReceiveBrevoEventErrors];
+
+export type ReceiveBrevoEventResponses = {
+    /**
+     * The report was taken, or it concerns no email of BeyondPilot.
+     */
+    204: void;
+};
+
+export type ReceiveBrevoEventResponse = ReceiveBrevoEventResponses[keyof ReceiveBrevoEventResponses];
+
 export type ReceiveResendEventData = {
     body: string;
     path?: never;
@@ -8088,7 +8139,7 @@ export type ReceiveResendEventData = {
 
 export type ReceiveResendEventErrors = {
     /**
-     * The report's signature does not check, or it is not from the configured provider.
+     * The report's signature or token does not check, or it is not from the configured provider.
      */
     403: Problem;
 };
@@ -8113,7 +8164,7 @@ export type ReceiveSesEventData = {
 
 export type ReceiveSesEventErrors = {
     /**
-     * The report's signature does not check, or it is not from the configured provider.
+     * The report's signature or token does not check, or it is not from the configured provider.
      */
     403: Problem;
     /**

@@ -6,6 +6,7 @@ import {
   CloudIcon,
   CopyIcon,
   KeyRoundIcon,
+  MailIcon,
   SendIcon,
   ServerIcon,
   TriangleAlertIcon,
@@ -43,11 +44,19 @@ import {
 import { testFailures, testRefusals } from "./email-test-failures";
 import { TestSend } from "./test-send";
 
-const providers = ["ses", "resend", "smtp"] as const;
+const providers = ["ses", "resend", "brevo", "smtp"] as const;
 const securities = ["starttls", "tls", "none"] as const;
 
 /** Each provider's icon on its card: plain, beside its name. */
-const providerIcons = { ses: CloudIcon, resend: SendIcon, smtp: ServerIcon } as const;
+const providerIcons = {
+  ses: CloudIcon,
+  resend: SendIcon,
+  brevo: MailIcon,
+  smtp: ServerIcon,
+} as const;
+
+/** What a bearer token may be made of, as the backend checks it. */
+const webhookToken = /^[A-Za-z0-9._~+/=-]{32,256}$/;
 
 type Provider = (typeof providers)[number];
 
@@ -72,6 +81,7 @@ type Values = {
     eventsTopicArn: string;
   };
   resend: { apiKey: string; webhookSecret: string };
+  brevo: { apiKey: string; webhookToken: string };
 };
 
 function valuesOf(settings: EmailSettings): Values {
@@ -95,6 +105,7 @@ function valuesOf(settings: EmailSettings): Values {
       eventsTopicArn: settings.ses.eventsTopicArn ?? "",
     },
     resend: { apiKey: "", webhookSecret: "" },
+    brevo: { apiKey: "", webhookToken: "" },
   };
 }
 
@@ -124,6 +135,10 @@ function bodyOf(values: Values, version: number): SaveEmailSettings {
     resend: {
       apiKey: values.resend.apiKey || null,
       webhookSecret: values.resend.webhookSecret || null,
+    },
+    brevo: {
+      apiKey: values.brevo.apiKey || null,
+      webhookToken: values.brevo.webhookToken || null,
     },
   };
 }
@@ -231,6 +246,10 @@ function EmailSettingsForm({
         eventsTopicArn: z.string().max(300),
       }),
       resend: z.object({ apiKey: z.string().max(500), webhookSecret: z.string().max(500) }),
+      brevo: z.object({
+        apiKey: z.string().max(256),
+        webhookToken: z.union([z.literal(""), z.string().regex(webhookToken, t("errors.token"))]),
+      }),
     })
     .superRefine((values, context) => {
       const need = (path: string[], missing: boolean) =>
@@ -249,6 +268,9 @@ function EmailSettingsForm({
       }
       if (values.provider === "resend") {
         need(["resend", "apiKey"], secretMissing(current.resend.apiKeySet, values.resend.apiKey));
+      }
+      if (values.provider === "brevo") {
+        need(["brevo", "apiKey"], secretMissing(current.brevo.apiKeySet, values.brevo.apiKey));
       }
     });
 
@@ -420,7 +442,7 @@ function EmailSettingsForm({
                     field.handleChange(next);
                   }
                 }}
-                className="sm:grid-cols-3"
+                className="sm:grid-cols-2"
               >
                 {providers.map((provider) => {
                   const Icon = providerIcons[provider];
@@ -497,6 +519,26 @@ function EmailSettingsForm({
                   description={
                     <span id="resend-api-key-hint">
                       {secretHint(current.resend.apiKeySet, t("resend.apiKeyHint"))}
+                    </span>
+                  }
+                />
+              )}
+            </form.AppField>
+          )}
+
+          {values.provider === "brevo" && (
+            <form.AppField name="brevo.apiKey">
+              {(field) => (
+                <field.TextField
+                  label={t("brevo.apiKey")}
+                  type="password"
+                  autoComplete="off"
+                  maxLength={256}
+                  placeholder={current.brevo.apiKeySet ? "••••••••••••" : undefined}
+                  aria-describedby="brevo-api-key-hint"
+                  description={
+                    <span id="brevo-api-key-hint">
+                      {secretHint(current.brevo.apiKeySet, t("brevo.apiKeyHint"))}
                     </span>
                   }
                 />
@@ -593,6 +635,32 @@ function EmailSettingsForm({
                     description={secretHint(
                       current.resend.webhookSecretSet,
                       t("reports.resendSecretHint"),
+                    )}
+                  />
+                )}
+              </form.AppField>
+            </>
+          )}
+          {values.provider === "brevo" && (
+            <>
+              <CopyField
+                id="brevo-events-url"
+                label={t("reports.endpoint")}
+                value={current.brevo.eventsUrl}
+                description={t("reports.brevoEndpointHint")}
+              />
+              <form.AppField name="brevo.webhookToken">
+                {(field) => (
+                  <field.TextField
+                    label={t("reports.brevoToken")}
+                    optional
+                    type="password"
+                    autoComplete="off"
+                    maxLength={256}
+                    placeholder={current.brevo.webhookTokenSet ? "••••••••••••" : undefined}
+                    description={secretHint(
+                      current.brevo.webhookTokenSet,
+                      t("reports.brevoTokenHint"),
                     )}
                   />
                 )}

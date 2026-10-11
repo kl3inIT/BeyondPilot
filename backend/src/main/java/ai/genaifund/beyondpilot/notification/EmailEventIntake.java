@@ -5,8 +5,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 import ai.genaifund.beyondpilot.notification.adapter.EmailProvider;
@@ -19,15 +22,17 @@ import com.resend.services.webhooks.model.VerifyWebhookOptions;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Takes in what providers report about sent email. Nothing is read before the report's signature is checked against
- * the settings: Resend's webhook secret, or the SNS signature of Amazon SES's topic. A report from any other topic is
- * refused, because anyone can make an SNS topic and sign reports with it.
+ * Takes in what providers report about sent email. Nothing is read before the report is checked against the settings:
+ * Resend's webhook secret, the SNS signature of Amazon SES's topic, or the token Brevo's webhook presents. A report from
+ * any other topic is refused, because anyone can make an SNS topic and sign reports with it.
  */
 @Service
 public class EmailEventIntake {
@@ -131,6 +136,69 @@ public class EmailEventIntake {
 		};
 		reports.apply(new DeliveryReport(EmailProvider.SES, messageId, type, instant(at),
 				detail(event.path("bounce").path("bounceSubType")), message.messageId()));
+	}
+
+	/**
+	 * A webhook of Brevo. Brevo signs nothing, so the webhook is recognised by the bearer token an operator set on it,
+	 * compared in constant time. Brevo sends a report again only after a 429, so a failure of the database is answered
+	 * with one.
+	 * @param authorization the request's {@code Authorization} header; null when there is none
+	 * @throws NotificationException when no token is set or the header does not carry it, or when the report could not
+	 * be recorded now
+	 */
+	public void brevo(@Nullable String authorization, String payload) {
+		try {
+			String token = settings.reporting().brevoWebhookToken();
+			// An empty token would equal the empty remainder of a bare "Bearer " header.
+			if (token == null || token.isBlank()) {
+				throw refused("No Brevo webhook token is set");
+			}
+			String scheme = "Bearer ";
+			if (authorization == null || !authorization.regionMatches(true, 0, scheme, 0, scheme.length())
+					|| !MessageDigest.isEqual(
+							authorization.substring(scheme.length()).strip().getBytes(StandardCharsets.UTF_8),
+							token.getBytes(StandardCharsets.UTF_8))) {
+				throw refused("A Brevo webhook did not present the token");
+			}
+			JsonNode body = json.readTree(payload);
+			// A webhook set to batch sends several reports as one list.
+			for (JsonNode event : body.isArray() ? body : List.of(body)) {
+				brevo(event);
+			}
+		}
+		catch (DataAccessException | TransactionException unavailable) {
+			LOG.atWarn()
+				.addKeyValue("event", "notification.email.report_not_taken")
+				.addKeyValue("provider", EmailProvider.BREVO.value())
+				.addKeyValue("error_type", unavailable.getClass().getName())
+				.addKeyValue("error_code", NotificationErrorCode.REPORT_NOT_TAKEN.code())
+				.log("A report could not be recorded; the provider is asked to send it again");
+			throw new NotificationException(NotificationErrorCode.REPORT_NOT_TAKEN,
+					"A Brevo report could not be recorded now");
+		}
+	}
+
+	private void brevo(JsonNode event) {
+		String kind = event.path("event").asString("");
+		DeliveryReport.Type type = switch (kind) {
+			case "delivered" -> DeliveryReport.Type.DELIVERED;
+			case "hard_bounce", "invalid_email", "blocked" -> DeliveryReport.Type.BOUNCED;
+			case "spam" -> DeliveryReport.Type.COMPLAINED;
+			default -> null;
+		};
+		// Brevo's send answer writes the identifier in angle brackets and its reports may not: both are kept without.
+		String messageId = event.path("message-id").asString("").strip();
+		if (messageId.startsWith("<") && messageId.endsWith(">")) {
+			messageId = messageId.substring(1, messageId.length() - 1);
+		}
+		if (type == null || messageId.isEmpty()) {
+			return;
+		}
+		JsonNode at = event.path("ts_event");
+		// Brevo numbers no report. One message goes to one address, so each kind of report happens to it once.
+		reports.apply(new DeliveryReport(EmailProvider.BREVO, messageId, type,
+				at.canConvertToLong() ? Instant.ofEpochSecond(at.asLong()) : Instant.now(), null,
+				"brevo:" + kind + ":" + messageId));
 	}
 
 	/** Answers SNS's request to confirm the subscription; the message's signature and address have been checked. */

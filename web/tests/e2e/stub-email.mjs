@@ -28,6 +28,11 @@ const settings = {
     webhookSecretSet: false,
     eventsUrl: "https://beyondpilot.vadan.app/api/notification/email/events/resend",
   },
+  brevo: {
+    apiKeySet: false,
+    webhookTokenSet: false,
+    eventsUrl: "https://beyondpilot.vadan.app/api/notification/email/events/brevo",
+  },
   updatedBy: null,
   updatedAt: null,
   version: 0,
