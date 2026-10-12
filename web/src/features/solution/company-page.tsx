@@ -1,4 +1,4 @@
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, ArrowUpRightIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { TextClamp } from "@/components/composites/text-clamp";
 import { Badge } from "@/components/ui/badge";
+import { shownDescription } from "@/features/organization/organization-description";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -116,28 +117,28 @@ type CompanyPageProps = {
   deployments: PublicCustomerDeploymentList;
 };
 
+/** Where "View solutions" leads on the page. */
+const SOLUTIONS = "solutions";
+
 /**
  * The public page of an organization, where "By …" on a solution leads: who it is, the solutions it
  * lists and the customer deployments behind them, with its facts beside. Its team and programmes
- * are not held yet, so the page does not show them.
+ * are not held yet, so the page does not show them. Its type and country stand once, under its
+ * name; a fact it did not give, as a builder may give no website, is left out.
  */
 function CompanyPage({ organization, solutions, more, deployments }: CompanyPageProps) {
   const detail = useTranslations("Solution.detail");
   const directory = useTranslations("Solution.directory");
+  const offers = useTranslations("Solution.offers");
   const lists = useTranslations("Lists");
   const type = useVocabulary("organizationType");
   const industry = useVocabulary("industry");
   const countryName = useCountryName();
   const country = organization.country ? countryName(organization.country) : undefined;
   const kind = [type(organization.type), country].filter(Boolean).join(" · ");
-  const facts = [
-    { name: detail("company.type"), value: type(organization.type) },
-    { name: detail("company.country"), value: country },
-    {
-      name: detail("company.industries"),
-      value: organization.industries.map(industry).join(", "),
-    },
-  ];
+  const description = shownDescription(organization.description);
+  const industries = organization.industries.map(industry).join(", ");
+  const website = organization.website;
 
   return (
     <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-8 px-5 pt-6 pb-18 md:px-8 md:pb-22 xl:px-16 xl:pb-24 desktop:px-20">
@@ -165,12 +166,41 @@ function CompanyPage({ organization, solutions, more, deployments }: CompanyPage
               </h1>
             </div>
             <p className="text-sm text-muted-foreground">{kind}</p>
-            {organization.description && (
-              <p className="text-base md:text-lg md:leading-7">{organization.description}</p>
+            {description.text && (
+              <p className="max-w-prose text-base md:text-lg md:leading-7">{description.text}</p>
+            )}
+            {description.items.length > 0 && (
+              <ul className="flex max-w-prose list-disc flex-col gap-1 pl-5 text-base">
+                {description.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            )}
+            {(solutions.total > 0 || website) && (
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                {solutions.total > 0 && (
+                  <Button size="lg" href={`#${SOLUTIONS}`}>
+                    {detail("company.viewSolutions")}
+                  </Button>
+                )}
+                {website && (
+                  <Button
+                    prominence="secondary"
+                    size="lg"
+                    href={website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {detail("company.visitWebsite")}
+                    <ArrowUpRightIcon aria-hidden="true" />
+                    <span className="sr-only">{offers("newTab")}</span>
+                  </Button>
+                )}
+              </div>
             )}
           </header>
 
-          <section className="flex flex-col gap-3">
+          <section id={SOLUTIONS} className="flex scroll-mt-24 flex-col gap-3">
             <h2 className="flex items-center gap-2 text-xl font-semibold">
               {detail("company.solutions")}
               <span className="text-sm font-medium text-muted-foreground">{solutions.total}</span>
@@ -223,34 +253,35 @@ function CompanyPage({ organization, solutions, more, deployments }: CompanyPage
           </section>
         </div>
 
-        <aside className="flex flex-col gap-5 lg:w-75 lg:shrink-0 xl:w-90">
-          <dl className="flex flex-col border-b">
-            {facts.map((fact) => (
-              <div key={fact.name} className="flex items-start gap-4 border-t py-3 text-sm">
-                <dt className="w-24 shrink-0 text-muted-foreground">{fact.name}</dt>
-                {fact.value ? (
-                  <dd className="font-medium">{fact.value}</dd>
-                ) : (
-                  <dd className="text-muted-foreground">{detail("unknown")}</dd>
-                )}
-              </div>
-            ))}
-            <div className="flex items-start gap-4 border-t py-3 text-sm">
-              <dt className="w-24 shrink-0 text-muted-foreground">{detail("company.website")}</dt>
-              <dd className="min-w-0">
-                {organization.website ? (
-                  <TextButton href={organization.website} target="_blank" rel="noreferrer">
-                    <span className="truncate">
-                      {organization.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
-                    </span>
-                  </TextButton>
-                ) : (
-                  <span className="text-muted-foreground">{detail("unknown")}</span>
-                )}
-              </dd>
-            </div>
-          </dl>
-        </aside>
+        {(industries || website) && (
+          <aside className="flex flex-col gap-5 lg:w-75 lg:shrink-0 xl:w-90">
+            <dl className="flex flex-col border-b">
+              {industries && (
+                <div className="flex items-start gap-4 border-t py-3 text-sm">
+                  <dt className="w-24 shrink-0 text-muted-foreground">
+                    {detail("company.industries")}
+                  </dt>
+                  <dd className="font-medium">{industries}</dd>
+                </div>
+              )}
+              {website && (
+                <div className="flex items-start gap-4 border-t py-3 text-sm">
+                  <dt className="w-24 shrink-0 text-muted-foreground">
+                    {detail("company.website")}
+                  </dt>
+                  <dd className="min-w-0">
+                    <TextButton href={website} target="_blank" rel="noopener noreferrer">
+                      <span className="truncate">
+                        {website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
+                      </span>
+                      <span className="sr-only">{offers("newTab")}</span>
+                    </TextButton>
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </aside>
+        )}
       </div>
     </div>
   );

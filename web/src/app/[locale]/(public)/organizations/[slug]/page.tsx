@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { descriptionLine } from "@/features/organization/organization-description";
 import { CompanyPage } from "@/features/solution/company-page";
 import {
   readCompany,
@@ -25,7 +26,9 @@ export async function generateMetadata({
 
   return {
     title: organization.name + titleSuffix,
-    description: organization.description || t("metaDescription", { name: organization.name }),
+    description:
+      descriptionLine(organization.description) ||
+      t("metaDescription", { name: organization.name }),
   };
 }
 
