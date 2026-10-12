@@ -820,6 +820,7 @@
           "closes": "Closes",
           "time": "Time",
           "ict": "Times are in Vietnam time (ICT).",
+          "opened": "Applications have opened, so when they open can no longer change.",
           "shortlist": "Demo-day places",
           "outcomes": "Outcomes due",
           "updates": "Applicants can edit a submitted application until the closing time."
@@ -855,6 +856,7 @@
           "empty": "Upload a cover image",
           "uploading": "Uploading…",
           "limits": "PNG, JPEG or WebP, up to 5 MB.",
+          "kept": "A published program keeps a cover: replace it, or unpublish the program to remove it.",
           "errors": {
             "type": "Use a PNG, JPEG or WebP image.",
             "size": "The image is larger than 5 MB.",
@@ -906,7 +908,8 @@
               "dates": "Set when the program starts and ends"
             },
             "ready": "Everything is in place.",
-            "done": "Done"
+            "done": "Done",
+            "missing": "Missing"
           },
           "confirm": {
             "title": "Publish {name}?",
@@ -929,6 +932,14 @@
         "preview": "Preview",
         "viewPage": "View page",
         "notSaved": "Not saved yet",
+        "phase": {
+          "opens": "Applications open {when}",
+          "closes": "Applications close {when}",
+          "outcomes": "Outcomes due {day}",
+          "starts": "Starts {day}",
+          "ends": "Ends {day}",
+          "ended": "Ended {day}"
+        },
         "leave": {
           "title": "Leave without saving?",
           "lead": "Your changes will be lost.",
@@ -1004,7 +1015,14 @@
         "addQuestion": "Add question",
         "locks": "The questions lock when applications open on {opens}: from then on they can no longer change.",
         "locksUnset": "The questions lock when applications open. No opening is set yet: set it under Settings.",
-        "fixedStill": "Applicants answer them as they are. The program's page, its closing date and its judges can still change."
+        "fixedStill": "Applicants answer them as they are. The program's page, its closing date and its judges can still change.",
+        "moved": "{label} moved to position {position} of {count}.",
+        "leave": {
+          "title": "Leave without saving?",
+          "lead": "Your changes to the questions will be lost.",
+          "leave": "Leave",
+          "stay": "Stay"
+        }
       }
     },
     "accounts": {
@@ -6267,6 +6285,8 @@
     "yourApplication": "Your application",
     "savesAsYouType": "Answers save as you type. Come back any time before {when}.",
     "allRequired": "All fields are required unless marked Optional.",
+    "stepDone": "Complete",
+    "stepLacks": "{count, plural, one {# answer missing} other {# answers missing}}",
     "optional": "Optional",
     "closed": "Applications closed on {when}. Nothing can be changed or submitted now.",
     "backToProgram": "Back to program",
@@ -6378,6 +6398,10 @@
       "edit": "Edit",
       "editNamed": "Edit {section}",
       "notAdded": "Not added",
+      "missing": "Missing",
+      "fillIn": "Fill in",
+      "fillInNamed": "Fill in {field}",
+      "held": "Something required is still missing. Fill in the lines marked Missing to submit.",
       "applyingAs": "Applying as",
       "name": "Name",
       "teamSize": "Team size",
@@ -6649,7 +6673,6 @@
       "conflictDeclared": "You declared a conflict with this applicant, so your score is left out. Score it below to take that back.",
       "noCriteria": "Scoring opens once GenAI Fund sets the judging criteria.",
       "criteria": "Criteria, 1 (lowest) to 5 (highest)",
-      "notScored": "Not scored",
       "average": "Average {value}",
       "score": "{score} out of 5",
       "note": "Private note",
@@ -6668,6 +6691,7 @@
       "conflict": "I have a conflict with this applicant",
       "saved": "Assessment saved.",
       "conflictSaved": "Conflict recorded. Your score is left out.",
+      "incomplete": "{count, plural, one {# criterion still needs} other {# criteria still need}} a score before you can save.",
       "bar": {
         "progress": "Scored {scored} of {total}",
         "score": "Score"

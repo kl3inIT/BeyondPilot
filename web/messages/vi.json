@@ -820,6 +820,7 @@
           "closes": "Đóng",
           "time": "Giờ",
           "ict": "Giờ Việt Nam (ICT).",
+          "opened": "Đợt nhận đơn đã mở, nên không đổi được thời điểm mở nữa.",
           "shortlist": "Số suất demo day",
           "outcomes": "Ngày báo kết quả",
           "updates": "Người nộp được sửa đơn đã nộp cho đến giờ đóng."
@@ -855,6 +856,7 @@
           "empty": "Tải ảnh bìa lên",
           "uploading": "Đang tải lên…",
           "limits": "PNG, JPEG hoặc WebP, tối đa 5 MB.",
+          "kept": "Chương trình đã công bố phải có ảnh bìa: hãy thay ảnh, hoặc gỡ chương trình khỏi trang công khai rồi mới gỡ ảnh.",
           "errors": {
             "type": "Hãy dùng ảnh PNG, JPEG hoặc WebP.",
             "size": "Ảnh lớn hơn 5 MB.",
@@ -906,7 +908,8 @@
               "dates": "Đặt ngày bắt đầu và kết thúc"
             },
             "ready": "Đã đủ.",
-            "done": "Xong"
+            "done": "Xong",
+            "missing": "Còn thiếu"
           },
           "confirm": {
             "title": "Công bố {name}?",
@@ -929,6 +932,14 @@
         "preview": "Xem trước",
         "viewPage": "Xem trang",
         "notSaved": "Chưa lưu",
+        "phase": {
+          "opens": "Mở nhận đơn {when}",
+          "closes": "Đóng nhận đơn {when}",
+          "outcomes": "Báo kết quả {day}",
+          "starts": "Bắt đầu {day}",
+          "ends": "Kết thúc {day}",
+          "ended": "Đã kết thúc {day}"
+        },
         "leave": {
           "title": "Rời trang mà không lưu?",
           "lead": "Các thay đổi sẽ mất.",
@@ -1004,7 +1015,14 @@
         "addQuestion": "Thêm câu hỏi",
         "locks": "Câu hỏi bị khóa khi mở nhận đơn lúc {opens}: từ lúc đó không đổi được nữa.",
         "locksUnset": "Câu hỏi bị khóa khi mở nhận đơn. Chưa đặt ngày mở: đặt ở Cài đặt.",
-        "fixedStill": "Người nộp trả lời đúng các câu này. Trang, hạn nộp và giám khảo của chương trình vẫn đổi được."
+        "fixedStill": "Người nộp trả lời đúng các câu này. Trang, hạn nộp và giám khảo của chương trình vẫn đổi được.",
+        "moved": "Đã đưa {label} tới vị trí {position}/{count}.",
+        "leave": {
+          "title": "Rời trang mà không lưu?",
+          "lead": "Các thay đổi ở phần câu hỏi sẽ mất.",
+          "leave": "Rời trang",
+          "stay": "Ở lại"
+        }
       }
     },
     "accounts": {
@@ -6267,6 +6285,8 @@
     "yourApplication": "Đơn của bạn",
     "savesAsYouType": "Câu trả lời được lưu khi bạn gõ. Quay lại bất cứ lúc nào trước {when}.",
     "allRequired": "Mọi ô đều bắt buộc, trừ ô ghi Không bắt buộc.",
+    "stepDone": "Đã xong",
+    "stepLacks": "Còn thiếu {count} mục",
     "optional": "Không bắt buộc",
     "closed": "Đợt nhận đơn đã đóng lúc {when}. Giờ không sửa hay nộp được nữa.",
     "backToProgram": "Về trang chương trình",
@@ -6378,6 +6398,10 @@
       "edit": "Sửa",
       "editNamed": "Sửa {section}",
       "notAdded": "Chưa thêm",
+      "missing": "Còn thiếu",
+      "fillIn": "Điền",
+      "fillInNamed": "Điền {field}",
+      "held": "Còn thiếu mục bắt buộc. Điền các dòng ghi Còn thiếu để nộp đơn.",
       "applyingAs": "Nộp với tư cách",
       "name": "Họ tên",
       "teamSize": "Quy mô nhóm",
@@ -6649,7 +6673,6 @@
       "conflictDeclared": "Bạn đã khai xung đột lợi ích với người nộp này, nên điểm của bạn không được tính. Chấm bên dưới để rút lại.",
       "noCriteria": "Chỉ chấm được khi GenAI Fund đã đặt tiêu chí chấm.",
       "criteria": "Tiêu chí, 1 (thấp nhất) đến 5 (cao nhất)",
-      "notScored": "Chưa chấm",
       "average": "Trung bình {value}",
       "score": "{score} trên 5",
       "note": "Ghi chú riêng",
@@ -6668,6 +6691,7 @@
       "conflict": "Tôi có xung đột lợi ích với người nộp này",
       "saved": "Đã lưu đánh giá.",
       "conflictSaved": "Đã ghi nhận xung đột. Điểm của bạn không được tính.",
+      "incomplete": "Còn {count} tiêu chí chưa chấm. Chấm đủ thì mới lưu được.",
       "bar": {
         "progress": "Đã chấm {scored}/{total}",
         "score": "Chấm điểm"
