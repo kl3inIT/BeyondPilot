@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, ChevronUpIcon, CircleAlertIcon, XIcon } from "lucide-react";
+import { ChevronDownIcon, CircleAlertIcon, XIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   useEffect,
@@ -206,8 +206,6 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
   const [adding, setAdding] = useState(false);
   /** Whether the folding group is open, once a person opened or closed it. */
   const [opened, setOpened] = useState<Partial<Record<Section, boolean>>>(asked);
-  /** Whether a group shows every row, once a person asked for all of them or for fewer. */
-  const [expanded, setExpanded] = useState<Partial<Record<Section, boolean>>>(asked);
   const [pending, setPending] = useState<string | null>(null);
 
   // What a request answered stands until the page is read again.
@@ -267,9 +265,6 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
       }
     };
   }, []);
-  // While a run works, and after one this screen watched to its end, the last group is open with every
-  // row, so that the rows are seen arriving; a person can still close it.
-  const atWork = running || (matching.run?.state === "done" && seen.watched === matching.run.id);
   const said = !seen.said
     ? null
     : seen.said.kind === "added"
@@ -290,8 +285,8 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
   const sections = grouped(withNeed(tab === "shortlist" ? tabs.shortlist : tabs.matches, position));
   const total = sectionNames.reduce((sum, section) => sum + sections[section].length, 0);
   // The last group can be folded on the Matches tab, and only under a stronger group: alone, it is the
-  // list. It starts open with its first rows, since a closed group read as "there are only three"; a
-  // filter shows every row it keeps, so that choosing one visibly changes the list.
+  // list. It starts open with every row, since a closed or shortened group read as "there are only
+  // three": the page lists all it found, in the order of relevance.
   const folds = tab === "matches" && sections.direct.length + sections.industry.length > 0;
   const views = Object.fromEntries(
     sectionNames.map((section) => [
@@ -299,7 +294,6 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
       groupView(section, sections[section].length, {
         folds,
         opened: opened[section] ?? true,
-        all: expanded[section] ?? (atWork || chosenNeed !== undefined),
       }),
     ]),
   ) as Record<Section, ReturnType<typeof groupView>>;
@@ -373,7 +367,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
         notify.success(
           "Matching.done.removed",
           { name: candidate.solutionName, reason: reasonName(body.reason) },
-          { label: "Matching.done.undo", onClick: () => void restore(candidate, "restored") },
+          { undo: () => void restore(candidate, "restored") },
         );
       },
     );
@@ -444,54 +438,40 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
 
   const rows = (section: Section) => {
     const view = views[section];
-    const all = expanded[section] ?? atWork;
     return (
-      <>
-        <ul className="flex flex-col">
-          {sections[section].slice(0, view.shown).map((candidate) =>
-            candidate.id === removingId ? (
-              <li key={candidate.id} className="p-1">
-                <MatchingRemove
-                  candidate={candidate}
-                  pending={pending === candidate.id}
-                  onCancel={() => setRemovingId(null)}
-                  onRemove={(body) => void remove(candidate, body)}
-                />
-              </li>
-            ) : (
-              <MatchingRow
-                key={candidate.id}
+      <ul className="flex flex-col">
+        {sections[section].slice(0, view.shown).map((candidate) =>
+          candidate.id === removingId ? (
+            <li key={candidate.id} className="p-1">
+              <MatchingRemove
                 candidate={candidate}
-                needs={needs}
-                selected={chosen?.id === candidate.id && (wide || sheetOpen)}
                 pending={pending === candidate.id}
-                reading={
-                  running && stream.reading.includes(candidate.solutionId)
-                    ? "now"
-                    : reads && section === "waiting"
-                      ? "waiting"
-                      : undefined
-                }
-                arrived={seen.fresh.includes(candidate.id)}
-                onSelect={() => select(candidate)}
-                onShortlist={() => void shortlist(candidate)}
-                onRemove={() => askWhy(candidate)}
+                onCancel={() => setRemovingId(null)}
+                onRemove={(body) => void remove(candidate, body)}
               />
-            ),
-          )}
-        </ul>
-        {view.folds && (view.more > 0 || all) && (
-          <div className="px-3 pt-1">
-            <TextButton
-              aria-expanded={all}
-              onClick={() => setExpanded((current) => ({ ...current, [section]: !all }))}
-            >
-              {all ? t("groups.fewer") : t("groups.more", { count: view.more })}
-              {all ? <ChevronUpIcon aria-hidden="true" /> : <ChevronDownIcon aria-hidden="true" />}
-            </TextButton>
-          </div>
+            </li>
+          ) : (
+            <MatchingRow
+              key={candidate.id}
+              candidate={candidate}
+              needs={needs}
+              selected={chosen?.id === candidate.id && (wide || sheetOpen)}
+              pending={pending === candidate.id}
+              reading={
+                running && stream.reading.includes(candidate.solutionId)
+                  ? "now"
+                  : reads && section === "waiting"
+                    ? "waiting"
+                    : undefined
+              }
+              arrived={seen.fresh.includes(candidate.id)}
+              onSelect={() => select(candidate)}
+              onShortlist={() => void shortlist(candidate)}
+              onRemove={() => askWhy(candidate)}
+            />
+          ),
         )}
-      </>
+      </ul>
     );
   };
 

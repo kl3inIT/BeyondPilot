@@ -934,6 +934,8 @@
           "unfeature": "Stopped featuring a solution",
           "deployment_approve": "Approved a customer deployment",
           "deployment_reject": "Sent a customer deployment back",
+          "deployment_withdraw": "Withdrew a customer deployment",
+          "deployment_restore": "Restored a customer deployment",
           "enrich": "Filled a solution from public sources",
           "back": "Wrote what GenAI Fund says of a solution"
         },
@@ -1062,6 +1064,8 @@
           "unfeature": "Stopped featuring the solution <resource></resource>",
           "deployment_approve": "Approved the customer deployment <resource></resource>",
           "deployment_reject": "Sent the customer deployment <resource></resource> back",
+          "deployment_withdraw": "Withdrew the customer deployment <resource></resource>",
+          "deployment_restore": "Restored the customer deployment <resource></resource>",
           "enrich": "Filled the solution <resource></resource> from public sources",
           "back": "Wrote what GenAI Fund says of the solution <resource></resource>"
         },
@@ -1435,15 +1439,14 @@
         "featured": "Featured",
         "since": "Featured {day}",
         "feature": "Feature",
-        "unfeature": "Stop featuring",
-        "hint": "A featured solution comes first when the public directory opens, until a reader searches, filters or sorts; its card says Featured."
+        "unfeature": "Stop featuring"
       },
       "review": {
         "open": "Review",
         "approve": "Approve",
-        "sendBack": "Send back…",
-        "reject": "Reject…",
-        "takeDown": "Take down…",
+        "sendBack": "Send back",
+        "reject": "Reject",
+        "takeDown": "Take down",
         "restore": "Restore",
         "sendBackTitle": "Send {name} back?",
         "sendBackLead": "The owners read what you write and send it again. They are emailed.",
@@ -1462,8 +1465,7 @@
         "message": "Note (optional)",
         "messageHint": "They read this word for word.",
         "cancel": "Cancel",
-        "back": "Back",
-        "keys": "Keys: A approve · S send back"
+        "back": "Back"
       },
       "detail": {
         "back": "All solutions",
@@ -3189,7 +3191,6 @@
           "open": "Let email reach {email} again",
           "title": "Let email reach this address again?",
           "lead": "BeyondPilot writes to {email} again from now.",
-          "noteManual": "Emails already given up are not sent again.",
           "noteProvider": "If mail to it bounces or is reported as spam again, the provider counts it against your sending.",
           "confirm": "Remove",
           "cancel": "Cancel",
@@ -3401,6 +3402,9 @@
         "invalid": "Write one email address."
       }
     }
+  },
+  "Actions": {
+    "undo": "Undo"
   },
   "Lists": {
     "loadMore": "Load more",
@@ -3771,6 +3775,11 @@
       "cancel": "Cancel",
       "emailDomain": "Verified email domain",
       "emailDomainHint": "Who can join with it is set in Members.",
+      "discard": {
+        "title": "Discard your changes?",
+        "confirm": "Discard changes",
+        "keep": "Keep editing"
+      },
       "leave": {
         "title": "Leave without saving?",
         "lead": "Your changes to the organization's profile are not saved yet.",
@@ -3837,6 +3846,10 @@
         "requestOnDomain": "Your email is on {domain}. An owner of {name} approves your request."
       },
       "ask": {
+        "join": {
+          "title": "Join {name}?",
+          "lead": "You join at once, and its members see you in their list."
+        },
         "request": {
           "title": "Ask to join {name}?",
           "messageHint": "The owners of {name} read this message."
@@ -3943,6 +3956,11 @@
         "cancel": "Cancel"
       },
       "confirm": {
+        "demoteSelf": {
+          "title": "Make yourself a member?",
+          "lead": "You can no longer invite people, change roles or edit the profile. Only another owner can make you an owner again.",
+          "confirm": "Make member"
+        },
         "leave": {
           "title": "Leave this organization?",
           "lead": "You lose access to its profile, members and solutions.",
@@ -4253,6 +4271,9 @@
       "SOLUTION_TOO_MANY_DEPLOYMENTS": "A solution lists at most 12 customer deployments. Remove one before adding another.",
       "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "This customer deployment is not waiting for review.",
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
+      "SOLUTION_DEPLOYMENT_NOT_DELETABLE": "This customer deployment was sent for review, so it is removed from the page and kept, not deleted. Reload the page.",
+      "SOLUTION_DEPLOYMENT_WITHDRAWN": "This customer deployment is removed from the page. Restore it first.",
+      "SOLUTION_DEPLOYMENT_NOT_WITHDRAWN": "This customer deployment is already back on the solution.",
       "SOLUTION_MEMBER_REQUIRED": "Only a member of an organization can do this.",
       "SOLUTION_DECK_NOT_USABLE": "This file cannot be the deck. Upload the PDF again.",
       "unknown": "That did not work. Try again.",
@@ -4270,10 +4291,11 @@
       "rejected": "{name} is rejected.",
       "deploymentSaved": "{name} sent to GenAI Fund for review.",
       "deploymentRemoved": "{name} removed.",
+      "deploymentRestored": "{name} restored.",
       "deploymentApproved": "{name} approved.",
       "deploymentRejected": "{name} sent back.",
       "shown": "{name} is listed in the directory.",
-      "hidden": "{name} is hidden from the directory.",
+      "hidden": "{name} is hidden from the directory. People with the link can still open it.",
       "linkCopied": "Link copied",
       "sentBack": "{name} sent back with what to change.",
       "takenDown": "{name} is taken down.",
@@ -4401,6 +4423,7 @@
       },
       "company": {
         "title": "The company behind this solution",
+        "metaDescription": "{name} on BeyondPilot: the company and the AI solutions it lists in GenAI Fund’s directory.",
         "view": "View company",
         "solutions": "Solutions",
         "noSolutions": "No solution is listed yet.",
@@ -4482,11 +4505,6 @@
           "title": "Delete {name}?",
           "lead": "This cannot be undone.",
           "confirm": "Delete draft"
-        },
-        "confirmHide": {
-          "title": "Hide from the directory?",
-          "lead": "People with the link can still open it.",
-          "confirm": "Hide"
         },
         "view": "Open"
       },
@@ -4777,6 +4795,8 @@
       "none": "No customer deployment yet.",
       "edit": "Edit",
       "remove": "Remove",
+      "restore": "Restore",
+      "withdrawn": "Removed from the solution's page. Only your organization sees it.",
       "rejected": "Sent back: {reason}.",
       "confirmRemove": {
         "title": "Remove {name}?",
@@ -6565,8 +6585,7 @@
         "status": "Open to proposals",
         "closes": "Closes {when}",
         "noDeadline": "No closing date",
-        "send": "Send a proposal",
-        "note": "{days, plural, one {Proposals can be edited for # day after sending.} other {Proposals can be edited for # days after sending.}}"
+        "send": "Send a proposal"
       }
     },
     "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
@@ -6993,9 +7012,7 @@
         "title": "Saved, no longer suggested",
         "about": "They stay until someone unsaves them."
       },
-      "emptyDirect": "No solution meets the key requirement yet.",
-      "more": "Show {count} more",
-      "fewer": "Show fewer"
+      "emptyDirect": "No solution meets the key requirement yet."
     },
     "status": {
       "met": "Met",
@@ -7128,8 +7145,7 @@
       "shortlisted": "{name} is saved.",
       "unshortlisted": "{name} is no longer saved.",
       "removed": "{name} removed · {reason}",
-      "restored": "{name} restored.",
-      "undo": "Undo"
+      "restored": "{name} restored."
     },
     "errors": {
       "MATCHING_USE_CASE_NOT_FOUND": "This use case no longer exists.",
@@ -7252,11 +7268,11 @@
       "proposals": "Proposals",
       "viewReceived": "View proposals",
       "continue": "Continue your proposal",
-      "sent": "Your organization sent a proposal.",
-      "sentOn": "Your organization sent a proposal on {date}.",
+      "sent": "Sent",
       "view": "View proposal",
       "edit": "Edit proposal",
-      "editUntil": "You can edit it until {when}.",
+      "until": "Edit until",
+      "closed": "Closed",
       "editClosed": {
         "disabled": "Editing is closed: this use case does not allow editing after sending.",
         "useCaseClosed": "Editing is closed because the use case has closed.",

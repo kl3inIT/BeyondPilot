@@ -3,12 +3,13 @@ import { useTranslations } from "next-intl";
 import { ChallengeBar } from "@/components/layout/challenge-bar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { MessageScope } from "@/i18n/message-scope";
 
 export default function PublicLayout({ children }: LayoutProps<"/[locale]">) {
   const t = useTranslations("Site");
 
   return (
-    <>
+    <MessageScope area="public">
       <a
         href="#content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2"
@@ -21,6 +22,6 @@ export default function PublicLayout({ children }: LayoutProps<"/[locale]">) {
         {children}
       </main>
       <SiteFooter />
-    </>
+    </MessageScope>
   );
 }

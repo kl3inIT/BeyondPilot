@@ -53,7 +53,6 @@ function SolutionRecordImages({ name, images }: SolutionRecordImagesProps) {
                 alt=""
                 fill
                 sizes="100px"
-                unoptimized
                 className={image.shape === "wide" ? "object-cover" : "object-contain"}
               />
             </button>

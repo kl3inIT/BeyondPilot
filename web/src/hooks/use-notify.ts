@@ -5,8 +5,14 @@ import { toast } from "sonner";
 
 type MessageKey = Parameters<ReturnType<typeof useTranslations<never>>>[0];
 type MessageValues = Record<string, string | number>;
-/** One way to take back what the toast reports, such as Undo. */
-type NotifyAction = { label: MessageKey; onClick: () => void };
+type NotifyOptions = {
+  /**
+   * The inverse of what the toast reports. Given, the toast offers Undo for as long as it stays, and
+   * a click calls this. Only for an action that can be restored and tells nobody outside
+   * (docs/conventions.md › Actions); the inverse raises its own toast, without an Undo.
+   */
+  undo?: () => void;
+};
 
 /**
  * Raises a toast from a message key, never from text: a toast is always in the reader's language,
@@ -18,10 +24,11 @@ function useNotify() {
   const say = useTranslations() as (key: MessageKey, values?: MessageValues) => string;
 
   return {
-    success(key: MessageKey, values?: MessageValues, action?: NotifyAction) {
+    success(key: MessageKey, values?: MessageValues, options?: NotifyOptions) {
+      const undo = options?.undo;
       toast.success(
         say(key, values),
-        action && { action: { label: say(action.label), onClick: action.onClick } },
+        undo && { action: { label: say("Actions.undo"), onClick: undo } },
       );
     },
     error(key: MessageKey, values?: MessageValues) {

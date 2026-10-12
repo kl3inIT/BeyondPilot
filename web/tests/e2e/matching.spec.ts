@@ -725,21 +725,19 @@ test.describe("solutions matched to a use case", () => {
     ).toBeVisible();
     await expect(counts(page, "Staple AI")).toHaveCount(0);
 
-    // The last group: five rows from the start, then all six; its header folds it away.
+    // The last group: every row from the start, in the order of relevance; its header folds it away.
     const last = group(page, "Right technology, less proof");
     await expect(last.getByRole("heading", { level: 2 })).toContainText("6");
     await expect(last.getByText("Right technology; part of the requirement shown.")).toBeVisible();
     await expect(lastGroupHeader(page)).toHaveAttribute("aria-expanded", "true");
-    await expect(last.getByRole("listitem")).toHaveCount(5);
+    await expect(last.getByRole("listitem")).toHaveCount(6);
+    await expect(last.getByRole("button", { name: /^Show \d+ more$/ })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
 
     await lastGroupHeader(page).click();
     await expect(last.getByRole("listitem")).toHaveCount(0);
     await lastGroupHeader(page).click();
-    await expect(last.getByRole("listitem")).toHaveCount(5);
-    await last.getByRole("button", { name: "Show 1 more" }).click();
     await expect(last.getByRole("listitem")).toHaveCount(6);
-    await expect(last.getByRole("button", { name: "Show fewer" })).toBeVisible();
     // A solution with no quote shows the AI's sentence, as before, and no source.
     await expect(row(page, "Inkstone").getByText("Built on document intelligence.")).toBeVisible();
     await expect(rowQuote(page, "Inkstone")).toHaveCount(0);

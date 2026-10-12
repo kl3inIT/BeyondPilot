@@ -62,7 +62,6 @@ function ProgramResult({ item }: { item: SearchItem }) {
             alt=""
             width={112}
             height={72}
-            unoptimized
             className="h-14 w-18 shrink-0 rounded-lg border object-cover md:h-18 md:w-28"
           />
         ) : (
