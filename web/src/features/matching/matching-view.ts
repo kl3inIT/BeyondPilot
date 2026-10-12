@@ -27,9 +27,6 @@ export type RunStage = (typeof runStages)[number];
 export type Activity =
   { kind: "added"; name: string; group: Group } | { kind: "several"; read: number; added: number };
 
-/** How many rows a folding group shows when it is first opened. */
-export const FOLDED_ROWS = 5;
-
 /** One capability the use case asks for: a short name for a chip, and its statement in full. */
 export type Need = {
   position: number;
@@ -170,18 +167,17 @@ export function grouped(candidates: MatchingCandidate[]) {
 }
 
 /**
- * How a group stands in the list. The first two groups and the small ones show every row. The last
- * group folds: closed it shows its header alone, opened its first rows, and all of them on request.
+ * How a group stands in the list. Every group shows every row, in the order of relevance. The last
+ * group alone can be folded to its header.
  */
 export function groupView(
   section: Section,
   total: number,
-  state: { folds: boolean; opened: boolean; all: boolean },
+  state: { folds: boolean; opened: boolean },
 ) {
   const folds = state.folds && section === "technology";
   const open = !folds || state.opened;
-  const shown = !open ? 0 : folds && !state.all ? Math.min(total, FOLDED_ROWS) : total;
-  return { folds, open, shown, more: open ? total - shown : 0 };
+  return { folds, open, shown: open ? total : 0 };
 }
 
 /** The statuses, strongest first, as a row counts them. */
