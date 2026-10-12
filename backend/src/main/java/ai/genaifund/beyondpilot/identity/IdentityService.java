@@ -96,6 +96,7 @@ public class IdentityService {
 	public MeResponse reachAt(Actor actor, ContactRequest request) {
 		Account account = active(actor);
 		account.reachAt(request.country(), request.phone());
+		account.nameIfUnnamed(request.name());
 		LOG.atInfo()
 			.addKeyValue("event", "identity.contact.changed")
 			.addKeyValue("account_id", account.getId())
@@ -167,7 +168,8 @@ public class IdentityService {
 	}
 
 	private static Person person(Account account) {
-		return new Person(account.getId(), account.getEmail(), account.getDisplayName());
+		return new Person(account.getId(), account.getEmail(), account.getDisplayName(), account.getCountry(),
+				account.getPhone());
 	}
 
 	private Account active(Actor actor) {
