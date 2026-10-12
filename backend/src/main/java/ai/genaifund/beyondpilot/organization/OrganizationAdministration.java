@@ -537,12 +537,14 @@ public class OrganizationAdministration {
 
 	private void tellOwners(Organization organization, boolean approved) {
 		owners(organization)
-			.forEach(owner -> email.sendOrganizationDecision(owner.email(), organization.getName(), approved));
+			.forEach(owner -> email.sendOrganizationDecision(owner.email(), organization.getName(),
+					organization.getSlug(), approved));
 	}
 
 	private void tellOwnersOfSuspension(Organization organization, boolean takenDown) {
 		owners(organization)
-			.forEach(owner -> email.sendOrganizationSuspension(owner.email(), organization.getName(), takenDown));
+			.forEach(owner -> email.sendOrganizationSuspension(owner.email(), organization.getName(),
+					organization.getSlug(), takenDown));
 	}
 
 	private Collection<Person> owners(Organization organization) {

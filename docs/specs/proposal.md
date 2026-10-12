@@ -184,8 +184,9 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 
 - **Invited by email.** An operator invites an address; it is stored stripped. An address already invited and not
   removed is refused with `PROPOSAL_REVIEWER_INVITED`. The invitation is open for 7 days (`ReviewSetup.INVITATION`).
-  `ReviewerInvited` is published and `ReviewMail` queues the email, which carries no link: the person signs in with
-  that address and finds the program under Reviews.
+  `ReviewerInvited` is published and `ReviewMail` queues the email. Its link opens the program's applications,
+  `/reviews/<program id>` on the site, after signing in; it carries no token, so the person still signs in with that
+  address, and also finds the program under Reviews.
 - **Sent again.** An invitation not yet used can be re-sent, which renews `invited_at` and `expires_at` for another
   7 days. A judge who joined is refused with `PROPOSAL_REVIEWER_JOINED`.
 - **Removed.** Removing sets `removed_at`; the judge loses access, and their scores stay. A removed or unknown judge
@@ -287,7 +288,7 @@ Applicants' acts, joining as a judge and assessments are not audited; they are l
 | Event               | Published                   | Carries                                                                               | Handled by       |
 | ------------------- | --------------------------- | ------------------------------------------------------------------------------------- | ---------------- |
 | `ProposalSubmitted` | Each submission             | application, program, organization, version, recipient, program name, `editableUntil` | `SubmissionMail` |
-| `ReviewerInvited`   | Each invitation and re-send | invitation, email, program name, inviter name, expiry (package-private)               | `ReviewMail`     |
+| `ReviewerInvited`   | Each invitation and re-send | invitation, email, program, program name, inviter name, expiry (package-private)      | `ReviewMail`     |
 | `OutcomesReleased`  | The release                 | program, and per applicant the decision, recipient, subject and message               | `ReviewMail`     |
 
 The handlers are `@EventListener`s that queue email in the publisher's transaction through `EmailService`

@@ -264,6 +264,9 @@ class UseCaseServiceTest {
 		assertThat(events(id)).containsExactly("use_case.submit", "use_case.approve");
 		assertThat(mail.latestSubjectTo("founder@approve.test")).contains("is published");
 		assertThat(mail.latestSubjectTo("colleague@approve.test")).contains("is published");
+		// The email leads to the published brief.
+		assertThat(mail.latestTextTo("founder@approve.test"))
+			.containsPattern("https?://[^/ ]+/use-cases/" + id + "(?![\\w/-])");
 		assertProblem(post(operator, ADMIN + "/" + id + "/approve", null), 409, "USECASE_NOT_AWAITING_REVIEW");
 	}
 
@@ -304,6 +307,9 @@ class UseCaseServiceTest {
 		assertThat(JsonPath.<String>read(sent, "$.status")).isEqualTo("needs_changes");
 		assertThat(JsonPath.<String>read(sent, "$.reviewNote")).isEqualTo("The problem statement is too vague.");
 		assertThat(mail.latestSubjectTo("founder@sendback.test")).contains("Changes needed");
+		// The email leads to where a member edits it.
+		assertThat(mail.latestTextTo("founder@sendback.test"))
+			.containsPattern("https?://[^/ ]+/workspace/organization/use-cases/" + id + "(?![\\w/-])");
 		assertProblem(post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "Again")), 409,
 				"USECASE_NOT_AWAITING_REVIEW");
 
