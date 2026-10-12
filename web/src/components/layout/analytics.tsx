@@ -1,7 +1,7 @@
 "use client";
 
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useLayoutEffect, useRef, useSyncExternalStore } from "react";
 
 import { usePathname } from "@/i18n/navigation";
 import { isTrackedPath } from "@/lib/analytics";
@@ -39,7 +39,9 @@ function Analytics() {
   const tracked = live && isTrackedPath(pathname);
   const loaded = useRef(false);
 
-  useEffect(() => {
+  // A layout effect, so the flag is set in the task that changes the address, before Google's
+  // script, which reads the flag about a second later, can report the private page.
+  useLayoutEffect(() => {
     if (tracked) {
       loaded.current = true;
     } else if (loaded.current) {

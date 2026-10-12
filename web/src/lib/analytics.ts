@@ -1,23 +1,34 @@
 /**
- * The areas Google Analytics never measures, without a locale prefix: every page behind sign-in,
- * the sign-in and consent screens, and a solution's unlisted link, whose address is its key. Their
- * addresses and titles carry application, organization and account details that stay with us.
- * This file imports nothing, so `next.config.ts` can read it.
+ * The first segment of every address Google Analytics may measure, without a locale prefix. A page
+ * outside this list is not measured, so a new area stays private until someone decides otherwise.
  */
-const untrackedPaths = [
-  "/admin",
-  "/workspace",
-  "/reviews",
-  "/account",
-  "/applications",
-  "/oauth-consent",
-  "/sign-in",
-  "/solutions/shared",
+const trackedSections = [
+  "how-it-works",
+  "about",
+  "programs",
+  "use-cases",
+  "solutions",
+  "organizations",
+  "talent",
+  "search",
+  "privacy",
+  "terms",
+  "get-started",
+  "founders",
 ] as const;
+
+/**
+ * Pages inside a measured section that stay private: a solution's unlisted link, whose address is
+ * its key, and a person's own proposal to a use case.
+ */
+const privatePages = [/^\/solutions\/shared(\/|$)/, /^\/use-cases\/[^/]+\/propose\/view$/];
 
 /** Whether the page at `pathname`, written without a locale prefix, may be measured. */
 function isTrackedPath(pathname: string): boolean {
-  return !untrackedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  const section = pathname.split("/")[1];
+  const listed = section === "" || trackedSections.some((tracked) => tracked === section);
+
+  return listed && !privatePages.some((page) => page.test(pathname));
 }
 
-export { isTrackedPath, untrackedPaths };
+export { isTrackedPath, trackedSections };
