@@ -204,7 +204,7 @@ test.describe("programs", () => {
     await expect(
       page.getByText("Nestlé has picked their problems.", { exact: false }),
     ).toBeVisible();
-    // The deadline above the page and among the four facts is the program's window, not page copy.
+    // The deadline in the closing call and among the four facts is the program's window, not page copy.
     await expect(
       page.getByText(/Applications close \d+ \w+, \d\d:\d\d ICT\./).first(),
     ).toBeVisible();
