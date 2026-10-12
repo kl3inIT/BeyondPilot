@@ -43,13 +43,21 @@ type AttachmentsFieldProps = {
   onChange: (value: UploadedAttachment[]) => void;
   /** Lists the files without the means to replace or add one. */
   readOnly?: boolean;
+  /** What the form refuses about the files, said under them. */
+  errors?: { message?: string }[];
 };
 
 /**
  * The files that explain a use case. Each is uploaded at once; the form names them when it is
  * saved. A file is replaced in its place, or another is added.
  */
-function AttachmentsField({ id, value, onChange, readOnly = false }: AttachmentsFieldProps) {
+function AttachmentsField({
+  id,
+  value,
+  onChange,
+  readOnly = false,
+  errors,
+}: AttachmentsFieldProps) {
   const t = useTranslations("Admin.useCases.form.attachments");
   const format = useFormatter();
   const input = useRef<HTMLInputElement>(null);
@@ -115,14 +123,19 @@ function AttachmentsField({ id, value, onChange, readOnly = false }: Attachments
         });
 
   return (
-    <Field>
+    <Field data-invalid={errors ? true : undefined}>
       <FieldLabel htmlFor={id}>{t("label")}</FieldLabel>
       <input
         ref={input}
         id={id}
         type="file"
         accept={accepted.join(",")}
-        aria-describedby={readOnly ? undefined : `${id}-hint`}
+        aria-invalid={errors ? true : undefined}
+        aria-describedby={
+          [readOnly ? undefined : `${id}-hint`, errors ? `${id}-error` : undefined]
+            .filter(Boolean)
+            .join(" ") || undefined
+        }
         className="sr-only"
         onChange={(event) => {
           const file = event.target.files?.[0];
@@ -177,6 +190,7 @@ function AttachmentsField({ id, value, onChange, readOnly = false }: Attachments
         </FieldDescription>
       )}
       {problem && <FieldError>{problem}</FieldError>}
+      {errors && <FieldError id={`${id}-error`} errors={errors} />}
     </Field>
   );
 }

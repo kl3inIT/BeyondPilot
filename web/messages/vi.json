@@ -5404,6 +5404,10 @@
   },
   "Form": {
     "optional": "Không bắt buộc",
+    "steps": {
+      "progress": "Bước {step}/{count} · {name}",
+      "all": "Tất cả bước"
+    },
     "errors": {
       "required": "Hãy điền mục này.",
       "tooLong": "Tối đa {max} ký tự.",
@@ -7697,8 +7701,8 @@
         "remove": "Bỏ {name}",
         "rolePlaceholder": "Trưởng dự án",
         "needed": {
-          "member": "Hãy thêm ít nhất một thành viên.",
-          "role": "Hãy nhập vai trò cho mọi thành viên."
+          "role": "Hãy nhập vai trò cho mọi thành viên.",
+          "primary": "Hãy chọn một đầu mối liên hệ."
         },
         "dialog": {
           "title": "Thêm thành viên vào đội ngũ",

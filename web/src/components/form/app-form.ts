@@ -73,6 +73,12 @@ export const useAppForm: typeof appForm.useAppForm = (options) => {
   });
 };
 
+/**
+ * Fields that several forms draw the same way, bound to the part of each form that holds them:
+ * `<Fields form={form} fields="content" />`.
+ */
+export const withFieldGroup = appForm.withFieldGroup;
+
 /** A refused submission's errors: the message under the form and the messages on its fields. */
 export type ServerErrors = {
   form?: string;
