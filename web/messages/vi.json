@@ -6939,9 +6939,7 @@
         "title": "Đã lưu, AI không còn gợi ý",
         "about": "Chúng vẫn ở đây cho tới khi có người bỏ lưu."
       },
-      "emptyDirect": "Chưa giải pháp nào đáp ứng yêu cầu chính.",
-      "more": "Xem thêm {count}",
-      "fewer": "Thu gọn"
+      "emptyDirect": "Chưa giải pháp nào đáp ứng yêu cầu chính."
     },
     "status": {
       "met": "Đáp ứng",

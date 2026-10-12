@@ -6939,9 +6939,7 @@
         "title": "Saved, no longer suggested",
         "about": "They stay until someone unsaves them."
       },
-      "emptyDirect": "No solution meets the key requirement yet.",
-      "more": "Show {count} more",
-      "fewer": "Show fewer"
+      "emptyDirect": "No solution meets the key requirement yet."
     },
     "status": {
       "met": "Met",
