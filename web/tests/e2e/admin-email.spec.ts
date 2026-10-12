@@ -10,6 +10,8 @@ async function answerPreview(page: Page) {
     const draft = route.request().postDataJSON() as { subject: string; body: string };
     drafts.push(draft);
     const unknown = /\{\{organisation\}\}/.test(draft.body);
+    // The backend says only that the text is badly written, not where.
+    const unwritten = /\{\{\/owner\}\}/.test(draft.body);
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -19,7 +21,9 @@ async function answerPreview(page: Page) {
         text: "Plain Cover is approved",
         problems: unknown
           ? [{ field: "body", type: "unknown_variable", variable: "organisation" }]
-          : [],
+          : unwritten
+            ? [{ field: "body", type: "syntax" }]
+            : [],
       }),
     });
   });
@@ -79,9 +83,27 @@ test.describe("admin email", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Organization approved");
     await expect(page.getByTitle("Preview of Organization approved")).toBeVisible();
 
+    // Each variable is listed with what a reader would see in its place, and whether it must appear.
+    const variables = page.getByRole("region", { name: "Variables" });
+    await expect(variables).toContainText(
+      "Each is replaced by a value when the email is sent; the examples show what a reader would see.",
+    );
+    const variable = variables.getByRole("listitem");
+    await expect(variable).toHaveCount(1);
+    await expect(variable.getByRole("button", { name: "{{organizationName}}" })).toBeVisible();
+    await expect(variable).toContainText("Plain Cover");
+    await expect(variable).toContainText("Must appear");
+    // This kind shows the same text to everyone, so it lists no condition.
+    await expect(page.getByRole("region", { name: "Conditions" })).toHaveCount(0);
+
     const body = page.getByRole("textbox", { name: "Body" });
     await body.click();
     await page.keyboard.press("ControlOrMeta+End");
+    // A variable chosen from the list lands where the cursor is.
+    await variable.getByRole("button", { name: "{{organizationName}}" }).click();
+    await expect
+      .poll(() => drafts.at(-1)?.body)
+      .toMatch(/Sign in to manage it\.\{\{organizationName\}\}$/);
     await page.keyboard.type(" {{organisation}}");
 
     await expect(page.getByText("{{organisation}} is not a variable of this email.")).toBeVisible();
@@ -94,6 +116,30 @@ test.describe("admin email", () => {
       page.getByText("A test can be sent once the wording has no problems."),
     ).toBeVisible();
     expect(drafts.at(-1)?.body).toContain("{{organisation}}");
+  });
+
+  test("wording that is badly written is told what is wrong and on which line", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await answerPreview(page);
+    await page.goto("/admin/email/templates/organization_approved");
+
+    const body = page.getByRole("textbox", { name: "Body" });
+    await body.click();
+    await page.keyboard.press("ControlOrMeta+End");
+    await page.keyboard.type(" {{/owner}}");
+
+    // The place and the fault are said in plain words, without the template language's own.
+    await expect(
+      page.getByText("Line 3: The condition owner ends but never starts."),
+    ).toBeVisible();
+    await expect(page.getByText(/\{\{#name\}\}/)).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Save changes" })).toBeDisabled();
+    // No axe pass on this page: it holds the sandboxed frame of the preview, which axe cannot
+    // enter, and the pass does not return. The lists of the editor are covered by their roles above.
   });
 
   test("the log counts the period's emails and opens one with what happened to it", async ({

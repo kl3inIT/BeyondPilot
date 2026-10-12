@@ -1,7 +1,7 @@
 "use client";
 
 import { useStore } from "@tanstack/react-form";
-import { AsteriskIcon, CircleAlertIcon, CircleDotIcon } from "lucide-react";
+import { CircleAlertIcon, CircleDotIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -32,6 +32,7 @@ import { EmailPreview } from "./email-preview";
 import { testFailures } from "./email-test-failures";
 import { TestSend } from "./test-send";
 import { TemplateCodeEditor, type TemplateCodeEditorHandle } from "./template-code-editor";
+import { switchVariables, tagFaults } from "./template-tags";
 
 /** How long typing pauses before the preview is rendered again. */
 const PREVIEW_DELAY = 400;
@@ -58,11 +59,16 @@ function Problems({ id, problems }: { id: string; problems: { message: string }[
   );
 }
 
+/** The look of a variable or a condition in the lists under the body: a chip that puts it in the text. */
+const chip =
+  "inline-flex max-w-full items-center rounded-md border bg-muted px-2 py-0.5 text-left font-mono text-xs break-all outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50";
+
 /**
  * One kind of email's wording: the subject and the Markdown body with the variables the kind
  * offers, a preview with sample values that also says what keeps the draft from being saved, and
  * sending the draft to oneself. A stored template always renders, because the backend refuses one
- * that does not pass its checks.
+ * that does not pass its checks. Under the body the variables are listed with the value the preview
+ * puts in their place, and apart from them the conditions, which show or hide a piece of the text.
  */
 /** What did not happen, for a refusal that has no words of its own. */
 const editorWords = {
@@ -88,7 +94,8 @@ function EmailTemplateEditor({
   const router = useRouter();
   const body = useRef<TemplateCodeEditorHandle>(null);
   const [current, setCurrent] = useState(template);
-  const [preview, setPreview] = useState<Preview | null>(null);
+  // The preview, with the draft it was made for: its problems are found in that text.
+  const [preview, setPreview] = useState<(Preview & { of: Draft }) | null>(null);
   const [resetting, setResetting] = useState<"asking" | "pending" | null>(null);
   const [testing, setTesting] = useState(false);
 
@@ -127,7 +134,7 @@ function EmailTemplateEditor({
       previewEmailTemplate({ path: { kind: template.kind }, body: draft })
         .then(({ data }) => {
           if (!stale) {
-            setPreview(data);
+            setPreview({ ...data, of: draft });
           }
         })
         .catch(() => undefined);
@@ -174,22 +181,63 @@ function EmailTemplateEditor({
   }
 
   // The problems of each field with the words that explain each, kept while the preview is the same.
+  // The backend says a text is badly written without saying where; the place and what is wrong
+  // there are found in the text itself, and said in general words when nothing is found.
   const { problems, subjectProblems, bodyProblems } = useMemo(() => {
-    const all = (preview?.problems ?? []).map((problem) => ({
-      ...problem,
-      message:
-        problem.type === "unknown_variable"
-          ? t("problems.unknownVariable", { variable: `{{${problem.variable ?? ""}}}` })
-          : problem.type === "missing_variable"
-            ? t("problems.missingVariable", { variable: `{{${problem.variable ?? ""}}}` })
-            : t(`problems.${problem.type === "subject_line" ? "subjectLine" : "syntax"}`),
-    }));
+    const all = (preview?.problems ?? []).flatMap((problem) => {
+      if (problem.type === "syntax") {
+        const faults = tagFaults(preview?.of[problem.field] ?? "").map((fault) => {
+          const words = t(`problems.${fault.kind}`, {
+            tag: fault.tag ?? "",
+            name: fault.name ?? "",
+          });
+          return {
+            ...problem,
+            from: fault.from,
+            to: fault.to,
+            // The subject is one line, so only the body says which.
+            message:
+              problem.field === "body"
+                ? t("problems.atLine", { line: fault.line, problem: words })
+                : words,
+          };
+        });
+        // The same words twice are one line under the field.
+        const said = new Set<string>();
+        const told = faults.filter((fault) => !said.has(fault.message) && said.add(fault.message));
+        return told.length > 0 ? told : [{ ...problem, message: t("problems.syntax") }];
+      }
+      return [
+        {
+          ...problem,
+          message:
+            problem.type === "unknown_variable"
+              ? t("problems.unknownVariable", { variable: `{{${problem.variable ?? ""}}}` })
+              : problem.type === "missing_variable"
+                ? t("problems.missingVariable", { variable: `{{${problem.variable ?? ""}}}` })
+                : t("problems.subjectLine"),
+        },
+      ];
+    });
     return {
       problems: all,
       subjectProblems: all.filter((problem) => problem.field === "subject"),
       bodyProblems: all.filter((problem) => problem.field === "body"),
     };
   }, [preview, t]);
+
+  const switches = switchVariables(
+    current.variables.map((variable) => variable.name),
+    current.defaultSubject,
+    current.defaultBody,
+  );
+  const values = current.variables.filter((variable) => !switches.has(variable.name));
+  const conditions = current.variables.filter((variable) => switches.has(variable.name));
+  // What a switch shows text for is written per switch; one without words is said in general.
+  const switchWords = (name: string) => {
+    const key = `switches.${name}` as "switches.other";
+    return t.has(key) ? key : "switches.other";
+  };
 
   return (
     <form
@@ -318,24 +366,74 @@ function EmailTemplateEditor({
               </Field>
             )}
           </form.Field>
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium">{t("variables")}</p>
-            <div className="flex flex-wrap gap-2">
-              {current.variables.map((variable) => (
-                <button
-                  key={variable.name}
-                  type="button"
-                  onClick={() => body.current?.insert(variable.name)}
-                  className="inline-flex items-center gap-1 rounded-md border bg-muted px-2 py-0.5 font-mono text-xs outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
-                  {variable.required && <AsteriskIcon aria-hidden="true" className="size-3" />}
-                  {`{{${variable.name}}}`}
-                  {variable.required && <span className="sr-only">{t("required")}</span>}
-                </button>
-              ))}
+          <section aria-labelledby="email-variables" className="flex flex-col gap-2">
+            <div className="flex flex-col gap-0.5">
+              <h2 id="email-variables" className="text-sm font-medium">
+                {t("variables")}
+              </h2>
+              <p className="text-xs text-muted-foreground">{t("variablesHint")}</p>
             </div>
-            <p className="text-xs text-muted-foreground">{t("variablesHint")}</p>
-          </div>
+            <ul className="flex flex-col divide-y rounded-lg border">
+              {values.map((variable) => (
+                <li
+                  key={variable.name}
+                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-3 py-1.5"
+                >
+                  <button
+                    type="button"
+                    onClick={() => body.current?.insert(variable.name)}
+                    className={chip}
+                  >
+                    {`{{${variable.name}}}`}
+                  </button>
+                  {variable.sample && (
+                    <span className="line-clamp-2 min-w-0 flex-1 basis-40 text-sm break-words text-muted-foreground">
+                      <span className="sr-only">{t("example")} </span>
+                      {variable.sample}
+                    </span>
+                  )}
+                  {variable.required && (
+                    <span className="ml-auto text-xs font-medium">{t("mustAppear")}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+          {conditions.length > 0 && (
+            <section aria-labelledby="email-conditions" className="flex flex-col gap-2">
+              <div className="flex flex-col gap-0.5">
+                <h2 id="email-conditions" className="text-sm font-medium">
+                  {t("conditions")}
+                </h2>
+                <p className="text-xs text-muted-foreground">{t("conditionsHint")}</p>
+              </div>
+              <ul className="flex flex-col divide-y rounded-lg border">
+                {conditions.map((variable) => (
+                  <li
+                    key={variable.name}
+                    className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-3 py-1.5"
+                  >
+                    <button
+                      type="button"
+                      aria-label={t("wrap", { name: variable.name })}
+                      onClick={() => body.current?.wrap(variable.name)}
+                      className={chip}
+                    >
+                      {variable.name}
+                    </button>
+                    <span className="min-w-0 flex-1 basis-40 text-sm text-muted-foreground">
+                      {t(switchWords(variable.name))}
+                    </span>
+                    {(variable.sample === "true" || variable.sample === "false") && (
+                      <span className="ml-auto text-xs font-medium">
+                        {t(variable.sample === "true" ? "previewOn" : "previewOff")}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
 
         {preview && (
