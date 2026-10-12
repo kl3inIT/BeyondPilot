@@ -19,7 +19,6 @@ test.describe("admin AI usage", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/ai/usage");
@@ -46,9 +45,9 @@ test.describe("admin AI usage", () => {
     await expect(page.getByText("Calls by hour")).toBeVisible();
     await expect(page.getByText("Most at 15:00, 247 calls")).toBeVisible();
 
-    // A table from 768px, stacked rows below it.
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
-    const groups = isMobile ? page.getByRole("listitem") : page.getByRole("row");
+    // A table at every width: on a phone it scrolls sideways.
+    await expect(page.getByRole("table")).toHaveCount(1);
+    const groups = page.getByRole("row");
     await expect(groups.filter({ hasText: "cx/gpt-6-luna" })).toContainText("22.6%");
     await expect(groups.filter({ hasText: "aihay" })).toContainText("61%");
     await expectNoSeriousA11yViolations(page);
@@ -72,7 +71,6 @@ test.describe("admin AI usage", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/ai/usage");
@@ -81,9 +79,7 @@ test.describe("admin AI usage", () => {
     await expect(page).toHaveURL(/\/admin\/ai\/usage\/calls\?/);
     await expect(page).toHaveURL(/outcome=failed/);
     await expect(page).toHaveURL(/task=document_reading/);
-    const calls = isMobile
-      ? page.getByRole("listitem").filter({ hasText: "cx/gpt-6-luna" })
-      : page.getByRole("row").filter({ hasText: "cx/gpt-6-luna" });
+    const calls = page.getByRole("row").filter({ hasText: "cx/gpt-6-luna" });
     await expect(calls).toHaveCount(2);
     // A failed call says what kind of failure it was, with the status where the provider gave one.
     await expect(calls.first()).toContainText("Request too large");
@@ -97,7 +93,7 @@ test.describe("admin AI usage", () => {
     await expect(page).not.toHaveURL(/outcome=/);
 
     await page.goto("/admin/ai/usage/calls");
-    const every = isMobile ? page.getByRole("listitem") : page.getByRole("row");
+    const every = page.getByRole("row");
     await expect(every.filter({ hasText: "aihay" })).toContainText("$0.0015");
     await expect(every.filter({ hasText: "cx/gpt-6.1-sol" })).toContainText("5,210 in · 512 out");
     await expect(every.filter({ hasText: "cx/gpt-6.1-sol" })).toContainText("Matching run");

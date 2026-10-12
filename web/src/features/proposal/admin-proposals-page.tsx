@@ -1,11 +1,11 @@
 import { InboxIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { ReviewStatus } from "@/components/composites/review-status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { UseCaseTabs } from "@/features/usecase/use-case-tabs";
 import { useFormatter } from "@/i18n/format";
@@ -99,35 +99,17 @@ function AdminProposalsPage({ useCase, proposals }: AdminProposalsPageProps) {
             />
           </div>
         ) : (
-          <>
-            {/* From 768px: a table. */}
-            <DataTable className="hidden bg-background md:block">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("list.columns.proposal")}</TableHead>
-                  <TableHead className="w-44">{t("list.columns.sent")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="max-w-0">{row.proposal}</TableCell>
-                    <TableCell>{row.sent}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </DataTable>
-
-            {/* Below 768px: one stacked row per proposal, never a table scrolled sideways. */}
-            <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
-              {rows.map((row) => (
-                <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-                  {row.proposal}
-                  <div className="text-sm">{row.sent}</div>
-                </li>
-              ))}
-            </ul>
-          </>
+          <DataTableRows
+            surface
+            columns={[
+              { id: "proposal", header: t("list.columns.proposal"), layout: { fill: true } },
+              { id: "sent", header: t("list.columns.sent"), layout: { width: "md" } },
+            ]}
+            rows={rows.map((row) => ({
+              id: row.id,
+              cells: { proposal: row.proposal, sent: row.sent },
+            }))}
+          />
         )}
       </div>
     </div>

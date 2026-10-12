@@ -3602,7 +3602,8 @@
       "selectPage": "Chọn mọi dòng của trang này",
       "selectOne": "Chọn {name}",
       "selectMatching": "Chọn cả {count} kết quả khớp",
-      "clear": "Bỏ chọn"
+      "clear": "Bỏ chọn",
+      "scroll": "Bảng, cuộn ngang"
     }
   },
   "Vocabulary": {

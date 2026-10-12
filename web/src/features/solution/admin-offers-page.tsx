@@ -6,7 +6,6 @@ import { DataTableRows } from "@/components/composites/data-table-view";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Link } from "@/i18n/navigation";
 import type { AdminOffer } from "@/lib/api/generated";
-import { cn } from "@/lib/utils";
 import { siteRoutes } from "@/lib/site";
 
 import { CreateOffer, OfferRowMenu } from "./offer-actions";
@@ -51,41 +50,38 @@ function AdminOffersPage({ offers, search }: { offers: AdminOffer[]; search: Adm
       <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch")} />
     );
   const record = (offer: AdminOffer) => `${siteRoutes.adminOffers}/${offer.id}`;
-  const name = (offer: AdminOffer, className: string) => (
-    <Link
-      href={record(offer)}
-      className={cn(
-        "rounded-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50",
-        className,
-      )}
-    >
-      {offer.title}
-    </Link>
-  );
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <AdminPageHeader destination="offers" title={t("title")} actions={<CreateOffer />} />
       <OffersToolbar />
 
-      {/* From 768px: a table. */}
+      {/* Where the table is made to fit, the address joins the offer; on a phone it keeps its column. */}
       <DataTableRows
-        className="hidden md:flex"
         columns={[
           { id: "title", header: list("columns.offer"), layout: { fill: true } },
-          { id: "writer", header: t("columns.writer"), layout: { from: "md" } },
+          { id: "writer", header: t("columns.writer") },
           { id: "state", header: t("columns.state") },
           { id: "url", header: list("columns.url"), layout: { from: "lg", width: "lg" } },
           { id: "solutions", header: list("columns.solutions"), layout: { numeric: true } },
-          { id: "actions", header: <span className="sr-only">{list("columns.actions")}</span> },
+          {
+            id: "actions",
+            header: <span className="sr-only">{list("columns.actions")}</span>,
+            layout: { width: "action" },
+          },
         ]}
         rows={shown.map((offer) => ({
           id: offer.id,
           cells: {
             title: (
               <div className="flex min-w-0 flex-col">
-                {name(offer, "truncate font-medium")}
-                <span className="min-w-0 lg:hidden">
+                <Link
+                  href={record(offer)}
+                  className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {offer.title}
+                </Link>
+                <span className="hidden min-w-0 md:max-lg:block">
                   <OfferAddress url={offer.url} />
                 </span>
               </div>
@@ -103,30 +99,6 @@ function AdminOffersPage({ offers, search }: { offers: AdminOffer[]; search: Adm
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per offer, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {shown.map((offer) => (
-          <li
-            key={offer.id}
-            className="flex items-start justify-between gap-3 border-b p-3 last:border-b-0"
-          >
-            <div className="flex min-w-0 flex-col gap-1">
-              {name(offer, "text-sm font-medium wrap-break-word")}
-              <span className="min-w-0 text-sm">
-                <OfferAddress url={offer.url} />
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {offer.organizationName ?? t("genAiFund")} ·{" "}
-                {list("solutions", { count: offer.solutions })}
-              </span>
-              <OfferState closed={offer.closed} />
-            </div>
-            <OfferRowMenu offer={offer} />
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
     </div>
   );
 }

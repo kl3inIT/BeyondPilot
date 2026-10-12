@@ -87,13 +87,12 @@ test.describe("admin email", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/email/activity");
 
     await expect(page.getByText("Emails, 7 days")).toBeVisible();
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    await expect(page.getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
 
     await page.goto("/admin/email/activity?status=bounced");
@@ -170,7 +169,6 @@ test.describe("admin email", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "emailer", baseURL!);
     // What SES says of beyondpilot.ai: verified, DKIM still waiting, the account still in its sandbox.
@@ -222,7 +220,7 @@ test.describe("admin email", () => {
     await expect(setup).toContainText("Sandbox: only verified addresses receive email");
     await expect(setup).toContainText("Waiting for the DKIM records");
     await expect(setup).toContainText("The domain is verified");
-    const records = isMobile ? setup.locator("ul li") : setup.getByRole("row");
+    const records = setup.getByRole("row");
     await expect(records.filter({ hasText: "a1b2c3._domainkey" })).toHaveCount(1);
     await expect(setup.getByText("v=DMARC1; p=none;").filter({ visible: true })).toBeVisible();
     await expectNoSeriousA11yViolations(page);

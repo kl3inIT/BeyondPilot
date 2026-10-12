@@ -74,9 +74,7 @@ function AdminOfferPage({ detail }: { detail: AdminOfferDetail }) {
           </span>
         </h2>
 
-        {/* From 768px: a table. */}
         <DataTableRows
-          className="hidden md:flex"
           columns={[
             { id: "name", header: page("solutions.columns.solution"), layout: { fill: true } },
             { id: "organization", header: page("solutions.columns.organization") },
@@ -106,23 +104,6 @@ function AdminOfferPage({ detail }: { detail: AdminOfferDetail }) {
           }))}
           empty={empty}
         />
-
-        {/* Below 768px: one stacked row per solution, never a table scrolled sideways. */}
-        <ul className="overflow-hidden rounded-lg border md:hidden">
-          {solutionList.map((solution) => (
-            <li key={solution.id} className="flex flex-col gap-1 border-b p-3 last:border-b-0">
-              <Link
-                href={`${siteRoutes.adminSolutions}/${solution.id}`}
-                className={`text-sm font-medium wrap-break-word ${link}`}
-              >
-                {solution.name}
-              </Link>
-              <span className="text-sm text-muted-foreground">{solution.organizationName}</span>
-              <span>{review(solution)}</span>
-            </li>
-          ))}
-          {empty && <li>{empty}</li>}
-        </ul>
       </section>
     </div>
   );

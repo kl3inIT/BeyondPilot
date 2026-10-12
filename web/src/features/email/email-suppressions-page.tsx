@@ -85,7 +85,6 @@ async function EmailSuppressionsPage({
 
       <DataTableRows
         sortKeys={emailSuppressionSortKeys}
-        className="hidden md:flex"
         columns={[
           { id: "address", header: t("suppressions.columns.address") },
           { id: "reason", header: t("suppressions.columns.reason"), layout: { width: "md" } },
@@ -117,23 +116,6 @@ async function EmailSuppressionsPage({
         }))}
         empty={empty}
       />
-
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {suppressions.items.map((item) => (
-          <li key={item.address} className="flex items-start gap-3 border-b p-3 last:border-b-0">
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <span className="truncate text-sm font-medium">{item.address}</span>
-              <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <Badge variant="outline">{t(`suppressions.reasons.${item.reason}`)}</Badge>
-                <time dateTime={item.createdAt}>{date(item.createdAt)}</time>
-              </span>
-              <span className="text-xs text-muted-foreground">{origin(item)}</span>
-            </div>
-            <RemoveSuppressionButton address={item.address} reason={item.reason} />
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       {suppressions.total > 0 && (
         <ListFooter

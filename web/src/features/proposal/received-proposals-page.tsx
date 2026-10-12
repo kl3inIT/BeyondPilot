@@ -116,35 +116,18 @@ function ReceivedProposalsPage({ proposals }: ReceivedProposalsPageProps) {
             />
           </div>
         ) : (
-          <>
-            {/* From 768px: a table. */}
-            <DataTableRows
-              className="hidden md:flex"
-              surface
-              columns={[
-                { id: "proposal", header: t("list.columns.proposal"), layout: { fill: true } },
-                { id: "status", header: t("list.columns.status"), layout: { width: "md" } },
-                { id: "sent", header: t("list.columns.sent"), layout: { width: "md" } },
-              ]}
-              rows={rows.map((row) => ({
-                id: row.id,
-                cells: { proposal: row.proposal, status: row.status, sent: row.sent },
-              }))}
-            />
-
-            {/* Below 768px: one stacked row per proposal, never a table scrolled sideways. */}
-            <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
-              {rows.map((row) => (
-                <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-                  {row.proposal}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                    {row.status}
-                    {row.sent}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </>
+          <DataTableRows
+            surface
+            columns={[
+              { id: "proposal", header: t("list.columns.proposal"), layout: { fill: true } },
+              { id: "status", header: t("list.columns.status"), layout: { width: "md" } },
+              { id: "sent", header: t("list.columns.sent"), layout: { width: "md" } },
+            ]}
+            rows={rows.map((row) => ({
+              id: row.id,
+              cells: { proposal: row.proposal, status: row.status, sent: row.sent },
+            }))}
+          />
         )}
       </div>
     </div>

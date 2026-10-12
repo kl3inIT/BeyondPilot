@@ -19,23 +19,36 @@ import {
 } from "@/components/ui/pagination";
 import { Table } from "@/components/ui/table";
 
+import { TableScroll } from "./table-scroll";
+
 /**
  * The frame every list of the application shares. A list is read by a Server Component from the
  * parameters of the URL and drawn with the registry table inside this frame; nothing here fetches
  * or keeps state (docs/conventions.md › Lists). The header row sits on the muted ground, and the
- * first and last columns keep the 20px inset of the cards around the list.
+ * first and last columns keep the 20px inset of the cards around the list. The table is a table at
+ * every width: when it does not fit, the frame scrolls it sideways.
  */
-function DataTable({ className, ...props }: React.ComponentProps<typeof Table>) {
+function DataTable({
+  className,
+  label,
+  ...props
+}: React.ComponentProps<typeof Table> & {
+  /** The name of the table for the region it becomes while it scrolls sideways. */
+  label?: string;
+}) {
   return (
-    <div
-      data-slot="data-table"
+    <TableScroll
+      label={label}
       className={cn(
-        "overflow-hidden rounded-lg border [&_td:first-child]:pl-5 [&_td:last-child]:pr-5 [&_th:first-child]:pl-5 [&_th:last-child]:pr-5 [&_thead]:bg-muted",
+        "[&_td:first-child]:pl-5 [&_td:last-child]:pr-5 [&_th:first-child]:pl-5 [&_th:last-child]:pr-5 [&_thead]:bg-muted",
+        // Below 768px the column of a row's menu stays at the end of the frame, above its fade, on
+        // the ground of its row, with a shadow while other columns hide under it.
+        "max-md:[&_[data-pinned]]:sticky max-md:[&_[data-pinned]]:right-0 max-md:[&_[data-pinned]]:z-10 max-md:data-more-end:[&_[data-pinned]]:shadow-md max-md:[&_td[data-pinned]]:bg-background max-md:[&_th[data-pinned]]:bg-muted max-md:[&_tr[data-state=selected]_td[data-pinned]]:bg-muted",
         className,
       )}
     >
       <Table {...props} />
-    </div>
+    </TableScroll>
   );
 }
 

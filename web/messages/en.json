@@ -3602,7 +3602,8 @@
       "selectPage": "Select every row on this page",
       "selectOne": "Select {name}",
       "selectMatching": "Select all {count} that match",
-      "clear": "Clear selection"
+      "clear": "Clear selection",
+      "scroll": "Table, scrolls sideways"
     }
   },
   "Vocabulary": {

@@ -19,7 +19,7 @@ const claim = "9c4f6d85-3c31-4d86-8d88-3a6c9c9e0d01";
 
 const decisionsPath = "**/api/organization/admin/**";
 
-/** The organizations shown, by the name each row leads with, whichever layout the viewport has. */
+/** The organizations shown, by the name each row leads with. */
 /** The organizations the list shows, by the link to each one's record. */
 function shownOrganizations(page: Page) {
   return page.locator('a[href*="/admin/organizations/"]:visible');
@@ -88,7 +88,6 @@ test.describe("admin organizations", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/organizations");
@@ -103,18 +102,15 @@ test.describe("admin organizations", () => {
       "Harbor Bank",
     ]);
     await expect(page.getByText("6 organizations")).toBeVisible();
-    // Each row is in the page twice, as a table row and as a stacked one; the viewport shows one.
     const shown = page.locator(":visible");
     await expect(page.getByText("Company · Singapore · 2 members").and(shown)).toHaveCount(1);
     await expect(page.getByText("Builder team · Vietnam · No owner").and(shown)).toHaveCount(1);
     await expect(page.getByText("New organization", { exact: true }).and(shown)).toHaveCount(1);
     await expect(page.getByText("Claim", { exact: true }).and(shown)).toHaveCount(1);
-    // Who asked is a column from 1024px.
-    if (!isMobile) {
-      await expect(page.getByRole("cell", { name: "Arif Hidayat" })).toBeVisible();
-    }
-    // A table from 768px, stacked rows below it.
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    // Who asked is a column where the table has the room, and on a phone, where it scrolls.
+    await expect(page.getByRole("cell", { name: "Arif Hidayat" })).toBeVisible();
+    // A table at every width: on a phone it scrolls sideways.
+    await expect(page.getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -624,7 +620,6 @@ test.describe("admin organizations", () => {
       "Teller 12",
       "newhire@harborbank.example",
     ]);
-    // The row is drawn as a table row and as a stacked row; one of them shows.
     await expect(
       page.getByText("Invited 1 Oct 2026 · expires 8 Oct 2026").filter({ visible: true }),
     ).toHaveCount(1);
@@ -651,7 +646,6 @@ test.describe("admin organizations", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     const record = `/api/organization/admin/organizations/${harborBank}`;
     await page.goto(`/admin/organizations/${harborBank}?tab=members`);
-    // Each person is in the page twice, as a table row and as a stacked one; the viewport shows one.
     const actions = (name: string) =>
       page.getByRole("button", { name: `Actions for ${name}` }).and(page.locator(":visible"));
 

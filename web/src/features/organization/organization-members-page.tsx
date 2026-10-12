@@ -150,11 +150,9 @@ function OrganizationMembersPage({
           )
         }
       >
-        {/* From 768px: a table. */}
         <DataTableRows
           sortKeys={organizationMemberSortKeys}
           defaultSort={defaultMemberSort}
-          className="hidden md:flex"
           surface
           columns={[
             { id: "member", header: t("columns.member") },
@@ -172,29 +170,12 @@ function OrganizationMembersPage({
             cells: {
               member: row.person,
               role: row.role,
-              jobTitle: <span className="whitespace-normal">{row.jobTitle}</span>,
+              jobTitle: <span className="block min-w-40 whitespace-normal">{row.jobTitle}</span>,
               joined: row.joined,
               actions: <div className="flex justify-end">{row.actions}</div>,
             },
           }))}
         />
-
-        {/* Below 768px: one stacked row per person, never a table scrolled sideways. */}
-        <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
-          {rows.map((row) => (
-            <li key={row.key} className="flex flex-col gap-2 border-b px-5 py-3 last:border-b-0">
-              <div className="flex items-start justify-between gap-3">
-                {row.person}
-                {row.actions}
-              </div>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-11 text-sm">
-                {row.role}
-                {row.jobTitle !== t("none") && <span>{row.jobTitle}</span>}
-                {row.joined}
-              </div>
-            </li>
-          ))}
-        </ul>
 
         {/* Keep the chosen size available even when all members now fit on one page. */}
         {(size !== null || members.total > Math.min(tablePageSizes[0], members.pageSize)) && (
