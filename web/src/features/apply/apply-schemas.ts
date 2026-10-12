@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { ApplicationView, FormQuestion } from "@/lib/api/generated";
 
 import { linkedinShape, phoneShape } from "./apply-draft";
-import { appliesAlone, type Who } from "./apply-values";
+import { appliesAlone, type ApplyValues, type Who } from "./apply-values";
 
 /** The words the schemas' messages are written in; the form passes its translations. */
 export type ApplyWords = {
@@ -160,4 +160,54 @@ export function problemsOf(
     fields[issue.path.join(".")] ??= { message: issue.message };
   }
   return fields;
+}
+
+/** The schemas are asked here only whether they refuse, so their messages are never read. */
+const unsaid: ApplyWords = {
+  required: "",
+  whoRequired: "",
+  companyRequired: "",
+  phoneRequired: "",
+  countryRequired: "",
+  linkedinInvalid: "",
+  webAddress: "",
+  maturityRequired: "",
+  deckRequired: "",
+  answerRequired: "",
+  answerConfirmRequired: "",
+  answerChoicesRequired: "",
+  confirmRequired: "",
+};
+
+/**
+ * What each step still lacks, as the names of the form's fields its own schema refuses: a step is
+ * complete when its list is empty, wherever the person is in the form. The review holds nothing of
+ * its own to fill in, and a program without questions lacks none.
+ */
+export function lackingBy(
+  values: ApplyValues,
+  context: Omit<ApplyContext, "who">,
+): Record<ApplyStep, string[]> {
+  const lacking = (step: ApplyStep) =>
+    Object.keys(
+      problemsOf(applyStepSchema(step, unsaid, { ...context, who: values.who }), values) ?? {},
+    );
+  return {
+    you: lacking("you"),
+    solution: lacking("solution"),
+    questions: lacking("questions"),
+    review: [],
+  };
+}
+
+/**
+ * The step a draft is taken up at: the first that lacks something, or the last one, the review,
+ * when none does. Answers its position in `steps`.
+ */
+export function firstUnfinished(
+  steps: readonly ApplyStep[],
+  lacking: Record<ApplyStep, string[]>,
+): number {
+  const position = steps.findIndex((step) => lacking[step].length > 0);
+  return position === -1 ? steps.length - 1 : position;
 }

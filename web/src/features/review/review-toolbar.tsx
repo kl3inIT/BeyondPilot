@@ -36,7 +36,8 @@ function ReviewToolbar({ operator, counts, choice }: ReviewToolbarProps) {
           setSearch({ tab: tabs.find((tab) => tab === value) ?? null, page: null })
         }
       >
-        <div className="overflow-x-auto">
+        {/* Wider than a narrow screen: the row scrolls, and its edge fades where more tabs wait. */}
+        <div className="scroll-fade-x scrollbar-none overflow-x-auto">
           <TabsList variant="line" aria-label={t("tabs.label")}>
             {tabs.map((tab) => (
               <TabsTrigger key={tab} value={tab}>

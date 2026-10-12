@@ -92,7 +92,7 @@ function PublishChecklist({
               <CircleIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               <a
                 href={`#${fieldId(fieldOfIssue[issue])}`}
-                className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                className="inline-flex min-h-6 items-center text-sm font-medium text-primary underline-offset-4 hover:underline"
                 onClick={(event) => {
                   // The field is focused, not only scrolled to, so the operator can type at once.
                   const field = document.getElementById(fieldId(fieldOfIssue[issue]));
@@ -105,12 +105,14 @@ function PublishChecklist({
               >
                 {t(`issues.${issue}`)}
               </a>
+              {/* Said in words, not only by the shape and colour of the mark. */}
+              <span className="text-xs font-medium">{t("missing")}</span>
             </li>
           ) : (
             <li key={issue} className="flex items-center gap-2 text-sm text-muted-foreground">
               <CircleCheckIcon className="size-4 shrink-0 text-success" aria-hidden="true" />
               <span>{t(`issues.${issue}`)}</span>
-              <span className="sr-only">{t("done")}</span>
+              <span className="text-xs">{t("done")}</span>
             </li>
           ),
         )}

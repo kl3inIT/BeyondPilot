@@ -289,10 +289,15 @@ function FilterToolbar({
                   })
                 }
               >
+                {/*
+                  From 768px a filter is as wide as what it says, between a floor that keeps a short
+                  one steady and a ceiling past which a long one is cut: a fixed width cut the
+                  longer Vietnamese values.
+                */}
                 <SelectTrigger
                   size="sm"
                   aria-label={filter.label}
-                  className="flex-1 md:w-44 md:flex-none"
+                  className="flex-1 md:max-w-72 md:min-w-36 md:flex-none"
                 >
                   <SelectValue />
                 </SelectTrigger>

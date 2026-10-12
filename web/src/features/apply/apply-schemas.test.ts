@@ -5,6 +5,8 @@ import type { ApplicationView } from "@/lib/api/generated";
 import {
   applyStepSchema,
   contactShapeSchema,
+  firstUnfinished,
+  lackingBy,
   problemsOf,
   type ApplyContext,
   type ApplyStep,
@@ -300,5 +302,95 @@ describe("step 4, review", () => {
   it("asks for the confirmation and nothing else", () => {
     expect(refused("review", empty)).toEqual({ confirmed: "confirmRequired" });
     expect(refused("review", { ...empty, confirmed: true })).toEqual({});
+  });
+});
+
+describe("what each step still lacks, by its own rules", () => {
+  const steps: ApplyStep[] = ["you", "solution", "questions", "review"];
+  const solved: ApplyValues = {
+    ...you,
+    solution: {
+      id: null,
+      name: "Claim Copilot",
+      summary: "A chat assistant.",
+      problemsSolved: "Drivers wait on a hotline.",
+      maturity: "pilot",
+      demoUrl: "",
+    },
+    application: {
+      ...you.application,
+      deck: { fileId: "deck-file", fileName: "deck.pdf", sizeBytes: 1 },
+    },
+  };
+  const complete: ApplyValues = {
+    ...solved,
+    application: {
+      ...solved.application,
+      answers: {
+        [text]: "Claims reach a decision.",
+        [file]: "file-id",
+        [confirm]: "true",
+        [choices]: '["Claims"]',
+      },
+    },
+  };
+
+  it("names the fields of every step at once, whichever step is on the screen", () => {
+    const lacking = lackingBy(empty, { organization: null, questions });
+
+    expect(lacking.you).toEqual([
+      "who",
+      "application.contact.firstName",
+      "application.contact.lastName",
+      "application.contact.phone",
+      "application.contact.country",
+    ]);
+    expect(lacking.solution).toContain("application.deck");
+    expect(lacking.questions).toContain(`application.answers.${confirm}`);
+  });
+
+  it("holds the review to nothing of its own: its confirmation is asked on Submit", () => {
+    expect(lackingBy(empty, { organization: null, questions }).review).toEqual([]);
+  });
+
+  it("asks someone who applies for an organization nothing about who applies", () => {
+    expect(lackingBy({ ...you, who: "" }, { organization: builder, questions }).you).toEqual([]);
+    expect(lackingBy({ ...you, who: "" }, { organization: team, questions }).you).toEqual([
+      "application.teamBackground",
+    ]);
+  });
+
+  it("lacks nothing in the questions of a program that asks none", () => {
+    expect(lackingBy(empty, { organization: null, questions: [] }).questions).toEqual([]);
+  });
+
+  it("takes a draft up at the first step that lacks something", () => {
+    const at = (values: ApplyValues) =>
+      firstUnfinished(steps, lackingBy(values, { organization: builder, questions }));
+
+    expect(at(empty)).toBe(0);
+    expect(at(you)).toBe(1);
+    expect(at(solved)).toBe(2);
+  });
+
+  it("takes a draft that lacks nothing up at the review", () => {
+    expect(firstUnfinished(steps, lackingBy(complete, { organization: builder, questions }))).toBe(
+      3,
+    );
+    // A step filled in after one that is not does not move the person past the gap.
+    expect(
+      firstUnfinished(
+        steps,
+        lackingBy({ ...complete, solution: empty.solution }, { organization: builder, questions }),
+      ),
+    ).toBe(1);
+  });
+
+  it("counts the steps of a program without questions", () => {
+    const short: ApplyStep[] = ["you", "solution", "review"];
+
+    expect(
+      firstUnfinished(short, lackingBy(solved, { organization: builder, questions: [] })),
+    ).toBe(2);
   });
 });

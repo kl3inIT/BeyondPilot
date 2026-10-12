@@ -7,8 +7,8 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { LeaveGuard, onGuardEntry } from "@/components/composites/leave-guard";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { RadioGroup, RadioGroupToggle } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useNotify } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
 import { saveAssessment, type Assessment, type ReviewCriterion } from "@/lib/api/generated";
@@ -125,13 +125,23 @@ function AssessmentPanel({
       {criteria.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("noCriteria")}</p>
       ) : (
-        <fieldset className="flex min-w-0 flex-col gap-2.5" disabled={released}>
-          <legend className="mb-1 flex w-full items-center justify-between gap-3 text-sm font-medium">
-            <span>{t("criteria")}</span>
-            <span className="text-primary tabular-nums">
-              {average === null ? t("notScored") : t("average", { value: average.toFixed(1) })}
+        <div
+          role="group"
+          aria-labelledby="assessment-criteria"
+          className="flex min-w-0 flex-col gap-2.5"
+        >
+          {/* How far the scoring is, at every width: the bar of a narrow screen only repeats it. */}
+          <div className="mb-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm font-medium">
+            <span id="assessment-criteria">{t("criteria")}</span>
+            <span className="flex gap-2 tabular-nums">
+              <span className={complete ? "text-muted-foreground" : undefined}>
+                {t("bar.progress", { scored: scored.length, total: criteria.length })}
+              </span>
+              {average !== null && (
+                <span className="text-primary">{t("average", { value: average.toFixed(1) })}</span>
+              )}
             </span>
-          </legend>
+          </div>
           {criteria.map((criterion) => (
             // In a narrow panel the scale goes under the name of its criterion.
             <div
@@ -139,30 +149,40 @@ function AssessmentPanel({
               className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5"
             >
               <span className="flex min-w-0 flex-col text-sm">
-                <span>{criterion.name}</span>
+                <span id={`criterion-${criterion.id}`}>{criterion.name}</span>
                 {criterion.description && (
-                  <span className="text-muted-foreground">{criterion.description}</span>
+                  <span id={`criterion-${criterion.id}-what`} className="text-muted-foreground">
+                    {criterion.description}
+                  </span>
                 )}
               </span>
-              <ToggleGroup
-                variant="rating"
-                size="sm"
-                spacing={1}
-                aria-label={criterion.name}
-                value={scores[criterion.id] ? [scores[criterion.id]] : []}
-                onValueChange={(values) =>
-                  setScores((current) => ({ ...current, [criterion.id]: values.at(-1) ?? "" }))
+              {/* One score of five: a radio group, so the arrow keys move along the scale. */}
+              <RadioGroup
+                className="flex w-fit"
+                aria-labelledby={`criterion-${criterion.id}`}
+                aria-describedby={
+                  criterion.description ? `criterion-${criterion.id}-what` : undefined
+                }
+                disabled={released}
+                value={scores[criterion.id] ?? ""}
+                onValueChange={(value) =>
+                  setScores((current) => ({ ...current, [criterion.id]: String(value) }))
                 }
               >
                 {SCORES.map((score) => (
-                  <ToggleGroupItem key={score} value={score} aria-label={t("score", { score })}>
+                  <RadioGroupToggle
+                    key={score}
+                    size="sm"
+                    value={score}
+                    aria-label={t("score", { score })}
+                  >
                     {score}
-                  </ToggleGroupItem>
+                  </RadioGroupToggle>
                 ))}
-              </ToggleGroup>
+              </RadioGroup>
             </div>
           ))}
-        </fieldset>
+        </div>
       )}
 
       <Field>
@@ -195,11 +215,18 @@ function AssessmentPanel({
               prominence="secondary"
               pending={pending === "save"}
               disabled={!complete || criteria.length === 0 || pending !== null}
+              aria-describedby={complete ? undefined : "assessment-incomplete"}
               onClick={() => save(false)}
             >
               {nextHref ? t("saveAndNext") : t("save")}
             </Button>
           </div>
+          {/* Why the save is held, beside it. Without criteria the panel says so above. */}
+          {!complete && criteria.length > 0 && (
+            <p id="assessment-incomplete" className="text-xs text-muted-foreground">
+              {t("incomplete", { count: criteria.length - scored.length })}
+            </p>
+          )}
           {!mine?.conflict && (
             <Button
               className="h-auto min-h-8 py-1 whitespace-normal"

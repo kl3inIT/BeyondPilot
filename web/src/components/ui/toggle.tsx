@@ -13,8 +13,9 @@ const toggleVariants = cva(
         outline:
           "border border-input bg-transparent text-foreground hover:bg-muted aria-pressed:border-primary aria-pressed:bg-accent aria-pressed:text-primary",
         // A score from a scale (Figma RatingOption): the chosen one is filled, so it reads at a glance.
+        // Chosen is `aria-pressed` on a toggle and `aria-checked` on the radio of a `RadioGroupToggle`.
         rating:
-          "border border-input bg-background text-foreground hover:bg-muted aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary",
+          "border border-input bg-background text-foreground hover:bg-muted aria-checked:border-primary aria-checked:bg-primary aria-checked:text-primary-foreground aria-checked:hover:bg-primary aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary",
       },
       size: {
         default:

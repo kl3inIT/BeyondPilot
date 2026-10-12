@@ -8,6 +8,7 @@ import { parseAsInteger, useQueryState } from "nuqs";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { TextButton } from "@/components/actions/text-button";
 import { EntryList } from "@/components/composites/entry-list";
 import { StepsNav } from "@/components/composites/steps-nav";
 import { useAppForm } from "@/components/form/app-form";
@@ -47,11 +48,14 @@ import {
   Optional,
   PdfField,
 } from "./apply-fields";
+import { focusField } from "./apply-focus";
 import { applyFormOptions, checkAgain } from "./apply-form";
 import { applyFormatter } from "./apply-format";
 import {
   applyStepSchema,
   contactShapeSchema,
+  firstUnfinished,
+  lackingBy,
   problemsOf,
   type ApplyStep,
   type ApplyWords,
@@ -112,9 +116,27 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   const steps: ApplyStep[] = hasQuestions
     ? ["you", "solution", "questions", "review"]
     : ["you", "solution", "review"];
-  const [stepNumber, setStepNumber] = useQueryState("step", parseAsInteger.withDefault(1));
-  const index = Math.min(Math.max(stepNumber, 1), steps.length) - 1;
+  // A draft is taken up at the first step that still lacks something; someone who starts, starts at
+  // step 1. A step the address names is the one shown, whatever the steps before it hold.
+  const [landing] = useState(() =>
+    initial.application
+      ? firstUnfinished(
+          steps,
+          lackingBy(defaults, {
+            organization: initial.organization,
+            questions: initial.program.questions,
+          }),
+        )
+      : 0,
+  );
+  const [stepNumber, setStepNumber] = useQueryState("step", parseAsInteger);
+  const index = Math.min(Math.max(stepNumber ?? landing + 1, 1), steps.length) - 1;
   const step = steps[index];
+  // How far the person has been: a step ahead of that is not said to be done or to lack anything.
+  const [reached, setReached] = useState(index);
+  if (index > reached) {
+    setReached(index);
+  }
 
   // Saves run one after another, each with the version the one before answered.
   const version = useRef<number | null>(initial.application?.version ?? null);
@@ -176,6 +198,13 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   const draft = useStore(form.store, (state) => state.values.application);
   const solution = useStore(form.store, (state) => state.values.solution);
   const submitting = useStore(form.store, (state) => state.isSubmitting);
+  // What each step still lacks by its own rules, as the form stands now.
+  const values = useStore(form.store, (state) => state.values);
+  const lacking = lackingBy(values, {
+    organization: view.organization,
+    questions: program.questions,
+  });
+  const complete = steps.every((key) => lacking[key].length === 0);
 
   const failureWords = useFailureWords();
   const errorText = useCallback(
@@ -329,12 +358,17 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
     return run.catch((error: unknown) => setProblem(errorText(error)));
   }
 
-  function goTo(next: number) {
+  // The field a step was opened for, from a line of the review that says it is missing.
+  const wanted = useRef<string | null>(null);
+
+  function goTo(next: number, field?: string) {
     setProblem(null);
+    wanted.current = field ?? null;
     void setStepNumber(next + 1);
   }
 
-  // A step that opens starts at the top of the page, with the focus on its heading.
+  // A step that opens starts at the top of the page, with the focus on its heading, or at the
+  // field it was opened for.
   const heading = useRef<HTMLHeadingElement>(null);
   const shown = useRef(step);
   useEffect(() => {
@@ -342,9 +376,14 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
       return;
     }
     shown.current = step;
+    const field = wanted.current;
+    wanted.current = null;
+    if (field && focusField(form, field)) {
+      return;
+    }
     window.scrollTo({ top: 0 });
     heading.current?.focus({ preventScroll: true });
-  }, [step]);
+  }, [step, form]);
 
   /** Continue, once the step holds what it needs: saves it and opens the next one. */
   async function next(values: ApplyValues) {
@@ -463,9 +502,16 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
             steps={steps.map((key, position) => ({
               id: key,
               title: t(`steps.${key}.title`),
-              done: position < index,
+              // Done by its own rules, not by where it stands: a step passed with something
+              // missing says so instead of showing a check.
+              done: position < reached && key !== "review" && lacking[key].length === 0,
+              problem:
+                position < reached && position !== index && lacking[key].length > 0
+                  ? t("stepLacks", { count: lacking[key].length })
+                  : undefined,
             }))}
             current={step}
+            doneLabel={t("stepDone")}
             className="max-lg:top-16 max-lg:-mx-4 max-lg:-mt-6 max-lg:px-4 md:max-lg:-mx-8 md:max-lg:-mt-12 md:max-lg:px-8"
           />
           <p className="flex gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground max-lg:hidden">
@@ -474,11 +520,14 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
           </p>
         </aside>
 
-        {/* Below 768px the header has no room for the deadline; it is said here. */}
-        <p className="flex items-center gap-1 text-xs text-muted-foreground md:hidden">
-          <Clock3Icon className="size-3.5 shrink-0" aria-hidden="true" />
-          {t("closes", { when: closes })}
-        </p>
+        {/* What the header has no room for is said here: the program below 640px, the deadline below 768px. */}
+        <div className="flex flex-col gap-1 md:hidden">
+          <p className="text-sm font-medium sm:hidden">{program.name}</p>
+          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Clock3Icon className="size-3.5 shrink-0" aria-hidden="true" />
+            {t("closes", { when: closes })}
+          </p>
+        </div>
 
         <main className="flex min-w-0 flex-1 flex-col gap-8 rounded-3xl border bg-card p-5 md:p-10">
           <div className="flex flex-col gap-2">
@@ -541,7 +590,9 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
                 />
               )}
             </AllRequired>
-            {step === "review" && <StepReview form={form} view={view} steps={steps} edit={goTo} />}
+            {step === "review" && (
+              <StepReview form={form} view={view} steps={steps} lacking={lacking} edit={goTo} />
+            )}
 
             <div className="fixed inset-x-0 bottom-0 z-10 flex flex-col gap-3 border-t bg-background px-4 pt-3 pb-6 md:static md:border-t md:bg-transparent md:px-0 md:pt-6 md:pb-0">
               {/* With the actions, so on a phone it is not under the bar they are fixed in. */}
@@ -549,6 +600,10 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
                 <p role="alert" className="text-sm text-destructive">
                   {problem}
                 </p>
+              )}
+              {/* Why Submit is held, beside it: the lines marked above lead to what is missing. */}
+              {step === "review" && !complete && program.open && (
+                <p className="text-sm text-muted-foreground">{t("review.held")}</p>
               )}
               <div className="flex items-center justify-between gap-3">
                 {index === 0 ? (
@@ -565,7 +620,9 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
                   </Button>
                 )}
                 <form.AppForm>
-                  <form.SubmitButton disabled={!program.open || leaving}>
+                  <form.SubmitButton
+                    disabled={!program.open || leaving || (step === "review" && !complete)}
+                  >
                     {step !== "review"
                       ? t("continue")
                       : view.application?.status === "submitted"
@@ -986,12 +1043,16 @@ function StepReview({
   form,
   view,
   steps,
+  lacking,
   edit,
 }: {
   form: ApplyForm;
   view: ApplicationView;
   steps: ApplyStep[];
-  edit: (index: number) => void;
+  /** What each step still lacks, as the names of the form's fields. */
+  lacking: Record<ApplyStep, string[]>;
+  /** Opens a step, at one of its fields when the line of that field asks. */
+  edit: (index: number, field?: string) => void;
 }) {
   const t = useTranslations("Apply.review");
   const you = useTranslations("Apply.you");
@@ -1001,62 +1062,101 @@ function StepReview({
   const countryName = useCountryName();
   const draft = useStore(form.store, (state) => state.values.application);
   const solution = useStore(form.store, (state) => state.values.solution);
+  const who = useStore(form.store, (state) => state.values.who);
+  const teamName = useStore(form.store, (state) => state.values.team.name);
   const contact = draft.contact;
   const organization = view.organization;
-  const none = t("notAdded");
 
-  const blocks: { step: Exclude<ApplyStep, "review">; rows: [string, string][] }[] = [
+  /** A line of the review: its name, what it holds, and the field of the form it is filled in at. */
+  type Row = { label: string; value: string; field?: string };
+  const lacks = (step: ApplyStep, field: string) => lacking[step].includes(field);
+
+  const blocks: { step: Exclude<ApplyStep, "review">; rows: Row[] }[] = [
     {
       step: "you",
       rows: [
-        [
-          t("applyingAs"),
-          organization ? `${organization.name} · ${typeName(organization.type)}` : none,
-        ],
-        [t("name"), `${contact.firstName} ${contact.lastName}`.trim() || none],
-        [you("email"), view.email],
-        [you("phone"), contact.phone || none],
-        [you("country"), contact.country ? countryName(contact.country) : none],
-        [you("linkedin"), contact.linkedin || none],
-        ...(organization?.teamSize && organization.type !== "independent_builder"
-          ? [[t("teamSize"), sizeName(organization.teamSize)] as [string, string]]
+        {
+          label: t("applyingAs"),
+          value: organization ? `${organization.name} · ${typeName(organization.type)}` : "",
+          field: "who",
+        },
+        // Someone in no organization yet who applies as a team names it in step 1.
+        ...(!organization && who === "team"
+          ? [{ label: you("teamName"), value: teamName, field: "team.name" }]
           : []),
-        ...(draft.teamBackground
-          ? [[you("teamBackground"), draft.teamBackground] as [string, string]]
+        {
+          label: t("name"),
+          value: `${contact.firstName} ${contact.lastName}`.trim(),
+          field: lacks("you", "application.contact.firstName")
+            ? "application.contact.firstName"
+            : "application.contact.lastName",
+        },
+        { label: you("email"), value: view.email },
+        { label: you("phone"), value: contact.phone, field: "application.contact.phone" },
+        {
+          label: you("country"),
+          value: contact.country ? countryName(contact.country) : "",
+          field: "application.contact.country",
+        },
+        { label: you("linkedin"), value: contact.linkedin },
+        ...(organization?.teamSize && organization.type !== "independent_builder"
+          ? [{ label: t("teamSize"), value: sizeName(organization.teamSize) }]
+          : []),
+        // Asked of a team or a company only, so it has a line when it is held or still missing.
+        ...(draft.teamBackground || lacks("you", "application.teamBackground")
+          ? [
+              {
+                label: you("teamBackground"),
+                value: draft.teamBackground,
+                field: "application.teamBackground",
+              },
+            ]
           : []),
       ],
     },
     {
       step: "solution",
       rows: [
-        [t("solution"), solution.name || none],
-        [t("summary"), solution.summary || none],
-        [t("problemsSolved"), solution.problemsSolved || none],
-        [t("maturity"), solution.maturity ? maturity(solution.maturity) : none],
-        [t("traction"), draft.traction || none],
-        [t("builtWith"), draft.builtWith.join(", ") || none],
-        [t("deck"), draft.deck?.fileName ?? none],
+        { label: t("solution"), value: solution.name, field: "solution.name" },
+        { label: t("summary"), value: solution.summary, field: "solution.summary" },
+        {
+          label: t("problemsSolved"),
+          value: solution.problemsSolved,
+          field: "solution.problemsSolved",
+        },
+        {
+          label: t("maturity"),
+          value: solution.maturity ? maturity(solution.maturity) : "",
+          field: "solution.maturity",
+        },
+        { label: t("traction"), value: draft.traction },
+        { label: t("builtWith"), value: draft.builtWith.join(", ") },
+        { label: t("deck"), value: draft.deck?.fileName ?? "", field: "application.deck" },
       ],
     },
     ...(steps.includes("questions")
       ? [
           {
             step: "questions" as const,
-            rows: view.program.questions.map((question): [string, string] => {
+            rows: view.program.questions.map((question): Row => {
               const value = draft.answers[question.id] ?? "";
               const shown =
                 question.kind === "confirm"
                   ? value === "true"
                     ? t("confirmed")
-                    : none
+                    : ""
                   : question.kind === "file"
                     ? (view.application?.files[question.id]?.fileName ??
-                      (value ? t("uploaded") : none))
+                      (value ? t("uploaded") : ""))
                     : question.kind === "multi_choice"
                       ? // One choice a line: a choice may hold a comma of its own.
-                        chosenOptions(value).join("\n") || none
-                      : value || none;
-              return [question.label, shown];
+                        chosenOptions(value).join("\n")
+                      : value;
+              return {
+                label: question.label,
+                value: shown,
+                field: `application.answers.${question.id}`,
+              };
             }),
           },
         ]
@@ -1080,12 +1180,31 @@ function StepReview({
             </Button>
           </div>
           <dl className="flex flex-col gap-2.5">
-            {block.rows.map(([label, value]) => (
-              <div key={label} className="grid gap-1 text-sm sm:grid-cols-3 sm:gap-4">
-                <dt className="text-muted-foreground">{label}</dt>
-                <dd className="break-words whitespace-pre-line sm:col-span-2">{value}</dd>
-              </div>
-            ))}
+            {block.rows.map(({ label, value, field }) => {
+              // Missing by the step's own rules: the line says so and leads to the field.
+              const missing = field !== undefined && lacks(block.step, field);
+              return (
+                <div key={label} className="grid gap-1 text-sm sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-muted-foreground">{label}</dt>
+                  {missing ? (
+                    <dd className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:col-span-2">
+                      {value && <span className="min-w-0 break-words">{value}</span>}
+                      <span className="font-medium text-destructive">{t("missing")}</span>
+                      <TextButton
+                        aria-label={t("fillInNamed", { field: label })}
+                        onClick={() => edit(steps.indexOf(block.step), field)}
+                      >
+                        {t("fillIn")}
+                      </TextButton>
+                    </dd>
+                  ) : (
+                    <dd className="break-words whitespace-pre-line sm:col-span-2">
+                      {value || t("notAdded")}
+                    </dd>
+                  )}
+                </div>
+              );
+            })}
           </dl>
         </section>
       ))}

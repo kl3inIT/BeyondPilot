@@ -21,7 +21,8 @@ type ReviewApplicationPageProps = {
 
 /**
  * One application under review: what its applicant submitted last, beside the caller's assessment.
- * An operator also reads every judge's score and the history, and decides. Below 1024px the
+ * An operator decides first in their column, and also reads every judge's score and the history;
+ * from 1024px that column is capped at the height of the screen and scrolls by itself. Below 1024px the
  * application comes first, so that it is read before anyone's scores, and the assessment keeps a
  * bar at the bottom of the screen with its progress.
  */
@@ -91,7 +92,22 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
         <div className="min-w-0 lg:col-span-2">
           <SubmittedRecord applicationId={review.id} submitted={submitted} />
         </div>
-        <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-4">
+        {/*
+          From 1024px the column stays beside the application and is never taller than the screen:
+          what does not fit scrolls inside it, so a long application pushes nothing out of reach.
+          An operator is here to decide, so the decision leads their column.
+        */}
+        <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-0 lg:-my-4 lg:max-h-dvh lg:overflow-y-auto lg:py-4">
+          {head.operator && !review.own && (
+            <DecisionPanel
+              key={`${review.id}-${review.reviewStatus}`}
+              programId={head.programId}
+              applicationId={review.id}
+              decision={review.reviewStatus ?? "under_review"}
+              released={released}
+              nextHref={nextHref}
+            />
+          )}
           {review.own ? (
             <p className="rounded-lg border bg-muted p-4 text-sm">{t("own")}</p>
           ) : (
@@ -164,16 +180,6 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
                 </ul>
               )}
             </section>
-          )}
-          {head.operator && !review.own && (
-            <DecisionPanel
-              key={`${review.id}-${review.reviewStatus}`}
-              programId={head.programId}
-              applicationId={review.id}
-              decision={review.reviewStatus ?? "under_review"}
-              released={released}
-              nextHref={nextHref}
-            />
           )}
           <section
             aria-labelledby="history-title"

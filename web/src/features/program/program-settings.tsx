@@ -27,11 +27,11 @@ import { failedWith, type ErrorCode } from "@/lib/api/failure";
 import { saveProgram, type AdminProgram } from "@/lib/api/generated";
 import { fieldOfPointer } from "@/lib/api/problem-fields";
 import { programRoute, publicSiteHost, siteRoutes } from "@/lib/site";
-import { instantInVietnam } from "@/lib/vietnam-time";
+import { instantInVietnam, partsInVietnam } from "@/lib/vietnam-time";
 
 import { CoverUpload } from "./cover-upload";
-import { programFormatter } from "./program-format";
-import { programState } from "./program-labels";
+import { programFormatter, vietnamDay } from "./program-format";
+import { programStanding, programState } from "./program-labels";
 import {
   missingToPublish,
   ProgramMenu,
@@ -75,6 +75,31 @@ function SettingsSection({
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-5 md:max-w-2xl">{children}</div>
     </section>
+  );
+}
+
+/**
+ * A key date or an event as a row of its list: when it is comes first, at the size of the text
+ * around it and in a column of its own from 640px, so a list is read down its dates and two entries
+ * of one name are told apart at a glance.
+ */
+function ScheduleEntry({
+  when,
+  title,
+  note,
+}: {
+  when: string;
+  title: string;
+  note?: string | null;
+}) {
+  return (
+    <div className="flex min-w-0 flex-1 flex-col gap-x-4 gap-y-0.5 sm:flex-row sm:items-baseline">
+      <span className="text-sm tabular-nums sm:w-48 sm:shrink-0">{when}</span>
+      <div className="flex min-w-0 flex-col">
+        <span className="text-sm font-medium break-words">{title}</span>
+        {note && <span className="text-xs text-muted-foreground">{note}</span>}
+      </div>
+    </div>
   );
 }
 
@@ -197,7 +222,24 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
   );
 
   const draft = program.status === "draft";
-  const state = programState({ status: program.status, phase: "upcoming" });
+  // The moment the screen opened places the program in its dates. The program is read without an
+  // "opened" fact or its phase, so both are worked out here from what it holds, as the backend does.
+  const [now] = useState(() => Date.now());
+  const standing = programStanding(program, now, partsInVietnam(new Date(now).toISOString()).day);
+  const state = programState({ status: program.status, phase: standing.phase });
+  // Once applications have opened, when they open is settled (PROGRAM_OPENING_FIXED), and a
+  // published program keeps its cover (PROGRAM_PUBLISHED_INCOMPLETE): each is said at its field
+  // instead of being refused on Save.
+  const opened = program.applications ? Date.parse(program.applications.opensAt) <= now : false;
+  const next = standing.next;
+  const nextText =
+    next === null
+      ? null
+      : "at" in next
+        ? t(`phase.${next.kind}`, {
+            when: `${format.dateTime(new Date(next.at), "day")}, ${format.dateTime(new Date(next.at), "time")}`,
+          })
+        : t(`phase.${next.kind}`, { day: format.dateTime(vietnamDay(next.day), "date") });
 
   return (
     <form
@@ -212,9 +254,17 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
       <AdminPageHeader
         title={program.name}
         badges={
-          <Badge variant={program.status === "published" ? "success" : state.variant}>
-            {program.status === "published" ? t("published") : states("draft")}
-          </Badge>
+          <>
+            <Badge variant={program.status === "published" ? "success" : state.variant}>
+              {program.status === "published" ? t("published") : states("draft")}
+            </Badge>
+            {/* Published says only that the page is public: the phase and what comes next say where it stands. */}
+            {!draft && (
+              <span className="text-sm text-muted-foreground">
+                {[states(standing.phase), nextText].filter(Boolean).join(" · ")}
+              </span>
+            )}
+          </>
         }
         lead={
           dirty
@@ -335,6 +385,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
                     value={field.state.value}
                     onChange={field.handleChange}
                     invalid={errors.length > 0}
+                    kept={draft ? undefined : t("cover.kept")}
                   />
                   <FieldError errors={errors} />
                 </Field>
@@ -384,7 +435,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
 
         <SettingsSection title={t("applications.title")} what={t("applications.what")}>
           <form.AppField name="takesApplications">
-            {(field) => <field.CheckboxField label={t("applications.takes")} />}
+            {(field) => <field.CheckboxField label={t("applications.takes")} disabled={opened} />}
           </form.AppField>
           <form.Subscribe selector={(formState) => formState.values.takesApplications}>
             {(takes) =>
@@ -392,10 +443,23 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
                 <>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-5">
                     <form.AppField name="opensDay">
-                      {(field) => <field.TextField label={t("applications.opens")} type="date" />}
+                      {(field) => (
+                        <field.TextField
+                          label={t("applications.opens")}
+                          type="date"
+                          disabled={opened}
+                          description={opened ? t("applications.opened") : undefined}
+                        />
+                      )}
                     </form.AppField>
                     <form.AppField name="opensTime">
-                      {(field) => <field.TextField label={t("applications.time")} type="time" />}
+                      {(field) => (
+                        <field.TextField
+                          label={t("applications.time")}
+                          type="time"
+                          disabled={opened}
+                        />
+                      )}
                     </form.AppField>
                     <form.AppField name="closesDay">
                       {(field) => <field.TextField label={t("applications.closes")} type="date" />}
@@ -477,40 +541,41 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
                   unsaved: !stored.keyDates.has(JSON.stringify(value)),
                 })),
               ].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+              // Without a date there is no list, and so no rule under nothing.
               return (
-                <ul className="flex flex-col border-b">
-                  {rows.map((row) => (
-                    <li
-                      key={row.index === null ? `window-${row.title}` : `date-${row.index}`}
-                      className="flex items-center gap-3 border-t py-3"
-                    >
-                      <div className="flex min-w-0 flex-1 flex-col">
-                        <span className="text-sm font-medium">{row.title}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {[when(row.startsAt, row.endsAt, row.allDay), row.note]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </span>
-                      </div>
-                      {row.unsaved && <Badge variant="outline">{t("notSaved")}</Badge>}
-                      {row.index === null ? (
-                        <LockIcon
-                          className="size-4 text-muted-foreground"
-                          aria-label={t("keyDates.locked")}
+                rows.length > 0 && (
+                  <ul className="flex flex-col border-b">
+                    {rows.map((row) => (
+                      <li
+                        key={row.index === null ? `window-${row.title}` : `date-${row.index}`}
+                        className="flex items-center gap-3 border-t py-3"
+                      >
+                        <ScheduleEntry
+                          when={when(row.startsAt, row.endsAt, row.allDay)}
+                          title={row.title}
+                          note={row.note}
                         />
-                      ) : (
-                        <Button
-                          prominence="tertiary"
-                          size="sm"
-                          aria-label={t("editNamed", { name: row.title })}
-                          onClick={() => setKeyDate({ index: row.index })}
-                        >
-                          {t("edit")}
-                        </Button>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                        {row.unsaved && <Badge variant="outline">{t("notSaved")}</Badge>}
+                        {row.index === null ? (
+                          <LockIcon
+                            role="img"
+                            className="size-4 shrink-0 text-muted-foreground"
+                            aria-label={t("keyDates.locked")}
+                          />
+                        ) : (
+                          <Button
+                            prominence="tertiary"
+                            size="sm"
+                            aria-label={t("editNamed", { name: row.title })}
+                            onClick={() => setKeyDate({ index: row.index })}
+                          >
+                            {t("edit")}
+                          </Button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )
               );
             }}
           </form.Subscribe>
@@ -540,14 +605,11 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
                       : [value.city, value.country].filter(Boolean).join(", ");
                     return (
                       <li key={`event-${index}`} className="flex items-center gap-3 border-t py-3">
-                        <div className="flex min-w-0 flex-1 flex-col">
-                          <span className="text-sm font-medium">{value.title}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {[when(saved.startsAt, saved.endsAt, false), where]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </span>
-                        </div>
+                        <ScheduleEntry
+                          when={when(saved.startsAt, saved.endsAt, false)}
+                          title={value.title}
+                          note={where || null}
+                        />
                         {!stored.events.has(JSON.stringify(value)) && (
                           <Badge variant="outline">{t("notSaved")}</Badge>
                         )}
@@ -597,7 +659,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
               missing > 0 && (
                 <a
                   href="#publish-checklist"
-                  className="text-xs text-muted-foreground underline-offset-4 hover:underline"
+                  className="inline-flex min-h-6 items-center self-start text-xs text-muted-foreground underline-offset-4 hover:underline md:self-auto"
                 >
                   {t("publish.missing", { count: missing })}
                 </a>

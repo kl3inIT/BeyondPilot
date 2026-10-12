@@ -146,6 +146,27 @@ export function submittedView(email, organization) {
   };
 }
 
+/**
+ * The same application before it was submitted, as a colleague left it: everything filled in but
+ * the solution's deck, so step 2 is the one that still lacks something.
+ */
+export const draftId = "3e2d1c0b-0000-4000-8000-000000000032";
+
+export function draftView(email, organization) {
+  const view = submittedView(email, organization);
+  return {
+    ...view,
+    application: {
+      ...view.application,
+      id: draftId,
+      status: "draft",
+      deck: null,
+      submissions: 0,
+      submittedAt: null,
+    },
+  };
+}
+
 const pocketPolicy = {
   id: "5a0b7c1d-0000-4000-8000-000000000020",
   name: "Pocket Policy",
@@ -172,10 +193,18 @@ export function answerApplication(url, session, email) {
   if (!session) {
     return [401, {}];
   }
-  // The owner of Pocket Policy has submitted; anyone else has not applied yet.
+  // The owner of Pocket Policy has submitted, a member of it has a draft of their own, and anyone
+  // else has not applied yet.
   const applied = session === "owner";
+  const drafting = session === "member";
   if (pathname === "/api/proposal/programs/insurance-ai-tasco/application") {
+    if (drafting) {
+      return [200, draftView(email, pocketPolicy)];
+    }
     return [200, applied ? submittedView(email, pocketPolicy) : emptyView(email)];
+  }
+  if (drafting && pathname === `/api/proposal/applications/${draftId}`) {
+    return [200, draftView(email, pocketPolicy)];
   }
   if (pathname === "/api/proposal/applications") {
     const view = submittedView(email, pocketPolicy);
