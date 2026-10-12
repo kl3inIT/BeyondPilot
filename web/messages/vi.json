@@ -656,7 +656,6 @@
     "connect": {
       "address": "Địa chỉ server",
       "copy": "Sao chép",
-      "copied": "Đã sao chép",
       "copyPrompt": "Sao chép câu lệnh",
       "appsLabel": "Ứng dụng",
       "apps": {
@@ -2883,13 +2882,14 @@
       "saved": "Đã lưu",
       "failed": "Chưa lưu được. Hãy thử lại.",
       "setup": {
-        "address": "Địa chỉ server",
         "operator": {
           "title": "Server cho operator",
+          "address": "Địa chỉ server cho operator",
           "lead": "Chỉ operator kết nối được, và server này đọc mọi khu vực, kể cả mục chưa niêm yết."
         },
         "user": {
           "title": "Server cho người dùng",
+          "address": "Địa chỉ server cho người dùng",
           "lead": "Mọi người đã đăng nhập đều kết nối được, và server này đọc những gì khách xem được.",
           "on": "Bật: mọi người kết nối được ứng dụng",
           "off": "Tắt: server trả 404 và các ứng dụng đã kết nối ngừng hoạt động"
@@ -3441,7 +3441,7 @@
       },
       "settings": {
         "metaTitle": "Cài đặt email",
-        "copy": "Sao chép",
+        "copy": "Sao chép {what}",
         "secretKept": "Để trống để giữ giá trị đã lưu.",
         "saved": "Đã lưu cài đặt.",
         "testSent": "Đã gửi email thử tới {email}. Kiểm tra xem mail đã tới chưa.",
@@ -3918,7 +3918,9 @@
       "title": "GenAI Fund đang duyệt tổ chức của bạn",
       "lead": "Cho tới khi được duyệt, {name} chưa xuất hiện trong các danh mục và chưa thể đăng giải pháp công khai.",
       "foot": "Chúng tôi gửi email cho các chủ sở hữu khi có quyết định.",
-      "edit": "Sửa hồ sơ"
+      "edit": "Sửa hồ sơ",
+      "missing": "Còn {count} mục bắt buộc chưa điền: {facts}. Người duyệt đọc hồ sơ đúng như hiện tại.",
+      "complete": "Hồ sơ đã đủ các mục bắt buộc."
     },
     "needsChanges": {
       "title": "GenAI Fund yêu cầu sửa {name}",
@@ -3966,6 +3968,7 @@
       "createTitle": "Tạo tổ chức của bạn",
       "createLead": "Người làm độc lập có thể tạo một studio hoặc một nhóm.",
       "edit": "Sửa hồ sơ",
+      "complete": "Hoàn thiện hồ sơ",
       "profileTitle": "Hồ sơ tổ chức",
       "basics": "Thông tin cơ bản",
       "about": "Giới thiệu",
@@ -3983,6 +3986,7 @@
       "description": "Mô tả ngắn",
       "descriptionHint": "Tổ chức làm gì và cho ai.",
       "save": "Lưu thay đổi",
+      "unchanged": "Chưa có gì thay đổi.",
       "create": "Gửi duyệt",
       "cancel": "Hủy",
       "emailDomain": "Tên miền email đã xác minh",

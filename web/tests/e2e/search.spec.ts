@@ -71,7 +71,7 @@ test.describe("search", () => {
     ).toBeVisible();
     await expect(
       page.getByRole("link", { name: "AI claims triage for motor insurance" }),
-    ).toHaveAttribute("href", "/use-cases?q=AI%20claims%20triage%20for%20motor%20insurance");
+    ).toHaveAttribute("href", "/use-cases/6c1f8f2e-0b1a-4c56-9a3e-0d5b2f4e7a10");
     await expectNoSeriousA11yViolations(page);
   });
 
