@@ -68,6 +68,7 @@ After the load, empty parts of the imported records are filled from public sourc
 
 The work folders hold the companies' pages and decks: they stay under `.tmp/` and are never committed.
 | `enterprise_logos.py` | Fetches the logos the `enterprises` sheet names and writes `enterprise-logos.sql` and the files, for the organizations that have no logo |
+| `people.py` | Reads the `representatives` sheet and writes `startup-invitations.sql`: an operator's invitation for each person of a startup to the organization the load made, with nobody's account created and no email sent |
 
 ## People and enterprises of the full export
 
@@ -76,6 +77,7 @@ GenAI Fund's full export of 8 October 2026 (`genai_platform_full_db_export_2026-
 1. Enterprise profiles: `python -I infrastructure/legacy-import/enterprises.py <full-export.xlsx> <out>` writes `enterprise-profiles.sql` and prints the counts. On the host, after a dump: `docker compose exec -T postgres psql -U beyondpilot -d beyondpilot -v ON_ERROR_STOP=1 -f - < enterprise-profiles.sql`. It runs in one transaction, fills only what is empty on an organization that exists, and ends with a notice of how many it completed; a second run completes none.
 2. Missing organizations: the same run writes `enterprise-organizations.sql`. After a dump, load it with the operator account, as `load.sql`: `psql -v ON_ERROR_STOP=1 -v operator=<id> -f - < enterprise-organizations.sql`. It creates, in review and with no member, the organization of each enterprise that has people and no use case, the one with the most people first. An enterprise whose name or website an organization already has is not created. It ends with a notice of the counts and the list of what it did not create and why; the list names companies and stays with the export. A second run creates none.
 3. Logos: `python -I infrastructure/legacy-import/enterprise_logos.py <full-export.xlsx> <out> <cache>` fetches each logo by the rules of `fetch.py` and writes `logo-files/` and `enterprise-logos.sql`. Copy the files into the object store as in step 2 of the load above, then run the SQL with the operator account. A logo is named only on an organization that has none, and a file no organization took is removed again. On the export of 8 October 2026, 28 enterprises name a logo: 12 were fetched, 10 are not public on Google Drive and 6 are addresses the load does not fetch.
+4. People of startups: `python -I infrastructure/legacy-import/people.py <full-export.xlsx> <out>` writes `startup-invitations.sql` and prints the counts. After a dump, run it with the operator account. Each person gets an open invitation to their startup's organization that does not lapse; the person who signs in with the address sees it and accepts. An address that belongs to an organization already, or is an operator's, gets none. It ends with a notice of the counts and the reasons, as counts, for what it did not write. A second run writes none. To take the load back before anyone accepted: `delete from organization_invitation where sent_by_operator and status = 'pending' and expires_at > now() + interval '50 years'`.
 
 ## Passages for matching
 
