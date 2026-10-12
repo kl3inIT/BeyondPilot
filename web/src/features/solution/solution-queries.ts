@@ -1,6 +1,7 @@
 import { knownSort } from "@/lib/list-sort";
 import { ApiError } from "@/lib/api/client";
 import {
+  getAdminOffer,
   getAdminSolution,
   getAdminSolutionDraft,
   getMySolution,
@@ -15,6 +16,7 @@ import {
   listSolutions,
   search as searchDirectory,
   type AdminOffer,
+  type AdminOfferDetail,
   type AdminSolutionList,
   type MySolutions,
   type OwnOffer,
@@ -217,6 +219,16 @@ export async function readAdminSolution(id: string): Promise<Solution | null> {
 export async function readAdminOffers(): Promise<AdminOffer[]> {
   const { data } = await listAdminOffers(await sessionRequest());
   return data;
+}
+
+/** One offer with the solutions that come with it, or `null` when there is no such offer. Server only. */
+export async function readAdminOffer(id: string): Promise<AdminOfferDetail | null> {
+  try {
+    const { data } = await getAdminOffer({ ...(await sessionRequest()), path: { id } });
+    return data;
+  } catch (error) {
+    return absent(error);
+  }
 }
 
 /** One draft as an operator's editor reads it, or `null`. Server only. */

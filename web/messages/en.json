@@ -951,6 +951,8 @@
           "offers_choose": "Chose the offers of a solution",
           "offer_create": "Added an offer",
           "offer_update": "Changed an offer",
+          "offer_close": "Closed an offer to new solutions",
+          "offer_reopen": "Opened an offer to new solutions again",
           "offer_delete": "Deleted an offer"
         },
         "introduction": {
@@ -1085,6 +1087,8 @@
           "offers_choose": "Chose the offers of the solution <resource></resource>",
           "offer_create": "Added the offer <resource></resource>",
           "offer_update": "Changed the offer <resource></resource>",
+          "offer_close": "Closed the offer <resource></resource> to new solutions",
+          "offer_reopen": "Opened the offer <resource></resource> to new solutions again",
           "offer_delete": "Deleted the offer <resource></resource>"
         },
         "introduction": {
@@ -1587,13 +1591,40 @@
       "title": "Offers",
       "genAiFund": "GenAI Fund",
       "columns": {
-        "writer": "Written by"
+        "writer": "Written by",
+        "state": "Status"
+      },
+      "filters": {
+        "search": "Search offers",
+        "state": {
+          "label": "Status",
+          "all": "All statuses"
+        }
+      },
+      "noMatch": "No offer matches the search.",
+      "detail": {
+        "back": "Offers",
+        "fields": {
+          "writer": "Written by",
+          "address": "Claimed at",
+          "created": "Created",
+          "updated": "Last changed"
+        },
+        "closedNote": "Closed to new solutions. The solutions below keep it and still show it.",
+        "solutions": {
+          "title": "Solutions that come with it",
+          "empty": "No solution comes with this offer.",
+          "columns": {
+            "solution": "Solution",
+            "organization": "Organization",
+            "review": "Review"
+          }
+        }
       }
     },
     "talent": {
       "metaTitle": "Talent · BeyondPilot",
       "title": "Talent",
-      "lead": "Every profile people sent for review.",
       "columns": {
         "person": "Person",
         "headline": "Headline",
@@ -1678,7 +1709,6 @@
         "link": "Reported messages",
         "metaTitle": "Reported messages · BeyondPilot",
         "title": "Reported messages",
-        "lead": "The sender was told the message was declined.",
         "back": "All talent",
         "from": "From {sender}",
         "to": "To {name}",
@@ -1784,7 +1814,6 @@
       "form": {
         "metaTitle": "Create a use case · BeyondPilot",
         "title": "Create a use case",
-        "lead": "The audit log records it as created by GenAI Fund.",
         "organization": "Create this use case for",
         "organizationPlaceholder": "Choose an organization",
         "organizationHint": "Only approved organizations are listed.",
@@ -2421,7 +2450,6 @@
     "matching": {
       "metaTitle": "Matching",
       "title": "Matching",
-      "lead": "A run is one search for solutions for one use case.",
       "blocks": {
         "run": {
           "title": "One run"
@@ -2652,7 +2680,6 @@
       "metaApps": "Connected apps · MCP · Admin · BeyondPilot",
       "metaActivity": "Activity · MCP · Admin · BeyondPilot",
       "title": "MCP",
-      "lead": "The servers AI apps reach BeyondPilot through, and what they may do.",
       "tabs": {
         "label": "MCP",
         "setup": "Setup",
@@ -3020,7 +3047,6 @@
         "metaTitle": "Email appearance",
         "back": "Templates",
         "title": "Appearance",
-        "lead": "What every email shares.",
         "color": "Accent colour",
         "colorPicker": "Pick a colour",
         "colorHint": "The colour of links and buttons.",
@@ -4357,7 +4383,8 @@
         "noMatch": "No offer matches.",
         "remove": "Remove {name}",
         "add": "New offer…",
-        "fromGenAiFund": "{title} (GenAI Fund)"
+        "fromGenAiFund": "{title} (GenAI Fund)",
+        "closed": "{title} (closed)"
       },
       "form": {
         "newTitle": "New offer",
@@ -4373,9 +4400,15 @@
       "done": {
         "created": "{name} added.",
         "saved": "{name} saved.",
-        "deleted": "{name} deleted."
+        "deleted": "{name} deleted.",
+        "closed": "{name} is closed to new solutions.",
+        "reopened": "{name} is open to new solutions again."
       },
       "fromGenAiFund": "From GenAI Fund",
+      "state": {
+        "open": "Open",
+        "closed": "Closed"
+      },
       "manage": {
         "title": "Offers",
         "create": "New offer",
@@ -4383,13 +4416,16 @@
           "offer": "Offer",
           "url": "Claimed at",
           "solutions": "Solutions",
-          "actions": "Actions"
+          "actions": "Actions",
+          "state": "Status"
         },
         "solutions": "{count, plural, =0 {No solution comes with it} one {# solution} other {# solutions}}",
         "openNamed": "Actions for {name}",
         "actions": {
           "edit": "Edit…",
-          "delete": "Delete…"
+          "delete": "Delete…",
+          "close": "Close to new solutions",
+          "reopen": "Open to new solutions"
         },
         "empty": {
           "title": "No offers yet",

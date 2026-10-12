@@ -951,6 +951,8 @@
           "offers_choose": "Chọn ưu đãi cho giải pháp",
           "offer_create": "Thêm ưu đãi",
           "offer_update": "Sửa ưu đãi",
+          "offer_close": "Đóng ưu đãi với giải pháp mới",
+          "offer_reopen": "Mở lại ưu đãi với giải pháp mới",
           "offer_delete": "Xóa ưu đãi"
         },
         "introduction": {
@@ -1085,6 +1087,8 @@
           "offers_choose": "Chọn ưu đãi cho giải pháp <resource></resource>",
           "offer_create": "Thêm ưu đãi <resource></resource>",
           "offer_update": "Sửa ưu đãi <resource></resource>",
+          "offer_close": "Đóng ưu đãi <resource></resource> với giải pháp mới",
+          "offer_reopen": "Mở lại ưu đãi <resource></resource> với giải pháp mới",
           "offer_delete": "Xóa ưu đãi <resource></resource>"
         },
         "introduction": {
@@ -1587,13 +1591,40 @@
       "title": "Ưu đãi",
       "genAiFund": "GenAI Fund",
       "columns": {
-        "writer": "Người tạo"
+        "writer": "Người tạo",
+        "state": "Trạng thái"
+      },
+      "filters": {
+        "search": "Tìm ưu đãi",
+        "state": {
+          "label": "Trạng thái",
+          "all": "Mọi trạng thái"
+        }
+      },
+      "noMatch": "Không có ưu đãi nào khớp với tìm kiếm.",
+      "detail": {
+        "back": "Ưu đãi",
+        "fields": {
+          "writer": "Người tạo",
+          "address": "Nhận tại",
+          "created": "Ngày tạo",
+          "updated": "Sửa lần cuối"
+        },
+        "closedNote": "Đã đóng với giải pháp mới. Các giải pháp bên dưới vẫn giữ và vẫn hiển thị ưu đãi này.",
+        "solutions": {
+          "title": "Giải pháp đi kèm",
+          "empty": "Chưa giải pháp nào đi kèm ưu đãi này.",
+          "columns": {
+            "solution": "Giải pháp",
+            "organization": "Tổ chức",
+            "review": "Duyệt"
+          }
+        }
       }
     },
     "talent": {
       "metaTitle": "Nhân lực · BeyondPilot",
       "title": "Nhân lực",
-      "lead": "Mọi hồ sơ đã được gửi duyệt.",
       "columns": {
         "person": "Người",
         "headline": "Giới thiệu ngắn",
@@ -1678,7 +1709,6 @@
         "link": "Lời nhắn bị báo cáo",
         "metaTitle": "Lời nhắn bị báo cáo · BeyondPilot",
         "title": "Lời nhắn bị báo cáo",
-        "lead": "Người gửi chỉ được báo là bị từ chối.",
         "back": "Tất cả nhân lực",
         "from": "Từ {sender}",
         "to": "Gửi {name}",
@@ -1784,7 +1814,6 @@
       "form": {
         "metaTitle": "Tạo use case · BeyondPilot",
         "title": "Tạo use case",
-        "lead": "Nhật ký thao tác ghi nhận use case do GenAI Fund tạo.",
         "organization": "Tạo use case này cho",
         "organizationPlaceholder": "Chọn một tổ chức",
         "organizationHint": "Chỉ liệt kê các tổ chức đã được duyệt.",
@@ -2421,7 +2450,6 @@
     "matching": {
       "metaTitle": "Ghép nối",
       "title": "Ghép nối",
-      "lead": "Một lượt là một lần tìm giải pháp cho một use case.",
       "blocks": {
         "run": {
           "title": "Trong một lượt"
@@ -2652,7 +2680,6 @@
       "metaApps": "Ứng dụng đã kết nối · MCP · Quản trị · BeyondPilot",
       "metaActivity": "Hoạt động · MCP · Quản trị · BeyondPilot",
       "title": "MCP",
-      "lead": "Các server để ứng dụng AI kết nối với BeyondPilot, và những gì chúng được làm.",
       "tabs": {
         "label": "MCP",
         "setup": "Thiết lập",
@@ -3020,7 +3047,6 @@
         "metaTitle": "Giao diện email",
         "back": "Mẫu",
         "title": "Giao diện",
-        "lead": "Những gì mọi email dùng chung.",
         "color": "Màu nhấn",
         "colorPicker": "Chọn màu",
         "colorHint": "Màu của liên kết và nút bấm.",
@@ -4357,7 +4383,8 @@
         "noMatch": "Không có ưu đãi nào khớp.",
         "remove": "Bỏ {name}",
         "add": "Ưu đãi mới…",
-        "fromGenAiFund": "{title} (GenAI Fund)"
+        "fromGenAiFund": "{title} (GenAI Fund)",
+        "closed": "{title} (đã đóng)"
       },
       "form": {
         "newTitle": "Ưu đãi mới",
@@ -4373,9 +4400,15 @@
       "done": {
         "created": "Đã thêm {name}.",
         "saved": "Đã lưu {name}.",
-        "deleted": "Đã xóa {name}."
+        "deleted": "Đã xóa {name}.",
+        "closed": "{name} không còn nhận thêm giải pháp mới.",
+        "reopened": "{name} nhận giải pháp mới trở lại."
       },
       "fromGenAiFund": "Từ GenAI Fund",
+      "state": {
+        "open": "Đang mở",
+        "closed": "Đã đóng"
+      },
       "manage": {
         "title": "Ưu đãi",
         "create": "Ưu đãi mới",
@@ -4383,13 +4416,16 @@
           "offer": "Ưu đãi",
           "url": "Nhận tại",
           "solutions": "Giải pháp",
-          "actions": "Thao tác"
+          "actions": "Thao tác",
+          "state": "Trạng thái"
         },
         "solutions": "{count, plural, =0 {Chưa giải pháp nào đi kèm} other {# giải pháp}}",
         "openNamed": "Thao tác với {name}",
         "actions": {
           "edit": "Sửa…",
-          "delete": "Xóa…"
+          "delete": "Xóa…",
+          "close": "Đóng với giải pháp mới",
+          "reopen": "Mở với giải pháp mới"
         },
         "empty": {
           "title": "Chưa có ưu đãi nào",

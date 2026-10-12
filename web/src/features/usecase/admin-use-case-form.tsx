@@ -288,7 +288,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
         if (step === "review") void form.handleSubmit();
       }}
     >
-      <AdminPageHeader title={t("title")} lead={t("lead")} />
+      <AdminPageHeader title={t("title")} />
 
       {/* A column below 1024px, so the bar of steps has the whole form to stick along. */}
       <div className="flex flex-col gap-8 lg:grid lg:grid-cols-3 lg:items-start">

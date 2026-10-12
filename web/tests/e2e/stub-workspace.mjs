@@ -531,6 +531,7 @@ export function answerWorkspace(url, session) {
               url: "https://offers.example/onboarding",
               solutions: 1,
               version: 0,
+              closed: false,
             },
           ]
         : [],

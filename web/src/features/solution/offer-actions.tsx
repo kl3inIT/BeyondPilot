@@ -16,13 +16,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
-import { deleteOffer, deleteOwnOffer, type AdminOffer } from "@/lib/api/generated";
+import {
+  deleteOffer,
+  deleteOwnOffer,
+  setOfferClosed,
+  setOwnOfferClosed,
+  type AdminOffer,
+} from "@/lib/api/generated";
 
 import { OfferDialog } from "./offer-dialog";
 import { solutionError } from "./solution-errors";
 
 /** An offer as a list shows it: the operators' list, or an organization's own. */
-type ListedOffer = Pick<AdminOffer, "id" | "title" | "url" | "version" | "solutions"> &
+type ListedOffer = Pick<AdminOffer, "id" | "title" | "url" | "version" | "solutions" | "closed"> &
   Partial<Pick<AdminOffer, "organizationId">>;
 
 type Scope = {
@@ -52,8 +58,46 @@ function CreateOffer({ own = false }: Scope) {
 }
 
 /**
- * What the ⋯ menu of one offer gives: changing it, and deleting it once no solution comes with it. A
- * deleted offer is gone for good, so the deletion is asked once.
+ * Closes an offer to new solutions, or opens it again. Whatever the answer, the page is read again,
+ * so it says what is true now: someone may have changed the offer meanwhile.
+ */
+function useCloseOffer(offer: ListedOffer, own: boolean) {
+  const notify = useNotify();
+  const router = useRouter();
+
+  return async function toggle() {
+    const closed = !offer.closed;
+    try {
+      await (own ? setOwnOfferClosed : setOfferClosed)({
+        path: { id: offer.id },
+        body: { closed, version: offer.version },
+      });
+      notify.success(closed ? "Solution.offers.done.closed" : "Solution.offers.done.reopened", {
+        name: offer.title,
+      });
+    } catch (error) {
+      notify.error(solutionError(error));
+    }
+    router.refresh();
+  };
+}
+
+/** The action on the record of an offer that closes it to new solutions, or opens it again. */
+function CloseOffer({ offer, own = false }: Scope & { offer: ListedOffer }) {
+  const t = useTranslations("Solution.offers.manage");
+  const toggle = useCloseOffer(offer, own);
+
+  return (
+    <Button prominence="secondary" size="lg" onClick={toggle}>
+      {offer.closed ? t("actions.reopen") : t("actions.close")}
+    </Button>
+  );
+}
+
+/**
+ * What the ⋯ menu of one offer gives: changing it, closing it to new solutions or opening it again,
+ * and deleting it once no solution comes with it. Closing keeps the offer on the solutions that come
+ * with it and can be undone, so it is not asked; a deleted offer is gone for good, so that is.
  */
 function OfferRowMenu({ offer, own = false }: Scope & { offer: ListedOffer }) {
   const t = useTranslations("Solution.offers.manage");
@@ -61,6 +105,7 @@ function OfferRowMenu({ offer, own = false }: Scope & { offer: ListedOffer }) {
   const router = useRouter();
   const [asking, setAsking] = useState<"edit" | "delete" | null>(null);
   const [pending, setPending] = useState(false);
+  const toggle = useCloseOffer(offer, own);
 
   async function remove() {
     setPending(true);
@@ -98,6 +143,9 @@ function OfferRowMenu({ offer, own = false }: Scope & { offer: ListedOffer }) {
             <DropdownMenuItem onClick={() => setAsking("edit")}>
               {t("actions.edit")}
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={toggle}>
+              {offer.closed ? t("actions.reopen") : t("actions.close")}
+            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
@@ -134,4 +182,4 @@ function OfferRowMenu({ offer, own = false }: Scope & { offer: ListedOffer }) {
   );
 }
 
-export { CreateOffer, OfferRowMenu };
+export { CloseOffer, CreateOffer, OfferRowMenu };

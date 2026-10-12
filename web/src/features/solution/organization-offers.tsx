@@ -7,6 +7,7 @@ import { OrganizationSection } from "@/features/organization/organization-sectio
 import type { OwnOffer } from "@/lib/api/generated";
 
 import { CreateOffer, OfferRowMenu } from "./offer-actions";
+import { OfferState } from "./offer-state";
 
 type OrganizationOffersProps = {
   offers: OwnOffer[];
@@ -56,6 +57,7 @@ function OrganizationOffers({ offers, editable }: OrganizationOffersProps) {
             surface
             columns={[
               { id: "title", header: t("columns.offer"), layout: { fill: true } },
+              { id: "state", header: t("columns.state") },
               { id: "url", header: t("columns.url"), layout: { width: "lg" } },
               { id: "solutions", header: t("columns.solutions"), layout: { numeric: true } },
               ...(editable
@@ -72,6 +74,7 @@ function OrganizationOffers({ offers, editable }: OrganizationOffersProps) {
               id: offer.id,
               cells: {
                 title: <span className="truncate font-medium">{offer.title}</span>,
+                state: <OfferState closed={offer.closed} />,
                 url: address(offer.url),
                 solutions: offer.solutions,
                 actions: (
@@ -96,6 +99,7 @@ function OrganizationOffers({ offers, editable }: OrganizationOffersProps) {
                   <span className="text-xs text-muted-foreground">
                     {t("solutions", { count: offer.solutions })}
                   </span>
+                  <OfferState closed={offer.closed} />
                 </div>
                 {editable && <OfferRowMenu offer={offer} own />}
               </li>
