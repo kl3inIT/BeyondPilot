@@ -1,11 +1,10 @@
 "use client";
 
-import { CheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
+import { StepsNav } from "@/components/composites/steps-nav";
 import { Link } from "@/i18n/navigation";
-import { cn } from "@/lib/utils";
 import { siteRoutes } from "@/lib/site";
 
 import { steps, type Step } from "./use-case-draft";
@@ -30,7 +29,8 @@ type WizardShellProps<S extends string = Step> = {
 
 /**
  * The frame of the use case pages that stand apart from the site: a header with the brand and the use case,
- * the list of steps on the left, and the use case in a card on the right.
+ * the list of steps on the left, and the use case in a card on the right. Below 1024px the steps are
+ * a bar that stays at the top of the screen.
  */
 function WizardShell<S extends string = Step>({
   title,
@@ -68,89 +68,33 @@ function WizardShell<S extends string = Step>({
         </div>
       </header>
 
-      <div className="mx-auto grid w-full max-w-5xl flex-1 gap-8 px-5 py-8 md:px-8 md:py-12 lg:min-h-0 lg:grid-cols-3 lg:grid-rows-1 lg:py-0">
-        <aside className="flex flex-col gap-6 lg:overflow-y-auto lg:py-12">
-          <nav aria-label={t("stepsLabel")}>
-            <p className="mb-3 text-xs font-medium text-muted-foreground">
-              {own ? own.heading : t("yourUseCase")}
-            </p>
-            <ol className="flex flex-col">
-              {names.map((name, index) => {
-                const finished = done(name);
-                const isCurrent = name === current;
-                const text = (
-                  <span
-                    className={cn(
-                      "text-sm font-medium",
-                      isCurrent
-                        ? "font-semibold text-foreground"
-                        : finished
-                          ? "text-foreground"
-                          : "text-muted-foreground",
-                    )}
-                  >
-                    {own ? own.title(name) : t(`steps.${name as Step}.title`)}
-                  </span>
-                );
-                return (
-                  <li key={name} className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          "flex size-6 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold",
-                          isCurrent
-                            ? "border-primary bg-background text-primary"
-                            : finished
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border text-muted-foreground",
-                        )}
-                      >
-                        {finished ? <CheckIcon className="size-3.5" /> : index + 1}
-                      </span>
-                      {index < names.length - 1 && (
-                        <span
-                          aria-hidden="true"
-                          className={cn("my-1 w-0.5 flex-1", finished ? "bg-primary" : "bg-border")}
-                        />
-                      )}
-                    </div>
-                    {onStep ? (
-                      <button
-                        type="button"
-                        aria-current={isCurrent ? "step" : undefined}
-                        onClick={() => onStep(name)}
-                        className={cn(
-                          "-mx-2 -mt-1 mb-4 flex flex-col items-start rounded-md px-2 py-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                          isCurrent && "bg-primary/10",
-                        )}
-                      >
-                        {text}
-                      </button>
-                    ) : (
-                      <div
-                        aria-current={isCurrent ? "step" : undefined}
-                        className={cn(
-                          "-mx-2 -mt-1 mb-4 flex flex-col items-start rounded-md px-2 py-1 text-left",
-                          isCurrent && "bg-primary/10",
-                        )}
-                      >
-                        {text}
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
-          </nav>
-          {notes.map((note, index) => (
-            <p
-              key={index}
-              className="rounded-lg border bg-background p-3 text-xs text-muted-foreground"
-            >
-              {note}
-            </p>
-          ))}
+      {/* A column below 1024px, so the bar of steps has the whole form to stick along. */}
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-5 py-8 md:px-8 md:py-12 lg:grid lg:min-h-0 lg:grid-cols-3 lg:grid-rows-1 lg:py-0">
+        <aside className="flex flex-col gap-6 max-lg:contents lg:overflow-y-auto lg:py-12">
+          <StepsNav
+            label={t("stepsLabel")}
+            heading={own ? own.heading : t("yourUseCase")}
+            steps={names.map((name) => ({
+              id: name,
+              title: own ? own.title(name) : t(`steps.${name as Step}.title`),
+              done: done(name),
+            }))}
+            current={current}
+            onStep={onStep}
+            className="max-lg:-mx-5 max-lg:-mt-8 max-lg:px-5 md:max-lg:-mx-8 md:max-lg:-mt-12 md:max-lg:px-8"
+          />
+          {notes.length > 0 && (
+            <div className="flex flex-col gap-6">
+              {notes.map((note, index) => (
+                <p
+                  key={index}
+                  className="rounded-lg border bg-background p-3 text-xs text-muted-foreground"
+                >
+                  {note}
+                </p>
+              ))}
+            </div>
+          )}
         </aside>
 
         {/* From 1024px the steps stay where they are and only this column scrolls. */}

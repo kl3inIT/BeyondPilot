@@ -5325,6 +5325,10 @@
   },
   "Form": {
     "optional": "Không bắt buộc",
+    "steps": {
+      "progress": "Bước {step}/{count} · {name}",
+      "all": "Tất cả bước"
+    },
     "errors": {
       "required": "Hãy điền mục này.",
       "tooLong": "Tối đa {max} ký tự.",
