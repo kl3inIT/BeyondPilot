@@ -128,8 +128,6 @@ type SolutionPageProps = {
   solution: PublicSolution;
   /** The editor of this solution, when the visitor may change it. */
   editHref?: string;
-  /** The way to ask for an introduction to its company, put in by the route that knows the visitor. */
-  introduction?: React.ReactNode;
 };
 
 /**
@@ -137,7 +135,7 @@ type SolutionPageProps = {
  * it says and its proof, beside the one way to reach its company and its facts. An absent value
  * keeps its criterion visible without inventing a placeholder.
  */
-function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
+function SolutionPage({ solution, editHref }: SolutionPageProps) {
   const t = useTranslations("Solution.detail");
   const directory = useTranslations("Solution.directory");
   const view = useTranslations("Solution.view");
@@ -630,11 +628,9 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
             <h2 className="text-base font-medium">
               {t("contact.title", { name: solution.organizationName })}
             </h2>
-            {introduction && <p className="text-xs text-muted-foreground">{t("contact.lead")}</p>}
           </div>
-          {(introduction || solution.website || solution.demoUrl || solution.deck) && (
+          {(solution.website || solution.demoUrl || solution.deck) && (
             <div className="flex flex-col gap-2">
-              {introduction}
               {(
                 [
                   ["website", solution.website],

@@ -4503,8 +4503,7 @@
         "deck": "Download the deck",
         "registeredIn": "Registered in",
         "deckSize": "Download the deck ({size})",
-        "basedIn": "Based in",
-        "lead": "Your email stays private until you reply."
+        "basedIn": "Based in"
       },
       "facts": {
         "stage": "Stage",
@@ -4898,33 +4897,6 @@
       "INTRODUCTION_NOT_PENDING": "This request was already answered.",
       "REQUEST_INVALID": "Check the message and try again.",
       "unknown": "That did not work. Try again."
-    },
-    "request": {
-      "open": "Request an introduction",
-      "by": "By {provider}",
-      "title": "Request an introduction to {provider}",
-      "lead": "Neither email address is shown until {provider} replies.",
-      "organization": "Your organization",
-      "message": "What do you need?",
-      "hint": "{provider} reads your name, your organization and this message before it answers.",
-      "required": "Write a message first.",
-      "send": "Send request",
-      "cancel": "Cancel",
-      "sent": {
-        "title": "Your request is with {provider}",
-        "lead": "When they reply, you both get an email with the other's name and address.",
-        "done": "Done"
-      },
-      "blocked": {
-        "organization": {
-          "title": "Join an organization first",
-          "lead": "An introduction is asked on behalf of an organization, so that the provider knows who is asking.",
-          "action": "Set up your organization"
-        },
-        "approval": {
-          "title": "Your organization is not approved yet"
-        }
-      }
     },
     "received": {
       "metaTitle": "Introductions · BeyondPilot",
@@ -5355,7 +5327,6 @@
       "address": {
         "pending": "Their email address is shared only if they accept",
         "accepted": "Their email address is no longer available",
-    "noMatch": "Nothing matches.",
         "declined": "No email address was shared",
         "closed": "No email address was shared"
       },
@@ -5384,6 +5355,7 @@
   },
   "Form": {
     "optional": "Optional",
+    "noMatch": "Nothing matches.",
     "errors": {
       "required": "Fill this in.",
       "tooLong": "Keep it to {max} characters.",
