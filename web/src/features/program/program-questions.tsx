@@ -11,12 +11,13 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { EntryList } from "@/components/composites/entry-list";
 import { FormDialog } from "@/components/composites/form-dialog";
+import { LeaveGuard } from "@/components/composites/leave-guard";
 import { useAppForm } from "@/components/form/app-form";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
@@ -29,6 +30,7 @@ import {
 } from "@/lib/api/generated";
 
 import { programFormatter } from "./program-format";
+import { moved, type Keyed } from "./program-question-order";
 
 const kinds = [
   "short_text",
@@ -65,10 +67,22 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
   const format = programFormatter(useLocale());
   const notify = useNotify();
   const router = useRouter();
-  const [questions, setQuestions] = useState<Draft[]>(initial.questions);
+  // Each row keeps one key for as long as the editor is open, so a question that moves, or one not
+  // saved yet, stays the same row to React and to the focus.
+  const [rows, setRows] = useState<Keyed<Draft>[]>(() =>
+    initial.questions.map((question, index) => ({
+      key: question.id ?? `stored-${index}`,
+      question,
+    })),
+  );
+  const added = useRef(0);
+  const questions = rows.map((row) => row.question);
   const [editing, setEditing] = useState<{ index: number | null } | null>(null);
   const [pending, setPending] = useState(false);
   const [now] = useState(() => Date.now());
+  // The row a move button moved, and which way: the focus goes with it, and the move is said.
+  const [lastMove, setLastMove] = useState<{ key: string; by: number; said: string } | null>(null);
+  const listId = useId();
   const dirty = JSON.stringify(questions) !== JSON.stringify(initial.questions);
   const opens = initial.opensAt ? new Date(initial.opensAt) : null;
   const when = (date: Date) =>
@@ -81,11 +95,31 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
     });
 
   function move(index: number, by: number) {
-    const next = [...questions];
-    const [moved] = next.splice(index, 1);
-    next.splice(index + by, 0, moved);
-    setQuestions(next);
+    const row = rows[index];
+    setRows(moved(rows, index, by));
+    setLastMove({
+      key: row.key,
+      by,
+      said: t("moved", {
+        label: row.question.label,
+        position: index + by + 1,
+        count: rows.length,
+      }),
+    });
   }
+
+  // The button that moved a question moves with it, so pressing it again moves the same question
+  // on. At either end of the list that button is switched off, and the other one takes the focus.
+  useEffect(() => {
+    if (!lastMove) {
+      return;
+    }
+    const button = (way: "up" | "down") =>
+      document.getElementById(`${listId}-${lastMove.key}-${way}`) as HTMLButtonElement | null;
+    const same = button(lastMove.by < 0 ? "up" : "down");
+    const other = button(lastMove.by < 0 ? "down" : "up");
+    (same && !same.disabled ? same : other)?.focus();
+  }, [lastMove, listId]);
 
   async function save() {
     setPending(true);
@@ -137,16 +171,15 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
         <p className="text-sm text-muted-foreground">{t("none")}</p>
       ) : (
         <ol className="flex flex-col border-b">
-          {questions.map((question, index) => (
-            <li
-              key={question.id ?? `new-${index}`}
-              className="flex items-center gap-3 border-t py-3"
-            >
+          {rows.map(({ key, question }, index) => (
+            // Where the row is too narrow for both, the question keeps its line and its controls
+            // go under it.
+            <li key={key} className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t py-3">
               <span className="w-6 shrink-0 text-sm text-muted-foreground tabular-nums">
                 {index + 1}
               </span>
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="text-sm font-medium">{question.label}</span>
+              <div className="flex min-w-0 flex-1 basis-48 flex-col gap-0.5">
+                <span className="text-sm font-medium break-words">{question.label}</span>
                 <span className="text-xs text-muted-foreground">
                   {[
                     t(`kinds.${question.kind}`),
@@ -161,8 +194,9 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
               </div>
               {!question.id && <Badge variant="outline">{t("notSaved")}</Badge>}
               {!initial.fixed && (
-                <div className="flex items-center gap-1">
+                <div className="ml-auto flex items-center gap-1">
                   <Button
+                    id={`${listId}-${key}-up`}
                     prominence="tertiary"
                     size="sm"
                     aria-label={t("moveUp", { label: question.label })}
@@ -172,6 +206,7 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
                     <ArrowUpIcon aria-hidden="true" />
                   </Button>
                   <Button
+                    id={`${listId}-${key}-down`}
                     prominence="tertiary"
                     size="sm"
                     aria-label={t("moveDown", { label: question.label })}
@@ -196,20 +231,46 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
       )}
 
       {!initial.fixed && (
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            prominence="secondary"
-            disabled={questions.length >= MAX_QUESTIONS}
-            onClick={() => setEditing({ index: null })}
+        <>
+          <div>
+            <Button
+              prominence="secondary"
+              disabled={questions.length >= MAX_QUESTIONS}
+              onClick={() => setEditing({ index: null })}
+            >
+              <PlusIcon aria-hidden="true" />
+              {t("add")}
+            </Button>
+          </div>
+          {/* A move is said to a screen reader, which does not see the row change place. */}
+          <p role="status" className="sr-only">
+            {lastMove?.said}
+          </p>
+          {/*
+            Save, as on Settings: with unsaved changes it stays at the foot of the screen, so it is
+            reached without scrolling past a long list.
+          */}
+          <div
+            className={
+              dirty
+                ? "sticky bottom-0 z-10 -mx-4 flex flex-wrap items-center justify-end gap-3 border-t bg-background px-4 py-3 md:-mx-6 md:px-6 lg:-mx-8 lg:px-8"
+                : "flex flex-wrap items-center justify-end gap-3"
+            }
           >
-            <PlusIcon aria-hidden="true" />
-            {t("add")}
-          </Button>
-          <Button disabled={!dirty} pending={pending} onClick={() => void save()}>
-            {t("save")}
-          </Button>
-          {dirty && <span className="text-sm text-muted-foreground">{t("unsaved")}</span>}
-        </div>
+            {dirty && <span className="text-sm text-muted-foreground">{t("unsaved")}</span>}
+            <Button disabled={!dirty} pending={pending} onClick={() => void save()}>
+              {t("save")}
+            </Button>
+          </div>
+          <LeaveGuard
+            active={dirty && !pending}
+            back
+            title={t("leave.title")}
+            description={t("leave.lead")}
+            leaveLabel={t("leave.leave")}
+            stayLabel={t("leave.stay")}
+          />
+        </>
       )}
 
       {editing && (
@@ -217,20 +278,21 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
           value={editing.index === null ? null : questions[editing.index]}
           onClose={() => setEditing(null)}
           onSave={(question) => {
-            const next = [...questions];
+            const next = [...rows];
             if (editing.index === null) {
-              next.push(question);
+              added.current += 1;
+              next.push({ key: `new-${added.current}`, question });
             } else {
-              next[editing.index] = question;
+              next[editing.index] = { key: next[editing.index].key, question };
             }
-            setQuestions(next);
+            setRows(next);
             setEditing(null);
           }}
           onDelete={
             editing.index === null
               ? undefined
               : () => {
-                  setQuestions(questions.filter((_, index) => index !== editing.index));
+                  setRows(rows.filter((_, index) => index !== editing.index));
                   setEditing(null);
                 }
           }

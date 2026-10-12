@@ -155,6 +155,12 @@ test.describe("admin programs", () => {
 
     await expect(page.getByRole("heading", { name: "Before you can publish" })).toBeVisible();
     await expect(shown(page, "Publish")).toBeDisabled();
+    // Each line says in words whether it is done, not only by its mark.
+    const summary = page
+      .getByRole("region", { name: "Before you can publish" })
+      .getByRole("listitem")
+      .filter({ hasText: "Add a summary" });
+    await expect(summary).toContainText("Missing");
     await expectNoSeriousA11yViolations(page);
 
     await page.getByRole("link", { name: "Add a summary" }).click();
@@ -163,6 +169,8 @@ test.describe("admin programs", () => {
     await expect(page.getByText("You have unsaved changes.")).toBeVisible();
     // The list follows the form: the summary is ticked before it is saved.
     await expect(page.getByRole("link", { name: "Add a summary" })).toHaveCount(0);
+    await expect(summary).toContainText("Done");
+    await expect(summary).not.toContainText("Missing");
     await expect(page.getByRole("link", { name: "Add a cover image" })).toBeVisible();
     // Publishing is not offered while the list still names something.
     await expect(shown(page, "Save and publish")).toBeDisabled();
@@ -310,6 +318,36 @@ test.describe("admin programs", () => {
       page.getByText("The address is fixed once the program has been published.", { exact: false }),
     ).toBeVisible();
     await expect(page.getByRole("heading", { name: "Before you can publish" })).toHaveCount(0);
+    // Beside the badge: the phase its dates put it in and what it waits for next. Its dates are
+    // fixed in the stub, so which phase that is depends on the day the test runs.
+    await expect(
+      page.getByText(
+        /^(Open|Running|Done) · (Applications close|Outcomes due|Ends|Ended) \d{1,2} \w{3}/,
+      ),
+    ).toBeVisible();
+    // What a save would be refused for is closed at its field, with the reason: applications have
+    // opened, so when they open is settled, and a published program keeps its cover.
+    const opens = page.getByLabel("Opens", { exact: true });
+    await expect(opens).toBeDisabled();
+    await expect(opens).toHaveAccessibleDescription(
+      "Applications have opened, so when they open can no longer change.",
+    );
+    await expect(page.getByLabel("Time", { exact: true }).nth(0)).toBeDisabled();
+    await expect(page.getByLabel("Closes", { exact: true })).toBeEnabled();
+    await expect(
+      page.getByRole("checkbox", { name: "Applications are taken on BeyondPilot" }),
+    ).toBeDisabled();
+    const remove = page.getByRole("button", { name: "Remove", exact: true });
+    await expect(remove).toBeDisabled();
+    await expect(remove).toHaveAccessibleDescription(
+      "A published program keeps a cover: replace it, or unpublish the program to remove it.",
+    );
+    await expect(page.getByRole("button", { name: "Replace" })).toBeEnabled();
+    // A key date leads with when it is; one that comes from the application window names its lock.
+    await expect(
+      page.getByRole("listitem").filter({ hasText: "Briefing with Tasco's business team" }),
+    ).toHaveText(/^7 Oct 2026, 15:30–17:00\s*Briefing with Tasco's business team/);
+    await expect(page.getByRole("img", { name: "Edited under Applications" })).toHaveCount(3);
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -475,6 +513,31 @@ test.describe("admin programs", () => {
     await choices.press("Enter");
     await dialog.getByRole("button", { name: "Add question" }).click();
     await expect(page.getByText("Several choices · 3 choices")).toBeVisible();
+
+    // The focus goes with the question that moved, and the move is said. Last in the list, it can
+    // only go back up, so that button takes the focus; the same key then takes it back.
+    await page.getByRole("button", { name: "Move Direction down" }).click();
+    await expect(page.getByRole("button", { name: "Move Direction up" })).toBeFocused();
+    await expect(page.getByRole("status").filter({ hasText: "moved to position" })).toHaveText(
+      "Direction moved to position 2 of 2.",
+    );
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("button", { name: "Move Direction down" })).toBeFocused();
+    await expect(page.getByRole("status").filter({ hasText: "moved to position" })).toHaveText(
+      "Direction moved to position 1 of 2.",
+    );
+
+    // Nothing is stored yet: leaving the page asks first.
+    await page
+      .getByRole("main")
+      .getByRole("link", { name: "Settings", exact: true })
+      .first()
+      .click();
+    const leaving = page.getByRole("alertdialog");
+    await expect(leaving).toContainText("Leave without saving?");
+    await leaving.getByRole("button", { name: "Stay" }).click();
+    await expect(page).toHaveURL(`/admin/programs/${draft}/questions`);
+
     await page.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByText("Questions saved.")).toBeVisible();
     expect(saved).toEqual([

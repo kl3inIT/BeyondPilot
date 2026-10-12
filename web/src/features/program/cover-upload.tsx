@@ -20,6 +20,11 @@ type CoverUploadProps = {
   value: string;
   onChange: (fileId: string) => void;
   invalid?: boolean;
+  /**
+   * Why the cover can be replaced but not removed, said under it: a published program keeps its
+   * cover, and the backend refuses a save that takes it away.
+   */
+  kept?: string;
 };
 
 /**
@@ -27,7 +32,7 @@ type CoverUploadProps = {
  * is uploaded at once; the program names it when Settings is saved, and the backend removes a cover
  * the program no longer names.
  */
-function CoverUpload({ id, value, onChange, invalid }: CoverUploadProps) {
+function CoverUpload({ id, value, onChange, invalid, kept }: CoverUploadProps) {
   const t = useTranslations("Admin.programs.settings.cover");
   const words = useFailureWords();
   const input = useRef<HTMLInputElement>(null);
@@ -107,12 +112,18 @@ function CoverUpload({ id, value, onChange, invalid }: CoverUploadProps) {
               prominence="tertiary"
               tone="danger"
               size="sm"
-              disabled={uploading}
+              disabled={uploading || Boolean(kept)}
+              aria-describedby={kept ? `${id}-kept` : undefined}
               onClick={() => onChange("")}
             >
               {t("remove")}
             </Button>
           </div>
+          {kept && (
+            <p id={`${id}-kept`} className="w-full text-sm text-muted-foreground">
+              {kept}
+            </p>
+          )}
         </div>
       ) : (
         <button
