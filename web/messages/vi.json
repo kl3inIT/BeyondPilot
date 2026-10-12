@@ -1557,10 +1557,8 @@
         "moves": "{members, plural, other {# thành viên}} và {invitations, plural, other {# lời mời đang mở}} chuyển theo, cùng với giải pháp và bài toán của nó.",
         "cancel": "Hủy",
         "continue": "Tiếp tục",
-        "confirmTitle": "Gộp vào {kept}?",
-        "confirmLabel": "Gõ {name} để xác nhận",
-        "cannotUndo": "Không thể hoàn tác.",
-        "back": "Quay lại",
+        "confirmTitle": "Gộp {name} vào {kept}?",
+        "confirmNote": "{name} chỉ còn là bản ghi cho biết đã được gộp vào đâu, và các thành viên của nó được báo qua email. Không thể hoàn tác.",
         "merge": "Gộp"
       },
       "people": {

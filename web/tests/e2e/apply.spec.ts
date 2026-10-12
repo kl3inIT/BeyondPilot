@@ -10,15 +10,36 @@ const shots = process.env.APPLY_SHOTS;
 
 type Call = { call: string; body: unknown };
 
+/** The company a person finds from step 1, and the one solution it has. */
+const pocketPolicy = {
+  id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+  name: "Pocket Policy",
+  type: "company",
+  country: "SG",
+  teamSize: "10_49",
+  approved: true,
+};
+const routeCopilot = {
+  id: "5a0b7c1d-0000-4000-8000-000000000011",
+  name: "Route Copilot",
+  summary: "Plans a fleet's day.",
+  problemsSolved: "Dispatchers plan routes by hand.",
+  maturity: "pilot",
+  demoUrl: null,
+  complete: true,
+};
+
 /**
  * Answers what the browser writes while a person applies, as the backend would, keeping the
- * application, the organization and the solution between calls. Returns the calls it saw.
+ * application, the organization and the solution between calls. Returns the calls it saw. Asking
+ * to get into the company answers `joining`: a member at once, or a request its owners decide.
  */
-async function fakeBackend(page: Page) {
+async function fakeBackend(page: Page, joining: "joined" | "requested" = "joined") {
   const calls: Call[] = [];
   const view = emptyView(email) as Record<string, unknown> & {
     application: Record<string, unknown> | null;
     organization: Record<string, unknown> | null;
+    solutions: Record<string, unknown>[];
   };
   let version = 0;
   const solution: Record<string, unknown> = {
@@ -77,6 +98,10 @@ async function fakeBackend(page: Page) {
       };
       return route.fulfill(fulfil(view));
     }
+    // The form reads itself again once the company finder was answered.
+    if (path.endsWith("/application") && request.method() === "GET") {
+      return route.fulfill(fulfil(view));
+    }
     if (path.endsWith("/application") && request.method() === "PUT") {
       const body = request.postDataJSON();
       version += 1;
@@ -106,6 +131,37 @@ async function fakeBackend(page: Page) {
       return route.fulfill(fulfil(view));
     }
     return route.fallback();
+  });
+
+  // The company finder of step 1: the search as a name is typed, then joining or asking to.
+  await page.route("**/api/organization/organizations?q=*", (route) =>
+    route.fulfill(
+      fulfil({
+        items: [
+          {
+            id: pocketPolicy.id,
+            name: pocketPolicy.name,
+            type: pocketPolicy.type,
+            country: pocketPolicy.country,
+            emailDomain: "pocketpolicy.example",
+            onDomain: joining === "joined",
+            way: joining === "joined" ? "join" : "request",
+          },
+        ],
+      }),
+    ),
+  );
+  await page.route("**/api/organization/organizations/*/join", async (route) => {
+    const request = route.request();
+    calls.push({
+      call: `${request.method()} ${new URL(request.url()).pathname}`,
+      body: request.postDataJSON(),
+    });
+    if (joining === "joined") {
+      view.organization = pocketPolicy;
+      view.solutions = [routeCopilot];
+    }
+    return route.fulfill(fulfil({ outcome: joining }));
   });
 
   await page.route("**/api/solution/mine**", async (route) => {
@@ -385,6 +441,84 @@ test.describe("apply", () => {
     expect(calls.map((call) => call.call)).toContain(
       "POST /api/proposal/applications/3e2d1c0b-0000-4000-8000-000000000030/submit",
     );
+  });
+
+  test("a person who joins their company from the form applies for it without a reload", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "unnamed", baseURL!);
+    const calls = await fakeBackend(page);
+    await page.goto(applyPath);
+    await page.waitForLoadState("networkidle");
+
+    // What is typed before the company is found stays as typed.
+    await page.getByLabel("First name").fill("An");
+    await page.getByLabel("Last name").fill("Tran");
+    await page.getByRole("radio", { name: /Company/ }).check();
+    await page.getByRole("searchbox", { name: "Company or team name" }).fill("pocket");
+    await page.getByRole("button", { name: "Join", exact: true }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("heading")).toHaveText("Join Pocket Policy?");
+    await dialog.getByRole("button", { name: "Join", exact: true }).click();
+    await expect(page.getByText("You joined Pocket Policy.")).toBeVisible();
+
+    // The step turns to the company at once: it is no longer asked who applies.
+    await expect(page.getByRole("heading", { name: "Applying for" })).toBeVisible();
+    await expect(page.getByText("Company · 10–49 people · Singapore")).toBeVisible();
+    await expect(page.getByRole("radio")).toHaveCount(0);
+    await expect(page.getByRole("searchbox")).toHaveCount(0);
+    await expect(page.getByLabel("First name")).toHaveValue("An");
+    await expect(page.getByLabel("Last name")).toHaveValue("Tran");
+    await settled(page);
+
+    await page.getByLabel("Phone number").fill("+84 912 345 678");
+    await page.getByLabel("Country").selectOption({ label: "Vietnam" });
+    await page.getByLabel("LinkedIn profile").fill("https://www.linkedin.com/in/antran");
+    await page.getByLabel("Team background").fill("Two engineers from an insurer.");
+    await page.getByRole("button", { name: "Continue" }).click();
+
+    // Step 2 starts from the company's only solution, as a form opened after joining would.
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your solution");
+    await expect(page.getByLabel("Solution", { exact: true })).toHaveValue(routeCopilot.id);
+    await expect(page.getByLabel("Solution name")).toHaveValue("Route Copilot");
+    // The company is the organization: none is made for the person.
+    expect(calls.map((call) => call.call)).toContain(
+      `POST /api/organization/organizations/${pocketPolicy.id}/join`,
+    );
+    expect(calls.some((call) => call.call.endsWith("/application/organization"))).toBe(false);
+    expect(
+      calls.findLast((call) => call.call.startsWith("PUT /api/proposal/"))?.body,
+    ).toMatchObject({
+      contact: { firstName: "An", lastName: "Tran" },
+      solutionId: routeCopilot.id,
+    });
+  });
+
+  test("a person who asked to join a company is still asked who applies", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "unnamed", baseURL!);
+    await fakeBackend(page, "requested");
+    await page.goto(applyPath);
+    await page.waitForLoadState("networkidle");
+
+    await page.getByRole("radio", { name: /Company/ }).check();
+    await page.getByRole("searchbox", { name: "Company or team name" }).fill("pocket");
+    await page.getByRole("button", { name: "Request to join" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Request to join" }).click();
+    await expect(page.getByText("Request sent to Pocket Policy.")).toBeVisible();
+
+    // Its owners have not decided: the person belongs to no company yet, and may apply another way.
+    await expect(page.getByRole("radio", { name: /Company/ })).toBeChecked();
+    await expect(page.getByRole("button", { name: "Request to join" })).toBeEnabled();
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(
+      page.getByText("Join your company, or add it, before you continue."),
+    ).toBeVisible();
   });
 
   test("the receipt, My applications and an application, which can be withdrawn", async ({

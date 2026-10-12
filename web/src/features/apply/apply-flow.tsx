@@ -23,6 +23,7 @@ import { useFailureWords } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
 import {
   createSolution,
+  getApplicationForm,
   getMySolution,
   organizeApplicant,
   saveApplication,
@@ -57,6 +58,7 @@ import {
 import {
   answersFor,
   appliesAlone,
+  likelySolutionId,
   organizationBodyOf,
   solutionBodyOf,
   solutionDraftOf,
@@ -293,16 +295,37 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   }, [solution, keepSolution, saveProblem, form]);
 
   /** Step 2 turns to another of the organization's solutions, or to a new one. */
-  function choose(id: string | null) {
+  function choose(id: string | null, from: ApplicationView = view) {
     solutionChanged.current = false;
     solutionId.current = id;
     linked.current = id;
     changed.current = true;
     setUnsaved(true);
-    form.setFieldValue("solution", solutionDraftOf(view, id), quietly);
+    form.setFieldValue("solution", solutionDraftOf(from, id), quietly);
     form.setFieldValue("application.solutionId", id, quietly);
     // What the step refused about the solution before is checked against the one chosen.
     checkAgain(form);
+  }
+
+  /**
+   * The company finder of step 1 was answered: the person joined a company, or asked to. The page
+   * was read before that and this form is never started again, so what the backend says of the
+   * person now is read here, after any save under way: no older answer then comes after it, and
+   * nothing typed is touched. A read that fails is said, and the next save answers the same.
+   */
+  function readOrganization() {
+    const run = queue.current.then(async () => {
+      const { data } = await getApplicationForm({ path: { slug: program.slug } });
+      version.current = data.application?.version ?? null;
+      show(data);
+      // As a form opened now would start: the company's only solution, unless one was begun here.
+      const likely = likelySolutionId(data, form.state.values.solution);
+      if (likely && linked.current === null && !solutionChanged.current) {
+        choose(likely, data);
+      }
+    });
+    queue.current = run.catch(() => undefined);
+    return run.catch((error: unknown) => setProblem(errorText(error)));
   }
 
   function goTo(next: number) {
@@ -502,7 +525,9 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
               void form.handleSubmit();
             }}
           >
-            {step === "you" && <StepYou form={form} view={view} />}
+            {step === "you" && (
+              <StepYou form={form} view={view} onOrganization={readOrganization} />
+            )}
             {step === "solution" && <StepSolution form={form} view={view} choose={choose} />}
             {step === "questions" && (
               <StepQuestions
@@ -552,7 +577,16 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   );
 }
 
-function StepYou({ form, view }: { form: ApplyForm; view: ApplicationView }) {
+function StepYou({
+  form,
+  view,
+  onOrganization,
+}: {
+  form: ApplyForm;
+  view: ApplicationView;
+  /** The person joined a company through the finder, or asked to. */
+  onOrganization: () => Promise<void>;
+}) {
   const t = useTranslations("Apply.you");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
@@ -606,7 +640,7 @@ function StepYou({ form, view }: { form: ApplyForm; view: ApplicationView }) {
                 who === "company" && (
                   <>
                     <h2 className="text-lg font-medium">{t("yourCompany")}</h2>
-                    <OrganizationFinder suggestion={null} embedded />
+                    <OrganizationFinder suggestion={null} embedded onAnswered={onOrganization} />
                   </>
                 )
               }
