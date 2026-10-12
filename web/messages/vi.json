@@ -2857,6 +2857,9 @@
         "use_case_sent_back": {
           "name": "Use case bị trả lại"
         },
+        "proposal_sent": {
+          "name": "Proposal đã gửi"
+        },
         "talent_approved": {
           "name": "Hồ sơ nhân lực được duyệt"
         },
@@ -7099,7 +7102,7 @@
       "PROPOSAL_EDIT_WINDOW_CLOSED": "Đã hết thời gian chỉnh sửa đề xuất này nên các thay đổi của bạn chưa được lưu."
     },
     "received": {
-      "column": "Đề xuất",
+      "column": "Proposal",
       "none": "Chưa có số liệu",
       "count": "{count, plural, other {# đề xuất}}",
       "viewProposals": "Xem đề xuất",

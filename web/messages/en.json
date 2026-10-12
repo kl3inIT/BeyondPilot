@@ -2857,6 +2857,9 @@
         "use_case_sent_back": {
           "name": "Use case sent back"
         },
+        "proposal_sent": {
+          "name": "Proposal sent"
+        },
         "talent_approved": {
           "name": "Talent profile approved"
         },

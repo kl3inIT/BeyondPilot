@@ -50,6 +50,7 @@ const kindIcons: Record<EmailKind, React.ComponentType<React.SVGProps<SVGSVGElem
   solution_restored: EyeIcon,
   use_case_approved: MegaphoneIcon,
   use_case_sent_back: FilePenIcon,
+  proposal_sent: FileCheckIcon,
   talent_approved: BadgeCheckIcon,
   talent_changes_requested: CircleXIcon,
   talent_removed: BadgeXIcon,
