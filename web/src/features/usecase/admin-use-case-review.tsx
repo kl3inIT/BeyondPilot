@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { useAppForm } from "@/components/form/app-form";
 import { ReviewStatus } from "@/components/composites/review-status";
 import type { AdminUseCase } from "@/lib/api/generated";
 
@@ -26,6 +27,8 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
   const list = useTranslations("Admin.useCases");
   const w = useTranslations("Organization.useCases.wizard");
   const values = useMemo(() => draftValuesOf(useCase), [useCase]);
+  // The fields are the wizard's, so they read from a form; this one is never sent.
+  const form = useAppForm({ defaultValues: { content: values } });
   const [view, setView] = useState<View>("review");
   const organization = useCase.organization.name;
   const status = (
@@ -80,7 +83,7 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
         </div>
         {status}
       </div>
-      <UseCaseStepFields step={view} values={values} onChange={() => undefined} readOnly />
+      <UseCaseStepFields form={form} fields="content" step={view} readOnly />
       <div className="flex items-center justify-between gap-3 border-t pt-6">
         <Button prominence="tertiary" onClick={() => go(previous)}>
           {previous === "review" ? t("backToReview") : w("back")}

@@ -1,6 +1,11 @@
 import type { PdfFile } from "@/components/composites/pdf-upload";
 import type { SaveUseCaseProposal, UseCaseProposal } from "@/lib/api/generated";
 
+import { PHONE, proposalStepSchemas } from "./proposal-schemas";
+
+/** The rules of the steps without their words, for asking only whether a step is complete. */
+const rules = proposalStepSchemas(() => "");
+
 /** The steps of the proposal, in the order the member goes through them. */
 export const steps = ["organization", "solutions", "details", "team", "pdf", "review"] as const;
 export type Step = (typeof steps)[number];
@@ -94,11 +99,7 @@ export function setRole(team: TeamRow[], accountId: string, role: string): TeamR
 
 /** Whether the team is one a proposal can be sent with: none, or roles filled and exactly one primary contact. */
 export function teamComplete(team: TeamRow[]): boolean {
-  return (
-    team.length === 0 ||
-    (team.every((member) => member.role.trim() !== "") &&
-      team.filter((member) => member.primary).length === 1)
-  );
+  return rules.team.safeParse({ team }).success;
 }
 
 /**
@@ -108,7 +109,7 @@ export function teamComplete(team: TeamRow[]): boolean {
  */
 export function incompleteSteps(values: ProposalValues, detailsDone: boolean): Step[] {
   const missing: Step[] = [];
-  if (values.solutionIds.length === 0 || values.approach.trim() === "") {
+  if (!rules.solutions.safeParse(values).success) {
     missing.push("solutions");
   }
   if (!detailsDone) {
@@ -117,14 +118,11 @@ export function incompleteSteps(values: ProposalValues, detailsDone: boolean): S
   if (!teamComplete(values.team)) {
     missing.push("team");
   }
-  if (!values.deck) {
+  if (!rules.pdf.safeParse(values).success) {
     missing.push("pdf");
   }
   return missing;
 }
-
-/** A number as the backend takes it: digits with spaces, brackets, dots or dashes, and a leading plus. */
-const PHONE = /^\+?[0-9 ().-]*$/;
 
 /** The submitting identity the sender gives: the account's name, country and number. */
 export type Details = { name: string; country: string; phone: string };
@@ -136,10 +134,5 @@ export function phoneValid(phone: string): boolean {
 
 /** Whether the details are what a proposal is sent with: a name, a country and a number. */
 export function detailsComplete(details: Details): boolean {
-  return (
-    details.name.trim() !== "" &&
-    details.country !== "" &&
-    details.phone.trim() !== "" &&
-    phoneValid(details.phone)
-  );
+  return rules.details.safeParse({ details }).success;
 }

@@ -5437,6 +5437,10 @@
   },
   "Form": {
     "optional": "Optional",
+    "steps": {
+      "progress": "Step {step} of {count} · {name}",
+      "all": "All steps"
+    },
     "errors": {
       "required": "Fill this in.",
       "tooLong": "Keep it to {max} characters.",
@@ -5974,7 +5978,6 @@
       "explore": "Explore the challenges",
       "lead": "Bring your working AI solution to real business challenges at Nestlé Vietnam. Selected providers can connect with relevant Nestlé teams, demonstrate their solutions and explore opportunities for collaboration.",
       "open": "Open to working prototypes, pilots and established products that can be adapted to the challenges.",
-      "imageAlt": "A builder holding a tablet beside a friendly AI robot, with a laptop and a light bulb",
       "facts": {
         "closes": {
           "label": "Applications close",
@@ -7730,8 +7733,8 @@
         "remove": "Remove {name}",
         "rolePlaceholder": "Project lead",
         "needed": {
-          "member": "Add at least one member.",
-          "role": "Give every member a role."
+          "role": "Give every member a role.",
+          "primary": "Choose one primary contact."
         },
         "dialog": {
           "title": "Add a team member",
