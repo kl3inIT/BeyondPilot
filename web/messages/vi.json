@@ -51,10 +51,10 @@
       "system": "Theo hệ thống"
     },
     "cookies": {
-      "label": "Đồng ý dùng cookie",
-      "message": "Chúng tôi muốn dùng cookie của Google Analytics để biết các trang công khai được sử dụng thế nào. Không có gì được đo lường nếu bạn không đồng ý. <privacy>Quyền riêng tư</privacy>",
-      "accept": "Đồng ý",
-      "decline": "Từ chối"
+      "title": "Chúng tôi tôn trọng quyền riêng tư của bạn",
+      "message": "Chúng tôi dùng cookie để trang hoạt động, cải thiện trải nghiệm của bạn và phân tích lượt truy cập. Khi bấm “Chấp nhận tất cả”, bạn đồng ý cho chúng tôi dùng cookie. <privacy>Xem thêm</privacy>",
+      "accept": "Chấp nhận tất cả",
+      "decline": "Từ chối tất cả"
     },
     "footer": {
       "platform": "Nền tảng",
