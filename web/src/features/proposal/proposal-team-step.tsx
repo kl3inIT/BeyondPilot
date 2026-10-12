@@ -86,9 +86,9 @@ function Team({ members }: ProposalTeamStepProps) {
           <DataTable>
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-48">{t("columns.member")}</TableHead>
-                <TableHead className="w-36">{t("columns.role")}</TableHead>
-                <TableHead className="w-32">{t("columns.primary")}</TableHead>
+                <TableHead className="min-w-56">{t("columns.member")}</TableHead>
+                <TableHead className="w-28">{t("columns.role")}</TableHead>
+                <TableHead className="w-20 whitespace-normal">{t("columns.primary")}</TableHead>
                 <TableHead className="w-10">
                   <span className="sr-only">{t("columns.actions")}</span>
                 </TableHead>
@@ -101,8 +101,8 @@ function Team({ members }: ProposalTeamStepProps) {
                 const missing = invalid && row.role.trim() === "";
                 return (
                   <TableRow key={row.accountId}>
-                    <TableCell className="max-w-0 min-w-48">
-                      <Person name={person?.name ?? null} email={person?.email ?? ""} />
+                    <TableCell className="min-w-56">
+                      <Person name={person?.name ?? null} email={person?.email ?? ""} wrapEmail />
                     </TableCell>
                     <TableCell>
                       <Input
