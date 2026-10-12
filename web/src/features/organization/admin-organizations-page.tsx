@@ -24,6 +24,7 @@ import {
 } from "./admin-organizations-search";
 import { AdminOrganizationsToolbar } from "./admin-organizations-toolbar";
 import { OrganizationMark } from "./organization-mark";
+import { OrganizationReviewQueue } from "./organization-review-queue";
 
 const address = createSerializer(adminOrganizationsSearch);
 
@@ -47,8 +48,8 @@ type AdminOrganizationsPageProps = {
 
 /**
  * Admin › Organisations: every organization, those waiting for review first. The list arrives
- * already read; search, the filter and paging are the URL. A decision is made in a dialog from the
- * row's menu.
+ * already read; search, the filter and paging are the URL. A row that waits carries Review, and a
+ * decision made in its dialog opens the next one that waits on the page.
  */
 function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPageProps) {
   const t = useTranslations("Admin.organizations");
@@ -135,43 +136,55 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       <AdminOrganizationsToolbar countries={organizations.countries} />
 
       {/* Who asked and when give way first where the table is made to fit, so the name keeps its room. */}
-      <DataTableRows
-        sortKeys={adminOrganizationSortKeys}
-        columns={[
-          { id: "name", header: t("columns.organization"), layout: { fill: true } },
-          { id: "request", header: t("columns.request"), layout: { width: "md" } },
-          { id: "status", header: t("columns.status"), layout: { width: "md" } },
-          {
-            id: "askedBy",
-            header: t("columns.askedBy"),
-            layout: { width: "lg", from: "xl" },
-          },
-          {
-            id: "received",
-            header: t("columns.received"),
-            layout: { width: "sm", from: "2xl", descFirst: true },
-          },
-          {
-            id: "actions",
-            header: <span className="sr-only">{t("columns.actions")}</span>,
-            layout: { width: "action" },
-          },
-        ]}
-        rows={rows.map((row) => ({
-          id: row.id,
-          cells: {
-            name: row.organization,
-            request: row.request ?? (
-              <span className="text-muted-foreground">{t("request.none")}</span>
-            ),
-            status: row.status,
-            askedBy: row.askedBy,
-            received: row.received,
-            actions: <div className="flex justify-end">{row.actions}</div>,
-          },
-        }))}
-        empty={empty}
-      />
+      <OrganizationReviewQueue
+        waiting={organizations.items
+          .filter((organization) => organization.status === "in_review")
+          .map(({ id, name, type, country, createdAt }) => ({
+            id,
+            name,
+            type,
+            country,
+            createdAt,
+          }))}
+      >
+        <DataTableRows
+          sortKeys={adminOrganizationSortKeys}
+          columns={[
+            { id: "name", header: t("columns.organization"), layout: { fill: true } },
+            { id: "request", header: t("columns.request"), layout: { width: "md" } },
+            { id: "status", header: t("columns.status"), layout: { width: "md" } },
+            {
+              id: "askedBy",
+              header: t("columns.askedBy"),
+              layout: { width: "lg", from: "xl" },
+            },
+            {
+              id: "received",
+              header: t("columns.received"),
+              layout: { width: "sm", from: "2xl", descFirst: true },
+            },
+            {
+              id: "actions",
+              header: <span className="sr-only">{t("columns.actions")}</span>,
+              layout: { width: "action" },
+            },
+          ]}
+          rows={rows.map((row) => ({
+            id: row.id,
+            cells: {
+              name: row.organization,
+              request: row.request ?? (
+                <span className="text-muted-foreground">{t("request.none")}</span>
+              ),
+              status: row.status,
+              askedBy: row.askedBy,
+              received: row.received,
+              actions: <div className="flex items-center justify-end gap-1">{row.actions}</div>,
+            },
+          }))}
+          empty={empty}
+        />
+      </OrganizationReviewQueue>
 
       <ListFooter
         count={t(queue ? "needReview" : "count", { count: organizations.total })}

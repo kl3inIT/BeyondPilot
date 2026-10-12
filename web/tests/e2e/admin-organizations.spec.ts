@@ -31,23 +31,37 @@ function shownPeople(page: Page) {
 }
 
 /**
- * Opens the review of the organization that waits, from the menu of its row. The dialog reads the
- * record from the browser, which the test answers.
+ * Opens the review of the organization that waits, from the Review button of its row. The dialog
+ * reads the record from the browser, which the test answers.
  */
 async function openReview(page: Page) {
   await page.route(`**/api/organization/admin/organizations/${lumen}`, (route) =>
     route.fulfill({
       json: {
         createdBy: "Linh Nguyễn",
+        createdByEmail: "linh.nguyen@lumenhealth.example",
         suggestedDomain: "lumenhealth.example",
-        organization: { website: "https://lumenhealth.example" },
+        organization: {
+          website: "https://lumenhealth.example",
+          description: "Triage assistants for clinics.",
+          teamSize: "2_9",
+          industries: ["healthcare"],
+          foundedYear: null,
+        },
+        members: [{ name: "Linh Nguyễn", email: "linh.nguyen@lumenhealth.example", role: "owner" }],
+        invitations: [],
         claims: [],
       },
     }),
   );
   await page.goto("/admin/organizations");
+  // Review stands on the row that waits, and is no longer an entry of its menu.
   await page.getByRole("button", { name: "Actions for Lumen Health" }).click();
-  await page.getByRole("menuitem", { name: "Review" }).click();
+  await expect(page.getByRole("menuitem", { name: "Review" })).toHaveCount(0);
+  await expect(page.getByRole("menuitem", { name: "Open record" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: /^Review / })).toHaveCount(1);
+  await page.getByRole("button", { name: "Review Lumen Health" }).click();
   return page.getByRole("dialog");
 }
 
@@ -187,6 +201,22 @@ test.describe("admin organizations", () => {
     // Who created it and its website are read when the dialog opens.
     await expect(dialog.getByText(/Created by Linh Nguyễn on 1 Oct 2026/)).toBeVisible();
     await expect(dialog.getByText("Company · Vietnam · lumenhealth.example")).toBeVisible();
+    // What the profile says is there to decide on, and what it leaves out is said.
+    await expect(dialog.getByText("Triage assistants for clinics.")).toBeVisible();
+    await expect(dialog.getByRole("link", { name: "lumenhealth.example" })).toHaveAttribute(
+      "href",
+      "https://lumenhealth.example",
+    );
+    const fact = (name: string) =>
+      dialog.locator("dl > div").filter({ has: page.getByText(name, { exact: true }) });
+    await expect(fact("Team size")).toContainText("2–9 people");
+    await expect(fact("Year founded")).toContainText("Not stated");
+    await expect(fact("Creator's email")).toContainText("linh.nguyen@lumenhealth.example");
+    await expect(fact("Members")).toContainText("Linh Nguyễn");
+    await expect(dialog.getByRole("link", { name: "Open record" })).toHaveAttribute(
+      "href",
+      `/admin/organizations/${lumen}`,
+    );
     // The creator's work domain is proposed, for the operator to confirm.
     await expect(dialog.getByLabel("Email domain to verify (optional)")).toHaveValue(
       "lumenhealth.example",
@@ -197,6 +227,10 @@ test.describe("admin organizations", () => {
     await dialog.getByRole("button", { name: "Approve", exact: true }).click();
 
     await expect(page.getByText("Organization approved.")).toBeVisible();
+    // It was the only one of the page that waited, so the review closes and says so.
+    await expect(
+      page.getByText("No other organization on this page waits for review."),
+    ).toBeVisible();
     await expect(dialog).toHaveCount(0);
     expect(decisions).toEqual([
       {
