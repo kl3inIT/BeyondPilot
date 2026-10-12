@@ -29,12 +29,33 @@ class DuplicatesTest(unittest.TestCase):
         self.assertNotIn("delete from organization ", sql)
         self.assertNotIn("delete from solution", sql)
 
-    def test_a_group_with_members_or_an_unapproved_keeper_is_left_for_a_person(self):
+    def test_a_group_with_a_member_who_signed_in_is_left_for_a_person(self):
         sql = duplicates.sql([])
 
-        self.assertIn("an organization of the group has members", sql)
-        self.assertIn("the one to keep is not approved", sql)
+        self.assertIn("a member of the group has signed in", sql)
+        self.assertIn("a.last_login_at is not null", sql)
         self.assertIn("for pair in select * from merge_plan where left_because is null loop", sql)
+        # A member who never signed in moves as the application moves one.
+        self.assertIn("update organization_member set organization_id = pair.kept, role = 'member', "
+                      "merged_from_id = pair.duplicate", sql)
+
+    def test_one_name_is_one_company_with_one_domain_or_when_a_person_found_so(self):
+        sql = duplicates.sql([], {"acme": {"website": "https://acme.example"}, "bolt": {"several": True}})
+
+        self.assertIn("count(distinct c.domain) filter (where c.domain <> '') = 1", sql)
+        self.assertIn("insert into legacy_same values ('acme', 'https://acme.example', false);", sql)
+        self.assertIn("insert into legacy_same values ('bolt', null, true);", sql)
+        self.assertIn("or c.key in (select key from legacy_same)", sql)
+
+    def test_a_company_found_to_have_several_products_keeps_every_solution(self):
+        sql = duplicates.sql([], {"bolt": {"several": True}})
+
+        self.assertIn("and key not in (select key from legacy_same where several)", sql)
+        # Only what this run merged is looked at, so a later run without the list refuses nothing of an earlier one.
+        self.assertIn("s.organization_id in (select kept from merge_plan", sql)
+
+    def test_an_approved_organization_is_kept_before_another(self):
+        self.assertIn("order by (c.status = 'approved') desc, c.has_deck desc", duplicates.sql([]))
 
     def test_a_duplicate_solution_is_refused_as_a_duplicate_not_deleted(self):
         sql = duplicates.sql([])
