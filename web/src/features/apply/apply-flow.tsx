@@ -1,6 +1,6 @@
 "use client";
 
-import { revalidateLogic, useStore } from "@tanstack/react-form";
+import { useStore } from "@tanstack/react-form";
 import {
   CheckIcon,
   Clock3Icon,
@@ -50,10 +50,11 @@ import {
   Optional,
   PdfField,
 } from "./apply-fields";
+import { applyFormOptions, checkAgain } from "./apply-form";
 import { applyFormatter } from "./apply-format";
 import {
   applyStepSchema,
-  contactShapes,
+  contactShapeSchema,
   problemsOf,
   type ApplyStep,
   type ApplyWords,
@@ -78,33 +79,9 @@ const SAVE_AFTER_MS = 1200;
 /** A value the form writes itself, such as an identifier a save answered: nobody typed it. */
 const quietly = { dontUpdateMeta: true, dontRunListeners: true, dontValidate: true } as const;
 
-/**
- * The form of the flow, a hook of its own so that the steps can name its type. Continue and Submit
- * are both its submit: it checks the step on the screen, on that submit and from then on as the
- * person types, and a step that is refused keeps the person on it.
- */
-function useApplyForm(options: {
-  defaults: ApplyValues;
-  /** What the step on the screen refuses in what the form holds, by field. */
-  problems: (values: ApplyValues) => Record<string, { message: string }> | undefined;
-  /** A person changed the field of this name. */
-  changed: (field: string) => void;
-  submit: (values: ApplyValues) => Promise<void>;
-}) {
-  return useAppForm({
-    defaultValues: options.defaults,
-    validationLogic: revalidateLogic(),
-    // A field refused when it was left does not keep the step from being checked as a whole.
-    canSubmitWhenInvalid: true,
-    validators: {
-      onDynamic: ({ value }) => {
-        const fields = options.problems(value);
-        return fields ? { fields } : undefined;
-      },
-    },
-    listeners: { onChange: ({ fieldApi }) => options.changed(fieldApi.name) },
-    onSubmit: ({ value }) => options.submit(value),
-  });
+/** The form of the flow, a hook of its own so that the steps can name its type. */
+function useApplyForm(options: Parameters<typeof applyFormOptions>[0]) {
+  return useAppForm(applyFormOptions(options));
 }
 
 type ApplyForm = ReturnType<typeof useApplyForm>;
@@ -181,6 +158,10 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
         }),
         values,
       ),
+    // A number or an address the backend would refuse is left out of the saves made while the
+    // person types, so its field says so once it is left.
+    problemsOnLeaving: (values) =>
+      step === "you" ? problemsOf(contactShapeSchema(words), values) : undefined,
     changed: (field) => {
       // Who applies and the team are kept when step 1 is left, and the confirmation never is.
       if (field.startsWith("application.")) {
@@ -346,7 +327,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
     form.setFieldValue("solution", solutionDraftOf(view, id), quietly);
     form.setFieldValue("application.solutionId", id, quietly);
     // What the step refused about the solution before is checked against the one chosen.
-    void form.validate("change");
+    checkAgain(form);
   }
 
   function goTo(next: number) {
@@ -564,11 +545,11 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
               }
               // What another step, or a choice the form made itself, left in error is checked against
               // what the form holds now: a field that is not on the screen must not hold this step back.
-              void form.validate("change");
+              checkAgain(form);
               void form.handleSubmit();
             }}
           >
-            {step === "you" && <StepYou form={form} view={view} words={words} />}
+            {step === "you" && <StepYou form={form} view={view} />}
             {step === "solution" && <StepSolution form={form} view={view} choose={choose} />}
             {step === "questions" && (
               <StepQuestions
@@ -618,15 +599,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   );
 }
 
-function StepYou({
-  form,
-  view,
-  words,
-}: {
-  form: ApplyForm;
-  view: ApplicationView;
-  words: ApplyWords;
-}) {
+function StepYou({ form, view }: { form: ApplyForm; view: ApplicationView }) {
   const t = useTranslations("Apply.you");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
@@ -637,7 +610,6 @@ function StepYou({
     const contact = state.values.application.contact;
     return contact.firstName.trim() ? `${contact.firstName.trim()} ${contact.lastName.trim()}` : "";
   });
-  const shapes = contactShapes(words);
 
   return (
     <>
@@ -709,7 +681,7 @@ function StepYou({
           <Input id="email" value={view.email} readOnly disabled aria-describedby="email-hint" />
           <FieldDescription id="email-hint">{t("emailHint")}</FieldDescription>
         </Field>
-        <form.AppField name="application.contact.phone" validators={{ onBlur: shapes.phone }}>
+        <form.AppField name="application.contact.phone">
           {(field) => (
             <field.TextField
               label={t("phone")}
@@ -731,10 +703,7 @@ function StepYou({
               />
             )}
           </form.AppField>
-          <form.AppField
-            name="application.contact.linkedin"
-            validators={{ onBlur: shapes.linkedin }}
-          >
+          <form.AppField name="application.contact.linkedin">
             {(field) => (
               <field.TextField
                 label={t("linkedin")}

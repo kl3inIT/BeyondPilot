@@ -43,7 +43,7 @@ const filled = (message: string) => z.string().trim().min(1, message);
  * refused here. A field that fails is left out of the saves made while the person types
  * (`savable`), so each says so when it is left.
  */
-export function contactShapes(words: Pick<ApplyWords, "phoneRequired" | "linkedinInvalid">) {
+function contactShapes(words: Pick<ApplyWords, "phoneRequired" | "linkedinInvalid">) {
   return {
     phone: z.string().trim().regex(phoneShape, words.phoneRequired),
     linkedin: z
@@ -51,6 +51,11 @@ export function contactShapes(words: Pick<ApplyWords, "phoneRequired" | "linkedi
       .trim()
       .refine((value) => value === "" || linkedinShape.test(value), words.linkedinInvalid),
   };
+}
+
+/** {@link contactShapes} over what the form holds, for the check made when a field is left. */
+export function contactShapeSchema(words: Pick<ApplyWords, "phoneRequired" | "linkedinInvalid">) {
+  return z.object({ application: z.object({ contact: z.object(contactShapes(words)) }) });
 }
 
 /**

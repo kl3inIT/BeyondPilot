@@ -4,7 +4,7 @@ import type { ApplicationView } from "@/lib/api/generated";
 
 import {
   applyStepSchema,
-  contactShapes,
+  contactShapeSchema,
   problemsOf,
   type ApplyContext,
   type ApplyStep,
@@ -195,21 +195,23 @@ describe("step 1, you and your team", () => {
   });
 });
 
-describe("contactShapes", () => {
-  const shapes = contactShapes(words);
+describe("contactShapeSchema, the check made when a field is left", () => {
+  const left = (phone: string, linkedin: string) =>
+    problemsOf(contactShapeSchema(words), {
+      ...you,
+      application: { ...you.application, contact: { ...contact, phone, linkedin } },
+    });
 
   it("accepts an empty field and what the backend accepts", () => {
-    expect(shapes.phone.safeParse("").success).toBe(true);
-    expect(shapes.phone.safeParse(" (028) 3822-1234 ").success).toBe(true);
-    expect(shapes.linkedin.safeParse("").success).toBe(true);
-    expect(shapes.linkedin.safeParse("https://www.linkedin.com/in/antran").success).toBe(true);
+    expect(left("", "")).toBeUndefined();
+    expect(left(" (028) 3822-1234 ", "https://www.linkedin.com/in/antran")).toBeUndefined();
   });
 
-  it("refuses a number with letters and an address without https", () => {
-    expect(shapes.phone.safeParse("abc").error?.issues[0].message).toBe("phoneRequired");
-    expect(
-      shapes.linkedin.safeParse("http://linkedin.com/in/antran").error?.issues[0].message,
-    ).toBe("linkedinInvalid");
+  it("refuses a number with letters and an address without https, each on its field", () => {
+    expect(left("abc", "http://linkedin.com/in/antran")).toEqual({
+      "application.contact.phone": { message: "phoneRequired" },
+      "application.contact.linkedin": { message: "linkedinInvalid" },
+    });
   });
 });
 
