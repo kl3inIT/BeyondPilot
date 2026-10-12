@@ -43,9 +43,6 @@ public class UseCaseProposal {
 
 	private @Nullable String approach;
 
-	@Column(nullable = false)
-	private boolean attachProfile;
-
 	private @Nullable UUID deckFileId;
 
 	private @Nullable UUID primaryContactAccountId;
@@ -89,9 +86,8 @@ public class UseCaseProposal {
 	 * that only changes the team, which another table holds.
 	 */
 	public void write(@Nullable String approach, @Nullable UUID deckFileId,
-			@Nullable UUID primaryContactAccountId, boolean attachProfile, Instant at) {
+			@Nullable UUID primaryContactAccountId, Instant at) {
 		this.approach = approach;
-		this.attachProfile = attachProfile;
 		this.deckFileId = deckFileId;
 		this.primaryContactAccountId = primaryContactAccountId;
 		this.updatedAt = at;
@@ -103,21 +99,15 @@ public class UseCaseProposal {
 	 */
 	public void edit(@Nullable String approach, @Nullable UUID deckFileId, @Nullable UUID primaryContactAccountId,
 			Instant at) {
-		// Whether the profile is attached is as it was sent; only the working copy of a draft changes it.
-		write(approach, deckFileId, primaryContactAccountId, attachProfile, at);
+		write(approach, deckFileId, primaryContactAccountId, at);
 		this.editedAt = at;
 	}
 
-	/** Makes the proposal sent, with the sender's profile as it is now when the proposal attaches it. */
-	public void send(UUID sender, @Nullable String talent, Instant at) {
+	/** Makes the proposal sent by this account. */
+	public void send(UUID sender, Instant at) {
 		this.status = SENT;
 		this.sentByAccountId = sender;
-		this.talent = talent;
 		this.sentAt = at;
-	}
-
-	public boolean isAttachProfile() {
-		return attachProfile;
 	}
 
 	public boolean isSent() {

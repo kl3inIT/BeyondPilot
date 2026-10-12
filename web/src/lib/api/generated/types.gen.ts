@@ -1354,6 +1354,10 @@ export type ContactRequest = {
      */
     country?: string | null;
     /**
+     * The name the account shows from now on; left out or blank keeps the one it has.
+     */
+    name?: string | null;
+    /**
      * With its country code, such as +84 912 345 678.
      */
     phone?: string | null;
@@ -4940,10 +4944,6 @@ export type SaveUseCaseProposal = {
      */
     approach?: string | null;
     /**
-     * Whether the sender's talent profile goes with the proposal, kept as it is when the proposal is sent. A sent proposal keeps what it was sent with.
-     */
-    attachProfile: boolean;
-    /**
      * A PDF the caller uploaded for an application.
      */
     deckFileId?: string | null;
@@ -5301,11 +5301,19 @@ export type SenderProject = {
 };
 
 /**
- * The account that sent the proposal, as shown with it when no talent profile goes with it.
+ * The submitting identity: the account that sent the proposal, with the name, address, country and number it gave.
  */
 export type SentBy = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
     email: string;
     name?: string | null;
+    /**
+     * With its country code.
+     */
+    phone?: string | null;
 };
 
 /**
@@ -6004,10 +6012,6 @@ export type UseCaseProgram = {
  */
 export type UseCaseProposal = {
     approach?: string | null;
-    /**
-     * Whether the sender's talent profile goes with the proposal.
-     */
-    attachProfile: boolean;
     deck?: AttachedFile | null;
     /**
      * While a sent proposal may still be edited, until when; null for a draft, and once the time to edit has ended or the use case has closed.
@@ -6019,7 +6023,7 @@ export type UseCaseProposal = {
     editedAt?: string | null;
     id: string;
     /**
-     * The sender's talent profile as it was when the proposal was sent; null for a draft and for a proposal sent without it.
+     * The sender's talent profile as it was when the proposal was sent; null for a draft and for a proposal sent without it, as every new one is.
      */
     sender?: SenderProfile | null;
     sentAt?: string | null;

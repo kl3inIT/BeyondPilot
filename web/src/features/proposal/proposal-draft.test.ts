@@ -4,6 +4,7 @@ import {
   addMember,
   addSolutions,
   bodyOf,
+  detailsComplete,
   incompleteSteps,
   removeMember,
   setPrimary,
@@ -16,7 +17,6 @@ const full: ProposalValues = {
   solutionIds: ["s1"],
   approach: "It reads claims.",
   deck: { fileId: "f1", fileName: "deck.pdf", sizeBytes: 10 },
-  attachProfile: false,
   team: [{ accountId: "a1", role: "Lead", primary: true }],
 };
 
@@ -27,7 +27,6 @@ describe("proposal draft", () => {
       approach: "",
       deck: null,
       team: [],
-      attachProfile: false,
     });
   });
 
@@ -65,11 +64,21 @@ describe("proposal draft", () => {
   });
 
   it("lists the steps that lack content", () => {
-    expect(incompleteSteps(full)).toEqual([]);
-    expect(incompleteSteps(valuesOf(null))).toEqual(["solutions", "pdf"]);
-    expect(incompleteSteps({ ...full, approach: " " })).toEqual(["solutions"]);
+    expect(incompleteSteps(full, true)).toEqual([]);
+    expect(incompleteSteps(valuesOf(null), true)).toEqual(["solutions", "pdf"]);
+    expect(incompleteSteps({ ...full, approach: " " }, true)).toEqual(["solutions"]);
+    expect(incompleteSteps(full, false)).toEqual(["details"]);
     expect(
-      incompleteSteps({ ...full, team: [{ accountId: "a1", role: "", primary: true }] }),
+      incompleteSteps({ ...full, team: [{ accountId: "a1", role: "", primary: true }] }, true),
     ).toEqual(["team"]);
+  });
+
+  it("asks for a name, a country and a number written with its country code", () => {
+    const given = { name: "Lan Tran", country: "VN", phone: "+84 912 345 678" };
+    expect(detailsComplete(given)).toBe(true);
+    expect(detailsComplete({ ...given, name: " " })).toBe(false);
+    expect(detailsComplete({ ...given, country: "" })).toBe(false);
+    expect(detailsComplete({ ...given, phone: "" })).toBe(false);
+    expect(detailsComplete({ ...given, phone: "call me" })).toBe(false);
   });
 });

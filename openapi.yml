@@ -13480,6 +13480,14 @@ components:
           - "null"
           description: ISO 3166-1 alpha-2.
           pattern: "^[A-Z]{2}$"
+        name:
+          type:
+          - string
+          - "null"
+          description: The name the account shows from now on; left out or blank keeps
+            the one it has.
+          maxLength: 120
+          minLength: 0
         phone:
           type:
           - string
@@ -20414,11 +20422,6 @@ components:
           description: How the solutions solve this use case.
           maxLength: 2000
           minLength: 0
-        attachProfile:
-          type: boolean
-          description: "Whether the sender's talent profile goes with the proposal,\
-            \ kept as it is when the proposal is sent. A sent proposal keeps what\
-            \ it was sent with."
         deckFileId:
           type:
           - string
@@ -20450,7 +20453,6 @@ components:
           description: The version the form read; null when the proposal does not
             exist yet.
       required:
-      - attachProfile
       - solutionIds
       - team
     SearchCounts:
@@ -21077,15 +21079,25 @@ components:
       - title
     SentBy:
       type: object
-      description: "The account that sent the proposal, as shown with it when no talent\
-        \ profile goes with it."
+      description: "The submitting identity: the account that sent the proposal, with\
+        \ the name, address, country and number it gave."
       properties:
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
         email:
           type: string
         name:
           type:
           - string
           - "null"
+        phone:
+          type:
+          - string
+          - "null"
+          description: With its country code.
       required:
       - email
     SentTalentEnquiry:
@@ -22406,9 +22418,6 @@ components:
           type:
           - string
           - "null"
-        attachProfile:
-          type: boolean
-          description: Whether the sender's talent profile goes with the proposal.
         deck:
           type:
           - object
@@ -22437,8 +22446,9 @@ components:
           - object
           - "null"
           $ref: "#/components/schemas/SenderProfile"
-          description: The sender's talent profile as it was when the proposal was
-            sent; null for a draft and for a proposal sent without it.
+          description: "The sender's talent profile as it was when the proposal was\
+            \ sent; null for a draft and for a proposal sent without it, as every\
+            \ new one is."
         sentAt:
           type:
           - string
@@ -22473,7 +22483,6 @@ components:
           description: "Sent back with the next save, so a save made on a stale copy\
             \ is refused."
       required:
-      - attachProfile
       - id
       - solutions
       - status

@@ -5,22 +5,19 @@ import type { ReactNode } from "react";
 
 import { Person } from "@/components/composites/person";
 import { TextButton } from "@/components/actions/text-button";
-import type {
-  ProposingOrganization,
-  SolutionSummary,
-  TalentProfile,
-  TeamCandidate,
-} from "@/lib/api/generated";
+import type { ProposingOrganization, SolutionSummary, TeamCandidate } from "@/lib/api/generated";
 
-import type { ProposalValues, Step } from "./proposal-draft";
-import { ProfileRows } from "./proposal-sender-card";
+import type { Details, ProposalValues, Step } from "./proposal-draft";
+import { SentByRows } from "./proposal-sender-card";
 import { catalogHref, catalogRowProps, ProposalSolutionRow } from "./proposal-solution-list";
 
 type ProposalReviewStepProps = {
   organization: ProposingOrganization;
   values: ProposalValues;
   catalog: SolutionSummary[];
-  profile: TalentProfile | null;
+  /** The submitting identity: what the account says, as it stands. */
+  details: Details;
+  email: string;
   members: TeamCandidate[];
   /** Opens a step to change what it holds. */
   onEdit: (step: Step) => void;
@@ -55,7 +52,8 @@ function ProposalReviewStep({
   organization,
   values,
   catalog,
-  profile,
+  details,
+  email,
   members,
   onEdit,
 }: ProposalReviewStepProps) {
@@ -90,8 +88,8 @@ function ProposalReviewStep({
         )}
       </Section>
 
-      <Section step="profile" title={t("steps.profile")} onEdit={onEdit}>
-        {values.attachProfile && profile ? <ProfileRows profile={profile} /> : none}
+      <Section step="details" title={t("steps.details")} onEdit={onEdit}>
+        <SentByRows sentBy={{ ...details, email }} />
       </Section>
 
       <Section step="team" title={t("steps.team")} onEdit={onEdit}>

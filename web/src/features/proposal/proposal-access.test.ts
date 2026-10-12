@@ -11,7 +11,6 @@ const draft = {
   status: "draft" as const,
   solutions: [],
   team: [],
-  attachProfile: false,
   updatedAt: "2026-10-01T00:00:00Z",
   version: 1,
 };

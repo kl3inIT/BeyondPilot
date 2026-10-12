@@ -8,7 +8,7 @@ import type { UseCaseProposal, UseCaseProposalForm } from "@/lib/api/generated";
 import { proposeToUseCaseRoute as proposeRoute, siteRoutes, useCaseRoute } from "@/lib/site";
 
 import { Card, ProposalTeamList, Rows } from "./proposal-card";
-import { ProposalSenderCard } from "./proposal-sender-card";
+import { ProposalSentBy } from "./proposal-sender-card";
 import { ProposalSolutionList } from "./proposal-solution-list";
 import type { EditState } from "./proposal-access";
 
@@ -85,9 +85,7 @@ function ProposalViewPage({ form, proposal, edit }: ProposalViewPageProps) {
           />
         </Card>
 
-        {proposal.sender && (
-          <ProposalSenderCard sender={proposal.sender} title={steps("profile")} />
-        )}
+        {proposal.sentBy && <ProposalSentBy sentBy={proposal.sentBy} title={steps("details")} />}
 
         <Card id="proposal-team" title={steps("team")}>
           <ProposalTeamList team={proposal.team} />

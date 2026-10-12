@@ -116,8 +116,8 @@ public enum ProposalErrorCode implements ErrorCode {
 	APPROACH_REQUIRED("PROPOSAL_APPROACH_REQUIRED", ErrorCategory.VALIDATION,
 			"Say how the solution solves this use case."),
 
-	PROFILE_INCOMPLETE("PROPOSAL_PROFILE_INCOMPLETE", ErrorCategory.VALIDATION,
-			"Create your talent profile to attach it, or send the proposal without it."),
+	CONTACT_REQUIRED("PROPOSAL_CONTACT_REQUIRED", ErrorCategory.VALIDATION,
+			"Add your name, country and phone number first."),
 
 	TEAM_INVALID("PROPOSAL_TEAM_INVALID", ErrorCategory.VALIDATION,
 			"The team can name only members of your organization, each once, and at most one primary contact."),

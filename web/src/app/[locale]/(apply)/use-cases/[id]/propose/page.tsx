@@ -50,7 +50,7 @@ export default async function ProposeRoute({
       organization={form.organization ?? null}
       solutions={solutions.items}
       profile={talent.profile ?? null}
-      accountName={account.displayName ?? account.email}
+      account={account}
     />
   );
 }

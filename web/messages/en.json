@@ -7190,7 +7190,7 @@
       "PROPOSAL_SOLUTION_REQUIRED": "Choose the solution you send.",
       "PROPOSAL_SOLUTION_NOT_FOUND": "Choose a solution of your organization.",
       "PROPOSAL_APPROACH_REQUIRED": "Say how the solution solves this use case.",
-      "PROPOSAL_PROFILE_INCOMPLETE": "Complete your profile first: a headline, a role, a skill and a short text about you.",
+      "PROPOSAL_CONTACT_REQUIRED": "Add your name, country and phone number first.",
       "PROPOSAL_TEAM_INVALID": "The team can name only members of your organization, each once, and at most one primary contact.",
       "PROPOSAL_TEAM_INCOMPLETE": "Name at least one person, give each a role and choose the primary contact.",
       "PROPOSAL_PDF_REQUIRED": "Add the proposal as a PDF.",
@@ -7297,7 +7297,7 @@
       "steps": {
         "organization": "Organization",
         "solutions": "AI solutions",
-        "profile": "Your profile",
+        "details": "Your details",
         "team": "Team",
         "pdf": "Proposal PDF",
         "review": "Review"
@@ -7325,18 +7325,14 @@
           "add": "{count, plural, one {Add # solution} other {Add # solutions}}"
         }
       },
-      "profile": {
-        "saveAndReturn": "Save and return later",
-        "back": "Back",
-        "continue": "Continue",
-        "readiness": {
-          "missing": "Add these before you continue",
-          "note": "A proposal shows your headline, role, skills and about text to the organization. They keep a copy of it as it is when you send."
-        },
-        "use": "Use my talent profile",
-        "create": "Create a talent profile",
-        "remove": "Remove",
-        "none": "No talent profile goes with this proposal."
+      "details": {
+        "name": "Name",
+        "email": "Email",
+        "country": "Country",
+        "countryPlaceholder": "Select a country",
+        "phone": "Phone",
+        "phoneInvalid": "Use digits with the country code, such as +84 912 345 678.",
+        "required": "Required"
       },
       "team": {
         "count": "{count, plural, one {# member} other {# members}}",
@@ -7405,7 +7401,6 @@
         "banner": "Your changes are visible to the organization that posted the use case once you save them. Editing closes {until}.",
         "note": "Nothing is saved until you choose Save changes.",
         "reviewLead": "Check your changes. They replace what you sent as soon as you save.",
-        "profileHint": "The profile copy sent with the proposal stays as it was when you sent it. Changes to your profile are not copied.",
         "unsaved": "Changes not saved yet",
         "pristine": "No changes yet",
         "save": "Save changes",

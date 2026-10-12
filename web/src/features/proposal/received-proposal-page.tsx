@@ -10,7 +10,7 @@ import { adminUseCaseProposalsRoute, siteRoutes, workspaceUseCaseProposalsRoute 
 import { cn } from "@/lib/utils";
 
 import { Card, ProposalTeamList, Rows } from "./proposal-card";
-import { ProposalSenderCard, ProposalSentBy } from "./proposal-sender-card";
+import { ProposalSentBy } from "./proposal-sender-card";
 import { ProposalSolutionList } from "./proposal-solution-list";
 import { proposalFileAddress } from "./received-proposals";
 
@@ -22,7 +22,7 @@ type ReceivedProposalPageProps = {
 
 /**
  * One proposal a use case received, read-only: who sent it, the solutions offered and the approach,
- * the sender as they described themselves when they sent it, the team and the PDF. Shortlist and
+ * the sender's name, address, country and number, the team and the PDF. Shortlist and
  * Decline are drawn and disabled for the organization until a later change adds the decision; GenAI
  * Fund reads the proposal without them.
  */
@@ -31,7 +31,7 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
   const t = useTranslations("UseCaseProposal.received.detail");
   const format = useFormatter();
   const size = useFileSize();
-  const { sender, deck, team, solutions, useCase } = proposal;
+  const { deck, team, solutions, useCase } = proposal;
   const day = (instant: string) =>
     format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
   const sent = day(proposal.sentAt);
@@ -105,11 +105,7 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
           />
         </Card>
 
-        {sender ? (
-          <ProposalSenderCard sender={sender} title={t("sender.title")} />
-        ) : (
-          <ProposalSentBy sentBy={proposal.sentBy} title={t("sentBy")} />
-        )}
+        <ProposalSentBy sentBy={proposal.sentBy} title={t("sentBy")} />
 
         <Card id="proposal-team" title={t("team.title")}>
           <ProposalTeamList team={team} />

@@ -53,8 +53,6 @@ import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
 import ai.genaifund.beyondpilot.storage.StorageService;
-import ai.genaifund.beyondpilot.talent.TalentSnapshot;
-import ai.genaifund.beyondpilot.talent.TalentSnapshots;
 import ai.genaifund.beyondpilot.usecase.UseCaseDirectory;
 import ai.genaifund.beyondpilot.usecase.UseCaseTarget;
 import org.jspecify.annotations.Nullable;
@@ -90,8 +88,6 @@ public class UseCaseProposals {
 
 	private final SolutionDirectory solutions;
 
-	private final TalentSnapshots talent;
-
 	private final IdentityService identity;
 
 	private final StorageService storage;
@@ -104,7 +100,7 @@ public class UseCaseProposals {
 
 	UseCaseProposals(UseCaseProposalRepository proposals, UseCaseProposalMemberRepository teams,
 			UseCaseProposalSolutionRepository offers, UseCaseDirectory useCases, OrganizationDirectory organizations, SolutionDirectory solutions,
-			TalentSnapshots talent, IdentityService identity, StorageService storage, JsonMapper json,
+			IdentityService identity, StorageService storage, JsonMapper json,
 			EmailService email, OrganizationService organizationService) {
 		this.proposals = proposals;
 		this.teams = teams;
@@ -112,7 +108,6 @@ public class UseCaseProposals {
 		this.useCases = useCases;
 		this.organizations = organizations;
 		this.solutions = solutions;
-		this.talent = talent;
 		this.identity = identity;
 		this.storage = storage;
 		this.json = json;
@@ -234,7 +229,7 @@ public class UseCaseProposals {
 			proposal.edit(text(request.approach()), deck, primary, Instant.now());
 		}
 		else {
-			proposal.write(text(request.approach()), deck, primary, request.attachProfile(), Instant.now());
+			proposal.write(text(request.approach()), deck, primary, Instant.now());
 		}
 		proposals.saveAndFlush(proposal);
 		teams.saveAll(team);
@@ -270,15 +265,14 @@ public class UseCaseProposals {
 		if (!team.stream().allMatch(member -> members.contains(member.getAccountId()))) {
 			throw refused(ProposalErrorCode.TEAM_INVALID, id);
 		}
-		String kept = null;
-		if (proposal.isAttachProfile()) {
-			TalentSnapshot profile = talent.of(actor.accountId())
-				.orElseThrow(() -> refused(ProposalErrorCode.PROFILE_INCOMPLETE, id));
-			kept = json.writeValueAsString(sender(profile));
+		// The submitting identity: the account's name, address, country and number.
+		Person sender = identity.person(actor);
+		if (blank(sender.displayName()) || blank(sender.country()) || blank(sender.phone())) {
+			throw refused(ProposalErrorCode.CONTACT_REQUIRED, id);
 		}
 
 		Instant now = Instant.now();
-		proposal.send(actor.accountId(), kept, now);
+		proposal.send(actor.accountId(), now);
 		proposals.saveAndFlush(proposal);
 		LOG.atInfo()
 			.addKeyValue("event", "proposal.use_case.sent")
@@ -528,8 +522,7 @@ public class UseCaseProposals {
 
 	private UseCaseProposalResponse response(UseCaseProposal proposal, UseCaseTarget target) {
 		return new UseCaseProposalResponse(proposal.getId(), proposal.getStatus(), solutions(proposal),
-				proposal.getApproach(), deck(proposal), team(proposal), proposal.isAttachProfile(), senderOf(proposal),
-				sentBy(proposal), proposal.getSentAt(),
+				proposal.getApproach(), deck(proposal), team(proposal), senderOf(proposal), sentBy(proposal), proposal.getSentAt(),
 				editableUntil(proposal, target), proposal.getEditedAt(), proposal.getVersion(),
 				proposal.getUpdatedAt());
 	}
@@ -537,7 +530,8 @@ public class UseCaseProposals {
 	private @Nullable SentByResponse sentBy(UseCaseProposal proposal) {
 		UUID sentBy = proposal.getSentByAccountId();
 		Person person = sentBy == null ? null : identity.people(List.of(sentBy)).get(sentBy);
-		return person == null ? null : new SentByResponse(person.displayName(), person.email());
+		return person == null ? null
+				: new SentByResponse(person.displayName(), person.email(), person.country(), person.phone());
 	}
 
 	private @Nullable SenderProfileResponse senderOf(UseCaseProposal proposal) {
@@ -641,18 +635,6 @@ public class UseCaseProposals {
 				: storage.describe(deck)
 					.map(file -> new AttachedFileResponse(file.id(), file.fileName(), file.sizeBytes()))
 					.orElse(null);
-	}
-
-	private static SenderProfileResponse sender(TalentSnapshot profile) {
-		return new SenderProfileResponse(profile.name(), profile.headline(), profile.bio(), profile.roles(),
-				profile.skills(), profile.country(), profile.city(), profile.worksAt(), profile.languages(),
-				profile.industries(), profile.engagement(), profile.website(), profile.photoFileId(),
-				profile.projects()
-					.stream()
-					.map(project -> new SenderProfileResponse.Project(project.title(), project.summary(), project.url(),
-							project.year(), project.stage()))
-					.toList(),
-				null);
 	}
 
 	private static ProposalUseCaseResponse useCase(UseCaseTarget target) {
