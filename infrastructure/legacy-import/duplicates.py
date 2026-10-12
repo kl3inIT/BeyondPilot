@@ -178,16 +178,17 @@ begin
     with product as (
         select s.id,
                row_number() over (partition by s.organization_id, pg_temp.name_key(s.name)
-                                  order by (s.status = 'approved') desc, (s.deck_file_id is not null) desc,
-                                           coalesce(v.active, true) desc, pg_temp.filled(s) desc,
+                                  order by (s.status = 'approved') desc, (s.status <> 'draft') desc,
+                                           (s.deck_file_id is not null) desc, coalesce(v.active, true) desc, pg_temp.filled(s) desc,
                                            coalesce(v.updated, '') desc, s.id) as place,
                first_value(s.name) over (partition by s.organization_id, pg_temp.name_key(s.name)
-                                         order by (s.status = 'approved') desc, (s.deck_file_id is not null) desc,
-                                                  coalesce(v.active, true) desc, pg_temp.filled(s) desc,
+                                         order by (s.status = 'approved') desc, (s.status <> 'draft') desc,
+                                                  (s.deck_file_id is not null) desc, coalesce(v.active, true) desc, pg_temp.filled(s) desc,
                                                   coalesce(v.updated, '') desc, s.id) as best
         from solution s
         left join legacy_company v on v.solution_id = s.id
-        where s.status in ('approved', 'in_review')
+        -- A draft counts when it is a record of the old platform; one a member began here is theirs to finish.
+        where (s.status in ('approved', 'in_review') or (s.status = 'draft' and v.solution_id is not null))
           and s.organization_id in (select kept from merge_plan
                                     where left_because is null
                                       and key not in (select key from legacy_same where several))),
