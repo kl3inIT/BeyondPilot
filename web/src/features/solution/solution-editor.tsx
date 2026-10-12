@@ -11,6 +11,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useStore } from "@tanstack/react-form";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
@@ -44,6 +45,7 @@ import { focusField } from "@/lib/focus-field";
 import { siteRoutes } from "@/lib/site";
 
 import { deckAddress } from "./solution-deck";
+import { useSolutionForm } from "./solution-editor-form";
 import {
   badLinks,
   contentOf,
@@ -52,12 +54,13 @@ import {
   fieldSteps,
   held,
   limits,
+  linkFields,
   missingForReview,
+  neededOf,
   reviewFields,
   toRequest,
   type EditorStep,
   type HeldImage,
-  type LinkField,
   type SolutionDraft,
 } from "./solution-editor-state";
 import { BasicsStep, EvidenceStep, FitStep } from "./solution-editor-steps";
@@ -112,12 +115,27 @@ function SolutionEditor({
   const [server, setServer] = useState(solution);
   const latest = useRef(solution);
   const inFlight = useRef<Promise<boolean> | null>(null);
-  const [draft, setDraft] = useState(() => held(solution));
   const [saving, setSaving] = useState(false);
   const [savedNow, setSavedNow] = useState<Date | null>(null);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [refused, setRefused] = useState<Set<string>>(new Set());
-  const [leftLinks, setLeftLinks] = useState<Set<LinkField>>(new Set());
+  // A field that changes is no longer marked: the backend's refusal was about what it held before.
+  const form = useSolutionForm(solution, (field) =>
+    setRefused((current) => {
+      if (!current.has(field)) {
+        return current;
+      }
+      const next = new Set(current);
+      next.delete(field);
+      return next;
+    }),
+  );
+  const draft = useStore(form.store, (state) => state.values.solution);
+  // The links a person has left: from then on, what is wrong with one is said under it. The form
+  // keeps that as each field's blur; they are read as one word, which compares equal while unchanged.
+  const leftLinks = useStore(form.store, (state) =>
+    linkFields.filter((field) => state.fieldMeta[`solution.${field}`]?.isBlurred).join(" "),
+  ).split(" ");
   const [checked, setChecked] = useState(false);
   // The person's word that what they wrote is right; a review is not sent without it.
   const [confirmed, setConfirmed] = useState(false);
@@ -163,22 +181,17 @@ function SolutionEditor({
     return id === "evidence" ? [...lacking, ...wrongLinks] : lacking;
   }
 
-  function change(patch: Partial<SolutionDraft>) {
-    setDraft((current) => ({ ...current, ...patch }));
-    // A field that changes is no longer marked: the backend's refusal was about what it held before.
-    setRefused((current) => {
-      const next = new Set(current);
-      Object.keys(patch).forEach((field) => next.delete(field));
-      return next.size === current.size ? current : next;
-    });
-  }
-
   /** An image under the cover whose upload ended; the list may have changed while it was on its way. */
   function addImage(image: HeldImage) {
-    setDraft((current) =>
-      current.images.length < limits.images
-        ? { ...current, images: [...current.images, image] }
-        : current,
+    form.setFieldValue("solution.images", (current) =>
+      current.length < limits.images ? [...current, image] : current,
+    );
+  }
+
+  /** From now on the links that are no address say so, left or not: the person asked to go on. */
+  function showWrongLinks() {
+    wrongLinks.forEach((field) =>
+      form.setFieldMeta(`solution.${field}`, (meta) => ({ ...meta, isBlurred: true })),
     );
   }
 
@@ -198,10 +211,11 @@ function SolutionEditor({
       setFailure(null);
       setRefused(new Set());
       // The deck the solution now names carries when it took it.
-      setDraft((current) =>
-        current.deck && data.deck && current.deck.fileId === data.deck.fileId
-          ? { ...current, deck: data.deck }
-          : current,
+      form.setFieldValue(
+        "solution.deck",
+        (current) =>
+          current && data.deck && current.fileId === data.deck.fileId ? data.deck : current,
+        { dontUpdateMeta: true },
       );
       return true;
     } catch (error) {
@@ -288,7 +302,7 @@ function SolutionEditor({
       return;
     }
     setTried((current) => new Set(current).add(step));
-    setLeftLinks(new Set(wrongLinks));
+    showWrongLinks();
     const onlyLinks = blocking.every((field) => field === "demoUrl" || field === "website");
     notify.error(onlyLinks ? "Solution.errors.REQUEST_INVALID" : "Solution.editor.stepIncomplete");
     focusField(fieldId(blocking[0]));
@@ -296,7 +310,7 @@ function SolutionEditor({
 
   /** Shows what keeps the editor from saving: a missing name, or a link that is not an address. */
   function showWhatBlocks() {
-    setLeftLinks(new Set(wrongLinks));
+    showWrongLinks();
     notify.error("Solution.errors.REQUEST_INVALID");
     open(nameless ? "basics" : "evidence", fieldId(nameless ? "name" : wrongLinks[0]));
   }
@@ -359,20 +373,19 @@ function SolutionEditor({
     }
   }
 
+  // What each field a review needs says while the draft lacks it, from the editor's schema.
+  const needed = neededOf(draft, t);
+
   function errorOf(field: keyof SolutionDraft): string | undefined {
     if (field === "name") {
-      return nameless ? t("needed.name") : undefined;
+      return needed.name;
     }
     if (field === "demoUrl" || field === "website") {
-      const shown = leftLinks.has(field) || refused.has(field);
+      const shown = leftLinks.includes(field) || refused.has(field);
       return shown && wrongLinks.includes(field) ? t("fields.linkInvalid") : undefined;
     }
-    const needed = missing.find((candidate) => candidate === field);
-    if (!needed || needed === "name") {
-      return undefined;
-    }
-    const holder = reviewFields.find((entry) => entry.field === needed)?.step;
-    return holder && asked(holder) ? t(`needed.${needed}`) : undefined;
+    const entry = reviewFields.find((candidate) => candidate.field === field);
+    return entry && asked(entry.step) ? needed[entry.field] : undefined;
   }
 
   /** What a step still lacks or holds wrongly, as the line under its title; nothing when it is in order. */
@@ -380,7 +393,7 @@ function SolutionEditor({
     const wrong =
       [...refused].filter((field) => fieldSteps[field] === id).length +
       (id === "evidence"
-        ? wrongLinks.filter((field) => leftLinks.has(field) && !refused.has(field)).length
+        ? wrongLinks.filter((field) => leftLinks.includes(field) && !refused.has(field)).length
         : 0) +
       (id === "basics" && nameless && !refused.has("name") ? 1 : 0);
     if (wrong > 0) {
@@ -706,31 +719,27 @@ function SolutionEditor({
               <FieldGroup>
                 {step === "basics" && (
                   <BasicsStep
-                    draft={draft}
-                    change={change}
+                    form={form}
                     errorOf={errorOf}
                     solutionId={solution.id}
                     operator={operator}
                   />
                 )}
-                {step === "fit" && <FitStep draft={draft} change={change} errorOf={errorOf} />}
+                {step === "fit" && <FitStep form={form} errorOf={errorOf} />}
                 {step === "evidence" && (
                   <EvidenceStep
-                    draft={draft}
-                    change={change}
+                    form={form}
                     errorOf={errorOf}
                     solutionId={solution.id}
                     deckHref={deckHref}
                     onImageAdded={addImage}
                     unsent={solution.status === "draft"}
                     customerDeployments={operator ? null : solution.customerDeployments}
-                    onLinkLeft={(field) => setLeftLinks((current) => new Set(current).add(field))}
                   />
                 )}
                 {step === "review" && (
                   <ReviewStep
-                    draft={draft}
-                    change={change}
+                    form={form}
                     customerDeployments={
                       operator
                         ? null
