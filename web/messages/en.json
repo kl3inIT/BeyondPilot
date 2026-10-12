@@ -7147,7 +7147,8 @@
         "sender": {
           "title": "Sender profile",
           "name": "Name",
-          "headline": "Headline"
+          "headline": "Headline",
+          "email": "Email"
         },
         "team": {
           "title": "Team",

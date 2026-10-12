@@ -7147,7 +7147,8 @@
         "sender": {
           "title": "Hồ sơ người gửi",
           "name": "Họ tên",
-          "headline": "Tiêu đề hồ sơ"
+          "headline": "Tiêu đề hồ sơ",
+          "email": "Email"
         },
         "team": {
           "title": "Đội ngũ",
