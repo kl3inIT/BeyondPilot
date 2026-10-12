@@ -579,11 +579,13 @@ test.describe("workspace solutions", () => {
     ).toBeVisible();
     await expect(dialog).toHaveCount(0);
 
+    // The solution was sent for review, so its deployment is withdrawn, not deleted: nobody is
+    // told and it can be restored, so it runs at once and the toast offers Undo.
     await deployments.getByRole("button", { name: "Remove" }).last().click();
-    const confirm = page.getByRole("alertdialog");
-    await expect(confirm.getByRole("heading")).toHaveText("Remove Claims line at Bảo An?");
-    await confirm.getByRole("button", { name: "Remove" }).click();
+    await expect(page.getByRole("alertdialog")).toHaveCount(0);
     await expect(page.getByText("Claims line at Bảo An removed.")).toBeVisible();
+    await page.getByRole("button", { name: "Undo" }).click();
+    await expect(page.getByText("Claims line at Bảo An restored.")).toBeVisible();
 
     expect(changes).toEqual([
       {
@@ -602,7 +604,11 @@ test.describe("workspace solutions", () => {
         },
       },
       {
-        call: `DELETE /api/solution/mine/${policyChat}/deployments/${sentBack}`,
+        call: `POST /api/solution/mine/${policyChat}/deployments/${sentBack}/withdraw`,
+        body: null,
+      },
+      {
+        call: `POST /api/solution/mine/${policyChat}/deployments/${sentBack}/restore`,
         body: null,
       },
     ]);
