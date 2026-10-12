@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { WorkspaceFrame } from "@/components/layout/workspace-frame";
 import { OrganizationEntry } from "@/features/organization/organization-entry";
 import { OrganizationEntryFrame } from "@/features/organization/organization-entry-frame";
 import { OrganizationProfilePage } from "@/features/organization/organization-profile-page";
@@ -33,11 +32,9 @@ export default async function MyOrganizationRoute({
   // A person without an organization meets the ways in, under the site's header like every other page.
   if (!organization) {
     return (
-      <WorkspaceFrame>
-        <OrganizationEntryFrame>
-          <OrganizationEntry mine={mine} finding={(await searchParams).find !== undefined} />
-        </OrganizationEntryFrame>
-      </WorkspaceFrame>
+      <OrganizationEntryFrame>
+        <OrganizationEntry mine={mine} finding={(await searchParams).find !== undefined} />
+      </OrganizationEntryFrame>
     );
   }
 
@@ -52,9 +49,5 @@ export default async function MyOrganizationRoute({
     useCases,
   };
 
-  return (
-    <WorkspaceFrame>
-      <OrganizationProfilePage mine={{ ...mine, organization }} counts={counts} />
-    </WorkspaceFrame>
-  );
+  return <OrganizationProfilePage mine={{ ...mine, organization }} counts={counts} />;
 }

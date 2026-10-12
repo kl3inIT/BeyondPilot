@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { WorkspaceFrame } from "@/components/layout/workspace-frame";
 import { readMembers, readMyOrganization } from "@/features/organization/organization-queries";
 import { readMySolutions } from "@/features/solution/solution-queries";
 import { MyUseCasesPage } from "@/features/usecase/my-use-cases-page";
@@ -48,15 +47,13 @@ export default async function OrganizationUseCasesRoute({
   const proposals = await readProposalCounts(published).catch(() => null);
 
   return (
-    <WorkspaceFrame>
-      <MyUseCasesPage
-        mine={{ ...mine, organization }}
-        useCases={useCases}
-        members={members?.total ?? 0}
-        solutions={solutions?.items.length ?? null}
-        proposals={proposals}
-        search={search}
-      />
-    </WorkspaceFrame>
+    <MyUseCasesPage
+      mine={{ ...mine, organization }}
+      useCases={useCases}
+      members={members?.total ?? 0}
+      solutions={solutions?.items.length ?? null}
+      proposals={proposals}
+      search={search}
+    />
   );
 }

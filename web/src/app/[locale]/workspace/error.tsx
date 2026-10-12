@@ -2,7 +2,13 @@
 
 import { ErrorNotice, type ErrorNoticeProps } from "@/components/layout/error-notice";
 
-// A page of a person's own area that fails is replaced inside the frame, so the header stays.
+// The failure of a page that draws the site's frame itself, or has none: the frame reads the session
+// on the server, so it cannot be drawn here, and the notice stands alone as the page's main content.
+// A section whose layout draws the frame has an error page of its own, which keeps it.
 export default function WorkspaceErrorPage(props: ErrorNoticeProps) {
-  return <ErrorNotice {...props} />;
+  return (
+    <main className="flex flex-1 flex-col">
+      <ErrorNotice {...props} />
+    </main>
+  );
 }
