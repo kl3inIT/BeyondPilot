@@ -64,6 +64,8 @@ class DuplicatesTest(unittest.TestCase):
         self.assertIn("partition by s.organization_id, pg_temp.name_key(s.name)", sql)
         # Search and matching read an approved solution listed or not, so taking one off the list would not do.
         self.assertNotIn("listed = false", sql)
+        # Production holds the import in review: a duplicate that waits for review is refused too, a draft is not.
+        self.assertIn("where s.status in ('approved', 'in_review')", sql)
 
     def test_a_matching_result_a_person_acted_on_stays(self):
         sql = duplicates.sql([])
