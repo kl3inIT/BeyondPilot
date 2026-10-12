@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 
 @Schema(name = "ProgramApplications", description = "When and how a program takes applications here.")
@@ -17,5 +18,14 @@ public record ProgramApplications(@Schema(requiredMode = Schema.RequiredMode.REQ
 		@Schema(types = { "string", "null" }, format = "date",
 				description = "The day applicants hear the outcome; not before the deadline.") @Nullable LocalDate outcomesDueOn,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Whether an applicant may change a submitted application until the deadline.") boolean allowUpdatesUntilClose) {
+				description = "Whether an applicant may change a submitted application until the deadline.") boolean allowUpdatesUntilClose,
+		@Schema(types = { "string", "null" },
+				description = "The title of the opening on the timeline; null shows the default words in the reader's language.") @Size(
+						max = 160) @Nullable String opensTitle,
+		@Schema(types = { "string", "null" },
+				description = "The title of the deadline on the timeline; null shows the default words.") @Size(
+						max = 160) @Nullable String closesTitle,
+		@Schema(types = { "string", "null" },
+				description = "The title of the day outcomes are due on the timeline; null shows the default words.") @Size(
+						max = 160) @Nullable String outcomesTitle) {
 }

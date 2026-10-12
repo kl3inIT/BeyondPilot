@@ -233,7 +233,15 @@ test.describe("admin programs", () => {
     await leaving.getByRole("button", { name: "Stay" }).click();
     await expect(page).toHaveURL(`/admin/programs/${draft}/settings`);
     await expect(page.getByText("Demo night")).toBeVisible();
-    await expect(page.getByText("Submissions close")).toBeVisible();
+    // The window's dates stand in the list under the words the page shows; the operator renames one,
+    // and its date stays the window's.
+    await expect(page.getByText("Applications close", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Rename Applications close" }).click();
+    const renaming = page.getByRole("dialog");
+    await renaming.getByRole("textbox", { name: "Title" }).fill("Submissions close");
+    await renaming.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByText("Submissions close", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Rename Submissions close" })).toBeVisible();
 
     await shown(page, "Save changes").click();
     await expect(page.getByText("Saved.")).toBeVisible();
@@ -249,6 +257,9 @@ test.describe("admin programs", () => {
           shortlistSize: null,
           outcomesDueOn: null,
           allowUpdatesUntilClose: true,
+          opensTitle: null,
+          closesTitle: "Submissions close",
+          outcomesTitle: null,
         },
         keyDates: [
           {
@@ -349,7 +360,7 @@ test.describe("admin programs", () => {
     await expect(
       page.getByRole("listitem").filter({ hasText: "Briefing with Tasco's business team" }),
     ).toHaveText(/^7 Oct 2026, 15:30–17:00\s*Briefing with Tasco's business team/);
-    await expect(page.getByRole("img", { name: "Edited under Applications" })).toHaveCount(3);
+    await expect(page.getByRole("img", { name: "Date edited under Applications" })).toHaveCount(3);
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -585,8 +596,6 @@ test.describe("admin programs", () => {
     await expect(page.getByText("Direction")).toBeVisible();
     await expect(page.getByText("Several choices · 3 choices")).toBeVisible();
     await expect(page.getByRole("button", { name: "Add a question" })).toHaveCount(0);
-    // The pointer still rests on Save changes; its hover colour is not what is checked here.
-    await page.mouse.move(0, 0);
     await expectNoSeriousA11yViolations(page);
   });
 });

@@ -76,6 +76,7 @@ async function SubmittedRecord({
     (contact.phone ?? none)
   );
   const linkedin = contact.linkedin ? linkedinAddress(contact.linkedin) : null;
+  const website = submitted.website ? webAddress(submitted.website) : null;
 
   const files: {
     label: string;
@@ -135,7 +136,14 @@ async function SubmittedRecord({
               ] as Row,
             ]
           : []),
-        ...(submitted.website ? [[t("website"), submitted.website] as Row] : []),
+        ...(submitted.website
+          ? [
+              [
+                t("website"),
+                website ? <Outside href={website}>{submitted.website}</Outside> : submitted.website,
+              ] as Row,
+            ]
+          : []),
         ...(submitted.teamBackground
           ? [[t("teamBackground"), submitted.teamBackground] as Row]
           : []),

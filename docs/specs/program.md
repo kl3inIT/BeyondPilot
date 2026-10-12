@@ -22,12 +22,15 @@ it asks applicants, and whether the public site shows it. It was delivered by
 
 ## Data
 
-`V4__program_create_programs.sql` creates three tables and `V12__program_create_questions.sql` the fourth. The module
+`V4__program_create_programs.sql` creates three tables and `V12__program_create_questions.sql` the fourth;
+`V86__program_add_window_titles.sql` adds the titles of the window's dates. The module
 owns all four ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
 
 - **`program`.** One row per program: `slug`, `name`, `type`, `partner_name`, `summary`, `about`, `starts_on`,
   `ends_on`, `status`, `published_at`, `page_kind`, `external_url`, `cover_file_id`, the application window
   (`applications_open_at`, `applications_close_at`, `shortlist_size`, `outcomes_due_on`, `allow_updates_until_close`),
+  the titles an operator gave the dates the window puts on the timeline (`applications_open_title`,
+  `applications_close_title`, `outcomes_due_title`, each null for the default words, at most 160 characters),
   `version`, `created_at`, `updated_at`.
 - **`program_milestone`** (key dates) and **`program_event`** (events). Lists keyed by `(program_id, position)`, kept
   in the order the operator gave and replaced as a whole, so a row has no identifier of its own.
@@ -78,8 +81,13 @@ application window, key dates and events, all or nothing.
   with `PROGRAM_CHANGED_MEANWHILE` when the `version` sent is not the program's version. The answer carries the new
   version.
 - **Lists replaced as sent.** Key dates (at most 30) and events (at most 30) replace the stored lists; an unchanged
-  list writes nothing. Sending `applications: null` clears the whole window and resets `allowUpdatesUntilClose` to
-  `true`.
+  list writes nothing. Sending `applications: null` clears the whole window, its titles included, and resets
+  `allowUpdatesUntilClose` to `true`.
+- **Titles of the window's dates.** The opening, the close and the day outcomes are due stand on the timeline without
+  being key dates: their dates are the window's. `applications.opensTitle`, `closesTitle` and `outcomesTitle` give each
+  a title of the operator's; null, or blank, leaves the default words, which the web application writes in the
+  reader's language (`Program.timeline` in the message catalogs). The admin read, the public page and both lists
+  carry them.
 - **Text.** Names and titles are stripped; an optional text that is blank is stored as null.
 - **Rules across fields**, each refused with its own code:
   - `endsOn` before `startsOn`: `PROGRAM_DAYS_OUT_OF_ORDER`.
@@ -87,6 +95,9 @@ application window, key dates and events, all or nothing.
   - `outcomesDueOn` before the day of `closesAt` in Vietnam time: `PROGRAM_OUTCOMES_BEFORE_CLOSE`.
   - A key date or an event whose `endsAt` is before its `startsAt`: `PROGRAM_KEY_DATE_OUT_OF_ORDER`,
     `PROGRAM_EVENT_OUT_OF_ORDER`.
+  - An event that is not `online` and has no `city`: `PROGRAM_EVENT_CITY_REQUIRED`. The rule is asked of an event that
+    is added or changed. One the program already holds exactly as sent is kept, so a program that held such an event
+    before the rule still saves its other fields; the Settings screen asks the same way, in the event's dialog.
   - `pageKind` `external` without `externalUrl`: `PROGRAM_EXTERNAL_URL_REQUIRED`.
 - **Single fields.** A malformed member (length, pattern, a web address that is not `http` or `https`) is refused by
   request validation as `REQUEST_INVALID` with a pointer to the member.
@@ -229,6 +240,7 @@ The contract is `openapi.yml`.
 | `PROGRAM_OUTCOMES_BEFORE_CLOSE` | 400    | `outcomesDueOn` before the closing day in Vietnam                                |
 | `PROGRAM_KEY_DATE_OUT_OF_ORDER` | 400    | A key date ends before it starts                                                 |
 | `PROGRAM_EVENT_OUT_OF_ORDER`    | 400    | An event ends before it starts                                                   |
+| `PROGRAM_EVENT_CITY_REQUIRED`   | 400    | An event added or changed is held in person and names no city                    |
 | `PROGRAM_EXTERNAL_URL_REQUIRED` | 400    | `external` page kind without `externalUrl`                                       |
 | `PROGRAM_CHOICES_REQUIRED`      | 400    | A `single_choice` or `multi_choice` question with fewer than two options         |
 | `PROGRAM_NOT_READY_TO_PUBLISH`  | 400    | Publishing while `publishIssues` is not empty                                    |

@@ -11,7 +11,13 @@ import { useAppForm } from "@/components/form/app-form";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-import { eventSchema, keyDateSchema, type EventValue, type KeyDateValue } from "./program-schemas";
+import {
+  eventSchema,
+  keyDateSchema,
+  windowTitleSchema,
+  type EventValue,
+  type KeyDateValue,
+} from "./program-schemas";
 
 type DialogProps<Value> = {
   /** The entry edited, or null to add one. */
@@ -194,7 +200,7 @@ function EventDialog({ value, onSave, onDelete, onClose, addButton }: DialogProp
                 {(field) => <field.TextField label={t("city")} maxLength={80} />}
               </form.AppField>
               <form.AppField name="country">
-                {(field) => <field.TextField label={t("country")} maxLength={80} />}
+                {(field) => <field.TextField label={t("country")} maxLength={80} optional />}
               </form.AppField>
             </div>
           )
@@ -227,4 +233,57 @@ function DeleteEntry({ label, onDelete }: { label: string; onDelete: () => void 
   );
 }
 
-export { EventDialog, KeyDateDialog };
+/**
+ * Renames a date the application window puts on the timeline. Its day and time stay the window's,
+ * edited under Applications; an empty title gives the date its default words back. Like a key date
+ * it is stored when Settings is saved.
+ */
+function WindowTitleDialog({
+  value,
+  defaultTitle,
+  onSave,
+  onClose,
+}: {
+  /** The operator's title, or empty when the date shows the default words. */
+  value: string;
+  /** The words the date shows without a title of its own, in the language of the screen. */
+  defaultTitle: string;
+  onSave: (title: string) => void;
+  onClose: () => void;
+}) {
+  const t = useTranslations("Admin.programs.settings.windowTitle");
+  const s = useTranslations("Admin.programs.settings");
+  const say = useTranslations("Form.errors");
+  const form = useAppForm({
+    defaultValues: { title: value },
+    validationLogic: revalidateLogic(),
+    validators: { onDynamic: windowTitleSchema(say) },
+    onSubmit: ({ value: saved }) => onSave(saved.title.trim()),
+  });
+
+  return (
+    <FormDialog
+      open
+      onOpenChange={(open) => !open && onClose()}
+      form={form}
+      title={t("dialogTitle", { name: defaultTitle })}
+      width="lg"
+      submitLabel={t("save")}
+      cancelLabel={s("cancel")}
+    >
+      <form.AppField name="title">
+        {(field) => (
+          <field.TextField
+            label={t("label")}
+            optional
+            maxLength={160}
+            autoComplete="off"
+            description={t("hint", { name: defaultTitle })}
+          />
+        )}
+      </form.AppField>
+    </FormDialog>
+  );
+}
+
+export { EventDialog, KeyDateDialog, WindowTitleDialog };

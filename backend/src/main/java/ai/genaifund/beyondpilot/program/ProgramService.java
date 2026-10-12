@@ -174,7 +174,9 @@ public class ProgramService {
 				program.getStartsOn(), program.getEndsOn(), program.getPageKind().code(), program.getExternalUrl(),
 				opensAt == null || closesAt == null ? null
 						: new ProgramApplications(opensAt, closesAt, program.getShortlistSize(),
-								program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose()),
+								program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose(),
+								program.getApplicationsOpenTitle(), program.getApplicationsCloseTitle(),
+								program.getOutcomesDueTitle()),
 				program.getMilestones()
 					.stream()
 					.map(milestone -> new ProgramKeyDate(milestone.title(), milestone.startsAt(), milestone.endsAt(),

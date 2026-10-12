@@ -3364,11 +3364,23 @@ export type ProgramApplications = {
      * The deadline; later than `opensAt`.
      */
     closesAt: string;
+    /**
+     * The title of the deadline on the timeline; null shows the default words.
+     */
+    closesTitle?: string | null;
     opensAt: string;
+    /**
+     * The title of the opening on the timeline; null shows the default words in the reader's language.
+     */
+    opensTitle?: string | null;
     /**
      * The day applicants hear the outcome; not before the deadline.
      */
     outcomesDueOn?: string | null;
+    /**
+     * The title of the day outcomes are due on the timeline; null shows the default words.
+     */
+    outcomesTitle?: string | null;
     /**
      * How many applications go on to the next round.
      */

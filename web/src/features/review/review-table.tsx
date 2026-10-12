@@ -13,6 +13,8 @@ import { useNotify } from "@/hooks/use-notify";
 import { Link } from "@/i18n/navigation";
 import { decideApplications } from "@/lib/api/generated";
 
+import { useSelectionCount } from "./review-selection";
+
 /** One application as the list shows it, its words already formatted. */
 type ReviewRow = {
   id: string;
@@ -70,6 +72,7 @@ function ReviewTable({
   const t = useTranslations("Review.list");
   const notify = useNotify();
   const router = useRouter();
+  const onCount = useSelectionCount();
   const [pending, setPending] = useState(false);
   const [asking, setAsking] = useState<{ decision: Decision; ids: string[]; clear: () => void }>();
 
@@ -176,6 +179,7 @@ function ReviewTable({
                 canSelect: (row) => !row.own,
                 name: (row) => row.solution,
                 matching,
+                onCount,
                 actions: (ids, clear) => (
                   <>
                     <Button

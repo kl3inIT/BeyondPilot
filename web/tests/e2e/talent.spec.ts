@@ -127,8 +127,6 @@ test.describe("talent directory", () => {
     // An account without a name signs the message with one; an address is never shown in its place.
     await expect(dialog.getByText("Say who is writing.")).toBeVisible();
     expect(sent).toEqual([]);
-    // The pointer rests on the button that was pressed; its hover colour is not what is checked.
-    await page.mouse.move(0, 0);
     await expectNoSeriousA11yViolations(page);
 
     await dialog.getByLabel("Your name").fill("Lan Trần");

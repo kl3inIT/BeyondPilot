@@ -74,6 +74,8 @@ type SaySettings = (
     | "slugFormat"
     | "slugLength"
     | "endsBeforeStarts"
+    | "endNeedsTime"
+    | "endNeedsDay"
     | "closesBeforeOpens"
     | "outcomesBeforeClose"
     | "webAddress"
@@ -126,6 +128,10 @@ export type SettingsValues = {
   shortlistSize: string;
   outcomesDueOn: string;
   allowUpdatesUntilClose: boolean;
+  /** The operator's own title for each date the window puts on the timeline; empty for the default words. */
+  opensTitle: string;
+  closesTitle: string;
+  outcomesTitle: string;
   keyDates: KeyDateValue[];
   events: EventValue[];
 };
@@ -169,6 +175,13 @@ export function eventSchema(say: SaySettings) {
       ),
     })
     .superRefine((value, context) => {
+      // Half an end is no end: the field that is missing says so, instead of the end being dropped.
+      if (value.endsDay && !value.endsTime) {
+        context.addIssue({ code: "custom", path: ["endsTime"], message: say("endNeedsTime") });
+      }
+      if (value.endsTime && !value.endsDay) {
+        context.addIssue({ code: "custom", path: ["endsDay"], message: say("endNeedsDay") });
+      }
       if (value.endsDay && value.endsTime) {
         const starts = `${value.startsDay}T${value.startsTime}`;
         if (`${value.endsDay}T${value.endsTime}` < starts) {
@@ -179,7 +192,16 @@ export function eventSchema(say: SaySettings) {
           });
         }
       }
+      // An event held in person is somewhere; the backend asks the same of an event added or changed.
+      if (!value.online && value.city.trim() === "") {
+        context.addIssue({ code: "custom", path: ["city"], message: say("required") });
+      }
     });
+}
+
+/** The operator's title for a date the window puts on the timeline; empty keeps the default words. */
+export function windowTitleSchema(say: SaySettings) {
+  return z.object({ title: text(160, say) });
 }
 
 /** What Settings checks before it saves; the backend checks the same again. */
@@ -215,6 +237,9 @@ export function settingsSchema(say: SaySettings) {
         .refine((value) => value === "" || /^[1-9]\d*$/.test(value), say("positive")),
       outcomesDueOn: z.string(),
       allowUpdatesUntilClose: z.boolean(),
+      opensTitle: text(160, say),
+      closesTitle: text(160, say),
+      outcomesTitle: text(160, say),
       keyDates: z.array(z.custom<KeyDateValue>()).max(30),
       events: z.array(z.custom<EventValue>()).max(30),
     })
