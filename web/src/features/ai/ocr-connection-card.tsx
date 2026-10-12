@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { Status } from "@/components/composites/status";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -115,7 +116,11 @@ function OcrConnectionCard({ provider }: { provider: OcrProvider }) {
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
             <h3 className="text-sm font-medium">{provider.name}</h3>
-            {provider.inUse && <Badge variant="success">{t("inUse")}</Badge>}
+            {provider.inUse && (
+              <Status tone="success" appearance="pill">
+                {t("inUse")}
+              </Status>
+            )}
             {!provider.hasKey && <Badge variant="outline">{t("noKey")}</Badge>}
             {!provider.enabled && <Badge variant="outline">{t("off")}</Badge>}
           </div>

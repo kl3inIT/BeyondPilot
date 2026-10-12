@@ -2,6 +2,7 @@ import { ClipboardCheckIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 import { DataTableEmpty } from "@/components/composites/data-table";
+import { Status } from "@/components/composites/status";
 import { Badge } from "@/components/ui/badge";
 import { applyFormatter } from "@/features/apply/apply-format";
 import { Link } from "@/i18n/navigation";
@@ -42,7 +43,9 @@ function MyReviewsPage({ programs }: { programs: ReviewPrograms }) {
                   {program.released ? (
                     <Badge variant="outline">{t("released")}</Badge>
                   ) : program.assessed >= program.applications && program.applications > 0 ? (
-                    <Badge variant="success">{t("done")}</Badge>
+                    <Status tone="success" appearance="pill">
+                      {t("done")}
+                    </Status>
                   ) : null}
                 </span>
                 <span className="text-sm text-muted-foreground">

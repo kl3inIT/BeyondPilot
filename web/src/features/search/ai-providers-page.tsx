@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/actions/button";
 import { HelpPopover } from "@/components/composites/help-popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Status } from "@/components/composites/status";
 import { Badge } from "@/components/ui/badge";
 import {
   Empty,
@@ -62,7 +63,9 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium break-all">{embedding.model}</span>
-                    <Badge variant="success">{t("model.active")}</Badge>
+                    <Status tone="success" appearance="pill">
+                      {t("model.active")}
+                    </Status>
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {t("model.through", { name: embedding.providerName })}
@@ -155,7 +158,11 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
                     <div className="flex min-w-0 flex-1 flex-col gap-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium">{provider.name}</span>
-                        {provider.inUse && <Badge variant="success">{t("connected.inUse")}</Badge>}
+                        {provider.inUse && (
+                          <Status tone="success" appearance="pill">
+                            {t("connected.inUse")}
+                          </Status>
+                        )}
                         <Badge variant="outline">
                           {provider.hasKey ? t("connected.keySaved") : t("connected.noKey")}
                         </Badge>
