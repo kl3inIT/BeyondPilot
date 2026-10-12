@@ -13,6 +13,7 @@ import ai.genaifund.beyondpilot.organization.dto.MemberListRequest;
 import ai.genaifund.beyondpilot.organization.dto.MembersResponse;
 import ai.genaifund.beyondpilot.organization.dto.MyOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationResponse;
+import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationBasicsRequest;
 import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -73,6 +74,21 @@ class MyOrganizationController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	OrganizationResponse save(@CurrentActor Actor actor, @Valid @RequestBody SaveOrganizationRequest request) {
 		return organizations.save(actor, request);
+	}
+
+	@PutMapping(path = "/basics", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "saveMyOrganizationBasics",
+			summary = "Save the name, type, size, industries and country of the caller's organization, leaving the rest of its profile",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The organization as saved.")
+	@ApiResponse(responseCode = "400", description = "A member is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "403", description = NOT_OWNER,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	OrganizationResponse saveBasics(@CurrentActor Actor actor,
+			@Valid @RequestBody SaveOrganizationBasicsRequest request) {
+		return organizations.saveBasics(actor, request);
 	}
 
 	@GetMapping(path = "/members", produces = MediaType.APPLICATION_JSON_VALUE)
