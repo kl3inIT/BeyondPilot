@@ -223,7 +223,8 @@ function ConnectionCard({ provider, startOpen }: { provider: ChatProvider; start
             {!provider.hasKey && <Badge variant="outline">{t("noKey")}</Badge>}
             {!provider.enabled && <Badge variant="outline">{t("off")}</Badge>}
           </div>
-          <span className="truncate text-xs text-muted-foreground">{provider.baseUrl}</span>
+          {/* The address tells two connections of one vendor apart, so it wraps and is never cut. */}
+          <span className="text-xs break-all text-muted-foreground">{provider.baseUrl}</span>
         </div>
         <span className="hidden text-xs text-muted-foreground md:inline">
           {t("count", { count: provider.models.length })}

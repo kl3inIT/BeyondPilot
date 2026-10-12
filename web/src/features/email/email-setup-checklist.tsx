@@ -1,19 +1,18 @@
 "use client";
 
 import {
-  CheckIcon,
   CircleCheckIcon,
   CircleDashedIcon,
   CircleHelpIcon,
   CircleXIcon,
   ClockIcon,
-  CopyIcon,
   RefreshCwIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { CopyButton } from "@/components/actions/copy-button";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Spinner } from "@/components/ui/spinner";
 import { useFormatter } from "@/i18n/format";
@@ -40,29 +39,12 @@ function StateIcon({ state }: { state: State }) {
 
 /** A value to paste into the DNS host, with a button that copies it. */
 function Copyable({ value, label }: { value: string; label: string }) {
-  const [copied, setCopied] = useState(false);
   return (
     <span className="flex min-w-0 items-center gap-1.5">
       <code className="min-w-0 truncate rounded bg-muted px-1.5 py-0.5 font-mono text-xs">
         {value}
       </code>
-      <button
-        type="button"
-        aria-label={label}
-        onClick={() =>
-          void navigator.clipboard.writeText(value).then(() => {
-            setCopied(true);
-            window.setTimeout(() => setCopied(false), 1500);
-          })
-        }
-        className="hit-area flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
-      >
-        {copied ? (
-          <CheckIcon aria-hidden="true" className="size-3.5" />
-        ) : (
-          <CopyIcon aria-hidden="true" className="size-3.5" />
-        )}
-      </button>
+      <CopyButton value={value} label={label} appearance="icon" className="shrink-0" />
     </span>
   );
 }

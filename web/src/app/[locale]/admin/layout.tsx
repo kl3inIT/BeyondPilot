@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { AdminBreadcrumb } from "@/components/layout/admin-breadcrumb";
+import { AdminCrumbProvider } from "@/components/layout/admin-crumb";
 import { adminIcons } from "@/components/layout/admin-icons";
 import type { AdminNavGroup } from "@/components/layout/admin-nav";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
@@ -150,19 +151,22 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           groups={groups}
         />
         <SidebarInset id="content">
-          <header className="flex h-12 shrink-0 items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" aria-label={t("toggleSidebar")} />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-vertical:h-4 data-vertical:self-auto"
-            />
-            <AdminBreadcrumb
-              area={{ href: siteRoutes.admin, label: t("title") }}
-              items={destinations}
-              subpages={[{ href: siteRoutes.adminUseCasesNew, label: t("nav.useCasesNew") }]}
-            />
-          </header>
-          {children}
+          {/* The page names itself for the breadcrumb, so both stand under the one that keeps the name. */}
+          <AdminCrumbProvider>
+            <header className="flex h-12 shrink-0 items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" aria-label={t("toggleSidebar")} />
+              <Separator
+                orientation="vertical"
+                className="mr-2 data-vertical:h-4 data-vertical:self-auto"
+              />
+              <AdminBreadcrumb
+                area={{ href: siteRoutes.admin, label: t("title") }}
+                items={destinations}
+                subpages={[{ href: siteRoutes.adminUseCasesNew, label: t("nav.useCasesNew") }]}
+              />
+            </header>
+            {children}
+          </AdminCrumbProvider>
         </SidebarInset>
       </SidebarProvider>
     </MessageScope>

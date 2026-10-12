@@ -54,7 +54,7 @@ function SearchPage({ params, results }: SearchPageProps) {
       <div className="flex w-full max-w-220 flex-col gap-6">
         <div className="flex flex-col gap-3">
           <SearchField q={q} />
-          {results && results.counts.all > 0 && (
+          {results && results.counts.all > 0 && !(kind && results.total === 0) && (
             <h1 className="text-sm text-muted-foreground">
               {t.rich(kind ? `kindResults.${kind}` : "results", {
                 count: kind ? results.total : results.counts.all,
@@ -158,8 +158,12 @@ function KindTabs({
   const current = kind ?? "all";
 
   return (
-    <nav aria-label={t("label")} className="-mx-5 overflow-x-auto border-b px-5 md:mx-0 md:px-0">
-      <ul className="flex gap-6 md:gap-7">
+    <nav
+      aria-label={t("label")}
+      className="-mx-5 scrollbar-none overflow-x-auto max-md:scroll-fade-x md:mx-0"
+    >
+      {/* The line under the tabs is the row's, as wide as the tabs, so the fade takes it too. */}
+      <ul className="flex w-max min-w-full gap-6 border-b px-5 md:gap-7 md:px-0">
         {tabs.map((tab) => (
           <li key={tab.key} className="shrink-0">
             <Link
@@ -228,7 +232,10 @@ function AllResults({
   );
 }
 
-/** One kind's results a page at a time, then the way on to its directory. */
+/**
+ * One kind's results a page at a time, then the way on to its directory. A kind that found nothing
+ * says so and leads to the kinds that did.
+ */
 function KindResults({
   q,
   kind,
@@ -242,6 +249,9 @@ function KindResults({
   results: SearchResults;
 }) {
   const t = useTranslations("Search");
+  if (results.total === 0) {
+    return <KindWithout q={q} kind={kind} counts={results.counts} />;
+  }
   const directory =
     kind === "program" ? directories[kind] : `${directories[kind]}?q=${encodeURIComponent(q)}`;
 
@@ -272,6 +282,51 @@ function KindResults({
         <ArrowRightIcon className="size-4 shrink-0" aria-hidden="true" />
       </Link>
     </div>
+  );
+}
+
+/**
+ * A kind the query found nothing of, while other kinds did: it names the kind and the query, then
+ * offers every result and each kind that has some, with how many.
+ */
+function KindWithout({
+  q,
+  kind,
+  counts,
+}: {
+  q: string;
+  kind: SearchKind;
+  counts: SearchResults["counts"];
+}) {
+  const t = useTranslations("Search");
+  const found = searchKinds.filter((each) => countOf(counts, each) > 0);
+
+  return (
+    <section className="flex flex-col gap-4 rounded-2xl border bg-card p-6 md:p-10">
+      <div className="flex flex-col gap-1.5">
+        <SearchXIcon aria-hidden="true" className="size-6 text-muted-foreground" />
+        <h1 className="text-lg font-semibold">{t(`kindNone.${kind}`, { q })}</h1>
+      </div>
+      <ul className="flex flex-col gap-2.5 md:flex-row md:flex-wrap md:gap-x-6">
+        {[null, ...found].map((each) => (
+          <li key={each ?? "all"}>
+            <Link
+              href={address(siteRoutes.search, { q, kind: each })}
+              className="inline-flex items-center gap-1 rounded-sm text-sm font-medium text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              {each ? (
+                <>
+                  {t(`kinds.${each}`)} <span className="text-xs">{countOf(counts, each)}</span>
+                </>
+              ) : (
+                t("kindNone.all", { count: counts.all })
+              )}
+              <ArrowRightIcon className="size-4" aria-hidden="true" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

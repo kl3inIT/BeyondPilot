@@ -97,24 +97,24 @@ function ProgramResult({ item }: { item: SearchItem }) {
 function SolutionResult({ item }: { item: SearchItem }) {
   const t = useTranslations("Search");
   const focusArea = useVocabulary("focusArea");
+  // A solution without a customer case says nothing about it: an absence is not a fact of the row.
+  const customerCases = item.customerDeployments ?? 0;
   const facts = [
     ...item.focusAreas.slice(0, CAPABILITY_LIMIT).map(focusArea),
-    item.customerDeployments !== null &&
-      item.customerDeployments !== undefined &&
-      t("customerCases", { count: item.customerDeployments }),
+    customerCases > 0 && t("customerCases", { count: customerCases }),
   ].filter(Boolean);
+  // An organization that carries its solution's name would only repeat the title.
+  const byline = item.subtitle && !sameName(item.subtitle, item.title) ? item.subtitle : null;
 
   return (
     <Row
       picture={<SolutionLogo name={item.title} fileId={item.photoFileId} size="card" />}
       title={item.title}
       href={`${siteRoutes.solutions}/${item.slug}`}
-      subtitle={item.subtitle ? t("by", { name: item.subtitle }) : null}
+      subtitle={byline ? t("by", { name: byline }) : null}
       snippet={item.snippet}
     >
-      {facts.length > 0 && (
-        <p className="truncate text-xs text-muted-foreground">{facts.join(" · ")}</p>
-      )}
+      {facts.length > 0 && <p className={factsLine}>{facts.join(" · ")}</p>}
     </Row>
   );
 }
@@ -179,12 +179,21 @@ function UseCaseResult({ item }: { item: SearchItem }) {
       subtitle={item.subtitle ?? t("anonymous")}
       snippet={item.snippet}
     >
-      {facts.length > 0 && (
-        <p className="truncate text-xs text-muted-foreground">{facts.join(" · ")}</p>
-      )}
+      {facts.length > 0 && <p className={factsLine}>{facts.join(" · ")}</p>}
     </Row>
   );
 }
+
+/** Whether two names are one, whatever their case and the space around them. */
+function sameName(one: string, other: string) {
+  return one.trim().toLocaleLowerCase() === other.trim().toLocaleLowerCase();
+}
+
+/**
+ * The line of facts under a result. On a phone it may take a second line, as the title may: what
+ * tells two results apart, and a closing date, are at the end of their line.
+ */
+const factsLine = "text-xs text-muted-foreground max-md:line-clamp-2 md:truncate";
 
 type RowProps = {
   picture: ReactNode;
@@ -202,7 +211,7 @@ function Row({ picture, title, href, external, subtitle, snippet, children }: Ro
     <article className="relative flex gap-3 px-4 py-3.5 transition-colors hover:bg-muted/40 has-[h3>a:focus-visible]:ring-3 has-[h3>a:focus-visible]:ring-ring/50 has-[h3>a:focus-visible]:ring-inset md:gap-4 md:px-5 md:py-4">
       {picture}
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <h3 className="truncate text-base font-medium">
+        <h3 className="text-base font-medium break-words max-md:line-clamp-2 md:truncate">
           {external ? (
             <a href={href} className={link}>
               {title}

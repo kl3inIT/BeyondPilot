@@ -44,6 +44,8 @@ test.describe("admin audit log", () => {
     await expect(page.getByRole("navigation", { name: "Pages of the audit log" })).toHaveCount(0);
     // A table at every width: on a phone it scrolls sideways.
     await expect(page.getByRole("table")).toHaveCount(1);
+    // The admin area has no page for one account, so the name of one stays text.
+    await expect(page.getByRole("table").getByRole("link")).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -75,7 +77,12 @@ test.describe("admin audit log", () => {
     await expect(shownEvents(page)).toHaveText([...lastWeek, "Enabled the account of Siti Rahma"]);
 
     await page.getByRole("combobox", { name: "Action" }).click();
-    await page.getByRole("option", { name: "Gave the operator role" }).click();
+    // The actions are offered by area, under the names the sidebar gives the areas.
+    await expect(page.getByRole("group", { name: "Programs" })).toContainText("Invited a judge");
+    await page
+      .getByRole("group", { name: "Accounts" })
+      .getByRole("option", { name: "Gave the operator role" })
+      .click();
     await expect(page).toHaveURL(/action=operator\.grant/);
     await expect(shownEvents(page)).toHaveText([
       "Gave the operator role to Minh Trần",

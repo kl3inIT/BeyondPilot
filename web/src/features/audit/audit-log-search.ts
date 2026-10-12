@@ -107,6 +107,39 @@ export const auditActions = [
 ] as const;
 
 /**
+ * The areas of the admin sidebar the actions belong to, in its order, each with the first words of
+ * its actions' names. An operator and an account are both accounts; what is done to a program's
+ * applications and judges is done on the program's pages.
+ */
+const actionAreas = [
+  ["programs", ["program", "proposal"]],
+  ["useCases", ["use_case"]],
+  ["solutions", ["solution"]],
+  ["talent", ["talent"]],
+  ["organizations", ["organization"]],
+  ["introductions", ["introduction"]],
+  ["aiProviders", ["ai"]],
+  ["searchIndex", ["search"]],
+  ["aiMatching", ["matching"]],
+  ["mcp", ["mcp"]],
+  ["accounts", ["account", "operator"]],
+  ["email", ["email"]],
+] as const;
+
+export type AuditAction = (typeof auditActions)[number];
+
+export type AuditActionArea = (typeof actionAreas)[number][0];
+
+/** The catalog of actions by area, for a filter of a hundred options that is read area by area. */
+export const auditActionGroups: { area: AuditActionArea; actions: AuditAction[] }[] =
+  actionAreas.map(([area, prefixes]) => ({
+    area,
+    actions: auditActions.filter((action) =>
+      (prefixes as readonly string[]).includes(action.split(".")[0]),
+    ),
+  }));
+
+/**
  * What narrows the audit log and which page of it is shown, as the URL holds it:
  * `?period=&action=&q=&before=&after=`. The page reads these on the server and the toolbar writes
  * them. `before` and `after` are cursors the backend handed out; a change of filter drops them.

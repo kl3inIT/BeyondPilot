@@ -53,16 +53,17 @@ function AppRow({ app }: { app: PersonConnectedApp }) {
   return (
     <li className="flex items-center gap-3 border-b px-4 py-3 last:border-b-0">
       <AppMark host={app.host} clientId={app.clientId} />
+      {/* Who connected which app, and when it was last used, are read in full: on a phone they wrap. */}
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="truncate text-sm font-medium">
+          <span className="min-w-0 text-sm font-medium break-words">
             {app.name} · {person}
           </span>
           <Badge variant={app.operator ? "default" : "outline"}>
             {app.operator ? t("operator") : t("user")}
           </Badge>
         </div>
-        <span className="truncate text-xs text-muted-foreground">{facts.join(" · ")}</span>
+        <span className="text-xs break-words text-muted-foreground">{facts.join(" · ")}</span>
       </div>
       <RevokePersonsApp app={app} person={person} />
     </li>

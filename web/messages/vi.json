@@ -734,6 +734,10 @@
       "email": "Email"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
+    "notFound": {
+      "description": "Có thể bản ghi đã bị xóa, hoặc địa chỉ không đúng.",
+      "home": "Về trang chủ quản trị"
+    },
     "programs": {
       "metaTitle": "Chương trình · BeyondPilot",
       "title": "Chương trình",
@@ -2370,6 +2374,13 @@
           "enabledHint": "Khi tắt, provider vẫn giữ key và model, nhưng không tác vụ nào dùng được.",
           "testTitle": "Thử kết nối",
           "testHint": "Liệt kê model của provider, không tốn token.",
+          "saveNeeds": {
+            "name": "Đặt tên cho provider để lưu.",
+            "endpoint": "Nhập endpoint URL để lưu.",
+            "endpointInvalid": "Sửa endpoint URL để lưu.",
+            "keyAgain": "Nhập lại key để lưu.",
+            "key": "Thêm API key để lưu."
+          },
           "cancel": "Hủy",
           "save": "Lưu"
         },
@@ -2797,6 +2808,7 @@
           "time": "Thời gian",
           "task": "Tác vụ",
           "model": "Model",
+          "outcome": "Kết quả",
           "tokens": "Token",
           "duration": "Thời lượng",
           "cost": "Chi phí",
@@ -3606,7 +3618,9 @@
     }
   },
   "Actions": {
-    "undo": "Hoàn tác"
+    "undo": "Hoàn tác",
+    "copied": "Đã sao chép",
+    "copyFailed": "Chưa sao chép được. Hãy chọn văn bản rồi tự sao chép."
   },
   "Lists": {
     "loadMore": "Xem thêm",
@@ -6929,6 +6943,13 @@
     "seeAll": "Xem cả {count}",
     "count": "{count} kết quả",
     "pastTheEnd": "Trang này không còn kết quả nào.",
+    "kindNone": {
+      "program": "Không có chương trình nào khớp “{q}”",
+      "solution": "Không có giải pháp AI nào khớp “{q}”",
+      "talent": "Không có nhân lực AI nào khớp “{q}”",
+      "use_case": "Không có use case nào khớp “{q}”",
+      "all": "Xem cả {count} kết quả"
+    },
     "directory": {
       "program": "Xem các chương trình theo loại và giai đoạn",
       "solution": "Lọc theo ngành, năng lực và mức phát triển trong danh mục giải pháp AI",
@@ -6936,7 +6957,7 @@
       "use_case": "Lọc theo ngành trong danh sách use case"
     },
     "by": "Của {name}",
-    "customerCases": "{count, plural, =0 {Chưa có khách hàng triển khai} other {# khách hàng triển khai}}",
+    "customerCases": "{count, plural, other {# khách hàng triển khai}}",
     "start": {
       "title": "Tìm kiếm trên BeyondPilot"
     },

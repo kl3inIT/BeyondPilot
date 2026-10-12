@@ -93,6 +93,7 @@ test.describe("admin talent", () => {
     page,
     context,
     baseURL,
+    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     const decisions = await answerDecisions(page, decisionsPath, 204);
@@ -103,6 +104,15 @@ test.describe("admin talent", () => {
     // The account's address is the operator's to see; the public profile never shows it.
     await expect(page.getByText("bao.tran@example.com")).toBeVisible();
     await expect(page.getByText("1 of 2 waiting")).toBeVisible();
+    // The record is the third crumb, after its destination; a phone has room for the destination only.
+    const crumbs = page.getByRole("navigation", { name: "breadcrumb" });
+    if (!isMobile) {
+      await expect(crumbs.getByRole("link", { name: "AI talent" })).toHaveAttribute(
+        "href",
+        "/admin/talent",
+      );
+      await expect(crumbs.locator('[aria-current="page"]')).toHaveText("Bảo Trần");
+    }
     await expectNoSeriousA11yViolations(page);
 
     await page.getByRole("button", { name: "Approve" }).click();
@@ -110,6 +120,9 @@ test.describe("admin talent", () => {
     await expect(page.getByText("Bảo Trần is approved.")).toBeVisible();
     await expect(page).toHaveURL(`/admin/talent/${mai}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Mai Phạm");
+    if (!isMobile) {
+      await expect(crumbs.locator('[aria-current="page"]')).toHaveText("Mai Phạm");
+    }
     await expect(page.getByText("2 of 2 waiting")).toBeVisible();
     await expect(page.getByRole("link", { name: "Next in review: Bảo Trần" })).toBeVisible();
     expect(decisions).toEqual([
@@ -233,7 +246,16 @@ test.describe("admin talent", () => {
     await expect(page.getByRole("button", { name: "Approve" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Send back…" })).toHaveCount(0);
 
+    // A record that does not exist answers 404 inside the admin frame, with a way back to its home.
     expect((await page.goto("/admin/talent/no-such-record"))?.status()).toBe(404);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Page not found");
+    await expect(
+      page.getByRole("main").getByRole("button", { name: "Toggle sidebar" }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to Admin home" })).toHaveAttribute(
+      "href",
+      "/admin",
+    );
   });
 
   test("a featured profile is marked and the list narrows to the featured ones", async ({

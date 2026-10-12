@@ -27,6 +27,7 @@ import {
 
 import type { ChatPreset } from "./chat-presets";
 import { ModelsField, useReportedModels } from "./models-field";
+import { validEndpoint } from "./provider-endpoint";
 
 /**
  * What a test of a connection found: how many models and how long when it worked, a fixed reason
@@ -78,10 +79,13 @@ type ProviderDialogProps = {
  * Connects a chat provider, or changes one. The address is free: a gateway often sits on a private
  * one. The key field is never filled in: a saved key is kept, replaced or removed, and it is kept
  * only while the address stays the same. A new provider can list its models here and take the
- * ticked ones with it.
+ * ticked ones with it. A name or an address that will not do is said at its field when the field
+ * is left, and while Save is off a line beside it says what it waits for.
  */
 function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialogProps) {
   const t = useTranslations("Admin.ai.chat.editor");
+  const say = useTranslations("Form.errors");
+  const failure = useTranslations("Errors");
   const notify = useNotify();
   const router = useRouter();
   const id = useId();
@@ -139,6 +143,19 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
   // A saved key is only used with the address it was saved for, so a new address needs the key again.
   const keyMoved = editing && keyAction === "keep" && address !== provider.baseUrl;
   const usableKey = typedKey !== "" || (keyAction === "keep" && !keyMoved);
+  // What Save waits for, the first of them: the fields in their order, then the key.
+  const saveNeeds =
+    name.trim() === ""
+      ? "name"
+      : address === ""
+        ? "endpoint"
+        : !validEndpoint(address)
+          ? "endpointInvalid"
+          : keyMoved
+            ? "keyAgain"
+            : keyMissing
+              ? "key"
+              : null;
   const probe: ProbeChatProvider | null =
     address !== "" && usableKey
       ? {
@@ -192,13 +209,33 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
       width="xl"
       submitLabel={t("save")}
       cancelLabel={t("cancel")}
-      submitDisabled={keyMissing || keyMoved || name.trim() === "" || address === ""}
+      submitDisabled={saveNeeds !== null}
+      aside={
+        saveNeeds && <p className="text-sm text-muted-foreground">{t(`saveNeeds.${saveNeeds}`)}</p>
+      }
     >
       <FieldGroup>
-        <form.AppField name="name">
+        <form.AppField
+          name="name"
+          validators={{
+            onBlur: ({ value }) => (value.trim() === "" ? { message: say("required") } : undefined),
+          }}
+        >
           {(field) => <field.TextField label={t("name")} maxLength={60} required />}
         </form.AppField>
-        <form.AppField name="baseUrl" listeners={{ onChange: connectionChanged }}>
+        <form.AppField
+          name="baseUrl"
+          validators={{
+            // The shape the backend will ask for, said on leaving the field and not only by a refused save.
+            onBlur: ({ value }) =>
+              value.trim() === ""
+                ? { message: say("required") }
+                : validEndpoint(value.trim())
+                  ? undefined
+                  : { message: failure("AI_PROVIDER_ENDPOINT_INVALID") },
+          }}
+          listeners={{ onChange: connectionChanged }}
+        >
           {(field) => (
             <field.TextField
               label={t("endpoint")}

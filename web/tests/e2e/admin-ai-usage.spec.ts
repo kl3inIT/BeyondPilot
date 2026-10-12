@@ -81,10 +81,24 @@ test.describe("admin AI usage", () => {
     await expect(page).toHaveURL(/task=document_reading/);
     const calls = page.getByRole("row").filter({ hasText: "cx/gpt-6-luna" });
     await expect(calls).toHaveCount(2);
-    // A failed call says what kind of failure it was, with the status where the provider gave one.
-    await expect(calls.first()).toContainText("Request too large");
-    await expect(calls.first()).toContainText("HTTP 413");
-    await expect(calls.last()).toContainText("Failed");
+    // How a call ended has a column of its own: a failed call says what kind of failure it was, with
+    // the status where the provider gave one, and its tokens are not known.
+    const columns = page.getByRole("columnheader");
+    await expect(columns).toHaveText([
+      "Time",
+      "Task",
+      "Model",
+      "Outcome",
+      "Tokens",
+      "Duration",
+      "Cost",
+      "About",
+    ]);
+    const outcome = calls.first().getByRole("cell").nth(3);
+    await expect(outcome).toContainText("Request too large");
+    await expect(outcome).toContainText("HTTP 413");
+    await expect(calls.first().getByRole("cell").nth(4)).toHaveText("—");
+    await expect(calls.last().getByRole("cell").nth(3)).toHaveText("Failed");
     await expect(page.getByText("1–2 of 2 calls")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
@@ -95,7 +109,16 @@ test.describe("admin AI usage", () => {
     await page.goto("/admin/ai/usage/calls");
     const every = page.getByRole("row");
     await expect(every.filter({ hasText: "aihay" })).toContainText("$0.0015");
-    await expect(every.filter({ hasText: "cx/gpt-6.1-sol" })).toContainText("5,210 in · 512 out");
+    await expect(every.filter({ hasText: "aihay" }).getByRole("cell").nth(3)).toHaveText(
+      "Succeeded",
+    );
+    // Tokens, durations and costs are rounded as the totals of the overview are, and end on one edge.
+    const matching = every.filter({ hasText: "cx/gpt-6.1-sol" });
+    await expect(matching).toContainText("5,210 in · 512 out");
+    await expect(matching).toContainText("19.4 s");
+    for (const cell of [4, 5, 6]) {
+      await expect(matching.getByRole("cell").nth(cell)).toHaveCSS("text-align", "right");
+    }
     await expect(every.filter({ hasText: "cx/gpt-6.1-sol" })).toContainText("Matching run");
     await expect(page.getByText("1–4 of 4 calls")).toBeVisible();
     // The tab back keeps the period.

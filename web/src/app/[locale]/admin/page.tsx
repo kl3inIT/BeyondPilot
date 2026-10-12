@@ -9,6 +9,7 @@ import { readAdminTalentList } from "@/features/talent/talent-queries";
 import { Link } from "@/i18n/navigation";
 import { requireRole } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -19,7 +20,10 @@ export async function generateMetadata({
   return { title: t("metaTitle"), robots: { index: false } };
 }
 
-/** Admin home: what waits for a decision, each count a way to its list, already narrowed. */
+/**
+ * Admin home: what waits for a decision, each count a way to its list, already narrowed. A queue with
+ * nothing in it stays a way to its list and reads quieter, so the eye lands on the ones that wait.
+ */
 export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/admin">) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -94,12 +98,25 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
           <li key={queue.key}>
             <Link
               href={queue.href}
-              className="flex h-full flex-col gap-1 rounded-xl border bg-card p-4 transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+              className={cn(
+                "flex h-full flex-col gap-1 rounded-xl border p-4 transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50",
+                queue.count > 0 ? "bg-card" : "border-dashed",
+              )}
             >
-              <span className="text-3xl font-semibold tracking-tight tabular-nums">
+              <span
+                className={cn(
+                  "text-3xl tracking-tight tabular-nums",
+                  queue.count > 0 ? "font-semibold" : "font-normal text-muted-foreground",
+                )}
+              >
                 {queue.count}
               </span>
-              <span className="flex items-center gap-2 text-sm font-medium">
+              <span
+                className={cn(
+                  "flex items-center gap-2 text-sm",
+                  queue.count > 0 ? "font-medium" : "text-muted-foreground",
+                )}
+              >
                 {/* The destination's icon in the sidebar, so the card and the menu read as one place. */}
                 <queue.Icon
                   aria-hidden="true"

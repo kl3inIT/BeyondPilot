@@ -10,6 +10,7 @@ import { getFormatter } from "@/i18n/format-server";
 import type { AiUsageCallList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { usageNumbers } from "./usage-format";
 import { taskNames, UsageHeader } from "./usage-page";
 import { usageCallsAddress, type UsageCallsSearch } from "./usage-search";
 import { UsageCallsToolbar } from "./usage-switches";
@@ -17,9 +18,9 @@ import { ListFooter } from "@/components/composites/list-footer";
 
 /**
  * Admin › AI › Usage › Calls: every call to a model or an OCR service in the period, newest first:
- * when, for what, to which model, what it took and what it was about. A failed call says what kind
- * of failure it was. No prompt, no answer and nothing a provider wrote is kept. The filters and the
- * page are the URL.
+ * when, for what, to which model, how it ended, what it took and what it was about. A failed call
+ * says what kind of failure it was, with the status the provider gave. No prompt, no answer and
+ * nothing a provider wrote is kept. The filters and the page are the URL.
  */
 async function UsageCallsPage({
   calls,
@@ -34,6 +35,7 @@ async function UsageCallsPage({
     taskNames(),
   ]);
   const today = format.dateTime(new Date(), { dateStyle: "short" });
+  const numbers = usageNumbers(format);
 
   /** "Today, 09:41:07" for a call of today in Vietnam time, "3 Oct, 14:32:10" before that. */
   function shortTime(at: Date) {
@@ -62,8 +64,14 @@ async function UsageCallsPage({
       task: taskName(call.task),
       model: call.modelName,
       provider: call.providerName,
-      failure:
-        call.failure == null ? null : (
+      // How the call ended: that it succeeded, or the kind of failure with the provider's status.
+      outcome:
+        call.failure == null ? (
+          <span className="flex items-center gap-2">
+            <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-success" />
+            {t("outcome.ok")}
+          </span>
+        ) : (
           <span className="flex items-center gap-2">
             <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-destructive" />
             <span className="font-medium">{t(`failure.${call.failure}`)}</span>
@@ -78,21 +86,12 @@ async function UsageCallsPage({
         call.inputTokens == null
           ? null
           : t("tokens", {
+              // A log keeps the exact counts; the overview's totals are the ones written short.
               input: format.number(call.inputTokens),
               output: format.number(call.outputTokens ?? 0),
             }),
-      duration: t("seconds", {
-        seconds: format.number(call.durationMs / 1000, { maximumFractionDigits: 1 }),
-      }),
-      cost:
-        call.estimatedCost == null
-          ? null
-          : format.number(call.estimatedCost, {
-              style: "currency",
-              currency: "USD",
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 4,
-            }),
+      duration: t("seconds", { seconds: numbers.seconds(call.durationMs) }),
+      cost: call.estimatedCost == null ? null : numbers.cost(call.estimatedCost),
       subject:
         call.subjectType === "solution_deck" && call.subjectId ? (
           <TextButton size="sm" href={`${siteRoutes.adminSolutions}/${call.subjectId}`}>
@@ -143,12 +142,21 @@ async function UsageCallsPage({
       {/* A click on the short time opens the full date and time. */}
       <DataTableRows
         columns={[
-          { id: "time", header: t("columns.time") },
+          { id: "time", header: t("columns.time"), layout: { nowrap: true } },
           { id: "task", header: t("columns.task") },
           { id: "model", header: t("columns.model") },
-          { id: "tokens", header: t("columns.tokens") },
-          { id: "duration", header: t("columns.duration") },
-          { id: "cost", header: t("columns.cost") },
+          { id: "outcome", header: t("columns.outcome"), layout: { nowrap: true } },
+          {
+            id: "tokens",
+            header: t("columns.tokens"),
+            layout: { numeric: true, nowrap: true },
+          },
+          {
+            id: "duration",
+            header: t("columns.duration"),
+            layout: { numeric: true, nowrap: true },
+          },
+          { id: "cost", header: t("columns.cost"), layout: { numeric: true, nowrap: true } },
           { id: "subject", header: t("columns.subject") },
         ]}
         rows={rows.map((row) => ({
@@ -178,7 +186,8 @@ async function UsageCallsPage({
                 <span className="text-xs text-muted-foreground">{row.provider}</span>
               </span>
             ),
-            tokens: <span className="tabular-nums">{row.failure ?? row.tokens ?? unknown}</span>,
+            outcome: row.outcome,
+            tokens: <span className="tabular-nums">{row.tokens ?? unknown}</span>,
             duration: <span className="tabular-nums">{row.duration}</span>,
             cost: <span className="tabular-nums">{row.cost ?? unknown}</span>,
             subject: row.subject ?? unknown,
