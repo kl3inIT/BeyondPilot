@@ -1,17 +1,19 @@
 "use client";
 
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { CloudAlertIcon, CloudCheckIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { PdfUpload } from "@/components/composites/pdf-upload";
+import { useAppForm } from "@/components/form/app-form";
+import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Field, FieldDescription } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
-import { Tick } from "@/features/usecase/wizard-fields";
 import { WizardShell } from "@/features/usecase/wizard-shell";
 import {
   saveUseCaseProposal,
@@ -42,11 +44,18 @@ import { codeOfProposalError, describeProposalError } from "./proposal-errors";
 import { ProposalOrganizationStep } from "./proposal-organization-step";
 import { ProposalDetailsStep } from "./proposal-details-step";
 import { ProposalReviewStep } from "./proposal-review-step";
+import { proposalStepSchemas, stepProblems } from "./proposal-schemas";
 import { ProposalSolutionsStep } from "./proposal-solutions-step";
 import { ProposalTeamStep } from "./proposal-team-step";
 
 /** How long after the last change the draft is saved. */
 const AUTOSAVE_MS = 800;
+
+/**
+ * What the form holds: the draft as it is saved, the details the account keeps, and the tick that
+ * goes with sending.
+ */
+type ProposalFormValues = ProposalValues & { details: Details; confirmed: boolean };
 
 type ProposalWizardProps = {
   useCaseId: string;
@@ -73,7 +82,7 @@ type ProposalWizardProps = {
  */
 function ProposalWizard({
   useCaseId,
-  form,
+  form: opened,
   organization,
   solutions,
   profile,
@@ -83,46 +92,99 @@ function ProposalWizard({
   const notify = useNotify();
   const router = useRouter();
   const format = useFormatter();
-  const editing = form.proposal?.status === "sent";
-  const editableUntil = form.proposal?.editableUntil ?? null;
+  const editing = opened.proposal?.status === "sent";
+  const editableUntil = opened.proposal?.editableUntil ?? null;
 
-  const [values, setValues] = useState<ProposalValues>(() => valuesOf(form.proposal));
+  // As the proposal was read: what the form starts from, whatever is read afterwards. What the
+  // account keeps comes first; the talent profile fills what it lacks, and everything stays editable.
+  const [initial] = useState<ProposalFormValues>(() => ({
+    ...valuesOf(opened.proposal),
+    details: {
+      name: account.displayName ?? profile?.name ?? "",
+      country: account.country ?? profile?.country ?? "",
+      phone: account.phone ?? "",
+    },
+    confirmed: false,
+  }));
   const [catalog, setCatalog] = useState(solutions);
   const [step, setStep] = useState<Step>("organization");
   const [savedAt, setSavedAt] = useState<Date>(() =>
-    form.proposal ? new Date(form.proposal.updatedAt) : new Date(),
+    opened.proposal ? new Date(opened.proposal.updatedAt) : new Date(),
   );
   const [state, setState] = useState<"idle" | "saving" | "failed">("idle");
   const [changed, setChanged] = useState(false);
-  const [checked, setChecked] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
   const [sending, setSending] = useState(false);
-  // What the account keeps comes first; the talent profile fills what it lacks, and everything stays editable.
-  const [details, setDetails] = useState<Details>(() => ({
-    name: account.displayName ?? profile?.name ?? "",
-    country: account.country ?? profile?.country ?? "",
-    phone: account.phone ?? "",
-  }));
   const [detailsChanged, setDetailsChanged] = useState(
     () => !account.displayName || !account.country,
   );
   const [edited, setEdited] = useState(false);
 
-  const latest = useRef(values);
-  const version = useRef<number | null>(form.proposal?.version ?? null);
-  const proposalId = useRef<string | null>(form.proposal?.id ?? null);
+  const version = useRef<number | null>(opened.proposal?.version ?? null);
+  const proposalId = useRef<string | null>(opened.proposal?.id ?? null);
+  // Whether something waits to be saved. It is not the form's `isDirty`, which compares with what
+  // the form started from: a draft saved a moment ago differs from that and has nothing waiting.
   const dirty = useRef(false);
   const stopped = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const chain = useRef<Promise<boolean>>(Promise.resolve(true));
 
-  const saveOnce = useCallback(async (): Promise<boolean> => {
+  const schemas = useMemo(
+    () =>
+      proposalStepSchemas(
+        (key) =>
+          ({
+            solution: t("solutions.needed.solution"),
+            approach: t("solutions.needed.approach"),
+            required: t("details.required"),
+            phoneInvalid: t("details.phoneInvalid"),
+            role: t("team.needed.role"),
+            deck: t("pdf.needed"),
+          })[key],
+      ),
+    [t],
+  );
+
+  const form = useAppForm({
+    defaultValues: initial,
+    validationLogic: revalidateLogic(),
+    // Continue checks the step on the screen and nothing else; the last step has nothing to check.
+    validators: {
+      onDynamic: ({ value }) => {
+        const fields = stepProblems(schemas, step, value);
+        return fields ? { fields } : undefined;
+      },
+    },
+    listeners: {
+      onChange: ({ fieldApi }) => {
+        if (fieldApi.name.startsWith("details.")) {
+          // The details are the account's: they are kept when the step is left, not with the draft.
+          setDetailsChanged(true);
+          setEdited(true);
+        } else if (fieldApi.name !== "confirmed") {
+          change();
+        }
+      },
+    },
+    onSubmit: async () => {
+      if (step !== "review") {
+        await go(steps[steps.indexOf(step) + 1]);
+      } else if (editing) {
+        await saveChanges();
+      } else {
+        await send();
+      }
+    },
+  });
+  const values = useStore(form.store, (held) => held.values);
+  const { details, confirmed } = values;
+
+  async function saveOnce(): Promise<boolean> {
     dirty.current = false;
     setState("saving");
     try {
       const { data } = await saveUseCaseProposal({
         path: { useCaseId },
-        body: bodyOf(latest.current, version.current),
+        body: bodyOf(form.state.values, version.current),
       });
       version.current = data.proposal?.version ?? version.current;
       proposalId.current = data.proposal?.id ?? proposalId.current;
@@ -141,10 +203,10 @@ function ProposalWizard({
       setState("failed");
       return false;
     }
-  }, [notify, useCaseId]);
+  }
 
   /** Saves what is waiting and says whether it is saved. */
-  const flush = useCallback((): Promise<boolean> => {
+  function flush(): Promise<boolean> {
     clearTimeout(timer.current);
     if (editing) {
       // A sent proposal is saved only by Save changes, never partway.
@@ -157,25 +219,20 @@ function ProposalWizard({
       return dirty.current ? saveOnce() : true;
     });
     return chain.current;
-  }, [saveOnce, editing]);
+  }
 
-  const change = useCallback(
-    (patch: Partial<ProposalValues>) => {
-      if (stopped.current) {
-        return;
-      }
-      const next = { ...latest.current, ...patch };
-      latest.current = next;
-      dirty.current = true;
-      setValues(next);
-      setEdited(true);
-      clearTimeout(timer.current);
-      if (!editing) {
-        timer.current = setTimeout(() => void flush(), AUTOSAVE_MS);
-      }
-    },
-    [flush, editing],
-  );
+  /** Notes that the draft changed and, unless it was sent, saves it once the person pauses. */
+  function change() {
+    if (stopped.current) {
+      return;
+    }
+    dirty.current = true;
+    setEdited(true);
+    clearTimeout(timer.current);
+    if (!editing) {
+      timer.current = setTimeout(() => void flush(), AUTOSAVE_MS);
+    }
+  }
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -201,7 +258,9 @@ function ProposalWizard({
       return true;
     }
     if (!phoneValid(details.phone)) {
-      setChecked(true);
+      // The number says what is wrong with it, and takes the focus.
+      void form.validateField("details.phone", "change");
+      focusFirstInvalidSoon(() => document.getElementById(form.formId));
       return false;
     }
     try {
@@ -220,12 +279,6 @@ function ProposalWizard({
     }
   }
 
-  function changeDetails(next: Details) {
-    setDetails(next);
-    setDetailsChanged(true);
-    setEdited(true);
-  }
-
   async function go(target: Step) {
     // Without an organization there is nothing to write yet.
     if (!organization && target !== "organization") {
@@ -235,19 +288,9 @@ function ProposalWizard({
       return;
     }
     if (await flush()) {
-      setChecked(false);
       setStep(target);
       window.scrollTo({ top: 0 });
     }
-  }
-
-  /** Goes to the next step once this one has what a proposal needs. */
-  async function next() {
-    if (missing.includes(step)) {
-      setChecked(true);
-      return;
-    }
-    await go(steps[stepIndex + 1]);
   }
 
   async function leave() {
@@ -267,7 +310,7 @@ function ProposalWizard({
       }
       const { data } = await saveUseCaseProposal({
         path: { useCaseId },
-        body: bodyOf(latest.current, version.current),
+        body: bodyOf(form.state.values, version.current),
       });
       version.current = data.proposal?.version ?? version.current;
       dirty.current = false;
@@ -352,7 +395,7 @@ function ProposalWizard({
   return (
     <WizardShell
       title={t("headerTitle")}
-      organizationName={form.useCase.title}
+      organizationName={opened.useCase.title}
       status={saveStatus}
       steps={{
         names: steps,
@@ -392,134 +435,154 @@ function ProposalWizard({
 
       <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}`)}</h1>
 
-      {step === "organization" && (
-        <ProposalOrganizationStep
-          useCaseId={useCaseId}
-          organization={organization}
-          accountName={account.displayName ?? account.email}
-        />
-      )}
-
-      {organization && step === "solutions" && (
-        <ProposalSolutionsStep
-          catalog={catalog}
-          organizationLogoFileId={organization.logoFileId}
-          onCatalog={setCatalog}
-          ids={values.solutionIds}
-          onIds={(solutionIds) => change({ solutionIds })}
-          approach={values.approach}
-          onApproach={(approach) => change({ approach })}
-          checked={checked}
-        />
-      )}
-
-      {organization && step === "details" && (
-        <ProposalDetailsStep
-          details={details}
-          onDetails={changeDetails}
-          email={account.email}
-          checked={checked}
-        />
-      )}
-
-      {step === "team" && (
-        <ProposalTeamStep
-          members={form.members}
-          team={values.team}
-          onTeam={(team) => change({ team })}
-          checked={checked}
-        />
-      )}
-
-      {step === "pdf" && (
-        <Field data-invalid={(checked && !values.deck) || undefined}>
-          <PdfUpload
-            id="proposal-deck"
-            zone
-            value={values.deck}
-            invalid={checked && !values.deck}
-            describedBy="proposal-deck-hint"
-            onChange={(deck) => change({ deck })}
-          />
-          <FieldDescription id="proposal-deck-hint">{t("pdf.hint")}</FieldDescription>
-          {checked && !values.deck && (
-            <p role="alert" className="text-sm text-destructive">
-              {t("pdf.needed")}
-            </p>
-          )}
-        </Field>
-      )}
-
-      {organization && step === "review" && (
-        <>
-          <ProposalReviewStep
-            organization={organization}
-            values={values}
-            catalog={catalog}
-            details={details}
-            email={account.email}
-            members={form.members}
-            onEdit={(target) => void go(target)}
-          />
-          {missing.length > 0 && (
-            <Alert>
-              <AlertTitle>{t("review.missing")}</AlertTitle>
-              <AlertDescription>
-                <ul className="mt-1 flex flex-col gap-1">
-                  {missing.map((name) => (
-                    <li key={name}>
-                      <TextButton onClick={() => void go(name)}>{t(`steps.${name}`)}</TextButton>
-                    </li>
-                  ))}
-                </ul>
-              </AlertDescription>
-            </Alert>
-          )}
-          {!editing && (
-            <Tick
-              label={t("review.confirm")}
-              checked={confirmed}
-              onCheckedChange={setConfirmed}
-              disabled={missing.length > 0}
+      {organization ? (
+        <form
+          id={form.formId}
+          noValidate
+          className="flex flex-col gap-5"
+          onSubmit={(event) => {
+            event.preventDefault();
+            // A form in a dialog opened from here sends its own event up; and only the last step
+            // sends on Enter, as before.
+            if (event.target === event.currentTarget && step === "review") {
+              void form.handleSubmit();
+            }
+          }}
+        >
+          {step === "organization" && (
+            <ProposalOrganizationStep
+              useCaseId={useCaseId}
+              organization={organization}
+              accountName={account.displayName ?? account.email}
             />
           )}
-        </>
-      )}
 
-      {organization && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
-          <Button prominence="tertiary" size="lg" disabled={sending} onClick={() => void leave()}>
-            {editing ? t("edit.cancel") : t("saveAndReturn")}
-          </Button>
-          <div className="flex items-center gap-3">
-            {stepIndex > 0 && (
-              <Button
-                prominence="tertiary"
-                size="lg"
-                disabled={sending}
-                onClick={() => void go(steps[stepIndex - 1])}
-              >
-                {t("back")}
-              </Button>
-            )}
-            {step === "review" ? (
-              <Button
-                size="lg"
-                pending={sending}
-                disabled={
-                  missing.length > 0 || (!editing && !confirmed) || changed || (editing && !edited)
-                }
-                onClick={() => void (editing ? saveChanges() : send())}
-              >
-                {editing ? t("edit.save") : t("send")}
-              </Button>
-            ) : (
-              <Button size="lg" onClick={() => void next()}>
-                {t("continue")}
-              </Button>
-            )}
+          {step === "solutions" && (
+            <ProposalSolutionsStep
+              form={form}
+              fields={{ solutionIds: "solutionIds", approach: "approach" }}
+              catalog={catalog}
+              organizationLogoFileId={organization.logoFileId}
+              onCatalog={setCatalog}
+            />
+          )}
+
+          {step === "details" && (
+            <ProposalDetailsStep form={form} fields="details" email={account.email} />
+          )}
+
+          {step === "team" && (
+            <ProposalTeamStep form={form} fields={{ team: "team" }} members={opened.members} />
+          )}
+
+          {step === "pdf" && (
+            <form.Field name="deck">
+              {(field) => {
+                const invalid = field.state.meta.isTouched && !field.state.meta.isValid;
+                return (
+                  <Field data-invalid={invalid || undefined}>
+                    <PdfUpload
+                      id="proposal-deck"
+                      zone
+                      value={field.state.value}
+                      invalid={invalid}
+                      describedBy={
+                        invalid ? "proposal-deck-hint proposal-deck-error" : "proposal-deck-hint"
+                      }
+                      onChange={field.handleChange}
+                    />
+                    <FieldDescription id="proposal-deck-hint">{t("pdf.hint")}</FieldDescription>
+                    {invalid && <FieldError id="proposal-deck-error">{t("pdf.needed")}</FieldError>}
+                  </Field>
+                );
+              }}
+            </form.Field>
+          )}
+
+          {step === "review" && (
+            <>
+              <ProposalReviewStep
+                organization={organization}
+                values={values}
+                catalog={catalog}
+                details={details}
+                email={account.email}
+                members={opened.members}
+                onEdit={(target) => void go(target)}
+              />
+              {missing.length > 0 && (
+                <Alert>
+                  <AlertTitle>{t("review.missing")}</AlertTitle>
+                  <AlertDescription>
+                    <ul className="mt-1 flex flex-col gap-1">
+                      {missing.map((name) => (
+                        <li key={name}>
+                          <TextButton onClick={() => void go(name)}>
+                            {t(`steps.${name}`)}
+                          </TextButton>
+                        </li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+              {!editing && (
+                <form.AppField name="confirmed">
+                  {(field) => (
+                    <field.CheckboxField
+                      label={t("review.confirm")}
+                      disabled={missing.length > 0}
+                    />
+                  )}
+                </form.AppField>
+              )}
+            </>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
+            <Button prominence="tertiary" size="lg" disabled={sending} onClick={() => void leave()}>
+              {editing ? t("edit.cancel") : t("saveAndReturn")}
+            </Button>
+            <div className="flex items-center gap-3">
+              {stepIndex > 0 && (
+                <Button
+                  prominence="tertiary"
+                  size="lg"
+                  disabled={sending}
+                  onClick={() => void go(steps[stepIndex - 1])}
+                >
+                  {t("back")}
+                </Button>
+              )}
+              {step === "review" ? (
+                <Button
+                  size="lg"
+                  pending={sending}
+                  disabled={
+                    missing.length > 0 ||
+                    (!editing && !confirmed) ||
+                    changed ||
+                    (editing && !edited)
+                  }
+                  onClick={() => void form.handleSubmit()}
+                >
+                  {editing ? t("edit.save") : t("send")}
+                </Button>
+              ) : (
+                <Button size="lg" onClick={() => void form.handleSubmit()}>
+                  {t("continue")}
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+        </form>
+      ) : (
+        // Without an organization there is nothing to write yet: its own form makes one.
+        <ProposalOrganizationStep
+          useCaseId={useCaseId}
+          organization={null}
+          accountName={account.displayName ?? account.email}
+        />
       )}
     </WizardShell>
   );
