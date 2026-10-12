@@ -1,19 +1,12 @@
 "use client";
 
+import { useStore } from "@tanstack/react-form";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Textarea } from "@/components/ui/textarea";
+import { FormDialog } from "@/components/composites/form-dialog";
+import { useAppForm } from "@/components/form/app-form";
 import { useNotify, type MessageKey } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
@@ -52,13 +45,26 @@ function AdminUseCaseDecision({
   const t = useTranslations("Admin.useCases.decision");
   const notify = useNotify();
   const router = useRouter();
-  const reasonId = useId();
-  const [pending, setPending] = useState<"approve" | "sendBack" | null>(null);
+  const [approving, setApproving] = useState(false);
   const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState("");
+
+  const form = useAppForm({
+    defaultValues: { reason: "" },
+    onSubmit: async ({ value }) => {
+      try {
+        await sendBackAdminUseCase({ path: { id }, body: { reason: value.reason } });
+        notify.success("Admin.useCases.decision.sentBack", { name: title, organization });
+        setOpen(false);
+        router.refresh();
+      } catch (error) {
+        notify.error(refusal(error));
+      }
+    },
+  });
+  const reason = useStore(form.store, (state) => state.values.reason);
 
   async function approve() {
-    setPending("approve");
+    setApproving(true);
     try {
       await approveAdminUseCase({ path: { id } });
       notify.success("Admin.useCases.decision.approved", { name: title });
@@ -67,22 +73,7 @@ function AdminUseCaseDecision({
       notify.error(refusal(error));
       router.refresh();
     } finally {
-      setPending(null);
-    }
-  }
-
-  async function sendBack() {
-    setPending("sendBack");
-    try {
-      await sendBackAdminUseCase({ path: { id }, body: { reason } });
-      notify.success("Admin.useCases.decision.sentBack", { name: title, organization });
-      setOpen(false);
-      setReason("");
-      router.refresh();
-    } catch (error) {
-      notify.error(refusal(error));
-    } finally {
-      setPending(null);
+      setApproving(false);
     }
   }
 
@@ -90,59 +81,41 @@ function AdminUseCaseDecision({
     <>
       <div className="flex flex-col gap-3">
         {!published && (
-          <Button
-            size="lg"
-            pending={pending === "approve"}
-            disabled={pending !== null}
-            onClick={approve}
-          >
+          <Button size="lg" pending={approving} onClick={approve}>
             {t("approve")}
           </Button>
         )}
         <Button
           size="lg"
           prominence={published ? "primary" : "secondary"}
-          disabled={pending !== null}
+          disabled={approving}
           onClick={() => setOpen(true)}
         >
           {t("sendBack")}
         </Button>
       </div>
 
-      <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>
-        <DialogContent showCloseButton={false} className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t("dialog.title", { organization })}</DialogTitle>
-            <DialogDescription>{t("dialog.description", { organization })}</DialogDescription>
-          </DialogHeader>
-          <Field>
-            <FieldLabel htmlFor={reasonId}>{t("dialog.label", { organization })}</FieldLabel>
-            <Textarea
-              id={reasonId}
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        form={form}
+        title={t("dialog.title", { organization })}
+        description={t("dialog.description", { organization })}
+        width="md"
+        submitLabel={t("dialog.confirm")}
+        cancelLabel={t("dialog.cancel")}
+        submitDisabled={reason.trim() === ""}
+      >
+        <form.AppField name="reason">
+          {(field) => (
+            <field.TextareaField
+              label={t("dialog.label", { organization })}
               rows={4}
               maxLength={MAX_REASON}
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
             />
-          </Field>
-          <DialogFooter>
-            <Button
-              prominence="secondary"
-              disabled={pending !== null}
-              onClick={() => setOpen(false)}
-            >
-              {t("dialog.cancel")}
-            </Button>
-            <Button
-              pending={pending === "sendBack"}
-              disabled={reason.trim() === "" || pending !== null}
-              onClick={sendBack}
-            >
-              {t("dialog.confirm")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          )}
+        </form.AppField>
+      </FormDialog>
     </>
   );
 }
