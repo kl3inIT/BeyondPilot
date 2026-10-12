@@ -933,6 +933,8 @@
           "unfeature": "Stopped featuring a solution",
           "deployment_approve": "Approved a customer deployment",
           "deployment_reject": "Sent a customer deployment back",
+          "deployment_withdraw": "Withdrew a customer deployment",
+          "deployment_restore": "Restored a customer deployment",
           "enrich": "Filled a solution from public sources",
           "back": "Wrote what GenAI Fund says of a solution"
         },
@@ -1061,6 +1063,8 @@
           "unfeature": "Stopped featuring the solution <resource></resource>",
           "deployment_approve": "Approved the customer deployment <resource></resource>",
           "deployment_reject": "Sent the customer deployment <resource></resource> back",
+          "deployment_withdraw": "Withdrew the customer deployment <resource></resource>",
+          "deployment_restore": "Restored the customer deployment <resource></resource>",
           "enrich": "Filled the solution <resource></resource> from public sources",
           "back": "Wrote what GenAI Fund says of the solution <resource></resource>"
         },
@@ -3188,7 +3192,6 @@
           "open": "Let email reach {email} again",
           "title": "Let email reach this address again?",
           "lead": "BeyondPilot writes to {email} again from now.",
-          "noteManual": "Emails already given up are not sent again.",
           "noteProvider": "If mail to it bounces or is reported as spam again, the provider counts it against your sending.",
           "confirm": "Remove",
           "cancel": "Cancel",
@@ -3400,6 +3403,9 @@
         "invalid": "Write one email address."
       }
     }
+  },
+  "Actions": {
+    "undo": "Undo"
   },
   "Lists": {
     "loadMore": "Load more",
@@ -3770,6 +3776,11 @@
       "cancel": "Cancel",
       "emailDomain": "Verified email domain",
       "emailDomainHint": "Who can join with it is set in Members.",
+      "discard": {
+        "title": "Discard your changes?",
+        "confirm": "Discard changes",
+        "keep": "Keep editing"
+      },
       "leave": {
         "title": "Leave without saving?",
         "lead": "Your changes to the organization's profile are not saved yet.",
@@ -3836,6 +3847,10 @@
         "requestOnDomain": "Your email is on {domain}. An owner of {name} approves your request."
       },
       "ask": {
+        "join": {
+          "title": "Join {name}?",
+          "lead": "You join at once, and its members see you in their list."
+        },
         "request": {
           "title": "Ask to join {name}?",
           "messageHint": "The owners of {name} read this message."
@@ -3942,6 +3957,11 @@
         "cancel": "Cancel"
       },
       "confirm": {
+        "demoteSelf": {
+          "title": "Make yourself a member?",
+          "lead": "You can no longer invite people, change roles or edit the profile. Only another owner can make you an owner again.",
+          "confirm": "Make member"
+        },
         "leave": {
           "title": "Leave this organization?",
           "lead": "You lose access to its profile, members and solutions.",
@@ -4252,6 +4272,9 @@
       "SOLUTION_TOO_MANY_DEPLOYMENTS": "A solution lists at most 12 customer deployments. Remove one before adding another.",
       "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "This customer deployment is not waiting for review.",
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
+      "SOLUTION_DEPLOYMENT_NOT_DELETABLE": "This customer deployment was sent for review, so it is removed from the page and kept, not deleted. Reload the page.",
+      "SOLUTION_DEPLOYMENT_WITHDRAWN": "This customer deployment is removed from the page. Restore it first.",
+      "SOLUTION_DEPLOYMENT_NOT_WITHDRAWN": "This customer deployment is already back on the solution.",
       "SOLUTION_MEMBER_REQUIRED": "Only a member of an organization can do this.",
       "SOLUTION_DECK_NOT_USABLE": "This file cannot be the deck. Upload the PDF again.",
       "unknown": "That did not work. Try again.",
@@ -4269,10 +4292,11 @@
       "rejected": "{name} is rejected.",
       "deploymentSaved": "{name} sent to GenAI Fund for review.",
       "deploymentRemoved": "{name} removed.",
+      "deploymentRestored": "{name} restored.",
       "deploymentApproved": "{name} approved.",
       "deploymentRejected": "{name} sent back.",
       "shown": "{name} is listed in the directory.",
-      "hidden": "{name} is hidden from the directory.",
+      "hidden": "{name} is hidden from the directory. People with the link can still open it.",
       "linkCopied": "Link copied",
       "sentBack": "{name} sent back with what to change.",
       "takenDown": "{name} is taken down.",
@@ -4481,11 +4505,6 @@
           "title": "Delete {name}?",
           "lead": "This cannot be undone.",
           "confirm": "Delete draft"
-        },
-        "confirmHide": {
-          "title": "Hide from the directory?",
-          "lead": "People with the link can still open it.",
-          "confirm": "Hide"
         },
         "view": "Open"
       },
@@ -4776,6 +4795,8 @@
       "none": "No customer deployment yet.",
       "edit": "Edit",
       "remove": "Remove",
+      "restore": "Restore",
+      "withdrawn": "Removed from the solution's page. Only your organization sees it.",
       "rejected": "Sent back: {reason}.",
       "confirmRemove": {
         "title": "Remove {name}?",
@@ -7074,8 +7095,7 @@
       "shortlisted": "{name} is saved.",
       "unshortlisted": "{name} is no longer saved.",
       "removed": "{name} removed · {reason}",
-      "restored": "{name} restored.",
-      "undo": "Undo"
+      "restored": "{name} restored."
     },
     "errors": {
       "MATCHING_USE_CASE_NOT_FOUND": "This use case no longer exists.",

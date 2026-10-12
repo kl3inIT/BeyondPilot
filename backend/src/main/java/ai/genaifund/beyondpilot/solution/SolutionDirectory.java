@@ -148,7 +148,9 @@ public class SolutionDirectory {
 				solution.getDemoUrl(), SolutionViews.publicDeck(solution),
 				shownLogo(solution.getLogoFileId(), organization.logoFileId()), solution.getCoverFileId(),
 				solution.getImageFileIds(), solution.isListed(), solution.isApproved(),
-				deployments.findBySolutionIdAndStatusOrderByDecidedAtDesc(solution.getId(), CustomerDeployment.APPROVED)
+				deployments
+					.findBySolutionIdAndStatusAndWithdrawnAtIsNullOrderByDecidedAtDesc(solution.getId(),
+							CustomerDeployment.APPROVED)
 					.stream()
 					.map(deployment -> SolutionViews.publicDeployment(deployment, solution))
 					.toList());
@@ -286,7 +288,8 @@ public class SolutionDirectory {
 	/** The customer deployments of a solution that GenAI Fund approved, the latest decided first. */
 	@Transactional(readOnly = true)
 	public List<CustomerCase> customerCases(UUID solutionId) {
-		return deployments.findBySolutionIdAndStatusOrderByDecidedAtDesc(solutionId, CustomerDeployment.APPROVED)
+		return deployments
+			.findBySolutionIdAndStatusAndWithdrawnAtIsNullOrderByDecidedAtDesc(solutionId, CustomerDeployment.APPROVED)
 			.stream()
 			.map(deployment -> new CustomerCase(deployment.getId(), deployment.getCustomer(), deployment.getTitle(),
 					deployment.getProblem(), deployment.getDelivered(), deployment.getResult()))
@@ -340,7 +343,8 @@ public class SolutionDirectory {
 					solution.getTraction(), solution.getBestCustomerProfile(), solution.getBuiltWith(),
 					solution.getFocusAreas(), solution.getIndustries(), solution.getMaturity(),
 					solution.getDeployment(), shownLogo(solution.getLogoFileId(), organization.logoFileId()),
-					deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.APPROVED),
+					deployments.countBySolutionIdAndStatusAndWithdrawnAtIsNull(solution.getId(),
+							CustomerDeployment.APPROVED),
 					solution.isListed(), solution.getDecidedAt(), solution.getCoverFileId(),
 					solution.getProgram() != null ? solution.getProgram() : solution.getBackedBy(),
 					solution.getFeaturedAt() != null);

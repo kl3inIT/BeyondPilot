@@ -20,7 +20,7 @@ type SolutionFeatureProps = {
 
 /**
  * Features a solution, or stops featuring it. Nobody is emailed and nothing else about the solution
- * changes, so it asks for no confirmation: the other press undoes it.
+ * changes, so it runs at once and its toast offers Undo (docs/conventions.md › Actions).
  */
 function SolutionFeature({ solution, appearance }: SolutionFeatureProps) {
   const t = useTranslations("Admin.solutions.feature");
@@ -29,16 +29,16 @@ function SolutionFeature({ solution, appearance }: SolutionFeatureProps) {
   const [pending, setPending] = useState(false);
   const featured = Boolean(solution.featuredAt);
 
-  async function toggle() {
-    if (pending) {
-      return;
-    }
+  /** Features the solution or stops featuring it; what Undo sends offers no Undo of its own. */
+  async function feature(next: boolean, undoable: boolean) {
     setPending(true);
     try {
-      await (featured ? unfeatureSolution : featureSolution)({ path: { id: solution.id } });
-      notify.success(featured ? "Solution.done.unfeatured" : "Solution.done.featured", {
-        name: solution.name,
-      });
+      await (next ? featureSolution : unfeatureSolution)({ path: { id: solution.id } });
+      notify.success(
+        next ? "Solution.done.featured" : "Solution.done.unfeatured",
+        { name: solution.name },
+        undoable ? { undo: () => void feature(!next, false) } : undefined,
+      );
       router.refresh();
     } catch (error) {
       notify.error(solutionError(error));
@@ -46,6 +46,8 @@ function SolutionFeature({ solution, appearance }: SolutionFeatureProps) {
       setPending(false);
     }
   }
+
+  const toggle = () => (pending ? undefined : feature(!featured, true));
 
   if (appearance === "item") {
     return (

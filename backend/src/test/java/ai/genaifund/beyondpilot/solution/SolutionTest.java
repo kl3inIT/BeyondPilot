@@ -1104,11 +1104,89 @@ class SolutionTest {
 			.query(String.class)
 			.list()).containsExactly("solution.deployment_approve", "solution.deployment_reject");
 
-		// Another organization cannot touch it, and its owners remove it.
+		// Another organization cannot touch it, and its owners no longer delete what GenAI Fund read.
 		String other = approvedOwner("founder@bystanders.test", "Bystanders Co");
 		assertProblem(delete(other, deployments + "/" + id), 404, "SOLUTION_NOT_FOUND");
-		delete(founder, deployments + "/" + id).expectStatus().isNoContent();
-		assertProblem(delete(founder, deployments + "/" + id), 404, "SOLUTION_DEPLOYMENT_NOT_FOUND");
+		assertProblem(delete(founder, deployments + "/" + id), 409, "SOLUTION_DEPLOYMENT_NOT_DELETABLE");
+	}
+
+	@Test
+	void aCustomerDeploymentSentForReviewIsWithdrawnAndRestoredAndOnlyThatOfADraftIsDeleted() {
+		String founder = approvedOwner("founder@withdrawers.test", "Withdrawers Co");
+		UUID solution = approved(founder, "Quokka Desk");
+		String deployments = MINE + "/" + solution + "/deployments";
+		String page = DIRECTORY + "/quokka-desk";
+		String added = body(post(founder, deployments, deployment("Loan enquiries", null)).expectStatus().isCreated());
+		UUID id = UUID.fromString(JsonPath.read(added, "$.id"));
+		String review = "/api/solution/admin/deployments/" + id;
+		post(operator, review + "/approve", null).expectStatus().isNoContent();
+		String organization = JsonPath.read(body(client.get().uri(page).exchange().expectStatus().isOk()),
+				"$.organizationSlug");
+
+		// Withdrawn, it keeps its row and its review, and only its organization reads it.
+		String other = approvedOwner("founder@onlookers.test", "Onlookers Co");
+		assertProblem(post(other, deployments + "/" + id + "/withdraw", null), 404, "SOLUTION_NOT_FOUND");
+		String withdrawn = body(post(founder, deployments + "/" + id + "/withdraw", null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(withdrawn, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<String>read(withdrawn, "$.withdrawnAt")).isNotNull();
+		assertThat(JsonPath.<List<Object>>read(body(client.get().uri(page).exchange().expectStatus().isOk()),
+				"$.customerDeployments"))
+			.isEmpty();
+		assertThat(JsonPath.<Integer>read(body(client.get().uri(DIRECTORY + "?q=Quokka").exchange().expectStatus().isOk()),
+				"$.items[0].customerDeployments"))
+			.isZero();
+		assertThat(JsonPath.<Integer>read(body(client.get()
+			.uri("/api/solution/deployments?organization=" + organization)
+			.exchange()
+			.expectStatus()
+			.isOk()), "$.total")).isZero();
+		assertThat(JsonPath.<List<Object>>read(body(get(operator, ADMIN + "/" + solution).expectStatus().isOk()),
+				"$.customerDeployments"))
+			.isEmpty();
+		String mine = body(get(founder, MINE + "/" + solution).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(mine, "$.customerDeployments[*].title")).containsExactly("Loan enquiries");
+		long version = JsonPath.<Number>read(mine, "$.customerDeployments[0].version").longValue();
+
+		// Nothing is decided or changed on it until it is restored.
+		assertProblem(post(operator, review + "/reject", Map.of("reason", "unverifiable", "message", "Name it.")), 409,
+				"SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW");
+		assertProblem(put(founder, deployments + "/" + id, deployment("Loan and card enquiries", version)), 409,
+				"SOLUTION_DEPLOYMENT_WITHDRAWN");
+		assertProblem(post(founder, deployments + "/" + id + "/withdraw", null), 409, "SOLUTION_DEPLOYMENT_WITHDRAWN");
+
+		// Restored, it is public again with the review it had.
+		String restored = body(post(founder, deployments + "/" + id + "/restore", null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(restored, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<Object>read(restored, "$.withdrawnAt")).isNull();
+		assertThat(JsonPath.<List<String>>read(body(client.get().uri(page).exchange().expectStatus().isOk()),
+				"$.customerDeployments[*].title"))
+			.containsExactly("Loan enquiries");
+		assertProblem(post(founder, deployments + "/" + id + "/restore", null), 409,
+				"SOLUTION_DEPLOYMENT_NOT_WITHDRAWN");
+		assertThat(jdbc.sql("select action from audit_event where resource_id = ? order by occurred_at, id")
+			.param(id.toString())
+			.query(String.class)
+			.list()).containsExactly("solution.deployment_approve", "solution.deployment_withdraw",
+					"solution.deployment_restore");
+
+		// One that waits for review leaves the operators' count while it is withdrawn.
+		String waitingOne = JsonPath.read(
+				body(post(founder, deployments, deployment("Card enquiries", null)).expectStatus().isCreated()), "$.id");
+		long waiting = deploymentsWaiting();
+		post(founder, deployments + "/" + waitingOne + "/withdraw", null).expectStatus().isOk();
+		assertThat(deploymentsWaiting()).isEqualTo(waiting - 1);
+
+		// On a draft no operator was shown it, so it is really deleted.
+		UUID draft = create(founder, "Quokka Draft");
+		String ofDraft = MINE + "/" + draft + "/deployments";
+		String unsent = JsonPath.read(
+				body(post(founder, ofDraft, deployment("Never sent", null)).expectStatus().isCreated()), "$.id");
+		delete(founder, ofDraft + "/" + unsent).expectStatus().isNoContent();
+		assertProblem(delete(founder, ofDraft + "/" + unsent), 404, "SOLUTION_DEPLOYMENT_NOT_FOUND");
+		assertThat(jdbc.sql("select count(*) from solution_customer_deployment where id = ?")
+			.param(UUID.fromString(unsent))
+			.query(Long.class)
+			.single()).isZero();
 	}
 
 	@Test

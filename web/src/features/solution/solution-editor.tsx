@@ -716,6 +716,7 @@ function SolutionEditor({
                     solutionId={solution.id}
                     deckHref={deckHref}
                     onImageAdded={addImage}
+                    unsent={solution.status === "draft"}
                     customerDeployments={operator ? null : solution.customerDeployments}
                     onLinkLeft={(field) => setLeftLinks((current) => new Set(current).add(field))}
                   />
@@ -724,7 +725,13 @@ function SolutionEditor({
                   <ReviewStep
                     draft={draft}
                     change={change}
-                    customerDeployments={operator ? null : solution.customerDeployments}
+                    customerDeployments={
+                      operator
+                        ? null
+                        : solution.customerDeployments.filter(
+                            (deployment) => !deployment.withdrawnAt,
+                          )
+                    }
                     operator={operator}
                     missing={missing}
                     submittable={autosaves}
