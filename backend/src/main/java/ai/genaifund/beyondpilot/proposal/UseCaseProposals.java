@@ -516,7 +516,7 @@ public class UseCaseProposals {
 			.toList();
 		return new UseCaseProposalFormResponse(useCase(target),
 				new ProposingOrganizationResponse(organizationId, membership.organizationName(),
-						name == null ? null : name.logoFileId(), membership.approved()),
+						name == null ? null : name.logoFileId(), membership.approved(), membership.owner()),
 				members, proposal == null ? null : response(proposal, target));
 	}
 

@@ -821,14 +821,6 @@
       "dayAndTime": "{day}, {time}",
       "never": "Chưa từng",
       "count": "{count} tài khoản",
-      "pagination": {
-        "label": "Các trang tài khoản",
-        "previous": "Trước",
-        "next": "Sau",
-        "goToPrevious": "Về trang trước",
-        "goToNext": "Sang trang sau",
-        "page": "Trang {page}"
-      },
       "actions": {
         "open": "Thao tác với {name}",
         "makeOperator": "Cấp quyền operator…",
@@ -2491,15 +2483,7 @@
           "who": "Ai, lúc nào"
         },
         "requirement": "Yêu cầu {position}",
-        "count": "{count} câu trả lời không đồng ý",
-        "pagination": {
-          "label": "Các trang câu trả lời không đồng ý",
-          "previous": "Trước",
-          "next": "Sau",
-          "goToPrevious": "Về trang trước",
-          "goToNext": "Sang trang sau",
-          "page": "Trang {page}"
-        }
+        "count": "{count} câu trả lời không đồng ý"
       },
       "tabs": {
         "limits": "Giới hạn",
@@ -2647,14 +2631,6 @@
         "empty": {
           "title": "Không có lượt gọi trong kỳ này",
           "description": "Nội dung hỏi và trả lời không bao giờ được lưu."
-        },
-        "pagination": {
-          "label": "Các trang lượt gọi",
-          "previous": "Trước",
-          "next": "Sau",
-          "goToPrevious": "Về trang trước",
-          "goToNext": "Sang trang sau",
-          "page": "Trang {page}"
         }
       }
     },
@@ -2774,14 +2750,6 @@
         "empty": {
           "title": "Không có lời gọi nào trong khoảng này",
           "description": "Nội dung câu hỏi không bao giờ được lưu."
-        },
-        "pagination": {
-          "label": "Các trang lời gọi",
-          "previous": "Trước",
-          "next": "Sau",
-          "goToPrevious": "Về trang trước",
-          "goToNext": "Sang trang sau",
-          "page": "Trang {page}"
         }
       },
       "confirm": {
@@ -5950,6 +5918,288 @@
       "text": "Hạn nộp là 23:59 ICT ngày 15 tháng 10. Mọi người nhận kết quả vào ngày 16 tháng 10."
     }
   },
+  "Nestle": {
+    "banner": {
+      "text": "Hạn nộp đơn: <strong>{closes}</strong>. Nộp trước ngày 5 tháng 11 để nhận đề bài đầy đủ sớm nhất."
+    },
+    "hero": {
+      "tagline": "Nestlé đã chọn ra những bài toán của mình. Giờ họ tìm người giải được chúng.",
+      "explore": "Xem các thách thức",
+      "lead": "Mang giải pháp AI đang chạy được của bạn đến những bài toán kinh doanh thực tế tại Nestlé Việt Nam. Các nhà cung cấp được chọn có thể kết nối với những đội Nestlé liên quan, trình diễn giải pháp và tìm hiểu cơ hội hợp tác.",
+      "open": "Dành cho bản thử đang chạy, dự án thí điểm và sản phẩm hoàn thiện có thể điều chỉnh theo các thách thức.",
+      "imageAlt": "Một người làm sản phẩm cầm máy tính bảng bên chú robot AI thân thiện, cùng laptop và bóng đèn",
+      "facts": {
+        "closes": {
+          "label": "Hạn nộp đơn",
+          "value": "15 thg 11, 23:59 ICT"
+        },
+        "matchingDay": {
+          "label": "Matching Day",
+          "value": "3 thg 12, TP. Hồ Chí Minh"
+        },
+        "opportunity": {
+          "label": "Cơ hội",
+          "value": "Tìm hiểu hợp tác với Nestlé Việt Nam"
+        },
+        "who": {
+          "label": "Ai được nộp",
+          "value": "Từ cá nhân đến nhà cung cấp lâu năm"
+        }
+      }
+    },
+    "nav": {
+      "label": "Trên trang này",
+      "offers": "Quyền lợi",
+      "areas": "Thách thức",
+      "use-cases": "Use case",
+      "how": "Cách tham gia",
+      "eligibility": "Điều kiện",
+      "dates": "Mốc thời gian",
+      "faq": "Hỏi đáp"
+    },
+    "offers": {
+      "title": "Chương trình mang lại gì",
+      "lead": "Kết nối với các đội Nestlé liên quan, hiểu nhu cầu kinh doanh và tìm hiểu giải pháp AI của bạn có thể đóng góp ra sao.",
+      "items": {
+        "owners": {
+          "title": "Kết nối với người phụ trách bài toán tại Nestlé",
+          "text": "Trình bày giải pháp với các đội kinh doanh liên quan và trao đổi cách giải pháp đáp ứng nhu cầu của họ."
+        },
+        "needs": {
+          "title": "Hiểu nhu cầu kinh doanh",
+          "text": "Ứng viên qua vòng sơ tuyển được briefing chi tiết để hiểu rõ hơn thách thức, yêu cầu và bối cảnh."
+        },
+        "collaboration": {
+          "title": "Cơ hội hợp tác",
+          "text": "Tìm hiểu những hướng hợp tác tiềm năng với Nestlé Việt Nam, dựa trên mức độ liên quan và phù hợp kinh doanh của giải pháp."
+        }
+      }
+    },
+    "areas": {
+      "title": "Tìm nơi giải pháp AI của bạn phù hợp.",
+      "lead": "Xem các bài toán kinh doanh do các đội Nestlé nêu ra. Hãy mang đến một giải pháp đang chạy được, giải quyết một bài toán hoặc có thể điều chỉnh để giải quyết nó.",
+      "tabs": "Lĩnh vực thách thức",
+      "today": "Hiện trạng",
+      "good": "Kết quả mong muốn",
+      "bring": "Hãy mang đến",
+      "items": {
+        "documents": {
+          "title": "Xử lý chứng từ & tuân thủ thương mại",
+          "today": "Chứng từ giao hàng đi qua giấy tờ và bảng tính trước khi có ai đối chiếu được. Chứng từ nhập khẩu đến bằng tiếng Anh và phải nộp bằng tiếng Việt, giữ nguyên bố cục. Mã HS được tra cứu thủ công, còn thuế nhập khẩu được kiểm tra bằng cách nhập lại cùng những con số.",
+          "good": "Chứng từ giao hàng được trích xuất và đối chiếu, bản dịch giữ nguyên bố cục, hỗ trợ quyết định mã HS và đối chiếu thuế nhập khẩu. Con người xử lý các trường hợp ngoại lệ."
+        },
+        "marketing": {
+          "title": "Phân tích & hoạch định marketing",
+          "today": "Văn hóa mạng xã hội thay đổi nhanh hơn một bản creative brief. Bài học từ các chiến dịch nằm trong những bộ slide và báo cáo không ai mở lại. Ngân sách được ước tính theo trí nhớ và báo giá cũ.",
+          "good": "Chiến dịch bắt đầu từ xu hướng hiện tại và bài học đã có, nội dung sáng tạo được thử nghiệm trước khi ra mắt và ngân sách được ước tính nhanh hơn."
+        },
+        "sales": {
+          "title": "Phân tích & dự báo bán hàng",
+          "today": "Dữ liệu bán hàng nằm ở nhiều công cụ khác nhau, nên cùng một con số được lấy ra theo ba cách. Việc dự báo chiếm mất thời gian lẽ ra dành để hành động theo nó.",
+          "good": "Dữ liệu bán hàng được tích hợp, hỗ trợ dự báo, phân tích và quyết định chi tiêu thương mại."
+        },
+        "manufacturing": {
+          "title": "Sản xuất thông minh & tự động hóa AI",
+          "today": "Bảo đảm nguồn cung cà phê ổn định trong khi đưa thiết bị mới vào vận hành, nâng cấp máy cũ và ra mắt sản phẩm mới tạo áp lực lên chi phí và khâu thực thi. Các đội còn phải theo kịp những yêu cầu thay đổi về an toàn thực phẩm, an toàn lao động và quy định pháp lý.",
+          "good": "Thiết bị kết nối, cảm biến, robot và AI giúp các đội dự đoán sự cố, tự động hóa việc lặp lại, nâng chất lượng và tận dụng tốt hơn tài sản hiện có. Chạy thử, kiểm nghiệm sản phẩm và mở rộng sản xuất nhanh hơn hỗ trợ tăng trưởng mới, còn dữ liệu truy xuất được và cảnh báo kịp thời hỗ trợ an toàn và tuân thủ."
+        },
+        "legal": {
+          "title": "Pháp lý, quy định & hỗ trợ nhân viên",
+          "today": "Hợp đồng được rà soát và theo dõi thủ công. Quy định và các vấn đề mới phát sinh được theo dõi bằng tay. Nhân viên hỏi bộ phận nhân sự những câu giống nhau về chính sách mỗi ngày.",
+          "good": "Chuyên gia dành thời gian cho việc cân nhắc và phán đoán; mọi việc hệ trọng đều có người rà soát."
+        }
+      },
+      "manufacturingIntro": "Giải pháp phần cứng, máy móc, phần mềm và tự động hóa AI tích hợp, gồm:",
+      "bringItems": {
+        "extraction": "Trích xuất chứng từ",
+        "deliveryReconciliation": "Đối chiếu chứng từ giao hàng",
+        "translation": "Dịch giữ nguyên bố cục",
+        "hsCode": "Hỗ trợ quyết định mã HS",
+        "importTax": "Đối chiếu thuế nhập khẩu",
+        "trends": "Phân tích xu hướng",
+        "preTesting": "Thử nghiệm sáng tạo trước khi ra mắt",
+        "campaignLearning": "Học từ chiến dịch",
+        "budget": "Ước tính ngân sách",
+        "salesData": "Tích hợp dữ liệu bán hàng",
+        "demand": "Dự báo nhu cầu",
+        "salesAnalytics": "Phân tích bán hàng",
+        "tradeSpend": "Tối ưu chi tiêu thương mại",
+        "machinery": "Máy móc kết nối & nâng cấp thiết bị",
+        "maintenance": "Bảo trì dự đoán",
+        "vision": "Thị giác AI & kiểm tra chất lượng",
+        "robotics": "Robot & vận chuyển vật liệu",
+        "optimisation": "Tối ưu quy trình, năng lượng & sản lượng",
+        "twins": "Bản sao số & chạy thử thiết bị mới",
+        "testing": "Kiểm nghiệm sản phẩm & mở rộng sản xuất",
+        "safety": "An toàn, tuân thủ & truy xuất nguồn gốc",
+        "contracts": "Rà soát & theo dõi hợp đồng",
+        "regulatory": "Thông tin quy định",
+        "issues": "Theo dõi vấn đề",
+        "hrPolicy": "Trợ lý chính sách nhân sự"
+      },
+      "more": {
+        "title": "Hướng khác",
+        "body": "Bạn có kinh nghiệm ứng dụng AI trong ngành hàng tiêu dùng nhanh (FMCG) hoặc sản xuất? Nếu bạn thấy một cơ hội khác để hợp tác với đối tác như Nestlé, chúng tôi muốn nghe từ bạn. Hãy cho chúng tôi biết về giải pháp, kinh nghiệm liên quan và cơ hội kinh doanh mà bạn nhìn thấy."
+      }
+    },
+    "early": {
+      "ask": "Bạn thấy bài toán quen thuộc?",
+      "title": "Bắt đầu sớm.",
+      "text": "Nộp trước ngày 5 tháng 11 để được xét vào đợt briefing sớm. Ứng viên qua vòng sơ tuyển được briefing chi tiết từ ngày 6 tháng 11."
+    },
+    "useCases": {
+      "title": "Use case trong chương trình này",
+      "lead": "Các bài toán Nestlé Việt Nam đã đăng cho chương trình này. Mở từng bài để đọc mục tiêu, yêu cầu, ngân sách và thời gian."
+    },
+    "how": {
+      "title": "Cách tham gia",
+      "lead": "Tìm hiểu các thách thức, giới thiệu giải pháp của bạn và kết nối với các đội Nestlé liên quan để trao đổi khả năng hợp tác.",
+      "steps": {
+        "apply": {
+          "title": "Nộp đơn và sàng lọc",
+          "text": "Nộp giải pháp đang chạy được và giải thích nó liên quan thế nào tới một bài toán kinh doanh."
+        },
+        "briefings": {
+          "title": "Briefing chi tiết",
+          "text": "Ứng viên qua vòng sơ tuyển được briefing chi tiết và có cơ hội trao đổi với Nestlé AI Champion phụ trách."
+        },
+        "matching": {
+          "title": "Matching Day",
+          "text": "Các nhà cung cấp vào danh sách rút gọn trình diễn giải pháp với những đội Nestlé liên quan, trao đổi về nhu cầu kinh doanh, độ phù hợp của giải pháp và khả năng hợp tác."
+        },
+        "collaboration": {
+          "title": "Tìm hiểu hợp tác",
+          "text": "Các nhà cung cấp được chọn có thể đi tiếp vào những buổi trao đổi sâu hơn để đánh giá độ phù hợp về kinh doanh, kỹ thuật và tìm hiểu các bước tiếp theo."
+        }
+      }
+    },
+    "eligibility": {
+      "title": "Chúng tôi tìm ai",
+      "lead": "Một cá nhân có bản thử đang chạy và một nhà cung cấp lâu năm có sản phẩm ở bốn mươi thị trường cùng vượt một thước đo: cho thấy nó chạy được, và chạy ở đâu.",
+      "kinds": {
+        "solo": "Cá nhân",
+        "students": "Nhóm sinh viên",
+        "startups": "Startup",
+        "scaleups": "Scale-up",
+        "vendors": "Công ty phần mềm",
+        "integrators": "Đơn vị tích hợp",
+        "established": "Nhà cung cấp lâu năm"
+      },
+      "need": {
+        "title": "Bạn cần gì",
+        "items": {
+          "working": "Một bản thử, dự án thí điểm hoặc sản phẩm đang chạy được (yêu cầu tối thiểu)",
+          "data": "Hiểu rõ giải pháp cần dữ liệu và hệ thống nào",
+          "security": "Câu trả lời thẳng thắn về bảo mật và bảo vệ dữ liệu",
+          "pilot": "Khả năng chạy thí điểm tại Việt Nam"
+        }
+      },
+      "questions": {
+        "title": "Sáu câu hỏi bạn sẽ trả lời trong phòng",
+        "lead": "Trả lời tốt trong đơn là bạn đã chuẩn bị xong một nửa cho Matching Day.",
+        "items": {
+          "problem": "Bạn hiểu bài toán kinh doanh như thế nào?",
+          "prove": "Thí điểm sẽ chứng minh điều gì, và làm sao chúng tôi biết?",
+          "solution": "Bạn đề xuất giải pháp gì?",
+          "data": "Giải pháp cần dữ liệu và tích hợp nào?",
+          "tested": "Giải pháp đã được thử nghiệm hoặc sử dụng ở đâu?",
+          "capability": "Sau đó Nestlé giữ lại được năng lực gì?"
+        }
+      },
+      "screening": {
+        "title": "Vòng sàng lọc còn xét",
+        "items": {
+          "protection": "Bảo vệ dữ liệu",
+          "integration": "Tích hợp hệ thống",
+          "references": "Khách hàng tham chiếu",
+          "pilotReady": "Sẵn sàng thí điểm tại Việt Nam"
+        }
+      }
+    },
+    "dates": {
+      "title": "Hành trình chương trình & các mốc chính",
+      "supporting": {
+        "title": "Hoạt động hỗ trợ",
+        "groups": {
+          "during": "Trong thời gian nhận đơn",
+          "before": "Trước Matching Day",
+          "after": "Sau Matching Day"
+        },
+        "when": {
+          "infoSession": "Tuần 19 thg 10",
+          "screening": "26 thg 10",
+          "briefings": "6 thg 11",
+          "confirm": "23 thg 11",
+          "plans": "Tháng 12"
+        },
+        "what": {
+          "infoSession": "Buổi giới thiệu · 45 phút trực tuyến",
+          "screening": "Sàng lọc liên tục · đơn nộp sớm được xét trước",
+          "briefings": "Briefing chi tiết",
+          "confirm": "Đội vào vòng cuối xác nhận tham gia",
+          "pack": "Phát bộ tài liệu chuẩn bị",
+          "plans": "Kế hoạch hành động 30 ngày",
+          "owner": "Mỗi kết nối có một người phụ trách đích danh"
+        }
+      },
+      "pocs": "PoC tùy thuộc vào việc tuyển chọn và phê duyệt."
+    },
+    "faq": {
+      "title": "Những câu hỏi bạn thật sự muốn hỏi.",
+      "items": {
+        "who": {
+          "q": "Ai được nộp đơn?",
+          "a": "Bất kỳ ai có giải pháp đang chạy được, từ cá nhân hay nhóm sinh viên đến nhà cung cấp lâu năm."
+        },
+        "finished": {
+          "q": "Tôi có cần sản phẩm hoàn chỉnh không?",
+          "a": "Không. Một bản thử đang chạy được là đủ điều kiện. Hãy cho thấy điều gì đang chạy hôm nay, điều gì cần điều chỉnh và giải pháp cần dữ liệu hay tích hợp nào."
+        },
+        "after": {
+          "q": "Sau Matching Day thì sao?",
+          "a": "Các nhà cung cấp được chọn có thể được mời trao đổi thêm để đánh giá độ phù hợp về kinh doanh, kỹ thuật và tìm hiểu khả năng hợp tác."
+        },
+        "prize": {
+          "q": "Có tiền thưởng không?",
+          "a": "Không có giải thưởng tiền mặt. Chương trình tập trung kết nối các nhà cung cấp giải pháp với Nestlé Việt Nam để tìm hiểu cơ hội hợp tác."
+        },
+        "vietnam": {
+          "q": "Tôi có cần đặt trụ sở tại Việt Nam không?",
+          "a": "Không. Bạn cần có khả năng hỗ trợ một dự án thí điểm tại Việt Nam. Matching Day diễn ra trực tiếp tại TP. Hồ Chí Minh."
+        },
+        "early": {
+          "q": "Có đợt briefing sớm không?",
+          "a": "Nộp trước ngày 5 tháng 11 để được xét vào đợt briefing sớm. Ứng viên qua vòng sơ tuyển được briefing chi tiết từ ngày 6 tháng 11."
+        },
+        "ip": {
+          "q": "Tôi có giữ quyền sở hữu trí tuệ không?",
+          "a": "Có. Ứng viên giữ quyền sở hữu trí tuệ của mình."
+        },
+        "hearBack": {
+          "q": "Khi nào tôi nhận kết quả?",
+          "a": "Mọi người nhận phản hồi chậm nhất ngày 20 tháng 11."
+        }
+      }
+    },
+    "closing": {
+      "title": "Giải pháp của bạn sẽ có mặt trong phòng ngày 3 tháng 12 chứ?",
+      "text": "Danh sách rút gọn đang thành hình — nộp hôm nay để có cơ hội được chọn.",
+      "closes": "Hạn nộp đơn: {closes}.",
+      "session": "Xem lịch buổi giới thiệu",
+      "share": "Biết một đội phù hợp? Gửi họ trang này"
+    },
+    "about": {
+      "label": "Về chương trình",
+      "tagline": "AI-First. Human-Led. Re-Inventing Nestlé.",
+      "text": "AI Solution Search là một phần của chương trình Nestlé Vietnam AI Reinvention và AI Hackathon 2026, do GenAI Fund điều hành cùng Nestlé Việt Nam. Việc tham gia và mọi hợp tác về sau tùy thuộc vào kết quả tuyển chọn, mức độ phù hợp kinh doanh và các yêu cầu hiện hành của Nestlé. Ứng viên giữ quyền sở hữu trí tuệ của mình."
+    },
+    "rail": {
+      "partners": "Đối tác",
+      "runBy": "Điều hành bởi",
+      "with": "Cùng với",
+      "questions": "Có câu hỏi về chương trình này?"
+    }
+  },
   "EntryList": {
     "remove": "Xoá {entry} khỏi {label}"
   },
@@ -6688,14 +6938,6 @@
     "empty": {
       "title": "Không có bài toán nào khớp",
       "clear": "Xóa từ khóa và bộ lọc"
-    },
-    "pagination": {
-      "label": "Các trang bài toán",
-      "previous": "Trước",
-      "next": "Sau",
-      "goToPrevious": "Về trang trước",
-      "goToNext": "Sang trang sau",
-      "page": "Trang {page}"
     },
     "publish": {
       "title": "Doanh nghiệp bạn có bài toán AI có thể giải?",
@@ -7513,7 +7755,17 @@
         "website": "Website (không bắt buộc)",
         "required": "Bắt buộc.",
         "existing": "Công ty tôi đã có trên BeyondPilot",
-        "continue": "Tiếp tục"
+        "continue": "Tiếp tục",
+        "pending": "Đang chờ duyệt",
+        "edit": "Sửa",
+        "dialog": {
+          "title": "Sửa tổ chức",
+          "more": "Thêm thông tin ở Tổ chức của tôi",
+          "cancel": "Hủy",
+          "save": "Lưu",
+          "saved": "Đã lưu tổ chức.",
+          "required": "Bắt buộc."
+        }
       }
     },
     "view": {

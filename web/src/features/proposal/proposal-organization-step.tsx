@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -19,6 +20,7 @@ import { siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
 import { describeProposalError } from "./proposal-errors";
+import { ProposalOrganizationDialog } from "./proposal-organization-dialog";
 
 /** The sizes a team names. */
 const teamSizes = ["2_9", "10_49", "50_99"] as const;
@@ -41,6 +43,16 @@ function ProposalOrganizationStep({
     return <NewOrganization useCaseId={useCaseId} accountName={accountName} />;
   }
 
+  return <OrganizationCard organization={organization} />;
+}
+
+type OrganizationCardProps = { organization: ProposingOrganization };
+
+/** The organization the proposal is sent for, with the way for its owner to correct what they gave when they made it. */
+function OrganizationCard({ organization }: OrganizationCardProps) {
+  const t = useTranslations("UseCaseProposal.wizard.organization");
+  const [editing, setEditing] = useState(false);
+
   return (
     <div className="flex items-center gap-4 rounded-lg border p-4">
       <Avatar size="lg">
@@ -49,7 +61,14 @@ function ProposalOrganizationStep({
         )}
         <AvatarFallback>{initials(organization.name, "")}</AvatarFallback>
       </Avatar>
-      <span className="truncate text-base font-medium">{organization.name}</span>
+      <span className="min-w-0 flex-1 truncate text-base font-medium">{organization.name}</span>
+      {!organization.approved && <Badge variant="secondary">{t("pending")}</Badge>}
+      {organization.owner && (
+        <>
+          <TextButton onClick={() => setEditing(true)}>{t("edit")}</TextButton>
+          <ProposalOrganizationDialog open={editing} onOpenChange={setEditing} />
+        </>
+      )}
     </div>
   );
 }

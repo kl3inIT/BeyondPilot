@@ -821,14 +821,6 @@
       "dayAndTime": "{day}, {time}",
       "never": "Never",
       "count": "{count, plural, one {# account} other {# accounts}}",
-      "pagination": {
-        "label": "Pages of accounts",
-        "previous": "Previous",
-        "next": "Next",
-        "goToPrevious": "Go to the previous page",
-        "goToNext": "Go to the next page",
-        "page": "Page {page}"
-      },
       "actions": {
         "open": "Actions for {name}",
         "makeOperator": "Make operator…",
@@ -2491,15 +2483,7 @@
           "who": "Who and when"
         },
         "requirement": "Requirement {position}",
-        "count": "{count, plural, one {# disagreement} other {# disagreements}}",
-        "pagination": {
-          "label": "Pages of disagreements",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
-        }
+        "count": "{count, plural, one {# disagreement} other {# disagreements}}"
       },
       "tabs": {
         "limits": "Limits",
@@ -2647,14 +2631,6 @@
         "empty": {
           "title": "No call in this period",
           "description": "What was asked and answered is never kept."
-        },
-        "pagination": {
-          "label": "Pages of calls",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
         }
       }
     },
@@ -2774,14 +2750,6 @@
         "empty": {
           "title": "No call in this period",
           "description": "What was asked is never kept."
-        },
-        "pagination": {
-          "label": "Pages of calls",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
         }
       },
       "confirm": {
@@ -5950,6 +5918,288 @@
       "text": "Submissions close 15 October at 23:59 ICT. Everyone hears back on 16 October."
     }
   },
+  "Nestle": {
+    "banner": {
+      "text": "Applications close <strong>{closes}</strong>. Apply before 5 November to get the full brief first."
+    },
+    "hero": {
+      "tagline": "Nestlé has picked their problems. Now they're looking for those who can solve them.",
+      "explore": "Explore the challenges",
+      "lead": "Bring your working AI solution to real business challenges at Nestlé Vietnam. Selected providers can connect with relevant Nestlé teams, demonstrate their solutions and explore opportunities for collaboration.",
+      "open": "Open to working prototypes, pilots and established products that can be adapted to the challenges.",
+      "imageAlt": "A builder holding a tablet beside a friendly AI robot, with a laptop and a light bulb",
+      "facts": {
+        "closes": {
+          "label": "Applications close",
+          "value": "15 Nov, 23:59 ICT"
+        },
+        "matchingDay": {
+          "label": "Matching Day",
+          "value": "3 Dec, Ho Chi Minh City"
+        },
+        "opportunity": {
+          "label": "The opportunity",
+          "value": "Explore collaboration with Nestlé Vietnam"
+        },
+        "who": {
+          "label": "Who can apply",
+          "value": "Solo builders to established providers"
+        }
+      }
+    },
+    "nav": {
+      "label": "On this page",
+      "offers": "Benefits",
+      "areas": "Challenges",
+      "use-cases": "Use cases",
+      "how": "How it works",
+      "eligibility": "Eligibility",
+      "dates": "Dates",
+      "faq": "FAQ"
+    },
+    "offers": {
+      "title": "What this program offers",
+      "lead": "Connect with relevant Nestlé teams, understand business needs and explore how your AI solution could contribute.",
+      "items": {
+        "owners": {
+          "title": "Connect with Nestlé's challenge owners",
+          "text": "Present your solution to the relevant business teams and discuss how it could address their needs."
+        },
+        "needs": {
+          "title": "Understand the business needs",
+          "text": "Pre-screened applicants receive detailed briefings to better understand the challenges, requirements and context."
+        },
+        "collaboration": {
+          "title": "Opportunities for collaboration",
+          "text": "Explore potential areas of collaboration with Nestlé Vietnam based on your solution's relevance and business fit."
+        }
+      }
+    },
+    "areas": {
+      "title": "Find where your AI solution fits.",
+      "lead": "Explore business challenges identified by Nestlé teams. Bring a working solution that addresses a challenge or can be adapted to solve it.",
+      "tabs": "Challenge areas",
+      "today": "What it looks like today",
+      "good": "What good looks like",
+      "bring": "Bring us",
+      "items": {
+        "documents": {
+          "title": "Document processing & trade compliance",
+          "today": "Delivery documents move on paper and spreadsheets before anyone can reconcile them. Import documents arrive in English and must be filed in Vietnamese, layout intact. HS codes are researched by hand, and import tax is checked by re-keying the same figures.",
+          "good": "Delivery documents extracted and reconciled, translations that keep their layout, support for HS-code decisions and import-tax reconciliation. People handle the exceptions."
+        },
+        "marketing": {
+          "title": "Marketing intelligence & planning",
+          "today": "Social culture moves faster than a creative brief. Campaign lessons sit in decks and reports nobody reopens. Budgets are estimated from memory and old quotes.",
+          "good": "Campaigns start from current trends and past learnings, creative is tested before launch and budgets are estimated faster."
+        },
+        "sales": {
+          "title": "Sales analytics & forecasting",
+          "today": "Sales data lives in different tools, so the same number gets pulled three ways. Forecasting takes time that should go into acting on it.",
+          "good": "Integrated sales data that supports forecasting, analysis and trade-spend decisions."
+        },
+        "manufacturing": {
+          "title": "Smart manufacturing & AI automation",
+          "today": "Ensuring reliable coffee supply while bringing new assets online, upgrading older machines and launching new products creates pressure on cost and execution. Teams must also keep pace with changing food safety, worker safety and regulatory requirements.",
+          "good": "Connected equipment, sensors, robotics and AI help teams anticipate failures, automate repetitive tasks, improve quality and make better use of existing assets. Faster commissioning, product testing and production scale-up support new growth, while traceable data and timely alerts support safety and compliance."
+        },
+        "legal": {
+          "title": "Legal, regulatory & employee support",
+          "today": "Contracts are reviewed and tracked by hand. Regulations and emerging issues are monitored manually. Employees ask HR the same policy questions every day.",
+          "good": "Experts spend their time on judgement, with a person reviewing anything high-stakes."
+        }
+      },
+      "manufacturingIntro": "Hardware, machinery, software and integrated AI automation solutions, including:",
+      "bringItems": {
+        "extraction": "Document extraction",
+        "deliveryReconciliation": "Delivery-document reconciliation",
+        "translation": "Layout-preserving translation",
+        "hsCode": "HS-code decision support",
+        "importTax": "Import-tax reconciliation",
+        "trends": "Trend intelligence",
+        "preTesting": "Creative pre-testing",
+        "campaignLearning": "Campaign learning",
+        "budget": "Budget estimation",
+        "salesData": "Sales-data integration",
+        "demand": "Demand forecasting",
+        "salesAnalytics": "Sales analytics",
+        "tradeSpend": "Trade-spend optimisation",
+        "machinery": "Connected machinery & equipment upgrades",
+        "maintenance": "Predictive maintenance",
+        "vision": "AI vision & quality inspection",
+        "robotics": "Robotics & material handling",
+        "optimisation": "Process, energy & yield optimisation",
+        "twins": "Digital twins & new-asset commissioning",
+        "testing": "Product testing & production scale-up",
+        "safety": "Safety, compliance & traceability",
+        "contracts": "Contract review & tracking",
+        "regulatory": "Regulatory intelligence",
+        "issues": "Issues monitoring",
+        "hrPolicy": "HR policy assistance"
+      },
+      "more": {
+        "title": "Something more",
+        "body": "Have experience applying AI in FMCG or manufacturing? If you see another opportunity to collaborate with a partner like Nestlé, we'd like to hear from you. Tell us about your solution, your relevant experience and the business opportunity you see."
+      }
+    },
+    "early": {
+      "ask": "Recognise one of these?",
+      "title": "Start early.",
+      "text": "Apply before 5 November to be considered for the early briefing process. Pre-screened applicants receive detailed briefings from 6 November."
+    },
+    "useCases": {
+      "title": "Use cases in this program",
+      "lead": "The business problems Nestlé Vietnam has published for this program. Open one to read its goal, requirements, budget and timeline."
+    },
+    "how": {
+      "title": "How it works",
+      "lead": "Explore the challenges, share your solution and connect with relevant Nestlé teams to discuss potential collaboration.",
+      "steps": {
+        "apply": {
+          "title": "Apply and screening",
+          "text": "Submit your working solution and explain its relevance to a business challenge."
+        },
+        "briefings": {
+          "title": "Detailed briefings",
+          "text": "Pre-screened applicants receive detailed briefings, with an opportunity to engage with the relevant Nestlé AI Champion."
+        },
+        "matching": {
+          "title": "Matching Day",
+          "text": "Shortlisted providers demonstrate their solutions to relevant Nestlé teams and discuss business needs, solution fit and potential collaboration."
+        },
+        "collaboration": {
+          "title": "Explore collaboration",
+          "text": "Selected providers may progress to deeper discussions to assess business and technical fit and explore possible next steps."
+        }
+      }
+    },
+    "eligibility": {
+      "title": "Who we're looking for",
+      "lead": "A solo builder with a working prototype and an established provider with a product in forty markets clear the same bar: show it working, and show where.",
+      "kinds": {
+        "solo": "Solo builders",
+        "students": "Student teams",
+        "startups": "Startups",
+        "scaleups": "Scale-ups",
+        "vendors": "Software vendors",
+        "integrators": "Integrators",
+        "established": "Established providers"
+      },
+      "need": {
+        "title": "What you need",
+        "items": {
+          "working": "A working prototype, pilot or product (the minimum requirement)",
+          "data": "A clear view of the data and systems it needs",
+          "security": "A straight answer about security and data protection",
+          "pilot": "The ability to run a pilot in Vietnam"
+        }
+      },
+      "questions": {
+        "title": "The six questions you'll answer in the room",
+        "lead": "Answer them well in your application and you've prepared for half of Matching Day.",
+        "items": {
+          "problem": "How do you understand the business problem?",
+          "prove": "What would the pilot prove, and how would we know?",
+          "solution": "What solution do you propose?",
+          "data": "What data and integrations does it need?",
+          "tested": "Where has it already been tested or used?",
+          "capability": "What capability does Nestlé keep afterwards?"
+        }
+      },
+      "screening": {
+        "title": "Screening also checks",
+        "items": {
+          "protection": "Data protection",
+          "integration": "System integration",
+          "references": "References",
+          "pilotReady": "Pilot-ready in Vietnam"
+        }
+      }
+    },
+    "dates": {
+      "title": "Program Journey & Key Dates",
+      "supporting": {
+        "title": "Supporting activities",
+        "groups": {
+          "during": "During applications",
+          "before": "Before Matching Day",
+          "after": "After Matching Day"
+        },
+        "when": {
+          "infoSession": "Week of 19 Oct",
+          "screening": "26 Oct",
+          "briefings": "6 Nov",
+          "confirm": "23 Nov",
+          "plans": "December"
+        },
+        "what": {
+          "infoSession": "Info session · 45 minutes online",
+          "screening": "Rolling screening · early applicants first",
+          "briefings": "Detailed briefings",
+          "confirm": "Finalists confirm participation",
+          "pack": "Preparation pack issued",
+          "plans": "30-day action plans",
+          "owner": "A named owner per match"
+        }
+      },
+      "pocs": "PoCs subject to selection and approvals."
+    },
+    "faq": {
+      "title": "The questions you're actually asking.",
+      "items": {
+        "who": {
+          "q": "Who can apply?",
+          "a": "Anyone with a working solution, from a solo builder or student team to an established provider."
+        },
+        "finished": {
+          "q": "Do I need a finished product?",
+          "a": "No. A working prototype is eligible. Show what works today, what needs adaptation and what data or integrations your solution requires."
+        },
+        "after": {
+          "q": "What happens after Matching Day?",
+          "a": "Selected providers may be invited to further discussions to assess business and technical fit and explore potential collaboration."
+        },
+        "prize": {
+          "q": "Is there prize money?",
+          "a": "There is no cash prize. The program focuses on connecting solution providers with Nestlé Vietnam to explore opportunities for collaboration."
+        },
+        "vietnam": {
+          "q": "Do I need to be based in Vietnam?",
+          "a": "No. You must be able to support a pilot in Vietnam. Matching Day takes place in person in Ho Chi Minh City."
+        },
+        "early": {
+          "q": "Is there an early briefing?",
+          "a": "Apply before 5 November to be considered for the early briefing process. Pre-screened applicants receive detailed briefings from 6 November."
+        },
+        "ip": {
+          "q": "Do I keep my IP?",
+          "a": "Yes. Applicants keep ownership of their IP."
+        },
+        "hearBack": {
+          "q": "When do I hear back?",
+          "a": "Everyone hears back by 20 November."
+        }
+      }
+    },
+    "closing": {
+      "title": "Will your solution be in the room on 3 December?",
+      "text": "The shortlist is taking shape—submit today for your chance to be selected.",
+      "closes": "Applications close {closes}.",
+      "session": "View info session timing",
+      "share": "Know a team that fits? Send them this page"
+    },
+    "about": {
+      "label": "About the programme",
+      "tagline": "AI-First. Human-Led. Re-Inventing Nestlé.",
+      "text": "The AI Solution Search is part of the Nestlé Vietnam AI Reinvention programme and AI Hackathon 2026, run by GenAI Fund with Nestlé Vietnam. Participation and any subsequent collaboration depend on selection, business fit and applicable Nestlé requirements. Applicants keep ownership of their IP."
+    },
+    "rail": {
+      "partners": "Partners",
+      "runBy": "Run by",
+      "with": "With",
+      "questions": "Questions about this program?"
+    }
+  },
   "EntryList": {
     "remove": "Remove {entry} from {label}"
   },
@@ -6688,14 +6938,6 @@
     "empty": {
       "title": "No use cases match",
       "clear": "Clear search and filters"
-    },
-    "pagination": {
-      "label": "Pages of use cases",
-      "previous": "Previous",
-      "next": "Next",
-      "goToPrevious": "Go to the previous page",
-      "goToNext": "Go to the next page",
-      "page": "Page {page}"
     },
     "publish": {
       "title": "Have a business problem AI could solve?",
@@ -7513,7 +7755,17 @@
         "website": "Website (optional)",
         "required": "Required.",
         "existing": "My company is already on BeyondPilot",
-        "continue": "Continue"
+        "continue": "Continue",
+        "pending": "Pending review",
+        "edit": "Edit",
+        "dialog": {
+          "title": "Edit organization",
+          "more": "More details in My organization",
+          "cancel": "Cancel",
+          "save": "Save",
+          "saved": "Organization saved.",
+          "required": "Required."
+        }
       }
     },
     "view": {

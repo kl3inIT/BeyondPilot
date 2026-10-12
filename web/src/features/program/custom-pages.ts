@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 
 import type { Program } from "@/lib/api/generated";
 
+import { NestlePage } from "./nestle/nestle-page";
 import { TascoPage } from "./tasco/tasco-page";
 
 /**
@@ -10,4 +11,5 @@ import { TascoPage } from "./tasco/tasco-page";
  */
 export const customProgramPages: Partial<Record<string, ComponentType<{ program: Program }>>> = {
   "insurance-ai-tasco": TascoPage,
+  "nestle-vietnam-ai-reinvention": NestlePage,
 };

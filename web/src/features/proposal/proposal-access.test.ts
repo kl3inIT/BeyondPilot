@@ -5,7 +5,7 @@ import type { UseCaseProposalForm } from "@/lib/api/generated";
 import { accessOfForm, accessOfRefusal, closedAt, editStateOf } from "./proposal-access";
 
 const useCase = { id: "u", title: "T" };
-const organization = { id: "o", name: "Org", approved: true };
+const organization = { id: "o", name: "Org", approved: true, owner: true };
 const draft = {
   id: "p",
   status: "draft" as const,
