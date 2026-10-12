@@ -42,7 +42,8 @@ function CreateOffer({ own = false }: Scope) {
   return (
     <>
       <Button size="lg" onClick={() => setOpen(true)}>
-        <PlusIcon aria-hidden="true" />
+        {/* An organization's page words its actions alone, as Add a solution above this one. */}
+        {!own && <PlusIcon aria-hidden="true" />}
         {t("create")}
       </Button>
       <OfferDialog open={open} onOpenChange={setOpen} own={own} onSaved={() => router.refresh()} />

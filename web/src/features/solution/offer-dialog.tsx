@@ -3,15 +3,8 @@
 import { revalidateLogic } from "@tanstack/react-form";
 import { useTranslations } from "next-intl";
 
-import { Button } from "@/components/actions/button";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useNotify } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -47,28 +40,13 @@ type OfferDialogProps = {
  * on every solution that comes with the offer.
  */
 function OfferDialog({ open, onOpenChange, offer, own = false, onSaved }: OfferDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false}>
-        {/* Drawn with the dialog, so each opening starts from the offer as it is now. */}
-        <OfferForm offer={offer} own={own} onSaved={onSaved} onClose={() => onOpenChange(false)} />
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function OfferForm({
-  offer,
-  own,
-  onSaved,
-  onClose,
-}: Pick<OfferDialogProps, "offer" | "onSaved"> & { own: boolean; onClose: () => void }) {
   const t = useTranslations("Solution.offers.form");
   const say = useTranslations("Form.errors");
   const notify = useNotify();
   const schema = offerSchema(say, t("urlInvalid"));
 
   const form = useAppForm({
+    // The offer as the list holds it now, which each opening starts from.
     defaultValues: { title: offer?.title ?? "", url: offer?.url ?? "" },
     validationLogic: revalidateLogic(),
     validators: { onDynamic: schema },
@@ -91,7 +69,7 @@ function OfferForm({
           url: data.url,
           fromGenAiFund: !own && !offer?.organizationId,
         });
-        onClose();
+        onOpenChange(false);
       } catch (error) {
         // The backend keeps titles apart; its refusal is said where the title is typed.
         if (error instanceof ApiError && error.code === "SOLUTION_OFFER_TITLE_TAKEN") {
@@ -104,20 +82,14 @@ function OfferForm({
   });
 
   return (
-    <form
-      id={form.formId}
-      noValidate
-      className="flex flex-col gap-4"
-      onSubmit={(event) => {
-        event.preventDefault();
-        // The dialog can open over the editor of a solution, whose own form must not take this submission.
-        event.stopPropagation();
-        void form.handleSubmit();
-      }}
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      form={form}
+      title={t(offer ? "editTitle" : "newTitle")}
+      submitLabel={t(offer ? "save" : "create")}
+      cancelLabel={t("cancel")}
     >
-      <DialogHeader>
-        <DialogTitle>{t(offer ? "editTitle" : "newTitle")}</DialogTitle>
-      </DialogHeader>
       <form.AppField name="title">
         {(field) => (
           <field.TextField
@@ -140,15 +112,7 @@ function OfferForm({
           />
         )}
       </form.AppField>
-      <form.AppForm>
-        <DialogFooter>
-          <Button prominence="secondary" onClick={onClose}>
-            {t("cancel")}
-          </Button>
-          <form.SubmitButton size="lg">{t(offer ? "save" : "create")}</form.SubmitButton>
-        </DialogFooter>
-      </form.AppForm>
-    </form>
+    </FormDialog>
   );
 }
 
