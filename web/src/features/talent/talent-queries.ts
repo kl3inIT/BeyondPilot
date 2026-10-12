@@ -6,6 +6,7 @@ import {
   getTalent,
   listAdminTalent,
   listReportedTalentEnquiries,
+  listSentTalentEnquiries,
   listTalent,
   search as searchDirectory,
   type AdminTalent,
@@ -14,6 +15,7 @@ import {
   type MyTalent,
   type PublicTalent,
   type PublicTalentList,
+  type SentTalentEnquiry,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 import { maxSearchPage } from "@/lib/page-size";
@@ -103,6 +105,12 @@ export async function readTalentProfile(slug: string): Promise<PublicTalent | nu
 export async function readMyTalent(): Promise<MyTalent> {
   const { data } = await getMyTalentProfile(await sessionRequest());
   return data;
+}
+
+/** The messages the caller sent through talent profiles, with what became of each. Server only. */
+export async function readSentTalentEnquiries(): Promise<SentTalentEnquiry[]> {
+  const { data } = await listSentTalentEnquiries(await sessionRequest());
+  return data.items;
 }
 
 /** One page of submitted profiles for the operator behind this request. Server only. */

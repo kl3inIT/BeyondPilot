@@ -83,6 +83,11 @@ function TalentContact({
             </AlertDescription>
           </Alert>
         )}
+        {waiting && (
+          <Button prominence="secondary" size="lg" className="w-full" href={siteRoutes.talentSent}>
+            {t("seeSent")}
+          </Button>
+        )}
         {idle && (
           <div className="flex flex-col gap-2">
             <Button size="lg" className="w-full" {...opens}>

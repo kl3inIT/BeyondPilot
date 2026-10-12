@@ -115,11 +115,15 @@ tasks.named<Test>("test") {
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
 	// Local settings and secrets come from the git-ignored .env at the repository root (.env.example
 	// names them). Only this task reads the file; a deployed application takes its environment as is.
+	// A name left empty is not set at all: an empty Google client id would otherwise turn Google
+	// sign-in on and stop the application for want of a client.
 	val localEnvironment = rootProject.file(".env")
 	if (localEnvironment.exists()) {
 		localEnvironment.readLines()
 			.map { it.trim() }
 			.filter { it.isNotEmpty() && !it.startsWith("#") && it.contains("=") }
-			.forEach { environment(it.substringBefore("=").trim(), it.substringAfter("=").trim()) }
+			.map { it.substringBefore("=").trim() to it.substringAfter("=").trim() }
+			.filter { (_, value) -> value.isNotEmpty() }
+			.forEach { (name, value) -> environment(name, value) }
 	}
 }

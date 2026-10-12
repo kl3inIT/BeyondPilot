@@ -26,6 +26,7 @@
       "signOutFailed": "Chưa đăng xuất được. Bạn thử lại.",
       "organization": "Tổ chức của tôi",
       "talentProfile": "Hồ sơ nhân lực",
+      "talentSent": "Lời nhắn đã gửi",
       "admin": "Quản trị",
       "applications": "Đơn của tôi",
       "reviews": "Chấm đơn",
@@ -5061,7 +5062,7 @@
       "send": "Gửi lời nhắn",
       "cancel": "Hủy",
       "sentTitle": "Lời nhắn đang được gửi tới {name}",
-      "sentLead": "Bạn sẽ nhận email khi họ trả lời.",
+      "sentLead": "Bạn sẽ nhận email khi họ trả lời. Lời nhắn được lưu trong mục Lời nhắn đã gửi.",
       "done": "Xong",
       "waitingTitle": "Lời nhắn của bạn đang chờ {name}",
       "waitingLead": "Đã gửi {date}. Bạn có thể viết lại khi họ trả lời hoặc lời nhắn đóng.",
@@ -5070,7 +5071,8 @@
       "senderName": "Tên của bạn",
       "senderNameHint": "Email của bạn vẫn được ẩn.",
       "senderNameRequired": "Hãy cho biết ai đang viết.",
-      "messageHint": "Bạn đang xây dựng hoặc tuyển gì, và cần gì ở họ."
+      "messageHint": "Bạn đang xây dựng hoặc tuyển gì, và cần gì ở họ.",
+      "seeSent": "Xem lời nhắn đã gửi"
     },
     "mine": {
       "metaTitle": "Hồ sơ nhân lực · BeyondPilot",
@@ -5266,6 +5268,58 @@
       "skillsSuggested": "Gợi ý:",
       "headlineHint": "Ví dụ: Kỹ sư ML xây dựng AI xử lý tài liệu cho ngân hàng.",
       "urlHint": "Địa chỉ đầy đủ, bắt đầu bằng https://."
+    },
+    "sent": {
+      "metaTitle": "Lời nhắn đã gửi",
+      "title": "Lời nhắn đã gửi",
+      "lead": "Những gì bạn đã viết cho mọi người trong mục nhân lực AI, và câu trả lời của họ. Email chỉ được chia sẻ khi họ chấp nhận.",
+      "listTitle": "Đã gửi",
+      "waiting": "{count} đang chờ",
+      "list": "Những người bạn đã viết cho",
+      "status": {
+        "pending": "Đang chờ",
+        "accepted": "Đã chấp nhận",
+        "declined": "Đã từ chối",
+        "closed": "Đã đóng, chưa trả lời"
+      },
+      "heading": {
+        "pending": "Lời nhắn của bạn đang chờ {name}",
+        "accepted": "{name} đã chấp nhận lời nhắn của bạn",
+        "declined": "{name} đã từ chối lời nhắn của bạn",
+        "closed": "Lời nhắn gửi {name} đã đóng, chưa được trả lời"
+      },
+      "yourMessage": "Lời nhắn của bạn",
+      "sentOn": "Gửi {date}",
+      "signedAs": "Ký tên {name}",
+      "answeredOn": "Trả lời {date}",
+      "closedOn": "Đóng {date}",
+      "address": {
+        "pending": "Email của họ chỉ được chia sẻ nếu họ chấp nhận",
+        "accepted": "Email của họ không còn khả dụng",
+        "declined": "Không email nào được chia sẻ",
+        "closed": "Không email nào được chia sẻ"
+      },
+      "note": {
+        "pending": "{name} có đến {date} để trả lời. Bạn sẽ nhận email khi họ trả lời. Nếu không có câu trả lời, lời nhắn đóng vào ngày đó và bạn có thể viết lại.",
+        "accepted": "{name} cũng đã nhận email của bạn. Từ đây hai bên trao đổi qua email; BeyondPilot không chuyển tiếp cuộc trò chuyện.",
+        "declined": "{name} không tiếp tục với lời nhắn này. Bạn có thể viết lại cho họ, hoặc tìm người khác trong mục nhân lực AI.",
+        "closed": "{name} đã không trả lời trong 14 ngày. Bạn có thể viết lại cho họ, hoặc tìm người khác trong mục nhân lực AI."
+      },
+      "earlier": "Lời nhắn trước đây gửi {name}",
+      "viewProfile": "Xem hồ sơ",
+      "write": "Viết email",
+      "writeTo": "Viết cho {email}",
+      "browse": "Xem nhân lực AI",
+      "none": {
+        "title": "Bạn chưa viết cho ai",
+        "lead": "Khi bạn liên hệ một người trong mục nhân lực AI, lời nhắn của bạn và câu trả lời của họ sẽ hiện ở đây."
+      },
+      "how": {
+        "title": "Một lời nhắn đi như thế nào",
+        "write": "Bạn viết cho một người từ hồ sơ của họ, dưới tên của bạn.",
+        "answer": "Họ có 14 ngày để chấp nhận hoặc từ chối, và bạn nhận câu trả lời qua email.",
+        "share": "Nếu họ chấp nhận, mỗi bên nhận được email của bên kia."
+      }
     }
   },
   "Form": {

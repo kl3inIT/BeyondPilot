@@ -5285,6 +5285,56 @@ export type SenderProject = {
 };
 
 /**
+ * A message the caller sent through a talent profile, with what became of it.
+ */
+export type SentTalentEnquiry = {
+    /**
+     * When the person answered it or it closed; null while it waits.
+     */
+    answeredAt?: string | null;
+    /**
+     * When a waiting message closes unanswered; null once it is answered.
+     */
+    closesAt?: string | null;
+    createdAt: string;
+    id: string;
+    message: string;
+    /**
+     * The profile it was sent through; the caller's messages to one person share it.
+     */
+    profileId: string;
+    /**
+     * Where the caller writes to the person; only once the person accepted.
+     */
+    recipientEmail?: string | null;
+    recipientHeadline?: string | null;
+    recipientName: string;
+    /**
+     * The address of the profile's public page; null while the profile is not in the directory.
+     */
+    recipientSlug?: string | null;
+    /**
+     * The name the caller signed it with; null on a message sent before a name was asked for.
+     */
+    senderName?: string | null;
+    /**
+     * A message the person reported reads as declined.
+     */
+    status: 'pending' | 'accepted' | 'declined' | 'closed';
+    topic: 'project' | 'role' | 'other';
+};
+
+/**
+ * The messages the caller sent through talent profiles.
+ */
+export type SentTalentEnquiryList = {
+    /**
+     * Those that wait for an answer first, then the newest.
+     */
+    items: Array<SentTalentEnquiry>;
+};
+
+/**
  * What reads a page that is only a picture from now on: a model that reads images, or an OCR provider. One of the two, or neither to leave pages unread.
  */
 export type SetDocumentReader = {
@@ -13798,6 +13848,31 @@ export type ReportTalentEnquiryResponses = {
 };
 
 export type ReportTalentEnquiryResponse = ReportTalentEnquiryResponses[keyof ReportTalentEnquiryResponses];
+
+export type ListSentTalentEnquiriesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/talent/mine/sent';
+};
+
+export type ListSentTalentEnquiriesErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type ListSentTalentEnquiriesError = ListSentTalentEnquiriesErrors[keyof ListSentTalentEnquiriesErrors];
+
+export type ListSentTalentEnquiriesResponses = {
+    /**
+     * The messages; none when the caller sent none.
+     */
+    200: SentTalentEnquiryList;
+};
+
+export type ListSentTalentEnquiriesResponse = ListSentTalentEnquiriesResponses[keyof ListSentTalentEnquiriesResponses];
 
 export type SubmitMyTalentProfileData = {
     body?: never;

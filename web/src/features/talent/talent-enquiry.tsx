@@ -20,6 +20,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { sendTalentEnquiry, type SendTalentEnquiry } from "@/lib/api/generated";
+import { siteRoutes } from "@/lib/site";
 
 import { talentError } from "./talent-errors";
 
@@ -96,6 +97,9 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
               <DialogDescription>{t("sentLead")}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
+              <Button prominence="secondary" size="lg" href={siteRoutes.talentSent}>
+                {t("seeSent")}
+              </Button>
               <Button size="lg" onClick={() => close(false)}>
                 {t("done")}
               </Button>

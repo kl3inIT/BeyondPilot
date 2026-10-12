@@ -26,6 +26,7 @@
       "signOutFailed": "We could not sign you out. Try again.",
       "organization": "My organization",
       "talentProfile": "Talent profile",
+      "talentSent": "Messages you sent",
       "admin": "Admin",
       "applications": "My applications",
       "reviews": "Reviews",
@@ -5061,7 +5062,7 @@
       "send": "Send message",
       "cancel": "Cancel",
       "sentTitle": "Your message is on its way to {name}",
-      "sentLead": "You get an email when they answer.",
+      "sentLead": "You get an email when they answer. The message stays in Messages you sent.",
       "done": "Done",
       "waitingTitle": "Your message waits for {name}",
       "waitingLead": "Sent {date}. You can write again once they answer or the message closes.",
@@ -5070,7 +5071,8 @@
       "senderName": "Your name",
       "senderNameHint": "Your email address stays hidden.",
       "senderNameRequired": "Say who is writing.",
-      "messageHint": "What you are building or hiring for, and what you need from them."
+      "messageHint": "What you are building or hiring for, and what you need from them.",
+      "seeSent": "See your messages"
     },
     "mine": {
       "metaTitle": "Talent profile · BeyondPilot",
@@ -5266,6 +5268,58 @@
       "skillsSuggested": "Suggested:",
       "headlineHint": "For example: ML engineer building document AI for banks.",
       "urlHint": "A full address that starts with https://."
+    },
+    "sent": {
+      "metaTitle": "Messages you sent",
+      "title": "Messages you sent",
+      "lead": "What you wrote to people in AI talent, and what they answered. An email address is shared only when they accept.",
+      "listTitle": "Sent",
+      "waiting": "{count} waiting",
+      "list": "People you wrote to",
+      "status": {
+        "pending": "Waiting",
+        "accepted": "Accepted",
+        "declined": "Declined",
+        "closed": "Closed unanswered"
+      },
+      "heading": {
+        "pending": "Your message waits for {name}",
+        "accepted": "{name} accepted your message",
+        "declined": "{name} declined your message",
+        "closed": "Your message to {name} closed unanswered"
+      },
+      "yourMessage": "Your message",
+      "sentOn": "Sent {date}",
+      "signedAs": "Signed as {name}",
+      "answeredOn": "Answered {date}",
+      "closedOn": "Closed {date}",
+      "address": {
+        "pending": "Their email address is shared only if they accept",
+        "accepted": "Their email address is no longer available",
+        "declined": "No email address was shared",
+        "closed": "No email address was shared"
+      },
+      "note": {
+        "pending": "{name} has until {date} to answer. You get an email when they do. Without an answer the message closes on that day, and you can write again.",
+        "accepted": "{name} received your email address too. From here you talk by email; BeyondPilot does not carry the conversation.",
+        "declined": "{name} will not take this message further. You can write to them again, or look for other people in AI talent.",
+        "closed": "{name} did not answer within 14 days. You can write to them again, or look for other people in AI talent."
+      },
+      "earlier": "Earlier messages to {name}",
+      "viewProfile": "View profile",
+      "write": "Write an email",
+      "writeTo": "Write to {email}",
+      "browse": "Browse AI talent",
+      "none": {
+        "title": "You have not written to anyone yet",
+        "lead": "When you contact someone in AI talent, your message and their answer show here."
+      },
+      "how": {
+        "title": "How a message travels",
+        "write": "You write to a person from their profile, under your name.",
+        "answer": "They have 14 days to accept or decline, and you are emailed their answer.",
+        "share": "If they accept, each of you receives the other's email address."
+      }
     }
   },
   "Form": {
