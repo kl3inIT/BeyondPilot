@@ -140,9 +140,6 @@ function StepList<S extends string>({ steps, current, onStep, doneLabel }: StepL
               {step.title}
             </span>
             {step.done && doneLabel && <span className="sr-only">{doneLabel}</span>}
-            {step.problem && (
-              <span className="text-xs font-medium text-destructive">{step.problem}</span>
-            )}
           </>
         );
         return (
@@ -168,29 +165,35 @@ function StepList<S extends string>({ steps, current, onStep, doneLabel }: StepL
                 />
               )}
             </div>
-            {onStep ? (
-              <button
-                type="button"
-                aria-current={isCurrent ? "step" : undefined}
-                onClick={() => onStep(step.id)}
-                className={cn(
-                  "-mx-2 -mt-1 mb-4 flex flex-col items-start rounded-md px-2 py-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                  isCurrent && "bg-primary/10",
-                )}
-              >
-                {title}
-              </button>
-            ) : (
-              <div
-                aria-current={isCurrent ? "step" : undefined}
-                className={cn(
-                  "-mx-2 -mt-1 mb-4 flex flex-col items-start rounded-md px-2 py-1 text-left",
-                  isCurrent && "bg-primary/10",
-                )}
-              >
-                {title}
-              </div>
-            )}
+            {/* What the step lacks stands under the tinted name, on the page's own ground, where its red reads. */}
+            <div className="mb-4 flex min-w-0 flex-col items-start gap-1">
+              {onStep ? (
+                <button
+                  type="button"
+                  aria-current={isCurrent ? "step" : undefined}
+                  onClick={() => onStep(step.id)}
+                  className={cn(
+                    "-mx-2 -mt-1 flex flex-col items-start rounded-md px-2 py-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+                    isCurrent && "bg-primary/10",
+                  )}
+                >
+                  {title}
+                </button>
+              ) : (
+                <div
+                  aria-current={isCurrent ? "step" : undefined}
+                  className={cn(
+                    "-mx-2 -mt-1 flex flex-col items-start rounded-md px-2 py-1 text-left",
+                    isCurrent && "bg-primary/10",
+                  )}
+                >
+                  {title}
+                </div>
+              )}
+              {step.problem && (
+                <span className="text-xs font-medium text-destructive">{step.problem}</span>
+              )}
+            </div>
           </li>
         );
       })}
