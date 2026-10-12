@@ -70,10 +70,10 @@ function ProposalTeamStep({ members, team, onTeam, checked }: ProposalTeamStepPr
           <DataTable>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("columns.member")}</TableHead>
-                <TableHead className="w-56">{t("columns.role")}</TableHead>
-                <TableHead className="w-36">{t("columns.primary")}</TableHead>
-                <TableHead className="w-12">
+                <TableHead className="min-w-48">{t("columns.member")}</TableHead>
+                <TableHead className="w-36">{t("columns.role")}</TableHead>
+                <TableHead className="w-32">{t("columns.primary")}</TableHead>
+                <TableHead className="w-10">
                   <span className="sr-only">{t("columns.actions")}</span>
                 </TableHead>
               </TableRow>
@@ -85,7 +85,7 @@ function ProposalTeamStep({ members, team, onTeam, checked }: ProposalTeamStepPr
                 const missing = checked && row.role.trim() === "";
                 return (
                   <TableRow key={row.accountId}>
-                    <TableCell className="max-w-0">
+                    <TableCell className="max-w-0 min-w-48">
                       <Person name={person?.name ?? null} email={person?.email ?? ""} />
                     </TableCell>
                     <TableCell>

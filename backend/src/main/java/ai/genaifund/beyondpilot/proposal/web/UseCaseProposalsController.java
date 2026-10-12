@@ -110,7 +110,7 @@ class UseCaseProposalsController {
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The sent proposals, the latest first.")
 	@ApiResponse(responseCode = "404",
-			description = "There is no such use case, or the caller's organization did not post it.",
+			description = "There is no such use case, or the caller is neither of the organization that posted it nor an operator.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ReceivedUseCaseProposalsResponse received(@CurrentActor Actor actor, @PathVariable UUID useCaseId) {
 		return proposals.received(actor, useCaseId);
@@ -121,7 +121,7 @@ class UseCaseProposalsController {
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The proposal as sent, with the sender's profile and the team.")
 	@ApiResponse(responseCode = "404",
-			description = "The proposal was not sent, or the caller's organization did not post its use case.",
+			description = "The proposal was not sent, or the caller is neither of the organization that posted its use case nor an operator.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ReceivedUseCaseProposalResponse receivedOne(@CurrentActor Actor actor, @PathVariable UUID id) {
 		return proposals.receivedOne(actor, id);
@@ -135,7 +135,7 @@ class UseCaseProposalsController {
 	@ApiResponse(responseCode = "302", description = "The address the object store serves the file at, for a while.",
 			content = @Content)
 	@ApiResponse(responseCode = "404",
-			description = "The proposal was not sent, or the caller's organization did not post its use case.",
+			description = "The proposal was not sent, or the caller is neither of the organization that posted its use case nor an operator.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ResponseEntity<Resource> file(@CurrentActor Actor actor, @PathVariable UUID id) {
 		FileDownload download = proposals.file(actor, id);

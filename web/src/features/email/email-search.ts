@@ -40,6 +40,7 @@ export const emailKinds = [
   "solution_restored",
   "use_case_approved",
   "use_case_sent_back",
+  "proposal_sent",
   "talent_approved",
   "talent_changes_requested",
   "talent_removed",

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { readProposalCounts } from "@/features/proposal/received-queries";
 import { MatchingPage } from "@/features/matching/matching-page";
 import { readMatching } from "@/features/matching/matching-queries";
 import { loadMatchingSearch } from "@/features/matching/matching-search";
@@ -47,12 +48,14 @@ export default async function AdminUseCaseCandidatesRoute({
     notFound();
   }
   const { solution } = await loadMatchingSearch(searchParams);
+  const proposals = await readProposalCounts([id]).catch(() => null);
 
   return (
     <MatchingPage
       area="admin"
       useCase={{ ...useCase, organizationName: useCase.organization.name }}
       matching={matching}
+      proposals={proposals?.get(id)}
       selected={solution ?? undefined}
     />
   );

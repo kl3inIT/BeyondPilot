@@ -46,6 +46,27 @@ class EmailRendererTest {
 	}
 
 	@Test
+	void theProposalEmailLinksToTheProposalAndNamesTheRoleOnlyWhenThereIsOne() {
+		String url = "https://beyondpilot.test/use-cases/42/propose/view";
+		Map<String, Object> values = new HashMap<>();
+		values.put("useCaseTitle", "Claims triage");
+		values.put("organizationName", "Plain Cover");
+		values.put("proposalUrl", url);
+		values.put("role", "Delivery lead");
+		values.put("primary", true);
+
+		RenderedEmail team = renderer.render(EmailKind.PROPOSAL_SENT, defaults.template(EmailKind.PROPOSAL_SENT),
+				values, APPEARANCE);
+		assertThat(team.subject()).isEqualTo("Proposal sent: Claims triage");
+		assertThat(team.html()).contains("href=\"" + url + "\"").contains("Delivery lead").contains("primary contact");
+
+		values.remove("role");
+		RenderedEmail sender = renderer.render(EmailKind.PROPOSAL_SENT, defaults.template(EmailKind.PROPOSAL_SENT),
+				values, APPEARANCE);
+		assertThat(sender.text()).doesNotContain("named on its team");
+	}
+
+	@Test
 	void aValueIsEscapedAndNeverBecomesMarkupOrALink() {
 		Map<String, Object> values = new HashMap<>();
 		values.put("senderName", "<b>Mallory</b>");
