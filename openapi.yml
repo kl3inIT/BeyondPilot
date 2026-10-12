@@ -4473,6 +4473,47 @@ paths:
         \ or stop that"
       tags:
       - My organization
+  /api/organization/mine/basics:
+    put:
+      operationId: saveMyOrganizationBasics
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveOrganizationBasics"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+          description: The organization as saved.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller belongs to no organization, or is not an owner\
+            \ of it."
+      security:
+      - session: []
+      summary: "Save the name, type, size, industries and country of the caller's\
+        \ organization, leaving the rest of its profile"
+      tags:
+      - My organization
   /api/organization/mine/invitations:
     post:
       operationId: inviteOrganizationMember
@@ -17390,10 +17431,15 @@ components:
           description: "Read at /api/storage/files/{id}."
         name:
           type: string
+        owner:
+          type: boolean
+          description: "Whether the caller is an owner of it, who may correct what\
+            \ they gave when they made it."
       required:
       - approved
       - id
       - name
+      - owner
     PublicCustomerDeployment:
       type: object
       description: An approved customer deployment as anyone reads it.
@@ -19970,6 +20016,45 @@ components:
       - type
       - version
       - website
+    SaveOrganizationBasics:
+      type: object
+      description: The facts a person gives when they make an organization. The rest
+        of the profile is left as it is.
+      properties:
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2.
+          pattern: "[A-Z]{2}"
+        industries:
+          type: array
+          description: The industries it works in or serves; a company names at least
+            one.
+          items:
+            type: string
+            pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|climate_sustainability|marketing_advertising|legal|hr_workforce|other
+          maxItems: 5
+          minItems: 0
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        teamSize:
+          type: string
+          pattern: just_me|2_9|10_49|50_99|100_499|500_999|1000_4999|5000_plus
+        type:
+          type: string
+          enum:
+          - company
+          - builder_team
+          - independent_builder
+          - other
+          pattern: company|builder_team|independent_builder|other
+      required:
+      - country
+      - industries
+      - name
+      - teamSize
+      - type
     SaveProgram:
       type: object
       description: "A program as the Settings screen holds it. Everything is saved\

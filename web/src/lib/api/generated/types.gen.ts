@@ -3464,6 +3464,10 @@ export type ProposingOrganization = {
      */
     logoFileId?: string | null;
     name: string;
+    /**
+     * Whether the caller is an owner of it, who may correct what they gave when they made it.
+     */
+    owner: boolean;
 };
 
 /**
@@ -4761,6 +4765,23 @@ export type SaveOrganization = {
      */
     version: number;
     website: string;
+};
+
+/**
+ * The facts a person gives when they make an organization. The rest of the profile is left as it is.
+ */
+export type SaveOrganizationBasics = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country: string;
+    /**
+     * The industries it works in or serves; a company names at least one.
+     */
+    industries: Array<string>;
+    name: string;
+    teamSize: string;
+    type: 'company' | 'builder_team' | 'independent_builder' | 'other';
 };
 
 /**
@@ -9575,6 +9596,39 @@ export type ChangeOrganizationAutoJoinResponses = {
 };
 
 export type ChangeOrganizationAutoJoinResponse = ChangeOrganizationAutoJoinResponses[keyof ChangeOrganizationAutoJoinResponses];
+
+export type SaveMyOrganizationBasicsData = {
+    body: SaveOrganizationBasics;
+    path?: never;
+    query?: never;
+    url: '/api/organization/mine/basics';
+};
+
+export type SaveMyOrganizationBasicsErrors = {
+    /**
+     * A member is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization, or is not an owner of it.
+     */
+    403: Problem;
+};
+
+export type SaveMyOrganizationBasicsError = SaveMyOrganizationBasicsErrors[keyof SaveMyOrganizationBasicsErrors];
+
+export type SaveMyOrganizationBasicsResponses = {
+    /**
+     * The organization as saved.
+     */
+    200: Organization;
+};
+
+export type SaveMyOrganizationBasicsResponse = SaveMyOrganizationBasicsResponses[keyof SaveMyOrganizationBasicsResponses];
 
 export type InviteOrganizationMemberData = {
     body: InviteMember;
