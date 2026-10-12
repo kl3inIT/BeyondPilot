@@ -110,7 +110,7 @@ function ReviewTable({
           <Link
             href={row.original.href}
             title={row.original.solution}
-            className="truncate font-medium outline-none hover:underline focus-visible:underline"
+            className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             {row.original.solution}
           </Link>

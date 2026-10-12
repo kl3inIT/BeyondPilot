@@ -9,6 +9,7 @@ import { useUnloadWarning } from "@/components/composites/leave-guard";
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { useAppForm } from "@/components/form/app-form";
+import { AllRequired } from "@/components/form/form-fields";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useNotify } from "@/hooks/use-notify";
 import { useFormatter } from "@/i18n/format";
@@ -264,7 +265,11 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
           {step !== "review" && <p className="text-sm text-muted-foreground">{t("allRequired")}</p>}
         </div>
 
-        {step !== "review" && <UseCaseStepFields form={form} fields="content" step={step} />}
+        {step !== "review" && (
+          <AllRequired>
+            <UseCaseStepFields form={form} fields="content" step={step} />
+          </AllRequired>
+        )}
 
         {step === "review" && (
           <>
@@ -292,7 +297,7 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
             )}
             <form.AppField name="confirmed">
               {(field) => (
-                <field.CheckboxField label={t("confirm")} disabled={missing.length > 0} />
+                <field.CheckboxField label={t("confirm")} required disabled={missing.length > 0} />
               )}
             </form.AppField>
           </>

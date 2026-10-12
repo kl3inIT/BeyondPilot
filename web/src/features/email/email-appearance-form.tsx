@@ -75,7 +75,8 @@ function EmailAppearanceForm({
       }
     },
   });
-  const dirty = useStore(form.store, (state) => state.isDirty);
+  // A value changed and then put back is no change: there is nothing to save or to lose.
+  const dirty = useStore(form.store, (state) => !state.isDefaultValue);
   const draft = useStore(form.store, (state) => state.values);
 
   // The preview follows the colour and footer being edited once typing pauses, saved or not. A colour that is not
@@ -195,6 +196,7 @@ function EmailAppearanceForm({
 
       <LeaveGuard
         active={dirty}
+        back
         title={t("leave.title")}
         description={t("leave.lead")}
         leaveLabel={t("leave.leave")}

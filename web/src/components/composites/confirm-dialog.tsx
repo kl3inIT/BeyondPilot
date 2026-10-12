@@ -1,6 +1,7 @@
 "use client";
 
 import { CircleHelpIcon, TriangleAlertIcon } from "lucide-react";
+import { useRef } from "react";
 
 import { Button } from "@/components/actions/button";
 import { DecisionMark } from "@/components/composites/decision-dialog";
@@ -34,6 +35,12 @@ type ConfirmDialogProps = {
  * Asks before an action that is hard to take back. The dialog names what it concerns, says what
  * will happen and how it is undone; Cancel has the focus when it opens. It stays open while the
  * action runs, and whoever opened it closes it when the action has ended.
+ *
+ * The dialog itself puts the focus on Cancel (`initialFocus`). The `autoFocus` attribute would move
+ * it as the button mounts, before the dialog has noted where the focus was, so that closing could
+ * only return it to a button that no longer exists. Closing returns the focus to what had it
+ * before: the button that opened the dialog, the menu button of the row for a dialog opened from
+ * a menu item, the opener of the dialog this one replaced.
  */
 function ConfirmDialog({
   open,
@@ -48,9 +55,10 @@ function ConfirmDialog({
   pending,
   onConfirm,
 }: ConfirmDialogProps) {
+  const cancel = useRef<HTMLButtonElement>(null);
   return (
     <AlertDialog open={open} onOpenChange={(next) => (pending ? undefined : onOpenChange(next))}>
-      <AlertDialogContent>
+      <AlertDialogContent initialFocus={cancel}>
         <div className="flex flex-col items-center gap-3 pt-2 text-center">
           <DecisionMark
             tone={tone === "danger" ? "danger" : "info"}
@@ -63,10 +71,10 @@ function ConfirmDialog({
         {note && <p className="text-sm text-muted-foreground">{note}</p>}
         <AlertDialogFooter variant="plain">
           <Button
+            ref={cancel}
             size="lg"
             prominence="secondary"
             disabled={pending}
-            autoFocus
             onClick={() => onOpenChange(false)}
           >
             {cancelLabel}

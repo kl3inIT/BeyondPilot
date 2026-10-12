@@ -12,6 +12,7 @@ import { TextButton } from "@/components/actions/text-button";
 import { EntryList } from "@/components/composites/entry-list";
 import { StepsNav } from "@/components/composites/steps-nav";
 import { useAppForm } from "@/components/form/app-form";
+import { AllRequired } from "@/components/form/form-fields";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -574,17 +575,21 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
               void form.handleSubmit();
             }}
           >
-            {step === "you" && (
-              <StepYou form={form} view={view} onOrganization={readOrganization} />
-            )}
-            {step === "solution" && <StepSolution form={form} view={view} choose={choose} />}
-            {step === "questions" && (
-              <StepQuestions
-                form={form}
-                questions={program.questions}
-                files={view.application?.files ?? {}}
-              />
-            )}
+            {/* The line above says every field is required unless marked Optional; this says it
+                field by field to a screen reader. */}
+            <AllRequired>
+              {step === "you" && (
+                <StepYou form={form} view={view} onOrganization={readOrganization} />
+              )}
+              {step === "solution" && <StepSolution form={form} view={view} choose={choose} />}
+              {step === "questions" && (
+                <StepQuestions
+                  form={form}
+                  questions={program.questions}
+                  files={view.application?.files ?? {}}
+                />
+              )}
+            </AllRequired>
             {step === "review" && (
               <StepReview form={form} view={view} steps={steps} lacking={lacking} edit={goTo} />
             )}
@@ -751,6 +756,8 @@ function StepYou({
             {(field) => (
               <field.TextField
                 label={t("linkedin")}
+                // Not asked for, though the label does not say Optional.
+                required={false}
                 type="url"
                 inputMode="url"
                 maxLength={300}
@@ -967,7 +974,12 @@ function StepQuestions({
           <form.AppField key={question.id} name={`application.answers.${question.id}`}>
             {(field) =>
               question.kind === "confirm" ? (
-                <AgreementField id={id} label={question.label} description={help} />
+                <AgreementField
+                  id={id}
+                  label={question.label}
+                  required={question.required}
+                  description={help}
+                />
               ) : question.kind === "multi_choice" ? (
                 <ChoicesField
                   id={id}
@@ -1197,7 +1209,7 @@ function StepReview({
         </section>
       ))}
       <form.AppField name="confirmed">
-        {(field) => <field.CheckboxField label={t("confirm")} />}
+        {(field) => <field.CheckboxField label={t("confirm")} required />}
       </form.AppField>
     </>
   );

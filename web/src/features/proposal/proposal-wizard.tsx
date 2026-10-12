@@ -192,8 +192,9 @@ function ProposalWizard({
   const values = useStore(form.store, (held) => held.values);
   const { details, confirmed } = values;
   const submitting = useStore(form.store, (held) => held.isSubmitting);
-  // A sent proposal is saved only on request, so "changed" is the form's own word for it.
-  const edited = useStore(form.store, (held) => held.isDirty);
+  // A sent proposal is saved only on request, so "changed" is whether the form differs from what
+  // it opened with: a value changed and then put back is nothing to save.
+  const edited = useStore(form.store, (held) => !held.isDefaultValue);
 
   async function saveOnce(): Promise<boolean> {
     dirty.current = false;
@@ -555,6 +556,7 @@ function ProposalWizard({
                   {(field) => (
                     <field.CheckboxField
                       label={t("review.confirm")}
+                      required
                       disabled={missing.length > 0}
                     />
                   )}

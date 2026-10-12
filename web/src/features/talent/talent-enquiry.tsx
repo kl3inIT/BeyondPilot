@@ -137,6 +137,7 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
                   <NativeSelect
                     id="talent-enquiry-topic"
                     className="w-full"
+                    aria-required="true"
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(event) => field.handleChange(event.target.value as EnquiryTopic)}

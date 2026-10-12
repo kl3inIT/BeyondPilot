@@ -32,7 +32,7 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
       <Link
         href={siteRoutes.myApplications}
-        className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:underline"
+        className="inline-flex min-h-11 w-fit items-center gap-1.5 rounded-sm text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <ArrowLeftIcon className="size-4" aria-hidden="true" />
         {t("back")}

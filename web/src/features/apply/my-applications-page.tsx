@@ -61,7 +61,7 @@ async function MyApplicationsPage({ list }: { list: MyApplications }) {
                       <div className="flex min-w-0 flex-col gap-1">
                         <Link
                           href={myApplicationRoute(item.id)}
-                          className="text-lg font-semibold outline-none hover:underline focus-visible:underline"
+                          className="rounded-sm text-lg font-semibold outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                         >
                           {item.programName}
                         </Link>
