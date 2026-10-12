@@ -579,6 +579,8 @@ test.describe("admin programs", () => {
     await expect(page.getByText("Direction")).toBeVisible();
     await expect(page.getByText("Several choices · 3 choices")).toBeVisible();
     await expect(page.getByRole("button", { name: "Add a question" })).toHaveCount(0);
+    // The pointer still rests on Save changes; its hover colour is not what is checked here.
+    await page.mouse.move(0, 0);
     await expectNoSeriousA11yViolations(page);
   });
 });
