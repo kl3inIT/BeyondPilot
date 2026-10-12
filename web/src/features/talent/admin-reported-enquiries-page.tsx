@@ -5,6 +5,8 @@ import { createSerializer } from "nuqs/server";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { Card, CardContent } from "@/components/ui/card";
+import { Item, ItemContent, ItemGroup, ItemTitle } from "@/components/ui/item";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentEnquiryList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -40,33 +42,40 @@ function AdminReportedEnquiriesPage({
         lead={t("lead")}
       />
       {enquiries.items.length === 0 ? (
-        <div className="rounded-lg border bg-background">
-          <DataTableEmpty icon={<InboxIcon aria-hidden="true" />} title={t("empty.title")} />
-        </div>
+        <Card>
+          <CardContent>
+            <DataTableEmpty icon={<InboxIcon aria-hidden="true" />} title={t("empty.title")} />
+          </CardContent>
+        </Card>
       ) : (
-        <ul className="max-w-3xl overflow-hidden rounded-lg border bg-background">
-          {enquiries.items.map((enquiry) => (
-            <li key={enquiry.id} className="flex flex-col gap-2 p-4 not-last:border-b">
-              <div className="grid gap-0.5 text-sm">
-                <span className="font-medium">
-                  {t("from", {
-                    sender: enquiry.senderName
-                      ? `${enquiry.senderName} (${enquiry.senderEmail})`
-                      : enquiry.senderEmail,
-                  })}
-                </span>
-                <span className="text-muted-foreground">
-                  {t("to", { name: enquiry.profileName })} · {topic(enquiry.topic)}
-                </span>
+        <div className="max-w-3xl">
+          <ItemGroup>
+            {enquiries.items.map((enquiry) => (
+              <div key={enquiry.id} role="listitem">
+                <Item variant="outline">
+                  <ItemContent>
+                    <ItemTitle>
+                      {t("from", {
+                        sender: enquiry.senderName
+                          ? `${enquiry.senderName} (${enquiry.senderEmail})`
+                          : enquiry.senderEmail,
+                      })}
+                    </ItemTitle>
+                    <p className="text-muted-foreground">
+                      {t("to", { name: enquiry.profileName })} · {topic(enquiry.topic)}
+                    </p>
+                    <p className="whitespace-pre-line">{enquiry.message}</p>
+                    <p className="text-muted-foreground">
+                      {t("sent", { date: date(enquiry.createdAt) })}
+                      {enquiry.reportedAt &&
+                        ` · ${t("reportedAt", { date: date(enquiry.reportedAt) })}`}
+                    </p>
+                  </ItemContent>
+                </Item>
               </div>
-              <p className="text-sm whitespace-pre-line">{enquiry.message}</p>
-              <p className="text-sm text-muted-foreground">
-                {t("sent", { date: date(enquiry.createdAt) })}
-                {enquiry.reportedAt && ` · ${t("reportedAt", { date: date(enquiry.reportedAt) })}`}
-              </p>
-            </li>
-          ))}
-        </ul>
+            ))}
+          </ItemGroup>
+        </div>
       )}
       <ListFooter
         count={t("count", { count: enquiries.total })}

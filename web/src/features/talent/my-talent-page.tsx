@@ -1,8 +1,19 @@
+import { InboxIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { MyTalent, TalentProfile } from "@/lib/api/generated";
@@ -126,9 +137,10 @@ function MyTalentPage({ mine, accountName, editing }: MyTalentPageProps) {
                       }
                     />
                     {profile && (
-                      <div className="border-t pt-6">
+                      <>
+                        <Separator />
                         <DeleteTalentProfile />
-                      </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -148,9 +160,18 @@ function MyTalentPage({ mine, accountName, editing }: MyTalentPageProps) {
               {mine.enquiries.length > 0 ? (
                 <TalentInbox enquiries={mine.enquiries} />
               ) : (
-                <p className="rounded-2xl border border-dashed bg-card p-6 text-sm text-muted-foreground">
-                  {t("inbox.none")}
-                </p>
+                <Card size="lg">
+                  <CardContent>
+                    <Empty>
+                      <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                          <InboxIcon aria-hidden="true" />
+                        </EmptyMedia>
+                        <EmptyTitle>{t("inbox.none")}</EmptyTitle>
+                      </EmptyHeader>
+                    </Empty>
+                  </CardContent>
+                </Card>
               )}
             </div>
           </TabsContent>
@@ -198,35 +219,38 @@ function PreviewCard({ profile }: { profile: TalentProfile }) {
   const t = useTranslations("Talent.mine.previewCard");
 
   return (
-    <section
-      aria-labelledby="talent-preview-card"
-      className="flex flex-col gap-3 rounded-2xl border bg-card p-5"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <h2 id="talent-preview-card" className="text-sm font-semibold">
-          {t("title")}
-        </h2>
-        <TalentPreview profile={profile} />
-      </div>
-      <TalentCard
-        linked={false}
-        person={{
-          slug: profile.slug,
-          name: profile.name,
-          headline: profile.headline,
-          photoFileId: profile.photoFileId,
-          roles: profile.roles,
-          skills: profile.skills,
-          city: profile.city,
-          country: profile.country,
-          projectCount: profile.projects.length,
-          leadProject: profile.projects[0] ?? null,
-          // The owner's profile does not say whether GenAI Fund features it, so the preview never claims it.
-          featured: false,
-        }}
-      />
-      <p className="text-xs text-muted-foreground">{t("note")}</p>
-    </section>
+    <Card size="lg" role="region" aria-labelledby="talent-preview-card">
+      <CardHeader>
+        <CardTitle>
+          <h2 id="talent-preview-card">{t("title")}</h2>
+        </CardTitle>
+        <CardAction>
+          <TalentPreview profile={profile} />
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-3">
+          <TalentCard
+            linked={false}
+            person={{
+              slug: profile.slug,
+              name: profile.name,
+              headline: profile.headline,
+              photoFileId: profile.photoFileId,
+              roles: profile.roles,
+              skills: profile.skills,
+              city: profile.city,
+              country: profile.country,
+              projectCount: profile.projects.length,
+              leadProject: profile.projects[0] ?? null,
+              // The owner's profile does not say whether GenAI Fund features it, so the preview never claims it.
+              featured: false,
+            }}
+          />
+          <p className="text-xs text-muted-foreground">{t("note")}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -235,16 +259,17 @@ function EnquiriesCard({ waiting }: { waiting: number }) {
   const t = useTranslations("Talent.mine.enquiriesCard");
 
   return (
-    <section
-      aria-labelledby="talent-enquiries-card"
-      className="flex flex-col gap-2 rounded-2xl border bg-card p-5"
-    >
-      <h2 id="talent-enquiries-card" className="text-base font-semibold">
-        {t("title")}
-      </h2>
-      <p className="text-sm font-medium">{t("waiting", { count: waiting })}</p>
-      <p className="text-sm text-muted-foreground">{t("lead")}</p>
-    </section>
+    <Card size="lg" role="region" aria-labelledby="talent-enquiries-card">
+      <CardHeader>
+        <CardTitle>
+          <h2 id="talent-enquiries-card">{t("title")}</h2>
+        </CardTitle>
+        <CardDescription>{t("lead")}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="font-medium">{t("waiting", { count: waiting })}</p>
+      </CardContent>
+    </Card>
   );
 }
 

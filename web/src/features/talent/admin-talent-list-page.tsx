@@ -11,6 +11,7 @@ import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { Person } from "@/components/composites/person";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { Item, ItemActions, ItemContent, ItemFooter, ItemGroup } from "@/components/ui/item";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -120,21 +121,23 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
       />
 
       {/* Below 768px: one stacked row per profile, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-            <div className="flex items-center justify-between gap-3">
-              {row.person}
-              {open(row)}
+      <div className="md:hidden">
+        <ItemGroup>
+          {rows.map((row) => (
+            <div key={row.id} role="listitem">
+              <Item variant="outline" size="sm">
+                <ItemContent>{row.person}</ItemContent>
+                <ItemActions>{open(row)}</ItemActions>
+                <ItemFooter>
+                  {row.status}
+                  <span className="text-xs text-muted-foreground">{row.submitted}</span>
+                </ItemFooter>
+              </Item>
             </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-11">
-              {row.status}
-              <span className="text-xs text-muted-foreground">{row.submitted}</span>
-            </div>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
+          ))}
+          {empty && <div role="listitem">{empty}</div>}
+        </ItemGroup>
+      </div>
 
       <ListFooter
         count={t("count", { count: talent.total })}

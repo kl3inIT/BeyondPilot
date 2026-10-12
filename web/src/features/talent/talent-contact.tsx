@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { siteRoutes } from "@/lib/site";
 
@@ -54,53 +55,61 @@ function TalentContact({
 
   return (
     <>
-      <section
-        aria-labelledby="talent-contact"
-        className="flex flex-col gap-4 rounded-2xl border bg-card p-5 shadow-sm md:p-6"
-      >
-        <h2 id="talent-contact" className="font-medium">
-          {t("title", { name })}
-        </h2>
-        {intro}
-        {own && (
-          <Button
-            prominence="secondary"
-            size="lg"
-            className="w-full"
-            href={siteRoutes.talentProfile}
-          >
-            {t("ownEdit")}
-          </Button>
-        )}
-        {waiting && waitingSince && (
-          <Alert>
-            <TimerIcon aria-hidden="true" />
-            <AlertTitle>{t("waitingTitle", { name })}</AlertTitle>
-            <AlertDescription>
-              {t("waitingLead", {
-                date: format.dateTime(new Date(waitingSince), { dateStyle: "medium" }),
-              })}
-            </AlertDescription>
-          </Alert>
-        )}
-        {waiting && (
-          <Button prominence="secondary" size="lg" className="w-full" href={siteRoutes.talentSent}>
-            {t("seeSent")}
-          </Button>
-        )}
-        {idle && (
-          <div className="flex flex-col gap-2">
-            <Button size="lg" className="w-full" {...opens}>
-              {t("open", { name })}
-            </Button>
-            {signInHref && (
-              <p className="text-xs text-muted-foreground">{t("signInLead", { name })}</p>
+      <Card size="lg" role="region" aria-labelledby="talent-contact">
+        <CardHeader>
+          <CardTitle>
+            <h2 id="talent-contact">{t("title", { name })}</h2>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-4">
+            {intro}
+            {own && (
+              <Button
+                prominence="secondary"
+                size="lg"
+                className="w-full"
+                href={siteRoutes.talentProfile}
+              >
+                {t("ownEdit")}
+              </Button>
             )}
+            {waiting && waitingSince && (
+              <Alert>
+                <TimerIcon aria-hidden="true" />
+                <AlertTitle>{t("waitingTitle", { name })}</AlertTitle>
+                <AlertDescription>
+                  {t("waitingLead", {
+                    date: format.dateTime(new Date(waitingSince), { dateStyle: "medium" }),
+                  })}
+                </AlertDescription>
+              </Alert>
+            )}
+            {waiting && (
+              <Button
+                prominence="secondary"
+                size="lg"
+                className="w-full"
+                href={siteRoutes.talentSent}
+              >
+                {t("seeSent")}
+              </Button>
+            )}
+            {idle && (
+              <div className="flex flex-col gap-2">
+                <Button size="lg" className="w-full" {...opens}>
+                  {t("open", { name })}
+                </Button>
+                {signInHref && (
+                  <p className="text-xs text-muted-foreground">{t("signInLead", { name })}</p>
+                )}
+              </div>
+            )}
+            <Separator />
+            {children}
           </div>
-        )}
-        <Separator />
-        {children}
-      </section>
+        </CardContent>
+      </Card>
       {idle && (
         <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t bg-background px-4 py-3 shadow-lg md:hidden">
           <span className="min-w-0 flex-1 truncate text-sm font-semibold">{name}</span>

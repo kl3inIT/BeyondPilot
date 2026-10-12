@@ -5,6 +5,16 @@ import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { QueueNext } from "@/components/composites/queue-next";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalent } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -81,72 +91,91 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
           <div className="min-w-0 flex-1 max-lg:order-1">
             <TalentView profile={profile} />
           </div>
-          <section
+          <Card
+            size="lg"
+            role="region"
             aria-labelledby="talent-decision"
-            className="flex flex-col gap-4 rounded-xl border bg-card p-5 lg:sticky lg:top-6 lg:w-88 lg:shrink-0"
+            className="lg:sticky lg:top-6 lg:w-88 lg:shrink-0"
           >
-            <div className="flex flex-col-reverse items-start gap-2">
-              <div className="flex min-w-0 flex-col gap-1">
-                <h2 id="talent-decision" className="text-lg font-semibold">
-                  {t(`decision.${state}.title`)}
-                </h2>
-                {/* A profile sent back or taken down says why in the note below. */}
-                {state !== "needs_changes" && state !== "suspended" && (
-                  <p className="text-sm text-muted-foreground">{t(`decision.${state}.lead`)}</p>
+            <CardHeader>
+              <CardTitle>
+                <h2 id="talent-decision">{t(`decision.${state}.title`)}</h2>
+              </CardTitle>
+              {/* A profile sent back or taken down says why in the note below. */}
+              {state !== "needs_changes" && state !== "suspended" && (
+                <CardDescription>{t(`decision.${state}.lead`)}</CardDescription>
+              )}
+              <CardAction>
+                <ReviewStatus state={state}>{status(state)}</ReviewStatus>
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-4">
+                {profile.suspendedAt ? (
+                  <Alert>
+                    <AlertTitle>
+                      {t("takenDown", { reason: reason(profile.suspensionReason ?? "other") })}
+                    </AlertTitle>
+                    {profile.suspensionMessage && (
+                      <AlertDescription>{profile.suspensionMessage}</AlertDescription>
+                    )}
+                  </Alert>
+                ) : (
+                  profile.status === "needs_changes" && (
+                    <Alert>
+                      <AlertTitle>
+                        {t("sentBack", { reason: reason(profile.decisionReason ?? "other") })}
+                      </AlertTitle>
+                      {profile.decisionMessage && (
+                        <AlertDescription>{profile.decisionMessage}</AlertDescription>
+                      )}
+                    </Alert>
+                  )
                 )}
+                <Separator />
+                <div className="flex flex-col items-start gap-3">
+                  <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+                    {sent && <span>{sent}</span>}
+                    {!profile.listed && (
+                      <span className="text-muted-foreground">{t("unlisted")}</span>
+                    )}
+                    {detail.featuredAt && (
+                      <FeaturedBadge>
+                        {feature("since", {
+                          day: format.dateTime(new Date(detail.featuredAt), {
+                            dateStyle: "medium",
+                          }),
+                        })}
+                      </FeaturedBadge>
+                    )}
+                    {state === "approved" && profile.listed && (
+                      <TextButton href={`${siteRoutes.talent}/${profile.slug}`}>
+                        {t("public")}
+                      </TextButton>
+                    )}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <TalentFeature
+                      key={`feature-${profile.id}`}
+                      profile={{
+                        id: profile.id,
+                        name: profile.name,
+                        featuredAt: detail.featuredAt,
+                      }}
+                    />
+                    {(state === "in_review" || state === "approved" || state === "suspended") && (
+                      <TalentReview
+                        key={`review-${profile.id}`}
+                        profile={profile}
+                        nextHref={next?.href ?? `${siteRoutes.adminTalent}?status=in_review`}
+                      />
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">{feature("hint")}</p>
               </div>
-              <ReviewStatus state={state}>{status(state)}</ReviewStatus>
-            </div>
-            {profile.suspendedAt ? (
-              <p className="rounded-lg bg-muted p-3 text-sm">
-                <span className="font-medium">
-                  {t("takenDown", { reason: reason(profile.suspensionReason ?? "other") })}
-                </span>
-                {profile.suspensionMessage && <> {profile.suspensionMessage}</>}
-              </p>
-            ) : (
-              profile.status === "needs_changes" && (
-                <p className="rounded-lg bg-muted p-3 text-sm">
-                  <span className="font-medium">
-                    {t("sentBack", { reason: reason(profile.decisionReason ?? "other") })}
-                  </span>
-                  {profile.decisionMessage && <> {profile.decisionMessage}</>}
-                </p>
-              )
-            )}
-            <div className="flex flex-col items-start gap-3 border-t pt-4">
-              <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
-                {sent && <span>{sent}</span>}
-                {!profile.listed && <span className="text-muted-foreground">{t("unlisted")}</span>}
-                {detail.featuredAt && (
-                  <FeaturedBadge>
-                    {feature("since", {
-                      day: format.dateTime(new Date(detail.featuredAt), { dateStyle: "medium" }),
-                    })}
-                  </FeaturedBadge>
-                )}
-                {state === "approved" && profile.listed && (
-                  <TextButton href={`${siteRoutes.talent}/${profile.slug}`}>
-                    {t("public")}
-                  </TextButton>
-                )}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <TalentFeature
-                  key={`feature-${profile.id}`}
-                  profile={{ id: profile.id, name: profile.name, featuredAt: detail.featuredAt }}
-                />
-                {(state === "in_review" || state === "approved" || state === "suspended") && (
-                  <TalentReview
-                    key={`review-${profile.id}`}
-                    profile={profile}
-                    nextHref={next?.href ?? `${siteRoutes.adminTalent}?status=in_review`}
-                  />
-                )}
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">{feature("hint")}</p>
-          </section>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

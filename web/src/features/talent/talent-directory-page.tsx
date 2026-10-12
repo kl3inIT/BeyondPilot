@@ -5,6 +5,7 @@ import { createSerializer } from "nuqs/server";
 import { Button } from "@/components/actions/button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PublicTalentList, PublicTalentSummary } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -135,9 +136,15 @@ function HowItWorks() {
       </h2>
       <ol className="grid gap-4 md:grid-cols-3">
         {steps.map((step) => (
-          <li key={step} className="flex flex-col gap-2 rounded-2xl border bg-card p-5">
-            <h3 className="font-semibold">{t(`${step}.title`)}</h3>
-            <p className="text-sm text-muted-foreground">{t(`${step}.body`)}</p>
+          <li key={step}>
+            <Card size="lg" className="h-full">
+              <CardHeader>
+                <CardTitle>
+                  <h3>{t(`${step}.title`)}</h3>
+                </CardTitle>
+                <CardDescription>{t(`${step}.body`)}</CardDescription>
+              </CardHeader>
+            </Card>
           </li>
         ))}
       </ol>

@@ -1,6 +1,16 @@
+import { SendIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import type { SentTalentEnquiry } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -37,31 +47,38 @@ function TalentSentPage({ enquiries }: { enquiries: SentTalentEnquiry[] }) {
           </section>
         ) : (
           <div className="grid items-start gap-4 lg:grid-cols-2 xl:gap-6">
-            <section
-              aria-labelledby="talent-sent-none"
-              className="flex flex-col items-start gap-4 rounded-2xl border bg-card p-5 md:p-6"
-            >
-              <div className="grid gap-1">
-                <h2 id="talent-sent-none" className="text-lg font-semibold">
-                  {t("none.title")}
-                </h2>
-                <p className="text-sm text-muted-foreground">{t("none.lead")}</p>
-              </div>
-              <Button href={siteRoutes.talent}>{t("browse")}</Button>
-            </section>
-            <section
-              aria-labelledby="talent-sent-how"
-              className="flex flex-col gap-3 rounded-2xl border bg-card p-5 md:p-6"
-            >
-              <h2 id="talent-sent-how" className="font-medium">
-                {t("how.title")}
-              </h2>
-              <ol className="grid list-decimal gap-2 pl-5 text-sm text-muted-foreground">
-                <li>{t("how.write")}</li>
-                <li>{t("how.answer")}</li>
-                <li>{t("how.share")}</li>
-              </ol>
-            </section>
+            <Card size="lg">
+              <CardContent>
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <SendIcon aria-hidden="true" />
+                    </EmptyMedia>
+                    <EmptyTitle>
+                      <h2>{t("none.title")}</h2>
+                    </EmptyTitle>
+                    <EmptyDescription>{t("none.lead")}</EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    <Button href={siteRoutes.talent}>{t("browse")}</Button>
+                  </EmptyContent>
+                </Empty>
+              </CardContent>
+            </Card>
+            <Card size="lg">
+              <CardHeader>
+                <CardTitle>
+                  <h2>{t("how.title")}</h2>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ol className="flex list-decimal flex-col gap-2 pl-5 text-muted-foreground">
+                  <li>{t("how.write")}</li>
+                  <li>{t("how.answer")}</li>
+                  <li>{t("how.share")}</li>
+                </ol>
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>

@@ -22,9 +22,11 @@ import {
   FieldLabel,
   FieldTitle,
 } from "@/components/ui/field";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -326,7 +328,7 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
       .filter((entry) => lacking.has(entry.field))
       .map((entry) => ({ id: entry.id, label: t(entry.field) })),
   ];
-  const group = "scroll-mt-24 border-t pt-6 text-lg font-semibold";
+  const group = "scroll-mt-24 text-lg font-semibold";
 
   /** The step goes on once the profile has what a proposal asks and what changed is saved. */
   async function carryOn() {
@@ -361,13 +363,7 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
         void save(false);
       }}
     >
-      <div
-        className={
-          embedded
-            ? "flex min-w-0 flex-1 flex-col gap-7"
-            : "flex min-w-0 flex-1 flex-col gap-7 rounded-3xl border bg-card p-5 md:p-10"
-        }
-      >
+      <FormShell bare={Boolean(embedded)}>
         <div id={talentSections.profile} className="flex scroll-mt-24 flex-col gap-2">
           <h2 id="talent-form-title" className="text-3xl font-semibold tracking-title">
             {t("title")}
@@ -383,6 +379,7 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
           <TalentPhotoUpload name={text.name} value={photo} onChange={setPhoto} />
         </Field>
 
+        <Separator />
         <h3 id={talentSections.basics} className={group}>
           {t("sections.basics")}
         </h3>
@@ -489,6 +486,7 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
           </FieldDescription>
         </Field>
 
+        <Separator />
         <h3 id={talentSections.skills} className={group}>
           {t("sections.skills")}
         </h3>
@@ -618,10 +616,8 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
           </Field>
         </div>
 
-        <div
-          id={talentSections.projects}
-          className="flex scroll-mt-24 flex-col gap-2 border-t pt-6"
-        >
+        <Separator />
+        <div id={talentSections.projects} className="flex scroll-mt-24 flex-col gap-2">
           <h3 className="text-lg font-semibold">
             {t("projects.title")}{" "}
             <span className="text-xs font-normal text-muted-foreground">{t("optional")}</span>
@@ -634,102 +630,118 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
         {projects.length > 0 && (
           <ul id="talent-projects" className="flex flex-col gap-4">
             {projects.map((project, index) => (
-              <li key={project.key} className="flex flex-col gap-4 rounded-2xl border p-4 md:p-5">
-                <div className="flex items-start gap-3">
-                  <div className="grid flex-1 gap-3 sm:grid-cols-4">
-                    <Field
-                      className="sm:col-span-3"
-                      data-invalid={bad("projects") && !project.title.trim()}
-                    >
-                      <FieldLabel htmlFor={`project-title-${project.key}`}>
-                        {t("projects.name", { number: index + 1 })}
-                        <RequiredMark />
-                      </FieldLabel>
-                      <Input
-                        id={`project-title-${project.key}`}
-                        maxLength={120}
-                        value={project.title}
-                        aria-invalid={(bad("projects") && !project.title.trim()) || undefined}
-                        onChange={(event) => {
-                          changeProject(project.key, "title", event.target.value);
-                          settle("projects");
-                        }}
-                      />
-                    </Field>
-                    <Field>
-                      <FieldLabel htmlFor={`project-year-${project.key}`}>
-                        {t("projects.year")}
-                      </FieldLabel>
-                      <Input
-                        id={`project-year-${project.key}`}
-                        type="number"
-                        inputMode="numeric"
-                        min={1990}
-                        max={2100}
-                        value={project.year}
-                        onChange={(event) => changeProject(project.key, "year", event.target.value)}
-                      />
-                    </Field>
-                  </div>
-                  <IconButton
-                    className="mt-6"
-                    aria-label={t("projects.remove", { number: index + 1 })}
-                    onClick={() =>
-                      setProjects((current) => current.filter((other) => other !== project))
-                    }
-                  >
-                    <Trash2Icon aria-hidden="true" />
-                  </IconButton>
-                </div>
-                <Field>
-                  <FieldLabel htmlFor={`project-summary-${project.key}`}>
-                    {t("projects.summary")}
-                  </FieldLabel>
-                  <Textarea
-                    id={`project-summary-${project.key}`}
-                    rows={2}
-                    maxLength={600}
-                    value={project.summary}
-                    onChange={(event) => changeProject(project.key, "summary", event.target.value)}
-                  />
-                </Field>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <Field>
-                    <FieldLabel htmlFor={`project-stage-${project.key}`}>
-                      {t("projects.stage")}
-                    </FieldLabel>
-                    <NativeSelect
-                      id={`project-stage-${project.key}`}
-                      className="w-full"
-                      value={project.stage}
-                      onChange={(event) => changeProject(project.key, "stage", event.target.value)}
-                    >
-                      <NativeSelectOption value="">{t("projects.stageNone")}</NativeSelectOption>
-                      {projectStages.map((value) => (
-                        <NativeSelectOption key={value} value={value}>
-                          {stage(value)}
-                        </NativeSelectOption>
-                      ))}
-                    </NativeSelect>
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor={`project-url-${project.key}`}>
-                      {t("projects.url")}
-                    </FieldLabel>
-                    <Input
-                      id={`project-url-${project.key}`}
-                      type="url"
-                      inputMode="url"
-                      maxLength={300}
-                      value={project.url}
-                      onChange={(event) => changeProject(project.key, "url", event.target.value)}
-                      aria-describedby={`project-url-${project.key}-hint`}
-                    />
-                    <FieldDescription id={`project-url-${project.key}-hint`}>
-                      {t("urlHint")}
-                    </FieldDescription>
-                  </Field>
-                </div>
+              <li key={project.key}>
+                <Card>
+                  <CardContent>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-start gap-3">
+                        <div className="grid flex-1 gap-3 sm:grid-cols-4">
+                          <Field
+                            className="sm:col-span-3"
+                            data-invalid={bad("projects") && !project.title.trim()}
+                          >
+                            <FieldLabel htmlFor={`project-title-${project.key}`}>
+                              {t("projects.name", { number: index + 1 })}
+                              <RequiredMark />
+                            </FieldLabel>
+                            <Input
+                              id={`project-title-${project.key}`}
+                              maxLength={120}
+                              value={project.title}
+                              aria-invalid={(bad("projects") && !project.title.trim()) || undefined}
+                              onChange={(event) => {
+                                changeProject(project.key, "title", event.target.value);
+                                settle("projects");
+                              }}
+                            />
+                          </Field>
+                          <Field>
+                            <FieldLabel htmlFor={`project-year-${project.key}`}>
+                              {t("projects.year")}
+                            </FieldLabel>
+                            <Input
+                              id={`project-year-${project.key}`}
+                              type="number"
+                              inputMode="numeric"
+                              min={1990}
+                              max={2100}
+                              value={project.year}
+                              onChange={(event) =>
+                                changeProject(project.key, "year", event.target.value)
+                              }
+                            />
+                          </Field>
+                        </div>
+                        <IconButton
+                          className="mt-6"
+                          aria-label={t("projects.remove", { number: index + 1 })}
+                          onClick={() =>
+                            setProjects((current) => current.filter((other) => other !== project))
+                          }
+                        >
+                          <Trash2Icon aria-hidden="true" />
+                        </IconButton>
+                      </div>
+                      <Field>
+                        <FieldLabel htmlFor={`project-summary-${project.key}`}>
+                          {t("projects.summary")}
+                        </FieldLabel>
+                        <Textarea
+                          id={`project-summary-${project.key}`}
+                          rows={2}
+                          maxLength={600}
+                          value={project.summary}
+                          onChange={(event) =>
+                            changeProject(project.key, "summary", event.target.value)
+                          }
+                        />
+                      </Field>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <Field>
+                          <FieldLabel htmlFor={`project-stage-${project.key}`}>
+                            {t("projects.stage")}
+                          </FieldLabel>
+                          <NativeSelect
+                            id={`project-stage-${project.key}`}
+                            className="w-full"
+                            value={project.stage}
+                            onChange={(event) =>
+                              changeProject(project.key, "stage", event.target.value)
+                            }
+                          >
+                            <NativeSelectOption value="">
+                              {t("projects.stageNone")}
+                            </NativeSelectOption>
+                            {projectStages.map((value) => (
+                              <NativeSelectOption key={value} value={value}>
+                                {stage(value)}
+                              </NativeSelectOption>
+                            ))}
+                          </NativeSelect>
+                        </Field>
+                        <Field>
+                          <FieldLabel htmlFor={`project-url-${project.key}`}>
+                            {t("projects.url")}
+                          </FieldLabel>
+                          <Input
+                            id={`project-url-${project.key}`}
+                            type="url"
+                            inputMode="url"
+                            maxLength={300}
+                            value={project.url}
+                            onChange={(event) =>
+                              changeProject(project.key, "url", event.target.value)
+                            }
+                            aria-describedby={`project-url-${project.key}-hint`}
+                          />
+                          <FieldDescription id={`project-url-${project.key}-hint`}>
+                            {t("urlHint")}
+                          </FieldDescription>
+                        </Field>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </li>
             ))}
           </ul>
@@ -741,6 +753,7 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
           </Button>
         )}
 
+        <Separator />
         <h3 id={talentSections.links} className={group}>
           {t("sections.links")}
         </h3>
@@ -767,7 +780,7 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
             <FieldDescription id="talent-website-hint">{t("urlHint")}</FieldDescription>
           )}
         </Field>
-      </div>
+      </FormShell>
 
       <div
         className={
@@ -777,37 +790,38 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
         }
       >
         {!embedded && aside}
-        <section
-          aria-labelledby="talent-visibility"
-          className="flex scroll-mt-24 flex-col gap-4 rounded-2xl border bg-card p-5"
-        >
-          <h3 id={talentSections.visibility} className="text-lg font-semibold">
-            {t("sections.visibility")}
-          </h3>
-          <RadioGroup
-            aria-labelledby="talent-visibility"
-            value={listed ? "listed" : "hidden"}
-            onValueChange={(value) => setListed(value === "listed")}
-          >
-            {(
-              [
-                ["listed", GlobeIcon],
-                ["hidden", EyeOffIcon],
-              ] as const
-            ).map(([choice, Icon]) => (
-              <FieldLabel key={choice} htmlFor={`talent-${choice}`}>
-                <Field orientation="horizontal" className="items-start">
-                  <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
-                  <FieldContent>
-                    <FieldTitle>{t(`visibility.${choice}.title`)}</FieldTitle>
-                    <FieldDescription>{t(`visibility.${choice}.lead`)}</FieldDescription>
-                  </FieldContent>
-                  <RadioGroupItem value={choice} id={`talent-${choice}`} />
-                </Field>
-              </FieldLabel>
-            ))}
-          </RadioGroup>
-        </section>
+        <Card size="lg" role="region" aria-labelledby="talent-visibility" className="scroll-mt-24">
+          <CardHeader>
+            <CardTitle>
+              <h3 id={talentSections.visibility}>{t("sections.visibility")}</h3>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RadioGroup
+              aria-labelledby="talent-visibility"
+              value={listed ? "listed" : "hidden"}
+              onValueChange={(value) => setListed(value === "listed")}
+            >
+              {(
+                [
+                  ["listed", GlobeIcon],
+                  ["hidden", EyeOffIcon],
+                ] as const
+              ).map(([choice, Icon]) => (
+                <FieldLabel key={choice} htmlFor={`talent-${choice}`}>
+                  <Field orientation="horizontal" className="items-start">
+                    <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
+                    <FieldContent>
+                      <FieldTitle>{t(`visibility.${choice}.title`)}</FieldTitle>
+                      <FieldDescription>{t(`visibility.${choice}.lead`)}</FieldDescription>
+                    </FieldContent>
+                    <RadioGroupItem value={choice} id={`talent-${choice}`} />
+                  </Field>
+                </FieldLabel>
+              ))}
+            </RadioGroup>
+          </CardContent>
+        </Card>
 
         {embedded ? (
           <div className="flex flex-col gap-4">
@@ -820,7 +834,8 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
                 refused={reviewFields.some((entry) => invalid.has(entry.field))}
               />
             )}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
+            <Separator />
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <Button
                 prominence="tertiary"
                 size="lg"
@@ -850,60 +865,64 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
             </div>
           </div>
         ) : (
-          <div className="sticky bottom-0 z-10 flex flex-col gap-4 rounded-2xl border bg-card p-5 lg:static">
-            {submittable && (
-              <ReviewReadiness
-                missingTitle={t("readiness.missing")}
-                readyTitle={t("readiness.ready")}
-                note={t("readiness.note")}
-                missing={toAdd}
-                refused={
-                  invalid.has("name") || reviewFields.some((entry) => invalid.has(entry.field))
-                }
-              />
-            )}
+          <Card size="lg" className="sticky bottom-0 z-10 lg:static">
+            <CardContent>
+              <div className="flex flex-col gap-4">
+                {submittable && (
+                  <ReviewReadiness
+                    missingTitle={t("readiness.missing")}
+                    readyTitle={t("readiness.ready")}
+                    note={t("readiness.note")}
+                    missing={toAdd}
+                    refused={
+                      invalid.has("name") || reviewFields.some((entry) => invalid.has(entry.field))
+                    }
+                  />
+                )}
 
-            <div className="flex flex-wrap items-center gap-3">
-              {submittable && (
-                <Button
-                  type="submit"
-                  prominence="tertiary"
-                  size="lg"
-                  pending={pending === "save"}
-                  disabled={pending !== null || !dirty}
-                >
-                  {t("saveDraft")}
-                </Button>
-              )}
-              {dirty && <span className="text-sm text-muted-foreground">{t("unsaved")}</span>}
-              <div className="ml-auto flex flex-wrap items-center gap-3">
-                {submittable && toAdd.length > 0 && (
-                  <TextButton className="max-sm:hidden" onClick={() => focusField(toAdd[0].id)}>
-                    {t("readiness.count", { count: toAdd.length })}
-                  </TextButton>
-                )}
-                {submittable ? (
-                  <Button
-                    size="lg"
-                    pending={pending === "submit"}
-                    disabled={pending !== null}
-                    onClick={() => save(true)}
-                  >
-                    {t(returned ? "resubmit" : "submit")}
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    size="lg"
-                    pending={pending === "save"}
-                    disabled={pending !== null || !dirty}
-                  >
-                    {t("save")}
-                  </Button>
-                )}
+                <div className="flex flex-wrap items-center gap-3">
+                  {submittable && (
+                    <Button
+                      type="submit"
+                      prominence="tertiary"
+                      size="lg"
+                      pending={pending === "save"}
+                      disabled={pending !== null || !dirty}
+                    >
+                      {t("saveDraft")}
+                    </Button>
+                  )}
+                  {dirty && <span className="text-sm text-muted-foreground">{t("unsaved")}</span>}
+                  <div className="ml-auto flex flex-wrap items-center gap-3">
+                    {submittable && toAdd.length > 0 && (
+                      <TextButton className="max-sm:hidden" onClick={() => focusField(toAdd[0].id)}>
+                        {t("readiness.count", { count: toAdd.length })}
+                      </TextButton>
+                    )}
+                    {submittable ? (
+                      <Button
+                        size="lg"
+                        pending={pending === "submit"}
+                        disabled={pending !== null}
+                        onClick={() => save(true)}
+                      >
+                        {t(returned ? "resubmit" : "submit")}
+                      </Button>
+                    ) : (
+                      <Button
+                        type="submit"
+                        size="lg"
+                        pending={pending === "save"}
+                        disabled={pending !== null || !dirty}
+                      >
+                        {t("save")}
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
       </div>
       <LeaveGuard
@@ -914,6 +933,19 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
         stayLabel={t("leave.stay")}
       />
     </form>
+  );
+}
+
+/** The fields stand on a card of their own, or bare inside a step that already frames them. */
+function FormShell({ bare, children }: { bare: boolean; children: ReactNode }) {
+  const fields = <div className="flex min-w-0 flex-1 flex-col gap-7">{children}</div>;
+
+  return bare ? (
+    fields
+  ) : (
+    <Card size="lg" className="min-w-0 flex-1">
+      <CardContent>{fields}</CardContent>
+    </Card>
   );
 }
 
