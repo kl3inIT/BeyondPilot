@@ -33,7 +33,7 @@ async function ProvidersShell({ tab, children }: { tab: ProvidersTab; children: 
                   : { pathname: siteRoutes.adminAiProviders, query: { tab: each } }
               }
               aria-current={each === tab ? "page" : undefined}
-              className="-mb-px border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
+              className="-mb-px border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
             >
               {t(each)}
             </Link>

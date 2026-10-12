@@ -19,6 +19,8 @@ type ChoiceComboboxProps = {
   /** The ids of the hint and the error that describe the field. */
   "aria-describedby"?: string;
   "aria-invalid"?: boolean;
+  /** At least one must be chosen. */
+  "aria-required"?: boolean;
   /** The name of the field for assistive technology, usually its label. */
   label: string;
   placeholder?: string;
@@ -49,6 +51,7 @@ function ChoiceCombobox({
   max,
   "aria-describedby": describedBy,
   "aria-invalid": invalid,
+  "aria-required": required,
 }: ChoiceComboboxProps) {
   const anchor = useComboboxAnchor();
   const labels = new Map(options.map((option) => [option.value, option.label]));
@@ -78,6 +81,7 @@ function ChoiceCombobox({
                 aria-label={label}
                 aria-describedby={describedBy}
                 aria-invalid={invalid}
+                aria-required={required}
                 placeholder={chosen.length === 0 ? placeholder : undefined}
               />
             </>

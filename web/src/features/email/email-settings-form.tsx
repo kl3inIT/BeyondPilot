@@ -324,7 +324,8 @@ function EmailSettingsForm({
   });
 
   const values = useStore(form.store, (state) => state.values);
-  const dirty = useStore(form.store, (state) => state.isDirty);
+  // A value changed and then put back is no change: there is nothing to save or to lose.
+  const dirty = useStore(form.store, (state) => !state.isDefaultValue);
 
   /** What the form changes in how email leaves, each said as one line. */
   function changes(next: Values) {
@@ -805,6 +806,7 @@ function EmailSettingsForm({
 
       <LeaveGuard
         active={dirty}
+        back
         title={t("leave.title")}
         description={t("leave.lead")}
         leaveLabel={t("leave.leave")}

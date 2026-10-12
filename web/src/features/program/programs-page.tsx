@@ -253,7 +253,10 @@ async function OpenProgram({
           </p>
         </div>
         <h3 className="text-2xl font-semibold md:text-3xl md:tracking-title">
-          <Link href={hrefOf(program)} className="outline-none focus-visible:underline">
+          <Link
+            href={hrefOf(program)}
+            className="rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
             {program.name}
           </Link>
         </h3>
@@ -366,7 +369,7 @@ async function UpcomingProgram({
         </p>
         <Link
           href={hrefOf(program)}
-          className="text-sm font-semibold outline-none after:absolute after:inset-0 focus-visible:underline"
+          className="text-sm font-semibold outline-none after:absolute after:inset-0 focus-visible:after:ring-3 focus-visible:after:ring-ring/50 focus-visible:after:ring-inset"
         >
           {program.name}
         </Link>
@@ -416,7 +419,7 @@ async function DoneProgram({
         </p>
         <Link
           href={hrefOf(program)}
-          className="text-base font-medium outline-none after:absolute after:inset-0 focus-visible:underline"
+          className="text-base font-medium outline-none after:absolute after:inset-0 focus-visible:after:ring-3 focus-visible:after:ring-ring/50 focus-visible:after:ring-inset"
         >
           {program.name}
         </Link>

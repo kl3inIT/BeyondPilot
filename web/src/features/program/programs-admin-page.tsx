@@ -142,7 +142,7 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
                   {/* The name is the row's link; it covers the whole row for the pointer. */}
                   <Link
                     href={row.href}
-                    className="font-medium outline-none after:absolute after:inset-0 focus-visible:underline"
+                    className="font-medium outline-none after:absolute after:inset-0 focus-visible:after:ring-3 focus-visible:after:ring-ring/50 focus-visible:after:ring-inset"
                   >
                     {row.program.name}
                   </Link>

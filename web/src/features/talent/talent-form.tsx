@@ -341,6 +341,7 @@ function TalentForm({ profile, suggestedName, aside }: TalentFormProps) {
                   aria-describedby={control.describedBy}
                   aria-invalid={control.invalid}
                   label={t("roles")}
+                  required
                   options={talentRoles.map((value) => ({ value, label: role(value) }))}
                   value={field.state.value}
                   onValueChange={field.handleChange}

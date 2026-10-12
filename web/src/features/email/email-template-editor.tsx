@@ -117,7 +117,8 @@ function EmailTemplateEditor({
   });
 
   const draft = useStore(form.store, (state) => state.values);
-  const dirty = useStore(form.store, (state) => state.isDirty);
+  // A value changed and then put back is no change: there is nothing to save or to lose.
+  const dirty = useStore(form.store, (state) => !state.isDefaultValue);
   const submitting = useStore(form.store, (state) => state.isSubmitting);
 
   // The preview follows the draft once typing pauses; an answer for an older draft is dropped.
@@ -351,6 +352,7 @@ function EmailTemplateEditor({
 
       <LeaveGuard
         active={dirty}
+        back
         title={t("leave.title")}
         description={t("leave.lead")}
         leaveLabel={t("leave.leave")}

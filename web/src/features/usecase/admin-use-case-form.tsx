@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/actions/button";
 import { StepsNav } from "@/components/composites/steps-nav";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
+import { AllRequired } from "@/components/form/form-fields";
 import { focusFirstInvalid } from "@/components/form/focus-first-invalid";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -349,33 +350,36 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
             )}
           </div>
 
-          {step === "challenge" && (
-            <form.AppField name="organizationId">
-              {(field) => (
-                <field.SelectField
-                  label={t("organization")}
-                  placeholder={t("organizationPlaceholder")}
-                  description={t("organizationHint")}
-                  options={organizations.map(({ id, name }) => ({ value: id, label: name }))}
-                />
-              )}
-            </form.AppField>
-          )}
+          {/* The line above says every field is required; this says it field by field to a screen reader. */}
+          <AllRequired>
+            {step === "challenge" && (
+              <form.AppField name="organizationId">
+                {(field) => (
+                  <field.SelectField
+                    label={t("organization")}
+                    placeholder={t("organizationPlaceholder")}
+                    description={t("organizationHint")}
+                    options={organizations.map(({ id, name }) => ({ value: id, label: name }))}
+                  />
+                )}
+              </form.AppField>
+            )}
 
-          {step !== "review" && <UseCaseStepFields form={form} fields="content" step={step} />}
+            {step !== "review" && <UseCaseStepFields form={form} fields="content" step={step} />}
 
-          {step === "budget" && (
-            <form.AppField name="proposalEditDays">
-              {(field) => (
-                <field.TextField
-                  label={t("proposalEditDays.label")}
-                  description={t("proposalEditDays.hint")}
-                  inputMode="numeric"
-                  maxLength={2}
-                />
-              )}
-            </form.AppField>
-          )}
+            {step === "budget" && (
+              <form.AppField name="proposalEditDays">
+                {(field) => (
+                  <field.TextField
+                    label={t("proposalEditDays.label")}
+                    description={t("proposalEditDays.hint")}
+                    inputMode="numeric"
+                    maxLength={2}
+                  />
+                )}
+              </form.AppField>
+            )}
+          </AllRequired>
 
           {step === "review" && <UseCaseSummary values={values} onEdit={go} />}
 
