@@ -208,6 +208,7 @@ type SelectFieldProps = Labelled & {
   options: { value: string; label: string }[];
   /** Shown while nothing is chosen. */
   placeholder?: string;
+  disabled?: boolean;
 };
 
 function SelectField({
@@ -217,6 +218,7 @@ function SelectField({
   description,
   options,
   placeholder,
+  disabled,
 }: SelectFieldProps) {
   const { field, invalid, errors, hintId, errorId, describedBy } =
     useDescribedField<string>(description);
@@ -231,6 +233,7 @@ function SelectField({
       <Select
         items={options}
         value={field.state.value || null}
+        disabled={disabled}
         onValueChange={(value) => field.handleChange(String(value ?? ""))}
       >
         <SelectTrigger

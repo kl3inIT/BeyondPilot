@@ -5404,6 +5404,10 @@
   },
   "Form": {
     "optional": "Optional",
+    "steps": {
+      "progress": "Step {step} of {count} · {name}",
+      "all": "All steps"
+    },
     "errors": {
       "required": "Fill this in.",
       "tooLong": "Keep it to {max} characters.",
@@ -5941,15 +5945,15 @@
       "explore": "Explore the challenges",
       "lead": "Bring your working AI solution to real business challenges at Nestlé Vietnam. Selected providers can connect with relevant Nestlé teams, demonstrate their solutions and explore opportunities for collaboration.",
       "open": "Open to working prototypes, pilots and established products that can be adapted to the challenges.",
-      "imageAlt": "A builder holding a tablet beside a friendly AI robot, with a laptop and a light bulb",
+      "imageAlt": "Nestlé's logo on the glass front of its building",
       "facts": {
         "closes": {
           "label": "Applications close",
-          "value": "15 Nov, 23:59 ICT"
+          "value": "22 Nov, 23:59 ICT"
         },
         "matchingDay": {
           "label": "Matching Day",
-          "value": "3 Dec, Ho Chi Minh City"
+          "value": "15 Dec, Ho Chi Minh City"
         },
         "opportunity": {
           "label": "The opportunity",
@@ -6190,12 +6194,12 @@
         },
         "hearBack": {
           "q": "When do I hear back?",
-          "a": "Everyone hears back by 20 November."
+          "a": "Everyone hears back by 27 November."
         }
       }
     },
     "closing": {
-      "title": "Will your solution be in the room on 3 December?",
+      "title": "Will your solution be in the room on 15 December?",
       "text": "The shortlist is taking shape—submit today for your chance to be selected.",
       "closes": "Applications close {closes}."
     },
@@ -7697,8 +7701,8 @@
         "remove": "Remove {name}",
         "rolePlaceholder": "Project lead",
         "needed": {
-          "member": "Add at least one member.",
-          "role": "Give every member a role."
+          "role": "Give every member a role.",
+          "primary": "Choose one primary contact."
         },
         "dialog": {
           "title": "Add a team member",
