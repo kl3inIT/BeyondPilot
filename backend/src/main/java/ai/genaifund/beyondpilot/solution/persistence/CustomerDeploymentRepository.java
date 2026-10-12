@@ -18,19 +18,26 @@ public interface CustomerDeploymentRepository extends JpaRepository<CustomerDepl
 	@Query("select d from CustomerDeployment d where d.id = :id")
 	Optional<CustomerDeployment> findForUpdate(UUID id);
 
+	/** Every deployment of a solution, the withdrawn ones too: what its organization reads. */
 	List<CustomerDeployment> findBySolutionIdOrderByCreatedAtDesc(UUID solutionId);
 
-	List<CustomerDeployment> findBySolutionIdAndStatusOrderByDecidedAtDesc(UUID solutionId, String status);
+	List<CustomerDeployment> findBySolutionIdAndWithdrawnAtIsNullOrderByCreatedAtDesc(UUID solutionId);
 
-	int countBySolutionId(UUID solutionId);
+	List<CustomerDeployment> findBySolutionIdAndStatusAndWithdrawnAtIsNullOrderByDecidedAtDesc(UUID solutionId,
+			String status);
 
-	int countBySolutionIdAndStatus(UUID solutionId, String status);
+	int countBySolutionIdAndWithdrawnAtIsNull(UUID solutionId);
 
-	/** The approved deployments of the approved, listed solutions not taken down of an organization, the newest decision first. */
+	int countBySolutionIdAndStatusAndWithdrawnAtIsNull(UUID solutionId, String status);
+
+	/**
+	 * The approved deployments, none withdrawn, of the approved, listed solutions not taken down of an organization,
+	 * the newest decision first.
+	 */
 	@Query("""
 			select d from CustomerDeployment d, Solution s
 			where s.id = d.solutionId and s.organizationId = :organizationId and s.status = 'approved'
-			  and s.listed = true and s.suspendedAt is null and d.status = 'approved'
+			  and s.listed = true and s.suspendedAt is null and d.status = 'approved' and d.withdrawnAt is null
 			order by d.decidedAt desc, d.id
 			""")
 	List<CustomerDeployment> findPublicByOrganization(UUID organizationId, Pageable page);
@@ -38,7 +45,7 @@ public interface CustomerDeploymentRepository extends JpaRepository<CustomerDepl
 	@Query("""
 			select count(d) from CustomerDeployment d, Solution s
 			where s.id = d.solutionId and s.organizationId = :organizationId and s.status = 'approved'
-			  and s.listed = true and s.suspendedAt is null and d.status = 'approved'
+			  and s.listed = true and s.suspendedAt is null and d.status = 'approved' and d.withdrawnAt is null
 			""")
 	long countPublicByOrganization(UUID organizationId);
 

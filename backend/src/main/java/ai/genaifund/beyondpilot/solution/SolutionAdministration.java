@@ -136,7 +136,8 @@ public class SolutionAdministration {
 		Solution solution = solutions.findById(id).filter(found -> !found.isDraft()).orElseThrow(() -> notFound(id));
 		return SolutionViews.solution(solution,
 				name(organizations.names(List.of(solution.getOrganizationId())), solution.getOrganizationId()),
-				SolutionViews.sender(solution, identity), deployments.findBySolutionIdOrderByCreatedAtDesc(id),
+				SolutionViews.sender(solution, identity),
+				deployments.findBySolutionIdAndWithdrawnAtIsNullOrderByCreatedAtDesc(id),
 				storage);
 	}
 
@@ -306,7 +307,7 @@ public class SolutionAdministration {
 	public void approveDeployment(Actor actor, UUID id) {
 		Operator operator = identity.requireOperator(actor);
 		CustomerDeployment deployment = deployment(id);
-		if (!deployment.isInReview()) {
+		if (!deployment.isInReview() || deployment.isWithdrawn()) {
 			throw notAwaiting(deployment);
 		}
 		deployment.approve(Instant.now());
@@ -324,7 +325,7 @@ public class SolutionAdministration {
 	public void rejectDeployment(Actor actor, UUID id, RejectCustomerDeploymentRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		CustomerDeployment deployment = deployment(id);
-		if (!deployment.isInReview() && !deployment.isApproved()) {
+		if ((!deployment.isInReview() && !deployment.isApproved()) || deployment.isWithdrawn()) {
 			throw notAwaiting(deployment);
 		}
 		deployment.reject(request.reason(), SolutionViews.text(request.message()), Instant.now());
@@ -348,7 +349,8 @@ public class SolutionAdministration {
 
 	private static SolutionException notAwaiting(CustomerDeployment deployment) {
 		return new SolutionException(SolutionErrorCode.DEPLOYMENT_NOT_AWAITING_REVIEW,
-				"Decision on customer deployment " + deployment.getId() + ", which is " + deployment.getStatus());
+				"Decision on customer deployment " + deployment.getId() + ", which is " + deployment.getStatus()
+						+ (deployment.isWithdrawn() ? " and withdrawn" : ""));
 	}
 
 	/** Tells every member of the solution's organization what GenAI Fund decided; a member not reached is skipped. */

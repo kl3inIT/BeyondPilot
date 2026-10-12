@@ -93,7 +93,8 @@ final class SolutionViews {
 		return new CustomerDeploymentResponse(deployment.getId(), deployment.getTitle(), deployment.getCustomer(),
 				deployment.getProblem(), deployment.getDelivered(), deployment.getStage(), deployment.getChannels(),
 				deployment.getLanguages(), deployment.getPeriod(), deployment.getResult(), deployment.getStatus(),
-				deployment.getDecisionReason(), deployment.getDecisionMessage(), deployment.getVersion(),
+				deployment.getDecisionReason(), deployment.getDecisionMessage(), deployment.getWithdrawnAt(),
+				deployment.getVersion(),
 				deployment.getUpdatedAt());
 	}
 
