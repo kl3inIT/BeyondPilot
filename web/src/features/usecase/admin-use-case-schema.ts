@@ -59,9 +59,22 @@ export function adminUseCaseSchema(say: Say) {
         .trim()
         .max(MAX_TEXT, say("tooLong", { max: MAX_TEXT })),
       targetUsers: text(MAX_TEXT),
+      // A row left empty is not sent; one row at least says what the solution must do.
       requirements: z
-        .array(z.object({ statement: text(300), necessity: z.enum(necessities) }))
-        .min(1, say("required")),
+        .array(
+          z.object({
+            statement: z
+              .string()
+              .trim()
+              .max(300, say("tooLong", { max: 300 })),
+            necessity: z.enum(necessities),
+          }),
+        )
+        .superRefine((rows, context) => {
+          if (!rows.some((row) => row.statement !== "")) {
+            context.addIssue({ code: "custom", path: [0, "statement"], message: say("required") });
+          }
+        }),
       dataReadiness: text(MAX_TEXT),
       integrationRequirements: text(MAX_TEXT),
       attachments: z

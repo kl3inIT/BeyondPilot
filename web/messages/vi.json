@@ -52,6 +52,22 @@
       "dark": "Tối",
       "system": "Theo hệ thống"
     },
+    "cookies": {
+      "title": "Chúng tôi tôn trọng quyền riêng tư của bạn",
+      "message": "Chúng tôi dùng cookie để trang hoạt động, cải thiện trải nghiệm của bạn và phân tích lượt truy cập. Nếu bạn chọn “Từ chối tất cả”, chỉ những cookie cần thiết được sử dụng. <privacy>Xem thêm</privacy>",
+      "accept": "Chấp nhận tất cả",
+      "decline": "Từ chối tất cả",
+      "customize": "Tùy chỉnh",
+      "preferences": {
+        "title": "Tùy chọn cookie",
+        "description": "Chọn loại cookie chúng tôi được dùng.",
+        "necessary": "Cần thiết",
+        "necessaryHint": "Giữ bạn đăng nhập và nhớ ngôn ngữ. Luôn bật.",
+        "analytics": "Phân tích",
+        "analyticsHint": "Giúp chúng tôi biết các trang công khai được sử dụng thế nào.",
+        "save": "Lưu tùy chọn"
+      }
+    },
     "footer": {
       "platform": "Nền tảng",
       "company": "Công ty",
@@ -3758,6 +3774,7 @@
       "notStated": "Chưa nêu",
       "website": "Website",
       "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
+      "websiteRequired": "Hãy nhập website của tổ chức.",
       "description": "Mô tả ngắn",
       "descriptionHint": "Tổ chức làm gì và cho ai.",
       "counter": "{count} / {max}",
@@ -5356,6 +5373,10 @@
   "Form": {
     "optional": "Không bắt buộc",
     "noMatch": "Không có kết quả phù hợp.",
+    "steps": {
+      "progress": "Bước {step}/{count} · {name}",
+      "all": "Tất cả bước"
+    },
     "errors": {
       "required": "Hãy điền mục này.",
       "tooLong": "Tối đa {max} ký tự.",
@@ -5888,23 +5909,19 @@
     }
   },
   "Nestle": {
-    "banner": {
-      "text": "Hạn nộp đơn: <strong>{closes}</strong>. Nộp trước ngày 5 tháng 11 để nhận đề bài đầy đủ sớm nhất."
-    },
     "hero": {
       "tagline": "Nestlé đã chọn ra những bài toán của mình. Giờ họ tìm người giải được chúng.",
       "explore": "Xem các thách thức",
       "lead": "Mang giải pháp AI đang chạy được của bạn đến những bài toán kinh doanh thực tế tại Nestlé Việt Nam. Các nhà cung cấp được chọn có thể kết nối với những đội Nestlé liên quan, trình diễn giải pháp và tìm hiểu cơ hội hợp tác.",
       "open": "Dành cho bản thử đang chạy, dự án thí điểm và sản phẩm hoàn thiện có thể điều chỉnh theo các thách thức.",
-      "imageAlt": "Một người làm sản phẩm cầm máy tính bảng bên chú robot AI thân thiện, cùng laptop và bóng đèn",
       "facts": {
         "closes": {
           "label": "Hạn nộp đơn",
-          "value": "15 thg 11, 23:59 ICT"
+          "value": "22 thg 11, 23:59 ICT"
         },
         "matchingDay": {
           "label": "Matching Day",
-          "value": "3 thg 12, TP. Hồ Chí Minh"
+          "value": "15 thg 12, TP. Hồ Chí Minh"
         },
         "opportunity": {
           "label": "Cơ hội",
@@ -6013,7 +6030,6 @@
     },
     "early": {
       "ask": "Bạn thấy bài toán quen thuộc?",
-      "title": "Bắt đầu sớm.",
       "text": "Nộp trước ngày 5 tháng 11 để được xét vào đợt briefing sớm. Ứng viên qua vòng sơ tuyển được briefing chi tiết từ ngày 6 tháng 11."
     },
     "useCases": {
@@ -6146,16 +6162,14 @@
         },
         "hearBack": {
           "q": "Khi nào tôi nhận kết quả?",
-          "a": "Mọi người nhận phản hồi chậm nhất ngày 20 tháng 11."
+          "a": "Mọi người nhận phản hồi chậm nhất ngày 27 tháng 11."
         }
       }
     },
     "closing": {
-      "title": "Giải pháp của bạn sẽ có mặt trong phòng ngày 3 tháng 12 chứ?",
+      "title": "Giải pháp của bạn sẽ có mặt trong phòng ngày 15 tháng 12 chứ?",
       "text": "Danh sách rút gọn đang thành hình — nộp hôm nay để có cơ hội được chọn.",
-      "closes": "Hạn nộp đơn: {closes}.",
-      "session": "Xem lịch buổi giới thiệu",
-      "share": "Biết một đội phù hợp? Gửi họ trang này"
+      "closes": "Hạn nộp đơn: {closes}."
     },
     "about": {
       "label": "Về chương trình",
@@ -6980,7 +6994,7 @@
         {
           "heading": "Cookie",
           "body": [
-            "Chúng tôi dùng một cookie phiên để giữ bạn đăng nhập và một cookie để nhớ ngôn ngữ. Chúng tôi không dùng cookie quảng cáo hay theo dõi của bên thứ ba."
+            "Chúng tôi dùng một cookie phiên để giữ bạn đăng nhập và một cookie để nhớ ngôn ngữ. Nếu bạn đồng ý, Google Analytics đặt cookie để đo lượt truy cập các trang công khai; công cụ này không bao giờ chạy trên các trang cần đăng nhập. Chúng tôi không dùng cookie quảng cáo."
           ]
         },
         {
@@ -7655,8 +7669,8 @@
         "remove": "Bỏ {name}",
         "rolePlaceholder": "Trưởng dự án",
         "needed": {
-          "member": "Hãy thêm ít nhất một thành viên.",
-          "role": "Hãy nhập vai trò cho mọi thành viên."
+          "role": "Hãy nhập vai trò cho mọi thành viên.",
+          "primary": "Hãy chọn một đầu mối liên hệ."
         },
         "dialog": {
           "title": "Thêm thành viên vào đội ngũ",

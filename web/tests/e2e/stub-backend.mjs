@@ -13,6 +13,7 @@ import { answerMatching, serveMatchingDeck, serveMatchingLive } from "./stub-mat
 import { answerMcp } from "./stub-mcp.mjs";
 import { answerReview } from "./stub-reviews.mjs";
 import { answerSearch, answerSearchAdmin } from "./stub-search.mjs";
+import { answerWizards } from "./stub-wizards.mjs";
 import { answerWorkspace } from "./stub-workspace.mjs";
 
 /** A PNG of one pixel, as in stored-files.ts. */
@@ -538,7 +539,10 @@ createServer((request, response) => {
       older: items.length > 0 && start + items.length < matching.length ? items.at(-1).id : null,
     });
   }
+  // The state a test of the forms in steps stands in (stub-wizards.mjs).
+  const scene = /STUB_SCENE=([a-z]+)/.exec(request.headers.cookie ?? "")?.[1];
   const record =
+    answerWizards(url, account ? session : undefined, scene) ??
     answerMatching(url, account) ??
     answerMcp(url, account ? session : undefined) ??
     answerJudging(url, account) ??

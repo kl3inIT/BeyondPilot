@@ -121,7 +121,8 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   from them.
 - **Event and email.** It publishes `ProposalSubmitted`; `SubmissionMail` queues the applicant's copy in the same
   transaction, so none leaves for a submission that rolled back. The copy names the close when the program allows
-  updates until then.
+  updates until then, and links to the application's page, `/applications/<id>` on the site, so the applicant comes
+  back to it from the email.
 - **Editing until the close.** When the program sets `allowUpdatesUntilClose`, a submitted application can be saved
   and submitted again, each time as a new version. Otherwise a save or a new submission of a submitted application is
   refused with `PROPOSAL_LOCKED`.
@@ -183,8 +184,9 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 
 - **Invited by email.** An operator invites an address; it is stored stripped. An address already invited and not
   removed is refused with `PROPOSAL_REVIEWER_INVITED`. The invitation is open for 7 days (`ReviewSetup.INVITATION`).
-  `ReviewerInvited` is published and `ReviewMail` queues the email, which carries no link: the person signs in with
-  that address and finds the program under Reviews.
+  `ReviewerInvited` is published and `ReviewMail` queues the email. Its link opens the program's applications,
+  `/reviews/<program id>` on the site, after signing in; it carries no token, so the person still signs in with that
+  address, and also finds the program under Reviews.
 - **Sent again.** An invitation not yet used can be re-sent, which renews `invited_at` and `expires_at` for another
   7 days. A judge who joined is refused with `PROPOSAL_REVIEWER_JOINED`.
 - **Removed.** Removing sets `removed_at`; the judge loses access, and their scores stay. A removed or unknown judge
@@ -247,7 +249,8 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   characters) and messages (at most 5000) once in `proposal_release`.
 - **Emails per applicant.** For each submitted application the group's subject and message are filled in, replacing
   `{organization}` and `{solution}` with the names in the last snapshot. `OutcomesReleased` carries them, and
-  `ReviewMail` queues one email per applicant in the release's transaction, so they leave once it commits.
+  `ReviewMail` queues one email per applicant in the release's transaction, so they leave once it commits. Each
+  email ends with a link to the applicant's application, which the operator does not write.
 - **Final.** After the release, assessments and decisions are refused, and the applicant sees their outcome on My
   applications and on the application.
 
@@ -285,7 +288,7 @@ Applicants' acts, joining as a judge and assessments are not audited; they are l
 | Event               | Published                   | Carries                                                                               | Handled by       |
 | ------------------- | --------------------------- | ------------------------------------------------------------------------------------- | ---------------- |
 | `ProposalSubmitted` | Each submission             | application, program, organization, version, recipient, program name, `editableUntil` | `SubmissionMail` |
-| `ReviewerInvited`   | Each invitation and re-send | invitation, email, program name, inviter name, expiry (package-private)               | `ReviewMail`     |
+| `ReviewerInvited`   | Each invitation and re-send | invitation, email, program, program name, inviter name, expiry (package-private)      | `ReviewMail`     |
 | `OutcomesReleased`  | The release                 | program, and per applicant the decision, recipient, subject and message               | `ReviewMail`     |
 
 The handlers are `@EventListener`s that queue email in the publisher's transaction through `EmailService`

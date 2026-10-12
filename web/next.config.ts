@@ -29,7 +29,9 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Only the site, never the address of a page: a private address must not reach Google
+          // Analytics as the referrer of the public page a person opens next.
+          { key: "Referrer-Policy", value: "strict-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
         ],
       },
