@@ -1434,15 +1434,14 @@
         "featured": "Featured",
         "since": "Featured {day}",
         "feature": "Feature",
-        "unfeature": "Stop featuring",
-        "hint": "A featured solution comes first when the public directory opens, until a reader searches, filters or sorts; its card says Featured."
+        "unfeature": "Stop featuring"
       },
       "review": {
         "open": "Review",
         "approve": "Approve",
-        "sendBack": "Send back…",
-        "reject": "Reject…",
-        "takeDown": "Take down…",
+        "sendBack": "Send back",
+        "reject": "Reject",
+        "takeDown": "Take down",
         "restore": "Restore",
         "sendBackTitle": "Send {name} back?",
         "sendBackLead": "The owners read what you write and send it again. They are emailed.",
@@ -1461,8 +1460,7 @@
         "message": "Note (optional)",
         "messageHint": "They read this word for word.",
         "cancel": "Cancel",
-        "back": "Back",
-        "keys": "Keys: A approve · S send back"
+        "back": "Back"
       },
       "detail": {
         "back": "All solutions",

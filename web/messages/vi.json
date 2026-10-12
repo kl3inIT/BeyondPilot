@@ -1434,15 +1434,14 @@
         "featured": "Nổi bật",
         "since": "Nổi bật từ {day}",
         "feature": "Đặt nổi bật",
-        "unfeature": "Bỏ nổi bật",
-        "hint": "Giải pháp nổi bật hiện đầu tiên khi mở danh mục công khai, cho đến khi người đọc tìm kiếm, lọc hoặc sắp xếp; thẻ của nó ghi Nổi bật."
+        "unfeature": "Bỏ nổi bật"
       },
       "review": {
         "open": "Duyệt",
         "approve": "Duyệt",
-        "sendBack": "Trả lại…",
-        "reject": "Từ chối…",
-        "takeDown": "Gỡ xuống…",
+        "sendBack": "Trả lại",
+        "reject": "Từ chối",
+        "takeDown": "Gỡ xuống",
         "restore": "Khôi phục",
         "sendBackTitle": "Trả lại {name}?",
         "sendBackLead": "Chủ sở hữu đọc nội dung bạn viết rồi gửi lại. Họ nhận email.",
@@ -1461,8 +1460,7 @@
         "message": "Ghi chú (không bắt buộc)",
         "messageHint": "Người nhận đọc nguyên văn.",
         "cancel": "Hủy",
-        "back": "Quay lại",
-        "keys": "Phím: A duyệt · S trả lại"
+        "back": "Quay lại"
       },
       "detail": {
         "back": "Tất cả giải pháp",

@@ -77,8 +77,8 @@ function CustomerDeploymentsReview({ deployments }: { deployments: CustomerDeplo
           return (
             <li key={deployment.id} className="flex flex-col gap-3 rounded-xl border bg-card p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex flex-col gap-1">
-                  <h3 className="text-base font-medium">{deployment.title}</h3>
+                <div className="flex min-w-0 flex-col gap-1">
+                  <h3 className="text-base font-medium break-words">{deployment.title}</h3>
                   <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
                     <ReviewStatus state={deployment.status}>
                       {status(deployment.status)}
@@ -117,20 +117,20 @@ function CustomerDeploymentsReview({ deployments }: { deployments: CustomerDeplo
                 )}
               </div>
               <dl className="grid gap-3 text-sm md:grid-cols-2">
-                <div className="flex flex-col gap-0.5">
+                <div className="flex min-w-0 flex-col gap-0.5 break-words">
                   <dt className="font-medium">{t("problem")}</dt>
                   <dd className="whitespace-pre-line text-muted-foreground">
                     {deployment.problem}
                   </dd>
                 </div>
-                <div className="flex flex-col gap-0.5">
+                <div className="flex min-w-0 flex-col gap-0.5 break-words">
                   <dt className="font-medium">{t("delivered")}</dt>
                   <dd className="whitespace-pre-line text-muted-foreground">
                     {deployment.delivered}
                   </dd>
                 </div>
                 {facts.map((fact) => (
-                  <div key={fact.name} className="flex flex-col gap-0.5">
+                  <div key={fact.name} className="flex min-w-0 flex-col gap-0.5 break-words">
                     <dt className="font-medium">{fact.name}</dt>
                     <dd className="text-muted-foreground">{fact.value}</dd>
                   </div>
