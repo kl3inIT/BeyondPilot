@@ -47,10 +47,10 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<String>read(first, "$.proposal.status")).isEqualTo("draft");
 		String id = JsonPath.read(first, "$.proposal.id");
 		String teamed = body(put(provider.colleague,
-				path, attached(draft(provider.solution, "We adapt it to your onboarding flow.", file(provider.colleagueEmail),
+				path, draft(provider.solution, "We adapt it to your onboarding flow.", file(provider.colleagueEmail),
 						List.of(member(provider.founderId, " Project lead ", true),
 								member(provider.colleagueId, "AI engineer", false)),
-						proposalVersion(first))))
+						proposalVersion(first)))
 			.expectStatus()
 			.isOk());
 		assertThat(JsonPath.<List<String>>read(teamed, "$.proposal.team[*].role")).containsExactly("Project lead",
@@ -74,17 +74,20 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertProblem(put(provider.founder, path, draft(provider.solution, "Stale.", null, List.of(), proposalVersion(first))),
 				409, "PROPOSAL_CHANGED_MEANWHILE");
 
-		// A proposal that attaches the sender's profile needs the sender to have one.
+		// The sender is who the account says: a name, a country and a number come first.
 		assertProblem(post(provider.founder, API + "/use-case-proposals/" + id + "/send", null), 400,
-				"PROPOSAL_PROFILE_INCOMPLETE");
-		put(provider.founder, "/api/talent/mine", profile("Founder Provider")).expectStatus().isOk();
+				"PROPOSAL_CONTACT_REQUIRED");
+		reachable(provider.founder);
 		String sent = body(post(provider.founder, API + "/use-case-proposals/" + id + "/send", null).expectStatus()
 			.isOk());
 		assertThat(JsonPath.<String>read(sent, "$.proposal.status")).isEqualTo("sent");
 		assertThat(JsonPath.<String>read(sent, "$.proposal.sentAt")).isNotNull();
-		// The sender reads the profile as sent.
-		assertThat(JsonPath.<String>read(sent, "$.proposal.sender.name")).isEqualTo("Founder Provider");
-		assertThat(JsonPath.<String>read(sent, "$.proposal.sender.headline")).isEqualTo("Builds claims AI");
+		// The sender reads who sent it: the account's name, address, country and number.
+		assertThat(JsonPath.<Object>read(sent, "$.proposal.sender")).isNull();
+		assertThat(JsonPath.<String>read(sent, "$.proposal.sentBy.name")).isEqualTo("Founder Provider");
+		assertThat(JsonPath.<String>read(sent, "$.proposal.sentBy.email")).isEqualTo(provider.founderEmail);
+		assertThat(JsonPath.<String>read(sent, "$.proposal.sentBy.country")).isEqualTo("VN");
+		assertThat(JsonPath.<String>read(sent, "$.proposal.sentBy.phone")).isEqualTo("+84 912 345 678");
 		assertThat(JsonPath.<List<String>>read(sent, "$.proposal.team[*].name")).hasSize(2);
 
 		// The sender and each other member of the team are told, each in an email of their own with their role.
@@ -92,7 +95,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(mail.latestTextTo(provider.founderEmail)).contains("Project lead", "and as the primary contact")
 			.contains("/use-cases/" + useCase + "/propose/view")
 			.doesNotContain("colleague@sends.test");
-		assertThat(mail.latestTextTo(provider.colleagueEmail)).contains("AI engineer", "sent by founder@sends.test")
+		assertThat(mail.latestTextTo(provider.colleagueEmail)).contains("AI engineer", "sent by Founder Provider")
 			.doesNotContain("and as the primary contact");
 
 		// An approved solution carries its address, and its own logo when it has one.
@@ -133,29 +136,21 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		}
 		String one = body(get(poster.colleague, API + "/use-case-proposals/" + id).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(one, "$.approach")).isEqualTo("We adapt it to your onboarding flow.");
-		assertThat(JsonPath.<String>read(one, "$.sender.headline")).isEqualTo("Builds claims AI");
-		assertThat(JsonPath.<String>read(one, "$.sender.email")).isEqualTo(provider.founderEmail);
-		assertThat(JsonPath.<List<String>>read(one, "$.sender.skills")).containsExactly("Python", "LangGraph");
-		assertThat(one).doesNotContain("rateBand");
+		assertThat(JsonPath.<String>read(one, "$.sentBy.email")).isEqualTo(provider.founderEmail);
+		assertThat(JsonPath.<String>read(one, "$.sentBy.phone")).isEqualTo("+84 912 345 678");
 		assertThat(JsonPath.<List<String>>read(one, "$.team[*].role")).containsExactly("Project lead", "AI engineer");
 		assertThat(JsonPath.<String>read(one, "$.deck.fileName")).isEqualTo("proposal.pdf");
 		// An operator reads what any use case received; the PDF is found for them (the test has no bytes behind it).
 		assertThat(JsonPath.<List<String>>read(body(get(operator, path + "s").expectStatus().isOk()),
 				"$.items[*].organizationName")).containsExactly("Team sends.test");
 		assertThat(JsonPath.<String>read(body(get(operator, API + "/use-case-proposals/" + id).expectStatus().isOk()),
-				"$.sender.headline")).isEqualTo("Builds claims AI");
+				"$.sentBy.email")).isEqualTo(provider.founderEmail);
 		get(operator, API + "/use-case-proposals/" + id + "/file").expectStatus().value(status -> assertThat(status).isNotEqualTo(404));
 		assertProblem(get(provider.founder, path + "s"), 404, "PROPOSAL_USE_CASE_NOT_FOUND");
 		assertProblem(get(provider.founder, API + "/use-case-proposals/" + id), 404, "PROPOSAL_USE_CASE_NOT_FOUND");
 		assertProblem(get(TestSignIn.session(client, mail, "stranger@nowhere.test"), path + "s"), 404,
 				"PROPOSAL_USE_CASE_NOT_FOUND");
 
-		// What the sender showed is kept as it was when the profile changes later.
-		put(provider.founder, "/api/talent/mine", profile("Renamed Provider", profileVersion(provider.founder)))
-			.expectStatus()
-			.isOk();
-		String again = body(get(poster.founder, API + "/use-case-proposals/" + id).expectStatus().isOk());
-		assertThat(JsonPath.<String>read(again, "$.sender.name")).isEqualTo("Founder Provider");
 	}
 
 	@Test
@@ -218,6 +213,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 
 		// A member of another organization cannot send it.
 		assertProblem(post(waiting.founder, send, null), 404, "PROPOSAL_NOT_FOUND");
+		reachable(provider.founder);
 		post(provider.founder, send, null).expectStatus().isOk();
 	}
 
@@ -232,7 +228,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isOk());
 		String id = JsonPath.read(saved, "$.proposal.id");
-		put(provider.founder, "/api/talent/mine", profile("Closing Founder")).expectStatus().isOk();
+		reachable(provider.founder);
 
 		jdbc.sql("update use_case set closes_at = now() - interval '1 minute' where id = ?").params(useCase).update();
 
@@ -396,15 +392,15 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isOk());
 		String id = JsonPath.read(saved, "$.proposal.id");
+		reachable(loner);
 		String sent = body(post(loner, API + "/use-case-proposals/" + id + "/send", null).expectStatus().isOk());
 
-		// It has no profile and no team; it carries who sent it, and the poster sees it as pending.
-		assertThat(JsonPath.<Boolean>read(sent, "$.proposal.attachProfile")).isFalse();
+		// It has no team; it carries who sent it, and the poster sees it as pending.
 		assertThat(JsonPath.<Object>read(sent, "$.proposal.sender")).isNull();
 		assertThat(JsonPath.<String>read(sent, "$.proposal.sentBy.email")).isEqualTo("alone@waiting-send.test");
 		String list = body(get(poster.founder, path + "s").expectStatus().isOk());
 		assertThat(JsonPath.<List<Boolean>>read(list, "$.items[*].organizationApproved")).containsExactly(false);
-		assertThat(JsonPath.<List<String>>read(list, "$.items[*].contactName")).containsExactly("alone@waiting-send.test");
+		assertThat(JsonPath.<List<String>>read(list, "$.items[*].contactName")).containsExactly("Founder Provider");
 		String one = body(get(poster.founder, API + "/use-case-proposals/" + id).expectStatus().isOk());
 		assertThat(JsonPath.<Boolean>read(one, "$.organizationApproved")).isFalse();
 		assertThat(JsonPath.<String>read(one, "$.sentBy.email")).isEqualTo("alone@waiting-send.test");
@@ -417,7 +413,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isOk());
 		String id = JsonPath.read(saved, "$.proposal.id");
-		put(provider.founder, "/api/talent/mine", profile("Founder Provider")).expectStatus().isOk();
+		reachable(provider.founder);
 		post(provider.founder, API + "/use-case-proposals/" + id + "/send", null).expectStatus().isOk();
 		return id;
 	}
@@ -429,7 +425,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		Poster poster = poster("posts-merge.test");
 		UUID first = publishedUseCase(poster.organization, "Both have one");
 		UUID second = publishedUseCase(poster.organization, "Only the duplicate has one");
-		put(duplicate.founder, "/api/talent/mine", profile("Duplicate Founder")).expectStatus().isOk();
+		reachable(duplicate.founder);
 		for (UUID useCase : List.of(first, second)) {
 			String saved = body(put(duplicate.founder, path(useCase), draft(duplicate.solution, "Approach.",
 					file(duplicate.founderEmail), List.of(member(duplicate.founderId, "Lead", true)), null))
@@ -560,16 +556,9 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		return member;
 	}
 
-	/** The request, with the sender's talent profile going with the proposal. */
-	private static Map<String, Object> attached(Map<String, Object> request) {
-		request.put("attachProfile", true);
-		return request;
-	}
-
 	private static Map<String, Object> draft(UUID solution, String approach, UUID deck, List<Map<String, Object>> team,
 			Long version) {
 		Map<String, Object> request = new HashMap<>();
-		request.put("attachProfile", false);
 		request.put("solutionIds", solution == null ? List.of() : List.of(solution));
 		request.put("approach", approach);
 		request.put("deckFileId", deck);
@@ -578,35 +567,10 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		return request;
 	}
 
-	private static Map<String, Object> profile(String name) {
-		return profile(name, null);
-	}
-
-	private static Map<String, Object> profile(String name, Long version) {
-		Map<String, Object> request = new HashMap<>();
-		request.put("name", name);
-		request.put("headline", "Builds claims AI");
-		request.put("bio", "Ten years of machine learning in insurance.");
-		request.put("roles", List.of("ml_engineer"));
-		request.put("skills", List.of("Python", "LangGraph"));
-		request.put("country", "VN");
-		request.put("engagement", List.of("contract"));
-		request.put("rateBand", "50_100");
-		request.put("website", "https://example.test");
-		request.put("photoFileId", null);
-		request.put("city", "Ho Chi Minh City");
-		request.put("languages", List.of("vi", "en"));
-		request.put("industries", List.of("insurance"));
-		request.put("worksAt", "Revee AI");
-		request.put("projects", List.of(Map.of("title", "Claims triage", "year", 2025, "stage", "pilot")));
-		request.put("listed", true);
-		request.put("version", version);
-		return request;
-	}
-
-	private long profileVersion(String session) {
-		return JsonPath.<Number>read(body(get(session, "/api/talent/mine").expectStatus().isOk()), "$.profile.version")
-			.longValue();
+	/** Gives the account the name, the country and the number a proposal is sent with. */
+	private void reachable(String session) {
+		put(session, "/api/identity/me/contact",
+				Map.of("country", "VN", "phone", "+84 912 345 678", "name", "Founder Provider")).expectStatus().isOk();
 	}
 
 	private static long proposalVersion(String form) {
