@@ -52,6 +52,7 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 - **Server or client**: Server Components by default, `"use client"` on the smallest leaf; writes go to Spring with the CSRF header, never through Server Actions ([rendering, data and auth](../docs/conventions.md#rendering-data-and-auth)).
 - **Text**: every visible string in both catalogs; dates in `Asia/Ho_Chi_Minh`; backend failures shown by code ([internationalization](../docs/conventions.md#internationalization)).
 - **Errors and states**: `error.tsx`, `not-found.tsx` and `loading.tsx` per area; problem codes mapped to fields ([errors, loading and empty states](../docs/conventions.md#errors-loading-and-empty-states)).
+- **Forms**: `useAppForm` and the shared controls for every form that sends data, one field or many; hint and error tied to the field, a counter where a limit is set, focus on the first field in error ([forms](../docs/conventions.md#forms)).
 - **Styling**: semantic tokens only, no raw colours, inline styles or arbitrary values ([design tokens and styling](../docs/conventions.md#design-tokens-and-styling)).
 - **Components**: layer choice, naming, props, the `tone`/`prominence`/`size` action wrappers, states and accessibility ([components](../docs/conventions.md#components)).
 - **Libraries**: add a library with its first consumer ([stack](../docs/conventions.md#stack)).

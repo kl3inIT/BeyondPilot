@@ -1,11 +1,13 @@
 "use client";
 
+import { useStore } from "@tanstack/react-form";
 import { CircleCheckIcon, CircleXIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { useAppForm } from "@/components/form/app-form";
 import {
   Dialog,
   DialogContent,
@@ -93,17 +95,52 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
   const id = useId();
   const editing = provider !== undefined;
   const adapterType = provider?.adapterType ?? preset.adapterType;
-  const [name, setName] = useState(provider?.name ?? preset.name);
-  const [baseUrl, setBaseUrl] = useState(provider?.baseUrl ?? preset.baseUrl);
-  const [keyAction, setKeyAction] = useState<SaveChatProvider["key"]>(
-    provider?.hasKey ? "keep" : "replace",
-  );
-  const [apiKey, setApiKey] = useState("");
-  const [enabled, setEnabled] = useState(provider?.enabled ?? true);
   const [result, setResult] = useState<ChatProviderTest | null>(null);
   const [testing, setTesting] = useState(false);
-  const [saving, setSaving] = useState(false);
   const reported = useReportedModels();
+
+  const form = useAppForm({
+    defaultValues: {
+      name: provider?.name ?? preset.name,
+      baseUrl: provider?.baseUrl ?? preset.baseUrl,
+      keyAction: (provider?.hasKey ? "keep" : "replace") as SaveChatProvider["key"],
+      apiKey: "",
+      enabled: provider?.enabled ?? true,
+    },
+    onSubmit: async ({ value }) => {
+      const body: SaveChatProvider = {
+        adapterType,
+        name: value.name.trim(),
+        baseUrl: value.baseUrl.trim(),
+        enabled: value.enabled,
+        key: value.keyAction,
+        apiKey: (value.keyAction === "replace" && value.apiKey.trim()) || null,
+        version: provider?.version ?? 0,
+      };
+      try {
+        if (provider) {
+          await changeChatProvider({ path: { id: provider.id }, body });
+        } else {
+          const { data } = await connectChatProvider({ body });
+          const models = reported.chosen();
+          const created = data.providers.find((each) => each.name === body.name);
+          if (created && models.length > 0) {
+            await addChatModels({ path: { id: created.id }, body: { models } });
+          }
+        }
+        notify.success(editing ? "Admin.ai.chat.done.saved" : "Admin.ai.chat.done.connected", {
+          name: body.name,
+        });
+        close();
+      } catch (error) {
+        notify.error(chatError(error));
+      }
+      // The provider may be saved even when its models were refused, so the page is read again either way.
+      router.refresh();
+    },
+  });
+  const { name, baseUrl, keyAction, apiKey } = useStore(form.store, (state) => state.values);
+  const saving = useStore(form.store, (state) => state.isSubmitting);
 
   const address = baseUrl.trim();
   const typedKey = keyAction === "replace" ? apiKey.trim() : "";
@@ -121,16 +158,22 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
         }
       : null;
 
-  /** Closing forgets the key typed, so it lives no longer than the dialog. */
+  /** Closing forgets what was typed, so the key lives no longer than the dialog. */
+  function close() {
+    onOpenChange(false);
+    form.reset();
+    setResult(null);
+    reported.reset();
+  }
+
   function change(next: boolean) {
     if (saving) {
       return;
     }
-    onOpenChange(next);
-    if (!next) {
-      setApiKey("");
-      setResult(null);
-      reported.reset();
+    if (next) {
+      onOpenChange(true);
+    } else {
+      close();
     }
   }
 
@@ -156,46 +199,18 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
     }
   }
 
-  async function save(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    const body: SaveChatProvider = {
-      adapterType,
-      name: name.trim(),
-      baseUrl: address,
-      enabled,
-      key: keyAction,
-      apiKey: typedKey || null,
-      version: provider?.version ?? 0,
-    };
-    try {
-      if (provider) {
-        await changeChatProvider({ path: { id: provider.id }, body });
-      } else {
-        const { data } = await connectChatProvider({ body });
-        const models = reported.chosen();
-        const created = data.providers.find((each) => each.name === body.name);
-        if (created && models.length > 0) {
-          await addChatModels({ path: { id: created.id }, body: { models } });
-        }
-      }
-      notify.success(editing ? "Admin.ai.chat.done.saved" : "Admin.ai.chat.done.connected", {
-        name: body.name,
-      });
-      setSaving(false);
-      change(false);
-    } catch (error) {
-      notify.error(chatError(error));
-      setSaving(false);
-    }
-    // The provider may be saved even when its models were refused, so the page is read again either way.
-    router.refresh();
-  }
-
   return (
     <Dialog open={open} onOpenChange={change}>
       <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-140">
-        <form noValidate onSubmit={save} className="flex flex-col gap-4">
+        <form
+          id={form.formId}
+          noValidate
+          className="flex flex-col gap-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void form.handleSubmit();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>
               {editing
@@ -205,84 +220,89 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
             <DialogDescription>{editing ? t("editLead") : t("connectLead")}</DialogDescription>
           </DialogHeader>
           <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor={`${id}-name`}>{t("name")}</FieldLabel>
-              <Input
-                id={`${id}-name`}
-                maxLength={60}
-                required
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor={`${id}-endpoint`}>{t("endpoint")}</FieldLabel>
-              <Input
-                id={`${id}-endpoint`}
-                type="url"
-                inputMode="url"
-                spellCheck={false}
-                maxLength={2048}
-                required
-                aria-describedby={adapterType !== "anthropic" ? `${id}-endpoint-hint` : undefined}
-                value={baseUrl}
-                onChange={(event) => {
-                  setBaseUrl(event.target.value);
-                  connectionChanged();
-                }}
-              />
-              {adapterType !== "anthropic" && (
-                <FieldDescription id={`${id}-endpoint-hint`}>
-                  {t("endpointHint.openai")}
-                </FieldDescription>
+            <form.AppField name="name">
+              {(field) => <field.TextField label={t("name")} maxLength={60} required />}
+            </form.AppField>
+            <form.AppField name="baseUrl" listeners={{ onChange: connectionChanged }}>
+              {(field) => (
+                <field.TextField
+                  label={t("endpoint")}
+                  type="url"
+                  inputMode="url"
+                  spellCheck={false}
+                  maxLength={2048}
+                  required
+                  description={adapterType !== "anthropic" ? t("endpointHint.openai") : undefined}
+                />
               )}
-            </Field>
+            </form.AppField>
             <Field>
               <FieldLabel htmlFor={editing ? `${id}-key-action` : `${id}-key`}>
                 {t("apiKey")}
               </FieldLabel>
               {editing && (
-                <NativeSelect
-                  id={`${id}-key-action`}
-                  className="w-full"
-                  value={keyAction}
-                  onChange={(event) => {
-                    setKeyAction(event.target.value as SaveChatProvider["key"]);
-                    connectionChanged();
-                  }}
-                >
-                  <NativeSelectOption value="keep" disabled={!provider.hasKey}>
-                    {t("keyKeep")}
-                  </NativeSelectOption>
-                  <NativeSelectOption value="replace">{t("keyReplace")}</NativeSelectOption>
-                  <NativeSelectOption value="remove">{t("keyRemove")}</NativeSelectOption>
-                </NativeSelect>
+                <form.Field name="keyAction" listeners={{ onChange: connectionChanged }}>
+                  {(field) => (
+                    <NativeSelect
+                      id={`${id}-key-action`}
+                      className="w-full"
+                      aria-describedby={`${id}-key-hint`}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value as SaveChatProvider["key"])
+                      }
+                    >
+                      <NativeSelectOption value="keep" disabled={!provider.hasKey}>
+                        {t("keyKeep")}
+                      </NativeSelectOption>
+                      <NativeSelectOption value="replace">{t("keyReplace")}</NativeSelectOption>
+                      <NativeSelectOption value="remove">{t("keyRemove")}</NativeSelectOption>
+                    </NativeSelect>
+                  )}
+                </form.Field>
               )}
               {keyAction === "replace" && (
-                <Input
-                  id={`${id}-key`}
-                  aria-label={editing ? t("newKey") : undefined}
-                  type="password"
-                  autoComplete="off"
-                  spellCheck={false}
-                  maxLength={500}
-                  value={apiKey}
-                  onChange={(event) => {
-                    setApiKey(event.target.value);
-                    connectionChanged();
-                  }}
-                />
+                <form.Field name="apiKey" listeners={{ onChange: connectionChanged }}>
+                  {(field) => (
+                    <Input
+                      id={`${id}-key`}
+                      aria-label={editing ? t("newKey") : undefined}
+                      aria-describedby={`${id}-key-hint`}
+                      type="password"
+                      autoComplete="off"
+                      spellCheck={false}
+                      maxLength={500}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                    />
+                  )}
+                </form.Field>
               )}
-              <FieldDescription>{keyMoved ? t("keyMoved") : t("keyHint")}</FieldDescription>
+              <FieldDescription id={`${id}-key-hint`}>
+                {keyMoved ? t("keyMoved") : t("keyHint")}
+              </FieldDescription>
             </Field>
             {editing && (
-              <Field orientation="horizontal">
-                <Switch id={`${id}-enabled`} checked={enabled} onCheckedChange={setEnabled} />
-                <div className="flex flex-col gap-0.5">
-                  <FieldLabel htmlFor={`${id}-enabled`}>{t("enabled")}</FieldLabel>
-                  <FieldDescription>{t("enabledHint")}</FieldDescription>
-                </div>
-              </Field>
+              <form.Field name="enabled">
+                {(field) => (
+                  <Field orientation="horizontal">
+                    <Switch
+                      id={`${id}-enabled`}
+                      aria-describedby={`${id}-enabled-hint`}
+                      checked={field.state.value}
+                      onCheckedChange={field.handleChange}
+                    />
+                    <div className="flex flex-col gap-0.5">
+                      <FieldLabel htmlFor={`${id}-enabled`}>{t("enabled")}</FieldLabel>
+                      <FieldDescription id={`${id}-enabled-hint`}>
+                        {t("enabledHint")}
+                      </FieldDescription>
+                    </div>
+                  </Field>
+                )}
+              </form.Field>
             )}
           </FieldGroup>
 

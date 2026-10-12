@@ -119,6 +119,7 @@ function EmailAppearanceForm({
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <form
+          id={form.formId}
           noValidate
           className="flex flex-col gap-5 lg:w-96 lg:shrink-0"
           onSubmit={(event) => {

@@ -54,6 +54,7 @@ function KeyDateDialog({ value, onSave, onDelete, onClose }: DialogProps<KeyDate
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <form
+          id={form.formId}
           noValidate
           className="flex flex-col gap-4"
           onSubmit={(event) => {
@@ -138,6 +139,7 @@ function EventDialog({ value, onSave, onDelete, onClose }: DialogProps<EventValu
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <form
+          id={form.formId}
           noValidate
           className="flex flex-col gap-4"
           onSubmit={(event) => {
