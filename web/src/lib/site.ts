@@ -171,7 +171,7 @@ export const siteOrigin = "https://beyondpilot.ai";
  * The Google Analytics 4 stream of the public address, in the property GenAI Fund keeps. A
  * measurement ID is public: every visitor's browser reads it.
  */
-export const analyticsMeasurementId = "G-FZHWZJGCLJ";
+export const analyticsMeasurementId = "G-P8079QEEG2";
 
 /** The live campaign's program on BeyondPilot, where its page and its application form are. */
 export const liveCampaignSlug = "insurance-ai-tasco";
