@@ -1,10 +1,12 @@
 "use client";
 
+import { useStore } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { useAppForm } from "@/components/form/app-form";
 import {
   Dialog,
   DialogContent,
@@ -48,24 +50,64 @@ function ProviderEditor({ vendor, provider }: ProviderEditorProps) {
   const id = useId();
   const editing = provider !== undefined;
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState(provider?.name ?? t(`vendor.${vendor.id}`));
-  const [keyAction, setKeyAction] = useState<SaveAiProvider["key"]>(editing ? "keep" : "replace");
-  const [apiKey, setApiKey] = useState("");
+  // The model the test embeds with is not saved, so it is no field of the form.
   const [model, setModel] = useState(vendor.models[0] ?? "");
   const [result, setResult] = useState<AiProviderTest | null>(null);
   const [testing, setTesting] = useState(false);
-  const [saving, setSaving] = useState(false);
 
-  /** Closing forgets the key typed, so it lives no longer than the dialog. */
+  const form = useAppForm({
+    defaultValues: {
+      name: provider?.name ?? t(`vendor.${vendor.id}`),
+      keyAction: (editing ? "keep" : "replace") as SaveAiProvider["key"],
+      apiKey: "",
+    },
+    onSubmit: async ({ value }) => {
+      const key = value.keyAction === "replace" ? value.apiKey.trim() : "";
+      if (value.keyAction === "replace" && key === "") {
+        return;
+      }
+      const body: SaveAiProvider = {
+        vendor: vendor.id,
+        name: value.name.trim(),
+        baseUrl: vendor.baseUrl,
+        key: value.keyAction,
+        apiKey: key || null,
+        version: provider?.version ?? 0,
+      };
+      try {
+        if (provider) {
+          await updateAiProvider({ path: { id: provider.id }, body });
+        } else {
+          await createAiProvider({ body });
+        }
+        notify.success(editing ? "Admin.ai.done.saved" : "Admin.ai.done.connected", {
+          name: body.name,
+        });
+        close();
+        router.refresh();
+      } catch (error) {
+        notify.error(aiError(error));
+      }
+    },
+  });
+  const { name, keyAction, apiKey } = useStore(form.store, (state) => state.values);
+  const saving = useStore(form.store, (state) => state.isSubmitting);
+
+  /** Closing forgets what was typed, so the key lives no longer than the dialog. */
+  function close() {
+    setOpen(false);
+    form.reset();
+    setResult(null);
+  }
+
   function change(next: boolean) {
     if (saving) {
       return;
     }
-    setOpen(next);
-    if (!next) {
-      setApiKey("");
-      setResult(null);
-      setKeyAction(editing ? "keep" : "replace");
+    if (next) {
+      setOpen(true);
+    } else {
+      close();
     }
   }
 
@@ -93,38 +135,6 @@ function ProviderEditor({ vendor, provider }: ProviderEditorProps) {
     }
   }
 
-  async function save(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (keyMissing) {
-      return;
-    }
-    setSaving(true);
-    const body: SaveAiProvider = {
-      vendor: vendor.id,
-      name: name.trim(),
-      baseUrl: vendor.baseUrl,
-      key: keyAction,
-      apiKey: typedKey || null,
-      version: provider?.version ?? 0,
-    };
-    try {
-      if (provider) {
-        await updateAiProvider({ path: { id: provider.id }, body });
-      } else {
-        await createAiProvider({ body });
-      }
-      notify.success(editing ? "Admin.ai.done.saved" : "Admin.ai.done.connected", {
-        name: body.name,
-      });
-      setSaving(false);
-      change(false);
-      router.refresh();
-    } catch (error) {
-      notify.error(aiError(error));
-      setSaving(false);
-    }
-  }
-
   return (
     <>
       {editing ? (
@@ -143,7 +153,15 @@ function ProviderEditor({ vendor, provider }: ProviderEditorProps) {
       )}
       <Dialog open={open} onOpenChange={change}>
         <DialogContent className="sm:max-w-120">
-          <form noValidate onSubmit={save} className="flex flex-col gap-4">
+          <form
+            id={form.formId}
+            noValidate
+            className="flex flex-col gap-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void form.handleSubmit();
+            }}
+          >
             <DialogHeader>
               <DialogTitle>
                 {editing
@@ -153,52 +171,66 @@ function ProviderEditor({ vendor, provider }: ProviderEditorProps) {
               <DialogDescription>{editing ? t("editLead") : t("connectLead")}</DialogDescription>
             </DialogHeader>
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor={`${id}-name`}>{t("name")}</FieldLabel>
-                <Input
-                  id={`${id}-name`}
-                  maxLength={60}
-                  required
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                />
-              </Field>
+              <form.AppField name="name">
+                {(field) => <field.TextField label={t("name")} maxLength={60} required />}
+              </form.AppField>
               <Field>
                 <FieldLabel htmlFor={`${id}-address`}>{t("address")}</FieldLabel>
-                <Input id={`${id}-address`} value={vendor.baseUrl} readOnly />
-                <FieldDescription>{t("addressHint")}</FieldDescription>
+                <Input
+                  id={`${id}-address`}
+                  value={vendor.baseUrl}
+                  readOnly
+                  aria-describedby={`${id}-address-hint`}
+                />
+                <FieldDescription id={`${id}-address-hint`}>{t("addressHint")}</FieldDescription>
               </Field>
               <Field data-invalid={keyMissing && apiKey !== "" ? true : undefined}>
                 <FieldLabel htmlFor={editing ? `${id}-key-action` : `${id}-key`}>
                   {t("apiKey")}
                 </FieldLabel>
                 {editing && (
-                  <NativeSelect
-                    id={`${id}-key-action`}
-                    className="w-full"
-                    value={keyAction}
-                    onChange={(event) => setKeyAction(event.target.value as SaveAiProvider["key"])}
-                  >
-                    <NativeSelectOption value="keep" disabled={!provider.hasKey}>
-                      {t("keyKeep")}
-                    </NativeSelectOption>
-                    <NativeSelectOption value="replace">{t("keyReplace")}</NativeSelectOption>
-                    <NativeSelectOption value="remove">{t("keyRemove")}</NativeSelectOption>
-                  </NativeSelect>
+                  <form.Field name="keyAction">
+                    {(field) => (
+                      <NativeSelect
+                        id={`${id}-key-action`}
+                        className="w-full"
+                        aria-describedby={`${id}-key-hint`}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value as SaveAiProvider["key"])
+                        }
+                      >
+                        <NativeSelectOption value="keep" disabled={!provider.hasKey}>
+                          {t("keyKeep")}
+                        </NativeSelectOption>
+                        <NativeSelectOption value="replace">{t("keyReplace")}</NativeSelectOption>
+                        <NativeSelectOption value="remove">{t("keyRemove")}</NativeSelectOption>
+                      </NativeSelect>
+                    )}
+                  </form.Field>
                 )}
                 {keyAction === "replace" && (
-                  <Input
-                    id={`${id}-key`}
-                    aria-label={editing ? t("newKey") : undefined}
-                    type="password"
-                    autoComplete="off"
-                    spellCheck={false}
-                    maxLength={500}
-                    value={apiKey}
-                    onChange={(event) => setApiKey(event.target.value)}
-                  />
+                  <form.Field name="apiKey">
+                    {(field) => (
+                      <Input
+                        id={`${id}-key`}
+                        aria-label={editing ? t("newKey") : undefined}
+                        aria-describedby={`${id}-key-hint`}
+                        type="password"
+                        autoComplete="off"
+                        spellCheck={false}
+                        maxLength={500}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) => field.handleChange(event.target.value)}
+                      />
+                    )}
+                  </form.Field>
                 )}
-                <FieldDescription>{t(`keyHint.${vendor.id}`)}</FieldDescription>
+                <FieldDescription id={`${id}-key-hint`}>
+                  {t(`keyHint.${vendor.id}`)}
+                </FieldDescription>
               </Field>
             </FieldGroup>
 

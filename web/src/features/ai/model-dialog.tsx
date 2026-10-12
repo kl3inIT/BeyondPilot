@@ -1,12 +1,13 @@
 "use client";
 
+import { useStore } from "@tanstack/react-form";
 import { CircleCheckIcon, CircleXIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useAppForm } from "@/components/form/app-form";
 import {
   Dialog,
   DialogContent,
@@ -60,32 +61,77 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
   const router = useRouter();
   const id = useId();
   const editing = model !== undefined;
-  const [modelName, setModelName] = useState(model?.modelName ?? "");
-  const [displayName, setDisplayName] = useState(model?.displayName ?? "");
-  const [contextWindow, setContextWindow] = useState(String(model?.contextWindow ?? 32000));
-  const [maxOutput, setMaxOutput] = useState(String(model?.maxOutputTokens ?? ""));
-  const [inputPrice, setInputPrice] = useState(String(model?.inputPrice ?? ""));
-  const [outputPrice, setOutputPrice] = useState(String(model?.outputPrice ?? ""));
-  const [cachedPrice, setCachedPrice] = useState(String(model?.cachedInputPrice ?? ""));
-  const [toolCalling, setToolCalling] = useState(model?.toolCalling ?? true);
-  const [vision, setVision] = useState(model?.vision ?? false);
-  const [reasoning, setReasoning] = useState(model?.reasoning ?? false);
   const [result, setResult] = useState<ChatModelTest | null>(null);
   const [testing, setTesting] = useState(false);
-  const [saving, setSaving] = useState(false);
+
+  const form = useAppForm({
+    defaultValues: {
+      modelName: model?.modelName ?? "",
+      displayName: model?.displayName ?? "",
+      contextWindow: String(model?.contextWindow ?? 32000),
+      maxOutput: String(model?.maxOutputTokens ?? ""),
+      inputPrice: String(model?.inputPrice ?? ""),
+      outputPrice: String(model?.outputPrice ?? ""),
+      cachedPrice: String(model?.cachedInputPrice ?? ""),
+      toolCalling: model?.toolCalling ?? true,
+      vision: model?.vision ?? false,
+      reasoning: model?.reasoning ?? false,
+    },
+    onSubmit: async ({ value }) => {
+      const contextWindow = numberOf(value.contextWindow);
+      if (invalid || contextWindow === null) {
+        return;
+      }
+      const body: SaveChatModel = {
+        modelName: value.modelName.trim(),
+        displayName: value.displayName.trim() || null,
+        contextWindow,
+        maxOutputTokens: numberOf(value.maxOutput),
+        inputPrice: numberOf(value.inputPrice),
+        outputPrice: numberOf(value.outputPrice),
+        cachedInputPrice: numberOf(value.cachedPrice),
+        toolCalling: value.toolCalling,
+        vision: value.vision,
+        reasoning: value.reasoning,
+        version: model?.version ?? 0,
+      };
+      try {
+        if (model) {
+          await changeChatModel({ path: { id: model.id }, body });
+          notify.success("Admin.ai.chat.done.modelSaved", { name: body.modelName });
+        } else {
+          await addChatModels({ path: { id: provider.id }, body: { models: [body] } });
+          notify.success("Admin.ai.chat.done.modelsAdded", { count: 1 });
+        }
+        close();
+        router.refresh();
+      } catch (error) {
+        notify.error(chatError(error));
+      }
+    },
+  });
+  const { modelName, contextWindow, maxOutput } = useStore(form.store, (state) => state.values);
+  const saving = useStore(form.store, (state) => state.isSubmitting);
 
   const context = numberOf(contextWindow);
   const output = numberOf(maxOutput);
   const outputTooLarge = context !== null && output !== null && output >= context;
   const invalid = modelName.trim() === "" || context === null || context < 1 || outputTooLarge;
 
+  function close() {
+    onOpenChange(false);
+    form.reset();
+    setResult(null);
+  }
+
   function change(next: boolean) {
     if (saving) {
       return;
     }
-    onOpenChange(next);
-    if (!next) {
-      setResult(null);
+    if (next) {
+      onOpenChange(true);
+    } else {
+      close();
     }
   }
 
@@ -105,73 +151,18 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
     }
   }
 
-  async function save(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (invalid || context === null) {
-      return;
-    }
-    setSaving(true);
-    const body: SaveChatModel = {
-      modelName: modelName.trim(),
-      displayName: displayName.trim() || null,
-      contextWindow: context,
-      maxOutputTokens: output,
-      inputPrice: numberOf(inputPrice),
-      outputPrice: numberOf(outputPrice),
-      cachedInputPrice: numberOf(cachedPrice),
-      toolCalling,
-      vision,
-      reasoning,
-      version: model?.version ?? 0,
-    };
-    try {
-      if (model) {
-        await changeChatModel({ path: { id: model.id }, body });
-        notify.success("Admin.ai.chat.done.modelSaved", { name: body.modelName });
-      } else {
-        await addChatModels({ path: { id: provider.id }, body: { models: [body] } });
-        notify.success("Admin.ai.chat.done.modelsAdded", { count: 1 });
-      }
-      setSaving(false);
-      change(false);
-      router.refresh();
-    } catch (error) {
-      notify.error(chatError(error));
-      setSaving(false);
-    }
-  }
-
-  const amount = (
-    key: "inputPrice" | "outputPrice" | "cachedPrice",
-    value: string,
-    set: (next: string) => void,
-  ) => (
-    <Field>
-      <FieldLabel htmlFor={`${id}-${key}`}>{t(key)}</FieldLabel>
-      <Input
-        id={`${id}-${key}`}
-        inputMode="decimal"
-        aria-describedby={`${id}-prices-hint`}
-        value={value}
-        onChange={(event) => set(event.target.value)}
-      />
-    </Field>
-  );
-  const capability = (
-    key: "toolCalling" | "vision" | "reasoning",
-    value: boolean,
-    set: (next: boolean) => void,
-  ) => (
-    <Field orientation="horizontal">
-      <Checkbox id={`${id}-${key}`} checked={value} onCheckedChange={set} />
-      <FieldLabel htmlFor={`${id}-${key}`}>{t(key)}</FieldLabel>
-    </Field>
-  );
-
   return (
     <Dialog open={open} onOpenChange={change}>
       <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-140">
-        <form noValidate onSubmit={save} className="flex flex-col gap-4">
+        <form
+          id={form.formId}
+          noValidate
+          className="flex flex-col gap-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void form.handleSubmit();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>
               {editing
@@ -180,61 +171,64 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
             </DialogTitle>
           </DialogHeader>
           <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor={`${id}-model`}>{t("modelName")}</FieldLabel>
-              <Input
-                id={`${id}-model`}
-                spellCheck={false}
-                maxLength={200}
-                required
-                readOnly={editing}
-                aria-describedby={editing ? undefined : `${id}-model-hint`}
-                value={modelName}
-                onChange={(event) => setModelName(event.target.value)}
-              />
-              {!editing && (
-                <FieldDescription id={`${id}-model-hint`}>{t("modelNameHint")}</FieldDescription>
-              )}
-            </Field>
-            <Field>
-              <FieldLabel htmlFor={`${id}-display`}>{t("displayName")}</FieldLabel>
-              <Input
-                id={`${id}-display`}
-                maxLength={200}
-                aria-describedby={`${id}-display-hint`}
-                value={displayName}
-                onChange={(event) => setDisplayName(event.target.value)}
-              />
-              <FieldDescription id={`${id}-display-hint`}>{t("displayNameHint")}</FieldDescription>
-            </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field>
-                <FieldLabel htmlFor={`${id}-context`}>{t("contextWindow")}</FieldLabel>
-                <Input
-                  id={`${id}-context`}
-                  inputMode="numeric"
+            <form.AppField name="modelName">
+              {(field) => (
+                <field.TextField
+                  label={t("modelName")}
+                  spellCheck={false}
+                  maxLength={200}
                   required
-                  value={contextWindow}
-                  onChange={(event) => setContextWindow(event.target.value)}
+                  readOnly={editing}
+                  description={editing ? undefined : t("modelNameHint")}
                 />
-              </Field>
-              <Field data-invalid={outputTooLarge || undefined}>
-                <FieldLabel htmlFor={`${id}-output`}>{t("maxOutput")}</FieldLabel>
-                <Input
-                  id={`${id}-output`}
-                  inputMode="numeric"
-                  aria-invalid={outputTooLarge || undefined}
-                  aria-describedby={`${id}-output-hint`}
-                  value={maxOutput}
-                  onChange={(event) => setMaxOutput(event.target.value)}
+              )}
+            </form.AppField>
+            <form.AppField name="displayName">
+              {(field) => (
+                <field.TextField
+                  label={t("displayName")}
+                  maxLength={200}
+                  description={t("displayNameHint")}
                 />
-              </Field>
+              )}
+            </form.AppField>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <form.AppField name="contextWindow">
+                {(field) => (
+                  <field.TextField label={t("contextWindow")} inputMode="numeric" required />
+                )}
+              </form.AppField>
+              {/* Marked as soon as it reaches the context window, whichever of the two was typed. */}
+              <form.Field name="maxOutput">
+                {(field) => (
+                  <Field data-invalid={outputTooLarge || undefined}>
+                    <FieldLabel htmlFor={`${id}-output`}>{t("maxOutput")}</FieldLabel>
+                    <Input
+                      id={`${id}-output`}
+                      inputMode="numeric"
+                      aria-invalid={outputTooLarge || undefined}
+                      aria-describedby={`${id}-output-hint`}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                    />
+                  </Field>
+                )}
+              </form.Field>
             </div>
             <FieldDescription id={`${id}-output-hint`}>{t("maxOutputHint")}</FieldDescription>
             <div className="grid gap-4 sm:grid-cols-3">
-              {amount("inputPrice", inputPrice, setInputPrice)}
-              {amount("outputPrice", outputPrice, setOutputPrice)}
-              {amount("cachedPrice", cachedPrice, setCachedPrice)}
+              {(["inputPrice", "outputPrice", "cachedPrice"] as const).map((key) => (
+                <form.AppField key={key} name={key}>
+                  {(field) => (
+                    <field.TextField
+                      label={t(key)}
+                      inputMode="decimal"
+                      aria-describedby={`${id}-prices-hint`}
+                    />
+                  )}
+                </form.AppField>
+              ))}
             </div>
             <FieldDescription id={`${id}-prices-hint`}>
               {model && !model.priceFromCatalog ? t("pricesOwn") : t("pricesFromCatalog")}
@@ -242,9 +236,11 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
             <FieldSet>
               <FieldLegend variant="label">{t("capabilities")}</FieldLegend>
               <div className="flex flex-col gap-2">
-                {capability("toolCalling", toolCalling, setToolCalling)}
-                {capability("vision", vision, setVision)}
-                {capability("reasoning", reasoning, setReasoning)}
+                {(["toolCalling", "vision", "reasoning"] as const).map((key) => (
+                  <form.AppField key={key} name={key}>
+                    {(field) => <field.CheckboxField label={t(key)} />}
+                  </form.AppField>
+                ))}
               </div>
             </FieldSet>
           </FieldGroup>
