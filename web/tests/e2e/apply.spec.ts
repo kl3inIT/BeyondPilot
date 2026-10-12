@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
-import { emptyView, submittedId, tascoQuestions } from "./stub-applications.mjs";
+import { draftId, emptyView, submittedId, tascoQuestions } from "./stub-applications.mjs";
 
 const applyPath = "/programs/insurance-ai-tasco/apply";
 const email = "an.tran@example.com";
@@ -302,6 +302,14 @@ test.describe("apply", () => {
       await expect(currentStep(page)).toHaveText(/You and your team/);
       await expect(steps(page).getByRole("button")).toHaveCount(0);
     }
+    // Below 640px the header has no room for the program's name: it stands under the bar of steps.
+    const program = page.locator("p").filter({ hasText: "AI for Insurance Challenge × Tasco" });
+    if (isMobile) {
+      await expect(program).toBeVisible();
+    } else {
+      await expect(program).toBeHidden();
+      await expect(page.getByRole("banner")).toContainText("AI for Insurance Challenge × Tasco");
+    }
     // Who applies is kept with the account, so nobody is chosen for the person.
     await expect(page.getByRole("radio", { name: /Individual/ })).not.toBeChecked();
     await page.getByRole("button", { name: "Continue" }).click();
@@ -342,6 +350,10 @@ test.describe("apply", () => {
       );
     } else {
       await expect(currentStep(page)).toHaveText(/Your solution/);
+      // The step left behind holds what it needs, and says so beside its check.
+      await expect(steps(page).getByRole("listitem").first()).toHaveText(
+        /You and your team\s*Complete/,
+      );
     }
     // The step was saved before who applies was kept, so a refused save leaves no organization.
     const organized = calls.findIndex((call) => call.call.endsWith("/application/organization"));
@@ -408,6 +420,8 @@ test.describe("apply", () => {
 
     // Step 4: everything once more, then a confirmation before it goes.
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Review and submit");
+    // Every step holds what it needs, so no line is marked and Submit is open.
+    await expect(page.getByText("Missing", { exact: true })).toHaveCount(0);
     await expect(page.getByText("Claim Copilot").first()).toBeVisible();
     await expect(page.getByText("OpenAI GPT")).toBeVisible();
     await expect(page.getByText("Claims Fraud")).toBeVisible();
@@ -519,6 +533,80 @@ test.describe("apply", () => {
     await expect(
       page.getByText("Join your company, or add it, before you continue."),
     ).toBeVisible();
+  });
+
+  test("a draft is taken up at the step that lacks something, and the review holds Submit until it is filled in", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "member", baseURL!);
+    await page.goto(applyPath);
+    // Everything is filled in but the deck of step 2, so the form opens there, not at step 1.
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your solution");
+    await expect(page.getByLabel("Solution name")).toHaveValue("Claim Copilot");
+
+    // A step named in the address is the one shown. On the review the line of the deck says it is
+    // missing, and Submit waits, with the reason beside it.
+    await page.goto(`${applyPath}?step=4`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Review and submit");
+    const solution = page.locator("section").filter({
+      has: page.getByRole("heading", { name: "Your solution" }),
+    });
+    await expect(solution.getByText("Missing", { exact: true })).toHaveCount(1);
+    await expect(page.getByText("Missing", { exact: true })).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Submit application" })).toBeDisabled();
+    await expect(
+      page.getByText(
+        "Something required is still missing. Fill in the lines marked Missing to submit.",
+      ),
+    ).toBeVisible();
+    await settled(page);
+
+    // The line leads to its step and to the field: here the button that opens the upload.
+    await page.getByRole("button", { name: "Fill in Solution deck" }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your solution");
+    await expect(page).toHaveURL(/step=2/);
+    await expect(page.getByRole("button", { name: /Choose a PDF/ })).toBeFocused();
+  });
+
+  test("someone who has submitted returns to the review, and a step in the address is respected", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await page.goto(applyPath);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Review and submit");
+    await expect(page.getByRole("button", { name: "Submit changes" })).toBeEnabled();
+
+    await page.goto(`${applyPath}?step=1`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("You and your team");
+  });
+
+  test("a draft's own page leads with where it stands and Continue", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "member", baseURL!);
+    await page.goto(`/applications/${draftId}`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Claim Copilot");
+    const standing = page.getByRole("complementary", { name: "Where it stands" });
+    await expect(standing.getByRole("link", { name: "Continue application" })).toHaveAttribute(
+      "href",
+      "/programs/insurance-ai-tasco/apply",
+    );
+    // Below 1024px the page is one column: where it stands comes before what the draft holds.
+    const stands = await standing.boundingBox();
+    const holds = await page.getByText("Two pilots with insurers.").boundingBox();
+    if (isMobile) {
+      expect(stands!.y).toBeLessThan(holds!.y);
+    } else {
+      expect(stands!.x).toBeGreaterThan(holds!.x);
+    }
+    await settled(page);
   });
 
   test("the receipt, My applications and an application, which can be withdrawn", async ({

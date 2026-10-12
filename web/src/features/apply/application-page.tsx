@@ -24,6 +24,9 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
   // Where the program takes no changes after submission, a withdrawn application stays withdrawn too.
   const changeable =
     program.open && (application.status === "draft" || program.allowUpdatesUntilClose);
+  // A draft is unfinished work: where it stands and the way on come before what it holds so far,
+  // in the page and so on a phone; from 1024px they stay the column beside it.
+  const draft = application.status === "draft";
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
@@ -55,12 +58,18 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="min-w-0 flex-1">
-          <ApplicationSummary view={view} />
-        </div>
+        {!draft && (
+          <div className="min-w-0 flex-1">
+            <ApplicationSummary view={view} />
+          </div>
+        )}
         <aside
           aria-label={t("whereItStands")}
-          className="flex flex-col gap-4 rounded-2xl border bg-card p-5 lg:sticky lg:top-6 lg:w-80"
+          className={
+            draft
+              ? "flex flex-col gap-4 rounded-2xl border bg-card p-5 lg:sticky lg:top-6 lg:order-last lg:w-80"
+              : "flex flex-col gap-4 rounded-2xl border bg-card p-5 lg:sticky lg:top-6 lg:w-80"
+          }
         >
           <h2 className="font-medium">{t("whereItStands")}</h2>
           {application.outcome && (
@@ -94,8 +103,11 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
           </dl>
           {changeable ? (
             <div className="flex flex-col gap-2 border-t pt-4">
-              <Button prominence="secondary" href={programApplyRoute(program.slug)}>
-                {application.status === "draft" ? t("continue") : t("edit")}
+              <Button
+                prominence={draft ? "primary" : "secondary"}
+                href={programApplyRoute(program.slug)}
+              >
+                {draft ? t("continue") : t("edit")}
               </Button>
               <p className="text-xs text-muted-foreground">
                 {t("editHint", { when: format.deadline(program.closesAt) })}
@@ -114,6 +126,11 @@ async function ApplicationPage({ view }: { view: ApplicationView }) {
             </p>
           )}
         </aside>
+        {draft && (
+          <div className="min-w-0 flex-1">
+            <ApplicationSummary view={view} />
+          </div>
+        )}
       </div>
     </div>
   );
