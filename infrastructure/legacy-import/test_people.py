@@ -12,9 +12,10 @@ def person(key, company, email, position=None, registered="2025-01-01", title=No
 
 
 class InvitationTest(unittest.TestCase):
-    organizations = {"solo": records.ident("startup-organization", "SOLO"),
-                     "team": records.ident("startup-organization", "TEAM"),
-                     "flat": records.ident("startup-organization", "FLAT")}
+    organizations = {"solo": people.Company(records.ident("startup-organization", "SOLO"), domain="solo.example"),
+                     "team": people.Company(records.ident("startup-organization", "TEAM"), domain="team.example"),
+                     "flat": people.Company(records.ident("startup-organization", "FLAT"), domain="flat.example"),
+                     "bare": people.Company(records.ident("startup-organization", "BARE"))}
 
     def roles(self, rows):
         found, left_out = people.invitations(rows, "startupId", self.organizations)
@@ -43,6 +44,19 @@ class InvitationTest(unittest.TestCase):
 
         self.assertEqual(roles, {"first@flat.example": "owner", "second@flat.example": "member"})
 
+    def test_only_an_address_on_the_companys_own_website_is_invited(self):
+        roles, left_out = self.roles([
+            person("1", "team", "founder@gmail.com", "Founder", "2025-01-01"),
+            person("2", "team", "helper@agency.example", "Founder", "2025-01-02"),
+            person("3", "team", "dev@mail.team.example", "Developer / Engineer", "2025-01-03"),
+            person("4", "bare", "a@bare.example", "Founder"),
+        ])
+
+        # The founder on a public mail service is not surely the company's, so the person who is owns it.
+        self.assertEqual(roles, {"dev@mail.team.example": "owner"})
+        self.assertEqual(left_out["the address is not on their company's website"], 2)
+        self.assertEqual(left_out["their company has no website of its own to tell whose it is"], 1)
+
     def test_a_person_without_an_address_or_a_loaded_company_gets_none(self):
         roles, left_out = self.roles([
             person("1", "solo", "not an address"),
@@ -62,19 +76,41 @@ class InvitationTest(unittest.TestCase):
         self.assertEqual(first[0].id, second[0].id)
 
     def test_a_test_startup_gives_its_people_no_organization(self):
-        found = people.startup_organizations([
-            {"id": "a", "startup_code": "REAL", "company_name": "Real", "is_active": True},
+        found = people.startup_companies([
+            {"id": "a", "startup_code": "REAL", "company_name": "Real", "is_active": True,
+             "website": "https://www.real.example/en"},
             {"id": "b", "startup_code": "TEST", "company_name": "Test", "is_active": True},
             {"id": "c", "startup_code": None, "company_name": "No Code"},
         ])
 
-        self.assertEqual(found, {"a": records.ident("startup-organization", "REAL")})
+        self.assertEqual(found, {"a": people.Company(records.ident("startup-organization", "REAL"),
+                                                     domain="real.example")})
+
+    def test_an_enterprise_carries_the_name_and_website_that_find_the_organization_standing_for_it(self):
+        found = people.enterprise_companies([
+            {"id": "e", "companyName": "Acme Pte. Ltd.", "website": "www.acme.example/vn"},
+            {"id": "t", "companyName": "Test"},
+        ])
+
+        self.assertEqual(found, {"e": people.Company(records.ident("enterprise-organization", "e"), "Acme Pte. Ltd.",
+                                                     "acme.example")})
+
+    def test_a_person_of_an_enterprise_is_invited_by_the_enterprise_column(self):
+        companies = {"e": people.Company(records.ident("enterprise-organization", "e"), "Acme", "acme.example")}
+        rows = [{"id": "1", "startupId": "solo", "enterpriseId": "e", "email": "a@acme.example", "createdAt": "2025"}]
+
+        found, _ = people.invitations(rows, "enterpriseId", companies)
+        text = people.sql(found)
+
+        self.assertEqual([(one.email, one.role) for one in found], [("a@acme.example", "owner")])
+        self.assertIn("'a@acme.example', 'owner', 'Acme', 'acme.example');", text)
+        self.assertIn("no organization here is surely their company", text)
 
     def test_the_invitation_is_an_operators_and_sends_nothing(self):
         found, _ = people.invitations([person("1", "solo", "a@solo.example")], "startupId", self.organizations)
         text = people.sql(found)
 
-        self.assertIn("'a@solo.example', 'owner', null);", text)
+        self.assertIn("'a@solo.example', 'owner', null, 'solo.example');", text)
         self.assertIn("sent_by_operator", text)
         self.assertIn("the address belongs to an organization already", text)
         self.assertIn("the address is an operator account", text)

@@ -129,7 +129,8 @@ def fill_sql(organizations: list[records.Organization]) -> str:
     return "\n".join(lines) + FILL
 
 
-CREATE = r"""
+# How the load tells that an organization here is the company a v1 record names.
+SAME_COMPANY = r"""
 -- A name as mapping.normalised_name reads it: lowercase, without the legal form, letters and digits only.
 create function pg_temp.name_key(name text) returns text language sql immutable as $$
     select regexp_replace(regexp_replace(lower(coalesce(name, '')),
@@ -141,7 +142,9 @@ $$;
 create function pg_temp.host(website text) returns text language sql immutable as $$
     select regexp_replace(regexp_replace(lower(coalesce(website, '')), '^[a-z]+://(www\.)?', ''), '[/:?#].*$', '')
 $$;
+"""
 
+CREATE = SAME_COMPANY + r"""
 -- Why an enterprise gets no organization, or null when it gets one.
 create function pg_temp.taken(candidate uuid, its_name text, its_domain text) returns text language plpgsql as $$
 begin
