@@ -352,6 +352,34 @@ The words that explain a screen: the line under a title, the hint under a field,
 - A tooltip that opens on hover holds no information. It names a control that is only an icon, and nothing else.
 - A placeholder is not a hint or an example: it leaves when typing starts, and it reads as a value already there.
 
+### Action words
+
+One action has one word, on a button, a menu item, a link that acts and the `aria-label` that names it, in both languages. A dialog's title and the toast that follows use the word of the button.
+
+| Action                                           | English                                | Vietnamese                   |
+| ------------------------------------------------ | -------------------------------------- | ---------------------------- |
+| Save a form that edits what exists               | Save changes                           | Lưu thay đổi                 |
+| Save for the first time, or in a small dialog    | Save                                   | Lưu                          |
+| Save a draft                                     | Save draft                             | Lưu nháp                     |
+| Save and do something more                       | Save and exit, Save and publish        | Lưu và thoát, Lưu và công bố |
+| Throw unsaved changes away                       | Discard changes                        | Bỏ thay đổi                  |
+| Leave a form or a dialog without doing the thing | Cancel                                 | Hủy                          |
+| Shut what only shows                             | Close                                  | Đóng                         |
+| Open something to change it                      | Edit                                   | Sửa                          |
+| Replace one value (a model, a photo, an answer)  | Change                                 | Đổi                          |
+| End the thing itself                             | Delete                                 | Xóa                          |
+| Take out of a list or a relation                 | Remove                                 | Gỡ                           |
+| Empty the search and filters of a list           | Clear filters                          | Xóa bộ lọc                   |
+| Empty a search that has no filters               | Clear search                           | Xóa tìm kiếm                 |
+| Empty a selection                                | Clear selection                        | Bỏ chọn                      |
+| Send a record to GenAI Fund's review             | Send for review, Send for review again | Gửi duyệt, Gửi duyệt lại     |
+
+- **Save.** "Update" is not a word for saving. A save names its object ("Save offers") only where two saves stand on one screen.
+- **Delete or Remove.** Delete ends the thing: a draft, a provider, an offer, a profile. Remove takes it out of a list or a relation while it, or the record that holds it, lives on: a member from an organization, a judge from a program, a model from a provider, a file from a field, a row from a form that is not saved yet. A soft delete still reads Delete when the person thinks of the thing as gone. Withdraw, Take down, Hide, Unpublish and Decline keep their own words.
+- **Cancel.** The safe choice of a confirmation may name what it keeps instead: "Keep it", "Keep editing".
+- **Review.** What is sent is then "In review". An application to a program is the exception: it is submitted ("Submit application"), and its status is "Submitted".
+- **Vietnamese spelling.** The tone mark sits where the catalog had it most: "Xóa", "Hủy", "khóa", "hóa", "thỏa", never "Xoá", "Huỷ", "khoá", "hoá", "thoả". A file is "tệp" and an application is "đơn".
+
 ### Errors, loading and empty states
 
 - `src/app/global-error.tsx` and an `error.tsx` per area show safe copy, Next's `digest` as a reference, and a retry action. Each area has a `not-found.tsx`; unknown paths under a locale render the localized not-found page through `[...rest]`.
