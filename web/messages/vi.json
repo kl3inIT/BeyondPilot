@@ -1424,9 +1424,8 @@
       "create": {
         "action": "Tạo giải pháp",
         "title": "Tạo giải pháp",
-        "lead": "Bạn viết trong trình soạn rồi đăng ngay, không qua duyệt. Giải pháp thuộc tổ chức bạn chọn.",
         "organization": "Tổ chức",
-        "organizationPlaceholder": "Chọn tổ chức",
+        "organizationPlaceholder": "Tìm hoặc chọn tổ chức",
         "organizationRequired": "Hãy chọn một tổ chức.",
         "noOrganizations": "Chưa có tổ chức nào được duyệt.",
         "name": "Tên giải pháp",
@@ -4557,8 +4556,7 @@
         "deck": "Tải tài liệu giới thiệu",
         "registeredIn": "Đăng ký tại",
         "deckSize": "Tải tài liệu giới thiệu ({size})",
-        "basedIn": "Trụ sở tại",
-        "lead": "Email của bạn được giữ kín cho đến khi bạn trả lời."
+        "basedIn": "Trụ sở tại"
       },
       "facts": {
         "stage": "Giai đoạn",
@@ -4952,33 +4950,6 @@
       "INTRODUCTION_NOT_PENDING": "Yêu cầu này đã được trả lời.",
       "REQUEST_INVALID": "Hãy kiểm tra lời nhắn và thử lại.",
       "unknown": "Chưa thực hiện được. Hãy thử lại."
-    },
-    "request": {
-      "open": "Nhờ giới thiệu",
-      "by": "Bởi {provider}",
-      "title": "Nhờ giới thiệu tới {provider}",
-      "lead": "Địa chỉ email của hai bên được giấu cho đến khi {provider} trả lời.",
-      "organization": "Tổ chức của bạn",
-      "message": "Bạn cần gì?",
-      "hint": "{provider} đọc tên bạn, tổ chức của bạn và lời nhắn này trước khi trả lời.",
-      "required": "Hãy viết lời nhắn trước.",
-      "send": "Gửi yêu cầu",
-      "cancel": "Hủy",
-      "sent": {
-        "title": "Yêu cầu của bạn đã tới {provider}",
-        "lead": "Khi họ trả lời, cả hai bên sẽ nhận email có tên và địa chỉ của nhau.",
-        "done": "Xong"
-      },
-      "blocked": {
-        "organization": {
-          "title": "Hãy tham gia một tổ chức trước",
-          "lead": "Việc nhờ giới thiệu được thực hiện nhân danh một tổ chức, để bên cung cấp biết ai đang hỏi.",
-          "action": "Thiết lập tổ chức của bạn"
-        },
-        "approval": {
-          "title": "Tổ chức của bạn chưa được duyệt"
-        }
-      }
     },
     "received": {
       "metaTitle": "Giới thiệu · BeyondPilot",
@@ -5437,6 +5408,7 @@
   },
   "Form": {
     "optional": "Không bắt buộc",
+    "noMatch": "Không có kết quả phù hợp.",
     "steps": {
       "progress": "Bước {step}/{count} · {name}",
       "all": "Tất cả bước"

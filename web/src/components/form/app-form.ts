@@ -10,6 +10,7 @@ import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
 import { fieldContext, formContext } from "@/components/form/form-context";
 import {
   CheckboxField,
+  ComboboxField,
   FormError,
   SelectField,
   SubmitButton,
@@ -20,7 +21,7 @@ import {
 const appForm = createFormHook({
   fieldContext,
   formContext,
-  fieldComponents: { TextField, TextareaField, SelectField, CheckboxField },
+  fieldComponents: { TextField, TextareaField, SelectField, ComboboxField, CheckboxField },
   formComponents: { SubmitButton, FormError },
 });
 
