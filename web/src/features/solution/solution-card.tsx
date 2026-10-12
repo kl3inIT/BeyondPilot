@@ -11,15 +11,18 @@ import { siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
 import { SolutionLogo } from "./solution-logo";
+import { OfferCorner, OfferLine } from "./solution-offers";
 
 /** How many capabilities a card names before it counts the rest. */
 const CAPABILITY_LIMIT = 3;
 
 /**
  * One solution in the directory: its cover with its logo over the corner, what it is called, who
- * offers it, what it does and its capabilities. The last line is the proof a card can state: how
- * many customer deployments GenAI Fund approved, or that none is published. The first card of a list
- * preloads its cover, which is the largest paint of the page on a phone.
+ * offers it, what it does and its capabilities. A solution that comes with offers says the first in
+ * a line and carries a gift in the corner of its cover, which leads to where they are claimed. The
+ * last line is the proof a card can state: how many customer deployments GenAI Fund approved, or
+ * that none is published. The first card of a list preloads its cover, which is the largest paint of
+ * the page on a phone.
  */
 function SolutionCard({
   solution,
@@ -55,6 +58,8 @@ function SolutionCard({
           size="card"
           className="absolute -bottom-5 left-4 shadow-sm"
         />
+        {/* Above the link that covers the card, so a press on the gift claims the offer. */}
+        <OfferCorner offers={solution.offers} className="absolute top-2 right-2 z-10" />
       </div>
       <div className="flex min-w-0 flex-col items-start gap-1">
         <h2 className="max-w-full truncate text-base font-medium">
@@ -77,6 +82,7 @@ function SolutionCard({
       {solution.summary && (
         <p className="line-clamp-2 text-sm text-muted-foreground">{solution.summary}</p>
       )}
+      <OfferLine offers={solution.offers} />
       {solution.focusAreas.length > 0 && (
         <div className="relative z-10 flex items-start gap-2">
           <LayersIcon className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />

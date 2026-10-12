@@ -468,6 +468,7 @@
       "auditLog": "Nhật ký thao tác",
       "organizations": "Tổ chức",
       "solutions": "Giải pháp AI",
+      "offers": "Ưu đãi",
       "talent": "Nhân lực AI",
       "introductions": "Giới thiệu",
       "review": "Xét duyệt",
@@ -937,7 +938,11 @@
           "deployment_withdraw": "Gỡ một triển khai khách hàng",
           "deployment_restore": "Khôi phục một triển khai khách hàng",
           "enrich": "Bổ sung solution từ nguồn công khai",
-          "back": "Ghi xác nhận của GenAI Fund về giải pháp"
+          "back": "Ghi xác nhận của GenAI Fund về giải pháp",
+          "offers_choose": "Chọn ưu đãi cho giải pháp",
+          "offer_create": "Thêm ưu đãi",
+          "offer_update": "Sửa ưu đãi",
+          "offer_delete": "Xóa ưu đãi"
         },
         "introduction": {
           "reply": "Trả lời yêu cầu giới thiệu",
@@ -1067,7 +1072,11 @@
           "deployment_withdraw": "Gỡ triển khai khách hàng <resource></resource>",
           "deployment_restore": "Khôi phục triển khai khách hàng <resource></resource>",
           "enrich": "Bổ sung solution <resource></resource> từ nguồn công khai",
-          "back": "Ghi xác nhận của GenAI Fund về giải pháp <resource></resource>"
+          "back": "Ghi xác nhận của GenAI Fund về giải pháp <resource></resource>",
+          "offers_choose": "Chọn ưu đãi cho giải pháp <resource></resource>",
+          "offer_create": "Thêm ưu đãi <resource></resource>",
+          "offer_update": "Sửa ưu đãi <resource></resource>",
+          "offer_delete": "Xóa ưu đãi <resource></resource>"
         },
         "introduction": {
           "reply": "Trả lời yêu cầu giới thiệu về <resource></resource>",
@@ -1554,8 +1563,25 @@
           "funding": "Ví dụ Seed."
         }
       },
+      "offers": {
+        "title": "Ưu đãi",
+        "lead": "Những gì đi kèm giải pháp, hiện trên thẻ và trang của nó. Chủ giải pháp cũng chọn được trong trình soạn.",
+        "field": "Ưu đãi",
+        "hint": "Tối đa {max}, từ danh sách ưu đãi.",
+        "save": "Lưu ưu đãi",
+        "saved": "Đã lưu ưu đãi cho {name}."
+      },
       "actions": {
         "organization": "Mở tổ chức"
+      }
+    },
+    "offers": {
+      "metaTitle": "Ưu đãi · BeyondPilot",
+      "title": "Ưu đãi",
+      "lead": "Danh sách của GenAI Fund trước, rồi tới ưu đãi mỗi tổ chức tự viết cho giải pháp của mình. Sửa một ưu đãi là sửa trên mọi giải pháp đi kèm nó.",
+      "genAiFund": "GenAI Fund",
+      "columns": {
+        "writer": "Người tạo"
       }
     },
     "talent": {
@@ -4280,7 +4306,12 @@
       "SOLUTION_IMAGE_NOT_USABLE": "Ảnh này không dùng được. Hãy tải lên lại.",
       "linkNotCopied": "Chưa sao chép được liên kết. Hãy thử lại.",
       "SOLUTION_NOT_APPROVED": "Chỉ gỡ được giải pháp đã duyệt và chưa bị gỡ.",
-      "SOLUTION_NOT_TAKEN_DOWN": "Giải pháp này chưa bị gỡ xuống."
+      "SOLUTION_NOT_TAKEN_DOWN": "Giải pháp này chưa bị gỡ xuống.",
+      "SOLUTION_OFFER_NOT_FOUND": "Ưu đãi này không còn tồn tại. Hãy tải lại trang.",
+      "SOLUTION_OFFER_TITLE_TAKEN": "Đã có một ưu đãi khác ghi giống hệt.",
+      "SOLUTION_OFFER_IN_USE": "Vẫn còn giải pháp đi kèm ưu đãi này. Hãy gỡ ưu đãi khỏi các giải pháp đó trước.",
+      "SOLUTION_OFFER_CHANGED_MEANWHILE": "Có người vừa lưu ưu đãi này. Hãy tải lại trang rồi sửa lại.",
+      "SOLUTION_OFFER_NOT_USABLE": "Một ưu đãi đã chọn không còn tồn tại. Hãy tải lại trang rồi chọn lại."
     },
     "done": {
       "saved": "Đã lưu giải pháp.",
@@ -4329,6 +4360,69 @@
       "ownEdit": "Sửa giải pháp này",
       "deployments": "{count} triển khai khách hàng",
       "backing": "GenAI Fund xác nhận:"
+    },
+    "offers": {
+      "label": "Ưu đãi:",
+      "title": "Ưu đãi",
+      "claim": "Nhận ưu đãi",
+      "claimNamed": "Nhận ưu đãi: {offer} (mở trong tab mới)",
+      "several": "{count} ưu đãi",
+      "more": "+{count} nữa",
+      "moreOffers": "+{count} ưu đãi nữa",
+      "newTab": "mở trong tab mới",
+      "picker": {
+        "placeholder": "Chọn ưu đãi",
+        "noMatch": "Không có ưu đãi nào khớp.",
+        "remove": "Bỏ {name}",
+        "add": "Ưu đãi mới…",
+        "fromGenAiFund": "{title} (GenAI Fund)"
+      },
+      "form": {
+        "newTitle": "Ưu đãi mới",
+        "editTitle": "Sửa ưu đãi",
+        "title": "Ưu đãi",
+        "titleRequired": "Hãy nhập ưu đãi.",
+        "titleTaken": "Đã có một ưu đãi khác ghi giống hệt.",
+        "counter": "{count} / {max}",
+        "url": "Liên kết",
+        "urlInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://.",
+        "cancel": "Hủy",
+        "create": "Thêm ưu đãi",
+        "save": "Lưu"
+      },
+      "done": {
+        "created": "Đã thêm {name}.",
+        "saved": "Đã lưu {name}.",
+        "deleted": "Đã xóa {name}."
+      },
+      "fromGenAiFund": "Từ GenAI Fund",
+      "manage": {
+        "title": "Ưu đãi",
+        "create": "Ưu đãi mới",
+        "columns": {
+          "offer": "Ưu đãi",
+          "url": "Nhận tại",
+          "solutions": "Giải pháp",
+          "actions": "Thao tác"
+        },
+        "solutions": "{count, plural, =0 {Chưa giải pháp nào đi kèm} other {# giải pháp}}",
+        "openNamed": "Thao tác với {name}",
+        "actions": {
+          "edit": "Sửa…",
+          "delete": "Xóa…"
+        },
+        "empty": {
+          "title": "Chưa có ưu đãi nào",
+          "description": "Thêm những gì đi kèm giải pháp, rồi chọn ưu đãi đó ở giải pháp.",
+          "own": "Viết những gì đi kèm giải pháp của bạn, ví dụ gói pilot, rồi chọn ưu đãi đó ở giải pháp."
+        },
+        "confirmDelete": {
+          "title": "Xóa {name}?",
+          "lead": "Không giải pháp nào đi kèm ưu đãi này. Ưu đãi sẽ bị xóa hẳn.",
+          "confirm": "Xóa ưu đãi",
+          "cancel": "Hủy"
+        }
+      }
     },
     "filters": {
       "search": "Tìm giải pháp AI",
@@ -4611,6 +4705,8 @@
         "builtWith": "Xây dựng bằng",
         "builtWithPlaceholder": "Thêm mô hình, công cụ hoặc framework",
         "builtWithHint": "Nhấn Enter sau mỗi mục, tối đa {max}.",
+        "offers": "Ưu đãi",
+        "offersHint": "Những gì khách hàng nhận kèm, ví dụ credit cloud. Chọn tối đa {max}: từ danh sách của GenAI Fund, hoặc ưu đãi bạn tự viết cho tổ chức.",
         "removeTag": "Bỏ {name}",
         "industries": "Ngành",
         "industriesPlaceholder": "Thêm ngành",
