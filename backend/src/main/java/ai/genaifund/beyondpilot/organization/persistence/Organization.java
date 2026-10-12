@@ -122,6 +122,16 @@ public class Organization {
 		this.createdByAccountId = createdByAccountId;
 	}
 
+	/** Changes the facts a person gives when they make an organization; the rest of the profile stays. */
+	public void describeBasics(String name, String type, String teamSize, List<String> industries, String country) {
+		this.name = name;
+		this.type = type;
+		this.teamSize = teamSize;
+		this.companySizeLabel = null;
+		this.industries = industries.toArray(String[]::new);
+		this.country = country;
+	}
+
 	public void describe(String name, String type, @Nullable String website,
 			@Nullable String country, @Nullable String teamSize, List<String> industries,
 			@Nullable String description, @Nullable Integer foundedYear, @Nullable UUID logoFileId) {

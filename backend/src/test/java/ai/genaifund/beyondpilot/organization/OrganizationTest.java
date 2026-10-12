@@ -261,6 +261,39 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOwnerCorrectsWhatTheyGaveWhenTheyMadeTheOrganizationWithoutTheRestOfTheProfile() {
+		String founder = signIn("founder@basics.test");
+		create(founder, "Basics Co");
+		String basics = API + "/mine/basics";
+		Map<String, Object> request = new HashMap<>(Map.of("name", " Basics Team ", "type", "builder_team", "teamSize",
+				"10_49", "industries", List.of("insurance"), "country", "SG"));
+
+		put(founder, basics, request).expectStatus().isOk();
+		String saved = mine(founder);
+		assertThat(JsonPath.<String>read(saved, "$.organization.name")).isEqualTo("Basics Team");
+		assertThat(JsonPath.<String>read(saved, "$.organization.type")).isEqualTo("builder_team");
+		assertThat(JsonPath.<String>read(saved, "$.organization.teamSize")).isEqualTo("10_49");
+		assertThat(JsonPath.<List<String>>read(saved, "$.organization.industries")).containsExactly("insurance");
+		assertThat(JsonPath.<String>read(saved, "$.organization.country")).isEqualTo("SG");
+		// What the request does not carry stays, and the organization still waits for review.
+		assertThat(JsonPath.<String>read(saved, "$.organization.description")).isEqualTo("Assistants for insurers.");
+		assertThat(JsonPath.<String>read(saved, "$.organization.status")).isEqualTo("in_review");
+
+		// A company names an industry; the other kinds may leave them out.
+		request.put("type", "company");
+		request.put("industries", List.of());
+		assertProblem(put(founder, basics, request), 400, "ORGANIZATION_INDUSTRIES_REQUIRED");
+		request.put("type", "independent_builder");
+		request.put("teamSize", "just_me");
+		put(founder, basics, request).expectStatus().isOk();
+		request.put("country", "Vietnam");
+		assertProblem(put(founder, basics, request), 400, "REQUEST_INVALID");
+		request.put("country", "VN");
+		// Only an owner of an organization corrects it.
+		assertProblem(put(signIn("nobody@basics.test"), basics, request), 403, "ORGANIZATION_MEMBERSHIP_REQUIRED");
+	}
+
+	@Test
 	void aRefusedOrganizationIsRefusedForGoodAndOnlyWhileItWaitsForReview() {
 		String founder = signIn("founder@refused.test");
 		UUID id = create(founder, "Refused Co");
