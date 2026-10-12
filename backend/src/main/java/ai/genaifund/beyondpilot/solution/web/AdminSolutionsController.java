@@ -14,6 +14,7 @@ import ai.genaifund.beyondpilot.solution.dto.RejectSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SaveSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SendBackSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionBackingRequest;
+import ai.genaifund.beyondpilot.solution.dto.SolutionOffersRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
 import ai.genaifund.beyondpilot.solution.dto.TakeDownSolutionRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -173,6 +174,20 @@ class AdminSolutionsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void back(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody SolutionBackingRequest request) {
 		solutions.back(actor, id, request);
+	}
+
+	@PutMapping(path = "/{id}/offers", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "chooseSolutionOffers",
+			summary = "Choose the offers a submitted solution comes with, from the list GenAI Fund keeps",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The solution comes with the offers named.", content = @Content)
+	@ApiResponse(responseCode = "400", description = "More than five offers, or one that is not in the list.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void offer(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody SolutionOffersRequest request) {
+		solutions.offer(actor, id, request);
 	}
 
 	@PostMapping(path = "/{id}/send-back", consumes = MediaType.APPLICATION_JSON_VALUE)

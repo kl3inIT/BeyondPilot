@@ -141,6 +141,7 @@ abstract class ApplicationsHttpTest {
 		solution.put("builtWith", List.of());
 		solution.put("languages", List.of());
 		solution.put("imageFileIds", List.of());
+		solution.put("offerIds", List.of());
 		solution.put("deployment", List.of());
 		solution.put("maturity", "pilot");
 		solution.put("demoUrl", demoUrl);
