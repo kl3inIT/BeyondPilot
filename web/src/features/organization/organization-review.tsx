@@ -3,11 +3,12 @@
 import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ShieldCheckIcon, Undo2Icon } from "lucide-react";
+import { ArrowRightIcon, ShieldCheckIcon, Undo2Icon } from "lucide-react";
 import { useRef, useState } from "react";
 import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
+import { TextButton } from "@/components/actions/text-button";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { FormDialog } from "@/components/composites/form-dialog";
 import { ReasonDialog } from "@/components/composites/reason-dialog";
@@ -21,9 +22,11 @@ import {
   approveOrganization,
   refuseOrganization,
   sendBackOrganization,
+  type AdminOrganization,
   type AdminOrganizationSummary,
   type RefuseOrganization,
 } from "@/lib/api/generated";
+import { siteRoutes } from "@/lib/site";
 
 import { refusalReasons } from "./organization-codes";
 import { domainOf, isDomain, websiteHost } from "./organization-format";
@@ -33,20 +36,101 @@ import { useAdminOrganization } from "./verified-domain";
 /** The longest reason for a send back that the backend takes. */
 const MAX_REASON = 1000;
 
+/** How many members the review names before it counts the rest. */
+const MEMBERS_NAMED = 3;
+
+/** An organization that waits for a decision, as a list or a record already holds it. */
+type OrganizationInReview = Pick<
+  AdminOrganizationSummary,
+  "id" | "name" | "type" | "country" | "createdAt"
+>;
+
 type OrganizationReviewProps = {
-  /** The organization that waits for a decision, as the list already holds it. */
-  organization: Pick<AdminOrganizationSummary, "id" | "name" | "type" | "country" | "createdAt">;
+  organization: OrganizationInReview;
+  /** How many other organizations of the list on screen still wait, when it is reviewed from one. */
+  more?: number;
   /** Closes the review, after a decision or without one. */
   onClose: () => void;
+  /** Called after a decision in place of `onClose`, by a list that then opens the next one. */
+  onDecided?: () => void;
 };
+
+/**
+ * What the profile says, for the operator to decide on: the facts its owner wrote, who created it
+ * and who belongs to it. A fact the owner left out reads as not stated.
+ */
+function ReviewFacts({ detail }: { detail: AdminOrganization }) {
+  const t = useTranslations("Admin.organizations.review.facts");
+  const sizeName = useVocabulary("teamSize");
+  const industryName = useVocabulary("industry");
+  const format = useFormatter();
+  const { organization, members } = detail;
+  const host = websiteHost(organization.website);
+  const named = members.slice(0, MEMBERS_NAMED).map((member) => member.name ?? member.email);
+  const facts = [
+    { name: t("teamSize"), value: organization.teamSize && sizeName(organization.teamSize) },
+    { name: t("foundedYear"), value: organization.foundedYear },
+    {
+      name: t("industries"),
+      value:
+        organization.industries.length > 0 &&
+        format.list(organization.industries.map(industryName)),
+    },
+    { name: t("creatorEmail"), value: detail.createdByEmail },
+    {
+      name: t("members"),
+      value:
+        members.length > MEMBERS_NAMED
+          ? t("membersMore", {
+              names: named.join(", "),
+              count: members.length - MEMBERS_NAMED,
+            })
+          : named.join(", "),
+    },
+  ];
+
+  return (
+    <div className="flex flex-col gap-3 text-sm">
+      <div className="flex flex-col gap-0.5">
+        <span className="text-xs text-muted-foreground">{t("description")}</span>
+        <p className="break-words whitespace-pre-line">{organization.description || t("none")}</p>
+      </div>
+      <dl className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
+        <div className="flex min-w-0 flex-col items-start gap-0.5">
+          <dt className="text-xs text-muted-foreground">{t("website")}</dt>
+          <dd className="max-w-full min-w-0">
+            {organization.website && host ? (
+              <a
+                href={organization.website}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-sm break-all underline underline-offset-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                {host}
+              </a>
+            ) : (
+              t("none")
+            )}
+          </dd>
+        </div>
+        {facts.map((fact) => (
+          <div key={fact.name} className="flex min-w-0 flex-col gap-0.5">
+            <dt className="text-xs text-muted-foreground">{fact.name}</dt>
+            <dd className="break-words">{fact.value || t("none")}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
 
 /**
  * The decision on an organization that waits for review, in a dialog: approve it, with the email
  * domain the operator verified; send it back with what its owners should change; or refuse it for
- * good with a reason they read. Who created it, its website and the domain to confirm are read when
- * the dialog opens; the dialog does not wait for them.
+ * good with a reason they read. What its profile says, who created it and the domain to confirm are
+ * read when the dialog opens; the dialog does not wait for them, and its record is one link away.
  */
-function OrganizationReview({ organization, onClose }: OrganizationReviewProps) {
+function OrganizationReview({ organization, more, onClose, onDecided }: OrganizationReviewProps) {
   const t = useTranslations("Admin.organizations.review");
   const typeName = useVocabulary("organizationType");
   const reasonName = useVocabulary("organizationRefusal");
@@ -103,7 +187,8 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
     try {
       await run();
       notify.success(done);
-      onClose();
+      // A list goes on to the next organization that waits; a record closes.
+      (onDecided ?? onClose)();
       router.refresh();
     } catch (error) {
       // A domain another organization has is said at the field; anything else in a toast.
@@ -180,7 +265,7 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
 
   return (
     <Dialog open onOpenChange={(open) => !open && !pending && onClose()}>
-      <DialogContent showCloseButton={false} className="sm:max-w-xl">
+      <DialogContent showCloseButton={false} className="max-h-dvh overflow-y-auto sm:max-w-xl">
         <form
           id={approval.formId}
           noValidate
@@ -203,6 +288,16 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
                 {detail ? t("lead", { creator: detail.createdBy, day }) : t("leadUnknown", { day })}
               </span>
             </div>
+          </div>
+          {detail && <ReviewFacts detail={detail} />}
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+            <TextButton size="sm" href={`${siteRoutes.adminOrganizations}/${id}`}>
+              {t("record")}
+              <ArrowRightIcon aria-hidden="true" />
+            </TextButton>
+            {more !== undefined && more > 0 && (
+              <span className="text-xs text-muted-foreground">{t("more", { count: more })}</span>
+            )}
           </div>
           <approval.AppField name="emailDomain">
             {(field) => (
@@ -262,4 +357,4 @@ function OrganizationReviewButton({ organization }: Pick<OrganizationReviewProps
   );
 }
 
-export { OrganizationReview, OrganizationReviewButton };
+export { OrganizationReview, OrganizationReviewButton, type OrganizationInReview };
