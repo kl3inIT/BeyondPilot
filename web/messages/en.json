@@ -7473,7 +7473,17 @@
         "website": "Website (optional)",
         "required": "Required.",
         "existing": "My company is already on BeyondPilot",
-        "continue": "Continue"
+        "continue": "Continue",
+        "pending": "Pending review",
+        "edit": "Edit",
+        "dialog": {
+          "title": "Edit organization",
+          "more": "More details in My organization",
+          "cancel": "Cancel",
+          "save": "Save",
+          "saved": "Organization saved.",
+          "required": "Required."
+        }
       }
     },
     "view": {

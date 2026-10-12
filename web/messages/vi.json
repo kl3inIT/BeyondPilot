@@ -7473,7 +7473,17 @@
         "website": "Website (không bắt buộc)",
         "required": "Bắt buộc.",
         "existing": "Công ty tôi đã có trên BeyondPilot",
-        "continue": "Tiếp tục"
+        "continue": "Tiếp tục",
+        "pending": "Đang chờ duyệt",
+        "edit": "Sửa",
+        "dialog": {
+          "title": "Sửa tổ chức",
+          "more": "Thêm thông tin ở Tổ chức của tôi",
+          "cancel": "Hủy",
+          "save": "Lưu",
+          "saved": "Đã lưu tổ chức.",
+          "required": "Bắt buộc."
+        }
       }
     },
     "view": {
