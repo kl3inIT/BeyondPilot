@@ -153,7 +153,6 @@ test.describe("MCP", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/ai/mcp/apps");
@@ -181,7 +180,7 @@ test.describe("MCP", () => {
     ]);
 
     await page.goto("/admin/ai/mcp/activity");
-    const calls = isMobile ? page.getByRole("listitem") : page.getByRole("row");
+    const calls = page.getByRole("row");
     await expect(calls.filter({ hasText: "Minh Tran" })).toContainText("Refused");
     await expect(calls.filter({ hasText: "Đạt Phan" })).toContainText("Succeeded");
     await expect(page.getByText("2 calls")).toBeVisible();

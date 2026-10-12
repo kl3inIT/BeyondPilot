@@ -170,12 +170,11 @@ test.describe("admin", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await serveStoredImages(page);
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/use-cases");
-    const records = isMobile ? page.getByRole("listitem") : page.getByRole("row");
+    const records = page.getByRole("row");
 
     const withLogo = records.filter({ hasText: "Claims triage" });
     await expect(withLogo.locator("img")).toHaveCount(1);

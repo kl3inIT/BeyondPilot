@@ -136,10 +136,10 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
       />
       <SolutionsToolbar list="admin" organizationOptions={solutions.organizations} />
 
-      {/* From 768px: a table. The sender gives way first, then the organization joins the solution. */}
+      {/* Where the table is made to fit, the sender gives way first, then the organization joins */}
+      {/* the solution. Below 768px the table scrolls and each keeps its column. */}
       <DataTableRows
         sortKeys={adminSolutionSortKeys}
-        className="hidden md:flex"
         columns={[
           // The one column that gives its width up: a long name or summary is cut, not wrapped.
           { id: "name", header: t("columns.solution"), layout: { fill: true } },
@@ -147,7 +147,11 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
           { id: "status", header: t("columns.status") },
           { id: "sentBy", header: t("columns.sentBy"), layout: { from: "xl" } },
           { id: "submitted", header: t("columns.waiting"), layout: { descFirst: true } },
-          { id: "actions", header: <span className="sr-only">{t("columns.actions")}</span> },
+          {
+            id: "actions",
+            header: <span className="sr-only">{t("columns.actions")}</span>,
+            layout: { width: "action" },
+          },
         ]}
         rows={rows.map((row) => ({
           id: row.id,
@@ -162,7 +166,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
                   >
                     {row.name}
                   </Link>
-                  <span className="truncate text-muted-foreground lg:hidden">
+                  <span className="hidden truncate text-muted-foreground md:max-lg:block">
                     {row.organization}
                   </span>
                   {row.summary && (
@@ -186,34 +190,6 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per solution, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <SolutionLogo name={row.name} fileId={row.logoFileId} size="row" />
-                <div className="flex min-w-0 flex-col">
-                  <Link
-                    href={row.href}
-                    className="truncate rounded-sm text-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-                  >
-                    {row.name}
-                  </Link>
-                  <span className="truncate text-sm text-muted-foreground">{row.organization}</span>
-                </div>
-              </div>
-              <RowMenu solution={row.solution} />
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              {row.status}
-              <span className="text-xs text-muted-foreground">{row.submitted}</span>
-            </div>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <ListFooter
         count={t("count", { count: solutions.total })}

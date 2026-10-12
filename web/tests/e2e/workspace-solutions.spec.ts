@@ -19,7 +19,7 @@ const coverFile = "c0fea2b3-4c5d-4e6f-8a9b-0c1d2e3f4a62";
 const list = "/workspace/organization/solutions";
 const changesPath = "**/api/solution/mine**";
 
-/** The solutions shown, by name, whichever layout the viewport has. */
+/** The solutions shown, by name. */
 function shownSolutions(page: Page) {
   return page.locator(`a[href^="${list}/"]:visible`);
 }
@@ -123,7 +123,6 @@ test.describe("workspace solutions", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "owner", baseURL!);
     await page.goto(list);
@@ -140,11 +139,9 @@ test.describe("workspace solutions", () => {
     await expect(shown("Not public yet")).toBeVisible();
     await expect(shown("Draft · 1 of 7 required fields filled")).toBeVisible();
     await expect(shown("Sent back: It is Policy Chat under another name.")).toBeVisible();
-    // A table from 768px, stacked rows below it.
+    // A table at every width: on a phone it scrolls sideways.
     // The solutions' own table; the organization's offers have theirs under it.
-    await expect(page.getByRole("region", { name: "Solutions" }).getByRole("table")).toHaveCount(
-      isMobile ? 0 : 1,
-    );
+    await expect(page.getByRole("region", { name: "Solutions" }).getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
 
     await page.getByRole("button", { name: "Actions for Policy Chat" }).click();

@@ -88,10 +88,9 @@ async function EmailActivityPage({
 
       <EmailActivityToolbar />
 
-      {/* From 768px: a table. The whole row opens the email. */}
+      {/* The whole row opens the email. */}
       {/* Each row is the containing block of its link's overlay, so the overlay covers that row only. */}
       <DataTableRows
-        className="hidden md:flex"
         rowLinks
         columns={[
           { id: "time", header: t("activity.columns.time"), layout: { width: "md" } },
@@ -125,28 +124,6 @@ async function EmailActivityPage({
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per email, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {messages.items.map((message) => (
-          <li key={message.id} className="border-b last:border-b-0">
-            <Link
-              href={adminEmailMessageRoute(message.id)}
-              className="flex flex-col gap-1 p-3 outline-none focus-visible:bg-muted/50"
-            >
-              <span className="flex items-center justify-between gap-3">
-                <span className="truncate text-sm font-medium">{message.recipient}</span>
-                <EmailStatusLabel status={message.status} />
-              </span>
-              <span className="truncate text-sm">{kindName(message.kind)}</span>
-              <time dateTime={message.createdAt} className="text-xs text-muted-foreground">
-                {time(message.createdAt)}
-              </time>
-            </Link>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <DataTablePager
         previous={messages.newer ? pageHref({ after: messages.newer }) : undefined}

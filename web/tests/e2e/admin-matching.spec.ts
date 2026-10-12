@@ -295,24 +295,20 @@ test.describe("admin matching settings", () => {
     }
     await expect(said.getByText("3 of 5 answers agreed in the last 30 days")).toBeVisible();
     await expect(said.getByText("2 disagreements")).toBeVisible();
-    // A table from 768px, one stacked row an answer below that.
-    const rows = isMobile
-      ? said.locator('[data-slot="matching-disagreements"]').getByRole("listitem")
-      : said
-          .getByRole("table")
-          .getByRole("row")
-          .filter({ has: page.getByRole("cell") });
+    // A table at every width: on a phone it scrolls sideways.
+    const rows = said
+      .getByRole("table")
+      .getByRole("row")
+      .filter({ has: page.getByRole("cell") });
     await expect(rows).toHaveCount(2);
-    if (!isMobile) {
-      await expect(said.getByRole("columnheader")).toHaveText([
-        "Solution",
-        "AI's group",
-        "Their group",
-        "Requirements the AI got wrong",
-        "Note",
-        "Who and when",
-      ]);
-    }
+    await expect(said.getByRole("columnheader")).toHaveText([
+      "Solution",
+      "AI's group",
+      "Their group",
+      "Requirements the AI got wrong",
+      "Note",
+      "Who and when",
+    ]);
     // A disagreement says the two groups, the requirements by name, the note, who and when. A
     // requirement of an earlier judgment is named by its place.
     const docbase = rows.filter({ hasText: "Docbase" });

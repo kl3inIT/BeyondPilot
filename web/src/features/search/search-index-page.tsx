@@ -197,7 +197,6 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
           </HelpPopover>
         </div>
         <DataTableRows
-          className="hidden md:flex"
           columns={[
             { id: "kind", header: t("kinds.kind") },
             { id: "total", header: t("kinds.total") },
@@ -238,27 +237,6 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
             },
           }))}
         />
-        <ul className="overflow-hidden rounded-lg border md:hidden">
-          {kinds.map((kind) => (
-            <li key={kind.kind} className="flex flex-col gap-1.5 border-b p-3 last:border-b-0">
-              <div className="flex items-center gap-2">
-                {kindIcons[kind.kind]}
-                <span className="flex-1 text-sm font-medium">{t(`kinds.name.${kind.kind}`)}</span>
-                <span className="text-xs text-muted-foreground">
-                  {t("kinds.embeddedOf", { embedded: kind.embedded, total: kind.total })}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t("kinds.mobileFacts", { listed: kind.listed, waiting: kind.waiting })}
-              </p>
-              {kind.heldBack > 0 && (
-                <Status tone="destructive">
-                  {t("kinds.heldBackCount", { count: kind.heldBack })}
-                </Status>
-              )}
-            </li>
-          ))}
-        </ul>
       </section>
 
       {data.heldBack.length > 0 && (
@@ -275,7 +253,6 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
             </div>
           </div>
           <DataTableRows
-            className="hidden md:flex"
             columns={[
               { id: "item", header: t("heldBack.item") },
               { id: "reason", header: t("heldBack.reason") },
@@ -295,7 +272,9 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
                   </div>
                 ),
                 reason: (
-                  <span className="whitespace-normal">{t(`heldBack.reasons.${item.reason}`)}</span>
+                  <span className="block min-w-48 whitespace-normal">
+                    {t(`heldBack.reasons.${item.reason}`)}
+                  </span>
                 ),
                 attempts: item.attempts,
                 next: (
@@ -311,33 +290,6 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
               },
             }))}
           />
-          <ul className="overflow-hidden rounded-lg border md:hidden">
-            {data.heldBack.map((item) => (
-              <li
-                key={`${item.kind}-${item.itemId}`}
-                className="flex flex-col gap-1 border-b p-3 last:border-b-0"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="flex-1 truncate text-sm font-medium">{item.title}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {t(`kinds.name.${item.kind}`)}
-                  </span>
-                </div>
-                <p className="text-xs">{t(`heldBack.reasons.${item.reason}`)}</p>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs text-muted-foreground">
-                    {t("heldBack.mobileNext", {
-                      count: item.attempts,
-                      next: item.nextAttemptAt
-                        ? dayAndTime(item.nextAttemptAt)
-                        : t("heldBack.soon"),
-                    })}
-                  </p>
-                  <RetryEmbeddings item={item} />
-                </div>
-              </li>
-            ))}
-          </ul>
           <div className="md:hidden">
             <RetryEmbeddings wide />
           </div>

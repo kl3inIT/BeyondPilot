@@ -132,64 +132,42 @@ function MyUseCasesPage({
             />
           </div>
         ) : (
-          <>
-            {/* From 768px: a table. */}
-            <DataTableRows
-              className="hidden md:flex"
-              surface
-              sortKeys={sorted.sortKeys}
-              defaultSort={sorted.defaultSort}
-              columns={[
-                { id: "useCase", header: t("columns.useCase"), layout: { fill: true } },
-                { id: "status", header: t("columns.status"), layout: { width: "md" } },
-                {
-                  id: "proposals",
-                  header: p("column"),
-                  layout: { width: "sm", descFirst: true },
-                },
-                { id: "editedBy", header: t("columns.editedBy"), layout: { width: "md" } },
-                {
-                  id: "updated",
-                  header: t("columns.updated"),
-                  layout: { width: "sm", descFirst: true },
-                },
-                {
-                  id: "actions",
-                  header: <span className="sr-only">{t("columns.actions")}</span>,
-                  layout: { width: "action" },
-                },
-              ]}
-              rows={rows.map((row) => ({
-                id: row.id,
-                cells: {
-                  useCase: row.title,
-                  status: row.status,
-                  proposals: row.proposals,
-                  editedBy: row.editedBy,
-                  updated: row.updated,
-                  actions: <div className="flex justify-end">{row.actions}</div>,
-                },
-              }))}
-            />
-
-            {/* Below 768px: one stacked row per use case, never a table scrolled sideways. */}
-            <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
-              {rows.map((row) => (
-                <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-                  <div className="flex items-start justify-between gap-3">
-                    {row.title}
-                    {row.actions}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                    {row.status}
-                    {row.proposals}
-                    {row.editedBy}
-                    {row.updated}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </>
+          <DataTableRows
+            surface
+            sortKeys={sorted.sortKeys}
+            defaultSort={sorted.defaultSort}
+            columns={[
+              { id: "useCase", header: t("columns.useCase"), layout: { fill: true } },
+              { id: "status", header: t("columns.status"), layout: { width: "md" } },
+              {
+                id: "proposals",
+                header: p("column"),
+                layout: { width: "sm", descFirst: true },
+              },
+              { id: "editedBy", header: t("columns.editedBy"), layout: { width: "md" } },
+              {
+                id: "updated",
+                header: t("columns.updated"),
+                layout: { width: "sm", descFirst: true },
+              },
+              {
+                id: "actions",
+                header: <span className="sr-only">{t("columns.actions")}</span>,
+                layout: { width: "action" },
+              },
+            ]}
+            rows={rows.map((row) => ({
+              id: row.id,
+              cells: {
+                useCase: row.title,
+                status: row.status,
+                proposals: row.proposals,
+                editedBy: row.editedBy,
+                updated: row.updated,
+                actions: <div className="flex justify-end">{row.actions}</div>,
+              },
+            }))}
+          />
         )}
       </OrganizationSection>
     </OrganizationFrame>

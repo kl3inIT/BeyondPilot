@@ -98,17 +98,20 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
       <AdminPageHeader destination="accounts" title={t("title")} />
       <AccountsToolbar />
 
-      {/* From 768px: a table. The Created column gives way first. */}
+      {/* The Created column gives way first where the table is made to fit. */}
       <DataTableRows
         sortKeys={accountSortKeys}
-        className="hidden md:flex"
         columns={[
           { id: "name", header: t("columns.account") },
           { id: "role", header: t("columns.role") },
           { id: "status", header: t("columns.status") },
           { id: "lastSignIn", header: t("columns.lastSignIn"), layout: { descFirst: true } },
           { id: "created", header: t("columns.created"), layout: { from: "xl", descFirst: true } },
-          { id: "actions", header: <span className="sr-only">{t("columns.actions")}</span> },
+          {
+            id: "actions",
+            header: <span className="sr-only">{t("columns.actions")}</span>,
+            layout: { width: "action" },
+          },
         ]}
         rows={rows.map((row) => ({
           id: row.account.id,
@@ -127,24 +130,6 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per account, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.account.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-            <div className="flex items-center justify-between gap-2">
-              {row.person}
-              {row.actions}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-11">
-              {row.role}
-              {row.status}
-              <span className="text-xs text-muted-foreground">{row.lastSignIn}</span>
-            </div>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <ListFooter
         count={t("count", { count: accounts.total })}

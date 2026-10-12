@@ -140,9 +140,8 @@ async function UsageCallsPage({
         models={calls.models}
       />
 
-      {/* From 768px: a table. A click on the short time opens the full date and time. */}
+      {/* A click on the short time opens the full date and time. */}
       <DataTableRows
-        className="hidden md:flex"
         columns={[
           { id: "time", header: t("columns.time") },
           { id: "task", header: t("columns.task") },
@@ -187,30 +186,6 @@ async function UsageCallsPage({
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per call, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.key} className="flex flex-col gap-1.5 border-b p-3 text-sm last:border-b-0">
-            <div className="flex items-center justify-between gap-3">
-              <span className="truncate font-medium">{row.model}</span>
-              <span className="text-xs text-muted-foreground tabular-nums">{row.duration}</span>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {row.task} · {row.provider}
-            </div>
-            <div className="flex items-center justify-between gap-3 text-xs tabular-nums">
-              {row.failure ?? <span>{row.tokens ?? unknown}</span>}
-              {row.cost && <span>{row.cost}</span>}
-            </div>
-            <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-              <time dateTime={row.at}>{row.time}</time>
-              {row.subject}
-            </div>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <ListFooter
         count={

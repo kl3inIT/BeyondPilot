@@ -312,54 +312,34 @@ function AdminMembers({
         // Nobody is invited to a merged organization: its people went to the one kept.
         !detail.merged && <p className="text-sm text-muted-foreground">{t("empty")}</p>
       ) : (
-        <>
-          {/* From 768px: a table. */}
-          <DataTableRows
-            sortKeys={organizationMemberSortKeys}
-            defaultSort={defaultMemberSort}
-            className="hidden md:flex"
-            surface
-            columns={[
-              { id: "member", header: t("columns.member") },
-              { id: "role", header: t("columns.role"), layout: { width: "sm" } },
-              {
-                id: "joined",
-                header: t("columns.joined"),
-                layout: { width: "sm", descFirst: true },
-              },
-              {
-                id: "actions",
-                header: <span className="sr-only">{t("columns.actions")}</span>,
-                layout: { width: "action" },
-              },
-            ]}
-            rows={rows.map((row) => ({
-              id: row.key,
-              cells: {
-                member: row.person,
-                role: row.role,
-                joined: row.joined,
-                actions: <div className="flex justify-end">{row.actions}</div>,
-              },
-            }))}
-          />
-
-          {/* Below 768px: one stacked row per person, never a table scrolled sideways. */}
-          <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
-            {rows.map((row) => (
-              <li key={row.key} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-                <div className="flex items-start justify-between gap-3">
-                  {row.person}
-                  {row.actions}
-                </div>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-11 text-sm">
-                  {row.role}
-                  {row.joined}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </>
+        <DataTableRows
+          sortKeys={organizationMemberSortKeys}
+          defaultSort={defaultMemberSort}
+          surface
+          columns={[
+            { id: "member", header: t("columns.member") },
+            { id: "role", header: t("columns.role"), layout: { width: "sm" } },
+            {
+              id: "joined",
+              header: t("columns.joined"),
+              layout: { width: "sm", descFirst: true },
+            },
+            {
+              id: "actions",
+              header: <span className="sr-only">{t("columns.actions")}</span>,
+              layout: { width: "action" },
+            },
+          ]}
+          rows={rows.map((row) => ({
+            id: row.key,
+            cells: {
+              member: row.person,
+              role: row.role,
+              joined: row.joined,
+              actions: <div className="flex justify-end">{row.actions}</div>,
+            },
+          }))}
+        />
       )}
       {/* The summary under the title has the count; the footer is for a list of several pages. */}
       {(size !== null || total > Math.min(tablePageSizes[0], pageSize)) && (
