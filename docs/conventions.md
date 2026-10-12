@@ -305,6 +305,15 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - Row actions sit in a menu at the end of the row. A destructive action comes last, after a divider, in the destructive colour; an action that opens a dialog ends with an ellipsis. The dialog names who or what it concerns, what will happen and who is emailed; whether an action has a dialog at all follows [Actions](#actions).
 - On a phone a list is stacked rows, never a table scrolled sideways.
 
+### Forms
+
+- Every form that sends data to the server is built with `useAppForm` and the shared controls of `src/components/form` (`TextField`, `TextareaField`, `SelectField`, `CheckboxField`, `SubmitButton`, `FormError`), whether it has one field or many. Its rules are a zod schema, never checks written by hand; a refused submit reaches the fields through `setServerErrors`; a list that grows is an array field; "unsaved" is the form's `isDirty`.
+- A search box and filters are not a form: they are the URL, through `FilterToolbar` ([Lists](#lists), [Admin page frame](#admin-page-frame)). A switch or a button that acts at once is not a form either.
+- A control the shared set lacks (a native select, a combobox, an upload) is composed from the registry `field` parts inside `form.Field`, which holds its value.
+- A field's hint and its error are tied to the control with `aria-describedby`. The shared controls do it from the field's name; no caller writes those ids.
+- A field with a length limit shows how much of it is used, at the end of the line that holds the hint. The shared controls show it from `maxLength`: always on a textarea, and on a text input whose limit is 60 characters or more. An address, a key, a number or a telephone number has no counter.
+- After a refused submit, focus moves to the first field in error and the field is scrolled into view, without animation for a person who asked for less motion. `useAppForm` and `setServerErrors` do it for a form written `<form id={form.formId}>`.
+
 ### Actions
 
 Reversibility comes before confirmation. An action that changes data is classified by two questions: can the data be restored, and does the action tell someone outside the screen at once, by an email or a notification?
