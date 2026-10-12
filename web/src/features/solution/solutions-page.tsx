@@ -48,9 +48,9 @@ function SolutionsPage({ solutions, search }: SolutionsPageProps) {
 
       {shown > 0 ? (
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {solutions.items.map((solution) => (
+          {solutions.items.map((solution, index) => (
             <li key={solution.slug} className="flex min-w-0">
-              <SolutionCard solution={solution} />
+              <SolutionCard solution={solution} preload={index === 0} />
             </li>
           ))}
         </ul>

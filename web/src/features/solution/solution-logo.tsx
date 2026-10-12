@@ -52,7 +52,6 @@ function SolutionLogo({ name, fileId, size, className }: SolutionLogoProps) {
           alt=""
           fill
           sizes={widths[size ?? "card"]}
-          unoptimized
           className="object-contain"
           onError={() => setBroken(true)}
         />
