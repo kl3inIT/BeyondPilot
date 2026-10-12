@@ -1,15 +1,14 @@
 "use client";
 
-import { GoogleAnalytics } from "@next/third-parties/google";
-import { useLayoutEffect, useRef, useSyncExternalStore } from "react";
+import { GoogleAnalytics, sendGAEvent } from "@next/third-parties/google";
+import { useEffect, useLayoutEffect, useRef, useSyncExternalStore } from "react";
 
 import { CookieConsent } from "@/components/layout/cookie-consent";
+import { usePublicSite } from "@/components/layout/use-public-site";
 import { usePathname } from "@/i18n/navigation";
-import { isTrackedPath } from "@/lib/analytics";
+import { applyTarget, isTrackedPath } from "@/lib/analytics";
 import { readConsent, subscribeConsent } from "@/lib/analytics-consent";
-import { analyticsMeasurementId, siteOrigin } from "@/lib/site";
-
-const subscribe = () => () => {};
+import { analyticsMeasurementId } from "@/lib/site";
 
 /**
  * Opens the current page as a new document that has no referrer. A plain reload would name this
@@ -20,6 +19,19 @@ function openWithoutReferrer() {
   link.href = window.location.pathname + window.location.search;
   link.rel = "noreferrer";
   link.click();
+}
+
+/**
+ * Reports a click on a link to an apply or propose page as `apply_click`. Those pages are behind
+ * sign-in and never measured, so the click on the public page is the only trace of the intent.
+ */
+function reportApplyClick(event: MouseEvent) {
+  const link = event.target instanceof Element ? event.target.closest("a") : null;
+  const target = link?.origin === window.location.origin ? applyTarget(link.pathname) : null;
+
+  if (target) {
+    sendGAEvent("event", "apply_click", target);
+  }
 }
 
 /**
@@ -34,11 +46,7 @@ function openWithoutReferrer() {
  */
 function Analytics() {
   const pathname = usePathname();
-  const live = useSyncExternalStore(
-    subscribe,
-    () => window.location.origin === siteOrigin,
-    () => false,
-  );
+  const live = usePublicSite();
   const consent = useSyncExternalStore(subscribeConsent, readConsent, () => null);
   const measurable = live && isTrackedPath(pathname);
   const tracked = measurable && consent === "granted";
@@ -53,6 +61,14 @@ function Analytics() {
       Reflect.set(window, `ga-disable-${analyticsMeasurementId}`, true);
       openWithoutReferrer();
     }
+  }, [tracked]);
+
+  useEffect(() => {
+    if (!tracked) {
+      return;
+    }
+    document.addEventListener("click", reportApplyClick, true);
+    return () => document.removeEventListener("click", reportApplyClick, true);
   }, [tracked]);
 
   if (tracked) {

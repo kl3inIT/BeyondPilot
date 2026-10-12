@@ -2,13 +2,15 @@ import { type NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 
 import { routing } from "@/i18n/routing";
+import { canonicalUrl } from "@/lib/canonical-host";
 import { markdownPathHeader } from "@/lib/markdown-request";
 
 const localeRouting = createMiddleware(routing);
 
 /**
- * Locale routing, and Markdown for agents: a request whose `Accept` names `text/markdown` gets the
- * same page as Markdown from `app/markdown/route.ts`; browsers keep the HTML.
+ * The one address of the public site, locale routing, and Markdown for agents: a request whose `Accept` names `text/markdown` gets the
+ * same page as Markdown from `app/markdown/route.ts`; browsers keep the HTML. A page asked for on the
+ * `www` name is answered with a permanent redirect to the same page of the public address.
  *
  * The browser's language never chooses the language of the site. next-intl has one switch for the
  * browser's language and for the choice a person made earlier, so the switch stays on and every
@@ -16,6 +18,13 @@ const localeRouting = createMiddleware(routing);
  * the person's own choice, then English.
  */
 export default function proxy(request: NextRequest) {
+  const canonical = canonicalUrl(
+    request.headers.get("host"),
+    request.nextUrl.pathname + request.nextUrl.search,
+  );
+  if (canonical) {
+    return NextResponse.redirect(canonical, 308);
+  }
   if (request.method === "GET" && request.headers.get("accept")?.includes("text/markdown")) {
     const headers = new Headers(request.headers);
     headers.set(markdownPathHeader, request.nextUrl.pathname + request.nextUrl.search);

@@ -3,7 +3,7 @@ import { join, sep } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { isTrackedPath, trackedSections } from "./analytics";
+import { applyTarget, isTrackedPath, trackedSections } from "./analytics";
 
 /** The areas of the site that are deliberately left out of the measurement. */
 const privateSections = [
@@ -109,4 +109,25 @@ describe("isTrackedPath", () => {
   it("never measures an area that is also listed as private", () => {
     expect(trackedSections.filter((section) => privateSections.includes(section))).toEqual([]);
   });
+});
+
+// The apply and propose pages are never measured, so the link that leads to them is what is counted.
+describe("applyTarget", () => {
+  it("names the program or the use case a link leads to", () => {
+    expect(applyTarget("/programs/insurance-ai-tasco/apply")).toEqual({
+      content_type: "program",
+      item_id: "insurance-ai-tasco",
+    });
+    expect(applyTarget("/vi/use-cases/42/propose")).toEqual({
+      content_type: "use_case",
+      item_id: "42",
+    });
+  });
+
+  it.each(["/programs/insurance-ai-tasco", "/use-cases/42/propose/view", "/applications/19", "/"])(
+    "ignores %s",
+    (pathname) => {
+      expect(applyTarget(pathname)).toBeNull();
+    },
+  );
 });
