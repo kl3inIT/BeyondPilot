@@ -8,8 +8,9 @@ import { ReviewReadiness } from "@/components/composites/review-readiness";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { useVocabulary } from "@/i18n/vocabulary";
-import type { CustomerDeployment } from "@/lib/api/generated";
+import type { CustomerDeployment, PublicSolutionSummary } from "@/lib/api/generated";
 
+import { SolutionCard } from "./solution-card";
 import {
   fieldId,
   reviewFields,
@@ -75,11 +76,20 @@ function ReviewGroup({ title, rows, missing, onEdit }: ReviewGroupProps) {
 type ReviewStepProps = {
   draft: SolutionDraft;
   change: (patch: Partial<SolutionDraft>) => void;
-  customerDeployments: CustomerDeployment[];
+  /** Null where an operator writes the solution: the organization adds the projects, and this reads none. */
+  customerDeployments: CustomerDeployment[] | null;
+  /** True on the operators' page, where the last step publishes at once instead of asking for a review. */
+  operator: boolean;
   /** The fields a review needs and the draft lacks. */
   missing: ReviewField[];
   /** True when the solution can be sent for review from here; a list of what it lacks then leads. */
   submittable: boolean;
+  /** The organization the card names, and the address the solution would have. */
+  organizationName: string;
+  slug: string;
+  /** Whether the person said that what they wrote is right; asked for when it is sent from here. */
+  confirmed: boolean;
+  onConfirmedChange: (confirmed: boolean) => void;
   /** Opens a step, with the focus on one of its fields when one is named. */
   onOpen: (step: EditorStep, field?: string) => void;
 };
@@ -89,8 +99,13 @@ function ReviewStep({
   draft,
   change,
   customerDeployments,
+  operator,
   missing,
   submittable,
+  organizationName,
+  slug,
+  confirmed,
+  onConfirmedChange,
   onOpen,
 }: ReviewStepProps) {
   const t = useTranslations("Solution.editor");
@@ -101,7 +116,7 @@ function ReviewStep({
   const deployment = useVocabulary("deployment");
 
   const counted = (state: CustomerDeployment["status"]) =>
-    customerDeployments.filter((item) => item.status === state).length;
+    (customerDeployments ?? []).filter((item) => item.status === state).length;
   const deploymentCounts = (
     [
       ["deploymentsApproved", counted("approved")],
@@ -112,6 +127,22 @@ function ReviewStep({
     .filter(([, count]) => count > 0)
     .map(([key, count]) => t(`review.${key}`, { count }))
     .join(" · ");
+
+  // The card the directory would draw from what the editor holds, so images are seen before a review.
+  const preview: PublicSolutionSummary = {
+    name: draft.name.trim(),
+    slug,
+    summary: draft.summary.trim() || null,
+    organizationName,
+    organizationSlug: "",
+    coverFileId: draft.cover?.fileId ?? null,
+    logoFileId: draft.logo?.fileId ?? null,
+    focusAreas: draft.focusAreas,
+    industries: draft.industries,
+    customerDeployments: counted("approved"),
+    featured: false,
+    backing: null,
+  };
 
   const groups: { step: EditorStep; rows: Row[] }[] = [
     {
@@ -161,18 +192,34 @@ function ReviewStep({
         { label: t("fields.deck"), value: draft.deck?.fileName ?? "" },
         { label: t("fields.demoUrl"), value: draft.demoUrl.trim() },
         { label: t("fields.website"), value: draft.website.trim() },
-        { label: t("review.customerDeployments"), value: deploymentCounts },
+        ...(customerDeployments
+          ? [{ label: t("review.customerDeployments"), value: deploymentCounts }]
+          : []),
       ],
     },
   ];
 
   return (
     <>
+      <section className="flex flex-col gap-3">
+        <div className="flex flex-col gap-0.5">
+          <h2 className="text-base font-semibold">{t("review.preview.title")}</h2>
+          {!draft.listed && (
+            <p className="text-sm text-muted-foreground">{t("review.preview.unlisted")}</p>
+          )}
+        </div>
+        {/* A picture of the card: its links lead nowhere before the solution is approved. */}
+        <div inert className="pointer-events-none flex max-w-100">
+          <SolutionCard solution={preview} />
+        </div>
+      </section>
       {submittable && (
         <ReviewReadiness
-          missingTitle={t("review.readiness.missing")}
-          readyTitle={t("review.readiness.ready")}
-          note={t("review.readiness.note")}
+          missingTitle={t(
+            operator ? "review.readiness.missingOperator" : "review.readiness.missing",
+          )}
+          readyTitle={t(operator ? "review.readiness.readyOperator" : "review.readiness.ready")}
+          note={t(operator ? "review.readiness.noteOperator" : "review.readiness.note")}
           missing={missing.map((field) => ({
             id: fieldId(field),
             label: t(`fields.${field}`),
@@ -211,6 +258,21 @@ function ReviewStep({
           </FieldDescription>
         </FieldContent>
       </Field>
+      {submittable && (
+        <Field orientation="horizontal">
+          <Checkbox
+            id={fieldId("confirmed")}
+            checked={confirmed}
+            onCheckedChange={(checked) => onConfirmedChange(checked === true)}
+            required
+          />
+          <FieldContent>
+            <FieldLabel htmlFor={fieldId("confirmed")}>
+              <span className="font-normal">{t("review.confirmAccurate")}</span>
+            </FieldLabel>
+          </FieldContent>
+        </Field>
+      )}
     </>
   );
 }

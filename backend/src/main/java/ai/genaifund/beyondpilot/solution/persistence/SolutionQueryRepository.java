@@ -48,9 +48,11 @@ public class SolutionQueryRepository {
 			       cover_file_id,
 			       coalesce(program, backed_by) as backing,
 			       (select count(*) from solution_customer_deployment d
-			        where d.solution_id = solution.id and d.status = 'approved') as deployments,
+			        where d.solution_id = solution.id and d.status = 'approved'
+			          and d.withdrawn_at is null) as deployments,
 			       (select count(*) from solution_customer_deployment d
-			        where d.solution_id = solution.id and d.status = 'in_review') as deployments_awaiting
+			        where d.solution_id = solution.id and d.status = 'in_review'
+			          and d.withdrawn_at is null) as deployments_awaiting
 			from solution
 			""";
 
@@ -138,7 +140,7 @@ public class SolutionQueryRepository {
 		return jdbc.sql("""
 				select count(*) from solution_customer_deployment d
 				join solution on solution.id = d.solution_id
-				where d.status = 'in_review' and solution.status <> 'draft'
+				where d.status = 'in_review' and d.withdrawn_at is null and solution.status <> 'draft'
 				""").query(Long.class).single();
 	}
 
@@ -172,7 +174,8 @@ public class SolutionQueryRepository {
 			default -> """
 					case when status = 'in_review' or exists (
 					         select 1 from solution_customer_deployment d
-					         where d.solution_id = solution.id and d.status = 'in_review') then 0 else 1 end,
+					         where d.solution_id = solution.id and d.status = 'in_review'
+					           and d.withdrawn_at is null) then 0 else 1 end,
 					     submitted_at, id""";
 		};
 	}

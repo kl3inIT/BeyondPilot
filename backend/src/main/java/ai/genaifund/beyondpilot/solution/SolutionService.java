@@ -3,11 +3,16 @@ package ai.genaifund.beyondpilot.solution;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.audit.AuditAction;
+import ai.genaifund.beyondpilot.audit.AuditRecord;
+import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
+import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.solution.dto.CreateSolutionRequest;
@@ -44,6 +49,8 @@ public class SolutionService {
 	/** How many customer deployments one solution lists at most. */
 	private static final int MAX_DEPLOYMENTS = 12;
 
+	private static final String CUSTOMER_DEPLOYMENT = "customer_deployment";
+
 	private final SolutionRepository solutions;
 
 	private final CustomerDeploymentRepository deployments;
@@ -54,16 +61,19 @@ public class SolutionService {
 
 	private final StorageService storage;
 
+	private final AuditTrail audit;
+
 	private final ApplicationEventPublisher events;
 
 	SolutionService(SolutionRepository solutions, CustomerDeploymentRepository deployments,
-			OrganizationDirectory organizations, IdentityService identity, StorageService storage,
+			OrganizationDirectory organizations, IdentityService identity, StorageService storage, AuditTrail audit,
 			ApplicationEventPublisher events) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.organizations = organizations;
 		this.identity = identity;
 		this.storage = storage;
+		this.audit = audit;
 		this.events = events;
 	}
 
@@ -79,7 +89,8 @@ public class SolutionService {
 				solutions.findByOrganizationIdOrderByCreatedAtDesc(membership.organizationId())
 					.stream()
 					.map(solution -> SolutionViews.summary(solution, membership.organizationName(),
-							deployments.countBySolutionIdAndStatus(solution.getId(), CustomerDeployment.IN_REVIEW)))
+							deployments.countBySolutionIdAndStatusAndWithdrawnAtIsNull(solution.getId(),
+									CustomerDeployment.IN_REVIEW)))
 					.toList(),
 				true);
 	}
@@ -105,14 +116,19 @@ public class SolutionService {
 	@Transactional
 	public SolutionResponse create(Actor actor, CreateSolutionRequest request) {
 		Membership membership = writer(actor);
-		String base = SolutionViews.slug(request.name());
+		return SolutionViews.solution(start(actor, membership.organizationId(), request.name()),
+				membership.organizationName(), null, List.of(), storage);
+	}
+
+	/** A new draft of an organization, under the address its name makes free; the caller decided that it may. */
+	Solution start(Actor actor, UUID organizationId, String name) {
+		String base = SolutionViews.slug(name);
 		String slug = base;
 		for (int suffix = 2; solutions.existsBySlug(slug); suffix++) {
 			slug = base + "-" + suffix;
 		}
-		Solution solution = solutions.saveAndFlush(new Solution(UUID.randomUUID(), membership.organizationId(), slug,
-				request.name().strip(), actor.accountId()));
-		return SolutionViews.solution(solution, membership.organizationName(), null, List.of(), storage);
+		return solutions.saveAndFlush(new Solution(UUID.randomUUID(), organizationId, slug, name.strip(),
+				actor.accountId()));
 	}
 
 	/**
@@ -128,7 +144,15 @@ public class SolutionService {
 	@Transactional
 	public SolutionResponse save(Actor actor, UUID id, SaveSolutionRequest request) {
 		Membership membership = writer(actor);
-		Solution solution = own(membership, id);
+		return write(actor, own(membership, id), membership.organizationName(), request);
+	}
+
+	/**
+	 * The writing of a save, whoever saves: a member of the organization, or an operator on its behalf. The caller has
+	 * locked the solution and decided that the actor may change it.
+	 */
+	SolutionResponse write(Actor actor, Solution solution, String organizationName, SaveSolutionRequest request) {
+		UUID id = solution.getId();
 		if (solution.isRejected()) {
 			// A refusal is final: what GenAI Fund refused stays as it was reviewed.
 			throw new SolutionException(SolutionErrorCode.NOT_EDITABLE, "Save of solution " + id + ", refused for good");
@@ -159,7 +183,8 @@ public class SolutionService {
 		}
 		droppedPictures.forEach(fileId -> events.publishEvent(new DroppedFiles.FileDropped(id, fileId)));
 		events.publishEvent(new SolutionChanged(id));
-		return view(solution, membership);
+		return SolutionViews.solution(solution, organizationName, SolutionViews.sender(solution, identity),
+				deployments.findBySolutionIdOrderByCreatedAtDesc(id), storage);
 	}
 
 	/**
@@ -300,10 +325,7 @@ public class SolutionService {
 	@Transactional
 	public CustomerDeploymentResponse addDeployment(Actor actor, UUID solutionId, SaveCustomerDeploymentRequest request) {
 		Solution solution = own(writer(actor), solutionId);
-		if (deployments.countBySolutionId(solutionId) >= MAX_DEPLOYMENTS) {
-			throw new SolutionException(SolutionErrorCode.TOO_MANY_DEPLOYMENTS,
-					"Solution " + solutionId + " already lists " + MAX_DEPLOYMENTS + " customer deployments");
-		}
+		requireRoom(solutionId);
 		CustomerDeployment deployment = new CustomerDeployment(UUID.randomUUID(), solution.getId());
 		describe(deployment, request);
 		CustomerDeploymentResponse added = SolutionViews.deployment(deployments.saveAndFlush(deployment));
@@ -315,12 +337,15 @@ public class SolutionService {
 	 * Saves a customer deployment as its form holds it, which sends it to review again: what it says about a customer
 	 * is not shown until GenAI Fund has read it.
 	 * @throws SolutionException when the caller is not a member, the solution has no such
-	 * deployment, or it changed since the form read it
+	 * deployment, it is withdrawn, or it changed since the form read it
 	 */
 	@Transactional
 	public CustomerDeploymentResponse saveDeployment(Actor actor, UUID solutionId, UUID id,
 			SaveCustomerDeploymentRequest request) {
 		CustomerDeployment deployment = ownDeployment(actor, solutionId, id);
+		if (deployment.isWithdrawn()) {
+			throw withdrawn(id);
+		}
 		if (request.version() == null || deployment.getVersion() != request.version()) {
 			throw new SolutionException(SolutionErrorCode.DEPLOYMENT_CHANGED_MEANWHILE, "Save of customer deployment "
 					+ id + " at version " + request.version() + ", which is at " + deployment.getVersion());
@@ -333,22 +358,91 @@ public class SolutionService {
 	}
 
 	/**
-	 * Removes a customer deployment, whatever its review says.
-	 * @throws SolutionException when the caller is not a member or the solution has no such
-	 * deployment
+	 * Deletes a customer deployment of a solution that is still a draft: no operator was shown it, so nothing of it is
+	 * kept. Once the solution was sent for review its deployments are {@linkplain #withdrawDeployment withdrawn}.
+	 * @throws SolutionException when the caller is not a member, the solution has no such
+	 * deployment, or the solution is no longer a draft
 	 */
 	@Transactional
 	public void deleteDeployment(Actor actor, UUID solutionId, UUID id) {
-		deployments.delete(ownDeployment(actor, solutionId, id));
+		Solution solution = own(writer(actor), solutionId);
+		CustomerDeployment deployment = deploymentOf(solution, id);
+		if (!solution.isDraft()) {
+			throw new SolutionException(SolutionErrorCode.DEPLOYMENT_NOT_DELETABLE, "Delete of customer deployment "
+					+ id + " of solution " + solutionId + ", which is " + solution.getStatus());
+		}
+		deployments.delete(deployment);
 		events.publishEvent(new SolutionChanged(solutionId));
 	}
 
+	/**
+	 * Takes a customer deployment off its solution: the public page, the directory's count, search and matching no
+	 * longer read it, and operators no longer review it. The row and its review stay, so restoring shows it as it was.
+	 * Nobody is told.
+	 * @throws SolutionException when the caller is not a member, the solution has no such
+	 * deployment, or it is already withdrawn
+	 */
+	@Transactional
+	public CustomerDeploymentResponse withdrawDeployment(Actor actor, UUID solutionId, UUID id) {
+		CustomerDeployment deployment = ownDeployment(actor, solutionId, id);
+		if (deployment.isWithdrawn()) {
+			throw withdrawn(id);
+		}
+		deployment.withdraw(Instant.now());
+		return changed(AuditAction.SOLUTION_DEPLOYMENT_WITHDRAW, actor, deployment);
+	}
+
+	/**
+	 * Puts a withdrawn customer deployment back on its solution with the review it had: an approved one is public
+	 * again without a new review, and one that waited waits again.
+	 * @throws SolutionException when the caller is not a member, the solution has no such
+	 * deployment, it is not withdrawn, or the solution already lists as many as it may
+	 */
+	@Transactional
+	public CustomerDeploymentResponse restoreDeployment(Actor actor, UUID solutionId, UUID id) {
+		CustomerDeployment deployment = ownDeployment(actor, solutionId, id);
+		if (!deployment.isWithdrawn()) {
+			throw new SolutionException(SolutionErrorCode.DEPLOYMENT_NOT_WITHDRAWN,
+					"Restore of customer deployment " + id + ", which is not withdrawn");
+		}
+		requireRoom(solutionId);
+		deployment.restore();
+		return changed(AuditAction.SOLUTION_DEPLOYMENT_RESTORE, actor, deployment);
+	}
+
+	/** Records a withdrawal or a restoring and tells the index, which counts the deployments the public reads. */
+	private CustomerDeploymentResponse changed(AuditAction action, Actor actor, CustomerDeployment deployment) {
+		deployments.flush();
+		Person person = identity.person(actor);
+		audit.record(new AuditRecord(action, new AuditRecord.Actor(person.accountId(), person.label(), person.email()),
+				new AuditRecord.Resource(CUSTOMER_DEPLOYMENT, deployment.getId().toString(), deployment.getTitle()),
+				Map.of()));
+		events.publishEvent(new SolutionChanged(deployment.getSolutionId()));
+		return SolutionViews.deployment(deployment);
+	}
+
+	/** A withdrawn deployment does not take one of the places. */
+	private void requireRoom(UUID solutionId) {
+		if (deployments.countBySolutionIdAndWithdrawnAtIsNull(solutionId) >= MAX_DEPLOYMENTS) {
+			throw new SolutionException(SolutionErrorCode.TOO_MANY_DEPLOYMENTS,
+					"Solution " + solutionId + " already lists " + MAX_DEPLOYMENTS + " customer deployments");
+		}
+	}
+
+	private static SolutionException withdrawn(UUID id) {
+		return new SolutionException(SolutionErrorCode.DEPLOYMENT_WITHDRAWN,
+				"Change of customer deployment " + id + ", which is withdrawn");
+	}
+
 	private CustomerDeployment ownDeployment(Actor actor, UUID solutionId, UUID id) {
-		Solution solution = own(writer(actor), solutionId);
+		return deploymentOf(own(writer(actor), solutionId), id);
+	}
+
+	private CustomerDeployment deploymentOf(Solution solution, UUID id) {
 		return deployments.findForUpdate(id)
 			.filter(found -> found.getSolutionId().equals(solution.getId()))
 			.orElseThrow(() -> new SolutionException(SolutionErrorCode.DEPLOYMENT_NOT_FOUND,
-					"No customer deployment " + id + " of solution " + solutionId));
+					"No customer deployment " + id + " of solution " + solution.getId()));
 	}
 
 	private static void describe(CustomerDeployment deployment, SaveCustomerDeploymentRequest request) {

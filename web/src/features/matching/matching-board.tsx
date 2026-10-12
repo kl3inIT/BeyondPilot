@@ -373,7 +373,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
         notify.success(
           "Matching.done.removed",
           { name: candidate.solutionName, reason: reasonName(body.reason) },
-          { label: "Matching.done.undo", onClick: () => void restore(candidate, "restored") },
+          { undo: () => void restore(candidate, "restored") },
         );
       },
     );

@@ -923,6 +923,8 @@
         },
         "solution": {
           "approve": "Duyệt giải pháp",
+          "create": "Tạo giải pháp",
+          "publish": "Đăng giải pháp",
           "send_back": "Trả lại giải pháp",
           "reject": "Từ chối hoặc trả lại giải pháp",
           "take_down": "Gỡ giải pháp xuống",
@@ -931,6 +933,8 @@
           "unfeature": "Bỏ nổi bật một giải pháp",
           "deployment_approve": "Duyệt triển khai khách hàng",
           "deployment_reject": "Trả lại triển khai khách hàng",
+          "deployment_withdraw": "Gỡ một triển khai khách hàng",
+          "deployment_restore": "Khôi phục một triển khai khách hàng",
           "enrich": "Bổ sung solution từ nguồn công khai",
           "back": "Ghi xác nhận của GenAI Fund về giải pháp"
         },
@@ -1049,6 +1053,8 @@
         },
         "solution": {
           "approve": "Duyệt giải pháp <resource></resource>",
+          "create": "Tạo giải pháp <resource></resource>",
+          "publish": "Đăng giải pháp <resource></resource>",
           "send_back": "Trả lại giải pháp <resource></resource>",
           "reject": "Từ chối giải pháp <resource></resource>",
           "take_down": "Gỡ giải pháp <resource></resource> xuống",
@@ -1057,6 +1063,8 @@
           "unfeature": "Bỏ nổi bật giải pháp <resource></resource>",
           "deployment_approve": "Duyệt triển khai khách hàng <resource></resource>",
           "deployment_reject": "Trả lại triển khai khách hàng <resource></resource>",
+          "deployment_withdraw": "Gỡ triển khai khách hàng <resource></resource>",
+          "deployment_restore": "Khôi phục triển khai khách hàng <resource></resource>",
           "enrich": "Bổ sung solution <resource></resource> từ nguồn công khai",
           "back": "Ghi xác nhận của GenAI Fund về giải pháp <resource></resource>"
         },
@@ -1390,6 +1398,19 @@
     },
     "solutions": {
       "metaTitle": "Giải pháp · BeyondPilot",
+      "create": {
+        "action": "Tạo giải pháp",
+        "title": "Tạo giải pháp",
+        "lead": "Bạn viết trong trình soạn rồi đăng ngay, không qua duyệt. Giải pháp thuộc tổ chức bạn chọn.",
+        "organization": "Tổ chức",
+        "organizationPlaceholder": "Chọn tổ chức",
+        "organizationRequired": "Hãy chọn một tổ chức.",
+        "noOrganizations": "Chưa có tổ chức nào được duyệt.",
+        "name": "Tên giải pháp",
+        "nameRequired": "Hãy nhập tên giải pháp.",
+        "cancel": "Hủy",
+        "submit": "Tạo và mở trình soạn"
+      },
       "title": "Giải pháp",
       "lead": "Mọi giải pháp nhà cung cấp đã gửi duyệt.",
       "columns": {
@@ -3171,7 +3192,6 @@
           "open": "Bỏ chặn {email}",
           "title": "Bỏ chặn địa chỉ này?",
           "lead": "BeyondPilot sẽ gửi lại tới {email} từ giờ.",
-          "noteManual": "Các email đã bỏ sẽ không được gửi lại.",
           "noteProvider": "Nếu mail tới địa chỉ này lại bị trả lại hoặc bị báo spam, nhà cung cấp sẽ tính điểm xấu cho việc gửi của bạn.",
           "confirm": "Bỏ chặn",
           "cancel": "Hủy",
@@ -3383,6 +3403,9 @@
         "invalid": "Nhập một địa chỉ email."
       }
     }
+  },
+  "Actions": {
+    "undo": "Hoàn tác"
   },
   "Lists": {
     "loadMore": "Xem thêm",
@@ -3753,6 +3776,11 @@
       "cancel": "Hủy",
       "emailDomain": "Tên miền email đã xác minh",
       "emailDomainHint": "Ai được tham gia bằng tên miền này được đặt trong mục Thành viên.",
+      "discard": {
+        "title": "Bỏ các thay đổi?",
+        "confirm": "Bỏ thay đổi",
+        "keep": "Sửa tiếp"
+      },
       "leave": {
         "title": "Rời trang mà không lưu?",
         "lead": "Các thay đổi của bạn với hồ sơ tổ chức chưa được lưu.",
@@ -3819,6 +3847,10 @@
         "requestOnDomain": "Email của bạn thuộc {domain}. Một chủ sở hữu của {name} sẽ duyệt yêu cầu của bạn."
       },
       "ask": {
+        "join": {
+          "title": "Tham gia {name}?",
+          "lead": "Bạn tham gia ngay, và các thành viên thấy bạn trong danh sách."
+        },
         "request": {
           "title": "Xin tham gia {name}?",
           "messageHint": "Các chủ sở hữu của {name} sẽ đọc lời nhắn này."
@@ -3925,6 +3957,11 @@
         "cancel": "Hủy"
       },
       "confirm": {
+        "demoteSelf": {
+          "title": "Chuyển chính bạn thành thành viên?",
+          "lead": "Bạn sẽ không còn mời người, đổi vai trò hay sửa hồ sơ được nữa. Chỉ một chủ sở hữu khác mới trao lại quyền cho bạn được.",
+          "confirm": "Chuyển thành thành viên"
+        },
         "leave": {
           "title": "Rời tổ chức này?",
           "lead": "Bạn sẽ mất quyền vào hồ sơ, thành viên và giải pháp của tổ chức.",
@@ -4226,7 +4263,8 @@
       "SOLUTION_INCOMPLETE": "Hãy điền các trường được đánh dấu trước khi gửi duyệt.",
       "SOLUTION_NOT_SUBMITTABLE": "Giải pháp này đang được duyệt, đã duyệt hoặc đã bị từ chối hẳn.",
       "SOLUTION_NOT_EDITABLE": "Giải pháp này đã bị từ chối hẳn nên không sửa được nữa.",
-      "SOLUTION_NOT_A_DRAFT": "Chỉ xóa được bản nháp.",
+      "SOLUTION_NOT_A_DRAFT": "Giải pháp này không còn là bản nháp.",
+      "SOLUTION_ORGANIZATION_NOT_APPROVED": "Tổ chức này chưa được duyệt nên chưa thể có giải pháp.",
       "SOLUTION_NOT_AWAITING_REVIEW": "Giải pháp này đã được duyệt xong.",
       "SOLUTION_CHANGED_MEANWHILE": "Có người vừa sửa giải pháp này. Hãy tải lại trang rồi thử lại.",
       "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
@@ -4234,6 +4272,9 @@
       "SOLUTION_TOO_MANY_DEPLOYMENTS": "Một giải pháp có tối đa 12 triển khai khách hàng. Hãy gỡ một cái trước khi thêm.",
       "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "Triển khai khách hàng này không chờ duyệt.",
       "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Có người vừa lưu triển khai khách hàng này. Hãy tải lại trang rồi sửa lại.",
+      "SOLUTION_DEPLOYMENT_NOT_DELETABLE": "Triển khai khách hàng này đã được gửi duyệt nên chỉ được gỡ khỏi trang và giữ lại, không bị xóa. Hãy tải lại trang.",
+      "SOLUTION_DEPLOYMENT_WITHDRAWN": "Triển khai khách hàng này đã được gỡ khỏi trang. Hãy khôi phục trước.",
+      "SOLUTION_DEPLOYMENT_NOT_WITHDRAWN": "Triển khai khách hàng này đã trở lại trên giải pháp.",
       "SOLUTION_MEMBER_REQUIRED": "Chỉ thành viên của một tổ chức mới làm được việc này.",
       "SOLUTION_DECK_NOT_USABLE": "Tệp này không dùng làm tài liệu giới thiệu được. Hãy tải PDF lên lại.",
       "unknown": "Chưa thực hiện được. Hãy thử lại.",
@@ -4245,15 +4286,17 @@
     "done": {
       "saved": "Đã lưu giải pháp.",
       "submitted": "Đã gửi GenAI Fund duyệt.",
+      "published": "Đã đăng {name}.",
       "deleted": "Đã xóa {name}.",
       "approved": "Đã duyệt {name}.",
       "rejected": "Đã từ chối {name}.",
       "deploymentSaved": "Đã gửi {name} cho GenAI Fund duyệt.",
       "deploymentRemoved": "Đã gỡ {name}.",
+      "deploymentRestored": "Đã khôi phục {name}.",
       "deploymentApproved": "Đã duyệt {name}.",
       "deploymentRejected": "Đã trả lại {name}.",
       "shown": "{name} đã được đăng trong danh mục.",
-      "hidden": "{name} đã ẩn khỏi danh mục.",
+      "hidden": "{name} đã ẩn khỏi danh mục. Người có link vẫn mở được.",
       "linkCopied": "Đã sao chép liên kết",
       "sentBack": "Đã trả lại {name} kèm nội dung cần sửa.",
       "takenDown": "Đã gỡ {name} xuống.",
@@ -4463,11 +4506,6 @@
           "lead": "Không hoàn tác được.",
           "confirm": "Xóa bản nháp"
         },
-        "confirmHide": {
-          "title": "Ẩn khỏi danh mục?",
-          "lead": "Ai có liên kết vẫn mở được.",
-          "confirm": "Ẩn"
-        },
         "view": "Mở"
       },
       "create": {
@@ -4607,6 +4645,7 @@
         "logo": "Hãy thêm logo.",
         "cover": "Hãy thêm ảnh bìa."
       },
+      "stepIncomplete": "Hãy điền các trường được đánh dấu để tiếp tục.",
       "deck": {
         "empty": "Tải tài liệu giới thiệu lên",
         "limits": "PDF, tối đa 100 MB",
@@ -4636,7 +4675,17 @@
         "readiness": {
           "missing": "Trước khi gửi duyệt, hãy bổ sung:",
           "ready": "Đã sẵn sàng gửi duyệt",
-          "note": "Việc duyệt thường mất một đến hai ngày làm việc; kết quả hiển thị ngay trên trang này."
+          "note": "Việc duyệt thường mất một đến hai ngày làm việc; kết quả hiển thị ngay trên trang này.",
+          "missingOperator": "Trước khi đăng, hãy bổ sung:",
+          "readyOperator": "Sẵn sàng để đăng",
+          "noteOperator": "Giải pháp được đăng ngay, không qua duyệt."
+        },
+        "publish": "Đăng",
+        "confirmPublish": {
+          "title": "Đăng giải pháp này?",
+          "lead": "Giải pháp xuất hiện trong danh mục ngay, không qua duyệt. Các thành viên của tổ chức sẽ nhận email báo giải pháp đã được duyệt.",
+          "confirm": "Đăng",
+          "cancel": "Sửa tiếp"
         },
         "submit": "Gửi duyệt",
         "resubmit": "Gửi duyệt lại",
@@ -4646,15 +4695,13 @@
           "confirm": "Gửi duyệt",
           "cancel": "Sửa tiếp"
         },
-        "delete": "Xóa bản nháp…",
-        "confirmDelete": {
-          "title": "Xóa {name}?",
-          "lead": "Không thể hoàn tác.",
-          "confirm": "Xóa bản nháp",
-          "cancel": "Hủy"
-        },
         "images": "{count} ảnh",
-        "listedHint": "Khi tắt, ai có liên kết vẫn mở được."
+        "listedHint": "Nếu tắt, giải pháp không xuất hiện trong danh mục, nhưng ai có liên kết vẫn mở được.",
+        "preview": {
+          "title": "Xem trước",
+          "unlisted": "Thẻ này không hiện trong danh mục khi tùy chọn bên dưới đang tắt."
+        },
+        "confirmAccurate": "Tôi xác nhận các thông tin trên là chính xác."
       },
       "leave": {
         "title": "Rời trang mà không lưu?",
@@ -4748,6 +4795,8 @@
       "none": "Chưa có triển khai khách hàng nào.",
       "edit": "Sửa",
       "remove": "Gỡ",
+      "restore": "Khôi phục",
+      "withdrawn": "Đã gỡ khỏi trang giải pháp. Chỉ tổ chức của bạn nhìn thấy.",
       "rejected": "Bị trả lại: {reason}.",
       "confirmRemove": {
         "title": "Gỡ {name}?",
@@ -7045,8 +7094,7 @@
       "shortlisted": "Đã lưu {name}.",
       "unshortlisted": "Đã bỏ lưu {name}.",
       "removed": "Đã loại {name} · {reason}",
-      "restored": "Đã khôi phục {name}.",
-      "undo": "Hoàn tác"
+      "restored": "Đã khôi phục {name}."
     },
     "errors": {
       "MATCHING_USE_CASE_NOT_FOUND": "Use case này không còn tồn tại.",

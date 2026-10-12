@@ -298,6 +298,12 @@ const solutions = [
   }),
 ];
 
+/** A draft an operator started for an organization: complete, so the editor's last step can publish it. */
+const operatorDraft = solution("ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e06", "Draft Desk", "draft", {
+  submittedAt: null,
+  submittedBy: null,
+});
+
 function profile(id, name, status, more) {
   return {
     id,
@@ -557,6 +563,20 @@ const lists = {
  * nothing when the path is neither.
  */
 export function answerReview(url, account) {
+  // The editor of an operator reads a draft, which no list of submitted solutions holds, and the organizations.
+  const draft = url.pathname.match(/^\/api\/solution\/admin\/solutions\/([^/]+)\/draft$/);
+  const organizations = url.pathname === "/api/solution/admin/solutions/organizations";
+  if (draft || organizations) {
+    if (account?.role !== "operator") {
+      return [account ? 403 : 401, {}];
+    }
+    if (organizations) {
+      return [200, [{ id: operatorDraft.organizationId, name: operatorDraft.organizationName }]];
+    }
+    return draft[1] === operatorDraft.id
+      ? [200, operatorDraft]
+      : [404, { status: 404, code: "SOLUTION_NOT_FOUND" }];
+  }
   const path = Object.keys(lists).find(
     (candidate) => url.pathname === candidate || url.pathname.startsWith(`${candidate}/`),
   );

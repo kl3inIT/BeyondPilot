@@ -9,6 +9,7 @@ import { Button } from "@/components/actions/button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { ChoiceSelect } from "@/components/composites/choice-select";
 import { RequiredMark } from "@/components/composites/required-mark";
+import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -83,6 +84,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
   // A saved profile is compared with the one the page holds, which is the old one until it is read again.
   const [refreshing, startRefresh] = useTransition();
   const pending = sending || refreshing;
+  const [discarding, setDiscarding] = useState(false);
   const [invalid, setInvalid] = useState<Set<string>>(new Set());
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -395,14 +397,19 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
-        {/* Unsaved changes to a saved profile are kept or dropped on leaving, where LeaveGuard asks. */}
+        {/* Unsaved changes to a saved profile are dropped only after a question: Cancel asks here, LeaveGuard on leaving. */}
         {!organization && (
           <Button prominence="secondary" size="lg" href={siteRoutes.workspaceOrganization}>
             {t("cancel")}
           </Button>
         )}
         {onCancel && (
-          <Button prominence="secondary" size="lg" disabled={pending} onClick={onCancel}>
+          <Button
+            prominence="secondary"
+            size="lg"
+            disabled={pending}
+            onClick={() => (dirty ? setDiscarding(true) : onCancel())}
+          >
             {t("cancel")}
           </Button>
         )}
@@ -423,6 +430,19 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
         leaveLabel={t("leave.leave")}
         stayLabel={t("leave.stay")}
       />
+      {onCancel && (
+        <ConfirmDialog
+          open={discarding}
+          onOpenChange={setDiscarding}
+          title={t("discard.title")}
+          description={t("leave.lead")}
+          confirmLabel={t("discard.confirm")}
+          cancelLabel={t("discard.keep")}
+          tone="danger"
+          pending={false}
+          onConfirm={onCancel}
+        />
+      )}
     </form>
   );
 }

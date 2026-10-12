@@ -73,6 +73,12 @@ public enum AuditAction {
 
 	SOLUTION_APPROVE("solution.approve"),
 
+	/** An operator started a solution as a draft of an organization. */
+	SOLUTION_CREATE("solution.create"),
+
+	/** An operator published a solution at once, with no review: the operator is GenAI Fund. */
+	SOLUTION_PUBLISH("solution.publish"),
+
 	/** An operator sent a solution back to its owners with what to change. */
 	SOLUTION_SEND_BACK("solution.send_back"),
 
@@ -101,6 +107,11 @@ public enum AuditAction {
 
 	/** {@code reason} is the code of the reason given. */
 	SOLUTION_DEPLOYMENT_REJECT("solution.deployment_reject", "reason"),
+
+	/** A member took a customer deployment off their solution; its review stays, and they can restore it. */
+	SOLUTION_DEPLOYMENT_WITHDRAW("solution.deployment_withdraw"),
+
+	SOLUTION_DEPLOYMENT_RESTORE("solution.deployment_restore"),
 
 	/**
 	 * Empty parts of a solution and its organization were filled from public sources: its deck, its website or a web
