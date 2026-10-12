@@ -66,7 +66,10 @@ function OrganizationProfileView({ organization, action }: OrganizationProfileVi
             facts={[
               { label: t("name"), value: organization.name },
               { label: t("website"), value: organization.website, href: organization.website },
-              { label: t("emailDomain"), value: organization.emailDomain, wide: true },
+              // A domain is verified by GenAI Fund, so without one there is nothing to state.
+              ...(organization.emailDomain
+                ? [{ label: t("emailDomain"), value: organization.emailDomain, wide: true }]
+                : []),
               { label: t("type"), value: typeName(organization.type) },
               {
                 label: t("teamSize"),

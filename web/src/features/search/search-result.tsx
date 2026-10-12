@@ -11,7 +11,7 @@ import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { SearchItem } from "@/lib/api/generated";
-import { programRoute, siteRoutes } from "@/lib/site";
+import { programRoute, siteRoutes, useCaseRoute } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
 import { budgetFigures, budgetText } from "@/features/usecase/use-case-budget";
@@ -139,8 +139,8 @@ function TalentResult({ item }: { item: SearchItem }) {
 
 /**
  * A use case, said the way the use cases list says it: who asks (or that they stay anonymous), the
- * industry, the budget when it is shown, and the date proposals close. A use case has no page of its
- * own yet, so it leads to the list, searched for its title.
+ * industry, the budget when it is shown, and the date proposals close. It leads to the use case's own
+ * page, whose address is the identifier the result carries as its `slug`.
  */
 function UseCaseResult({ item }: { item: SearchItem }) {
   const t = useTranslations("UseCases");
@@ -175,7 +175,7 @@ function UseCaseResult({ item }: { item: SearchItem }) {
         </div>
       }
       title={item.title}
-      href={`${siteRoutes.useCases}?q=${encodeURIComponent(item.title)}`}
+      href={useCaseRoute(item.slug)}
       subtitle={item.subtitle ?? t("anonymous")}
       snippet={item.snippet}
     >

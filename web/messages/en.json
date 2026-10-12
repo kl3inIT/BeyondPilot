@@ -657,7 +657,6 @@
     "connect": {
       "address": "Server address",
       "copy": "Copy",
-      "copied": "Copied",
       "copyPrompt": "Copy the prompt",
       "appsLabel": "Apps",
       "apps": {
@@ -2889,13 +2888,14 @@
       "saved": "Saved",
       "failed": "That did not save. Try again.",
       "setup": {
-        "address": "Server address",
         "operator": {
           "title": "Operators' server",
+          "address": "Operators' server address",
           "lead": "Only operators connect, and it reads every area, listed or not."
         },
         "user": {
           "title": "User server",
+          "address": "User server address",
           "lead": "Every signed-in person may connect to it, and it reads what visitors see.",
           "on": "On: people can connect apps",
           "off": "Off: it answers 404 and connected apps stop"
@@ -3449,7 +3449,7 @@
       },
       "settings": {
         "metaTitle": "Email settings",
-        "copy": "Copy",
+        "copy": "Copy {what}",
         "secretKept": "Leave it empty to keep the saved one.",
         "saved": "Settings saved.",
         "testSent": "Test email sent to {email}. Check that it arrived.",
@@ -3926,7 +3926,9 @@
       "title": "GenAI Fund is reviewing your organization",
       "lead": "Until it is approved, {name} does not appear in the directories and cannot list a solution publicly.",
       "foot": "We email the owners when it is decided.",
-      "edit": "Edit profile"
+      "edit": "Edit profile",
+      "missing": "{count, plural, one {# required field is empty: {facts}.} other {# required fields are empty: {facts}.}} The reviewer reads the profile as it is now.",
+      "complete": "The profile has every required field."
     },
     "needsChanges": {
       "title": "GenAI Fund asked for changes to {name}",
@@ -3975,6 +3977,7 @@
       "createLead": "Independent builders can create a practice or team.",
       "profileTitle": "Organization profile",
       "edit": "Edit profile",
+      "complete": "Complete profile",
       "basics": "Basics",
       "about": "About",
       "name": "Organization name",
@@ -3991,6 +3994,7 @@
       "description": "Short description",
       "descriptionHint": "What the organization does and for whom.",
       "save": "Save changes",
+      "unchanged": "Nothing has changed yet.",
       "create": "Send for review",
       "cancel": "Cancel",
       "emailDomain": "Verified email domain",

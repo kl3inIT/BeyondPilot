@@ -39,23 +39,28 @@ const PREVIEW_DELAY = 400;
 
 type Draft = { subject: string; body: string };
 
-/** What keeps a field's draft from being saved, one line each. */
+/**
+ * What keeps a field's draft from being saved, one line each. The element is always there, empty
+ * while nothing is wrong: the field's `aria-describedby` then always names something, and a problem
+ * the preview finds while the person types is said by the live region it arrives in.
+ */
 function Problems({ id, problems }: { id: string; problems: { message: string }[] }) {
-  if (problems.length === 0) {
-    return null;
-  }
   return (
-    <ul id={id} className="flex flex-col gap-1">
-      {problems.map((problem) => (
-        <li
-          key={problem.message}
-          className="flex items-start gap-1.5 text-xs font-medium text-destructive"
-        >
-          <CircleAlertIcon aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
-          {problem.message}
-        </li>
-      ))}
-    </ul>
+    <div id={id} aria-live="polite">
+      {problems.length > 0 && (
+        <ul className="mt-2 flex flex-col gap-1">
+          {problems.map((problem) => (
+            <li
+              key={problem.message}
+              className="flex items-start gap-1.5 text-xs font-medium text-destructive"
+            >
+              <CircleAlertIcon aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+              {problem.message}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -325,19 +330,22 @@ function EmailTemplateEditor({
                 <FieldLabel id="email-subject-label" htmlFor="email-subject">
                   {t("subject")}
                 </FieldLabel>
-                <TemplateCodeEditor
-                  id="email-subject"
-                  labelledBy="email-subject-label"
-                  singleLine
-                  value={field.state.value}
-                  onChange={field.handleChange}
-                  onBlur={field.handleBlur}
-                  variables={current.variables}
-                  problems={subjectProblems}
-                  invalid={subjectProblems.length > 0}
-                  describedBy="email-subject-problems"
-                />
-                <Problems id="email-subject-problems" problems={subjectProblems} />
+                {/* One child of the field, so the empty list of problems adds no gap under the editor. */}
+                <div className="flex flex-col">
+                  <TemplateCodeEditor
+                    id="email-subject"
+                    labelledBy="email-subject-label"
+                    singleLine
+                    value={field.state.value}
+                    onChange={field.handleChange}
+                    onBlur={field.handleBlur}
+                    variables={current.variables}
+                    problems={subjectProblems}
+                    invalid={subjectProblems.length > 0}
+                    describedBy="email-subject-problems"
+                  />
+                  <Problems id="email-subject-problems" problems={subjectProblems} />
+                </div>
               </Field>
             )}
           </form.Field>
@@ -347,22 +355,26 @@ function EmailTemplateEditor({
                 <FieldLabel id="email-body-label" htmlFor="email-body">
                   {t("body")}
                 </FieldLabel>
-                <TemplateCodeEditor
-                  ref={body}
-                  id="email-body"
-                  labelledBy="email-body-label"
-                  value={field.state.value}
-                  onChange={field.handleChange}
-                  onBlur={field.handleBlur}
-                  variables={current.variables}
-                  problems={bodyProblems}
-                  invalid={bodyProblems.length > 0}
-                  describedBy="email-body-problems"
-                />
-                {bodyProblems.length > 0 ? (
+                <div className="flex flex-col">
+                  <TemplateCodeEditor
+                    ref={body}
+                    id="email-body"
+                    labelledBy="email-body-label"
+                    value={field.state.value}
+                    onChange={field.handleChange}
+                    onBlur={field.handleBlur}
+                    variables={current.variables}
+                    problems={bodyProblems}
+                    invalid={bodyProblems.length > 0}
+                    // The hint gives way to the problems; each has an id of its own.
+                    describedBy={
+                      bodyProblems.length > 0 ? "email-body-problems" : "email-body-hint"
+                    }
+                  />
                   <Problems id="email-body-problems" problems={bodyProblems} />
-                ) : (
-                  <FieldDescription id="email-body-problems">{t("bodyHint")}</FieldDescription>
+                </div>
+                {bodyProblems.length === 0 && (
+                  <FieldDescription id="email-body-hint">{t("bodyHint")}</FieldDescription>
                 )}
                 {/* What the preview shows and the body does not hold (notification/layout.html). */}
                 <FieldDescription>{t("frame")}</FieldDescription>

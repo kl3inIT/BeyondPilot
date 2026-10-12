@@ -9,7 +9,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/actions/button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
-import { LeaveGuard } from "@/components/composites/leave-guard";
+import { LeaveGuard, onGuardEntry } from "@/components/composites/leave-guard";
 import { RequiredMark } from "@/components/composites/required-mark";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
@@ -151,9 +151,9 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
         } else {
           await createOrganization({ body });
           notify.success("Organization.done.created");
-          startLeaving(() =>
-            router.push(getPathname({ href: siteRoutes.workspaceOrganization, locale })),
-          );
+          const next = getPathname({ href: siteRoutes.workspaceOrganization, locale });
+          // The entry the guard added to catch Back gives way to the organization's page.
+          startLeaving(() => (onGuardEntry() ? router.replace(next) : router.push(next)));
         }
       } catch (error) {
         // An operator's save holds the profile under `profile`.
@@ -181,8 +181,10 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
   const changed =
     useStore(form.store, (state) => !state.isDefaultValue) ||
     domain.text !== (organization?.emailDomain ?? "");
-  // Only a saved profile can differ from what was saved; a new one has nothing to lose yet.
-  const dirty = organization !== undefined && !pending && changed;
+  // What a leave would lose: a saved profile's changes, or what was typed into a new one.
+  const dirty = !pending && changed;
+  // A saved profile has nothing to save until it differs from what was saved.
+  const unchanged = organization !== undefined && !pending && !changed;
 
   // The form's title is the page's on the create page; on the profile it sits under the organization's name.
   const Title = organization ? "h2" : "h1";
@@ -361,7 +363,7 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
-        {/* Unsaved changes to a saved profile are dropped only after a question: Cancel asks here, LeaveGuard on leaving. */}
+        {/* Unsaved work is dropped only after a question: Cancel asks here on a saved profile, and LeaveGuard on leaving, which Cancel is on a new one. */}
         {!organization && (
           <Button prominence="secondary" size="lg" href={siteRoutes.workspaceOrganization}>
             {t("cancel")}
@@ -377,18 +379,27 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
             {t("cancel")}
           </Button>
         )}
-        <Button
-          type="submit"
-          size="lg"
-          pending={pending}
-          disabled={organization !== undefined && !dirty}
-          className="ml-auto"
-        >
-          {t(organization ? "save" : "create")}
-        </Button>
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
+          {/* Why the save is held, beside it. */}
+          {unchanged && (
+            <p id={`${form.formId}-unchanged`} className="text-sm text-muted-foreground">
+              {t("unchanged")}
+            </p>
+          )}
+          <Button
+            type="submit"
+            size="lg"
+            pending={pending}
+            disabled={organization !== undefined && !dirty}
+            aria-describedby={unchanged ? `${form.formId}-unchanged` : undefined}
+          >
+            {t(organization ? "save" : "create")}
+          </Button>
+        </div>
       </div>
       <LeaveGuard
         active={dirty}
+        back
         title={t("leave.title")}
         description={t("leave.lead")}
         leaveLabel={t("leave.leave")}

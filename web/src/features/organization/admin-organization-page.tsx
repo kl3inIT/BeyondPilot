@@ -306,7 +306,13 @@ function AdminMembers({
           </h2>
           <p className="text-sm text-muted-foreground">{summary}</p>
         </div>
-        {!detail.merged && <AdminInvite organization={organization} />}
+        {!detail.merged && (
+          // A record that waits for review has its primary action in the header: Review.
+          <AdminInvite
+            organization={organization}
+            prominence={reviewState(organization) === "in_review" ? "secondary" : "primary"}
+          />
+        )}
       </div>
       {rows.length === 0 ? (
         // Nobody is invited to a merged organization: its people went to the one kept.

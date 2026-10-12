@@ -235,9 +235,11 @@ function ProgramMenu({ program }: { program: AdminProgram }) {
           <DropdownMenuGroup>
             <DropdownMenuItem
               onClick={() => {
-                void navigator.clipboard
-                  .writeText(`https://${addressOf(program.slug)}`)
-                  .then(() => notify.success("Admin.programs.settings.copied"));
+                // A menu item ends in a toast either way: a refused clipboard is said too.
+                navigator.clipboard.writeText(`https://${addressOf(program.slug)}`).then(
+                  () => notify.success("Admin.programs.settings.copied"),
+                  () => notify.error("Actions.copyFailed"),
+                );
               }}
             >
               <LinkIcon aria-hidden="true" />

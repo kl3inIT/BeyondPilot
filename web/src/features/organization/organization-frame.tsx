@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { ReviewStatus } from "@/components/composites/review-status";
+import { useFormatter } from "@/i18n/format";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { MyOrganization, Organization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -18,6 +19,7 @@ import { NoticeCard } from "./notice-card";
 import { OrganizationAction } from "./organization-action";
 import { websiteHost } from "./organization-format";
 import { OrganizationMark } from "./organization-mark";
+import { missingProfileFacts } from "./organization-schemas";
 import { OrganizationTabs } from "./organization-tabs";
 
 type OrganizationTab = "profile" | "members" | "solutions" | "introductions" | "useCases";
@@ -45,6 +47,7 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
   const reasonName = useVocabulary("organizationRefusal");
   const takeDownReasonName = useVocabulary("organizationTakeDown");
   const countryName = useCountryName();
+  const format = useFormatter();
   const { organization, mergedFrom } = mine;
   const owner = mine.role === "owner";
 
@@ -86,6 +89,8 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
   const country = organization.country && countryName(organization.country);
   // The way to the profile is offered from the other tabs, to the people who can change it.
   const toProfile = owner && current !== "profile";
+  // What the form would still ask of this organization: the reviewer reads the profile without it.
+  const missing = missingProfileFacts(organization);
 
   return (
     <div className="flex flex-1 flex-col bg-muted pt-10 pb-16 md:pt-14 md:pb-24">
@@ -126,7 +131,19 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
           <NoticeCard
             titleAs="h2"
             title={t("inReview.title")}
-            description={<p>{t("inReview.lead", { name: organization.name })}</p>}
+            description={
+              <>
+                <p>{t("inReview.lead", { name: organization.name })}</p>
+                <p>
+                  {missing.length > 0
+                    ? t("inReview.missing", {
+                        count: missing.length,
+                        facts: format.list(missing.map((fact) => t(`form.${fact}`))),
+                      })
+                    : t("inReview.complete")}
+                </p>
+              </>
+            }
             badge={
               <ReviewStatus state="in_review" appearance="pill">
                 {t("status.in_review")}
@@ -134,11 +151,15 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             }
             foot={t("inReview.foot")}
             actions={
-              toProfile && (
+              // On the Profile tab the action is the profile's own, under the notice.
+              toProfile &&
+              (missing.length > 0 ? (
+                <Button href={siteRoutes.workspaceOrganization}>{t("form.complete")}</Button>
+              ) : (
                 <Button prominence="secondary" href={siteRoutes.workspaceOrganization}>
                   {t("inReview.edit")}
                 </Button>
-              )
+              ))
             }
           />
         )}

@@ -96,8 +96,11 @@ const appearance = EditorView.theme({
   ".cm-selectionBackground, &.cm-focused .cm-selectionBackground": {
     backgroundColor: "color-mix(in oklab, var(--primary) 20%, transparent) !important",
   },
+  // The ink of the sky pair on a wash of the primary: 5.98:1 by day, 5.80:1 on the active line and
+  // 4.57:1 under a selection, where the primary itself read at 4.48, 4.34 and 3.43; 7.4:1 or more
+  // by night. The wash stays see-through so a selection shows under a tag.
   ".cm-variable": {
-    color: "var(--primary)",
+    color: "var(--sky-foreground)",
     backgroundColor: "color-mix(in oklab, var(--primary) 10%, transparent)",
     borderRadius: "3px",
   },
