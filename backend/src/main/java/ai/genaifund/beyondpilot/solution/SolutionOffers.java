@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -17,10 +18,13 @@ import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.solution.dto.AdminOfferDetailResponse;
 import ai.genaifund.beyondpilot.solution.dto.AdminOfferResponse;
+import ai.genaifund.beyondpilot.solution.dto.AdminOfferSolutionResponse;
 import ai.genaifund.beyondpilot.solution.dto.OfferResponse;
 import ai.genaifund.beyondpilot.solution.dto.OwnOfferResponse;
 import ai.genaifund.beyondpilot.solution.dto.SaveOfferRequest;
+import ai.genaifund.beyondpilot.solution.dto.SetOfferClosedRequest;
 import ai.genaifund.beyondpilot.solution.persistence.Offer;
 import ai.genaifund.beyondpilot.solution.persistence.OfferQueryRepository;
 import ai.genaifund.beyondpilot.solution.persistence.OfferRepository;
@@ -87,9 +91,9 @@ public class SolutionOffers {
 			// Another organization's solution answers as one that does not exist.
 			throw noSolution(solutionId);
 		}
-		return offerList.availableTo(solution.getOrganizationId())
+		return offerList.availableTo(solution.getOrganizationId(), solutionId)
 			.stream()
-			.map(row -> new OfferResponse(row.id(), row.title(), row.url(), row.organizationId() == null))
+			.map(row -> new OfferResponse(row.id(), row.title(), row.url(), row.organizationId() == null, row.closed()))
 			.toList();
 	}
 
@@ -107,7 +111,7 @@ public class SolutionOffers {
 			OrganizationName organization = row.organizationId() == null ? null : names.get(row.organizationId());
 			return new AdminOfferResponse(row.id(), row.title(), row.url(), row.organizationId(),
 					organization == null ? null : organization.name(), row.solutions(), row.version(),
-					row.updatedAt());
+					row.updatedAt(), row.closed());
 		}).toList();
 	}
 
@@ -138,7 +142,7 @@ public class SolutionOffers {
 		Offer offer = add(membership.organizationId(), request);
 		Person person = identity.person(actor);
 		record(AuditAction.SOLUTION_OFFER_CREATE, person.accountId(), person.label(), person.email(), offer);
-		return new OfferResponse(offer.getId(), offer.getTitle(), offer.getUrl(), false);
+		return new OfferResponse(offer.getId(), offer.getTitle(), offer.getUrl(), false, false);
 	}
 
 	/** The offers the caller's organization wrote, by title; none for a caller who belongs to no organization. */
@@ -148,7 +152,8 @@ public class SolutionOffers {
 		return organizations.membershipOf(actor)
 			.map(membership -> offerList.writtenBy(membership.organizationId())
 				.stream()
-				.map(row -> new OwnOfferResponse(row.id(), row.title(), row.url(), row.solutions(), row.version()))
+				.map(row -> new OwnOfferResponse(row.id(), row.title(), row.url(), row.solutions(), row.version(),
+						row.closed()))
 				.toList())
 			.orElse(List.of());
 	}
@@ -163,7 +168,8 @@ public class SolutionOffers {
 		Person person = identity.person(actor);
 		Offer offer = own(actor, id);
 		int withIt = change(offer, request, person.accountId(), person.label(), person.email());
-		return new OwnOfferResponse(offer.getId(), offer.getTitle(), offer.getUrl(), withIt, offer.getVersion());
+		return new OwnOfferResponse(offer.getId(), offer.getTitle(), offer.getUrl(), withIt, offer.getVersion(),
+				offer.isClosed());
 	}
 
 	/**
@@ -254,14 +260,79 @@ public class SolutionOffers {
 	}
 
 	/**
+	 * The record of an offer: the offer and the solutions that come with it.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when the offer does not exist
+	 */
+	@Transactional(readOnly = true)
+	public AdminOfferDetailResponse detail(Actor actor, UUID id) {
+		identity.requireOperator(actor);
+		Offer offer = offers.findById(id).orElseThrow(() -> notFound(id));
+		List<OfferQueryRepository.Coming> coming = offerList.solutionsWith(id);
+		Map<UUID, OrganizationName> names = organizations
+			.names(coming.stream().map(OfferQueryRepository.Coming::organizationId).distinct().toList());
+		List<AdminOfferSolutionResponse> solutions = coming.stream().map(solution -> {
+			OrganizationName organization = names.get(solution.organizationId());
+			return new AdminOfferSolutionResponse(solution.id(), solution.slug(), solution.name(),
+					solution.organizationId(), organization == null ? "" : organization.name(), solution.status(),
+					solution.suspendedAt());
+		}).toList();
+		return new AdminOfferDetailResponse(view(offer, organizationName(offer.getOrganizationId()), solutions.size()),
+				offer.getCreatedAt(), solutions);
+	}
+
+	/**
+	 * Closes an offer to new solutions, or opens it again. The solutions that come with it keep it, and nothing shows
+	 * differently on their cards.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when the offer does not exist, or changed since the form read it
+	 */
+	@Transactional
+	public AdminOfferResponse setClosed(Actor actor, UUID id, SetOfferClosedRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Offer offer = offers.findForUpdate(id).orElseThrow(() -> notFound(id));
+		setClosed(offer, request, operator.accountId(), operator.label(), operator.email());
+		return view(offer, organizationName(offer.getOrganizationId()), (int) offers.countSolutions(id));
+	}
+
+	/**
+	 * Closes an offer of the caller's organization to new solutions, or opens it again.
+	 * @throws SolutionException when the caller belongs to no organization, the organization wrote no such offer, or it
+	 * changed since the form read it
+	 */
+	@Transactional
+	public OwnOfferResponse setClosedOwn(Actor actor, UUID id, SetOfferClosedRequest request) {
+		Person person = identity.person(actor);
+		Offer offer = own(actor, id);
+		setClosed(offer, request, person.accountId(), person.label(), person.email());
+		return new OwnOfferResponse(offer.getId(), offer.getTitle(), offer.getUrl(), (int) offers.countSolutions(id),
+				offer.getVersion(), offer.isClosed());
+	}
+
+	private void setClosed(Offer offer, SetOfferClosedRequest request, UUID accountId, String label, String email) {
+		if (request.version() == null || offer.getVersion() != request.version()) {
+			throw new SolutionException(SolutionErrorCode.OFFER_CHANGED_MEANWHILE, "Closing of offer " + offer.getId()
+					+ " at version " + request.version() + ", which is at " + offer.getVersion());
+		}
+		boolean closed = request.closed();
+		if (offer.closeTo(closed)) {
+			offers.flush();
+			record(closed ? AuditAction.SOLUTION_OFFER_CLOSE : AuditAction.SOLUTION_OFFER_REOPEN, accountId, label,
+					email, offer);
+		}
+	}
+
+	/**
 	 * Makes the solution come with the offers named, once each.
-	 * @throws SolutionException when one of them does not exist, or is another organization's
+	 * @throws SolutionException when one of them does not exist, is another organization's, or is closed and the
+	 * solution does not already come with it
 	 */
 	void choose(Solution solution, List<UUID> wanted) {
 		List<UUID> chosen = wanted.stream().distinct().toList();
 		List<Offer> found = offers.findAllById(chosen);
-		if (found.size() != chosen.size()
-				|| found.stream().anyMatch(offer -> !offer.isFor(solution.getOrganizationId()))) {
+		Set<UUID> kept = solution.getOfferIds();
+		if (found.size() != chosen.size() || found.stream()
+			.anyMatch(offer -> !offer.isFor(solution.getOrganizationId()) || offer.isClosed() && !kept.contains(offer.getId()))) {
 			throw new SolutionException(SolutionErrorCode.OFFER_NOT_USABLE,
 					"Solution " + solution.getId() + " names an offer it may not come with");
 		}
@@ -279,7 +350,7 @@ public class SolutionOffers {
 			.stream()
 			.collect(Collectors.groupingBy(OfferQueryRepository.Attached::solutionId,
 					Collectors.mapping(offer -> new OfferResponse(offer.id(), offer.title(), offer.url(),
-							offer.organizationId() == null), Collectors.toList())));
+							offer.organizationId() == null, offer.closed()), Collectors.toList())));
 	}
 
 	private Offer add(@Nullable UUID organizationId, SaveOfferRequest request) {
@@ -319,7 +390,7 @@ public class SolutionOffers {
 
 	private static AdminOfferResponse view(Offer offer, @Nullable String organizationName, int solutions) {
 		return new AdminOfferResponse(offer.getId(), offer.getTitle(), offer.getUrl(), offer.getOrganizationId(),
-				organizationName, solutions, offer.getVersion(), offer.getUpdatedAt());
+				organizationName, solutions, offer.getVersion(), offer.getUpdatedAt(), offer.isClosed());
 	}
 
 	/** What a person typed as one line: trimmed, with every run of white space made one space. */

@@ -6,8 +6,10 @@ import java.util.UUID;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.solution.SolutionOffers;
+import ai.genaifund.beyondpilot.solution.dto.AdminOfferDetailResponse;
 import ai.genaifund.beyondpilot.solution.dto.AdminOfferResponse;
 import ai.genaifund.beyondpilot.solution.dto.SaveOfferRequest;
+import ai.genaifund.beyondpilot.solution.dto.SetOfferClosedRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -87,6 +89,31 @@ class AdminOffersController {
 	AdminOfferResponse save(@CurrentActor Actor actor, @PathVariable UUID id,
 			@Valid @RequestBody SaveOfferRequest request) {
 		return offers.save(actor, id, request);
+	}
+
+	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getAdminOffer", summary = "One offer with the solutions that come with it",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The offer and its solutions, by name.")
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	AdminOfferDetailResponse get(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return offers.detail(actor, id);
+	}
+
+	@PutMapping(path = "/{id}/closed", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "setOfferClosed",
+			summary = "Close an offer to new solutions, or open it again; the solutions that come with it keep it",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The offer as saved, with its new version.")
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The offer changed since it was read.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	AdminOfferResponse setClosed(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody SetOfferClosedRequest request) {
+		return offers.setClosed(actor, id, request);
 	}
 
 	@DeleteMapping("/{id}")

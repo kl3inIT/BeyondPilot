@@ -111,6 +111,12 @@ public enum AuditAction {
 	/** An operator changed an offer, which changes it on every solution that comes with it. */
 	SOLUTION_OFFER_UPDATE("solution.offer_update"),
 
+	/** An offer was closed to new solutions; the ones that come with it keep it. */
+	SOLUTION_OFFER_CLOSE("solution.offer_close"),
+
+	/** A closed offer was opened to new solutions again. */
+	SOLUTION_OFFER_REOPEN("solution.offer_reopen"),
+
 	/** An operator deleted an offer no solution comes with. */
 	SOLUTION_OFFER_DELETE("solution.offer_delete"),
 
