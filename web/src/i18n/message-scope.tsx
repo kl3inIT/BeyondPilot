@@ -21,6 +21,7 @@ const rootPaths = [
   // The header, footer, toasts and the error screen, on every page.
   "Site",
   "Error",
+  "Actions",
   // Shared controls: form fields, list paging and sorting, and the words for a code.
   "Form",
   "Lists",

@@ -3,7 +3,7 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Person } from "@/components/composites/person";
 import { Status } from "@/components/composites/status";
@@ -15,7 +15,7 @@ import { siteRoutes } from "@/lib/site";
 import { AccountRowActions } from "./account-row-actions";
 import { accountsSearch, type AccountsSearch, accountSortKeys } from "./accounts-search";
 import { AccountsToolbar } from "./accounts-toolbar";
-import { PageSizeSelect } from "@/components/composites/page-size-select";
+import { ListFooter } from "@/components/composites/list-footer";
 
 const address = createSerializer(accountsSearch);
 
@@ -81,8 +81,6 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
       actions: you ? null : <AccountRowActions account={account} />,
     };
   });
-
-  const pages = Math.max(1, Math.ceil(accounts.total / accounts.pageSize));
   /** The address of a page of this list, with the search and filters kept. */
   const pageHref = (number: number) =>
     address(siteRoutes.adminAccounts, { ...search, page: number });
@@ -147,20 +145,12 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
         {empty && <li>{empty}</li>}
       </ul>
 
-      <DataTableFooter
+      <ListFooter
         count={t("count", { count: accounts.total })}
         page={accounts.page}
-        pages={pages}
+        pageSize={accounts.pageSize}
+        total={accounts.total}
         href={pageHref}
-        sizer={<PageSizeSelect size={accounts.pageSize} total={accounts.total} />}
-        labels={{
-          navigation: t("pagination.label"),
-          previous: t("pagination.previous"),
-          next: t("pagination.next"),
-          goToPrevious: t("pagination.goToPrevious"),
-          goToNext: t("pagination.goToNext"),
-          page: (number) => t("pagination.page", { page: number }),
-        }}
       />
     </div>
   );

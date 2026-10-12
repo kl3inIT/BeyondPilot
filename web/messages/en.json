@@ -469,6 +469,7 @@
       "auditLog": "Audit log",
       "organizations": "Organizations",
       "solutions": "AI solutions",
+      "offers": "Offers",
       "talent": "AI talent",
       "introductions": "Introductions",
       "review": "Review",
@@ -820,14 +821,6 @@
       "dayAndTime": "{day}, {time}",
       "never": "Never",
       "count": "{count, plural, one {# account} other {# accounts}}",
-      "pagination": {
-        "label": "Pages of accounts",
-        "previous": "Previous",
-        "next": "Next",
-        "goToPrevious": "Go to the previous page",
-        "goToNext": "Go to the next page",
-        "page": "Page {page}"
-      },
       "actions": {
         "open": "Actions for {name}",
         "makeOperator": "Make operator…",
@@ -938,7 +931,11 @@
           "deployment_withdraw": "Withdrew a customer deployment",
           "deployment_restore": "Restored a customer deployment",
           "enrich": "Filled a solution from public sources",
-          "back": "Wrote what GenAI Fund says of a solution"
+          "back": "Wrote what GenAI Fund says of a solution",
+          "offers_choose": "Chose the offers of a solution",
+          "offer_create": "Added an offer",
+          "offer_update": "Changed an offer",
+          "offer_delete": "Deleted an offer"
         },
         "introduction": {
           "reply": "Replied to a request for an introduction",
@@ -1068,7 +1065,11 @@
           "deployment_withdraw": "Withdrew the customer deployment <resource></resource>",
           "deployment_restore": "Restored the customer deployment <resource></resource>",
           "enrich": "Filled the solution <resource></resource> from public sources",
-          "back": "Wrote what GenAI Fund says of the solution <resource></resource>"
+          "back": "Wrote what GenAI Fund says of the solution <resource></resource>",
+          "offers_choose": "Chose the offers of the solution <resource></resource>",
+          "offer_create": "Added the offer <resource></resource>",
+          "offer_update": "Changed the offer <resource></resource>",
+          "offer_delete": "Deleted the offer <resource></resource>"
         },
         "introduction": {
           "reply": "Replied to the request for an introduction about <resource></resource>",
@@ -1555,8 +1556,25 @@
           "funding": "Such as Seed."
         }
       },
+      "offers": {
+        "title": "Offers",
+        "lead": "What the solution comes with, shown on its card and page. Its owners choose these in their editor too.",
+        "field": "Offers",
+        "hint": "Up to {max}, from the list of offers.",
+        "save": "Save offers",
+        "saved": "Offers saved for {name}."
+      },
       "actions": {
         "organization": "Open the organization"
+      }
+    },
+    "offers": {
+      "metaTitle": "Offers · BeyondPilot",
+      "title": "Offers",
+      "lead": "GenAI Fund's list first, then what each organization wrote for its own solutions. A change shows on every solution that comes with the offer.",
+      "genAiFund": "GenAI Fund",
+      "columns": {
+        "writer": "Written by"
       }
     },
     "talent": {
@@ -2465,15 +2483,7 @@
           "who": "Who and when"
         },
         "requirement": "Requirement {position}",
-        "count": "{count, plural, one {# disagreement} other {# disagreements}}",
-        "pagination": {
-          "label": "Pages of disagreements",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
-        }
+        "count": "{count, plural, one {# disagreement} other {# disagreements}}"
       },
       "tabs": {
         "limits": "Limits",
@@ -2621,14 +2631,6 @@
         "empty": {
           "title": "No call in this period",
           "description": "What was asked and answered is never kept."
-        },
-        "pagination": {
-          "label": "Pages of calls",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
         }
       }
     },
@@ -2748,14 +2750,6 @@
         "empty": {
           "title": "No call in this period",
           "description": "What was asked is never kept."
-        },
-        "pagination": {
-          "label": "Pages of calls",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
         }
       },
       "confirm": {
@@ -4281,7 +4275,12 @@
       "SOLUTION_IMAGE_NOT_USABLE": "This image cannot be used. Upload it again.",
       "linkNotCopied": "The link was not copied. Try again.",
       "SOLUTION_NOT_APPROVED": "Only an approved solution that is not taken down can be taken down.",
-      "SOLUTION_NOT_TAKEN_DOWN": "This solution is not taken down."
+      "SOLUTION_NOT_TAKEN_DOWN": "This solution is not taken down.",
+      "SOLUTION_OFFER_NOT_FOUND": "This offer no longer exists. Reload the page.",
+      "SOLUTION_OFFER_TITLE_TAKEN": "Another offer already reads the same.",
+      "SOLUTION_OFFER_IN_USE": "A solution still comes with this offer. Take it off those solutions first.",
+      "SOLUTION_OFFER_CHANGED_MEANWHILE": "Someone else saved this offer in the meantime. Reload the page and make your changes again.",
+      "SOLUTION_OFFER_NOT_USABLE": "One of the chosen offers no longer exists. Reload the page and choose again."
     },
     "done": {
       "saved": "Solution saved.",
@@ -4330,6 +4329,67 @@
       "ownEdit": "Edit this solution",
       "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}",
       "backing": "Confirmed by GenAI Fund:"
+    },
+    "offers": {
+      "label": "Offer:",
+      "title": "Offers",
+      "claim": "Claim offer",
+      "claimNamed": "Claim the offer: {offer} (opens in a new tab)",
+      "several": "{count} offers",
+      "more": "+{count} more",
+      "moreOffers": "+{count} more offers",
+      "newTab": "opens in a new tab",
+      "picker": {
+        "placeholder": "Choose offers",
+        "noMatch": "No offer matches.",
+        "remove": "Remove {name}",
+        "add": "New offer…",
+        "fromGenAiFund": "{title} (GenAI Fund)"
+      },
+      "form": {
+        "newTitle": "New offer",
+        "editTitle": "Edit offer",
+        "title": "Offer",
+        "titleTaken": "Another offer already reads the same.",
+        "url": "Link",
+        "urlInvalid": "Enter a full address that starts with https://.",
+        "cancel": "Cancel",
+        "create": "Add offer",
+        "save": "Save"
+      },
+      "done": {
+        "created": "{name} added.",
+        "saved": "{name} saved.",
+        "deleted": "{name} deleted."
+      },
+      "fromGenAiFund": "From GenAI Fund",
+      "manage": {
+        "title": "Offers",
+        "create": "New offer",
+        "columns": {
+          "offer": "Offer",
+          "url": "Claimed at",
+          "solutions": "Solutions",
+          "actions": "Actions"
+        },
+        "solutions": "{count, plural, =0 {No solution comes with it} one {# solution} other {# solutions}}",
+        "openNamed": "Actions for {name}",
+        "actions": {
+          "edit": "Edit…",
+          "delete": "Delete…"
+        },
+        "empty": {
+          "title": "No offers yet",
+          "description": "Add what a solution comes with, then choose it on the solution.",
+          "own": "Write what your solutions come with, such as a pilot package, then choose it on a solution."
+        },
+        "confirmDelete": {
+          "title": "Delete {name}?",
+          "lead": "No solution comes with this offer. It is deleted for good.",
+          "confirm": "Delete offer",
+          "cancel": "Cancel"
+        }
+      }
     },
     "filters": {
       "search": "Search AI solutions",
@@ -4612,6 +4672,8 @@
         "builtWith": "Built with",
         "builtWithPlaceholder": "Add a model, tool or framework",
         "builtWithHint": "Press Enter after each one, up to {max}.",
+        "offers": "Offers",
+        "offersHint": "What a customer gets with it, such as cloud credits. Choose up to {max}: from GenAI Fund's list, or one you write for your organization.",
         "removeTag": "Remove {name}",
         "industries": "Industries",
         "industriesPlaceholder": "Add an industry",
@@ -6598,14 +6660,6 @@
     "empty": {
       "title": "No use cases match",
       "clear": "Clear search and filters"
-    },
-    "pagination": {
-      "label": "Pages of use cases",
-      "previous": "Previous",
-      "next": "Next",
-      "goToPrevious": "Go to the previous page",
-      "goToNext": "Go to the next page",
-      "page": "Page {page}"
     },
     "publish": {
       "title": "Have a business problem AI could solve?",

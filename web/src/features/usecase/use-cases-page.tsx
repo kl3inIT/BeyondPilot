@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
 import { Section } from "@/components/ui/section";
 import { siteRoutes } from "@/lib/site";
 import { maxSearchPage } from "@/lib/page-size";
@@ -12,7 +12,7 @@ import { UseCaseCard } from "./use-case-card";
 import type { UseCaseList } from "./use-cases-queries";
 import { useCasesSearch, type UseCasesSearch } from "./use-cases-search";
 import { UseCasesToolbar } from "./use-cases-toolbar";
-import { PageSizeSelect } from "@/components/composites/page-size-select";
+import { ListFooter } from "@/components/composites/list-footer";
 
 const address = createSerializer(useCasesSearch);
 
@@ -28,10 +28,6 @@ type UseCasesPageProps = {
 async function UseCasesPage({ useCases, search }: UseCasesPageProps) {
   const t = await getTranslations("UseCases");
   const shown = useCases.items.length;
-  const pages = Math.min(
-    search.q.trim() ? maxSearchPage : Infinity,
-    Math.max(1, Math.ceil(useCases.total / useCases.pageSize)),
-  );
   /** The address of a page of this list, with the search, industry and order kept. */
   const pageHref = (number: number) => address(siteRoutes.useCases, { ...search, page: number });
 
@@ -64,20 +60,13 @@ async function UseCasesPage({ useCases, search }: UseCasesPageProps) {
           </div>
         )}
 
-        <DataTableFooter
+        <ListFooter
           count={t("count", { count: useCases.total })}
           page={useCases.page}
-          pages={pages}
+          pageSize={useCases.pageSize}
+          total={useCases.total}
           href={pageHref}
-          sizer={<PageSizeSelect size={useCases.pageSize} total={useCases.total} />}
-          labels={{
-            navigation: t("pagination.label"),
-            previous: t("pagination.previous"),
-            next: t("pagination.next"),
-            goToPrevious: t("pagination.goToPrevious"),
-            goToNext: t("pagination.goToNext"),
-            page: (number) => t("pagination.page", { page: number }),
-          }}
+          maxPages={search.q.trim() ? maxSearchPage : Infinity}
         />
 
         <div className="flex flex-col gap-4 rounded-2xl bg-accent p-5 md:flex-row md:items-center md:justify-between md:p-6">

@@ -16,7 +16,11 @@ import { MemberActions } from "./member-actions";
 import { MemberRole } from "./member-role";
 import { OrganizationFrame } from "./organization-frame";
 import { isApproved } from "./organization-format";
-import { organizationMembersSearch } from "./organization-members-search";
+import {
+  defaultMemberSort,
+  organizationMemberSortKeys,
+  organizationMembersSearch,
+} from "./organization-members-search";
 import { OrganizationSection } from "./organization-section";
 import { tablePageSizes } from "@/lib/page-size";
 
@@ -31,6 +35,8 @@ type OrganizationMembersPageProps = {
   useCases: number | null;
   /** The page size the URL holds; none is the list's own. */
   size: number | null;
+  /** The order the URL holds; none is the list's own. */
+  sort: string;
 };
 
 /**
@@ -44,6 +50,7 @@ function OrganizationMembersPage({
   solutions,
   useCases,
   size,
+  sort,
 }: OrganizationMembersPageProps) {
   const t = useTranslations("Organization.members");
   const format = useFormatter();
@@ -144,13 +151,15 @@ function OrganizationMembersPage({
       >
         {/* From 768px: a table. */}
         <DataTableRows
+          sortKeys={organizationMemberSortKeys}
+          defaultSort={defaultMemberSort}
           className="hidden md:flex"
           surface
           columns={[
             { id: "member", header: t("columns.member") },
             { id: "role", header: t("columns.role"), layout: { width: "sm" } },
             { id: "jobTitle", header: t("columns.jobTitle"), layout: { width: "lg" } },
-            { id: "joined", header: t("columns.joined"), layout: { width: "sm" } },
+            { id: "joined", header: t("columns.joined"), layout: { width: "sm", descFirst: true } },
             {
               id: "actions",
               header: <span className="sr-only">{t("columns.actions")}</span>,
@@ -193,7 +202,7 @@ function OrganizationMembersPage({
             page={members.page}
             pageSize={members.pageSize}
             total={members.total}
-            href={(page) => address(siteRoutes.workspaceMembers, { page, size })}
+            href={(page) => address(siteRoutes.workspaceMembers, { page, size, sort })}
           />
         )}
       </OrganizationSection>

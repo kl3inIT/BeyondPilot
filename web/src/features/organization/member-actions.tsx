@@ -13,11 +13,10 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
-import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { Person } from "@/components/composites/person";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
-import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
+import { useAppForm } from "@/components/form/app-form";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,8 +25,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { useNotify } from "@/hooks/use-notify";
 import {
   changeMyJobTitle,
@@ -61,7 +58,6 @@ function MemberActions({ member, owner, onlyOwner }: MemberActionsProps) {
   const router = useRouter();
   const [asking, setAsking] = useState<"remove" | "demote" | null>(null);
   const [titling, setTitling] = useState(false);
-  const [jobTitle, setJobTitle] = useState(member.jobTitle ?? "");
   const [pending, setPending] = useState(false);
   // The page shows the change once it has read it again; until then the action cannot be repeated.
   const [refreshing, startRefresh] = useTransition();
@@ -86,21 +82,6 @@ function MemberActions({ member, owner, onlyOwner }: MemberActionsProps) {
     } finally {
       setPending(false);
       setAsking(null);
-    }
-  }
-
-  async function saveJobTitle(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPending(true);
-    try {
-      await changeMyJobTitle({ body: { jobTitle: jobTitle.trim() || null } });
-      notify.success("Organization.done.jobTitleSaved");
-      setTitling(false);
-      startRefresh(() => router.refresh());
-    } catch (error) {
-      notify.error(organizationError(error));
-    } finally {
-      setPending(false);
     }
   }
 
@@ -135,12 +116,7 @@ function MemberActions({ member, owner, onlyOwner }: MemberActionsProps) {
         <DropdownMenuContent align="end" className="w-56">
           {member.self && (
             <DropdownMenuGroup>
-              <DropdownMenuItem
-                onClick={() => {
-                  setJobTitle(member.jobTitle ?? "");
-                  setTitling(true);
-                }}
-              >
+              <DropdownMenuItem onClick={() => setTitling(true)}>
                 <PencilIcon aria-hidden="true" />
                 {t("actions.editJobTitle")}
               </DropdownMenuItem>
@@ -225,39 +201,61 @@ function MemberActions({ member, owner, onlyOwner }: MemberActionsProps) {
           </div>
         </ConfirmDialog>
       )}
-      {titling && (
-        <Dialog open onOpenChange={(open) => !open && !pending && setTitling(false)}>
-          <DialogContent showCloseButton={false}>
-            <form noValidate onSubmit={saveJobTitle} className="flex flex-col gap-4">
-              <DecisionDialogHeader tone="info" icon={BriefcaseIcon} title={t("jobTitle.title")} />
-              <Field>
-                <FieldLabel htmlFor="member-job-title">{t("jobTitle.label")}</FieldLabel>
-                <Input
-                  id="member-job-title"
-                  autoComplete="organization-title"
-                  maxLength={120}
-                  value={jobTitle}
-                  onChange={(event) => setJobTitle(event.target.value)}
-                />
-              </Field>
-              <DialogFooter variant="plain">
-                <Button
-                  size="lg"
-                  prominence="secondary"
-                  disabled={pending}
-                  onClick={() => setTitling(false)}
-                >
-                  {t("jobTitle.cancel")}
-                </Button>
-                <Button size="lg" type="submit" pending={pending}>
-                  {t("jobTitle.save")}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+      {member.self && (
+        <JobTitleDialog
+          jobTitle={member.jobTitle ?? ""}
+          open={titling}
+          onOpenChange={setTitling}
+          onSaved={() => startRefresh(() => router.refresh())}
+        />
       )}
     </>
+  );
+}
+
+type JobTitleDialogProps = {
+  /** The caller's job title as the list holds it; empty when they have none. */
+  jobTitle: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** Called once the title is saved, to read the list again. */
+  onSaved: () => void;
+};
+
+/** Changes the caller's own job title; an empty one takes it away. */
+function JobTitleDialog({ jobTitle, open, onOpenChange, onSaved }: JobTitleDialogProps) {
+  const t = useTranslations("Organization.members.jobTitle");
+  const notify = useNotify();
+  const form = useAppForm({
+    defaultValues: { jobTitle },
+    onSubmit: async ({ value }) => {
+      try {
+        await changeMyJobTitle({ body: { jobTitle: value.jobTitle.trim() || null } });
+        notify.success("Organization.done.jobTitleSaved");
+        onOpenChange(false);
+        onSaved();
+      } catch (error) {
+        notify.error(organizationError(error));
+      }
+    },
+  });
+
+  return (
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      form={form}
+      title={t("title")}
+      mark={{ tone: "info", icon: BriefcaseIcon }}
+      submitLabel={t("save")}
+      cancelLabel={t("cancel")}
+    >
+      <form.AppField name="jobTitle">
+        {(field) => (
+          <field.TextField label={t("label")} autoComplete="organization-title" maxLength={120} />
+        )}
+      </form.AppField>
+    </FormDialog>
   );
 }
 
