@@ -557,6 +557,7 @@ function EmailSettingsForm({
                       autoCapitalize="none"
                       spellCheck={false}
                       maxLength={128}
+                      uncounted
                     />
                   )}
                 </form.AppField>
@@ -617,6 +618,7 @@ function EmailSettingsForm({
                         autoCapitalize="none"
                         spellCheck={false}
                         maxLength={255}
+                        uncounted
                         description={t("smtp.hostHint")}
                       />
                     )}
@@ -649,6 +651,7 @@ function EmailSettingsForm({
                       spellCheck={false}
                       autoComplete="off"
                       maxLength={255}
+                      uncounted
                     />
                   )}
                 </form.AppField>
@@ -736,6 +739,7 @@ function EmailSettingsForm({
                     autoCapitalize="none"
                     spellCheck={false}
                     maxLength={64}
+                    uncounted
                     description={t("reports.configurationSetHint")}
                   />
                 )}
@@ -754,6 +758,7 @@ function EmailSettingsForm({
                     autoCapitalize="none"
                     spellCheck={false}
                     maxLength={300}
+                    uncounted
                     className="font-mono"
                     description={t("reports.topicArnHint")}
                   />

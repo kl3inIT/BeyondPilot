@@ -177,6 +177,7 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
                   label={t("modelName")}
                   spellCheck={false}
                   maxLength={200}
+                  uncounted
                   required
                   readOnly={editing}
                   description={editing ? undefined : t("modelNameHint")}

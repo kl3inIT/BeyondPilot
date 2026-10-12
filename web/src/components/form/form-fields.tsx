@@ -101,17 +101,22 @@ function FieldHint({
 }
 
 type TextFieldProps = Labelled &
-  Omit<ComponentProps<"input">, "id" | "name" | "value" | "onChange" | "onBlur">;
+  Omit<ComponentProps<"input">, "id" | "name" | "value" | "onChange" | "onBlur"> & {
+    /** Hides how much of `maxLength` is used: for a host, a key or another identifier. */
+    uncounted?: boolean;
+  };
 
 /**
  * A line of text. With a `maxLength` a person can reach while writing, 60 characters or more on a
- * plain text input, it shows how much is used; an address, a key or a number does not.
+ * plain text input, it shows how much is used; an address, a password or a number does not, nor
+ * does a field marked `uncounted`.
  */
 function TextField({
   label,
   optional,
   requiredMark,
   description,
+  uncounted,
   "aria-describedby": alsoDescribedBy,
   ...input
 }: TextFieldProps) {
@@ -120,6 +125,7 @@ function TextField({
     alsoDescribedBy,
   );
   const counted =
+    !uncounted &&
     (input.type === undefined || input.type === "text") &&
     input.maxLength !== undefined &&
     input.maxLength >= COUNTED_FROM;
