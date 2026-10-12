@@ -291,6 +291,101 @@ create temp table lov_answer (
 """
 
 TAIL = r"""
+
+-- What ProposalService.snapshot keeps at a submission.
+create function pg_temp.lov_version(key_ text, program_id_ uuid, organization_ uuid, solution_ uuid, answers_ jsonb)
+returns void language plpgsql as $f$
+declare
+    app lov_app%rowtype;
+begin
+    select * into strict app from lov_app where key = key_;
+    insert into proposal_version (proposal_id, number, submitted_at, snapshot)
+    select app.proposal_id, 1, app.submitted_at, jsonb_build_object(
+        'applicant', jsonb_build_object('email', app.email, 'contact', app.contact),
+        'organization', jsonb_build_object('id', o.id, 'name', o.name, 'type', o.type, 'country', o.country,
+            'teamSize', o.team_size, 'website', o.website, 'teamBackground', app.team_background),
+        'solution', jsonb_build_object('id', s.id, 'name', s.name, 'summary', s.summary,
+            'problemsSolved', s.problems_solved, 'maturity', s.maturity, 'demoUrl', s.demo_url),
+        'materials', jsonb_build_object(
+            'deck', (select jsonb_build_object('fileId', f.id, 'fileName', f.file_name,
+                                               'sizeBytes', f.size_bytes)
+                     from lov_file f where f.id = app.deck_file_id),
+            'builtWith', to_jsonb(app.built_with), 'traction', app.traction),
+        'answers', coalesce((
+            select jsonb_agg(jsonb_strip_nulls(jsonb_build_object(
+                       'questionId', q.id, 'label', q.label, 'kind', q.kind, 'value', answers_ ->> q.id::text,
+                       'file', (select jsonb_build_object('fileId', f.id, 'fileName', f.file_name,
+                                                          'sizeBytes', f.size_bytes)
+                                from lov_file f where q.kind = 'file'
+                                    and f.id::text = answers_ ->> q.id::text))) order by q.position)
+            from program_question q
+            where q.program_id = program_id_ and answers_ ? q.id::text), '[]'::jsonb))
+    from organization o, solution s where o.id = organization_ and s.id = solution_;
+end $f$;
+
+-- Brings one application loaded before up to date with the old page: its organization and solution (the ones this load
+-- made), its files, its answers, and for a submitted one the version it keeps.
+create function pg_temp.lov_update(key_ text, program_id_ uuid, account uuid, organization_ uuid) returns void
+language plpgsql as $f$
+declare
+    app lov_app%rowtype;
+    solution_ uuid;
+    address text;
+    suffix integer;
+    answers_ jsonb;
+begin
+    select * into strict app from lov_app where key = key_;
+    update organization set name = coalesce(app.organization_name, name), type = app.organization_type,
+           website = app.website, country = app.business_country, team_size = app.team_size, updated_at = now()
+    where id = organization_ and id = app.organization_id;
+
+    select solution_id into solution_ from proposal where id = app.proposal_id;
+    if solution_ is null and app.solution_name is not null then
+        solution_ := app.solution_id;
+        address := app.solution_slug;
+        suffix := 2;
+        while exists (select 1 from solution where slug = address) loop
+            address := app.solution_slug || '-' || suffix;
+            suffix := suffix + 1;
+        end loop;
+        insert into solution (id, organization_id, slug, name, summary, problems_solved, maturity, demo_url,
+                              built_with, status, listed, created_by_account_id, created_at, updated_at)
+        values (solution_, organization_, address, app.solution_name, app.summary, app.problems_solved,
+                app.maturity, app.demo_url, app.solution_built, 'draft', true, account, app.created_at, app.updated_at);
+    elsif solution_ is not null then
+        update solution set name = coalesce(app.solution_name, name), summary = app.summary,
+               problems_solved = app.problems_solved, maturity = app.maturity, demo_url = app.demo_url,
+               built_with = app.solution_built, updated_at = app.updated_at
+        where id = solution_;
+    end if;
+
+    -- A file replaced on the old page keeps its identifier: the row follows the new name and size.
+    insert into storage_file (id, provider, object_key, purpose, public_read, file_name, media_type, size_bytes,
+                              status, uploaded_by_account_id, upload_expires_at, created_at, stored_at)
+    select f.id, 'local', f.object_key, 'application_file', false, f.file_name, 'application/pdf', f.size_bytes,
+           'stored', account, now(), now(), now()
+    from lov_file f where f.key = app.key
+    on conflict (id) do update set file_name = excluded.file_name, size_bytes = excluded.size_bytes;
+
+    select coalesce(jsonb_object_agg(q.id::text, a.value), '{}'::jsonb) into answers_
+    from (select label, value from lov_answer where key = app.key
+          union all
+          select '@PROPOSAL_FILE@', app.proposal_file_id::text where app.proposal_file_id is not null) a
+    join program_question q on q.program_id = program_id_ and q.label = a.label
+        and q.kind = case when a.label = '@PROPOSAL_FILE@' then 'file' else 'long_text' end;
+
+    update proposal set solution_id = solution_, status = app.status, contact = app.contact,
+           team_background = app.team_background, deck_file_id = app.deck_file_id, built_with = app.built_with,
+           traction = app.traction, answers = answers_,
+           submissions = case when app.status = 'submitted' then 1 else 0 end, submitted_at = app.submitted_at,
+           updated_at = app.updated_at
+    where id = app.proposal_id;
+
+    delete from proposal_version where proposal_id = app.proposal_id;
+    if app.status = 'submitted' and solution_ is not null then
+        perform pg_temp.lov_version(key_, program_id_, organization_, solution_, answers_);
+    end if;
+end $f$;
 do $$
 declare
     app record;
@@ -307,6 +402,9 @@ declare
     loaded integer := 0;
     versions integer := 0;
     kept integer := 0;
+    updated integer := 0;
+    changed_here integer := 0;
+    existing proposal%rowtype;
 begin
     select id into strict program_id_ from program where slug = '@PROGRAM@';
     for app in select * from lov_app order by email loop
@@ -316,9 +414,24 @@ begin
             insert into identity_account (id, email, display_name) values (account, app.email, app.display_name);
             accounts := accounts + 1;
         end if;
-        -- Someone who has an application to the program on BeyondPilot keeps it untouched.
-        if exists (select 1 from proposal where program_id = program_id_ and account_id = account) then
-            kept := kept + 1;
+        -- An application loaded before and changed on the old page since is brought up to date, as long as nobody
+        -- saved it, its organization or its solution on BeyondPilot (their versions are still 0). Anything else that
+        -- exists is kept untouched: a person's own work here is never overwritten.
+        select * into existing from proposal where program_id = program_id_ and account_id = account;
+        if found then
+            if existing.id = app.proposal_id and existing.updated_at < app.updated_at then
+                if existing.version = 0
+                        and not exists (select 1 from solution where id = existing.solution_id and version <> 0)
+                        and not exists (select 1 from organization where id = existing.organization_id
+                                            and (id <> app.organization_id or version <> 0)) then
+                    perform pg_temp.lov_update(app.key, program_id_, account, existing.organization_id);
+                    updated := updated + 1;
+                else
+                    changed_here := changed_here + 1;
+                end if;
+            else
+                kept := kept + 1;
+            end if;
             continue;
         end if;
         -- As IdentityAccounts.reachAtIfUnknown: what the applicant stated, where the account says nothing.
@@ -384,35 +497,13 @@ begin
                 app.updated_at);
         loaded := loaded + 1;
 
-        -- What ProposalService.snapshot keeps at a submission.
         if app.status = 'submitted' then
-            insert into proposal_version (proposal_id, number, submitted_at, snapshot)
-            select app.proposal_id, 1, app.submitted_at, jsonb_build_object(
-                'applicant', jsonb_build_object('email', app.email, 'contact', app.contact),
-                'organization', jsonb_build_object('id', o.id, 'name', o.name, 'type', o.type, 'country', o.country,
-                    'teamSize', o.team_size, 'website', o.website, 'teamBackground', app.team_background),
-                'solution', jsonb_build_object('id', s.id, 'name', s.name, 'summary', s.summary,
-                    'problemsSolved', s.problems_solved, 'maturity', s.maturity, 'demoUrl', s.demo_url),
-                'materials', jsonb_build_object(
-                    'deck', (select jsonb_build_object('fileId', f.id, 'fileName', f.file_name,
-                                                       'sizeBytes', f.size_bytes)
-                             from lov_file f where f.id = app.deck_file_id),
-                    'builtWith', to_jsonb(app.built_with), 'traction', app.traction),
-                'answers', coalesce((
-                    select jsonb_agg(jsonb_strip_nulls(jsonb_build_object(
-                               'questionId', q.id, 'label', q.label, 'kind', q.kind, 'value', answers_ ->> q.id::text,
-                               'file', (select jsonb_build_object('fileId', f.id, 'fileName', f.file_name,
-                                                                  'sizeBytes', f.size_bytes)
-                                        from lov_file f where q.kind = 'file'
-                                            and f.id::text = answers_ ->> q.id::text))) order by q.position)
-                    from program_question q
-                    where q.program_id = program_id_ and answers_ ? q.id::text), '[]'::jsonb))
-            from organization o, solution s where o.id = organization_ and s.id = solution_;
+            perform pg_temp.lov_version(app.key, program_id_, organization_, solution_, answers_);
             versions := versions + 1;
         end if;
     end loop;
-    raise notice 'lovable import: % applicants, % applications loaded (% submitted), % kept the application they had, % accounts, % organizations, % solutions created',
-        (select count(*) from lov_app), loaded, versions, kept, accounts, organizations, solutions;
+    raise notice 'lovable import: % applicants, % applications loaded (% submitted), % brought up to date, % changed on both sides and left as they are here, % kept as they are, % accounts, % organizations, % solutions created',
+        (select count(*) from lov_app), loaded, versions, updated, changed_here, kept, accounts, organizations, solutions;
 end $$;
 commit;
 """

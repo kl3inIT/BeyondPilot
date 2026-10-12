@@ -20,7 +20,7 @@ Taken from the Lovable project by its owner; it holds names, email addresses and
 - **Application:** contact, team background, traction, tools, the deck, and the proposal PDF as the answer to "Your proposal to Tasco". Proposal description and pilot requirements fill the questions with those labels when the program asks them. A submitted application keeps its first submission time and gets version 1, with the snapshot `ProposalService.snapshot` keeps.
 - **Left out:** test rows, and rows where nothing was written. Text longer than the form takes is kept whole.
 
-Identifiers are UUID version 5 of the application's identifier or the email address, so a second run adds only applicants who have no application to the program yet. It does not update one it loaded before. The load publishes no event, so no email is sent.
+Identifiers are UUID version 5 of the application's identifier or the email address, so a second run adds only applicants who have no application to the program yet. An application loaded before and changed on the old page since (a later `updated_at`) is brought up to date, with its organization, solution, files and first version, as long as nobody saved it, its organization or its solution on BeyondPilot; one changed on both sides is left as it is here and counted in the closing notice. The load publishes no event, so no email is sent.
 
 ## Run
 
