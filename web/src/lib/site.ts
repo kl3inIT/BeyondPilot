@@ -98,6 +98,16 @@ export function workspaceUseCaseCandidatesRoute(id: string) {
   return `${siteRoutes.workspaceUseCases}/${id}/candidates`;
 }
 
+/** The proposals a use case received, as GenAI Fund reads them. */
+export function adminUseCaseProposalsRoute(id: string) {
+  return `${siteRoutes.adminUseCases}/${id}/proposals`;
+}
+
+/** One proposal a use case received, as GenAI Fund reads it. */
+export function adminUseCaseProposalRoute(useCaseId: string, proposalId: string) {
+  return `${adminUseCaseProposalsRoute(useCaseId)}/${proposalId}`;
+}
+
 /** The solutions matched to a use case, as GenAI Fund reads them. */
 export function adminUseCaseCandidatesRoute(id: string) {
   return `${siteRoutes.adminUseCases}/${id}/candidates`;

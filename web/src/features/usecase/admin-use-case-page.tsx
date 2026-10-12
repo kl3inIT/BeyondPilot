@@ -16,13 +16,15 @@ import { UseCaseTabs } from "./use-case-tabs";
 
 type AdminUseCasePageProps = {
   useCase: AdminUseCase;
+  /** How many proposals the use case received, for the tab GenAI Fund has for them. */
+  proposals?: number;
 };
 
 /**
  * Admin › a use case: where it stands, what it says and what became of it. The use case is read the way its
  * members wrote it, step by step, and never edited here. One in review carries the operators' decision beside it.
  */
-function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
+function AdminUseCasePage({ useCase, proposals }: AdminUseCasePageProps) {
   const t = useTranslations("Admin.useCases.detail");
   const statusLabel = useTranslations("Admin.useCases.status");
   const d = useTranslations("Admin.useCases.decision");
@@ -115,7 +117,9 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
         }
         lead={organization}
       >
-        {useCase.publishedAt && <UseCaseTabs area="admin" id={useCase.id} current="brief" />}
+        {useCase.publishedAt && (
+          <UseCaseTabs area="admin" id={useCase.id} current="brief" proposals={proposals} />
+        )}
       </AdminPageHeader>
 
       <div className="grid items-start gap-6 lg:grid-cols-3">

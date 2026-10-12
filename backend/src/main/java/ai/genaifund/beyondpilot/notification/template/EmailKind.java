@@ -100,6 +100,13 @@ public enum EmailKind {
 			Variable.required("organizationName", "Plain Cover"),
 			Variable.quote("reason", "Say which lines of business it covers.")),
 
+	PROPOSAL_SENT("proposal_sent", EmailGroup.USE_CASES, true, null,
+			Variable.required("useCaseTitle", "Claims triage for motor insurance"),
+			Variable.required("organizationName", "Plain Cover"), Variable.optional("role", "Delivery lead"),
+			Variable.required("proposalUrl", "https://beyondpilot.example/use-cases/1/propose/view"),
+			Variable.optional("primary", Boolean.TRUE), Variable.optional("senderName", "Hà Lê"),
+			Variable.optional("editableUntil", "19 Oct 2026, 23:59 ICT")),
+
 	TALENT_APPROVED("talent_approved", EmailGroup.TALENT, true, "note",
 			Variable.required("profileName", "Mei Tan"), Variable.quote("note", null)),
 

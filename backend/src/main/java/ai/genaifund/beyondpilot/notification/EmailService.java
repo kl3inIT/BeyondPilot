@@ -341,6 +341,29 @@ public class EmailService {
 	}
 
 	/**
+	 * Tells a member of the team of a proposal that it was sent, with the role they are named for. The link opens the
+	 * proposal after signing in; it acts on nothing.
+	 * @param organizationName the organization that sent it
+	 * @param role the role typed for this person on the team; null when the sender is not on it
+	 * @param primary whether this person is the primary contact
+	 * @param senderName who sent it, as they are shown; null when the recipient is the sender
+	 * @param useCaseId the use case the proposal went to
+	 * @param editableUntil until when the proposal can still change; null when it cannot
+	 */
+	@Transactional
+	public void sendProposalSent(String recipient, String useCaseTitle, String organizationName,
+			@Nullable String role, boolean primary, @Nullable String senderName, UUID useCaseId, @Nullable Instant editableUntil) {
+		String until = editableUntil == null ? null
+				: DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH)
+					.withZone(VIETNAM)
+					.format(editableUntil) + " ICT";
+		queue(EmailKind.PROPOSAL_SENT, recipient,
+				values("useCaseTitle", useCaseTitle, "organizationName", organizationName, "role", role, "primary",
+						primary, "senderName", senderName, "editableUntil", until, "proposalUrl",
+						settings.appearance().siteUrl() + "/use-cases/" + useCaseId + "/propose/view"));
+	}
+
+	/**
 	 * Tells an address that it was asked to judge a program's applications. Like an organization invitation it carries
 	 * no link that acts: the person signs in with this address and finds the program under Reviews.
 	 * @param inviterName who asked, as they are shown

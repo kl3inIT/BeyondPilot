@@ -2874,6 +2874,9 @@
         "use_case_sent_back": {
           "name": "Use case sent back"
         },
+        "proposal_sent": {
+          "name": "Proposal sent"
+        },
         "talent_approved": {
           "name": "Talent profile approved"
         },
@@ -6820,7 +6823,8 @@
     "pageTabs": {
       "label": "Pages of this use case",
       "brief": "Brief",
-      "candidates": "Matched solutions"
+      "candidates": "Matched solutions",
+      "proposals": "Proposals"
     },
     "head": {
       "back": "{organization} · Use cases",
@@ -7127,6 +7131,9 @@
       "PROPOSAL_EDIT_WINDOW_CLOSED": "The time to edit this proposal has ended, so your changes were not saved."
     },
     "received": {
+      "admin": {
+        "metaTitle": "Proposals · BeyondPilot Admin"
+      },
       "column": "Proposals",
       "none": "No count",
       "count": "{count, plural, one {# proposal} other {# proposals}}",

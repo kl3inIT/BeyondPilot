@@ -5,6 +5,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,10 +14,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Person;
+import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
@@ -90,9 +94,12 @@ public class UseCaseProposals {
 
 	private final JsonMapper json;
 
+	private final EmailService email;
+
 	UseCaseProposals(UseCaseProposalRepository proposals, UseCaseProposalMemberRepository teams,
 			UseCaseProposalSolutionRepository offers, UseCaseDirectory useCases, OrganizationDirectory organizations, SolutionDirectory solutions,
-			TalentSnapshots talent, IdentityService identity, StorageService storage, JsonMapper json) {
+			TalentSnapshots talent, IdentityService identity, StorageService storage, JsonMapper json,
+			EmailService email) {
 		this.proposals = proposals;
 		this.teams = teams;
 		this.offers = offers;
@@ -103,6 +110,7 @@ public class UseCaseProposals {
 		this.identity = identity;
 		this.storage = storage;
 		this.json = json;
+		this.email = email;
 	}
 
 	/**
@@ -246,11 +254,42 @@ public class UseCaseProposals {
 			.addKeyValue("use_case_id", proposal.getUseCaseId())
 			.addKeyValue("organization_id", proposal.getOrganizationId())
 			.log("Proposal sent to a use case");
+		tellTeam(actor, proposal, target, membership, team);
 		return form(actor, target, membership, proposal);
 	}
 
 	/**
-	 * The proposals a use case received, for the members of the organization that posted it.
+	 * Queues one email for the sender and one for each other member of the team, each with the role named for them.
+	 * They leave once the sending commits.
+	 */
+	private void tellTeam(Actor actor, UseCaseProposal proposal, UseCaseTarget target, Membership membership,
+			List<UseCaseProposalMember> team) {
+		Map<UUID, Person> people = identity
+			.people(Stream.concat(Stream.of(actor.accountId()), team.stream().map(UseCaseProposalMember::getAccountId))
+				.distinct()
+				.toList());
+		Person sender = people.get(actor.accountId());
+		Instant until = editableUntil(proposal, target);
+		UUID primary = proposal.getPrimaryContactAccountId();
+		Map<UUID, UseCaseProposalMember> named = new LinkedHashMap<>();
+		team.forEach(member -> named.put(member.getAccountId(), member));
+		// The sender is told even when they are not on the team, as the one who sent it.
+		Set<UUID> recipients = new LinkedHashSet<>(List.of(actor.accountId()));
+		recipients.addAll(named.keySet());
+		for (UUID accountId : recipients) {
+			Person person = people.get(accountId);
+			UseCaseProposalMember member = named.get(accountId);
+			if (person == null) {
+				continue;
+			}
+			email.sendProposalSent(person.email(), target.title(), membership.organizationName(),
+					member == null ? null : member.getRole(), accountId.equals(primary),
+					accountId.equals(actor.accountId()) || sender == null ? null : label(sender), target.id(), until);
+		}
+	}
+
+	/**
+	 * The proposals a use case received, for the members of the organization that posted it and for operators.
 	 * @throws ProposalException when the use case is unknown or the caller's organization did not post it
 	 */
 	@Transactional(readOnly = true)
@@ -406,6 +445,9 @@ public class UseCaseProposals {
 	private UseCaseTarget posted(Actor actor, UUID useCaseId) {
 		UseCaseTarget target = useCases.target(useCaseId)
 			.orElseThrow(() -> new ProposalException(ProposalErrorCode.USE_CASE_NOT_FOUND, "No use case " + useCaseId));
+		if (identity.isOperator(actor)) {
+			return target;
+		}
 		organizations.membershipOf(actor)
 			.filter(membership -> membership.organizationId().equals(target.organizationId()))
 			.orElseThrow(() -> new ProposalException(ProposalErrorCode.USE_CASE_NOT_FOUND,
@@ -413,7 +455,7 @@ public class UseCaseProposals {
 		return target;
 	}
 
-	/** A sent proposal of a use case the caller's organization posted. */
+	/** A sent proposal of a use case the caller's organization posted, or any when the caller is an operator. */
 	private UseCaseProposal readable(Actor actor, UUID id) {
 		UseCaseProposal proposal = proposals.findById(id).filter(UseCaseProposal::isSent).orElseThrow(() -> notFound(id));
 		posted(actor, proposal.getUseCaseId());

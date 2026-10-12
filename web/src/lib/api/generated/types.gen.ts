@@ -11189,7 +11189,7 @@ export type GetReceivedUseCaseProposalData = {
 
 export type GetReceivedUseCaseProposalErrors = {
     /**
-     * The proposal was not sent, or the caller's organization did not post its use case.
+     * The proposal was not sent, or the caller is neither of the organization that posted its use case nor an operator.
      */
     404: Problem;
 };
@@ -11216,7 +11216,7 @@ export type GetUseCaseProposalFileData = {
 
 export type GetUseCaseProposalFileErrors = {
     /**
-     * The proposal was not sent, or the caller's organization did not post its use case.
+     * The proposal was not sent, or the caller is neither of the organization that posted its use case nor an operator.
      */
     404: Problem;
 };
@@ -11356,7 +11356,7 @@ export type ListUseCaseProposalsData = {
 
 export type ListUseCaseProposalsErrors = {
     /**
-     * There is no such use case, or the caller's organization did not post it.
+     * There is no such use case, or the caller is neither of the organization that posted it nor an operator.
      */
     404: Problem;
 };

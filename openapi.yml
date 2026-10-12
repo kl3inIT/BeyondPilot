@@ -6541,8 +6541,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The proposal was not sent, or the caller's organization did\
-            \ not post its use case."
+          description: "The proposal was not sent, or the caller is neither of the\
+            \ organization that posted its use case nor an operator."
       security:
       - session: []
       summary: One proposal a use case received
@@ -6573,8 +6573,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The proposal was not sent, or the caller's organization did\
-            \ not post its use case."
+          description: "The proposal was not sent, or the caller is neither of the\
+            \ organization that posted its use case nor an operator."
       security:
       - session: []
       summary: The PDF of a proposal a use case received
@@ -6743,8 +6743,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "There is no such use case, or the caller's organization did\
-            \ not post it."
+          description: "There is no such use case, or the caller is neither of the\
+            \ organization that posted it nor an operator."
       security:
       - session: []
       summary: The proposals a use case received
