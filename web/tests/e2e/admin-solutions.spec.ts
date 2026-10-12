@@ -233,7 +233,7 @@ test.describe("admin solutions", () => {
     ]);
   });
 
-  test("the keys decide once the page has been read, and never under a dialog", async ({
+  test("a decision is made with its button, not a key; N goes to the next record", async ({
     page,
     context,
     baseURL,
@@ -243,20 +243,13 @@ test.describe("admin solutions", () => {
     await signInAs(context, "operator", baseURL!);
     const decisions = await answerDecisions(page, decisionsPath, 204);
     await page.goto(`/admin/solutions/${claimsCopilot}`);
-    await expect(page.getByText("Keys: A approve · S send back")).toBeVisible();
+    await expect(page.getByText("Keys:")).toHaveCount(0);
 
-    // A key pressed as the page arrives was meant for the page before it.
-    await page.keyboard.press("a");
     // Keys act from the second second of a page on.
     await page.waitForTimeout(1100);
-    expect(decisions).toEqual([]);
-
-    await page.keyboard.press("s");
-    const dialog = page.getByRole("dialog");
-    await expect(dialog.getByRole("heading")).toHaveText("Send Claims Copilot back?");
     await page.keyboard.press("a");
-    await dialog.getByRole("button", { name: "Cancel" }).click();
-    await expect(dialog).toHaveCount(0);
+    await page.keyboard.press("s");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
     expect(decisions).toEqual([]);
 
     await page.keyboard.press("n");
@@ -272,7 +265,7 @@ test.describe("admin solutions", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     await page.goto(`/admin/solutions/${underwritingRadar}`);
 
-    await page.getByRole("button", { name: "Send back…" }).click();
+    await page.getByRole("button", { name: "Send back" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading")).toHaveText("Send Underwriting Radar back?");
     await expect(dialog.getByRole("button", { name: "Send back" })).toBeDisabled();
@@ -302,7 +295,7 @@ test.describe("admin solutions", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     await page.goto(`/admin/solutions/${underwritingRadar}`);
 
-    await page.getByRole("button", { name: "Reject…" }).click();
+    await page.getByRole("button", { name: "Reject" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading")).toHaveText("Reject Underwriting Radar for good?");
     await expect(dialog.getByRole("option", { name: "Information is missing" })).toHaveCount(0);
@@ -339,7 +332,7 @@ test.describe("admin solutions", () => {
     await page.keyboard.press("s");
     await expect(page.getByRole("dialog")).toHaveCount(0);
     // The solution's own decision stands before those of its customer deployments.
-    await page.getByRole("button", { name: "Take down…" }).first().click();
+    await page.getByRole("button", { name: "Take down" }).first().click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading")).toHaveText("Take Policy Chat down?");
 
@@ -368,7 +361,7 @@ test.describe("admin solutions", () => {
     await expect(page.getByText("Taken down: Misleading information.")).toBeVisible();
     await expect(page.getByText("The customers named are not real.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Open the public page" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Take down…" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Take down" })).toHaveCount(0);
     await page.getByRole("button", { name: "Restore" }).click();
     const dialog = page.getByRole("alertdialog");
     await expect(dialog.getByRole("heading")).toHaveText("Put Risk Lens back?");
@@ -395,7 +388,7 @@ test.describe("admin solutions", () => {
     await waiting.getByRole("button", { name: "Approve" }).click();
     await expect(page.getByText("Claims line at Bảo An approved.")).toBeVisible();
 
-    await waiting.getByRole("button", { name: "Send back…" }).click();
+    await waiting.getByRole("button", { name: "Send back" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading")).toHaveText("Send Claims line at Bảo An back?");
     await giveReason(page, "Could not be verified", "Who can confirm it?");
@@ -406,7 +399,7 @@ test.describe("admin solutions", () => {
     // An approved one has no approval left to give.
     const approved = deploymentCard(page, "Renewals at Mekong Life");
     await expect(approved.getByRole("button", { name: "Approve" })).toHaveCount(0);
-    await approved.getByRole("button", { name: "Take down…" }).click();
+    await approved.getByRole("button", { name: "Take down" }).click();
     await expect(dialog.getByRole("heading")).toHaveText("Take Renewals at Mekong Life down?");
     await giveReason(page, "Information is missing", "");
     await dialog.getByRole("button", { name: "Take down" }).click();
@@ -521,8 +514,8 @@ test.describe("admin solutions", () => {
     await expect(page.getByText("Rejected: Already listed.")).toBeVisible();
     await expect(page.getByText("It is Policy Chat under another name.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Approve" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Send back…" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Reject…" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Send back" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Reject" })).toHaveCount(0);
 
     expect((await page.goto("/admin/solutions/no-such-record"))?.status()).toBe(404);
   });

@@ -3,8 +3,7 @@ import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTableFooter } from "@/components/composites/data-table";
-import { PageSizeSelect } from "@/components/composites/page-size-select";
+import { ListFooter } from "@/components/composites/list-footer";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import type { ProgramEvent, ProgramSummary, SearchResults } from "@/lib/api/generated";
@@ -68,7 +67,6 @@ async function ProgramsPage({
     getTranslations("Program.type"),
     getLocale(),
   ]);
-  const pagination = await getTranslations("Lists.pagination");
   const format = programFormatter(locale);
   const comingUp = groups.upcoming.length + groups.events.length;
   const byYear = new Map<number, ProgramSummary[]>();
@@ -116,31 +114,16 @@ async function ProgramsPage({
                 ),
               )}
             </div>
-            <DataTableFooter
+            <ListFooter
               count={t("programCount", { count: results.total })}
               page={results.page}
-              pages={Math.min(
-                maxSearchPage,
-                Math.max(1, Math.ceil(results.total / results.pageSize)),
-              )}
+              pageSize={results.pageSize}
+              total={results.total}
               href={(page) =>
                 serializeProgramsPublicSearch(siteRoutes.programs, { ...search, page })
               }
-              sizer={
-                <PageSizeSelect
-                  size={results.pageSize}
-                  total={results.total}
-                  sizes={gridPageSizes}
-                />
-              }
-              labels={{
-                navigation: pagination("label"),
-                previous: pagination("previous"),
-                next: pagination("next"),
-                goToPrevious: pagination("goToPrevious"),
-                goToNext: pagination("goToNext"),
-                page: (page) => pagination("page", { page }),
-              }}
+              sizes={gridPageSizes}
+              maxPages={maxSearchPage}
             />
           </>
         )}
@@ -151,10 +134,11 @@ async function ProgramsPage({
               title={t("open")}
               count={t("programCount", { count: groups.open.length })}
             />
-            {groups.open.map((program) => (
+            {groups.open.map((program, index) => (
               <OpenProgram
                 key={program.slug}
                 program={program}
+                preload={index === 0}
                 kind={types(program.type)}
                 format={format}
               />
@@ -227,10 +211,13 @@ async function OpenProgram({
   program,
   kind,
   format,
+  preload = false,
 }: {
   program: ProgramSummary;
   kind: string;
   format: Format;
+  /** The first card preloads its cover, the largest paint of the page on a phone. */
+  preload?: boolean;
 }) {
   const t = await getTranslations("Programs");
   const applications = program.applications;
@@ -246,7 +233,7 @@ async function OpenProgram({
             src={publicFileUrl(program.coverFileId)}
             alt=""
             fill
-            unoptimized
+            preload={preload}
             sizes="(min-width: 1280px) 30rem, 100vw"
             className="object-cover"
           />
@@ -427,7 +414,6 @@ async function DoneProgram({
           alt=""
           width={480}
           height={180}
-          unoptimized
           className="h-37.5 w-full object-cover"
         />
       ) : (

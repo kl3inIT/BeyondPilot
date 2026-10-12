@@ -7,6 +7,7 @@ import {
   FileTextIcon,
   LayoutDashboardIcon,
   LogOutIcon,
+  SendIcon,
   UserRoundCogIcon,
   UserRoundIcon,
 } from "lucide-react";
@@ -112,6 +113,10 @@ function SiteAccountItems({
       <DropdownMenuItem render={<Link href={siteRoutes.talentProfile} />}>
         <UserRoundIcon aria-hidden="true" />
         {t("talentProfile")}
+      </DropdownMenuItem>
+      <DropdownMenuItem render={<Link href={siteRoutes.talentSent} />}>
+        <SendIcon aria-hidden="true" />
+        {t("talentSent")}
       </DropdownMenuItem>
       <DropdownMenuItem render={<Link href={siteRoutes.account} />}>
         <UserRoundCogIcon aria-hidden="true" />

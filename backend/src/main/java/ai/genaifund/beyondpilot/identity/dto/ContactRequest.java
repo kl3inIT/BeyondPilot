@@ -11,5 +11,8 @@ public record ContactRequest(
 		@Schema(types = { "string", "null" }, description = "ISO 3166-1 alpha-2.") @Pattern(
 				regexp = "^[A-Z]{2}$") @Nullable String country,
 		@Schema(types = { "string", "null" }, description = "With its country code, such as +84 912 345 678.") @Size(
-				max = 40) @Pattern(regexp = "^\\+?[0-9 ().-]*$") @Nullable String phone) {
+				max = 40) @Pattern(regexp = "^\\+?[0-9 ().-]*$") @Nullable String phone,
+		@Schema(types = { "string", "null" },
+				description = "The name the account shows from now on; left out or blank keeps the one it has.") @Size(
+						max = 120) @Nullable String name) {
 }

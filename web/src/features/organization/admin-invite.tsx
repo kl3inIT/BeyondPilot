@@ -1,15 +1,16 @@
 "use client";
 
+import { revalidateLogic } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { MailPlusIcon } from "lucide-react";
 import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
-import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { FormDialog } from "@/components/composites/form-dialog";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useNotify } from "@/hooks/use-notify";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -28,105 +29,84 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
   const notify = useNotify();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState<InviteMember["role"]>("owner");
-  const [pending, setPending] = useState(false);
-  const [invalid, setInvalid] = useState(false);
-
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const address = email.trim();
-    if (!address.includes("@")) {
-      setInvalid(true);
-      return;
-    }
-    setPending(true);
-    try {
-      await inviteAdminOrganizationMember({
-        path: { id: organization.id },
-        body: { email: address, role },
-      });
-      notify.success("Organization.done.invited", { count: 1 });
-      setEmail("");
-      setInvalid(false);
-      setOpen(false);
-      router.refresh();
-    } catch (error) {
-      // Only a badly written address is the field's to say; any other refusal has its own words.
-      setInvalid(error instanceof ApiError && error.code === "REQUEST_INVALID");
-      notify.error(organizationError(error));
-    } finally {
-      setPending(false);
-    }
-  }
+  const form = useAppForm({
+    defaultValues: { email: "", role: "owner" as InviteMember["role"] },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({
+        email: z
+          .string()
+          .refine((text) => z.email().safeParse(text.trim()).success, t("emailInvalid")),
+        role: z.enum(["owner", "member"]),
+      }),
+    },
+    onSubmit: async ({ value, formApi }) => {
+      try {
+        await inviteAdminOrganizationMember({
+          path: { id: organization.id },
+          body: { email: value.email.trim(), role: value.role },
+        });
+        notify.success("Organization.done.invited", { count: 1 });
+        setOpen(false);
+        router.refresh();
+      } catch (error) {
+        // Only a badly written address is the field's to say; any other refusal has its own words.
+        if (error instanceof ApiError && error.code === "REQUEST_INVALID") {
+          setServerErrors(formApi, { fields: { email: { message: t("emailInvalid") } } });
+        }
+        notify.error(organizationError(error));
+      }
+    },
+  });
 
   return (
     <>
-      <Button
-        onClick={() => {
-          setInvalid(false);
-          setOpen(true);
-        }}
+      <Button onClick={() => setOpen(true)}>{t("open")}</Button>
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        form={form}
+        title={t("title", { name: organization.name })}
+        mark={{ tone: "info", icon: MailPlusIcon }}
+        width="lg"
+        submitLabel={t("send")}
+        cancelLabel={t("cancel")}
       >
-        {t("open")}
-      </Button>
-      <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>
-        <DialogContent showCloseButton={false} className="sm:max-w-120">
-          <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-            <DecisionDialogHeader
-              tone="info"
-              icon={MailPlusIcon}
-              title={t("title", { name: organization.name })}
-            />
-            <FieldGroup>
-              <Field data-invalid={invalid || undefined}>
-                <FieldLabel htmlFor="admin-invite-email">{t("email")}</FieldLabel>
-                <Input
-                  id="admin-invite-email"
-                  type="email"
-                  inputMode="email"
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  spellCheck={false}
-                  maxLength={254}
-                  value={email}
-                  onChange={(event) => {
-                    setEmail(event.target.value);
-                    setInvalid(false);
-                  }}
-                  aria-invalid={invalid || undefined}
-                />
-                {invalid && <FieldError>{t("emailInvalid")}</FieldError>}
-              </Field>
+        <FieldGroup>
+          <form.AppField name="email">
+            {(field) => (
+              <field.TextField
+                label={t("email")}
+                type="email"
+                inputMode="email"
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={254}
+              />
+            )}
+          </form.AppField>
+          <form.Field name="role">
+            {(field) => (
               <Field>
                 <FieldLabel htmlFor="admin-invite-role">{t("role")}</FieldLabel>
                 <NativeSelect
                   id="admin-invite-role"
                   className="w-full"
-                  value={role}
-                  onChange={(event) => setRole(event.target.value as InviteMember["role"])}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) =>
+                    field.handleChange(event.target.value as InviteMember["role"])
+                  }
                 >
                   <NativeSelectOption value="owner">{roleName("owner")}</NativeSelectOption>
                   <NativeSelectOption value="member">{roleName("member")}</NativeSelectOption>
                 </NativeSelect>
               </Field>
-            </FieldGroup>
-            <DialogFooter variant="plain">
-              <Button
-                size="lg"
-                prominence="secondary"
-                disabled={pending}
-                onClick={() => setOpen(false)}
-              >
-                {t("cancel")}
-              </Button>
-              <Button size="lg" type="submit" pending={pending}>
-                {t("send")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+            )}
+          </form.Field>
+        </FieldGroup>
+      </FormDialog>
     </>
   );
 }

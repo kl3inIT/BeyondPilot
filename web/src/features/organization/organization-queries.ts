@@ -28,11 +28,12 @@ export async function readMyOrganization(): Promise<MyOrganization> {
 export async function readMembers(
   page = 1,
   size?: number | null,
+  sort?: "role" | "-role" | "joined" | "-joined",
 ): Promise<OrganizationMembers | null> {
   try {
     const { data } = await listMyOrganizationMembers({
       ...(await sessionRequest()),
-      query: { page: Math.max(1, page), size: size ?? undefined },
+      query: { page: Math.max(1, page), size: size ?? undefined, sort },
     });
     return data;
   } catch (error) {

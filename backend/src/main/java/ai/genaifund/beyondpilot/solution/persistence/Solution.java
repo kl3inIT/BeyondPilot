@@ -2,12 +2,18 @@ package ai.genaifund.beyondpilot.solution.persistence;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -176,6 +182,12 @@ public class Solution {
 	@Column(nullable = false, updatable = false)
 	private UUID createdByAccountId;
 
+	/** The offers it comes with, by identifier, from the list GenAI Fund keeps. */
+	@ElementCollection
+	@CollectionTable(name = "solution_offer", joinColumns = @JoinColumn(name = "solution_id"))
+	@Column(name = "offer_id")
+	private Set<UUID> offerIds = new LinkedHashSet<>();
+
 	@Version
 	private long version;
 
@@ -266,6 +278,14 @@ public class Solution {
 
 	public void list(boolean listed) {
 		this.listed = listed;
+	}
+
+	/** Names the offers it comes with; the same ones leave the solution untouched. */
+	public void comeWith(Collection<UUID> offerIds) {
+		if (!this.offerIds.equals(Set.copyOf(offerIds))) {
+			this.offerIds.clear();
+			this.offerIds.addAll(offerIds);
+		}
 	}
 
 	/** Sends the solution for review; a send back it answers is cleared, as a refusal only ever ends a review. */
@@ -582,6 +602,10 @@ public class Solution {
 
 	public boolean isListed() {
 		return listed;
+	}
+
+	public Set<UUID> getOfferIds() {
+		return Set.copyOf(offerIds);
 	}
 
 	public @Nullable Instant getFeaturedAt() {

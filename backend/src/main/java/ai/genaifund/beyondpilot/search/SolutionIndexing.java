@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.organization.OrganizationChanged;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
@@ -12,6 +13,7 @@ import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Docu
 import ai.genaifund.beyondpilot.solution.IndexedSolution;
 import ai.genaifund.beyondpilot.solution.SolutionChanged;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
+import ai.genaifund.beyondpilot.solution.SolutionOffer;
 import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Component;
 
@@ -83,6 +85,12 @@ class SolutionIndexing {
 		Cards.put(facets, Cards.COVER, solution.coverFileId());
 		Cards.put(facets, Cards.BACKING, solution.backing());
 		facets.put(Cards.FEATURED, solution.featured());
+		Cards.put(facets, Cards.OFFERS,
+				solution.offers()
+					.stream()
+					.map(offer -> Map.of(Cards.OFFER_TITLE, offer.title(), Cards.OFFER_URL, offer.url(),
+							Cards.OFFER_FROM_GENAI_FUND, offer.fromGenAiFund()))
+					.toList());
 		String maturity = solution.maturity();
 		String keywords = Cards.words(solution.focusAreas(), solution.industries(),
 				maturity == null ? List.of() : List.of(maturity), solution.deployment(), solution.builtWith());
@@ -90,7 +98,9 @@ class SolutionIndexing {
 				solution.organizationName(), Objects.requireNonNullElse(solution.summary(), ""), keywords,
 				Cards.lines(solution.name(), solution.organizationName(), keywords, solution.summary(),
 						solution.problemsSolved(), solution.valueProposition(), solution.bestCustomerProfile(),
-						solution.traction()),
+						solution.traction(),
+						// A search for an offer finds the solutions that come with it.
+						solution.offers().stream().map(SolutionOffer::title).collect(Collectors.joining("\n"))),
 				facets, solution.listed(), null, null);
 	}
 

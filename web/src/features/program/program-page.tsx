@@ -114,7 +114,6 @@ async function ProgramPage({ program }: { program: Program }) {
               alt=""
               width={560}
               height={320}
-              unoptimized
               priority
               className="aspect-video w-full rounded-2xl object-cover lg:w-120"
             />

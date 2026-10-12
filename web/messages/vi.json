@@ -8,6 +8,7 @@
     "backedBy": "Được đầu tư bởi",
     "genaiFund": "GenAI Fund",
     "skipToContent": "Chuyển tới nội dung",
+    "loading": "Đang tải",
     "notifications": "Thông báo",
     "nav": {
       "label": "Điều hướng chính",
@@ -26,6 +27,7 @@
       "signOutFailed": "Chưa đăng xuất được. Bạn thử lại.",
       "organization": "Tổ chức của tôi",
       "talentProfile": "Hồ sơ nhân lực",
+      "talentSent": "Lời nhắn đã gửi",
       "admin": "Quản trị",
       "applications": "Đơn của tôi",
       "reviews": "Chấm đơn",
@@ -483,6 +485,7 @@
       "auditLog": "Nhật ký thao tác",
       "organizations": "Tổ chức",
       "solutions": "Giải pháp AI",
+      "offers": "Ưu đãi",
       "talent": "Nhân lực AI",
       "introductions": "Giới thiệu",
       "review": "Xét duyệt",
@@ -834,14 +837,6 @@
       "dayAndTime": "{day}, {time}",
       "never": "Chưa từng",
       "count": "{count} tài khoản",
-      "pagination": {
-        "label": "Các trang tài khoản",
-        "previous": "Trước",
-        "next": "Sau",
-        "goToPrevious": "Về trang trước",
-        "goToNext": "Sang trang sau",
-        "page": "Trang {page}"
-      },
       "actions": {
         "open": "Thao tác với {name}",
         "makeOperator": "Cấp quyền operator…",
@@ -952,7 +947,11 @@
           "deployment_withdraw": "Gỡ một triển khai khách hàng",
           "deployment_restore": "Khôi phục một triển khai khách hàng",
           "enrich": "Bổ sung solution từ nguồn công khai",
-          "back": "Ghi xác nhận của GenAI Fund về giải pháp"
+          "back": "Ghi xác nhận của GenAI Fund về giải pháp",
+          "offers_choose": "Chọn ưu đãi cho giải pháp",
+          "offer_create": "Thêm ưu đãi",
+          "offer_update": "Sửa ưu đãi",
+          "offer_delete": "Xóa ưu đãi"
         },
         "introduction": {
           "reply": "Trả lời yêu cầu giới thiệu",
@@ -1082,7 +1081,11 @@
           "deployment_withdraw": "Gỡ triển khai khách hàng <resource></resource>",
           "deployment_restore": "Khôi phục triển khai khách hàng <resource></resource>",
           "enrich": "Bổ sung solution <resource></resource> từ nguồn công khai",
-          "back": "Ghi xác nhận của GenAI Fund về giải pháp <resource></resource>"
+          "back": "Ghi xác nhận của GenAI Fund về giải pháp <resource></resource>",
+          "offers_choose": "Chọn ưu đãi cho giải pháp <resource></resource>",
+          "offer_create": "Thêm ưu đãi <resource></resource>",
+          "offer_update": "Sửa ưu đãi <resource></resource>",
+          "offer_delete": "Xóa ưu đãi <resource></resource>"
         },
         "introduction": {
           "reply": "Trả lời yêu cầu giới thiệu về <resource></resource>",
@@ -1454,15 +1457,14 @@
         "featured": "Nổi bật",
         "since": "Nổi bật từ {day}",
         "feature": "Đặt nổi bật",
-        "unfeature": "Bỏ nổi bật",
-        "hint": "Giải pháp nổi bật hiện đầu tiên khi mở danh mục công khai, cho đến khi người đọc tìm kiếm, lọc hoặc sắp xếp; thẻ của nó ghi Nổi bật."
+        "unfeature": "Bỏ nổi bật"
       },
       "review": {
         "open": "Duyệt",
         "approve": "Duyệt",
-        "sendBack": "Trả lại…",
-        "reject": "Từ chối…",
-        "takeDown": "Gỡ xuống…",
+        "sendBack": "Trả lại",
+        "reject": "Từ chối",
+        "takeDown": "Gỡ xuống",
         "restore": "Khôi phục",
         "sendBackTitle": "Trả lại {name}?",
         "sendBackLead": "Chủ sở hữu đọc nội dung bạn viết rồi gửi lại. Họ nhận email.",
@@ -1481,8 +1483,7 @@
         "message": "Ghi chú (không bắt buộc)",
         "messageHint": "Người nhận đọc nguyên văn.",
         "cancel": "Hủy",
-        "back": "Quay lại",
-        "keys": "Phím: A duyệt · S trả lại"
+        "back": "Quay lại"
       },
       "detail": {
         "back": "Tất cả giải pháp",
@@ -1571,8 +1572,25 @@
           "funding": "Ví dụ Seed."
         }
       },
+      "offers": {
+        "title": "Ưu đãi",
+        "lead": "Những gì đi kèm giải pháp, hiện trên thẻ và trang của nó. Chủ giải pháp cũng chọn được trong trình soạn.",
+        "field": "Ưu đãi",
+        "hint": "Tối đa {max}, từ danh sách ưu đãi.",
+        "save": "Lưu ưu đãi",
+        "saved": "Đã lưu ưu đãi cho {name}."
+      },
       "actions": {
         "organization": "Mở tổ chức"
+      }
+    },
+    "offers": {
+      "metaTitle": "Ưu đãi · BeyondPilot",
+      "title": "Ưu đãi",
+      "lead": "Danh sách của GenAI Fund trước, rồi tới ưu đãi mỗi tổ chức tự viết cho giải pháp của mình. Sửa một ưu đãi là sửa trên mọi giải pháp đi kèm nó.",
+      "genAiFund": "GenAI Fund",
+      "columns": {
+        "writer": "Người tạo"
       }
     },
     "talent": {
@@ -2481,15 +2499,7 @@
           "who": "Ai, lúc nào"
         },
         "requirement": "Yêu cầu {position}",
-        "count": "{count} câu trả lời không đồng ý",
-        "pagination": {
-          "label": "Các trang câu trả lời không đồng ý",
-          "previous": "Trước",
-          "next": "Sau",
-          "goToPrevious": "Về trang trước",
-          "goToNext": "Sang trang sau",
-          "page": "Trang {page}"
-        }
+        "count": "{count} câu trả lời không đồng ý"
       },
       "tabs": {
         "limits": "Giới hạn",
@@ -2637,14 +2647,6 @@
         "empty": {
           "title": "Không có lượt gọi trong kỳ này",
           "description": "Nội dung hỏi và trả lời không bao giờ được lưu."
-        },
-        "pagination": {
-          "label": "Các trang lượt gọi",
-          "previous": "Trước",
-          "next": "Sau",
-          "goToPrevious": "Về trang trước",
-          "goToNext": "Sang trang sau",
-          "page": "Trang {page}"
         }
       }
     },
@@ -2764,14 +2766,6 @@
         "empty": {
           "title": "Không có lời gọi nào trong khoảng này",
           "description": "Nội dung câu hỏi không bao giờ được lưu."
-        },
-        "pagination": {
-          "label": "Các trang lời gọi",
-          "previous": "Trước",
-          "next": "Sau",
-          "goToPrevious": "Về trang trước",
-          "goToNext": "Sang trang sau",
-          "page": "Trang {page}"
         }
       },
       "confirm": {
@@ -4297,7 +4291,12 @@
       "SOLUTION_IMAGE_NOT_USABLE": "Ảnh này không dùng được. Hãy tải lên lại.",
       "linkNotCopied": "Chưa sao chép được liên kết. Hãy thử lại.",
       "SOLUTION_NOT_APPROVED": "Chỉ gỡ được giải pháp đã duyệt và chưa bị gỡ.",
-      "SOLUTION_NOT_TAKEN_DOWN": "Giải pháp này chưa bị gỡ xuống."
+      "SOLUTION_NOT_TAKEN_DOWN": "Giải pháp này chưa bị gỡ xuống.",
+      "SOLUTION_OFFER_NOT_FOUND": "Ưu đãi này không còn tồn tại. Hãy tải lại trang.",
+      "SOLUTION_OFFER_TITLE_TAKEN": "Đã có một ưu đãi khác ghi giống hệt.",
+      "SOLUTION_OFFER_IN_USE": "Vẫn còn giải pháp đi kèm ưu đãi này. Hãy gỡ ưu đãi khỏi các giải pháp đó trước.",
+      "SOLUTION_OFFER_CHANGED_MEANWHILE": "Có người vừa lưu ưu đãi này. Hãy tải lại trang rồi sửa lại.",
+      "SOLUTION_OFFER_NOT_USABLE": "Một ưu đãi đã chọn không còn tồn tại. Hãy tải lại trang rồi chọn lại."
     },
     "done": {
       "saved": "Đã lưu giải pháp.",
@@ -4346,6 +4345,67 @@
       "ownEdit": "Sửa giải pháp này",
       "deployments": "{count} triển khai khách hàng",
       "backing": "GenAI Fund xác nhận:"
+    },
+    "offers": {
+      "label": "Ưu đãi:",
+      "title": "Ưu đãi",
+      "claim": "Nhận ưu đãi",
+      "claimNamed": "Nhận ưu đãi: {offer} (mở trong tab mới)",
+      "several": "{count} ưu đãi",
+      "more": "+{count} nữa",
+      "moreOffers": "+{count} ưu đãi nữa",
+      "newTab": "mở trong tab mới",
+      "picker": {
+        "placeholder": "Chọn ưu đãi",
+        "noMatch": "Không có ưu đãi nào khớp.",
+        "remove": "Bỏ {name}",
+        "add": "Ưu đãi mới…",
+        "fromGenAiFund": "{title} (GenAI Fund)"
+      },
+      "form": {
+        "newTitle": "Ưu đãi mới",
+        "editTitle": "Sửa ưu đãi",
+        "title": "Ưu đãi",
+        "titleTaken": "Đã có một ưu đãi khác ghi giống hệt.",
+        "url": "Liên kết",
+        "urlInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://.",
+        "cancel": "Hủy",
+        "create": "Thêm ưu đãi",
+        "save": "Lưu"
+      },
+      "done": {
+        "created": "Đã thêm {name}.",
+        "saved": "Đã lưu {name}.",
+        "deleted": "Đã xóa {name}."
+      },
+      "fromGenAiFund": "Từ GenAI Fund",
+      "manage": {
+        "title": "Ưu đãi",
+        "create": "Ưu đãi mới",
+        "columns": {
+          "offer": "Ưu đãi",
+          "url": "Nhận tại",
+          "solutions": "Giải pháp",
+          "actions": "Thao tác"
+        },
+        "solutions": "{count, plural, =0 {Chưa giải pháp nào đi kèm} other {# giải pháp}}",
+        "openNamed": "Thao tác với {name}",
+        "actions": {
+          "edit": "Sửa…",
+          "delete": "Xóa…"
+        },
+        "empty": {
+          "title": "Chưa có ưu đãi nào",
+          "description": "Thêm những gì đi kèm giải pháp, rồi chọn ưu đãi đó ở giải pháp.",
+          "own": "Viết những gì đi kèm giải pháp của bạn, ví dụ gói pilot, rồi chọn ưu đãi đó ở giải pháp."
+        },
+        "confirmDelete": {
+          "title": "Xóa {name}?",
+          "lead": "Không giải pháp nào đi kèm ưu đãi này. Ưu đãi sẽ bị xóa hẳn.",
+          "confirm": "Xóa ưu đãi",
+          "cancel": "Hủy"
+        }
+      }
     },
     "filters": {
       "search": "Tìm giải pháp AI",
@@ -4440,6 +4500,7 @@
       },
       "company": {
         "title": "Công ty đứng sau giải pháp này",
+        "metaDescription": "{name} trên BeyondPilot: thông tin công ty và các giải pháp AI được đăng trong danh bạ của GenAI Fund.",
         "view": "Xem công ty",
         "solutions": "Giải pháp",
         "noSolutions": "Chưa có giải pháp nào được đăng.",
@@ -4627,6 +4688,8 @@
         "builtWith": "Xây dựng bằng",
         "builtWithPlaceholder": "Thêm mô hình, công cụ hoặc framework",
         "builtWithHint": "Nhấn Enter sau mỗi mục, tối đa {max}.",
+        "offers": "Ưu đãi",
+        "offersHint": "Những gì khách hàng nhận kèm, ví dụ credit cloud. Chọn tối đa {max}: từ danh sách của GenAI Fund, hoặc ưu đãi bạn tự viết cho tổ chức.",
         "removeTag": "Bỏ {name}",
         "industries": "Ngành",
         "industriesPlaceholder": "Thêm ngành",
@@ -5078,7 +5141,7 @@
       "send": "Gửi lời nhắn",
       "cancel": "Hủy",
       "sentTitle": "Lời nhắn đang được gửi tới {name}",
-      "sentLead": "Bạn sẽ nhận email khi họ trả lời.",
+      "sentLead": "Bạn sẽ nhận email khi họ trả lời. Lời nhắn được lưu trong mục Lời nhắn đã gửi.",
       "done": "Xong",
       "waitingTitle": "Lời nhắn của bạn đang chờ {name}",
       "waitingLead": "Đã gửi {date}. Bạn có thể viết lại khi họ trả lời hoặc lời nhắn đóng.",
@@ -5087,7 +5150,8 @@
       "senderName": "Tên của bạn",
       "senderNameHint": "Email của bạn vẫn được ẩn.",
       "senderNameRequired": "Hãy cho biết ai đang viết.",
-      "messageHint": "Bạn đang xây dựng hoặc tuyển gì, và cần gì ở họ."
+      "messageHint": "Bạn đang xây dựng hoặc tuyển gì, và cần gì ở họ.",
+      "seeSent": "Xem lời nhắn đã gửi"
     },
     "mine": {
       "metaTitle": "Hồ sơ nhân lực · BeyondPilot",
@@ -5283,6 +5347,58 @@
       "skillsSuggested": "Gợi ý:",
       "headlineHint": "Ví dụ: Kỹ sư ML xây dựng AI xử lý tài liệu cho ngân hàng.",
       "urlHint": "Địa chỉ đầy đủ, bắt đầu bằng https://."
+    },
+    "sent": {
+      "metaTitle": "Lời nhắn đã gửi",
+      "title": "Lời nhắn đã gửi",
+      "lead": "Những gì bạn đã viết cho mọi người trong mục nhân lực AI, và câu trả lời của họ. Email chỉ được chia sẻ khi họ chấp nhận.",
+      "listTitle": "Đã gửi",
+      "waiting": "{count} đang chờ",
+      "list": "Những người bạn đã viết cho",
+      "status": {
+        "pending": "Đang chờ",
+        "accepted": "Đã chấp nhận",
+        "declined": "Đã từ chối",
+        "closed": "Đã đóng, chưa trả lời"
+      },
+      "heading": {
+        "pending": "Lời nhắn của bạn đang chờ {name}",
+        "accepted": "{name} đã chấp nhận lời nhắn của bạn",
+        "declined": "{name} đã từ chối lời nhắn của bạn",
+        "closed": "Lời nhắn gửi {name} đã đóng, chưa được trả lời"
+      },
+      "yourMessage": "Lời nhắn của bạn",
+      "sentOn": "Gửi {date}",
+      "signedAs": "Ký tên {name}",
+      "answeredOn": "Trả lời {date}",
+      "closedOn": "Đóng {date}",
+      "address": {
+        "pending": "Email của họ chỉ được chia sẻ nếu họ chấp nhận",
+        "accepted": "Email của họ không còn khả dụng",
+        "declined": "Không email nào được chia sẻ",
+        "closed": "Không email nào được chia sẻ"
+      },
+      "note": {
+        "pending": "{name} có đến {date} để trả lời. Bạn sẽ nhận email khi họ trả lời. Nếu không có câu trả lời, lời nhắn đóng vào ngày đó và bạn có thể viết lại.",
+        "accepted": "{name} cũng đã nhận email của bạn. Từ đây hai bên trao đổi qua email; BeyondPilot không chuyển tiếp cuộc trò chuyện.",
+        "declined": "{name} không tiếp tục với lời nhắn này. Bạn có thể viết lại cho họ, hoặc tìm người khác trong mục nhân lực AI.",
+        "closed": "{name} đã không trả lời trong 14 ngày. Bạn có thể viết lại cho họ, hoặc tìm người khác trong mục nhân lực AI."
+      },
+      "earlier": "Lời nhắn trước đây gửi {name}",
+      "viewProfile": "Xem hồ sơ",
+      "write": "Viết email",
+      "writeTo": "Viết cho {email}",
+      "browse": "Xem nhân lực AI",
+      "none": {
+        "title": "Bạn chưa viết cho ai",
+        "lead": "Khi bạn liên hệ một người trong mục nhân lực AI, lời nhắn của bạn và câu trả lời của họ sẽ hiện ở đây."
+      },
+      "how": {
+        "title": "Một lời nhắn đi như thế nào",
+        "write": "Bạn viết cho một người từ hồ sơ của họ, dưới tên của bạn.",
+        "answer": "Họ có 14 ngày để chấp nhận hoặc từ chối, và bạn nhận câu trả lời qua email.",
+        "share": "Nếu họ chấp nhận, mỗi bên nhận được email của bên kia."
+      }
     }
   },
   "Form": {
@@ -6557,14 +6673,6 @@
       "title": "Không có bài toán nào khớp",
       "clear": "Xóa từ khóa và bộ lọc"
     },
-    "pagination": {
-      "label": "Các trang bài toán",
-      "previous": "Trước",
-      "next": "Sau",
-      "goToPrevious": "Về trang trước",
-      "goToNext": "Sang trang sau",
-      "page": "Trang {page}"
-    },
     "publish": {
       "title": "Doanh nghiệp bạn có bài toán AI có thể giải?",
       "description": "Xem các đề xuất ở một nơi và chọn nhà cung cấp cho giai đoạn thí điểm.",
@@ -6975,9 +7083,7 @@
         "title": "Đã lưu, AI không còn gợi ý",
         "about": "Chúng vẫn ở đây cho tới khi có người bỏ lưu."
       },
-      "emptyDirect": "Chưa giải pháp nào đáp ứng yêu cầu chính.",
-      "more": "Xem thêm {count}",
-      "fewer": "Thu gọn"
+      "emptyDirect": "Chưa giải pháp nào đáp ứng yêu cầu chính."
     },
     "status": {
       "met": "Đáp ứng",
@@ -7150,20 +7256,20 @@
       "PROPOSAL_USE_CASE_CLOSED": "Use case này không còn nhận proposal.",
       "PROPOSAL_OWN_USE_CASE": "Tổ chức của bạn đã đăng use case này nên không gửi proposal cho nó được.",
       "PROPOSAL_NO_ORGANIZATION": "Hãy tham gia hoặc lập một tổ chức để gửi proposal.",
-      "PROPOSAL_ORGANIZATION_NOT_APPROVED": "Tổ chức của bạn gửi được proposal sau khi GenAI Fund duyệt.",
       "PROPOSAL_NOT_FOUND": "Không có proposal này.",
       "PROPOSAL_ALREADY_SENT": "Proposal này đã gửi nên không sửa được nữa.",
       "PROPOSAL_SOLUTION_REQUIRED": "Hãy chọn giải pháp bạn gửi.",
       "PROPOSAL_SOLUTION_NOT_FOUND": "Hãy chọn một giải pháp của tổ chức bạn.",
       "PROPOSAL_APPROACH_REQUIRED": "Hãy nói giải pháp giải quyết use case này như thế nào.",
-      "PROPOSAL_PROFILE_INCOMPLETE": "Hãy hoàn thiện hồ sơ trước: tiêu đề, một vai trò, một kỹ năng và vài dòng về bạn.",
+      "PROPOSAL_CONTACT_REQUIRED": "Hãy thêm tên, quốc gia và số điện thoại của bạn trước.",
       "PROPOSAL_TEAM_INVALID": "Nhóm chỉ gồm thành viên của tổ chức bạn, mỗi người một lần, và tối đa một người liên hệ chính.",
       "PROPOSAL_TEAM_INCOMPLETE": "Hãy thêm ít nhất một người, ghi vai trò cho từng người và chọn người liên hệ chính.",
       "PROPOSAL_PDF_REQUIRED": "Hãy thêm proposal dưới dạng PDF.",
       "PROPOSAL_CHANGED_MEANWHILE": "Có người đã lưu proposal này trong lúc bạn xem. Hãy tải lại để thấy thay đổi.",
       "REQUEST_INVALID": "Có chỗ trong proposal chưa hợp lệ. Hãy kiểm tra và thử lại.",
       "unknown": "Đã có lỗi. Hãy thử lại sau một lát.",
-      "PROPOSAL_EDIT_WINDOW_CLOSED": "Đã hết thời gian chỉnh sửa đề xuất này nên các thay đổi của bạn chưa được lưu."
+      "PROPOSAL_EDIT_WINDOW_CLOSED": "Đã hết thời gian chỉnh sửa đề xuất này nên các thay đổi của bạn chưa được lưu.",
+      "PROPOSAL_ALREADY_IN_ORGANIZATION": "Bạn đã thuộc một tổ chức."
     },
     "received": {
       "admin": {
@@ -7225,7 +7331,9 @@
         "edited": "Đã chỉnh sửa {date}",
         "sent": "Gửi {date}",
         "crumbs": "Vị trí",
-        "useCases": "Bài toán"
+        "useCases": "Bài toán",
+        "pending": "Chờ duyệt",
+        "sentBy": "Người gửi"
       },
       "edited": "Đã chỉnh sửa {date}"
     },
@@ -7260,7 +7368,7 @@
       "steps": {
         "organization": "Tổ chức",
         "solutions": "Giải pháp AI",
-        "profile": "Hồ sơ của bạn",
+        "details": "Thông tin của bạn",
         "team": "Đội ngũ",
         "pdf": "PDF proposal",
         "review": "Xem lại"
@@ -7288,14 +7396,14 @@
           "add": "{count, plural, other {Thêm # giải pháp}}"
         }
       },
-      "profile": {
-        "saveAndReturn": "Lưu và quay lại sau",
-        "back": "Quay lại",
-        "continue": "Tiếp tục",
-        "readiness": {
-          "missing": "Hãy bổ sung những mục này trước khi tiếp tục",
-          "note": "Proposal hiển thị tiêu đề, vai trò, kỹ năng và phần giới thiệu của bạn cho tổ chức nhận. Họ giữ một bản sao như lúc bạn gửi."
-        }
+      "details": {
+        "name": "Tên",
+        "email": "Email",
+        "country": "Quốc gia",
+        "countryPlaceholder": "Chọn quốc gia",
+        "phone": "Số điện thoại",
+        "phoneInvalid": "Dùng chữ số và mã quốc gia, ví dụ +84 912 345 678.",
+        "required": "Bắt buộc"
       },
       "team": {
         "count": "{count, plural, other {# thành viên}}",
@@ -7334,19 +7442,11 @@
         "nothing": "Chưa có gì.",
         "primary": "Đầu mối liên hệ",
         "missing": "Hoàn tất các bước này trước khi gửi",
-        "confirm": "Tôi xác nhận những gì tôi gửi là chính xác và tôi được phép đưa chúng vào proposal thay mặt tổ chức của mình."
+        "confirm": "Tôi xác nhận những gì tôi gửi là chính xác và tôi được phép đưa chúng vào proposal thay mặt tổ chức của mình.",
+        "none": "Không có"
       },
       "blocked": {
-        "organization": "Đến tổ chức của tôi",
         "backToUseCase": "Quay lại use case",
-        "noOrganization": {
-          "title": "Bạn cần có tổ chức để gửi proposal",
-          "lead": "Proposal được gửi thay mặt một tổ chức. Hãy tạo hoặc tham gia một tổ chức rồi quay lại."
-        },
-        "notApproved": {
-          "title": "Tổ chức của bạn chưa được phê duyệt",
-          "lead": "Chỉ các tổ chức đã được GenAI Fund phê duyệt mới gửi được proposal. Bạn sẽ gửi được khi tổ chức của bạn được phê duyệt."
-        },
         "own": {
           "title": "Bạn không thể gửi proposal cho use case của chính mình",
           "lead": "Use case này do tổ chức của bạn đăng."
@@ -7372,12 +7472,24 @@
         "banner": "Tổ chức đăng bài toán sẽ thấy các thay đổi của bạn ngay khi bạn lưu. Thời hạn chỉnh sửa kết thúc vào {until}.",
         "note": "Sẽ không có gì được lưu cho đến khi bạn chọn Lưu thay đổi.",
         "reviewLead": "Kiểm tra lại các thay đổi. Chúng sẽ thay thế nội dung bạn đã gửi ngay khi bạn lưu.",
-        "profileHint": "Bản sao hồ sơ gửi kèm đề xuất vẫn giữ nguyên như lúc bạn gửi. Các thay đổi trong hồ sơ của bạn sẽ không được sao chép.",
         "unsaved": "Chưa lưu các thay đổi",
         "pristine": "Chưa có thay đổi",
         "save": "Lưu thay đổi",
         "cancel": "Hủy",
         "saved": "Đã lưu các thay đổi của đề xuất."
+      },
+      "organization": {
+        "kind": "Ai gửi proposal",
+        "individual": "Một mình tôi",
+        "team": "Một nhóm",
+        "teamName": "Tên nhóm",
+        "country": "Quốc gia",
+        "countryPlaceholder": "Chọn quốc gia",
+        "teamSize": "Quy mô nhóm",
+        "website": "Website (không bắt buộc)",
+        "required": "Bắt buộc.",
+        "existing": "Công ty tôi đã có trên BeyondPilot",
+        "continue": "Tiếp tục"
       }
     },
     "view": {

@@ -1,10 +1,13 @@
 "use client";
 
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
+import { useAppForm } from "@/components/form/app-form";
 import {
   Dialog,
   DialogContent,
@@ -14,18 +17,17 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { RequiredMark } from "@/components/composites/required-mark";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { sendTalentEnquiry, type SendTalentEnquiry } from "@/lib/api/generated";
+import { siteRoutes } from "@/lib/site";
 
 import { talentError } from "./talent-errors";
 
 type EnquiryTopic = SendTalentEnquiry["topic"];
 
-const topics: readonly EnquiryTopic[] = ["project", "role", "other"];
+const topics = ["project", "role", "other"] as const satisfies readonly EnquiryTopic[];
 const MAX_MESSAGE = 2000;
 
 type TalentEnquiryProps = {
@@ -48,33 +50,31 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
   const t = useTranslations("Talent.enquiry");
   const notify = useNotify();
   const router = useRouter();
-  const [topic, setTopic] = useState<EnquiryTopic>("project");
-  const [message, setMessage] = useState("");
-  const [signature, setSignature] = useState(senderName);
-  const [pending, setPending] = useState(false);
-  const [invalid, setInvalid] = useState(false);
-  const [unsigned, setUnsigned] = useState(false);
   const [sent, setSent] = useState(false);
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const missingName = !signature.trim();
-    const missingMessage = !message.trim();
-    setUnsigned(missingName);
-    setInvalid(missingMessage);
-    if (missingName || missingMessage) {
-      return;
-    }
-    setPending(true);
-    try {
-      await sendTalentEnquiry({ path: { slug }, body: { senderName: signature, topic, message } });
-      setSent(true);
-    } catch (error) {
-      notify.error(talentError(error));
-    } finally {
-      setPending(false);
-    }
-  }
+  const form = useAppForm({
+    defaultValues: { signature: senderName, topic: "project" as EnquiryTopic, message: "" },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({
+        signature: z.string().refine((text) => text.trim() !== "", t("senderNameRequired")),
+        topic: z.enum(topics),
+        message: z.string().refine((text) => text.trim() !== "", t("required")),
+      }),
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await sendTalentEnquiry({
+          path: { slug },
+          body: { senderName: value.signature, topic: value.topic, message: value.message },
+        });
+        setSent(true);
+      } catch (error) {
+        notify.error(talentError(error));
+      }
+    },
+  });
+  const pending = useStore(form.store, (state) => state.isSubmitting);
 
   function close(next: boolean) {
     if (pending) {
@@ -96,80 +96,73 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
               <DialogDescription>{t("sentLead")}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
+              <Button prominence="secondary" size="lg" href={siteRoutes.talentSent}>
+                {t("seeSent")}
+              </Button>
               <Button size="lg" onClick={() => close(false)}>
                 {t("done")}
               </Button>
             </DialogFooter>
           </div>
         ) : (
-          <form noValidate onSubmit={submit} className="flex flex-col gap-4">
+          <form
+            id={form.formId}
+            noValidate
+            className="flex flex-col gap-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void form.handleSubmit();
+            }}
+          >
             <DialogHeader>
               <DialogTitle>{t("dialogTitle", { name })}</DialogTitle>
               <DialogDescription>{t("dialogLead", { name })}</DialogDescription>
             </DialogHeader>
-            <Field data-invalid={unsigned || undefined}>
-              <FieldLabel htmlFor="talent-enquiry-name">
-                {t("senderName")}
-                <RequiredMark />
-              </FieldLabel>
-              <Input
-                id="talent-enquiry-name"
-                autoComplete="name"
-                maxLength={120}
-                value={signature}
-                onChange={(event) => setSignature(event.target.value)}
-                aria-invalid={unsigned || undefined}
-                aria-describedby="talent-enquiry-name-hint"
-              />
-              {unsigned ? (
-                <FieldError id="talent-enquiry-name-hint">{t("senderNameRequired")}</FieldError>
-              ) : (
-                <FieldDescription id="talent-enquiry-name-hint">
-                  {t("senderNameHint", { name })}
-                </FieldDescription>
+            <form.AppField name="signature">
+              {(field) => (
+                <field.TextField
+                  label={t("senderName")}
+                  requiredMark
+                  autoComplete="name"
+                  maxLength={120}
+                  description={t("senderNameHint", { name })}
+                />
               )}
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="talent-enquiry-topic">
-                {t("topic")}
-                <RequiredMark />
-              </FieldLabel>
-              <NativeSelect
-                id="talent-enquiry-topic"
-                className="w-full"
-                value={topic}
-                onChange={(event) => setTopic(event.target.value as EnquiryTopic)}
-              >
-                {topics.map((value) => (
-                  <NativeSelectOption key={value} value={value}>
-                    {t(`topics.${value}`)}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
-            </Field>
-            <Field data-invalid={invalid || undefined}>
-              <FieldLabel htmlFor="talent-enquiry">
-                {t("message")}
-                <RequiredMark />
-              </FieldLabel>
-              <Textarea
-                id="talent-enquiry"
-                rows={5}
-                maxLength={MAX_MESSAGE}
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-                aria-invalid={invalid || undefined}
-                aria-describedby="talent-enquiry-hint"
-              />
-              {invalid ? (
-                <FieldError id="talent-enquiry-hint">{t("required")}</FieldError>
-              ) : (
-                <FieldDescription id="talent-enquiry-hint">{t("messageHint")}</FieldDescription>
+            </form.AppField>
+            <form.Field name="topic">
+              {(field) => (
+                <Field>
+                  <FieldLabel htmlFor="talent-enquiry-topic">
+                    {t("topic")}
+                    <RequiredMark />
+                  </FieldLabel>
+                  <NativeSelect
+                    id="talent-enquiry-topic"
+                    className="w-full"
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(event) => field.handleChange(event.target.value as EnquiryTopic)}
+                  >
+                    {topics.map((value) => (
+                      <NativeSelectOption key={value} value={value}>
+                        {t(`topics.${value}`)}
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelect>
+                </Field>
               )}
-              <span className="text-right text-xs text-muted-foreground tabular-nums">
-                {message.length} / {MAX_MESSAGE}
-              </span>
-            </Field>
+            </form.Field>
+            <form.AppField name="message">
+              {(field) => (
+                <field.TextareaField
+                  label={t("message")}
+                  requiredMark
+                  rows={5}
+                  maxLength={MAX_MESSAGE}
+                  description={t("messageHint")}
+                />
+              )}
+            </form.AppField>
             <p id="talent-enquiry-send-note" className="text-sm text-muted-foreground">
               {t("hint")}
             </p>

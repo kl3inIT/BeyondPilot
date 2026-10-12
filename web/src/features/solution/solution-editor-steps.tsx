@@ -23,6 +23,7 @@ import { CodeCombobox } from "./code-combobox";
 import { CustomerDeploymentsEditor } from "./customer-deployments-editor";
 import { DeckUpload } from "./deck-upload";
 import { GalleryUpload, ImageUpload } from "./image-upload";
+import { OfferPicker } from "./offer-picker";
 import { deployments, focusAreas, industries, languages, maturities } from "./solution-codes";
 import {
   fieldId,
@@ -106,8 +107,14 @@ function about(field: keyof SolutionDraft, error: string | undefined, hint: bool
   return [error && `${id}-error`, hint && `${id}-hint`].filter(Boolean).join(" ") || undefined;
 }
 
-/** Step 1: what the solution is, how far it has come and what it is built with. */
-function BasicsStep({ draft, change, errorOf }: StepProps) {
+type BasicsStepProps = StepProps & {
+  solutionId: string;
+  /** True for an operator, whose new offer joins GenAI Fund's list; a member's is their organization's. */
+  operator: boolean;
+};
+
+/** Step 1: what the solution is, how far it has come, what it is built with and what it comes with. */
+function BasicsStep({ draft, change, errorOf, solutionId, operator }: BasicsStepProps) {
   const t = useTranslations("Solution.editor");
   const maturity = useVocabulary("maturity");
   const counter = (value: string, max: number) => t("counter", { count: value.length, max });
@@ -218,6 +225,21 @@ function BasicsStep({ draft, change, errorOf }: StepProps) {
           maxLength={limits.builtWithName}
           removeLabel={(name) => t("fields.removeTag", { name })}
           aria-describedby={about("builtWith", undefined, true)}
+        />
+      </EditorField>
+      <EditorField
+        field="offers"
+        label={t("fields.offers")}
+        optional={t("optional")}
+        hint={t("fields.offersHint", { max: limits.offers })}
+      >
+        <OfferPicker
+          id={fieldId("offers")}
+          solutionId={solutionId}
+          value={draft.offers}
+          onValueChange={(offers) => change({ offers })}
+          operator={operator}
+          aria-describedby={about("offers", undefined, true)}
         />
       </EditorField>
     </>

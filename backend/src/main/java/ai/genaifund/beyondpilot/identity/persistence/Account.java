@@ -129,6 +129,13 @@ public class Account {
 	}
 
 	/** Keeps the name a person already has; a provider's name only fills an empty one. */
+	/** Changes the name the account shows; a blank one changes nothing. */
+	public void rename(@Nullable String name) {
+		if (name != null && !name.isBlank()) {
+			displayName = name.strip();
+		}
+	}
+
 	public void nameIfUnnamed(@Nullable String name) {
 		if (displayName == null && name != null && !name.isBlank()) {
 			displayName = name.strip();

@@ -36,7 +36,6 @@ function OrganizationMark({ name, logoFileId, size = "default" }: OrganizationMa
         alt=""
         width={sides[size]}
         height={sides[size]}
-        unoptimized
         className={cn(box, "shrink-0 rounded-lg object-contain")}
         onError={() => setBroken(true)}
       />

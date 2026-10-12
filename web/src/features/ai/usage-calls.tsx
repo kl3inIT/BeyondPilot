@@ -3,7 +3,7 @@ import { getFormatter, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
-import { DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { AiUsageCallList } from "@/lib/api/generated";
@@ -12,7 +12,7 @@ import { siteRoutes } from "@/lib/site";
 import { taskNames, UsageHeader } from "./usage-page";
 import { usageCallsAddress, type UsageCallsSearch } from "./usage-search";
 import { UsageCallsToolbar } from "./usage-switches";
-import { PageSizeSelect } from "@/components/composites/page-size-select";
+import { ListFooter } from "@/components/composites/list-footer";
 
 /**
  * Admin › AI › Usage › Calls: every call to a model or an OCR service in the period, newest first:
@@ -102,8 +102,6 @@ async function UsageCallsPage({
         ),
     };
   });
-
-  const pages = Math.max(1, Math.ceil(calls.total / calls.pageSize));
   const first = (calls.page - 1) * calls.pageSize + 1;
   const pageHref = (number: number) =>
     usageCallsAddress(siteRoutes.adminAiUsageCalls, { ...search, page: number });
@@ -213,7 +211,7 @@ async function UsageCallsPage({
         {empty && <li>{empty}</li>}
       </ul>
 
-      <DataTableFooter
+      <ListFooter
         count={
           calls.total === 0
             ? t("count", { count: 0 })
@@ -224,17 +222,9 @@ async function UsageCallsPage({
               })
         }
         page={calls.page}
-        pages={pages}
+        pageSize={calls.pageSize}
+        total={calls.total}
         href={pageHref}
-        sizer={<PageSizeSelect size={calls.pageSize} total={calls.total} />}
-        labels={{
-          navigation: t("pagination.label"),
-          previous: t("pagination.previous"),
-          next: t("pagination.next"),
-          goToPrevious: t("pagination.goToPrevious"),
-          goToNext: t("pagination.goToNext"),
-          page: (number) => t("pagination.page", { page: number }),
-        }}
       />
     </div>
   );

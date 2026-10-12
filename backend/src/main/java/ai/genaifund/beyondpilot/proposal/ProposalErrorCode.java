@@ -107,9 +107,6 @@ public enum ProposalErrorCode implements ErrorCode {
 	NO_ORGANIZATION("PROPOSAL_NO_ORGANIZATION", ErrorCategory.NOT_PERMITTED,
 			"Join or set up an organization to send a proposal."),
 
-	ORGANIZATION_NOT_APPROVED("PROPOSAL_ORGANIZATION_NOT_APPROVED", ErrorCategory.NOT_PERMITTED,
-			"Your organization can send proposals once GenAI Fund has approved it."),
-
 	PROPOSAL_NOT_FOUND("PROPOSAL_NOT_FOUND", ErrorCategory.NOT_FOUND,
 			"There is no such proposal."),
 
@@ -119,14 +116,14 @@ public enum ProposalErrorCode implements ErrorCode {
 	APPROACH_REQUIRED("PROPOSAL_APPROACH_REQUIRED", ErrorCategory.VALIDATION,
 			"Say how the solution solves this use case."),
 
-	PROFILE_INCOMPLETE("PROPOSAL_PROFILE_INCOMPLETE", ErrorCategory.VALIDATION,
-			"Complete your profile first: a headline, a role, a skill and a short text about you."),
+	CONTACT_REQUIRED("PROPOSAL_CONTACT_REQUIRED", ErrorCategory.VALIDATION,
+			"Add your name, country and phone number first."),
 
 	TEAM_INVALID("PROPOSAL_TEAM_INVALID", ErrorCategory.VALIDATION,
 			"The team can name only members of your organization, each once, and at most one primary contact."),
 
 	TEAM_INCOMPLETE("PROPOSAL_TEAM_INCOMPLETE", ErrorCategory.VALIDATION,
-			"Name at least one person, give each a role and choose the primary contact."),
+			"Give each person on the team a role and choose the primary contact."),
 
 	PDF_REQUIRED("PROPOSAL_PDF_REQUIRED", ErrorCategory.VALIDATION,
 			"Add the proposal as a PDF."),

@@ -7,15 +7,8 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useNotify } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
@@ -78,74 +71,57 @@ function NewProgramDialog({ locale }: { locale: string }) {
         <PlusIcon aria-hidden="true" />
         {t("open")}
       </Button>
-      <Dialog
+      <FormDialog
         open={open}
         onOpenChange={(next) => {
           setOpen(next);
           if (!next) {
-            form.reset();
+            // The form starts again, so its address follows the name again.
             setSlugEdited(false);
           }
         }}
+        form={form}
+        title={t("title")}
+        description={t("lead")}
+        width="md"
+        submitLabel={t("submit")}
+        cancelLabel={t("cancel")}
       >
-        <DialogContent className="sm:max-w-md">
-          <form
-            noValidate
-            className="flex flex-col gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void form.handleSubmit();
-            }}
-          >
-            <DialogHeader>
-              <DialogTitle>{t("title")}</DialogTitle>
-              <DialogDescription>{t("lead")}</DialogDescription>
-            </DialogHeader>
-            <form.AppField
-              name="name"
-              listeners={{
-                onChange: ({ value }) => {
-                  if (!slugEdited) {
-                    form.setFieldValue("slug", slugify(value));
-                  }
-                },
-              }}
-            >
-              {(field) => <field.TextField label={t("name")} autoComplete="off" maxLength={120} />}
-            </form.AppField>
-            <form.AppField name="slug" listeners={{ onChange: () => setSlugEdited(true) }}>
-              {(field) => (
-                <field.TextField
-                  label={t("slug")}
-                  autoComplete="off"
-                  spellCheck={false}
-                  maxLength={60}
-                  description={t("slugHint", {
-                    address: `${publicSiteHost}${siteRoutes.programs}/${field.state.value || "…"}`,
-                  })}
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="type">
-              {(field) => (
-                <field.SelectField
-                  label={t("type")}
-                  placeholder={t("typePlaceholder")}
-                  options={programTypes.map((value) => ({ value, label: types(value) }))}
-                />
-              )}
-            </form.AppField>
-            <form.AppForm>
-              <DialogFooter>
-                <Button prominence="secondary" onClick={() => setOpen(false)}>
-                  {t("cancel")}
-                </Button>
-                <form.SubmitButton>{t("submit")}</form.SubmitButton>
-              </DialogFooter>
-            </form.AppForm>
-          </form>
-        </DialogContent>
-      </Dialog>
+        <form.AppField
+          name="name"
+          listeners={{
+            onChange: ({ value }) => {
+              if (!slugEdited) {
+                form.setFieldValue("slug", slugify(value));
+              }
+            },
+          }}
+        >
+          {(field) => <field.TextField label={t("name")} autoComplete="off" maxLength={120} />}
+        </form.AppField>
+        <form.AppField name="slug" listeners={{ onChange: () => setSlugEdited(true) }}>
+          {(field) => (
+            <field.TextField
+              label={t("slug")}
+              autoComplete="off"
+              spellCheck={false}
+              maxLength={60}
+              description={t("slugHint", {
+                address: `${publicSiteHost}${siteRoutes.programs}/${field.state.value || "…"}`,
+              })}
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="type">
+          {(field) => (
+            <field.SelectField
+              label={t("type")}
+              placeholder={t("typePlaceholder")}
+              options={programTypes.map((value) => ({ value, label: types(value) }))}
+            />
+          )}
+        </form.AppField>
+      </FormDialog>
     </>
   );
 }

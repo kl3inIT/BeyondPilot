@@ -7,7 +7,6 @@ import {
   chipOf,
   constraintsOf,
   coverageOf,
-  FOLDED_ROWS,
   grouped,
   groupView,
   hostOf,
@@ -269,51 +268,31 @@ describe("the sentence above the list", () => {
 });
 
 describe("a group in the list", () => {
-  const closed = { folds: true, opened: false, all: false };
+  const closed = { folds: true, opened: false };
 
   it("shows every row of the first two groups and of the small ones, however many", () => {
     for (const section of ["direct", "industry", "waiting", "kept"] as const) {
-      expect(groupView(section, 12, closed)).toEqual({
-        folds: false,
-        open: true,
-        shown: 12,
-        more: 0,
-      });
+      expect(groupView(section, 12, closed)).toEqual({ folds: false, open: true, shown: 12 });
     }
   });
 
-  it("folds the last group to its header until it is opened", () => {
-    expect(groupView("technology", 21, closed)).toEqual({
-      folds: true,
-      open: false,
-      shown: 0,
-      more: 0,
-    });
+  it("folds the last group to its header when it is closed", () => {
+    expect(groupView("technology", 21, closed)).toEqual({ folds: true, open: false, shown: 0 });
   });
 
-  it("shows the first rows of the opened group, and the rest on request", () => {
-    expect(groupView("technology", 21, { ...closed, opened: true })).toEqual({
+  it("shows every row of the opened last group", () => {
+    expect(groupView("technology", 21, { folds: true, opened: true })).toEqual({
       folds: true,
       open: true,
-      shown: FOLDED_ROWS,
-      more: 21 - FOLDED_ROWS,
-    });
-    expect(groupView("technology", 21, { folds: true, opened: true, all: true })).toMatchObject({
       shown: 21,
-      more: 0,
-    });
-    expect(groupView("technology", 3, { ...closed, opened: true })).toMatchObject({
-      shown: 3,
-      more: 0,
     });
   });
 
   it("does not fold where folding is off, as on the shortlist", () => {
-    expect(groupView("technology", 21, { folds: false, opened: false, all: false })).toEqual({
+    expect(groupView("technology", 21, { folds: false, opened: false })).toEqual({
       folds: false,
       open: true,
       shown: 21,
-      more: 0,
     });
   });
 });

@@ -4,6 +4,7 @@ import {
   addMember,
   addSolutions,
   bodyOf,
+  detailsComplete,
   incompleteSteps,
   removeMember,
   setPrimary,
@@ -21,7 +22,12 @@ const full: ProposalValues = {
 
 describe("proposal draft", () => {
   it("starts empty before anything was saved", () => {
-    expect(valuesOf(null)).toEqual({ solutionIds: [], approach: "", deck: null, team: [] });
+    expect(valuesOf(null)).toEqual({
+      solutionIds: [],
+      approach: "",
+      deck: null,
+      team: [],
+    });
   });
 
   it("sends the version the form read", () => {
@@ -51,15 +57,28 @@ describe("proposal draft", () => {
     expect(setPrimary(team, "a2").map((member) => member.primary)).toEqual([false, true]);
   });
 
-  it("asks for roles and exactly one primary contact", () => {
-    expect(teamComplete([])).toBe(false);
+  it("takes no team, or asks for roles and exactly one primary contact", () => {
+    expect(teamComplete([])).toBe(true);
     expect(teamComplete([{ accountId: "a1", role: " ", primary: true }])).toBe(false);
     expect(teamComplete(full.team)).toBe(true);
   });
 
   it("lists the steps that lack content", () => {
     expect(incompleteSteps(full, true)).toEqual([]);
-    expect(incompleteSteps(valuesOf(null), false)).toEqual(["solutions", "profile", "team", "pdf"]);
+    expect(incompleteSteps(valuesOf(null), true)).toEqual(["solutions", "pdf"]);
     expect(incompleteSteps({ ...full, approach: " " }, true)).toEqual(["solutions"]);
+    expect(incompleteSteps(full, false)).toEqual(["details"]);
+    expect(
+      incompleteSteps({ ...full, team: [{ accountId: "a1", role: "", primary: true }] }, true),
+    ).toEqual(["team"]);
+  });
+
+  it("asks for a name, a country and a number written with its country code", () => {
+    const given = { name: "Lan Tran", country: "VN", phone: "+84 912 345 678" };
+    expect(detailsComplete(given)).toBe(true);
+    expect(detailsComplete({ ...given, name: " " })).toBe(false);
+    expect(detailsComplete({ ...given, country: "" })).toBe(false);
+    expect(detailsComplete({ ...given, phone: "" })).toBe(false);
+    expect(detailsComplete({ ...given, phone: "call me" })).toBe(false);
   });
 });

@@ -2,10 +2,10 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { z } from "zod";
 
-import { Button } from "@/components/actions/button";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { useAppForm } from "@/components/form/app-form";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useNotify } from "@/hooks/use-notify";
@@ -24,30 +24,38 @@ function AccountContactForm({ account }: { account: Me }) {
   const countryName = useCountryName();
   const notify = useNotify();
   const router = useRouter();
-  const [country, setCountry] = useState(account.country ?? "");
-  const [phone, setPhone] = useState(account.phone ?? "");
-  const [pending, setPending] = useState(false);
-  const badPhone = !PHONE.test(phone.trim());
 
-  async function save(event: React.FormEvent) {
-    event.preventDefault();
-    if (badPhone) {
-      return;
-    }
-    setPending(true);
-    try {
-      await updateMyContact({ body: { country: country || null, phone: phone.trim() || null } });
-      notify.success("Account.saved");
-      router.refresh();
-    } catch {
-      notify.error("Account.failed");
-    } finally {
-      setPending(false);
-    }
-  }
+  const form = useAppForm({
+    defaultValues: { country: account.country ?? "", phone: account.phone ?? "" },
+    // The number is checked as it is typed, so a letter is refused where it is written.
+    validators: {
+      onChange: z.object({
+        country: z.string(),
+        phone: z.string().trim().regex(PHONE, t("phoneInvalid")),
+      }),
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await updateMyContact({
+          body: { country: value.country || null, phone: value.phone.trim() || null },
+        });
+        notify.success("Account.saved");
+        router.refresh();
+      } catch {
+        notify.error("Account.failed");
+      }
+    },
+  });
 
   return (
-    <form onSubmit={save} className="flex flex-col gap-5 rounded-2xl border bg-card p-5 md:p-6">
+    <form
+      id={form.formId}
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.handleSubmit();
+      }}
+      className="flex flex-col gap-5 rounded-2xl border bg-card p-5 md:p-6"
+    >
       <div className="grid gap-5 sm:grid-cols-2">
         <Field>
           <FieldLabel htmlFor="account-name">{t("name")}</FieldLabel>
@@ -66,44 +74,45 @@ function AccountContactForm({ account }: { account: Me }) {
         </Field>
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field>
-          <FieldLabel htmlFor="account-country">{t("country")}</FieldLabel>
-          <NativeSelect
-            id="account-country"
-            className="w-full"
-            autoComplete="country"
-            value={country}
-            onChange={(event) => setCountry(event.target.value)}
-          >
-            <NativeSelectOption value="">{t("countryPlaceholder")}</NativeSelectOption>
-            {countryCodes.map((code) => (
-              <NativeSelectOption key={code} value={code}>
-                {countryName(code)}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        </Field>
-        <Field data-invalid={badPhone || undefined}>
-          <FieldLabel htmlFor="account-phone">{t("phone")}</FieldLabel>
-          <Input
-            id="account-phone"
-            type="tel"
-            autoComplete="tel"
-            inputMode="tel"
-            maxLength={40}
-            value={phone}
-            onChange={(event) => setPhone(event.target.value)}
-            aria-invalid={badPhone || undefined}
-            aria-describedby="account-phone-hint"
-          />
-          <FieldDescription id="account-phone-hint">{t("phoneHint")}</FieldDescription>
-          {badPhone && <FieldError>{t("phoneInvalid")}</FieldError>}
-        </Field>
+        <form.Field name="country">
+          {(field) => (
+            <Field>
+              <FieldLabel htmlFor="account-country">{t("country")}</FieldLabel>
+              <NativeSelect
+                id="account-country"
+                className="w-full"
+                autoComplete="country"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(event) => field.handleChange(event.target.value)}
+              >
+                <NativeSelectOption value="">{t("countryPlaceholder")}</NativeSelectOption>
+                {countryCodes.map((code) => (
+                  <NativeSelectOption key={code} value={code}>
+                    {countryName(code)}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            </Field>
+          )}
+        </form.Field>
+        <form.AppField name="phone">
+          {(field) => (
+            <field.TextField
+              label={t("phone")}
+              type="tel"
+              autoComplete="tel"
+              inputMode="tel"
+              maxLength={40}
+              description={t("phoneHint")}
+            />
+          )}
+        </form.AppField>
       </div>
       <div>
-        <Button type="submit" pending={pending}>
-          {t("save")}
-        </Button>
+        <form.AppForm>
+          <form.SubmitButton>{t("save")}</form.SubmitButton>
+        </form.AppForm>
       </div>
     </form>
   );

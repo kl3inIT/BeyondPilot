@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import { notFound } from "next/navigation";
-import { hasLocale, NextIntlClientProvider } from "next-intl";
+import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { Analytics } from "@/components/layout/analytics";
 import { Providers } from "@/components/layout/providers";
+import { MessageScope } from "@/i18n/message-scope";
 import { routing } from "@/i18n/routing";
 
 import "../globals.css";
@@ -50,10 +51,10 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <NextIntlClientProvider>
+        <MessageScope>
           <Providers>{children}</Providers>
           <Analytics />
-        </NextIntlClientProvider>
+        </MessageScope>
       </body>
     </html>
   );

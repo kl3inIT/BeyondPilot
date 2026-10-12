@@ -13,11 +13,12 @@ import { useNotify } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
 import { Tick } from "@/features/usecase/wizard-fields";
 import { WizardShell } from "@/features/usecase/wizard-shell";
-import { TalentForm } from "@/features/talent/talent-form";
 import {
   saveUseCaseProposal,
   getUseCaseProposalForm,
   sendUseCaseProposal,
+  updateMyContact,
+  type Me,
   type ProposingOrganization,
   type SolutionSummary,
   type TalentProfile,
@@ -28,15 +29,18 @@ import { proposalViewRoute, proposeToUseCaseRoute as proposeRoute, briefRoute } 
 
 import {
   bodyOf,
+  detailsComplete,
   incompleteSteps,
-  profileComplete,
+  phoneValid,
   steps,
   valuesOf,
+  type Details,
   type ProposalValues,
   type Step,
 } from "./proposal-draft";
 import { codeOfProposalError, describeProposalError } from "./proposal-errors";
 import { ProposalOrganizationStep } from "./proposal-organization-step";
+import { ProposalDetailsStep } from "./proposal-details-step";
 import { ProposalReviewStep } from "./proposal-review-step";
 import { ProposalSolutionsStep } from "./proposal-solutions-step";
 import { ProposalTeamStep } from "./proposal-team-step";
@@ -47,18 +51,19 @@ const AUTOSAVE_MS = 800;
 type ProposalWizardProps = {
   useCaseId: string;
   form: UseCaseProposalForm;
-  /** The caller's organization; the wizard is only drawn for one that is approved. */
-  organization: ProposingOrganization;
+  /** The caller's organization, approved or waiting for review; none for a person who belongs to none yet. */
+  organization: ProposingOrganization | null;
   /** What the organization offers, to resolve the solutions the proposal holds. */
   solutions: SolutionSummary[];
   /** The caller's talent profile, or none yet. */
   profile: TalentProfile | null;
-  /** The name of the caller's account, to start a profile with. */
-  accountName: string;
+  /** The caller's account, whose name, address, country and number the proposal is sent with. */
+  account: Me;
 };
 
 /**
- * The six steps in which a member of an approved organization writes a proposal to a use case. What is
+ * The six steps in which a member of an organization, one still waiting for GenAI Fund's review included, writes a
+ * proposal to a use case. What is
  * written is saved as it changes, so nothing is lost and anyone of the organization can pick the draft
  * up; the last step reviews it and sends it.
  *
@@ -72,7 +77,7 @@ function ProposalWizard({
   organization,
   solutions,
   profile,
-  accountName,
+  account,
 }: ProposalWizardProps) {
   const t = useTranslations("UseCaseProposal.wizard");
   const notify = useNotify();
@@ -92,6 +97,15 @@ function ProposalWizard({
   const [checked, setChecked] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [sending, setSending] = useState(false);
+  // What the account keeps comes first; the talent profile fills what it lacks, and everything stays editable.
+  const [details, setDetails] = useState<Details>(() => ({
+    name: account.displayName ?? profile?.name ?? "",
+    country: account.country ?? profile?.country ?? "",
+    phone: account.phone ?? "",
+  }));
+  const [detailsChanged, setDetailsChanged] = useState(
+    () => !account.displayName || !account.country,
+  );
   const [edited, setEdited] = useState(false);
 
   const latest = useRef(values);
@@ -177,12 +191,49 @@ function ProposalWizard({
   }, []);
 
   const stepIndex = steps.indexOf(step);
-  const complete = profileComplete(profile);
-  const missing = incompleteSteps(values, complete);
+  const missing = incompleteSteps(values, detailsComplete(details));
   const done = (name: Step) =>
     name === "organization" || (name !== "review" && !missing.includes(name));
 
+  /** Keeps the details on the account; false when they cannot be kept yet. */
+  async function saveDetails(): Promise<boolean> {
+    if (!detailsChanged) {
+      return true;
+    }
+    if (!phoneValid(details.phone)) {
+      setChecked(true);
+      return false;
+    }
+    try {
+      await updateMyContact({
+        body: {
+          country: details.country || null,
+          phone: details.phone.trim() || null,
+          name: details.name.trim() || null,
+        },
+      });
+      setDetailsChanged(false);
+      return true;
+    } catch (error) {
+      notify.error(describeProposalError(error));
+      return false;
+    }
+  }
+
+  function changeDetails(next: Details) {
+    setDetails(next);
+    setDetailsChanged(true);
+    setEdited(true);
+  }
+
   async function go(target: Step) {
+    // Without an organization there is nothing to write yet.
+    if (!organization && target !== "organization") {
+      return;
+    }
+    if (step === "details" && target !== "details" && !(await saveDetails())) {
+      return;
+    }
     if (await flush()) {
       setChecked(false);
       setStep(target);
@@ -211,6 +262,9 @@ function ProposalWizard({
   async function saveChanges() {
     setSending(true);
     try {
+      if (!(await saveDetails())) {
+        return;
+      }
       const { data } = await saveUseCaseProposal({
         path: { useCaseId },
         body: bodyOf(latest.current, version.current),
@@ -241,6 +295,9 @@ function ProposalWizard({
   async function send() {
     setSending(true);
     try {
+      if (!(await saveDetails())) {
+        return;
+      }
       // A proposal that was never saved has no identity to send yet.
       if (proposalId.current === null) {
         dirty.current = true;
@@ -333,15 +390,17 @@ function ProposalWizard({
         </Alert>
       )}
 
-      {step === "profile" ? (
-        <h1 className="sr-only">{t("steps.profile")}</h1>
-      ) : (
-        <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}`)}</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}`)}</h1>
+
+      {step === "organization" && (
+        <ProposalOrganizationStep
+          useCaseId={useCaseId}
+          organization={organization}
+          accountName={account.displayName ?? account.email}
+        />
       )}
 
-      {step === "organization" && <ProposalOrganizationStep organization={organization} />}
-
-      {step === "solutions" && (
+      {organization && step === "solutions" && (
         <ProposalSolutionsStep
           catalog={catalog}
           organizationLogoFileId={organization.logoFileId}
@@ -354,23 +413,12 @@ function ProposalWizard({
         />
       )}
 
-      {step === "profile" && editing && (
-        <Alert>
-          <AlertDescription>{t("edit.profileHint")}</AlertDescription>
-        </Alert>
-      )}
-
-      {step === "profile" && (
-        <TalentForm
-          // A saved profile gets a fresh form, so it holds the new version.
-          key={profile ? `${profile.version}-${profile.status}` : "new"}
-          profile={profile}
-          suggestedName={accountName}
-          embedded={{
-            onBack: () => void go("solutions"),
-            onLeave: () => void leave(),
-            onContinue: () => void go("team"),
-          }}
+      {organization && step === "details" && (
+        <ProposalDetailsStep
+          details={details}
+          onDetails={changeDetails}
+          email={account.email}
+          checked={checked}
         />
       )}
 
@@ -402,13 +450,14 @@ function ProposalWizard({
         </Field>
       )}
 
-      {step === "review" && (
+      {organization && step === "review" && (
         <>
           <ProposalReviewStep
             organization={organization}
             values={values}
             catalog={catalog}
-            profile={profile}
+            details={details}
+            email={account.email}
             members={form.members}
             onEdit={(target) => void go(target)}
           />
@@ -437,7 +486,7 @@ function ProposalWizard({
         </>
       )}
 
-      {step !== "profile" && (
+      {organization && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
           <Button prominence="tertiary" size="lg" disabled={sending} onClick={() => void leave()}>
             {editing ? t("edit.cancel") : t("saveAndReturn")}

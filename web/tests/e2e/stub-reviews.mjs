@@ -2,6 +2,8 @@
 // talent profiles, as the operators' lists and their record pages read them. Nothing here changes: a
 // decision is answered by the test that makes it, and the page reads the same records again.
 
+import { offers } from "./stub-directories.mjs";
+
 const hour = 60 * 60 * 1000;
 const ago = (hours) => new Date(Date.now() - hours * hour).toISOString();
 const day = "2026-10-01T03:00:00Z";
@@ -251,6 +253,7 @@ function solution(id, name, status, more) {
       sizeBytes: 1258291,
     },
     images: [],
+    offers: [],
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],
@@ -563,6 +566,25 @@ const lists = {
  * nothing when the path is neither.
  */
 export function answerReview(url, account) {
+  // The list of offers an operator keeps. The picker reads its own from the browser, which a test answers.
+  if (url.pathname === "/api/solution/admin/offers") {
+    if (account?.role !== "operator") {
+      return [account ? 403 : 401, {}];
+    }
+    return [
+      200,
+      offers.map(({ fromGenAiFund, ...offer }, index) => ({
+        ...offer,
+        // The second is an organization's own.
+        organizationId: fromGenAiFund ? null : "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+        organizationName: fromGenAiFund ? null : "Pocket Policy",
+        // The first goes with two solutions, so it cannot be deleted; the second with none.
+        solutions: index === 0 ? 2 : 0,
+        version: 0,
+        updatedAt: day,
+      })),
+    ];
+  }
   // The editor of an operator reads a draft, which no list of submitted solutions holds, and the organizations.
   const draft = url.pathname.match(/^\/api\/solution\/admin\/solutions\/([^/]+)\/draft$/);
   const organizations = url.pathname === "/api/solution/admin/solutions/organizations";

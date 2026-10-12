@@ -46,6 +46,67 @@ test.describe("solutions directory", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("a solution that comes with offers carries a gift that leads to where they are claimed", async ({
+    page,
+    isMobile,
+  }) => {
+    await page.goto("/solutions");
+    const card = (name: string) =>
+      page.getByRole("article").filter({ has: page.getByRole("link", { name, exact: true }) });
+
+    // One offer: the gift is the link itself, to another site in a new tab, and the card says the offer.
+    const claim = card("Policy Chat").getByRole("link", {
+      name: /^Claim the offer: \$1,000 in cloud credits/,
+    });
+    await expect(claim).toHaveAttribute("href", "https://offers.example/cloud-credits");
+    await expect(claim).toHaveAttribute("target", "_blank");
+    await expect(claim).toHaveAttribute("rel", "noopener noreferrer nofollow");
+    await expect(card("Policy Chat").getByText("$1,000 in cloud credits")).toBeVisible();
+    // The gift is its own link above the one that covers the card, so a press on it does not open the solution.
+    await expect(claim).toBeVisible();
+
+    // Several: the card names the first and counts the rest, and the gift opens their list, each a link.
+    await expect(
+      card("Clinic Triage").getByRole("paragraph").filter({ hasText: "$1,000 in cloud credits" }),
+    ).toContainText("+1 more");
+    // The count opens the offers the line does not name: under the pointer, or on a tap where there is none.
+    const more = card("Clinic Triage").getByRole("button", { name: "+1 more offers" });
+    const listed = page.getByRole("link", { name: /^Ten hours of onboarding support/ });
+    await (isMobile ? more.tap() : more.hover());
+    await expect(listed).toHaveAttribute("href", "https://offers.example/onboarding");
+    // It closes the way it opened.
+    await (isMobile ? more.tap() : page.mouse.move(0, 0));
+    await expect(listed).toHaveCount(0);
+    // The gift shows how many there are, so it is not read as a link to one.
+    await expect(card("Clinic Triage").getByRole("button", { name: "2 offers" })).toHaveText("2");
+    await card("Clinic Triage").getByRole("button", { name: "2 offers" }).click();
+    const second = page.getByRole("link", { name: /^Ten hours of onboarding support/ });
+    await expect(second).toHaveAttribute("href", "https://offers.example/onboarding");
+    await expect(second).toHaveAttribute("target", "_blank");
+    await expectNoSeriousA11yViolations(page);
+    await page.keyboard.press("Escape");
+    await expect(page).toHaveURL("/solutions");
+
+    // A solution that comes with none has no gift.
+    await expect(card("Claims Vision").getByRole("link", { name: /Claim the offer/ })).toHaveCount(
+      0,
+    );
+    await expect(card("Claims Vision").getByRole("button", { name: /offers$/ })).toHaveCount(0);
+
+    // Its page names each offer beside the action that claims it.
+    await page.goto("/solutions/clinic-triage");
+    const offers = page.getByRole("region", { name: "Offers" });
+    await expect(offers.getByText("Ten hours of onboarding support")).toBeVisible();
+    await expect(
+      offers.getByRole("link", { name: /^Claim the offer: \$1,000 in cloud credits/ }),
+    ).toHaveAttribute("href", "https://offers.example/cloud-credits");
+    await expect(offers.getByRole("link", { name: /^Claim the offer/ })).toHaveCount(2);
+    await expectNoSeriousA11yViolations(page);
+
+    await page.goto("/solutions/claims-vision");
+    await expect(page.getByRole("region", { name: "Offers" })).toHaveCount(0);
+  });
+
   test("search, a facet and the order are the address, and the server answers them", async ({
     page,
     isMobile,
@@ -276,7 +337,7 @@ test.describe("solutions directory", () => {
     await expect(page).toHaveTitle("Pocket Policy · BeyondPilot");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pocket Policy");
     await expect(
-      page.locator('header img[src$="/0b6f2f0e-5d0e-4c57-9a55-6f6f3c1d2a10"]'),
+      page.locator('header img[src*="0b6f2f0e-5d0e-4c57-9a55-6f6f3c1d2a10"]'),
     ).toBeVisible();
     await expect(page.getByText("Company · Singapore")).toBeVisible();
     await expect(page.getByText("Insurance, Banking and finance")).toBeVisible();

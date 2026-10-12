@@ -1,29 +1,23 @@
 "use client";
 
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { MoreHorizontalIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { FormDialog } from "@/components/composites/form-dialog";
+import { useAppForm } from "@/components/form/app-form";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { useNotify } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -50,66 +44,47 @@ function InviteReviewer({ programId, programName }: { programId: string; program
   const notify = useNotify();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [invalid, setInvalid] = useState(false);
-  const [pending, setPending] = useState(false);
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
-      setInvalid(true);
-      return;
-    }
-    setPending(true);
-    try {
-      await inviteReviewer({ path: { programId }, body: { email: email.trim() } });
-      notify.success("Review.reviewers.invite.sent", { email: email.trim() });
-      setOpen(false);
-      setEmail("");
-      router.refresh();
-    } catch (error) {
-      notify.error(errorKey(error));
-    } finally {
-      setPending(false);
-    }
-  }
+  const form = useAppForm({
+    defaultValues: { email: "" },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({
+        email: z
+          .string()
+          .trim()
+          .regex(/^\S+@\S+\.\S+$/, t("invalid")),
+      }),
+    },
+    onSubmit: async ({ value }) => {
+      const email = value.email.trim();
+      try {
+        await inviteReviewer({ path: { programId }, body: { email } });
+        notify.success("Review.reviewers.invite.sent", { email });
+        setOpen(false);
+        router.refresh();
+      } catch (error) {
+        notify.error(errorKey(error));
+      }
+    },
+  });
 
   return (
     <>
       <Button onClick={() => setOpen(true)}>{t("open")}</Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-            <DialogHeader>
-              <DialogTitle>{t("title", { program: programName })}</DialogTitle>
-              <DialogDescription>{t("description")}</DialogDescription>
-            </DialogHeader>
-            <Field data-invalid={invalid || undefined}>
-              <FieldLabel htmlFor="reviewer-email">{t("email")}</FieldLabel>
-              <Input
-                id="reviewer-email"
-                type="email"
-                autoComplete="off"
-                value={email}
-                aria-invalid={invalid || undefined}
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                  setInvalid(false);
-                }}
-              />
-              {invalid && <FieldError>{t("invalid")}</FieldError>}
-            </Field>
-            <DialogFooter>
-              <Button prominence="secondary" type="button" onClick={() => setOpen(false)}>
-                {t("cancel")}
-              </Button>
-              <Button type="submit" pending={pending}>
-                {t("send")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        form={form}
+        title={t("title", { program: programName })}
+        description={t("description")}
+        submitLabel={t("send")}
+        cancelLabel={t("cancel")}
+      >
+        <form.AppField name="email">
+          {(field) => <field.TextField label={t("email")} type="email" autoComplete="off" />}
+        </form.AppField>
+      </FormDialog>
     </>
   );
 }
@@ -186,7 +161,8 @@ function ReviewerRowActions({
   );
 }
 
-type Draft = { name: string; description: string };
+/** The most criteria a program is judged on. */
+const MAX_CRITERIA = 12;
 
 /**
  * Edits a program's judging criteria in a dialog, in order, and saves them together. They are
@@ -200,138 +176,114 @@ function CriteriaEditor({
   criteria: ReviewCriterion[];
 }) {
   const t = useTranslations("Review.criteria");
-  const form = useTranslations("Form");
   const notify = useNotify();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [drafts, setDrafts] = useState<Draft[]>([]);
-  const [pending, setPending] = useState(false);
+
+  const form = useAppForm({
+    defaultValues: {
+      criteria:
+        criteria.length > 0
+          ? criteria.map((criterion) => ({
+              name: criterion.name,
+              description: criterion.description ?? "",
+            }))
+          : [{ name: "", description: "" }],
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await saveReviewCriteria({
+          path: { programId },
+          body: {
+            criteria: value.criteria.map((draft) => ({
+              name: draft.name.trim(),
+              description: draft.description.trim() === "" ? null : draft.description.trim(),
+            })),
+          },
+        });
+        notify.success("Review.criteria.saved");
+        setOpen(false);
+        router.refresh();
+      } catch (error) {
+        notify.error(errorKey(error));
+      }
+    },
+  });
+  const drafts = useStore(form.store, (state) => state.values.criteria);
   const filled = drafts.length > 0 && drafts.every((draft) => draft.name.trim() !== "");
-
-  function start() {
-    setDrafts(
-      criteria.length > 0
-        ? criteria.map((criterion) => ({
-            name: criterion.name,
-            description: criterion.description ?? "",
-          }))
-        : [{ name: "", description: "" }],
-    );
-    setOpen(true);
-  }
-
-  async function save() {
-    setPending(true);
-    try {
-      await saveReviewCriteria({
-        path: { programId },
-        body: {
-          criteria: drafts.map((draft) => ({
-            name: draft.name.trim(),
-            description: draft.description.trim() === "" ? null : draft.description.trim(),
-          })),
-        },
-      });
-      notify.success("Review.criteria.saved");
-      setOpen(false);
-      router.refresh();
-    } catch (error) {
-      notify.error(errorKey(error));
-    } finally {
-      setPending(false);
-    }
-  }
 
   return (
     <>
-      <Button prominence="secondary" size="sm" onClick={start}>
+      <Button prominence="secondary" size="sm" onClick={() => setOpen(true)}>
         {criteria.length > 0 ? t("edit") : t("add")}
       </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>{t("dialogTitle")}</DialogTitle>
-            <DialogDescription>{t("dialogDescription")}</DialogDescription>
-          </DialogHeader>
-          <ol className="flex flex-col gap-3 overflow-y-auto">
-            {drafts.map((draft, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="w-5 text-sm text-muted-foreground tabular-nums">{index + 1}</span>
-                <div className="flex flex-1 flex-col gap-3">
-                  <Field>
-                    <FieldLabel htmlFor={`criterion-${index}-name`}>{t("nameLabel")}</FieldLabel>
-                    <Input
-                      id={`criterion-${index}-name`}
-                      aria-describedby={`criterion-${index}-name-hint`}
-                      value={draft.name}
-                      maxLength={80}
-                      onChange={(event) =>
-                        setDrafts(
-                          drafts.map((item, at) =>
-                            at === index ? { ...item, name: event.target.value } : item,
-                          ),
-                        )
-                      }
-                    />
-                    <FieldDescription id={`criterion-${index}-name-hint`}>
-                      {t("nameHint")}
-                    </FieldDescription>
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor={`criterion-${index}-description`}>
-                      {t("descriptionLabel")}
-                      <span className="font-normal text-muted-foreground">{form("optional")}</span>
-                    </FieldLabel>
-                    <Input
-                      id={`criterion-${index}-description`}
-                      aria-describedby={`criterion-${index}-description-hint`}
-                      value={draft.description}
-                      maxLength={300}
-                      onChange={(event) =>
-                        setDrafts(
-                          drafts.map((item, at) =>
-                            at === index ? { ...item, description: event.target.value } : item,
-                          ),
-                        )
-                      }
-                    />
-                    <FieldDescription id={`criterion-${index}-description-hint`}>
-                      {t("descriptionHint")}
-                    </FieldDescription>
-                  </Field>
-                </div>
-                <IconButton
-                  aria-label={t("remove", { number: index + 1 })}
-                  prominence="tertiary"
-                  size="sm"
-                  disabled={drafts.length === 1}
-                  onClick={() => setDrafts(drafts.filter((_, at) => at !== index))}
-                >
-                  <Trash2Icon aria-hidden="true" />
-                </IconButton>
-              </li>
-            ))}
-          </ol>
-          <Button
-            prominence="tertiary"
-            size="sm"
-            className="self-start"
-            disabled={drafts.length >= 12}
-            onClick={() => setDrafts([...drafts, { name: "", description: "" }])}
-          >
-            <PlusIcon aria-hidden="true" />
-            {t("addOne")}
-          </Button>
-          <DialogFooter>
-            <Button prominence="secondary" onClick={() => setOpen(false)}>
-              {t("cancel")}
-            </Button>
-            <Button pending={pending} disabled={!filled} onClick={save}>
-              {t("save")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        form={form}
+        title={t("dialogTitle")}
+        description={t("dialogDescription")}
+        width="xl"
+        submitLabel={t("save")}
+        cancelLabel={t("cancel")}
+        submitDisabled={!filled}
+      >
+        <form.Field name="criteria" mode="array">
+          {(list) => (
+            <>
+              <ol className="flex flex-col gap-3">
+                {list.state.value.map((_, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="w-5 text-sm text-muted-foreground tabular-nums">
+                      {index + 1}
+                    </span>
+                    <div className="flex flex-1 flex-col gap-3">
+                      <form.AppField name={`criteria[${index}].name`}>
+                        {(field) => (
+                          <field.TextField
+                            label={t("nameLabel")}
+                            maxLength={80}
+                            description={t("nameHint")}
+                          />
+                        )}
+                      </form.AppField>
+                      <form.AppField name={`criteria[${index}].description`}>
+                        {(field) => (
+                          <field.TextField
+                            label={t("descriptionLabel")}
+                            optional
+                            maxLength={300}
+                            description={t("descriptionHint")}
+                          />
+                        )}
+                      </form.AppField>
+                    </div>
+                    <IconButton
+                      aria-label={t("remove", { number: index + 1 })}
+                      prominence="tertiary"
+                      size="sm"
+                      disabled={list.state.value.length === 1}
+                      onClick={() => list.removeValue(index)}
+                    >
+                      <Trash2Icon aria-hidden="true" />
+                    </IconButton>
+                  </li>
+                ))}
+              </ol>
+              <Button
+                prominence="tertiary"
+                size="sm"
+                className="self-start"
+                disabled={list.state.value.length >= MAX_CRITERIA}
+                onClick={() => list.pushValue({ name: "", description: "" })}
+              >
+                <PlusIcon aria-hidden="true" />
+                {t("addOne")}
+              </Button>
+            </>
+          )}
+        </form.Field>
+      </FormDialog>
     </>
   );
 }

@@ -1,25 +1,17 @@
 "use client";
 
+import { useStore } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useId, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { ReasonDialog } from "@/components/composites/reason-dialog";
 import { reviewState } from "@/components/composites/review-status";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Textarea } from "@/components/ui/textarea";
+import { useAppForm } from "@/components/form/app-form";
 import { useNotify } from "@/hooks/use-notify";
-import { useShortcuts } from "@/hooks/use-shortcuts";
 import { getPathname } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import {
@@ -69,14 +61,21 @@ function SolutionReview({ solution, nextHref }: SolutionReviewProps) {
   const router = useRouter();
   const locale = useLocale();
   const [open, setOpen] = useState<Exclude<Decision, "approve"> | null>(null);
-  const [sendBackReason, setSendBackReason] = useState("");
-  const sendBackId = useId();
   const [pending, setPending] = useState<Decision | null>(null);
   // Set at the first press, before the pending state has rendered, so presses in one tick decide once.
   const deciding = useRef(false);
   const state = reviewState(solution);
   const waiting = state === "in_review";
   const { id, name } = solution;
+
+  const sendBack = useAppForm({
+    defaultValues: { reason: "" },
+    onSubmit: ({ value }) =>
+      decide("sendBack", () =>
+        sendBackSolution({ path: { id }, body: { reason: value.reason.trim() } }),
+      ),
+  });
+  const sendBackReason = useStore(sendBack.store, (form) => form.values.reason);
 
   async function decide(kind: Decision, run: () => Promise<unknown>) {
     if (deciding.current) {
@@ -105,55 +104,26 @@ function SolutionReview({ solution, nextHref }: SolutionReviewProps) {
   }
 
   const approve = () => decide("approve", () => approveSolution({ path: { id } }));
-  // A key does nothing while a decision is on its way, so one press is one decision.
-  const idle = pending === null;
-  useShortcuts({
-    a: waiting && idle ? approve : undefined,
-    s: idle && waiting ? () => setOpen("sendBack") : undefined,
-  });
 
   const dialogs = (
     <>
-      {open === "sendBack" && (
-        <Dialog open onOpenChange={(next) => !next && pending === null && setOpen(null)}>
-          <DialogContent showCloseButton={false} className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>{t("sendBackTitle", { name })}</DialogTitle>
-              <DialogDescription>{t("sendBackLead")}</DialogDescription>
-            </DialogHeader>
-            <Field>
-              <FieldLabel htmlFor={sendBackId}>{t("sendBackLabel")}</FieldLabel>
-              <Textarea
-                id={sendBackId}
-                rows={4}
-                maxLength={MAX_REASON}
-                value={sendBackReason}
-                onChange={(event) => setSendBackReason(event.target.value)}
-              />
-            </Field>
-            <DialogFooter>
-              <Button
-                prominence="secondary"
-                disabled={pending !== null}
-                onClick={() => setOpen(null)}
-              >
-                {t("cancel")}
-              </Button>
-              <Button
-                pending={pending === "sendBack"}
-                disabled={sendBackReason.trim() === ""}
-                onClick={() =>
-                  void decide("sendBack", () =>
-                    sendBackSolution({ path: { id }, body: { reason: sendBackReason.trim() } }),
-                  )
-                }
-              >
-                {t("sendBackConfirm")}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
+      <FormDialog
+        open={open === "sendBack"}
+        onOpenChange={(next) => !next && setOpen(null)}
+        form={sendBack}
+        title={t("sendBackTitle", { name })}
+        description={t("sendBackLead")}
+        width="md"
+        submitLabel={t("sendBackConfirm")}
+        cancelLabel={t("cancel")}
+        submitDisabled={sendBackReason.trim() === ""}
+      >
+        <sendBack.AppField name="reason">
+          {(field) => (
+            <field.TextareaField label={t("sendBackLabel")} rows={4} maxLength={MAX_REASON} />
+          )}
+        </sendBack.AppField>
+      </FormDialog>
       {open === "reject" && (
         <ReasonDialog
           open
@@ -260,14 +230,13 @@ function SolutionReview({ solution, nextHref }: SolutionReviewProps) {
       </Button>
       <Button
         className="w-full"
-        prominence="tertiary"
+        prominence="secondary"
         tone="danger"
         onClick={() => setOpen("reject")}
       >
         {t("reject")}
       </Button>
       {dialogs}
-      <p className="text-xs text-muted-foreground">{t("keys")}</p>
     </div>
   );
 }

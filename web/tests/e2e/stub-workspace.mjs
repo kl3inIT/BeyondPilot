@@ -172,6 +172,7 @@ function solution(id, name, status, more) {
       sizeBytes: 1258291,
     },
     images: [],
+    offers: [],
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],
@@ -293,6 +294,65 @@ function profile(name, slug, status, more) {
   };
 }
 
+const linh = "7c2b9f6e-1d43-4f0a-9a57-3e8d5b1c6a20";
+
+/** What a sender wrote to one person, with what became of it. */
+function sentEnquiry(id, recipient, status, message, more = {}) {
+  return {
+    id,
+    profileId: recipient.profileId,
+    recipientName: recipient.name,
+    recipientHeadline: recipient.headline,
+    recipientSlug: recipient.slug,
+    recipientEmail: null,
+    senderName: "Đạt Phan",
+    topic: "project",
+    message,
+    status,
+    createdAt: day,
+    answeredAt: status === "pending" ? null : day,
+    closesAt: status === "pending" ? "2026-10-20T03:00:00Z" : null,
+    ...more,
+  };
+}
+
+const linhTran = {
+  profileId: linh,
+  name: "Linh Tran",
+  headline: "ML engineer building document AI for banks",
+  slug: "linh-tran",
+};
+
+/** The messages an account sent through talent profiles: one that waits, then the answered ones. */
+const sent = {
+  operator: [
+    sentEnquiry(
+      "a1f0c5d2-6b7e-4c88-9d10-2f3e4a5b6c71",
+      linhTran,
+      "pending",
+      "Could we talk this week?",
+    ),
+    sentEnquiry(
+      "b2e1d6c3-7c8f-4d99-8e21-3a4f5b6c7d82",
+      {
+        profileId: "8d3c0a7f-2e54-4a1b-8b68-4f9e6c2d7b31",
+        name: "Tran Quoc Bao",
+        headline: "AI consultant",
+        slug: null,
+      },
+      "accepted",
+      "Would you advise our analytics team?",
+      { recipientEmail: "bao.tran@example.com", topic: "role" },
+    ),
+    sentEnquiry(
+      "c3f2e7d4-8d90-4eaa-9f32-4b5a6c7d8e93",
+      linhTran,
+      "declined",
+      "An OCR pilot for claims forms?",
+    ),
+  ],
+};
+
 /** The talent profile of the accounts that have one, with the messages sent through it. */
 const talent = {
   operator: {
@@ -383,8 +443,10 @@ export function answerWorkspace(url, session) {
     "/api/organization/mine",
     "/api/organization/mine/members",
     "/api/solution/mine",
+    "/api/solution/offers/mine",
     "/api/usecase/mine",
     "/api/talent/mine",
+    "/api/talent/mine/sent",
     "/api/introduction/mine/received",
   ];
   if (!known.includes(pathname) && !pathname.startsWith("/api/solution/mine/")) {
@@ -426,6 +488,9 @@ export function answerWorkspace(url, session) {
   if (pathname === "/api/talent/mine") {
     return [200, talent[session] ?? { profile: null, enquiries: [] }];
   }
+  if (pathname === "/api/talent/mine/sent") {
+    return [200, { items: sent[session] ?? [] }];
+  }
   if (pathname === "/api/organization/mine/members") {
     if (!role) {
       return refused(403, "ORGANIZATION_MEMBERSHIP_REQUIRED");
@@ -453,6 +518,23 @@ export function answerWorkspace(url, session) {
   if (pathname === "/api/usecase/mine") {
     // Anyone who belongs to an approved organization may read its use cases; the stub has none.
     return role ? [200, { items: [] }] : refused(403, "USECASE_ENTERPRISE_REQUIRED");
+  }
+  if (pathname === "/api/solution/offers/mine") {
+    // One offer the organization wrote, which one of its solutions comes with, so it cannot be deleted.
+    return [
+      200,
+      role
+        ? [
+            {
+              id: "0ffe7a11-0000-4000-8000-000000000002",
+              title: "Ten hours of onboarding support",
+              url: "https://offers.example/onboarding",
+              solutions: 1,
+              version: 0,
+            },
+          ]
+        : [],
+    ];
   }
   if (pathname === "/api/solution/mine") {
     // A person without an organization has no solutions, and is not refused.

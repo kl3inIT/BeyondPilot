@@ -103,11 +103,10 @@ public class UseCaseProposal {
 		this.editedAt = at;
 	}
 
-	/** Makes the proposal sent, with the sender's profile as it is now. */
-	public void send(UUID sender, String talent, Instant at) {
+	/** Makes the proposal sent by this account. */
+	public void send(UUID sender, Instant at) {
 		this.status = SENT;
 		this.sentByAccountId = sender;
-		this.talent = talent;
 		this.sentAt = at;
 	}
 

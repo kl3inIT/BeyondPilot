@@ -15,6 +15,12 @@ import { answerReview } from "./stub-reviews.mjs";
 import { answerSearch, answerSearchAdmin } from "./stub-search.mjs";
 import { answerWorkspace } from "./stub-workspace.mjs";
 
+/** A PNG of one pixel, as in stored-files.ts. */
+const pixel = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+  "base64",
+);
+
 const accounts = {
   // Invited by GenAI Fund to judge the Tasco challenge (stub-judging.mjs).
   judge: {
@@ -359,6 +365,15 @@ createServer((request, response) => {
     return;
   }
 
+  // A stored file, read by the image optimizer on the server (the browser's reads are answered by the
+  // test, with page.route): a one-pixel PNG stands for any logo or cover.
+  if (url.pathname.startsWith("/api/storage/files/")) {
+    response.writeHead(200, {
+      "Content-Type": "image/png",
+      "Cache-Control": "public, max-age=31536000, immutable",
+    });
+    return response.end(pixel);
+  }
   if (url.pathname === "/api/identity/me") {
     return json(response, account ? 200 : 401, account ?? {});
   }

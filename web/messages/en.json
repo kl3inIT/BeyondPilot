@@ -8,6 +8,7 @@
     "backedBy": "Funded by",
     "genaiFund": "GenAI Fund",
     "skipToContent": "Skip to content",
+    "loading": "Loading",
     "notifications": "Notifications",
     "nav": {
       "label": "Main navigation",
@@ -26,6 +27,7 @@
       "signOutFailed": "We could not sign you out. Try again.",
       "organization": "My organization",
       "talentProfile": "Talent profile",
+      "talentSent": "Messages you sent",
       "admin": "Admin",
       "applications": "My applications",
       "reviews": "Reviews",
@@ -483,6 +485,7 @@
       "auditLog": "Audit log",
       "organizations": "Organizations",
       "solutions": "AI solutions",
+      "offers": "Offers",
       "talent": "AI talent",
       "introductions": "Introductions",
       "review": "Review",
@@ -834,14 +837,6 @@
       "dayAndTime": "{day}, {time}",
       "never": "Never",
       "count": "{count, plural, one {# account} other {# accounts}}",
-      "pagination": {
-        "label": "Pages of accounts",
-        "previous": "Previous",
-        "next": "Next",
-        "goToPrevious": "Go to the previous page",
-        "goToNext": "Go to the next page",
-        "page": "Page {page}"
-      },
       "actions": {
         "open": "Actions for {name}",
         "makeOperator": "Make operator…",
@@ -952,7 +947,11 @@
           "deployment_withdraw": "Withdrew a customer deployment",
           "deployment_restore": "Restored a customer deployment",
           "enrich": "Filled a solution from public sources",
-          "back": "Wrote what GenAI Fund says of a solution"
+          "back": "Wrote what GenAI Fund says of a solution",
+          "offers_choose": "Chose the offers of a solution",
+          "offer_create": "Added an offer",
+          "offer_update": "Changed an offer",
+          "offer_delete": "Deleted an offer"
         },
         "introduction": {
           "reply": "Replied to a request for an introduction",
@@ -1082,7 +1081,11 @@
           "deployment_withdraw": "Withdrew the customer deployment <resource></resource>",
           "deployment_restore": "Restored the customer deployment <resource></resource>",
           "enrich": "Filled the solution <resource></resource> from public sources",
-          "back": "Wrote what GenAI Fund says of the solution <resource></resource>"
+          "back": "Wrote what GenAI Fund says of the solution <resource></resource>",
+          "offers_choose": "Chose the offers of the solution <resource></resource>",
+          "offer_create": "Added the offer <resource></resource>",
+          "offer_update": "Changed the offer <resource></resource>",
+          "offer_delete": "Deleted the offer <resource></resource>"
         },
         "introduction": {
           "reply": "Replied to the request for an introduction about <resource></resource>",
@@ -1454,15 +1457,14 @@
         "featured": "Featured",
         "since": "Featured {day}",
         "feature": "Feature",
-        "unfeature": "Stop featuring",
-        "hint": "A featured solution comes first when the public directory opens, until a reader searches, filters or sorts; its card says Featured."
+        "unfeature": "Stop featuring"
       },
       "review": {
         "open": "Review",
         "approve": "Approve",
-        "sendBack": "Send back…",
-        "reject": "Reject…",
-        "takeDown": "Take down…",
+        "sendBack": "Send back",
+        "reject": "Reject",
+        "takeDown": "Take down",
         "restore": "Restore",
         "sendBackTitle": "Send {name} back?",
         "sendBackLead": "The owners read what you write and send it again. They are emailed.",
@@ -1481,8 +1483,7 @@
         "message": "Note (optional)",
         "messageHint": "They read this word for word.",
         "cancel": "Cancel",
-        "back": "Back",
-        "keys": "Keys: A approve · S send back"
+        "back": "Back"
       },
       "detail": {
         "back": "All solutions",
@@ -1571,8 +1572,25 @@
           "funding": "Such as Seed."
         }
       },
+      "offers": {
+        "title": "Offers",
+        "lead": "What the solution comes with, shown on its card and page. Its owners choose these in their editor too.",
+        "field": "Offers",
+        "hint": "Up to {max}, from the list of offers.",
+        "save": "Save offers",
+        "saved": "Offers saved for {name}."
+      },
       "actions": {
         "organization": "Open the organization"
+      }
+    },
+    "offers": {
+      "metaTitle": "Offers · BeyondPilot",
+      "title": "Offers",
+      "lead": "GenAI Fund's list first, then what each organization wrote for its own solutions. A change shows on every solution that comes with the offer.",
+      "genAiFund": "GenAI Fund",
+      "columns": {
+        "writer": "Written by"
       }
     },
     "talent": {
@@ -2481,15 +2499,7 @@
           "who": "Who and when"
         },
         "requirement": "Requirement {position}",
-        "count": "{count, plural, one {# disagreement} other {# disagreements}}",
-        "pagination": {
-          "label": "Pages of disagreements",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
-        }
+        "count": "{count, plural, one {# disagreement} other {# disagreements}}"
       },
       "tabs": {
         "limits": "Limits",
@@ -2637,14 +2647,6 @@
         "empty": {
           "title": "No call in this period",
           "description": "What was asked and answered is never kept."
-        },
-        "pagination": {
-          "label": "Pages of calls",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
         }
       }
     },
@@ -2764,14 +2766,6 @@
         "empty": {
           "title": "No call in this period",
           "description": "What was asked is never kept."
-        },
-        "pagination": {
-          "label": "Pages of calls",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
         }
       },
       "confirm": {
@@ -4297,7 +4291,12 @@
       "SOLUTION_IMAGE_NOT_USABLE": "This image cannot be used. Upload it again.",
       "linkNotCopied": "The link was not copied. Try again.",
       "SOLUTION_NOT_APPROVED": "Only an approved solution that is not taken down can be taken down.",
-      "SOLUTION_NOT_TAKEN_DOWN": "This solution is not taken down."
+      "SOLUTION_NOT_TAKEN_DOWN": "This solution is not taken down.",
+      "SOLUTION_OFFER_NOT_FOUND": "This offer no longer exists. Reload the page.",
+      "SOLUTION_OFFER_TITLE_TAKEN": "Another offer already reads the same.",
+      "SOLUTION_OFFER_IN_USE": "A solution still comes with this offer. Take it off those solutions first.",
+      "SOLUTION_OFFER_CHANGED_MEANWHILE": "Someone else saved this offer in the meantime. Reload the page and make your changes again.",
+      "SOLUTION_OFFER_NOT_USABLE": "One of the chosen offers no longer exists. Reload the page and choose again."
     },
     "done": {
       "saved": "Solution saved.",
@@ -4346,6 +4345,67 @@
       "ownEdit": "Edit this solution",
       "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}",
       "backing": "Confirmed by GenAI Fund:"
+    },
+    "offers": {
+      "label": "Offer:",
+      "title": "Offers",
+      "claim": "Claim offer",
+      "claimNamed": "Claim the offer: {offer} (opens in a new tab)",
+      "several": "{count} offers",
+      "more": "+{count} more",
+      "moreOffers": "+{count} more offers",
+      "newTab": "opens in a new tab",
+      "picker": {
+        "placeholder": "Choose offers",
+        "noMatch": "No offer matches.",
+        "remove": "Remove {name}",
+        "add": "New offer…",
+        "fromGenAiFund": "{title} (GenAI Fund)"
+      },
+      "form": {
+        "newTitle": "New offer",
+        "editTitle": "Edit offer",
+        "title": "Offer",
+        "titleTaken": "Another offer already reads the same.",
+        "url": "Link",
+        "urlInvalid": "Enter a full address that starts with https://.",
+        "cancel": "Cancel",
+        "create": "Add offer",
+        "save": "Save"
+      },
+      "done": {
+        "created": "{name} added.",
+        "saved": "{name} saved.",
+        "deleted": "{name} deleted."
+      },
+      "fromGenAiFund": "From GenAI Fund",
+      "manage": {
+        "title": "Offers",
+        "create": "New offer",
+        "columns": {
+          "offer": "Offer",
+          "url": "Claimed at",
+          "solutions": "Solutions",
+          "actions": "Actions"
+        },
+        "solutions": "{count, plural, =0 {No solution comes with it} one {# solution} other {# solutions}}",
+        "openNamed": "Actions for {name}",
+        "actions": {
+          "edit": "Edit…",
+          "delete": "Delete…"
+        },
+        "empty": {
+          "title": "No offers yet",
+          "description": "Add what a solution comes with, then choose it on the solution.",
+          "own": "Write what your solutions come with, such as a pilot package, then choose it on a solution."
+        },
+        "confirmDelete": {
+          "title": "Delete {name}?",
+          "lead": "No solution comes with this offer. It is deleted for good.",
+          "confirm": "Delete offer",
+          "cancel": "Cancel"
+        }
+      }
     },
     "filters": {
       "search": "Search AI solutions",
@@ -4440,6 +4500,7 @@
       },
       "company": {
         "title": "The company behind this solution",
+        "metaDescription": "{name} on BeyondPilot: the company and the AI solutions it lists in GenAI Fund’s directory.",
         "view": "View company",
         "solutions": "Solutions",
         "noSolutions": "No solution is listed yet.",
@@ -4627,6 +4688,8 @@
         "builtWith": "Built with",
         "builtWithPlaceholder": "Add a model, tool or framework",
         "builtWithHint": "Press Enter after each one, up to {max}.",
+        "offers": "Offers",
+        "offersHint": "What a customer gets with it, such as cloud credits. Choose up to {max}: from GenAI Fund's list, or one you write for your organization.",
         "removeTag": "Remove {name}",
         "industries": "Industries",
         "industriesPlaceholder": "Add an industry",
@@ -5078,7 +5141,7 @@
       "send": "Send message",
       "cancel": "Cancel",
       "sentTitle": "Your message is on its way to {name}",
-      "sentLead": "You get an email when they answer.",
+      "sentLead": "You get an email when they answer. The message stays in Messages you sent.",
       "done": "Done",
       "waitingTitle": "Your message waits for {name}",
       "waitingLead": "Sent {date}. You can write again once they answer or the message closes.",
@@ -5087,7 +5150,8 @@
       "senderName": "Your name",
       "senderNameHint": "Your email address stays hidden.",
       "senderNameRequired": "Say who is writing.",
-      "messageHint": "What you are building or hiring for, and what you need from them."
+      "messageHint": "What you are building or hiring for, and what you need from them.",
+      "seeSent": "See your messages"
     },
     "mine": {
       "metaTitle": "Talent profile · BeyondPilot",
@@ -5283,6 +5347,58 @@
       "skillsSuggested": "Suggested:",
       "headlineHint": "For example: ML engineer building document AI for banks.",
       "urlHint": "A full address that starts with https://."
+    },
+    "sent": {
+      "metaTitle": "Messages you sent",
+      "title": "Messages you sent",
+      "lead": "What you wrote to people in AI talent, and what they answered. An email address is shared only when they accept.",
+      "listTitle": "Sent",
+      "waiting": "{count} waiting",
+      "list": "People you wrote to",
+      "status": {
+        "pending": "Waiting",
+        "accepted": "Accepted",
+        "declined": "Declined",
+        "closed": "Closed unanswered"
+      },
+      "heading": {
+        "pending": "Your message waits for {name}",
+        "accepted": "{name} accepted your message",
+        "declined": "{name} declined your message",
+        "closed": "Your message to {name} closed unanswered"
+      },
+      "yourMessage": "Your message",
+      "sentOn": "Sent {date}",
+      "signedAs": "Signed as {name}",
+      "answeredOn": "Answered {date}",
+      "closedOn": "Closed {date}",
+      "address": {
+        "pending": "Their email address is shared only if they accept",
+        "accepted": "Their email address is no longer available",
+        "declined": "No email address was shared",
+        "closed": "No email address was shared"
+      },
+      "note": {
+        "pending": "{name} has until {date} to answer. You get an email when they do. Without an answer the message closes on that day, and you can write again.",
+        "accepted": "{name} received your email address too. From here you talk by email; BeyondPilot does not carry the conversation.",
+        "declined": "{name} will not take this message further. You can write to them again, or look for other people in AI talent.",
+        "closed": "{name} did not answer within 14 days. You can write to them again, or look for other people in AI talent."
+      },
+      "earlier": "Earlier messages to {name}",
+      "viewProfile": "View profile",
+      "write": "Write an email",
+      "writeTo": "Write to {email}",
+      "browse": "Browse AI talent",
+      "none": {
+        "title": "You have not written to anyone yet",
+        "lead": "When you contact someone in AI talent, your message and their answer show here."
+      },
+      "how": {
+        "title": "How a message travels",
+        "write": "You write to a person from their profile, under your name.",
+        "answer": "They have 14 days to accept or decline, and you are emailed their answer.",
+        "share": "If they accept, each of you receives the other's email address."
+      }
     }
   },
   "Form": {
@@ -6557,14 +6673,6 @@
       "title": "No use cases match",
       "clear": "Clear search and filters"
     },
-    "pagination": {
-      "label": "Pages of use cases",
-      "previous": "Previous",
-      "next": "Next",
-      "goToPrevious": "Go to the previous page",
-      "goToNext": "Go to the next page",
-      "page": "Page {page}"
-    },
     "publish": {
       "title": "Have a business problem AI could solve?",
       "description": "Review proposals in one place and pick providers for a pilot.",
@@ -6975,9 +7083,7 @@
         "title": "Saved, no longer suggested",
         "about": "They stay until someone unsaves them."
       },
-      "emptyDirect": "No solution meets the key requirement yet.",
-      "more": "Show {count} more",
-      "fewer": "Show fewer"
+      "emptyDirect": "No solution meets the key requirement yet."
     },
     "status": {
       "met": "Met",
@@ -7150,20 +7256,20 @@
       "PROPOSAL_USE_CASE_CLOSED": "This use case no longer takes proposals.",
       "PROPOSAL_OWN_USE_CASE": "Your organization posted this use case, so it cannot send a proposal to it.",
       "PROPOSAL_NO_ORGANIZATION": "Join or set up an organization to send a proposal.",
-      "PROPOSAL_ORGANIZATION_NOT_APPROVED": "Your organization can send proposals once GenAI Fund has approved it.",
       "PROPOSAL_NOT_FOUND": "There is no such proposal.",
       "PROPOSAL_ALREADY_SENT": "This proposal was sent, so it can no longer change.",
       "PROPOSAL_SOLUTION_REQUIRED": "Choose the solution you send.",
       "PROPOSAL_SOLUTION_NOT_FOUND": "Choose a solution of your organization.",
       "PROPOSAL_APPROACH_REQUIRED": "Say how the solution solves this use case.",
-      "PROPOSAL_PROFILE_INCOMPLETE": "Complete your profile first: a headline, a role, a skill and a short text about you.",
+      "PROPOSAL_CONTACT_REQUIRED": "Add your name, country and phone number first.",
       "PROPOSAL_TEAM_INVALID": "The team can name only members of your organization, each once, and at most one primary contact.",
       "PROPOSAL_TEAM_INCOMPLETE": "Name at least one person, give each a role and choose the primary contact.",
       "PROPOSAL_PDF_REQUIRED": "Add the proposal as a PDF.",
       "PROPOSAL_CHANGED_MEANWHILE": "Someone saved this proposal in the meantime. Reload it to see their changes.",
       "REQUEST_INVALID": "Something in the proposal is not valid. Check it and try again.",
       "unknown": "Something went wrong. Try again in a moment.",
-      "PROPOSAL_EDIT_WINDOW_CLOSED": "The time to edit this proposal has ended, so your changes were not saved."
+      "PROPOSAL_EDIT_WINDOW_CLOSED": "The time to edit this proposal has ended, so your changes were not saved.",
+      "PROPOSAL_ALREADY_IN_ORGANIZATION": "You already belong to an organization."
     },
     "received": {
       "admin": {
@@ -7225,7 +7331,9 @@
         "edited": "Edited {date}",
         "sent": "Sent {date}",
         "crumbs": "Where you are",
-        "useCases": "Use cases"
+        "useCases": "Use cases",
+        "pending": "Pending review",
+        "sentBy": "Sent by"
       },
       "edited": "Edited {date}"
     },
@@ -7260,7 +7368,7 @@
       "steps": {
         "organization": "Organization",
         "solutions": "AI solutions",
-        "profile": "Your profile",
+        "details": "Your details",
         "team": "Team",
         "pdf": "Proposal PDF",
         "review": "Review"
@@ -7288,14 +7396,14 @@
           "add": "{count, plural, one {Add # solution} other {Add # solutions}}"
         }
       },
-      "profile": {
-        "saveAndReturn": "Save and return later",
-        "back": "Back",
-        "continue": "Continue",
-        "readiness": {
-          "missing": "Add these before you continue",
-          "note": "A proposal shows your headline, role, skills and about text to the organization. They keep a copy of it as it is when you send."
-        }
+      "details": {
+        "name": "Name",
+        "email": "Email",
+        "country": "Country",
+        "countryPlaceholder": "Select a country",
+        "phone": "Phone",
+        "phoneInvalid": "Use digits with the country code, such as +84 912 345 678.",
+        "required": "Required"
       },
       "team": {
         "count": "{count, plural, one {# member} other {# members}}",
@@ -7334,19 +7442,11 @@
         "nothing": "Nothing yet.",
         "primary": "Primary contact",
         "missing": "Finish these steps before you send",
-        "confirm": "I confirm that what I am sending is accurate and that I may offer it for my organization."
+        "confirm": "I confirm that what I am sending is accurate and that I may offer it for my organization.",
+        "none": "None"
       },
       "blocked": {
-        "organization": "Go to my organization",
         "backToUseCase": "Back to the use case",
-        "noOrganization": {
-          "title": "You need an organization to send a proposal",
-          "lead": "A proposal is sent for an organization. Create one or join one, then come back."
-        },
-        "notApproved": {
-          "title": "Your organization is not approved yet",
-          "lead": "Only organizations GenAI Fund has approved can send proposals. You can send one once yours is approved."
-        },
         "own": {
           "title": "You cannot send a proposal to your own use case",
           "lead": "This use case was posted by your organization."
@@ -7372,12 +7472,24 @@
         "banner": "Your changes are visible to the organization that posted the use case once you save them. Editing closes {until}.",
         "note": "Nothing is saved until you choose Save changes.",
         "reviewLead": "Check your changes. They replace what you sent as soon as you save.",
-        "profileHint": "The profile copy sent with the proposal stays as it was when you sent it. Changes to your profile are not copied.",
         "unsaved": "Changes not saved yet",
         "pristine": "No changes yet",
         "save": "Save changes",
         "cancel": "Cancel",
         "saved": "Your changes to the proposal were saved."
+      },
+      "organization": {
+        "kind": "Who sends the proposal",
+        "individual": "Just me",
+        "team": "A team",
+        "teamName": "Team name",
+        "country": "Country",
+        "countryPlaceholder": "Choose a country",
+        "teamSize": "Team size",
+        "website": "Website (optional)",
+        "required": "Required.",
+        "existing": "My company is already on BeyondPilot",
+        "continue": "Continue"
       }
     },
     "view": {

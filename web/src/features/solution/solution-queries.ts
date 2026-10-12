@@ -7,13 +7,17 @@ import {
   getOrganization,
   getSharedSolution,
   getSolution,
+  listAdminOffers,
   listAdminSolutions,
   listCustomerDeployments,
   listMySolutions,
+  listOwnOffers,
   listSolutions,
   search as searchDirectory,
+  type AdminOffer,
   type AdminSolutionList,
   type MySolutions,
+  type OwnOffer,
   type PublicCustomerDeploymentList,
   type PublicOrganization,
   type PublicSolution,
@@ -73,6 +77,7 @@ export async function readSolutions(search: SolutionsSearch): Promise<PublicSolu
         customerDeployments: item.customerDeployments!,
         featured: item.featured!,
         backing: item.backing,
+        offers: item.offers,
       })),
     };
   }
@@ -164,6 +169,12 @@ export async function readMySolutions(): Promise<MySolutions> {
   return data;
 }
 
+/** The offers the caller's organization wrote for its solutions. Server only. */
+export async function readMyOffers(): Promise<OwnOffer[]> {
+  const { data } = await listOwnOffers(await sessionRequest());
+  return data;
+}
+
 /** One solution of the caller's organization, or `null`. Server only. */
 export async function readMySolution(id: string): Promise<Solution | null> {
   try {
@@ -200,6 +211,12 @@ export async function readAdminSolution(id: string): Promise<Solution | null> {
   } catch (error) {
     return absent(error);
   }
+}
+
+/** The list of offers GenAI Fund keeps, for the operator behind this request. Server only. */
+export async function readAdminOffers(): Promise<AdminOffer[]> {
+  const { data } = await listAdminOffers(await sessionRequest());
+  return data;
 }
 
 /** One draft as an operator's editor reads it, or `null`. Server only. */

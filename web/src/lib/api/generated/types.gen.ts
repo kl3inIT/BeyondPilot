@@ -180,6 +180,32 @@ export type AdminIntroductionList = {
 };
 
 /**
+ * An offer as an operator reads it: GenAI Fund's, or an organization's own.
+ */
+export type AdminOffer = {
+    id: string;
+    /**
+     * The organization that wrote it; null for an offer of GenAI Fund's list.
+     */
+    organizationId?: string | null;
+    /**
+     * The name of that organization; null for an offer of GenAI Fund's list.
+     */
+    organizationName?: string | null;
+    /**
+     * How many solutions come with it; it is deleted only when none does.
+     */
+    solutions: number;
+    title: string;
+    updatedAt: string;
+    url: string;
+    /**
+     * Sent back with a save, which is refused when the offer changed since.
+     */
+    version: number;
+};
+
+/**
  * One organization as an operator reviews it.
  */
 export type AdminOrganization = {
@@ -1066,7 +1092,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -1353,6 +1379,10 @@ export type ContactRequest = {
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
+    /**
+     * The name the account shows from now on; left out or blank keeps the one it has.
+     */
+    name?: string | null;
     /**
      * With its country code, such as +84 912 345 678.
      */
@@ -2879,6 +2909,25 @@ export type OcrSettings = {
 };
 
 /**
+ * An offer a solution comes with, such as cloud credits.
+ */
+export type Offer = {
+    /**
+     * True for an offer of GenAI Fund's list; false for one the organization wrote.
+     */
+    fromGenAiFund: boolean;
+    id: string;
+    /**
+     * The line that names it, such as "$1,000 in cloud credits".
+     */
+    title: string;
+    /**
+     * The https address where it is claimed.
+     */
+    url: string;
+};
+
+/**
  * An organization as the people who belong to it, and operators, see it.
  */
 export type Organization = {
@@ -3059,6 +3108,23 @@ export type OrganizationMembers = {
  */
 export type OrganizationSearch = {
     items: Array<OrganizationMatch>;
+};
+
+/**
+ * An offer an organization wrote for its solutions, as its members read it.
+ */
+export type OwnOffer = {
+    id: string;
+    /**
+     * How many of the organization's solutions come with it; it is deleted only when none does.
+     */
+    solutions: number;
+    title: string;
+    url: string;
+    /**
+     * Sent back with a save, which is refused when the offer changed since.
+     */
+    version: number;
 };
 
 /**
@@ -3451,7 +3517,7 @@ export type ProposalUseCase = {
  */
 export type ProposingOrganization = {
     /**
-     * Whether GenAI Fund approved it; one that is not cannot send a proposal.
+     * Whether GenAI Fund approved it; one that is not still sends proposals, which the organization that posted the use case sees marked as pending.
      */
     approved: boolean;
     id: string;
@@ -3492,6 +3558,24 @@ export type PublicCustomerDeploymentList = {
     page: number;
     pageSize: number;
     total: number;
+};
+
+/**
+ * An offer a solution comes with, as anyone reads it.
+ */
+export type PublicOffer = {
+    /**
+     * True for an offer of GenAI Fund's list, which its card marks; false for one the solution's organization wrote.
+     */
+    fromGenAiFund: boolean;
+    /**
+     * The line that names it, such as "$1,000 in cloud credits".
+     */
+    title: string;
+    /**
+     * The https address where it is claimed.
+     */
+    url: string;
 };
 
 /**
@@ -3580,6 +3664,10 @@ export type PublicSolution = {
      * Customers named by the company; these are not reviewed customer deployments.
      */
     notablePayingCustomers?: string | null;
+    /**
+     * The offers it comes with, by title.
+     */
+    offers: Array<PublicOffer>;
     /**
      * Its exact imported company-size label; null for an organization that has not supplied one.
      */
@@ -3671,6 +3759,10 @@ export type PublicSolutionSummary = {
     logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
+    /**
+     * The offers it comes with, by title; its card links to each.
+     */
+    offers: Array<PublicOffer>;
     organizationName: string;
     /**
      * The address of the organization's public page.
@@ -3916,12 +4008,20 @@ export type ReceivedUseCaseProposal = {
     editedAt?: string | null;
     id: string;
     /**
+     * Whether GenAI Fund approved the sending organization; a proposal from one that is not is marked as pending.
+     */
+    organizationApproved: boolean;
+    /**
      * Read at /api/storage/files/{id}.
      */
     organizationLogoFileId?: string | null;
     organizationName: string;
+    /**
+     * The sender's talent profile, when it went with the proposal.
+     */
     sender?: SenderProfile | null;
     sentAt: string;
+    sentBy: SentBy;
     solutions: Array<ProposalSolution>;
     team: Array<ProposalTeamMember>;
     useCase: ProposalUseCase;
@@ -3932,7 +4032,7 @@ export type ReceivedUseCaseProposal = {
  */
 export type ReceivedUseCaseProposalSummary = {
     /**
-     * The primary contact.
+     * The primary contact, or the sender when no team was named.
      */
     contactName?: string | null;
     /**
@@ -3940,6 +4040,10 @@ export type ReceivedUseCaseProposalSummary = {
      */
     editedAt?: string | null;
     id: string;
+    /**
+     * Whether GenAI Fund approved the sending organization.
+     */
+    organizationApproved: boolean;
     /**
      * Read at /api/storage/files/{id}.
      */
@@ -4714,6 +4818,24 @@ export type SaveOcrProvider = {
 };
 
 /**
+ * An offer as its form holds it.
+ */
+export type SaveOffer = {
+    /**
+     * The line that names it on a card.
+     */
+    title: string;
+    /**
+     * The https address where it is claimed.
+     */
+    url: string;
+    /**
+     * The version the form read; left out for a new offer.
+     */
+    version?: number | null;
+};
+
+/**
  * The profile of an organization as its Profile screen holds it.
  */
 export type SaveOrganization = {
@@ -4858,6 +4980,10 @@ export type SaveSolution = {
     logoFileId?: string | null;
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
+    /**
+     * The offers it comes with, from the list GenAI Fund keeps; empty for none.
+     */
+    offerIds: Array<string>;
     problemsSolved?: string | null;
     /**
      * Two or three sentences shown in lists.
@@ -4936,7 +5062,7 @@ export type SaveUseCaseProposal = {
      */
     solutionIds: Array<string>;
     /**
-     * The people named, in the order shown; at most one is primary.
+     * The people named, in the order shown; at most one is primary. The team may be empty.
      */
     team: Array<TeamMemberRequest>;
     /**
@@ -5088,6 +5214,10 @@ export type SearchItem = {
      */
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     /**
+     * The offers a solution comes with, by title.
+     */
+    offers: Array<SearchOffer>;
+    /**
      * The logo of a use case's organization, absent when anonymous.
      */
     organizationLogoFileId?: string | null;
@@ -5157,6 +5287,21 @@ export type SearchItem = {
      * Where a person works.
      */
     worksAt?: string | null;
+};
+
+/**
+ * An offer a solution in the results comes with.
+ */
+export type SearchOffer = {
+    /**
+     * True for an offer of GenAI Fund's list.
+     */
+    fromGenAiFund: boolean;
+    title: string;
+    /**
+     * The https address where it is claimed.
+     */
+    url: string;
 };
 
 /**
@@ -5285,6 +5430,72 @@ export type SenderProject = {
 };
 
 /**
+ * The submitting identity: the account that sent the proposal, with the name, address, country and number it gave.
+ */
+export type SentBy = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    email: string;
+    name?: string | null;
+    /**
+     * With its country code.
+     */
+    phone?: string | null;
+};
+
+/**
+ * A message the caller sent through a talent profile, with what became of it.
+ */
+export type SentTalentEnquiry = {
+    /**
+     * When the person answered it or it closed; null while it waits.
+     */
+    answeredAt?: string | null;
+    /**
+     * When a waiting message closes unanswered; null once it is answered.
+     */
+    closesAt?: string | null;
+    createdAt: string;
+    id: string;
+    message: string;
+    /**
+     * The profile it was sent through; the caller's messages to one person share it.
+     */
+    profileId: string;
+    /**
+     * Where the caller writes to the person; only once the person accepted.
+     */
+    recipientEmail?: string | null;
+    recipientHeadline?: string | null;
+    recipientName: string;
+    /**
+     * The address of the profile's public page; null while the profile is not in the directory.
+     */
+    recipientSlug?: string | null;
+    /**
+     * The name the caller signed it with; null on a message sent before a name was asked for.
+     */
+    senderName?: string | null;
+    /**
+     * A message the person reported reads as declined.
+     */
+    status: 'pending' | 'accepted' | 'declined' | 'closed';
+    topic: 'project' | 'role' | 'other';
+};
+
+/**
+ * The messages the caller sent through talent profiles.
+ */
+export type SentTalentEnquiryList = {
+    /**
+     * Those that wait for an answer first, then the newest.
+     */
+    items: Array<SentTalentEnquiry>;
+};
+
+/**
  * What reads a page that is only a picture from now on: a model that reads images, or an OCR provider. One of the two, or neither to leave pages unread.
  */
 export type SetDocumentReader = {
@@ -5315,6 +5526,16 @@ export type SetSemanticSearch = {
      * The version of the search settings it was read at.
      */
     version: number;
+};
+
+/**
+ * The offers a solution comes with, as an operator chooses them.
+ */
+export type SetSolutionOffers = {
+    /**
+     * Offers of the list GenAI Fund keeps; empty for none.
+     */
+    offerIds: Array<string>;
 };
 
 /**
@@ -5407,6 +5628,10 @@ export type Solution = {
      */
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
+    /**
+     * The offers it comes with, by title.
+     */
+    offers: Array<Offer>;
     organizationId: string;
     organizationName: string;
     problemsSolved?: string | null;
@@ -5941,10 +6166,14 @@ export type UseCaseProposal = {
     editedAt?: string | null;
     id: string;
     /**
-     * The sender's talent profile as it was when the proposal was sent; null for a draft.
+     * The sender's talent profile as it was when the proposal was sent; null for a draft and for a proposal sent without it, as every new one is.
      */
     sender?: SenderProfile | null;
     sentAt?: string | null;
+    /**
+     * Who sent it; null for a draft.
+     */
+    sentBy?: SentBy | null;
     /**
      * The solutions offered, in the order shown.
      */
@@ -6613,7 +6842,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -11279,6 +11508,37 @@ export type SendUseCaseProposalResponses = {
 
 export type SendUseCaseProposalResponse = SendUseCaseProposalResponses[keyof SendUseCaseProposalResponses];
 
+export type OrganizeUseCaseProposalData = {
+    body: ApplicantOrganization;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-cases/{useCaseId}/organization';
+};
+
+export type OrganizeUseCaseProposalErrors = {
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case no longer takes proposals, or the caller already belongs to an organization.
+     */
+    409: Problem;
+};
+
+export type OrganizeUseCaseProposalError = OrganizeUseCaseProposalErrors[keyof OrganizeUseCaseProposalErrors];
+
+export type OrganizeUseCaseProposalResponses = {
+    /**
+     * The form, now with the new organization.
+     */
+    200: UseCaseProposalForm;
+};
+
+export type OrganizeUseCaseProposalResponse = OrganizeUseCaseProposalResponses[keyof OrganizeUseCaseProposalResponses];
+
 export type GetUseCaseProposalFormData = {
     body?: never;
     path: {
@@ -11329,7 +11589,7 @@ export type SaveUseCaseProposalErrors = {
      */
     400: Problem;
     /**
-     * The caller has no organization, it is not approved, or it posted the use case.
+     * The caller has no organization, or it posted the use case.
      */
     403: Problem;
     /**
@@ -11894,6 +12154,154 @@ export type RejectCustomerDeploymentResponses = {
 
 export type RejectCustomerDeploymentResponse = RejectCustomerDeploymentResponses[keyof RejectCustomerDeploymentResponses];
 
+export type ListAdminOffersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/solution/admin/offers';
+};
+
+export type ListAdminOffersErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListAdminOffersError = ListAdminOffersErrors[keyof ListAdminOffersErrors];
+
+export type ListAdminOffersResponses = {
+    /**
+     * The offers, by title.
+     */
+    200: Array<AdminOffer>;
+};
+
+export type ListAdminOffersResponse = ListAdminOffersResponses[keyof ListAdminOffersResponses];
+
+export type CreateOfferData = {
+    body: SaveOffer;
+    path?: never;
+    query?: never;
+    url: '/api/solution/admin/offers';
+};
+
+export type CreateOfferErrors = {
+    /**
+     * The title is blank or too long, or the address is not an https one.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * Another offer reads the same.
+     */
+    409: Problem;
+};
+
+export type CreateOfferError = CreateOfferErrors[keyof CreateOfferErrors];
+
+export type CreateOfferResponses = {
+    /**
+     * The offer.
+     */
+    201: AdminOffer;
+};
+
+export type CreateOfferResponse = CreateOfferResponses[keyof CreateOfferResponses];
+
+export type DeleteOfferData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/offers/{id}';
+};
+
+export type DeleteOfferErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such offer.
+     */
+    404: Problem;
+    /**
+     * A solution still comes with the offer.
+     */
+    409: Problem;
+};
+
+export type DeleteOfferError = DeleteOfferErrors[keyof DeleteOfferErrors];
+
+export type DeleteOfferResponses = {
+    /**
+     * The offer is gone.
+     */
+    204: void;
+};
+
+export type DeleteOfferResponse = DeleteOfferResponses[keyof DeleteOfferResponses];
+
+export type SaveOfferData = {
+    body: SaveOffer;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/offers/{id}';
+};
+
+export type SaveOfferErrors = {
+    /**
+     * The title is blank or too long, or the address is not an https one.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such offer.
+     */
+    404: Problem;
+    /**
+     * The offer changed since it was read, or another reads the same.
+     */
+    409: Problem;
+};
+
+export type SaveOfferError = SaveOfferErrors[keyof SaveOfferErrors];
+
+export type SaveOfferResponses = {
+    /**
+     * The offer as saved, with its new version.
+     */
+    200: AdminOffer;
+};
+
+export type SaveOfferResponse = SaveOfferResponses[keyof SaveOfferResponses];
+
 export type ListAdminSolutionsData = {
     body?: never;
     path?: never;
@@ -12257,6 +12665,45 @@ export type FeatureSolutionResponses = {
 };
 
 export type FeatureSolutionResponse = FeatureSolutionResponses[keyof FeatureSolutionResponses];
+
+export type ChooseSolutionOffersData = {
+    body: SetSolutionOffers;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/solutions/{id}/offers';
+};
+
+export type ChooseSolutionOffersErrors = {
+    /**
+     * More than five offers, or one that is not in the list.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such submitted solution.
+     */
+    404: Problem;
+};
+
+export type ChooseSolutionOffersError = ChooseSolutionOffersErrors[keyof ChooseSolutionOffersErrors];
+
+export type ChooseSolutionOffersResponses = {
+    /**
+     * The solution comes with the offers named.
+     */
+    204: void;
+};
+
+export type ChooseSolutionOffersResponse = ChooseSolutionOffersResponses[keyof ChooseSolutionOffersResponses];
 
 export type PublishAdminSolutionData = {
     body?: never;
@@ -12962,6 +13409,181 @@ export type WithdrawCustomerDeploymentResponses = {
 };
 
 export type WithdrawCustomerDeploymentResponse = WithdrawCustomerDeploymentResponses[keyof WithdrawCustomerDeploymentResponses];
+
+export type ListSolutionOffersData = {
+    body?: never;
+    path?: never;
+    query: {
+        solutionId: string;
+    };
+    url: '/api/solution/offers';
+};
+
+export type ListSolutionOffersErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller writes no such solution.
+     */
+    404: Problem;
+};
+
+export type ListSolutionOffersError = ListSolutionOffersErrors[keyof ListSolutionOffersErrors];
+
+export type ListSolutionOffersResponses = {
+    /**
+     * The offers, by title.
+     */
+    200: Array<Offer>;
+};
+
+export type ListSolutionOffersResponse = ListSolutionOffersResponses[keyof ListSolutionOffersResponses];
+
+export type CreateOwnOfferData = {
+    body: SaveOffer;
+    path?: never;
+    query?: never;
+    url: '/api/solution/offers';
+};
+
+export type CreateOwnOfferErrors = {
+    /**
+     * The title is blank or too long, or the address is not an https one.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization.
+     */
+    403: Problem;
+    /**
+     * Another offer of the organization reads the same.
+     */
+    409: Problem;
+};
+
+export type CreateOwnOfferError = CreateOwnOfferErrors[keyof CreateOwnOfferErrors];
+
+export type CreateOwnOfferResponses = {
+    /**
+     * The offer.
+     */
+    201: Offer;
+};
+
+export type CreateOwnOfferResponse = CreateOwnOfferResponses[keyof CreateOwnOfferResponses];
+
+export type ListOwnOffersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/solution/offers/mine';
+};
+
+export type ListOwnOffersErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type ListOwnOffersError = ListOwnOffersErrors[keyof ListOwnOffersErrors];
+
+export type ListOwnOffersResponses = {
+    /**
+     * The offers; none for a caller who belongs to no organization.
+     */
+    200: Array<OwnOffer>;
+};
+
+export type ListOwnOffersResponse = ListOwnOffersResponses[keyof ListOwnOffersResponses];
+
+export type DeleteOwnOfferData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/offers/{id}';
+};
+
+export type DeleteOwnOfferErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization.
+     */
+    403: Problem;
+    /**
+     * The caller's organization wrote no such offer.
+     */
+    404: Problem;
+    /**
+     * A solution still comes with the offer.
+     */
+    409: Problem;
+};
+
+export type DeleteOwnOfferError = DeleteOwnOfferErrors[keyof DeleteOwnOfferErrors];
+
+export type DeleteOwnOfferResponses = {
+    /**
+     * The offer is gone.
+     */
+    204: void;
+};
+
+export type DeleteOwnOfferResponse = DeleteOwnOfferResponses[keyof DeleteOwnOfferResponses];
+
+export type SaveOwnOfferData = {
+    body: SaveOffer;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/offers/{id}';
+};
+
+export type SaveOwnOfferErrors = {
+    /**
+     * The title is blank or too long, or the address is not an https one.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization.
+     */
+    403: Problem;
+    /**
+     * The caller's organization wrote no such offer.
+     */
+    404: Problem;
+    /**
+     * The offer changed since it was read, or another reads the same.
+     */
+    409: Problem;
+};
+
+export type SaveOwnOfferError = SaveOwnOfferErrors[keyof SaveOwnOfferErrors];
+
+export type SaveOwnOfferResponses = {
+    /**
+     * The offer as saved, with its new version.
+     */
+    200: OwnOffer;
+};
+
+export type SaveOwnOfferResponse = SaveOwnOfferResponses[keyof SaveOwnOfferResponses];
 
 export type ListSolutionsData = {
     body?: never;
@@ -13798,6 +14420,31 @@ export type ReportTalentEnquiryResponses = {
 };
 
 export type ReportTalentEnquiryResponse = ReportTalentEnquiryResponses[keyof ReportTalentEnquiryResponses];
+
+export type ListSentTalentEnquiriesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/talent/mine/sent';
+};
+
+export type ListSentTalentEnquiriesErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type ListSentTalentEnquiriesError = ListSentTalentEnquiriesErrors[keyof ListSentTalentEnquiriesErrors];
+
+export type ListSentTalentEnquiriesResponses = {
+    /**
+     * The messages; none when the caller sent none.
+     */
+    200: SentTalentEnquiryList;
+};
+
+export type ListSentTalentEnquiriesResponse = ListSentTalentEnquiriesResponses[keyof ListSentTalentEnquiriesResponses];
 
 export type SubmitMyTalentProfileData = {
     body?: never;

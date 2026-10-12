@@ -1,27 +1,18 @@
 import type { UseCaseProposal, UseCaseProposalForm } from "@/lib/api/generated";
 
-import type { ProposalErrorCode } from "./proposal-errors";
-
 /**
  * What a signed-in visitor may do about a use case on its public page: nothing (it takes no more proposals), read the proposals it received (it is their own
- * organization's), send one, continue the draft they have, or
- * nothing yet for a reason shown beside the disabled button.
+ * organization's), send one, or continue the draft they have. Waiting for GenAI Fund's review of the organization, or having
+ * none yet, holds nothing up.
  */
 export type SenderAccess =
   | { kind: "hidden" }
   | { kind: "own" }
   | { kind: "open"; draft: boolean }
-  | { kind: "sent"; proposal: UseCaseProposal }
-  | { kind: "blocked"; code: ProposalErrorCode };
+  | { kind: "sent"; proposal: UseCaseProposal };
 
 /** What the form of a use case says the caller may do. */
 export function accessOfForm(form: UseCaseProposalForm): SenderAccess {
-  if (!form.organization) {
-    return { kind: "blocked", code: "PROPOSAL_NO_ORGANIZATION" };
-  }
-  if (!form.organization.approved) {
-    return { kind: "blocked", code: "PROPOSAL_ORGANIZATION_NOT_APPROVED" };
-  }
   if (form.proposal?.status === "sent") {
     return { kind: "sent", proposal: form.proposal };
   }

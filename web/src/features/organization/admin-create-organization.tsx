@@ -1,19 +1,19 @@
 "use client";
 
+import { revalidateLogic } from "@tanstack/react-form";
 import { PlusIcon, BuildingIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
-import { ChoiceSelect } from "@/components/composites/choice-select";
-import { RequiredMark } from "@/components/composites/required-mark";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
-import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
+import { FormDialog } from "@/components/composites/form-dialog";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
+import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import { createAdminOrganization, type AdminCreateOrganization } from "@/lib/api/generated";
@@ -35,6 +35,7 @@ const blank = {
   foundedYear: "",
   description: "",
   logoFileId: "",
+  industries: [] as string[],
 };
 
 /**
@@ -53,66 +54,96 @@ function AdminCreateOrganization() {
   const notify = useNotify();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [text, setText] = useState(blank);
-  const [chosenIndustries, setChosenIndustries] = useState<string[]>([]);
+  // The domain keeps its own state: the same field stands in the decision dialogs, outside a form.
   const domain = useVerifiedDomain(null);
-  const [pending, setPending] = useState(false);
-  const [invalid, setInvalid] = useState<Set<string>>(new Set());
 
-  const set = (field: keyof typeof blank) => (value: string) =>
-    setText((current) => ({ ...current, [field]: value }));
-  const write = (field: keyof typeof blank) => (event: React.ChangeEvent<HTMLInputElement>) =>
-    set(field)(event.target.value);
-  const bad = (field: string) => invalid.has(field) || undefined;
+  /** What a field the backend rejected says; one without words here is only marked. */
+  const rejections: Partial<Record<keyof typeof blank, string>> = {
+    name: t("nameRequired"),
+    type: t("typeRequired"),
+    website: t("websiteInvalid"),
+    ownerEmail: t("ownerEmailInvalid"),
+    foundedYear: f("foundedYearInvalid"),
+  };
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const missing = new Set<string>();
-    if (!text.name.trim()) {
-      missing.add("name");
-    }
-    if (!text.type) {
-      missing.add("type");
-    }
-    const year = text.foundedYear.trim() ? yearOf(text.foundedYear) : null;
-    if (text.foundedYear.trim() && year === null) {
-      missing.add("foundedYear");
-    }
-    const emailDomain = domain.read();
-    setInvalid(missing);
-    if (missing.size > 0 || emailDomain === undefined) {
-      return;
-    }
-    setPending(true);
-    try {
-      await createAdminOrganization({
-        body: {
-          name: text.name,
-          type: text.type as AdminCreateOrganization["type"],
-          website: text.website.trim() || null,
-          country: text.country || null,
-          teamSize: (text.teamSize || null) as AdminCreateOrganization["teamSize"],
-          industries: chosenIndustries.length > 0 ? chosenIndustries : null,
-          description: text.description.trim() || null,
-          foundedYear: year,
-          logoFileId: text.logoFileId || null,
-          emailDomain,
-          ownerEmail: text.ownerEmail.trim() || null,
-        },
-      });
-      notify.success("Organization.done.adminCreated", { name: text.name.trim() });
-      setOpen(false);
-      setText(blank);
-      setChosenIndustries([]);
-      domain.change("");
-      router.refresh();
-    } catch (error) {
-      setInvalid(rejectedFields(error));
-      if (!domain.refused(error)) {
-        notify.error(organizationError(error));
+  const form = useAppForm({
+    defaultValues: blank,
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({
+        name: z.string().refine((text) => text.trim() !== "", t("nameRequired")),
+        type: z.string().min(1, t("typeRequired")),
+        website: z
+          .string()
+          .refine(
+            (text) => !text.trim() || /^https?:\/\/\S+$/.test(text.trim()),
+            t("websiteInvalid"),
+          ),
+        ownerEmail: z
+          .string()
+          .refine(
+            (text) => !text.trim() || z.email().safeParse(text.trim()).success,
+            t("ownerEmailInvalid"),
+          ),
+        country: z.string(),
+        teamSize: z.string(),
+        foundedYear: z
+          .string()
+          .refine((text) => !text.trim() || yearOf(text) !== null, f("foundedYearInvalid")),
+        description: z.string(),
+        logoFileId: z.string(),
+        industries: z.array(z.string()),
+      }),
+    },
+    // The domain is checked with the other fields, so every problem shows at once.
+    onSubmitInvalid: () => void domain.read(),
+    onSubmit: async ({ value, formApi }) => {
+      const emailDomain = domain.read();
+      if (emailDomain === undefined) {
+        focusFirstInvalidSoon(() => document.getElementById(formApi.formId));
+        return;
       }
-    } finally {
-      setPending(false);
+      try {
+        await createAdminOrganization({
+          body: {
+            name: value.name.trim(),
+            type: value.type as AdminCreateOrganization["type"],
+            website: value.website.trim() || null,
+            country: value.country || null,
+            teamSize: (value.teamSize || null) as AdminCreateOrganization["teamSize"],
+            industries: value.industries.length > 0 ? value.industries : null,
+            description: value.description.trim() || null,
+            foundedYear: value.foundedYear.trim() ? yearOf(value.foundedYear) : null,
+            logoFileId: value.logoFileId || null,
+            emailDomain,
+            ownerEmail: value.ownerEmail.trim() || null,
+          },
+        });
+        notify.success("Organization.done.adminCreated", { name: value.name.trim() });
+        change(false);
+        router.refresh();
+      } catch (error) {
+        const rejected = [...rejectedFields(error)].filter((field) => field in blank);
+        setServerErrors(formApi, {
+          fields: Object.fromEntries(
+            rejected.map((field) => [
+              field,
+              { message: rejections[field as keyof typeof blank] ?? "" },
+            ]),
+          ),
+        });
+        if (!domain.refused(error)) {
+          notify.error(organizationError(error));
+        }
+      }
+    },
+  });
+
+  /** The domain is no field of the form, so closing empties it as the dialog empties the form. */
+  function change(next: boolean) {
+    setOpen(next);
+    if (!next) {
+      domain.change("");
     }
   }
 
@@ -122,180 +153,156 @@ function AdminCreateOrganization() {
         <PlusIcon aria-hidden="true" />
         {t("open")}
       </Button>
-      <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>
-        <DialogContent showCloseButton={false} className="max-h-dvh overflow-y-auto sm:max-w-3xl">
-          <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-            <DecisionDialogHeader tone="info" icon={BuildingIcon} title={t("title")} />
-            <FieldGroup>
-              <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
-                <Field data-invalid={bad("name")}>
-                  <FieldLabel htmlFor="admin-organization-name">
-                    {t("name")}
-                    <RequiredMark />
-                  </FieldLabel>
-                  <Input
-                    id="admin-organization-name"
-                    maxLength={120}
-                    value={text.name}
-                    onChange={write("name")}
-                    aria-invalid={bad("name")}
-                  />
-                  {bad("name") && <FieldError>{t("nameRequired")}</FieldError>}
-                </Field>
-                <Field data-invalid={bad("type")}>
-                  <FieldLabel htmlFor="admin-organization-type">
-                    {t("type")}
-                    <RequiredMark />
-                  </FieldLabel>
-                  <ChoiceSelect
-                    id="admin-organization-type"
-                    placeholder={t("typePlaceholder")}
-                    options={organizationTypes.map((value) => ({ value, label: typeName(value) }))}
-                    value={text.type}
-                    onValueChange={set("type")}
-                    aria-invalid={bad("type")}
-                  />
-                  {bad("type") && <FieldError>{t("typeRequired")}</FieldError>}
-                </Field>
-                <Field data-invalid={bad("website")}>
-                  <FieldLabel htmlFor="admin-organization-website">{t("website")}</FieldLabel>
-                  <Input
-                    id="admin-organization-website"
-                    type="url"
-                    inputMode="url"
-                    maxLength={300}
-                    value={text.website}
-                    onChange={write("website")}
-                    aria-invalid={bad("website")}
-                    aria-describedby="admin-organization-website-hint"
-                  />
-                  <FieldDescription id="admin-organization-website-hint">
-                    {t("websiteHint")}
-                  </FieldDescription>
-                  {bad("website") && <FieldError>{t("websiteInvalid")}</FieldError>}
-                </Field>
-                <Field data-invalid={bad("ownerEmail")}>
-                  <FieldLabel htmlFor="admin-organization-owner">{t("ownerEmail")}</FieldLabel>
-                  <Input
-                    id="admin-organization-owner"
-                    type="email"
-                    inputMode="email"
-                    autoCapitalize="none"
-                    spellCheck={false}
-                    maxLength={254}
-                    value={text.ownerEmail}
-                    onChange={write("ownerEmail")}
-                    aria-invalid={bad("ownerEmail")}
-                  />
-                  {bad("ownerEmail") && <FieldError>{t("ownerEmailInvalid")}</FieldError>}
-                </Field>
-                <Field data-invalid={domain.problem !== null || undefined}>
-                  <FieldLabel htmlFor="admin-organization-domain">{t("emailDomain")}</FieldLabel>
-                  <Input
-                    id="admin-organization-domain"
-                    inputMode="url"
-                    autoCapitalize="none"
-                    autoComplete="off"
-                    spellCheck={false}
-                    maxLength={253}
-                    value={domain.text}
-                    aria-invalid={domain.problem !== null || undefined}
-                    aria-describedby="admin-organization-domain-hint"
-                    onChange={(event) => domain.change(event.target.value)}
-                  />
-                  <FieldDescription id="admin-organization-domain-hint">
-                    {t("emailDomainHint")}
-                  </FieldDescription>
-                  {domain.problem && <FieldError>{f(`domain.${domain.problem}`)}</FieldError>}
-                </Field>
-                <Field data-invalid={bad("country")}>
-                  <FieldLabel htmlFor="admin-organization-country">{f("country")}</FieldLabel>
-                  <ChoiceSelect
-                    id="admin-organization-country"
-                    placeholder={f("countryPlaceholder")}
-                    options={countryCodes.map((value) => ({ value, label: countryName(value) }))}
-                    value={text.country}
-                    onValueChange={set("country")}
-                    aria-invalid={bad("country")}
-                  />
-                </Field>
-                <Field data-invalid={bad("teamSize")}>
-                  <FieldLabel htmlFor="admin-organization-team-size">{f("teamSize")}</FieldLabel>
-                  <ChoiceSelect
-                    id="admin-organization-team-size"
-                    placeholder={f("teamSizePlaceholder")}
-                    options={teamSizes.map((value) => ({ value, label: sizeName(value) }))}
-                    value={text.teamSize}
-                    onValueChange={set("teamSize")}
-                    aria-invalid={bad("teamSize")}
-                  />
-                </Field>
-                <Field data-invalid={bad("foundedYear")}>
-                  <FieldLabel htmlFor="admin-organization-founded-year">
-                    {f("foundedYear")}
-                  </FieldLabel>
-                  <Input
-                    id="admin-organization-founded-year"
-                    inputMode="numeric"
-                    maxLength={4}
-                    value={text.foundedYear}
-                    onChange={write("foundedYear")}
-                    aria-invalid={bad("foundedYear")}
-                  />
-                  {bad("foundedYear") && <FieldError>{f("foundedYearInvalid")}</FieldError>}
-                </Field>
-              </div>
-              <Field data-invalid={bad("industries")}>
-                <FieldLabel htmlFor="admin-organization-industries">{f("industries")}</FieldLabel>
-                <ChoiceCombobox
-                  id="admin-organization-industries"
-                  label={f("industries")}
-                  placeholder={f("industriesPlaceholder")}
-                  emptyLabel={f("industriesEmpty")}
-                  removeLabel={(industry) => f("industriesRemove", { industry })}
-                  aria-invalid={bad("industries")}
-                  options={industries.map((value) => ({ value, label: industryName(value) }))}
-                  value={chosenIndustries}
-                  onValueChange={setChosenIndustries}
-                  max={MAX_INDUSTRIES}
+      <FormDialog
+        open={open}
+        onOpenChange={change}
+        form={form}
+        title={t("title")}
+        mark={{ tone: "info", icon: BuildingIcon }}
+        width="3xl"
+        submitLabel={t("confirm")}
+        cancelLabel={t("cancel")}
+      >
+        <FieldGroup>
+          <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
+            <form.AppField name="name">
+              {(field) => <field.TextField label={t("name")} requiredMark maxLength={120} />}
+            </form.AppField>
+            <form.AppField name="type">
+              {(field) => (
+                <field.SelectField
+                  label={t("type")}
+                  requiredMark
+                  placeholder={t("typePlaceholder")}
+                  options={organizationTypes.map((value) => ({
+                    value,
+                    label: typeName(value),
+                  }))}
                 />
-              </Field>
-              <div className="flex flex-col gap-6 sm:flex-row sm:gap-3">
-                <Field data-invalid={bad("description")} className="sm:flex-1">
-                  <FieldLabel htmlFor="admin-organization-description">
-                    {f("description")}
-                  </FieldLabel>
-                  <Textarea
-                    id="admin-organization-description"
+              )}
+            </form.AppField>
+            <form.AppField name="website">
+              {(field) => (
+                <field.TextField
+                  label={t("website")}
+                  type="url"
+                  inputMode="url"
+                  maxLength={300}
+                  description={t("websiteHint")}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="ownerEmail">
+              {(field) => (
+                <field.TextField
+                  label={t("ownerEmail")}
+                  type="email"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  maxLength={254}
+                />
+              )}
+            </form.AppField>
+            <Field data-invalid={domain.problem !== null || undefined}>
+              <FieldLabel htmlFor="admin-organization-domain">{t("emailDomain")}</FieldLabel>
+              <Input
+                id="admin-organization-domain"
+                inputMode="url"
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={253}
+                value={domain.text}
+                aria-invalid={domain.problem !== null || undefined}
+                aria-describedby={
+                  domain.problem
+                    ? "admin-organization-domain-hint admin-organization-domain-error"
+                    : "admin-organization-domain-hint"
+                }
+                onChange={(event) => domain.change(event.target.value)}
+              />
+              <FieldDescription id="admin-organization-domain-hint">
+                {t("emailDomainHint")}
+              </FieldDescription>
+              {domain.problem && (
+                <FieldError id="admin-organization-domain-error">
+                  {f(`domain.${domain.problem}`)}
+                </FieldError>
+              )}
+            </Field>
+            <form.AppField name="country">
+              {(field) => (
+                <field.SelectField
+                  label={f("country")}
+                  placeholder={f("countryPlaceholder")}
+                  options={countryCodes.map((value) => ({ value, label: countryName(value) }))}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="teamSize">
+              {(field) => (
+                <field.SelectField
+                  label={f("teamSize")}
+                  placeholder={f("teamSizePlaceholder")}
+                  options={teamSizes.map((value) => ({ value, label: sizeName(value) }))}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="foundedYear">
+              {(field) => (
+                <field.TextField label={f("foundedYear")} inputMode="numeric" maxLength={4} />
+              )}
+            </form.AppField>
+          </div>
+          <form.Field name="industries">
+            {(field) => {
+              const invalid = field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field data-invalid={invalid || undefined}>
+                  <FieldLabel htmlFor="admin-organization-industries">{f("industries")}</FieldLabel>
+                  <ChoiceCombobox
+                    id="admin-organization-industries"
+                    label={f("industries")}
+                    placeholder={f("industriesPlaceholder")}
+                    emptyLabel={f("industriesEmpty")}
+                    removeLabel={(industry) => f("industriesRemove", { industry })}
+                    aria-invalid={invalid || undefined}
+                    options={industries.map((value) => ({
+                      value,
+                      label: industryName(value),
+                    }))}
+                    value={field.state.value}
+                    onValueChange={field.handleChange}
+                    max={MAX_INDUSTRIES}
+                  />
+                </Field>
+              );
+            }}
+          </form.Field>
+          <div className="flex flex-col gap-6 sm:flex-row sm:gap-3">
+            <div className="sm:flex-1">
+              <form.AppField name="description">
+                {(field) => (
+                  <field.TextareaField
+                    label={f("description")}
                     rows={3}
                     maxLength={MAX_DESCRIPTION}
-                    value={text.description}
-                    onChange={(event) => set("description")(event.target.value)}
-                    aria-invalid={bad("description")}
                   />
-                </Field>
+                )}
+              </form.AppField>
+            </div>
+            <form.Field name="logoFileId">
+              {(field) => (
                 <Field className="sm:w-auto">
                   <FieldLabel htmlFor="organization-logo">{f("logo.label")}</FieldLabel>
-                  <OrganizationLogoUpload value={text.logoFileId} onChange={set("logoFileId")} />
+                  <OrganizationLogoUpload value={field.state.value} onChange={field.handleChange} />
                 </Field>
-              </div>
-            </FieldGroup>
-            <DialogFooter variant="plain">
-              <Button
-                size="lg"
-                prominence="secondary"
-                disabled={pending}
-                onClick={() => setOpen(false)}
-              >
-                {t("cancel")}
-              </Button>
-              <Button size="lg" type="submit" pending={pending}>
-                {t("confirm")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+              )}
+            </form.Field>
+          </div>
+        </FieldGroup>
+      </FormDialog>
     </>
   );
 }

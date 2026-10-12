@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { CompanyPage } from "@/features/solution/company-page";
 import {
@@ -15,15 +15,18 @@ import { siteRoutes, titleSuffix } from "@/lib/site";
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/organizations/[slug]">): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const organization = await readCompany(slug);
+  if (!organization) {
+    return { robots: { index: false } };
+  }
+  // An organization that wrote no description still gets one: search results show it as the snippet.
+  const t = await getTranslations({ locale, namespace: "Solution.detail.company" });
 
-  return organization
-    ? {
-        title: organization.name + titleSuffix,
-        description: organization.description ?? undefined,
-      }
-    : { robots: { index: false } };
+  return {
+    title: organization.name + titleSuffix,
+    description: organization.description || t("metaDescription", { name: organization.name }),
+  };
 }
 
 export default async function OrganizationRoute({
