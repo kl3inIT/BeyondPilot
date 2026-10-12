@@ -58,6 +58,32 @@ class EnterpriseProfileTest(unittest.TestCase):
         self.assertIn("coalesce(o.country, e.country)", sql)
         self.assertNotIn("insert into organization", sql)
 
+    def test_an_enterprise_with_people_and_no_use_case_is_missing_an_organization(self):
+        enterprise_rows = [
+            {"id": "owner", "companyName": "Owner", "createdAt": "2025-01-01"},
+            {"id": "one", "companyName": "One Person", "createdAt": "2025-01-02"},
+            {"id": "three", "companyName": "Three People", "createdAt": "2025-01-03"},
+            {"id": "empty", "companyName": "Nobody", "createdAt": "2025-01-04"},
+            {"id": "test", "companyName": "Test", "createdAt": "2025-01-05"},
+        ]
+        people = [{"enterpriseId": key} for key in ("owner", "one", "three", "three", "three", "test", "gone")]
+        people.append({"enterpriseId": None, "startupId": "a startup"})
+
+        found = enterprises.missing(enterprise_rows, people, [{"enterpriseId": "owner"}])
+
+        # The one with the most people comes first: of two records of one company, the load keeps the first.
+        self.assertEqual([organization.name for organization in found], ["Three People", "One Person"])
+
+    def test_the_organizations_are_created_in_review_unless_the_name_or_website_is_taken(self):
+        sql = enterprises.create_sql([enterprises.profile(
+            {"id": "1", "companyName": "Acme Pte. Ltd.", "website": "https://www.acme.example/vn"})])
+
+        self.assertIn("'acme-pte-ltd', 'Acme Pte. Ltd.', 'acme.example', 'https://www.acme.example/vn'", sql)
+        self.assertIn("'in_review'", sql)
+        self.assertIn("an organization has this name", sql)
+        self.assertIn("an organization has this website", sql)
+        self.assertIn("-v operator=<operator account uuid>", sql)
+
 
 if __name__ == "__main__":
     unittest.main()
