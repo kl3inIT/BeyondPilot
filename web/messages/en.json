@@ -52,6 +52,22 @@
       "dark": "Dark",
       "system": "System"
     },
+    "cookies": {
+      "title": "We value your privacy",
+      "message": "We use cookies to keep the site working, improve your browsing experience and analyze our traffic. If you choose “Reject All”, only the necessary cookies are used. <privacy>Read more</privacy>",
+      "accept": "Accept All",
+      "decline": "Reject All",
+      "customize": "Customize",
+      "preferences": {
+        "title": "Cookie preferences",
+        "description": "Choose which cookies we may use.",
+        "necessary": "Necessary",
+        "necessaryHint": "Keep you signed in and remember your language. Always on.",
+        "analytics": "Analytics",
+        "analyticsHint": "Help us see how the public pages are used.",
+        "save": "Save preferences"
+      }
+    },
     "footer": {
       "platform": "Platform",
       "company": "Company",
@@ -5920,9 +5936,6 @@
     }
   },
   "Nestle": {
-    "banner": {
-      "text": "Applications close <strong>{closes}</strong>. Apply before 5 November to get the full brief first."
-    },
     "hero": {
       "tagline": "Nestlé has picked their problems. Now they're looking for those who can solve them.",
       "explore": "Explore the challenges",
@@ -6045,7 +6058,6 @@
     },
     "early": {
       "ask": "Recognise one of these?",
-      "title": "Start early.",
       "text": "Apply before 5 November to be considered for the early briefing process. Pre-screened applicants receive detailed briefings from 6 November."
     },
     "useCases": {
@@ -6185,9 +6197,7 @@
     "closing": {
       "title": "Will your solution be in the room on 3 December?",
       "text": "The shortlist is taking shape—submit today for your chance to be selected.",
-      "closes": "Applications close {closes}.",
-      "session": "View info session timing",
-      "share": "Know a team that fits? Send them this page"
+      "closes": "Applications close {closes}."
     },
     "about": {
       "label": "About the programme",
@@ -7012,7 +7022,7 @@
         {
           "heading": "Cookies",
           "body": [
-            "We use a session cookie to keep you signed in and a cookie to remember your language. We do not use advertising or third-party tracking cookies."
+            "We use a session cookie to keep you signed in and a cookie to remember your language. If you accept, Google Analytics sets cookies to measure visits to our public pages; it never runs on pages you sign in to see. We do not use advertising cookies."
           ]
         },
         {
