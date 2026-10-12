@@ -3,6 +3,30 @@
 @import "shadcn/tailwind.css";
 @import "../styles/tokens.css";
 
+/* Registry primitives installed ahead of their first screen: Tailwind would otherwise generate
+   their variant-heavy classes, a quarter of the stylesheet every page waits for. A primitive leaves
+   this list with its first import; globals-sources.test.ts fails while it is on both. */
+@source not "../components/ui/aspect-ratio.tsx";
+@source not "../components/ui/attachment.tsx";
+@source not "../components/ui/bubble.tsx";
+@source not "../components/ui/button-group.tsx";
+@source not "../components/ui/calendar.tsx";
+@source not "../components/ui/carousel.tsx";
+@source not "../components/ui/context-menu.tsx";
+@source not "../components/ui/direction.tsx";
+@source not "../components/ui/drawer.tsx";
+@source not "../components/ui/hover-card.tsx";
+@source not "../components/ui/item.tsx";
+@source not "../components/ui/marker.tsx";
+@source not "../components/ui/menubar.tsx";
+@source not "../components/ui/message.tsx";
+@source not "../components/ui/message-scroller.tsx";
+@source not "../components/ui/navigation-menu.tsx";
+@source not "../components/ui/questionnaire.tsx";
+@source not "../components/ui/resizable.tsx";
+@source not "../components/ui/scroll-area.tsx";
+@source not "../components/ui/slider.tsx";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
