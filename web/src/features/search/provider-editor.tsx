@@ -6,15 +6,8 @@ import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { useAppForm } from "@/components/form/app-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -83,7 +76,7 @@ function ProviderEditor({ vendor, provider }: ProviderEditorProps) {
         notify.success(editing ? "Admin.ai.done.saved" : "Admin.ai.done.connected", {
           name: body.name,
         });
-        close();
+        change(false);
         router.refresh();
       } catch (error) {
         notify.error(aiError(error));
@@ -91,23 +84,12 @@ function ProviderEditor({ vendor, provider }: ProviderEditorProps) {
     },
   });
   const { name, keyAction, apiKey } = useStore(form.store, (state) => state.values);
-  const saving = useStore(form.store, (state) => state.isSubmitting);
 
-  /** Closing forgets what was typed, so the key lives no longer than the dialog. */
-  function close() {
-    setOpen(false);
-    form.reset();
-    setResult(null);
-  }
-
+  /** Closing forgets the test as the dialog forgets what was typed: the key lives no longer than it. */
   function change(next: boolean) {
-    if (saving) {
-      return;
-    }
-    if (next) {
-      setOpen(true);
-    } else {
-      close();
+    setOpen(next);
+    if (!next) {
+      setResult(null);
     }
   }
 
@@ -151,139 +133,122 @@ function ProviderEditor({ vendor, provider }: ProviderEditorProps) {
           {t("connect")}
         </Button>
       )}
-      <Dialog open={open} onOpenChange={change}>
-        <DialogContent className="sm:max-w-120">
-          <form
-            id={form.formId}
-            noValidate
-            className="flex flex-col gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void form.handleSubmit();
-            }}
-          >
-            <DialogHeader>
-              <DialogTitle>
-                {editing
-                  ? t("editTitle", { name: provider.name })
-                  : t("connectTitle", { name: t(`vendor.${vendor.id}`) })}
-              </DialogTitle>
-              <DialogDescription>{editing ? t("editLead") : t("connectLead")}</DialogDescription>
-            </DialogHeader>
-            <FieldGroup>
-              <form.AppField name="name">
-                {(field) => <field.TextField label={t("name")} maxLength={60} required />}
-              </form.AppField>
-              <Field>
-                <FieldLabel htmlFor={`${id}-address`}>{t("address")}</FieldLabel>
-                <Input
-                  id={`${id}-address`}
-                  value={vendor.baseUrl}
-                  readOnly
-                  aria-describedby={`${id}-address-hint`}
-                />
-                <FieldDescription id={`${id}-address-hint`}>{t("addressHint")}</FieldDescription>
-              </Field>
-              <Field data-invalid={keyMissing && apiKey !== "" ? true : undefined}>
-                <FieldLabel htmlFor={editing ? `${id}-key-action` : `${id}-key`}>
-                  {t("apiKey")}
-                </FieldLabel>
-                {editing && (
-                  <form.Field name="keyAction">
-                    {(field) => (
-                      <NativeSelect
-                        id={`${id}-key-action`}
-                        className="w-full"
-                        aria-describedby={`${id}-key-hint`}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(event) =>
-                          field.handleChange(event.target.value as SaveAiProvider["key"])
-                        }
-                      >
-                        <NativeSelectOption value="keep" disabled={!provider.hasKey}>
-                          {t("keyKeep")}
-                        </NativeSelectOption>
-                        <NativeSelectOption value="replace">{t("keyReplace")}</NativeSelectOption>
-                        <NativeSelectOption value="remove">{t("keyRemove")}</NativeSelectOption>
-                      </NativeSelect>
-                    )}
-                  </form.Field>
-                )}
-                {keyAction === "replace" && (
-                  <form.Field name="apiKey">
-                    {(field) => (
-                      <Input
-                        id={`${id}-key`}
-                        aria-label={editing ? t("newKey") : undefined}
-                        aria-describedby={`${id}-key-hint`}
-                        type="password"
-                        autoComplete="off"
-                        spellCheck={false}
-                        maxLength={500}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(event) => field.handleChange(event.target.value)}
-                      />
-                    )}
-                  </form.Field>
-                )}
-                <FieldDescription id={`${id}-key-hint`}>
-                  {t(`keyHint.${vendor.id}`)}
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
-
-            <section
-              aria-labelledby={`${id}-test`}
-              className="flex flex-col gap-2.5 rounded-lg border p-3"
-            >
-              <h3 id={`${id}-test`} className="text-sm font-medium">
-                {t("test")}
-              </h3>
-              <div className="flex items-center gap-2">
-                <NativeSelect
-                  aria-label={t("model")}
-                  className="w-full"
-                  value={model}
-                  onChange={(event) => {
-                    setModel(event.target.value);
-                    setResult(null);
-                  }}
-                >
-                  {vendor.models.map((each) => (
-                    <NativeSelectOption key={each} value={each}>
-                      {each}
+      <FormDialog
+        open={open}
+        onOpenChange={change}
+        form={form}
+        title={
+          editing
+            ? t("editTitle", { name: provider.name })
+            : t("connectTitle", { name: t(`vendor.${vendor.id}`) })
+        }
+        description={editing ? t("editLead") : t("connectLead")}
+        width="lg"
+        submitLabel={t("save")}
+        cancelLabel={t("cancel")}
+        submitDisabled={keyMissing || name.trim() === ""}
+      >
+        <FieldGroup>
+          <form.AppField name="name">
+            {(field) => <field.TextField label={t("name")} maxLength={60} required />}
+          </form.AppField>
+          <Field>
+            <FieldLabel htmlFor={`${id}-address`}>{t("address")}</FieldLabel>
+            <Input
+              id={`${id}-address`}
+              value={vendor.baseUrl}
+              readOnly
+              aria-describedby={`${id}-address-hint`}
+            />
+            <FieldDescription id={`${id}-address-hint`}>{t("addressHint")}</FieldDescription>
+          </Field>
+          <Field data-invalid={keyMissing && apiKey !== "" ? true : undefined}>
+            <FieldLabel htmlFor={editing ? `${id}-key-action` : `${id}-key`}>
+              {t("apiKey")}
+            </FieldLabel>
+            {editing && (
+              <form.Field name="keyAction">
+                {(field) => (
+                  <NativeSelect
+                    id={`${id}-key-action`}
+                    className="w-full"
+                    aria-describedby={`${id}-key-hint`}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(event) =>
+                      field.handleChange(event.target.value as SaveAiProvider["key"])
+                    }
+                  >
+                    <NativeSelectOption value="keep" disabled={!provider.hasKey}>
+                      {t("keyKeep")}
                     </NativeSelectOption>
-                  ))}
-                </NativeSelect>
-                <Button
-                  prominence="secondary"
-                  pending={testing}
-                  disabled={keyMissing || keyAction === "remove"}
-                  onClick={test}
-                >
-                  {t("testButton")}
-                </Button>
-              </div>
-              {result ? (
-                <ProbeResult result={result} />
-              ) : (
-                <p className="text-xs text-muted-foreground">{t("testHint")}</p>
-              )}
-            </section>
+                    <NativeSelectOption value="replace">{t("keyReplace")}</NativeSelectOption>
+                    <NativeSelectOption value="remove">{t("keyRemove")}</NativeSelectOption>
+                  </NativeSelect>
+                )}
+              </form.Field>
+            )}
+            {keyAction === "replace" && (
+              <form.Field name="apiKey">
+                {(field) => (
+                  <Input
+                    id={`${id}-key`}
+                    aria-label={editing ? t("newKey") : undefined}
+                    aria-describedby={`${id}-key-hint`}
+                    type="password"
+                    autoComplete="off"
+                    spellCheck={false}
+                    maxLength={500}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                  />
+                )}
+              </form.Field>
+            )}
+            <FieldDescription id={`${id}-key-hint`}>{t(`keyHint.${vendor.id}`)}</FieldDescription>
+          </Field>
+        </FieldGroup>
 
-            <DialogFooter>
-              <Button prominence="secondary" disabled={saving} onClick={() => change(false)}>
-                {t("cancel")}
-              </Button>
-              <Button type="submit" pending={saving} disabled={keyMissing || name.trim() === ""}>
-                {t("save")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+        <section
+          aria-labelledby={`${id}-test`}
+          className="flex flex-col gap-2.5 rounded-lg border p-3"
+        >
+          <h3 id={`${id}-test`} className="text-sm font-medium">
+            {t("test")}
+          </h3>
+          <div className="flex items-center gap-2">
+            <NativeSelect
+              aria-label={t("model")}
+              className="w-full"
+              value={model}
+              onChange={(event) => {
+                setModel(event.target.value);
+                setResult(null);
+              }}
+            >
+              {vendor.models.map((each) => (
+                <NativeSelectOption key={each} value={each}>
+                  {each}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+            <Button
+              prominence="secondary"
+              pending={testing}
+              disabled={keyMissing || keyAction === "remove"}
+              onClick={test}
+            >
+              {t("testButton")}
+            </Button>
+          </div>
+          {result ? (
+            <ProbeResult result={result} />
+          ) : (
+            <p className="text-xs text-muted-foreground">{t("testHint")}</p>
+          )}
+        </section>
+      </FormDialog>
     </>
   );
 }

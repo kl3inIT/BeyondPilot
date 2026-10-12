@@ -1,6 +1,6 @@
 "use client";
 
-import { revalidateLogic, useStore } from "@tanstack/react-form";
+import { revalidateLogic } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { MailPlusIcon } from "lucide-react";
@@ -8,9 +8,8 @@ import { useState } from "react";
 import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
-import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useNotify } from "@/hooks/use-notify";
@@ -48,7 +47,6 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
           body: { email: value.email.trim(), role: value.role },
         });
         notify.success("Organization.done.invited", { count: 1 });
-        formApi.reset();
         setOpen(false);
         router.refresh();
       } catch (error) {
@@ -60,77 +58,55 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
       }
     },
   });
-  const pending = useStore(form.store, (state) => state.isSubmitting);
 
   return (
     <>
       <Button onClick={() => setOpen(true)}>{t("open")}</Button>
-      <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>
-        <DialogContent showCloseButton={false} className="sm:max-w-120">
-          <form
-            id={form.formId}
-            noValidate
-            className="flex flex-col gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void form.handleSubmit();
-            }}
-          >
-            <DecisionDialogHeader
-              tone="info"
-              icon={MailPlusIcon}
-              title={t("title", { name: organization.name })}
-            />
-            <FieldGroup>
-              <form.AppField name="email">
-                {(field) => (
-                  <field.TextField
-                    label={t("email")}
-                    type="email"
-                    inputMode="email"
-                    autoCapitalize="none"
-                    autoComplete="off"
-                    spellCheck={false}
-                    maxLength={254}
-                  />
-                )}
-              </form.AppField>
-              <form.Field name="role">
-                {(field) => (
-                  <Field>
-                    <FieldLabel htmlFor="admin-invite-role">{t("role")}</FieldLabel>
-                    <NativeSelect
-                      id="admin-invite-role"
-                      className="w-full"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) =>
-                        field.handleChange(event.target.value as InviteMember["role"])
-                      }
-                    >
-                      <NativeSelectOption value="owner">{roleName("owner")}</NativeSelectOption>
-                      <NativeSelectOption value="member">{roleName("member")}</NativeSelectOption>
-                    </NativeSelect>
-                  </Field>
-                )}
-              </form.Field>
-            </FieldGroup>
-            <DialogFooter variant="plain">
-              <Button
-                size="lg"
-                prominence="secondary"
-                disabled={pending}
-                onClick={() => setOpen(false)}
-              >
-                {t("cancel")}
-              </Button>
-              <Button size="lg" type="submit" pending={pending}>
-                {t("send")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        form={form}
+        title={t("title", { name: organization.name })}
+        mark={{ tone: "info", icon: MailPlusIcon }}
+        width="lg"
+        submitLabel={t("send")}
+        cancelLabel={t("cancel")}
+      >
+        <FieldGroup>
+          <form.AppField name="email">
+            {(field) => (
+              <field.TextField
+                label={t("email")}
+                type="email"
+                inputMode="email"
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={254}
+              />
+            )}
+          </form.AppField>
+          <form.Field name="role">
+            {(field) => (
+              <Field>
+                <FieldLabel htmlFor="admin-invite-role">{t("role")}</FieldLabel>
+                <NativeSelect
+                  id="admin-invite-role"
+                  className="w-full"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) =>
+                    field.handleChange(event.target.value as InviteMember["role"])
+                  }
+                >
+                  <NativeSelectOption value="owner">{roleName("owner")}</NativeSelectOption>
+                  <NativeSelectOption value="member">{roleName("member")}</NativeSelectOption>
+                </NativeSelect>
+              </Field>
+            )}
+          </form.Field>
+        </FieldGroup>
+      </FormDialog>
     </>
   );
 }

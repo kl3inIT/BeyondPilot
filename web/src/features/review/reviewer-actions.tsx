@@ -10,15 +10,8 @@ import { z } from "zod";
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { useAppForm } from "@/components/form/app-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,13 +56,12 @@ function InviteReviewer({ programId, programName }: { programId: string; program
           .regex(/^\S+@\S+\.\S+$/, t("invalid")),
       }),
     },
-    onSubmit: async ({ value, formApi }) => {
+    onSubmit: async ({ value }) => {
       const email = value.email.trim();
       try {
         await inviteReviewer({ path: { programId }, body: { email } });
         notify.success("Review.reviewers.invite.sent", { email });
         setOpen(false);
-        formApi.reset();
         router.refresh();
       } catch (error) {
         notify.error(errorKey(error));
@@ -80,35 +72,19 @@ function InviteReviewer({ programId, programName }: { programId: string; program
   return (
     <>
       <Button onClick={() => setOpen(true)}>{t("open")}</Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <form
-            id={form.formId}
-            noValidate
-            className="flex flex-col gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void form.handleSubmit();
-            }}
-          >
-            <DialogHeader>
-              <DialogTitle>{t("title", { program: programName })}</DialogTitle>
-              <DialogDescription>{t("description")}</DialogDescription>
-            </DialogHeader>
-            <form.AppField name="email">
-              {(field) => <field.TextField label={t("email")} type="email" autoComplete="off" />}
-            </form.AppField>
-            <DialogFooter>
-              <Button prominence="secondary" type="button" onClick={() => setOpen(false)}>
-                {t("cancel")}
-              </Button>
-              <form.AppForm>
-                <form.SubmitButton>{t("send")}</form.SubmitButton>
-              </form.AppForm>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        form={form}
+        title={t("title", { program: programName })}
+        description={t("description")}
+        submitLabel={t("send")}
+        cancelLabel={t("cancel")}
+      >
+        <form.AppField name="email">
+          {(field) => <field.TextField label={t("email")} type="email" autoComplete="off" />}
+        </form.AppField>
+      </FormDialog>
     </>
   );
 }
@@ -234,91 +210,80 @@ function CriteriaEditor({
     },
   });
   const drafts = useStore(form.store, (state) => state.values.criteria);
-  const pending = useStore(form.store, (state) => state.isSubmitting);
   const filled = drafts.length > 0 && drafts.every((draft) => draft.name.trim() !== "");
-
-  /** Every opening starts from the criteria as they are saved. */
-  function start() {
-    form.reset();
-    setOpen(true);
-  }
 
   return (
     <>
-      <Button prominence="secondary" size="sm" onClick={start}>
+      <Button prominence="secondary" size="sm" onClick={() => setOpen(true)}>
         {criteria.length > 0 ? t("edit") : t("add")}
       </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>{t("dialogTitle")}</DialogTitle>
-            <DialogDescription>{t("dialogDescription")}</DialogDescription>
-          </DialogHeader>
-          <form.Field name="criteria" mode="array">
-            {(list) => (
-              <>
-                <ol className="flex flex-col gap-3 overflow-y-auto">
-                  {list.state.value.map((_, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="w-5 text-sm text-muted-foreground tabular-nums">
-                        {index + 1}
-                      </span>
-                      <div className="flex flex-1 flex-col gap-3">
-                        <form.AppField name={`criteria[${index}].name`}>
-                          {(field) => (
-                            <field.TextField
-                              label={t("nameLabel")}
-                              maxLength={80}
-                              description={t("nameHint")}
-                            />
-                          )}
-                        </form.AppField>
-                        <form.AppField name={`criteria[${index}].description`}>
-                          {(field) => (
-                            <field.TextField
-                              label={t("descriptionLabel")}
-                              optional
-                              maxLength={300}
-                              description={t("descriptionHint")}
-                            />
-                          )}
-                        </form.AppField>
-                      </div>
-                      <IconButton
-                        aria-label={t("remove", { number: index + 1 })}
-                        prominence="tertiary"
-                        size="sm"
-                        disabled={list.state.value.length === 1}
-                        onClick={() => list.removeValue(index)}
-                      >
-                        <Trash2Icon aria-hidden="true" />
-                      </IconButton>
-                    </li>
-                  ))}
-                </ol>
-                <Button
-                  prominence="tertiary"
-                  size="sm"
-                  className="self-start"
-                  disabled={list.state.value.length >= MAX_CRITERIA}
-                  onClick={() => list.pushValue({ name: "", description: "" })}
-                >
-                  <PlusIcon aria-hidden="true" />
-                  {t("addOne")}
-                </Button>
-              </>
-            )}
-          </form.Field>
-          <DialogFooter>
-            <Button prominence="secondary" onClick={() => setOpen(false)}>
-              {t("cancel")}
-            </Button>
-            <Button pending={pending} disabled={!filled} onClick={() => void form.handleSubmit()}>
-              {t("save")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        form={form}
+        title={t("dialogTitle")}
+        description={t("dialogDescription")}
+        width="xl"
+        submitLabel={t("save")}
+        cancelLabel={t("cancel")}
+        submitDisabled={!filled}
+      >
+        <form.Field name="criteria" mode="array">
+          {(list) => (
+            <>
+              <ol className="flex flex-col gap-3">
+                {list.state.value.map((_, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="w-5 text-sm text-muted-foreground tabular-nums">
+                      {index + 1}
+                    </span>
+                    <div className="flex flex-1 flex-col gap-3">
+                      <form.AppField name={`criteria[${index}].name`}>
+                        {(field) => (
+                          <field.TextField
+                            label={t("nameLabel")}
+                            maxLength={80}
+                            description={t("nameHint")}
+                          />
+                        )}
+                      </form.AppField>
+                      <form.AppField name={`criteria[${index}].description`}>
+                        {(field) => (
+                          <field.TextField
+                            label={t("descriptionLabel")}
+                            optional
+                            maxLength={300}
+                            description={t("descriptionHint")}
+                          />
+                        )}
+                      </form.AppField>
+                    </div>
+                    <IconButton
+                      aria-label={t("remove", { number: index + 1 })}
+                      prominence="tertiary"
+                      size="sm"
+                      disabled={list.state.value.length === 1}
+                      onClick={() => list.removeValue(index)}
+                    >
+                      <Trash2Icon aria-hidden="true" />
+                    </IconButton>
+                  </li>
+                ))}
+              </ol>
+              <Button
+                prominence="tertiary"
+                size="sm"
+                className="self-start"
+                disabled={list.state.value.length >= MAX_CRITERIA}
+                onClick={() => list.pushValue({ name: "", description: "" })}
+              >
+                <PlusIcon aria-hidden="true" />
+                {t("addOne")}
+              </Button>
+            </>
+          )}
+        </form.Field>
+      </FormDialog>
     </>
   );
 }
