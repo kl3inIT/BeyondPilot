@@ -7209,7 +7209,9 @@
         "edited": "Đã chỉnh sửa {date}",
         "sent": "Gửi {date}",
         "crumbs": "Vị trí",
-        "useCases": "Bài toán"
+        "useCases": "Bài toán",
+        "pending": "Chờ duyệt",
+        "sentBy": "Người gửi"
       },
       "edited": "Đã chỉnh sửa {date}"
     },
