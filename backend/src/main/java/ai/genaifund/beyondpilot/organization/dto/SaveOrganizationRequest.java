@@ -13,13 +13,15 @@ import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 
 @Schema(name = "SaveOrganization", description = "The profile of an organization as its Profile screen holds it.")
+@RequiredOfCompany
 public record SaveOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "company", "builder_team", "independent_builder", "other" }) @NotNull @Pattern(
 						regexp = OrganizationCodes.TYPE) String type,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 300) @Pattern(
-				regexp = OrganizationCodes.WEBSITE) String website,
+		@Schema(types = { "string", "null" },
+				description = "A company gives one; a team, a builder or another organization may leave it out.") @Size(
+						max = 300) @Pattern(regexp = OrganizationCodes.WEBSITE) @Nullable String website,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "ISO 3166-1 alpha-2.") @NotNull @Pattern(
 				regexp = OrganizationCodes.COUNTRY) String country,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Pattern(
@@ -31,8 +33,8 @@ public record SaveOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "What it does and for whom, in at most 280 characters.") @NotBlank @Size(
 						max = 280) String description,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The year it started; for an independent builder, the year the practice did.") @NotNull @Min(1800) @Max(2100) @NotAfterThisYear Integer foundedYear,
+		@Schema(types = { "integer", "null" },
+				description = "The year it started; for an independent builder, the year the practice did. A company gives it; a team, a builder or another organization may leave it out.") @Min(1800) @Max(2100) @NotAfterThisYear @Nullable Integer foundedYear,
 		@Schema(types = { "string", "null" },
 				description = "A logo the caller uploaded for an organization; null for none.") @Nullable UUID logoFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

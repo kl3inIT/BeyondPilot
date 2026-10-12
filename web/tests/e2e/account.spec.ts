@@ -11,7 +11,7 @@ test.describe("Account", () => {
     expect(visitor.status()).toBe(307);
   });
 
-  test("a person keeps their country and phone number on the account", async ({
+  test("a person changes their name and keeps their country and phone number", async ({
     page,
     context,
     baseURL,
@@ -20,7 +20,10 @@ test.describe("Account", () => {
     await page.goto("/account");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Account");
-    await expect(page.getByLabel("Email")).toBeDisabled();
+    // The address they sign in with is read, not typed; the name is theirs to change.
+    await expect(page.getByText("dat.phan@example.com")).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "Email" })).toHaveCount(0);
+    await expect(page.getByLabel("Name")).toHaveValue("Đạt Phan");
     await expectNoSeriousA11yViolations(page);
 
     const saved: unknown[] = [];
@@ -35,10 +38,16 @@ test.describe("Account", () => {
     await page.getByRole("button", { name: "Save changes" }).click();
     expect(saved).toHaveLength(0);
 
+    await page.getByLabel("Name").fill(" ");
+    await expect(page.getByText("Enter your name.")).toBeVisible();
+    await page.getByRole("button", { name: "Save changes" }).click();
+    expect(saved).toHaveLength(0);
+
+    await page.getByLabel("Name").fill("Phan Tiến Đạt");
     await page.getByLabel("Country").selectOption({ label: "Vietnam" });
     await page.getByLabel("Phone number").fill("+84 912 345 678");
     await page.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByText("Your account is saved.")).toBeVisible();
-    expect(saved).toEqual([{ country: "VN", phone: "+84 912 345 678" }]);
+    expect(saved).toEqual([{ name: "Phan Tiến Đạt", country: "VN", phone: "+84 912 345 678" }]);
   });
 });

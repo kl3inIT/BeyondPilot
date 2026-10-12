@@ -56,10 +56,21 @@ describe("profileSchema", () => {
     });
   });
 
-  it("asks only a company for its industries", () => {
-    expect(refusedAt({ ...filled, industries: [] })).toEqual({ industries: "industriesRequired" });
-    expect(refusedAt({ ...filled, type: "independent_builder", industries: [] })).toEqual({});
-    expect(refusedAt({ ...filled, type: "builder_team", industries: [] })).toEqual({});
+  it("asks only a company for its website, its industries and the year it started", () => {
+    const without = { ...filled, website: " ", industries: [], foundedYear: "" };
+    expect(refusedAt(without)).toEqual({
+      website: "websiteRequired",
+      industries: "industriesRequired",
+      foundedYear: "foundedYearInvalid",
+    });
+    expect(refusedAt({ ...without, type: "independent_builder" })).toEqual({});
+    expect(refusedAt({ ...without, type: "builder_team" })).toEqual({});
+  });
+
+  it("checks a year a builder did write", () => {
+    expect(refusedAt({ ...filled, type: "independent_builder", foundedYear: "20x9" })).toEqual({
+      foundedYear: "foundedYearInvalid",
+    });
   });
 
   it("leaves the form of the website to the backend", () => {
@@ -126,6 +137,12 @@ describe("profileValuesOf and profileBodyOf", () => {
       description: "",
       logoFileId: "",
     });
+  });
+
+  it("sends a website and a year left empty as none", () => {
+    expect(
+      profileBodyOf({ ...filled, type: "independent_builder", website: " ", foundedYear: "" }),
+    ).toMatchObject({ website: null, foundedYear: null });
   });
 
   it("trims the name, the website and the description", () => {

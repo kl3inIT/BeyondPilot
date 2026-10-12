@@ -34,6 +34,7 @@ import { MAX_DESCRIPTION, MAX_INDUSTRIES } from "./organization-format";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
 import { OrganizationProfileSection } from "./organization-profile-section";
 import {
+  givesCompanyFacts,
   profileBodyOf,
   profileRefusals,
   profileSchema,
@@ -43,10 +44,11 @@ import { useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
 
 /**
  * The industries of the profile, found by typing: the form's field, with how many are chosen under
- * it. Only a company has to name one, so the star follows the type.
+ * it. Only a company has to name one, so the star follows the type and the others read Optional.
  */
 function IndustriesField({ required }: { required: boolean }) {
   const t = useTranslations("Organization.form");
+  const marks = useTranslations("Form");
   const industryName = useVocabulary("industry");
   const { field, invalid, errors, ids } = useFieldValidity<string[]>();
   const { control: controlId, hint: hintId, error: errorId } = ids;
@@ -55,7 +57,11 @@ function IndustriesField({ required }: { required: boolean }) {
     <Field data-invalid={invalid || undefined}>
       <FieldLabel htmlFor={controlId}>
         {t("industries")}
-        {required && <RequiredMark />}
+        {required ? (
+          <RequiredMark />
+        ) : (
+          <span className="font-normal text-muted-foreground">{marks("optional")}</span>
+        )}
       </FieldLabel>
       <ChoiceCombobox
         id={controlId}
@@ -169,6 +175,8 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
 
   const existing = useExistingOrganizations(() => form.state.isSubmitting);
   const type = useStore(form.store, (state) => state.values.type);
+  // A company gives its website, its industries and the year it started; anyone else may.
+  const company = givesCompanyFacts(type);
   const pending = useStore(form.store, (state) => state.isSubmitting) || leaving;
   const changed =
     useStore(form.store, (state) => !state.isDefaultValue) ||
@@ -222,7 +230,8 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
             {(field) => (
               <field.TextField
                 label={t("website")}
-                requiredMark
+                requiredMark={company}
+                optional={!company}
                 type="url"
                 inputMode="url"
                 autoComplete="url"
@@ -275,7 +284,7 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
 
       <OrganizationProfileSection icon={FileTextIcon} title={t("about")}>
         <form.AppField name="industries">
-          {() => <IndustriesField required={type === "company"} />}
+          {() => <IndustriesField required={company} />}
         </form.AppField>
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
           <form.AppField name="country">
@@ -292,7 +301,8 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
             {(field) => (
               <field.TextField
                 label={t("foundedYear")}
-                requiredMark
+                requiredMark={company}
+                optional={!company}
                 inputMode="numeric"
                 maxLength={4}
                 description={t(

@@ -358,6 +358,15 @@ test.describe("solutions directory", () => {
       "href",
       "https://www.pocketpolicy.example/",
     );
+    // Its solutions are the page's first action; its website opens beside it, in a new tab.
+    await expect(page.getByRole("link", { name: "View solutions" })).toHaveAttribute(
+      "href",
+      "#solutions",
+    );
+    await expect(page.getByRole("link", { name: "Visit website" })).toHaveAttribute(
+      "target",
+      "_blank",
+    );
 
     const solutions = page.getByRole("main").getByRole("heading", { level: 3 }).getByRole("link");
     await expect(solutions).toHaveText([

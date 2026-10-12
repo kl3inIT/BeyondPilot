@@ -101,7 +101,7 @@ class OrganizationTest {
 	void aRequestOutOfBoundsIsAValidationProblemThatPointsAtIt() {
 		String body = body(post(signIn("typo@invalid.test"), API + "/organizations",
 				Map.of("name", " ", "type", "club", "country", "vn", "industries",
-						List.of("mining"), "website", "x"))
+						List.of("mining"), "website", "x", "foundedYear", 1700))
 			.expectStatus()
 			.isBadRequest());
 
@@ -154,6 +154,60 @@ class OrganizationTest {
 		assertThat(JsonPath.<Integer>read(created, "$.foundedYear")).isEqualTo(2021);
 		assertThat(JsonPath.<String>read(created, "$.description")).isEqualTo("Assistants for insurers.");
 		assertThat(JsonPath.<String>read(mine(session), "$.jobTitle")).isNull();
+	}
+
+	@Test
+	void onlyACompanyMustGiveItsWebsiteAndTheYearItWasFounded() {
+		// A builder on their own creates a practice without either, and saves it as a team without either.
+		String builder = signIn("dat@no-website.test");
+		Map<String, Object> practice = new HashMap<>(creation("Dat Studio"));
+		practice.put("type", "independent_builder");
+		practice.put("teamSize", "just_me");
+		practice.remove("website");
+		practice.remove("foundedYear");
+		String created = body(post(builder, API + "/organizations", practice).expectStatus().isCreated());
+		assertThat(JsonPath.<Object>read(created, "$.website")).isNull();
+		assertThat(JsonPath.<Object>read(created, "$.foundedYear")).isNull();
+
+		Map<String, Object> team = new HashMap<>(profile("Dat Team"));
+		team.put("type", "builder_team");
+		team.remove("website");
+		team.remove("foundedYear");
+		int version = JsonPath.<Integer>read(mine(builder), "$.organization.version");
+		put(builder, API + "/mine", save(team, version)).expectStatus().isOk();
+		String saved = mine(builder);
+		assertThat(JsonPath.<String>read(saved, "$.organization.type")).isEqualTo("builder_team");
+		assertThat(JsonPath.<Object>read(saved, "$.organization.website")).isNull();
+		version = JsonPath.<Integer>read(saved, "$.organization.version");
+
+		// A year a team does give is checked as a company's is.
+		team.put("foundedYear", 1799);
+		String early = body(put(builder, API + "/mine", save(team, version)).expectStatus().isBadRequest());
+		assertThat(JsonPath.<List<String>>read(early, "$.errors[*].pointer")).containsExactly("#/foundedYear");
+		team.remove("foundedYear");
+
+		// A company is refused at each one it lacks: when it is created, saved by its owner, or saved by an operator.
+		Map<String, Object> company = new HashMap<>(creation("No Website Co"));
+		company.remove("website");
+		company.remove("foundedYear");
+		String refused = body(post(signIn("founder@no-website-co.test"), API + "/organizations", company)
+			.expectStatus()
+			.isBadRequest());
+		assertThat(JsonPath.<String>read(refused, "$.code")).isEqualTo("REQUEST_INVALID");
+		assertThat(JsonPath.<List<String>>read(refused, "$.errors[*].pointer")).containsExactlyInAnyOrder("#/website",
+				"#/foundedYear");
+		assertThat(JsonPath.<List<String>>read(refused, "$.errors[*].code")).containsOnly("REQUIRED_OF_COMPANY");
+
+		team.put("type", "company");
+		String unsaved = body(put(builder, API + "/mine", save(team, version)).expectStatus().isBadRequest());
+		assertThat(JsonPath.<List<String>>read(unsaved, "$.errors[*].pointer")).containsExactlyInAnyOrder("#/website",
+				"#/foundedYear");
+		String byOperator = body(put(operator, API + "/admin/organizations/" + JsonPath.<String>read(created, "$.id"),
+				Map.of("profile", save(team, version)))
+			.expectStatus()
+			.isBadRequest());
+		assertThat(JsonPath.<List<String>>read(byOperator, "$.errors[*].pointer"))
+			.containsExactlyInAnyOrder("#/profile/website", "#/profile/foundedYear");
 	}
 
 	@Test

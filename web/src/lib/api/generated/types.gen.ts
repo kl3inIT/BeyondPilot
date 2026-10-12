@@ -1437,9 +1437,9 @@ export type CreateOrganization = {
      */
     description: string;
     /**
-     * The year it started; for an independent builder, the year the practice did.
+     * The year it started; for an independent builder, the year the practice did. A company gives it; a team, a builder or another organization may leave it out.
      */
-    foundedYear: number;
+    foundedYear?: number | null;
     /**
      * The industries it works in or serves, as the codes the solutions use. A company names one to five; a team or a builder may name none.
      */
@@ -1455,7 +1455,10 @@ export type CreateOrganization = {
     name: string;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
-    website: string;
+    /**
+     * A company gives one; a team, a builder or another organization may leave it out.
+     */
+    website?: string | null;
 };
 
 /**
@@ -4895,9 +4898,9 @@ export type SaveOrganization = {
      */
     description: string;
     /**
-     * The year it started; for an independent builder, the year the practice did.
+     * The year it started; for an independent builder, the year the practice did. A company gives it; a team, a builder or another organization may leave it out.
      */
-    foundedYear: number;
+    foundedYear?: number | null;
     /**
      * The industries it works in or serves, as the codes the solutions use.
      */
@@ -4913,7 +4916,10 @@ export type SaveOrganization = {
      * The version the screen read.
      */
     version: number;
-    website: string;
+    /**
+     * A company gives one; a team, a builder or another organization may leave it out.
+     */
+    website?: string | null;
 };
 
 /**

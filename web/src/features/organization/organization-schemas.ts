@@ -50,31 +50,47 @@ export function profileValuesOf(organization?: Organization): ProfileValues {
 }
 
 /**
- * What the form checks before it asks the backend: that every fact is there. Whether the website is
- * an address is the backend's to say.
+ * Whether an organization of this type must give its website, the year it started and its
+ * industries. A company must; a team or a builder on their own may have none yet.
+ */
+export function givesCompanyFacts(type: Organization["type"]): boolean {
+  return type === "company";
+}
+
+/**
+ * What the form checks before it asks the backend: that every fact is there, and for a team or a
+ * builder every fact but the three only a company must give. A year that is written is checked
+ * whoever writes it. Whether the website is an address is the backend's to say.
  */
 export function profileSchema(say: Say) {
   const filled = (text: string) => text.trim() !== "";
   return z
     .object({
       name: z.string().refine(filled, say("nameRequired")),
-      website: z.string().refine(filled, say("websiteRequired")),
+      website: z.string(),
       type: z.enum(organizationTypes),
       teamSize: z.string().min(1, say("teamSizeRequired")),
       industries: z.array(z.string()),
       country: z.string().min(1, say("countryRequired")),
-      foundedYear: z.string().refine((text) => yearOf(text) !== null, say("foundedYearInvalid")),
+      foundedYear: z
+        .string()
+        .refine((text) => !filled(text) || yearOf(text) !== null, say("foundedYearInvalid")),
       description: z.string().refine(filled, say("descriptionRequired")),
       logoFileId: z.string(),
     })
     .superRefine((values, context) => {
-      // A company names its industries; a team or a builder on their own may not have settled on one.
-      if (values.type === "company" && values.industries.length === 0) {
-        context.addIssue({
-          code: "custom",
-          path: ["industries"],
-          message: say("industriesRequired"),
-        });
+      if (!givesCompanyFacts(values.type)) {
+        return;
+      }
+      const missing = {
+        website: !filled(values.website) && say("websiteRequired"),
+        industries: values.industries.length === 0 && say("industriesRequired"),
+        foundedYear: !filled(values.foundedYear) && say("foundedYearInvalid"),
+      };
+      for (const [field, message] of Object.entries(missing)) {
+        if (message) {
+          context.addIssue({ code: "custom", path: [field], message });
+        }
       }
     });
 }
@@ -87,9 +103,9 @@ export function profileBodyOf(values: ProfileValues): Omit<SaveOrganization, "ve
     country: values.country,
     teamSize: values.teamSize as SaveOrganization["teamSize"],
     industries: values.industries,
-    website: values.website.trim(),
+    website: values.website.trim() || null,
     description: values.description.trim(),
-    foundedYear: Number(values.foundedYear),
+    foundedYear: values.foundedYear.trim() ? Number(values.foundedYear) : null,
     logoFileId: values.logoFileId || null,
   };
 }

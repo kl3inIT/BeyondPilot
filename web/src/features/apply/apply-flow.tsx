@@ -756,8 +756,7 @@ function StepYou({
             {(field) => (
               <field.TextField
                 label={t("linkedin")}
-                // Not asked for, though the label does not say Optional.
-                required={false}
+                optional
                 type="url"
                 inputMode="url"
                 maxLength={300}

@@ -2,22 +2,21 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { z } from "zod";
 
 import { useAppForm } from "@/components/form/app-form";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Field, FieldDescription, FieldLabel, FieldTitle } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useNotify } from "@/hooks/use-notify";
 import { countryCodes, useCountryName } from "@/i18n/vocabulary";
 import { updateMyContact, type Me } from "@/lib/api/generated";
 
-/** A number as the backend takes it: digits with spaces, brackets, dots or dashes, and a leading plus. */
-const PHONE = /^\+?[0-9 ().-]*$/;
+import { contactBodyOf, contactSchema, contactValuesOf, MAX_NAME } from "./identity-schemas";
 
 /**
- * Where a person is and the number to reach them on, kept on the account. Both may stay empty; an
- * application asks for them when it needs them and starts from what is kept here.
+ * What a person is called, where they are and the number to reach them on, kept on the account. The
+ * name is theirs to change; the address they sign in with is not, so it is read here, not typed.
+ * The country and the number may stay empty; an application asks for them when it needs them and
+ * starts from what is kept here.
  */
 function AccountContactForm({ account }: { account: Me }) {
   const t = useTranslations("Account");
@@ -26,20 +25,14 @@ function AccountContactForm({ account }: { account: Me }) {
   const router = useRouter();
 
   const form = useAppForm({
-    defaultValues: { country: account.country ?? "", phone: account.phone ?? "" },
+    defaultValues: contactValuesOf(account),
     // The number is checked as it is typed, so a letter is refused where it is written.
-    validators: {
-      onChange: z.object({
-        country: z.string(),
-        phone: z.string().trim().regex(PHONE, t("phoneInvalid")),
-      }),
-    },
+    validators: { onChange: contactSchema(t) },
     onSubmit: async ({ value }) => {
       try {
-        await updateMyContact({
-          body: { country: value.country || null, phone: value.phone.trim() || null },
-        });
+        await updateMyContact({ body: contactBodyOf(value) });
         notify.success("Account.saved");
+        // The header reads the account again, so it shows the new name.
         router.refresh();
       } catch (error) {
         notify.failure(error, { otherwise: "Account.failed" });
@@ -57,20 +50,20 @@ function AccountContactForm({ account }: { account: Me }) {
       className="flex flex-col gap-5 rounded-2xl border bg-card p-5 md:p-6"
     >
       <div className="grid gap-5 sm:grid-cols-2">
+        <form.AppField name="name">
+          {(field) => (
+            <field.TextField
+              label={t("name")}
+              requiredMark
+              autoComplete="name"
+              maxLength={MAX_NAME}
+            />
+          )}
+        </form.AppField>
         <Field>
-          <FieldLabel htmlFor="account-name">{t("name")}</FieldLabel>
-          <Input id="account-name" value={account.displayName ?? ""} readOnly disabled />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="account-email">{t("email")}</FieldLabel>
-          <Input
-            id="account-email"
-            value={account.email}
-            readOnly
-            disabled
-            aria-describedby="account-email-hint"
-          />
-          <FieldDescription id="account-email-hint">{t("emailHint")}</FieldDescription>
+          <FieldTitle>{t("email")}</FieldTitle>
+          <p className="text-sm break-all">{account.email}</p>
+          <FieldDescription>{t("emailHint")}</FieldDescription>
         </Field>
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
