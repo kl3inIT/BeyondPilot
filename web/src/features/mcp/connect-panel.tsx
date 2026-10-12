@@ -27,6 +27,18 @@ const apps = {
 
 type AppKey = keyof typeof apps;
 
+/**
+ * What a step's sentence marks: `ui` is a label quoted from the other app's own screen, in that
+ * app's language, and `cmd` is something to type or paste as it stands.
+ */
+function stepParts(address: string) {
+  return {
+    address,
+    ui: (chunks: React.ReactNode) => <span className="font-medium">{chunks}</span>,
+    cmd: (chunks: React.ReactNode) => <code className="font-mono text-xs break-all">{chunks}</code>,
+  };
+}
+
 /** Copies a text, and says so for a moment. */
 function useCopy() {
   const [copied, setCopied] = useState(false);
@@ -90,7 +102,9 @@ function AppSteps({ address, keys }: { address: string; keys: readonly AppKey[] 
                   <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-primary">
                     {index + 1}
                   </span>
-                  <span className="pt-0.5 break-words">{t(step, { address })}</span>
+                  <span className="min-w-0 pt-0.5 break-words">
+                    {t.rich(step, stepParts(address))}
+                  </span>
                 </li>
               ))}
             </ol>

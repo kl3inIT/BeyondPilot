@@ -308,12 +308,25 @@ test.describe("solutions directory", () => {
   }) => {
     await page.goto("/solutions/policy-chat");
 
+    // The card itself says who states it and who reviewed it, and promises what the dialog holds.
+    const card = page
+      .getByRole("article")
+      .filter({ has: page.getByRole("button", { name: "Renewals at Mekong Life" }) });
+    await expect(card).toContainText("In production");
+    await expect(card).toContainText(
+      "Stated by Pocket Policy and reviewed by GenAI Fund on 1 Oct 2026. The customer has not confirmed it here.",
+    );
+    await expect(card).toContainText("Open to read the problem, what was deployed and the result.");
+
     await page.getByRole("button", { name: "Renewals at Mekong Life" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading", { name: "Renewals at Mekong Life" })).toBeVisible();
     await expect(
-      dialog.getByText("In production; reviewed by GenAI Fund on 1 Oct 2026."),
+      dialog.getByText(
+        "In production. Stated by Pocket Policy and reviewed by GenAI Fund on 1 Oct 2026. The customer has not confirmed it here.",
+      ),
     ).toBeVisible();
+    await expect(dialog.getByRole("heading", { name: "What was deployed" })).toBeVisible();
     await expect(
       dialog.getByText("Renewal questions filled the call centre every quarter."),
     ).toBeVisible();

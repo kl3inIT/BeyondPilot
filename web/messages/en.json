@@ -32,7 +32,7 @@
       "applications": "My applications",
       "reviews": "Reviews",
       "settings": "Account",
-      "mcp": "MCP",
+      "mcp": "Connect an AI app",
       "backToSite": "Back to the site",
       "appearance": "Appearance"
     },
@@ -57,6 +57,7 @@
       "message": "We use cookies to keep the site working, improve your browsing experience and analyze our traffic. If you choose “Reject All”, only the necessary cookies are used. <privacy>Read more</privacy>",
       "accept": "Accept All",
       "decline": "Reject All",
+      "settings": "Cookie settings",
       "customize": "Customize",
       "preferences": {
         "title": "Cookie preferences",
@@ -639,11 +640,12 @@
     "phoneHint": "With its country code, such as +84 912 345 678."
   },
   "Mcp": {
-    "metaTitle": "MCP · BeyondPilot",
-    "title": "MCP",
-    "lead": "Search BeyondPilot from ChatGPT, Claude or Codex.",
+    "metaTitle": "Connect an AI app · BeyondPilot",
+    "title": "Use BeyondPilot in your AI app",
+    "lead": "Connect ChatGPT, Claude or Codex through MCP (Model Context Protocol), then ask it about the AI solutions and programs listed on BeyondPilot.",
+    "limits": "The app signs in with your BeyondPilot account, can only search and read, and can be revoked any time under Connected apps.",
     "tabs": {
-      "label": "MCP",
+      "label": "AI app connection",
       "connect": "Connect",
       "apps": "Connected apps"
     },
@@ -656,26 +658,26 @@
       "apps": {
         "chatgpt": {
           "name": "ChatGPT",
-          "step1": "Settings › Apps and connectors › Create",
-          "step2": "Paste the address, keep OAuth",
-          "step3": "Sign in to BeyondPilot and choose Allow"
+          "step1": "In ChatGPT, open <ui>Settings › Apps and connectors</ui> and choose <ui>Create</ui>.",
+          "step2": "Paste the server address from this page and leave authentication set to <ui>OAuth</ui>.",
+          "step3": "When ChatGPT opens BeyondPilot, sign in and choose <ui>Allow</ui>."
         },
         "claude": {
           "name": "Claude",
-          "step1": "Settings › Connectors › Add custom connector",
-          "step2": "Paste the address",
-          "step3": "Sign in to BeyondPilot and choose Allow"
+          "step1": "In Claude, open <ui>Settings › Connectors</ui> and choose <ui>Add custom connector</ui>.",
+          "step2": "Name it BeyondPilot and paste the server address from this page.",
+          "step3": "When Claude opens BeyondPilot, sign in and choose <ui>Allow</ui>."
         },
         "codex": {
           "name": "Codex",
-          "step1": "Run codex mcp add beyondpilot --url {address}",
-          "step2": "Run codex mcp login beyondpilot, sign in and choose Allow"
+          "step1": "In a terminal, run <cmd>codex mcp add beyondpilot --url {address}</cmd>",
+          "step2": "Then run <cmd>codex mcp login beyondpilot</cmd>. When your browser opens BeyondPilot, sign in and choose <ui>Allow</ui>."
         },
         "other": {
           "name": "Other apps",
-          "step1": "Add the server {address} as streamable HTTP with OAuth",
+          "step1": "In your app's MCP settings, add a server of the type streamable HTTP with OAuth at <cmd>{address}</cmd>",
           "step2": "An app that names no client of its own signs in as mcp-local",
-          "step3": "Sign in to BeyondPilot and choose Allow",
+          "step3": "When the app opens BeyondPilot, sign in and choose <ui>Allow</ui>.",
           "clientHelp": "How an app without a client name signs in"
         }
       },
@@ -1439,6 +1441,7 @@
       "actions": {
         "open": "Actions for {name}",
         "review": "Review",
+        "reviewNamed": "Review {name}",
         "record": "Open record",
         "claim": "Decide claim"
       },
@@ -1515,7 +1518,21 @@
         "domain": "Email domain to verify (optional)",
         "domainHint": "Only the company's own domain, since colleagues on it can then join at once.",
         "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
-        "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate."
+        "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate.",
+        "facts": {
+          "description": "Description",
+          "website": "Website",
+          "teamSize": "Team size",
+          "foundedYear": "Year founded",
+          "industries": "Industries",
+          "creatorEmail": "Creator's email",
+          "members": "Members",
+          "membersMore": "{names} and {count} more",
+          "none": "Not stated"
+        },
+        "record": "Open record",
+        "more": "{count, plural, one {# more waits on this page} other {# more wait on this page}}",
+        "queueDone": "No other organization on this page waits for review."
       },
       "clear": "Clear filters",
       "queueEmpty": {
@@ -3148,7 +3165,12 @@
           "unknownVariable": "{variable} is not a variable of this email.",
           "missingVariable": "{variable} must appear: it is what this email is for.",
           "subjectLine": "The subject must be one line and not empty.",
-          "syntax": "A tag is not closed or not allowed. Use '{{name}}', '{{#name}}…{{/name}}' or '{{^name}}…{{/name}}'."
+          "syntax": "A variable or a condition in this text is not written correctly.",
+          "unclosed": "A variable is opened with '{{' but never closed with '}}'.",
+          "forbidden": "{tag} cannot be used here. Choose a variable from the list under the body.",
+          "unended": "The condition {name} starts but never ends.",
+          "unopened": "The condition {name} ends but never starts.",
+          "atLine": "Line {line}: {problem}"
         },
         "unsaved": "You have unsaved changes",
         "fixToSave": "{count, plural, one {Fix the problem marked below to save} other {Fix the # problems marked below to save}}",
@@ -3164,7 +3186,24 @@
         "body": "Body",
         "bodyHint": "Markdown: # heading, **bold**, [link](https://…).",
         "variables": "Variables",
-        "variablesHint": "Those with * must appear.",
+        "variablesHint": "Each is replaced by a value when the email is sent; the examples show what a reader would see.",
+        "example": "Example:",
+        "mustAppear": "Must appear",
+        "conditions": "Conditions",
+        "conditionsHint": "Select words in the body, then choose a condition: those words are sent only when it holds.",
+        "wrap": "Send the selected words only under the condition {name}",
+        "previewOn": "On in the preview",
+        "previewOff": "Off in the preview",
+        "switches": {
+          "owner": "Shown when the person is invited as an owner",
+          "claim": "Shown when the request was a claim to own the organization",
+          "resubmitted": "Shown when the application was changed and submitted again",
+          "primary": "Shown when the person is the proposal's primary contact",
+          "aboutProject": "Shown when the message is about a project",
+          "aboutRole": "Shown when the message is about a role",
+          "aboutOther": "Shown when the message is about something else",
+          "other": "Shown only in some cases of this email"
+        },
         "previewTitle": "Preview of {name}",
         "leave": {
           "title": "Leave without saving?",
@@ -3958,12 +3997,18 @@
         "taken": "Another organization already has this domain."
       },
       "websiteFormatHint": "A full address that starts with https://.",
-      "foundedYearFormatHint": "A four-digit year, such as 2021."
+      "foundedYearFormatHint": "A four-digit year, such as 2021.",
+      "existing": {
+        "title": "Your organization may already be on BeyondPilot",
+        "lead": "{count, plural, =1 {If this is yours, join it instead of creating it again. If yours is a different organization, continue below.} other {If one of these is yours, join it instead of creating it again. If yours is a different organization, continue below.}}"
+      }
     },
     "find": {
       "title": "Find your organization",
       "search": "Company or team name",
       "nothing": "No organization matches “{query}”.",
+      "failed": "The search did not run, so we cannot tell whether your organization is already here.",
+      "retry": "Try again",
       "way": {
         "join": "You can join at once",
         "joinDomain": "Your email is on {domain}, so you join at once",
@@ -4942,10 +4987,10 @@
       }
     },
     "deployment": {
-      "open": "Open the deployment to read the problem, what was deployed and the result.",
+      "open": "{holds, select, all {Open to read the problem, what was deployed and the result.} delivered {Open to read the problem and what was deployed.} result {Open to read the problem and the result.} other {Open to read the problem.}}",
       "eyebrow": "Customer deployment",
       "line": "{solution} · {customer}",
-      "lead": "{stage}; reviewed by GenAI Fund on {day}.",
+      "lead": "{stage}. Stated by {organization} and reviewed by GenAI Fund on {day}. The customer has not confirmed it here.",
       "problem": "The business problem",
       "delivered": "What was deployed",
       "scope": "Scope and result",
@@ -4954,11 +4999,12 @@
       "period": "Period",
       "result": "Result",
       "notPublished": "Not published",
+      "scopeNone": "{organization} published no channels, languages, period or result.",
       "about": "About this project",
       "deliveredBy": "Delivered by",
       "customer": "Customer",
       "solutionUsed": "Solution used",
-      "source": "Stated by the company and reviewed by GenAI Fund. The customer has not confirmed it here."
+      "source": "Stated by {organization} and reviewed by GenAI Fund on {day}. The customer has not confirmed it here."
     },
     "deployments": {
       "title": "Customer deployments",
