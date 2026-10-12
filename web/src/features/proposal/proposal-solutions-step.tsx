@@ -74,15 +74,18 @@ function ProposalSolutionsStep({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">{t("count", { count: rows.length })}</p>
+          {rows.length > 0 ? (
+            <p className="text-sm text-muted-foreground">{t("count", { count: rows.length })}</p>
+          ) : (
+            <span />
+          )}
           <Button prominence="secondary" onClick={() => setPicking(true)}>
             {t("add")}
           </Button>
         </div>
         {rows.length === 0 ? (
-          <div className="flex flex-col items-center gap-1 rounded-lg border border-dashed p-8 text-center">
-            <p className="text-sm font-medium">{t("empty.title")}</p>
-            <p className="text-sm text-muted-foreground">{t("empty.lead")}</p>
+          <div className="flex items-center justify-center rounded-lg border border-dashed p-8 text-center">
+            <p className="text-sm text-muted-foreground">{t("empty")}</p>
           </div>
         ) : (
           <ul className="flex flex-col gap-2">
@@ -124,7 +127,7 @@ function ProposalSolutionsStep({
           onChange={(event) => onApproach(event.target.value)}
         />
         <div className="flex items-start justify-between gap-3">
-          <FieldDescription>{t("approachHint")}</FieldDescription>
+          <span />
           <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
             {format.number(approach.length)} / {format.number(maxApproach)}
           </span>

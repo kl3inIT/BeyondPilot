@@ -7183,7 +7183,6 @@
       "metaTitle": "Gửi proposal · BeyondPilot",
       "headerTitle": "Proposal",
       "stepsHeading": "Proposal của bạn",
-      "saveNote": "Chỉ những người ở {name} xem được bản nháp của bạn.",
       "saving": "Đang lưu…",
       "notSaved": "Chưa lưu",
       "saved": "Đã lưu {time}",
@@ -7201,27 +7200,12 @@
         "pdf": "PDF proposal",
         "review": "Xem lại"
       },
-      "leads": {
-        "organization": "Proposal được gửi thay mặt tổ chức của bạn.",
-        "solutions": "Chọn các giải pháp AI của tổ chức bạn dùng cho use case này và giải thích cách chúng giải quyết bài toán.",
-        "profile": "Hồ sơ nhân sự của bạn.",
-        "team": "Nêu những người sẽ tham gia, vai trò của từng người và người đầu mối mà tổ chức đăng use case nên liên hệ.",
-        "pdf": "Tải lên một tệp PDF proposal: bạn sẽ làm gì, làm thế nào và trong bao lâu.",
-        "review": "Kiểm tra những gì bạn sắp gửi. Bạn không thể sửa proposal sau khi đã gửi."
-      },
-      "organization": {
-        "approved": "Đã được GenAI Fund phê duyệt"
-      },
       "solutions": {
         "count": "{count, plural, other {# giải pháp}}",
         "add": "Thêm giải pháp",
-        "empty": {
-          "title": "Chưa có giải pháp nào",
-          "lead": "Hãy thêm ít nhất một giải pháp của tổ chức bạn."
-        },
+        "empty": "Chưa có solution nào",
         "remove": "Bỏ {name}",
         "approach": "Các giải pháp giải quyết use case này như thế nào",
-        "approachHint": "Nêu mỗi giải pháp làm được gì cho use case này và bạn sẽ điều chỉnh những gì.",
         "needed": {
           "solution": "Hãy thêm ít nhất một giải pháp.",
           "approach": "Hãy giải thích cách các giải pháp giải quyết use case này."
@@ -7251,10 +7235,7 @@
       "team": {
         "count": "{count, plural, other {# thành viên}}",
         "add": "Thêm thành viên",
-        "empty": {
-          "title": "Chưa có đội ngũ",
-          "lead": "Hãy thêm những người trong tổ chức sẽ tham gia use case này."
-        },
+        "empty": "Chưa có thành viên nào",
         "columns": {
           "member": "Thành viên",
           "role": "Vai trò",
@@ -7313,11 +7294,9 @@
       "sent": {
         "metaTitle": "Đã gửi proposal · BeyondPilot",
         "title": "Proposal của bạn đã được gửi",
-        "lead": "Tổ chức đăng use case giờ có thể đọc proposal này.",
         "rows": {
           "useCase": "Use case",
           "organization": "Gửi cho",
-          "solutions": "Giải pháp",
           "sent": "Đã gửi"
         },
         "backToUseCase": "Quay lại use case",

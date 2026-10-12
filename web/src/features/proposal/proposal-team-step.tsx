@@ -52,15 +52,18 @@ function ProposalTeamStep({ members, team, onTeam, checked }: ProposalTeamStepPr
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">{t("count", { count: team.length })}</p>
+        {team.length > 0 ? (
+          <p className="text-sm text-muted-foreground">{t("count", { count: team.length })}</p>
+        ) : (
+          <span />
+        )}
         <Button prominence="secondary" disabled={free.length === 0} onClick={() => setAdding(true)}>
           {t("add")}
         </Button>
       </div>
       {team.length === 0 ? (
-        <div className="flex flex-col items-center gap-1 rounded-lg border border-dashed p-8 text-center">
-          <p className="text-sm font-medium">{t("empty.title")}</p>
-          <p className="text-sm text-muted-foreground">{t("empty.lead")}</p>
+        <div className="flex items-center justify-center rounded-lg border border-dashed p-8 text-center">
+          <p className="text-sm text-muted-foreground">{t("empty")}</p>
         </div>
       ) : (
         <RadioGroup

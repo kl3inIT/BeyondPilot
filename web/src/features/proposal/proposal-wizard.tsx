@@ -305,7 +305,7 @@ function ProposalWizard({
       current={step}
       done={done}
       onStep={(name) => void go(name)}
-      notes={[editing ? t("edit.note") : t("saveNote", { name: organization.name })]}
+      notes={editing ? [t("edit.note")] : []}
     >
       {editing && editableUntil && (
         <Alert>
@@ -336,12 +336,7 @@ function ProposalWizard({
       {step === "profile" ? (
         <h1 className="sr-only">{t("steps.profile")}</h1>
       ) : (
-        <div className="flex flex-col gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}`)}</h1>
-          <p className="text-base text-muted-foreground">
-            {editing && step === "review" ? t("edit.reviewLead") : t(`leads.${step}`)}
-          </p>
-        </div>
+        <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}`)}</h1>
       )}
 
       {step === "organization" && <ProposalOrganizationStep organization={organization} />}
