@@ -101,68 +101,73 @@ async function NestlePage({ program }: { program: Program }) {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pt-6 pb-16 md:px-8">
         <ProgramBreadcrumb name={program.name} />
 
-        <header className="flex flex-col gap-8 rounded-3xl border bg-card p-6 md:p-10">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:gap-12">
-            <div className="flex min-w-0 flex-1 flex-col gap-4">
-              <div className="flex">
-                <Badge variant={open ? "success" : "info"}>{page(`phase.${program.phase}`)}</Badge>
-              </div>
-              <h1 className="text-4xl font-semibold tracking-headline md:text-5xl">
-                {program.name}
-              </h1>
-              <p className="max-w-xl text-xl font-semibold text-primary">{t("hero.tagline")}</p>
-              <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
-                {open && (
-                  <Button size="lg" href={apply}>
-                    {page("applyNow")}
+        <div className="flex flex-col gap-6">
+          <header className="flex flex-col overflow-hidden rounded-3xl border">
+            <div className="flex flex-col gap-8 bg-primary bg-linear-150 from-foreground/60 via-transparent via-60% to-transparent p-6 text-primary-foreground md:p-10 lg:flex-row lg:items-center lg:gap-12 dark:from-transparent">
+              <div className="flex min-w-0 flex-1 flex-col gap-4">
+                <div className="flex">
+                  <Badge variant={open ? "success" : "info"}>
+                    {page(`phase.${program.phase}`)}
+                  </Badge>
+                </div>
+                <h1 className="text-4xl font-semibold tracking-headline md:text-5xl">
+                  {program.name}
+                </h1>
+                <p className="max-w-xl text-xl font-semibold">{t("hero.tagline")}</p>
+                <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center">
+                  {open && (
+                    <Button size="lg" prominence="secondary" href={apply}>
+                      {page("applyNow")}
+                    </Button>
+                  )}
+                  <Button size="lg" prominence="inverse" href="#areas">
+                    {t("hero.explore")}
+                    <ArrowDownIcon aria-hidden="true" />
                   </Button>
+                </div>
+                {open && (
+                  <p className="text-sm">
+                    <ProgramCountdown
+                      deadline={applications.closesAt}
+                      closes={deadlineText(format, applications)}
+                    />
+                  </p>
                 )}
-                <Button size="lg" prominence="secondary" href="#areas">
-                  {t("hero.explore")}
-                  <ArrowDownIcon aria-hidden="true" />
-                </Button>
               </div>
-              {open && (
-                <p className="text-sm text-muted-foreground">
-                  <ProgramCountdown
-                    deadline={applications.closesAt}
-                    closes={deadlineText(format, applications)}
-                  />
-                </p>
-              )}
+              {/* The key visual keeps its white ground, which is the tile it stands on. */}
+              <Image
+                src="/programs/nestle/key-visual.webp"
+                alt={t("hero.imageAlt")}
+                width={1100}
+                height={900}
+                priority
+                sizes="(min-width: 1024px) 26rem, (min-width: 640px) 24rem, 100vw"
+                className="h-auto w-full max-w-sm self-center rounded-3xl lg:w-104 lg:max-w-none"
+              />
             </div>
-            <Image
-              src="/programs/nestle/key-visual.webp"
-              alt={t("hero.imageAlt")}
-              width={1013}
-              height={916}
-              priority
-              sizes="(min-width: 1024px) 26rem, (min-width: 640px) 24rem, 100vw"
-              className="h-auto w-full max-w-sm self-center rounded-2xl lg:w-104 lg:max-w-none"
-            />
-          </div>
+            <dl className="grid gap-x-6 gap-y-5 bg-accent p-6 sm:grid-cols-2 md:px-10 lg:grid-cols-4">
+              {facts.map(([fact, Icon]) => (
+                // A group of a description list holds only its term and description, so the icon
+                // stands inside the term.
+                <div key={fact} className="flex flex-col gap-1.5">
+                  <dt className="flex items-center gap-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                    <Icon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                    {t(`hero.facts.${fact}.label`)}
+                  </dt>
+                  <dd className="font-semibold">
+                    {fact === "closes" && closes ? closes : t(`hero.facts.${fact}.value`)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </header>
           <div className="grid gap-4 md:grid-cols-5 md:gap-10">
             <p className="text-lg text-muted-foreground md:col-span-3">{t("hero.lead")}</p>
             <p className="self-start border-l-2 border-primary pl-3 text-sm font-medium md:col-span-2">
               {t("hero.open")}
             </p>
           </div>
-          <dl className="grid gap-x-6 gap-y-5 border-t pt-6 sm:grid-cols-2 lg:grid-cols-4">
-            {facts.map(([fact, Icon]) => (
-              // A group of a description list holds only its term and description, so the icon
-              // stands inside the term.
-              <div key={fact} className="flex flex-col gap-1.5">
-                <dt className="flex items-center gap-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  <Icon className="size-4 shrink-0 text-primary" aria-hidden="true" />
-                  {t(`hero.facts.${fact}.label`)}
-                </dt>
-                <dd className="font-semibold">
-                  {fact === "closes" && closes ? closes : t(`hero.facts.${fact}.value`)}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </header>
+        </div>
 
         <nav aria-label={t("nav.label")} className="border-b">
           <ul className="flex flex-wrap gap-x-6 text-sm">
@@ -348,8 +353,8 @@ async function NestlePage({ program }: { program: Program }) {
             <Image
               src="/programs/nestle/key-visual.webp"
               alt=""
-              width={1013}
-              height={916}
+              width={1100}
+              height={900}
               sizes="(min-width: 768px) 22rem, 100vw"
               className="hidden h-auto rounded-2xl md:block md:w-88"
             />
