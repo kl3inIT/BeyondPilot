@@ -208,10 +208,16 @@ def maturity(value) -> tuple[str | None, str | None]:
 TEAM_SIZE = {
     "100-499 employees": "100_499", "100–499 employees": "100_499",
     "500-999 employees": "500_999", "500–999 employees": "500_999",
+    # The bands v1 offers an enterprise.
+    "1,000-4,999 employees": "1000_4999", "1,000–4,999 employees": "1000_4999",
+    "5,000-9,999 employees": "5000_plus", "5,000–9,999 employees": "5000_plus",
+    "10,000-49,999 employees": "5000_plus", "10,000–49,999 employees": "5000_plus",
+    "50,000 employees or more": "5000_plus",
 }
 
 # v1 bands that straddle two of BeyondPilot's: guessing one would store a size nobody gave, so they stay unknown.
-TEAM_SIZE_STRADDLING = {"1-19 employees", "1–19 employees", "20-99 employees", "20–99 employees"}
+TEAM_SIZE_STRADDLING = {"1-19 employees", "1–19 employees", "20-99 employees", "20–99 employees",
+                        "less than 100 employees"}
 
 
 def team_size(value) -> tuple[str | None, str | None]:
@@ -246,7 +252,9 @@ COUNTRY = {
     "kyrgyzstan": "KG", "antigua and barbuda": "AG", "israel": "IL", "qatar": "QA", "laos": "LA", "uganda": "UG",
     "italy": "IT", "mexico": "MX", "poland": "PL", "kazakhstan": "KZ", "saint vincent and the grenadines": "VC",
     "jordan": "JO", "ukraine": "UA", "bulgaria": "BG", "cambodia": "KH", "angola": "AO", "argentina": "AR",
-    "malta": "MT", "sri lanka": "LK", "georgia": "GE",
+    "malta": "MT", "sri lanka": "LK", "georgia": "GE", "belize": "BZ", "switzerland": "CH", "saudi arabia": "SA",
+    # As v1 writes them for an enterprise's headquarters.
+    "korea south": "KR", "philippiness": "PH",
 }
 
 

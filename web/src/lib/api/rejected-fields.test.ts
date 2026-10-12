@@ -19,6 +19,12 @@ describe("rejectedFields", () => {
     );
   });
 
+  it("looks under the member that holds the form's fields, when told which", () => {
+    expect(
+      rejectedFields(problem("#/profile/name", "#/emailDomain", "#/profile"), "profile"),
+    ).toEqual(new Set(["name", "emailDomain"]));
+  });
+
   it("is empty for a failure that is not a validation problem", () => {
     expect(rejectedFields(new ApiError(undefined, undefined))).toEqual(new Set());
     expect(rejectedFields(new Error("other"))).toEqual(new Set());

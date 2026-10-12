@@ -150,8 +150,8 @@ test.describe("workspace organization", () => {
     await expect(page.getByText("Select a team size.")).toBeVisible();
     await expect(page.getByText("Choose at least one industry.")).toBeVisible();
     await expect(page.getByText("Select a country.")).toBeVisible();
-    // The website, the year and the description are asked as the mockup asks them.
-    await expect(page.getByText("Enter a full address that starts with https://")).toBeVisible();
+    // The year and the description are asked as the mockup asks them.
+    await expect(page.getByText("Enter the organization's website.")).toBeVisible();
     await expect(
       page.getByText("Enter a four-digit year no later than this year, such as 2021."),
     ).toBeVisible();
