@@ -1,11 +1,12 @@
 import { ActivityIcon, SearchXIcon } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { getFormatter } from "@/i18n/format-server";
 import type { AiUsageCallList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -44,7 +45,7 @@ async function UsageCallsPage({
     });
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
-      : t("dayAndTime", { day: format.dateTime(at, { day: "numeric", month: "short" }), time });
+      : t("dayAndTime", { day: format.dateTime(at, "day"), time });
   }
 
   const rows = calls.items.map((call) => {

@@ -1,12 +1,13 @@
 "use client";
 
 import { TimerIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { useFormatter } from "@/i18n/format";
 import { siteRoutes } from "@/lib/site";
 
 import { TalentEnquiry } from "./talent-enquiry";
@@ -78,7 +79,7 @@ function TalentContact({
             <AlertTitle>{t("waitingTitle", { name })}</AlertTitle>
             <AlertDescription>
               {t("waitingLead", {
-                date: format.dateTime(new Date(waitingSince), { dateStyle: "medium" }),
+                date: format.dateTime(new Date(waitingSince), "date"),
               })}
             </AlertDescription>
           </Alert>

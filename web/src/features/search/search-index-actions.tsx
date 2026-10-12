@@ -14,8 +14,6 @@ import {
   type SearchIndexHeldBack,
 } from "@/lib/api/generated";
 
-import { aiError } from "./admin-ai-errors";
-
 /**
  * Turns semantic search on or off. Off, search matches keywords and calls no provider; without a
  * usable provider the switch is off and cannot be turned on.
@@ -43,7 +41,7 @@ function SemanticSwitch({
       notify.success(next ? "Admin.searchIndex.done.on" : "Admin.searchIndex.done.off");
       router.refresh();
     } catch (error) {
-      notify.error(aiError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }
@@ -82,7 +80,7 @@ function RebuildIndex({ wide }: { wide?: boolean }) {
       });
       router.refresh();
     } catch (error) {
-      notify.error(aiError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }
@@ -116,7 +114,7 @@ function RetryEmbeddings({ item, wide }: { item?: SearchIndexHeldBack; wide?: bo
       notify.success("Admin.searchIndex.done.retried", { count: data.count });
       router.refresh();
     } catch (error) {
-      notify.error(aiError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }

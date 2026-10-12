@@ -26,7 +26,6 @@ import {
 } from "@/lib/api/generated";
 
 import { solutionRejections, solutionTakedowns } from "./solution-codes";
-import { solutionError } from "./solution-errors";
 
 /** The longest reason for a send back that the backend takes. */
 const MAX_REASON = 1000;
@@ -97,7 +96,7 @@ function SolutionReview({ solution, nextHref }: SolutionReviewProps) {
         setPending(null);
       }
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
       deciding.current = false;
       setPending(null);
     }

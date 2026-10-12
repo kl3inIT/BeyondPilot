@@ -10,7 +10,6 @@ import { chooseSolutionOffers, type Solution } from "@/lib/api/generated";
 
 import { OfferPicker } from "./offer-picker";
 import { limits } from "./solution-editor-state";
-import { solutionError } from "./solution-errors";
 
 /**
  * The offers a solution that was sent for review comes with, as an operator chooses them. Its owners
@@ -36,7 +35,7 @@ function SolutionOffersChoice({
         notify.success("Admin.solutions.offers.saved", { name: solution.name });
         router.refresh();
       } catch (error) {
-        notify.error(solutionError(error));
+        notify.failure(error);
       }
     },
   });

@@ -1,5 +1,5 @@
 import { Building2Icon, SearchXIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -9,6 +9,7 @@ import { ListFooter } from "@/components/composites/list-footer";
 import { reviewState } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganizationList } from "@/lib/api/generated";
@@ -99,9 +100,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
     ),
     received: (
       <span className="text-muted-foreground">
-        {format.dateTime(new Date(organization.requestedAt ?? organization.createdAt), {
-          dateStyle: "medium",
-        })}
+        {format.dateTime(new Date(organization.requestedAt ?? organization.createdAt), "date")}
       </span>
     ),
     actions: <AdminOrganizationRowActions organization={organization} />,

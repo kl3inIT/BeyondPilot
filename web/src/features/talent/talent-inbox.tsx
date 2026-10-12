@@ -1,10 +1,11 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
 import { Status } from "@/components/composites/status";
+import { useFormatter } from "@/i18n/format";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { TalentEnquiry } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
@@ -61,7 +62,7 @@ function TalentInbox({ enquiries }: { enquiries: TalentEnquiry[] }) {
                 <span className="flex justify-between gap-3 text-sm text-muted-foreground">
                   <span className="truncate">{topic(enquiry.topic)}</span>
                   <span className="shrink-0 tabular-nums">
-                    {format.dateTime(new Date(enquiry.createdAt), { dateStyle: "medium" })}
+                    {format.dateTime(new Date(enquiry.createdAt), "date")}
                   </span>
                 </span>
               </button>
@@ -88,7 +89,7 @@ function EnquiryDetail({ enquiry }: { enquiry: TalentEnquiry }) {
   const t = useTranslations("Talent.mine.inbox");
   const topic = useVocabulary("enquiryTopic");
   const format = useFormatter();
-  const date = (value: string) => format.dateTime(new Date(value), { dateStyle: "medium" });
+  const date = (value: string) => format.dateTime(new Date(value), "date");
   const name = enquiry.senderName ?? t("someone");
 
   return (

@@ -17,7 +17,6 @@ import {
 } from "@/lib/api/generated";
 
 import { takeDownReasons } from "./organization-codes";
-import { organizationError } from "./organization-errors";
 
 type TakeDownProps = {
   organization: Pick<Organization, "id" | "name">;
@@ -54,7 +53,7 @@ function TakeDownDialog({
       onClose();
       router.refresh();
     } catch (error) {
-      notify.error(organizationError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }
@@ -95,7 +94,7 @@ function RestoreButton({ organization, reason }: TakeDownProps & { reason: strin
       setAsking(false);
       router.refresh();
     } catch (error) {
-      notify.error(organizationError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }

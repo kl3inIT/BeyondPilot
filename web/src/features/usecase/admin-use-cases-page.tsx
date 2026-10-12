@@ -1,5 +1,5 @@
 import { EllipsisIcon, FileTextIcon, SearchXIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import type { AdminUseCaseList, UseCaseOrganization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -48,8 +49,7 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
   const format = useFormatter();
   const locale = useLocale();
 
-  const day = (instant: string) =>
-    format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
+  const day = (instant: string) => format.dateTime(new Date(instant), "date");
 
   const rows = useCases.items.map((useCase) => ({
     id: useCase.id,

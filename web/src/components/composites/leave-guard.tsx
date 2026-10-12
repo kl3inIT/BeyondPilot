@@ -24,6 +24,23 @@ function onGuardEntry() {
 }
 
 /**
+ * Has the browser ask before the page is closed or reloaded, for as long as `unsaved` says there is
+ * work to lose. The one place that listens for it: `LeaveGuard` asks through it, and so does a page
+ * that saves by itself and only has the moments between two saves to protect.
+ */
+function useUnloadWarning(unsaved: () => boolean) {
+  useEffect(() => {
+    function ask(event: BeforeUnloadEvent) {
+      if (unsaved()) {
+        event.preventDefault();
+      }
+    }
+    window.addEventListener("beforeunload", ask);
+    return () => window.removeEventListener("beforeunload", ask);
+  }, [unsaved]);
+}
+
+/**
  * Keeps unsaved work from being lost by accident. While `active`, a link of the page that leads
  * elsewhere asks first, and so does the browser when the page is closed or reloaded. With `back`,
  * the browser's Back asks too.
@@ -32,14 +49,11 @@ function LeaveGuard({ active, back, title, description, leaveLabel, stayLabel }:
   const [destination, setDestination] = useState<Destination | null>(null);
   const leaving = useRef(false);
 
+  useUnloadWarning(() => active && !leaving.current);
+
   useEffect(() => {
     if (!active) {
       return;
-    }
-    function askBrowser(event: BeforeUnloadEvent) {
-      if (!leaving.current) {
-        event.preventDefault();
-      }
     }
     function askLink(event: MouseEvent) {
       const link = (event.target as HTMLElement).closest("a[href]");
@@ -57,12 +71,8 @@ function LeaveGuard({ active, back, title, description, leaveLabel, stayLabel }:
       event.stopPropagation();
       setDestination({ href: url.href });
     }
-    window.addEventListener("beforeunload", askBrowser);
     document.addEventListener("click", askLink, true);
-    return () => {
-      window.removeEventListener("beforeunload", askBrowser);
-      document.removeEventListener("click", askLink, true);
-    };
+    return () => document.removeEventListener("click", askLink, true);
   }, [active]);
 
   useEffect(() => {
@@ -122,4 +132,4 @@ function LeaveGuard({ active, back, title, description, leaveLabel, stayLabel }:
   );
 }
 
-export { LeaveGuard, onGuardEntry };
+export { LeaveGuard, onGuardEntry, useUnloadWarning };

@@ -1,20 +1,18 @@
-import { programFormatter } from "@/features/program/program-format";
+import { vietnamDay } from "@/features/program/program-format";
+import { deadlineText, formatterOf } from "@/i18n/formats";
 
-/** Times on the application form, in Vietnam time, as the program sets its deadline. */
+/** Times on the application form, in the app's shapes (`@/i18n/formats`), from the strings the backend sends. */
 export function applyFormatter(locale: string) {
-  const format = programFormatter(locale);
-  const time = { hour: "2-digit", minute: "2-digit", hourCycle: "h23" } as const;
+  const format = formatterOf(locale);
   return {
     /** "15 Oct, 23:59 ICT". */
-    deadline: (at: string) =>
-      `${format.dateTime(new Date(at), { day: "numeric", month: "short" })}, ${format.dateTime(new Date(at), time)} ICT`,
+    deadline: (at: string) => deadlineText(format, new Date(at)),
     /** "14:32". */
-    time: (at: string) => format.dateTime(new Date(at), time),
+    time: (at: string) => format.dateTime(new Date(at), "time"),
     /** "16 Oct", a day the backend writes as 2026-10-16. */
-    day: (day: string) =>
-      format.dateTime(new Date(`${day}T00:00:00+07:00`), { day: "numeric", month: "short" }),
+    day: (day: string) => format.dateTime(vietnamDay(day), "day"),
     /** "3 Oct 2026, 14:32 ICT". */
     moment: (at: string) =>
-      `${format.dateTime(new Date(at), { day: "numeric", month: "short", year: "numeric" })}, ${format.dateTime(new Date(at), time)} ICT`,
+      `${format.dateTime(new Date(at), "date")}, ${format.dateTime(new Date(at), "time")} ICT`,
   };
 }

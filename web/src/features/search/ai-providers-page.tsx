@@ -1,5 +1,5 @@
 import { PlugZapIcon, ScanSearchIcon } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { HelpPopover } from "@/components/composites/help-popover";
@@ -12,6 +12,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { getFormatter } from "@/i18n/format-server";
 import type { AiProviders } from "@/lib/api/generated";
 import { SettingsBlock } from "@/features/ai/settings-block";
 import { siteRoutes } from "@/lib/site";
@@ -97,12 +98,7 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
                 <div className="flex flex-col gap-0.5 px-4 py-3">
                   <dt className="text-xs text-muted-foreground">{t("model.since")}</dt>
                   <dd className="text-sm font-medium">
-                    {embedding.since
-                      ? format.dateTime(new Date(embedding.since), {
-                          dateStyle: "medium",
-                          timeZone: "Asia/Ho_Chi_Minh",
-                        })
-                      : "—"}
+                    {embedding.since ? format.dateTime(new Date(embedding.since), "date") : "—"}
                   </dd>
                 </div>
               </dl>
@@ -168,11 +164,7 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
                         {t("connected.meta", {
                           address: provider.baseUrl,
                           name: provider.updatedBy,
-                          date: format.dateTime(new Date(provider.updatedAt), {
-                            day: "numeric",
-                            month: "short",
-                            timeZone: "Asia/Ho_Chi_Minh",
-                          }),
+                          date: format.dateTime(new Date(provider.updatedAt), "day"),
                         })}
                       </span>
                       {provider.inUse && (

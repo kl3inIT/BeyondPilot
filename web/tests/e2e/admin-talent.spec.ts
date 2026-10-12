@@ -277,7 +277,7 @@ test.describe("admin talent", () => {
     await expect(page.getByText("Siti Rahma is featured.")).toBeVisible();
 
     await page.goto(`/admin/talent/${arif}`);
-    await expect(page.locator("[data-featured]")).toHaveText("Featured Oct 1, 2026");
+    await expect(page.locator("[data-featured]")).toHaveText("Featured 1 Oct 2026");
     await expectNoSeriousA11yViolations(page);
     await page.getByRole("button", { name: "Stop featuring" }).click();
     await expect(page.getByText("Arif Hidayat is no longer featured.")).toBeVisible();

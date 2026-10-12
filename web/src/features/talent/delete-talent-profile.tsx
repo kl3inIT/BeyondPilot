@@ -9,8 +9,6 @@ import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { useNotify } from "@/hooks/use-notify";
 import { deleteMyTalentProfile } from "@/lib/api/generated";
 
-import { talentError } from "./talent-errors";
-
 /**
  * Deletes the caller's talent profile, its projects and the messages sent through it, after asking.
  * The page is read again and offers a new, empty profile.
@@ -30,7 +28,7 @@ function DeleteTalentProfile() {
       setAsking(false);
       router.refresh();
     } catch (error) {
-      notify.error(talentError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }

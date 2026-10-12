@@ -24,6 +24,31 @@ const eslintConfig = defineConfig([
       "shadcn/no-restyle": ["error", { allow: ["layout"] }],
     },
   },
+  {
+    // Dates are written one way (docs/conventions.md › Internationalization): next-intl's own
+    // formatter would write an English date the American way, so only src/i18n may take it.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/i18n/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "next-intl",
+              importNames: ["useFormatter", "createFormatter"],
+              message: "Use useFormatter from @/i18n/format.",
+            },
+            {
+              name: "next-intl/server",
+              importNames: ["getFormatter"],
+              message: "Use getFormatter from @/i18n/format-server.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   prettier,
   // Override default ignores of eslint-config-next.
   globalIgnores([

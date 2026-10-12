@@ -189,7 +189,7 @@ test.describe("admin organizations", () => {
 
     await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
     // Who created it and its website are read when the dialog opens.
-    await expect(dialog.getByText(/Created by Linh Nguyễn on Oct 1, 2026/)).toBeVisible();
+    await expect(dialog.getByText(/Created by Linh Nguyễn on 1 Oct 2026/)).toBeVisible();
     await expect(dialog.getByText("Company · Vietnam · lumenhealth.example")).toBeVisible();
     // The creator's work domain is proposed, for the operator to confirm.
     await expect(dialog.getByLabel("Email domain to verify (optional)")).toHaveValue(
@@ -375,7 +375,7 @@ test.describe("admin organizations", () => {
     await expect(page).toHaveURL(`/admin/organizations/${openKitchen}`);
     await expect(page).toHaveTitle("Open Kitchen · BeyondPilot");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Open Kitchen");
-    await expect(page.getByText("Created by Đạt Phan on Oct 1, 2026")).toBeVisible();
+    await expect(page.getByText("Created by Đạt Phan on 1 Oct 2026")).toBeVisible();
     const claims = page.getByRole("region", { name: "Claims to own it" });
     await expect(claims.getByText("I founded the team.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
@@ -405,7 +405,7 @@ test.describe("admin organizations", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     await page.goto(`/admin/organizations/${quietMill}`);
 
-    await expect(page.getByText("Taken down on Oct 6, 2026")).toBeVisible();
+    await expect(page.getByText("Taken down on 6 Oct 2026")).toBeVisible();
     await expect(page.getByText("Reason: Misleading or false information.")).toBeVisible();
     await expect(page.getByText("Send us the contract or remove the customer.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
@@ -532,7 +532,7 @@ test.describe("admin organizations", () => {
     await page.goto(`/admin/organizations/${pocketPolicyLtd}`);
 
     await expect(
-      page.getByRole("heading", { name: "Merged into Pocket Policy on Oct 7, 2026 by Young Xv" }),
+      page.getByRole("heading", { name: "Merged into Pocket Policy on 7 Oct 2026 by Young Xv" }),
     ).toBeVisible();
     await expect(
       page.getByText(
@@ -615,7 +615,7 @@ test.describe("admin organizations", () => {
     ]);
     // The row is drawn as a table row and as a stacked row; one of them shows.
     await expect(
-      page.getByText("Invited Oct 1, 2026 · expires Oct 8, 2026").filter({ visible: true }),
+      page.getByText("Invited 1 Oct 2026 · expires 8 Oct 2026").filter({ visible: true }),
     ).toHaveCount(1);
   });
 

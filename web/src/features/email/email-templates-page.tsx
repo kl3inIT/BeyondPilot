@@ -1,8 +1,9 @@
 import { ChevronRightIcon } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
+import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { EmailTemplateList } from "@/lib/api/generated";
 import { adminEmailTemplateRoute, siteRoutes } from "@/lib/site";

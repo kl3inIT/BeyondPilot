@@ -21,7 +21,6 @@ import {
   type EmbeddingModelInUse,
 } from "@/lib/api/generated";
 
-import { aiError } from "./admin-ai-errors";
 import { ProbeResult } from "./provider-probe";
 
 /** How many items the job embeds a minute: a batch of 32 every minute. */
@@ -76,7 +75,7 @@ function ChangeModel({ providers, vendors, current, items, settingsVersion }: Ch
         setOpen(false);
         router.refresh();
       } catch (error) {
-        notify.error(aiError(error));
+        notify.failure(error);
       }
     },
   });
@@ -103,7 +102,7 @@ function ChangeModel({ providers, vendors, current, items, settingsVersion }: Ch
       });
       setResult(data);
     } catch (error) {
-      notify.error(aiError(error));
+      notify.failure(error);
     } finally {
       setTesting(false);
     }

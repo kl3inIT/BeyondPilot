@@ -1,5 +1,5 @@
 import { ScrollTextIcon, SearchXIcon, ServerCogIcon } from "lucide-react";
-import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -7,6 +7,7 @@ import { DataTableEmpty, DataTablePager } from "@/components/composites/data-tab
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Person } from "@/components/composites/person";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { getFormatter } from "@/i18n/format-server";
 import type { AuditEvent, AuditEventList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -48,7 +49,7 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
       : t("dayAndTime", {
-          day: format.dateTime(at, { day: "numeric", month: "short", year: "numeric" }),
+          day: format.dateTime(at, "date"),
           time,
         });
   }

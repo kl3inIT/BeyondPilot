@@ -17,7 +17,6 @@ import {
 } from "@/lib/api/generated";
 
 import { deploymentRejections } from "./solution-codes";
-import { solutionError } from "./solution-errors";
 
 /**
  * The customer deployments of a solution as an operator reviews them: what its organization claims
@@ -52,7 +51,7 @@ function CustomerDeploymentsReview({ deployments }: { deployments: CustomerDeplo
       setRejecting(null);
       router.refresh();
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
     } finally {
       setPending(null);
     }

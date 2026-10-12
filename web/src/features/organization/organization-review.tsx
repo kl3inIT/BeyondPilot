@@ -2,7 +2,7 @@
 
 import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { ShieldCheckIcon, Undo2Icon } from "lucide-react";
 import { useRef, useState } from "react";
 import { z } from "zod";
@@ -14,8 +14,9 @@ import { ReasonDialog } from "@/components/composites/reason-dialog";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { useNotify } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
-import { ApiError } from "@/lib/api/client";
+import { failedWith } from "@/lib/api/failure";
 import {
   approveOrganization,
   refuseOrganization,
@@ -25,7 +26,6 @@ import {
 } from "@/lib/api/generated";
 
 import { refusalReasons } from "./organization-codes";
-import { organizationError } from "./organization-errors";
 import { domainOf, isDomain, websiteHost } from "./organization-format";
 import { OrganizationMark } from "./organization-mark";
 import { useAdminOrganization } from "./verified-domain";
@@ -107,10 +107,10 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
       router.refresh();
     } catch (error) {
       // A domain another organization has is said at the field; anything else in a toast.
-      if (error instanceof ApiError && error.code === "ORGANIZATION_DOMAIN_TAKEN") {
+      if (failedWith(error, "ORGANIZATION_DOMAIN_TAKEN")) {
         setServerErrors(approval, { fields: { emailDomain: { message: t("domainTaken") } } });
       } else {
-        notify.error(organizationError(error));
+        notify.failure(error);
       }
       deciding.current = false;
       setPending(false);
@@ -171,7 +171,7 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
     );
   }
 
-  const day = format.dateTime(new Date(organization.createdAt), { dateStyle: "medium" });
+  const day = format.dateTime(new Date(organization.createdAt), "date");
   const kind = [
     typeName(organization.type),
     organization.country && countryName(organization.country),

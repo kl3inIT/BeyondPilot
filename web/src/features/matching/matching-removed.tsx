@@ -1,9 +1,10 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { SolutionLogo } from "@/features/solution/solution-logo";
+import { useFormatter } from "@/i18n/format";
 import type { MatchingCandidate } from "@/lib/api/generated";
 
 type MatchingRemovedProps = {

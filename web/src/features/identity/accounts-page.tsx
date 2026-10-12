@@ -1,5 +1,5 @@
 import { SearchXIcon } from "lucide-react";
-import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -9,6 +9,7 @@ import { Person } from "@/components/composites/person";
 import { Status } from "@/components/composites/status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
+import { getFormatter } from "@/i18n/format-server";
 import type { AccountList, AccountSummary, Me } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -44,10 +45,10 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
       return t("never");
     }
     const at = new Date(account.lastSignInAt);
-    const time = format.dateTime(at, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    const time = format.dateTime(at, "time");
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
-      : t("dayAndTime", { day: format.dateTime(at, { day: "numeric", month: "short" }), time });
+      : t("dayAndTime", { day: format.dateTime(at, "day"), time });
   }
 
   const rows = accounts.items.map((account) => {
@@ -76,7 +77,7 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
         </Status>
       ),
       lastSignIn: lastSignIn(account),
-      created: format.dateTime(new Date(account.createdAt), { dateStyle: "medium" }),
+      created: format.dateTime(new Date(account.createdAt), "date"),
       // An operator does not disable or demote themselves; the backend refuses it as well.
       actions: you ? null : <AccountRowActions account={account} />,
     };

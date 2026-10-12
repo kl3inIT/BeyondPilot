@@ -19,6 +19,7 @@ import { OrganizationFinder } from "@/features/organization/organization-finder"
 import { maturities } from "@/features/solution/solution-codes";
 import { getPathname, Link } from "@/i18n/navigation";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
+import { useFailureWords } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
 import {
   createSolution,
@@ -35,6 +36,7 @@ import { chosenOptions } from "@/lib/chosen-options";
 import { myApplicationRoute, programRoute, siteRoutes } from "@/lib/site";
 
 import { savable, saveBodyOf, type ApplyDraft } from "./apply-draft";
+import { applyWords } from "./apply-errors";
 import {
   AgreementField,
   ChoiceCardsField,
@@ -172,30 +174,10 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   const solution = useStore(form.store, (state) => state.values.solution);
   const submitting = useStore(form.store, (state) => state.isSubmitting);
 
+  const failureWords = useFailureWords();
   const errorText = useCallback(
-    (error: unknown) => {
-      const code = error instanceof ApiError ? error.code : undefined;
-      const known = [
-        "PROPOSAL_CLOSED",
-        "PROPOSAL_LOCKED",
-        "PROPOSAL_WITHDRAWN_FOR_GOOD",
-        "PROPOSAL_CHANGED_MEANWHILE",
-        "PROPOSAL_ORGANIZATION_REQUIRED",
-        "PROPOSAL_ORGANIZATION_APPLIED",
-        "PROPOSAL_CONTACT_INCOMPLETE",
-        "PROPOSAL_TEAM_BACKGROUND_REQUIRED",
-        "PROPOSAL_SOLUTION_REQUIRED",
-        "PROPOSAL_SOLUTION_INCOMPLETE",
-        "PROPOSAL_DECK_REQUIRED",
-        "PROPOSAL_ANSWER_REQUIRED",
-        "PROPOSAL_ANSWER_INVALID",
-        "ORGANIZATION_ALREADY_MEMBER",
-      ] as const;
-      return code && (known as readonly string[]).includes(code)
-        ? t(`errors.codes.${code as (typeof known)[number]}`)
-        : t("errors.unknown");
-    },
-    [t],
+    (error: unknown) => failureWords(error, applyWords),
+    [failureWords],
   );
 
   /** Why a save made while the person types failed: no answer at all, a refused value, or a rule. */

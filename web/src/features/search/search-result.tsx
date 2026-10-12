@@ -1,12 +1,13 @@
 import Image from "next/image";
 import { BriefcaseBusinessIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { daysText, programFormatter } from "@/features/program/program-format";
 import { SolutionLogo } from "@/features/solution/solution-logo";
 import { TalentPhoto } from "@/features/talent/talent-photo";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { SearchItem } from "@/lib/api/generated";
@@ -159,12 +160,7 @@ function UseCaseResult({ item }: { item: SearchItem }) {
     budget,
     item.closesAt &&
       t("deadline.date", {
-        date: format.dateTime(new Date(item.closesAt), {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-          timeZone: "Asia/Ho_Chi_Minh",
-        }),
+        date: format.dateTime(new Date(item.closesAt), "date"),
       }),
   ].filter(Boolean);
 

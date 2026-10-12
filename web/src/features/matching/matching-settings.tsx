@@ -2,7 +2,7 @@
 
 import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { z } from "zod";
 
@@ -19,8 +19,9 @@ import {
 } from "@/components/ui/input-group";
 import { SettingsBlock } from "@/features/ai/settings-block";
 import { MatchingAdminTabs } from "@/features/matching/matching-admin-tabs";
-import { useNotify } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
+import { useFailureWords, useNotify } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
+import { failedWith } from "@/lib/api/failure";
 import {
   getMatchingSettings,
   saveMatchingSettings,
@@ -141,6 +142,7 @@ function LimitField({
  */
 function MatchingSettingsPage({ settings }: { settings: MatchingSettings }) {
   const t = useTranslations("Admin.matching");
+  const words = useFailureWords();
   const format = useFormatter();
   const notify = useNotify();
   const router = useRouter();
@@ -184,8 +186,7 @@ function MatchingSettingsPage({ settings }: { settings: MatchingSettings }) {
         notify.success("Admin.matching.saved");
         router.refresh();
       } catch (error) {
-        const code = error instanceof ApiError ? error.code : undefined;
-        if (code === "MATCHING_SETTINGS_CHANGED") {
+        if (failedWith(error, "MATCHING_SETTINGS_CHANGED")) {
           // Their values replace what was typed: saving over them is what the version prevents.
           const theirs = await getMatchingSettings()
             .then(({ data }) => data)
@@ -201,7 +202,10 @@ function MatchingSettingsPage({ settings }: { settings: MatchingSettings }) {
           return;
         }
         setServerErrors(formApi, {
-          form: t(code === "REQUEST_INVALID" ? "errors.invalid" : "errors.unknown"),
+          form: words(error, {
+            REQUEST_INVALID: "Admin.matching.errors.invalid",
+            otherwise: "Admin.matching.errors.unknown",
+          }),
           fields: {},
         });
       }

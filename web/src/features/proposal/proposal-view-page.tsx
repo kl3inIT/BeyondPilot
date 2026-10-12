@@ -1,9 +1,10 @@
 import { ArrowLeftIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { useFileSize } from "@/features/solution/solution-deck";
+import { useFormatter } from "@/i18n/format";
 import type { UseCaseProposal, UseCaseProposalForm } from "@/lib/api/generated";
 import { proposeToUseCaseRoute as proposeRoute, siteRoutes, useCaseRoute } from "@/lib/site";
 
@@ -30,8 +31,7 @@ function ProposalViewPage({ form, proposal, edit }: ProposalViewPageProps) {
   const closed = useTranslations("UseCaseProposal.actions.editClosed");
   const size = useFileSize();
   const format = useFormatter();
-  const day = (instant: string) =>
-    format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
+  const day = (instant: string) => format.dateTime(new Date(instant), "date");
   const { deck } = proposal;
 
   return (

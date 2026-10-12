@@ -312,7 +312,7 @@ test.describe("solutions directory", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading", { name: "Renewals at Mekong Life" })).toBeVisible();
     await expect(
-      dialog.getByText("In production; reviewed by GenAI Fund on Oct 1, 2026."),
+      dialog.getByText("In production; reviewed by GenAI Fund on 1 Oct 2026."),
     ).toBeVisible();
     await expect(
       dialog.getByText("Renewal questions filled the call centre every quarter."),

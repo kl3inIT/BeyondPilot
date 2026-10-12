@@ -17,7 +17,6 @@ import {
   organizationTypes,
   teamSizes,
 } from "@/features/organization/organization-codes";
-import { organizationError } from "@/features/organization/organization-errors";
 import { useNotify } from "@/hooks/use-notify";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import {
@@ -55,7 +54,7 @@ function ProposalOrganizationDialog({ open, onOpenChange }: ProposalOrganization
       },
       (error) => {
         if (current) {
-          notify.error(organizationError(error));
+          notify.failure(error);
           onOpenChange(false);
         }
       },
@@ -126,7 +125,7 @@ function BasicsForm({ organization, open, onOpenChange }: BasicsFormProps) {
         onOpenChange(false);
         router.refresh();
       } catch (error) {
-        notify.error(organizationError(error));
+        notify.failure(error);
       }
     },
   });

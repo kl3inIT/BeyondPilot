@@ -33,8 +33,6 @@ import {
   type OrganizationMember,
 } from "@/lib/api/generated";
 
-import { organizationError } from "./organization-errors";
-
 type MemberActionsProps = {
   member: OrganizationMember;
   /** Whether the person looking at the list owns the organization. */
@@ -53,7 +51,7 @@ type MemberActionsProps = {
  */
 function MemberActions({ member, owner, onlyOwner }: MemberActionsProps) {
   const t = useTranslations("Organization.members");
-  const refusal = useTranslations("Organization.errors");
+  const refusal = useTranslations("Errors");
   const notify = useNotify();
   const router = useRouter();
   const [asking, setAsking] = useState<"remove" | "demote" | null>(null);
@@ -78,7 +76,7 @@ function MemberActions({ member, owner, onlyOwner }: MemberActionsProps) {
       notify.success(done, { name }, undo && { undo });
       startRefresh(() => router.refresh());
     } catch (error) {
-      notify.error(organizationError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(null);
@@ -235,7 +233,7 @@ function JobTitleDialog({ jobTitle, open, onOpenChange, onSaved }: JobTitleDialo
         onOpenChange(false);
         onSaved();
       } catch (error) {
-        notify.error(organizationError(error));
+        notify.failure(error);
       }
     },
   });
