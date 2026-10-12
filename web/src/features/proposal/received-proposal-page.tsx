@@ -6,7 +6,8 @@ import { TextButton } from "@/components/actions/text-button";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { useFileSize } from "@/features/solution/solution-deck";
 import type { ReceivedUseCaseProposal } from "@/lib/api/generated";
-import { workspaceUseCaseProposalsRoute } from "@/lib/site";
+import { adminUseCaseProposalsRoute, workspaceUseCaseProposalsRoute } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 import { Card, ProposalTeamList, Rows } from "./proposal-card";
 import { ProposalSenderCard } from "./proposal-sender-card";
@@ -15,14 +16,18 @@ import { proposalFileAddress } from "./received-proposals";
 
 type ReceivedProposalPageProps = {
   proposal: ReceivedUseCaseProposal;
+  /** Whose page it is: the organization's own, or the operators', inside Admin, which decides nothing. */
+  area?: "workspace" | "admin";
 };
 
 /**
  * One proposal a use case received, read-only: who sent it, the solutions offered and the approach,
  * the sender as they described themselves when they sent it, the team and the PDF. Shortlist and
- * Decline are drawn and disabled until a later change adds the decision.
+ * Decline are drawn and disabled for the organization until a later change adds the decision; GenAI
+ * Fund reads the proposal without them.
  */
-function ReceivedProposalPage({ proposal }: ReceivedProposalPageProps) {
+function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposalPageProps) {
+  const admin = area === "admin";
   const t = useTranslations("UseCaseProposal.received.detail");
   const format = useFormatter();
   const size = useFileSize();
@@ -40,10 +45,22 @@ function ReceivedProposalPage({ proposal }: ReceivedProposalPageProps) {
       })
     : null;
   return (
-    <div className="flex flex-1 justify-center bg-muted px-5 pt-8 pb-16 md:px-8 md:pt-12">
-      <div className="flex w-full max-w-220 flex-col gap-5">
+    <div
+      className={cn(
+        "flex flex-1 justify-center",
+        admin ? "px-4 pt-2 pb-12 md:px-6 lg:px-8" : "bg-muted px-5 pt-8 pb-16 md:px-8 md:pt-12",
+      )}
+    >
+      <div className={"flex w-full max-w-220 flex-col gap-5"}>
         <div className="flex flex-col gap-2">
-          <TextButton href={workspaceUseCaseProposalsRoute(useCase.id)} className="self-start">
+          <TextButton
+            href={
+              admin
+                ? adminUseCaseProposalsRoute(useCase.id)
+                : workspaceUseCaseProposalsRoute(useCase.id)
+            }
+            className="self-start"
+          >
             <ArrowLeftIcon aria-hidden="true" />
             {t("back")}
           </TextButton>
@@ -58,12 +75,14 @@ function ReceivedProposalPage({ proposal }: ReceivedProposalPageProps) {
               </h1>
             </div>
             {/* The decision comes with a later change: drawn, not offered. */}
-            <div className="flex items-center gap-3">
-              <Button prominence="secondary" disabled>
-                {t("decline")}
-              </Button>
-              <Button disabled>{t("shortlist")}</Button>
-            </div>
+            {!admin && (
+              <div className="flex items-center gap-3">
+                <Button prominence="secondary" disabled>
+                  {t("decline")}
+                </Button>
+                <Button disabled>{t("shortlist")}</Button>
+              </div>
+            )}
           </div>
           <p className="text-sm text-muted-foreground">
             {t("meta", { useCase: useCase.title, sent })}
