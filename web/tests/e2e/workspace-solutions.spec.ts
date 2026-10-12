@@ -4,6 +4,7 @@ import { expectNoSeriousA11yViolations } from "./axe";
 import { answerDecisions, refusal } from "./reviews";
 import { signInAs } from "./session";
 import { answerUploads, pixel, serveStoredImages } from "./stored-files";
+import { answerWorkspace } from "./stub-workspace.mjs";
 
 const policyChat = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e11";
 const claimsVision = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e12";
@@ -140,10 +141,13 @@ test.describe("workspace solutions", () => {
       "/solutions/policy-chat",
     );
     // Hiding runs at once, since showing it again undoes it: the toast says what stays and offers that.
-    await page.route("**/api/solution/mine/ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e11", (route) =>
-      route.request().method() === "GET"
-        ? route.fallback()
-        : route.fulfill({ status: 200, contentType: "application/json", body: "{}" }),
+    // The row reads the solution as it is held, then saves it unlisted: both are answered here.
+    const [, held] = answerWorkspace(
+      new URL(`http://stub/api/solution/mine/${policyChat}`),
+      "owner",
+    ) as [number, unknown];
+    await page.route(`**/api/solution/mine/${policyChat}`, (route) =>
+      route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(held) }),
     );
     await page.getByRole("menuitem", { name: "Hide from the directory" }).click();
     await expect(
