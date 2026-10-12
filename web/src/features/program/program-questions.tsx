@@ -313,6 +313,7 @@ function QuestionDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <form
+          id={form.formId}
           noValidate
           className="flex flex-col gap-4"
           onSubmit={(event) => {
