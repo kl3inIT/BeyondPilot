@@ -68,6 +68,9 @@ function AssessmentPanel({
     scored.length === criteria.length && scored.length > 0
       ? scored.reduce((a, b) => a + b, 0) / scored.length
       : null;
+  // One primary action a screen: "Save and next" is a judge's. An operator's is the decision above
+  // this panel, and a save that leads nowhere further is a plain one.
+  const saveProminence = judge && nextHref ? "primary" : "secondary";
 
   async function save(conflict: boolean) {
     setPending(conflict ? "conflict" : "save");
@@ -212,7 +215,7 @@ function AssessmentPanel({
             )}
             <Button
               className="flex-1"
-              prominence="secondary"
+              prominence={saveProminence}
               pending={pending === "save"}
               disabled={!complete || criteria.length === 0 || pending !== null}
               aria-describedby={complete ? undefined : "assessment-incomplete"}
@@ -248,7 +251,12 @@ function AssessmentPanel({
             {t("bar.progress", { scored: scored.length, total: criteria.length })}
           </span>
           {complete ? (
-            <Button size="sm" pending={pending === "save"} onClick={() => save(false)}>
+            <Button
+              size="sm"
+              prominence={saveProminence}
+              pending={pending === "save"}
+              onClick={() => save(false)}
+            >
               {nextHref ? t("saveAndNext") : t("save")}
             </Button>
           ) : (

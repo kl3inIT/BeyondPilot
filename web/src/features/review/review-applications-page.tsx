@@ -13,6 +13,7 @@ import { adminProgramReleaseRoute } from "@/lib/site";
 
 import { ExportApplications } from "./export-applications";
 import { listApplications, reviewSearch, type ReviewSearch } from "./review-search";
+import { PageLeadingAction, ReviewSelection } from "./review-selection";
 import { ReviewTable, type ReviewRow } from "./review-table";
 import { ReviewToolbar } from "./review-toolbar";
 
@@ -108,7 +109,10 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
         : t("lead.closedNoDay");
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
+    <ReviewSelection
+      className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8"
+      lang={locale}
+    >
       <AdminPageHeader
         title={head.name}
         lead={head.operator ? lead : t("judgeLead", { count: head.criteria.length })}
@@ -121,12 +125,16 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
                 applicationIds={narrowed ? shown.map((item) => item.id) : null}
                 disabled={shown.length === 0}
               />
-              <Button
-                prominence={head.releasedAt ? "secondary" : "primary"}
-                href={adminProgramReleaseRoute(head.programId)}
-              >
-                {head.releasedAt ? t("seeRelease") : t("release")}
-              </Button>
+              {head.releasedAt ? (
+                <Button prominence="secondary" href={adminProgramReleaseRoute(head.programId)}>
+                  {t("seeRelease")}
+                </Button>
+              ) : (
+                // While rows are selected the selection bar's Shortlist is the screen's primary.
+                <PageLeadingAction href={adminProgramReleaseRoute(head.programId)}>
+                  {t("release")}
+                </PageLeadingAction>
+              )}
             </>
           )
         }
@@ -191,7 +199,7 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
           page: (number) => pages("page", { page: number }),
         }}
       />
-    </div>
+    </ReviewSelection>
   );
 }
 
