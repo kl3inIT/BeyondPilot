@@ -821,14 +821,6 @@
       "dayAndTime": "{day}, {time}",
       "never": "Chưa từng",
       "count": "{count} tài khoản",
-      "pagination": {
-        "label": "Các trang tài khoản",
-        "previous": "Trước",
-        "next": "Sau",
-        "goToPrevious": "Về trang trước",
-        "goToNext": "Sang trang sau",
-        "page": "Trang {page}"
-      },
       "actions": {
         "open": "Thao tác với {name}",
         "makeOperator": "Cấp quyền operator…",
@@ -2491,15 +2483,7 @@
           "who": "Ai, lúc nào"
         },
         "requirement": "Yêu cầu {position}",
-        "count": "{count} câu trả lời không đồng ý",
-        "pagination": {
-          "label": "Các trang câu trả lời không đồng ý",
-          "previous": "Trước",
-          "next": "Sau",
-          "goToPrevious": "Về trang trước",
-          "goToNext": "Sang trang sau",
-          "page": "Trang {page}"
-        }
+        "count": "{count} câu trả lời không đồng ý"
       },
       "tabs": {
         "limits": "Giới hạn",
@@ -2647,14 +2631,6 @@
         "empty": {
           "title": "Không có lượt gọi trong kỳ này",
           "description": "Nội dung hỏi và trả lời không bao giờ được lưu."
-        },
-        "pagination": {
-          "label": "Các trang lượt gọi",
-          "previous": "Trước",
-          "next": "Sau",
-          "goToPrevious": "Về trang trước",
-          "goToNext": "Sang trang sau",
-          "page": "Trang {page}"
         }
       }
     },
@@ -2774,14 +2750,6 @@
         "empty": {
           "title": "Không có lời gọi nào trong khoảng này",
           "description": "Nội dung câu hỏi không bao giờ được lưu."
-        },
-        "pagination": {
-          "label": "Các trang lời gọi",
-          "previous": "Trước",
-          "next": "Sau",
-          "goToPrevious": "Về trang trước",
-          "goToNext": "Sang trang sau",
-          "page": "Trang {page}"
         }
       },
       "confirm": {
@@ -6688,14 +6656,6 @@
     "empty": {
       "title": "Không có bài toán nào khớp",
       "clear": "Xóa từ khóa và bộ lọc"
-    },
-    "pagination": {
-      "label": "Các trang bài toán",
-      "previous": "Trước",
-      "next": "Sau",
-      "goToPrevious": "Về trang trước",
-      "goToNext": "Sang trang sau",
-      "page": "Trang {page}"
     },
     "publish": {
       "title": "Doanh nghiệp bạn có bài toán AI có thể giải?",

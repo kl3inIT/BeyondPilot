@@ -821,14 +821,6 @@
       "dayAndTime": "{day}, {time}",
       "never": "Never",
       "count": "{count, plural, one {# account} other {# accounts}}",
-      "pagination": {
-        "label": "Pages of accounts",
-        "previous": "Previous",
-        "next": "Next",
-        "goToPrevious": "Go to the previous page",
-        "goToNext": "Go to the next page",
-        "page": "Page {page}"
-      },
       "actions": {
         "open": "Actions for {name}",
         "makeOperator": "Make operator…",
@@ -2491,15 +2483,7 @@
           "who": "Who and when"
         },
         "requirement": "Requirement {position}",
-        "count": "{count, plural, one {# disagreement} other {# disagreements}}",
-        "pagination": {
-          "label": "Pages of disagreements",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
-        }
+        "count": "{count, plural, one {# disagreement} other {# disagreements}}"
       },
       "tabs": {
         "limits": "Limits",
@@ -2647,14 +2631,6 @@
         "empty": {
           "title": "No call in this period",
           "description": "What was asked and answered is never kept."
-        },
-        "pagination": {
-          "label": "Pages of calls",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
         }
       }
     },
@@ -2774,14 +2750,6 @@
         "empty": {
           "title": "No call in this period",
           "description": "What was asked is never kept."
-        },
-        "pagination": {
-          "label": "Pages of calls",
-          "previous": "Previous",
-          "next": "Next",
-          "goToPrevious": "Go to the previous page",
-          "goToNext": "Go to the next page",
-          "page": "Page {page}"
         }
       },
       "confirm": {
@@ -6688,14 +6656,6 @@
     "empty": {
       "title": "No use cases match",
       "clear": "Clear search and filters"
-    },
-    "pagination": {
-      "label": "Pages of use cases",
-      "previous": "Previous",
-      "next": "Next",
-      "goToPrevious": "Go to the previous page",
-      "goToNext": "Go to the next page",
-      "page": "Page {page}"
     },
     "publish": {
       "title": "Have a business problem AI could solve?",

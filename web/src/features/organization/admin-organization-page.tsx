@@ -23,8 +23,10 @@ import {
 } from "./admin-organization-search";
 import { ClaimDecisionButton } from "./claim-decision";
 import { MemberRole } from "./member-role";
+import { membersInOrder } from "./member-order";
 import { NoticeCard } from "./notice-card";
 import { OrganizationMark } from "./organization-mark";
+import { defaultMemberSort, organizationMemberSortKeys } from "./organization-members-search";
 import { OrganizationProfileEditor } from "./organization-profile-editor";
 import { OrganizationProfileView } from "./organization-profile-view";
 import { OrganizationReviewButton } from "./organization-review";
@@ -43,6 +45,8 @@ type AdminOrganizationPageProps = {
   page: number;
   /** How many members a page holds, as the URL holds it; none is the tab's own. */
   size: number | null;
+  /** The order of the members, as the URL holds it; none is the tab's own. */
+  sort: string;
 };
 
 /**
@@ -51,7 +55,7 @@ type AdminOrganizationPageProps = {
  * organization, a claim on one nobody owns), takes an approved organization down or restores it, and
  * merges a duplicate into the one to keep. A merged one only says where it went.
  */
-function AdminOrganizationPage({ detail, tab, page, size }: AdminOrganizationPageProps) {
+function AdminOrganizationPage({ detail, tab, page, size, sort }: AdminOrganizationPageProps) {
   const t = useTranslations("Admin.organizations.detail");
   const s = useTranslations("Organization.status");
   const typeName = useVocabulary("organizationType");
@@ -219,7 +223,7 @@ function AdminOrganizationPage({ detail, tab, page, size }: AdminOrganizationPag
         // The key gives a saved organization a fresh editor, reading the new version.
         <OrganizationProfileEditor key={organization.version} organization={organization} admin />
       ) : (
-        <AdminMembers detail={detail} page={page} size={size} record={record} />
+        <AdminMembers detail={detail} page={page} size={size} sort={sort} record={record} />
       )}
     </div>
   );
@@ -230,11 +234,13 @@ function AdminMembers({
   detail,
   page,
   size,
+  sort,
   record,
 }: {
   detail: AdminOrganization;
   page: number;
   size: number | null;
+  sort: string;
   record: string;
 }) {
   const t = useTranslations("Admin.organizations.people");
@@ -247,19 +253,21 @@ function AdminMembers({
   const owners = members.filter((member) => member.role === "owner").length;
   const day = (at: string) => format.dateTime(new Date(at), { dateStyle: "medium" });
 
-  const people = members.slice((current - 1) * pageSize, current * pageSize).map((member) => ({
-    key: member.accountId,
-    person: <Person name={member.name ?? null} email={member.email} />,
-    role: <MemberRole role={member.role} />,
-    joined: <span className="text-muted-foreground">{day(member.joinedAt)}</span>,
-    actions: (
-      <AdminMemberActions
-        organizationId={organization.id}
-        member={member}
-        onlyOwner={member.role === "owner" && owners === 1}
-      />
-    ),
-  }));
+  const people = membersInOrder(members, sort)
+    .slice((current - 1) * pageSize, current * pageSize)
+    .map((member) => ({
+      key: member.accountId,
+      person: <Person name={member.name ?? null} email={member.email} />,
+      role: <MemberRole role={member.role} />,
+      joined: <span className="text-muted-foreground">{day(member.joinedAt)}</span>,
+      actions: (
+        <AdminMemberActions
+          organizationId={organization.id}
+          member={member}
+          onlyOwner={member.role === "owner" && owners === 1}
+        />
+      ),
+    }));
   // The open invitations are not paged: they close the list, on its last page.
   const invited = (current === lastPage ? invitations : []).map((invitation) => ({
     key: invitation.id,
@@ -302,12 +310,18 @@ function AdminMembers({
         <>
           {/* From 768px: a table. */}
           <DataTableRows
+            sortKeys={organizationMemberSortKeys}
+            defaultSort={defaultMemberSort}
             className="hidden md:flex"
             surface
             columns={[
               { id: "member", header: t("columns.member") },
               { id: "role", header: t("columns.role"), layout: { width: "sm" } },
-              { id: "joined", header: t("columns.joined"), layout: { width: "sm" } },
+              {
+                id: "joined",
+                header: t("columns.joined"),
+                layout: { width: "sm", descFirst: true },
+              },
               {
                 id: "actions",
                 header: <span className="sr-only">{t("columns.actions")}</span>,
@@ -349,7 +363,7 @@ function AdminMembers({
           page={current}
           pageSize={pageSize}
           total={total}
-          href={(next) => address(record, { tab: "members", page: next, size })}
+          href={(next) => address(record, { tab: "members", page: next, size, sort })}
         />
       )}
     </section>
