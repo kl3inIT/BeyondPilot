@@ -5928,11 +5928,11 @@
       "facts": {
         "closes": {
           "label": "Hạn nộp đơn",
-          "value": "15 thg 11, 23:59 ICT"
+          "value": "22 thg 11, 23:59 ICT"
         },
         "matchingDay": {
           "label": "Matching Day",
-          "value": "3 thg 12, TP. Hồ Chí Minh"
+          "value": "15 thg 12, TP. Hồ Chí Minh"
         },
         "opportunity": {
           "label": "Cơ hội",
@@ -6173,12 +6173,12 @@
         },
         "hearBack": {
           "q": "Khi nào tôi nhận kết quả?",
-          "a": "Mọi người nhận phản hồi chậm nhất ngày 20 tháng 11."
+          "a": "Mọi người nhận phản hồi chậm nhất ngày 27 tháng 11."
         }
       }
     },
     "closing": {
-      "title": "Giải pháp của bạn sẽ có mặt trong phòng ngày 3 tháng 12 chứ?",
+      "title": "Giải pháp của bạn sẽ có mặt trong phòng ngày 15 tháng 12 chứ?",
       "text": "Danh sách rút gọn đang thành hình — nộp hôm nay để có cơ hội được chọn.",
       "closes": "Hạn nộp đơn: {closes}."
     },
