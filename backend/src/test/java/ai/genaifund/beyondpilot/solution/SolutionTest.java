@@ -1575,15 +1575,15 @@ class SolutionTest {
 	void aClosedOfferIsChosenNoMoreAndTheSolutionsThatComeWithItKeepIt() {
 		String founder = approvedOwner("founder@closed-offers.test", "Closed Offers Co");
 		String neighbour = approvedOwner("founder@closed-neighbour.test", "Closed Neighbour Co");
-		UUID offer = offer("Quokka credits for the first hundred", "https://offers.example.test/quokka");
-		Map<String, Object> description = described("Quokka Desk", 0);
+		UUID offer = offer("Dunnart credits for the first hundred", "https://offers.example.test/dunnart");
+		Map<String, Object> description = described("Dunnart Desk", 0);
 		description.put("offerIds", List.of(offer));
-		UUID partner = approved(founder, "Quokka Desk", description);
+		UUID partner = approved(founder, "Dunnart Desk", description);
 
 		// An operator reads the record of the offer with the solutions that come with it; nobody else does.
 		String open = body(get(operator, OFFER_LIST + "/" + offer).expectStatus().isOk());
 		assertThat(JsonPath.<Boolean>read(open, "$.offer.closed")).isFalse();
-		assertThat(JsonPath.<List<String>>read(open, "$.solutionList[*].name")).containsExactly("Quokka Desk");
+		assertThat(JsonPath.<List<String>>read(open, "$.solutionList[*].name")).containsExactly("Dunnart Desk");
 		assertThat(JsonPath.<List<String>>read(open, "$.solutionList[*].organizationName"))
 			.containsExactly("Closed Offers Co");
 		assertProblem(get(founder, OFFER_LIST + "/" + offer), 403, "IDENTITY_OPERATOR_REQUIRED");
@@ -1607,11 +1607,11 @@ class SolutionTest {
 			.isEqualTo(JsonPath.<Number>read(closed, "$.version").longValue());
 
 		// Another solution does not choose it, nor is it offered to it.
-		UUID other = create(neighbour, "Quokka Rival");
+		UUID other = create(neighbour, "Dunnart Rival");
 		assertThat(JsonPath.<List<String>>read(body(get(neighbour, OFFERS + "?solutionId=" + other).expectStatus().isOk()),
 				"$[*].id"))
 			.doesNotContain(offer.toString());
-		Map<String, Object> rival = described("Quokka Rival", 0);
+		Map<String, Object> rival = described("Dunnart Rival", 0);
 		rival.put("offerIds", List.of(offer));
 		assertProblem(put(neighbour, MINE + "/" + other, rival), 400, "SOLUTION_OFFER_NOT_USABLE");
 
@@ -1619,10 +1619,10 @@ class SolutionTest {
 		// before, and saving the solution again is not refused.
 		String options = body(get(founder, OFFERS + "?solutionId=" + partner).expectStatus().isOk());
 		assertThat(JsonPath.<List<Boolean>>read(options, "$[?(@.id == '" + offer + "')].closed")).containsExactly(true);
-		String page = body(client.get().uri(DIRECTORY + "/quokka-desk").exchange().expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(page, "$.offers[*].url")).containsExactly("https://offers.example.test/quokka");
+		String page = body(client.get().uri(DIRECTORY + "/dunnart-desk").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(page, "$.offers[*].url")).containsExactly("https://offers.example.test/dunnart");
 		String mine = body(get(founder, MINE + "/" + partner).expectStatus().isOk());
-		Map<String, Object> resave = keeping(mine, described("Quokka Desk", versionOf(mine)));
+		Map<String, Object> resave = keeping(mine, described("Dunnart Desk", versionOf(mine)));
 		resave.put("offerIds", List.of(offer));
 		put(founder, MINE + "/" + partner, resave).expectStatus().isOk();
 		assertThat(solutionsOf(offer)).isEqualTo(1);
@@ -1637,8 +1637,8 @@ class SolutionTest {
 			.contains(offer.toString());
 
 		// An organization closes and opens an offer of its own, and no other organization's.
-		String written = body(post(founder, OFFERS, Map.of("title", "Quokka pilot package", "url",
-				"https://offers.example.test/quokka-pilot")).expectStatus().isCreated());
+		String written = body(post(founder, OFFERS, Map.of("title", "Dunnart pilot package", "url",
+				"https://offers.example.test/dunnart-pilot")).expectStatus().isCreated());
 		UUID own = UUID.fromString(JsonPath.read(written, "$.id"));
 		long ownVersion = JsonPath.<List<Number>>read(body(get(founder, OFFERS + "/mine").expectStatus().isOk()), "$[*].version")
 			.get(0)
