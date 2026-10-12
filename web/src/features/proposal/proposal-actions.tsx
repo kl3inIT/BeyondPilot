@@ -68,8 +68,8 @@ function SentProposal({ useCaseId, editable, text }: SentProposalProps) {
 }
 
 /**
- * Send a proposal, in the card of a public use case. Nobody sees them for their
- * own organization's use case or one that takes no more proposals; an organization GenAI Fund has not approved sees the
+ * Send a proposal, in the card of a public use case. Nobody sees them for a use case
+ * that takes no more proposals, and the posting organization sees a way to the proposals it received instead; an organization GenAI Fund has not approved sees the
  * button disabled with the reason. Reading what the caller may do never stops the page from showing.
  */
 async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: ProposalActionsProps) {
@@ -89,6 +89,14 @@ async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: Propos
   const access: SenderAccess = account
     ? await readAccess(useCaseId)
     : { kind: "open", draft: false };
+  // The organization that posted the use case reads what it received; it sends nothing to its own.
+  if (access.kind === "own") {
+    return (
+      <Button className="w-full" size="lg" href={site.workspaceUseCaseProposalsRoute(useCaseId)}>
+        {o("viewReceived")}
+      </Button>
+    );
+  }
   if (access.kind === "hidden" || (closed && access.kind !== "sent")) {
     return null;
   }

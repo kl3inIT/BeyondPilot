@@ -7166,6 +7166,7 @@
     },
     "actions": {
       "proposals": "Proposals",
+      "viewReceived": "View proposals",
       "continue": "Continue your proposal",
       "sent": "Your organization sent a proposal.",
       "sentOn": "Your organization sent a proposal on {date}.",

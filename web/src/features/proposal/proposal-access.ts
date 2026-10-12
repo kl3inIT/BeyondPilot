@@ -3,12 +3,13 @@ import type { UseCaseProposal, UseCaseProposalForm } from "@/lib/api/generated";
 import type { ProposalErrorCode } from "./proposal-errors";
 
 /**
- * What a signed-in visitor may do about a use case on its public page: nothing (it is their own
- * organization's, or it takes no more proposals), send one, continue the draft they have, or
+ * What a signed-in visitor may do about a use case on its public page: nothing (it takes no more proposals), read the proposals it received (it is their own
+ * organization's), send one, continue the draft they have, or
  * nothing yet for a reason shown beside the disabled button.
  */
 export type SenderAccess =
   | { kind: "hidden" }
+  | { kind: "own" }
   | { kind: "open"; draft: boolean }
   | { kind: "sent"; proposal: UseCaseProposal }
   | { kind: "blocked"; code: ProposalErrorCode };
@@ -28,15 +29,18 @@ export function accessOfForm(form: UseCaseProposalForm): SenderAccess {
 }
 
 /**
- * What a refused read of the form means. The caller's own use case and one that takes no more
- * proposals offer nothing; any other failure must not take the page's actions away, so the
+ * What a refused read of the form means. The caller's own use case offers the way to the proposals it received, and one that takes no more
+ * proposals offers nothing; any other failure must not take the page's actions away, so the
  * buttons stay and the form says what is wrong when it opens.
  */
 export function accessOfRefusal(
   status: number | undefined,
   code: string | undefined,
 ): SenderAccess {
-  if (code === "PROPOSAL_OWN_USE_CASE" || code === "PROPOSAL_USE_CASE_CLOSED") {
+  if (code === "PROPOSAL_OWN_USE_CASE") {
+    return { kind: "own" };
+  }
+  if (code === "PROPOSAL_USE_CASE_CLOSED") {
     return { kind: "hidden" };
   }
   if (code === "PROPOSAL_USE_CASE_NOT_FOUND" || status === 404 || status === 409) {

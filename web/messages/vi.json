@@ -7166,6 +7166,7 @@
     },
     "actions": {
       "proposals": "Đề xuất",
+      "viewReceived": "Xem các proposal",
       "continue": "Tiếp tục đề xuất của bạn",
       "sent": "Tổ chức của bạn đã gửi đề xuất.",
       "sentOn": "Tổ chức của bạn đã gửi đề xuất vào {date}.",
