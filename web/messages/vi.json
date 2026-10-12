@@ -1404,9 +1404,8 @@
       "create": {
         "action": "Tạo giải pháp",
         "title": "Tạo giải pháp",
-        "lead": "Bạn viết trong trình soạn rồi đăng ngay, không qua duyệt. Giải pháp thuộc tổ chức bạn chọn.",
         "organization": "Tổ chức",
-        "organizationPlaceholder": "Chọn tổ chức",
+        "organizationPlaceholder": "Tìm hoặc chọn tổ chức",
         "organizationRequired": "Hãy chọn một tổ chức.",
         "noOrganizations": "Chưa có tổ chức nào được duyệt.",
         "name": "Tên giải pháp",
@@ -1415,7 +1414,6 @@
         "submit": "Tạo và mở trình soạn"
       },
       "title": "Giải pháp",
-      "lead": "Mọi giải pháp nhà cung cấp đã gửi duyệt.",
       "columns": {
         "solution": "Giải pháp",
         "organization": "Tổ chức",
@@ -1571,7 +1569,6 @@
     "offers": {
       "metaTitle": "Ưu đãi · BeyondPilot",
       "title": "Ưu đãi",
-      "lead": "Danh sách của GenAI Fund trước, rồi tới ưu đãi mỗi tổ chức tự viết cho giải pháp của mình. Sửa một ưu đãi là sửa trên mọi giải pháp đi kèm nó.",
       "genAiFund": "GenAI Fund",
       "columns": {
         "writer": "Người tạo"
@@ -1689,7 +1686,6 @@
     "introductions": {
       "metaTitle": "Giới thiệu · BeyondPilot",
       "title": "Giới thiệu",
-      "lead": "Chủ sở hữu của từng tổ chức trả lời; bạn đọc và thấy yêu cầu nào chờ quá lâu.",
       "overdueNotice": "{count} yêu cầu đã chờ câu trả lời quá 3 ngày.",
       "overdue": "Chờ quá 3 ngày",
       "search": "Tìm theo giải pháp",
@@ -5359,6 +5355,7 @@
       "address": {
         "pending": "Email của họ chỉ được chia sẻ nếu họ chấp nhận",
         "accepted": "Email của họ không còn khả dụng",
+    "noMatch": "Không có kết quả phù hợp.",
         "declined": "Không email nào được chia sẻ",
         "closed": "Không email nào được chia sẻ"
       },

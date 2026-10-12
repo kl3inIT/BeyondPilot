@@ -45,12 +45,7 @@ function AdminOffersPage({ offers }: { offers: AdminOffer[] }) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <AdminPageHeader
-        destination="offers"
-        title={t("title")}
-        lead={t("lead")}
-        actions={<CreateOffer />}
-      />
+      <AdminPageHeader destination="offers" title={t("title")} actions={<CreateOffer />} />
 
       {/* From 768px: a table. */}
       <DataTableRows

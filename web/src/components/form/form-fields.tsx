@@ -8,6 +8,14 @@ import { RequiredMark } from "@/components/composites/required-mark";
 import { useFieldValidity, useFormContext } from "@/components/form/form-context";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox";
+import {
   Field,
   FieldContent,
   FieldDescription,
@@ -257,6 +265,64 @@ function SelectField({
   );
 }
 
+type Option = { value: string; label: string };
+
+/**
+ * One choice out of a list too long to read whole, such as the organizations: typing narrows it and
+ * the arrow opens all of it. A short list belongs in {@link SelectField}.
+ */
+function ComboboxField({
+  label,
+  optional,
+  requiredMark,
+  description,
+  options,
+  placeholder,
+}: SelectFieldProps) {
+  const t = useTranslations("Form");
+  const { field, invalid, errors, hintId, errorId, describedBy } =
+    useDescribedField<string>(description);
+  return (
+    <Field data-invalid={invalid || undefined}>
+      <FieldLabelText
+        label={label}
+        optional={optional}
+        requiredMark={requiredMark}
+        htmlFor={field.name}
+      />
+      <Combobox
+        autoHighlight
+        items={options}
+        value={options.find((option) => option.value === field.state.value) ?? null}
+        isItemEqualToValue={(item: Option, other: Option) => item.value === other.value}
+        onValueChange={(next: Option | null) => field.handleChange(next?.value ?? "")}
+      >
+        <ComboboxInput
+          id={field.name}
+          className="w-full"
+          placeholder={placeholder}
+          aria-invalid={invalid || undefined}
+          aria-describedby={describedBy}
+          onBlur={field.handleBlur}
+        />
+        <ComboboxContent>
+          <ComboboxEmpty>{t("noMatch")}</ComboboxEmpty>
+          {/* The list names itself: a listbox without a name is nothing to a screen reader. */}
+          <ComboboxList aria-label={label}>
+            {(option: Option) => (
+              <ComboboxItem key={option.value} value={option}>
+                {option.label}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+      {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
+      {invalid && <FieldError id={errorId} errors={errors} />}
+    </Field>
+  );
+}
+
 function CheckboxField({ label, disabled }: { label: string; disabled?: boolean }) {
   const { field, invalid, errors, errorId, describedBy } = useDescribedField<boolean>(undefined);
   return (
@@ -313,4 +379,12 @@ function FormError() {
   );
 }
 
-export { CheckboxField, FormError, SelectField, SubmitButton, TextareaField, TextField };
+export {
+  CheckboxField,
+  ComboboxField,
+  FormError,
+  SelectField,
+  SubmitButton,
+  TextareaField,
+  TextField,
+};

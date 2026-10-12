@@ -1404,9 +1404,8 @@
       "create": {
         "action": "Create solution",
         "title": "Create a solution",
-        "lead": "You write it in the editor and publish it without a review. It belongs to the organization you choose.",
         "organization": "Organization",
-        "organizationPlaceholder": "Select an organization",
+        "organizationPlaceholder": "Search or select an organization",
         "organizationRequired": "Choose an organization.",
         "noOrganizations": "No organization is approved yet.",
         "name": "Solution name",
@@ -1415,7 +1414,6 @@
         "submit": "Create and open editor"
       },
       "title": "Solutions",
-      "lead": "Every solution providers sent for review.",
       "columns": {
         "solution": "Solution",
         "organization": "Organization",
@@ -1571,7 +1569,6 @@
     "offers": {
       "metaTitle": "Offers · BeyondPilot",
       "title": "Offers",
-      "lead": "GenAI Fund's list first, then what each organization wrote for its own solutions. A change shows on every solution that comes with the offer.",
       "genAiFund": "GenAI Fund",
       "columns": {
         "writer": "Written by"
@@ -1689,7 +1686,6 @@
     "introductions": {
       "metaTitle": "Introductions · BeyondPilot",
       "title": "Introductions",
-      "lead": "The owners of each organization answer; you read, and see which requests wait too long.",
       "overdueNotice": "{count, plural, one {# request has} other {# requests have}} waited more than 3 days for an answer.",
       "overdue": "Waiting over 3 days",
       "search": "Search by solution",
@@ -5359,6 +5355,7 @@
       "address": {
         "pending": "Their email address is shared only if they accept",
         "accepted": "Their email address is no longer available",
+    "noMatch": "Nothing matches.",
         "declined": "No email address was shared",
         "closed": "No email address was shared"
       },

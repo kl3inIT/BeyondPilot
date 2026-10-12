@@ -84,13 +84,12 @@ function CreateAdminSolution() {
         onOpenChange={setOpen}
         form={form}
         title={t("title")}
-        description={t("lead")}
         submitLabel={t("submit")}
         cancelLabel={t("cancel")}
       >
         <form.AppField name="organizationId">
           {(field) => (
-            <field.SelectField
+            <field.ComboboxField
               label={t("organization")}
               requiredMark
               placeholder={t("organizationPlaceholder")}
