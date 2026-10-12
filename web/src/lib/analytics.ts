@@ -18,10 +18,15 @@ const trackedSections = [
 ] as const;
 
 /**
- * Pages inside a measured section that stay private: a solution's unlisted link, whose address is
- * its key, and a person's own proposal to a use case.
+ * Pages inside a measured section that stay private: the ones a person signs in to see (applying
+ * to a program, a proposal to a use case and what follows it) and a solution's unlisted link,
+ * whose address is its key.
  */
-const privatePages = [/^\/solutions\/shared(\/|$)/, /^\/use-cases\/[^/]+\/propose\/view$/];
+const privatePages = [
+  /^\/programs\/[^/]+\/apply(\/|$)/,
+  /^\/use-cases\/[^/]+\/propose(\/|$)/,
+  /^\/solutions\/shared(\/|$)/,
+];
 
 /** Whether the page at `pathname`, written without a locale prefix, may be measured. */
 function isTrackedPath(pathname: string): boolean {
