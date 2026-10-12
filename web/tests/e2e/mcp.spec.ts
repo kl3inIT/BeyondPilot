@@ -19,9 +19,25 @@ test.describe("MCP", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/account/mcp");
 
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("MCP");
+    // The page says what it is for before it names the protocol, and what the app may do before
+    // the address.
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Use BeyondPilot in your AI app",
+    );
+    await expect(page.getByText(/through MCP \(Model Context Protocol\)/)).toBeVisible();
+    await expect(
+      page.getByText(/can only search and read, and can be revoked any time under Connected apps/),
+    ).toBeVisible();
     await expect(page.getByLabel("Server address")).toHaveValue(/\/mcp$/);
-    await expect(page.getByText("Settings › Apps and connectors › Create")).toBeVisible();
+    // A step is a sentence a person can follow, with the other app's labels quoted.
+    await expect(
+      page.getByText("In ChatGPT, open Settings › Apps and connectors and choose Create."),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        "Paste the server address from this page and leave authentication set to OAuth.",
+      ),
+    ).toBeVisible();
     await page.getByRole("tab", { name: "Codex" }).click();
     await expect(page.getByText(/codex mcp add beyondpilot --url .*\/mcp/)).toBeVisible();
     await expectNoSeriousA11yViolations(page);
@@ -62,7 +78,7 @@ test.describe("MCP", () => {
     await signInAs(context, "unnamed", baseURL!);
     await page.goto("/");
     await page.getByRole("button", { name: /Account menu/ }).click();
-    await page.getByRole("menuitem", { name: "MCP" }).click();
+    await page.getByRole("menuitem", { name: "Connect an AI app" }).click();
     await expect(page).toHaveURL(/\/account\/mcp$/);
   });
 
