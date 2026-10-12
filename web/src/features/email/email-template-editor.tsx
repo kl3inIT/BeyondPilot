@@ -274,28 +274,28 @@ function EmailTemplateEditor({
         title={name}
         badges={current.edited && <Badge variant="outline">{t("edited")}</Badge>}
         lead={
-          (description || (current.edited && current.updatedBy && current.updatedAt)) && (
-            <div className="flex flex-col gap-1">
-              {description && <p>{description}</p>}
-              {current.edited && current.updatedBy && current.updatedAt && (
-                <p className="text-xs">
-                  {t("lastEdited", {
-                    name: current.updatedBy,
-                    when: format.dateTime(new Date(current.updatedAt), {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    }),
-                  })}{" "}
-                  <Link
-                    href={siteRoutes.adminAuditLog}
-                    className="font-medium text-primary underline-offset-4 hover:underline"
-                  >
-                    {t("viewAudit")}
-                  </Link>
-                </p>
-              )}
-            </div>
-          )
+          <div className="flex flex-col gap-1">
+            {description && <p>{description}</p>}
+            {/* The wording has one language: an operator reading Vietnamese edits the English everyone gets. */}
+            <p>{t("sentInEnglish")}</p>
+            {current.edited && current.updatedBy && current.updatedAt && (
+              <p className="text-xs">
+                {t("lastEdited", {
+                  name: current.updatedBy,
+                  when: format.dateTime(new Date(current.updatedAt), {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  }),
+                })}{" "}
+                <Link
+                  href={siteRoutes.adminAuditLog}
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  {t("viewAudit")}
+                </Link>
+              </p>
+            )}
+          </div>
         }
         actions={
           <>
@@ -364,6 +364,8 @@ function EmailTemplateEditor({
                 ) : (
                   <FieldDescription id="email-body-problems">{t("bodyHint")}</FieldDescription>
                 )}
+                {/* What the preview shows and the body does not hold (notification/layout.html). */}
+                <FieldDescription>{t("frame")}</FieldDescription>
               </Field>
             )}
           </form.Field>

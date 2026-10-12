@@ -429,6 +429,7 @@
     "PROGRAM_OUTCOMES_BEFORE_CLOSE": "Ngày báo kết quả trước ngày đóng nhận đơn.",
     "PROGRAM_KEY_DATE_OUT_OF_ORDER": "Có mốc thời gian kết thúc trước khi bắt đầu.",
     "PROGRAM_EVENT_OUT_OF_ORDER": "Có sự kiện kết thúc trước khi bắt đầu.",
+    "PROGRAM_EVENT_CITY_REQUIRED": "Sự kiện trực tiếp cần có thành phố. Hãy sửa sự kiện để thêm.",
     "PROGRAM_EXTERNAL_URL_REQUIRED": "Nhập địa chỉ của trang ở nơi khác.",
     "PROGRAM_NOT_READY_TO_PUBLISH": "Chương trình vẫn còn thiếu những mục trong danh sách ở trên.",
     "PROGRAM_COVER_NOT_USABLE": "Ảnh này không dùng làm ảnh bìa được. Hãy tải lên lại.",
@@ -837,11 +838,8 @@
         "keyDates": {
           "title": "Các mốc thời gian",
           "what": "Dòng thời gian trên trang chương trình, và điều người nộp đơn được báo sẽ diễn ra.",
-          "opens": "Mở nhận đơn và giai đoạn xây dựng",
-          "closes": "Đóng nhận bài",
-          "outcomes": "Mọi người nộp đơn nhận kết quả",
           "fromWindow": "Theo thời gian nhận đơn",
-          "locked": "Sửa ở mục Nhận đơn",
+          "locked": "Ngày sửa ở mục Nhận đơn",
           "add": "Thêm mốc",
           "hint": "Giờ Việt Nam (ICT)."
         },
@@ -884,6 +882,14 @@
           "noteHint": "Hiện dưới ngày trên trang chương trình.",
           "add": "Thêm mốc",
           "update": "Lưu"
+        },
+        "windowTitle": {
+          "rename": "Đổi tên",
+          "renameNamed": "Đổi tên {name}",
+          "dialogTitle": "Đổi tên “{name}”",
+          "label": "Tiêu đề",
+          "hint": "Hiện trên trang chương trình ở mọi ngôn ngữ. Để trống để hiện “{name}”.",
+          "save": "Lưu"
         },
         "event": {
           "addTitle": "Thêm sự kiện",
@@ -3219,6 +3225,8 @@
         "subject": "Tiêu đề",
         "body": "Nội dung",
         "bodyHint": "Markdown: # tiêu đề, **đậm**, [liên kết](https://…).",
+        "sentInEnglish": "Gửi bằng tiếng Anh cho mọi người nhận, dù họ đọc BeyondPilot bằng ngôn ngữ nào.",
+        "frame": "BeyondPilot thêm phần đầu thư, lời chào cuối và chân thư quanh nội dung, cùng phần trích lời nhắn nếu email có; ghi chú cuối email sửa ở mục Giao diện.",
         "variables": "Biến",
         "variablesHint": "Mỗi biến được thay bằng một giá trị khi email được gửi; ví dụ cho thấy người nhận sẽ đọc gì.",
         "example": "Ví dụ:",
@@ -5540,6 +5548,8 @@
       "slugLength": "Từ 3 đến 60 ký tự.",
       "invalid": "Hãy kiểm tra lại mục này.",
       "endsBeforeStarts": "Thời điểm kết thúc trước thời điểm bắt đầu.",
+      "endNeedsTime": "Thêm giờ kết thúc, hoặc xóa ngày kết thúc.",
+      "endNeedsDay": "Thêm ngày kết thúc, hoặc xóa giờ kết thúc.",
       "closesBeforeOpens": "Giờ đóng nhận đơn trước giờ mở.",
       "outcomesBeforeClose": "Ngày báo kết quả trước ngày đóng nhận đơn.",
       "webAddress": "Nhập địa chỉ bắt đầu bằng http:// hoặc https://.",
@@ -6619,7 +6629,7 @@
         "shortlisted": "Vào vòng trong",
         "not_selected": "Không được chọn",
         "to_score": "Chưa chấm",
-        "scored": "Đã chấm"
+        "scored": "Đã xong"
       },
       "search": "Tìm người nộp",
       "clear": "Xóa bộ lọc",
@@ -6788,9 +6798,9 @@
       "notGiven": "Không có",
       "deck": "Deck",
       "blocks": {
-        "team": "Bạn và đội của bạn",
-        "solution": "Giải pháp của bạn",
-        "questions": "Cho chương trình này",
+        "team": "Người nộp và đội",
+        "solution": "Giải pháp",
+        "questions": "Câu trả lời cho chương trình này",
         "files": "Tệp và liên kết"
       },
       "applyingAs": "Nộp với tư cách",
@@ -6944,7 +6954,7 @@
       },
       "released": "Đã công bố kết quả",
       "done": "Đã chấm hết",
-      "progress": "Đã chấm {done} / {total}",
+      "progress": "Bạn đã chấm {done}/{total}",
       "closes": "Hạn nộp {closes}"
     }
   },
