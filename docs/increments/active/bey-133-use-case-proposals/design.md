@@ -4,7 +4,7 @@ Linear: BEY-133. Design in Figma, page Screens: "Use case — apply with a propo
 
 ## What a person can do
 
-- **Send a proposal.** A member of an approved organization opens a published use case and chooses **Send a proposal**. Six steps follow, each with **Save and return later**: Organization, AI solutions, Your profile, Team, Proposal PDF, Review.
+- **Send a proposal.** A signed-in member of an organization (or a person in none) opens a published use case and chooses **Send a proposal**. Six steps follow, each with **Save and return later**: Organization, AI solutions, Your profile, Team, Proposal PDF, Review.
 - **Look at it and change it after sending.** The members of the organization keep reading what they sent. They may also edit it for the number of days GenAI Fund sets for that use case (7 unless GenAI Fund says otherwise, 0 to 90), counted from the sending, and only while the use case is open. A sent proposal that was edited says so to the organization that posted the use case.
 - **Read proposals.** Every member of the organization that posted the use case reads the proposals it received, in a list and one by one. Reading is all they do for now.
 - **See how many.** Anyone, signed in or not, sees how many proposals a use case has received.
@@ -14,9 +14,9 @@ Out of scope, kept as screens or left out: editing a sent proposal's sender snap
 ## Domain story
 
 1. A provider's member reads a published, open use case and chooses **Send a proposal**. The browser opens the form; the server makes one working copy for the provider's organization and that use case the first time something is saved.
-2. **Organization.** The form shows the member's organization. An organization GenAI Fund has not approved cannot send; the form says so and offers nothing else.
+2. **Organization.** The form shows the member's organization. GenAI Fund's review of the organization decides whether it is listed, not whether it sends (the brief: approval of a public listing is distinct from eligibility), so an organization still in review sends all the same, and its proposal is marked pending where it is read. A person in no organization makes one here, as themselves or as a team (country, and for a team its name, size and website); it waits for review and sends.
 3. **AI solutions.** The member chooses one or more solutions of the organization, whatever their review says (draft, in review, sent back, approved, rejected, taken down; listed or not), and writes how they solve this use case. A missing solution is created on the spot with the existing Solution flow: its name is asked in the usual dialog, which creates a draft, and the Solution editor opens in a near-full-screen dialog over the proposal. Public listing of that solution stays with the existing review by GenAI Fund; the proposal never asks for it.
-4. **Your profile.** The form shows the member's own talent profile. The member fills in what a proposal needs (a headline, a role, a skill, an about text) before the step passes.
+4. **Your profile (optional).** Nothing of the talent profile shows until the member chooses it: a button attaches their current profile, which then shows with a way to remove it; a member with none can make one in place. A proposal sent without a profile shows who sent it (name and address of the account).
 5. **Team.** The member adds people of the organization, each with a role typed by hand, and marks one of them as the primary contact.
 6. **Proposal PDF.** The member uploads one PDF.
 7. **Review and send.** The server checks everything again and keeps a snapshot of the sender's talent profile with the proposal. The proposal is now **sent** and counts.
@@ -29,7 +29,7 @@ Failures. The use case closes while the form is open: sending is refused with th
 | Term | Meaning | Not |
 | --- | --- | --- |
 | Proposal | What a provider organization sends to one use case. In code `UseCaseProposal`; tables `use_case_proposal` and `use_case_proposal_member`. | The existing table `proposal` and `ProposalService`: those are a person's **application** to a program ([BEY-37](../../completed/bey-37-proposal/design.md)). The module is named `proposal` for historical reasons. |
-| Provider organization | The approved organization whose member sends the proposal. | The organization that posted the use case. |
+| Provider organization | The organization whose member sends the proposal, approved or still in review. | The organization that posted the use case. |
 | Posting organization | The organization that posted the use case. Its members read the proposals. | |
 | Team member | A member of the provider organization named on one proposal, with a role typed for that proposal. | The organization's own member role (`owner`, `member`) and a member's job title; neither is copied. |
 | Primary contact | The one team member the posting organization is told to speak to. | |
@@ -64,12 +64,12 @@ Commands: save the working copy; send it. Read models: the form (use case, organ
 Invariants, checked on the server:
 
 - One proposal for each provider organization and use case (unique index). An organization never proposes to its own use case.
-- Saving needs a member of an **approved** organization, a use case that is published and open, and a working copy that is still a draft. The version the form read must still be current.
+- Saving needs a member of an organization, approved or still in review (a person in none makes one first, through the organization command), a use case that is published and open, and a working copy that is still a draft. The version the form read must still be current.
 - Sending needs everything below, checked again at that moment:
   - at least one solution of the organization, any review state, each once, and a non-blank approach;
-  - at least one team member; every one of them a member of the organization; every role non-blank; exactly one primary contact;
+  - a team is optional; one that is named has members of the organization only, every role non-blank and exactly one primary contact;
   - one stored PDF uploaded by the caller with the purpose `application_file`;
-  - the caller's talent profile has a headline, a bio, a role and a skill (the profile's `complete`).
+  - a talent profile is optional: the proposal says whether it attaches the sender's profile (`attach_profile`); when it does, sending keeps the snapshot and needs the sender to have a profile, any state. Without it no snapshot is kept, and the proposal carries who sent it (`sentBy`: name and address of the account).
 - A saved draft may be partial; only sending demands the above.
 - A sent proposal may be saved again by the members of its organization while the use case is open and now is before `sent_at` plus the use case's `proposal_edit_days`. Such a save is checked as sending is (the same completeness and the same codes), keeps the status sent, the sender and the snapshot, keeps the `version` check, and records `edited_at`. Outside that window the save is refused with `PROPOSAL_EDIT_WINDOW_CLOSED`; with 0 days no sent proposal can be edited. Once the use case closes nobody edits, but the organization still reads what it sent.
 - Sending stores the snapshot and the time in the same transaction that makes the proposal sent.
@@ -130,7 +130,7 @@ All paths are under `/api/proposal`; the operation ids are stable names for the 
 | Operation | Method and path | Who | Answers |
 | --- | --- | --- | --- |
 | `getUseCaseProposalForm` | `GET /use-cases/{useCaseId}/proposal` | signed in | The use case, the caller's organization and whether it is approved, its members, and the working copy (with the solutions it offers) or null |
-| `saveUseCaseProposal` | `PUT /use-cases/{useCaseId}/proposal` | member of an approved organization | The form with the draft as saved, or with the sent proposal as edited within its edit window |
+| `saveUseCaseProposal` | `PUT /use-cases/{useCaseId}/proposal` | member of an organization | The form with the draft as saved, or with the sent proposal as edited within its edit window |
 | `sendUseCaseProposal` | `POST /use-case-proposals/{id}/send` | the same | The form with the proposal sent |
 | `listUseCaseProposals` | `GET /use-cases/{useCaseId}/proposals` | member of the posting organization | The sent proposals, newest first |
 | `getReceivedUseCaseProposal` | `GET /use-case-proposals/{id}` | member of the posting organization | One sent proposal with its snapshot and team |
@@ -145,7 +145,7 @@ The working copy is shared by the members of the provider organization; the `ver
 
 ## Errors
 
-New codes of `ProposalErrorCode`, all starting `PROPOSAL_`: `USE_CASE_NOT_OPEN` (not found, not published or past its close), `OWN_USE_CASE`, `ORGANIZATION_NOT_APPROVED`, `ORGANIZATION_REQUIRED` (reused), `ALREADY_SENT`, `PROFILE_INCOMPLETE`, `TEAM_INVALID`, `TEAM_INCOMPLETE`, `PDF_REQUIRED`, `SOLUTION_REQUIRED` (reused), `APPROACH_REQUIRED`, `CHANGED_MEANWHILE` (reused), `SOLUTION_NOT_FOUND` (a solution that is not the organization's, or named twice), `EDIT_WINDOW_CLOSED` (a save of a sent proposal after its edit window, or with no edit days, or after the use case closed; `ALREADY_SENT` stays for sending a sent proposal), `PROPOSAL_NOT_FOUND` (read of a proposal that does not exist or is not the caller's to read). `USE_CASE_NOT_OPEN` is `USE_CASE_NOT_FOUND` and `USE_CASE_CLOSED`, and `ORGANIZATION_REQUIRED` is `NO_ORGANIZATION`, in the code.
+New codes of `ProposalErrorCode`, all starting `PROPOSAL_`: `USE_CASE_NOT_OPEN` (not found, not published or past its close), `OWN_USE_CASE`, `ORGANIZATION_REQUIRED` (reused), `ALREADY_SENT`, `PROFILE_INCOMPLETE`, `TEAM_INVALID`, `TEAM_INCOMPLETE`, `PDF_REQUIRED`, `SOLUTION_REQUIRED` (reused), `APPROACH_REQUIRED`, `CHANGED_MEANWHILE` (reused), `SOLUTION_NOT_FOUND` (a solution that is not the organization's, or named twice), `EDIT_WINDOW_CLOSED` (a save of a sent proposal after its edit window, or with no edit days, or after the use case closed; `ALREADY_SENT` stays for sending a sent proposal), `PROPOSAL_NOT_FOUND` (read of a proposal that does not exist or is not the caller's to read). `USE_CASE_NOT_OPEN` is `USE_CASE_NOT_FOUND` and `USE_CASE_CLOSED`, and `ORGANIZATION_REQUIRED` is `NO_ORGANIZATION`, in the code.
 
 ## Web
 
