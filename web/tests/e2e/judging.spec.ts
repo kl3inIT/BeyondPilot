@@ -67,7 +67,7 @@ test.describe("judging applications", () => {
     await expect(page.getByText("Claim Copilot")).toHaveCount(0);
 
     // The download holds the applications the list shows now, and says of all of them how many are scored.
-    await expect(page.getByText("2 of 3 scored")).toBeVisible();
+    await expect(page.getByText("2 of 3 have a score")).toBeVisible();
     const download = page.waitForEvent("download");
     await page.getByRole("button", { name: "Download (CSV)" }).click();
     expect((await download).suggestedFilename()).toBe("insurance-ai-tasco-applications.csv");
@@ -116,7 +116,7 @@ test.describe("judging applications", () => {
     await expect(demo).toHaveAttribute("rel", "noopener noreferrer");
     // The applicant's contact is a row each, so an email or a phone number is copied on its own;
     // the email writes, the phone dials, and the profile opens in a tab of its own.
-    const team = page.getByRole("region", { name: "You and your team" });
+    const team = page.getByRole("region", { name: "Applicant and team" });
     await expect(team.getByRole("term")).toHaveText([
       "Applying as",
       "Name",

@@ -26,6 +26,8 @@ const program: AdminProgram = {
     shortlistSize: 10,
     outcomesDueOn: "2026-10-16",
     allowUpdatesUntilClose: true,
+    opensTitle: "Applications and the build period open",
+    closesTitle: null,
   },
   questionCount: 0,
   keyDates: [
@@ -95,6 +97,9 @@ describe("Settings values", () => {
         shortlistSize: 10,
         outcomesDueOn: "2026-10-16",
         allowUpdatesUntilClose: true,
+        opensTitle: "Applications and the build period open",
+        closesTitle: null,
+        outcomesTitle: null,
       },
       keyDates: [
         {
@@ -124,6 +129,23 @@ describe("Settings values", () => {
         },
       ],
     });
+  });
+
+  it("send a title for a date of the window only when the operator gave one and the date exists", () => {
+    const values = settingsValuesOf(program);
+    expect(values).toMatchObject({
+      opensTitle: "Applications and the build period open",
+      closesTitle: "",
+      outcomesTitle: "",
+    });
+    expect(
+      saveBodyOf({ ...values, closesTitle: "  Submissions close ", outcomesTitle: "Finalists" })
+        .applications,
+    ).toMatchObject({ closesTitle: "Submissions close", outcomesTitle: "Finalists" });
+    // Without the day outcomes are due there is no date to name.
+    expect(
+      saveBodyOf({ ...values, outcomesDueOn: "", outcomesTitle: "Finalists" }).applications,
+    ).toMatchObject({ outcomesDueOn: null, outcomesTitle: null });
   });
 
   it("drop the window when applications are not taken, and the place of an online event", () => {

@@ -85,6 +85,9 @@ export function settingsValuesOf(program: AdminProgram): SettingsValues {
     shortlistSize: applications?.shortlistSize ? String(applications.shortlistSize) : "",
     outcomesDueOn: applications?.outcomesDueOn ?? "",
     allowUpdatesUntilClose: applications?.allowUpdatesUntilClose ?? true,
+    opensTitle: applications?.opensTitle ?? "",
+    closesTitle: applications?.closesTitle ?? "",
+    outcomesTitle: applications?.outcomesTitle ?? "",
     keyDates: program.keyDates.map(keyDateValueOf),
     events: program.events.map(eventValueOf),
   };
@@ -112,6 +115,10 @@ export function saveBodyOf(values: SettingsValues): SaveProgram {
           shortlistSize: values.shortlistSize ? Number(values.shortlistSize) : null,
           outcomesDueOn: values.outcomesDueOn || null,
           allowUpdatesUntilClose: values.allowUpdatesUntilClose,
+          opensTitle: orNull(values.opensTitle),
+          closesTitle: orNull(values.closesTitle),
+          // A title belongs to a date: without the day outcomes are due there is none to name.
+          outcomesTitle: values.outcomesDueOn ? orNull(values.outcomesTitle) : null,
         }
       : undefined,
     keyDates: values.keyDates.map(keyDateOf),

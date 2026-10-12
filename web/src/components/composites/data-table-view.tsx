@@ -116,6 +116,11 @@ type DataTableSelection<TData> = {
   matching?: string[];
   /** The actions on the selected rows, beside their count; `clear` empties the selection. */
   actions: (ids: string[], clear: () => void) => React.ReactNode;
+  /**
+   * Called with how many rows are selected whenever that changes, for a page whose own leading
+   * action gives way while the bar's is on the screen. A stable function: a state setter.
+   */
+  onCount?: (count: number) => void;
 };
 
 type DataTableViewProps<TData extends RowData> = {
@@ -189,6 +194,14 @@ function DataTableView<TData extends RowData>({
   );
   const clear = () => setPicked([]);
   const anySelected = selected.length > 0;
+
+  const selectedCount = selected.length;
+  const onCount = selection?.onCount;
+  useEffect(() => {
+    onCount?.(selectedCount);
+    // A table that leaves the screen, as when a search finds nothing, leaves no selection behind.
+    return () => onCount?.(0);
+  }, [onCount, selectedCount]);
 
   // Escape empties the selection, as in Dub, unless a dialog or menu has the key.
   useEffect(() => {

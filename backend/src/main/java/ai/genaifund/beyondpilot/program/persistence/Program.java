@@ -75,6 +75,12 @@ public class Program {
 	@Column(nullable = false)
 	private boolean allowUpdatesUntilClose = true;
 
+	private @Nullable String applicationsOpenTitle;
+
+	private @Nullable String applicationsCloseTitle;
+
+	private @Nullable String outcomesDueTitle;
+
 	@ElementCollection
 	@CollectionTable(name = "program_milestone", joinColumns = @JoinColumn(name = "program_id"))
 	@OrderColumn(name = "position")
@@ -155,6 +161,17 @@ public class Program {
 		this.shortlistSize = null;
 		this.outcomesDueOn = null;
 		this.allowUpdatesUntilClose = true;
+		titleWindowDates(null, null, null);
+	}
+
+	/**
+	 * Names the dates the window puts on the timeline: its opening, its close and the day outcomes are due. A null
+	 * leaves a date its default words, which the reader's language chooses.
+	 */
+	public void titleWindowDates(@Nullable String opens, @Nullable String closes, @Nullable String outcomes) {
+		this.applicationsOpenTitle = opens;
+		this.applicationsCloseTitle = closes;
+		this.outcomesDueTitle = outcomes;
 	}
 
 	/** The lists are replaced as given; an unchanged list writes nothing. */
@@ -282,6 +299,18 @@ public class Program {
 
 	public @Nullable LocalDate getOutcomesDueOn() {
 		return outcomesDueOn;
+	}
+
+	public @Nullable String getApplicationsOpenTitle() {
+		return applicationsOpenTitle;
+	}
+
+	public @Nullable String getApplicationsCloseTitle() {
+		return applicationsCloseTitle;
+	}
+
+	public @Nullable String getOutcomesDueTitle() {
+		return outcomesDueTitle;
 	}
 
 	public boolean isAllowUpdatesUntilClose() {

@@ -394,6 +394,104 @@ class ProgramAdministrationTest {
 	}
 
 	@Test
+	void anEventHeldInPersonNamesItsCityOnceItIsAddedOrChanged() {
+		String one = created("Placed", "placed");
+		String id = one.substring(one.lastIndexOf('/') + 1);
+
+		Map<String, Object> nowhere = program(0, "Placed", "placed");
+		nowhere.put("events", List.of(event("Meetup", false, " ")));
+		assertProblem(save(operator, one, nowhere), 400, "PROGRAM_EVENT_CITY_REQUIRED");
+
+		// An online event has no place, and a city is enough for one held in person.
+		Map<String, Object> placed = program(0, "Placed", "placed");
+		placed.put("events", List.of(event("Webinar", true, null), event("Meetup", false, " Ho Chi Minh City ")));
+		save(operator, one, placed).expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.events[0].city")
+			.isEmpty()
+			.jsonPath("$.events[1].city")
+			.isEqualTo("Ho Chi Minh City");
+
+		// A program saved before the rule holds an event in person without a city: it still saves its other fields
+		// with that event as it stands, and is asked for the city once the event changes.
+		jdbc.sql("""
+				insert into program_event (program_id, position, title, starts_at, online)
+				values (?::uuid, 2, 'Demo day', '2026-10-09T07:00:00Z', false)
+				""").param(id).update();
+		Map<String, Object> renamed = program(1, "Placed again", "placed");
+		renamed.put("events", List.of(event("Webinar", true, null), event("Meetup", false, "Ho Chi Minh City"),
+				event("Demo day", false, null)));
+		save(operator, one, renamed).expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.name")
+			.isEqualTo("Placed again")
+			.jsonPath("$.events[2].city")
+			.isEmpty();
+
+		Map<String, Object> changed = program(2, "Placed again", "placed");
+		changed.put("events", List.of(event("Demo day and dinner", false, null)));
+		assertProblem(save(operator, one, changed), 400, "PROGRAM_EVENT_CITY_REQUIRED");
+	}
+
+	@Test
+	void anOperatorNamesTheDatesTheWindowPutsOnTheTimeline() {
+		String one = created("Named dates", "named-dates");
+		Map<String, Object> program = program(0, "Named dates", "named-dates");
+		Map<String, Object> window = applications("2026-10-01T02:00:00Z", "2026-11-15T16:59:00Z", "2026-11-16");
+		window.put("opensTitle", " Applications and the build period open ");
+		window.put("closesTitle", "   ");
+		window.put("outcomesTitle", "Finalists announced");
+		program.put("applications", window);
+
+		// A title is stripped, and a blank one is none: the date keeps its default words.
+		save(operator, one, program).expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.applications.opensTitle")
+			.isEqualTo("Applications and the build period open")
+			.jsonPath("$.applications.closesTitle")
+			.isEmpty()
+			.jsonPath("$.applications.outcomesTitle")
+			.isEqualTo("Finalists announced");
+		// The page reads the same titles; an operator reads a draft's page.
+		get(operator, "/api/program/programs/named-dates").expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.applications.opensTitle")
+			.isEqualTo("Applications and the build period open")
+			.jsonPath("$.applications.closesTitle")
+			.isEmpty();
+		String list = new String(get(operator, PROGRAMS).expectBody().returnResult().getResponseBody(), UTF_8);
+		assertThat(JsonPath.<List<String>>read(list,
+				"$.items[?(@.slug == 'named-dates')].applications.outcomesTitle"))
+			.containsExactly("Finalists announced");
+
+		// A window sent without its titles has none, and a title longer than a key date's is pointed at.
+		Map<String, Object> plain = program(1, "Named dates", "named-dates");
+		plain.put("applications", applications("2026-10-01T02:00:00Z", "2026-11-15T16:59:00Z", "2026-11-16"));
+		save(operator, one, plain).expectStatus()
+			.isOk()
+			.expectBody()
+			.jsonPath("$.applications.opensTitle")
+			.isEmpty()
+			.jsonPath("$.applications.outcomesTitle")
+			.isEmpty();
+		Map<String, Object> wordy = program(2, "Named dates", "named-dates");
+		Map<String, Object> tooLong = applications("2026-10-01T02:00:00Z", "2026-11-15T16:59:00Z", "2026-11-16");
+		tooLong.put("closesTitle", "x".repeat(161));
+		wordy.put("applications", tooLong);
+		String body = new String(save(operator, one, wordy).expectStatus()
+			.isBadRequest()
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), UTF_8);
+		assertThat(JsonPath.<List<String>>read(body, "$.errors[*].pointer"))
+			.containsExactly("#/applications/closesTitle");
+	}
+
+	@Test
 	void aSavedMemberThatIsNotValidIsPointedAt() {
 		String one = created("Pointed", "pointed");
 		Map<String, Object> program = program(0, "Pointed", "pointed");
@@ -590,6 +688,15 @@ class ProgramAdministrationTest {
 		keyDate.put("endsAt", endsAt);
 		keyDate.put("allDay", allDay);
 		return keyDate;
+	}
+
+	private static Map<String, Object> event(String title, boolean online, String city) {
+		Map<String, Object> event = new LinkedHashMap<>();
+		event.put("title", title);
+		event.put("startsAt", "2026-10-09T07:00:00Z");
+		event.put("online", online);
+		event.put("city", city);
+		return event;
 	}
 
 	private RestTestClient.ResponseSpec save(String session, String uri, Map<String, Object> program) {

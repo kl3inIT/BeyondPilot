@@ -175,7 +175,7 @@ public class ProgramAdministration {
 		program.runBetween(request.startsOn(), request.endsOn());
 		program.showAs(pageKind, externalUrl);
 		takeApplications(program, request.applications());
-		program.schedule(milestones(id, request.keyDates()), events(id, request.events()));
+		program.schedule(milestones(id, request.keyDates()), events(id, request.events(), program.getEvents()));
 		program.coverWith(cover);
 		// What publishing asks for stays while the program is public: a save cannot take its cover or summary away.
 		List<PublishIssue> missing = program.isPublished() ? PublishIssue.of(program) : List.of();
@@ -232,6 +232,8 @@ public class ProgramAdministration {
 		}
 		program.takeApplications(applications.opensAt(), applications.closesAt(), applications.shortlistSize(),
 				outcomesDueOn, applications.allowUpdatesUntilClose());
+		program.titleWindowDates(text(applications.opensTitle()), text(applications.closesTitle()),
+				text(applications.outcomesTitle()));
 	}
 
 	private static List<ProgramMilestone> milestones(UUID id, List<ProgramKeyDate> keyDates) {
@@ -244,13 +246,21 @@ public class ProgramAdministration {
 		}).toList();
 	}
 
-	private static List<ProgramEvent> events(UUID id, List<ProgramEventEntry> events) {
+	/**
+	 * An event held in person names its city. The rule is asked of an event that is added or changed: one the program
+	 * already holds as sent is kept, so a program saved before the rule still saves its other fields.
+	 */
+	private static List<ProgramEvent> events(UUID id, List<ProgramEventEntry> events, List<ProgramEvent> stored) {
 		return events.stream().map(event -> {
 			if (outOfOrder(event.startsAt(), event.endsAt())) {
 				throw refused(ProgramErrorCode.EVENT_OUT_OF_ORDER, id);
 			}
-			return new ProgramEvent(event.title().strip(), event.startsAt(), event.endsAt(), event.online(),
-					text(event.city()), text(event.country()), text(event.registrationUrl()));
+			ProgramEvent saved = new ProgramEvent(event.title().strip(), event.startsAt(), event.endsAt(),
+					event.online(), text(event.city()), text(event.country()), text(event.registrationUrl()));
+			if (!saved.online() && saved.city() == null && !stored.contains(saved)) {
+				throw refused(ProgramErrorCode.EVENT_CITY_REQUIRED, id);
+			}
+			return saved;
 		}).toList();
 	}
 
@@ -387,7 +397,9 @@ public class ProgramAdministration {
 				program.getPageKind().code(), program.getExternalUrl(), program.getCoverFileId(),
 				opensAt == null || closesAt == null ? null
 						: new ProgramApplications(opensAt, closesAt, program.getShortlistSize(),
-								program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose()),
+								program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose(),
+								program.getApplicationsOpenTitle(), program.getApplicationsCloseTitle(),
+								program.getOutcomesDueTitle()),
 				program.getQuestions().size(),
 				program.getMilestones()
 					.stream()

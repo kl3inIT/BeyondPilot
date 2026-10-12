@@ -8,11 +8,19 @@ import { cva, type VariantProps } from "class-variance-authority";
 const dangerText =
   "text-destructive hover:bg-destructive/10 hover:text-rose-foreground dark:hover:text-destructive";
 
+/** The approving action as text, by the same rule: on its own tint by day the green is `mint-foreground`. */
+const successText =
+  "text-success hover:bg-success/10 hover:text-mint-foreground dark:hover:text-success";
+
 /**
  * Product action appearance by role, not by look: `prominence` says how important the action is,
  * `tone` whether it is destructive, or the approving one of a pair of decisions. Mirrors the Figma `Button` component set
  * (docs/guidelines/figma.md › Components): full pills, except the tertiary action's 6px corners
  * (DESIGN.md › Buttons). `hit-area` gives every action a 44px target on touch screens.
+ *
+ * A solid action darkens under the pointer (`primary-hover`, `destructive-hover`, `success-hover`
+ * in tokens.css), so its ink reads at 4.5:1 or better there as at rest; the colour at 90% let the
+ * page through and fell under it.
  */
 const actionVariants = cva(
   "hit-area inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-transparent text-sm font-medium whitespace-nowrap transition-colors outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-busy:pointer-events-none aria-busy:opacity-70 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -35,7 +43,7 @@ const actionVariants = cva(
       {
         tone: "default",
         prominence: "primary",
-        class: "bg-primary text-primary-foreground hover:bg-primary/90",
+        class: "bg-primary text-primary-foreground hover:bg-primary-hover",
       },
       {
         tone: "default",
@@ -60,7 +68,7 @@ const actionVariants = cva(
       {
         tone: "danger",
         prominence: "primary",
-        class: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        class: "bg-destructive text-destructive-foreground hover:bg-destructive-hover",
       },
       {
         tone: "danger",
@@ -80,22 +88,22 @@ const actionVariants = cva(
       {
         tone: "success",
         prominence: "primary",
-        class: "bg-success text-success-foreground hover:bg-success/90",
+        class: "bg-success text-success-foreground hover:bg-success-hover",
       },
       {
         tone: "success",
         prominence: "secondary",
-        class: "text-success hover:bg-success/10",
+        class: successText,
       },
       {
         tone: "success",
         prominence: "tertiary",
-        class: "text-success hover:bg-success/10",
+        class: successText,
       },
       {
         tone: "success",
         prominence: "internal",
-        class: "bg-success/10 text-success hover:bg-success/20",
+        class: "bg-success/10 text-mint-foreground hover:bg-success/20 dark:text-success",
       },
     ],
     defaultVariants: {

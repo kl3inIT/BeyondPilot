@@ -44,7 +44,8 @@ public class ProgramQueryRepository {
 	public List<AdminProgramSummaryResponse> all(Instant now) {
 		return jdbc.sql("""
 				select id, slug, name, type, partner_name, cover_file_id, status, starts_on, ends_on, applications_open_at,
-				       applications_close_at, shortlist_size, outcomes_due_on, allow_updates_until_close, updated_at
+				       applications_close_at, shortlist_size, outcomes_due_on, allow_updates_until_close,
+				       applications_open_title, applications_close_title, outcomes_due_title, updated_at
 				from program
 				order by starts_on desc nulls first, created_at desc, id
 				""").query((row, index) -> {
@@ -69,7 +70,7 @@ public class ProgramQueryRepository {
 		return jdbc.sql("""
 				select id, slug, name, type, partner_name, summary, cover_file_id, starts_on, ends_on, page_kind,
 				       external_url, applications_open_at, applications_close_at, shortlist_size, outcomes_due_on,
-				       allow_updates_until_close
+				       allow_updates_until_close, applications_open_title, applications_close_title, outcomes_due_title
 				from program
 				where status = 'published' and (cast(:type as text) is null or type = :type)
 				order by starts_on desc nulls last, created_at desc, id
@@ -116,7 +117,9 @@ public class ProgramQueryRepository {
 		}
 		int shortlistSize = row.getInt("shortlist_size");
 		return new ProgramApplications(opensAt, closesAt, row.wasNull() ? null : shortlistSize,
-				day(row.getDate("outcomes_due_on")), row.getBoolean("allow_updates_until_close"));
+				day(row.getDate("outcomes_due_on")), row.getBoolean("allow_updates_until_close"),
+				row.getString("applications_open_title"), row.getString("applications_close_title"),
+				row.getString("outcomes_due_title"));
 	}
 
 	private static @Nullable Instant instant(@Nullable Timestamp timestamp) {

@@ -12,16 +12,16 @@ const criteria: ReviewCriterion[] = [
   { id: "c3", name: "Team" },
 ];
 
-function panel(props: { released?: boolean } = {}) {
+function panel(props: { released?: boolean; judge?: boolean; nextHref?: string } = {}) {
   return (
     <AssessmentPanel
       applicationId="a1"
       criteria={criteria}
       mine={null}
       version={1}
-      judge
+      judge={props.judge ?? true}
       released={props.released ?? false}
-      nextHref={null}
+      nextHref={props.nextHref ?? null}
     />
   );
 }
@@ -77,6 +77,31 @@ describe("AssessmentPanel", () => {
     expect(screen.getByText("Average 4.0")).toBeVisible();
     expect(screen.queryByText(/still need/)).not.toBeInTheDocument();
     expect(save()).not.toHaveAccessibleDescription();
+  });
+
+  it("draws a judge's Save and next as the primary action, beside Skip", () => {
+    render(panel({ nextHref: "/reviews/p1/a2" }));
+
+    expect(screen.getAllByRole("button", { name: "Save and next" })[0]).toHaveAttribute(
+      "data-prominence",
+      "primary",
+    );
+    expect(screen.getByRole("link", { name: "Skip" })).toHaveAttribute(
+      "data-prominence",
+      "tertiary",
+    );
+  });
+
+  it("draws a plain Save, and an operator's save under the decision, as secondary", () => {
+    const { unmount } = render(panel());
+    expect(save()).toHaveAttribute("data-prominence", "secondary");
+    unmount();
+
+    render(panel({ judge: false, nextHref: "/admin/programs/p1/applications/a2" }));
+    expect(screen.getAllByRole("button", { name: "Save and next" })[0]).toHaveAttribute(
+      "data-prominence",
+      "secondary",
+    );
   });
 
   it("takes no score once the outcomes are released", () => {

@@ -17787,15 +17787,39 @@ components:
           type: string
           format: date-time
           description: The deadline; later than `opensAt`.
+        closesTitle:
+          type:
+          - string
+          - "null"
+          description: The title of the deadline on the timeline; null shows the default
+            words.
+          maxLength: 160
+          minLength: 0
         opensAt:
           type: string
           format: date-time
+        opensTitle:
+          type:
+          - string
+          - "null"
+          description: The title of the opening on the timeline; null shows the default
+            words in the reader's language.
+          maxLength: 160
+          minLength: 0
         outcomesDueOn:
           type:
           - string
           - "null"
           format: date
           description: The day applicants hear the outcome; not before the deadline.
+        outcomesTitle:
+          type:
+          - string
+          - "null"
+          description: The title of the day outcomes are due on the timeline; null
+            shows the default words.
+          maxLength: 160
+          minLength: 0
         shortlistSize:
           type:
           - integer

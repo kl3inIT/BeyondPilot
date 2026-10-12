@@ -673,6 +673,13 @@ test.describe("apply", () => {
       /^Outcome \(to come\)/,
       /^Demo day \(to come\)/,
     ]);
+    // The words a stage hides for a screen reader stay inside its column: the page is no wider
+    // than the screen, on a phone as well.
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+    ).toBe(true);
     const released = page
       .getByRole("region", { name: "Past" })
       .getByRole("listitem")

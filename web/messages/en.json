@@ -429,6 +429,7 @@
     "PROGRAM_OUTCOMES_BEFORE_CLOSE": "Outcomes are due before applications close.",
     "PROGRAM_KEY_DATE_OUT_OF_ORDER": "A key date ends before it starts.",
     "PROGRAM_EVENT_OUT_OF_ORDER": "An event ends before it starts.",
+    "PROGRAM_EVENT_CITY_REQUIRED": "An event held in person needs its city. Edit the event to add it.",
     "PROGRAM_EXTERNAL_URL_REQUIRED": "Enter the address of the page somewhere else.",
     "PROGRAM_NOT_READY_TO_PUBLISH": "The program still lacks what the list above names.",
     "PROGRAM_COVER_NOT_USABLE": "This image cannot be the cover. Upload it again.",
@@ -837,11 +838,8 @@
         "keyDates": {
           "title": "Key dates",
           "what": "The timeline on the program's page, and what an applicant is told happens next.",
-          "opens": "Applications and the build period open",
-          "closes": "Submissions close",
-          "outcomes": "Every applicant hears back",
           "fromWindow": "From the application window",
-          "locked": "Edited under Applications",
+          "locked": "Date edited under Applications",
           "add": "Add a date",
           "hint": "Times are in Vietnam time (ICT)."
         },
@@ -884,6 +882,14 @@
           "noteHint": "Shown under the date on the program's page.",
           "add": "Add date",
           "update": "Save"
+        },
+        "windowTitle": {
+          "rename": "Rename",
+          "renameNamed": "Rename {name}",
+          "dialogTitle": "Rename “{name}”",
+          "label": "Title",
+          "hint": "Shown on the program's page in every language. Leave it empty to show “{name}”.",
+          "save": "Save"
         },
         "event": {
           "addTitle": "Add an event",
@@ -3219,6 +3225,8 @@
         "subject": "Subject",
         "body": "Body",
         "bodyHint": "Markdown: # heading, **bold**, [link](https://…).",
+        "sentInEnglish": "Sent in English to every recipient, whichever language they read BeyondPilot in.",
+        "frame": "BeyondPilot adds the header, the sign-off and the footer around the body, and the quoted message where an email carries one; the footer note is set under Appearance.",
         "variables": "Variables",
         "variablesHint": "Each is replaced by a value when the email is sent; the examples show what a reader would see.",
         "example": "Example:",
@@ -5540,6 +5548,8 @@
       "slugLength": "Use 3 to 60 characters.",
       "invalid": "Check this field.",
       "endsBeforeStarts": "The end is before the start.",
+      "endNeedsTime": "Add the end time, or clear the end date.",
+      "endNeedsDay": "Add the end date, or clear the end time.",
       "closesBeforeOpens": "Applications close before they open.",
       "outcomesBeforeClose": "Outcomes are due before applications close.",
       "webAddress": "Enter an address that starts with http:// or https://.",
@@ -6619,7 +6629,7 @@
         "shortlisted": "Shortlisted",
         "not_selected": "Not selected",
         "to_score": "To score",
-        "scored": "Scored"
+        "scored": "Done"
       },
       "search": "Search applicants",
       "clear": "Clear filters",
@@ -6691,7 +6701,7 @@
         "description": "Drafts are never listed."
       },
       "footer": "{shown, plural, one {# application} other {# applications}} · {drafts, plural, one {# draft was} other {# drafts were}} not submitted · {withdrawn} withdrawn",
-      "footerScored": "{scored} of {total} scored",
+      "footerScored": "{scored, plural, one {# of {total} has a score} other {# of {total} have a score}}",
       "download": "Download (CSV)",
       "downloadFailed": "We could not download the applications. Try again.",
       "own": "Yours"
@@ -6788,9 +6798,9 @@
       "notGiven": "Not given",
       "deck": "Deck",
       "blocks": {
-        "team": "You and your team",
-        "solution": "Your solution",
-        "questions": "For this program",
+        "team": "Applicant and team",
+        "solution": "Solution",
+        "questions": "Answers for this program",
         "files": "Files and links"
       },
       "applyingAs": "Applying as",
@@ -6944,7 +6954,7 @@
       },
       "released": "Outcomes released",
       "done": "All scored",
-      "progress": "{done} of {total} scored",
+      "progress": "You scored {done} of {total}",
       "closes": "Applications close {closes}"
     }
   },
