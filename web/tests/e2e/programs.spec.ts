@@ -12,12 +12,15 @@ test.describe("programs", () => {
     await page.goto("/programs");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Programs and events");
+    // Two programs take applications; each card carries its own countdown and Apply.
     const open = page.getByRole("region", { name: "Open now" });
+    await expect(open.getByRole("link", { name: "Nestlé Vietnam AI Reinvention" })).toBeVisible();
+    const tasco = open.getByRole("article").filter({ hasText: "Tasco" });
     await expect(
-      open.getByRole("link", { name: "AI for Insurance Challenge × Tasco" }),
+      tasco.getByRole("link", { name: "AI for Insurance Challenge × Tasco" }),
     ).toBeVisible();
-    await expect(open.getByText(/days left · closes/)).toBeVisible();
-    await expect(open.getByRole("link", { name: "Apply now" })).toHaveAttribute("href", applyUrl);
+    await expect(tasco.getByText(/days left · closes/)).toBeVisible();
+    await expect(tasco.getByRole("link", { name: "Apply now" })).toHaveAttribute("href", applyUrl);
 
     // An event the open card already shows is not repeated under Coming up.
     await expect(
@@ -187,6 +190,144 @@ test.describe("programs", () => {
 
     await page.goto("/vi/programs/insurance-ai-tasco");
     await expect(page.getByRole("heading", { name: "Thử thách", exact: true })).toBeVisible();
+  });
+
+  test("the Nestlé page is the one made for it, with the program's dates", async ({
+    page,
+    isMobile,
+  }) => {
+    await page.goto("/programs/nestle-vietnam-ai-reinvention");
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Nestlé Vietnam AI Reinvention",
+    );
+    await expect(
+      page.getByText("Nestlé has picked their problems.", { exact: false }),
+    ).toBeVisible();
+    // The deadline above the page and among the four facts is the program's window, not page copy.
+    await expect(
+      page.getByText(/Applications close \d+ \w+, \d\d:\d\d ICT\./).first(),
+    ).toBeVisible();
+    const hero = page.locator("header").filter({ has: page.getByRole("heading", { level: 1 }) });
+    await expect(hero.getByRole("term")).toHaveText([
+      "Applications close",
+      "Matching Day",
+      "The opportunity",
+      "Who can apply",
+    ]);
+    await expect(hero.getByRole("definition").first()).toHaveText(/^\d+ \w+, \d\d:\d\d ICT$/);
+    const applyUrl = "/programs/nestle-vietnam-ai-reinvention/apply";
+    await expect(page.getByRole("link", { name: "Apply now" }).first()).toHaveAttribute(
+      "href",
+      applyUrl,
+    );
+
+    const nav = page.getByRole("navigation", { name: "On this page" });
+    for (const [name, id] of [
+      ["Benefits", "offers"],
+      ["Challenges", "areas"],
+      ["Use cases", "use-cases"],
+      ["How it works", "how"],
+      ["Eligibility", "eligibility"],
+      ["Dates", "dates"],
+      ["FAQ", "faq"],
+    ]) {
+      await expect(nav.getByRole("link", { name, exact: true })).toHaveAttribute("href", `#${id}`);
+      await expect(page.locator(`#${id}`).getByRole("heading", { level: 2 })).toBeVisible();
+    }
+    await expect(page.locator("#offers").getByRole("listitem")).toHaveCount(3);
+
+    // Six tabs over one panel: the first area is open, another replaces it, the last is the invitation.
+    const areas = page.locator("#areas");
+    await expect(areas.getByRole("tab")).toHaveCount(6);
+    const panel = areas.getByRole("tabpanel");
+    await expect(panel.getByRole("heading", { level: 3 })).toHaveText(
+      "Document processing & trade compliance",
+    );
+    await expect(panel.getByRole("term")).toHaveText([
+      "What it looks like today",
+      "What good looks like",
+      "Bring us",
+    ]);
+    await expect(panel.getByRole("listitem")).toHaveCount(5);
+    await areas.getByRole("tab", { name: "Smart manufacturing & AI automation" }).click();
+    await expect(panel.getByRole("heading", { level: 3 })).toHaveText(
+      "Smart manufacturing & AI automation",
+    );
+    await expect(panel.getByText("Predictive maintenance")).toBeVisible();
+    await expect(panel.getByText("HS-code decision support")).toHaveCount(0);
+    await areas.getByRole("tab", { name: "Something more" }).click();
+    await expect(
+      panel.getByText("Have experience applying AI in FMCG", { exact: false }),
+    ).toBeVisible();
+    await expect(areas.getByText("Recognise one of these?")).toBeVisible();
+
+    // The use cases attached to the program, and only those.
+    await expect(page.locator("#use-cases").getByRole("heading", { level: 3 })).toHaveText([
+      "Claims triage with document intelligence",
+      "Demand forecasting for a retail chain",
+    ]);
+    await expect(page.locator("#how").getByRole("listitem")).toHaveCount(4);
+    const eligibility = page.locator("#eligibility");
+    await expect(eligibility.getByRole("heading", { level: 3 })).toHaveText([
+      "What you need",
+      "The six questions you'll answer in the room",
+      "Screening also checks",
+    ]);
+    await expect(
+      eligibility.getByText("What capability does Nestlé keep afterwards?"),
+    ).toBeVisible();
+
+    // The rail is the program's: its key date, its window and its event; the activities are the page's.
+    const dates = page.locator("#dates");
+    await expect(dates.getByText("Matching Day", { exact: true })).toBeVisible();
+    await expect(dates.getByText("Applications close", { exact: true })).toBeVisible();
+    await expect(dates.getByText("Every applicant hears back")).toBeVisible();
+    await expect(dates.getByRole("link", { name: "Register" })).toHaveAttribute(
+      "href",
+      "https://luma.com/nestle-info-session",
+    );
+    await expect(dates.getByRole("heading", { level: 4 })).toHaveText([
+      "During applications",
+      "Before Matching Day",
+      "After Matching Day",
+    ]);
+    const faq = page.locator("#faq");
+    await expect(faq.getByRole("button")).toHaveCount(8);
+    await faq.getByRole("button", { name: "Is there prize money?" }).click();
+    await expect(faq.getByText("There is no cash prize.", { exact: false })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /Will your solution be in the room on 3 December\?/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "About the programme" }).getByText("AI-First. Human-Led.", {
+        exact: false,
+      }),
+    ).toBeVisible();
+    // The navigation and the tabs wrap: the page is never wider than the screen.
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+    ).toBe(true);
+    if (isMobile) {
+      // On a phone the card to apply comes before the first section.
+      const card = await page
+        .getByRole("complementary", { name: "Applying" })
+        .first()
+        .boundingBox();
+      const offers = await page
+        .getByRole("heading", { name: "What this program offers" })
+        .boundingBox();
+      expect(card!.y).toBeLessThan(offers!.y);
+    }
+    await expectNoSeriousA11yViolations(page);
+
+    await page.goto("/vi/programs/nestle-vietnam-ai-reinvention");
+    await expect(
+      page.getByRole("heading", { name: "Chương trình mang lại gì", exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("tab")).toHaveCount(6);
   });
 
   test("a draft is found by an operator only, under a banner that leads back", async ({

@@ -142,8 +142,10 @@ The operators' list shows each program's phase whatever its status.
 - **Page kinds.** `standard`: the page is built from the program's fields. `custom`: the web application has a page
   written for that address and fills it with the program's data; a `custom` program whose address has no such page is
   shown as a standard page (`web/src/app/[locale]/(public)/programs/[slug]/page.tsx`). `external`: the page is
-  somewhere else, at `externalUrl`.
-- **Use cases.** A standard page and the Tasco page list the use cases an operator attached to the program, read
+  somewhere else, at `externalUrl`. The written pages are listed in `web/src/features/program/custom-pages.ts`:
+  `insurance-ai-tasco` and `nestle-vietnam-ai-reinvention`. Their long content is fixed for the campaign and lives in
+  both message catalogs; the deadline, the timeline, the events and Apply are the program's.
+- **Use cases.** A standard page and the written pages list the use cases an operator attached to the program, read
   from the public use case list by the program's address (`GET /api/usecase/use-cases?program=`), newest first, its
   first page. A program with none has no such section and no entry for it in the page's navigation; `program` gains
   no dependency on `usecase`, the web page composes the two.

@@ -26,17 +26,9 @@ import { genaiFundLinks, programApplyRoute } from "@/lib/site";
 import { ProgramCountdown } from "../program-countdown";
 import { deadlineText, programFormatter, renderedAt } from "../program-format";
 import { ProgramBreadcrumb } from "../program-page";
-import { ApplyCard, DraftBanner, Timeline, timelineOf } from "../program-parts";
+import { ApplyCard, DraftBanner, Note, SectionHead, Timeline, timelineOf } from "../program-parts";
 import { ProgramUseCases } from "../program-use-cases";
-import {
-  Argument,
-  Myths,
-  Note,
-  PilotMonth,
-  SectionHead,
-  Support,
-  TascoClient,
-} from "./tasco-parts";
+import { Argument, Myths, PilotMonth, Support, TascoClient } from "./tasco-parts";
 
 const pains = [
   ["paper", FileTextIcon],
