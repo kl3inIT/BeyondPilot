@@ -1,17 +1,11 @@
 "use client";
 
-import {
-  BanIcon,
-  CircleCheckIcon,
-  EllipsisIcon,
-  MailIcon,
-  ShieldCheckIcon,
-  ShieldOffIcon,
-} from "lucide-react";
+import { BanIcon, CircleCheckIcon, MailIcon, ShieldCheckIcon, ShieldOffIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { RowMenuTrigger } from "@/components/actions/row-menu-trigger";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { Person } from "@/components/composites/person";
 import {
@@ -20,7 +14,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify, type MessageKey } from "@/hooks/use-notify";
 import { Link } from "@/i18n/navigation";
@@ -113,18 +106,7 @@ function AccountRowActions({ account }: { account: AccountSummary }) {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <button
-              type="button"
-              aria-label={t("actions.open", { name })}
-              disabled={pending}
-              className="hit-area flex size-8 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
-            />
-          }
-        >
-          <EllipsisIcon className="size-4" aria-hidden="true" />
-        </DropdownMenuTrigger>
+        <RowMenuTrigger aria-label={t("actions.open", { name })} disabled={pending} />
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuGroup>
             <DropdownMenuItem

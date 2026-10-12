@@ -1,8 +1,9 @@
-import { BoxesIcon, EllipsisIcon, SearchXIcon } from "lucide-react";
+import { BoxesIcon, SearchXIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
+import { RowMenuTrigger } from "@/components/actions/row-menu-trigger";
 import { TextButton } from "@/components/actions/text-button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
@@ -16,7 +17,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
@@ -211,17 +211,7 @@ function RowMenu({ solution }: { solution: AdminSolutionSummary }) {
   const { id, name, organizationId } = solution;
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <button
-            type="button"
-            aria-label={t("openNamed", { name })}
-            className="hit-area flex size-8 shrink-0 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
-          />
-        }
-      >
-        <EllipsisIcon className="size-4" aria-hidden="true" />
-      </DropdownMenuTrigger>
+      <RowMenuTrigger aria-label={t("openNamed", { name })} />
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>
           <DropdownMenuItem render={<Link href={`${siteRoutes.adminSolutions}/${id}`} />}>
