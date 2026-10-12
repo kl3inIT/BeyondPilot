@@ -4,7 +4,8 @@
 
 Writes `<output>/startup-invitations.sql`: an operator's invitation for each person of a startup, to the organization
 the startups' load made. Nobody gets an account and no email is sent: whoever signs in with the address sees the
-invitation and accepts it. The invitation does not lapse. It takes the operator account as `-v operator=<uuid>` and
+invitation and accepts it. The invitation does not lapse. An address that belongs to an organization already, or is an
+operator's, gets none. It takes the operator account as `-v operator=<uuid>` and
 ends by counting what it did not write and why.
 """
 
@@ -107,6 +108,10 @@ begin
             when exists (select 1 from organization_invitation i where i.id = person.id) then 'loaded already'
             when exists (select 1 from identity_account a join organization_member m on m.account_id = a.id
                          where lower(a.email) = person.email) then 'the address belongs to an organization already'
+            -- An operator runs the platform; a company's profile is not theirs to own through this load.
+            when exists (select 1 from identity_account a
+                         where lower(a.email) = person.email and a.platform_role = 'operator')
+                then 'the address is an operator account'
             when exists (select 1 from organization_invitation i
                          where i.organization_id = target and lower(i.email) = person.email and i.status = 'pending')
                 then 'the address is invited to it already'

@@ -77,6 +77,7 @@ class InvitationTest(unittest.TestCase):
         self.assertIn("'a@solo.example', 'owner', null);", text)
         self.assertIn("sent_by_operator", text)
         self.assertIn("the address belongs to an organization already", text)
+        self.assertIn("the address is an operator account", text)
         self.assertIn("now() + interval '100 years'", text)
 
 
