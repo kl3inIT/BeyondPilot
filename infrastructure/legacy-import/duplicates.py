@@ -10,7 +10,9 @@ into it as `OrganizationAdministration.merge` does it: their open invitations, r
 proposals, introductions and enquiries move to the kept one, and each stays as a record of where it went.
 
 The solutions that are then several under the kept organization are the same product described several times: the
-best one by the same order stays listed and the others are taken off the list, not deleted.
+best one by the same order stays, and the others are refused as duplicates, as an operator refuses a solution. Taking
+one off the list would not do: search and matching read an approved solution listed or not. A refused solution is in
+neither, keeps everything it holds, and can be reviewed again.
 
 A group is left for a person when an organization in it has members, or when the one to keep is not approved: merging
 it moves people or needs a review, which a rule does not decide. The file ends by listing what it merged and what it
@@ -32,18 +34,20 @@ import records
 import report
 
 
-def v1_facts(startup_rows, enterprise_rows) -> list[tuple[str, bool, str]]:
-    """What the old platform knew of each company the load took: whether it was active, and when it last changed."""
+def v1_facts(startup_rows, enterprise_rows) -> list[tuple[str, str | None, bool, str]]:
+    """What the old platform knew of each company the load took: the organization and the solution it became,
+    whether it was active, and when it last changed. An enterprise has no solution."""
     found = []
     for row in startup_rows:
         code = mapping.clean(row.get("startup_code"))
         if code is not None:
-            found.append((str(records.ident("startup-organization", code)), row.get("is_active") is True,
+            found.append((str(records.ident("startup-organization", code)),
+                          str(records.ident("startup-solution", code)), row.get("is_active") is True,
                           str(row.get("updated_at") or "")))
     for row in enterprise_rows:
         key = mapping.clean(row.get("id"))
         if key is not None:
-            found.append((str(records.ident("enterprise-organization", key)), row.get("isActive") is True,
+            found.append((str(records.ident("enterprise-organization", key)), None, row.get("isActive") is True,
                           str(row.get("updatedAt") or "")))
     return found
 
@@ -91,7 +95,8 @@ do $$
 declare
     pair record;
     merged integer := 0;
-    unlisted integer := 0;
+    refused_count integer := 0;
+    results_gone integer := 0;
 begin
     for pair in select * from merge_plan where left_because is null loop
         -- As MembershipRepository.moveOpenInvitations and moveOpenRequests.
@@ -132,49 +137,62 @@ begin
         merged := merged + 1;
     end loop;
 
-    -- Under each kept organization the solutions with one name are one product: the best stays listed.
+    -- Under an organization others were merged into, the solutions with one name are one product described several
+    -- times. The best stays; the others are refused as duplicates, as an operator refuses one, which takes them out
+    -- of the directory, of search and of matching, and can be reviewed again.
     with product as (
         select s.id,
                row_number() over (partition by s.organization_id, pg_temp.name_key(s.name)
                                   order by (s.deck_file_id is not null) desc, coalesce(v.active, true) desc,
-                                           pg_temp.filled(s) desc, coalesce(v.updated, '') desc, s.id) as place
+                                           pg_temp.filled(s) desc, coalesce(v.updated, '') desc, s.id) as place,
+               first_value(s.name) over (partition by s.organization_id, pg_temp.name_key(s.name)
+                                         order by (s.deck_file_id is not null) desc, coalesce(v.active, true) desc,
+                                                  pg_temp.filled(s) desc, coalesce(v.updated, '') desc, s.id) as best
         from solution s
         left join legacy_company v on v.solution_id = s.id
-        where s.organization_id in (select kept from merge_plan where left_because is null)),
-    taken as (
-        update solution s set listed = false, version = s.version + 1, updated_at = now()
-        from product p where p.id = s.id and p.place > 1 and s.listed
+        where s.status = 'approved'
+          and s.organization_id in (select merged_into_id from organization where status = 'merged')),
+    refused as (
+        update solution s
+        set status = 'rejected', decision_reason = 'duplicate', decided_at = now(),
+            decision_message = 'This company registered more than once on the old platform. Its organizations were '
+                || 'merged into one, and "' || p.best || '" is the record that was kept.',
+            version = s.version + 1, updated_at = now()
+        from product p where p.id = s.id and p.place > 1
         returning s.id)
-    select count(*) into unlisted from taken;
+    insert into legacy_ids (id) select id from refused;
+    select count(*) into refused_count from legacy_ids;
 
-    raise notice 'legacy import: % organizations merged into % kept ones, % solutions taken off the list, % organizations in % groups left for a person',
-        merged, (select count(distinct kept) from merge_plan where left_because is null), unlisted,
+    -- A matching result on a solution that is refused now is no result; one a person decided or answered on stays.
+    delete from matching_candidate c
+    where c.solution_id in (select id from legacy_ids)
+      and not exists (select 1 from matching_decision d where d.candidate_id = c.id)
+      and not exists (select 1 from matching_feedback f where f.candidate_id = c.id);
+    get diagnostics results_gone = row_count;
+
+    raise notice 'legacy import: % organizations merged into % kept ones, % solutions refused as duplicates, % matching results on them removed, % organizations in % groups left for a person',
+        merged, (select count(distinct kept) from merge_plan where left_because is null), refused_count, results_gone,
         (select count(*) from merge_plan where left_because is not null),
         (select count(distinct kept) from merge_plan where left_because is not null);
 end $$;
 
--- What a person decides, as counts; and how many matching results point at a solution no longer listed.
+-- What a person decides, as counts.
 select left_because, count(*) from merge_plan where left_because is not null group by left_because order by 1;
-select 'matching results on a solution taken off the list', count(*), count(distinct c.use_case_id)
-from matching_candidate c join solution s on s.id = c.solution_id
-where not s.listed and s.organization_id in (select kept from merge_plan where left_because is null);
 commit;
 """
 
 
-def sql(facts: list[tuple[str, bool, str]]) -> str:
+def sql(facts: list[tuple[str, str | None, bool, str]]) -> str:
     lines = [
         "-- Merges the organizations the old platform holds twice, built by infrastructure/legacy-import/duplicates.py.",
         build.HEAD,
         "create temp table legacy_company (id uuid primary key, solution_id uuid, active boolean not null, "
         "updated text not null) on commit drop;",
     ]
-    for organization_id, active, updated in facts:
-        lines.append(f"insert into legacy_company (id, active, updated) values ({build.lit(organization_id)}, "
-                     f"{build.lit(active)}, {build.lit(updated)});")
-    # A solution moves with its organization, so what v1 knew of it is tied to the solution before anything moves.
-    lines.append("update legacy_company v set solution_id = s.id from solution s where s.organization_id = v.id "
-                 "and (select count(*) from solution x where x.organization_id = v.id) = 1;")
+    for organization_id, solution_id, active, updated in facts:
+        lines.append(f"insert into legacy_company (id, solution_id, active, updated) values ("
+                     f"{build.lit(organization_id)}, {build.lit(solution_id)}, {build.lit(active)}, "
+                     f"{build.lit(updated)});")
     return "\n".join(lines) + MERGE
 
 
