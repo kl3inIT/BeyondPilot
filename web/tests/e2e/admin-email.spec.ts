@@ -120,7 +120,7 @@ test.describe("admin email", () => {
     await expect(page.getByText("Bounced").filter({ visible: true }).first()).toBeVisible();
     await expect(
       page
-        .getByRole("button", { name: "Let email reach bounced@nowhere.example again" })
+        .getByRole("button", { name: "Allow email to bounced@nowhere.example again" })
         .filter({ visible: true }),
     ).toBeVisible();
     await expectNoSeriousA11yViolations(page);

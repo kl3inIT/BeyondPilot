@@ -50,6 +50,19 @@ export function solutionDraftOf(view: ApplicationView, id: string | null): Solut
 }
 
 /**
+ * The solution someone who has just joined an organization most likely applies with: its only one,
+ * as `draftOf` starts a form. None when they began a solution here, or the organization has several.
+ */
+export function likelySolutionId(view: ApplicationView, begun: SolutionDraft): string | null {
+  const untouched =
+    begun.id === null &&
+    [begun.name, begun.summary, begun.problemsSolved, begun.maturity, begun.demoUrl].every(
+      (value) => value.trim() === "",
+    );
+  return untouched && view.solutions.length === 1 ? view.solutions[0].id : null;
+}
+
+/**
  * The answers with an empty one for every question that has none, so that each question's field
  * holds text. An answer to a question the program no longer asks is kept as it was stored. Answers
  * the same object when nothing is missing.
