@@ -3803,7 +3803,6 @@
       "websiteRequired": "Hãy nhập website của tổ chức.",
       "description": "Mô tả ngắn",
       "descriptionHint": "Tổ chức làm gì và cho ai.",
-      "counter": "{count} / {max}",
       "save": "Lưu thay đổi",
       "create": "Gửi để duyệt",
       "cancel": "Hủy",
@@ -4677,7 +4676,6 @@
       },
       "steps": {
         "label": "Giải pháp của bạn",
-        "progress": "Bước {step}/{count} · {name}",
         "toAdd": "{count, plural, other {Còn # mục cần bổ sung}}",
         "toCheck": "{count, plural, other {# mục cần xem lại}}",
         "complete": "Đã xong",
@@ -6230,8 +6228,6 @@
     "saveAndExit": "Lưu và thoát",
     "yourApplication": "Đơn của bạn",
     "savesAsYouType": "Câu trả lời được lưu khi bạn gõ. Quay lại bất cứ lúc nào trước {when}.",
-    "stepOf": "Bước {step}/{count} · {title}",
-    "progress": "Tiến độ điền đơn",
     "allRequired": "Mọi ô đều bắt buộc, trừ ô ghi Không bắt buộc.",
     "optional": "Không bắt buộc",
     "closed": "Đợt nhận đơn đã đóng lúc {when}. Giờ không sửa hay nộp được nữa.",
@@ -6325,7 +6321,6 @@
       "deckRequired": "Thêm deck của giải pháp, dạng PDF.",
       "demoUrl": "Link demo",
       "demoUrlHint": "Video, bản thử hoặc demo chạy thật, mở được mà không cần đăng nhập.",
-      "required": "Điền ô này.",
       "tractionHint": "Khách hàng, dự án thử, người dùng hoặc doanh thu tới nay.",
       "builtWithHint": "Model, công cụ hoặc framework; bấm Enter để thêm từng mục."
     },

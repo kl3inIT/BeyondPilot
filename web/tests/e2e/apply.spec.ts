@@ -172,6 +172,14 @@ async function settled(page: Page) {
   await expectNoSeriousA11yViolations(page);
 }
 
+const steps = (page: Page) => page.getByRole("navigation", { name: "Your application" });
+
+/** The step the list of steps marks as the one on the screen. */
+const currentStep = (page: Page) =>
+  steps(page)
+    .getByRole("listitem")
+    .filter({ has: page.locator('[aria-current="step"]') });
+
 async function shot(page: Page, name: string) {
   if (shots) {
     await page.screenshot({ path: `${shots}/${name}.png`, fullPage: true });
@@ -211,6 +219,33 @@ test.describe("apply", () => {
 
     // Step 1: what is missing is said beside each field, and the first one takes the focus.
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("You and your team");
+    // The steps show where the person is: beside the form, or on a phone in the bar above it,
+    // whose list opens in place. They are not a way to move: Continue and Back are.
+    if (isMobile) {
+      const bar = steps(page).getByRole("button", { name: /All steps/ });
+      await expect(bar).toHaveText(/Step 1 of 4 · You and your team/);
+      await expect(bar).toHaveAttribute("aria-expanded", "false");
+      await bar.click();
+      await expect(bar).toHaveAttribute("aria-expanded", "true");
+      await expect(steps(page).getByRole("listitem")).toHaveText([
+        /You and your team/,
+        /Your solution/,
+        /Questions from this program/,
+        /Review and submit/,
+      ]);
+      await expect(currentStep(page)).toHaveText(/You and your team/);
+      await bar.click();
+      await expect(bar).toHaveAttribute("aria-expanded", "false");
+    } else {
+      await expect(steps(page).getByRole("listitem")).toHaveText([
+        /You and your team/,
+        /Your solution/,
+        /Questions from this program/,
+        /Review and submit/,
+      ]);
+      await expect(currentStep(page)).toHaveText(/You and your team/);
+      await expect(steps(page).getByRole("button")).toHaveCount(0);
+    }
     // Who applies is kept with the account, so nobody is chosen for the person.
     await expect(page.getByRole("radio", { name: /Individual/ })).not.toBeChecked();
     await page.getByRole("button", { name: "Continue" }).click();
@@ -243,6 +278,15 @@ test.describe("apply", () => {
 
     // Step 2: the solution, its deck uploaded at once.
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Your solution");
+    // A step that opens takes the focus on its heading, and the steps follow.
+    await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
+    if (isMobile) {
+      await expect(steps(page).getByRole("button", { name: /All steps/ })).toHaveText(
+        /Step 2 of 4 · Your solution/,
+      );
+    } else {
+      await expect(currentStep(page)).toHaveText(/Your solution/);
+    }
     // The step was saved before who applies was kept, so a refused save leaves no organization.
     const organized = calls.findIndex((call) => call.call.endsWith("/application/organization"));
     expect(calls[organized]).toEqual({

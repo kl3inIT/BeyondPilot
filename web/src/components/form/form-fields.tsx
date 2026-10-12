@@ -59,20 +59,27 @@ function FieldLabelText({
 }
 
 /**
- * The bound field with the ids of its hint and its error, and the `aria-describedby` that ties the
- * ones on the screen to the control, after any id the caller adds.
+ * The bound field with the ids of its control, its hint and its error, which start with the form's
+ * id, and the `aria-describedby` that ties the hint and the error on the screen to the control,
+ * after any id the caller adds.
  */
 function useDescribedField<TValue>(description: ReactNode, alsoDescribedBy?: string) {
-  const { field, invalid, errors } = useFieldValidity<TValue>();
-  const hintId = `${field.name}-hint`;
-  const errorId = `${field.name}-error`;
+  const { field, invalid, errors, ids } = useFieldValidity<TValue>();
   // An error without words marks the control and draws nothing, so there is nothing to point at.
   const worded = invalid && errors.some((error) => error?.message);
   const describedBy =
-    [alsoDescribedBy, description ? hintId : undefined, worded ? errorId : undefined]
+    [alsoDescribedBy, description ? ids.hint : undefined, worded ? ids.error : undefined]
       .filter(Boolean)
       .join(" ") || undefined;
-  return { field, invalid, errors, hintId, errorId, describedBy };
+  return {
+    field,
+    invalid,
+    errors,
+    controlId: ids.control,
+    hintId: ids.hint,
+    errorId: ids.error,
+    describedBy,
+  };
 }
 
 /** The shortest limit a text input counts against: below it nobody runs out while writing. */
@@ -128,10 +135,8 @@ function TextField({
   "aria-describedby": alsoDescribedBy,
   ...input
 }: TextFieldProps) {
-  const { field, invalid, errors, hintId, errorId, describedBy } = useDescribedField<string>(
-    description,
-    alsoDescribedBy,
-  );
+  const { field, invalid, errors, controlId, hintId, errorId, describedBy } =
+    useDescribedField<string>(description, alsoDescribedBy);
   const counted =
     !uncounted &&
     (input.type === undefined || input.type === "text") &&
@@ -143,11 +148,11 @@ function TextField({
         label={label}
         optional={optional}
         requiredMark={requiredMark}
-        htmlFor={field.name}
+        htmlFor={controlId}
       />
       <Input
         {...input}
-        id={field.name}
+        id={controlId}
         name={field.name}
         value={field.state.value}
         aria-invalid={invalid || undefined}
@@ -178,21 +183,19 @@ function TextareaField({
   "aria-describedby": alsoDescribedBy,
   ...textarea
 }: TextareaFieldProps) {
-  const { field, invalid, errors, hintId, errorId, describedBy } = useDescribedField<string>(
-    description,
-    alsoDescribedBy,
-  );
+  const { field, invalid, errors, controlId, hintId, errorId, describedBy } =
+    useDescribedField<string>(description, alsoDescribedBy);
   return (
     <Field data-invalid={invalid || undefined}>
       <FieldLabelText
         label={label}
         optional={optional}
         requiredMark={requiredMark}
-        htmlFor={field.name}
+        htmlFor={controlId}
       />
       <Textarea
         {...textarea}
-        id={field.name}
+        id={controlId}
         name={field.name}
         value={field.state.value}
         aria-invalid={invalid || undefined}
@@ -228,7 +231,7 @@ function SelectField({
   placeholder,
   disabled,
 }: SelectFieldProps) {
-  const { field, invalid, errors, hintId, errorId, describedBy } =
+  const { field, invalid, errors, controlId, hintId, errorId, describedBy } =
     useDescribedField<string>(description);
   return (
     <Field data-invalid={invalid || undefined}>
@@ -236,7 +239,7 @@ function SelectField({
         label={label}
         optional={optional}
         requiredMark={requiredMark}
-        htmlFor={field.name}
+        htmlFor={controlId}
       />
       <Select
         items={options}
@@ -245,7 +248,7 @@ function SelectField({
         onValueChange={(value) => field.handleChange(String(value ?? ""))}
       >
         <SelectTrigger
-          id={field.name}
+          id={controlId}
           aria-invalid={invalid || undefined}
           aria-describedby={describedBy}
           className="w-full"
@@ -327,11 +330,12 @@ function ComboboxField({
 }
 
 function CheckboxField({ label, disabled }: { label: string; disabled?: boolean }) {
-  const { field, invalid, errors, errorId, describedBy } = useDescribedField<boolean>(undefined);
+  const { field, invalid, errors, controlId, errorId, describedBy } =
+    useDescribedField<boolean>(undefined);
   return (
     <Field orientation="horizontal" data-invalid={invalid || undefined}>
       <Checkbox
-        id={field.name}
+        id={controlId}
         name={field.name}
         checked={field.state.value}
         disabled={disabled}
@@ -340,7 +344,7 @@ function CheckboxField({ label, disabled }: { label: string; disabled?: boolean 
         onCheckedChange={(checked) => field.handleChange(checked === true)}
       />
       <FieldContent>
-        <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+        <FieldLabel htmlFor={controlId}>{label}</FieldLabel>
         {invalid && <FieldError id={errorId} errors={errors} />}
       </FieldContent>
     </Field>

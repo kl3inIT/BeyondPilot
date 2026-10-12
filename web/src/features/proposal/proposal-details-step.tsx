@@ -59,14 +59,14 @@ const ProposalDetailsStep = withFieldGroup({
 function CountryField() {
   const t = useTranslations("UseCaseProposal.wizard.details");
   const countryName = useCountryName();
-  const { field, invalid, errors } = useFieldValidity<string>();
-  const errorId = `${field.name}-error`;
+  const { field, invalid, errors, ids } = useFieldValidity<string>();
+  const errorId = ids.error;
 
   return (
     <Field data-invalid={invalid || undefined}>
-      <FieldLabel htmlFor={field.name}>{t("country")}</FieldLabel>
+      <FieldLabel htmlFor={ids.control}>{t("country")}</FieldLabel>
       <NativeSelect
-        id={field.name}
+        id={ids.control}
         name={field.name}
         className="w-full"
         autoComplete="country"
