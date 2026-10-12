@@ -118,6 +118,32 @@ test.describe("judging applications", () => {
     await expect(demo).toHaveAttribute("href", "https://plaincover.example/demo");
     await expect(demo).toHaveAttribute("target", "_blank");
     await expect(demo).toHaveAttribute("rel", "noopener noreferrer");
+    // The applicant's contact is a row each, so an email or a phone number is copied on its own;
+    // the email writes, the phone dials, and the profile opens in a tab of its own.
+    const team = page.getByRole("region", { name: "You and your team" });
+    await expect(team.getByRole("term")).toHaveText([
+      "Applying as",
+      "Name",
+      "Email",
+      "Phone",
+      "Country",
+      "Team size",
+      "LinkedIn",
+      "Team background",
+    ]);
+    await expect(team.getByRole("definition").nth(1)).toHaveText("Wei Ling Tan");
+    const email = team.getByRole("link", { name: "wei.ling@plaincover.example" });
+    await expect(team.getByRole("definition").nth(2)).toHaveText("wei.ling@plaincover.example");
+    await expect(email).toHaveAttribute("href", "mailto:wei.ling@plaincover.example");
+    await expect(team.getByRole("definition").nth(3)).toHaveText("+65 8123 4567");
+    await expect(team.getByRole("link", { name: "+65 8123 4567" })).toHaveAttribute(
+      "href",
+      "tel:+6581234567",
+    );
+    const profile = team.getByRole("link", { name: "https://www.linkedin.com/in/weilingtan" });
+    await expect(profile).toHaveAttribute("href", "https://www.linkedin.com/in/weilingtan");
+    await expect(profile).toHaveAttribute("target", "_blank");
+    await expect(profile).toHaveAttribute("rel", "noopener noreferrer");
     const scores = page.getByRole("region", { name: "Judges' scores" });
     await expect(scores).toContainText("Minh Anh Le");
     await expect(scores).toContainText("on version 1");
