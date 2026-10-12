@@ -99,4 +99,32 @@ describe("ProgramQuestionsEditor", () => {
     // The one status is the line that says the questions are fixed.
     expect(screen.getByRole("status")).toHaveTextContent("the questions can no longer change");
   });
+
+  it("marks the choices of a question that has too few, with the reason, and puts the focus there", async () => {
+    const choice = { ...question("q4", "Direction"), kind: "single_choice" as const };
+    const { user } = render(
+      <ProgramQuestionsEditor
+        programId="p1"
+        initial={{ ...stored, questions: [{ ...choice, options: ["Buying"] }] }}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Edit Direction" }));
+    const dialog = await screen.findByRole("dialog");
+    const choices = within(dialog).getByRole("textbox", { name: "Choices" });
+    expect(choices).toBeValid();
+
+    await user.click(within(dialog).getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(choices).toBeInvalid());
+    expect(choices).toHaveAccessibleDescription(
+      expect.stringContaining("Add at least two choices."),
+    );
+    await waitFor(() => expect(choices).toHaveFocus());
+
+    // A second choice clears it.
+    await user.type(choices, "Claiming{Enter}");
+    await waitFor(() => expect(choices).toBeValid());
+    expect(within(dialog).queryByText("Add at least two choices.")).not.toBeInTheDocument();
+  });
 });

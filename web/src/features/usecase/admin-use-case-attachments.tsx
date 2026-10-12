@@ -126,21 +126,29 @@ function AttachmentsField({
           maximumFractionDigits: 1,
         });
 
+  // The control a person sees stands for the field: the button that adds a file, or the first that
+  // replaces one once the list is full. It carries the id the label names, the error and the hint,
+  // and keeps its own words as its name.
+  const control = readOnly ? null : value.length < maxAttachments ? "add" : 0;
+  const shown = {
+    id,
+    "aria-labelledby": `${id}-name`,
+    "aria-invalid": errors ? true : undefined,
+    "aria-describedby":
+      [`${id}-hint`, errors ? `${id}-error` : undefined].filter(Boolean).join(" ") || undefined,
+  } as const;
+
   return (
     <Field data-invalid={errors ? true : undefined}>
       <FieldLabel htmlFor={id}>{t("label")}</FieldLabel>
       <input
         ref={input}
-        id={id}
         type="file"
         accept={accepted.join(",")}
-        aria-invalid={errors ? true : undefined}
-        aria-describedby={
-          [readOnly ? undefined : `${id}-hint`, errors ? `${id}-error` : undefined]
-            .filter(Boolean)
-            .join(" ") || undefined
-        }
         className="sr-only"
+        // The buttons below open it; on its own it would be a stop in the tab order nobody can see.
+        tabIndex={-1}
+        aria-hidden="true"
         onChange={(event) => {
           const file = event.target.files?.[0];
           if (file) {
@@ -169,8 +177,12 @@ function AttachmentsField({
               </span>
             </div>
             {!readOnly && (
-              <TextButton disabled={uploading} onClick={() => choose(index)}>
-                {t("replace")}
+              <TextButton
+                {...(control === index ? shown : {})}
+                disabled={uploading}
+                onClick={() => choose(index)}
+              >
+                <span id={control === index ? `${id}-name` : undefined}>{t("replace")}</span>
               </TextButton>
             )}
           </div>
@@ -182,9 +194,14 @@ function AttachmentsField({
           </p>
         )}
         {!readOnly && value.length < maxAttachments && (
-          <TextButton className="self-start" disabled={uploading} onClick={() => choose(null)}>
+          <TextButton
+            {...(control === "add" ? shown : {})}
+            className="self-start"
+            disabled={uploading}
+            onClick={() => choose(null)}
+          >
             <PlusIcon aria-hidden="true" />
-            {t("add")}
+            <span id={`${id}-name`}>{t("add")}</span>
           </TextButton>
         )}
       </div>

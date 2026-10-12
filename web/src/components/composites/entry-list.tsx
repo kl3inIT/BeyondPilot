@@ -17,6 +17,8 @@ type EntryListProps = {
   max: number;
   maxLength: number;
   describedBy?: string;
+  /** Set when the list is refused: the input, the control that takes the focus, says so. */
+  invalid?: boolean;
 };
 
 /**
@@ -32,6 +34,7 @@ function EntryList({
   max,
   maxLength,
   describedBy,
+  invalid,
 }: EntryListProps) {
   const t = useTranslations("EntryList");
   const [draft, setDraft] = useState("");
@@ -72,6 +75,7 @@ function EntryList({
         placeholder={placeholder}
         disabled={value.length >= max}
         aria-describedby={describedBy}
+        aria-invalid={invalid || undefined}
         onChange={(event) => setDraft(event.target.value.replace(",", ""))}
         onBlur={add}
         onKeyDown={(event) => {

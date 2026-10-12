@@ -647,6 +647,8 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
         from there up while there are unsaved changes, which the header's own actions scroll away from.
       */}
       <div
+        // The page keeps what it scrolls into view above this bar (app/globals.css).
+        data-slot="foot-bar"
         className={
           dirty
             ? "fixed inset-x-0 bottom-0 z-10 flex flex-col gap-2 border-t bg-background px-4 pt-3 pb-6 md:sticky md:inset-x-auto md:-mx-6 md:flex-row md:items-center md:justify-end md:px-6 md:py-3 lg:-mx-8 lg:px-8"

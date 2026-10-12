@@ -396,27 +396,37 @@ function QuestionDialog({
           <>
             {offersChoices(kind) && (
               <form.Field name="options">
-                {(field) => (
-                  <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
-                    <FieldLabel htmlFor="question-options">{t("options")}</FieldLabel>
-                    <EntryList
-                      id="question-options"
-                      label={t("options")}
-                      value={field.state.value}
-                      onChange={field.handleChange}
-                      placeholder={t("optionsPlaceholder")}
-                      max={MAX_CHOICES}
-                      maxLength={160}
-                      describedBy="question-options-hint"
-                    />
-                    <FieldDescription id="question-options-hint">
-                      {t("optionsHint", { count: MAX_CHOICES })}
-                    </FieldDescription>
-                    {field.state.meta.errors.length > 0 && (
-                      <FieldError>{t("choicesRequired")}</FieldError>
-                    )}
-                  </Field>
-                )}
+                {(field) => {
+                  // Too few choices: the input that adds one is marked and takes the focus, with
+                  // the reason tied to it.
+                  const invalid = field.state.meta.errors.length > 0;
+                  return (
+                    <Field data-invalid={invalid || undefined}>
+                      <FieldLabel htmlFor="question-options">{t("options")}</FieldLabel>
+                      <EntryList
+                        id="question-options"
+                        label={t("options")}
+                        value={field.state.value}
+                        onChange={field.handleChange}
+                        placeholder={t("optionsPlaceholder")}
+                        max={MAX_CHOICES}
+                        maxLength={160}
+                        invalid={invalid}
+                        describedBy={
+                          invalid
+                            ? "question-options-hint question-options-error"
+                            : "question-options-hint"
+                        }
+                      />
+                      <FieldDescription id="question-options-hint">
+                        {t("optionsHint", { count: MAX_CHOICES })}
+                      </FieldDescription>
+                      {invalid && (
+                        <FieldError id="question-options-error">{t("choicesRequired")}</FieldError>
+                      )}
+                    </Field>
+                  );
+                }}
               </form.Field>
             )}
             {(kind === "short_text" || kind === "long_text") && (

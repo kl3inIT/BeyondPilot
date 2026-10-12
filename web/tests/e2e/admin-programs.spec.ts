@@ -171,7 +171,9 @@ test.describe("admin programs", () => {
     await expect(page.getByRole("link", { name: "Add a summary" })).toHaveCount(0);
     await expect(summary).toContainText("Done");
     await expect(summary).not.toContainText("Missing");
-    await expect(page.getByRole("link", { name: "Add a cover image" })).toBeVisible();
+    // The cover's link puts the focus on the button a person sees, not on the hidden file input.
+    await page.getByRole("link", { name: "Add a cover image" }).click();
+    await expect(page.getByRole("button", { name: "Upload a cover image" })).toBeFocused();
     // Publishing is not offered while the list still names something.
     await expect(shown(page, "Save and publish")).toBeDisabled();
   });
@@ -441,7 +443,11 @@ test.describe("admin programs", () => {
       }
       return route.fulfill({ status: 204 });
     });
-    await page.locator('input[type="file"][id$="coverFileId"]').setInputFiles({
+    const chooser = page.waitForEvent("filechooser");
+    await page.getByRole("button", { name: "Upload a cover image" }).click();
+    await (
+      await chooser
+    ).setFiles({
       name: "cover.png",
       mimeType: "image/png",
       buffer: Buffer.from(

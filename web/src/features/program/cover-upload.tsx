@@ -15,6 +15,10 @@ const accepted = ["image/png", "image/jpeg", "image/webp"];
 const maxBytes = 5 * 1024 * 1024;
 
 type CoverUploadProps = {
+  /**
+   * The id of the control a person sees: the button that adds a cover, or the one that replaces it.
+   * The field's label and a link to the field name it, so the focus they move can be seen.
+   */
   id: string;
   /** The stored file that is the cover, or empty for none. */
   value: string;
@@ -30,7 +34,9 @@ type CoverUploadProps = {
 /**
  * A program's cover: the image as the list and the page show it, replaced or removed here. The file
  * is uploaded at once; the program names it when Settings is saved, and the backend removes a cover
- * the program no longer names.
+ * the program no longer names. The file input only opens the browser's chooser: it is out of the tab
+ * order and of the accessibility tree, and the button in view carries the id, the error state and
+ * the name, which stays its own words under the field's label.
  */
 function CoverUpload({ id, value, onChange, invalid, kept }: CoverUploadProps) {
   const t = useTranslations("Admin.programs.settings.cover");
@@ -76,12 +82,11 @@ function CoverUpload({ id, value, onChange, invalid, kept }: CoverUploadProps) {
     <div className="flex flex-col gap-2">
       <input
         ref={input}
-        id={id}
         type="file"
         accept={accepted.join(",")}
         className="sr-only"
-        aria-invalid={invalid || undefined}
-        aria-describedby={value ? undefined : `${id}-limits`}
+        tabIndex={-1}
+        aria-hidden="true"
         onChange={(event) => {
           const file = event.target.files?.[0];
           if (file) {
@@ -101,12 +106,15 @@ function CoverUpload({ id, value, onChange, invalid, kept }: CoverUploadProps) {
           />
           <div className="flex gap-2 sm:ml-auto">
             <Button
+              id={id}
               prominence="secondary"
               size="sm"
               pending={uploading}
+              aria-labelledby={`${id}-name`}
+              aria-invalid={invalid || undefined}
               onClick={() => input.current?.click()}
             >
-              {t("replace")}
+              <span id={`${id}-name`}>{t("replace")}</span>
             </Button>
             <Button
               prominence="tertiary"
@@ -126,9 +134,16 @@ function CoverUpload({ id, value, onChange, invalid, kept }: CoverUploadProps) {
           )}
         </div>
       ) : (
+        // The button stands for the file field, so it is what says the field is in error and what
+        // takes the focus after a refused save (docs/conventions.md › Forms).
+        // eslint-disable-next-line jsx-a11y/role-supports-aria-props
         <button
+          id={id}
           type="button"
           disabled={uploading}
+          aria-labelledby={`${id}-name`}
+          aria-describedby={`${id}-limits`}
+          aria-invalid={invalid || undefined}
           onClick={() => input.current?.click()}
           className={
             invalid
@@ -144,7 +159,9 @@ function CoverUpload({ id, value, onChange, invalid, kept }: CoverUploadProps) {
             <ImageUpIcon className="size-5 text-muted-foreground" aria-hidden="true" />
           )}
           <span className="flex flex-col">
-            <span className="text-sm font-medium">{uploading ? t("uploading") : t("empty")}</span>
+            <span id={`${id}-name`} className="text-sm font-medium">
+              {uploading ? t("uploading") : t("empty")}
+            </span>
             <span id={`${id}-limits`} className="text-xs text-muted-foreground">
               {t("limits")}
             </span>

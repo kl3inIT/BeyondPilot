@@ -179,6 +179,14 @@
   html {
     @apply font-sans;
   }
+  /*
+   * A bar of actions at the foot of the screen (`data-slot="foot-bar"`) covers what scrolls under it. While a page
+   * has one, a field brought into view by Tab, by `focus()` or by `scrollIntoView` stops above it: the document is
+   * what scrolls, and the tallest such bar is 97px, a draft program's on a phone with its link to what is missing.
+   */
+  html:has([data-slot="foot-bar"]) {
+    scroll-padding-bottom: 7rem;
+  }
   /* Tailwind resets buttons to the arrow; anything that can be clicked shows the hand. */
   :where(
     button,
