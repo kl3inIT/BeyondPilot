@@ -289,7 +289,7 @@ public class UseCaseProposals {
 	}
 
 	/**
-	 * The proposals a use case received, for the members of the organization that posted it.
+	 * The proposals a use case received, for the members of the organization that posted it and for operators.
 	 * @throws ProposalException when the use case is unknown or the caller's organization did not post it
 	 */
 	@Transactional(readOnly = true)
@@ -445,6 +445,9 @@ public class UseCaseProposals {
 	private UseCaseTarget posted(Actor actor, UUID useCaseId) {
 		UseCaseTarget target = useCases.target(useCaseId)
 			.orElseThrow(() -> new ProposalException(ProposalErrorCode.USE_CASE_NOT_FOUND, "No use case " + useCaseId));
+		if (identity.isOperator(actor)) {
+			return target;
+		}
 		organizations.membershipOf(actor)
 			.filter(membership -> membership.organizationId().equals(target.organizationId()))
 			.orElseThrow(() -> new ProposalException(ProposalErrorCode.USE_CASE_NOT_FOUND,
@@ -452,7 +455,7 @@ public class UseCaseProposals {
 		return target;
 	}
 
-	/** A sent proposal of a use case the caller's organization posted. */
+	/** A sent proposal of a use case the caller's organization posted, or any when the caller is an operator. */
 	private UseCaseProposal readable(Actor actor, UUID id) {
 		UseCaseProposal proposal = proposals.findById(id).filter(UseCaseProposal::isSent).orElseThrow(() -> notFound(id));
 		posted(actor, proposal.getUseCaseId());

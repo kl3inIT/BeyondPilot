@@ -138,6 +138,12 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(one).doesNotContain("rateBand");
 		assertThat(JsonPath.<List<String>>read(one, "$.team[*].role")).containsExactly("Project lead", "AI engineer");
 		assertThat(JsonPath.<String>read(one, "$.deck.fileName")).isEqualTo("proposal.pdf");
+		// An operator reads what any use case received; the PDF is found for them (the test has no bytes behind it).
+		assertThat(JsonPath.<List<String>>read(body(get(operator, path + "s").expectStatus().isOk()),
+				"$.items[*].organizationName")).containsExactly("Team sends.test");
+		assertThat(JsonPath.<String>read(body(get(operator, API + "/use-case-proposals/" + id).expectStatus().isOk()),
+				"$.sender.headline")).isEqualTo("Builds claims AI");
+		get(operator, API + "/use-case-proposals/" + id + "/file").expectStatus().value(status -> assertThat(status).isNotEqualTo(404));
 		assertProblem(get(provider.founder, path + "s"), 404, "PROPOSAL_USE_CASE_NOT_FOUND");
 		assertProblem(get(provider.founder, API + "/use-case-proposals/" + id), 404, "PROPOSAL_USE_CASE_NOT_FOUND");
 		assertProblem(get(TestSignIn.session(client, mail, "stranger@nowhere.test"), path + "s"), 404,
