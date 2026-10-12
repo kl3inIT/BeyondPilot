@@ -2792,6 +2792,7 @@
       "chart": {
         "byHour": "Lượt gọi theo giờ",
         "byDay": "Lượt gọi theo ngày",
+        "name": "Lượt gọi thành công và lỗi {step, select, hour {theo giờ} other {theo ngày}}, {period, select, today {hôm nay} week {7 ngày qua} other {30 ngày qua}}",
         "mostAtHour": "Nhiều nhất lúc {when}, {count, plural, other {# lượt}}",
         "mostOnDay": "Nhiều nhất ngày {when}, {count, plural, other {# lượt}}",
         "succeeded": "Thành công",
@@ -6699,6 +6700,10 @@
       "noMatch": {
         "title": "Không có đơn nào khớp",
         "clear": "Xóa bộ lọc"
+      },
+      "allScored": {
+        "title": "Không còn đơn nào cần chấm",
+        "see": "Xem đơn đã xong"
       },
       "empty": {
         "title": "Chưa có đơn nào",

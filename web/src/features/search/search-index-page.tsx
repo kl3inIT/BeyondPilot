@@ -199,11 +199,11 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
         <DataTableRows
           columns={[
             { id: "kind", header: t("kinds.kind") },
-            { id: "total", header: t("kinds.total") },
-            { id: "listed", header: t("kinds.listed") },
-            { id: "embedded", header: t("kinds.embedded") },
-            { id: "waiting", header: t("kinds.waiting") },
-            { id: "heldBack", header: t("kinds.heldBack") },
+            { id: "total", header: t("kinds.total"), layout: { numeric: true } },
+            { id: "listed", header: t("kinds.listed"), layout: { numeric: true } },
+            { id: "embedded", header: t("kinds.embedded"), layout: { numeric: true } },
+            { id: "waiting", header: t("kinds.waiting"), layout: { numeric: true } },
+            { id: "heldBack", header: t("kinds.heldBack"), layout: { numeric: true } },
           ]}
           rows={kinds.map((kind) => ({
             id: kind.kind,

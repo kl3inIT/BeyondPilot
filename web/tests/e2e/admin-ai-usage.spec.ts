@@ -79,6 +79,8 @@ test.describe("admin AI usage", () => {
     await expect(page).toHaveURL(/\/admin\/ai\/usage\/calls\?/);
     await expect(page).toHaveURL(/outcome=failed/);
     await expect(page).toHaveURL(/task=document_reading/);
+    // The log opens on the period the overview showed: today, which the address leaves out.
+    await expect(page).not.toHaveURL(/period=/);
     const calls = page.getByRole("row").filter({ hasText: "cx/gpt-6-luna" });
     await expect(calls).toHaveCount(2);
     // How a call ended has a column of its own: a failed call says what kind of failure it was, with

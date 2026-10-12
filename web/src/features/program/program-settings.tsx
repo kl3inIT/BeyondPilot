@@ -670,6 +670,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
               {t("events.add")}
             </Button>
           </div>
+          <p className="text-sm text-muted-foreground">{t("applications.ict")}</p>
         </SettingsSection>
       </div>
 
