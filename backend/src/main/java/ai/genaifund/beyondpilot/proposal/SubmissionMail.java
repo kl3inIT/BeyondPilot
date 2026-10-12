@@ -20,7 +20,7 @@ class SubmissionMail {
 
 	@EventListener
 	void send(ProposalSubmitted submitted) {
-		email.sendApplicationReceived(submitted.recipient(), submitted.programName(), submitted.version(),
-				submitted.editableUntil());
+		email.sendApplicationReceived(submitted.recipient(), submitted.programName(), submitted.proposalId(),
+				submitted.version(), submitted.editableUntil());
 	}
 }

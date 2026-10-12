@@ -67,6 +67,44 @@ class EmailRendererTest {
 	}
 
 	@Test
+	void theApplicationEmailsLinkToTheApplication() {
+		String url = "https://beyondpilot.test/applications/42";
+		Map<String, Object> values = new HashMap<>();
+		values.put("programName", "Claims challenge");
+		values.put("editableUntil", "15 Oct 2026, 23:59 ICT");
+		values.put("applicationUrl", url);
+
+		RenderedEmail received = renderer.render(EmailKind.APPLICATION_RECEIVED,
+				defaults.template(EmailKind.APPLICATION_RECEIVED), values, APPEARANCE);
+		assertThat(received.html()).containsPattern("<a [^>]*href=\"" + url + "\" style=\"display:inline-block;[^\"]*\">"
+				+ "View your application</a>")
+			.contains("until 15 Oct 2026, 23:59 ICT");
+		assertThat(received.text()).contains(url);
+
+		values.put("subject", "Shortlisted: Claims challenge");
+		values.put("message", "Hi Minh,\n\nYour team is on the shortlist.");
+		RenderedEmail outcome = renderer.render(EmailKind.APPLICATION_OUTCOME,
+				defaults.template(EmailKind.APPLICATION_OUTCOME), values, APPEARANCE);
+		assertThat(outcome.html()).contains("Hi Minh,<br><br>Your team is on the shortlist.")
+			.contains("href=\"" + url + "\"");
+		assertThat(outcome.text()).contains("Your team is on the shortlist.").contains(url);	}
+
+	@Test
+	void aWordingSavedBeforeAKindOfferedTheLinkIsStillValidAndStillRenders() {
+		EmailTemplate saved = new EmailTemplate("We have your application to {{programName}}",
+				"Thank you for applying to {{programName}}.{{#editableUntil}} Change it until {{editableUntil}}.{{/editableUntil}}");
+		Map<String, Object> values = new HashMap<>();
+		values.put("programName", "Claims challenge");
+		values.put("applicationUrl", "https://beyondpilot.test/applications/42");
+
+		assertThat(renderer.problems(EmailKind.APPLICATION_RECEIVED, saved)).isEmpty();
+		RenderedEmail email = renderer.render(EmailKind.APPLICATION_RECEIVED, saved, values, APPEARANCE);
+		assertThat(email.subject()).isEqualTo("We have your application to Claims challenge");
+		assertThat(email.text()).startsWith("Thank you for applying to Claims challenge.")
+			.doesNotContain("/applications/42");
+	}
+
+	@Test
 	void aValueIsEscapedAndNeverBecomesMarkupOrALink() {
 		Map<String, Object> values = new HashMap<>();
 		values.put("senderName", "<b>Mallory</b>");

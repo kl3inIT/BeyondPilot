@@ -121,7 +121,8 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   from them.
 - **Event and email.** It publishes `ProposalSubmitted`; `SubmissionMail` queues the applicant's copy in the same
   transaction, so none leaves for a submission that rolled back. The copy names the close when the program allows
-  updates until then.
+  updates until then, and links to the application's page, `/applications/<id>` on the site, so the applicant comes
+  back to it from the email.
 - **Editing until the close.** When the program sets `allowUpdatesUntilClose`, a submitted application can be saved
   and submitted again, each time as a new version. Otherwise a save or a new submission of a submitted application is
   refused with `PROPOSAL_LOCKED`.
@@ -247,7 +248,8 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   characters) and messages (at most 5000) once in `proposal_release`.
 - **Emails per applicant.** For each submitted application the group's subject and message are filled in, replacing
   `{organization}` and `{solution}` with the names in the last snapshot. `OutcomesReleased` carries them, and
-  `ReviewMail` queues one email per applicant in the release's transaction, so they leave once it commits.
+  `ReviewMail` queues one email per applicant in the release's transaction, so they leave once it commits. Each
+  email ends with a link to the applicant's application, which the operator does not write.
 - **Final.** After the release, assessments and decisions are refused, and the applicant sees their outcome on My
   applications and on the application.
 

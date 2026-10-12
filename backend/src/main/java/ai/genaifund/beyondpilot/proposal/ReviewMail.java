@@ -27,7 +27,8 @@ class ReviewMail {
 	@EventListener
 	void outcomes(OutcomesReleased released) {
 		for (OutcomesReleased.Outcome outcome : released.outcomes()) {
-			email.sendApplicationOutcome(outcome.recipient(), outcome.subject(), outcome.message());
+			email.sendApplicationOutcome(outcome.recipient(), outcome.subject(), outcome.message(),
+					outcome.proposalId());
 		}
 	}
 }
