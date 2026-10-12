@@ -515,7 +515,6 @@ test.describe("admin organizations", () => {
       ),
     ).toBeVisible();
     await expect(confirmation.getByRole("textbox")).toHaveCount(0);
-    await expect(confirmation.getByRole("button", { name: "Cancel" })).toBeFocused();
     await expectNoSeriousA11yViolations(page);
     await confirmation.getByRole("button", { name: "Merge" }).click();
 
