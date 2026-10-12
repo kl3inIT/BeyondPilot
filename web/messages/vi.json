@@ -52,6 +52,22 @@
       "dark": "Tối",
       "system": "Theo hệ thống"
     },
+    "cookies": {
+      "title": "Chúng tôi tôn trọng quyền riêng tư của bạn",
+      "message": "Chúng tôi dùng cookie để trang hoạt động, cải thiện trải nghiệm của bạn và phân tích lượt truy cập. Nếu bạn chọn “Từ chối tất cả”, chỉ những cookie cần thiết được sử dụng. <privacy>Xem thêm</privacy>",
+      "accept": "Chấp nhận tất cả",
+      "decline": "Từ chối tất cả",
+      "customize": "Tùy chỉnh",
+      "preferences": {
+        "title": "Tùy chọn cookie",
+        "description": "Chọn loại cookie chúng tôi được dùng.",
+        "necessary": "Cần thiết",
+        "necessaryHint": "Giữ bạn đăng nhập và nhớ ngôn ngữ. Luôn bật.",
+        "analytics": "Phân tích",
+        "analyticsHint": "Giúp chúng tôi biết các trang công khai được sử dụng thế nào.",
+        "save": "Lưu tùy chọn"
+      }
+    },
     "footer": {
       "platform": "Nền tảng",
       "company": "Công ty",
@@ -7010,7 +7026,7 @@
         {
           "heading": "Cookie",
           "body": [
-            "Chúng tôi dùng một cookie phiên để giữ bạn đăng nhập và một cookie để nhớ ngôn ngữ. Chúng tôi không dùng cookie quảng cáo hay theo dõi của bên thứ ba."
+            "Chúng tôi dùng một cookie phiên để giữ bạn đăng nhập và một cookie để nhớ ngôn ngữ. Nếu bạn đồng ý, Google Analytics đặt cookie để đo lượt truy cập các trang công khai; công cụ này không bao giờ chạy trên các trang cần đăng nhập. Chúng tôi không dùng cookie quảng cáo."
           ]
         },
         {
