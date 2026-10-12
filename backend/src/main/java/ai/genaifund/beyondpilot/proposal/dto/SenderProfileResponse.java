@@ -20,7 +20,14 @@ public record SenderProfileResponse(@Schema(requiredMode = Schema.RequiredMode.R
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> engagement,
 		@Schema(types = { "string", "null" }) @Nullable String website,
 		@Schema(types = { "string", "null" }, format = "uuid", description = "Read at /api/storage/files/{id}.") @Nullable UUID photoFileId,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<Project> projects) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<Project> projects,
+		@Schema(types = { "string", "null" }, description = "The sign-in address of the sender's account when the proposal is read; not part of the copy kept at sending.") @Nullable String email) {
+
+	/** The same profile with the sender's address, read from the account when the proposal is shown. */
+	public SenderProfileResponse withEmail(@Nullable String email) {
+		return new SenderProfileResponse(name, headline, bio, roles, skills, country, city, worksAt, languages, industries,
+				engagement, website, photoFileId, projects, email);
+	}
 
 	@Schema(name = "SenderProject", description = "One piece of work the profile showed.")
 	public record Project(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String title,
