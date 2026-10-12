@@ -74,8 +74,18 @@ function AdminCreateOrganization() {
       onDynamic: z.object({
         name: z.string().refine((text) => text.trim() !== "", t("nameRequired")),
         type: z.string().min(1, t("typeRequired")),
-        website: z.string(),
-        ownerEmail: z.string(),
+        website: z
+          .string()
+          .refine(
+            (text) => !text.trim() || /^https?:\/\/\S+$/.test(text.trim()),
+            t("websiteInvalid"),
+          ),
+        ownerEmail: z
+          .string()
+          .refine(
+            (text) => !text.trim() || z.email().safeParse(text.trim()).success,
+            t("ownerEmailInvalid"),
+          ),
         country: z.string(),
         teamSize: z.string(),
         foundedYear: z
@@ -95,7 +105,7 @@ function AdminCreateOrganization() {
       try {
         await createAdminOrganization({
           body: {
-            name: value.name,
+            name: value.name.trim(),
             type: value.type as AdminCreateOrganization["type"],
             website: value.website.trim() || null,
             country: value.country || null,

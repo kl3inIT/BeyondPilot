@@ -268,9 +268,13 @@ function AddHost() {
             />
           )}
         </form.Field>
-        <Button type="submit" prominence="secondary" pending={change.pending}>
-          {t("add")}
-        </Button>
+        <form.Subscribe selector={(state) => state.values.host.trim() === ""}>
+          {(blank) => (
+            <Button type="submit" prominence="secondary" disabled={blank} pending={change.pending}>
+              {t("add")}
+            </Button>
+          )}
+        </form.Subscribe>
       </div>
       <p id={`${id}-hint`} className="text-sm text-muted-foreground">
         {t("addHint")}

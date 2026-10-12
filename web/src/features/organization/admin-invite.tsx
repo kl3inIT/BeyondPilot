@@ -35,7 +35,9 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
     validationLogic: revalidateLogic(),
     validators: {
       onDynamic: z.object({
-        email: z.string().refine((text) => text.includes("@"), t("emailInvalid")),
+        email: z
+          .string()
+          .refine((text) => z.email().safeParse(text.trim()).success, t("emailInvalid")),
         role: z.enum(["owner", "member"]),
       }),
     },
