@@ -61,6 +61,30 @@ describe("proposal draft", () => {
     expect(teamComplete([])).toBe(true);
     expect(teamComplete([{ accountId: "a1", role: " ", primary: true }])).toBe(false);
     expect(teamComplete(full.team)).toBe(true);
+    expect(teamComplete([{ accountId: "a1", role: "Lead", primary: false }])).toBe(false);
+    expect(
+      teamComplete([
+        { accountId: "a1", role: "Lead", primary: true },
+        { accountId: "a2", role: "Dev", primary: true },
+      ]),
+    ).toBe(false);
+  });
+
+  it("reads a team as a stored draft may hold it", () => {
+    // A member who has left the organization stays in the draft, and counts like any other row.
+    const stored = valuesOf({
+      solutions: [],
+      team: [
+        { accountId: "gone", role: "Lead", primary: true },
+        { accountId: "a2", role: "", primary: false },
+      ],
+    } as unknown as Parameters<typeof valuesOf>[0]);
+
+    expect(stored.team).toEqual([
+      { accountId: "gone", role: "Lead", primary: true },
+      { accountId: "a2", role: "", primary: false },
+    ]);
+    expect(incompleteSteps(stored, true)).toEqual(["solutions", "team", "pdf"]);
   });
 
   it("lists the steps that lack content", () => {
@@ -80,5 +104,7 @@ describe("proposal draft", () => {
     expect(detailsComplete({ ...given, country: "" })).toBe(false);
     expect(detailsComplete({ ...given, phone: "" })).toBe(false);
     expect(detailsComplete({ ...given, phone: "call me" })).toBe(false);
+    expect(detailsComplete({ ...given, phone: " 0912 345 678 " })).toBe(true);
+    expect(detailsComplete({ ...given, phone: "   " })).toBe(false);
   });
 });

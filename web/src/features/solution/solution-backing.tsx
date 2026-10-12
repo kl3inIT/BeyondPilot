@@ -2,11 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 
-import { Button } from "@/components/actions/button";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { useAppForm } from "@/components/form/app-form";
+import { FieldDescription } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
 import { backSolution, type Solution } from "@/lib/api/generated";
 
@@ -26,37 +24,37 @@ function SolutionBacking({ solution }: { solution: Pick<Solution, "id" | "name" 
   const t = useTranslations("Admin.solutions.backing");
   const notify = useNotify();
   const router = useRouter();
-  const [held, setHeld] = useState({
-    backedBy: solution.backing?.backedBy ?? "",
-    program: solution.backing?.program ?? "",
-    funding: solution.backing?.funding ?? "",
+  const form = useAppForm({
+    defaultValues: {
+      backedBy: solution.backing?.backedBy ?? "",
+      program: solution.backing?.program ?? "",
+      funding: solution.backing?.funding ?? "",
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await backSolution({
+          path: { id: solution.id },
+          body: {
+            backedBy: value.backedBy.trim() || null,
+            program: value.program.trim() || null,
+            funding: value.funding.trim() || null,
+          },
+        });
+        notify.success("Admin.solutions.backing.saved", { name: solution.name });
+        router.refresh();
+      } catch (error) {
+        notify.error(solutionError(error));
+      }
+    },
   });
-  const [pending, setPending] = useState(false);
-
-  async function save(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPending(true);
-    try {
-      await backSolution({
-        path: { id: solution.id },
-        body: {
-          backedBy: held.backedBy.trim() || null,
-          program: held.program.trim() || null,
-          funding: held.funding.trim() || null,
-        },
-      });
-      notify.success("Admin.solutions.backing.saved", { name: solution.name });
-      router.refresh();
-    } catch (error) {
-      notify.error(solutionError(error));
-    } finally {
-      setPending(false);
-    }
-  }
 
   return (
     <form
-      onSubmit={save}
+      id={form.formId}
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.handleSubmit();
+      }}
       aria-labelledby="solution-backing"
       className="flex flex-col gap-4 rounded-lg border bg-card p-5"
     >
@@ -66,27 +64,23 @@ function SolutionBacking({ solution }: { solution: Pick<Solution, "id" | "name" 
         </h2>
         <p className="text-sm text-muted-foreground">{t("lead")}</p>
       </div>
-      {fields.map((field) => (
-        <Field key={field}>
-          <FieldLabel htmlFor={`solution-backing-${field}`}>{t(`fields.${field}`)}</FieldLabel>
-          <Input
-            id={`solution-backing-${field}`}
-            maxLength={MAX}
-            value={held[field]}
-            onChange={(event) =>
-              setHeld((current) => ({ ...current, [field]: event.target.value }))
-            }
-            aria-describedby={`solution-backing-${field}-hint`}
-          />
-          <FieldDescription id={`solution-backing-${field}-hint`}>
-            {t(`hints.${field}`)}
-          </FieldDescription>
-        </Field>
+      {fields.map((name) => (
+        <form.AppField key={name} name={name}>
+          {(field) => (
+            <field.TextField
+              label={t(`fields.${name}`)}
+              maxLength={MAX}
+              description={t(`hints.${name}`)}
+            />
+          )}
+        </form.AppField>
       ))}
       <FieldDescription>{t("hint")}</FieldDescription>
-      <Button type="submit" prominence="secondary" pending={pending} className="self-start">
-        {t("save")}
-      </Button>
+      <form.AppForm>
+        <form.SubmitButton prominence="secondary" className="self-start">
+          {t("save")}
+        </form.SubmitButton>
+      </form.AppForm>
     </form>
   );
 }

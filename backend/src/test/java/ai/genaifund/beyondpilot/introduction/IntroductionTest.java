@@ -75,6 +75,8 @@ class IntroductionTest {
 		assertThat(mail.latestSubjectTo("owner@ask-provider.test")).isEqualTo("A request for an introduction to Ask Triage");
 		String text = mail.latestTextTo("owner@ask-provider.test");
 		assertThat(text).contains("Ask Buyer").contains("We need claims triage.").doesNotContain("buyer@ask-buyer.test");
+		// The email leads to where the organization answers.
+		assertThat(text).containsPattern("https?://[^/ ]+/workspace/organization/introductions(?![\\w/-])");
 		String received = body(get(provider, INTRODUCTION + "/mine/received").expectStatus().isOk());
 		assertThat(JsonPath.<Boolean>read(received, "$.editable")).isTrue();
 		assertThat(JsonPath.<List<String>>read(received, "$.items[*].solutionName")).containsExactly("Ask Triage");

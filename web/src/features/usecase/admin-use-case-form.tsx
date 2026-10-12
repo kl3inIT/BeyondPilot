@@ -1,12 +1,13 @@
 "use client";
 
 import { revalidateLogic, useStore } from "@tanstack/react-form";
-import { CheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { useAppForm } from "@/components/form/app-form";
+import { StepsNav } from "@/components/composites/steps-nav";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
+import { focusFirstInvalid } from "@/components/form/focus-first-invalid";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useNotify } from "@/hooks/use-notify";
@@ -16,11 +17,10 @@ import { createAdminUseCase, type UseCaseOrganization } from "@/lib/api/generate
 import { fieldOfPointer } from "@/lib/api/problem-fields";
 import { siteRoutes } from "@/lib/site";
 import { instantInVietnam } from "@/lib/vietnam-time";
-import { cn } from "@/lib/utils";
 
 import { adminUseCaseSchema, DEFAULT_EDIT_DAYS, editDaysOf } from "./admin-use-case-schema";
 import {
-  defaultClosesTime,
+  blankDraft,
   incompleteSteps,
   steps,
   timelineOf,
@@ -30,10 +30,7 @@ import {
 import { UseCaseStepFields } from "./use-case-step-fields";
 import { UseCaseSummary } from "./use-case-summary";
 
-/**
- * What the form holds. The use case itself is one value: its fields are the wizard's, which the
- * organization's own wizard and the review screen draw too, and they take and give the whole draft.
- */
+/** What the form holds: who the use case is for, the use case in the wizard's own fields, and the days. */
 type AdminUseCaseValues = {
   organizationId: string;
   content: DraftValues;
@@ -41,38 +38,9 @@ type AdminUseCaseValues = {
   proposalEditDays: string;
 };
 
-const blankContent: DraftValues = {
-  title: "",
-  problemStatement: "",
-  industry: "",
-  technologies: [],
-  expectedOutcomes: "",
-  currentProcess: "",
-  currentSolutions: "",
-  targetUsers: "",
-  requirements: [
-    { statement: "", necessity: "required" },
-    { statement: "", necessity: "required" },
-    { statement: "", necessity: "optional" },
-  ],
-  dataReadiness: "",
-  integrationRequirements: "",
-  attachments: [],
-  currency: "USD",
-  budgetMin: "",
-  budgetMax: "",
-  budgetToBeDetermined: false,
-  budgetMembersOnly: false,
-  timelineMinWeeks: null,
-  timelineMaxWeeks: null,
-  closesDay: "",
-  closesTime: defaultClosesTime,
-  hideOrganizationName: false,
-};
-
 const blank: AdminUseCaseValues = {
   organizationId: "",
-  content: blankContent,
+  content: blankDraft,
   proposalEditDays: String(DEFAULT_EDIT_DAYS),
 };
 
@@ -86,6 +54,35 @@ const refusalSteps = {
 
 type RefusalCode = keyof typeof refusalSteps;
 
+/** The field each refusal is about, where the form shows it as well. */
+const refusalFields = {
+  USECASE_ORGANIZATION_NOT_ELIGIBLE: "organizationId",
+  USECASE_CLOSES_IN_THE_PAST: "content.closesDay",
+  USECASE_BUDGET_INCOMPLETE: "content.budgetMin",
+  USECASE_BUDGET_OUT_OF_ORDER: "content.budgetMax",
+  USECASE_ATTACHMENT_NOT_USABLE: "content.attachments",
+} as const satisfies Record<RefusalCode, string>;
+
+/**
+ * The form's field for a field as the schema or the backend names it: the use case's own fields sit
+ * under `content`, the timeline is shown on its first number of weeks, the close time on its day.
+ */
+function formFieldOf(name: string): string {
+  if (name === "organizationId" || name === "proposalEditDays") {
+    return name;
+  }
+  if (name.startsWith("timeline")) {
+    return "content.timelineMinWeeks";
+  }
+  if (name === "closesAt") {
+    return "content.closesDay";
+  }
+  if (name === "attachmentFileIds") {
+    return "content.attachments";
+  }
+  return `content.${name}`;
+}
+
 function stepOfField(field: string): Step {
   if (["organizationId", "title", "problemStatement", "industry", "technologies"].includes(field)) {
     return "challenge";
@@ -96,7 +93,7 @@ function stepOfField(field: string): Step {
   if (
     field === "requirements" ||
     field.startsWith("requirements[") ||
-    ["dataReadiness", "integrationRequirements", "attachments"].includes(field)
+    ["dataReadiness", "integrationRequirements", "attachments", "attachmentFileIds"].includes(field)
   ) {
     return "requirements";
   }
@@ -114,8 +111,22 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
   const notify = useNotify();
   const router = useRouter();
   const [step, setStep] = useState<Step>("challenge");
-  // What the step shown must have corrected; it leaves with the step and with the next change.
+  // A refusal no field can say: it stands above the step, and leaves with the step and with the next change.
   const [problem, setProblem] = useState<string | null>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const shown = useRef(step);
+
+  // A step that opens takes the focus: on its first field in error when it opened for one, on its
+  // heading otherwise.
+  useEffect(() => {
+    if (shown.current === step) {
+      return;
+    }
+    shown.current = step;
+    if (!focusFirstInvalid(heading.current?.closest("form"))) {
+      heading.current?.focus({ preventScroll: true });
+    }
+  }, [step]);
   const schema = useMemo(
     () =>
       adminUseCaseSchema((key, parameters) =>
@@ -137,32 +148,35 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
       proposalEditDays: held.proposalEditDays,
     }).error?.issues ?? [];
 
+  /** The problems by the form's field, the first of each field. */
+  const problemsOf = (held: AdminUseCaseValues) => {
+    const fields: Record<string, { message: string }> = {};
+    for (const issue of issuesOf(held)) {
+      // A path as a field is named: `requirements[2].statement`.
+      const name = fieldOfPointer(issue.path.join("/"));
+      fields[formFieldOf(name)] ??= { message: issue.message };
+    }
+    return fields;
+  };
+
   const form = useAppForm({
     defaultValues: blank,
     validationLogic: revalidateLogic(),
     validators: {
       onDynamic: ({ value }) => {
         const issues = issuesOf(value);
-        if (issues.length === 0) {
-          return undefined;
-        }
-        // The two fields of this form say their own problem; the wizard's fields have no place for one.
-        const on = (name: string) => issues.find((issue) => issue.path[0] === name);
-        return {
-          form: issues[0].message,
-          fields: {
-            organizationId: on("organizationId"),
-            proposalEditDays: on("proposalEditDays"),
-          },
-        };
+        return issues.length === 0
+          ? undefined
+          : { form: issues[0].message, fields: problemsOf(value) };
       },
     },
-    // The step that holds the first problem opens, with the problem said above its fields.
+    listeners: { onChange: () => setProblem(null) },
+    // The step that holds the first problem opens, and its fields say what is wrong with them.
     onSubmitInvalid: ({ value }) => {
       const issue = issuesOf(value).at(0);
       if (issue) {
+        show(Object.keys(problemsOf(value)));
         go(stepOfField(String(issue.path[0] ?? "organizationId")));
-        setProblem(issue.message);
       }
     },
     onSubmit: async ({ value }) => {
@@ -170,11 +184,32 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
       await publish(value);
     },
   });
-  const { organizationId, content: values } = useStore(form.store, (state) => state.values);
+  const organizationId = useStore(form.store, (state) => state.values.organizationId);
+  const values = useStore(form.store, (state) => state.values.content);
 
   const stepIndex = steps.indexOf(step);
   const missing = incompleteSteps(values);
   const organization = organizations.find(({ id }) => id === organizationId);
+
+  /**
+   * Lets fields show their problem although the person has not been in them: submitting does that
+   * only for the fields of the step on the screen.
+   */
+  function show(fields: string[]) {
+    for (const field of fields as "organizationId"[]) {
+      // A field the form has never held has nothing to show.
+      if (form.getFieldMeta(field)) {
+        form.setFieldMeta(field, (meta) => ({ ...meta, isTouched: true }));
+      }
+    }
+  }
+
+  /** Opens the step a refusal is about and puts it on the fields it names. */
+  function refuse(target: Step, fields: Record<string, { message: string }>) {
+    show(Object.keys(fields));
+    go(target);
+    setServerErrors(form, { fields });
+  }
 
   function go(target: Step) {
     setProblem(null);
@@ -225,10 +260,17 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
       const code = error instanceof ApiError ? error.code : undefined;
       if (code && code in refusalSteps) {
         const refusal = code as RefusalCode;
-        go(refusalSteps[refusal]);
-        setProblem(t(`errors.${refusal}`));
+        refuse(refusalSteps[refusal], {
+          [refusalFields[refusal]]: { message: t(`errors.${refusal}`) },
+        });
       } else if (error instanceof ApiError && error.violations.length > 0) {
-        go(stepOfField(fieldOfPointer(error.violations[0].pointer)));
+        // The fields the backend points at are marked; it gives no words this screen may show, so
+        // the line above the step says that nothing was saved.
+        const names = error.violations.map(({ pointer }) => fieldOfPointer(pointer));
+        refuse(
+          stepOfField(names[0]),
+          Object.fromEntries(names.map((name) => [formFieldOf(name), { message: "" }])),
+        );
         setProblem(t("errors.unknown"));
       } else {
         notify.error("Admin.useCases.form.errors.unknown");
@@ -248,8 +290,9 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
     >
       <AdminPageHeader title={t("title")} lead={t("lead")} />
 
-      <div className="grid items-start gap-8 xl:grid-cols-3">
-        <main className="flex min-w-0 flex-col gap-5 rounded-3xl border bg-background p-6 md:p-10 xl:col-span-2">
+      {/* A column below 1024px, so the bar of steps has the whole form to stick along. */}
+      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-3 lg:items-start">
+        <main className="flex min-w-0 flex-col gap-5 rounded-3xl border bg-background p-6 md:p-10 lg:col-span-2">
           {problem && (
             <Alert variant="destructive">
               <AlertTitle>{t("errors.fix")}</AlertTitle>
@@ -258,7 +301,11 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
           )}
 
           <div className="flex flex-col gap-3">
-            <h2 className="text-3xl font-semibold tracking-tight">
+            <h2
+              ref={heading}
+              tabIndex={-1}
+              className="text-3xl font-semibold tracking-tight outline-none"
+            >
               {step === "review" ? t("review.title") : w(`steps.${step}.title`)}
             </h2>
             {step === "review" ? (
@@ -286,23 +333,10 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
             </form.AppField>
           )}
 
-          {step !== "review" && (
-            <form.Field name="content">
-              {(field) => (
-                <UseCaseStepFields
-                  step={step}
-                  values={field.state.value}
-                  onChange={(patch) => {
-                    setProblem(null);
-                    field.handleChange((current) => ({ ...current, ...patch }));
-                  }}
-                />
-              )}
-            </form.Field>
-          )}
+          {step !== "review" && <UseCaseStepFields form={form} fields="content" step={step} />}
 
           {step === "budget" && (
-            <form.AppField name="proposalEditDays" listeners={{ onChange: () => setProblem(null) }}>
+            <form.AppField name="proposalEditDays">
               {(field) => (
                 <field.TextField
                   label={t("proposalEditDays.label")}
@@ -344,58 +378,20 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
           </div>
         </main>
 
-        <aside className="flex flex-col gap-6 xl:sticky xl:top-4">
-          <nav aria-label={w("stepsLabel")}>
-            <p className="mb-3 text-xs font-medium text-muted-foreground">{w("yourUseCase")}</p>
-            <ol className="flex flex-col">
-              {steps.map((name, index) => {
-                const done = name !== "review" && !missing.includes(name);
-                const current = name === step;
-                return (
-                  <li key={name} className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          "flex size-6 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold",
-                          current
-                            ? "border-primary bg-background text-primary"
-                            : done
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border text-muted-foreground",
-                        )}
-                      >
-                        {done ? <CheckIcon className="size-3.5" /> : index + 1}
-                      </span>
-                      {index < steps.length - 1 && (
-                        <span
-                          className={cn("my-1 w-0.5 flex-1", done ? "bg-primary" : "bg-border")}
-                        />
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      aria-current={current ? "step" : undefined}
-                      onClick={() => go(name)}
-                      className={cn(
-                        "-mx-2 -mt-1 mb-4 flex flex-col items-start rounded-md px-2 py-1 text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                        current && "bg-primary/10",
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          "text-sm font-medium",
-                          current ? "font-semibold text-foreground" : "text-muted-foreground",
-                        )}
-                      >
-                        {name === "review" ? t("review.title") : w(`steps.${name}.title`)}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ol>
-          </nav>
+        {/* From 1024px the steps stay in view beside the form; below that they are the bar above it. */}
+        <aside className="flex flex-col gap-6 max-lg:contents lg:sticky lg:top-4">
+          <StepsNav
+            label={w("stepsLabel")}
+            heading={w("yourUseCase")}
+            steps={steps.map((name) => ({
+              id: name,
+              title: name === "review" ? t("review.title") : w(`steps.${name}.title`),
+              done: name !== "review" && !missing.includes(name),
+            }))}
+            current={step}
+            onStep={go}
+            className="max-lg:order-first max-lg:-mx-4 max-lg:px-4 md:max-lg:-mx-6 md:max-lg:px-6"
+          />
           <p className="rounded-lg border bg-background p-3 text-xs text-muted-foreground">
             {values.hideOrganizationName
               ? t("publishNoteUnnamed")

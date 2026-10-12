@@ -1,5 +1,6 @@
 "use client";
 
+import { useStore } from "@tanstack/react-form";
 import { PencilIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -11,13 +12,8 @@ import { useVocabulary } from "@/i18n/vocabulary";
 import type { CustomerDeployment, PublicSolutionSummary } from "@/lib/api/generated";
 
 import { SolutionCard } from "./solution-card";
-import {
-  fieldId,
-  reviewFields,
-  type EditorStep,
-  type ReviewField,
-  type SolutionDraft,
-} from "./solution-editor-state";
+import { fieldId, reviewFields, type EditorStep, type ReviewField } from "./solution-editor-state";
+import type { SolutionForm } from "./solution-editor-form";
 
 type Row = {
   label: string;
@@ -74,8 +70,8 @@ function ReviewGroup({ title, rows, missing, onEdit }: ReviewGroupProps) {
 }
 
 type ReviewStepProps = {
-  draft: SolutionDraft;
-  change: (patch: Partial<SolutionDraft>) => void;
+  /** The editor's form: the review reads the draft it holds, and holds whether it is listed. */
+  form: SolutionForm;
   /** Null where an operator writes the solution: the organization adds the projects, and this reads none. */
   customerDeployments: CustomerDeployment[] | null;
   /** True on the operators' page, where the last step publishes at once instead of asking for a review. */
@@ -96,8 +92,7 @@ type ReviewStepProps = {
 
 /** Step 4: everything the solution says, read back by step, and whether the directory lists it. */
 function ReviewStep({
-  draft,
-  change,
+  form,
   customerDeployments,
   operator,
   missing,
@@ -114,6 +109,7 @@ function ReviewStep({
   const focusArea = useVocabulary("focusArea");
   const language = useVocabulary("language");
   const deployment = useVocabulary("deployment");
+  const draft = useStore(form.store, (state) => state.values.solution);
 
   const counted = (state: CustomerDeployment["status"]) =>
     (customerDeployments ?? []).filter((item) => item.status === state).length;
@@ -244,22 +240,26 @@ function ReviewStep({
           onEdit={() => onOpen(group.step)}
         />
       ))}
-      <Field orientation="horizontal">
-        <Checkbox
-          id={fieldId("listed")}
-          checked={draft.listed}
-          onCheckedChange={(checked) => change({ listed: checked === true })}
-          aria-describedby={`${fieldId("listed")}-hint`}
-        />
-        <FieldContent>
-          <FieldLabel htmlFor={fieldId("listed")}>
-            <span className="font-normal">{t("review.listed")}</span>
-          </FieldLabel>
-          <FieldDescription id={`${fieldId("listed")}-hint`}>
-            {t("review.listedHint")}
-          </FieldDescription>
-        </FieldContent>
-      </Field>
+      <form.Field name="solution.listed">
+        {(field) => (
+          <Field orientation="horizontal">
+            <Checkbox
+              id={fieldId("listed")}
+              checked={field.state.value}
+              onCheckedChange={(checked) => field.handleChange(checked === true)}
+              aria-describedby={`${fieldId("listed")}-hint`}
+            />
+            <FieldContent>
+              <FieldLabel htmlFor={fieldId("listed")}>
+                <span className="font-normal">{t("review.listed")}</span>
+              </FieldLabel>
+              <FieldDescription id={`${fieldId("listed")}-hint`}>
+                {t("review.listedHint")}
+              </FieldDescription>
+            </FieldContent>
+          </Field>
+        )}
+      </form.Field>
       {submittable && (
         <Field orientation="horizontal">
           <Checkbox

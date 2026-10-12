@@ -263,7 +263,7 @@ test.describe("admin", () => {
 
     await page.getByLabel("Requirement 1").fill("Classify every uploaded claim document.");
     await page.getByLabel("Requirement 2").fill("Extract policy and claimant identifiers.");
-    await page.getByLabel("Requirement 3").fill("Flag unreadable documents.");
+    // The third row is left empty: a row that says nothing is not sent, and is not asked for.
     await page
       .getByLabel("Data availability and readiness")
       .fill("Anonymized PDF claims are ready.");
@@ -272,7 +272,8 @@ test.describe("admin", () => {
       .fill("Connect to the claims API.");
     await page.getByRole("button", { name: "Continue" }).click();
 
-    await page.getByRole("checkbox", { name: "Budget to be determined" }).click();
+    await page.getByLabel("Minimum budget (USD)").fill("40000");
+    await page.getByLabel("Maximum budget (USD)").fill("15000");
     await page.getByRole("combobox", { name: "Preferred timeline" }).click();
     await page.getByRole("option", { name: "4–8 weeks" }).click();
     const closes = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -287,11 +288,32 @@ test.describe("admin", () => {
     expect(submitted).toBeUndefined();
     await page.getByRole("button", { name: "Publish use case" }).click();
 
+    // What is wrong is said once, under its field: the step that holds it opens and the field
+    // takes the focus.
+    await expect(page.getByRole("heading", { level: 2 })).toHaveText("Budget and timeline");
+    const maximum = page.getByLabel("Maximum budget (USD)");
+    await expect(maximum).toBeFocused();
+    await expect(maximum).toHaveAccessibleDescription("The maximum is below the minimum.");
+    await expect(page.getByText("Check this step")).toHaveCount(0);
+    expect(submitted).toBeUndefined();
+    await expectNoSeriousA11yViolations(page);
+    await maximum.fill("50000");
+    await expect(maximum).not.toHaveAttribute("aria-invalid", "true");
+    await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByRole("button", { name: "Publish use case" }).click();
+
     await expect.poll(() => submitted).toBeDefined();
     await expect(page).toHaveURL("/admin/use-cases");
     expect(submitted).toMatchObject({
       organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
       title: "Faster claims triage",
+      requirements: [
+        { statement: "Classify every uploaded claim document.", necessity: "required" },
+        { statement: "Extract policy and claimant identifiers.", necessity: "required" },
+      ],
+      budgetMin: 40000,
+      budgetMax: 50000,
+      budgetToBeDetermined: false,
       publishNow: true,
     });
   });

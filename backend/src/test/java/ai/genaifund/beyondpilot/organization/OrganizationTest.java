@@ -206,6 +206,9 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(mine, "$.organization.status")).isEqualTo("approved");
 		assertThat(JsonPath.<String>read(mine, "$.organization.emailDomain")).isEqualTo("approved.test");
 		assertThat(mail.latestSubjectTo("founder@approved.test")).isEqualTo("Approved Co on BeyondPilot");
+		// The email leads to the page the approval made public.
+		assertThat(mail.latestTextTo("founder@approved.test"))
+			.containsPattern("https?://[^/ ]+/organizations/approved-co(?![\\w/-])");
 		assertThat(events(id)).containsExactly("organization.approve");
 		// A decision is made once.
 		assertProblem(post(operator, approval, Map.of()), 409, "ORGANIZATION_NOT_AWAITING_REVIEW");
@@ -240,6 +243,9 @@ class OrganizationTest {
 		assertProblem(post(operator, sendBack, Map.of("reason", " ")), 400, "REQUEST_INVALID");
 		post(operator, sendBack, Map.of("reason", "Tell us what you build.")).expectStatus().isNoContent();
 		assertThat(mail.latestSubjectTo("founder@sentback.test")).isEqualTo("Changes needed: Sent Back Co");
+		// The email leads to where the owner corrects it.
+		assertThat(mail.latestTextTo("founder@sentback.test"))
+			.containsPattern("https?://[^/ ]+/workspace/organization(?![\\w/-])");
 		// It no longer waits for review, so it is not decided twice.
 		assertProblem(post(operator, sendBack, Map.of("reason", "Again.")), 409, "ORGANIZATION_NOT_AWAITING_REVIEW");
 		assertProblem(post(operator, API + "/admin/organizations/" + id + "/approve", Map.of()), 409,
@@ -570,6 +576,9 @@ class OrganizationTest {
 			.isEmpty();
 
 		post(operator, API + "/admin/organizations/" + id + "/restore", null).expectStatus().isNoContent();
+		// The owner is led back to the public page, which answers again.
+		assertThat(mail.latestTextTo("founder@takedown.test"))
+			.containsPattern("https?://[^/ ]+/organizations/takedown-co(?![\\w/-])");
 		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("approved");
 		assertThat(JsonPath.<Object>read(mine(founder), "$.organization.suspendedAt")).isNull();
 		// What was said when it was taken down stays on the record.
@@ -712,6 +721,9 @@ class OrganizationTest {
 			.isNoContent();
 
 		assertThat(mail.latestSubjectTo("Guest@gmail.com")).isEqualTo("You are invited to Inviting Co on BeyondPilot");
+		// The email leads to where the invitation is answered, and carries nothing that accepts it.
+		assertThat(mail.latestTextTo("Guest@gmail.com"))
+			.containsPattern("https?://[^/ ]+/workspace/organization(?![\\w/-])");
 		assertProblem(post(founder, API + "/mine/invitations", Map.of("email", "guest@gmail.com", "role", "owner")),
 				409, "ORGANIZATION_ALREADY_INVITED");
 		assertProblem(
@@ -1007,6 +1019,8 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(mine, "$.role")).isEqualTo("owner");
 		assertThat(JsonPath.<String>read(mine, "$.organization.emailDomain")).isEqualTo("claimed.test");
 		assertThat(mail.latestSubjectTo("claimant@gmail.com")).isEqualTo("Your request for Claimed Co on BeyondPilot");
+		assertThat(mail.latestTextTo("claimant@gmail.com"))
+			.containsPattern("https?://[^/ ]+/workspace/organization(?![\\w/-])");
 		assertThat(events(UUID.fromString(unowned))).containsExactly("organization.create",
 				"organization.claim_approve");
 		assertProblem(post(operator, API + "/admin/claims/" + claim + "/decline", null), 404,

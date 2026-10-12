@@ -40,7 +40,37 @@ export type DraftValues = {
 };
 
 /** The close time a new use case starts with: the end of the day, in Vietnam. */
-export const defaultClosesTime = "23:59";
+const defaultClosesTime = "23:59";
+
+/** A use case before anything is written: three requirements to fill, two required and one optional. */
+export const blankDraft: DraftValues = {
+  title: "",
+  problemStatement: "",
+  industry: "",
+  technologies: [],
+  expectedOutcomes: "",
+  currentProcess: "",
+  currentSolutions: "",
+  targetUsers: "",
+  requirements: [
+    { statement: "", necessity: "required" },
+    { statement: "", necessity: "required" },
+    { statement: "", necessity: "optional" },
+  ],
+  dataReadiness: "",
+  integrationRequirements: "",
+  attachments: [],
+  currency: "USD",
+  budgetMin: "",
+  budgetMax: "",
+  budgetToBeDetermined: false,
+  budgetMembersOnly: false,
+  timelineMinWeeks: null,
+  timelineMaxWeeks: null,
+  closesDay: "",
+  closesTime: defaultClosesTime,
+  hideOrganizationName: false,
+};
 
 /** What a use case says, as both the members and the operators read it. */
 export type UseCaseContent = Pick<

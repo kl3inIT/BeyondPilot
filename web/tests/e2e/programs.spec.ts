@@ -204,7 +204,7 @@ test.describe("programs", () => {
     await expect(
       page.getByText("Nestlé has picked their problems.", { exact: false }),
     ).toBeVisible();
-    // The deadline above the page and among the four facts is the program's window, not page copy.
+    // The deadline in the closing call and among the four facts is the program's window, not page copy.
     await expect(
       page.getByText(/Applications close \d+ \w+, \d\d:\d\d ICT\./).first(),
     ).toBeVisible();
@@ -297,7 +297,7 @@ test.describe("programs", () => {
     await faq.getByRole("button", { name: "Is there prize money?" }).click();
     await expect(faq.getByText("There is no cash prize.", { exact: false })).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /Will your solution be in the room on 3 December\?/ }),
+      page.getByRole("heading", { name: /Will your solution be in the room on 15 December\?/ }),
     ).toBeVisible();
     await expect(
       page.getByRole("region", { name: "About the programme" }).getByText("AI-First. Human-Led.", {

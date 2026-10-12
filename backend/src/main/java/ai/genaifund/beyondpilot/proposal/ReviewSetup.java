@@ -303,8 +303,8 @@ public class ReviewSetup {
 
 	private void sent(Operator operator, ApplicationForm form, ProposalReviewer reviewer) {
 		record(AuditAction.PROPOSAL_REVIEWER_INVITE, operator, form, Map.of("email", reviewer.getEmail()));
-		events.publishEvent(new ReviewerInvited(reviewer.getId(), reviewer.getEmail(), form.name(), operator.label(),
-				reviewer.getExpiresAt()));
+		events.publishEvent(new ReviewerInvited(reviewer.getId(), reviewer.getEmail(), form.programId(), form.name(),
+				operator.label(), reviewer.getExpiresAt()));
 	}
 
 	private ProposalReviewer reviewer(UUID programId, UUID reviewerId) {
