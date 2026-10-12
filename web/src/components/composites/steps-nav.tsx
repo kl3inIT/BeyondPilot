@@ -13,6 +13,8 @@ type StepsNavStep<S extends string> = {
   title: string;
   /** Whether the step holds what it needs, shown as a check. */
   done: boolean;
+  /** What the step still lacks or holds wrongly, said under its title as something to put right. */
+  problem?: string;
 };
 
 type StepsNavProps<S extends string> = {
@@ -25,7 +27,12 @@ type StepsNavProps<S extends string> = {
   current: S;
   /** Opens a step; without it the steps are only shown. */
   onStep?: (step: S) => void;
-  /** Places the bar of a narrow screen in the page: the margins that take it to the edges. */
+  /** What stands for the check of a done step, for assistive technology. */
+  doneLabel?: string;
+  /**
+   * Places the bar of a narrow screen in the page: the margins that take it to the edges, and
+   * `max-lg:top-*` with the height of a header that sticks above it.
+   */
   className?: string;
 };
 
@@ -34,7 +41,7 @@ type StepsNavProps<S extends string> = {
  * is the list of steps, for a column the page keeps still. Below that it is a bar that sticks to
  * the top of the screen with the step the person is on, how far that is, and a control that opens
  * the same list. Its parent on a narrow screen is a column as tall as the form, so the bar has the
- * whole form to stick along.
+ * whole form to stick along. It sticks inside whatever scrolls the form: the page, or a dialog.
  */
 function StepsNav<S extends string>({
   label,
@@ -42,6 +49,7 @@ function StepsNav<S extends string>({
   steps,
   current,
   onStep,
+  doneLabel,
   className,
 }: StepsNavProps<S>) {
   const t = useTranslations("Form.steps");
@@ -80,6 +88,7 @@ function StepsNav<S extends string>({
               <StepList
                 steps={steps}
                 current={current}
+                doneLabel={doneLabel}
                 onStep={
                   onStep &&
                   ((step: S) => {
@@ -96,33 +105,45 @@ function StepsNav<S extends string>({
 
       <div className="max-lg:hidden">
         <p className="mb-3 text-xs font-medium text-muted-foreground">{heading}</p>
-        <StepList steps={steps} current={current} onStep={onStep} />
+        <StepList steps={steps} current={current} onStep={onStep} doneLabel={doneLabel} />
       </div>
     </nav>
   );
 }
 
-type StepListProps<S extends string> = Pick<StepsNavProps<S>, "steps" | "current" | "onStep">;
+type StepListProps<S extends string> = Pick<
+  StepsNavProps<S>,
+  "steps" | "current" | "onStep" | "doneLabel"
+>;
 
-/** The steps one under the other, each with its number or its check, joined by a line. */
-function StepList<S extends string>({ steps, current, onStep }: StepListProps<S>) {
+/**
+ * The steps one under the other, each with its number or its check and what it still lacks, joined
+ * by a line.
+ */
+function StepList<S extends string>({ steps, current, onStep, doneLabel }: StepListProps<S>) {
   return (
     <ol className="flex flex-col">
       {steps.map((step, index) => {
         const isCurrent = step.id === current;
         const title = (
-          <span
-            className={cn(
-              "text-sm font-medium",
-              isCurrent
-                ? "font-semibold text-foreground"
-                : step.done
-                  ? "text-foreground"
-                  : "text-muted-foreground",
+          <>
+            <span
+              className={cn(
+                "text-sm font-medium",
+                isCurrent
+                  ? "font-semibold text-foreground"
+                  : step.done
+                    ? "text-foreground"
+                    : "text-muted-foreground",
+              )}
+            >
+              {step.title}
+            </span>
+            {step.done && doneLabel && <span className="sr-only">{doneLabel}</span>}
+            {step.problem && (
+              <span className="text-xs font-medium text-destructive">{step.problem}</span>
             )}
-          >
-            {step.title}
-          </span>
+          </>
         );
         return (
           <li key={step.id} className="flex gap-3">
