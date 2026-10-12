@@ -1,7 +1,7 @@
 "use client";
 
 import { useStore, type AnyFormApi } from "@tanstack/react-form";
-import type { ComponentProps, ComponentType, PropsWithChildren, ReactNode } from "react";
+import type { ComponentProps, ComponentType, PropsWithChildren, ReactNode, RefObject } from "react";
 
 import { Button } from "@/components/actions/button";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
@@ -42,6 +42,12 @@ type FormDialogProps = {
   submitDisabled?: boolean;
   /** An action that is not the form's, at the start of the footer: Delete on an entry that exists. */
   aside?: ReactNode;
+  /**
+   * Where the focus goes when the dialog closes, when what opened it may be gone by then: the
+   * button that adds to a list, for a dialog whose Delete removes the row it was opened from. While
+   * the ref is empty the focus returns to what opened the dialog.
+   */
+  finalFocus?: RefObject<HTMLElement | null>;
   /** The fields. */
   children: ReactNode;
 };
@@ -51,7 +57,7 @@ type FormDialogProps = {
  * line under it, the `<form>` and its submit, the form-level error above the buttons, Cancel and
  * the submit button, which shows the form pending. It cannot be closed while the form is sent,
  * the form starts again once it has closed, and a body taller than the screen scrolls between the
- * head and the buttons.
+ * head and the buttons. Closing returns the focus to what opened it, or to `finalFocus`.
  */
 function FormDialog({
   open,
@@ -65,6 +71,7 @@ function FormDialog({
   cancelLabel,
   submitDisabled,
   aside,
+  finalFocus,
   children,
 }: FormDialogProps) {
   const submitting = useStore(form.store, (state) => state.isSubmitting);
@@ -84,6 +91,7 @@ function FormDialog({
       {/* A column no taller than the screen, so the body can scroll between the head and the buttons. */}
       <DialogContent
         showCloseButton={!mark}
+        finalFocus={finalFocus}
         data-width={width}
         className="flex max-h-dvh flex-col data-[width=3xl]:sm:max-w-3xl data-[width=lg]:sm:max-w-lg data-[width=md]:sm:max-w-md data-[width=xl]:sm:max-w-xl"
       >
