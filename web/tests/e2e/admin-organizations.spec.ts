@@ -135,7 +135,7 @@ test.describe("admin organizations", () => {
       "No organization matches",
     );
 
-    await page.getByRole("link", { name: "Clear search and filter" }).click();
+    await page.getByRole("link", { name: "Clear filters" }).click();
     await expect(page).toHaveURL("/admin/organizations");
     await expect(shownOrganizations(page)).toHaveCount(6);
   });

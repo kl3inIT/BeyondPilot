@@ -89,7 +89,7 @@ test.describe("use cases", () => {
     );
     await expect(page.getByText("No use cases match")).toBeVisible();
     // The way back is a plain link to the list without filters.
-    await expect(page.getByRole("link", { name: "Clear search and filters" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "Clear filters" })).toHaveAttribute(
       "href",
       "/use-cases",
     );

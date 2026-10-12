@@ -142,7 +142,7 @@ test.describe("admin audit log", () => {
     await page.goto("/admin/audit-log?q=nobody");
 
     await expect(page.locator('[data-slot="empty-title"]:visible')).toHaveText("No event matches");
-    await page.getByRole("link", { name: "Clear search and filters" }).click();
+    await page.getByRole("link", { name: "Clear filters" }).click();
 
     await expect(page).toHaveURL("/admin/audit-log");
     await expect(shownEvents(page)).toHaveCount(4);

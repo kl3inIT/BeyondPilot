@@ -152,7 +152,7 @@ test.describe("solutions directory", () => {
     await page.goto("/solutions?q=nothing&maturity=scaled");
 
     await expect(page.getByText("No solution matches")).toBeVisible();
-    await page.getByRole("link", { name: "Clear search and filters" }).click();
+    await page.getByRole("link", { name: "Clear filters" }).click();
 
     await expect(page).toHaveURL("/solutions");
     await expect(shownSolutions(page)).toHaveCount(6);

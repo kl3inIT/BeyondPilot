@@ -148,7 +148,7 @@ test.describe("admin accounts", () => {
     await expect(page.locator('[data-slot="empty-title"]:visible')).toHaveText(
       "No account matches",
     );
-    await page.getByRole("link", { name: "Clear search and filters" }).click();
+    await page.getByRole("link", { name: "Clear filters" }).click();
 
     await expect(page).toHaveURL("/admin/accounts");
     await expect(shownAccounts(page)).toHaveCount(5);

@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class IntroductionAdministration {
 
-	static final int PAGE_SIZE = 20;
+	static final int PAGE_SIZE = 25;
 
 	/** How long a request may wait for an answer before operators are shown it as overdue. */
 	static final Duration OVERDUE_AFTER = Duration.ofDays(3);

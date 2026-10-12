@@ -148,7 +148,7 @@ test.describe("an organization's use case, written in steps", () => {
     await expect(
       page.getByText("Finance matches invoices to purchase orders by hand."),
     ).toBeVisible();
-    const submit = page.getByRole("button", { name: "Submit for approval" });
+    const submit = page.getByRole("button", { name: "Send for review" });
     await expect(submit).toBeDisabled();
     await page
       .getByRole("checkbox", {
@@ -160,7 +160,7 @@ test.describe("an organization's use case, written in steps", () => {
     await submit.click();
 
     await expect(page).toHaveURL(`${wizardPath}/sent`);
-    await expect(heading(page)).toHaveText("Sent for approval");
+    await expect(heading(page)).toHaveText("Sent for review");
     expect(submits).toEqual(["POST"]);
     // Nothing was changed since the draft was opened again, so sending saved nothing first.
     expect(saves).toHaveLength(before);

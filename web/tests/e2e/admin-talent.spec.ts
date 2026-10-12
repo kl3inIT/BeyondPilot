@@ -84,7 +84,7 @@ test.describe("admin talent", () => {
       "No profile matches",
     );
 
-    await page.getByRole("link", { name: "Clear search and filter" }).click();
+    await page.getByRole("link", { name: "Clear filters" }).click();
     await expect(page).toHaveURL("/admin/talent");
     await expect(shownProfiles(page)).toHaveCount(5);
   });

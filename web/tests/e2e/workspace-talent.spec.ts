@@ -41,7 +41,7 @@ test.describe("workspace talent profile", () => {
     await expectNoSeriousA11yViolations(page);
 
     await expect(async () => {
-      await page.getByRole("button", { name: "Submit for review" }).click();
+      await page.getByRole("button", { name: "Send for review" }).click();
       await expect(page.getByText("Say what you do in one line.")).toBeVisible({ timeout: 1000 });
     }).toPass();
     await expect(page.getByLabel("Headline")).toBeFocused();
@@ -56,7 +56,7 @@ test.describe("workspace talent profile", () => {
     await page.getByRole("option", { name: "Vietnamese" }).click();
     await expect(page.getByRole("note").getByText("Ready to send for review")).toBeVisible();
 
-    await page.getByRole("button", { name: "Submit for review" }).click();
+    await page.getByRole("button", { name: "Send for review" }).click();
 
     await expect(page.getByText("Sent to GenAI Fund for review.")).toBeVisible();
     expect(changes).toEqual([
@@ -102,7 +102,7 @@ test.describe("workspace talent profile", () => {
       await page.getByRole("button", { name: "Add a project" }).click();
       await expect(page.getByLabel("Year")).toBeVisible({ timeout: 1000 });
     }).toPass();
-    await page.getByRole("button", { name: "Submit for review again" }).click();
+    await page.getByRole("button", { name: "Send for review again" }).click();
     await expect(page.getByText("Give every project a title, or remove it.")).toBeVisible();
     await expect(page.getByText("Check the marked fields and try again.").first()).toBeVisible();
     expect(changes).toEqual([]);
@@ -111,7 +111,7 @@ test.describe("workspace talent profile", () => {
 
     await page.getByRole("textbox", { name: "Project 1" }).fill("Renewals assistant");
     await page.getByLabel("Year").fill("2026");
-    await page.getByRole("button", { name: "Submit for review again" }).click();
+    await page.getByRole("button", { name: "Send for review again" }).click();
 
     await expect(page.getByText("Sent to GenAI Fund for review.")).toBeVisible();
     expect(changes.map((change) => change.call)).toEqual([

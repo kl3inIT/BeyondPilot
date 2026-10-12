@@ -269,6 +269,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - App screens (workspace, admin, review) are organised by business domain in flat feature folders, as in MemoryOS and Dub: `src/features/<domain>/` holds the domain's page components (`campaign-detail-page.tsx`), parts (`campaign-card.tsx`), query and mutation options (`<domain>-queries.ts`) and form schemas (`<domain>-schemas.ts`). A subfolder appears only when a domain grows too many files. A domain is named after the business concept and usually matches a backend module; it imports another domain only in the direction the backend modules depend on each other.
 - Public marketing pages are composed from sections, as in Launch UI and the Medusa storefront: `src/components/sections/<section>/` holds one section per folder (hero, logos, faq, cta, …), and the route's `page.tsx` stacks them. A section that shows live product data takes it through props from a feature component; sections never fetch.
 - `src/components/ui` holds shadcn registry primitives. `src/components/composites` holds product patterns that features share: `DataTable`, `ConfirmDialog`, `Status`, `Person`. A pattern goes there when a second feature needs it, or from its first use when it is a named pattern of the design system, with its component in Figma. Composites never fetch data or check authority, and are built from the registry primitives. `src/components/layout` holds headers, footers and navigation.
+- The state of a record is drawn with `Status`, or with `ReviewStatus` for a review, which fixes the tone of each state (`draft` neutral, `in_review` and `needs_changes` warning, `approved` success, `rejected` and `suspended` destructive, `closed` and `merged` neutral), so a state has one colour on every screen. The registry `badge` is for what classifies a record and does not change with it: an industry, a skill, a count.
 - What every page shares on the client is mounted once in `src/components/layout/providers.tsx` under the root layout: the theme, the tooltip provider and the toaster. Tooltips use the provider's delay; a tooltip does not set its own. A provider only some pages need goes in the layout of those pages.
 - `src/components/` never imports from `src/features/` or `src/app/`, so it can later move into a shared package without changes.
 - `src/lib/api` holds the generated client and its configuration, `src/lib/auth` the server-only session helpers, `src/i18n` the locale routing, `src/styles/tokens.css` the design tokens, and `messages/` the translation catalogs.
@@ -300,6 +301,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - Rows an operator acts on together are selected with a box per row and one for the page. The selection gathers in a bar at the bottom of the screen with its count and actions; once the whole page is selected the bar offers every row the search matches, Escape empties it, and a row that leaves the list leaves the selection. An action on five or more rows, or on any row when it cannot be undone, is asked once with the count ([Actions](#actions)).
 - Columns are laid out with the composite's fixed words rather than classes: `fill` takes the room left, `nowrap` keeps one line, `numeric` aligns right, `width` is `action`, `sm`, `md` or `lg`, `from` leaves the column out between 768px and `lg`, `xl` or `2xl`, where the table is made to fit, and `narrow` holds a box.
 - A list that holds more than its smallest page offers its page size beside the pagination (`PageSizeSelect`): 10, 25, 50 and 100 for a table, 12, 24 and 48 for a directory of cards. The size is the URL (`size`), and changing it returns to the start of the list.
+- A list opens at one size for its kind: 25 rows for a table, 12 for a directory of cards, 50 for a log read from its newest end (audit, email activity, AI usage, MCP activity) and for a program's applications, which are compared and selected as one round. Two keep 10 because of what a row is: the members of one organization, a section of a page, and the public use cases, each a tall card. A new list takes the size of its kind, which is always one the control offers.
 - A search field has one size per surface: `DirectorySearch` at 48px in a public directory, the registry `input-group` at 32px in an admin toolbar.
 - A list that only grows and is read from its newest end, such as a log, is paged by cursor instead: the address carries `before` or `after`, and under the list sit Previous and Next without a count or page numbers.
 - An empty list and a search that finds nothing are different states. The second keeps the header row and offers one action that clears the search and the filters.
@@ -352,6 +354,34 @@ The words that explain a screen: the line under a title, the hint under a field,
 - What only some people need, such as what a term means, is behind a control that opens on a click or a tap: a disclosure or a popover.
 - A tooltip that opens on hover holds no information. It names a control that is only an icon, and nothing else.
 - A placeholder is not a hint or an example: it leaves when typing starts, and it reads as a value already there.
+
+### Action words
+
+One action has one word, on a button, a menu item, a link that acts and the `aria-label` that names it, in both languages. A dialog's title and the toast that follows use the word of the button.
+
+| Action                                           | English                                | Vietnamese                   |
+| ------------------------------------------------ | -------------------------------------- | ---------------------------- |
+| Save a form that edits what exists               | Save changes                           | Lưu thay đổi                 |
+| Save for the first time, or in a small dialog    | Save                                   | Lưu                          |
+| Save a draft                                     | Save draft                             | Lưu nháp                     |
+| Save and do something more                       | Save and exit, Save and publish        | Lưu và thoát, Lưu và công bố |
+| Throw unsaved changes away                       | Discard changes                        | Bỏ thay đổi                  |
+| Leave a form or a dialog without doing the thing | Cancel                                 | Hủy                          |
+| Shut what only shows                             | Close                                  | Đóng                         |
+| Open something to change it                      | Edit                                   | Sửa                          |
+| Replace one value (a model, a photo, an answer)  | Change                                 | Đổi                          |
+| End the thing itself                             | Delete                                 | Xóa                          |
+| Take out of a list or a relation                 | Remove                                 | Gỡ                           |
+| Empty the search and filters of a list           | Clear filters                          | Xóa bộ lọc                   |
+| Empty a search that has no filters               | Clear search                           | Xóa tìm kiếm                 |
+| Empty a selection                                | Clear selection                        | Bỏ chọn                      |
+| Send a record to GenAI Fund's review             | Send for review, Send for review again | Gửi duyệt, Gửi duyệt lại     |
+
+- **Save.** "Update" is not a word for saving. A save names its object ("Save offers") only where two saves stand on one screen.
+- **Delete or Remove.** Delete ends the thing: a draft, a provider, an offer, a profile. Remove takes it out of a list or a relation while it, or the record that holds it, lives on: a member from an organization, a judge from a program, a model from a provider, a file from a field, a row from a form that is not saved yet. A soft delete still reads Delete when the person thinks of the thing as gone. Withdraw, Take down, Hide, Unpublish and Decline keep their own words.
+- **Cancel.** The safe choice of a confirmation may name what it keeps instead: "Keep it", "Keep editing".
+- **Review.** What is sent is then "In review". An application to a program is the exception: it is submitted ("Submit application"), and its status is "Submitted".
+- **Vietnamese spelling.** The tone mark sits where the catalog had it most: "Xóa", "Hủy", "khóa", "hóa", "thỏa", never "Xoá", "Huỷ", "khoá", "hoá", "thoả". A file is "tệp" and an application is "đơn".
 
 ### Errors, loading and empty states
 

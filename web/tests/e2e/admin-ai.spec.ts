@@ -71,7 +71,7 @@ test.describe("admin AI", () => {
     await expect(dialog.getByLabel("Endpoint URL")).toBeEditable();
     await expect(dialog.getByLabel("API key")).toHaveAttribute("type", "password");
     await expect(dialog.getByRole("button", { name: "List models" })).toBeDisabled();
-    await expect(dialog.getByRole("button", { name: "Save provider" })).toBeDisabled();
+    await expect(dialog.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -105,7 +105,7 @@ test.describe("admin AI", () => {
     await expect(dialog.getByLabel("Base URL")).toHaveValue("https://api.openai.com/v1");
     await expect(dialog.getByLabel("Base URL")).toHaveAttribute("readonly", "");
     await expect(dialog.getByLabel("API key")).toHaveAttribute("type", "password");
-    await expect(dialog.getByRole("button", { name: "Save provider" })).toBeDisabled();
+    await expect(dialog.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -158,7 +158,7 @@ test.describe("admin AI", () => {
     await expect(dialog.getByLabel("Price per 1,000 pages (USD)")).toHaveValue("");
     await expect(dialog.getByLabel("API key")).toHaveAttribute("type", "password");
     await expect(dialog.getByRole("button", { name: "Test connection" })).toBeDisabled();
-    await expect(dialog.getByRole("button", { name: "Save provider" })).toBeDisabled();
+    await expect(dialog.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
   });
 

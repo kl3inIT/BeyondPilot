@@ -79,10 +79,7 @@ test.describe("admin programs", () => {
     await expect(page.getByRole("link", { name: "GenAI Monthly Meetup" })).toHaveCount(0);
     await page.getByRole("searchbox", { name: "Search programs by name" }).fill("nothing like it");
     await expect(page.getByText("No programs match").and(page.locator(":visible"))).toBeVisible();
-    await page
-      .getByRole("link", { name: "Show all programs" })
-      .and(page.locator(":visible"))
-      .click();
+    await page.getByRole("link", { name: "Clear filters" }).and(page.locator(":visible")).click();
     await expect(page).toHaveURL("/admin/programs");
 
     await page.getByRole("link", { name: "AI for Insurance Challenge × Tasco" }).click();
@@ -478,7 +475,7 @@ test.describe("admin programs", () => {
     await choices.press("Enter");
     await dialog.getByRole("button", { name: "Add question" }).click();
     await expect(page.getByText("Several choices · 3 choices")).toBeVisible();
-    await page.getByRole("button", { name: "Save questions" }).click();
+    await page.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByText("Questions saved.")).toBeVisible();
     expect(saved).toEqual([
       {

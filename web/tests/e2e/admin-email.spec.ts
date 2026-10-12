@@ -75,7 +75,7 @@ test.describe("admin email", () => {
     await expect(page.getByRole("button", { name: "Send test" })).toBeDisabled();
     // Wording with a problem is not offered for saving, and the preview says it is behind.
     await expect(page.getByText("Fix the problem marked below to save")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Save changes" })).toBeDisabled();
     await expect(page.getByText("This is the last version that worked.")).toBeVisible();
     await expect(
       page.getByText("A test can be sent once the wording has no problems."),
@@ -138,7 +138,7 @@ test.describe("admin email", () => {
     await expect(page.getByLabel("Address for the provider")).toHaveValue(
       "https://beyondpilot.vadan.app/api/notification/email/events/resend",
     );
-    await page.getByRole("button", { name: "Save settings" }).click();
+    await page.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByRole("textbox", { name: "API key" })).toHaveAttribute(
       "aria-invalid",
       "true",
@@ -150,7 +150,7 @@ test.describe("admin email", () => {
       "https://beyondpilot.vadan.app/api/notification/email/events/brevo",
     );
     await page.getByRole("textbox", { name: /Webhook token/ }).fill("too-short");
-    await page.getByRole("button", { name: "Save settings" }).click();
+    await page.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByRole("textbox", { name: "API key" })).toHaveAttribute(
       "aria-invalid",
       "true",
@@ -235,7 +235,7 @@ test.describe("admin email", () => {
     });
     await page.getByRole("radio", { name: /Resend/ }).check();
     await page.getByRole("textbox", { name: "API key" }).fill("re_test_key_for_the_question");
-    await page.getByRole("button", { name: "Save settings" }).click();
+    await page.getByRole("button", { name: "Save changes" }).click();
     const ask = page.getByRole("alertdialog", { name: "Change how email is sent?" });
     await expect(ask).toContainText("nobody can sign in, you included");
     await expect(ask).toContainText("Provider: Amazon SES → Resend");

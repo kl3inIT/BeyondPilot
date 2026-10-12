@@ -181,7 +181,7 @@ test.describe("admin solutions", () => {
       "No solution matches",
     );
 
-    await page.getByRole("link", { name: "Clear search and filter" }).click();
+    await page.getByRole("link", { name: "Clear filters" }).click();
     await expect(page).toHaveURL("/admin/solutions");
     await expect(shownSolutions(page)).toHaveCount(5);
 

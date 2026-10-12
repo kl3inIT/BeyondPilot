@@ -164,7 +164,11 @@ function AdminOrganizationPage({ detail, tab, page, size, sort }: AdminOrganizat
               )}
             </>
           }
-          badge={<Badge variant="info">{s("suspended")}</Badge>}
+          badge={
+            <ReviewStatus state="suspended" appearance="pill">
+              {s("suspended")}
+            </ReviewStatus>
+          }
           foot={t("takenDown.foot", { members: detail.members.length })}
           actions={
             <RestoreButton

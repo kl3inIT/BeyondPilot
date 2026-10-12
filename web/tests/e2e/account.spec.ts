@@ -32,12 +32,12 @@ test.describe("Account", () => {
 
     await page.getByLabel("Phone number").fill("call me");
     await expect(page.getByText("Enter a phone number with its country code")).toBeVisible();
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByRole("button", { name: "Save changes" }).click();
     expect(saved).toHaveLength(0);
 
     await page.getByLabel("Country").selectOption({ label: "Vietnam" });
     await page.getByLabel("Phone number").fill("+84 912 345 678");
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByText("Your account is saved.")).toBeVisible();
     expect(saved).toEqual([{ country: "VN", phone: "+84 912 345 678" }]);
   });
