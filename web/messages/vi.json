@@ -6795,7 +6795,8 @@
     "pageTabs": {
       "label": "Các trang của use case này",
       "brief": "Đề bài",
-      "candidates": "Giải pháp phù hợp"
+      "candidates": "Giải pháp phù hợp",
+      "proposals": "Proposal"
     },
     "head": {
       "back": "{organization} · Use case",

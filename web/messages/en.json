@@ -6795,7 +6795,8 @@
     "pageTabs": {
       "label": "Pages of this use case",
       "brief": "Brief",
-      "candidates": "Matched solutions"
+      "candidates": "Matched solutions",
+      "proposals": "Proposals"
     },
     "head": {
       "back": "{organization} · Use cases",
