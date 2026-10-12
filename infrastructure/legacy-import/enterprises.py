@@ -27,8 +27,9 @@ import mapping
 import records
 import report
 
-# A website v1 holds without its scheme ("www.acme.com/vn"): a host with a dot, then an optional path.
-BARE_WEBSITE = re.compile(r"(?i)^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(/\S*)?$")
+# A website as v1 holds it, with its scheme or without ("www.acme.com/vn"): a host with a dot, then an optional port
+# and path. A word after a scheme ("https://none") is not an address.
+WEBSITE = re.compile(r"(?i)^(https?://)?[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+(:\d+)?([/?#]\S*)?$")
 
 
 def website(value) -> str | None:
@@ -36,9 +37,10 @@ def website(value) -> str | None:
     text = mapping.clean(value)
     if text is None or report.TEST_WEBSITE.search(text):
         return None
-    if re.match(r"(?i)^https?://\S+$", text):
-        return text
-    return "https://" + text if BARE_WEBSITE.match(text) else None
+    found = WEBSITE.match(text)
+    if found is None:
+        return None
+    return text if found.group(1) else "https://" + text
 
 
 def profile(row) -> records.Organization | None:
@@ -223,7 +225,12 @@ def main(workbook_path: Path, out: Path) -> dict:
     (out / "enterprise-profiles.sql").write_text(fill_sql(organizations), encoding="utf-8", newline="\n")
     (out / "enterprise-organizations.sql").write_text(create_sql(to_create), encoding="utf-8", newline="\n")
     return {
-        "enterprises": len(rows), "left_out_as_test": len(rows) - len(organizations),
+        "enterprises": len(rows),
+        "left_out_without_an_id_or_a_name": sum(1 for row in rows if mapping.clean(row.get("id")) is None
+                                                or mapping.clean(row.get("companyName")) is None),
+        "left_out_as_test": sum(1 for row in rows if mapping.clean(row.get("id")) is not None
+                                and (name := mapping.clean(row.get("companyName"))) is not None
+                                and report.TEST_NAME.match(name.strip())),
         "with_people_and_no_use_case": len(to_create),
         "with": {part: sum(1 for o in organizations if getattr(o, part))
                  for part in ("website", "country", "team_size", "company_size_label", "description", "founded_year",

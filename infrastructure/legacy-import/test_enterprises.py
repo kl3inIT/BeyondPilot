@@ -40,6 +40,8 @@ class EnterpriseProfileTest(unittest.TestCase):
         self.assertEqual(enterprises.website("acme.example"), "https://acme.example")
         self.assertIsNone(enterprises.website("acme example"))
         self.assertIsNone(enterprises.website("coming soon"))
+        self.assertIsNone(enterprises.website("https://not-a-domain"))
+        self.assertEqual(enterprises.website("https://acme.example:8443/vn?x=1"), "https://acme.example:8443/vn?x=1")
         self.assertIsNone(enterprises.website("https://test.com"))
         self.assertIsNone(enterprises.website(None))
 
