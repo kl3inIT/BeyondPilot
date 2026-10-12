@@ -6690,7 +6690,9 @@
         "files": "Files and links"
       },
       "applyingAs": "Applying as",
-      "contact": "Contact",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
       "country": "Country",
       "teamSize": "Team size",
       "linkedin": "LinkedIn",

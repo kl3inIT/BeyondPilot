@@ -6690,7 +6690,9 @@
         "files": "Tệp và liên kết"
       },
       "applyingAs": "Nộp với tư cách",
-      "contact": "Liên hệ",
+      "name": "Họ tên",
+      "email": "Email",
+      "phone": "Số điện thoại",
       "country": "Quốc gia",
       "teamSize": "Quy mô đội",
       "linkedin": "LinkedIn",
