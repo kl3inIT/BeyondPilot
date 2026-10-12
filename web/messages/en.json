@@ -5919,9 +5919,6 @@
     }
   },
   "Nestle": {
-    "banner": {
-      "text": "Applications close <strong>{closes}</strong>. Apply before 5 November to get the full brief first."
-    },
     "hero": {
       "tagline": "Nestlé has picked their problems. Now they're looking for those who can solve them.",
       "explore": "Explore the challenges",
@@ -6044,7 +6041,6 @@
     },
     "early": {
       "ask": "Recognise one of these?",
-      "title": "Start early.",
       "text": "Apply before 5 November to be considered for the early briefing process. Pre-screened applicants receive detailed briefings from 6 November."
     },
     "useCases": {
@@ -6184,9 +6180,7 @@
     "closing": {
       "title": "Will your solution be in the room on 3 December?",
       "text": "The shortlist is taking shape—submit today for your chance to be selected.",
-      "closes": "Applications close {closes}.",
-      "session": "View info session timing",
-      "share": "Know a team that fits? Send them this page"
+      "closes": "Applications close {closes}."
     },
     "about": {
       "label": "About the programme",

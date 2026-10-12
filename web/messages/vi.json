@@ -5919,9 +5919,6 @@
     }
   },
   "Nestle": {
-    "banner": {
-      "text": "Hạn nộp đơn: <strong>{closes}</strong>. Nộp trước ngày 5 tháng 11 để nhận đề bài đầy đủ sớm nhất."
-    },
     "hero": {
       "tagline": "Nestlé đã chọn ra những bài toán của mình. Giờ họ tìm người giải được chúng.",
       "explore": "Xem các thách thức",
@@ -6044,7 +6041,6 @@
     },
     "early": {
       "ask": "Bạn thấy bài toán quen thuộc?",
-      "title": "Bắt đầu sớm.",
       "text": "Nộp trước ngày 5 tháng 11 để được xét vào đợt briefing sớm. Ứng viên qua vòng sơ tuyển được briefing chi tiết từ ngày 6 tháng 11."
     },
     "useCases": {
@@ -6184,9 +6180,7 @@
     "closing": {
       "title": "Giải pháp của bạn sẽ có mặt trong phòng ngày 3 tháng 12 chứ?",
       "text": "Danh sách rút gọn đang thành hình — nộp hôm nay để có cơ hội được chọn.",
-      "closes": "Hạn nộp đơn: {closes}.",
-      "session": "Xem lịch buổi giới thiệu",
-      "share": "Biết một đội phù hợp? Gửi họ trang này"
+      "closes": "Hạn nộp đơn: {closes}."
     },
     "about": {
       "label": "Về chương trình",
