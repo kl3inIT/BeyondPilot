@@ -7,14 +7,8 @@ import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { useAppForm } from "@/components/form/app-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Field,
   FieldDescription,
@@ -103,7 +97,7 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
           await addChatModels({ path: { id: provider.id }, body: { models: [body] } });
           notify.success("Admin.ai.chat.done.modelsAdded", { count: 1 });
         }
-        close();
+        change(false);
         router.refresh();
       } catch (error) {
         notify.error(chatError(error));
@@ -111,27 +105,17 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
     },
   });
   const { modelName, contextWindow, maxOutput } = useStore(form.store, (state) => state.values);
-  const saving = useStore(form.store, (state) => state.isSubmitting);
 
   const context = numberOf(contextWindow);
   const output = numberOf(maxOutput);
   const outputTooLarge = context !== null && output !== null && output >= context;
   const invalid = modelName.trim() === "" || context === null || context < 1 || outputTooLarge;
 
-  function close() {
-    onOpenChange(false);
-    form.reset();
-    setResult(null);
-  }
-
+  /** Closing forgets the test, as the dialog forgets what was typed. */
   function change(next: boolean) {
-    if (saving) {
-      return;
-    }
-    if (next) {
-      onOpenChange(true);
-    } else {
-      close();
+    onOpenChange(next);
+    if (!next) {
+      setResult(null);
     }
   }
 
@@ -152,140 +136,121 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
   }
 
   return (
-    <Dialog open={open} onOpenChange={change}>
-      <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-140">
-        <form
-          id={form.formId}
-          noValidate
-          className="flex flex-col gap-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void form.handleSubmit();
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>
-              {editing
-                ? t("editTitle", { name: model.modelName })
-                : t("addTitle", { name: provider.name })}
-            </DialogTitle>
-          </DialogHeader>
-          <FieldGroup>
-            <form.AppField name="modelName">
-              {(field) => (
-                <field.TextField
-                  label={t("modelName")}
-                  spellCheck={false}
-                  maxLength={200}
-                  uncounted
-                  required
-                  readOnly={editing}
-                  description={editing ? undefined : t("modelNameHint")}
-                />
-              )}
-            </form.AppField>
-            <form.AppField name="displayName">
-              {(field) => (
-                <field.TextField
-                  label={t("displayName")}
-                  maxLength={200}
-                  description={t("displayNameHint")}
-                />
-              )}
-            </form.AppField>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <form.AppField name="contextWindow">
-                {(field) => (
-                  <field.TextField label={t("contextWindow")} inputMode="numeric" required />
-                )}
-              </form.AppField>
-              {/* Marked as soon as it reaches the context window, whichever of the two was typed. */}
-              <form.Field name="maxOutput">
-                {(field) => (
-                  <Field data-invalid={outputTooLarge || undefined}>
-                    <FieldLabel htmlFor={`${id}-output`}>{t("maxOutput")}</FieldLabel>
-                    <Input
-                      id={`${id}-output`}
-                      inputMode="numeric"
-                      aria-invalid={outputTooLarge || undefined}
-                      aria-describedby={`${id}-output-hint`}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                    />
-                  </Field>
-                )}
-              </form.Field>
-            </div>
-            <FieldDescription id={`${id}-output-hint`}>{t("maxOutputHint")}</FieldDescription>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {(["inputPrice", "outputPrice", "cachedPrice"] as const).map((key) => (
-                <form.AppField key={key} name={key}>
-                  {(field) => (
-                    <field.TextField
-                      label={t(key)}
-                      inputMode="decimal"
-                      aria-describedby={`${id}-prices-hint`}
-                    />
-                  )}
-                </form.AppField>
-              ))}
-            </div>
-            <FieldDescription id={`${id}-prices-hint`}>
-              {model && !model.priceFromCatalog ? t("pricesOwn") : t("pricesFromCatalog")}
-            </FieldDescription>
-            <FieldSet>
-              <FieldLegend variant="label">{t("capabilities")}</FieldLegend>
-              <div className="flex flex-col gap-2">
-                {(["toolCalling", "vision", "reasoning"] as const).map((key) => (
-                  <form.AppField key={key} name={key}>
-                    {(field) => <field.CheckboxField label={t(key)} />}
-                  </form.AppField>
-                ))}
-              </div>
-            </FieldSet>
-          </FieldGroup>
-
-          {editing && (
-            <section aria-labelledby={`${id}-test`} className="flex flex-col gap-2.5">
-              <div className="flex items-center gap-2">
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <h3 id={`${id}-test`} className="text-sm font-medium">
-                    {t("test")}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">{t("testHint")}</p>
-                </div>
-                <Button prominence="secondary" size="sm" pending={testing} onClick={test}>
-                  {t("testButton")}
-                </Button>
-              </div>
-              {result && (
-                <p
-                  role="status"
-                  className="flex items-center gap-2.5 rounded-lg bg-muted p-2.5 text-sm font-medium"
-                >
-                  {result.ok ? (
-                    <CircleCheckIcon className="size-4 shrink-0 text-success" aria-hidden="true" />
-                  ) : (
-                    <CircleXIcon className="size-4 shrink-0 text-destructive" aria-hidden="true" />
-                  )}
-                  {t(result.ok ? "testOk" : "testFailed", { ms: result.latencyMs })}
-                </p>
-              )}
-            </section>
+    <FormDialog
+      open={open}
+      onOpenChange={change}
+      form={form}
+      title={
+        editing ? t("editTitle", { name: model.modelName }) : t("addTitle", { name: provider.name })
+      }
+      width="xl"
+      submitLabel={editing ? t("save") : t("add")}
+      cancelLabel={t("cancel")}
+      submitDisabled={invalid}
+    >
+      <FieldGroup>
+        <form.AppField name="modelName">
+          {(field) => (
+            <field.TextField
+              label={t("modelName")}
+              spellCheck={false}
+              maxLength={200}
+              uncounted
+              required
+              readOnly={editing}
+              description={editing ? undefined : t("modelNameHint")}
+            />
           )}
+        </form.AppField>
+        <form.AppField name="displayName">
+          {(field) => (
+            <field.TextField
+              label={t("displayName")}
+              maxLength={200}
+              description={t("displayNameHint")}
+            />
+          )}
+        </form.AppField>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <form.AppField name="contextWindow">
+            {(field) => <field.TextField label={t("contextWindow")} inputMode="numeric" required />}
+          </form.AppField>
+          {/* Marked as soon as it reaches the context window, whichever of the two was typed. */}
+          <form.Field name="maxOutput">
+            {(field) => (
+              <Field data-invalid={outputTooLarge || undefined}>
+                <FieldLabel htmlFor={`${id}-output`}>{t("maxOutput")}</FieldLabel>
+                <Input
+                  id={`${id}-output`}
+                  inputMode="numeric"
+                  aria-invalid={outputTooLarge || undefined}
+                  aria-describedby={`${id}-output-hint`}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              </Field>
+            )}
+          </form.Field>
+        </div>
+        <FieldDescription id={`${id}-output-hint`}>{t("maxOutputHint")}</FieldDescription>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {(["inputPrice", "outputPrice", "cachedPrice"] as const).map((key) => (
+            <form.AppField key={key} name={key}>
+              {(field) => (
+                <field.TextField
+                  label={t(key)}
+                  inputMode="decimal"
+                  aria-describedby={`${id}-prices-hint`}
+                />
+              )}
+            </form.AppField>
+          ))}
+        </div>
+        <FieldDescription id={`${id}-prices-hint`}>
+          {model && !model.priceFromCatalog ? t("pricesOwn") : t("pricesFromCatalog")}
+        </FieldDescription>
+        <FieldSet>
+          <FieldLegend variant="label">{t("capabilities")}</FieldLegend>
+          <div className="flex flex-col gap-2">
+            {(["toolCalling", "vision", "reasoning"] as const).map((key) => (
+              <form.AppField key={key} name={key}>
+                {(field) => <field.CheckboxField label={t(key)} />}
+              </form.AppField>
+            ))}
+          </div>
+        </FieldSet>
+      </FieldGroup>
 
-          <DialogFooter>
-            <Button prominence="secondary" disabled={saving} onClick={() => change(false)}>
-              {t("cancel")}
+      {editing && (
+        <section aria-labelledby={`${id}-test`} className="flex flex-col gap-2.5">
+          <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <h3 id={`${id}-test`} className="text-sm font-medium">
+                {t("test")}
+              </h3>
+              <p className="text-xs text-muted-foreground">{t("testHint")}</p>
+            </div>
+            <Button prominence="secondary" size="sm" pending={testing} onClick={test}>
+              {t("testButton")}
             </Button>
-            <Button type="submit" pending={saving} disabled={invalid}>
-              {editing ? t("save") : t("add")}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          </div>
+          {result && (
+            <p
+              role="status"
+              className="flex items-center gap-2.5 rounded-lg bg-muted p-2.5 text-sm font-medium"
+            >
+              {result.ok ? (
+                <CircleCheckIcon className="size-4 shrink-0 text-success" aria-hidden="true" />
+              ) : (
+                <CircleXIcon className="size-4 shrink-0 text-destructive" aria-hidden="true" />
+              )}
+              {t(result.ok ? "testOk" : "testFailed", { ms: result.latencyMs })}
+            </p>
+          )}
+        </section>
+      )}
+    </FormDialog>
   );
 }
 

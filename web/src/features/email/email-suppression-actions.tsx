@@ -1,6 +1,6 @@
 "use client";
 
-import { revalidateLogic, useStore } from "@tanstack/react-form";
+import { revalidateLogic } from "@tanstack/react-form";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -9,15 +9,8 @@ import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useNotify } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -48,7 +41,6 @@ function AddSuppressionButton() {
         await addEmailSuppression({ body: { address } });
         notify.success("Admin.email.suppressions.add.done", { email: address });
         setOpen(false);
-        formApi.reset();
         router.refresh();
       } catch (error) {
         const code = error instanceof ApiError ? error.code : undefined;
@@ -62,7 +54,6 @@ function AddSuppressionButton() {
       }
     },
   });
-  const pending = useStore(form.store, (state) => state.isSubmitting);
 
   return (
     <>
@@ -70,44 +61,29 @@ function AddSuppressionButton() {
         <PlusIcon aria-hidden="true" />
         {t("open")}
       </Button>
-      <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>
-        <DialogContent showCloseButton={false} className="sm:max-w-md">
-          <form
-            id={form.formId}
-            noValidate
-            className="flex flex-col gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void form.handleSubmit();
-            }}
-          >
-            <DialogHeader>
-              <DialogTitle>{t("title")}</DialogTitle>
-              <DialogDescription>{t("lead")}</DialogDescription>
-            </DialogHeader>
-            <form.AppField name="address">
-              {(field) => (
-                <field.TextField
-                  label={t("address")}
-                  type="email"
-                  inputMode="email"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  maxLength={254}
-                />
-              )}
-            </form.AppField>
-            <DialogFooter>
-              <Button prominence="secondary" disabled={pending} onClick={() => setOpen(false)}>
-                {t("cancel")}
-              </Button>
-              <Button type="submit" pending={pending}>
-                {t("confirm")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        form={form}
+        title={t("title")}
+        description={t("lead")}
+        width="md"
+        submitLabel={t("confirm")}
+        cancelLabel={t("cancel")}
+      >
+        <form.AppField name="address">
+          {(field) => (
+            <field.TextField
+              label={t("address")}
+              type="email"
+              inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              maxLength={254}
+            />
+          )}
+        </form.AppField>
+      </FormDialog>
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { revalidateLogic, useStore } from "@tanstack/react-form";
+import { revalidateLogic } from "@tanstack/react-form";
 import { PlusIcon, BuildingIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -9,10 +9,9 @@ import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
-import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useNotify } from "@/hooks/use-notify";
@@ -96,6 +95,8 @@ function AdminCreateOrganization() {
         industries: z.array(z.string()),
       }),
     },
+    // The domain is checked with the other fields, so every problem shows at once.
+    onSubmitInvalid: () => void domain.read(),
     onSubmit: async ({ value, formApi }) => {
       const emailDomain = domain.read();
       if (emailDomain === undefined) {
@@ -119,9 +120,7 @@ function AdminCreateOrganization() {
           },
         });
         notify.success("Organization.done.adminCreated", { name: value.name.trim() });
-        setOpen(false);
-        formApi.reset();
-        domain.change("");
+        change(false);
         router.refresh();
       } catch (error) {
         const rejected = [...rejectedFields(error)].filter((field) => field in blank);
@@ -139,7 +138,14 @@ function AdminCreateOrganization() {
       }
     },
   });
-  const pending = useStore(form.store, (state) => state.isSubmitting);
+
+  /** The domain is no field of the form, so closing empties it as the dialog empties the form. */
+  function change(next: boolean) {
+    setOpen(next);
+    if (!next) {
+      domain.change("");
+    }
+  }
 
   return (
     <>
@@ -147,180 +153,156 @@ function AdminCreateOrganization() {
         <PlusIcon aria-hidden="true" />
         {t("open")}
       </Button>
-      <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>
-        <DialogContent showCloseButton={false} className="max-h-dvh overflow-y-auto sm:max-w-3xl">
-          <form
-            id={form.formId}
-            noValidate
-            className="flex flex-col gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              // The domain is checked with the other fields, so every problem shows at once.
-              domain.read();
-              void form.handleSubmit();
-            }}
-          >
-            <DecisionDialogHeader tone="info" icon={BuildingIcon} title={t("title")} />
-            <FieldGroup>
-              <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
-                <form.AppField name="name">
-                  {(field) => <field.TextField label={t("name")} requiredMark maxLength={120} />}
-                </form.AppField>
-                <form.AppField name="type">
-                  {(field) => (
-                    <field.SelectField
-                      label={t("type")}
-                      requiredMark
-                      placeholder={t("typePlaceholder")}
-                      options={organizationTypes.map((value) => ({
-                        value,
-                        label: typeName(value),
-                      }))}
-                    />
-                  )}
-                </form.AppField>
-                <form.AppField name="website">
-                  {(field) => (
-                    <field.TextField
-                      label={t("website")}
-                      type="url"
-                      inputMode="url"
-                      maxLength={300}
-                      description={t("websiteHint")}
-                    />
-                  )}
-                </form.AppField>
-                <form.AppField name="ownerEmail">
-                  {(field) => (
-                    <field.TextField
-                      label={t("ownerEmail")}
-                      type="email"
-                      inputMode="email"
-                      autoCapitalize="none"
-                      spellCheck={false}
-                      maxLength={254}
-                    />
-                  )}
-                </form.AppField>
-                <Field data-invalid={domain.problem !== null || undefined}>
-                  <FieldLabel htmlFor="admin-organization-domain">{t("emailDomain")}</FieldLabel>
-                  <Input
-                    id="admin-organization-domain"
-                    inputMode="url"
-                    autoCapitalize="none"
-                    autoComplete="off"
-                    spellCheck={false}
-                    maxLength={253}
-                    value={domain.text}
-                    aria-invalid={domain.problem !== null || undefined}
-                    aria-describedby={
-                      domain.problem
-                        ? "admin-organization-domain-hint admin-organization-domain-error"
-                        : "admin-organization-domain-hint"
-                    }
-                    onChange={(event) => domain.change(event.target.value)}
+      <FormDialog
+        open={open}
+        onOpenChange={change}
+        form={form}
+        title={t("title")}
+        mark={{ tone: "info", icon: BuildingIcon }}
+        width="3xl"
+        submitLabel={t("confirm")}
+        cancelLabel={t("cancel")}
+      >
+        <FieldGroup>
+          <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
+            <form.AppField name="name">
+              {(field) => <field.TextField label={t("name")} requiredMark maxLength={120} />}
+            </form.AppField>
+            <form.AppField name="type">
+              {(field) => (
+                <field.SelectField
+                  label={t("type")}
+                  requiredMark
+                  placeholder={t("typePlaceholder")}
+                  options={organizationTypes.map((value) => ({
+                    value,
+                    label: typeName(value),
+                  }))}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="website">
+              {(field) => (
+                <field.TextField
+                  label={t("website")}
+                  type="url"
+                  inputMode="url"
+                  maxLength={300}
+                  description={t("websiteHint")}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="ownerEmail">
+              {(field) => (
+                <field.TextField
+                  label={t("ownerEmail")}
+                  type="email"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  maxLength={254}
+                />
+              )}
+            </form.AppField>
+            <Field data-invalid={domain.problem !== null || undefined}>
+              <FieldLabel htmlFor="admin-organization-domain">{t("emailDomain")}</FieldLabel>
+              <Input
+                id="admin-organization-domain"
+                inputMode="url"
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={253}
+                value={domain.text}
+                aria-invalid={domain.problem !== null || undefined}
+                aria-describedby={
+                  domain.problem
+                    ? "admin-organization-domain-hint admin-organization-domain-error"
+                    : "admin-organization-domain-hint"
+                }
+                onChange={(event) => domain.change(event.target.value)}
+              />
+              <FieldDescription id="admin-organization-domain-hint">
+                {t("emailDomainHint")}
+              </FieldDescription>
+              {domain.problem && (
+                <FieldError id="admin-organization-domain-error">
+                  {f(`domain.${domain.problem}`)}
+                </FieldError>
+              )}
+            </Field>
+            <form.AppField name="country">
+              {(field) => (
+                <field.SelectField
+                  label={f("country")}
+                  placeholder={f("countryPlaceholder")}
+                  options={countryCodes.map((value) => ({ value, label: countryName(value) }))}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="teamSize">
+              {(field) => (
+                <field.SelectField
+                  label={f("teamSize")}
+                  placeholder={f("teamSizePlaceholder")}
+                  options={teamSizes.map((value) => ({ value, label: sizeName(value) }))}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="foundedYear">
+              {(field) => (
+                <field.TextField label={f("foundedYear")} inputMode="numeric" maxLength={4} />
+              )}
+            </form.AppField>
+          </div>
+          <form.Field name="industries">
+            {(field) => {
+              const invalid = field.state.meta.isTouched && !field.state.meta.isValid;
+              return (
+                <Field data-invalid={invalid || undefined}>
+                  <FieldLabel htmlFor="admin-organization-industries">{f("industries")}</FieldLabel>
+                  <ChoiceCombobox
+                    id="admin-organization-industries"
+                    label={f("industries")}
+                    placeholder={f("industriesPlaceholder")}
+                    emptyLabel={f("industriesEmpty")}
+                    removeLabel={(industry) => f("industriesRemove", { industry })}
+                    aria-invalid={invalid || undefined}
+                    options={industries.map((value) => ({
+                      value,
+                      label: industryName(value),
+                    }))}
+                    value={field.state.value}
+                    onValueChange={field.handleChange}
+                    max={MAX_INDUSTRIES}
                   />
-                  <FieldDescription id="admin-organization-domain-hint">
-                    {t("emailDomainHint")}
-                  </FieldDescription>
-                  {domain.problem && (
-                    <FieldError id="admin-organization-domain-error">
-                      {f(`domain.${domain.problem}`)}
-                    </FieldError>
-                  )}
                 </Field>
-                <form.AppField name="country">
-                  {(field) => (
-                    <field.SelectField
-                      label={f("country")}
-                      placeholder={f("countryPlaceholder")}
-                      options={countryCodes.map((value) => ({ value, label: countryName(value) }))}
-                    />
-                  )}
-                </form.AppField>
-                <form.AppField name="teamSize">
-                  {(field) => (
-                    <field.SelectField
-                      label={f("teamSize")}
-                      placeholder={f("teamSizePlaceholder")}
-                      options={teamSizes.map((value) => ({ value, label: sizeName(value) }))}
-                    />
-                  )}
-                </form.AppField>
-                <form.AppField name="foundedYear">
-                  {(field) => (
-                    <field.TextField label={f("foundedYear")} inputMode="numeric" maxLength={4} />
-                  )}
-                </form.AppField>
-              </div>
-              <form.Field name="industries">
-                {(field) => {
-                  const invalid = field.state.meta.isTouched && !field.state.meta.isValid;
-                  return (
-                    <Field data-invalid={invalid || undefined}>
-                      <FieldLabel htmlFor="admin-organization-industries">
-                        {f("industries")}
-                      </FieldLabel>
-                      <ChoiceCombobox
-                        id="admin-organization-industries"
-                        label={f("industries")}
-                        placeholder={f("industriesPlaceholder")}
-                        emptyLabel={f("industriesEmpty")}
-                        removeLabel={(industry) => f("industriesRemove", { industry })}
-                        aria-invalid={invalid || undefined}
-                        options={industries.map((value) => ({
-                          value,
-                          label: industryName(value),
-                        }))}
-                        value={field.state.value}
-                        onValueChange={field.handleChange}
-                        max={MAX_INDUSTRIES}
-                      />
-                    </Field>
-                  );
-                }}
-              </form.Field>
-              <div className="flex flex-col gap-6 sm:flex-row sm:gap-3">
-                <div className="sm:flex-1">
-                  <form.AppField name="description">
-                    {(field) => (
-                      <field.TextareaField
-                        label={f("description")}
-                        rows={3}
-                        maxLength={MAX_DESCRIPTION}
-                      />
-                    )}
-                  </form.AppField>
-                </div>
-                <form.Field name="logoFileId">
-                  {(field) => (
-                    <Field className="sm:w-auto">
-                      <FieldLabel htmlFor="organization-logo">{f("logo.label")}</FieldLabel>
-                      <OrganizationLogoUpload
-                        value={field.state.value}
-                        onChange={field.handleChange}
-                      />
-                    </Field>
-                  )}
-                </form.Field>
-              </div>
-            </FieldGroup>
-            <DialogFooter variant="plain">
-              <Button
-                size="lg"
-                prominence="secondary"
-                disabled={pending}
-                onClick={() => setOpen(false)}
-              >
-                {t("cancel")}
-              </Button>
-              <Button size="lg" type="submit" pending={pending}>
-                {t("confirm")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+              );
+            }}
+          </form.Field>
+          <div className="flex flex-col gap-6 sm:flex-row sm:gap-3">
+            <div className="sm:flex-1">
+              <form.AppField name="description">
+                {(field) => (
+                  <field.TextareaField
+                    label={f("description")}
+                    rows={3}
+                    maxLength={MAX_DESCRIPTION}
+                  />
+                )}
+              </form.AppField>
+            </div>
+            <form.Field name="logoFileId">
+              {(field) => (
+                <Field className="sm:w-auto">
+                  <FieldLabel htmlFor="organization-logo">{f("logo.label")}</FieldLabel>
+                  <OrganizationLogoUpload value={field.state.value} onChange={field.handleChange} />
+                </Field>
+              )}
+            </form.Field>
+          </div>
+        </FieldGroup>
+      </FormDialog>
     </>
   );
 }

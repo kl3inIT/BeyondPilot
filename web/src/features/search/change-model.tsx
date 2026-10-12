@@ -7,15 +7,8 @@ import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { useAppForm } from "@/components/form/app-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useNotify } from "@/hooks/use-notify";
@@ -88,7 +81,6 @@ function ChangeModel({ providers, vendors, current, items, settingsVersion }: Ch
     },
   });
   const { providerId, model } = useStore(form.store, (state) => state.values);
-  const saving = useStore(form.store, (state) => state.isSubmitting);
   const provider = usable.find((each) => each.id === providerId);
   const models = modelsOf(providerId);
   const changing = current !== null && current.model !== model;
@@ -127,117 +119,100 @@ function ChangeModel({ providers, vendors, current, items, settingsVersion }: Ch
       >
         {current ? t("change") : t("choose")}
       </Button>
-      <Dialog open={open} onOpenChange={(next) => (saving ? undefined : setOpen(next))}>
-        <DialogContent className="sm:max-w-125">
-          <form
-            id={form.formId}
-            noValidate
-            className="flex flex-col gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void form.handleSubmit();
+      <FormDialog
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (!next) {
+            // The form starts again, and a test says nothing about the choice it starts with.
+            setResult(null);
+          }
+        }}
+        form={form}
+        title={t("title")}
+        description={t("lead")}
+        width="lg"
+        submitLabel={changing ? t("embedAgain") : t("use")}
+        cancelLabel={t("cancel")}
+        submitDisabled={!provider || model === ""}
+      >
+        <FieldGroup>
+          <form.Field
+            name="providerId"
+            listeners={{
+              // Another provider offers other models, so the choice starts at its first.
+              onChange: ({ value }) => {
+                form.setFieldValue("model", modelsOf(value)[0] ?? "");
+                setResult(null);
+              },
             }}
           >
-            <DialogHeader>
-              <DialogTitle>{t("title")}</DialogTitle>
-              <DialogDescription>{t("lead")}</DialogDescription>
-            </DialogHeader>
-            <FieldGroup>
-              <form.Field
-                name="providerId"
-                listeners={{
-                  // Another provider offers other models, so the choice starts at its first.
-                  onChange: ({ value }) => {
-                    form.setFieldValue("model", modelsOf(value)[0] ?? "");
-                    setResult(null);
-                  },
-                }}
-              >
-                {(field) => (
-                  <Field>
-                    <FieldLabel htmlFor={`${id}-provider`}>{t("provider")}</FieldLabel>
-                    <NativeSelect
-                      id={`${id}-provider`}
-                      className="w-full"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                    >
-                      {usable.map((each) => (
-                        <NativeSelectOption key={each.id} value={each.id}>
-                          {each.name}
-                        </NativeSelectOption>
-                      ))}
-                    </NativeSelect>
-                  </Field>
-                )}
-              </form.Field>
-              <form.Field name="model" listeners={{ onChange: () => setResult(null) }}>
-                {(field) => (
-                  <Field>
-                    <FieldLabel htmlFor={`${id}-model`}>{t("model")}</FieldLabel>
-                    <NativeSelect
-                      id={`${id}-model`}
-                      className="w-full"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                    >
-                      {models.map((each) => (
-                        <NativeSelectOption key={each} value={each}>
-                          {each}
-                        </NativeSelectOption>
-                      ))}
-                    </NativeSelect>
-                  </Field>
-                )}
-              </form.Field>
-            </FieldGroup>
-
-            <div className="flex flex-col gap-2.5 rounded-lg border p-3">
-              <div className="flex items-center gap-2">
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <p className="text-sm font-medium">{t("test")}</p>
-                  <p className="text-xs text-muted-foreground">{t("testHint")}</p>
-                </div>
-                <Button
-                  prominence="secondary"
-                  pending={testing}
-                  disabled={!provider}
-                  onClick={test}
+            {(field) => (
+              <Field>
+                <FieldLabel htmlFor={`${id}-provider`}>{t("provider")}</FieldLabel>
+                <NativeSelect
+                  id={`${id}-provider`}
+                  className="w-full"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
                 >
-                  {t("testButton")}
-                </Button>
-              </div>
-              {result && <ProbeResult result={result} />}
-            </div>
-
-            {changing && (
-              <div className="flex items-start gap-2.5 rounded-lg border bg-muted p-3 text-sm">
-                <TriangleAlertIcon
-                  className="mt-0.5 size-4 shrink-0 text-warning"
-                  aria-hidden="true"
-                />
-                <p>
-                  {t("warning", {
-                    count: items,
-                    minutes: Math.max(1, Math.ceil(items / PER_MINUTE)),
-                  })}
-                </p>
-              </div>
+                  {usable.map((each) => (
+                    <NativeSelectOption key={each.id} value={each.id}>
+                      {each.name}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+              </Field>
             )}
+          </form.Field>
+          <form.Field name="model" listeners={{ onChange: () => setResult(null) }}>
+            {(field) => (
+              <Field>
+                <FieldLabel htmlFor={`${id}-model`}>{t("model")}</FieldLabel>
+                <NativeSelect
+                  id={`${id}-model`}
+                  className="w-full"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                >
+                  {models.map((each) => (
+                    <NativeSelectOption key={each} value={each}>
+                      {each}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+              </Field>
+            )}
+          </form.Field>
+        </FieldGroup>
 
-            <DialogFooter>
-              <Button prominence="secondary" disabled={saving} onClick={() => setOpen(false)}>
-                {t("cancel")}
-              </Button>
-              <Button type="submit" pending={saving} disabled={!provider || model === ""}>
-                {changing ? t("embedAgain") : t("use")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+        <div className="flex flex-col gap-2.5 rounded-lg border p-3">
+          <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <p className="text-sm font-medium">{t("test")}</p>
+              <p className="text-xs text-muted-foreground">{t("testHint")}</p>
+            </div>
+            <Button prominence="secondary" pending={testing} disabled={!provider} onClick={test}>
+              {t("testButton")}
+            </Button>
+          </div>
+          {result && <ProbeResult result={result} />}
+        </div>
+
+        {changing && (
+          <div className="flex items-start gap-2.5 rounded-lg border bg-muted p-3 text-sm">
+            <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
+            <p>
+              {t("warning", {
+                count: items,
+                minutes: Math.max(1, Math.ceil(items / PER_MINUTE)),
+              })}
+            </p>
+          </div>
+        )}
+      </FormDialog>
     </>
   );
 }
