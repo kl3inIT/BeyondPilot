@@ -16,7 +16,7 @@ const operatorDraft = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e06";
 
 const decisionsPath = "**/api/solution/admin/**";
 
-/** The ⋯ trigger of each solution shown, whichever layout the viewport has. */
+/** The ⋯ trigger of each solution shown. */
 function shownSolutions(page: Page) {
   return page.getByRole("button", { name: /^Open / });
 }
@@ -125,7 +125,6 @@ test.describe("admin solutions", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/solutions");
@@ -152,8 +151,8 @@ test.describe("admin solutions", () => {
     await expect(page.getByText("Sent 3 hours ago").and(page.locator(":visible"))).toHaveCount(1);
     await expect(page.getByText("1 deployment waits").and(page.locator(":visible"))).toHaveCount(1);
     await expect(page.getByText("5 solutions")).toBeVisible();
-    // A table from 768px, stacked rows below it.
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    // A table at every width: on a phone it scrolls sideways.
+    await expect(page.getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
   });
 

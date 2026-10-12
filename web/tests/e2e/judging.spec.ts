@@ -34,7 +34,6 @@ test.describe("judging applications", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     const calls = await recordWrites(page);
@@ -50,16 +49,15 @@ test.describe("judging applications", () => {
       page.getByText("3 applications · 4 drafts were not submitted · 1 withdrawn"),
     ).toBeVisible();
     await expect(page.getByRole("tab", { name: "To decide 1" })).toBeVisible();
-    if (!isMobile) {
-      // Once any application has a score the highest mean comes first, and a header turns the order.
-      const score = page.getByRole("columnheader", { name: "Scores" });
-      await expect(score).toHaveAttribute("aria-sort", "descending");
-      await score.getByRole("button").click();
-      await expect(page).toHaveURL(/sort=score/);
-      await expect(score).toHaveAttribute("aria-sort", "ascending");
-      await page.getByRole("columnheader", { name: "Submitted" }).getByRole("button").click();
-      await expect(page).toHaveURL(/sort=submitted/);
-    }
+    // Once any application has a score the highest mean comes first, and a header turns the order.
+    // On a phone the table is the same one, scrolled sideways.
+    const score = page.getByRole("columnheader", { name: "Scores" });
+    await expect(score).toHaveAttribute("aria-sort", "descending");
+    await score.getByRole("button").click();
+    await expect(page).toHaveURL(/sort=score/);
+    await expect(score).toHaveAttribute("aria-sort", "ascending");
+    await page.getByRole("columnheader", { name: "Submitted" }).getByRole("button").click();
+    await expect(page).toHaveURL(/sort=submitted/);
     await page.goto(`${admin}/applications`);
     await settled(page);
     await expectNoSeriousA11yViolations(page);
@@ -78,18 +76,17 @@ test.describe("judging applications", () => {
     expect((calls[0].body as { applicationIds: string[] }).applicationIds).toHaveLength(1);
     calls.length = 0;
 
-    if (!isMobile) {
-      await page.goto(`${admin}/applications`);
-      await page.getByRole("checkbox", { name: "Select Plain Cover" }).click();
-      await page.getByRole("checkbox", { name: "Select Renew in a Minute" }).click();
-      const selection = page.getByRole("region", { name: "Selected rows" });
-      await expect(selection).toContainText("2 selected");
-      await selection.getByRole("button", { name: "Shortlist" }).click();
-      await expect.poll(() => calls.length).toBe(1);
-      expect(calls[0].url).toContain(`/programs/${judgedProgramId}/decisions`);
-      expect(calls[0].body).toMatchObject({ decision: "shortlisted" });
-      expect((calls[0].body as { applicationIds: string[] }).applicationIds).toHaveLength(2);
-    }
+    // Rows are selected and decided on together, on a phone as well.
+    await page.goto(`${admin}/applications`);
+    await page.getByRole("checkbox", { name: "Select Plain Cover" }).click();
+    await page.getByRole("checkbox", { name: "Select Renew in a Minute" }).click();
+    const selection = page.getByRole("region", { name: "Selected rows" });
+    await expect(selection).toContainText("2 selected");
+    await selection.getByRole("button", { name: "Shortlist" }).click();
+    await expect.poll(() => calls.length).toBe(1);
+    expect(calls[0].url).toContain(`/programs/${judgedProgramId}/decisions`);
+    expect(calls[0].body).toMatchObject({ decision: "shortlisted" });
+    expect((calls[0].body as { applicationIds: string[] }).applicationIds).toHaveLength(2);
   });
 
   test("an operator scores an application on every criterion, reads the judges' scores and decides", async ({

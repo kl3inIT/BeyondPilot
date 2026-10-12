@@ -50,12 +50,7 @@ test.describe("admin programs", () => {
     expect((await page.goto(`/admin/programs/${tasco}/settings`))?.status()).toBe(404);
   });
 
-  test("the list shows each program's state and window", async ({
-    page,
-    context,
-    baseURL,
-    isMobile,
-  }) => {
+  test("the list shows each program's state and window", async ({ page, context, baseURL }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/programs");
 
@@ -68,7 +63,7 @@ test.describe("admin programs", () => {
     await expect(
       page.getByText("23 Sept – 15 Oct 2026, 23:59 ICT").and(page.locator(":visible")),
     ).toBeVisible();
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    await expect(page.getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
 
     // The tabs count each state; a tab and a search narrow the list, and the address keeps them.

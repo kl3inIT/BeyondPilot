@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
 
-/** The events shown, each by its sentence, whichever layout the viewport has. */
+/** The events shown, each by its sentence. */
 function shownEvents(page: Page) {
   return page.locator('[data-slot="audit-activity"]:visible');
 }
@@ -32,7 +32,6 @@ test.describe("admin audit log", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/audit-log");
@@ -43,8 +42,8 @@ test.describe("admin audit log", () => {
     await expect(page.locator('[data-slot="person"]:visible').nth(2)).toContainText("System");
     // Four events fit one page, so no paging is offered.
     await expect(page.getByRole("navigation", { name: "Pages of the audit log" })).toHaveCount(0);
-    // A table from 768px, stacked rows below it.
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    // A table at every width: on a phone it scrolls sideways.
+    await expect(page.getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -56,7 +55,6 @@ test.describe("admin audit log", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/audit-log");
 
-    // The table and the stacked rows both carry it; only one of them shows at a width.
     await expect(page.locator("time:visible").first()).toHaveText(
       /^(Today|\w+ \d{1,2}, \d{4}), \d{2}:\d{2}:\d{2}$/,
     );
@@ -143,7 +141,6 @@ test.describe("admin audit log", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/audit-log?q=nobody");
 
-    // The table and the stacked rows both hold this state; the viewport shows one of them.
     await expect(page.locator('[data-slot="empty-title"]:visible')).toHaveText("No event matches");
     await page.getByRole("link", { name: "Clear search and filters" }).click();
 

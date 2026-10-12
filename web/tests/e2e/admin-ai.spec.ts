@@ -166,7 +166,6 @@ test.describe("admin AI", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/ai/search-index");
@@ -178,8 +177,8 @@ test.describe("admin AI", () => {
     await expect(
       page.getByText("The provider refused the text (400 Bad request).").filter({ visible: true }),
     ).toBeVisible();
-    // A table from 768px, stacked rows below it.
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 2);
+    // A table at every width: on a phone it scrolls sideways.
+    await expect(page.getByRole("table")).toHaveCount(2);
     await expectNoSeriousA11yViolations(page);
   });
 });

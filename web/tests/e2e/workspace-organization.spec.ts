@@ -18,7 +18,7 @@ async function answerSearch(page: Page, items: object[]) {
   );
 }
 
-/** The people shown, by the name each row leads with, whichever layout the viewport has. */
+/** The people shown, by the name each row leads with. */
 /** The people of the members list, not those asking to join above it. */
 function shownPeople(page: Page) {
   return page
@@ -451,7 +451,6 @@ test.describe("workspace organization", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "owner", baseURL!);
     const changes = await answerDecisions(page, changesPath, 204);
@@ -461,12 +460,11 @@ test.describe("workspace organization", () => {
     await expect(
       page.getByText("2 members · 1 invitation pending · 19 of 20 invitations left in 24 hours"),
     ).toBeVisible();
-    // The row is drawn as a table row and as a stacked row; one of them shows.
     await expect(
       page.getByText("Invited 1 Oct 2026 · expires 8 Oct 2026").filter({ visible: true }),
     ).toHaveCount(1);
-    // A table from 768px, stacked rows below it.
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    // A table at every width: on a phone it scrolls sideways.
+    await expect(page.getByRole("table")).toHaveCount(1);
     await expect(page.getByText("On pocketpolicy.example")).toBeVisible();
     await expect(page.getByText("I joined the claims team.")).toBeVisible();
     // One page of members needs no count under it: the section's summary already says it.
