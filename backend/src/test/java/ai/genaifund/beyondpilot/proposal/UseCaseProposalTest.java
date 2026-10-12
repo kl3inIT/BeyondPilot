@@ -87,6 +87,14 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<String>read(sent, "$.proposal.sender.headline")).isEqualTo("Builds claims AI");
 		assertThat(JsonPath.<List<String>>read(sent, "$.proposal.team[*].name")).hasSize(2);
 
+		// The sender and each other member of the team are told, each in an email of their own with their role.
+		assertThat(mail.latestSubjectTo(provider.founderEmail)).isEqualTo("Proposal sent: Voice-enabled navigation");
+		assertThat(mail.latestTextTo(provider.founderEmail)).contains("Project lead", "and as the primary contact")
+			.contains("/use-cases/" + useCase + "/propose/view")
+			.doesNotContain("colleague@sends.test");
+		assertThat(mail.latestTextTo(provider.colleagueEmail)).contains("AI engineer", "sent by founder@sends.test")
+			.doesNotContain("and as the primary contact");
+
 		// An approved solution carries its address, and its own logo when it has one.
 		UUID logo = file(provider.founderEmail);
 		jdbc.sql("update solution set status = 'approved', logo_file_id = ? where id = ?")
