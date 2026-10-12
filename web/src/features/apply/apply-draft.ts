@@ -48,8 +48,8 @@ export function draftOf(
 }
 
 /** What the backend accepts as a phone number and as a LinkedIn address (proposal › ContactDetails). */
-const phoneShape = /^\+?[0-9 ().-]*$/;
-const linkedinShape = /^https:\/\/\S+$/;
+export const phoneShape = /^\+?[0-9 ().-]*$/;
+export const linkedinShape = /^https:\/\/\S+$/;
 
 /** The contact fields whose text the backend would refuse; an empty field is not one of them. */
 export function invalidContact(draft: ApplyDraft): ("phone" | "linkedin")[] {
