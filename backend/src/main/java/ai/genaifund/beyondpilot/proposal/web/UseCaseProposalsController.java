@@ -7,6 +7,7 @@ import java.util.UUID;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.proposal.UseCaseProposals;
+import ai.genaifund.beyondpilot.proposal.dto.ApplicantOrganizationRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.SaveUseCaseProposalRequest;
@@ -68,6 +69,22 @@ class UseCaseProposalsController {
 		return proposals.form(actor, useCaseId);
 	}
 
+	@PostMapping(path = "/use-cases/{useCaseId}/organization", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "organizeUseCaseProposal",
+			summary = "Make the organization a person sends a proposal for when they belong to none",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The form, now with the new organization.")
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "The use case no longer takes proposals, or the caller already belongs to an organization.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseProposalFormResponse organize(@CurrentActor Actor actor, @PathVariable UUID useCaseId,
+			@Valid @RequestBody ApplicantOrganizationRequest request) {
+		return proposals.organize(actor, useCaseId, request);
+	}
+
 	@PutMapping(path = "/use-cases/{useCaseId}/proposal", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "saveUseCaseProposal", summary = "Keep what the proposal form holds",
@@ -77,7 +94,7 @@ class UseCaseProposalsController {
 			description = "The team names someone who is not a member, a member twice or two primary contacts, or the solution is not the organization's.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "403",
-			description = "The caller has no organization, it is not approved, or it posted the use case.",
+			description = "The caller has no organization, or it posted the use case.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "There is no such use case.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
