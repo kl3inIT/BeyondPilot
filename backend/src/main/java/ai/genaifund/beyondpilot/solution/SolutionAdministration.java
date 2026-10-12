@@ -26,6 +26,7 @@ import ai.genaifund.beyondpilot.solution.dto.RejectSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SaveSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SendBackSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionBackingRequest;
+import ai.genaifund.beyondpilot.solution.dto.SolutionOffersRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
 import ai.genaifund.beyondpilot.solution.dto.TakeDownSolutionRequest;
 import ai.genaifund.beyondpilot.solution.persistence.CustomerDeployment;
@@ -79,10 +80,12 @@ public class SolutionAdministration {
 
 	private final SolutionService service;
 
+	private final SolutionOffers offers;
+
 	SolutionAdministration(SolutionRepository solutions, CustomerDeploymentRepository deployments,
 			SolutionQueryRepository solutionList, OrganizationDirectory organizations, IdentityService identity,
 			AuditTrail audit, ApplicationEventPublisher events, StorageService storage, EmailService email,
-			SolutionService service) {
+			SolutionService service, SolutionOffers offers) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.solutionList = solutionList;
@@ -93,6 +96,7 @@ public class SolutionAdministration {
 		this.storage = storage;
 		this.email = email;
 		this.service = service;
+		this.offers = offers;
 	}
 
 	/**
@@ -146,7 +150,7 @@ public class SolutionAdministration {
 		return SolutionViews.solution(solution,
 				name(organizations.names(List.of(solution.getOrganizationId())), solution.getOrganizationId()),
 				SolutionViews.sender(solution, identity),
-				deployments.findBySolutionIdAndWithdrawnAtIsNullOrderByCreatedAtDesc(id),
+				deployments.findBySolutionIdAndWithdrawnAtIsNullOrderByCreatedAtDesc(id), offers.of(id),
 				storage);
 	}
 
@@ -200,7 +204,7 @@ public class SolutionAdministration {
 			.orElseThrow(() -> organizationNotApproved(request.organizationId()));
 		Solution solution = service.start(actor, organization.id(), request.name());
 		record(AuditAction.SOLUTION_CREATE, operator, solution, Map.of());
-		return SolutionViews.solution(solution, organization.name(), null, List.of(), storage);
+		return SolutionViews.solution(solution, organization.name(), null, List.of(), List.of(), storage);
 	}
 
 	/**
@@ -214,7 +218,7 @@ public class SolutionAdministration {
 		Solution solution = solutions.findById(id).orElseThrow(() -> draftNotFound(id));
 		requireDraft(solution);
 		return SolutionViews.solution(solution, organizationName(solution), SolutionViews.sender(solution, identity),
-				deployments.findBySolutionIdOrderByCreatedAtDesc(id), storage);
+				deployments.findBySolutionIdOrderByCreatedAtDesc(id), offers.of(id), storage);
 	}
 
 	/**
@@ -294,6 +298,21 @@ public class SolutionAdministration {
 		solution.back(SolutionViews.text(request.backedBy()), SolutionViews.text(request.program()),
 				SolutionViews.text(request.funding()), Instant.now());
 		record(AuditAction.SOLUTION_BACK, operator, solution, Map.of());
+		events.publishEvent(new SolutionChanged(id));
+	}
+
+	/**
+	 * Chooses the offers a solution that was sent for review comes with, from the list GenAI Fund keeps. Its owners
+	 * choose them in their editor; an operator does it here for a solution whose owners do not.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when no submitted solution has this identifier, or an offer named is not in the list
+	 */
+	@Transactional
+	public void offer(Actor actor, UUID id, SolutionOffersRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		Solution solution = reviewable(id);
+		offers.choose(solution, request.offerIds());
+		record(AuditAction.SOLUTION_OFFERS_CHOOSE, operator, solution, Map.of());
 		events.publishEvent(new SolutionChanged(id));
 	}
 

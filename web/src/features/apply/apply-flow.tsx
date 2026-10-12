@@ -224,6 +224,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
             logoFileId: found.logo?.fileId ?? null,
             coverFileId: found.cover?.fileId ?? null,
             imageFileIds: found.images.map((image) => image.fileId),
+            offerIds: found.offers.map((offer) => offer.id),
             listed: found.listed,
             version: found.version,
           },

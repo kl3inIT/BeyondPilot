@@ -64,6 +64,14 @@ final class Cards {
 
 	static final String BACKING = "backing";
 
+	static final String OFFERS = "offers";
+
+	static final String OFFER_TITLE = "title";
+
+	static final String OFFER_URL = "url";
+
+	static final String OFFER_FROM_GENAI_FUND = "fromGenAiFund";
+
 	static final String PROJECT_COUNT = "projectCount";
 
 	static final String LEAD_PROJECT_TITLE = "leadProjectTitle";

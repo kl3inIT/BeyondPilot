@@ -270,6 +270,7 @@ class IntroductionTest {
 		request.put("deployment", List.of("cloud_saas"));
 		request.put("website", "https://example.test");
 		request.put("imageFileIds", List.of());
+		request.put("offerIds", List.of());
 		request.put("listed", true);
 		request.put("version", version);
 		return request;

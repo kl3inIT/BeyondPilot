@@ -705,7 +705,13 @@ function SolutionEditor({
             <fieldset disabled={finallyRefused} className="min-w-0">
               <FieldGroup>
                 {step === "basics" && (
-                  <BasicsStep draft={draft} change={change} errorOf={errorOf} />
+                  <BasicsStep
+                    draft={draft}
+                    change={change}
+                    errorOf={errorOf}
+                    solutionId={solution.id}
+                    operator={operator}
+                  />
                 )}
                 {step === "fit" && <FitStep draft={draft} change={change} errorOf={errorOf} />}
                 {step === "evidence" && (

@@ -22,6 +22,12 @@ final class SolutionCodes {
 
 	static final String WEBSITE = "https?://[^\\s]+";
 
+	/** A card links to an offer straight away, so its address is an https one and nothing else. */
+	static final String OFFER_URL = "https://[^\\s]+";
+
+	/** How many offers one solution comes with at most. */
+	static final int MAX_OFFERS = 5;
+
 	static final String REJECTION = "not_an_ai_solution|duplicate|unverifiable|other";
 
 	static final String TAKEDOWN = "misleading_information|not_an_ai_solution|unverifiable|breaks_the_rules|other";

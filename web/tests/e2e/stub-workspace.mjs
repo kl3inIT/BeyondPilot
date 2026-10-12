@@ -172,6 +172,7 @@ function solution(id, name, status, more) {
       sizeBytes: 1258291,
     },
     images: [],
+    offers: [],
     focusAreas: ["conversational_ai"],
     industries: ["insurance"],
     deployment: ["cloud_saas"],
@@ -442,6 +443,7 @@ export function answerWorkspace(url, session) {
     "/api/organization/mine",
     "/api/organization/mine/members",
     "/api/solution/mine",
+    "/api/solution/offers/mine",
     "/api/usecase/mine",
     "/api/talent/mine",
     "/api/talent/mine/sent",
@@ -516,6 +518,23 @@ export function answerWorkspace(url, session) {
   if (pathname === "/api/usecase/mine") {
     // Anyone who belongs to an approved organization may read its use cases; the stub has none.
     return role ? [200, { items: [] }] : refused(403, "USECASE_ENTERPRISE_REQUIRED");
+  }
+  if (pathname === "/api/solution/offers/mine") {
+    // One offer the organization wrote, which one of its solutions comes with, so it cannot be deleted.
+    return [
+      200,
+      role
+        ? [
+            {
+              id: "0ffe7a11-0000-4000-8000-000000000002",
+              title: "Ten hours of onboarding support",
+              url: "https://offers.example/onboarding",
+              solutions: 1,
+              version: 0,
+            },
+          ]
+        : [],
+    ];
   }
   if (pathname === "/api/solution/mine") {
     // A person without an organization has no solutions, and is not refused.
