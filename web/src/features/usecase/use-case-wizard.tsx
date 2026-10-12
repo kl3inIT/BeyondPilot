@@ -1,11 +1,13 @@
 "use client";
 
+import { useStore } from "@tanstack/react-form";
 import { CloudAlertIcon, CloudCheckIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
+import { useAppForm } from "@/components/form/app-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useNotify } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
@@ -25,13 +27,15 @@ import {
 import { UseCaseStepFields } from "./use-case-step-fields";
 import { UseCaseSummary } from "./use-case-summary";
 import { UseCaseTabs } from "./use-case-tabs";
-import { Tick } from "./wizard-fields";
 import { WizardShell } from "./wizard-shell";
 
 /** How long after the last change the draft is saved. */
 const AUTOSAVE_MS = 800;
 
 type Problem = "changed" | "locked" | null;
+
+/** What the form holds: the use case as it is written, and the tick that goes with sending it. */
+type UseCaseWizardValues = { content: DraftValues; confirmed: boolean };
 
 type UseCaseWizardProps = {
   useCase: MyUseCase;
@@ -50,30 +54,49 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
   const router = useRouter();
   const format = useFormatter();
 
-  const [values, setValues] = useState<DraftValues>(() => draftValuesOf(useCase));
+  // As the use case was read: what the form starts from, whatever is read afterwards.
+  const [initial] = useState<UseCaseWizardValues>(() => ({
+    content: draftValuesOf(useCase),
+    confirmed: false,
+  }));
   const [step, setStep] = useState<Step>("challenge");
   const [status, setStatus] = useState(useCase.status);
   const [changedSinceReview, setChangedSinceReview] = useState(useCase.changedSinceReview);
   const [savedAt, setSavedAt] = useState<Date>(() => new Date(useCase.updatedAt));
   const [state, setState] = useState<"idle" | "saving" | "failed">("idle");
   const [problem, setProblem] = useState<Problem>(null);
-  const [confirmed, setConfirmed] = useState(false);
-  const [sending, setSending] = useState(false);
 
-  const latest = useRef(values);
   const version = useRef(useCase.version);
+  // Whether something waits to be saved. It is not the form's `isDirty`, which compares with what
+  // the form started from: a draft saved a moment ago differs from that and has nothing waiting.
   const dirty = useRef(false);
   const stopped = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const chain = useRef<Promise<boolean>>(Promise.resolve(true));
 
-  const saveOnce = useCallback(async (): Promise<boolean> => {
+  const form = useAppForm({
+    defaultValues: initial,
+    // Every change to the use case is saved a moment later; the tick is not part of the draft.
+    listeners: {
+      onChange: ({ fieldApi }) => {
+        if (fieldApi.name !== "confirmed") {
+          changed();
+        }
+      },
+    },
+    onSubmit: () => submit(),
+  });
+  const values = useStore(form.store, (held) => held.values.content);
+  const confirmed = useStore(form.store, (held) => held.values.confirmed);
+  const sending = useStore(form.store, (held) => held.isSubmitting);
+
+  async function saveOnce(): Promise<boolean> {
     dirty.current = false;
     setState("saving");
     try {
       const { data } = await saveMyUseCase({
         path: { id: useCase.id },
-        body: bodyOf(latest.current, version.current),
+        body: bodyOf(form.state.values.content, version.current),
       });
       version.current = data.version;
       setStatus(data.status);
@@ -94,10 +117,10 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
       setState("failed");
       return false;
     }
-  }, [notify, useCase.id]);
+  }
 
   /** Saves what is waiting and says whether it is saved. */
-  const flush = useCallback((): Promise<boolean> => {
+  function flush(): Promise<boolean> {
     clearTimeout(timer.current);
     chain.current = chain.current.then(async () => {
       if (stopped.current) {
@@ -106,22 +129,17 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
       return dirty.current ? saveOnce() : true;
     });
     return chain.current;
-  }, [saveOnce]);
+  }
 
-  const change = useCallback(
-    (patch: Partial<DraftValues>) => {
-      if (stopped.current) {
-        return;
-      }
-      const next = { ...latest.current, ...patch };
-      latest.current = next;
-      dirty.current = true;
-      setValues(next);
-      clearTimeout(timer.current);
-      timer.current = setTimeout(() => void flush(), AUTOSAVE_MS);
-    },
-    [flush],
-  );
+  /** Notes that the use case changed and saves it once the person pauses. */
+  function changed() {
+    if (stopped.current) {
+      return;
+    }
+    dirty.current = true;
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => void flush(), AUTOSAVE_MS);
+  }
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -154,7 +172,6 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
   }
 
   async function submit() {
-    setSending(true);
     try {
       if (!(await flush())) {
         return;
@@ -164,8 +181,6 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
       router.push(`${siteRoutes.workspaceUseCases}/${useCase.id}/sent`);
     } catch (error) {
       notify.error(describeUseCaseError(error));
-    } finally {
-      setSending(false);
     }
   }
 
@@ -202,111 +217,123 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
       onStep={(name) => void go(name)}
       notes={[t("saveNote", { name: useCase.organizationName })]}
     >
-      {useCase.publishedAt && <UseCaseTabs area="workspace" id={useCase.id} current="brief" />}
-      {problem === "changed" && (
-        <Alert variant="destructive">
-          <AlertTitle>{e("USECASE_CHANGED_MEANWHILE")}</AlertTitle>
-          <div className="mt-2">
-            <Button prominence="secondary" size="sm" onClick={() => router.refresh()}>
-              {t("reload")}
-            </Button>
-          </div>
-        </Alert>
-      )}
-      {problem === "locked" && (
-        <Alert variant="destructive">
-          <AlertTitle>{e("USECASE_NOT_EDITABLE")}</AlertTitle>
-          <div className="mt-2">
-            <Button prominence="secondary" size="sm" href={siteRoutes.workspaceUseCases}>
+      <form
+        id={form.formId}
+        noValidate
+        className="flex flex-col gap-5"
+        onSubmit={(event) => {
+          event.preventDefault();
+          // Only the last step sends: Enter in a field of another step does nothing.
+          if (step === "review") {
+            void form.handleSubmit();
+          }
+        }}
+      >
+        {useCase.publishedAt && <UseCaseTabs area="workspace" id={useCase.id} current="brief" />}
+        {problem === "changed" && (
+          <Alert variant="destructive">
+            <AlertTitle>{e("USECASE_CHANGED_MEANWHILE")}</AlertTitle>
+            <div className="mt-2">
+              <Button prominence="secondary" size="sm" onClick={() => router.refresh()}>
+                {t("reload")}
+              </Button>
+            </div>
+          </Alert>
+        )}
+        {problem === "locked" && (
+          <Alert variant="destructive">
+            <AlertTitle>{e("USECASE_NOT_EDITABLE")}</AlertTitle>
+            <div className="mt-2">
+              <Button prominence="secondary" size="sm" href={siteRoutes.workspaceUseCases}>
+                {t("backToList")}
+              </Button>
+            </div>
+          </Alert>
+        )}
+        {status === "needs_changes" && useCase.reviewNote && (
+          <Alert>
+            <AlertTitle>{t("sentBack.title")}</AlertTitle>
+            <AlertDescription>{t("sentBack.note", { note: useCase.reviewNote })}</AlertDescription>
+          </Alert>
+        )}
+        {status === "approved" && (
+          <Alert>
+            <AlertTitle>{t("editingPublished.title")}</AlertTitle>
+            <AlertDescription>{t("editingPublished.description")}</AlertDescription>
+          </Alert>
+        )}
+
+        <div className="flex flex-col gap-3">
+          <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}.title`)}</h1>
+          {(step === "challenge" || step === "requirements" || step === "review") && (
+            <p className="text-base text-muted-foreground">{t(`steps.${step}.lead`)}</p>
+          )}
+          {step !== "review" && <p className="text-sm text-muted-foreground">{t("allRequired")}</p>}
+        </div>
+
+        {step !== "review" && <UseCaseStepFields form={form} fields="content" step={step} />}
+
+        {step === "review" && (
+          <>
+            <UseCaseSummary values={values} onEdit={(target) => void go(target)} />
+            {missing.length > 0 && (
+              <Alert>
+                <AlertTitle>{t("missing.title")}</AlertTitle>
+                <AlertDescription>
+                  <ul className="mt-1 flex flex-col gap-1">
+                    {missing.map((name) => (
+                      <li key={name}>
+                        <TextButton onClick={() => void go(name)}>
+                          {t(`steps.${name}.title`)}
+                        </TextButton>
+                      </li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+            {unchanged && (
+              <Alert>
+                <AlertTitle>{t("unchanged")}</AlertTitle>
+              </Alert>
+            )}
+            <form.AppField name="confirmed">
+              {(field) => (
+                <field.CheckboxField label={t("confirm")} disabled={missing.length > 0} />
+              )}
+            </form.AppField>
+          </>
+        )}
+
+        <div className="flex items-center justify-between gap-3 border-t pt-6">
+          {stepIndex === 0 ? (
+            <Button prominence="tertiary" onClick={() => void leave()}>
               {t("backToList")}
             </Button>
-          </div>
-        </Alert>
-      )}
-      {status === "needs_changes" && useCase.reviewNote && (
-        <Alert>
-          <AlertTitle>{t("sentBack.title")}</AlertTitle>
-          <AlertDescription>{t("sentBack.note", { note: useCase.reviewNote })}</AlertDescription>
-        </Alert>
-      )}
-      {status === "approved" && (
-        <Alert>
-          <AlertTitle>{t("editingPublished.title")}</AlertTitle>
-          <AlertDescription>{t("editingPublished.description")}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="flex flex-col gap-3">
-        <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}.title`)}</h1>
-        {(step === "challenge" || step === "requirements" || step === "review") && (
-          <p className="text-base text-muted-foreground">{t(`steps.${step}.lead`)}</p>
-        )}
-        {step !== "review" && <p className="text-sm text-muted-foreground">{t("allRequired")}</p>}
-      </div>
-
-      {step !== "review" && <UseCaseStepFields step={step} values={values} onChange={change} />}
-
-      {step === "review" && (
-        <>
-          <UseCaseSummary values={values} onEdit={(target) => void go(target)} />
-          {missing.length > 0 && (
-            <Alert>
-              <AlertTitle>{t("missing.title")}</AlertTitle>
-              <AlertDescription>
-                <ul className="mt-1 flex flex-col gap-1">
-                  {missing.map((name) => (
-                    <li key={name}>
-                      <TextButton onClick={() => void go(name)}>
-                        {t(`steps.${name}.title`)}
-                      </TextButton>
-                    </li>
-                  ))}
-                </ul>
-              </AlertDescription>
-            </Alert>
-          )}
-          {unchanged && (
-            <Alert>
-              <AlertTitle>{t("unchanged")}</AlertTitle>
-            </Alert>
-          )}
-          <Tick
-            label={t("confirm")}
-            checked={confirmed}
-            onCheckedChange={setConfirmed}
-            disabled={missing.length > 0}
-          />
-        </>
-      )}
-
-      <div className="flex items-center justify-between gap-3 border-t pt-6">
-        {stepIndex === 0 ? (
-          <Button prominence="tertiary" onClick={() => void leave()}>
-            {t("backToList")}
-          </Button>
-        ) : (
-          <Button prominence="tertiary" onClick={() => void go(steps[stepIndex - 1])}>
-            {t("back")}
-          </Button>
-        )}
-        <div className="flex flex-wrap items-center justify-end gap-3">
-          {saveStatus}
-          <Button prominence="secondary" disabled={sending} onClick={() => void leave()}>
-            {t("saveAndExit")}
-          </Button>
-          {step === "review" ? (
-            <Button
-              pending={sending}
-              disabled={missing.length > 0 || !confirmed || problem !== null || unchanged}
-              onClick={() => void submit()}
-            >
-              {t("submit")}
-            </Button>
           ) : (
-            <Button onClick={() => void go(steps[stepIndex + 1])}>{t("continue")}</Button>
+            <Button prominence="tertiary" onClick={() => void go(steps[stepIndex - 1])}>
+              {t("back")}
+            </Button>
           )}
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            {saveStatus}
+            <Button prominence="secondary" disabled={sending} onClick={() => void leave()}>
+              {t("saveAndExit")}
+            </Button>
+            {step === "review" ? (
+              <form.AppForm>
+                <form.SubmitButton
+                  disabled={missing.length > 0 || !confirmed || problem !== null || unchanged}
+                >
+                  {t("submit")}
+                </form.SubmitButton>
+              </form.AppForm>
+            ) : (
+              <Button onClick={() => void go(steps[stepIndex + 1])}>{t("continue")}</Button>
+            )}
+          </div>
         </div>
-      </div>
+      </form>
     </WizardShell>
   );
 }
