@@ -22,7 +22,9 @@ public class SolutionQueryRepository {
 	private static final String PUBLIC_FILTER = """
 			where status = 'approved' and listed and suspended_at is null
 			  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\'
-			       or lower(summary) like :pattern escape '\\')
+			       or lower(summary) like :pattern escape '\\'
+			       or exists (select 1 from solution_offer so join offer o on o.id = so.offer_id
+			                  where so.solution_id = solution.id and lower(o.title) like :pattern escape '\\'))
 			  and (cast(:industry as text) is null or industries @> array[cast(:industry as text)])
 			  and (cast(:focusArea as text) is null or focus_areas @> array[cast(:focusArea as text)])
 			  and (cast(:maturity as text) is null or maturity = :maturity)

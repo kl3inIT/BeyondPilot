@@ -102,6 +102,18 @@ public enum AuditAction {
 
 	SOLUTION_UNFEATURE("solution.unfeature"),
 
+	/** An operator chose the offers a solution that was sent for review comes with. */
+	SOLUTION_OFFERS_CHOOSE("solution.offers_choose"),
+
+	/** An operator added an offer to the list solutions choose from. */
+	SOLUTION_OFFER_CREATE("solution.offer_create"),
+
+	/** An operator changed an offer, which changes it on every solution that comes with it. */
+	SOLUTION_OFFER_UPDATE("solution.offer_update"),
+
+	/** An operator deleted an offer no solution comes with. */
+	SOLUTION_OFFER_DELETE("solution.offer_delete"),
+
 	/** An operator approved what an organization tells about a customer of a solution. */
 	SOLUTION_DEPLOYMENT_APPROVE("solution.deployment_approve"),
 

@@ -142,6 +142,7 @@ function ReviewStep({
     customerDeployments: counted("approved"),
     featured: false,
     backing: null,
+    offers: draft.offers.map(({ title, url, fromGenAiFund }) => ({ title, url, fromGenAiFund })),
   };
 
   const groups: { step: EditorStep; rows: Row[] }[] = [
@@ -159,6 +160,7 @@ function ReviewStep({
         },
         { label: t("fields.traction"), value: draft.traction.trim() },
         { label: t("fields.builtWith"), value: draft.builtWith.join(", ") },
+        { label: t("fields.offers"), value: draft.offers.map((offer) => offer.title).join("\n") },
       ],
     },
     {

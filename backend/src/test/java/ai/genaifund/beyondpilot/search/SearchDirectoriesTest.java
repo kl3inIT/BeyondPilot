@@ -164,6 +164,46 @@ class SearchDirectoriesTest {
 	}
 
 	@Test
+	void aSolutionIsFoundByAnOfferItComesWithAndItsCardSaysWhereTheOfferIsClaimed() {
+		String owner = TestSignIn.session(client, mail, "offer-" + word + "@directories.test");
+		UUID organization = organization(owner, "Offer " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		UUID solution = submittedSolution(owner, "Claims Reader " + word);
+		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
+		await().atMost(WAIT).until(() -> total("claims reader " + word) == 1);
+		assertThat(JsonPath.<List<Object>>read(search("claims%20reader%20" + word), "$.items[0].offers")).isEmpty();
+
+		String offer = body(client.post()
+			.uri("/api/solution/admin/offers")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("title", "Numbat credits " + word, "url", "https://offers.example.test/" + word))
+			.exchange()
+			.expectStatus()
+			.isCreated());
+		String offerId = JsonPath.read(offer, "$.id");
+		Map<String, Object> withOffer = asSaved(owner, solution, "Claims Reader " + word);
+		withOffer.put("offerIds", List.of(offerId));
+		put(owner, "/api/solution/mine/" + solution, withOffer);
+
+		// The words of the offer find the solution, and its card carries the offer.
+		await().atMost(WAIT).until(() -> total("numbat credits " + word) == 1);
+		String found = search("numbat%20credits%20" + word);
+		assertThat(JsonPath.<String>read(found, "$.items[0].title")).isEqualTo("Claims Reader " + word);
+		assertThat(JsonPath.<List<String>>read(found, "$.items[0].offers[*].url"))
+			.containsExactly("https://offers.example.test/" + word);
+
+		// A change to the offer reaches the card of every solution that comes with it.
+		put(operator, "/api/solution/admin/offers/" + offerId,
+				Map.of("title", "Numbat credits " + word, "url", "https://offers.example.test/moved-" + word, "version",
+						JsonPath.<Number>read(offer, "$.version").longValue()));
+		await().atMost(WAIT)
+			.until(() -> List.of("https://offers.example.test/moved-" + word)
+				.equals(JsonPath.<List<String>>read(search("claims%20reader%20" + word), "$.items[0].offers[*].url")));
+	}
+
+	@Test
 	void anApprovedListedProfileIsFoundAndLeavesTheResultsWhenTakenDownOrUnlisted() {
 		String person = TestSignIn.session(client, mail, "person-" + word + "@directories.test");
 		String saved = body(put(person, "/api/talent/mine", profile("Lan " + word, null)));
@@ -371,6 +411,7 @@ class SearchDirectoriesTest {
 		request.put("builtWith", List.of("LangGraph"));
 		request.put("languages", List.of());
 		request.put("imageFileIds", List.of());
+		request.put("offerIds", List.of());
 		request.put("listed", true);
 		request.put("version", version);
 		return request;

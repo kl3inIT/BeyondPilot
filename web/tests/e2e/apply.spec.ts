@@ -44,6 +44,7 @@ async function fakeBackend(page: Page) {
     logo: null,
     cover: null,
     images: [],
+    offers: [],
     status: "draft",
     decisionReason: null,
     decisionMessage: null,

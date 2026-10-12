@@ -2,7 +2,6 @@ import { getFormatter, getTranslations } from "next-intl/server";
 
 import { TextButton } from "@/components/actions/text-button";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
-import { DataTableFooter } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import type { MatchingDisagreement, MatchingFeedbackList } from "@/lib/api/generated";
 import { adminUseCaseCandidatesRoute, siteRoutes } from "@/lib/site";
@@ -10,7 +9,7 @@ import { adminUseCaseCandidatesRoute, siteRoutes } from "@/lib/site";
 import { MatchingAdminTabs } from "./matching-admin-tabs";
 import { matchingFeedbackAddress } from "./matching-search";
 import { requirementName } from "./matching-view";
-import { PageSizeSelect } from "@/components/composites/page-size-select";
+import { ListFooter } from "@/components/composites/list-footer";
 
 /**
  * Admin › AI › Matching, the Feedback tab: what people said about the groups the AI gave. How many
@@ -71,7 +70,6 @@ async function MatchingFeedbackPage({
       }),
     };
   });
-  const pages = Math.max(1, Math.ceil(feedback.total / feedback.pageSize));
   const nobody = feedback.answers === 0 && feedback.total === 0;
 
   return (
@@ -155,22 +153,14 @@ async function MatchingFeedbackPage({
             ))}
           </ul>
 
-          <DataTableFooter
+          <ListFooter
             count={t("count", { count: feedback.total })}
             page={feedback.page}
-            pages={pages}
+            pageSize={feedback.pageSize}
+            total={feedback.total}
             href={(page) =>
               matchingFeedbackAddress(siteRoutes.adminAiMatchingFeedback, { page, size })
             }
-            sizer={<PageSizeSelect size={feedback.pageSize} total={feedback.total} />}
-            labels={{
-              navigation: t("pagination.label"),
-              previous: t("pagination.previous"),
-              next: t("pagination.next"),
-              goToPrevious: t("pagination.goToPrevious"),
-              goToNext: t("pagination.goToNext"),
-              page: (page) => t("pagination.page", { page }),
-            }}
           />
         </>
       )}

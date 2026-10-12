@@ -100,7 +100,7 @@ test.describe("admin accounts", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/accounts?q=example");
 
-    const paging = page.getByRole("navigation", { name: "Pages of accounts" });
+    const paging = page.getByRole("navigation", { name: "Pages" });
     await expect(shownAccounts(page)).toHaveText(["Đạt Phan", "Hà Lê"]);
     await expect(page.getByText("5 accounts")).toBeVisible();
     await expect(paging.getByRole("link", { name: "Page 1" })).toHaveAttribute(
@@ -125,7 +125,7 @@ test.describe("admin accounts", () => {
     await page.goto("/admin/accounts");
 
     await expect(page.getByText("5 accounts")).toBeVisible();
-    await expect(page.getByRole("navigation", { name: "Pages of accounts" })).toHaveCount(0);
+    await expect(page.getByRole("navigation", { name: "Pages" })).toHaveCount(0);
   });
 
   test("a search that finds nothing says so and offers the way back", async ({

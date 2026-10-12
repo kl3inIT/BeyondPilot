@@ -1,15 +1,19 @@
 "use client";
 
+import { revalidateLogic } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { UserCheckIcon } from "lucide-react";
 import { useRef, useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { Person } from "@/components/composites/person";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { useNotify } from "@/hooks/use-notify";
+import { ApiError } from "@/lib/api/client";
 import {
   approveOrganizationClaim,
   declineOrganizationClaim,
@@ -17,7 +21,8 @@ import {
 } from "@/lib/api/generated";
 
 import { organizationError } from "./organization-errors";
-import { useAdminOrganization, useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
+import { domainOf, isDomain } from "./organization-format";
+import { useAdminOrganization } from "./verified-domain";
 
 type ClaimDecisionProps = {
   /** The organization nobody owns yet. */
@@ -39,12 +44,35 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
   const notify = useNotify();
   const router = useRouter();
   const detail = useAdminOrganization(organization.id);
-  const domain = useVerifiedDomain(detail?.suggestedDomain);
   const [pending, setPending] = useState<"approve" | "decline" | null>(null);
   // Set at the first press, before the pending state has rendered, so presses in one tick decide once.
   const deciding = useRef(false);
   const { name } = organization;
   const claim = detail?.claims.find((candidate) => candidate.id === claimId);
+
+  // The domain starts from what the backend proposes, which can still arrive after the dialog
+  // opened: the form takes new default values until the operator has touched it.
+  const form = useAppForm({
+    defaultValues: { emailDomain: detail?.suggestedDomain ?? "" },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({
+        emailDomain: z
+          .string()
+          .refine((text) => domainOf(text) === "" || isDomain(domainOf(text)), t("domainInvalid")),
+      }),
+    },
+    onSubmit: ({ value }) =>
+      decide(
+        "approve",
+        () =>
+          approveOrganizationClaim({
+            path: { id: claimId },
+            body: { emailDomain: domainOf(value.emailDomain) || null },
+          }),
+        "Organization.done.claimApproved",
+      ),
+  });
 
   async function decide(
     kind: "approve" | "decline",
@@ -63,24 +91,14 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
       router.refresh();
     } catch (error) {
       // A domain another organization has is said at the field; anything else in a toast.
-      if (!domain.refused(error)) {
+      if (error instanceof ApiError && error.code === "ORGANIZATION_DOMAIN_TAKEN") {
+        setServerErrors(form, { fields: { emailDomain: { message: t("domainTaken") } } });
+      } else {
         notify.error(organizationError(error));
       }
       deciding.current = false;
       setPending(null);
     }
-  }
-
-  function approve() {
-    const emailDomain = domain.read();
-    if (emailDomain === undefined) {
-      return;
-    }
-    void decide(
-      "approve",
-      () => approveOrganizationClaim({ path: { id: claimId }, body: { emailDomain } }),
-      "Organization.done.claimApproved",
-    );
   }
 
   const decline = () =>
@@ -93,51 +111,68 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
   return (
     <Dialog open onOpenChange={(open) => !open && !pending && onClose()}>
       <DialogContent showCloseButton={false}>
-        <DecisionDialogHeader
-          tone="info"
-          icon={UserCheckIcon}
-          title={t("title", { name })}
-          description={
-            claim
-              ? t("lead", {
-                  day: format.dateTime(new Date(claim.createdAt), { dateStyle: "medium" }),
-                })
-              : undefined
-          }
-        />
-        {claim && (
-          <div className="flex flex-col gap-3 rounded-lg border bg-muted p-3">
-            <Person name={claim.name ?? null} email={claim.email} />
-            {claim.message && <p className="text-sm whitespace-pre-line">{claim.message}</p>}
-          </div>
-        )}
-        <VerifiedDomainField
-          id="claim-domain"
-          domain={domain}
-          label={t("domain")}
-          hint={t("domainHint")}
-          problems={{ invalid: t("domainInvalid"), taken: t("domainTaken") }}
-          disabled={pending !== null}
-        />
-        <DialogFooter variant="plain">
-          <Button
-            size="lg"
-            prominence="secondary"
-            pending={pending === "decline"}
-            disabled={pending === "approve"}
-            onClick={decline}
-          >
-            {t("decline")}
-          </Button>
-          <Button
-            size="lg"
-            pending={pending === "approve"}
-            disabled={pending === "decline"}
-            onClick={approve}
-          >
-            {t("approve")}
-          </Button>
-        </DialogFooter>
+        <form
+          id={form.formId}
+          noValidate
+          className="flex flex-col gap-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void form.handleSubmit();
+          }}
+        >
+          <DecisionDialogHeader
+            tone="info"
+            icon={UserCheckIcon}
+            title={t("title", { name })}
+            description={
+              claim
+                ? t("lead", {
+                    day: format.dateTime(new Date(claim.createdAt), { dateStyle: "medium" }),
+                  })
+                : undefined
+            }
+          />
+          {claim && (
+            <div className="flex flex-col gap-3 rounded-lg border bg-muted p-3">
+              <Person name={claim.name ?? null} email={claim.email} />
+              {claim.message && <p className="text-sm whitespace-pre-line">{claim.message}</p>}
+            </div>
+          )}
+          <form.AppField name="emailDomain">
+            {(field) => (
+              <field.TextField
+                label={t("domain")}
+                description={t("domainHint")}
+                inputMode="url"
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={253}
+                uncounted
+                disabled={pending !== null}
+              />
+            )}
+          </form.AppField>
+          <DialogFooter variant="plain">
+            <Button
+              size="lg"
+              prominence="secondary"
+              pending={pending === "decline"}
+              disabled={pending === "approve"}
+              onClick={decline}
+            >
+              {t("decline")}
+            </Button>
+            <Button
+              type="submit"
+              size="lg"
+              pending={pending === "approve"}
+              disabled={pending === "decline"}
+            >
+              {t("approve")}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
