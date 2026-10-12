@@ -17,10 +17,21 @@ type PersonProps = React.ComponentProps<"div"> & {
    * initials takes them below the contrast a reader needs.
    */
   muted?: boolean;
+  /** Lets a long address run onto a second line instead of cutting it, where the address is what the reader needs. */
+  wrapEmail?: boolean;
 };
 
 /** Who a row or a card is about: their initials, then the name over the address or a second line. */
-function Person({ name, email, icon, badge, muted = false, className, ...props }: PersonProps) {
+function Person({
+  name,
+  email,
+  icon,
+  badge,
+  muted = false,
+  wrapEmail = false,
+  className,
+  ...props
+}: PersonProps) {
   return (
     <div data-slot="person" className={cn("flex min-w-0 items-center gap-3", className)} {...props}>
       <Avatar>
@@ -33,7 +44,11 @@ function Person({ name, email, icon, badge, muted = false, className, ...props }
           </span>
           {badge}
         </span>
-        {name && <span className="truncate text-muted-foreground">{email}</span>}
+        {name && (
+          <span className={cn("text-muted-foreground", wrapEmail ? "break-all" : "truncate")}>
+            {email}
+          </span>
+        )}
       </div>
     </div>
   );

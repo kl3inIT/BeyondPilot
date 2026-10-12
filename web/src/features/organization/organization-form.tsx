@@ -29,6 +29,7 @@ import { rejectedFields } from "@/lib/api/rejected-fields";
 import { siteRoutes } from "@/lib/site";
 
 import { industries, organizationTypes, teamSizes } from "./organization-codes";
+import { ExistingOrganizations, useExistingOrganizations } from "./organization-existing";
 import { MAX_DESCRIPTION, MAX_INDUSTRIES } from "./organization-format";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
 import { OrganizationProfileSection } from "./organization-profile-section";
@@ -80,6 +81,8 @@ function IndustriesField({ required }: { required: boolean }) {
 type OrganizationFormProps = {
   /** The organization to change; without one the form creates it. */
   organization?: Organization;
+  /** The name a new organization starts from: what the person typed in the finder. */
+  initialName?: string;
   /** Set when an operator changes the organization: the form then also holds its verified domain. */
   admin?: boolean;
   /** Leaves a saved profile unchanged and closes the form. */
@@ -88,9 +91,11 @@ type OrganizationFormProps = {
 
 /**
  * The profile of an organization, as its owner writes it: to create one, or to change the one they
- * own. The backend decides what is valid; a member it rejects is marked here by its name.
+ * own. The backend decides what is valid; a member it rejects is marked here by its name. A new
+ * organization is checked against those that exist when its name or its website is left, and what
+ * may be the same one is named above the submit button, as a warning the person may pass.
  */
-function OrganizationForm({ organization, admin, onCancel }: OrganizationFormProps) {
+function OrganizationForm({ organization, initialName, admin, onCancel }: OrganizationFormProps) {
   const t = useTranslations("Organization.form");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
@@ -106,7 +111,9 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
   const [discarding, setDiscarding] = useState(false);
 
   const form = useAppForm({
-    defaultValues: profileValuesOf(organization),
+    defaultValues: organization
+      ? profileValuesOf(organization)
+      : { ...profileValuesOf(), name: initialName ?? "" },
     validationLogic: revalidateLogic(),
     validators: { onDynamic: profileSchema(t) },
     // The domain is checked with the other fields, so every problem shows at once.
@@ -159,6 +166,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
     },
   });
 
+  const existing = useExistingOrganizations(() => form.state.isSubmitting);
   const type = useStore(form.store, (state) => state.values.type);
   const pending = useStore(form.store, (state) => state.isSubmitting) || leaving;
   const changed =
@@ -189,7 +197,12 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
 
       <OrganizationProfileSection icon={Building2Icon} title={t("basics")}>
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
-          <form.AppField name="name">
+          <form.AppField
+            name="name"
+            listeners={
+              organization ? undefined : { onBlur: ({ value }) => existing.checkName(value) }
+            }
+          >
             {(field) => (
               <field.TextField
                 label={t("name")}
@@ -199,7 +212,12 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
               />
             )}
           </form.AppField>
-          <form.AppField name="website">
+          <form.AppField
+            name="website"
+            listeners={
+              organization ? undefined : { onBlur: ({ value }) => existing.checkWebsite(value) }
+            }
+          >
             {(field) => (
               <field.TextField
                 label={t("website")}
@@ -323,6 +341,12 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
             disabled={pending}
           />
         </OrganizationProfileSection>
+      )}
+
+      {!organization && (
+        <div aria-live="polite" className="empty:hidden">
+          {existing.matches.length > 0 && <ExistingOrganizations matches={existing.matches} />}
+        </div>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">

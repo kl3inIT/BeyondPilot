@@ -15,31 +15,40 @@ import { Link } from "@/i18n/navigation";
 import type { AdminOrganizationSummary } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { Button } from "@/components/actions/button";
+
 import { ClaimDecision } from "./claim-decision";
-import { OrganizationReview } from "./organization-review";
+import { useReviewQueue } from "./organization-review-queue";
 
 /**
- * What an operator can do with one organization, in a menu at the end of its row: review one that
- * waits for a decision, decide the claim to own one, and open its record.
+ * What an operator can do with one organization, at the end of its row: Review, in view, on one
+ * that waits for a decision, which is what the list is for; and in a menu, deciding the claim to
+ * own one and opening its record. The review itself belongs to the list, which goes on to the next
+ * organization that waits.
  */
 function AdminOrganizationRowActions({ organization }: { organization: AdminOrganizationSummary }) {
   const t = useTranslations("Admin.organizations.actions");
-  const [reviewing, setReviewing] = useState(false);
+  const review = useReviewQueue();
   const [deciding, setDeciding] = useState(false);
   const { claimId } = organization;
 
   return (
     <>
+      {review && organization.status === "in_review" && (
+        <Button
+          size="sm"
+          prominence="secondary"
+          aria-label={t("reviewNamed", { name: organization.name })}
+          onClick={() => review(organization.id)}
+        >
+          <ClipboardCheckIcon aria-hidden="true" />
+          <span className="max-md:sr-only">{t("review")}</span>
+        </Button>
+      )}
       <DropdownMenu>
         <RowMenuTrigger aria-label={t("open", { name: organization.name })} />
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuGroup>
-            {organization.status === "in_review" && (
-              <DropdownMenuItem onClick={() => setReviewing(true)}>
-                <ClipboardCheckIcon aria-hidden="true" />
-                {t("review")}
-              </DropdownMenuItem>
-            )}
             {claimId && (
               <DropdownMenuItem onClick={() => setDeciding(true)}>
                 <KeyRoundIcon aria-hidden="true" />
@@ -55,9 +64,6 @@ function AdminOrganizationRowActions({ organization }: { organization: AdminOrga
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      {reviewing && (
-        <OrganizationReview organization={organization} onClose={() => setReviewing(false)} />
-      )}
       {deciding && claimId && (
         <ClaimDecision
           organization={organization}

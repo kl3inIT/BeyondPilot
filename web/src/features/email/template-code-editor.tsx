@@ -22,11 +22,26 @@ import { cn } from "@/lib/utils";
 /** A variable a kind of email offers, as the editor completes and checks it. */
 type Variable = { name: string; required: boolean; sample?: string | null };
 
-/** What the backend found wrong in the text, with the words to show for it. */
-type Problem = { type: string; variable?: string | null; message: string };
+/**
+ * What the backend found wrong in the text, with the words to show for it, and the place when the
+ * screen found it.
+ */
+type Problem = {
+  type: string;
+  variable?: string | null;
+  message: string;
+  from?: number;
+  to?: number;
+};
 
-/** What the screen can do to the editor from outside: put a variable where the cursor is. */
-type TemplateCodeEditorHandle = { insert: (variable: string) => void };
+/**
+ * What the screen can do to the editor from outside: put a variable where the cursor is, and wrap
+ * what is selected in a switch, so it is sent only when the switch is on.
+ */
+type TemplateCodeEditorHandle = {
+  insert: (variable: string) => void;
+  wrap: (variable: string) => void;
+};
 
 /** A tag of the template: `{{name}}`, `{{#name}}`, `{{/name}}`, `{{^name}}`. */
 const TAG = /\{\{[#/^]?\s*[\w.]+\s*\}\}/g;
@@ -129,6 +144,13 @@ function diagnosticsOf(text: string, problems: Problem[]): Diagnostic[] {
         }
       }
     }
+    if (problem.type === "syntax" && problem.from !== undefined && problem.to !== undefined) {
+      // The text may have moved on since the problem was found.
+      if (problem.from < text.length) {
+        mark(problem.from, Math.min(problem.to, text.length), problem.message);
+      }
+      continue;
+    }
     if (problem.type === "syntax") {
       for (const match of text.matchAll(FORBIDDEN)) {
         mark(match.index, match.index + match[0].length, problem.message);
@@ -192,6 +214,22 @@ function TemplateCodeEditor({
       view.dispatch({
         changes: { from, to, insert: tag },
         selection: { anchor: from + tag.length },
+        scrollIntoView: true,
+      });
+      view.focus();
+    },
+    wrap(variable) {
+      const view = editor.current?.view;
+      if (!view) {
+        return;
+      }
+      const start = `{{#${variable}}}`;
+      const { from, to } = view.state.selection.main;
+      const inside = view.state.sliceDoc(from, to);
+      // What was selected stays selected, between the two tags; with nothing selected the cursor waits there.
+      view.dispatch({
+        changes: { from, to, insert: `${start}${inside}{{/${variable}}}` },
+        selection: { anchor: from + start.length, head: from + start.length + inside.length },
         scrollIntoView: true,
       });
       view.focus();

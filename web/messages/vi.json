@@ -32,7 +32,7 @@
       "applications": "Đơn của tôi",
       "reviews": "Chấm đơn",
       "settings": "Tài khoản",
-      "mcp": "MCP",
+      "mcp": "Kết nối ứng dụng AI",
       "backToSite": "Về trang chính",
       "appearance": "Giao diện"
     },
@@ -640,11 +640,12 @@
     "phoneHint": "Kèm mã quốc gia, ví dụ +84 912 345 678."
   },
   "Mcp": {
-    "metaTitle": "MCP · BeyondPilot",
-    "title": "MCP",
-    "lead": "Tìm kiếm BeyondPilot từ ChatGPT, Claude hoặc Codex.",
+    "metaTitle": "Kết nối ứng dụng AI · BeyondPilot",
+    "title": "Dùng BeyondPilot trong ứng dụng AI của bạn",
+    "lead": "Kết nối ChatGPT, Claude hoặc Codex qua MCP (Model Context Protocol), rồi hỏi về các giải pháp AI và chương trình đang đăng trên BeyondPilot.",
+    "limits": "Ứng dụng đăng nhập bằng tài khoản BeyondPilot của bạn, chỉ tìm và đọc được, và bạn có thể thu hồi bất cứ lúc nào trong mục Ứng dụng đã kết nối.",
     "tabs": {
-      "label": "MCP",
+      "label": "Kết nối ứng dụng AI",
       "connect": "Kết nối",
       "apps": "Ứng dụng đã kết nối"
     },
@@ -657,26 +658,26 @@
       "apps": {
         "chatgpt": {
           "name": "ChatGPT",
-          "step1": "Settings › Apps and connectors › Create",
-          "step2": "Dán địa chỉ, giữ OAuth",
-          "step3": "Đăng nhập BeyondPilot và chọn Cho phép"
+          "step1": "Trong ChatGPT, mở <ui>Settings › Apps and connectors</ui> rồi chọn <ui>Create</ui>.",
+          "step2": "Dán địa chỉ server ở trang này và giữ nguyên phần xác thực là <ui>OAuth</ui>.",
+          "step3": "Khi ChatGPT mở BeyondPilot, hãy đăng nhập và chọn <ui>Cho phép</ui>."
         },
         "claude": {
           "name": "Claude",
-          "step1": "Settings › Connectors › Add custom connector",
-          "step2": "Dán địa chỉ",
-          "step3": "Đăng nhập BeyondPilot và chọn Cho phép"
+          "step1": "Trong Claude, mở <ui>Settings › Connectors</ui> rồi chọn <ui>Add custom connector</ui>.",
+          "step2": "Đặt tên là BeyondPilot và dán địa chỉ server ở trang này.",
+          "step3": "Khi Claude mở BeyondPilot, hãy đăng nhập và chọn <ui>Cho phép</ui>."
         },
         "codex": {
           "name": "Codex",
-          "step1": "Chạy codex mcp add beyondpilot --url {address}",
-          "step2": "Chạy codex mcp login beyondpilot, đăng nhập và chọn Cho phép"
+          "step1": "Trong terminal, chạy <cmd>codex mcp add beyondpilot --url {address}</cmd>",
+          "step2": "Rồi chạy <cmd>codex mcp login beyondpilot</cmd>. Khi trình duyệt mở BeyondPilot, hãy đăng nhập và chọn <ui>Cho phép</ui>."
         },
         "other": {
           "name": "Ứng dụng khác",
-          "step1": "Thêm server {address} dạng streamable HTTP với OAuth",
+          "step1": "Trong phần cài đặt MCP của ứng dụng, thêm một server dạng streamable HTTP với OAuth tại <cmd>{address}</cmd>",
           "step2": "Ứng dụng không có client riêng sẽ đăng nhập dưới tên mcp-local",
-          "step3": "Đăng nhập BeyondPilot và chọn Cho phép",
+          "step3": "Khi ứng dụng mở BeyondPilot, hãy đăng nhập và chọn <ui>Cho phép</ui>.",
           "clientHelp": "Ứng dụng không có client riêng đăng nhập thế nào"
         }
       },
@@ -1458,6 +1459,7 @@
       "actions": {
         "open": "Thao tác với {name}",
         "review": "Xem xét",
+        "reviewNamed": "Xem xét {name}",
         "record": "Mở hồ sơ",
         "claim": "Quyết định yêu cầu nhận"
       },
@@ -1534,7 +1536,21 @@
         "domain": "Tên miền email cần xác minh (không bắt buộc)",
         "domainHint": "Chỉ nhập tên miền của chính công ty, vì đồng nghiệp dùng tên miền này sẽ tham gia được ngay.",
         "domainInvalid": "Nhập một tên miền như example.com, hoặc để trống.",
-        "domainTaken": "Một tổ chức khác đã có tên miền này. Hãy để trống, hoặc xác định tổ chức nào là bản trùng."
+        "domainTaken": "Một tổ chức khác đã có tên miền này. Hãy để trống, hoặc xác định tổ chức nào là bản trùng.",
+        "facts": {
+          "description": "Mô tả",
+          "website": "Website",
+          "teamSize": "Quy mô",
+          "foundedYear": "Năm thành lập",
+          "industries": "Ngành",
+          "creatorEmail": "Email người tạo",
+          "members": "Thành viên",
+          "membersMore": "{names} và {count} người nữa",
+          "none": "Chưa nêu"
+        },
+        "record": "Mở hồ sơ",
+        "more": "Còn {count} tổ chức chờ duyệt trên trang này",
+        "queueDone": "Không còn tổ chức nào trên trang này chờ duyệt."
       },
       "clear": "Xóa bộ lọc",
       "queueEmpty": {
@@ -3167,7 +3183,12 @@
           "unknownVariable": "{variable} không phải biến của email này.",
           "missingVariable": "Phải có {variable}: email tồn tại vì nó.",
           "subjectLine": "Tiêu đề phải nằm trên một dòng và không được trống.",
-          "syntax": "Có thẻ chưa đóng hoặc không được phép. Dùng '{{tên}}', '{{#tên}}…{{/tên}}' hoặc '{{^tên}}…{{/tên}}'."
+          "syntax": "Một biến hoặc một điều kiện trong phần này viết chưa đúng.",
+          "unclosed": "Một biến mở bằng '{{' nhưng chưa đóng bằng '}}'.",
+          "forbidden": "Không dùng được {tag} ở đây. Hãy chọn một biến trong danh sách dưới phần nội dung.",
+          "unended": "Điều kiện {name} có mở đầu nhưng chưa có kết thúc.",
+          "unopened": "Điều kiện {name} có kết thúc nhưng chưa có mở đầu.",
+          "atLine": "Dòng {line}: {problem}"
         },
         "unsaved": "Có thay đổi chưa lưu",
         "fixToSave": "{count, plural, other {Sửa # lỗi được đánh dấu bên dưới để lưu}}",
@@ -3183,7 +3204,24 @@
         "body": "Nội dung",
         "bodyHint": "Markdown: # tiêu đề, **đậm**, [liên kết](https://…).",
         "variables": "Biến",
-        "variablesHint": "Biến có dấu * phải xuất hiện.",
+        "variablesHint": "Mỗi biến được thay bằng một giá trị khi email được gửi; ví dụ cho thấy người nhận sẽ đọc gì.",
+        "example": "Ví dụ:",
+        "mustAppear": "Bắt buộc có",
+        "conditions": "Điều kiện",
+        "conditionsHint": "Bôi chọn chữ trong phần nội dung rồi chọn một điều kiện: phần chữ đó chỉ được gửi khi điều kiện đúng.",
+        "wrap": "Chỉ gửi phần chữ đã chọn theo điều kiện {name}",
+        "previewOn": "Đang bật trong bản xem trước",
+        "previewOff": "Đang tắt trong bản xem trước",
+        "switches": {
+          "owner": "Hiện khi người nhận được mời làm chủ sở hữu",
+          "claim": "Hiện khi yêu cầu là yêu cầu nhận tổ chức",
+          "resubmitted": "Hiện khi đơn đã được sửa và nộp lại",
+          "primary": "Hiện khi người nhận là đầu mối chính của đề xuất",
+          "aboutProject": "Hiện khi lời nhắn nói về một dự án",
+          "aboutRole": "Hiện khi lời nhắn nói về một vị trí",
+          "aboutOther": "Hiện khi lời nhắn nói về việc khác",
+          "other": "Chỉ hiện trong một số trường hợp của email này"
+        },
         "previewTitle": "Xem trước {name}",
         "leave": {
           "title": "Rời trang mà không lưu?",
@@ -3977,12 +4015,18 @@
         "taken": "Một tổ chức khác đã dùng tên miền này."
       },
       "websiteFormatHint": "Địa chỉ đầy đủ, bắt đầu bằng https://.",
-      "foundedYearFormatHint": "Năm gồm bốn chữ số, ví dụ 2021."
+      "foundedYearFormatHint": "Năm gồm bốn chữ số, ví dụ 2021.",
+      "existing": {
+        "title": "Tổ chức của bạn có thể đã có trên BeyondPilot",
+        "lead": "{count, plural, =1 {Nếu đây là tổ chức của bạn, hãy tham gia thay vì tạo lại. Nếu của bạn là tổ chức khác, hãy tiếp tục bên dưới.} other {Nếu một trong số này là tổ chức của bạn, hãy tham gia thay vì tạo lại. Nếu của bạn là tổ chức khác, hãy tiếp tục bên dưới.}}"
+      }
     },
     "find": {
       "title": "Tìm tổ chức của bạn",
       "search": "Tên công ty hoặc nhóm",
       "nothing": "Không có tổ chức nào khớp “{query}”.",
+      "failed": "Chưa tìm kiếm được nên chưa biết tổ chức của bạn đã có ở đây hay chưa.",
+      "retry": "Thử lại",
       "way": {
         "join": "Bạn được tham gia ngay",
         "joinDomain": "Email của bạn thuộc {domain} nên bạn được tham gia ngay",
@@ -4961,10 +5005,10 @@
       }
     },
     "deployment": {
-      "open": "Mở triển khai để đọc bài toán, những gì đã triển khai và kết quả.",
+      "open": "{holds, select, all {Mở để đọc bài toán, những gì đã triển khai và kết quả.} delivered {Mở để đọc bài toán và những gì đã triển khai.} result {Mở để đọc bài toán và kết quả.} other {Mở để đọc bài toán.}}",
       "eyebrow": "Triển khai khách hàng",
       "line": "{solution} · {customer}",
-      "lead": "{stage}; GenAI Fund duyệt ngày {day}.",
+      "lead": "{stage}. Do {organization} tự khai và GenAI Fund duyệt ngày {day}. Khách hàng chưa xác nhận tại đây.",
       "problem": "Bài toán kinh doanh",
       "delivered": "Những gì đã triển khai",
       "scope": "Phạm vi và kết quả",
@@ -4973,11 +5017,12 @@
       "period": "Thời gian",
       "result": "Kết quả",
       "notPublished": "Chưa công bố",
+      "scopeNone": "{organization} chưa công bố kênh, ngôn ngữ, thời gian hay kết quả.",
       "about": "Về dự án này",
       "deliveredBy": "Đơn vị triển khai",
       "customer": "Khách hàng",
       "solutionUsed": "Giải pháp sử dụng",
-      "source": "Do công ty tự khai và GenAI Fund đã duyệt. Khách hàng chưa xác nhận tại đây."
+      "source": "Do {organization} tự khai và GenAI Fund duyệt ngày {day}. Khách hàng chưa xác nhận tại đây."
     },
     "deployments": {
       "title": "Triển khai khách hàng",

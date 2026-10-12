@@ -6,8 +6,8 @@ import { ConnectPanel } from "./connect-panel";
 import { McpTabs } from "./connected-apps";
 
 /**
- * A person's MCP page: how to connect their AI app to BeyondPilot's MCP server, and the apps they
- * connected, each with Revoke.
+ * A person's MCP page: what connecting an AI app to BeyondPilot's MCP server gives and what the app
+ * may do, how to connect one, and the apps they connected, each with Revoke.
  */
 async function McpPage({ address, apps }: { address: string; apps: ConnectedApp[] }) {
   const t = await getTranslations("Mcp");
@@ -19,7 +19,9 @@ async function McpPage({ address, apps }: { address: string; apps: ConnectedApp[
           <h1 className="text-3xl leading-none font-semibold tracking-title md:text-5xl md:leading-none">
             {t("title")}
           </h1>
-          <p className="text-sm text-muted-foreground">{t("lead")}</p>
+          {/* What connecting gives, then what the app may do and how it ends: read before the address. */}
+          <p className="max-w-prose text-base">{t("lead")}</p>
+          <p className="max-w-prose text-sm text-muted-foreground">{t("limits")}</p>
         </div>
         <McpTabs connect={<ConnectPanel address={address} />} apps={apps} />
       </div>

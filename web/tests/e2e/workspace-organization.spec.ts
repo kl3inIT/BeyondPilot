@@ -132,8 +132,116 @@ test.describe("workspace organization", () => {
     await expect(page.getByText("No organization matches “Sài Gòn Logistics”.")).toBeVisible();
     await page.getByRole("link", { name: "Create a new organization" }).click();
 
-    await expect(page).toHaveURL("/workspace/organization/new");
+    // The name is carried to the form, so it is not typed twice.
+    await expect(page).toHaveURL(
+      `/workspace/organization/new?name=${encodeURIComponent("Sài Gòn Logistics")}`,
+    );
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Create your organization");
+    await expect(page.getByLabel("Organization name")).toHaveValue("Sài Gòn Logistics");
+  });
+
+  test("a search that did not run offers to try again, not to create", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "unnamed", baseURL!);
+    const search = "**/api/organization/organizations?q=*";
+    await page.route(search, (route) => route.fulfill({ status: 500 }));
+    await page.goto("/workspace/organization");
+
+    await page.getByRole("searchbox", { name: "Company or team name" }).fill("Sài Gòn Logistics");
+    await expect(
+      page.getByText(
+        "The search did not run, so we cannot tell whether your organization is already here.",
+      ),
+    ).toBeVisible();
+    await expect(page.getByText("No organization matches", { exact: false })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Create a new organization" })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+
+    await page.unroute(search);
+    await answerSearch(page, []);
+    await page.getByRole("button", { name: "Try again" }).click();
+    await expect(page.getByText("No organization matches “Sài Gòn Logistics”.")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Create a new organization" })).toBeVisible();
+  });
+
+  test("the create form names an organization that may be the same one, and still lets it through", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "unnamed", baseURL!);
+    const asked: string[] = [];
+    await page.route("**/api/organization/organizations?q=*", (route) => {
+      asked.push(new URL(route.request().url()).searchParams.get("q") ?? "");
+      return route.fulfill({
+        json: {
+          items: [
+            {
+              id: pocketPolicy,
+              name: "Pocket Policy",
+              type: "company",
+              country: "SG",
+              emailDomain: "pocketpolicy.example",
+              onDomain: false,
+              way: "request",
+            },
+            // Found by the same word, and not the same organization.
+            {
+              id: siti,
+              name: "Pocket Change",
+              type: "company",
+              country: "SG",
+              emailDomain: null,
+              onDomain: false,
+              way: "claim",
+            },
+          ],
+        },
+      });
+    });
+    const changes = await answerDecisions(page, changesPath, 200, { outcome: "requested" });
+    await page.goto("/workspace/organization/new");
+
+    const name = page.getByLabel("Organization name");
+    const notice = page.getByRole("region", {
+      name: "Your organization may already be on BeyondPilot",
+    });
+    // Nothing is asked while the name is typed; leaving the field asks.
+    await name.fill("Pocket Policy Pte Ltd");
+    expect(asked).toEqual([]);
+    await expect(notice).toHaveCount(0);
+    await name.blur();
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText("Pocket Policy");
+    await expect(notice).not.toContainText("Pocket Change");
+    await expect(notice).toContainText("If this is yours, join it instead of creating it again.");
+    // Leaving the field again with the same name asks nothing more.
+    const once = asked.length;
+    await name.focus();
+    await name.blur();
+    await page.getByLabel("Website").fill("https://www.pocketpolicy.example");
+    await page.getByLabel("Website").blur();
+    await expect.poll(() => asked).toContain("pocketpolicy");
+    expect(asked.filter((text) => text === "Pocket Policy Pte Ltd")).toHaveLength(1);
+    expect(once).toBeGreaterThan(0);
+    // A warning, not a block: the form can still be sent.
+    await expect(page.getByRole("button", { name: "Send for review" })).toBeEnabled();
+    await expectNoSeriousA11yViolations(page);
+
+    await notice.getByRole("button", { name: "Request to join" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("heading")).toHaveText("Ask to join Pocket Policy?");
+    await dialog.getByRole("button", { name: "Request to join" }).click();
+    await expect(page.getByText("Request sent to Pocket Policy.")).toBeVisible();
+    expect(changes).toEqual([
+      {
+        call: `POST /api/organization/organizations/${pocketPolicy}/join`,
+        body: { message: null },
+      },
+    ]);
   });
 
   test("a new organization needs its facts, and goes to review", async ({
