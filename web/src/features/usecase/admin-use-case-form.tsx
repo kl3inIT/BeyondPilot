@@ -294,8 +294,34 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
       <AdminPageHeader title={t("title")} />
 
       {/* A column below 1024px, so the bar of steps has the whole form to stick along. */}
-      <div className="flex flex-col gap-8 lg:grid lg:grid-cols-3 lg:items-start">
-        <main className="flex min-w-0 flex-col gap-5 rounded-3xl border bg-background p-6 md:p-10 lg:col-span-2">
+      <div className="flex w-full max-w-5xl flex-col gap-8 lg:flex-row lg:items-start lg:gap-6 xl:gap-8">
+        {/* From 1024px the steps stay in view on the left of the form, as in every form written in steps;
+            below that they are the bar above it. The column is narrower until 1280px, where the
+            admin sidebar leaves the form the least room. */}
+        <aside className="flex shrink-0 flex-col gap-6 max-lg:contents lg:sticky lg:top-4 lg:w-48 xl:w-56">
+          <StepsNav
+            label={w("stepsLabel")}
+            heading={w("yourUseCase")}
+            steps={steps.map((name) => ({
+              id: name,
+              title: name === "review" ? t("review.title") : w(`steps.${name}.title`),
+              done: name !== "review" && !missing.includes(name),
+            }))}
+            current={step}
+            onStep={go}
+            className="max-lg:-mx-4 max-lg:px-4 md:max-lg:-mx-6 md:max-lg:px-6"
+          />
+          <p className="rounded-lg border bg-background p-3 text-xs text-muted-foreground max-lg:order-last">
+            {values.hideOrganizationName
+              ? t("publishNoteUnnamed")
+              : t("publishNote", {
+                  organization: organization?.name ?? t("thisOrganization"),
+                })}
+          </p>
+        </aside>
+
+        {/* The admin frame is the page's `main`; the card is a part of it. */}
+        <div className="flex min-w-0 flex-col gap-5 rounded-3xl border bg-background p-6 md:p-10 lg:flex-1 lg:max-xl:p-6">
           {problem && (
             <Alert variant="destructive">
               <AlertTitle>{t("errors.fix")}</AlertTitle>
@@ -379,30 +405,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
               </Button>
             )}
           </div>
-        </main>
-
-        {/* From 1024px the steps stay in view beside the form; below that they are the bar above it. */}
-        <aside className="flex flex-col gap-6 max-lg:contents lg:sticky lg:top-4">
-          <StepsNav
-            label={w("stepsLabel")}
-            heading={w("yourUseCase")}
-            steps={steps.map((name) => ({
-              id: name,
-              title: name === "review" ? t("review.title") : w(`steps.${name}.title`),
-              done: name !== "review" && !missing.includes(name),
-            }))}
-            current={step}
-            onStep={go}
-            className="max-lg:order-first max-lg:-mx-4 max-lg:px-4 md:max-lg:-mx-6 md:max-lg:px-6"
-          />
-          <p className="rounded-lg border bg-background p-3 text-xs text-muted-foreground">
-            {values.hideOrganizationName
-              ? t("publishNoteUnnamed")
-              : t("publishNote", {
-                  organization: organization?.name ?? t("thisOrganization"),
-                })}
-          </p>
-        </aside>
+        </div>
       </div>
     </form>
   );
