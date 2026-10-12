@@ -1,7 +1,7 @@
 import { FieldApi, FormApi, revalidateLogic, type ValidationLogicFn } from "@tanstack/react-form";
 import { describe, expect, it } from "vitest";
 
-import { clearingServerErrors } from "./validation-logic";
+import { clearingServerErrors, keepingSubmitErrors } from "./validation-logic";
 
 // A form as `useAppForm` sets it up, driven as the screen drives it: fields are mounted, typed into,
 // left, and the form is submitted. The form's own rules refuse an empty `name` and an empty `phone`.
@@ -32,7 +32,7 @@ function formWith(validators: object, logic?: ValidationLogicFn) {
   const seen = { submitted: 0 };
   const form = new FormApi({
     defaultValues: { name: "", phone: "", rows: [] } as Values,
-    validationLogic: clearingServerErrors(logic),
+    validationLogic: keepingSubmitErrors(clearingServerErrors(logic)),
     validators: validators as never,
     onSubmit: () => {
       seen.submitted += 1;
@@ -189,5 +189,86 @@ describe("what the server refused", () => {
 
     expect(errors()).toEqual({});
     expect(seen.submitted).toBe(2);
+  });
+});
+
+describe("what a submit refused", () => {
+  const forms: [string, object, ValidationLogicFn | undefined][] = [
+    ["checked again as the person types", { onDynamic: required }, revalidateLogic()],
+    ["checked on submit", { onSubmit: required }, undefined],
+  ];
+
+  it.each(forms)("stays when the field is left as it is, in a form %s", async (_, rules, logic) => {
+    const { form, field, errors } = formWith(rules, logic);
+    const name = field("name");
+    const phone = field("phone", { onChange: lenient });
+    await form.handleSubmit();
+
+    name.handleBlur();
+    phone.handleBlur();
+
+    expect(errors()).toEqual({ name: ["name required"], phone: ["phone required"] });
+  });
+
+  it.each(forms)(
+    "goes when the value is accepted and comes back when it is refused again, in a form %s",
+    async (_, rules, logic) => {
+      const { form, field, errors } = formWith(rules, logic);
+      const name = field("name");
+      field("phone");
+      await form.handleSubmit();
+
+      name.handleChange("An");
+      expect(errors()).toEqual({ phone: ["phone required"] });
+      name.handleBlur();
+      expect(errors()).toEqual({ phone: ["phone required"] });
+
+      name.handleChange("");
+      expect(errors()).toEqual({ name: ["name required"], phone: ["phone required"] });
+    },
+  );
+
+  it("stays on a field refused by its own submit rule, until that rule accepts the value", async () => {
+    const { form, seen, field, errors } = formWith({ onDynamic: required }, revalidateLogic());
+    field("name").handleChange("An");
+    const phone = field("phone", {
+      onSubmit: ({ value }: { value: string }) => (value === "0000" ? "not a number" : undefined),
+    });
+    phone.handleChange("0000");
+    await form.handleSubmit();
+
+    phone.handleBlur();
+    expect(errors()).toEqual({ phone: ["not a number"] });
+
+    phone.handleChange("0912");
+    expect(errors()).toEqual({});
+    await form.handleSubmit();
+    expect(seen.submitted).toBe(1);
+  });
+
+  it("is not looked for before the first submit", () => {
+    const { field, errors } = formWith({ onSubmit: required }, undefined);
+    const name = field("name");
+
+    name.handleChange("An");
+    name.handleChange("");
+    name.handleBlur();
+
+    expect(errors()).toEqual({});
+  });
+
+  it("stays on a row of a list when a field of the row is left", async () => {
+    const { form, field, errors } = formWith({ onSubmit: required }, undefined);
+    field("name").handleChange("An");
+    field("phone").handleChange("0912");
+    field("rows").pushValue({ title: "" });
+    const title = field("rows[0].title");
+    await form.handleSubmit();
+
+    title.handleBlur();
+    expect(errors()).toEqual({ "rows[0].title": ["title required"] });
+
+    title.handleChange("First");
+    expect(errors()).toEqual({});
   });
 });

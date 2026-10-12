@@ -1,3 +1,4 @@
+import { revalidateLogic } from "@tanstack/react-form";
 import { screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
@@ -91,3 +92,65 @@ describe("a form made with useAppForm", () => {
     expect(screen.getByLabelText("Email")).toBeValid();
   });
 });
+
+/** A form of two required fields, whose rules are checked the way the test names. */
+function SignUpForm({ checked }: { checked: "onDynamic" | "onSubmit" }) {
+  const rules = z.object({
+    name: z.string().min(1, "Fill this in."),
+    email: z.string().min(1, "Fill this in."),
+  });
+  const form = useAppForm({
+    defaultValues: { name: "", email: "" },
+    ...(checked === "onDynamic"
+      ? { validationLogic: revalidateLogic(), validators: { onDynamic: rules } }
+      : { validators: { onSubmit: rules } }),
+  });
+  return (
+    <form
+      id={form.formId}
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.handleSubmit();
+      }}
+    >
+      <form.AppField name="name">{(field) => <field.TextField label="Name" />}</form.AppField>
+      <form.AppField name="email">{(field) => <field.TextField label="Email" />}</form.AppField>
+      <form.AppForm>
+        <form.SubmitButton>Send</form.SubmitButton>
+      </form.AppForm>
+    </form>
+  );
+}
+
+describe.each(["onDynamic", "onSubmit"] as const)(
+  "what a submit refused, in a form whose rules are %s ones",
+  (checked) => {
+    it("stays on the field the focus moved to when the person tabs on without correcting it", async () => {
+      const { user } = render(<SignUpForm checked={checked} />);
+      await user.click(screen.getByRole("button", { name: "Send" }));
+      await waitFor(() => expect(screen.getByLabelText("Name")).toHaveFocus());
+
+      await user.tab();
+
+      await waitFor(() => expect(screen.getByLabelText("Email")).toHaveFocus());
+      // Leaving the field checks it again, which is not over in the tick of the key.
+      await waitFor(() => expect(screen.getByLabelText("Email")).toBeInvalid());
+      expect(screen.getByLabelText("Name")).toBeInvalid();
+      expect(screen.getByLabelText("Name")).toHaveAccessibleDescription("Fill this in.");
+    });
+
+    it("goes as the value is corrected, and comes back when it is emptied again", async () => {
+      const { user } = render(<SignUpForm checked={checked} />);
+      await user.click(screen.getByRole("button", { name: "Send" }));
+      await waitFor(() => expect(screen.getByLabelText("Name")).toHaveFocus());
+
+      await user.keyboard("L");
+      await waitFor(() => expect(screen.getByLabelText("Name")).toBeValid());
+      expect(screen.getByLabelText("Email")).toBeInvalid();
+
+      await user.keyboard("{Backspace}");
+      await waitFor(() => expect(screen.getByLabelText("Name")).toBeInvalid());
+    });
+  },
+);
