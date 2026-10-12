@@ -7103,6 +7103,9 @@
       "PROPOSAL_EDIT_WINDOW_CLOSED": "The time to edit this proposal has ended, so your changes were not saved."
     },
     "received": {
+      "admin": {
+        "metaTitle": "Proposals · BeyondPilot Admin"
+      },
       "column": "Proposals",
       "none": "No count",
       "count": "{count, plural, one {# proposal} other {# proposals}}",

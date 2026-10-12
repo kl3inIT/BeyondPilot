@@ -7103,6 +7103,9 @@
       "PROPOSAL_EDIT_WINDOW_CLOSED": "Đã hết thời gian chỉnh sửa đề xuất này nên các thay đổi của bạn chưa được lưu."
     },
     "received": {
+      "admin": {
+        "metaTitle": "Proposal · BeyondPilot Admin"
+      },
       "column": "Proposal",
       "none": "Chưa có số liệu",
       "count": "{count, plural, other {# đề xuất}}",
