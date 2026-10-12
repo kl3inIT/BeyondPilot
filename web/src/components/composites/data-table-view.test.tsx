@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { render } from "@/test/render";
@@ -22,6 +22,17 @@ const columns = column.columns([
     cell: ({ getValue }) => getValue(),
   }),
 ]);
+
+/**
+ * Waits until a column says which way it is sorted. A click writes the order to the URL in a
+ * transition, so the header follows a moment later, and the next click turns round whatever order
+ * the header shows by then.
+ */
+function sortedAs(name: string, order: "ascending" | "descending") {
+  return waitFor(() =>
+    expect(screen.getByRole("columnheader", { name })).toHaveAttribute("aria-sort", order),
+  );
+}
 
 /** A list that sorts by both columns; the server's order is the highest score first. */
 function sorted() {
@@ -66,17 +77,11 @@ describe("DataTableView", () => {
       const { user, onUrlUpdate } = render(sorted());
 
       await user.click(screen.getByRole("button", { name: "Solution" }));
-      expect(screen.getByRole("columnheader", { name: "Solution" })).toHaveAttribute(
-        "aria-sort",
-        "ascending",
-      );
+      await sortedAs("Solution", "ascending");
       await user.click(screen.getByRole("button", { name: "Solution" }));
 
+      await sortedAs("Solution", "descending");
       expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe("?sort=-name");
-      expect(screen.getByRole("columnheader", { name: "Solution" })).toHaveAttribute(
-        "aria-sort",
-        "descending",
-      );
     });
 
     it("reads the order from the URL", () => {
@@ -97,9 +102,11 @@ describe("DataTableView", () => {
       );
 
       await user.click(screen.getByRole("button", { name: "Score" }));
+      await sortedAs("Score", "ascending");
       expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe("?sort=score");
 
       await user.click(screen.getByRole("button", { name: "Score" }));
+      await sortedAs("Score", "descending");
       expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe("");
     });
 
