@@ -104,8 +104,7 @@ test.describe("admin offers", () => {
       refusal("SOLUTION_OFFER_TITLE_TAKEN"),
     );
     await dialog.getByRole("button", { name: "Add offer" }).click();
-    await expect(dialog.getByText("Enter the offer.")).toBeVisible();
-    await expect(dialog.getByText("Enter a full address that starts with https://.")).toBeVisible();
+    await expect(dialog.getByText("Fill this in.")).toHaveCount(2);
     await dialog.getByLabel("Offer").fill("$1,000 in cloud credits");
     await dialog.getByLabel("Link").fill("http://offers.example/plain");
     await dialog.getByRole("button", { name: "Add offer" }).click();
