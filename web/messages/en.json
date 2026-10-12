@@ -7332,8 +7332,7 @@
         "countryPlaceholder": "Select a country",
         "phone": "Phone",
         "phoneInvalid": "Use digits with the country code, such as +84 912 345 678.",
-        "required": "Required",
-        "use": "Use my talent profile"
+        "required": "Required"
       },
       "team": {
         "count": "{count, plural, one {# member} other {# members}}",

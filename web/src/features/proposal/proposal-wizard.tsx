@@ -97,12 +97,15 @@ function ProposalWizard({
   const [checked, setChecked] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [sending, setSending] = useState(false);
+  // What the account keeps comes first; the talent profile fills what it lacks, and everything stays editable.
   const [details, setDetails] = useState<Details>(() => ({
-    name: account.displayName ?? "",
-    country: account.country ?? "",
+    name: account.displayName ?? profile?.name ?? "",
+    country: account.country ?? profile?.country ?? "",
     phone: account.phone ?? "",
   }));
-  const [detailsChanged, setDetailsChanged] = useState(false);
+  const [detailsChanged, setDetailsChanged] = useState(
+    () => !account.displayName || !account.country,
+  );
   const [edited, setEdited] = useState(false);
 
   const latest = useRef(values);
@@ -215,18 +218,6 @@ function ProposalWizard({
       notify.error(describeProposalError(error));
       return false;
     }
-  }
-
-  /** Fills the details from the talent profile; a name the account has is kept. */
-  function fillFromProfile() {
-    if (!profile) {
-      return;
-    }
-    changeDetails({
-      name: account.displayName ? details.name : (profile.name ?? details.name),
-      country: profile.country ?? details.country,
-      phone: details.phone,
-    });
   }
 
   function changeDetails(next: Details) {
@@ -399,14 +390,7 @@ function ProposalWizard({
         </Alert>
       )}
 
-      <div className="flex items-start justify-between gap-3">
-        <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}`)}</h1>
-        {organization && step === "details" && profile && (
-          <Button prominence="secondary" onClick={fillFromProfile}>
-            {t("details.use")}
-          </Button>
-        )}
-      </div>
+      <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}`)}</h1>
 
       {step === "organization" && (
         <ProposalOrganizationStep
@@ -434,7 +418,6 @@ function ProposalWizard({
           details={details}
           onDetails={changeDetails}
           email={account.email}
-          nameLocked={Boolean(account.displayName)}
           checked={checked}
         />
       )}

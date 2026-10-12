@@ -14,20 +14,12 @@ type ProposalDetailsStepProps = {
   onDetails: (details: Details) => void;
   /** The address of the account, which is not changed here. */
   email: string;
-  /** A name the account already has is kept, so it is only read. */
-  nameLocked: boolean;
   /** Whether the missing parts are pointed out. */
   checked: boolean;
 };
 
 /** The submitting identity: the account's name, address, country and number, the fields the brief asks for. */
-function ProposalDetailsStep({
-  details,
-  onDetails,
-  email,
-  nameLocked,
-  checked,
-}: ProposalDetailsStepProps) {
+function ProposalDetailsStep({ details, onDetails, email, checked }: ProposalDetailsStepProps) {
   const t = useTranslations("UseCaseProposal.wizard.details");
   const countryName = useCountryName();
   const nameMissing = checked && details.name.trim() === "";
@@ -44,8 +36,6 @@ function ProposalDetailsStep({
           autoComplete="name"
           maxLength={120}
           value={details.name}
-          readOnly={nameLocked}
-          disabled={nameLocked}
           onChange={(event) => onDetails({ ...details, name: event.target.value })}
           aria-invalid={nameMissing || undefined}
         />

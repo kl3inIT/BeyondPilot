@@ -7332,8 +7332,7 @@
         "countryPlaceholder": "Chọn quốc gia",
         "phone": "Số điện thoại",
         "phoneInvalid": "Dùng chữ số và mã quốc gia, ví dụ +84 912 345 678.",
-        "required": "Bắt buộc",
-        "use": "Dùng hồ sơ talent của tôi"
+        "required": "Bắt buộc"
       },
       "team": {
         "count": "{count, plural, other {# thành viên}}",
