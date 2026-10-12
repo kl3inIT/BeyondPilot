@@ -58,18 +58,15 @@ function SolutionFeature({ solution, appearance }: SolutionFeatureProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <Button
-        className="w-full"
-        prominence="secondary"
-        pending={pending}
-        onClick={() => void toggle()}
-      >
-        {featured ? <StarOffIcon aria-hidden="true" /> : <StarIcon aria-hidden="true" />}
-        {t(featured ? "unfeature" : "feature")}
-      </Button>
-      <p className="text-xs text-muted-foreground">{t("hint")}</p>
-    </div>
+    <Button
+      className="w-full"
+      prominence="secondary"
+      pending={pending}
+      onClick={() => void toggle()}
+    >
+      {featured ? <StarOffIcon aria-hidden="true" /> : <StarIcon aria-hidden="true" />}
+      {t(featured ? "unfeature" : "feature")}
+    </Button>
   );
 }
 

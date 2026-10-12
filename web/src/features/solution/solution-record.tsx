@@ -136,7 +136,7 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
             {group.rows.map((row) => (
               <div key={row.label} className="contents">
                 <dt className="text-sm text-muted-foreground">{row.label}</dt>
-                <dd className="pb-2 text-sm whitespace-pre-line sm:col-span-3 sm:pb-0">
+                <dd className="min-w-0 pb-2 text-sm break-words whitespace-pre-line sm:col-span-3 sm:pb-0">
                   {row.value ?? <span className="text-muted-foreground">{t("missing")}</span>}
                 </dd>
               </div>

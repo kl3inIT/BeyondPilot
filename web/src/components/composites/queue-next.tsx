@@ -41,7 +41,11 @@ function QueueNext({ position, previous, next, done }: QueueNextProps) {
       )}
       {position && <span className="text-sm text-muted-foreground">{position}</span>}
       {next ? (
-        <TextButton id={`${id}-next`} href={next.href}>
+        <TextButton
+          id={`${id}-next`}
+          href={next.href}
+          className="min-w-0 shrink text-left whitespace-normal"
+        >
           {next.label}
           <ArrowRightIcon aria-hidden="true" />
           <Kbd aria-hidden="true">N</Kbd>

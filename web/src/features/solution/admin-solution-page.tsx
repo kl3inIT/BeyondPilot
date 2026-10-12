@@ -45,7 +45,10 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
     {
       label: t("organization"),
       value: (
-        <TextButton href={`${siteRoutes.adminOrganizations}/${solution.organizationId}`}>
+        <TextButton
+          href={`${siteRoutes.adminOrganizations}/${solution.organizationId}`}
+          className="text-left whitespace-normal"
+        >
           {solution.organizationName}
         </TextButton>
       ),
