@@ -36,12 +36,6 @@ export default async function ProposeRoute({
     return <ProposalBlocked useCaseId={id} reason={result.reason} />;
   }
   const { form } = result;
-  if (!form.organization) {
-    return <ProposalBlocked useCaseId={id} reason="noOrganization" />;
-  }
-  if (!form.organization.approved) {
-    return <ProposalBlocked useCaseId={id} reason="notApproved" />;
-  }
   // A sent proposal opens for editing while its window is open, and is only read after it.
   if (form.proposal?.status === "sent" && !form.proposal.editableUntil) {
     redirect(getPathname({ href: proposalViewRoute(id), locale: await getLocale() }));
@@ -53,7 +47,7 @@ export default async function ProposeRoute({
     <ProposalWizard
       useCaseId={id}
       form={form}
-      organization={form.organization}
+      organization={form.organization ?? null}
       solutions={solutions.items}
       profile={talent.profile ?? null}
       accountName={account.displayName ?? account.email}

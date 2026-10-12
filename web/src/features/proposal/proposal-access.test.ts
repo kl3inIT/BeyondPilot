@@ -11,6 +11,7 @@ const draft = {
   status: "draft" as const,
   solutions: [],
   team: [],
+  attachProfile: false,
   updatedAt: "2026-10-01T00:00:00Z",
   version: 1,
 };
@@ -20,14 +21,11 @@ function form(parts: Partial<UseCaseProposalForm>): UseCaseProposalForm {
 }
 
 describe("accessOfForm", () => {
-  it("needs an organization, and an approved one", () => {
-    expect(accessOfForm(form({ organization: null }))).toEqual({
-      kind: "blocked",
-      code: "PROPOSAL_NO_ORGANIZATION",
-    });
+  it("lets a person without an organization, or with one waiting for review, start", () => {
+    expect(accessOfForm(form({ organization: null }))).toEqual({ kind: "open", draft: false });
     expect(accessOfForm(form({ organization: { ...organization, approved: false } }))).toEqual({
-      kind: "blocked",
-      code: "PROPOSAL_ORGANIZATION_NOT_APPROVED",
+      kind: "open",
+      draft: false,
     });
   });
 

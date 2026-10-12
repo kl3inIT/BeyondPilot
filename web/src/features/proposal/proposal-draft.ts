@@ -1,5 +1,5 @@
 import type { PdfFile } from "@/components/composites/pdf-upload";
-import type { SaveUseCaseProposal, TalentProfile, UseCaseProposal } from "@/lib/api/generated";
+import type { SaveUseCaseProposal, UseCaseProposal } from "@/lib/api/generated";
 
 /** The steps of the proposal, in the order the member goes through them. */
 export const steps = ["organization", "solutions", "profile", "team", "pdf", "review"] as const;
@@ -17,6 +17,8 @@ export type ProposalValues = {
   approach: string;
   deck: PdfFile | null;
   team: TeamRow[];
+  /** Whether the sender's talent profile goes with the proposal. */
+  attachProfile: boolean;
 };
 
 /** The values a saved proposal holds, or empty ones before anything was saved. */
@@ -37,6 +39,7 @@ export function valuesOf(proposal: UseCaseProposal | null | undefined): Proposal
         role: member.role,
         primary: member.primary,
       })) ?? [],
+    attachProfile: proposal?.attachProfile ?? false,
   };
 }
 
@@ -51,6 +54,7 @@ export function bodyOf(values: ProposalValues, version: number | null): SaveUseC
       role: member.role,
       primary: member.primary,
     })),
+    attachProfile: values.attachProfile,
     version,
   };
 }
@@ -92,31 +96,23 @@ export function setRole(team: TeamRow[], accountId: string, role: string): TeamR
   return team.map((member) => (member.accountId === accountId ? { ...member, role } : member));
 }
 
-/** Whether the profile has what a proposal needs: a headline, a role, a skill and an about text. */
-export function profileComplete(profile: TalentProfile | null | undefined): boolean {
-  return !!profile?.complete;
-}
-
-/** Whether the team is one a proposal can be sent with: roles filled and exactly one primary contact. */
+/** Whether the team is one a proposal can be sent with: none, or roles filled and exactly one primary contact. */
 export function teamComplete(team: TeamRow[]): boolean {
   return (
-    team.length > 0 &&
-    team.every((member) => member.role.trim() !== "") &&
-    team.filter((member) => member.primary).length === 1
+    team.length === 0 ||
+    (team.every((member) => member.role.trim() !== "") &&
+      team.filter((member) => member.primary).length === 1)
   );
 }
 
 /**
- * The steps whose content a proposal still lacks, in order. The organization step has nothing to fill
- * and the review step is not content, so neither is ever listed.
+ * The steps whose content a proposal still lacks, in order. The organization step has nothing to fill, the
+ * profile is optional and the review step is not content, so none of them is ever listed.
  */
-export function incompleteSteps(values: ProposalValues, profileIsComplete: boolean): Step[] {
+export function incompleteSteps(values: ProposalValues): Step[] {
   const missing: Step[] = [];
   if (values.solutionIds.length === 0 || values.approach.trim() === "") {
     missing.push("solutions");
-  }
-  if (!profileIsComplete) {
-    missing.push("profile");
   }
   if (!teamComplete(values.team)) {
     missing.push("team");

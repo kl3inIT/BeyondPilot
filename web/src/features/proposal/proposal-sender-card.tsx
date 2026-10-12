@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
-import type { SenderProfile } from "@/lib/api/generated";
+import type { SenderProfile, SentBy } from "@/lib/api/generated";
 
 import { Card, Rows } from "./proposal-card";
 
@@ -88,4 +88,30 @@ function ProposalSenderCard({ sender, title }: ProposalSenderCardProps) {
   );
 }
 
-export { ProposalSenderCard, useSenderRows };
+/** The lines of a profile, as the review and the step draw them. */
+function ProfileRows({ profile }: { profile: Parameters<typeof useSenderRows>[0] }) {
+  return <Rows rows={useSenderRows(profile)} />;
+}
+
+type ProposalSentByProps = {
+  sentBy: SentBy;
+  title: string;
+};
+
+/** Who sent a proposal that came without a talent profile: the name and the address of the account. */
+function ProposalSentBy({ sentBy, title }: ProposalSentByProps) {
+  const t = useTranslations("UseCaseProposal.received.detail.sender");
+
+  return (
+    <Card id="proposal-sent-by" title={title}>
+      <Rows
+        rows={[
+          { label: t("name"), value: sentBy.name },
+          { label: t("email"), value: sentBy.email },
+        ].filter((row) => row.value)}
+      />
+    </Card>
+  );
+}
+
+export { ProfileRows, ProposalSenderCard, ProposalSentBy };
