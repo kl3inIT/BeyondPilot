@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { ChoiceSelect } from "@/components/composites/choice-select";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { ReviewStatus } from "@/components/composites/review-status";
 import {
@@ -18,7 +19,6 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -138,18 +138,17 @@ function DeploymentForm({ solutionId, deployment, onClose }: DeploymentFormProps
               </Field>
               <Field>
                 <FieldLabel htmlFor={`${id}-stage`}>{t("stage")}</FieldLabel>
-                <NativeSelect
+                <ChoiceSelect
                   id={`${id}-stage`}
-                  className="w-full"
+                  options={deploymentStages.map((value) => ({ value, label: stage(value) }))}
                   value={text.stage}
-                  onChange={write("stage")}
-                >
-                  {deploymentStages.map((value) => (
-                    <NativeSelectOption key={value} value={value}>
-                      {stage(value)}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
+                  onValueChange={(next) =>
+                    setText((current) => ({
+                      ...current,
+                      stage: deploymentStages.find((value) => value === next) ?? current.stage,
+                    }))
+                  }
+                />
               </Field>
             </div>
             <Field>

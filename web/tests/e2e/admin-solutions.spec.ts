@@ -12,6 +12,7 @@ const quoteBot = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e04";
 const riskLens = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e05";
 const waitingDeployment = "be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f01";
 const approvedDeployment = "be6b8fa7-5e53-4fa8-8fa0-5c8e1e1a2f02";
+const operatorDraft = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e06";
 
 const decisionsPath = "**/api/solution/admin/**";
 
@@ -29,6 +30,86 @@ test.describe("admin solutions", () => {
   test.beforeEach(({ page }) => serveStoredImages(page));
 
   test.use({ locale: "en-US" });
+
+  test("an operator starts a solution for an organization and publishes it from the editor", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const writes: { call: string; body: unknown }[] = [];
+    // The dialog asks the backend for the approved organizations as it opens.
+    await page.route("**/api/solution/admin/solutions/organizations**", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([
+          { id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03", name: "Pocket Policy" },
+        ]),
+      }),
+    );
+    await page.route("**/api/solution/admin/solutions", async (route) => {
+      const request = route.request();
+      if (request.method() !== "POST") {
+        return route.fallback();
+      }
+      expect(request.headers()["x-beyondpilot-csrf"]).toBe("1");
+      writes.push({ call: "POST create", body: request.postDataJSON() });
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({
+          id: operatorDraft,
+          name: "Draft Desk",
+          status: "draft",
+          version: 1,
+        }),
+      });
+    });
+    await page.route(`**/api/solution/admin/solutions/${operatorDraft}/publish`, async (route) => {
+      writes.push({ call: "POST publish", body: route.request().postDataJSON() });
+      await route.fulfill({ status: 204 });
+    });
+
+    await page.goto("/admin/solutions");
+    await page.getByRole("button", { name: "Create solution" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("heading", { name: "Create a solution" })).toBeVisible();
+    // Both are asked for before the draft is made.
+    await dialog.getByRole("button", { name: "Create and open editor" }).click();
+    await expect(dialog.getByText("Choose an organization.")).toBeVisible();
+    await expect(dialog.getByText("Enter the solution's name.")).toBeVisible();
+    await dialog.getByLabel("Organization").click();
+    await page.getByRole("option", { name: "Pocket Policy" }).click();
+    await dialog.getByLabel("Solution name").fill("Draft Desk");
+    await dialog.getByRole("button", { name: "Create and open editor" }).click();
+
+    // The editor of an operator is the organization's editor, left for the operators' list.
+    await expect(page).toHaveURL(`/admin/solutions/${operatorDraft}/edit`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Basics");
+    expect(writes[0]).toEqual({
+      call: "POST create",
+      body: { organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03", name: "Draft Desk" },
+    });
+
+    await page.goto(`/admin/solutions/${operatorDraft}/edit?step=evidence`);
+    // The organization adds its customer deployments; an operator's draft has none to write.
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Evidence");
+    await expect(page.getByText("Customer deployments")).toHaveCount(0);
+
+    await page.goto(`/admin/solutions/${operatorDraft}/edit?step=review`);
+    await expect(page.getByText("Ready to publish")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send for review" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Publish" })).toBeDisabled();
+    await page.getByRole("checkbox", { name: /information above is accurate/ }).check();
+    await page.getByRole("button", { name: "Publish" }).click();
+    const confirm = page.getByRole("alertdialog");
+    await expect(confirm.getByRole("heading")).toHaveText("Publish this solution?");
+    await confirm.getByRole("button", { name: "Publish" }).click();
+
+    await expect(page).toHaveURL(`/admin/solutions/${operatorDraft}`);
+    expect(writes.at(-1)).toEqual({ call: "POST publish", body: null });
+  });
 
   test("nobody but an operator gets the list or a record", async ({ page, context, baseURL }) => {
     const visitor = await page.request.get("/admin/solutions", { maxRedirects: 0 });

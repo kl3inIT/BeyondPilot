@@ -20,6 +20,8 @@ type ChoiceSelectProps = {
   /** Shown while nothing is chosen. */
   placeholder?: string;
   "aria-invalid"?: boolean;
+  "aria-required"?: boolean;
+  "aria-describedby"?: string;
 };
 
 /** A field that picks one of a fixed list, with the list drawn by the app rather than the browser. */
@@ -30,6 +32,8 @@ function ChoiceSelect({
   onValueChange,
   placeholder,
   "aria-invalid": invalid,
+  "aria-required": required,
+  "aria-describedby": describedBy,
 }: ChoiceSelectProps) {
   return (
     <Select
@@ -37,7 +41,13 @@ function ChoiceSelect({
       value={value || null}
       onValueChange={(chosen) => onValueChange(chosen ?? "")}
     >
-      <SelectTrigger id={id} className="w-full" aria-invalid={invalid}>
+      <SelectTrigger
+        id={id}
+        className="w-full"
+        aria-invalid={invalid}
+        aria-required={required}
+        aria-describedby={describedBy}
+      >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

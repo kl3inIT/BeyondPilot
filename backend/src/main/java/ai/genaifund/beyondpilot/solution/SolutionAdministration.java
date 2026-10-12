@@ -17,11 +17,13 @@ import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.solution.dto.AdminCreateSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListResponse;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionOrganizationOptionResponse;
 import ai.genaifund.beyondpilot.solution.dto.RejectCustomerDeploymentRequest;
 import ai.genaifund.beyondpilot.solution.dto.RejectSolutionRequest;
+import ai.genaifund.beyondpilot.solution.dto.SaveSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SendBackSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionBackingRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
@@ -50,6 +52,9 @@ public class SolutionAdministration {
 
 	static final int PAGE_SIZE = 25;
 
+	/** How many organizations the operator's list of those to start a solution for holds. */
+	static final int ORGANIZATION_LIMIT = 50;
+
 	private static final String SOLUTION = "solution";
 
 	private static final String CUSTOMER_DEPLOYMENT = "customer_deployment";
@@ -72,9 +77,12 @@ public class SolutionAdministration {
 
 	private final EmailService email;
 
+	private final SolutionService service;
+
 	SolutionAdministration(SolutionRepository solutions, CustomerDeploymentRepository deployments,
 			SolutionQueryRepository solutionList, OrganizationDirectory organizations, IdentityService identity,
-			AuditTrail audit, ApplicationEventPublisher events, StorageService storage, EmailService email) {
+			AuditTrail audit, ApplicationEventPublisher events, StorageService storage, EmailService email,
+			SolutionService service) {
 		this.solutions = solutions;
 		this.deployments = deployments;
 		this.solutionList = solutionList;
@@ -84,6 +92,7 @@ public class SolutionAdministration {
 		this.events = events;
 		this.storage = storage;
 		this.email = email;
+		this.service = service;
 	}
 
 	/**
@@ -163,6 +172,112 @@ public class SolutionAdministration {
 		record(AuditAction.SOLUTION_APPROVE, operator, solution, Map.of());
 		events.publishEvent(new SolutionChanged(id));
 		tell(solution, EmailService.SolutionDecision.APPROVED, null);
+	}
+
+	/**
+	 * The approved organizations a solution can be started for, by name; at most {@value #ORGANIZATION_LIMIT}.
+	 * @param text only those whose name contains it, ignoring case; every one when blank or null
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public List<AdminSolutionOrganizationOptionResponse> organizationsToStartFor(Actor actor, @Nullable String text) {
+		identity.requireOperator(actor);
+		return organizations.approvedOrganizations(text, ORGANIZATION_LIMIT)
+			.stream()
+			.map(organization -> new AdminSolutionOrganizationOptionResponse(organization.id(), organization.name()))
+			.toList();
+	}
+
+	/**
+	 * Starts a solution as a draft of an approved organization, for an operator to write in the editor and publish.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when the organization is not approved
+	 */
+	@Transactional
+	public SolutionResponse create(Actor actor, AdminCreateSolutionRequest request) {
+		Operator operator = identity.requireOperator(actor);
+		OrganizationName organization = organizations.approvedOrganization(request.organizationId())
+			.orElseThrow(() -> organizationNotApproved(request.organizationId()));
+		Solution solution = service.start(actor, organization.id(), request.name());
+		record(AuditAction.SOLUTION_CREATE, operator, solution, Map.of());
+		return SolutionViews.solution(solution, organization.name(), null, List.of(), storage);
+	}
+
+	/**
+	 * A draft as the editor of an operator reads it.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when the solution does not exist or is not a draft
+	 */
+	@Transactional(readOnly = true)
+	public SolutionResponse draft(Actor actor, UUID id) {
+		identity.requireOperator(actor);
+		Solution solution = solutions.findById(id).orElseThrow(() -> draftNotFound(id));
+		requireDraft(solution);
+		return SolutionViews.solution(solution, organizationName(solution), SolutionViews.sender(solution, identity),
+				deployments.findBySolutionIdOrderByCreatedAtDesc(id), storage);
+	}
+
+	/**
+	 * Saves a draft as the editor of an operator holds it, by the rules of any save of a solution.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when the solution does not exist, is not a draft, changed since the editor read it, or
+	 * names a file the caller may not give it
+	 */
+	@Transactional
+	public SolutionResponse saveDraft(Actor actor, UUID id, SaveSolutionRequest request) {
+		identity.requireOperator(actor);
+		Solution solution = solutions.findForUpdate(id).orElseThrow(() -> draftNotFound(id));
+		requireDraft(solution);
+		return service.write(actor, solution, organizationName(solution), request);
+	}
+
+	/**
+	 * Publishes a draft at once: it is approved with no review, since the operator is GenAI Fund. Its organization is
+	 * told as it is of any approved solution.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when the solution does not exist, is not a draft, lacks what a submission needs, or
+	 * belongs to an organization that is not approved
+	 */
+	@Transactional
+	public void publish(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Solution solution = solutions.findForUpdate(id).orElseThrow(() -> draftNotFound(id));
+		requireDraft(solution);
+		if (!solution.isComplete()) {
+			throw new SolutionException(SolutionErrorCode.INCOMPLETE,
+					"Publication of solution " + id + ", which lacks what a submission needs");
+		}
+		if (!organizations.isApproved(solution.getOrganizationId())) {
+			throw organizationNotApproved(solution.getOrganizationId());
+		}
+		Instant now = Instant.now();
+		// The record names the operator as the sender, and no review lies between the two steps.
+		solution.submit(now, operator.accountId());
+		solution.approve(now);
+		solutions.flush();
+		record(AuditAction.SOLUTION_PUBLISH, operator, solution, Map.of());
+		events.publishEvent(new SolutionChanged(id));
+		tell(solution, EmailService.SolutionDecision.APPROVED, null);
+	}
+
+	private String organizationName(Solution solution) {
+		return name(organizations.names(List.of(solution.getOrganizationId())), solution.getOrganizationId());
+	}
+
+	private static void requireDraft(Solution solution) {
+		if (!solution.isDraft()) {
+			throw new SolutionException(SolutionErrorCode.NOT_A_DRAFT,
+					"Edit by an operator of solution " + solution.getId() + ", which is " + solution.getStatus());
+		}
+	}
+
+	private static SolutionException draftNotFound(UUID id) {
+		return new SolutionException(SolutionErrorCode.SOLUTION_NOT_FOUND, "No solution " + id);
+	}
+
+	private static SolutionException organizationNotApproved(UUID organizationId) {
+		return new SolutionException(SolutionErrorCode.ORGANIZATION_NOT_APPROVED,
+				"Solution of organization " + organizationId + ", which is not approved");
 	}
 
 	/**

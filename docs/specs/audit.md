@@ -58,7 +58,7 @@ meaning, and adding one is an ordinary change.
 - **Not only operators.** Most actions are an operator's; some record what an owner, a member or a person did, such
   as `introduction.reply`, `organization.member_role`, `talent.enquiry_accept` and `talent.delete`.
 
-The 68 actions, by the module that records them, with their declared detail fields:
+The 70 actions, by the module that records them, with their declared detail fields:
 
 | Module         | Actions (detail fields)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

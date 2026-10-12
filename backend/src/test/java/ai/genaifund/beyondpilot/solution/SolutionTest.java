@@ -1296,6 +1296,71 @@ class SolutionTest {
 		return jdbc.sql("select count(*) from storage_file where id = ?").param(file).query(Long.class).single() == 1;
 	}
 
+	@Test
+	void anOperatorWritesADraftForAnApprovedOrganizationAndPublishesItWithNoReview() {
+		String founder = approvedOwner("founder@published.test", "Published Co");
+		UUID organization = organizationOf(founder);
+		UUID unreviewed = organization(signIn("waiting@unreviewed.test"), "Operator Waiting Inc");
+
+		// The operator picks among the approved organizations: one that waits for review is not offered.
+		assertProblem(get(founder, ADMIN + "/organizations"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		// The list is cut at 50 by name, so the test asks by name rather than reading all of it.
+		assertThat(JsonPath.<List<String>>read(
+				body(get(operator, ADMIN + "/organizations?q=Published Co").expectStatus().isOk()), "$[*].name"))
+			.containsExactly("Published Co");
+		assertThat(JsonPath.<List<String>>read(
+				body(get(operator, ADMIN + "/organizations?q=Operator Waiting Inc").expectStatus().isOk()), "$[*].name"))
+			.isEmpty();
+
+		// Only an operator starts one, and only for an organization GenAI Fund approved.
+		assertProblem(post(founder, ADMIN, Map.of("organizationId", organization, "name", "Operator Desk")), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(operator, ADMIN, Map.of("organizationId", unreviewed, "name", "Operator Desk")), 409,
+				"SOLUTION_ORGANIZATION_NOT_APPROVED");
+		assertProblem(post(operator, ADMIN, Map.of("organizationId", organization, "name", " ")), 400,
+				"REQUEST_INVALID");
+
+		String draft = body(post(operator, ADMIN, Map.of("organizationId", organization, "name", "Operator Desk"))
+			.expectStatus()
+			.isCreated());
+		UUID id = UUID.fromString(JsonPath.read(draft, "$.id"));
+		assertThat(JsonPath.<String>read(draft, "$.status")).isEqualTo("draft");
+		assertThat(JsonPath.<String>read(draft, "$.organizationName")).isEqualTo("Published Co");
+		// It is a draft of the organization, which sees it as it sees its own.
+		get(founder, MINE + "/" + id).expectStatus().isOk();
+
+		// Reading and saving it as an operator are for operators.
+		assertProblem(get(founder, ADMIN + "/" + id + "/draft"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(post(founder, ADMIN + "/" + id + "/publish", null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(get(operator, ADMIN + "/" + UUID.randomUUID() + "/draft"), 404, "SOLUTION_NOT_FOUND");
+		assertThat(JsonPath.<String>read(body(get(operator, ADMIN + "/" + id + "/draft").expectStatus().isOk()),
+				"$.name"))
+			.isEqualTo("Operator Desk");
+
+		// What a review needs is needed here too: the operator publishes a complete draft.
+		assertProblem(post(operator, ADMIN + "/" + id + "/publish", null), 400, "SOLUTION_INCOMPLETE");
+		Map<String, Object> description = pictured(operator, described("Operator Desk", versionOf(draft)));
+		String saved = body(put(operator, ADMIN + "/" + id + "/draft", description).expectStatus().isOk());
+		assertThat(versionOf(saved)).isGreaterThan(versionOf(draft));
+		assertProblem(put(operator, ADMIN + "/" + id + "/draft", description), 409, "SOLUTION_CHANGED_MEANWHILE");
+
+		post(operator, ADMIN + "/" + id + "/publish", null).expectStatus().isNoContent();
+
+		String published = body(get(operator, ADMIN + "/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(published, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<String>read(published, "$.organizationName")).isEqualTo("Published Co");
+		assertThat(mail.latestSubjectTo("founder@published.test")).isEqualTo("Operator Desk is approved on BeyondPilot");
+		assertThat(events(id)).containsExactly("solution.create", "solution.publish");
+		assertThat(JsonPath.<List<String>>read(
+				body(client.get().uri(DIRECTORY + "?q=Operator").exchange().expectStatus().isOk()), "$.items[*].name"))
+			.contains("Operator Desk");
+
+		// Once published it is no draft, so the operator's editor no longer takes it.
+		assertProblem(put(operator, ADMIN + "/" + id + "/draft", described("Operator Desk", versionOf(published))), 409,
+				"SOLUTION_NOT_A_DRAFT");
+		assertProblem(post(operator, ADMIN + "/" + id + "/publish", null), 409, "SOLUTION_NOT_A_DRAFT");
+	}
+
 	private UUID organizationOf(String session) {
 		return UUID.fromString(
 				JsonPath.read(body(get(session, ORGANIZATION + "/mine").expectStatus().isOk()), "$.organization.id"));

@@ -42,7 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useNotify } from "@/hooks/use-notify";
 import {
   addChatModels,
@@ -67,27 +67,30 @@ const iconButton =
   "hit-area flex size-8 shrink-0 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 data-popup-open:bg-muted [&>svg]:size-4";
 
 /**
- * One thing a model can do, as an icon that says it in words: on hover, on keyboard focus, and on a
- * tap, since a touch screen has no hover. The words are its name for assistive technology.
+ * One thing a model can do, as an icon that says it in words: on hover, on Enter from the keyboard,
+ * and on a tap, since a touch screen has no hover and a tooltip never opens there. The words are
+ * its name for assistive technology.
  */
 function Capability({ label, children }: { label: string; children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
   return (
-    <Tooltip open={open} onOpenChange={setOpen}>
-      <TooltipTrigger
+    <Popover>
+      <PopoverTrigger
+        openOnHover
+        delay={150}
         render={
           <button
             type="button"
             aria-label={label}
-            onClick={() => setOpen(true)}
             className="hit-area inline-flex size-6 items-center justify-center rounded-md text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring [&>svg]:size-3.5"
           />
         }
       >
         {children}
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
+      </PopoverTrigger>
+      <PopoverContent side="top" className="w-auto">
+        {label}
+      </PopoverContent>
+    </Popover>
   );
 }
 

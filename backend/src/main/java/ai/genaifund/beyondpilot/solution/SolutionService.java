@@ -116,14 +116,19 @@ public class SolutionService {
 	@Transactional
 	public SolutionResponse create(Actor actor, CreateSolutionRequest request) {
 		Membership membership = writer(actor);
-		String base = SolutionViews.slug(request.name());
+		return SolutionViews.solution(start(actor, membership.organizationId(), request.name()),
+				membership.organizationName(), null, List.of(), storage);
+	}
+
+	/** A new draft of an organization, under the address its name makes free; the caller decided that it may. */
+	Solution start(Actor actor, UUID organizationId, String name) {
+		String base = SolutionViews.slug(name);
 		String slug = base;
 		for (int suffix = 2; solutions.existsBySlug(slug); suffix++) {
 			slug = base + "-" + suffix;
 		}
-		Solution solution = solutions.saveAndFlush(new Solution(UUID.randomUUID(), membership.organizationId(), slug,
-				request.name().strip(), actor.accountId()));
-		return SolutionViews.solution(solution, membership.organizationName(), null, List.of(), storage);
+		return solutions.saveAndFlush(new Solution(UUID.randomUUID(), organizationId, slug, name.strip(),
+				actor.accountId()));
 	}
 
 	/**
@@ -139,7 +144,15 @@ public class SolutionService {
 	@Transactional
 	public SolutionResponse save(Actor actor, UUID id, SaveSolutionRequest request) {
 		Membership membership = writer(actor);
-		Solution solution = own(membership, id);
+		return write(actor, own(membership, id), membership.organizationName(), request);
+	}
+
+	/**
+	 * The writing of a save, whoever saves: a member of the organization, or an operator on its behalf. The caller has
+	 * locked the solution and decided that the actor may change it.
+	 */
+	SolutionResponse write(Actor actor, Solution solution, String organizationName, SaveSolutionRequest request) {
+		UUID id = solution.getId();
 		if (solution.isRejected()) {
 			// A refusal is final: what GenAI Fund refused stays as it was reviewed.
 			throw new SolutionException(SolutionErrorCode.NOT_EDITABLE, "Save of solution " + id + ", refused for good");
@@ -170,7 +183,8 @@ public class SolutionService {
 		}
 		droppedPictures.forEach(fileId -> events.publishEvent(new DroppedFiles.FileDropped(id, fileId)));
 		events.publishEvent(new SolutionChanged(id));
-		return view(solution, membership);
+		return SolutionViews.solution(solution, organizationName, SolutionViews.sender(solution, identity),
+				deployments.findBySolutionIdOrderByCreatedAtDesc(id), storage);
 	}
 
 	/**

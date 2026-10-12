@@ -33,7 +33,8 @@ import { getPathname } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import { ApiError } from "@/lib/api/client";
 import {
-  deleteSolutionDraft,
+  publishAdminSolution,
+  saveAdminSolutionDraft,
   saveSolution,
   submitSolution,
   type Solution,
@@ -80,9 +81,15 @@ type Failure = { message: MessageKey; content: string; conflict: boolean };
  */
 function SolutionEditor({
   solution,
+  operator = false,
   onLeave,
 }: {
   solution: Solution;
+  /**
+   * Set on the operators' page: the draft belongs to an organization, an operator writes it and
+   * publishes it at once, with no review, so its calls and its way out are the operators'.
+   */
+  operator?: boolean;
   /**
    * Set when another page holds the editor, such as a dialog of a proposal: every way out of the editor
    * calls it instead of going to the list of solutions.
@@ -112,8 +119,12 @@ function SolutionEditor({
   const [refused, setRefused] = useState<Set<string>>(new Set());
   const [leftLinks, setLeftLinks] = useState<Set<LinkField>>(new Set());
   const [checked, setChecked] = useState(false);
-  const [pending, setPending] = useState<"exit" | "save" | "submit" | "delete" | null>(null);
-  const [confirming, setConfirming] = useState<"submit" | "delete" | null>(null);
+  // The person's word that what they wrote is right; a review is not sent without it.
+  const [confirmed, setConfirmed] = useState(false);
+  // The steps whose Continue was pressed while one of their fields was lacking.
+  const [tried, setTried] = useState<Set<EditorStep>>(new Set());
+  const [pending, setPending] = useState<"exit" | "save" | "submit" | null>(null);
+  const [confirming, setConfirming] = useState<"submit" | null>(null);
   const [step, setStep] = useQueryState(
     "step",
     parseAsStringLiteral(editorSteps).withDefault("basics").withOptions({ history: "push" }),
@@ -121,7 +132,10 @@ function SolutionEditor({
   const focusAfterStep = useRef<string | null>(null);
   const firstStep = useRef(true);
 
-  const list = getPathname({ href: siteRoutes.workspaceSolutions, locale });
+  const list = getPathname({
+    href: operator ? siteRoutes.adminSolutions : siteRoutes.workspaceSolutions,
+    locale,
+  });
   /** Goes where the editor leads when it is done: the list of solutions, or back to what holds it. */
   const leave = () => (onLeave ? onLeave() : router.push(list));
   // A draft and a solution sent back are written step by step and sent for review at the end.
@@ -136,9 +150,18 @@ function SolutionEditor({
   const nameless = draft.name.trim() === "";
   const saveable = !nameless && wrongLinks.length === 0;
   const stuck = failure !== null && failure.content === content;
-  // What a review needs is asked for once the person has reached the review, not while they still write.
-  const asking = checked || step === "review";
+  // What a review needs is asked for once the person has reached the review, or pressed Continue on
+  // the step that holds it, not while they still write.
+  const asked = (id: EditorStep) => checked || step === "review" || tried.has(id);
   const index = editorSteps.indexOf(step);
+
+  /** What keeps a step from being left forward: a field a review needs, or a link that is no address. */
+  function blockersOf(id: EditorStep): string[] {
+    const lacking = reviewFields
+      .filter((entry) => entry.step === id && missing.includes(entry.field))
+      .map((entry) => entry.field);
+    return id === "evidence" ? [...lacking, ...wrongLinks] : lacking;
+  }
 
   function change(patch: Partial<SolutionDraft>) {
     setDraft((current) => ({ ...current, ...patch }));
@@ -162,10 +185,13 @@ function SolutionEditor({
   async function send(body: SolutionDraft): Promise<boolean> {
     setSaving(true);
     try {
-      const { data } = await saveSolution({
+      const request = {
         path: { id: solution.id },
         body: toRequest(body, latest.current.version),
-      });
+      };
+      const { data } = operator
+        ? await saveAdminSolutionDraft(request)
+        : await saveSolution(request);
       latest.current = data;
       setServer(data);
       setSavedNow(new Date());
@@ -254,6 +280,20 @@ function SolutionEditor({
     void setStep(next);
   }
 
+  /** Goes to the next step, or stays and marks what the step in view still lacks. */
+  function next() {
+    const blocking = blockersOf(step);
+    if (blocking.length === 0) {
+      open(editorSteps[index + 1]);
+      return;
+    }
+    setTried((current) => new Set(current).add(step));
+    setLeftLinks(new Set(wrongLinks));
+    const onlyLinks = blocking.every((field) => field === "demoUrl" || field === "website");
+    notify.error(onlyLinks ? "Solution.errors.REQUEST_INVALID" : "Solution.editor.stepIncomplete");
+    focusField(fieldId(blocking[0]));
+  }
+
   /** Shows what keeps the editor from saving: a missing name, or a link that is not an address. */
   function showWhatBlocks() {
     setLeftLinks(new Set(wrongLinks));
@@ -301,27 +341,21 @@ function SolutionEditor({
         setConfirming(null);
         return;
       }
-      await submitSolution({ path: { id: solution.id } });
-      notify.success("Solution.done.submitted");
-      leave();
+      if (operator) {
+        await publishAdminSolution({ path: { id: solution.id } });
+        notify.success("Solution.done.published", { name: draft.name.trim() });
+        // What was published is read in the record of the review, with the rest of the solutions.
+        router.push(getPathname({ href: `${siteRoutes.adminSolutions}/${solution.id}`, locale }));
+      } else {
+        await submitSolution({ path: { id: solution.id } });
+        notify.success("Solution.done.submitted");
+        leave();
+      }
     } catch (error) {
       notify.error(solutionError(error));
       setConfirming(null);
     } finally {
       setPending(null);
-    }
-  }
-
-  async function remove() {
-    setPending("delete");
-    try {
-      await deleteSolutionDraft({ path: { id: solution.id } });
-      notify.success("Solution.done.deleted", { name: solution.name });
-      leave();
-    } catch (error) {
-      notify.error(solutionError(error));
-      setPending(null);
-      setConfirming(null);
     }
   }
 
@@ -334,7 +368,11 @@ function SolutionEditor({
       return shown && wrongLinks.includes(field) ? t("fields.linkInvalid") : undefined;
     }
     const needed = missing.find((candidate) => candidate === field);
-    return asking && needed && needed !== "name" ? t(`needed.${needed}`) : undefined;
+    if (!needed || needed === "name") {
+      return undefined;
+    }
+    const holder = reviewFields.find((entry) => entry.field === needed)?.step;
+    return holder && asked(holder) ? t(`needed.${needed}`) : undefined;
   }
 
   /** What a step still lacks or holds wrongly, as the line under its title; nothing when it is in order. */
@@ -353,7 +391,7 @@ function SolutionEditor({
         (entry) => entry.step === id && entry.field !== "name" && missing.includes(entry.field),
       )
       .map((entry) => entry.field);
-    if (!asking || lacking.length === 0) {
+    if (!asked(id) || lacking.length === 0) {
       return undefined;
     }
     // The images are named: "2 fields to add" would not say that a file is what is asked for.
@@ -474,7 +512,7 @@ function SolutionEditor({
             {autosaves ? (
               <>
                 <Button
-                  prominence="tertiary"
+                  prominence="secondary"
                   size="sm"
                   className="max-md:hidden"
                   pending={pending === "exit"}
@@ -546,7 +584,7 @@ function SolutionEditor({
 
       <main
         id="content"
-        className="mx-auto flex w-full max-w-260 flex-1 justify-center gap-10 px-5 py-6 md:px-8 md:py-8 lg:py-10"
+        className="mx-auto flex w-full max-w-360 flex-1 gap-10 px-5 py-6 md:px-8 md:py-8 lg:py-10"
       >
         <nav
           aria-label={t("steps.label")}
@@ -572,7 +610,6 @@ function SolutionEditor({
                   }
                   doneLabel={t("steps.complete")}
                   last={position === editorSteps.length - 1}
-                  onSelect={() => open(id)}
                 />
               );
             })}
@@ -585,7 +622,7 @@ function SolutionEditor({
           )}
         </nav>
 
-        <div className="flex w-full max-w-170 min-w-0 flex-col gap-4">
+        <div className="flex w-full min-w-0 flex-col gap-4 max-lg:mx-auto max-lg:max-w-170">
           {standing === "in_review" && (
             <Alert>
               <TimerIcon aria-hidden="true" />
@@ -680,7 +717,7 @@ function SolutionEditor({
                     deckHref={deckHref}
                     onImageAdded={addImage}
                     unsent={solution.status === "draft"}
-                    customerDeployments={solution.customerDeployments}
+                    customerDeployments={operator ? null : solution.customerDeployments}
                     onLinkLeft={(field) => setLeftLinks((current) => new Set(current).add(field))}
                   />
                 )}
@@ -688,11 +725,20 @@ function SolutionEditor({
                   <ReviewStep
                     draft={draft}
                     change={change}
-                    customerDeployments={solution.customerDeployments.filter(
-                      (deployment) => !deployment.withdrawnAt,
-                    )}
+                    customerDeployments={
+                      operator
+                        ? null
+                        : solution.customerDeployments.filter(
+                            (deployment) => !deployment.withdrawnAt,
+                          )
+                    }
+                    operator={operator}
                     missing={missing}
                     submittable={autosaves}
+                    organizationName={server.organizationName}
+                    slug={server.slug}
+                    confirmed={confirmed}
+                    onConfirmedChange={setConfirmed}
                     onOpen={open}
                   />
                 )}
@@ -708,7 +754,7 @@ function SolutionEditor({
               {index === 0 ? (
                 autosaves ? (
                   <Button
-                    prominence="tertiary"
+                    prominence="secondary"
                     pending={pending === "exit"}
                     disabled={pending !== null}
                     onClick={exit}
@@ -724,22 +770,28 @@ function SolutionEditor({
                   </Button>
                 )
               ) : (
-                <Button prominence="tertiary" onClick={() => open(editorSteps[index - 1])}>
+                <Button prominence="secondary" onClick={() => open(editorSteps[index - 1])}>
                   {t("previous")}
                 </Button>
               )}
               {!last && (
-                <Button size="lg" onClick={() => open(editorSteps[index + 1])}>
+                <Button size="lg" onClick={next}>
                   {t("continue")}
                 </Button>
               )}
               {last && autosaves && (
                 <Button
                   size="lg"
-                  disabled={missing.length > 0 || !saveable || pending !== null}
+                  disabled={missing.length > 0 || !saveable || !confirmed || pending !== null}
                   onClick={() => setConfirming("submit")}
                 >
-                  {t(server.status === "needs_changes" ? "review.resubmit" : "review.submit")}
+                  {t(
+                    operator
+                      ? "review.publish"
+                      : server.status === "needs_changes"
+                        ? "review.resubmit"
+                        : "review.submit",
+                  )}
                 </Button>
               )}
               {last && !autosaves && !finallyRefused && (
@@ -754,19 +806,6 @@ function SolutionEditor({
               )}
             </div>
           </section>
-
-          {last && server.status === "draft" && (
-            <Button
-              prominence="tertiary"
-              tone="danger"
-              size="sm"
-              className="self-start"
-              disabled={pending !== null}
-              onClick={() => setConfirming("delete")}
-            >
-              {t("review.delete")}
-            </Button>
-          )}
         </div>
       </main>
 
@@ -774,25 +813,12 @@ function SolutionEditor({
         <ConfirmDialog
           open
           onOpenChange={() => setConfirming(null)}
-          title={t("review.confirm.title")}
-          description={t("review.confirm.lead")}
-          confirmLabel={t("review.confirm.confirm")}
-          cancelLabel={t("review.confirm.cancel")}
+          title={t(operator ? "review.confirmPublish.title" : "review.confirm.title")}
+          description={t(operator ? "review.confirmPublish.lead" : "review.confirm.lead")}
+          confirmLabel={t(operator ? "review.confirmPublish.confirm" : "review.confirm.confirm")}
+          cancelLabel={t(operator ? "review.confirmPublish.cancel" : "review.confirm.cancel")}
           pending={pending === "submit"}
           onConfirm={submit}
-        />
-      )}
-      {confirming === "delete" && (
-        <ConfirmDialog
-          open
-          onOpenChange={() => setConfirming(null)}
-          title={t("review.confirmDelete.title", { name: solution.name })}
-          description={t("review.confirmDelete.lead")}
-          confirmLabel={t("review.confirmDelete.confirm")}
-          cancelLabel={t("review.confirmDelete.cancel")}
-          tone="danger"
-          pending={pending === "delete"}
-          onConfirm={remove}
         />
       )}
       <LeaveGuard

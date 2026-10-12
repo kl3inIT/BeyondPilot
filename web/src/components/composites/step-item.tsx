@@ -48,13 +48,12 @@ type StepItemProps = {
   doneLabel: string;
   /** The last step draws no line to a next one. */
   last?: boolean;
-  onSelect: () => void;
 };
 
 /**
  * One step of a vertical stepper: its number or, once done, a check mark, its title and one line
- * about it, joined to the next step by a line. A step is a way to that step, so a person moves
- * through them in any order.
+ * about it, joined to the next step by a line. It only shows where the person is: a step is not a
+ * link, so the way forward is the form's own Continue.
  */
 function StepItem({
   number,
@@ -64,7 +63,6 @@ function StepItem({
   state,
   doneLabel,
   last = false,
-  onSelect,
 }: StepItemProps) {
   return (
     <li className="relative flex pb-5 last:pb-0" data-slot="step-item" data-state={state}>
@@ -78,11 +76,9 @@ function StepItem({
           }
         />
       )}
-      <button
-        type="button"
+      <div
         aria-current={state === "current" ? "step" : undefined}
-        onClick={onSelect}
-        className="group flex w-full items-start gap-3 rounded-md text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="flex w-full items-start gap-3 text-left"
       >
         <span className={stepMarker({ state })}>
           {state === "done" ? (
@@ -95,12 +91,10 @@ function StepItem({
           )}
         </span>
         <span className="flex min-w-0 flex-col gap-0.5 pt-0.5">
-          <span className={stepTitle({ state })}>
-            <span className="group-hover:underline group-hover:underline-offset-4">{title}</span>
-          </span>
+          <span className={stepTitle({ state })}>{title}</span>
           {meta && <span className={stepMeta({ tone })}>{meta}</span>}
         </span>
-      </button>
+      </div>
     </li>
   );
 }
