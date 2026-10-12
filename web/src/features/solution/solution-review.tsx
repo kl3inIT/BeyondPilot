@@ -19,7 +19,6 @@ import {
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
-import { useShortcuts } from "@/hooks/use-shortcuts";
 import { getPathname } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import {
@@ -105,12 +104,6 @@ function SolutionReview({ solution, nextHref }: SolutionReviewProps) {
   }
 
   const approve = () => decide("approve", () => approveSolution({ path: { id } }));
-  // A key does nothing while a decision is on its way, so one press is one decision.
-  const idle = pending === null;
-  useShortcuts({
-    a: waiting && idle ? approve : undefined,
-    s: idle && waiting ? () => setOpen("sendBack") : undefined,
-  });
 
   const dialogs = (
     <>
@@ -260,14 +253,13 @@ function SolutionReview({ solution, nextHref }: SolutionReviewProps) {
       </Button>
       <Button
         className="w-full"
-        prominence="tertiary"
+        prominence="secondary"
         tone="danger"
         onClick={() => setOpen("reject")}
       >
         {t("reject")}
       </Button>
       {dialogs}
-      <p className="text-xs text-muted-foreground">{t("keys")}</p>
     </div>
   );
 }
