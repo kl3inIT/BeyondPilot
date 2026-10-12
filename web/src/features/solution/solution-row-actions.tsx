@@ -50,6 +50,7 @@ type SolutionRowActionsProps = {
  * What a member does with one solution from the list of their organization. Each state has its own
  * few actions: a draft is continued, sent or deleted; what is in review is read or edited; what was
  * sent back is fixed and sent again; what is approved is opened, shared, and hidden or shown.
+ * Hiding and showing run at once and their toast offers Undo: nobody is told, and the other undoes it.
  * Nothing that was sent for review is deleted, and nothing is withdrawn from review.
  */
 function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
@@ -57,7 +58,7 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
   const locale = useLocale();
   const notify = useNotify();
   const router = useRouter();
-  const [confirming, setConfirming] = useState<"delete" | "hide" | null>(null);
+  const [confirming, setConfirming] = useState<"delete" | null>(null);
   const [pending, setPending] = useState(false);
 
   const editor = `${siteRoutes.workspaceSolutions}/${solution.id}`;
@@ -67,7 +68,7 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
   const filled = reviewFields.length - solution.missing.length;
 
   /** Lists the solution in the directory, or takes it out; its address keeps working either way. */
-  async function list(listed: boolean) {
+  async function list(listed: boolean, undoable: boolean) {
     setPending(true);
     try {
       const { data: found } = await getMySolution({ path: { id: solution.id } });
@@ -75,15 +76,16 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
         path: { id: solution.id },
         body: { ...toRequest(held(found), found.version), listed },
       });
-      notify.success(listed ? "Solution.done.shown" : "Solution.done.hidden", {
-        name: solution.name,
-      });
+      notify.success(
+        listed ? "Solution.done.shown" : "Solution.done.hidden",
+        { name: solution.name },
+        undoable ? { undo: () => void list(!listed, false) } : undefined,
+      );
       router.refresh();
     } catch (error) {
       notify.error(solutionError(error));
     } finally {
       setPending(false);
-      setConfirming(null);
     }
   }
 
@@ -227,12 +229,12 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 {solution.listed ? (
-                  <DropdownMenuItem onClick={() => setConfirming("hide")}>
+                  <DropdownMenuItem disabled={pending} onClick={() => list(false, true)}>
                     <EyeOffIcon aria-hidden="true" />
                     {t("hide")}
                   </DropdownMenuItem>
                 ) : (
-                  <DropdownMenuItem disabled={pending} onClick={() => list(true)}>
+                  <DropdownMenuItem disabled={pending} onClick={() => list(true, true)}>
                     <EyeIcon aria-hidden="true" />
                     {t("show")}
                   </DropdownMenuItem>
@@ -253,17 +255,6 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
         tone="danger"
         pending={pending}
         onConfirm={remove}
-      />
-      <ConfirmDialog
-        open={confirming === "hide"}
-        onOpenChange={(next) => setConfirming(next ? "hide" : null)}
-        title={t("confirmHide.title")}
-        description={t("confirmHide.lead")}
-        confirmLabel={t("confirmHide.confirm")}
-        cancelLabel={t("cancel")}
-        tone="danger"
-        pending={pending}
-        onConfirm={() => list(false)}
       />
     </>
   );

@@ -114,8 +114,10 @@ function AddSuppressionButton() {
 }
 
 /**
- * Lets email reach an address again. For an address that bounced or complained, the dialog says
- * what that risks: the provider counts every new bounce or complaint against the sender.
+ * Lets email reach an address again. An address an operator added is let through at once, and the
+ * toast offers Undo, which adds it back. For an address that bounced or complained the provider's
+ * record cannot be put back, so the dialog asks once and says what it risks: the provider counts
+ * every new bounce or complaint against the sender.
  */
 function RemoveSuppressionButton({
   address,
@@ -134,7 +136,11 @@ function RemoveSuppressionButton({
     setPending(true);
     try {
       await removeEmailSuppression({ path: { address } });
-      notify.success("Admin.email.suppressions.remove.done", { email: address });
+      notify.success(
+        "Admin.email.suppressions.remove.done",
+        { email: address },
+        reason === "manual" ? { undo: () => void addBack() } : undefined,
+      );
       router.refresh();
     } catch {
       notify.error("Admin.email.suppressions.errors.unknown");
@@ -144,12 +150,24 @@ function RemoveSuppressionButton({
     }
   }
 
+  async function addBack() {
+    try {
+      await addEmailSuppression({ body: { address } });
+      notify.success("Admin.email.suppressions.add.done", { email: address });
+      router.refresh();
+    } catch {
+      notify.error("Admin.email.suppressions.errors.unknown");
+    }
+  }
+
   return (
     <>
       <button
         type="button"
         aria-label={t("open", { email: address })}
-        onClick={() => setAsking(true)}
+        aria-busy={pending || undefined}
+        disabled={pending}
+        onClick={() => (reason === "manual" ? void remove() : setAsking(true))}
         className="hit-area flex size-8 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <Trash2Icon aria-hidden="true" className="size-4" />
@@ -159,10 +177,10 @@ function RemoveSuppressionButton({
         onOpenChange={(open) => !open && setAsking(false)}
         title={t("title")}
         description={t("lead", { email: address })}
-        note={reason === "manual" ? t("noteManual") : t("noteProvider")}
+        note={t("noteProvider")}
         confirmLabel={t("confirm")}
         cancelLabel={t("cancel")}
-        tone={reason === "manual" ? "default" : "danger"}
+        tone="danger"
         pending={pending}
         onConfirm={() => void remove()}
       />
