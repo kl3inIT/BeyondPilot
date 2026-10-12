@@ -4,12 +4,14 @@ import { CircleAlertIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { TextButton } from "@/components/actions/text-button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { FieldSeparator } from "@/components/ui/field";
 import { CheckEmail } from "@/features/identity/check-email";
 import { EmailSignIn } from "@/features/identity/email-sign-in";
 import { GoogleButton } from "@/features/identity/google-button";
 import type { CodeRequestOutcome } from "@/features/identity/identity-api";
+import { siteRoutes } from "@/lib/site";
 
 /** What can come back in `?error=` after a round trip; an unknown value shows nothing. */
 const errorCodes = ["google"] as const;
@@ -26,7 +28,9 @@ type SignInFormProps = {
 
 /**
  * The sign-in methods and what follows them: Google, or a code by email and then the screen that
- * takes the code. While one method is in progress the other one waits.
+ * takes the code. While one method is in progress the other one waits. Under the title stands what
+ * an account is for, or, for a person a page sent here, that they go on to that page; under the
+ * methods, what continuing accepts.
  */
 function SignInForm({ returnTo, home, error }: SignInFormProps) {
   const t = useTranslations("SignIn");
@@ -48,9 +52,12 @@ function SignInForm({ returnTo, home, error }: SignInFormProps) {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight text-balance md:text-3xl">
-        {t("title")}
-      </h1>
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-balance md:text-3xl">
+          {t("title")}
+        </h1>
+        <p className="text-sm text-muted-foreground">{t(returnTo ? "returnLead" : "lead")}</p>
+      </div>
       {errorCode === "google" && (
         <Alert variant="destructive">
           <CircleAlertIcon aria-hidden="true" />
@@ -76,6 +83,20 @@ function SignInForm({ returnTo, home, error }: SignInFormProps) {
           }}
         />
       </div>
+      <p className="text-xs text-muted-foreground">
+        {t.rich("legal", {
+          terms: (chunks) => (
+            <TextButton size="sm" href={siteRoutes.terms} className="whitespace-normal">
+              {chunks}
+            </TextButton>
+          ),
+          privacy: (chunks) => (
+            <TextButton size="sm" href={siteRoutes.privacy} className="whitespace-normal">
+              {chunks}
+            </TextButton>
+          ),
+        })}
+      </p>
     </>
   );
 }
