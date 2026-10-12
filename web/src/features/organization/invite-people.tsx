@@ -1,16 +1,18 @@
 "use client";
 
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { MailPlusIcon } from "lucide-react";
 import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { HelpPopover } from "@/components/composites/help-popover";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useNotify } from "@/hooks/use-notify";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -54,60 +56,55 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
   const notify = useNotify();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [emails, setEmails] = useState("");
-  const [role, setRole] = useState<InviteMember["role"]>("member");
-  const [pending, setPending] = useState(false);
-  const [invalid, setInvalid] = useState(false);
   // The day's limit is said first: only waiting helps, whatever is still open.
   const reached = allowance.leftToday === 0 ? "daily" : allowance.leftOpen === 0 ? "open" : null;
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const addresses = addressesOf(emails);
-    if (addresses.length === 0) {
-      setInvalid(true);
-      return;
-    }
-    setPending(true);
-    const refused: { address: string; error: unknown }[] = [];
-    for (const [index, address] of addresses.entries()) {
-      try {
-        await inviteOrganizationMember({ body: { email: address, role } });
-      } catch (error) {
-        refused.push({ address, error });
-        if (reachedLimit(error)) {
-          // The rest would be refused for the same reason; they stay in the field.
-          refused.push(...addresses.slice(index + 1).map((rest) => ({ address: rest, error })));
-          break;
+  const form = useAppForm({
+    defaultValues: { emails: "", role: "member" as InviteMember["role"] },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({
+        emails: z.string().refine((text) => addressesOf(text).length > 0, t("emailsInvalid")),
+        role: z.enum(["owner", "member"]),
+      }),
+    },
+    onSubmit: async ({ value, formApi }) => {
+      const addresses = addressesOf(value.emails);
+      const refused: { address: string; error: unknown }[] = [];
+      for (const [index, address] of addresses.entries()) {
+        try {
+          await inviteOrganizationMember({ body: { email: address, role: value.role } });
+        } catch (error) {
+          refused.push({ address, error });
+          if (reachedLimit(error)) {
+            // The rest would be refused for the same reason; they stay in the field.
+            refused.push(...addresses.slice(index + 1).map((rest) => ({ address: rest, error })));
+            break;
+          }
         }
       }
-    }
-    const sent = addresses.length - refused.length;
-    if (sent > 0) {
-      notify.success("Organization.done.invited", { count: sent });
-      router.refresh();
-    }
-    if (refused.length > 0) {
-      setEmails(refused.map((entry) => entry.address).join(", "));
-      setInvalid(badAddress(refused[0].error));
-      notify.error(organizationError(refused[0].error));
-    } else {
-      setEmails("");
-      setInvalid(false);
-      setOpen(false);
-    }
-    setPending(false);
-  }
+      const sent = addresses.length - refused.length;
+      if (sent > 0) {
+        notify.success("Organization.done.invited", { count: sent });
+        router.refresh();
+      }
+      if (refused.length > 0) {
+        formApi.setFieldValue("emails", refused.map((entry) => entry.address).join(", "));
+        if (badAddress(refused[0].error)) {
+          setServerErrors(formApi, { fields: { emails: { message: t("emailsInvalid") } } });
+        }
+        notify.error(organizationError(refused[0].error));
+      } else {
+        formApi.reset();
+        setOpen(false);
+      }
+    },
+  });
+  const pending = useStore(form.store, (state) => state.isSubmitting);
 
   return (
     <>
-      <Button
-        size="lg"
-        onClick={() => {
-          setInvalid(false);
-          setOpen(true);
-        }}
-      >
+      <Button size="lg" onClick={() => setOpen(true)}>
         {t("open")}
       </Button>
       <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>
@@ -135,7 +132,15 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
               </DialogFooter>
             </>
           ) : (
-            <form noValidate onSubmit={submit} className="flex flex-col gap-4">
+            <form
+              id={form.formId}
+              noValidate
+              className="flex flex-col gap-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void form.handleSubmit();
+              }}
+            >
               <DecisionDialogHeader
                 tone="info"
                 icon={MailPlusIcon}
@@ -148,40 +153,40 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
                 })}
               />
               <FieldGroup>
-                <Field data-invalid={invalid || undefined}>
-                  <FieldLabel htmlFor="invite-emails">{t("emails")}</FieldLabel>
-                  <Input
-                    id="invite-emails"
-                    inputMode="email"
-                    autoCapitalize="none"
-                    autoComplete="off"
-                    spellCheck={false}
-                    value={emails}
-                    aria-describedby={invalid ? undefined : "invite-emails-hint"}
-                    onChange={(event) => setEmails(event.target.value)}
-                    aria-invalid={invalid || undefined}
-                  />
-                  {invalid ? (
-                    <FieldError>{t("emailsInvalid")}</FieldError>
-                  ) : (
-                    <FieldDescription id="invite-emails-hint">{t("emailsHint")}</FieldDescription>
+                <form.AppField name="emails">
+                  {(field) => (
+                    <field.TextField
+                      label={t("emails")}
+                      inputMode="email"
+                      autoCapitalize="none"
+                      autoComplete="off"
+                      spellCheck={false}
+                      description={t("emailsHint")}
+                    />
                   )}
-                </Field>
-                <Field>
-                  <div className="flex items-center gap-1">
-                    <FieldLabel htmlFor="invite-role">{t("role")}</FieldLabel>
-                    <HelpPopover label={t("roleHelp")}>{t("note")}</HelpPopover>
-                  </div>
-                  <NativeSelect
-                    id="invite-role"
-                    className="w-full"
-                    value={role}
-                    onChange={(event) => setRole(event.target.value as InviteMember["role"])}
-                  >
-                    <NativeSelectOption value="member">{roleName("member")}</NativeSelectOption>
-                    <NativeSelectOption value="owner">{roleName("owner")}</NativeSelectOption>
-                  </NativeSelect>
-                </Field>
+                </form.AppField>
+                <form.Field name="role">
+                  {(field) => (
+                    <Field>
+                      <div className="flex items-center gap-1">
+                        <FieldLabel htmlFor="invite-role">{t("role")}</FieldLabel>
+                        <HelpPopover label={t("roleHelp")}>{t("note")}</HelpPopover>
+                      </div>
+                      <NativeSelect
+                        id="invite-role"
+                        className="w-full"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value as InviteMember["role"])
+                        }
+                      >
+                        <NativeSelectOption value="member">{roleName("member")}</NativeSelectOption>
+                        <NativeSelectOption value="owner">{roleName("owner")}</NativeSelectOption>
+                      </NativeSelect>
+                    </Field>
+                  )}
+                </form.Field>
               </FieldGroup>
               <DialogFooter variant="plain">
                 <Button
