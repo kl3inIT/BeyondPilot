@@ -5,8 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { useAppForm } from "@/components/form/app-form";
 import { useNotify } from "@/hooks/use-notify";
 import {
   acceptOrganizationInvitation,
@@ -27,27 +26,28 @@ function OrganizationInvitation({ invitation }: { invitation: Invitation }) {
   const format = useFormatter();
   const notify = useNotify();
   const router = useRouter();
-  const [jobTitle, setJobTitle] = useState("");
   const [pending, setPending] = useState<"accept" | "decline" | null>(null);
   const owner = invitation.role === "owner";
 
-  async function accept(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPending("accept");
-    try {
-      await acceptOrganizationInvitation({ path: { id: invitation.id } });
-      // The job title belongs to the membership, so it is written once the person has joined.
-      const title = jobTitle.trim();
-      if (title) {
-        await changeMyJobTitle({ body: { jobTitle: title } }).catch(() => undefined);
+  const form = useAppForm({
+    defaultValues: { jobTitle: "" },
+    onSubmit: async ({ value }) => {
+      setPending("accept");
+      try {
+        await acceptOrganizationInvitation({ path: { id: invitation.id } });
+        // The job title belongs to the membership, so it is written once the person has joined.
+        const title = value.jobTitle.trim();
+        if (title) {
+          await changeMyJobTitle({ body: { jobTitle: title } }).catch(() => undefined);
+        }
+        notify.success("Organization.done.invitationAccepted");
+        router.refresh();
+      } catch (error) {
+        notify.error(organizationError(error));
+        setPending(null);
       }
-      notify.success("Organization.done.invitationAccepted");
-      router.refresh();
-    } catch (error) {
-      notify.error(organizationError(error));
-      setPending(null);
-    }
-  }
+    },
+  });
 
   async function decline() {
     setPending("decline");
@@ -78,17 +78,24 @@ function OrganizationInvitation({ invitation }: { invitation: Invitation }) {
           </span>
         </div>
       </div>
-      <form noValidate onSubmit={accept} className="flex flex-col gap-4">
-        <Field>
-          <FieldLabel htmlFor="invitation-job-title">{t("jobTitle")}</FieldLabel>
-          <Input
-            id="invitation-job-title"
-            autoComplete="organization-title"
-            maxLength={120}
-            value={jobTitle}
-            onChange={(event) => setJobTitle(event.target.value)}
-          />
-        </Field>
+      <form
+        id={form.formId}
+        noValidate
+        className="flex flex-col gap-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void form.handleSubmit();
+        }}
+      >
+        <form.AppField name="jobTitle">
+          {(field) => (
+            <field.TextField
+              label={t("jobTitle")}
+              autoComplete="organization-title"
+              maxLength={120}
+            />
+          )}
+        </form.AppField>
         <Button
           type="submit"
           size="lg"

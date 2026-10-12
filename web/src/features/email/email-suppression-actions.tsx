@@ -1,12 +1,15 @@
 "use client";
 
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import {
   Dialog,
   DialogContent,
@@ -15,8 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { useNotify } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -34,38 +35,34 @@ function AddSuppressionButton() {
   const notify = useNotify();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [address, setAddress] = useState("");
-  const [problem, setProblem] = useState<"invalid" | "exists" | null>(null);
-  const [pending, setPending] = useState(false);
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const value = address.trim();
-    if (!ADDRESS.test(value)) {
-      setProblem("invalid");
-      return;
-    }
-    setPending(true);
-    try {
-      await addEmailSuppression({ body: { address: value } });
-      notify.success("Admin.email.suppressions.add.done", { email: value });
-      setOpen(false);
-      setAddress("");
-      setProblem(null);
-      router.refresh();
-    } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      if (code === "NOTIFICATION_SUPPRESSION_EXISTS") {
-        setProblem("exists");
-      } else if (error instanceof ApiError && error.violations.length > 0) {
-        setProblem("invalid");
-      } else {
-        notify.error("Admin.email.suppressions.errors.unknown");
+  const form = useAppForm({
+    defaultValues: { address: "" },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({ address: z.string().trim().regex(ADDRESS, t("invalid")) }),
+    },
+    onSubmit: async ({ value, formApi }) => {
+      const address = value.address.trim();
+      try {
+        await addEmailSuppression({ body: { address } });
+        notify.success("Admin.email.suppressions.add.done", { email: address });
+        setOpen(false);
+        formApi.reset();
+        router.refresh();
+      } catch (error) {
+        const code = error instanceof ApiError ? error.code : undefined;
+        if (code === "NOTIFICATION_SUPPRESSION_EXISTS") {
+          setServerErrors(formApi, { fields: { address: { message: t("exists") } } });
+        } else if (error instanceof ApiError && error.violations.length > 0) {
+          setServerErrors(formApi, { fields: { address: { message: t("invalid") } } });
+        } else {
+          notify.error("Admin.email.suppressions.errors.unknown");
+        }
       }
-    } finally {
-      setPending(false);
-    }
-  }
+    },
+  });
+  const pending = useStore(form.store, (state) => state.isSubmitting);
 
   return (
     <>
@@ -75,29 +72,31 @@ function AddSuppressionButton() {
       </Button>
       <Dialog open={open} onOpenChange={(next) => (pending ? undefined : setOpen(next))}>
         <DialogContent showCloseButton={false} className="sm:max-w-md">
-          <form noValidate onSubmit={submit} className="flex flex-col gap-4">
+          <form
+            id={form.formId}
+            noValidate
+            className="flex flex-col gap-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void form.handleSubmit();
+            }}
+          >
             <DialogHeader>
               <DialogTitle>{t("title")}</DialogTitle>
               <DialogDescription>{t("lead")}</DialogDescription>
             </DialogHeader>
-            <Field data-invalid={problem !== null || undefined}>
-              <FieldLabel htmlFor="suppression-address">{t("address")}</FieldLabel>
-              <Input
-                id="suppression-address"
-                type="email"
-                inputMode="email"
-                autoCapitalize="none"
-                spellCheck={false}
-                maxLength={254}
-                value={address}
-                onChange={(event) => {
-                  setAddress(event.target.value);
-                  setProblem(null);
-                }}
-                aria-invalid={problem !== null || undefined}
-              />
-              {problem && <FieldError>{t(problem)}</FieldError>}
-            </Field>
+            <form.AppField name="address">
+              {(field) => (
+                <field.TextField
+                  label={t("address")}
+                  type="email"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  maxLength={254}
+                />
+              )}
+            </form.AppField>
             <DialogFooter>
               <Button prominence="secondary" disabled={pending} onClick={() => setOpen(false)}>
                 {t("cancel")}

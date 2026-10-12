@@ -1,11 +1,13 @@
 "use client";
 
+import { useStore } from "@tanstack/react-form";
 import { TriangleAlertIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { useAppForm } from "@/components/form/app-form";
 import {
   Dialog,
   DialogContent,
@@ -54,21 +56,42 @@ function ChangeModel({ providers, vendors, current, items, settingsVersion }: Ch
   const id = useId();
   const usable = providers.filter((provider) => provider.hasKey);
   const [open, setOpen] = useState(false);
-  const [providerId, setProviderId] = useState(current?.providerId ?? usable[0]?.id ?? "");
-  const provider = usable.find((each) => each.id === providerId);
-  const models = vendors.find((vendor) => vendor.id === provider?.vendor)?.models ?? [];
-  const [model, setModel] = useState(current?.model ?? models[0] ?? "");
   const [result, setResult] = useState<AiProviderTest | null>(null);
   const [testing, setTesting] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const changing = current !== null && current.model !== model;
+  /** The models of the vendor a provider belongs to. */
+  const modelsOf = (id: string) => {
+    const vendor = usable.find((each) => each.id === id)?.vendor;
+    return vendors.find((each) => each.id === vendor)?.models ?? [];
+  };
+  const firstProvider = current?.providerId ?? usable[0]?.id ?? "";
 
-  function pickProvider(next: string) {
-    setProviderId(next);
-    const vendor = usable.find((each) => each.id === next)?.vendor;
-    setModel(vendors.find((each) => each.id === vendor)?.models[0] ?? "");
-    setResult(null);
-  }
+  const form = useAppForm({
+    defaultValues: {
+      providerId: firstProvider,
+      model: current?.model ?? modelsOf(firstProvider)[0] ?? "",
+    },
+    onSubmit: async ({ value }) => {
+      const chosen = usable.find((each) => each.id === value.providerId);
+      if (!chosen) {
+        return;
+      }
+      try {
+        await chooseEmbeddingModel({
+          body: { providerId: chosen.id, model: value.model, version: settingsVersion },
+        });
+        notify.success("Admin.ai.done.modelChosen", { model: value.model });
+        setOpen(false);
+        router.refresh();
+      } catch (error) {
+        notify.error(aiError(error));
+      }
+    },
+  });
+  const { providerId, model } = useStore(form.store, (state) => state.values);
+  const saving = useStore(form.store, (state) => state.isSubmitting);
+  const provider = usable.find((each) => each.id === providerId);
+  const models = modelsOf(providerId);
+  const changing = current !== null && current.model !== model;
 
   async function test() {
     if (!provider) {
@@ -94,26 +117,6 @@ function ChangeModel({ providers, vendors, current, items, settingsVersion }: Ch
     }
   }
 
-  async function save(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!provider) {
-      return;
-    }
-    setSaving(true);
-    try {
-      await chooseEmbeddingModel({
-        body: { providerId: provider.id, model, version: settingsVersion },
-      });
-      notify.success("Admin.ai.done.modelChosen", { model });
-      setSaving(false);
-      setOpen(false);
-      router.refresh();
-    } catch (error) {
-      notify.error(aiError(error));
-      setSaving(false);
-    }
-  }
-
   return (
     <>
       <Button
@@ -126,45 +129,69 @@ function ChangeModel({ providers, vendors, current, items, settingsVersion }: Ch
       </Button>
       <Dialog open={open} onOpenChange={(next) => (saving ? undefined : setOpen(next))}>
         <DialogContent className="sm:max-w-125">
-          <form noValidate onSubmit={save} className="flex flex-col gap-4">
+          <form
+            id={form.formId}
+            noValidate
+            className="flex flex-col gap-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void form.handleSubmit();
+            }}
+          >
             <DialogHeader>
               <DialogTitle>{t("title")}</DialogTitle>
               <DialogDescription>{t("lead")}</DialogDescription>
             </DialogHeader>
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor={`${id}-provider`}>{t("provider")}</FieldLabel>
-                <NativeSelect
-                  id={`${id}-provider`}
-                  className="w-full"
-                  value={providerId}
-                  onChange={(event) => pickProvider(event.target.value)}
-                >
-                  {usable.map((each) => (
-                    <NativeSelectOption key={each.id} value={each.id}>
-                      {each.name}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor={`${id}-model`}>{t("model")}</FieldLabel>
-                <NativeSelect
-                  id={`${id}-model`}
-                  className="w-full"
-                  value={model}
-                  onChange={(event) => {
-                    setModel(event.target.value);
+              <form.Field
+                name="providerId"
+                listeners={{
+                  // Another provider offers other models, so the choice starts at its first.
+                  onChange: ({ value }) => {
+                    form.setFieldValue("model", modelsOf(value)[0] ?? "");
                     setResult(null);
-                  }}
-                >
-                  {models.map((each) => (
-                    <NativeSelectOption key={each} value={each}>
-                      {each}
-                    </NativeSelectOption>
-                  ))}
-                </NativeSelect>
-              </Field>
+                  },
+                }}
+              >
+                {(field) => (
+                  <Field>
+                    <FieldLabel htmlFor={`${id}-provider`}>{t("provider")}</FieldLabel>
+                    <NativeSelect
+                      id={`${id}-provider`}
+                      className="w-full"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                    >
+                      {usable.map((each) => (
+                        <NativeSelectOption key={each.id} value={each.id}>
+                          {each.name}
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
+                  </Field>
+                )}
+              </form.Field>
+              <form.Field name="model" listeners={{ onChange: () => setResult(null) }}>
+                {(field) => (
+                  <Field>
+                    <FieldLabel htmlFor={`${id}-model`}>{t("model")}</FieldLabel>
+                    <NativeSelect
+                      id={`${id}-model`}
+                      className="w-full"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) => field.handleChange(event.target.value)}
+                    >
+                      {models.map((each) => (
+                        <NativeSelectOption key={each} value={each}>
+                          {each}
+                        </NativeSelectOption>
+                      ))}
+                    </NativeSelect>
+                  </Field>
+                )}
+              </form.Field>
             </FieldGroup>
 
             <div className="flex flex-col gap-2.5 rounded-lg border p-3">

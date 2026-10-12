@@ -200,6 +200,7 @@ function EmailTemplateEditor({
 
   return (
     <form
+      id={form.formId}
       noValidate
       className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8"
       onSubmit={(event) => {
