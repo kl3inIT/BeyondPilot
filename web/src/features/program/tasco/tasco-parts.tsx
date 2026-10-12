@@ -2,6 +2,8 @@ import { getTranslations } from "next-intl/server";
 
 import { Badge } from "@/components/ui/badge";
 
+import { Note, SectionHead } from "../program-parts";
+
 const businesses = ["retail", "tolling", "insurance", "roadside", "care", "charging"] as const;
 
 /** What places Tasco for a reader: its listing, its toll business, the brands it sells and its shareholder. */
@@ -14,25 +16,6 @@ const supportItems = ["briefing", "workshops", "mentors", "credits"] as const;
 const myths = ["rnd", "procurement", "insurance", "weeks", "prize"] as const;
 
 const label = "text-xs font-semibold tracking-wide text-muted-foreground uppercase";
-
-export function SectionHead({ title, lead }: { title: string; lead?: string }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <h2 className="text-2xl font-semibold tracking-title md:text-3xl">{title}</h2>
-      {lead && <p className="max-w-3xl text-muted-foreground">{lead}</p>}
-    </div>
-  );
-}
-
-/** A remark that stands beside a section's content: a rule, a condition, a thing to know. */
-export function Note({ title, text }: { title: string; text: string }) {
-  return (
-    <div className="flex flex-col gap-0.5 rounded-xl border bg-accent p-4">
-      <h3 className="font-medium">{title}</h3>
-      <p className="text-sm text-muted-foreground">{text}</p>
-    </div>
-  );
-}
 
 /** A point argued in a few paragraphs under a section. */
 export function Argument({ title, paragraphs }: { title: string; paragraphs: string[] }) {

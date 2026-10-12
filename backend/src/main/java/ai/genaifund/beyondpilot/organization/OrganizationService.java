@@ -29,6 +29,7 @@ import ai.genaifund.beyondpilot.organization.dto.MyOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationMatchResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationSearchResponse;
+import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationBasicsRequest;
 import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.ClosedRequest;
@@ -341,6 +342,30 @@ public class OrganizationService {
 		organizations.flush();
 		events.publishEvent(new OrganizationChanged(organization.getId()));
 		logos.discardReplaced(formerLogo, logo);
+		return OrganizationViews.organization(organization);
+	}
+
+	/**
+	 * Saves the name, type, size, industries and country alone, for an owner who made the organization in a few lines
+	 * and has not written the rest of the profile yet. An organization sent back that its owner saves waits for review
+	 * again.
+	 * @throws OrganizationException when the caller is not an owner, or a company names no industry
+	 */
+	@Transactional
+	public OrganizationResponse saveBasics(Actor actor, SaveOrganizationBasicsRequest request) {
+		Member owner = owner(actor);
+		if ("company".equals(request.type()) && request.industries().isEmpty()) {
+			throw new OrganizationException(OrganizationErrorCode.INDUSTRIES_REQUIRED,
+					"Company saved by account " + actor.accountId() + " without an industry");
+		}
+		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
+		organization.describeBasics(request.name().strip(), request.type(), request.teamSize(),
+				OrganizationViews.codes(request.industries()), request.country());
+		if (organization.isSentBack()) {
+			organization.resubmit();
+		}
+		organizations.flush();
+		events.publishEvent(new OrganizationChanged(organization.getId()));
 		return OrganizationViews.organization(organization);
 	}
 
