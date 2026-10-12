@@ -150,6 +150,13 @@ public class TalentDetailRepository {
 				""").params(profileId, limit).query(TalentDetailRepository::enquiry).list();
 	}
 
+	/** The messages one account sent, to any profile, those that wait first, then the newest. */
+	public List<Enquiry> sentBy(UUID senderAccountId, int limit) {
+		return jdbc.sql(SELECT_ENQUIRY + """
+				where sender_account_id = ? order by (status = 'pending') desc, created_at desc, id limit ?
+				""").params(senderAccountId, limit).query(TalentDetailRepository::enquiry).list();
+	}
+
 	/** One message, locked until the transaction ends, so two answers to it cannot both pass. */
 	public Optional<Enquiry> findEnquiryForUpdate(UUID id) {
 		return jdbc.sql(SELECT_ENQUIRY + "where id = ? for update")

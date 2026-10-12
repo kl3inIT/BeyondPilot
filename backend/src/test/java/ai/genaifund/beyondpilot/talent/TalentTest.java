@@ -564,6 +564,56 @@ class TalentTest {
 	}
 
 	@Test
+	void aSenderReadsWhatTheySentWithAnAddressOnlyOnceAcceptedAndAReportAsADecline() {
+		String kowari = signIn("kowari@profile.test");
+		approved(kowari, apart("Kowari Person", null));
+		String potoroo = signIn("potoroo@profile.test");
+		approved(potoroo, apart("Potoroo Person", null));
+		String sender = signIn("sender@kowari.test");
+		String sent = MINE + "/sent";
+		client.get().uri(sent).exchange().expectStatus().isUnauthorized();
+		assertThat(JsonPath.<List<Object>>read(body(get(sender, sent).expectStatus().isOk()), "$.items")).isEmpty();
+		post(sender, DIRECTORY + "/kowari-person/enquiries",
+				Map.of("senderName", "Lan Tran", "topic", "project", "message", "A claims model?"))
+			.expectStatus()
+			.isNoContent();
+		post(sender, DIRECTORY + "/potoroo-person/enquiries",
+				Map.of("senderName", "Lan Tran", "topic", "other", "message", "Buy followers now"))
+			.expectStatus()
+			.isNoContent();
+
+		String waiting = body(get(sender, sent).expectStatus().isOk());
+
+		assertThat(JsonPath.<List<String>>read(waiting, "$.items[*].status")).containsExactly("pending", "pending");
+		assertThat(JsonPath.<List<Object>>read(waiting, "$.items[*].recipientEmail")).containsOnlyNulls();
+		assertThat(JsonPath.<List<Object>>read(waiting, "$.items[*].closesAt")).doesNotContainNull();
+		assertThat(waiting).doesNotContain("@profile.test");
+		post(kowari, MINE + "/enquiries/" + JsonPath.<String>read(mine(kowari), "$.enquiries[0].id") + "/accept", null)
+			.expectStatus()
+			.isNoContent();
+		post(potoroo, MINE + "/enquiries/" + JsonPath.<String>read(mine(potoroo), "$.enquiries[0].id") + "/report", null)
+			.expectStatus()
+			.isNoContent();
+
+		String answered = body(get(sender, sent).expectStatus().isOk());
+
+		String accepted = "$.items[?(@.recipientName == 'Kowari Person')]";
+		assertThat(JsonPath.<List<String>>read(answered, accepted + ".status")).containsExactly("accepted");
+		assertThat(JsonPath.<List<String>>read(answered, accepted + ".recipientEmail"))
+			.containsExactly("kowari@profile.test");
+		assertThat(JsonPath.<List<String>>read(answered, accepted + ".recipientSlug")).containsExactly("kowari-person");
+		assertThat(JsonPath.<List<String>>read(answered, accepted + ".senderName")).containsExactly("Lan Tran");
+		assertThat(JsonPath.<List<String>>read(answered, accepted + ".message")).containsExactly("A claims model?");
+		// A report reads as a decline here too, and shares no address.
+		String reported = "$.items[?(@.recipientName == 'Potoroo Person')]";
+		assertThat(JsonPath.<List<String>>read(answered, reported + ".status")).containsExactly("declined");
+		assertThat(JsonPath.<List<Object>>read(answered, reported + ".recipientEmail")).containsOnlyNulls();
+		assertThat(answered).doesNotContain("reported").doesNotContain("potoroo@profile.test");
+		// What one person sent is theirs alone.
+		assertThat(JsonPath.<List<Object>>read(body(get(kowari, sent).expectStatus().isOk()), "$.items")).isEmpty();
+	}
+
+	@Test
 	void aSenderStartsTenConversationsADay() {
 		UUID profile = approved(signIn("dingo@profile.test"), "Dingo Person");
 		String sender = signIn("busy@dingo.test");

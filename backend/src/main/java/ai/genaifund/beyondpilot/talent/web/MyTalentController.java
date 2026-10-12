@@ -7,6 +7,7 @@ import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.talent.TalentService;
 import ai.genaifund.beyondpilot.talent.dto.MyTalentResponse;
 import ai.genaifund.beyondpilot.talent.dto.SaveTalentProfileRequest;
+import ai.genaifund.beyondpilot.talent.dto.SentTalentEnquiryListResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentProfileResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -93,6 +94,15 @@ class MyTalentController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void delete(@CurrentActor Actor actor) {
 		talent.delete(actor);
+	}
+
+	@GetMapping(path = "/sent", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "listSentTalentEnquiries",
+			summary = "The messages the caller sent through talent profiles, with what became of each",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The messages; none when the caller sent none.")
+	SentTalentEnquiryListResponse sent(@CurrentActor Actor actor) {
+		return talent.sent(actor);
 	}
 
 	@PostMapping(path = "/enquiries/{id}/accept")

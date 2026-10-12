@@ -9628,6 +9628,28 @@ paths:
         it as declined
       tags:
       - My talent profile
+  /api/talent/mine/sent:
+    get:
+      operationId: listSentTalentEnquiries
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SentTalentEnquiryList"
+          description: The messages; none when the caller sent none.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: "The messages the caller sent through talent profiles, with what became\
+        \ of each"
+      tags:
+      - My talent profile
   /api/talent/mine/submit:
     post:
       operationId: submitMyTalentProfile
@@ -20867,6 +20889,93 @@ components:
           format: int32
       required:
       - title
+    SentTalentEnquiry:
+      type: object
+      description: "A message the caller sent through a talent profile, with what\
+        \ became of it."
+      properties:
+        answeredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the person answered it or it closed; null while it waits.
+        closesAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When a waiting message closes unanswered; null once it is answered.
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        message:
+          type: string
+        profileId:
+          type: string
+          format: uuid
+          description: The profile it was sent through; the caller's messages to one
+            person share it.
+        recipientEmail:
+          type:
+          - string
+          - "null"
+          description: Where the caller writes to the person; only once the person
+            accepted.
+        recipientHeadline:
+          type:
+          - string
+          - "null"
+        recipientName:
+          type: string
+        recipientSlug:
+          type:
+          - string
+          - "null"
+          description: The address of the profile's public page; null while the profile
+            is not in the directory.
+        senderName:
+          type:
+          - string
+          - "null"
+          description: The name the caller signed it with; null on a message sent
+            before a name was asked for.
+        status:
+          type: string
+          description: A message the person reported reads as declined.
+          enum:
+          - pending
+          - accepted
+          - declined
+          - closed
+        topic:
+          type: string
+          enum:
+          - project
+          - role
+          - other
+      required:
+      - createdAt
+      - id
+      - message
+      - profileId
+      - recipientName
+      - status
+      - topic
+    SentTalentEnquiryList:
+      type: object
+      description: The messages the caller sent through talent profiles.
+      properties:
+        items:
+          type: array
+          description: "Those that wait for an answer first, then the newest."
+          items:
+            $ref: "#/components/schemas/SentTalentEnquiry"
+      required:
+      - items
     SetDocumentReader:
       type: object
       description: "What reads a page that is only a picture from now on: a model\
