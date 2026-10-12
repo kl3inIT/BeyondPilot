@@ -54,16 +54,22 @@ async function ApplicationTracker({ item, now }: { item: MyApplication; now: num
   return (
     <ol aria-label={t("label")} className="grid auto-cols-fr grid-flow-col gap-1.5">
       {stages.map((stage) => (
-        <li key={stage.key} className="relative flex min-w-0 flex-col gap-1.5">
+        <li key={stage.key} className="flex min-w-0 flex-col gap-1.5">
           <span
             aria-hidden="true"
             className={stage.done ? "h-1 rounded-full bg-primary" : "h-1 rounded-full bg-border"}
           />
+          {/*
+            `relative` makes this span the containing block of the hidden words after the label.
+            They are positioned absolutely where the line would have put them, which for a label cut
+            short is past the end of the column; a box that only cuts its overflow does not cut a
+            positioned child it does not contain, so on a phone those words widened the page.
+          */}
           <span
             className={
               stage.done
-                ? "truncate text-xs font-medium text-foreground"
-                : "truncate text-xs text-muted-foreground"
+                ? "relative truncate text-xs font-medium text-foreground"
+                : "relative truncate text-xs text-muted-foreground"
             }
           >
             {stage.label}

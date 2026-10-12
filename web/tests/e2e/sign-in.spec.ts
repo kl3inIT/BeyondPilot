@@ -166,9 +166,7 @@ test.describe("sign in", () => {
 
     const alert = page.getByRole("alert").filter({ hasText: "We couldn't send the email" });
     await expect(alert).toContainText("an.tran@tasco.com.vn");
-    // The pointer is still on the submit button. Its hover colour (primary at 90%) is below 4.5:1,
-    // a finding about every primary button that is reported separately; this check reads the alert.
-    await page.mouse.move(0, 0);
+    // The pointer is still on the submit button, so the check reads its hover colour too.
     await expectNoSeriousA11yViolations(page);
   });
 

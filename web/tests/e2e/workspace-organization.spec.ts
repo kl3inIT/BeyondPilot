@@ -267,8 +267,6 @@ test.describe("workspace organization", () => {
     // The first field that lacks something is where the person continues.
     await expect(page.getByLabel("Organization name")).toBeFocused();
     expect(changes).toEqual([]);
-    // The pointer still rests on the button; its hover colour is not what is checked here.
-    await page.mouse.move(0, 0);
     await expectNoSeriousA11yViolations(page);
 
     await page.getByLabel("Organization name").fill("Sài Gòn Logistics");
