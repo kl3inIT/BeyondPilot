@@ -86,8 +86,25 @@ async function NestlePage({ program }: { program: Program }) {
 
         <div className="flex flex-col gap-6">
           <header className="flex flex-col overflow-hidden rounded-3xl border">
-            <div className="flex flex-col gap-8 bg-primary bg-linear-150 from-foreground/60 via-transparent via-60% to-transparent p-6 text-primary-foreground md:p-10 lg:flex-row lg:items-center lg:gap-12 dark:from-transparent">
-              <div className="flex min-w-0 flex-1 flex-col gap-4">
+            {/* The photograph GenAI Fund chose fills the right of the band from edge to edge; the site's blue runs
+                into it from the left, so the words keep their contrast and nothing frames the picture. A phone
+                has no room for both, and keeps the blue. */}
+            <div className="relative isolate flex flex-col gap-8 overflow-hidden bg-primary p-6 text-primary-foreground md:p-10 lg:min-h-104 lg:justify-center">
+              <div
+                aria-hidden="true"
+                className="absolute inset-y-0 right-0 -z-10 hidden w-1/2 lg:block"
+              >
+                <Image
+                  src="/programs/nestle/hero-photo.webp"
+                  alt=""
+                  fill
+                  priority
+                  sizes="(min-width: 1280px) 40rem, 50vw"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-linear-to-r from-primary via-primary/40 via-25% to-transparent to-55%" />
+              </div>
+              <div className="flex min-w-0 flex-col gap-4 lg:max-w-xl">
                 <div className="flex">
                   <Badge variant={open ? "success" : "info"}>
                     {page(`phase.${program.phase}`)}
@@ -117,16 +134,6 @@ async function NestlePage({ program }: { program: Program }) {
                   </p>
                 )}
               </div>
-              {/* The photograph GenAI Fund chose for the program: Nestlé's logo on its building. */}
-              <Image
-                src="/programs/nestle/hero-photo.webp"
-                alt={t("hero.imageAlt")}
-                width={880}
-                height={550}
-                priority
-                sizes="(min-width: 1024px) 26rem, (min-width: 640px) 24rem, 100vw"
-                className="h-auto w-full max-w-sm self-center rounded-3xl lg:w-104 lg:max-w-none"
-              />
             </div>
             <dl className="grid gap-x-6 gap-y-5 bg-accent p-6 sm:grid-cols-2 md:px-10 lg:grid-cols-4">
               {facts.map(([fact, Icon]) => (
