@@ -5372,7 +5372,6 @@
       "address": {
         "pending": "Their email address is shared only if they accept",
         "accepted": "Their email address is no longer available",
-    "noMatch": "Nothing matches.",
         "declined": "No email address was shared",
         "closed": "No email address was shared"
       },
@@ -5401,6 +5400,7 @@
   },
   "Form": {
     "optional": "Optional",
+    "noMatch": "Nothing matches.",
     "steps": {
       "progress": "Step {step} of {count} · {name}",
       "all": "All steps"

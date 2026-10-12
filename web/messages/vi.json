@@ -5372,7 +5372,6 @@
       "address": {
         "pending": "Email của họ chỉ được chia sẻ nếu họ chấp nhận",
         "accepted": "Email của họ không còn khả dụng",
-    "noMatch": "Không có kết quả phù hợp.",
         "declined": "Không email nào được chia sẻ",
         "closed": "Không email nào được chia sẻ"
       },
@@ -5401,6 +5400,7 @@
   },
   "Form": {
     "optional": "Không bắt buộc",
+    "noMatch": "Không có kết quả phù hợp.",
     "steps": {
       "progress": "Bước {step}/{count} · {name}",
       "all": "Tất cả bước"
