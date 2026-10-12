@@ -457,7 +457,7 @@ test.describe("admin organizations", () => {
     ]);
   });
 
-  test("a duplicate is merged into the organization kept, once its name is typed", async ({
+  test("a duplicate is merged into the organization kept, once that is confirmed", async ({
     page,
     context,
     baseURL,
@@ -503,14 +503,25 @@ test.describe("admin organizations", () => {
     await expectNoSeriousA11yViolations(page);
     await dialog.getByRole("button", { name: "Continue" }).click();
 
-    await expect(dialog.getByRole("heading", { name: "Merge into Pocket Policy?" })).toBeVisible();
-    await expect(dialog.getByText("This cannot be undone.")).toBeVisible();
-    const merge = dialog.getByRole("button", { name: "Merge" });
-    await expect(merge).toBeDisabled();
-    await dialog.getByLabel("Type Harbor Bank to confirm").fill("Harbor");
-    await expect(merge).toBeDisabled();
-    await dialog.getByLabel("Type Harbor Bank to confirm").fill("Harbor Bank");
-    await merge.click();
+    // The merge is asked once, naming both organizations and what it does; nothing is typed.
+    const confirmation = page.getByRole("alertdialog");
+    await expect(
+      confirmation.getByRole("heading", { name: "Merge Harbor Bank into Pocket Policy?" }),
+    ).toBeVisible();
+    await expect(
+      confirmation.getByText(
+        "12 members and 1 open invitation move with it, and so do its solutions and use cases.",
+      ),
+    ).toBeVisible();
+    await expect(
+      confirmation.getByText(
+        "Harbor Bank stays only as a record of where it went, and its members are told by email. This cannot be undone.",
+      ),
+    ).toBeVisible();
+    await expect(confirmation.getByRole("textbox")).toHaveCount(0);
+    await expect(confirmation.getByRole("button", { name: "Cancel" })).toBeFocused();
+    await expectNoSeriousA11yViolations(page);
+    await confirmation.getByRole("button", { name: "Merge" }).click();
 
     await expect(
       page.getByText("Harbor Bank was merged into Pocket Policy. Its members were told."),
