@@ -4,18 +4,18 @@ import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { Person } from "@/components/composites/person";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { adminTalentSearch, type AdminTalentSearch } from "./talent-search";
+import { adminTalentSearch, adminTalentSortKeys, type AdminTalentSearch } from "./talent-search";
 import { TalentToolbar } from "./talent-toolbar";
 
 const address = createSerializer(adminTalentSearch);
@@ -83,51 +83,41 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        <div className="flex flex-col gap-1">
-          <AdminPageTitle destination="talent">{t("title")}</AdminPageTitle>
-          <p className="text-sm text-muted-foreground">{t("lead")}</p>
-        </div>
-        <TextButton href={siteRoutes.adminTalentReported}>{t("reported.link")}</TextButton>
-      </div>
+      <AdminPageHeader
+        destination="talent"
+        title={t("title")}
+        lead={t("lead")}
+        actions={
+          <TextButton href={siteRoutes.adminTalentReported}>{t("reported.link")}</TextButton>
+        }
+      />
       <TalentToolbar />
 
       {/* From 768px: a table. The Headline column gives way first. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("columns.person")}</TableHead>
-            <TableHead className="hidden xl:table-cell">{t("columns.headline")}</TableHead>
-            <TableHead>{t("columns.status")}</TableHead>
-            <TableHead>{t("columns.submitted")}</TableHead>
-            <TableHead>
-              <span className="sr-only">{t("columns.actions")}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>{row.person}</TableCell>
-              <TableCell className="hidden max-w-xs xl:table-cell">
-                <span className="line-clamp-1 text-muted-foreground">{row.headline}</span>
-              </TableCell>
-              <TableCell>{row.status}</TableCell>
-              <TableCell>
-                <span className="text-muted-foreground">{row.submitted}</span>
-              </TableCell>
-              <TableCell>
-                <div className="flex justify-end">{open(row)}</div>
-              </TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={5}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+      <DataTableRows
+        sortKeys={adminTalentSortKeys}
+        className="hidden md:flex"
+        columns={[
+          { id: "name", header: t("columns.person") },
+          { id: "headline", header: t("columns.headline"), layout: { from: "xl" } },
+          { id: "status", header: t("columns.status") },
+          { id: "submitted", header: t("columns.submitted") },
+          { id: "actions", header: <span className="sr-only">{t("columns.actions")}</span> },
+        ]}
+        rows={rows.map((row) => ({
+          id: row.id,
+          cells: {
+            name: row.person,
+            headline: (
+              <span className="line-clamp-1 max-w-xs text-muted-foreground">{row.headline}</span>
+            ),
+            status: row.status,
+            submitted: <span className="text-muted-foreground">{row.submitted}</span>,
+            actions: <div className="flex justify-end">{open(row)}</div>,
+          },
+        }))}
+        empty={empty}
+      />
 
       {/* Below 768px: one stacked row per profile, never a table scrolled sideways. */}
       <ul className="overflow-hidden rounded-lg border md:hidden">

@@ -468,6 +468,42 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
+	void theListSortsByTheKeyItIsGivenAndRefusesAnUnknownOne() {
+		String tag = UUID.randomUUID().toString().substring(0, 8);
+		UUID organization = organization("Sorted Bank " + tag);
+		// A draft may lack a close date; a published one may not.
+		post(operator, USE_CASES, useCase(organization, "Bravo " + tag, true)).expectStatus().isCreated();
+		post(operator, USE_CASES, useCase(organization, "alpha " + tag, true)).expectStatus().isCreated();
+		post(operator, USE_CASES, useCase(organization, "Charlie " + tag, false)).expectStatus().isCreated();
+		jdbc.sql("""
+				update use_case set
+				  closes_at = case when title like 'Bravo %' then now() + interval '10 days'
+				                   when title like 'alpha %' then now() + interval '20 days' end,
+				  updated_at = now() - case when title like 'Bravo %' then interval '1 day'
+				                            when title like 'alpha %' then interval '3 days'
+				                            else interval '2 days' end,
+				  created_at = now() - case when title like 'Bravo %' then interval '3 days'
+				                            when title like 'alpha %' then interval '1 day'
+				                            else interval '2 days' end
+				where organization_id = ?
+				""").param(organization).update();
+
+		assertThat(titles("?q=" + tag + "&sort=title")).containsExactly("alpha " + tag, "Bravo " + tag,
+				"Charlie " + tag);
+		assertThat(titles("?q=" + tag + "&sort=-title")).containsExactly("Charlie " + tag, "Bravo " + tag,
+				"alpha " + tag);
+		// One without a close date comes last either way.
+		assertThat(titles("?q=" + tag + "&sort=closes")).containsExactly("Bravo " + tag, "alpha " + tag,
+				"Charlie " + tag);
+		assertThat(titles("?q=" + tag + "&sort=-closes")).containsExactly("alpha " + tag, "Bravo " + tag,
+				"Charlie " + tag);
+		assertThat(titles("?q=" + tag + "&sort=-updated")).containsExactly("Bravo " + tag, "Charlie " + tag,
+				"alpha " + tag);
+		assertThat(titles("?q=" + tag)).containsExactly("alpha " + tag, "Charlie " + tag, "Bravo " + tag);
+		get(operator, USE_CASES + "?sort=budget").expectStatus().isBadRequest();
+	}
+
+	@Test
 	void anOperatorFeaturesUseCasesWhichLeadOnlyTheViewTheListOpensWith() {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		UUID organization = organization("Featuring Bank " + tag);

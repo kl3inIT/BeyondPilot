@@ -32,7 +32,9 @@ function ReviewToolbar({ operator, counts, choice }: ReviewToolbarProps) {
     <div className="flex flex-col gap-3">
       <Tabs
         value={search.tab}
-        onValueChange={(value) => setSearch({ tab: tabs.find((tab) => tab === value) ?? null })}
+        onValueChange={(value) =>
+          setSearch({ tab: tabs.find((tab) => tab === value) ?? null, page: null })
+        }
       >
         <div className="overflow-x-auto">
           <TabsList variant="line" aria-label={t("tabs.label")}>

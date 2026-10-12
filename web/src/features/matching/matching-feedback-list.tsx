@@ -1,9 +1,9 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 
 import { TextButton } from "@/components/actions/text-button";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
-import { DataTable, DataTableFooter } from "@/components/composites/data-table";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { DataTableFooter } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import type { MatchingDisagreement, MatchingFeedbackList } from "@/lib/api/generated";
 import { adminUseCaseCandidatesRoute, siteRoutes } from "@/lib/site";
 
@@ -76,52 +76,51 @@ async function MatchingFeedbackPage({
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <AdminPageTitle destination="aiMatching">{title("title")}</AdminPageTitle>
-      <MatchingAdminTabs current="feedback" />
-      <p className="text-sm text-muted-foreground">
-        {nobody ? t("empty") : t("agreed", { a: feedback.agreements, n: feedback.answers })}
-      </p>
+      <AdminPageHeader
+        destination="aiMatching"
+        title={title("title")}
+        lead={nobody ? t("empty") : t("agreed", { a: feedback.agreements, n: feedback.answers })}
+      >
+        <MatchingAdminTabs current="feedback" />
+      </AdminPageHeader>
 
       {feedback.total > 0 && (
         <>
-          <DataTable className="hidden md:block">
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("columns.solution")}</TableHead>
-                <TableHead>{t("columns.ai")}</TableHead>
-                <TableHead>{t("columns.expected")}</TableHead>
-                <TableHead>{t("columns.requirements")}</TableHead>
-                <TableHead>{t("columns.note")}</TableHead>
-                <TableHead>{t("columns.who")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.key}>
-                  <TableCell className="align-top whitespace-normal">
-                    <span className="flex flex-col items-start gap-0.5">
-                      {row.solution}
-                      <span className="text-xs text-muted-foreground">{row.useCase}</span>
-                    </span>
-                  </TableCell>
-                  <TableCell className="align-top">{row.ai}</TableCell>
-                  <TableCell className="align-top">
-                    <span className="font-medium">{row.expected}</span>
-                  </TableCell>
-                  <TableCell className="align-top whitespace-normal">{row.requirements}</TableCell>
-                  <TableCell className="align-top whitespace-normal">{row.note}</TableCell>
-                  <TableCell className="align-top">
-                    <span className="flex flex-col">
-                      <span>{row.by}</span>
-                      <time dateTime={row.at} className="text-xs text-muted-foreground">
-                        {row.when}
-                      </time>
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </DataTable>
+          {/* The solution, the requirements and the note wrap; a cell keeps one line otherwise. */}
+          <DataTableRows
+            className="hidden md:flex"
+            columns={[
+              { id: "solution", header: t("columns.solution"), layout: { top: true } },
+              { id: "ai", header: t("columns.ai"), layout: { top: true } },
+              { id: "expected", header: t("columns.expected"), layout: { top: true } },
+              { id: "requirements", header: t("columns.requirements"), layout: { top: true } },
+              { id: "note", header: t("columns.note"), layout: { top: true } },
+              { id: "who", header: t("columns.who") },
+            ]}
+            rows={rows.map((row) => ({
+              id: row.key,
+              cells: {
+                solution: (
+                  <span className="flex flex-col items-start gap-0.5 whitespace-normal">
+                    {row.solution}
+                    <span className="text-xs text-muted-foreground">{row.useCase}</span>
+                  </span>
+                ),
+                ai: row.ai,
+                expected: <span className="font-medium">{row.expected}</span>,
+                requirements: <span className="whitespace-normal">{row.requirements}</span>,
+                note: <span className="whitespace-normal">{row.note}</span>,
+                who: (
+                  <span className="flex flex-col">
+                    <span>{row.by}</span>
+                    <time dateTime={row.at} className="text-xs text-muted-foreground">
+                      {row.when}
+                    </time>
+                  </span>
+                ),
+              },
+            }))}
+          />
 
           <ul
             data-slot="matching-disagreements"

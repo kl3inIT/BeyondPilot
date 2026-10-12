@@ -12,11 +12,10 @@ import {
 import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTable } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { HelpPopover } from "@/components/composites/help-popover";
 import { Status } from "@/components/composites/status";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import type { SearchIndex, SearchIndexKind } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -138,13 +137,16 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex items-center justify-between gap-4">
-        <AdminPageTitle destination="searchIndex">{t("title")}</AdminPageTitle>
-        <div className="hidden items-center gap-1 md:flex">
-          {rebuildHelp}
-          <RebuildIndex />
-        </div>
-      </div>
+      <AdminPageHeader
+        destination="searchIndex"
+        title={t("title")}
+        actions={
+          <div className="hidden items-center gap-1 md:flex">
+            {rebuildHelp}
+            <RebuildIndex />
+          </div>
+        }
+      />
 
       <section
         aria-label={t("semantic.label")}
@@ -199,52 +201,48 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
             <p>{t("kinds.note")}</p>
           </HelpPopover>
         </div>
-        <DataTable className="hidden md:block">
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("kinds.kind")}</TableHead>
-              <TableHead>{t("kinds.total")}</TableHead>
-              <TableHead>{t("kinds.listed")}</TableHead>
-              <TableHead>{t("kinds.embedded")}</TableHead>
-              <TableHead>{t("kinds.waiting")}</TableHead>
-              <TableHead>{t("kinds.heldBack")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {kinds.map((kind) => (
-              <TableRow key={kind.kind}>
-                <TableCell>
-                  <span className="flex items-center gap-2 font-medium">
-                    {kindIcons[kind.kind]}
-                    {t(`kinds.name.${kind.kind}`)}
-                  </span>
-                </TableCell>
-                <TableCell>{format.number(kind.total)}</TableCell>
-                <TableCell>{format.number(kind.listed)}</TableCell>
-                <TableCell>
-                  {kind.total === 0
-                    ? "0"
-                    : t("kinds.embeddedShare", {
-                        count: kind.embedded,
-                        share: format.number(kind.embedded / kind.total, { style: "percent" }),
-                      })}
-                </TableCell>
-                <TableCell>
-                  <span className={kind.waiting === 0 ? "text-muted-foreground" : undefined}>
-                    {format.number(kind.waiting)}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  {kind.heldBack > 0 ? (
-                    <Status tone="destructive">{format.number(kind.heldBack)}</Status>
-                  ) : (
-                    <span className="text-muted-foreground">0</span>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </DataTable>
+        <DataTableRows
+          className="hidden md:flex"
+          columns={[
+            { id: "kind", header: t("kinds.kind") },
+            { id: "total", header: t("kinds.total") },
+            { id: "listed", header: t("kinds.listed") },
+            { id: "embedded", header: t("kinds.embedded") },
+            { id: "waiting", header: t("kinds.waiting") },
+            { id: "heldBack", header: t("kinds.heldBack") },
+          ]}
+          rows={kinds.map((kind) => ({
+            id: kind.kind,
+            cells: {
+              kind: (
+                <span className="flex items-center gap-2 font-medium">
+                  {kindIcons[kind.kind]}
+                  {t(`kinds.name.${kind.kind}`)}
+                </span>
+              ),
+              total: format.number(kind.total),
+              listed: format.number(kind.listed),
+              embedded:
+                kind.total === 0
+                  ? "0"
+                  : t("kinds.embeddedShare", {
+                      count: kind.embedded,
+                      share: format.number(kind.embedded / kind.total, { style: "percent" }),
+                    }),
+              waiting: (
+                <span className={kind.waiting === 0 ? "text-muted-foreground" : undefined}>
+                  {format.number(kind.waiting)}
+                </span>
+              ),
+              heldBack:
+                kind.heldBack > 0 ? (
+                  <Status tone="destructive">{format.number(kind.heldBack)}</Status>
+                ) : (
+                  <span className="text-muted-foreground">0</span>
+                ),
+            },
+          }))}
+        />
         <ul className="overflow-hidden rounded-lg border md:hidden">
           {kinds.map((kind) => (
             <li key={kind.kind} className="flex flex-col gap-1.5 border-b p-3 last:border-b-0">
@@ -281,49 +279,43 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
               <RetryEmbeddings />
             </div>
           </div>
-          <DataTable className="hidden md:block">
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("heldBack.item")}</TableHead>
-                <TableHead>{t("heldBack.reason")}</TableHead>
-                <TableHead>{t("heldBack.attempts")}</TableHead>
-                <TableHead>{t("heldBack.next")}</TableHead>
-                <TableHead>
-                  <span className="sr-only">{t("heldBack.actions")}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.heldBack.map((item) => (
-                <TableRow key={`${item.kind}-${item.itemId}`}>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{item.title}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {t(`kinds.name.${item.kind}`)}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="whitespace-normal">
-                      {t(`heldBack.reasons.${item.reason}`)}
+          <DataTableRows
+            className="hidden md:flex"
+            columns={[
+              { id: "item", header: t("heldBack.item") },
+              { id: "reason", header: t("heldBack.reason") },
+              { id: "attempts", header: t("heldBack.attempts") },
+              { id: "next", header: t("heldBack.next") },
+              { id: "actions", header: <span className="sr-only">{t("heldBack.actions")}</span> },
+            ]}
+            rows={data.heldBack.map((item) => ({
+              id: `${item.kind}-${item.itemId}`,
+              cells: {
+                item: (
+                  <div className="flex flex-col">
+                    <span className="font-medium">{item.title}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t(`kinds.name.${item.kind}`)}
                     </span>
-                  </TableCell>
-                  <TableCell>{item.attempts}</TableCell>
-                  <TableCell>
-                    <span className="text-muted-foreground">
-                      {item.nextAttemptAt ? dayAndTime(item.nextAttemptAt) : t("heldBack.soon")}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-end">
-                      <RetryEmbeddings item={item} />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </DataTable>
+                  </div>
+                ),
+                reason: (
+                  <span className="whitespace-normal">{t(`heldBack.reasons.${item.reason}`)}</span>
+                ),
+                attempts: item.attempts,
+                next: (
+                  <span className="text-muted-foreground">
+                    {item.nextAttemptAt ? dayAndTime(item.nextAttemptAt) : t("heldBack.soon")}
+                  </span>
+                ),
+                actions: (
+                  <div className="flex justify-end">
+                    <RetryEmbeddings item={item} />
+                  </div>
+                ),
+              },
+            }))}
+          />
           <ul className="overflow-hidden rounded-lg border md:hidden">
             {data.heldBack.map((item) => (
               <li

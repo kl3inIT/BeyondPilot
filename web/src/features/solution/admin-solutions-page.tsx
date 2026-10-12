@@ -4,11 +4,12 @@ import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +18,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminSolutionList, AdminSolutionSummary } from "@/lib/api/generated";
@@ -26,7 +26,11 @@ import { siteRoutes } from "@/lib/site";
 import { CreateAdminSolution } from "./create-admin-solution";
 import { SolutionLogo } from "./solution-logo";
 import { SolutionFeature } from "./solution-feature";
-import { adminSolutionsSearch, type AdminSolutionsSearch } from "./solutions-search";
+import {
+  adminSolutionSortKeys,
+  adminSolutionsSearch,
+  type AdminSolutionsSearch,
+} from "./solutions-search";
 import { SolutionsToolbar } from "./solutions-toolbar";
 
 const address = createSerializer(adminSolutionsSearch);
@@ -109,87 +113,79 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
-        <div className="flex flex-col gap-1">
-          <AdminPageTitle destination="solutions">{t("title")}</AdminPageTitle>
-          <p className="text-sm text-muted-foreground">{t("lead")}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          {/* How much waits, whatever the list is narrowed to, and the way to only that. */}
-          {solutions.awaitingReview > 0 &&
-            (search.status === "in_review" ? (
-              <span className="text-sm font-medium">
-                {t("awaiting", { count: solutions.awaitingReview })}
-              </span>
-            ) : (
-              <TextButton href={address(siteRoutes.adminSolutions, { status: "in_review" })}>
-                {t("awaiting", { count: solutions.awaitingReview })}
-              </TextButton>
-            ))}
-          <CreateAdminSolution />
-        </div>
-      </div>
+      <AdminPageHeader
+        destination="solutions"
+        title={t("title")}
+        lead={t("lead")}
+        actions={
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            {/* How much waits, whatever the list is narrowed to, and the way to only that. */}
+            {solutions.awaitingReview > 0 &&
+              (search.status === "in_review" ? (
+                <span className="text-sm font-medium">
+                  {t("awaiting", { count: solutions.awaitingReview })}
+                </span>
+              ) : (
+                <TextButton href={address(siteRoutes.adminSolutions, { status: "in_review" })}>
+                  {t("awaiting", { count: solutions.awaitingReview })}
+                </TextButton>
+              ))}
+            <CreateAdminSolution />
+          </div>
+        }
+      />
       <SolutionsToolbar list="admin" organizationOptions={solutions.organizations} />
 
       {/* From 768px: a table. The sender gives way first, then the organization joins the solution. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("columns.solution")}</TableHead>
-            <TableHead className="hidden lg:table-cell">{t("columns.organization")}</TableHead>
-            <TableHead>{t("columns.status")}</TableHead>
-            <TableHead className="hidden xl:table-cell">{t("columns.sentBy")}</TableHead>
-            <TableHead>{t("columns.waiting")}</TableHead>
-            <TableHead>
-              <span className="sr-only">{t("columns.actions")}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              {/* The one column that gives its width up: a long name or summary is cut, not wrapped. */}
-              <TableCell className="w-full max-w-0">
-                <div className="flex min-w-0 items-center gap-3">
-                  <SolutionLogo name={row.name} fileId={row.logoFileId} size="row" />
-                  <div className="flex min-w-0 flex-col">
-                    <Link
-                      href={row.href}
-                      className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-                    >
-                      {row.name}
-                    </Link>
-                    <span className="truncate text-muted-foreground lg:hidden">
-                      {row.organization}
+      <DataTableRows
+        sortKeys={adminSolutionSortKeys}
+        className="hidden md:flex"
+        columns={[
+          // The one column that gives its width up: a long name or summary is cut, not wrapped.
+          { id: "name", header: t("columns.solution"), layout: { fill: true } },
+          { id: "organization", header: t("columns.organization"), layout: { from: "lg" } },
+          { id: "status", header: t("columns.status") },
+          { id: "sentBy", header: t("columns.sentBy"), layout: { from: "xl" } },
+          { id: "submitted", header: t("columns.waiting"), layout: { descFirst: true } },
+          { id: "actions", header: <span className="sr-only">{t("columns.actions")}</span> },
+        ]}
+        rows={rows.map((row) => ({
+          id: row.id,
+          cells: {
+            name: (
+              <div className="flex min-w-0 items-center gap-3">
+                <SolutionLogo name={row.name} fileId={row.logoFileId} size="row" />
+                <div className="flex min-w-0 flex-col">
+                  <Link
+                    href={row.href}
+                    className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                  >
+                    {row.name}
+                  </Link>
+                  <span className="truncate text-muted-foreground lg:hidden">
+                    {row.organization}
+                  </span>
+                  {row.summary && (
+                    <span className="hidden truncate text-muted-foreground lg:block">
+                      {row.summary}
                     </span>
-                    {row.summary && (
-                      <span className="hidden truncate text-muted-foreground lg:block">
-                        {row.summary}
-                      </span>
-                    )}
-                  </div>
+                  )}
                 </div>
-              </TableCell>
-              <TableCell className="hidden lg:table-cell">{row.organization}</TableCell>
-              <TableCell>{row.status}</TableCell>
-              <TableCell className="hidden xl:table-cell">{row.sender}</TableCell>
-              <TableCell>
-                <span className="text-muted-foreground">{row.submitted}</span>
-              </TableCell>
-              <TableCell>
-                <div className="flex justify-end">
-                  <RowMenu solution={row.solution} />
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={6}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+              </div>
+            ),
+            organization: row.organization,
+            status: row.status,
+            sentBy: row.sender,
+            submitted: <span className="text-muted-foreground">{row.submitted}</span>,
+            actions: (
+              <div className="flex justify-end">
+                <RowMenu solution={row.solution} />
+              </div>
+            ),
+          },
+        }))}
+        empty={empty}
+      />
 
       {/* Below 768px: one stacked row per solution, never a table scrolled sideways. */}
       <ul className="overflow-hidden rounded-lg border md:hidden">

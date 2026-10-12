@@ -1,8 +1,7 @@
-import { ArrowLeftIcon } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { TextButton } from "@/components/actions/text-button";
 import { QueueNext } from "@/components/composites/queue-next";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { applyFormatter } from "@/features/apply/apply-format";
 import type { ReviewApplication, ReviewApplicationItem } from "@/lib/api/generated";
@@ -22,7 +21,9 @@ type ReviewApplicationPageProps = {
 
 /**
  * One application under review: what its applicant submitted last, beside the caller's assessment.
- * An operator also reads every judge's score and the history, and decides.
+ * An operator also reads every judge's score and the history, and decides. Below 1024px the
+ * application comes first, so that it is read before anyone's scores, and the assessment keeps a
+ * bar at the bottom of the screen with its progress.
  */
 async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationPageProps) {
   const [t, locale] = await Promise.all([getTranslations("Review.application"), getLocale()]);
@@ -36,35 +37,16 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
   const nextHref = nextId ? `${base}/${nextId}` : null;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-        <TextButton href={base}>
-          <ArrowLeftIcon aria-hidden="true" />
-          {t("back", { program: head.name })}
-        </TextButton>
-        <QueueNext
-          position={
-            judging
-              ? t("positionLeft", {
-                  place: review.position,
-                  total: review.total,
-                  left: judging.left,
-                })
-              : t("position", { place: review.position, total: review.total })
-          }
-          previous={
-            review.previousId
-              ? { href: `${base}/${review.previousId}`, label: t("previous") }
-              : null
-          }
-          next={nextHref ? { href: nextHref, label: t(judging ? "nextToScore" : "next") } : null}
-          done={judging?.left === 0 ? t("allScored") : undefined}
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{submitted.solutionName}</h1>
-          {head.operator && review.reviewStatus && (
+    <div
+      className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-28 md:px-6 lg:px-8 lg:pb-12"
+      lang={locale}
+    >
+      <AdminPageHeader
+        back={{ href: base, label: t("back", { program: head.name }) }}
+        title={submitted.solutionName}
+        badges={
+          head.operator &&
+          review.reviewStatus && (
             <Badge
               variant={
                 review.reviewStatus === "shortlisted"
@@ -76,19 +58,40 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
             >
               {t(`decision.${review.reviewStatus}`)}
             </Badge>
-          )}
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {t("meta", {
-            organization: submitted.organizationName,
-            submitted: format.moment(review.submittedAt),
-            version: review.version,
-          })}
-        </p>
-      </div>
+          )
+        }
+        lead={t("meta", {
+          organization: submitted.organizationName,
+          submitted: format.moment(review.submittedAt),
+          version: review.version,
+        })}
+        actions={
+          <QueueNext
+            position={
+              judging
+                ? t("positionLeft", {
+                    place: review.position,
+                    total: review.total,
+                    left: judging.left,
+                  })
+                : t("position", { place: review.position, total: review.total })
+            }
+            previous={
+              review.previousId
+                ? { href: `${base}/${review.previousId}`, label: t("previous") }
+                : null
+            }
+            next={nextHref ? { href: nextHref, label: t(judging ? "nextToScore" : "next") } : null}
+            done={judging?.left === 0 ? t("allScored") : undefined}
+          />
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
-        <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-4 lg:order-2">
+        <div className="min-w-0 lg:col-span-2">
+          <SubmittedRecord applicationId={review.id} submitted={submitted} />
+        </div>
+        <div className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-4">
           {review.own ? (
             <p className="rounded-lg border bg-muted p-4 text-sm">{t("own")}</p>
           ) : (
@@ -195,10 +198,6 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
               ))}
             </ol>
           </section>
-        </div>
-
-        <div className="min-w-0 lg:order-1 lg:col-span-2">
-          <SubmittedRecord applicationId={review.id} submitted={submitted} />
         </div>
       </div>
     </div>

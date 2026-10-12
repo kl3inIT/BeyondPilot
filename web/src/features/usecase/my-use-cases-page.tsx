@@ -1,9 +1,9 @@
 import { LightbulbIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { ReviewStatus } from "@/components/composites/review-status";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OrganizationFrame } from "@/features/organization/organization-frame";
 import { OrganizationSection } from "@/features/organization/organization-section";
 import { Link } from "@/i18n/navigation";
@@ -13,6 +13,7 @@ import { siteRoutes, workspaceUseCaseProposalsRoute } from "@/lib/site";
 import { proposalsShown } from "@/features/proposal/received-proposals";
 
 import { MyUseCaseActions } from "./my-use-case-actions";
+import { sortMyUseCases, type MyUseCasesSearch } from "./my-use-cases-search";
 import { PostUseCase } from "./post-use-case";
 import { LiveRefresh } from "./live-refresh";
 
@@ -25,6 +26,8 @@ type MyUseCasesPageProps = {
   solutions: number | null;
   /** How many proposals each published use case received; null when the count could not be read. */
   proposals: Map<string, number> | null;
+  /** The order of the use cases, from the URL. */
+  search: MyUseCasesSearch;
 };
 
 /** The statuses a use case is counted under, in the order the summary says them. */
@@ -35,14 +38,22 @@ const statuses = ["approved", "in_review", "needs_changes", "draft", "closed"] a
  * stands. Every member reads, writes and sends them; the tab opens the draft of a use case, or the
  * use case as it stands when it can no longer be changed.
  */
-function MyUseCasesPage({ mine, useCases, members, solutions, proposals }: MyUseCasesPageProps) {
+function MyUseCasesPage({
+  mine,
+  useCases,
+  members,
+  solutions,
+  proposals,
+  search,
+}: MyUseCasesPageProps) {
   const t = useTranslations("Organization.useCases");
   const p = useTranslations("UseCaseProposal.received");
   const format = useFormatter();
   const day = (instant: string) =>
     format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
 
-  const rows = useCases.items.map((useCase) => {
+  const sorted = sortMyUseCases(useCases.items, proposals, search);
+  const rows = sorted.items.map((useCase) => {
     const address = `${siteRoutes.workspaceUseCases}/${useCase.id}`;
     const name = useCase.title ?? t("untitled");
     const date = useCase.closesAt ? day(useCase.closesAt) : "";
@@ -123,34 +134,43 @@ function MyUseCasesPage({ mine, useCases, members, solutions, proposals }: MyUse
         ) : (
           <>
             {/* From 768px: a table. */}
-            <DataTable className="hidden bg-background md:block">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("columns.useCase")}</TableHead>
-                  <TableHead className="w-36">{t("columns.status")}</TableHead>
-                  <TableHead className="w-32">{p("column")}</TableHead>
-                  <TableHead className="w-36">{t("columns.editedBy")}</TableHead>
-                  <TableHead className="w-32">{t("columns.updated")}</TableHead>
-                  <TableHead className="w-12">
-                    <span className="sr-only">{t("columns.actions")}</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell className="max-w-0">{row.title}</TableCell>
-                    <TableCell>{row.status}</TableCell>
-                    <TableCell>{row.proposals}</TableCell>
-                    <TableCell>{row.editedBy}</TableCell>
-                    <TableCell>{row.updated}</TableCell>
-                    <TableCell>
-                      <div className="flex justify-end">{row.actions}</div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </DataTable>
+            <DataTableRows
+              className="hidden md:flex"
+              surface
+              sortKeys={sorted.sortKeys}
+              defaultSort={sorted.defaultSort}
+              columns={[
+                { id: "useCase", header: t("columns.useCase"), layout: { fill: true } },
+                { id: "status", header: t("columns.status"), layout: { width: "md" } },
+                {
+                  id: "proposals",
+                  header: p("column"),
+                  layout: { width: "sm", descFirst: true },
+                },
+                { id: "editedBy", header: t("columns.editedBy"), layout: { width: "md" } },
+                {
+                  id: "updated",
+                  header: t("columns.updated"),
+                  layout: { width: "sm", descFirst: true },
+                },
+                {
+                  id: "actions",
+                  header: <span className="sr-only">{t("columns.actions")}</span>,
+                  layout: { width: "action" },
+                },
+              ]}
+              rows={rows.map((row) => ({
+                id: row.id,
+                cells: {
+                  useCase: row.title,
+                  status: row.status,
+                  proposals: row.proposals,
+                  editedBy: row.editedBy,
+                  updated: row.updated,
+                  actions: <div className="flex justify-end">{row.actions}</div>,
+                },
+              }))}
+            />
 
             {/* Below 768px: one stacked row per use case, never a table scrolled sideways. */}
             <ul className="overflow-hidden rounded-lg border bg-background md:hidden">

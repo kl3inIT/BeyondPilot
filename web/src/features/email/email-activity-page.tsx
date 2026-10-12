@@ -3,8 +3,8 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTable, DataTableEmpty, DataTablePager } from "@/components/composites/data-table";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DataTableEmpty, DataTablePager } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { Link } from "@/i18n/navigation";
 import type { EmailMessageList } from "@/lib/api/generated";
 import { adminEmailMessageRoute, siteRoutes } from "@/lib/site";
@@ -88,52 +88,42 @@ async function EmailActivityPage({
       <EmailActivityToolbar />
 
       {/* From 768px: a table. The whole row opens the email. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-36">{t("activity.columns.time")}</TableHead>
-            <TableHead>{t("activity.columns.recipient")}</TableHead>
-            <TableHead>{t("activity.columns.email")}</TableHead>
-            <TableHead className="w-36">{t("activity.columns.status")}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {messages.items.map((message) => (
-            <TableRow key={message.id} className="relative">
-              <TableCell>
-                <time dateTime={message.createdAt} className="text-muted-foreground">
-                  {time(message.createdAt)}
-                </time>
-              </TableCell>
-              <TableCell>
-                <span className="block max-w-56 truncate">{message.recipient}</span>
-              </TableCell>
-              <TableCell>
-                <Link
-                  href={adminEmailMessageRoute(message.id)}
-                  className="flex min-w-0 items-center gap-2 outline-none after:absolute after:inset-0 focus-visible:underline"
-                >
-                  <KindIcon kind={message.kind} />
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate font-medium">{kindName(message.kind)}</span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      {message.subject}
-                    </span>
-                  </span>
-                </Link>
-              </TableCell>
-              <TableCell>
-                <EmailStatusLabel status={message.status} />
-              </TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={4}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+      {/* Each row is the containing block of its link's overlay, so the overlay covers that row only. */}
+      <DataTableRows
+        className="hidden md:flex"
+        rowLinks
+        columns={[
+          { id: "time", header: t("activity.columns.time"), layout: { width: "md" } },
+          { id: "recipient", header: t("activity.columns.recipient") },
+          { id: "email", header: t("activity.columns.email") },
+          { id: "status", header: t("activity.columns.status"), layout: { width: "md" } },
+        ]}
+        rows={messages.items.map((message) => ({
+          id: message.id,
+          cells: {
+            time: (
+              <time dateTime={message.createdAt} className="text-muted-foreground">
+                {time(message.createdAt)}
+              </time>
+            ),
+            recipient: <span className="block max-w-56 truncate">{message.recipient}</span>,
+            email: (
+              <Link
+                href={adminEmailMessageRoute(message.id)}
+                className="flex min-w-0 items-center gap-2 outline-none after:absolute after:inset-0 focus-visible:underline"
+              >
+                <KindIcon kind={message.kind} />
+                <span className="flex min-w-0 flex-col">
+                  <span className="truncate font-medium">{kindName(message.kind)}</span>
+                  <span className="truncate text-xs text-muted-foreground">{message.subject}</span>
+                </span>
+              </Link>
+            ),
+            status: <EmailStatusLabel status={message.status} />,
+          },
+        }))}
+        empty={empty}
+      />
 
       {/* Below 768px: one stacked row per email, never a table scrolled sideways. */}
       <ul className="overflow-hidden rounded-lg border md:hidden">

@@ -1,7 +1,6 @@
 "use client";
 
 import { revalidateLogic, useStore } from "@tanstack/react-form";
-import { ArrowLeftIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -9,10 +8,10 @@ import { z } from "zod";
 
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useNotify } from "@/hooks/use-notify";
-import { Link } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
 import {
   previewEmailTemplate,
@@ -112,17 +111,11 @@ function EmailAppearanceForm({
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <Link
-        href={siteRoutes.adminEmailTemplates}
-        className="inline-flex w-fit items-center gap-1.5 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:underline"
-      >
-        <ArrowLeftIcon aria-hidden="true" className="size-4" />
-        {t("back")}
-      </Link>
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("lead")}</p>
-      </div>
+      <AdminPageHeader
+        back={{ href: siteRoutes.adminEmailTemplates, label: t("back") }}
+        title={t("title")}
+        lead={t("lead")}
+      />
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <form

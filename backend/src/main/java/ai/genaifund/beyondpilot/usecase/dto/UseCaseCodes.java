@@ -21,6 +21,9 @@ final class UseCaseCodes {
 
 	static final String SORT = "newest|deadline|budget";
 
+	/** The operators' list: a key, with {@code -} before it for the reverse. */
+	static final String ADMIN_SORT = "-?(title|closes|updated)";
+
 	private UseCaseCodes() {
 	}
 }

@@ -2,10 +2,9 @@ import { TriangleAlertIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
-import { cn } from "@/lib/utils";
 
 type EmailTab = "templates" | "activity" | "suppressions" | "settings";
 
@@ -32,12 +31,7 @@ async function EmailHeader({
   ] as const;
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* On a narrow screen the title is in the bar above; without a button the row would be an empty gap. */}
-      <div className={cn("flex items-start justify-between gap-4", !action && "max-md:contents")}>
-        <AdminPageTitle destination="email">{t("title")}</AdminPageTitle>
-        {action}
-      </div>
+    <AdminPageHeader destination="email" title={t("title")} actions={action}>
       {ready === false && current !== "settings" && (
         <div
           role="status"
@@ -72,7 +66,7 @@ async function EmailHeader({
           ))}
         </ul>
       </nav>
-    </div>
+    </AdminPageHeader>
   );
 }
 

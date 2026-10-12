@@ -98,7 +98,8 @@ public class UseCaseAdministration {
 	}
 
 	/**
-	 * One page of use cases in any status, the newest first, each as it reads now: closed once its date has passed.
+	 * One page of use cases in any status, in the order the request asks for and the newest first without one, each
+	 * as it reads now: closed once its date has passed.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 */
 	@Transactional(readOnly = true)
@@ -111,7 +112,7 @@ public class UseCaseAdministration {
 		List<UUID> matching = text == null ? List.of()
 				: organizations.approvedOrganizations(text, ORGANIZATION_LIMIT).stream().map(OrganizationName::id).toList();
 		List<UseCaseQueryRepository.Row> rows = useCaseList.page(text, matching, request.organizationId(),
-				request.status(), request.featured(), now, size, (long) (page - 1) * size);
+				request.status(), request.featured(), request.sort(), now, size, (long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(UseCaseQueryRepository.Row::organizationId).collect(Collectors.toSet()));
 		List<AdminUseCaseSummaryResponse> items = rows.stream()
@@ -450,7 +451,8 @@ public class UseCaseAdministration {
 	public UseCasesAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
 		Instant now = Instant.now();
-		List<UseCaseQueryRepository.Row> rows = useCaseList.page(null, List.of(), null, "in_review", null, now, limit, 0);
+		List<UseCaseQueryRepository.Row> rows = useCaseList.page(null, List.of(), null, "in_review", null, null, now, limit,
+				0);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(UseCaseQueryRepository.Row::organizationId).collect(Collectors.toSet()));
 		return new UseCasesAwaitingReview(useCaseList.count(null, List.of(), null, "in_review", null, now), rows.stream()

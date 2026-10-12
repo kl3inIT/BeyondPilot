@@ -363,6 +363,37 @@ class SolutionTest {
 	}
 
 	@Test
+	void theOperatorsListSortsByTheKeyItIsGivenAndRefusesAnUnknownOne() {
+		String founder = approvedOwner("founder@sortable.test", "Sortable Works");
+		UUID bravo = submitted(founder, "Sortable Bravo");
+		submitted(founder, "Sortable Alpha");
+		submitted(founder, "Sortable Charlie");
+		// Sent back rather than approved, so that it stays out of the directory other tests read.
+		post(operator, ADMIN + "/" + bravo + "/send-back", Map.of("reason", "Say who it is for."))
+			.expectStatus()
+			.isNoContent();
+		jdbc.sql("""
+				update solution set submitted_at = now() - case name when 'Sortable Bravo' then interval '3 days'
+				                                                     when 'Sortable Alpha' then interval '1 day'
+				                                                     else interval '2 days' end
+				where name like 'Sortable %'
+				""").update();
+
+		assertThat(names(operator, ADMIN + "?q=sortable&sort=name")).containsExactly("Sortable Alpha",
+				"Sortable Bravo", "Sortable Charlie");
+		assertThat(names(operator, ADMIN + "?q=sortable&sort=-name")).containsExactly("Sortable Charlie",
+				"Sortable Bravo", "Sortable Alpha");
+		assertThat(names(operator, ADMIN + "?q=sortable&sort=submitted")).containsExactly("Sortable Bravo",
+				"Sortable Charlie", "Sortable Alpha");
+		assertThat(names(operator, ADMIN + "?q=sortable&sort=-submitted")).containsExactly("Sortable Alpha",
+				"Sortable Charlie", "Sortable Bravo");
+		// Without a key, those waiting for review first, the longest wait on top.
+		assertThat(names(operator, ADMIN + "?q=sortable")).containsExactly("Sortable Charlie", "Sortable Alpha",
+				"Sortable Bravo");
+		assertProblem(get(operator, ADMIN + "?sort=newest"), 400, "REQUEST_INVALID");
+	}
+
+	@Test
 	void aSolutionSentBeforeTheSenderWasRecordedNamesNobody() {
 		String founder = approvedOwner("founder@earlier.test", "Earlier Co");
 		UUID id = submitted(founder, "Earlier Desk");

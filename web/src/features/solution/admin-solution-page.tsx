@@ -1,10 +1,10 @@
-import { ArrowLeftIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { QueueNext } from "@/components/composites/queue-next";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { Solution } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -92,21 +92,20 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-        <TextButton href={siteRoutes.adminSolutions}>
-          <ArrowLeftIcon aria-hidden="true" />
-          {t("back")}
-        </TextButton>
-        <QueueNext
-          position={
-            queue.place === null
-              ? undefined
-              : t("position", { place: queue.place, total: queue.total })
-          }
-          next={next && { href: next.href, label: t("next", { name: next.name }) }}
-        />
-      </div>
-      <h1 className="text-2xl font-semibold tracking-tight">{solution.name}</h1>
+      <AdminPageHeader
+        back={{ href: siteRoutes.adminSolutions, label: t("back") }}
+        title={solution.name}
+        actions={
+          <QueueNext
+            position={
+              queue.place === null
+                ? undefined
+                : t("position", { place: queue.place, total: queue.total })
+            }
+            next={next && { href: next.href, label: t("next", { name: next.name }) }}
+          />
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
         {/* The decision: first on a narrow screen, beside the record and in view while it scrolls on a wide one. */}

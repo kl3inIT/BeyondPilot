@@ -3,12 +3,12 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { reviewState } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganizationList } from "@/lib/api/generated";
@@ -19,6 +19,7 @@ import { AdminOrganizationRowActions } from "./admin-organization-row-actions";
 import {
   adminOrganizationsSearch,
   type AdminOrganizationsSearch,
+  adminOrganizationSortKeys,
 } from "./admin-organizations-search";
 import { AdminOrganizationsToolbar } from "./admin-organizations-toolbar";
 import { OrganizationMark } from "./organization-mark";
@@ -127,48 +128,52 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <AdminPageTitle destination="organizations">{t("title")}</AdminPageTitle>
-        <AdminCreateOrganization />
-      </div>
+      <AdminPageHeader
+        destination="organizations"
+        title={t("title")}
+        actions={<AdminCreateOrganization />}
+      />
       <AdminOrganizationsToolbar countries={organizations.countries} />
 
       {/* From 768px: a table. Who asked and when give way first, so the name keeps its room. */}
-      <DataTable className="hidden md:block">
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t("columns.organization")}</TableHead>
-            <TableHead className="w-36">{t("columns.request")}</TableHead>
-            <TableHead className="w-36">{t("columns.status")}</TableHead>
-            <TableHead className="hidden w-56 xl:table-cell">{t("columns.askedBy")}</TableHead>
-            <TableHead className="hidden w-32 2xl:table-cell">{t("columns.received")}</TableHead>
-            <TableHead className="w-12">
-              <span className="sr-only">{t("columns.actions")}</span>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell className="max-w-0">{row.organization}</TableCell>
-              <TableCell>
-                {row.request ?? <span className="text-muted-foreground">{t("request.none")}</span>}
-              </TableCell>
-              <TableCell>{row.status}</TableCell>
-              <TableCell className="hidden max-w-0 xl:table-cell">{row.askedBy}</TableCell>
-              <TableCell className="hidden 2xl:table-cell">{row.received}</TableCell>
-              <TableCell>
-                <div className="flex justify-end">{row.actions}</div>
-              </TableCell>
-            </TableRow>
-          ))}
-          {empty && (
-            <TableRow>
-              <TableCell colSpan={6}>{empty}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </DataTable>
+      <DataTableRows
+        sortKeys={adminOrganizationSortKeys}
+        className="hidden md:flex"
+        columns={[
+          { id: "name", header: t("columns.organization"), layout: { fill: true } },
+          { id: "request", header: t("columns.request"), layout: { width: "md" } },
+          { id: "status", header: t("columns.status"), layout: { width: "md" } },
+          {
+            id: "askedBy",
+            header: t("columns.askedBy"),
+            layout: { width: "lg", from: "xl" },
+          },
+          {
+            id: "received",
+            header: t("columns.received"),
+            layout: { width: "sm", from: "2xl", descFirst: true },
+          },
+          {
+            id: "actions",
+            header: <span className="sr-only">{t("columns.actions")}</span>,
+            layout: { width: "action" },
+          },
+        ]}
+        rows={rows.map((row) => ({
+          id: row.id,
+          cells: {
+            name: row.organization,
+            request: row.request ?? (
+              <span className="text-muted-foreground">{t("request.none")}</span>
+            ),
+            status: row.status,
+            askedBy: row.askedBy,
+            received: row.received,
+            actions: <div className="flex justify-end">{row.actions}</div>,
+          },
+        }))}
+        empty={empty}
+      />
 
       {/* Below 768px: one stacked row per organization, never a table scrolled sideways. */}
       <ul className="overflow-hidden rounded-lg border md:hidden">

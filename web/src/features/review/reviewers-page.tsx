@@ -1,19 +1,22 @@
 import { UsersIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { Person } from "@/components/composites/person";
 import { Badge } from "@/components/ui/badge";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ReviewCriteria, Reviewers } from "@/lib/api/generated";
 
 import { CriteriaEditor, InviteReviewer, ReviewerRowActions } from "./reviewer-actions";
+import { sortReviewers, type ReviewersSearch } from "./reviewers-search";
 
 type ReviewersPageProps = {
   programId: string;
   programName: string;
   reviewers: Reviewers;
   criteria: ReviewCriteria;
+  /** The order of the judges, from the URL. */
+  search: ReviewersSearch;
 };
 
 /**
@@ -21,10 +24,17 @@ type ReviewersPageProps = {
  * and the criteria every judge scores on. Operators score every program without an invitation and
  * are listed once they have.
  */
-function ReviewersPage({ programId, programName, reviewers, criteria }: ReviewersPageProps) {
+function ReviewersPage({
+  programId,
+  programName,
+  reviewers,
+  criteria,
+  search,
+}: ReviewersPageProps) {
   const t = useTranslations("Review.reviewers");
   const c = useTranslations("Review.criteria");
   const locale = useLocale();
+  const sorted = sortReviewers(reviewers.items, search);
 
   return (
     <div className="flex flex-col gap-6" lang={locale}>
@@ -41,57 +51,53 @@ function ReviewersPage({ programId, programName, reviewers, criteria }: Reviewer
         {reviewers.items.length === 0 ? (
           <DataTableEmpty icon={<UsersIcon aria-hidden="true" />} title={t("empty.title")} />
         ) : (
-          <DataTable>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("columns.reviewer")}</TableHead>
-                <TableHead className="hidden sm:table-cell">{t("columns.role")}</TableHead>
-                <TableHead>{t("columns.status")}</TableHead>
-                <TableHead className="hidden sm:table-cell">{t("columns.assessed")}</TableHead>
-                <TableHead>
-                  <span className="sr-only">{t("columns.actions")}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {reviewers.items.map((reviewer) => (
-                <TableRow key={reviewer.id ?? reviewer.email}>
-                  <TableCell className="w-full max-w-0">
-                    <Person name={reviewer.name ?? null} email={reviewer.email} />
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {t(`role.${reviewer.role}`)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        reviewer.status === "active"
-                          ? "success"
-                          : reviewer.status === "invited"
-                            ? "outline"
-                            : "warning"
-                      }
-                    >
-                      {t(`status.${reviewer.status}`)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden whitespace-nowrap sm:table-cell">
-                    {t("assessed", { done: reviewer.assessed, total: reviewers.applications })}
-                  </TableCell>
-                  <TableCell>
-                    {reviewer.id && (
-                      <ReviewerRowActions
-                        programId={programId}
-                        reviewerId={reviewer.id}
-                        email={reviewer.email}
-                        canResend={reviewer.status !== "active"}
-                      />
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </DataTable>
+          <DataTableRows
+            sortKeys={sorted.sortKeys}
+            defaultSort={sorted.defaultSort}
+            columns={[
+              { id: "reviewer", header: t("columns.reviewer"), layout: { fill: true } },
+              { id: "role", header: t("columns.role"), layout: { from: "sm" } },
+              { id: "status", header: t("columns.status") },
+              {
+                id: "assessed",
+                header: t("columns.assessed"),
+                layout: { from: "sm", nowrap: true, descFirst: true },
+              },
+              { id: "actions", header: <span className="sr-only">{t("columns.actions")}</span> },
+            ]}
+            rows={sorted.items.map((reviewer) => ({
+              id: reviewer.id ?? reviewer.email,
+              cells: {
+                reviewer: <Person name={reviewer.name ?? null} email={reviewer.email} />,
+                role: t(`role.${reviewer.role}`),
+                status: (
+                  <Badge
+                    variant={
+                      reviewer.status === "active"
+                        ? "success"
+                        : reviewer.status === "invited"
+                          ? "outline"
+                          : "warning"
+                    }
+                  >
+                    {t(`status.${reviewer.status}`)}
+                  </Badge>
+                ),
+                assessed: t("assessed", {
+                  done: reviewer.assessed,
+                  total: reviewers.applications,
+                }),
+                actions: reviewer.id && (
+                  <ReviewerRowActions
+                    programId={programId}
+                    reviewerId={reviewer.id}
+                    email={reviewer.email}
+                    canResend={reviewer.status !== "active"}
+                  />
+                ),
+              },
+            }))}
+          />
         )}
         <p className="text-sm text-muted-foreground">{t("note")}</p>
       </section>

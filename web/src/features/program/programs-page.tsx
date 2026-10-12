@@ -81,8 +81,8 @@ async function ProgramsPage({
     : groups.open.length + comingUp + groups.done.length === 0;
 
   return (
-    <div className="bg-muted" lang={locale}>
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-10 md:px-8 md:py-14">
+    <div className="flex-1 bg-muted" lang={locale}>
+      <div className="mx-auto flex w-full max-w-360 flex-col gap-10 px-5 py-10 md:px-8 md:py-14 xl:px-16 desktop:px-20">
         <header className="flex max-w-2xl flex-col gap-3">
           <h1 className="text-4xl font-semibold tracking-headline md:text-5xl">{t("title")}</h1>
           <p className="text-muted-foreground md:text-lg">{t("lead")}</p>

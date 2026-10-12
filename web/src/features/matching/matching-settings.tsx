@@ -9,7 +9,7 @@ import { z } from "zod";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { useFieldValidity } from "@/components/form/form-context";
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
   InputGroup,
@@ -225,9 +225,9 @@ function MatchingSettingsPage({ settings }: { settings: MatchingSettings }) {
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <AdminPageTitle destination="aiMatching">{t("title")}</AdminPageTitle>
-      <MatchingAdminTabs current="limits" />
-      <p className="max-w-prose text-sm text-muted-foreground">{t("lead")}</p>
+      <AdminPageHeader destination="aiMatching" title={t("title")} lead={t("lead")}>
+        <MatchingAdminTabs current="limits" />
+      </AdminPageHeader>
 
       <form
         noValidate

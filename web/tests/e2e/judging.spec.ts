@@ -50,6 +50,17 @@ test.describe("judging applications", () => {
       page.getByText("3 applications · 4 drafts were not submitted · 1 withdrawn"),
     ).toBeVisible();
     await expect(page.getByRole("tab", { name: "To decide 1" })).toBeVisible();
+    if (!isMobile) {
+      // Once any application has a score the highest mean comes first, and a header turns the order.
+      const score = page.getByRole("columnheader", { name: "Scores" });
+      await expect(score).toHaveAttribute("aria-sort", "descending");
+      await score.getByRole("button").click();
+      await expect(page).toHaveURL(/sort=score/);
+      await expect(score).toHaveAttribute("aria-sort", "ascending");
+      await page.getByRole("columnheader", { name: "Submitted" }).getByRole("button").click();
+      await expect(page).toHaveURL(/sort=submitted/);
+    }
+    await page.goto(`${admin}/applications`);
     await settled(page);
     await expectNoSeriousA11yViolations(page);
 
@@ -71,7 +82,7 @@ test.describe("judging applications", () => {
       await page.goto(`${admin}/applications`);
       await page.getByRole("checkbox", { name: "Select Plain Cover" }).click();
       await page.getByRole("checkbox", { name: "Select Renew in a Minute" }).click();
-      const selection = page.getByRole("region", { name: "Selected applications" });
+      const selection = page.getByRole("region", { name: "Selected rows" });
       await expect(selection).toContainText("2 selected");
       await selection.getByRole("button", { name: "Shortlist" }).click();
       await expect.poll(() => calls.length).toBe(1);
@@ -85,6 +96,7 @@ test.describe("judging applications", () => {
     page,
     context,
     baseURL,
+    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     const calls = await recordWrites(page);
@@ -113,7 +125,9 @@ test.describe("judging applications", () => {
     await settled(page);
     await expectNoSeriousA11yViolations(page);
 
-    const save = page.getByRole("button", { name: "Save and next" });
+    // The panel's own button; below 1024px the bar at the bottom repeats it.
+    const assessment = page.getByRole("region", { name: /^Your assessment/ });
+    const save = assessment.getByRole("button", { name: "Save and next" }).first();
     await expect(save).toBeDisabled();
     await page
       .getByRole("group", { name: criteria[0].name })
@@ -123,7 +137,10 @@ test.describe("judging applications", () => {
       .getByRole("group", { name: criteria[1].name })
       .getByRole("button", { name: "3 out of 5" })
       .click();
-    await expect(page.getByText("Average 3.5")).toBeVisible();
+    await expect(assessment.getByText("Average 3.5")).toBeVisible();
+    if (isMobile) {
+      await expect(page.getByText("Scored 2 of 2")).toBeVisible();
+    }
     await page.getByLabel("Private note").fill("Clear on consent.");
     await save.click();
     await expect.poll(() => calls.length).toBe(1);

@@ -1,3 +1,4 @@
+import { knownSort } from "@/lib/list-sort";
 import { ApiError } from "@/lib/api/client";
 import {
   getAdminOrganization,
@@ -12,6 +13,7 @@ import {
 import { sessionRequest } from "@/lib/auth/session";
 
 import type { AdminOrganizationsSearch } from "./admin-organizations-search";
+import { adminOrganizationSortKeys } from "./admin-organizations-search";
 
 /** The longest search the backend takes. */
 const MAX_SEARCH = 100;
@@ -51,6 +53,7 @@ export async function readAdminOrganizations(
       q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
       status: search.status ?? undefined,
       country: search.country ?? undefined,
+      sort: knownSort(search.sort, adminOrganizationSortKeys),
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },

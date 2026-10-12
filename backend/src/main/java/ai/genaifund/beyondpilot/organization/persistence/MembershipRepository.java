@@ -85,13 +85,31 @@ public class MembershipRepository {
 				""").param(organizationId).query(MembershipRepository::member).list();
 	}
 
-	/** One page of the members of an organization, in the order of {@link #members(UUID)}. */
-	public List<Member> members(UUID organizationId, int limit, long offset) {
-		return jdbc.sql(MEMBERS + """
-				where organization_id = ?
-				order by case role when 'owner' then 0 else 1 end, created_at, account_id
-				limit ? offset ?
-				""").params(organizationId, limit, offset).query(MembershipRepository::member).list();
+	/**
+	 * One page of the members of an organization in the order {@code sort} names; without one, in the order of
+	 * {@link #members(UUID)}.
+	 * @param sort {@code role}, owners first, or {@code joined}, with {@code -} before it for the reverse
+	 */
+	public List<Member> members(UUID organizationId, @Nullable String sort, int limit, long offset) {
+		return jdbc.sql(MEMBERS + "where organization_id = ?\norder by " + memberOrder(sort) + "\nlimit ? offset ?\n")
+			.params(organizationId, limit, offset)
+			.query(MembershipRepository::member)
+			.list();
+	}
+
+	/**
+	 * The order a sort key names, with the account last so that pages do not overlap. The SQL is chosen here by the
+	 * key, never taken from the caller's text; an unknown key keeps the default order.
+	 */
+	private static String memberOrder(@Nullable String sort) {
+		boolean descending = sort != null && sort.startsWith("-");
+		String key = sort == null ? "" : sort.substring(descending ? 1 : 0);
+		String direction = descending ? " desc" : "";
+		return switch (key) {
+			case "joined" -> "created_at" + direction + ", account_id";
+			case "role" -> "case role when 'owner' then 0 else 1 end" + direction + ", created_at, account_id";
+			default -> "case role when 'owner' then 0 else 1 end, created_at, account_id";
+		};
 	}
 
 	public long countMembers(UUID organizationId) {

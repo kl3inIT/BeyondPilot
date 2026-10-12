@@ -2,7 +2,7 @@ import { BoxesIcon, BuildingIcon, RocketIcon, UsersIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { AdminPageTitle } from "@/components/layout/admin-icons";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { readAdminOrganizations } from "@/features/organization/organization-queries";
 import { readAdminSolutions } from "@/features/solution/solution-queries";
 import { readAdminTalentList } from "@/features/talent/talent-queries";
@@ -26,17 +26,32 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
   await requireRole("operator", siteRoutes.admin);
   const t = await getTranslations("Admin");
   const [organizations, solutions, talent] = await Promise.all([
-    readAdminOrganizations({ q: "", status: "in_review", country: null, page: 1, size: null }),
+    readAdminOrganizations({
+      q: "",
+      status: "in_review",
+      country: null,
+      sort: "",
+      page: 1,
+      size: null,
+    }),
     readAdminSolutions({
       q: "",
       organizationId: null,
       status: "in_review",
       industry: null,
       featured: null,
+      sort: "",
       page: 1,
       size: null,
     }),
-    readAdminTalentList({ q: "", status: "in_review", featured: null, page: 1, size: null }),
+    readAdminTalentList({
+      q: "",
+      status: "in_review",
+      featured: null,
+      sort: "",
+      page: 1,
+      size: null,
+    }),
   ]);
   const queues = [
     {
@@ -69,10 +84,11 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <div className="flex flex-col gap-1">
-        <AdminPageTitle destination="home">{t("title")}</AdminPageTitle>
-        <p className="text-sm text-muted-foreground">{t("home.lead", { count: waiting })}</p>
-      </div>
+      <AdminPageHeader
+        destination="home"
+        title={t("title")}
+        lead={t("home.lead", { count: waiting })}
+      />
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {queues.map((queue) => (
           <li key={queue.key}>

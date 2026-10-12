@@ -3,6 +3,7 @@ import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { ReviewStatus } from "@/components/composites/review-status";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AdminUseCase } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
@@ -100,20 +101,22 @@ function AdminUseCasePage({ useCase }: AdminUseCasePageProps) {
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <LiveRefresh />
-      <div className="flex flex-col gap-1.5">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-muted-foreground">{organization}</span>
-          <ReviewStatus appearance="pill" state={status}>
-            {statusLabel(status)}
-          </ReviewStatus>
-          {useCase.featuredAt && (
-            <FeaturedBadge>{f("since", { day: day(useCase.featuredAt) })}</FeaturedBadge>
-          )}
-        </div>
-      </div>
-
-      {useCase.publishedAt && <UseCaseTabs area="admin" id={useCase.id} current="brief" />}
+      <AdminPageHeader
+        title={title}
+        badges={
+          <>
+            <ReviewStatus appearance="pill" state={status}>
+              {statusLabel(status)}
+            </ReviewStatus>
+            {useCase.featuredAt && (
+              <FeaturedBadge>{f("since", { day: day(useCase.featuredAt) })}</FeaturedBadge>
+            )}
+          </>
+        }
+        lead={organization}
+      >
+        {useCase.publishedAt && <UseCaseTabs area="admin" id={useCase.id} current="brief" />}
+      </AdminPageHeader>
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-4 lg:col-span-2">

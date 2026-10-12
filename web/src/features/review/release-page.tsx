@@ -1,7 +1,7 @@
-import { ArrowLeftIcon, InfoIcon } from "lucide-react";
+import { InfoIcon } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { TextButton } from "@/components/actions/text-button";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
@@ -68,14 +68,11 @@ async function ReleasePage({ release }: { release: Release }) {
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <TextButton href={applications} className="self-start">
-        <ArrowLeftIcon aria-hidden="true" />
-        {t("back")}
-      </TextButton>
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("lead", { program: head.name })}</p>
-      </div>
+      <AdminPageHeader
+        back={{ href: applications, label: t("back") }}
+        title={t("title")}
+        lead={t("lead", { program: head.name })}
+      />
       {head.releasedAt ? (
         <Alert>
           <AlertTitle>{t("released", { at: format.moment(head.releasedAt) })}</AlertTitle>

@@ -1,15 +1,13 @@
-import { ArrowLeftIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { TextButton } from "@/components/actions/text-button";
-import { DataTable } from "@/components/composites/data-table";
+import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganization } from "@/lib/api/generated";
@@ -82,47 +80,54 @@ function AdminOrganizationPage({ detail, tab, page, size }: AdminOrganizationPag
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div>
-        <TextButton href={siteRoutes.adminOrganizations}>
-          <ArrowLeftIcon aria-hidden="true" />
-          {t("back")}
-        </TextButton>
-      </div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <OrganizationMark name={organization.name} logoFileId={organization.logoFileId} />
-          <div className="flex min-w-0 flex-col gap-1">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <h1 className="text-2xl font-semibold tracking-tight break-words">
-                {organization.name}
-              </h1>
-              <ReviewStatus state={state} appearance="pill">
-                {s(state)}
-              </ReviewStatus>
-            </div>
-            <p className="text-sm text-muted-foreground">{kind.join(" · ")}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {state === "approved" && (
-            <Button
-              prominence="secondary"
-              href={`${siteRoutes.organizations}/${organization.slug}`}
+      <AdminPageHeader
+        back={{ href: siteRoutes.adminOrganizations, label: t("back") }}
+        media={<OrganizationMark name={organization.name} logoFileId={organization.logoFileId} />}
+        title={organization.name}
+        badges={
+          <ReviewStatus state={state} appearance="pill">
+            {s(state)}
+          </ReviewStatus>
+        }
+        lead={kind.join(" · ")}
+        actions={
+          <>
+            {state === "approved" && (
+              <Button
+                prominence="secondary"
+                href={`${siteRoutes.organizations}/${organization.slug}`}
+              >
+                {t("viewPage")}
+              </Button>
+            )}
+            {state === "in_review" && <OrganizationReviewButton organization={organization} />}
+            {!merged && (
+              <AdminOrganizationMenu
+                organization={organization}
+                canTakeDown={state === "approved"}
+                members={detail.members.length}
+                invitations={detail.invitations.length}
+              />
+            )}
+          </>
+        }
+      >
+        <nav aria-label={t("tabs.label")} className="flex items-end gap-5 border-b">
+          {tabs.map((item) => (
+            <Link
+              key={item.key}
+              href={address(record, { tab: item.key })}
+              aria-current={item.key === tab ? "page" : undefined}
+              className="group -mb-px flex items-center gap-1.5 border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
             >
-              {t("viewPage")}
-            </Button>
-          )}
-          {state === "in_review" && <OrganizationReviewButton organization={organization} />}
-          {!merged && (
-            <AdminOrganizationMenu
-              organization={organization}
-              canTakeDown={state === "approved"}
-              members={detail.members.length}
-              invitations={detail.invitations.length}
-            />
-          )}
-        </div>
-      </div>
+              {item.label}
+              {item.count !== undefined && (
+                <span className="text-xs group-aria-[current=page]:text-primary">{item.count}</span>
+              )}
+            </Link>
+          ))}
+        </nav>
+      </AdminPageHeader>
 
       {state === "rejected" && (
         <p className="rounded-lg border bg-muted p-3 text-sm">
@@ -207,22 +212,6 @@ function AdminOrganizationPage({ detail, tab, page, size }: AdminOrganizationPag
           </ul>
         </section>
       )}
-
-      <nav aria-label={t("tabs.label")} className="flex items-end gap-5 border-b">
-        {tabs.map((item) => (
-          <Link
-            key={item.key}
-            href={address(record, { tab: item.key })}
-            aria-current={item.key === tab ? "page" : undefined}
-            className="group -mb-px flex items-center gap-1.5 border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
-          >
-            {item.label}
-            {item.count !== undefined && (
-              <span className="text-xs group-aria-[current=page]:text-primary">{item.count}</span>
-            )}
-          </Link>
-        ))}
-      </nav>
 
       {tab === "profile" && merged ? (
         <OrganizationProfileView organization={organization} />
@@ -312,30 +301,29 @@ function AdminMembers({
       ) : (
         <>
           {/* From 768px: a table. */}
-          <DataTable className="hidden bg-background md:block">
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("columns.member")}</TableHead>
-                <TableHead className="w-30">{t("columns.role")}</TableHead>
-                <TableHead className="w-32">{t("columns.joined")}</TableHead>
-                <TableHead className="w-12">
-                  <span className="sr-only">{t("columns.actions")}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.key}>
-                  <TableCell>{row.person}</TableCell>
-                  <TableCell>{row.role}</TableCell>
-                  <TableCell>{row.joined}</TableCell>
-                  <TableCell>
-                    <div className="flex justify-end">{row.actions}</div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </DataTable>
+          <DataTableRows
+            className="hidden md:flex"
+            surface
+            columns={[
+              { id: "member", header: t("columns.member") },
+              { id: "role", header: t("columns.role"), layout: { width: "sm" } },
+              { id: "joined", header: t("columns.joined"), layout: { width: "sm" } },
+              {
+                id: "actions",
+                header: <span className="sr-only">{t("columns.actions")}</span>,
+                layout: { width: "action" },
+              },
+            ]}
+            rows={rows.map((row) => ({
+              id: row.key,
+              cells: {
+                member: row.person,
+                role: row.role,
+                joined: row.joined,
+                actions: <div className="flex justify-end">{row.actions}</div>,
+              },
+            }))}
+          />
 
           {/* Below 768px: one stacked row per person, never a table scrolled sideways. */}
           <ul className="overflow-hidden rounded-lg border bg-background md:hidden">

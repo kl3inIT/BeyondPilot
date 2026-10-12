@@ -18,6 +18,13 @@ public record AccountListRequest(
 		@Parameter(description = "Only accounts of this role.",
 				schema = @Schema(allowableValues = { "user", "operator" })) @Pattern(
 						regexp = "user|operator") @Nullable String role,
+		@Parameter(
+				description = "The order: `name` by the name, or the address when there is none, `lastSignIn` by the "
+						+ "last sign-in, `created` by when the account was made; `-` before a key turns it round, and "
+						+ "an account that never signed in comes last either way. Without it, the latest sign-in first, "
+						+ "then the newest account.",
+				schema = @Schema(type = "string", allowableValues = { "name", "-name", "lastSignIn", "-lastSignIn",
+						"created", "-created" })) @Pattern(regexp = "-?(name|lastSignIn|created)") @Nullable String sort,
 		@Parameter(description = "The page, counted from 1.",
 				schema = @Schema(type = "integer", format = "int32", defaultValue = "1", minimum = "1")) @Min(1) @Nullable Integer page,
 		@Parameter(description = "How many items a page holds; the list's own page size when absent.",

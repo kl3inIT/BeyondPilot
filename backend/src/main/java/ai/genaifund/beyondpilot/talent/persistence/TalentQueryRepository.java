@@ -92,13 +92,16 @@ public class TalentQueryRepository {
 			.single();
 	}
 
-	/** One page for operators, drafts left out: those waiting for review first, the longest wait on top. */
-	public List<Row> adminPage(@Nullable String text, @Nullable String status, @Nullable Boolean featured, int limit,
-			long offset) {
-		return adminFiltered(ROW + ADMIN_FILTER + """
-				order by case status when 'in_review' then 0 else 1 end, submitted_at, id
-				limit :limit offset :offset
-				""", text, status, featured).param("limit", limit)
+	/**
+	 * One page for operators, drafts left out, in the order {@code sort} names; without one, those waiting for review
+	 * first, the longest wait on top.
+	 * @param sort {@code name} or {@code submitted}, with {@code -} before it for the reverse
+	 */
+	public List<Row> adminPage(@Nullable String text, @Nullable String status, @Nullable Boolean featured,
+			@Nullable String sort, int limit, long offset) {
+		return adminFiltered(ROW + ADMIN_FILTER + "order by " + adminOrder(sort) + "\nlimit :limit offset :offset\n",
+				text, status, featured)
+			.param("limit", limit)
 			.param("offset", offset)
 			.query(TalentQueryRepository::row)
 			.list();
@@ -117,6 +120,21 @@ public class TalentQueryRepository {
 	private static String publicOrder(@Nullable String sort, boolean featuredFirst) {
 		return "order by " + (featuredFirst ? "featured_at asc nulls last, " : "")
 				+ ("newest".equals(sort) ? "decided_at desc nulls last, id" : "lower(name), id");
+	}
+
+	/**
+	 * The operators' order a sort key names, with the identifier last so that pages do not overlap. The SQL is chosen
+	 * here by the key, never taken from the caller's text; an unknown key keeps the default order.
+	 */
+	private static String adminOrder(@Nullable String sort) {
+		boolean descending = sort != null && sort.startsWith("-");
+		String key = sort == null ? "" : sort.substring(descending ? 1 : 0);
+		String direction = descending ? " desc" : "";
+		return switch (key) {
+			case "name" -> "lower(name)" + direction + ", id";
+			case "submitted" -> "submitted_at" + direction + " nulls last, id";
+			default -> "case status when 'in_review' then 0 else 1 end, submitted_at, id";
+		};
 	}
 
 	private JdbcClient.StatementSpec publicFiltered(String sql, PublicFilter filter) {

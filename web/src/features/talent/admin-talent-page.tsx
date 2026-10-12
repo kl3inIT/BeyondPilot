@@ -1,10 +1,10 @@
-import { ArrowLeftIcon } from "lucide-react";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { QueueNext } from "@/components/composites/queue-next";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
+import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalent } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -52,31 +52,31 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-        <TextButton href={siteRoutes.adminTalent}>
-          <ArrowLeftIcon aria-hidden="true" />
-          {t("back")}
-        </TextButton>
-        <QueueNext
-          position={
-            queue.place === null
-              ? undefined
-              : t("position", { place: queue.place, total: queue.total })
-          }
-          next={next && { href: next.href, label: t("next", { name: next.name }) }}
-        />
-      </div>
+      <AdminPageHeader
+        back={{ href: siteRoutes.adminTalent, label: t("back") }}
+        title={profile.name}
+        lead={
+          <div className="flex flex-col gap-1">
+            {profile.headline && <p>{profile.headline}</p>}
+            <p className="flex flex-wrap gap-x-3 gap-y-1">
+              {who && <span>{who}</span>}
+              <span>{detail.email}</span>
+            </p>
+          </div>
+        }
+        actions={
+          <QueueNext
+            position={
+              queue.place === null
+                ? undefined
+                : t("position", { place: queue.place, total: queue.total })
+            }
+            next={next && { href: next.href, label: t("next", { name: next.name }) }}
+          />
+        }
+      />
 
       <div className="flex w-full flex-col gap-8">
-        <header className="flex flex-col gap-1.5">
-          <h1 className="text-2xl font-semibold tracking-tight">{profile.name}</h1>
-          {profile.headline && <p className="text-muted-foreground">{profile.headline}</p>}
-          <p className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
-            {who && <span>{who}</span>}
-            <span>{detail.email}</span>
-          </p>
-        </header>
-
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start xl:gap-8">
           <div className="min-w-0 flex-1 max-lg:order-1">
             <TalentView profile={profile} />
