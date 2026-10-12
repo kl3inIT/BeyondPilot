@@ -54,7 +54,7 @@ async function ApplicationTracker({ item, now }: { item: MyApplication; now: num
   return (
     <ol aria-label={t("label")} className="grid auto-cols-fr grid-flow-col gap-1.5">
       {stages.map((stage) => (
-        <li key={stage.key} className="flex min-w-0 flex-col gap-1.5">
+        <li key={stage.key} className="relative flex min-w-0 flex-col gap-1.5">
           <span
             aria-hidden="true"
             className={stage.done ? "h-1 rounded-full bg-primary" : "h-1 rounded-full bg-border"}

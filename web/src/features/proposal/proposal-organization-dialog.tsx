@@ -207,6 +207,7 @@ function BasicsForm({ organization, open, onOpenChange }: BasicsFormProps) {
                   emptyLabel={f("industriesEmpty")}
                   removeLabel={(industry) => f("industriesRemove", { industry })}
                   aria-invalid={error ? true : undefined}
+                  aria-required={company || undefined}
                   options={industries.map((value) => ({ value, label: industryName(value) }))}
                   value={field.state.value}
                   onValueChange={field.handleChange}

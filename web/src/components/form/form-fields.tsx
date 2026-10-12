@@ -5,7 +5,12 @@ import type { ComponentProps, ReactNode } from "react";
 
 import { Button } from "@/components/actions/button";
 import { RequiredMark } from "@/components/composites/required-mark";
-import { useFieldValidity, useFormContext } from "@/components/form/form-context";
+import {
+  RequiredUnlessOptional,
+  useFieldValidity,
+  useFormContext,
+  type RequiredMarks,
+} from "@/components/form/form-context";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Combobox,
@@ -34,21 +39,32 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useFormatter } from "@/i18n/format";
 
-type Labelled = {
+/**
+ * A field's label and hint, and what it says about having to be filled (`optional`, `requiredMark`,
+ * `required`): the control says it to a screen reader with `aria-required`, as `useFieldValidity`
+ * works it out.
+ */
+type Labelled = RequiredMarks & {
   label: string;
-  /** Marks the field as optional beside its label. */
-  optional?: boolean;
-  /** Marks the field as one that must be filled, with the red star beside its label. */
-  requiredMark?: boolean;
   description?: ReactNode;
 };
+
+/**
+ * Wraps the fields of a form that says, in words above them, that every field must be filled unless
+ * it is marked Optional. The controls inside say so one by one to a screen reader: each is
+ * `aria-required` unless it is `optional` or `required={false}`. A box to tick is never required
+ * by this, only by its own `required`.
+ */
+function AllRequired({ children }: { children: ReactNode }) {
+  return <RequiredUnlessOptional value>{children}</RequiredUnlessOptional>;
+}
 
 function FieldLabelText({
   label,
   optional,
   requiredMark,
   htmlFor,
-}: Labelled & { htmlFor: string }) {
+}: Pick<Labelled, "label" | "optional" | "requiredMark"> & { htmlFor: string }) {
   const t = useTranslations("Form");
   return (
     <FieldLabel htmlFor={htmlFor}>
@@ -62,10 +78,15 @@ function FieldLabelText({
 /**
  * The bound field with the ids of its control, its hint and its error, which start with the form's
  * id, and the `aria-describedby` that ties the hint and the error on the screen to the control,
- * after any id the caller adds.
+ * after any id the caller adds. `required` is the control's `aria-required` and `errorRole` the
+ * role of its error, which announces itself only when no submit moved the focus to it.
  */
-function useDescribedField<TValue>(description: ReactNode, alsoDescribedBy?: string) {
-  const { field, invalid, errors, ids } = useFieldValidity<TValue>();
+function useDescribedField<TValue>(
+  description: ReactNode,
+  alsoDescribedBy?: string,
+  marks?: RequiredMarks,
+) {
+  const { field, invalid, errors, ids, required, spoken } = useFieldValidity<TValue>(marks);
   // An error without words marks the control and draws nothing, so there is nothing to point at.
   const worded = invalid && errors.some((error) => error?.message);
   const describedBy =
@@ -80,6 +101,8 @@ function useDescribedField<TValue>(description: ReactNode, alsoDescribedBy?: str
     hintId: ids.hint,
     errorId: ids.error,
     describedBy,
+    required,
+    errorRole: spoken ? ("alert" as const) : undefined,
   };
 }
 
@@ -131,13 +154,18 @@ function TextField({
   label,
   optional,
   requiredMark,
+  required: mustFill,
   description,
   uncounted,
   "aria-describedby": alsoDescribedBy,
   ...input
 }: TextFieldProps) {
-  const { field, invalid, errors, controlId, hintId, errorId, describedBy } =
-    useDescribedField<string>(description, alsoDescribedBy);
+  const { field, invalid, errors, controlId, hintId, errorId, describedBy, required, errorRole } =
+    useDescribedField<string>(description, alsoDescribedBy, {
+      optional,
+      requiredMark,
+      required: mustFill,
+    });
   const counted =
     !uncounted &&
     (input.type === undefined || input.type === "text") &&
@@ -157,6 +185,7 @@ function TextField({
         name={field.name}
         value={field.state.value}
         aria-invalid={invalid || undefined}
+        aria-required={required}
         aria-describedby={describedBy}
         onBlur={field.handleBlur}
         onChange={(event) => field.handleChange(event.target.value)}
@@ -167,7 +196,7 @@ function TextField({
         used={field.state.value.length}
         limit={counted ? input.maxLength : undefined}
       />
-      {invalid && <FieldError id={errorId} errors={errors} />}
+      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
     </Field>
   );
 }
@@ -180,12 +209,17 @@ function TextareaField({
   label,
   optional,
   requiredMark,
+  required: mustFill,
   description,
   "aria-describedby": alsoDescribedBy,
   ...textarea
 }: TextareaFieldProps) {
-  const { field, invalid, errors, controlId, hintId, errorId, describedBy } =
-    useDescribedField<string>(description, alsoDescribedBy);
+  const { field, invalid, errors, controlId, hintId, errorId, describedBy, required, errorRole } =
+    useDescribedField<string>(description, alsoDescribedBy, {
+      optional,
+      requiredMark,
+      required: mustFill,
+    });
   return (
     <Field data-invalid={invalid || undefined}>
       <FieldLabelText
@@ -200,6 +234,7 @@ function TextareaField({
         name={field.name}
         value={field.state.value}
         aria-invalid={invalid || undefined}
+        aria-required={required}
         aria-describedby={describedBy}
         onBlur={field.handleBlur}
         onChange={(event) => field.handleChange(event.target.value)}
@@ -210,7 +245,7 @@ function TextareaField({
         used={field.state.value.length}
         limit={textarea.maxLength}
       />
-      {invalid && <FieldError id={errorId} errors={errors} />}
+      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
     </Field>
   );
 }
@@ -227,13 +262,18 @@ function SelectField({
   label,
   optional,
   requiredMark,
+  required: mustFill,
   description,
   options,
   placeholder,
   disabled,
 }: SelectFieldProps) {
-  const { field, invalid, errors, controlId, hintId, errorId, describedBy } =
-    useDescribedField<string>(description);
+  const { field, invalid, errors, controlId, hintId, errorId, describedBy, required, errorRole } =
+    useDescribedField<string>(description, undefined, {
+      optional,
+      requiredMark,
+      required: mustFill,
+    });
   return (
     <Field data-invalid={invalid || undefined}>
       <FieldLabelText
@@ -251,6 +291,7 @@ function SelectField({
         <SelectTrigger
           id={controlId}
           aria-invalid={invalid || undefined}
+          aria-required={required}
           aria-describedby={describedBy}
           className="w-full"
         >
@@ -267,7 +308,7 @@ function SelectField({
         </SelectContent>
       </Select>
       {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
-      {invalid && <FieldError id={errorId} errors={errors} />}
+      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
     </Field>
   );
 }
@@ -282,13 +323,18 @@ function ComboboxField({
   label,
   optional,
   requiredMark,
+  required: mustFill,
   description,
   options,
   placeholder,
 }: SelectFieldProps) {
   const t = useTranslations("Form");
-  const { field, invalid, errors, hintId, errorId, describedBy } =
-    useDescribedField<string>(description);
+  const { field, invalid, errors, hintId, errorId, describedBy, required, errorRole } =
+    useDescribedField<string>(description, undefined, {
+      optional,
+      requiredMark,
+      required: mustFill,
+    });
   return (
     <Field data-invalid={invalid || undefined}>
       <FieldLabelText
@@ -309,6 +355,7 @@ function ComboboxField({
           className="w-full"
           placeholder={placeholder}
           aria-invalid={invalid || undefined}
+          aria-required={required}
           aria-describedby={describedBy}
           onBlur={field.handleBlur}
         />
@@ -325,14 +372,21 @@ function ComboboxField({
         </ComboboxContent>
       </Combobox>
       {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
-      {invalid && <FieldError id={errorId} errors={errors} />}
+      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
     </Field>
   );
 }
 
-function CheckboxField({ label, disabled }: { label: string; disabled?: boolean }) {
-  const { field, invalid, errors, controlId, errorId, describedBy } =
-    useDescribedField<boolean>(undefined);
+type CheckboxFieldProps = {
+  label: string;
+  disabled?: boolean;
+  /** The box must be ticked for the form to go: a confirmation. Nothing else says it. */
+  required?: boolean;
+};
+
+function CheckboxField({ label, disabled, required: mustTick = false }: CheckboxFieldProps) {
+  const { field, invalid, errors, controlId, errorId, describedBy, required, errorRole } =
+    useDescribedField<boolean>(undefined, undefined, { required: mustTick });
   return (
     <Field orientation="horizontal" data-invalid={invalid || undefined}>
       <Checkbox
@@ -341,12 +395,13 @@ function CheckboxField({ label, disabled }: { label: string; disabled?: boolean 
         checked={field.state.value}
         disabled={disabled}
         aria-invalid={invalid || undefined}
+        aria-required={required}
         aria-describedby={describedBy}
         onCheckedChange={(checked) => field.handleChange(checked === true)}
       />
       <FieldContent>
         <FieldLabel htmlFor={controlId}>{label}</FieldLabel>
-        {invalid && <FieldError id={errorId} errors={errors} />}
+        {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
       </FieldContent>
     </Field>
   );
@@ -388,6 +443,7 @@ function FormError() {
 }
 
 export {
+  AllRequired,
   CheckboxField,
   ComboboxField,
   FormError,

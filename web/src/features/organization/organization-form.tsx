@@ -59,6 +59,7 @@ function IndustriesField({ required }: { required: boolean }) {
       </FieldLabel>
       <ChoiceCombobox
         id={controlId}
+        aria-required={required || undefined}
         label={t("industries")}
         placeholder={t("industriesPlaceholder")}
         emptyLabel={t("industriesEmpty")}

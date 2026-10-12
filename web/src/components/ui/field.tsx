@@ -164,6 +164,13 @@ function FieldSeparator({
   );
 }
 
+/**
+ * The error of a field or of a form. One that carries an `id` is the error a control points at with
+ * `aria-describedby`: it is read with the control when the focus reaches it, and is not a live
+ * region, so the errors of a refused submit do not all speak at once while the focus moves to the
+ * first of them. One without an `id` is tied to nothing and announces itself (`role="alert"`). A
+ * caller passes `role` to say otherwise.
+ */
 function FieldError({
   className,
   children,
@@ -200,7 +207,7 @@ function FieldError({
 
   return (
     <div
-      role="alert"
+      role={props.id ? undefined : "alert"}
       data-slot="field-error"
       className={cn("text-sm font-normal text-destructive", className)}
       {...props}

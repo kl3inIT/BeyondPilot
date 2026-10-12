@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
 import { PdfUpload, type PdfFile } from "@/components/composites/pdf-upload";
+import { RequiredWord } from "@/components/composites/required-mark";
 import { useFieldValidity } from "@/components/form/form-context";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -22,7 +23,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { answerOfChosen, chosenOptions } from "@/lib/chosen-options";
 
 // The controls of the application form that the shared set lacks. Each is rendered inside
-// `form.AppField`, which holds its value, and ties its hint and its error to the control.
+// `form.AppField`, which holds its value, and ties its hint and its error to the control. The form
+// says every field is required unless marked Optional, so each says it must be filled when it is
+// not `optional`: with `aria-required` where the role takes it, in its name otherwise.
 
 /** The ids a control is described by, for `aria-describedby`: those of what is on the screen. */
 function describedBy(...ids: unknown[]) {
@@ -51,7 +54,7 @@ function NativeSelectField({
   placeholder?: string;
   options: Option[];
 }) {
-  const { field, invalid, errors, ids } = useFieldValidity<string>();
+  const { field, invalid, errors, ids, required } = useFieldValidity<string>({ optional });
   const { control: controlId, hint: hintId, error: errorId } = ids;
   return (
     <Field data-invalid={invalid || undefined}>
@@ -65,6 +68,7 @@ function NativeSelectField({
         className="w-full"
         value={field.state.value}
         aria-invalid={invalid || undefined}
+        aria-required={required}
         aria-describedby={describedBy(description && hintId, invalid && errorId)}
         onBlur={field.handleBlur}
         onChange={(event) => field.handleChange(event.target.value)}
@@ -102,7 +106,7 @@ function ChoiceCardsField({
   options: (Option & { what: string })[];
   detail?: ReactNode;
 }) {
-  const { field, invalid, errors, ids } = useFieldValidity<string>();
+  const { field, invalid, errors, ids, required } = useFieldValidity<string>();
   const { control: controlId, hint: hintId, error: errorId } = ids;
   return (
     <>
@@ -113,6 +117,7 @@ function ChoiceCardsField({
           value={field.state.value}
           onValueChange={(value) => field.handleChange(String(value))}
           aria-label={label}
+          aria-required={required}
           aria-describedby={describedBy(description && hintId, invalid && errorId)}
         >
           {options.map((option) => (
@@ -165,7 +170,7 @@ function PdfField({
   value: PdfFile | null;
   onChange: (file: PdfFile | null) => void;
 }) {
-  const { invalid, errors } = useFieldValidity<unknown>();
+  const { invalid, errors, required } = useFieldValidity<unknown>({ optional });
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
   const described = describedBy(description && hintId, invalid && errorId);
@@ -174,6 +179,8 @@ function PdfField({
       <FieldLabel htmlFor={id}>
         {label}
         {optional && <Optional />}
+        {/* The upload is a button and a file input, and neither takes `aria-required`. */}
+        {required && <RequiredWord />}
       </FieldLabel>
       {/*
         The upload does not say it is in error, and a refused step gives the focus to the first
@@ -221,7 +228,9 @@ function ChoicesField({
   description?: ReactNode;
   options: string[];
 }) {
-  const { field, invalid, errors } = useFieldValidity<string | undefined>();
+  const { field, invalid, errors, required } = useFieldValidity<string | undefined>({
+    optional,
+  });
   const chosen = chosenOptions(field.state.value);
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
@@ -229,6 +238,7 @@ function ChoicesField({
     <FieldSet id={id} aria-describedby={describedBy(description && hintId, invalid && errorId)}>
       <FieldLegend variant="label">
         {label} {optional && <Optional />}
+        {required && <RequiredWord />}
       </FieldLegend>
       {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
       <FieldGroup data-slot="checkbox-group">
@@ -262,13 +272,18 @@ function ChoicesField({
 function AgreementField({
   id,
   label,
+  required: mustAgree,
   description,
 }: {
   id: string;
   label: string;
+  /** The application cannot go without the agreement. */
+  required: boolean;
   description?: ReactNode;
 }) {
-  const { field, invalid, errors } = useFieldValidity<string | undefined>();
+  const { field, invalid, errors, required } = useFieldValidity<string | undefined>({
+    required: mustAgree,
+  });
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
   return (
@@ -278,6 +293,7 @@ function AgreementField({
         checked={field.state.value === "true"}
         onCheckedChange={(checked) => field.handleChange(checked ? "true" : "")}
         aria-invalid={invalid || undefined}
+        aria-required={required}
         aria-describedby={describedBy(description && hintId, invalid && errorId)}
       />
       <FieldContent>

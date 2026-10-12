@@ -177,7 +177,9 @@ function UseCaseSummary({ values, onEdit, viewLabel, hideEmpty = false }: UseCas
               {t(`steps.${block.step}.title`)}
             </h3>
             {onEdit && (
-              <TextButton onClick={() => onEdit(block.step)}>
+              // As tall as the 24px a target needs: a line of text is 20px, which is too little
+              // whenever the bar of steps stands right above it, as it does while the page scrolls.
+              <TextButton className="min-h-6" onClick={() => onEdit(block.step)}>
                 {!viewLabel && <PencilIcon aria-hidden="true" />}
                 {viewLabel ?? r("edit")}
               </TextButton>

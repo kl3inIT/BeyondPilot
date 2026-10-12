@@ -3,6 +3,7 @@
 import { revalidateLogic } from "@tanstack/react-form";
 import { Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { useRef, type RefObject } from "react";
 
 import { Button } from "@/components/actions/button";
 import { FormDialog } from "@/components/composites/form-dialog";
@@ -19,7 +20,27 @@ type DialogProps<Value> = {
   /** Present when the entry exists and can be taken out of the list. */
   onDelete?: () => void;
   onClose: () => void;
+  /**
+   * The button that adds to the list. It takes the focus when the entry is deleted: the row whose
+   * button opened the dialog is gone by then.
+   */
+  addButton: RefObject<HTMLElement | null>;
 };
+
+/**
+ * Where the focus goes when a dialog of the list closes: to what opened it, which an empty ref
+ * leaves to the dialog, and to the list's Add button once the entry was deleted.
+ */
+function useFocusAfterDelete(addButton: RefObject<HTMLElement | null>, onDelete?: () => void) {
+  const finalFocus = useRef<HTMLElement | null>(null);
+  const deleting =
+    onDelete &&
+    (() => {
+      finalFocus.current = addButton.current;
+      onDelete();
+    });
+  return { finalFocus, deleting };
+}
 
 const emptyKeyDate: KeyDateValue = {
   title: "",
@@ -34,7 +55,8 @@ const emptyKeyDate: KeyDateValue = {
  * Adds or edits a key date. The entry goes into the program's list; it is stored when Settings is
  * saved, with everything else.
  */
-function KeyDateDialog({ value, onSave, onDelete, onClose }: DialogProps<KeyDateValue>) {
+function KeyDateDialog({ value, onSave, onDelete, onClose, addButton }: DialogProps<KeyDateValue>) {
+  const { finalFocus, deleting } = useFocusAfterDelete(addButton, onDelete);
   const t = useTranslations("Admin.programs.settings.keyDate");
   const s = useTranslations("Admin.programs.settings");
   const say = useTranslations("Form.errors");
@@ -54,7 +76,8 @@ function KeyDateDialog({ value, onSave, onDelete, onClose }: DialogProps<KeyDate
       width="lg"
       submitLabel={value ? t("update") : t("add")}
       cancelLabel={s("cancel")}
-      aside={onDelete && <DeleteEntry label={s("delete")} onDelete={onDelete} />}
+      aside={deleting && <DeleteEntry label={s("delete")} onDelete={deleting} />}
+      finalFocus={finalFocus}
     >
       <form.AppField name="title">
         {(field) => <field.TextField label={t("title")} maxLength={160} autoComplete="off" />}
@@ -101,7 +124,8 @@ const emptyEvent: EventValue = {
 };
 
 /** Adds or edits an event of the program, stored when Settings is saved. */
-function EventDialog({ value, onSave, onDelete, onClose }: DialogProps<EventValue>) {
+function EventDialog({ value, onSave, onDelete, onClose, addButton }: DialogProps<EventValue>) {
+  const { finalFocus, deleting } = useFocusAfterDelete(addButton, onDelete);
   const t = useTranslations("Admin.programs.settings.event");
   const s = useTranslations("Admin.programs.settings");
   const say = useTranslations("Form.errors");
@@ -121,7 +145,8 @@ function EventDialog({ value, onSave, onDelete, onClose }: DialogProps<EventValu
       width="lg"
       submitLabel={value ? t("update") : t("add")}
       cancelLabel={s("cancel")}
-      aside={onDelete && <DeleteEntry label={s("delete")} onDelete={onDelete} />}
+      aside={deleting && <DeleteEntry label={s("delete")} onDelete={deleting} />}
+      finalFocus={finalFocus}
     >
       <form.AppField name="title">
         {(field) => <field.TextField label={t("title")} maxLength={160} autoComplete="off" />}

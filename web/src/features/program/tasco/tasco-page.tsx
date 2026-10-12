@@ -227,7 +227,7 @@ async function TascoPage({ program }: { program: Program }) {
                 <li key={section}>
                   <a
                     href={`#${section}`}
-                    className="inline-flex min-h-11 items-center text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground focus-visible:underline"
+                    className="inline-flex min-h-11 items-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     {t(`nav.${section}`)}
                   </a>
@@ -405,7 +405,7 @@ async function TascoPage({ program }: { program: Program }) {
                       <a
                         href={linkedin}
                         aria-label={t("judges.linkedin", { name })}
-                        className="font-medium outline-none after:absolute after:inset-0 focus-visible:underline"
+                        className="font-medium outline-none after:absolute after:inset-0 focus-visible:after:ring-3 focus-visible:after:ring-ring/50 focus-visible:after:ring-inset"
                       >
                         {name}
                       </a>

@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { TextButton } from "@/components/actions/text-button";
 import { withFieldGroup } from "@/components/form/app-form";
 import { fieldIds } from "@/components/form/field-ids";
+import { RequiredWord } from "@/components/composites/required-mark";
 import { useFieldValidity } from "@/components/form/form-context";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -127,6 +128,8 @@ const UseCaseStepFields = withFieldGroup({
             {(field) => (
               <field.TextareaField
                 label={t("currentSolutions")}
+                // One of the two the form names as not required.
+                required={false}
                 description={t("currentSolutionsHint")}
                 rows={4}
                 maxLength={MAX_TEXT}
@@ -161,6 +164,8 @@ const UseCaseStepFields = withFieldGroup({
                         {(field) => (
                           <field.TextField
                             label={t("requirement", { number: index + 1 })}
+                            // One requirement is asked for, and its error stands on the first row.
+                            required={index === 0}
                             maxLength={300}
                             disabled={readOnly}
                           />
@@ -184,7 +189,8 @@ const UseCaseStepFields = withFieldGroup({
                 ))}
                 {!readOnly && (
                   <TextButton
-                    className="self-start"
+                    // 24px tall, the least a target may be when another stands right beside it.
+                    className="min-h-6 self-start"
                     onClick={() => rows.pushValue({ statement: "", necessity: "required" })}
                   >
                     <PlusIcon aria-hidden="true" />
@@ -311,12 +317,16 @@ function errorIdOf(id: string, invalid: boolean, errors: ({ message: string } | 
 function TechnologiesField({ readOnly }: { readOnly: boolean }) {
   const t = useTranslations("Organization.useCases.wizard");
   const technologyName = useVocabulary("technology");
-  const { field, invalid, errors, ids } = useFieldValidity<string[]>();
+  const { field, invalid, errors, ids, required } = useFieldValidity<string[]>();
   const errorId = errorIdOf(ids.error, invalid, errors);
+  const labelId = `${ids.control}-label`;
 
   return (
-    <Field data-invalid={invalid || undefined}>
-      <FieldLabel>{t("technologies")}</FieldLabel>
+    <Field data-invalid={invalid || undefined} aria-labelledby={labelId}>
+      <FieldLabel id={labelId}>
+        {t("technologies")}
+        {required && <RequiredWord />}
+      </FieldLabel>
       <div className="grid gap-x-6 gap-y-3 sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-5">
         {useCaseTechnologies.map((value) => (
           <label key={value} className="flex items-start gap-2 text-sm">
@@ -367,7 +377,7 @@ type TimelineFieldProps = {
 /** The preferred timeline: one of the presets, kept as the weeks it stands for. */
 function TimelineField({ maxWeeks, onMaxWeeks, readOnly }: TimelineFieldProps) {
   const t = useTranslations("Organization.useCases.wizard");
-  const { field, invalid, errors, ids } = useFieldValidity<number | null>();
+  const { field, invalid, errors, ids, required } = useFieldValidity<number | null>();
   const errorId = errorIdOf(ids.error, invalid, errors);
   const options = timelineCodes.map((value) => ({ value, label: t(`timeline.${value}`) }));
   const chosen = timelineOf({ timelineMinWeeks: field.state.value, timelineMaxWeeks: maxWeeks });
@@ -388,6 +398,7 @@ function TimelineField({ maxWeeks, onMaxWeeks, readOnly }: TimelineFieldProps) {
         <SelectTrigger
           id={ids.control}
           aria-invalid={invalid || undefined}
+          aria-required={required}
           aria-describedby={errorId}
           className="w-full"
         >
@@ -419,7 +430,7 @@ type ClosesInputProps = {
 
 /** The day or the time proposals close, one of the two inputs under one label. */
 function ClosesInput({ type, label, describedBy, readOnly }: ClosesInputProps) {
-  const { field, invalid, errors, ids } = useFieldValidity<string>();
+  const { field, invalid, errors, ids, required } = useFieldValidity<string>();
   const errorId = errorIdOf(ids.error, invalid, errors);
 
   return (
@@ -431,6 +442,7 @@ function ClosesInput({ type, label, describedBy, readOnly }: ClosesInputProps) {
         disabled={readOnly}
         aria-label={label}
         aria-invalid={invalid || undefined}
+        aria-required={required}
         aria-describedby={errorId ? `${describedBy} ${errorId}` : describedBy}
         value={field.state.value}
         onBlur={field.handleBlur}

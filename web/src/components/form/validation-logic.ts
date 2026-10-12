@@ -38,3 +38,41 @@ export function clearingServerErrors(
       },
     });
 }
+
+/**
+ * Keeps what a submit refused until it is corrected, around the validation logic of a form.
+ *
+ * The library takes a field's `onSubmit` error away at the first check that is not a submit and
+ * finds nothing wrong, without looking at the rule that set it: leaving the field is such a check,
+ * so tabbing on from the field the refusal moved focus to hid its error while it was still wrong.
+ * It concerns the forms and the fields whose rules are `onSubmit` ones; an `onDynamic` rule is
+ * checked again by `revalidateLogic` and never met this.
+ *
+ * Once the form has been submitted, a change and a blur check the `onSubmit` rules again, the
+ * form's and the field's own: the error stays while the value is refused, goes when it is
+ * accepted, and comes back if it is made wrong again, as in a form checked by `onDynamic`. Before
+ * the first submit nothing changes, and an asynchronous rule still waits for the submit.
+ */
+export function keepingSubmitErrors(
+  logic: ValidationLogicFn = defaultValidationLogic,
+): ValidationLogicFn {
+  return (props) =>
+    logic({
+      ...props,
+      runValidation: ({ validators, form }) => {
+        const { type, async, fieldName } = props.event;
+        const rule = props.validators?.onSubmit;
+        const checksAgain =
+          !async &&
+          !props.group &&
+          (type === "change" || type === "blur") &&
+          props.form.state.submissionAttempts > 0 &&
+          // A field passes on what the form found for it, so it is asked even without a rule.
+          (fieldName !== undefined || rule !== undefined);
+        return props.runValidation({
+          validators: checksAgain ? [...validators, { fn: rule, cause: "submit" }] : validators,
+          form,
+        });
+      },
+    });
+}
