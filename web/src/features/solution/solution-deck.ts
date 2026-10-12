@@ -1,4 +1,4 @@
-import { useFormatter } from "next-intl";
+import { useFormatter } from "@/i18n/format";
 
 /**
  * Where the deck of a solution is read. Anyone reads the deck of an approved solution; before that

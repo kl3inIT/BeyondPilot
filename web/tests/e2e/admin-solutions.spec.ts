@@ -492,7 +492,7 @@ test.describe("admin solutions", () => {
     await expect(page.getByText("Claims Copilot is featured.")).toBeVisible();
 
     await page.goto(`/admin/solutions/${policyChat}`);
-    await expect(page.locator("[data-featured]")).toHaveText("Featured Oct 1, 2026");
+    await expect(page.locator("[data-featured]")).toHaveText("Featured 1 Oct 2026");
     await expectNoSeriousA11yViolations(page);
     await page.getByRole("button", { name: "Stop featuring" }).click();
     await expect(page.getByText("Policy Chat is no longer featured.")).toBeVisible();
