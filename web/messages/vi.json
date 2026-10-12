@@ -7135,10 +7135,8 @@
       },
       "detail": {
         "metaTitle": "Đề xuất",
-        "back": "Đề xuất",
         "decline": "Từ chối",
         "shortlist": "Chọn vào danh sách rút gọn",
-        "meta": "{useCase} · gửi {sent}",
         "solutions": {
           "title": "Giải pháp AI",
           "approach": "Cách tiếp cận",
@@ -7161,7 +7159,10 @@
           "download": "Tải PDF",
           "none": "Chưa đính kèm tệp PDF."
         },
-        "edited": "Đã chỉnh sửa {date}"
+        "edited": "Đã chỉnh sửa {date}",
+        "sent": "Gửi {date}",
+        "crumbs": "Vị trí",
+        "useCases": "Bài toán"
       },
       "edited": "Đã chỉnh sửa {date}"
     },

@@ -3,10 +3,9 @@ import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
-import { OrganizationMark } from "@/features/organization/organization-mark";
 import { useFileSize } from "@/features/solution/solution-deck";
 import type { ReceivedUseCaseProposal } from "@/lib/api/generated";
-import { adminUseCaseProposalsRoute, workspaceUseCaseProposalsRoute } from "@/lib/site";
+import { adminUseCaseProposalsRoute, siteRoutes, workspaceUseCaseProposalsRoute } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 import { Card, ProposalTeamList, Rows } from "./proposal-card";
@@ -32,18 +31,10 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
   const format = useFormatter();
   const size = useFileSize();
   const { sender, deck, team, solutions, useCase } = proposal;
-  const sent = format.dateTime(new Date(proposal.sentAt), {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "Asia/Ho_Chi_Minh",
-  });
-  const edited = proposal.editedAt
-    ? format.dateTime(new Date(proposal.editedAt), {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone: "Asia/Ho_Chi_Minh",
-      })
-    : null;
+  const day = (instant: string) =>
+    format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
+  const sent = day(proposal.sentAt);
+  const edited = proposal.editedAt ? day(proposal.editedAt) : null;
   return (
     <div
       className={cn(
@@ -52,43 +43,49 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
       )}
     >
       <div className={"flex w-full max-w-220 flex-col gap-5"}>
-        <div className="flex flex-col gap-2">
-          <TextButton
-            href={
-              admin
-                ? adminUseCaseProposalsRoute(useCase.id)
-                : workspaceUseCaseProposalsRoute(useCase.id)
-            }
-            className="self-start"
+        <header className="flex flex-col gap-2">
+          <nav
+            aria-label={t("crumbs")}
+            className="flex flex-wrap items-center gap-x-2 text-sm font-medium"
           >
-            <ArrowLeftIcon aria-hidden="true" />
-            {t("back")}
-          </TextButton>
-          <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
-            <div className="flex min-w-0 items-center gap-3">
-              <OrganizationMark
-                name={proposal.organizationName}
-                logoFileId={proposal.organizationLogoFileId}
-              />
-              <h1 className="text-3xl font-semibold tracking-tight break-words">
-                {proposal.organizationName}
-              </h1>
+            <TextButton href={admin ? siteRoutes.adminUseCases : siteRoutes.workspaceUseCases}>
+              <ArrowLeftIcon aria-hidden="true" />
+              {t("useCases")}
+            </TextButton>
+            <span aria-hidden="true" className="text-muted-foreground">
+              ›
+            </span>
+            <TextButton
+              href={
+                admin
+                  ? adminUseCaseProposalsRoute(useCase.id)
+                  : workspaceUseCaseProposalsRoute(useCase.id)
+              }
+            >
+              {useCase.title}
+            </TextButton>
+          </nav>
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+            <h1 className="min-w-0 text-2xl font-semibold tracking-tight break-words">
+              {proposal.organizationName}
+            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm text-muted-foreground">
+                {t("sent", { date: sent })}
+                {edited && " · " + t("edited", { date: edited })}
+              </span>
+              {/* The decision comes with a later change: drawn, not offered. */}
+              {!admin && (
+                <>
+                  <Button prominence="secondary" disabled>
+                    {t("decline")}
+                  </Button>
+                  <Button disabled>{t("shortlist")}</Button>
+                </>
+              )}
             </div>
-            {/* The decision comes with a later change: drawn, not offered. */}
-            {!admin && (
-              <div className="flex items-center gap-3">
-                <Button prominence="secondary" disabled>
-                  {t("decline")}
-                </Button>
-                <Button disabled>{t("shortlist")}</Button>
-              </div>
-            )}
           </div>
-          <p className="text-sm text-muted-foreground">
-            {t("meta", { useCase: useCase.title, sent })}
-            {edited && " · " + t("edited", { date: edited })}
-          </p>
-        </div>
+        </header>
 
         <Card id="proposal-solutions" title={t("solutions.title")}>
           <ProposalSolutionList solutions={solutions} />

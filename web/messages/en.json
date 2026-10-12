@@ -7135,10 +7135,8 @@
       },
       "detail": {
         "metaTitle": "Proposal",
-        "back": "Proposals",
         "decline": "Decline",
         "shortlist": "Shortlist",
-        "meta": "{useCase} · sent {sent}",
         "solutions": {
           "title": "AI solutions",
           "approach": "Approach",
@@ -7161,7 +7159,10 @@
           "download": "Download PDF",
           "none": "No PDF attached."
         },
-        "edited": "Edited {date}"
+        "edited": "Edited {date}",
+        "sent": "Sent {date}",
+        "crumbs": "Where you are",
+        "useCases": "Use cases"
       },
       "edited": "Edited {date}"
     },
