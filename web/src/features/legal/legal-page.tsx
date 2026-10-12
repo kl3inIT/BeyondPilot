@@ -35,7 +35,11 @@ async function LegalPage({ doc }: { doc: LegalDoc }) {
         <ol className="mt-3 grid list-decimal gap-1.5 pl-5 text-sm text-muted-foreground sm:grid-cols-2">
           {sections.map((section, index) => (
             <li key={section.heading}>
-              <a href={`#${anchor(index)}`} className="hover:text-foreground hover:underline">
+              {/* 24px to aim at: the padding adds 4px to the line and the margin takes it back. */}
+              <a
+                href={`#${anchor(index)}`}
+                className="-my-0.5 inline-flex py-0.5 hover:text-foreground hover:underline"
+              >
                 {section.heading}
               </a>
             </li>

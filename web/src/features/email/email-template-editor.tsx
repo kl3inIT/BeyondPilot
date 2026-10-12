@@ -66,7 +66,7 @@ function Problems({ id, problems }: { id: string; problems: { message: string }[
 
 /** The look of a variable or a condition in the lists under the body: a chip that puts it in the text. */
 const chip =
-  "inline-flex max-w-full items-center rounded-md border bg-muted px-2 py-0.5 text-left font-mono text-xs break-all outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50";
+  "inline-flex min-h-6 max-w-full items-center rounded-md border bg-muted px-2 py-0.5 text-left font-mono text-xs break-all outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50";
 
 /**
  * One kind of email's wording: the subject and the Markdown body with the variables the kind
@@ -322,7 +322,7 @@ function EmailTemplateEditor({
         }
       />
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+      <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
         <div className="flex min-w-0 flex-1 flex-col gap-5">
           <form.Field name="subject">
             {(field) => (
@@ -457,7 +457,7 @@ function EmailTemplateEditor({
             html={preview.html}
             title={t("previewTitle", { name })}
             behind={problems.length > 0 ? t("previewBehind") : undefined}
-            className="lg:w-140 lg:shrink-0"
+            className="xl:w-140 xl:shrink-0"
           />
         )}
       </div>

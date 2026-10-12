@@ -66,7 +66,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
         <div className="grid min-w-0 text-sm">
           <Link
             href={`${siteRoutes.adminOrganizations}/${organization.id}`}
-            className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="relative -my-0.5 truncate rounded-sm py-0.5 font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             {organization.name}
           </Link>

@@ -52,7 +52,7 @@ function AddressField({ address, label }: { address: string; label: string }) {
         {label}
       </label>
       <div className="flex items-start gap-2">
-        <Textarea id={id} value={address} readOnly rows={1} className="min-h-10 flex-1" />
+        <Textarea id={id} value={address} readOnly rows={1} className="min-h-10 min-w-0 flex-1" />
         <CopyButton value={address} label={t("copy")} />
       </div>
     </div>

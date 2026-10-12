@@ -113,8 +113,8 @@ async function EmailMessagePage({ message }: { message: EmailMessage }) {
         </div>
       )}
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="flex flex-col gap-6 lg:w-96 lg:shrink-0">
+      <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
+        <div className="flex flex-col gap-6 xl:w-96 xl:shrink-0">
           <section className="flex flex-col gap-3" aria-labelledby="message-facts">
             <h2 id="message-facts" className="text-base font-medium">
               {t("message.facts")}

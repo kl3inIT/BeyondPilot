@@ -116,11 +116,11 @@ function EmailAppearanceForm({
         title={t("title")}
       />
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+      <div className="flex flex-col gap-6 xl:flex-row xl:items-start">
         <form
           id={form.formId}
           noValidate
-          className="flex flex-col gap-5 lg:w-96 lg:shrink-0"
+          className="flex flex-col gap-5 xl:w-96 xl:shrink-0"
           onSubmit={(event) => {
             event.preventDefault();
             void form.handleSubmit();
