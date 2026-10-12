@@ -84,7 +84,7 @@ class CustomerDeploymentsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The deployment changed since it was read.",
+	@ApiResponse(responseCode = "409", description = "The deployment changed since it was read, or is withdrawn.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	CustomerDeploymentResponse save(@CurrentActor Actor actor, @PathVariable UUID solutionId, @PathVariable UUID id,
 			@Valid @RequestBody SaveCustomerDeploymentRequest request) {
@@ -93,15 +93,52 @@ class CustomerDeploymentsController {
 
 	@DeleteMapping("/mine/{solutionId}/deployments/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "deleteCustomerDeployment", summary = "Remove a customer deployment",
+	@Operation(operationId = "deleteCustomerDeployment",
+			summary = "Delete a customer deployment of a solution that is still a draft",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "204", description = "The deployment is gone.", content = @Content)
 	@ApiResponse(responseCode = "403", description = NOT_WRITER,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "The solution was sent for review, so its deployments are withdrawn, not deleted.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void delete(@CurrentActor Actor actor, @PathVariable UUID solutionId, @PathVariable UUID id) {
 		solutions.deleteDeployment(actor, solutionId, id);
+	}
+
+	@PostMapping(path = "/mine/{solutionId}/deployments/{id}/withdraw", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "withdrawCustomerDeployment",
+			summary = "Take a customer deployment off its solution, keeping it and its review",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The deployment, withdrawn: only its organization reads it.")
+	@ApiResponse(responseCode = "403", description = NOT_WRITER,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The deployment is already withdrawn.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	CustomerDeploymentResponse withdraw(@CurrentActor Actor actor, @PathVariable UUID solutionId,
+			@PathVariable UUID id) {
+		return solutions.withdrawDeployment(actor, solutionId, id);
+	}
+
+	@PostMapping(path = "/mine/{solutionId}/deployments/{id}/restore", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "restoreCustomerDeployment",
+			summary = "Put a withdrawn customer deployment back on its solution with the review it had",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The deployment, no longer withdrawn.")
+	@ApiResponse(responseCode = "403", description = NOT_WRITER,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = NOT_FOUND,
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "The deployment is not withdrawn, or the solution already lists as many as it may.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	CustomerDeploymentResponse restore(@CurrentActor Actor actor, @PathVariable UUID solutionId,
+			@PathVariable UUID id) {
+		return solutions.restoreDeployment(actor, solutionId, id);
 	}
 
 	@PostMapping("/admin/deployments/{id}/approve")
@@ -114,7 +151,7 @@ class CustomerDeploymentsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The deployment is not waiting for review.",
+	@ApiResponse(responseCode = "409", description = "The deployment is not waiting for review, or is withdrawn.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void approve(@CurrentActor Actor actor, @PathVariable UUID id) {
 		administration.approveDeployment(actor, id);
@@ -132,7 +169,8 @@ class CustomerDeploymentsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The deployment is neither waiting for review nor approved.",
+	@ApiResponse(responseCode = "409",
+			description = "The deployment is neither waiting for review nor approved, or is withdrawn.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void reject(@CurrentActor Actor actor, @PathVariable UUID id,
 			@Valid @RequestBody RejectCustomerDeploymentRequest request) {

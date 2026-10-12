@@ -38,6 +38,8 @@ export const auditActions = [
   "solution.unfeature",
   "solution.deployment_approve",
   "solution.deployment_reject",
+  "solution.deployment_withdraw",
+  "solution.deployment_restore",
   "solution.enrich",
   "use_case.create",
   "use_case.submit",

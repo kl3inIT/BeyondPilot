@@ -108,6 +108,11 @@ public enum AuditAction {
 	/** {@code reason} is the code of the reason given. */
 	SOLUTION_DEPLOYMENT_REJECT("solution.deployment_reject", "reason"),
 
+	/** A member took a customer deployment off their solution; its review stays, and they can restore it. */
+	SOLUTION_DEPLOYMENT_WITHDRAW("solution.deployment_withdraw"),
+
+	SOLUTION_DEPLOYMENT_RESTORE("solution.deployment_restore"),
+
 	/**
 	 * Empty parts of a solution and its organization were filled from public sources: its deck, its website or a web
 	 * search. {@code fields} names the parts filled; {@code evidence} is a JSON object giving, for each, the verbatim

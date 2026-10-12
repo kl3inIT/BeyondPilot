@@ -15,7 +15,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * One project in which a customer put a solution to work. It waits for review from the moment it is written, and
- * again after every change.
+ * again after every change. Its owners withdraw it and restore it without touching its review.
  */
 @Entity
 @Table(name = "solution_customer_deployment")
@@ -64,6 +64,8 @@ public class CustomerDeployment {
 	private @Nullable String decisionMessage;
 
 	private @Nullable Instant decidedAt;
+
+	private @Nullable Instant withdrawnAt;
 
 	@Version
 	private long version;
@@ -116,6 +118,19 @@ public class CustomerDeployment {
 		decisionReason = reason;
 		decisionMessage = message;
 		decidedAt = at;
+	}
+
+	/** Takes it off its solution for everyone but its organization; its review stays as it is. */
+	public void withdraw(Instant at) {
+		withdrawnAt = at;
+	}
+
+	public void restore() {
+		withdrawnAt = null;
+	}
+
+	public boolean isWithdrawn() {
+		return withdrawnAt != null;
 	}
 
 	public boolean isInReview() {
@@ -184,6 +199,10 @@ public class CustomerDeployment {
 
 	public @Nullable Instant getDecidedAt() {
 		return decidedAt;
+	}
+
+	public @Nullable Instant getWithdrawnAt() {
+		return withdrawnAt;
 	}
 
 	public long getVersion() {

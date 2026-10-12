@@ -24,6 +24,8 @@ public record CustomerDeploymentResponse(@Schema(requiredMode = Schema.RequiredM
 				description = "Why it was last rejected.") @Nullable String decisionReason,
 		@Schema(types = { "string", "null" },
 				description = "What the operator wrote to the owners with the rejection.") @Nullable String decisionMessage,
+		@Schema(types = { "string", "null" }, format = "date-time",
+				description = "When its organization withdrew it; null while it is shown.") @Nullable Instant withdrawnAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Sent back with a save, which is refused when the deployment changed since.") long version,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant updatedAt) {

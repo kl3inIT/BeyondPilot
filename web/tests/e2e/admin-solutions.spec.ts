@@ -463,6 +463,13 @@ test.describe("admin solutions", () => {
     expect(decisions).toEqual([
       { call: `POST /api/solution/admin/solutions/${policyChat}/unfeature`, body: null },
     ]);
+    // Nobody was told and it can be put back, so the toast offers Undo, which features it again.
+    await page.getByRole("button", { name: "Undo" }).click();
+    await expect(page.getByText("Policy Chat is featured.")).toBeVisible();
+    expect(decisions.at(-1)).toEqual({
+      call: `POST /api/solution/admin/solutions/${policyChat}/feature`,
+      body: null,
+    });
 
     await page.getByRole("combobox", { name: "Featured" }).click();
     await page.getByRole("option", { name: "Not featured" }).click();

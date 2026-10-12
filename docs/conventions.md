@@ -296,14 +296,24 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 - The API pages from 1 and answers `items`, `page`, `pageSize` and `total`; a page past the end is empty, not an error. A list request takes an optional `size` from 1 to 100; absent, the list keeps its own page size, and `pageSize` answers the size used.
 - Under a list sits the count of what matches and, when it fills more than one page, the registry `pagination` with page links; a way that does not exist is not offered.
 - A table of rows is drawn by `DataTableView`, which wraps TanStack Table in manual mode as Dub and Medusa do: the Server Component sorts and pages, and the composite draws. The columns an operator would rank by (a score, a date, a count, a name) sort from their header, which writes `?sort=key` ascending or `?sort=-key` descending, marks itself with `aria-sort`, and returns to page 1. One column sorts at a time, a second click turns it round, and the list has its own default order, left out of the URL. A key the list does not know falls back to that default.
-- Rows an operator acts on together are selected with a box per row and one for the page. The selection gathers in a bar at the bottom of the screen with its count and actions; once the whole page is selected the bar offers every row the search matches, Escape empties it, and a row that leaves the list leaves the selection. An action on five or more rows, or on any row when it cannot be undone, is asked again with the count.
+- Rows an operator acts on together are selected with a box per row and one for the page. The selection gathers in a bar at the bottom of the screen with its count and actions; once the whole page is selected the bar offers every row the search matches, Escape empties it, and a row that leaves the list leaves the selection. An action on five or more rows, or on any row when it cannot be undone, is asked once with the count ([Actions](#actions)).
 - Columns are laid out with the composite's fixed words rather than classes: `fill` takes the room left, `nowrap` keeps one line, `numeric` aligns right, `width` is `action`, `sm`, `md` or `lg`, `from` hides the column below `sm`, `md`, `lg` or `xl`, and `narrow` holds a box.
 - A list that holds more than its smallest page offers its page size beside the pagination (`PageSizeSelect`): 10, 25, 50 and 100 for a table, 12, 24 and 48 for a directory of cards. The size is the URL (`size`), and changing it returns to the start of the list.
 - A search field has one size per surface: `DirectorySearch` at 48px in a public directory, the registry `input-group` at 32px in an admin toolbar.
 - A list that only grows and is read from its newest end, such as a log, is paged by cursor instead: the address carries `before` or `after`, and under the list sit Previous and Next without a count or page numbers.
 - An empty list and a search that finds nothing are different states. The second keeps the header row and offers one action that clears the search and the filters.
-- Row actions sit in a menu at the end of the row. A destructive action comes last, after a divider, in the destructive colour; an action that opens a dialog ends with an ellipsis. The dialog names who or what it concerns, what will happen and how it is undone.
+- Row actions sit in a menu at the end of the row. A destructive action comes last, after a divider, in the destructive colour; an action that opens a dialog ends with an ellipsis. The dialog names who or what it concerns, what will happen and who is emailed; whether an action has a dialog at all follows [Actions](#actions).
 - On a phone a list is stacked rows, never a table scrolled sideways.
+
+### Actions
+
+Reversibility comes before confirmation. An action that changes data is classified by two questions: can the data be restored, and does the action tell someone outside the screen at once, by an email or a notification?
+
+- **Restorable and silent** (feature and unfeature, removing a solution from a matching result, a switch nobody depends on): the action runs at once, and its success toast offers **Undo** for as long as the toast stays, which calls the inverse operation. The toast is raised through `useNotify` with its `undo` option. Without an inverse operation in the API the action is not of this kind.
+- **Restorable, but it emails someone** (taking down or restoring an organization, a solution or a talent profile; a review decision with a message; an invitation; revoking access): the dialog is a form that takes the reason or the message and says who is emailed. There is no second confirmation and no Undo, because an email cannot be recalled.
+- **Not restorable, or reaching outside widely** (releasing outcomes, merging two organizations, really deleting personal data, changing the email provider, switching off the MCP user server): the action is asked once, in `ConfirmDialog`, naming the consequence and the count of what it touches.
+- No action asks a person to type a name to confirm.
+- Which records are deleted and which change status is in the [persistence guideline](guidelines/persistence.md#deletion).
 
 ### Internationalization
 
@@ -347,7 +357,7 @@ The words that explain a screen: the line under a title, the hint under a field,
 - Files are kebab-case, components are PascalCase, exports are named (default exports only where Next.js requires them), one main component per file, and no barrel `index.ts` files.
 - Props extend the native element's props; `ref` is an ordinary prop; `className` is merged last with `cn()`; variants use `cva`; parts are composed (`Card`, `CardHeader`, `CardContent`) rather than passed as convenience props. Base UI primitives take a `render` prop for polymorphism.
 - Product actions use the `Button`, `IconButton` and `TextButton` wrappers with `tone` (`default`, `danger`, `success` for the approving one of a pair of decisions), `prominence` (`primary`, `secondary`, `tertiary`, `internal`, `inverse` for the ink-coloured action of the landing and the header), `size` (`sm`, `md`, `lg`; `Button` also has `xl` for the one action a page leads to) and `pending`. Product code does not pick shadcn button variants directly.
-- Every interactive component covers hover, active, focus-visible, disabled, pending (`aria-busy`) and invalid (`aria-invalid`) in both themes. Destructive actions confirm in a dialog whose Cancel receives initial focus.
+- Every interactive component covers hover, active, focus-visible, disabled, pending (`aria-busy`) and invalid (`aria-invalid`) in both themes. An action that is asked first ([Actions](#actions)) is asked in a dialog whose Cancel receives initial focus.
 - Use semantic elements first and Base UI for complex widgets; icon-only controls have an accessible name; buttons default to `type="button"`; everything works from the keyboard.
 - Registry primitives under `src/components/ui` are changed as little as possible, and the reason for a change is recorded in its commit.
 - Behavior tests sit next to the component. Storybook is not used.
