@@ -7,15 +7,8 @@ import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { useAppForm } from "@/components/form/app-form";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -131,7 +124,7 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
         notify.success(editing ? "Admin.ai.chat.done.saved" : "Admin.ai.chat.done.connected", {
           name: body.name,
         });
-        close();
+        change(false);
       } catch (error) {
         notify.error(chatError(error));
       }
@@ -140,7 +133,6 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
     },
   });
   const { name, baseUrl, keyAction, apiKey } = useStore(form.store, (state) => state.values);
-  const saving = useStore(form.store, (state) => state.isSubmitting);
 
   const address = baseUrl.trim();
   const typedKey = keyAction === "replace" ? apiKey.trim() : "";
@@ -158,22 +150,12 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
         }
       : null;
 
-  /** Closing forgets what was typed, so the key lives no longer than the dialog. */
-  function close() {
-    onOpenChange(false);
-    form.reset();
-    setResult(null);
-    reported.reset();
-  }
-
+  /** Closing forgets what was read as the dialog forgets what was typed: the key lives no longer than it. */
   function change(next: boolean) {
-    if (saving) {
-      return;
-    }
-    if (next) {
-      onOpenChange(true);
-    } else {
-      close();
+    onOpenChange(next);
+    if (!next) {
+      setResult(null);
+      reported.reset();
     }
   }
 
@@ -200,150 +182,127 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
   }
 
   return (
-    <Dialog open={open} onOpenChange={change}>
-      <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-140">
-        <form
-          id={form.formId}
-          noValidate
-          className="flex flex-col gap-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void form.handleSubmit();
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>
-              {editing
-                ? t("editTitle", { name: provider.name })
-                : t("connectTitle", { name: preset.name })}
-            </DialogTitle>
-            <DialogDescription>{editing ? t("editLead") : t("connectLead")}</DialogDescription>
-          </DialogHeader>
-          <FieldGroup>
-            <form.AppField name="name">
-              {(field) => <field.TextField label={t("name")} maxLength={60} required />}
-            </form.AppField>
-            <form.AppField name="baseUrl" listeners={{ onChange: connectionChanged }}>
+    <FormDialog
+      open={open}
+      onOpenChange={change}
+      form={form}
+      title={
+        editing ? t("editTitle", { name: provider.name }) : t("connectTitle", { name: preset.name })
+      }
+      description={editing ? t("editLead") : t("connectLead")}
+      width="xl"
+      submitLabel={t("save")}
+      cancelLabel={t("cancel")}
+      submitDisabled={keyMissing || keyMoved || name.trim() === "" || address === ""}
+    >
+      <FieldGroup>
+        <form.AppField name="name">
+          {(field) => <field.TextField label={t("name")} maxLength={60} required />}
+        </form.AppField>
+        <form.AppField name="baseUrl" listeners={{ onChange: connectionChanged }}>
+          {(field) => (
+            <field.TextField
+              label={t("endpoint")}
+              type="url"
+              inputMode="url"
+              spellCheck={false}
+              maxLength={2048}
+              required
+              description={adapterType !== "anthropic" ? t("endpointHint.openai") : undefined}
+            />
+          )}
+        </form.AppField>
+        <Field>
+          <FieldLabel htmlFor={editing ? `${id}-key-action` : `${id}-key`}>
+            {t("apiKey")}
+          </FieldLabel>
+          {editing && (
+            <form.Field name="keyAction" listeners={{ onChange: connectionChanged }}>
               {(field) => (
-                <field.TextField
-                  label={t("endpoint")}
-                  type="url"
-                  inputMode="url"
+                <NativeSelect
+                  id={`${id}-key-action`}
+                  className="w-full"
+                  aria-describedby={`${id}-key-hint`}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) =>
+                    field.handleChange(event.target.value as SaveChatProvider["key"])
+                  }
+                >
+                  <NativeSelectOption value="keep" disabled={!provider.hasKey}>
+                    {t("keyKeep")}
+                  </NativeSelectOption>
+                  <NativeSelectOption value="replace">{t("keyReplace")}</NativeSelectOption>
+                  <NativeSelectOption value="remove">{t("keyRemove")}</NativeSelectOption>
+                </NativeSelect>
+              )}
+            </form.Field>
+          )}
+          {keyAction === "replace" && (
+            <form.Field name="apiKey" listeners={{ onChange: connectionChanged }}>
+              {(field) => (
+                <Input
+                  id={`${id}-key`}
+                  aria-label={editing ? t("newKey") : undefined}
+                  aria-describedby={`${id}-key-hint`}
+                  type="password"
+                  autoComplete="off"
                   spellCheck={false}
-                  maxLength={2048}
-                  required
-                  description={adapterType !== "anthropic" ? t("endpointHint.openai") : undefined}
+                  maxLength={500}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
                 />
               )}
-            </form.AppField>
-            <Field>
-              <FieldLabel htmlFor={editing ? `${id}-key-action` : `${id}-key`}>
-                {t("apiKey")}
-              </FieldLabel>
-              {editing && (
-                <form.Field name="keyAction" listeners={{ onChange: connectionChanged }}>
-                  {(field) => (
-                    <NativeSelect
-                      id={`${id}-key-action`}
-                      className="w-full"
-                      aria-describedby={`${id}-key-hint`}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) =>
-                        field.handleChange(event.target.value as SaveChatProvider["key"])
-                      }
-                    >
-                      <NativeSelectOption value="keep" disabled={!provider.hasKey}>
-                        {t("keyKeep")}
-                      </NativeSelectOption>
-                      <NativeSelectOption value="replace">{t("keyReplace")}</NativeSelectOption>
-                      <NativeSelectOption value="remove">{t("keyRemove")}</NativeSelectOption>
-                    </NativeSelect>
-                  )}
-                </form.Field>
-              )}
-              {keyAction === "replace" && (
-                <form.Field name="apiKey" listeners={{ onChange: connectionChanged }}>
-                  {(field) => (
-                    <Input
-                      id={`${id}-key`}
-                      aria-label={editing ? t("newKey") : undefined}
-                      aria-describedby={`${id}-key-hint`}
-                      type="password"
-                      autoComplete="off"
-                      spellCheck={false}
-                      maxLength={500}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                    />
-                  )}
-                </form.Field>
-              )}
-              <FieldDescription id={`${id}-key-hint`}>
-                {keyMoved ? t("keyMoved") : t("keyHint")}
-              </FieldDescription>
-            </Field>
-            {editing && (
-              <form.Field name="enabled">
-                {(field) => (
-                  <Field orientation="horizontal">
-                    <Switch
-                      id={`${id}-enabled`}
-                      aria-describedby={`${id}-enabled-hint`}
-                      checked={field.state.value}
-                      onCheckedChange={field.handleChange}
-                    />
-                    <div className="flex flex-col gap-0.5">
-                      <FieldLabel htmlFor={`${id}-enabled`}>{t("enabled")}</FieldLabel>
-                      <FieldDescription id={`${id}-enabled-hint`}>
-                        {t("enabledHint")}
-                      </FieldDescription>
-                    </div>
-                  </Field>
-                )}
-              </form.Field>
+            </form.Field>
+          )}
+          <FieldDescription id={`${id}-key-hint`}>
+            {keyMoved ? t("keyMoved") : t("keyHint")}
+          </FieldDescription>
+        </Field>
+        {editing && (
+          <form.Field name="enabled">
+            {(field) => (
+              <Field orientation="horizontal">
+                <Switch
+                  id={`${id}-enabled`}
+                  aria-describedby={`${id}-enabled-hint`}
+                  checked={field.state.value}
+                  onCheckedChange={field.handleChange}
+                />
+                <div className="flex flex-col gap-0.5">
+                  <FieldLabel htmlFor={`${id}-enabled`}>{t("enabled")}</FieldLabel>
+                  <FieldDescription id={`${id}-enabled-hint`}>{t("enabledHint")}</FieldDescription>
+                </div>
+              </Field>
             )}
-          </FieldGroup>
+          </form.Field>
+        )}
+      </FieldGroup>
 
-          {!editing && <ModelsField reported={reported} probe={probe} />}
+      {!editing && <ModelsField reported={reported} probe={probe} />}
 
-          <section aria-labelledby={`${id}-test`} className="flex flex-col gap-2.5">
-            <div className="flex items-center gap-2">
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <h3 id={`${id}-test`} className="text-sm font-medium">
-                  {t("testTitle")}
-                </h3>
-                <p className="text-xs text-muted-foreground">{t("testHint")}</p>
-              </div>
-              <Button
-                prominence="secondary"
-                size="sm"
-                pending={testing}
-                disabled={probe === null}
-                onClick={test}
-              >
-                {t("testTitle")}
-              </Button>
-            </div>
-            {result && <ProviderTestResult result={result} className="rounded-lg" />}
-          </section>
-
-          <DialogFooter>
-            <Button prominence="secondary" disabled={saving} onClick={() => change(false)}>
-              {t("cancel")}
-            </Button>
-            <Button
-              type="submit"
-              pending={saving}
-              disabled={keyMissing || keyMoved || name.trim() === "" || address === ""}
-            >
-              {t("save")}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <section aria-labelledby={`${id}-test`} className="flex flex-col gap-2.5">
+        <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <h3 id={`${id}-test`} className="text-sm font-medium">
+              {t("testTitle")}
+            </h3>
+            <p className="text-xs text-muted-foreground">{t("testHint")}</p>
+          </div>
+          <Button
+            prominence="secondary"
+            size="sm"
+            pending={testing}
+            disabled={probe === null}
+            onClick={test}
+          >
+            {t("testTitle")}
+          </Button>
+        </div>
+        {result && <ProviderTestResult result={result} className="rounded-lg" />}
+      </section>
+    </FormDialog>
   );
 }
 
