@@ -49,15 +49,22 @@ meaning.
 | `applications`  | `application_received`, `reviewer_invitation`, `application_outcome`                                                                                                                                                                              | `sendApplicationReceived`, `sendReviewerInvitation`, `sendApplicationOutcome`                                                                                                   |
 | `introductions` | `introduction_request`, `introduction_made`, `introduction_declined`                                                                                                                                                                              | `sendIntroductionRequest`, `sendIntroduction`, `sendIntroductionDeclined`                                                                                                       |
 | `solutions`     | `solution_approved`, `solution_sent_back`, `solution_rejected`, `solution_taken_down`, `solution_restored`                                                                                                                                        | `sendSolutionDecision`                                                                                                                                                          |
-| `use_cases`     | `use_case_approved`, `use_case_sent_back`, `proposal_sent`                                                                                                                                                                                                     | `sendUseCaseDecision`, `sendProposalSent`                                                                                                                                                         |
+| `use_cases`     | `use_case_approved`, `use_case_sent_back`, `proposal_sent`                                                                                                                                                                                        | `sendUseCaseDecision`, `sendProposalSent`                                                                                                                                       |
 | `talent`        | `talent_approved`, `talent_changes_requested`, `talent_removed`, `talent_restored`, `talent_enquiry`, `talent_enquiry_reminder`, `talent_introduction`, `talent_enquiry_declined`, `talent_enquiry_closed`                                        | `sendTalentDecision`, `sendTalentEnquiry`, `sendTalentEnquiryReminder`, `sendTalentIntroduction`, `sendTalentEnquiryDeclined`, `sendTalentEnquiryClosed`                        |
 
 **`application_outcome` cannot be edited.** An operator writes its subject and message for each release of outcomes.
-The message is plain text, and its line breaks are kept.
+The message is plain text, and its line breaks are kept. The button "View your application" follows the message.
 
 **Contents of the emails:**
 
-- **Links.** `proposal_sent` carries one link, to the proposal, which opens after signing in and acts on nothing; no other kind has a link.
+- **Links.** Three kinds carry one link each, built from the site's address (`site-url`). It opens after signing in
+  and acts on nothing; no other kind has a link.
+  - `proposal_sent`: `proposalUrl`, the proposal, `<siteUrl>/use-cases/<use case id>/propose/view`.
+  - `application_received` and `application_outcome`: `applicationUrl`, the applicant's own application,
+    `<siteUrl>/applications/<application id>`. A person who closed the page comes back to it from the email; signed
+    out, they sign in first and land on the application.
+- **`applicationUrl` is optional.** A wording an operator saved before the kind offered it stays valid and is sent as
+  it is, without the link, until the operator adds `[View your application]({{applicationUrl}})` or resets the kind.
 - **No working links.** An invitation (organization or reviewer) has no link that acts: the person signs in with the
   address it was sent to.
 - **Sender addresses.** An enquiry or introduction request never carries the sender's address. Only the introduction

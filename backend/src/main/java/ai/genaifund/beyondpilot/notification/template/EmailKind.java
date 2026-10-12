@@ -52,7 +52,8 @@ public enum EmailKind {
 	APPLICATION_RECEIVED("application_received", EmailGroup.APPLICATIONS, true, null,
 			Variable.required("programName", "AI for Insurance Challenge × Tasco"),
 			Variable.optional("resubmitted", Boolean.FALSE),
-			Variable.optional("editableUntil", "15 Oct 2026, 23:59 ICT")),
+			Variable.optional("editableUntil", "15 Oct 2026, 23:59 ICT"),
+			Variable.optional("applicationUrl", "https://beyondpilot.example/applications/1")),
 
 	REVIEWER_INVITATION("reviewer_invitation", EmailGroup.APPLICATIONS, true, null,
 			Variable.required("programName", "AI for Insurance Challenge × Tasco"),
@@ -61,7 +62,8 @@ public enum EmailKind {
 	/** The subject and the message are what an operator wrote for one release of outcomes; nobody edits a template. */
 	APPLICATION_OUTCOME("application_outcome", EmailGroup.APPLICATIONS, false, null,
 			Variable.required("subject", "Shortlisted: AI for Insurance Challenge × Tasco"),
-			Variable.required("message", "Hi Minh,\n\nYour team is on the shortlist.")),
+			Variable.required("message", "Hi Minh,\n\nYour team is on the shortlist."),
+			Variable.optional("applicationUrl", "https://beyondpilot.example/applications/1")),
 
 	INTRODUCTION_REQUEST("introduction_request", EmailGroup.INTRODUCTIONS, true, "message",
 			Variable.optional("senderName", "Minh Trần"), Variable.required("senderOrganization", "Pocket Policy"),

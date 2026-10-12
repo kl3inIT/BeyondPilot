@@ -4,4 +4,6 @@ subject: Application submitted: {{programName}}
 
 {{^resubmitted}}Your application to {{programName}} was submitted.{{/resubmitted}}{{#resubmitted}}Your changed application to {{programName}} was submitted.{{/resubmitted}}{{#editableUntil}} You can change it on BeyondPilot until {{editableUntil}}.{{/editableUntil}}
 
-Sign in and open My applications to see where it stands.
+[View your application]({{applicationUrl}})
+
+The link opens your application after you sign in. You can also find it under My applications.
