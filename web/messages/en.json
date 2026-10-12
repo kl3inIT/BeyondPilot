@@ -6531,8 +6531,7 @@
         "status": "Open to proposals",
         "closes": "Closes {when}",
         "noDeadline": "No closing date",
-        "send": "Send a proposal",
-        "note": "{days, plural, one {Proposals can be edited for # day after sending.} other {Proposals can be edited for # days after sending.}}"
+        "send": "Send a proposal"
       }
     },
     "count": "{count, plural, =0 {No use cases} one {# use case} other {# use cases}}",
@@ -7217,11 +7216,11 @@
       "proposals": "Proposals",
       "viewReceived": "View proposals",
       "continue": "Continue your proposal",
-      "sent": "Your organization sent a proposal.",
-      "sentOn": "Your organization sent a proposal on {date}.",
+      "sent": "Sent",
       "view": "View proposal",
       "edit": "Edit proposal",
-      "editUntil": "You can edit it until {when}.",
+      "until": "Edit until",
+      "closed": "Closed",
       "editClosed": {
         "disabled": "Editing is closed: this use case does not allow editing after sending.",
         "useCaseClosed": "Editing is closed because the use case has closed.",
