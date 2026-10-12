@@ -6483,8 +6483,7 @@
         "status": "Mở nhận đề xuất",
         "closes": "Đóng {when}",
         "noDeadline": "Không có hạn chót",
-        "send": "Gửi đề xuất",
-        "note": "{days, plural, other {Đề xuất có thể được chỉnh sửa trong # ngày sau khi gửi.}}"
+        "send": "Gửi đề xuất"
       }
     },
     "count": "{count, plural, =0 {Không có bài toán nào} other {# bài toán}}",
@@ -7170,11 +7169,11 @@
       "proposals": "Đề xuất",
       "viewReceived": "Xem các proposal",
       "continue": "Tiếp tục đề xuất của bạn",
-      "sent": "Tổ chức của bạn đã gửi đề xuất.",
-      "sentOn": "Tổ chức của bạn đã gửi đề xuất vào {date}.",
+      "sent": "Đã gửi",
       "view": "Xem đề xuất",
       "edit": "Chỉnh sửa đề xuất",
-      "editUntil": "Bạn có thể chỉnh sửa đến {when}.",
+      "until": "Sửa đến",
+      "closed": "Đã đóng",
       "editClosed": {
         "disabled": "Đã đóng chỉnh sửa: bài toán này không cho chỉnh sửa sau khi gửi.",
         "useCaseClosed": "Đã đóng chỉnh sửa vì bài toán đã đóng.",
