@@ -16,15 +16,9 @@ import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { EntryList } from "@/components/composites/entry-list";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { useAppForm } from "@/components/form/app-form";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
@@ -310,108 +304,86 @@ function QuestionDialog({
   });
 
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg">
-        <form
-          noValidate
-          className="flex flex-col gap-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            void form.handleSubmit();
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>{value ? t("editTitle") : t("addTitle")}</DialogTitle>
-          </DialogHeader>
-          <form.AppField name="kind">
-            {(field) => (
-              <field.SelectField
-                label={t("kind")}
-                options={kinds.map((kind) => ({ value: kind, label: t(`kinds.${kind}`) }))}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="label">
-            {(field) => (
-              <field.TextareaField label={t("label")} maxLength={300} className="min-h-16" />
-            )}
-          </form.AppField>
-          <form.AppField name="help">
-            {(field) => (
-              <field.TextField
-                label={t("help")}
-                optional
-                maxLength={600}
-                description={t("helpHint")}
-              />
-            )}
-          </form.AppField>
-          <form.Subscribe selector={(state) => state.values.kind}>
-            {(kind) => (
-              <>
-                {offersChoices(kind) && (
-                  <form.Field name="options">
-                    {(field) => (
-                      <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
-                        <FieldLabel htmlFor="question-options">{t("options")}</FieldLabel>
-                        <EntryList
-                          id="question-options"
-                          label={t("options")}
-                          value={field.state.value}
-                          onChange={field.handleChange}
-                          placeholder={t("optionsPlaceholder")}
-                          max={MAX_CHOICES}
-                          maxLength={160}
-                          describedBy="question-options-hint"
-                        />
-                        <FieldDescription id="question-options-hint">
-                          {t("optionsHint", { count: MAX_CHOICES })}
-                        </FieldDescription>
-                        {field.state.meta.errors.length > 0 && (
-                          <FieldError>{t("choicesRequired")}</FieldError>
-                        )}
-                      </Field>
+    <FormDialog
+      open
+      onOpenChange={(open) => !open && onClose()}
+      form={form}
+      title={value ? t("editTitle") : t("addTitle")}
+      width="lg"
+      submitLabel={value ? t("update") : t("addQuestion")}
+      cancelLabel={t("cancel")}
+      aside={
+        onDelete && (
+          <Button prominence="tertiary" tone="danger" onClick={onDelete}>
+            <Trash2Icon aria-hidden="true" />
+            {t("delete")}
+          </Button>
+        )
+      }
+    >
+      <form.AppField name="kind">
+        {(field) => (
+          <field.SelectField
+            label={t("kind")}
+            options={kinds.map((kind) => ({ value: kind, label: t(`kinds.${kind}`) }))}
+          />
+        )}
+      </form.AppField>
+      <form.AppField name="label">
+        {(field) => <field.TextareaField label={t("label")} maxLength={300} className="min-h-16" />}
+      </form.AppField>
+      <form.AppField name="help">
+        {(field) => (
+          <field.TextField label={t("help")} optional maxLength={600} description={t("helpHint")} />
+        )}
+      </form.AppField>
+      <form.Subscribe selector={(state) => state.values.kind}>
+        {(kind) => (
+          <>
+            {offersChoices(kind) && (
+              <form.Field name="options">
+                {(field) => (
+                  <Field data-invalid={field.state.meta.errors.length > 0 || undefined}>
+                    <FieldLabel htmlFor="question-options">{t("options")}</FieldLabel>
+                    <EntryList
+                      id="question-options"
+                      label={t("options")}
+                      value={field.state.value}
+                      onChange={field.handleChange}
+                      placeholder={t("optionsPlaceholder")}
+                      max={MAX_CHOICES}
+                      maxLength={160}
+                      describedBy="question-options-hint"
+                    />
+                    <FieldDescription id="question-options-hint">
+                      {t("optionsHint", { count: MAX_CHOICES })}
+                    </FieldDescription>
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError>{t("choicesRequired")}</FieldError>
                     )}
-                  </form.Field>
+                  </Field>
                 )}
-                {(kind === "short_text" || kind === "long_text") && (
-                  <form.AppField name="maxLength">
-                    {(field) => (
-                      <field.TextField
-                        label={t("maxLength")}
-                        optional
-                        inputMode="numeric"
-                        description={t("maxLengthHint")}
-                      />
-                    )}
-                  </form.AppField>
+              </form.Field>
+            )}
+            {(kind === "short_text" || kind === "long_text") && (
+              <form.AppField name="maxLength">
+                {(field) => (
+                  <field.TextField
+                    label={t("maxLength")}
+                    optional
+                    inputMode="numeric"
+                    description={t("maxLengthHint")}
+                  />
                 )}
-              </>
+              </form.AppField>
             )}
-          </form.Subscribe>
-          <form.AppField name="required">
-            {(field) => <field.CheckboxField label={t("required")} />}
-          </form.AppField>
-          <DialogFooter className="sm:justify-between">
-            {onDelete ? (
-              <Button prominence="tertiary" tone="danger" onClick={onDelete}>
-                <Trash2Icon aria-hidden="true" />
-                {t("delete")}
-              </Button>
-            ) : (
-              <span />
-            )}
-            <div className="flex flex-col-reverse gap-2 sm:flex-row">
-              <Button prominence="secondary" onClick={onClose}>
-                {t("cancel")}
-              </Button>
-              <Button type="submit">{value ? t("update") : t("addQuestion")}</Button>
-            </div>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          </>
+        )}
+      </form.Subscribe>
+      <form.AppField name="required">
+        {(field) => <field.CheckboxField label={t("required")} />}
+      </form.AppField>
+    </FormDialog>
   );
 }
 

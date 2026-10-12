@@ -6628,6 +6628,48 @@ paths:
       summary: Send a proposal to its use case
       tags:
       - Use case proposals
+  /api/proposal/use-cases/{useCaseId}/organization:
+    post:
+      operationId: organizeUseCaseProposal
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicantOrganization"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseProposalForm"
+          description: "The form, now with the new organization."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The use case no longer takes proposals, or the caller already\
+            \ belongs to an organization."
+      security:
+      - session: []
+      summary: Make the organization a person sends a proposal for when they belong
+        to none
+      tags:
+      - Use case proposals
   /api/proposal/use-cases/{useCaseId}/proposal:
     get:
       operationId: getUseCaseProposalForm
@@ -6703,8 +6745,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The caller has no organization, it is not approved, or it\
-            \ posted the use case."
+          description: "The caller has no organization, or it posted the use case."
         "404":
           content:
             application/problem+json:
@@ -13439,6 +13480,14 @@ components:
           - "null"
           description: ISO 3166-1 alpha-2.
           pattern: "^[A-Z]{2}$"
+        name:
+          type:
+          - string
+          - "null"
+          description: The name the account shows from now on; left out or blank keeps
+            the one it has.
+          maxLength: 120
+          minLength: 0
         phone:
           type:
           - string
@@ -17327,8 +17376,9 @@ components:
       properties:
         approved:
           type: boolean
-          description: Whether GenAI Fund approved it; one that is not cannot send
-            a proposal.
+          description: "Whether GenAI Fund approved it; one that is not still sends\
+            \ proposals, which the organization that posted the use case sees marked\
+            \ as pending."
         id:
           type: string
           format: uuid
@@ -18220,6 +18270,10 @@ components:
         id:
           type: string
           format: uuid
+        organizationApproved:
+          type: boolean
+          description: Whether GenAI Fund approved the sending organization; a proposal
+            from one that is not is marked as pending.
         organizationLogoFileId:
           type:
           - string
@@ -18233,9 +18287,12 @@ components:
           - object
           - "null"
           $ref: "#/components/schemas/SenderProfile"
+          description: "The sender's talent profile, when it went with the proposal."
         sentAt:
           type: string
           format: date-time
+        sentBy:
+          $ref: "#/components/schemas/SentBy"
         solutions:
           type: array
           items:
@@ -18248,8 +18305,10 @@ components:
           $ref: "#/components/schemas/ProposalUseCase"
       required:
       - id
+      - organizationApproved
       - organizationName
       - sentAt
+      - sentBy
       - solutions
       - team
       - useCase
@@ -18261,7 +18320,7 @@ components:
           type:
           - string
           - "null"
-          description: The primary contact.
+          description: "The primary contact, or the sender when no team was named."
         editedAt:
           type:
           - string
@@ -18272,6 +18331,9 @@ components:
         id:
           type: string
           format: uuid
+        organizationApproved:
+          type: boolean
+          description: Whether GenAI Fund approved the sending organization.
         organizationLogoFileId:
           type:
           - string
@@ -18290,6 +18352,7 @@ components:
             type: string
       required:
       - id
+      - organizationApproved
       - organizationName
       - sentAt
       - solutionNames
@@ -20376,7 +20439,8 @@ components:
           minItems: 0
         team:
           type: array
-          description: "The people named, in the order shown; at most one is primary."
+          description: "The people named, in the order shown; at most one is primary.\
+            \ The team may be empty."
           items:
             $ref: "#/components/schemas/TeamMemberRequest"
           maxItems: 20
@@ -21013,6 +21077,29 @@ components:
           format: int32
       required:
       - title
+    SentBy:
+      type: object
+      description: "The submitting identity: the account that sent the proposal, with\
+        \ the name, address, country and number it gave."
+      properties:
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        email:
+          type: string
+        name:
+          type:
+          - string
+          - "null"
+        phone:
+          type:
+          - string
+          - "null"
+          description: With its country code.
+      required:
+      - email
     SentTalentEnquiry:
       type: object
       description: "A message the caller sent through a talent profile, with what\
@@ -22359,13 +22446,20 @@ components:
           - object
           - "null"
           $ref: "#/components/schemas/SenderProfile"
-          description: The sender's talent profile as it was when the proposal was
-            sent; null for a draft.
+          description: "The sender's talent profile as it was when the proposal was\
+            \ sent; null for a draft and for a proposal sent without it, as every\
+            \ new one is."
         sentAt:
           type:
           - string
           - "null"
           format: date-time
+        sentBy:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/SentBy"
+          description: Who sent it; null for a draft.
         solutions:
           type: array
           description: "The solutions offered, in the order shown."

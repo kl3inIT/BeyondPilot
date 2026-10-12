@@ -1,10 +1,12 @@
 "use client";
 
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { CheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { useAppForm } from "@/components/form/app-form";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useNotify } from "@/hooks/use-notify";
@@ -27,9 +29,19 @@ import {
 } from "./use-case-draft";
 import { UseCaseStepFields } from "./use-case-step-fields";
 import { UseCaseSummary } from "./use-case-summary";
-import { Choice, TextInput } from "./wizard-fields";
 
-const blank: DraftValues = {
+/**
+ * What the form holds. The use case itself is one value: its fields are the wizard's, which the
+ * organization's own wizard and the review screen draw too, and they take and give the whole draft.
+ */
+type AdminUseCaseValues = {
+  organizationId: string;
+  content: DraftValues;
+  /** The days a sent proposal may be edited, as typed. */
+  proposalEditDays: string;
+};
+
+const blankContent: DraftValues = {
   title: "",
   problemStatement: "",
   industry: "",
@@ -56,6 +68,12 @@ const blank: DraftValues = {
   closesDay: "",
   closesTime: defaultClosesTime,
   hideOrganizationName: false,
+};
+
+const blank: AdminUseCaseValues = {
+  organizationId: "",
+  content: blankContent,
+  proposalEditDays: String(DEFAULT_EDIT_DAYS),
 };
 
 const refusalSteps = {
@@ -95,16 +113,9 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
   const say = useTranslations("Form.errors");
   const notify = useNotify();
   const router = useRouter();
-  const [organizationId, setOrganizationId] = useState("");
-  const [values, setValues] = useState<DraftValues>(blank);
-  const [editDays, setEditDays] = useState(String(DEFAULT_EDIT_DAYS));
   const [step, setStep] = useState<Step>("challenge");
+  // What the step shown must have corrected; it leaves with the step and with the next change.
   const [problem, setProblem] = useState<string | null>(null);
-  const [publishing, setPublishing] = useState(false);
-
-  const stepIndex = steps.indexOf(step);
-  const missing = incompleteSteps(values);
-  const organization = organizations.find(({ id }) => id === organizationId);
   const schema = useMemo(
     () =>
       adminUseCaseSchema((key, parameters) =>
@@ -117,29 +128,65 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
     [say, t],
   );
 
+  /** What the schema refuses in what the form holds, the first problem first. */
+  const issuesOf = (held: AdminUseCaseValues) =>
+    schema.safeParse({
+      ...held.content,
+      organizationId: held.organizationId,
+      timeline: timelineOf(held.content),
+      proposalEditDays: held.proposalEditDays,
+    }).error?.issues ?? [];
+
+  const form = useAppForm({
+    defaultValues: blank,
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: ({ value }) => {
+        const issues = issuesOf(value);
+        if (issues.length === 0) {
+          return undefined;
+        }
+        // The two fields of this form say their own problem; the wizard's fields have no place for one.
+        const on = (name: string) => issues.find((issue) => issue.path[0] === name);
+        return {
+          form: issues[0].message,
+          fields: {
+            organizationId: on("organizationId"),
+            proposalEditDays: on("proposalEditDays"),
+          },
+        };
+      },
+    },
+    // The step that holds the first problem opens, with the problem said above its fields.
+    onSubmitInvalid: ({ value }) => {
+      const issue = issuesOf(value).at(0);
+      if (issue) {
+        go(stepOfField(String(issue.path[0] ?? "organizationId")));
+        setProblem(issue.message);
+      }
+    },
+    onSubmit: async ({ value }) => {
+      setProblem(null);
+      await publish(value);
+    },
+  });
+  const { organizationId, content: values } = useStore(form.store, (state) => state.values);
+
+  const stepIndex = steps.indexOf(step);
+  const missing = incompleteSteps(values);
+  const organization = organizations.find(({ id }) => id === organizationId);
+
   function go(target: Step) {
     setProblem(null);
     setStep(target);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function publish() {
-    const timeline = timelineOf(values);
-    const result = schema.safeParse({
-      ...values,
-      organizationId,
-      timeline,
-      proposalEditDays: editDays,
-    });
-    if (!result.success) {
-      const issue = result.error.issues[0];
-      go(stepOfField(String(issue.path[0] ?? "organizationId")));
-      setProblem(issue.message);
-      return;
-    }
-
-    setPublishing(true);
-    setProblem(null);
+  async function publish({
+    organizationId,
+    content: values,
+    proposalEditDays,
+  }: AdminUseCaseValues) {
     try {
       const amount = (text: string) => (values.budgetToBeDetermined ? null : Number(text));
       await createAdminUseCase({
@@ -168,7 +215,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
           timelineMaxWeeks: values.timelineMaxWeeks!,
           closesAt: instantInVietnam(values.closesDay, values.closesTime),
           hideOrganizationName: values.hideOrganizationName,
-          proposalEditDays: editDaysOf(editDays) ?? DEFAULT_EDIT_DAYS,
+          proposalEditDays: editDaysOf(proposalEditDays) ?? DEFAULT_EDIT_DAYS,
           publishNow: true,
         },
       });
@@ -186,18 +233,17 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
       } else {
         notify.error("Admin.useCases.form.errors.unknown");
       }
-    } finally {
-      setPublishing(false);
     }
   }
 
   return (
     <form
+      id={form.formId}
       noValidate
       className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8"
       onSubmit={(event) => {
         event.preventDefault();
-        if (step === "review") void publish();
+        if (step === "review") void form.handleSubmit();
       }}
     >
       <AdminPageHeader title={t("title")} lead={t("lead")} />
@@ -228,39 +274,44 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
           </div>
 
           {step === "challenge" && (
-            <Choice
-              label={t("organization")}
-              placeholder={t("organizationPlaceholder")}
-              hint={t("organizationHint")}
-              options={organizations.map(({ id, name }) => ({ value: id, label: name }))}
-              value={organizationId}
-              onValueChange={setOrganizationId}
-            />
+            <form.AppField name="organizationId">
+              {(field) => (
+                <field.SelectField
+                  label={t("organization")}
+                  placeholder={t("organizationPlaceholder")}
+                  description={t("organizationHint")}
+                  options={organizations.map(({ id, name }) => ({ value: id, label: name }))}
+                />
+              )}
+            </form.AppField>
           )}
 
           {step !== "review" && (
-            <UseCaseStepFields
-              step={step}
-              values={values}
-              onChange={(patch) => {
-                setProblem(null);
-                setValues((current) => ({ ...current, ...patch }));
-              }}
-            />
+            <form.Field name="content">
+              {(field) => (
+                <UseCaseStepFields
+                  step={step}
+                  values={field.state.value}
+                  onChange={(patch) => {
+                    setProblem(null);
+                    field.handleChange((current) => ({ ...current, ...patch }));
+                  }}
+                />
+              )}
+            </form.Field>
           )}
 
           {step === "budget" && (
-            <TextInput
-              label={t("proposalEditDays.label")}
-              hint={t("proposalEditDays.hint")}
-              inputMode="numeric"
-              maxLength={2}
-              value={editDays}
-              onValueChange={(days) => {
-                setProblem(null);
-                setEditDays(days);
-              }}
-            />
+            <form.AppField name="proposalEditDays" listeners={{ onChange: () => setProblem(null) }}>
+              {(field) => (
+                <field.TextField
+                  label={t("proposalEditDays.label")}
+                  description={t("proposalEditDays.hint")}
+                  inputMode="numeric"
+                  maxLength={2}
+                />
+              )}
+            </form.AppField>
           )}
 
           {step === "review" && <UseCaseSummary values={values} onEdit={go} />}
@@ -276,14 +327,11 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
               </Button>
             )}
             {step === "review" ? (
-              <Button
-                key="publish"
-                type="submit"
-                pending={publishing}
-                disabled={publishing || missing.length > 0 || !organizationId}
-              >
-                {t("publishSubmit")}
-              </Button>
+              <form.AppForm>
+                <form.SubmitButton disabled={missing.length > 0 || !organizationId}>
+                  {t("publishSubmit")}
+                </form.SubmitButton>
+              </form.AppForm>
             ) : (
               <Button
                 key={`continue-${step}`}

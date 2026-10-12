@@ -1,19 +1,15 @@
 "use client";
 
+import { useStore } from "@tanstack/react-form";
 import { CircleCheckIcon, CircleXIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { FormDialog } from "@/components/composites/form-dialog";
+import { useAppForm } from "@/components/form/app-form";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -31,6 +27,15 @@ import {
 
 import { chatError } from "./chat-errors";
 import type { OcrPreset } from "./ocr-presets";
+
+/** The price typed: none when the field is empty. */
+const priceOf = (text: string) => (text.trim() === "" ? null : Number(text));
+
+/** A price is none or a number from 0 to 100,000; the field is marked, and has no words of its own. */
+const priceSchema = z.string().refine((text) => {
+  const price = priceOf(text);
+  return price === null || (price >= 0 && price <= 100000);
+}, "");
 
 /**
  * What a test of an OCR connection found: that the service read the picture sent and how long it
@@ -83,21 +88,51 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
   const id = useId();
   const editing = provider !== undefined;
   const adapterType = provider?.adapterType ?? preset.adapterType;
-  const [name, setName] = useState<string>(provider?.name ?? preset.name);
-  const [baseUrl, setBaseUrl] = useState<string>(provider?.baseUrl ?? preset.baseUrl);
-  const [keyAction, setKeyAction] = useState<SaveOcrProvider["key"]>(
-    provider?.hasKey ? "keep" : "replace",
-  );
-  const [apiKey, setApiKey] = useState("");
-  const [price, setPrice] = useState<string>(String(provider?.pricePerThousandCalls ?? ""));
-  const [enabled, setEnabled] = useState(provider?.enabled ?? true);
   const [result, setResult] = useState<OcrProviderTest | null>(null);
   const [testing, setTesting] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const savedName: string = provider?.name ?? preset.name;
+  const savedAddress: string = provider?.baseUrl ?? preset.baseUrl;
+
+  const form = useAppForm({
+    defaultValues: {
+      name: savedName,
+      baseUrl: savedAddress,
+      keyAction: (provider?.hasKey ? "keep" : "replace") as SaveOcrProvider["key"],
+      apiKey: "",
+      price: String(provider?.pricePerThousandCalls ?? ""),
+      enabled: provider?.enabled ?? true,
+    },
+    onSubmit: async ({ value }) => {
+      const body: SaveOcrProvider = {
+        adapterType,
+        name: value.name.trim(),
+        baseUrl: value.baseUrl.trim(),
+        enabled: value.enabled,
+        key: value.keyAction,
+        apiKey: (value.keyAction === "replace" && value.apiKey.trim()) || null,
+        pricePerThousandCalls: priceOf(value.price),
+        version: provider?.version ?? 0,
+      };
+      try {
+        if (provider) {
+          await changeOcrProvider({ path: { id: provider.id }, body });
+        } else {
+          await connectOcrProvider({ body });
+        }
+        notify.success(editing ? "Admin.ai.ocr.done.saved" : "Admin.ai.ocr.done.connected", {
+          name: body.name,
+        });
+        change(false);
+        router.refresh();
+      } catch (error) {
+        notify.error(chatError(error));
+      }
+    },
+  });
+  const { name, baseUrl, keyAction, apiKey, price } = useStore(form.store, (state) => state.values);
 
   const address = baseUrl.trim();
-  const typedPrice = price.trim() === "" ? null : Number(price);
-  const priceInvalid = typedPrice !== null && !(typedPrice >= 0 && typedPrice <= 100000);
+  const priceInvalid = !priceSchema.safeParse(price).success;
   const typedKey = keyAction === "replace" ? apiKey.trim() : "";
   const keyMissing = keyAction === "replace" && typedKey === "";
   // A saved key is only used with the address it was saved for, so a new address needs the key again.
@@ -113,17 +148,16 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
         }
       : null;
 
-  /** Closing forgets the key typed, so it lives no longer than the dialog. */
+  /** Closing forgets the test as the dialog forgets what was typed: the key lives no longer than it. */
   function change(next: boolean) {
-    if (saving) {
-      return;
-    }
     onOpenChange(next);
     if (!next) {
-      setApiKey("");
       setResult(null);
     }
   }
+
+  /** What was found with the old address or key says nothing about the new one. */
+  const connectionChanged = () => setResult(null);
 
   async function test() {
     if (!probe) {
@@ -141,91 +175,55 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
     }
   }
 
-  async function save(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    const body: SaveOcrProvider = {
-      adapterType,
-      name: name.trim(),
-      baseUrl: address,
-      enabled,
-      key: keyAction,
-      apiKey: typedKey || null,
-      pricePerThousandCalls: typedPrice,
-      version: provider?.version ?? 0,
-    };
-    try {
-      if (provider) {
-        await changeOcrProvider({ path: { id: provider.id }, body });
-      } else {
-        await connectOcrProvider({ body });
-      }
-      notify.success(editing ? "Admin.ai.ocr.done.saved" : "Admin.ai.ocr.done.connected", {
-        name: body.name,
-      });
-      setSaving(false);
-      change(false);
-      router.refresh();
-    } catch (error) {
-      notify.error(chatError(error));
-      setSaving(false);
-    }
-  }
-
   return (
-    <Dialog open={open} onOpenChange={change}>
-      <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-140">
-        <form noValidate onSubmit={save} className="flex flex-col gap-4">
-          <DialogHeader>
-            <DialogTitle>
-              {editing
-                ? t("editTitle", { name: provider.name })
-                : t("connectTitle", { name: preset.name })}
-            </DialogTitle>
-            <DialogDescription>{editing ? t("editLead") : t("connectLead")}</DialogDescription>
-          </DialogHeader>
-          <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor={`${id}-name`}>{t("name")}</FieldLabel>
-              <Input
-                id={`${id}-name`}
-                maxLength={60}
-                required
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor={`${id}-endpoint`}>{t("endpoint")}</FieldLabel>
-              <Input
-                id={`${id}-endpoint`}
-                type="url"
-                inputMode="url"
-                spellCheck={false}
-                maxLength={2048}
-                required
-                aria-describedby={`${id}-endpoint-hint`}
-                value={baseUrl}
-                onChange={(event) => {
-                  setBaseUrl(event.target.value);
-                  setResult(null);
-                }}
-              />
-              <FieldDescription id={`${id}-endpoint-hint`}>{t("endpointHint")}</FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor={editing ? `${id}-key-action` : `${id}-key`}>
-                {t("apiKey")}
-              </FieldLabel>
-              {editing && (
+    <FormDialog
+      open={open}
+      onOpenChange={change}
+      form={form}
+      title={
+        editing ? t("editTitle", { name: provider.name }) : t("connectTitle", { name: preset.name })
+      }
+      description={editing ? t("editLead") : t("connectLead")}
+      width="xl"
+      submitLabel={t("save")}
+      cancelLabel={t("cancel")}
+      submitDisabled={
+        keyMissing || keyMoved || priceInvalid || name.trim() === "" || address === ""
+      }
+    >
+      <FieldGroup>
+        <form.AppField name="name">
+          {(field) => <field.TextField label={t("name")} maxLength={60} required />}
+        </form.AppField>
+        <form.AppField name="baseUrl" listeners={{ onChange: connectionChanged }}>
+          {(field) => (
+            <field.TextField
+              label={t("endpoint")}
+              type="url"
+              inputMode="url"
+              spellCheck={false}
+              maxLength={2048}
+              required
+              description={t("endpointHint")}
+            />
+          )}
+        </form.AppField>
+        <Field>
+          <FieldLabel htmlFor={editing ? `${id}-key-action` : `${id}-key`}>
+            {t("apiKey")}
+          </FieldLabel>
+          {editing && (
+            <form.Field name="keyAction" listeners={{ onChange: connectionChanged }}>
+              {(field) => (
                 <NativeSelect
                   id={`${id}-key-action`}
                   className="w-full"
-                  value={keyAction}
-                  onChange={(event) => {
-                    setKeyAction(event.target.value as SaveOcrProvider["key"]);
-                    setResult(null);
-                  }}
+                  aria-describedby={`${id}-key-hint`}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) =>
+                    field.handleChange(event.target.value as SaveOcrProvider["key"])
+                  }
                 >
                   <NativeSelectOption value="keep" disabled={!provider.hasKey}>
                     {t("keyKeep")}
@@ -234,91 +232,88 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
                   <NativeSelectOption value="remove">{t("keyRemove")}</NativeSelectOption>
                 </NativeSelect>
               )}
-              {keyAction === "replace" && (
+            </form.Field>
+          )}
+          {keyAction === "replace" && (
+            <form.Field name="apiKey" listeners={{ onChange: connectionChanged }}>
+              {(field) => (
                 <Input
                   id={`${id}-key`}
                   aria-label={editing ? t("newKey") : undefined}
+                  aria-describedby={`${id}-key-hint`}
                   type="password"
                   autoComplete="off"
                   spellCheck={false}
                   maxLength={500}
-                  value={apiKey}
-                  onChange={(event) => {
-                    setApiKey(event.target.value);
-                    setResult(null);
-                  }}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
                 />
               )}
-              <FieldDescription>{keyMoved ? t("keyMoved") : t("keyHint")}</FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor={`${id}-price`}>{t("price")}</FieldLabel>
-              <Input
-                id={`${id}-price`}
-                type="number"
-                inputMode="decimal"
-                min={0}
-                max={100000}
-                step="any"
-                aria-invalid={priceInvalid || undefined}
-                value={price}
-                onChange={(event) => setPrice(event.target.value)}
-              />
-              <FieldDescription>
-                {provider && !provider.priceFromCatalog && provider.pricePerThousandCalls != null
+            </form.Field>
+          )}
+          <FieldDescription id={`${id}-key-hint`}>
+            {keyMoved ? t("keyMoved") : t("keyHint")}
+          </FieldDescription>
+        </Field>
+        <form.AppField name="price" validators={{ onChange: priceSchema }}>
+          {(field) => (
+            <field.TextField
+              label={t("price")}
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={100000}
+              step="any"
+              description={
+                provider && !provider.priceFromCatalog && provider.pricePerThousandCalls != null
                   ? t("priceOwn")
-                  : t("priceHint")}
-              </FieldDescription>
-            </Field>
-            {editing && (
+                  : t("priceHint")
+              }
+            />
+          )}
+        </form.AppField>
+        {editing && (
+          <form.Field name="enabled">
+            {(field) => (
               <Field orientation="horizontal">
-                <Switch id={`${id}-enabled`} checked={enabled} onCheckedChange={setEnabled} />
+                <Switch
+                  id={`${id}-enabled`}
+                  aria-describedby={`${id}-enabled-hint`}
+                  checked={field.state.value}
+                  onCheckedChange={field.handleChange}
+                />
                 <div className="flex flex-col gap-0.5">
                   <FieldLabel htmlFor={`${id}-enabled`}>{t("enabled")}</FieldLabel>
-                  <FieldDescription>{t("enabledHint")}</FieldDescription>
+                  <FieldDescription id={`${id}-enabled-hint`}>{t("enabledHint")}</FieldDescription>
                 </div>
               </Field>
             )}
-          </FieldGroup>
+          </form.Field>
+        )}
+      </FieldGroup>
 
-          <section aria-labelledby={`${id}-test`} className="flex flex-col gap-2.5">
-            <div className="flex items-center gap-2">
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <h3 id={`${id}-test`} className="text-sm font-medium">
-                  {t("testTitle")}
-                </h3>
-                <p className="text-xs text-muted-foreground">{t("testHint")}</p>
-              </div>
-              <Button
-                prominence="secondary"
-                size="sm"
-                pending={testing}
-                disabled={probe === null}
-                onClick={test}
-              >
-                {t("testTitle")}
-              </Button>
-            </div>
-            {result && <OcrTestResult result={result} className="rounded-lg" />}
-          </section>
-
-          <DialogFooter>
-            <Button prominence="secondary" disabled={saving} onClick={() => change(false)}>
-              {t("cancel")}
-            </Button>
-            <Button
-              type="submit"
-              pending={saving}
-              disabled={
-                keyMissing || keyMoved || priceInvalid || name.trim() === "" || address === ""
-              }
-            >
-              {t("save")}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <section aria-labelledby={`${id}-test`} className="flex flex-col gap-2.5">
+        <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <h3 id={`${id}-test`} className="text-sm font-medium">
+              {t("testTitle")}
+            </h3>
+            <p className="text-xs text-muted-foreground">{t("testHint")}</p>
+          </div>
+          <Button
+            prominence="secondary"
+            size="sm"
+            pending={testing}
+            disabled={probe === null}
+            onClick={test}
+          >
+            {t("testTitle")}
+          </Button>
+        </div>
+        {result && <OcrTestResult result={result} className="rounded-lg" />}
+      </section>
+    </FormDialog>
   );
 }
 

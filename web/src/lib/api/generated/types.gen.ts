@@ -1354,6 +1354,10 @@ export type ContactRequest = {
      */
     country?: string | null;
     /**
+     * The name the account shows from now on; left out or blank keeps the one it has.
+     */
+    name?: string | null;
+    /**
      * With its country code, such as +84 912 345 678.
      */
     phone?: string | null;
@@ -3451,7 +3455,7 @@ export type ProposalUseCase = {
  */
 export type ProposingOrganization = {
     /**
-     * Whether GenAI Fund approved it; one that is not cannot send a proposal.
+     * Whether GenAI Fund approved it; one that is not still sends proposals, which the organization that posted the use case sees marked as pending.
      */
     approved: boolean;
     id: string;
@@ -3916,12 +3920,20 @@ export type ReceivedUseCaseProposal = {
     editedAt?: string | null;
     id: string;
     /**
+     * Whether GenAI Fund approved the sending organization; a proposal from one that is not is marked as pending.
+     */
+    organizationApproved: boolean;
+    /**
      * Read at /api/storage/files/{id}.
      */
     organizationLogoFileId?: string | null;
     organizationName: string;
+    /**
+     * The sender's talent profile, when it went with the proposal.
+     */
     sender?: SenderProfile | null;
     sentAt: string;
+    sentBy: SentBy;
     solutions: Array<ProposalSolution>;
     team: Array<ProposalTeamMember>;
     useCase: ProposalUseCase;
@@ -3932,7 +3944,7 @@ export type ReceivedUseCaseProposal = {
  */
 export type ReceivedUseCaseProposalSummary = {
     /**
-     * The primary contact.
+     * The primary contact, or the sender when no team was named.
      */
     contactName?: string | null;
     /**
@@ -3940,6 +3952,10 @@ export type ReceivedUseCaseProposalSummary = {
      */
     editedAt?: string | null;
     id: string;
+    /**
+     * Whether GenAI Fund approved the sending organization.
+     */
+    organizationApproved: boolean;
     /**
      * Read at /api/storage/files/{id}.
      */
@@ -4936,7 +4952,7 @@ export type SaveUseCaseProposal = {
      */
     solutionIds: Array<string>;
     /**
-     * The people named, in the order shown; at most one is primary.
+     * The people named, in the order shown; at most one is primary. The team may be empty.
      */
     team: Array<TeamMemberRequest>;
     /**
@@ -5282,6 +5298,22 @@ export type SenderProject = {
     title: string;
     url?: string | null;
     year?: number | null;
+};
+
+/**
+ * The submitting identity: the account that sent the proposal, with the name, address, country and number it gave.
+ */
+export type SentBy = {
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    email: string;
+    name?: string | null;
+    /**
+     * With its country code.
+     */
+    phone?: string | null;
 };
 
 /**
@@ -5991,10 +6023,14 @@ export type UseCaseProposal = {
     editedAt?: string | null;
     id: string;
     /**
-     * The sender's talent profile as it was when the proposal was sent; null for a draft.
+     * The sender's talent profile as it was when the proposal was sent; null for a draft and for a proposal sent without it, as every new one is.
      */
     sender?: SenderProfile | null;
     sentAt?: string | null;
+    /**
+     * Who sent it; null for a draft.
+     */
+    sentBy?: SentBy | null;
     /**
      * The solutions offered, in the order shown.
      */
@@ -11329,6 +11365,37 @@ export type SendUseCaseProposalResponses = {
 
 export type SendUseCaseProposalResponse = SendUseCaseProposalResponses[keyof SendUseCaseProposalResponses];
 
+export type OrganizeUseCaseProposalData = {
+    body: ApplicantOrganization;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-cases/{useCaseId}/organization';
+};
+
+export type OrganizeUseCaseProposalErrors = {
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+    /**
+     * The use case no longer takes proposals, or the caller already belongs to an organization.
+     */
+    409: Problem;
+};
+
+export type OrganizeUseCaseProposalError = OrganizeUseCaseProposalErrors[keyof OrganizeUseCaseProposalErrors];
+
+export type OrganizeUseCaseProposalResponses = {
+    /**
+     * The form, now with the new organization.
+     */
+    200: UseCaseProposalForm;
+};
+
+export type OrganizeUseCaseProposalResponse = OrganizeUseCaseProposalResponses[keyof OrganizeUseCaseProposalResponses];
+
 export type GetUseCaseProposalFormData = {
     body?: never;
     path: {
@@ -11379,7 +11446,7 @@ export type SaveUseCaseProposalErrors = {
      */
     400: Problem;
     /**
-     * The caller has no organization, it is not approved, or it posted the use case.
+     * The caller has no organization, or it posted the use case.
      */
     403: Problem;
     /**

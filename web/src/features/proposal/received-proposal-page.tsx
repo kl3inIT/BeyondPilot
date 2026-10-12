@@ -2,6 +2,7 @@ import { ArrowLeftIcon, DownloadIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
+import { Badge } from "@/components/ui/badge";
 import { TextButton } from "@/components/actions/text-button";
 import { useFileSize } from "@/features/solution/solution-deck";
 import type { ReceivedUseCaseProposal } from "@/lib/api/generated";
@@ -9,7 +10,7 @@ import { adminUseCaseProposalsRoute, siteRoutes, workspaceUseCaseProposalsRoute 
 import { cn } from "@/lib/utils";
 
 import { Card, ProposalTeamList, Rows } from "./proposal-card";
-import { ProposalSenderCard } from "./proposal-sender-card";
+import { ProposalSentBy } from "./proposal-sender-card";
 import { ProposalSolutionList } from "./proposal-solution-list";
 import { proposalFileAddress } from "./received-proposals";
 
@@ -21,7 +22,7 @@ type ReceivedProposalPageProps = {
 
 /**
  * One proposal a use case received, read-only: who sent it, the solutions offered and the approach,
- * the sender as they described themselves when they sent it, the team and the PDF. Shortlist and
+ * the sender's name, address, country and number, the team and the PDF. Shortlist and
  * Decline are drawn and disabled for the organization until a later change adds the decision; GenAI
  * Fund reads the proposal without them.
  */
@@ -30,7 +31,7 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
   const t = useTranslations("UseCaseProposal.received.detail");
   const format = useFormatter();
   const size = useFileSize();
-  const { sender, deck, team, solutions, useCase } = proposal;
+  const { deck, team, solutions, useCase } = proposal;
   const day = (instant: string) =>
     format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
   const sent = day(proposal.sentAt);
@@ -66,9 +67,12 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
             </TextButton>
           </nav>
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-            <h1 className="min-w-0 text-2xl font-semibold tracking-tight break-words">
-              {proposal.organizationName}
-            </h1>
+            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+              <h1 className="min-w-0 text-2xl font-semibold tracking-tight break-words">
+                {proposal.organizationName}
+              </h1>
+              {!proposal.organizationApproved && <Badge variant="secondary">{t("pending")}</Badge>}
+            </div>
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-sm text-muted-foreground">
                 {t("sent", { date: sent })}
@@ -101,7 +105,7 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
           />
         </Card>
 
-        {sender && <ProposalSenderCard sender={sender} title={t("sender.title")} />}
+        <ProposalSentBy sentBy={proposal.sentBy} title={t("sentBy")} />
 
         <Card id="proposal-team" title={t("team.title")}>
           <ProposalTeamList team={team} />

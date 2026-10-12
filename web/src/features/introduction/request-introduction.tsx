@@ -1,9 +1,12 @@
 "use client";
 
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
+import { useAppForm } from "@/components/form/app-form";
 import {
   Dialog,
   DialogContent,
@@ -12,8 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
-import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { requestIntroduction } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -51,31 +52,29 @@ function RequestIntroduction({
   const t = useTranslations("Introduction.request");
   const notify = useNotify();
   const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [pending, setPending] = useState(false);
-  const [invalid, setInvalid] = useState(false);
   const [sent, setSent] = useState(false);
   const blocked = organization === null ? "organization" : awaitingApproval ? "approval" : null;
   // A visitor's button is the link to sign in; a signed-in person's opens the dialog.
   const opens = signInHref ? { href: signInHref } : { onClick: () => setOpen(true) };
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!message.trim()) {
-      setInvalid(true);
-      return;
-    }
-    setInvalid(false);
-    setPending(true);
-    try {
-      await requestIntroduction({ body: { solutionSlug: slug, message } });
-      setSent(true);
-    } catch (error) {
-      notify.error(introductionError(error));
-    } finally {
-      setPending(false);
-    }
-  }
+  const form = useAppForm({
+    defaultValues: { message: "" },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({
+        message: z.string().refine((text) => text.trim() !== "", t("required")),
+      }),
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await requestIntroduction({ body: { solutionSlug: slug, message: value.message } });
+        setSent(true);
+      } catch (error) {
+        notify.error(introductionError(error));
+      }
+    },
+  });
+  const pending = useStore(form.store, (state) => state.isSubmitting);
 
   function close(next: boolean) {
     if (pending) {
@@ -85,7 +84,7 @@ function RequestIntroduction({
     if (!next && sent) {
       // A later request starts empty; the one just sent stays waiting.
       setSent(false);
-      setMessage("");
+      form.reset();
     }
   }
 
@@ -138,7 +137,15 @@ function RequestIntroduction({
               </DialogFooter>
             </div>
           ) : (
-            <form noValidate onSubmit={submit} className="flex flex-col gap-4">
+            <form
+              id={form.formId}
+              noValidate
+              className="flex flex-col gap-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void form.handleSubmit();
+              }}
+            >
               <DialogHeader>
                 <DialogTitle>{t("title", { provider })}</DialogTitle>
                 <DialogDescription>{t("lead", { provider })}</DialogDescription>
@@ -147,25 +154,16 @@ function RequestIntroduction({
                 <span className="text-sm font-medium">{t("organization")}</span>
                 <p className="rounded-lg border bg-muted px-3 py-2 text-sm">{organization}</p>
               </div>
-              <Field data-invalid={invalid || undefined}>
-                <FieldLabel htmlFor="introduction-message">{t("message")}</FieldLabel>
-                <Textarea
-                  id="introduction-message"
-                  rows={5}
-                  maxLength={2000}
-                  value={message}
-                  aria-describedby={invalid ? undefined : "introduction-message-hint"}
-                  onChange={(event) => setMessage(event.target.value)}
-                  aria-invalid={invalid || undefined}
-                />
-                {invalid ? (
-                  <FieldError>{t("required")}</FieldError>
-                ) : (
-                  <FieldDescription id="introduction-message-hint">
-                    {t("hint", { provider })}
-                  </FieldDescription>
+              <form.AppField name="message">
+                {(field) => (
+                  <field.TextareaField
+                    label={t("message")}
+                    rows={5}
+                    maxLength={2000}
+                    description={t("hint", { provider })}
+                  />
                 )}
-              </Field>
+              </form.AppField>
               <DialogFooter>
                 <Button prominence="secondary" disabled={pending} onClick={() => close(false)}>
                   {t("cancel")}

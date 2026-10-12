@@ -4,6 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ReviewStatus } from "@/components/composites/review-status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { Badge } from "@/components/ui/badge";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { UseCaseTabs } from "@/features/usecase/use-case-tabs";
@@ -54,6 +55,11 @@ function AdminProposalsPage({ useCase, proposals }: AdminProposalsPageProps) {
             >
               {proposal.organizationName}
             </Link>
+            {!proposal.organizationApproved && (
+              <Badge variant="secondary" className="self-start">
+                {t("detail.pending")}
+              </Badge>
+            )}
             {detail && <span className="truncate text-muted-foreground">{detail}</span>}
           </div>
         </div>

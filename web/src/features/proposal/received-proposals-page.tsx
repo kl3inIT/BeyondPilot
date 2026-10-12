@@ -4,6 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { TextButton } from "@/components/actions/text-button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { Badge } from "@/components/ui/badge";
 import { Status } from "@/components/composites/status";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { Link } from "@/i18n/navigation";
@@ -49,6 +50,11 @@ function ReceivedProposalsPage({ proposals }: ReceivedProposalsPageProps) {
             >
               {proposal.organizationName}
             </Link>
+            {!proposal.organizationApproved && (
+              <Badge variant="secondary" className="self-start">
+                {t("detail.pending")}
+              </Badge>
+            )}
             {detail && <span className="truncate text-muted-foreground">{detail}</span>}
           </div>
         </div>

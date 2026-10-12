@@ -196,6 +196,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
 
   return (
     <form
+      id={form.formId}
       noValidate
       className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-36 md:px-6 md:pb-12 lg:px-8"
       onSubmit={(submitEvent) => {
