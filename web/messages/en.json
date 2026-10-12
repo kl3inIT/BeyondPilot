@@ -2792,6 +2792,7 @@
       "chart": {
         "byHour": "Calls by hour",
         "byDay": "Calls by day",
+        "name": "Succeeded and failed calls {step, select, hour {by hour} other {by day}}, {period, select, today {today} week {last 7 days} other {last 30 days}}",
         "mostAtHour": "Most at {when}, {count, plural, one {# call} other {# calls}}",
         "mostOnDay": "Most on {when}, {count, plural, one {# call} other {# calls}}",
         "succeeded": "Succeeded",
@@ -6699,6 +6700,10 @@
       "noMatch": {
         "title": "No application matches",
         "clear": "Clear filters"
+      },
+      "allScored": {
+        "title": "Nothing left to score",
+        "see": "See done applications"
       },
       "empty": {
         "title": "No applications yet",

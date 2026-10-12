@@ -1,4 +1,4 @@
-import { FileTextIcon, SearchXIcon } from "lucide-react";
+import { CircleCheckIcon, FileTextIcon, SearchXIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
@@ -100,6 +100,9 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
     search.choice !== null ||
     search.kind !== null ||
     search.tab !== "all";
+  // A judge with nothing left to score has finished, whatever the search: not a search that failed.
+  const allScored =
+    !head.operator && search.tab === "to_score" && counts.to_score === 0 && counts.scored > 0;
   const lead = head.releasedAt
     ? t("lead.released", { day: day(head.releasedAt) })
     : !head.closed
@@ -162,6 +165,12 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
           operator={head.operator}
           released={Boolean(head.releasedAt)}
         />
+      ) : allScored ? (
+        <DataTableEmpty icon={<CircleCheckIcon aria-hidden="true" />} title={t("allScored.title")}>
+          <Button prominence="secondary" size="sm" href={`${base}${address({ tab: "scored" })}`}>
+            {t("allScored.see")}
+          </Button>
+        </DataTableEmpty>
       ) : narrowed && data.items.length > 0 ? (
         <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
           <Button prominence="secondary" size="sm" href={base}>

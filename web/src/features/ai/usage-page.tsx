@@ -225,7 +225,7 @@ async function UsageOverviewPage({
             prominence="secondary"
             size="sm"
             href={usageCallsAddress(siteRoutes.adminAiUsageCalls, {
-              period: "7d",
+              period: search.period,
               task: worst.task,
               model: worst.modelName,
               outcome: "failed",
@@ -304,7 +304,15 @@ async function UsageOverviewPage({
             </figcaption>
             <UsageChart
               data={chart}
-              labels={{ succeeded: t("chart.succeeded"), failed: t("chart.failed") }}
+              name={t("chart.name", {
+                step: byHour ? "hour" : "day",
+                period: { today: "today", "7d": "week", "30d": "month" }[search.period],
+              })}
+              labels={{
+                succeeded: t("chart.succeeded"),
+                failed: t("chart.failed"),
+                calls: t("totals.calls"),
+              }}
             />
           </figure>
 

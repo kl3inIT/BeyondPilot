@@ -117,7 +117,7 @@ async function ReleasePage({ release }: { release: Release }) {
                         <Link
                           href={`${applications}/${item.id}`}
                           title={item.solutionName}
-                          className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                          className="relative -my-0.5 truncate rounded-sm py-0.5 font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                         >
                           {item.solutionName}
                         </Link>

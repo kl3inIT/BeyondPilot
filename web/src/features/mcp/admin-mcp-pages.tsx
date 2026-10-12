@@ -80,13 +80,13 @@ function SettingsSection({
   return (
     <section
       aria-label={title}
-      className={`grid gap-4 md:grid-cols-3 md:gap-12 ${first ? "" : "border-t pt-8"}`}
+      className={`grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-12 ${first ? "" : "border-t pt-8"}`}
     >
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-medium">{title}</h2>
         {lead && <p className="text-sm text-muted-foreground">{lead}</p>}
       </div>
-      <div className="flex flex-col gap-5 md:col-span-2">{children}</div>
+      <div className="flex min-w-0 flex-col gap-5 md:col-span-2">{children}</div>
     </section>
   );
 }

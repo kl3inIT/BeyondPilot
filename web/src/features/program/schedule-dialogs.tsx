@@ -96,7 +96,9 @@ function KeyDateDialog({ value, onSave, onDelete, onClose, addButton }: DialogPr
           !allDay && (
             <div className="grid grid-cols-2 gap-3">
               <form.AppField name="from">
-                {(field) => <field.TextField label={t("from")} type="time" />}
+                {(field) => (
+                  <field.TextField label={t("from")} type="time" description={s("keyDates.hint")} />
+                )}
               </form.AppField>
               <form.AppField name="to">
                 {(field) => <field.TextField label={t("to")} type="time" optional />}
@@ -162,7 +164,13 @@ function EventDialog({ value, onSave, onDelete, onClose, addButton }: DialogProp
           {(field) => <field.TextField label={t("startsDay")} type="date" />}
         </form.AppField>
         <form.AppField name="startsTime">
-          {(field) => <field.TextField label={t("startsTime")} type="time" />}
+          {(field) => (
+            <field.TextField
+              label={t("startsTime")}
+              type="time"
+              description={s("applications.ict")}
+            />
+          )}
         </form.AppField>
         <form.AppField name="endsDay">
           {(field) => <field.TextField label={t("endsDay")} type="date" optional />}

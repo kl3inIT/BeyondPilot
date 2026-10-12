@@ -385,7 +385,7 @@ function Prompt({
             <li key={each}>
               <Link
                 href={directories[each]}
-                className="inline-flex items-center gap-1 rounded-sm text-sm font-medium text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="-my-0.5 inline-flex items-center gap-1 rounded-sm py-0.5 text-sm font-medium text-primary outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 {t(`kinds.${each}`)}
                 <ArrowRightIcon className="size-4" aria-hidden="true" />

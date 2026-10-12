@@ -14,8 +14,9 @@ function fileHref(applicationId: string, file: AttachedFile) {
   return `/api/proposal/review/applications/${applicationId}/files/${file.fileId}`;
 }
 
+/** A link of the record, 24px to aim at: the padding adds 4px to its line and the margin takes it back. */
 const link =
-  "font-medium text-primary underline-offset-4 rounded-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
+  "-my-0.5 inline-flex py-0.5 font-medium text-primary underline-offset-4 rounded-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
 
 /** A web address the applicant gave, opened in a tab of its own, away from the review. */
 function Outside({ href, children }: { href: string; children: string }) {
@@ -245,7 +246,7 @@ async function SubmittedRecord({
                     href={item.link ?? fileHref(applicationId, item.file as AttachedFile)}
                     target={item.link ? "_blank" : undefined}
                     rel={item.link ? "noreferrer" : undefined}
-                    className={cn("shrink-0", link)}
+                    className={cn("hit-area shrink-0", link)}
                   >
                     {item.link ? t("openLink") : t("open")}
                   </a>
