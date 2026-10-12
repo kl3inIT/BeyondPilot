@@ -6,11 +6,10 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 
 import { Button } from "@/components/actions/button";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
-import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { FormDialog } from "@/components/composites/form-dialog";
+import { useAppForm } from "@/components/form/app-form";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import { joinOrganization, searchOrganizations, type OrganizationMatch } from "@/lib/api/generated";
@@ -52,7 +51,6 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
   const [found, setFound] = useState<OrganizationMatch[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [asking, setAsking] = useState<OrganizationMatch | null>(null);
-  const [message, setMessage] = useState("");
   const [pending, setPending] = useState<string | null>(null);
   // The page shows what joining made of the caller once it has read it again; until then nothing is asked twice.
   const [refreshing, startRefresh] = useTransition();
@@ -104,18 +102,11 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
     }
   }
 
-  function choose(match: OrganizationMatch) {
-    setMessage("");
-    setAsking(match);
-  }
-
   const typed = query.trim().length >= 2;
   // Before a search, the organization of the caller's email domain is the one result.
   const results = typed ? found : suggestion ? [suggestion] : null;
   const nothing = typed && found !== null && found.length === 0 && !searching;
   const only = results?.length === 1 ? results[0] : null;
-  // Joining by domain needs no words; a request or a claim is read by someone, so it may carry some.
-  const askingWay = asking?.way ?? "request";
 
   return (
     <div
@@ -163,7 +154,7 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
               size="lg"
               pending={pending === match.id}
               disabled={refreshing}
-              onClick={() => choose(match)}
+              onClick={() => setAsking(match)}
             >
               {t(`action.${match.way}`)}
             </Button>
@@ -205,59 +196,67 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
       )}
 
       {asking && (
-        <Dialog open onOpenChange={(open) => !open && !pending && setAsking(null)}>
-          <DialogContent showCloseButton={false} className="sm:max-w-md">
-            <DecisionDialogHeader
-              tone="info"
-              icon={SendIcon}
-              title={t(`ask.${askingWay}.title`, { name: asking.name })}
-              description={
-                askingWay === "claim"
-                  ? t("ask.claim.lead")
-                  : askingWay === "join"
-                    ? t("ask.join.lead")
-                    : undefined
-              }
-            />
-            {askingWay !== "join" && (
-              <Field>
-                <FieldLabel htmlFor="join-message">{t("ask.message")}</FieldLabel>
-                <Textarea
-                  id="join-message"
-                  rows={4}
-                  maxLength={500}
-                  value={message}
-                  aria-describedby="join-message-hint"
-                  onChange={(event) => setMessage(event.target.value)}
-                />
-                <FieldDescription id="join-message-hint">
-                  {askingWay === "claim"
-                    ? t("ask.claim.messageHint")
-                    : t("ask.request.messageHint", { name: asking.name })}
-                </FieldDescription>
-              </Field>
-            )}
-            <DialogFooter variant="plain">
-              <Button
-                size="lg"
-                prominence="secondary"
-                disabled={pending !== null}
-                onClick={() => setAsking(null)}
-              >
-                {t("ask.cancel")}
-              </Button>
-              <Button
-                size="lg"
-                pending={pending !== null}
-                onClick={() => join(asking, askingWay === "join" ? undefined : message)}
-              >
-                {t(`action.${askingWay}`)}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <AskDialog
+          match={asking}
+          onJoin={(note) => join(asking, note)}
+          onClose={() => setAsking(null)}
+        />
       )}
     </div>
+  );
+}
+
+type AskDialogProps = {
+  /** The organization the person chose. */
+  match: OrganizationMatch;
+  /** Joins, asks or claims, with the message when there is one; it closes the dialog once done. */
+  onJoin: (note?: string) => Promise<void>;
+  onClose: () => void;
+};
+
+/**
+ * Asks before joining, asking to join or claiming an organization. Joining by domain needs no
+ * words; a request or a claim is read by someone, so it may carry some.
+ */
+function AskDialog({ match, onJoin, onClose }: AskDialogProps) {
+  const t = useTranslations("Organization.find");
+  const { way, name } = match;
+  const form = useAppForm({
+    defaultValues: { message: "" },
+    onSubmit: ({ value }) => onJoin(way === "join" ? undefined : value.message),
+  });
+
+  return (
+    <FormDialog
+      open
+      onOpenChange={(open) => !open && onClose()}
+      form={form}
+      title={t(`ask.${way}.title`, { name })}
+      description={
+        way === "claim" ? t("ask.claim.lead") : way === "join" ? t("ask.join.lead") : undefined
+      }
+      mark={{ tone: "info", icon: SendIcon }}
+      width="md"
+      submitLabel={t(`action.${way}`)}
+      cancelLabel={t("ask.cancel")}
+    >
+      {way !== "join" && (
+        <form.AppField name="message">
+          {(field) => (
+            <field.TextareaField
+              label={t("ask.message")}
+              rows={4}
+              maxLength={500}
+              description={
+                way === "claim"
+                  ? t("ask.claim.messageHint")
+                  : t("ask.request.messageHint", { name })
+              }
+            />
+          )}
+        </form.AppField>
+      )}
+    </FormDialog>
   );
 }
 
