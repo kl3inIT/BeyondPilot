@@ -5,30 +5,13 @@ import type { AttachedFile, SubmittedApplication } from "@/lib/api/generated";
 import { chosenOptions } from "@/lib/chosen-options";
 import { cn } from "cn";
 
+import { linkedinAddress, mailAddress, phoneAddress, webAddress } from "./applicant-links";
+
 type Row = [string, React.ReactNode];
 
 /** The address a judge opens a file of the submission at; the backend checks they review it. */
 function fileHref(applicationId: string, file: AttachedFile) {
   return `/api/proposal/review/applications/${applicationId}/files/${file.fileId}`;
-}
-
-/**
- * A link an applicant gave, when it is a web address. The backend takes only https links, but an
- * answer is shown as it was stored, so anything else is shown as text and never becomes a link.
- */
-function webAddress(value: string): string | null {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
-  } catch {
-    return null;
-  }
-}
-
-/** The number a telephone link dials: the digits of what was given, with its leading plus. */
-function dialled(phone: string): string | null {
-  const digits = phone.replace(/[^\d+]/g, "");
-  return /^\+?\d+$/.test(digits) ? digits : null;
 }
 
 const link =
@@ -75,13 +58,24 @@ async function SubmittedRecord({
   const contact = submitted.contact;
   const demo = submitted.demoUrl ? webAddress(submitted.demoUrl) : null;
   const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ");
-  const email = (
-    <a href={`mailto:${submitted.email}`} className={link}>
+  // What the applicant typed is a link only where it leads to what its row says; otherwise text.
+  const mail = mailAddress(submitted.email);
+  const email = mail ? (
+    <a href={mail} className={link}>
       {submitted.email}
     </a>
+  ) : (
+    submitted.email
   );
-  const phone = contact.phone ? dialled(contact.phone) : null;
-  const linkedin = contact.linkedin ? webAddress(contact.linkedin) : null;
+  const dial = contact.phone ? phoneAddress(contact.phone) : null;
+  const phone = dial ? (
+    <a href={dial} className={link}>
+      {contact.phone}
+    </a>
+  ) : (
+    (contact.phone ?? none)
+  );
+  const linkedin = contact.linkedin ? linkedinAddress(contact.linkedin) : null;
 
   const files: {
     label: string;
@@ -128,16 +122,7 @@ async function SubmittedRecord({
         // One row each: the email and the phone are copied from here to reach the applicant.
         [t("name"), name || none],
         [t("email"), email],
-        [
-          t("phone"),
-          contact.phone && phone ? (
-            <a href={`tel:${phone}`} className={link}>
-              {contact.phone}
-            </a>
-          ) : (
-            (contact.phone ?? none)
-          ),
-        ],
+        [t("phone"), phone],
         [t("country"), word("country", submitted.country ?? contact.country)],
         ...(submitted.teamSize
           ? [[t("teamSize"), word("teamSize", submitted.teamSize)] as Row]
