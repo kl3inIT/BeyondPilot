@@ -1557,10 +1557,8 @@
         "moves": "{members, plural, one {# member} other {# members}} and {invitations, plural, one {# open invitation} other {# open invitations}} move with it, and so do its solutions and use cases.",
         "cancel": "Cancel",
         "continue": "Continue",
-        "confirmTitle": "Merge into {kept}?",
-        "confirmLabel": "Type {name} to confirm",
-        "cannotUndo": "This cannot be undone.",
-        "back": "Back",
+        "confirmTitle": "Merge {name} into {kept}?",
+        "confirmNote": "{name} stays only as a record of where it went, and its members are told by email. This cannot be undone.",
         "merge": "Merge"
       },
       "people": {
@@ -3356,7 +3354,7 @@
         "add": {
           "open": "Add address",
           "title": "Stop email to an address",
-          "lead": "BeyondPilot sends nothing more to it, sign-in codes included, until you remove it.",
+          "lead": "BeyondPilot sends nothing more to it, sign-in codes included, until you allow it again.",
           "address": "Email address",
           "invalid": "Write one email address.",
           "cancel": "Cancel",
@@ -3364,11 +3362,11 @@
           "done": "{email} receives no more email."
         },
         "remove": {
-          "open": "Let email reach {email} again",
-          "title": "Let email reach this address again?",
+          "open": "Allow email to {email} again",
+          "title": "Allow email to this address again?",
           "lead": "BeyondPilot writes to {email} again from now.",
           "noteProvider": "If mail to it bounces or is reported as spam again, the provider counts it against your sending.",
-          "confirm": "Remove",
+          "confirm": "Allow email",
           "cancel": "Cancel",
           "done": "{email} receives email again."
         },

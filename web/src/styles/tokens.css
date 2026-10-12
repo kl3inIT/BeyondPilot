@@ -103,7 +103,8 @@
   --accent: oklch(0.295 0.054 256.532);
   --accent-foreground: oklch(0.981 0.005 247.876);
   --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(1 0 0);
+  /* The dark ink, as on the primary: white on this lighter red would read at 2.9:1. */
+  --destructive-foreground: oklch(0.176 0.033 256.392);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.754 0.139 232.661);
