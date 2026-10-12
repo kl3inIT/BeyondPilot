@@ -9,6 +9,11 @@ type ChoiceChipsProps = {
   id?: string;
   /** The ids of the hint and the error that describe the group. */
   "aria-describedby"?: string;
+  /**
+   * True while the choice is refused. Each chip that can be chosen says so, as each radio of a
+   * refused group does, so the first of them is a control a form can move the focus to.
+   */
+  "aria-invalid"?: boolean;
   /** The name of the group for assistive technology, usually the field's label. */
   label: string;
   options: { value: string; label: string }[];
@@ -33,6 +38,7 @@ function ChoiceChips({
   max,
   disabled,
   "aria-describedby": describedBy,
+  "aria-invalid": invalid,
 }: ChoiceChipsProps) {
   const full = max !== undefined && value.length >= max;
 
@@ -51,8 +57,14 @@ function ChoiceChips({
     >
       {options.map((option) => {
         const on = value.includes(option.value);
+        const unavailable = full && !on;
         return (
-          <ToggleGroupItem key={option.value} value={option.value} disabled={full && !on}>
+          <ToggleGroupItem
+            key={option.value}
+            value={option.value}
+            disabled={unavailable}
+            aria-invalid={(invalid && !disabled && !unavailable) || undefined}
+          >
             {on && <CheckIcon aria-hidden="true" />}
             {option.label}
           </ToggleGroupItem>

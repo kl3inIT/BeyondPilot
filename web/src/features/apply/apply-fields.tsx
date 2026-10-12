@@ -51,17 +51,16 @@ function NativeSelectField({
   placeholder?: string;
   options: Option[];
 }) {
-  const { field, invalid, errors } = useFieldValidity<string>();
-  const hintId = `${field.name}-hint`;
-  const errorId = `${field.name}-error`;
+  const { field, invalid, errors, ids } = useFieldValidity<string>();
+  const { control: controlId, hint: hintId, error: errorId } = ids;
   return (
     <Field data-invalid={invalid || undefined}>
-      <FieldLabel htmlFor={field.name}>
+      <FieldLabel htmlFor={controlId}>
         {label}
         {optional && <Optional />}
       </FieldLabel>
       <NativeSelect
-        id={field.name}
+        id={controlId}
         name={field.name}
         className="w-full"
         value={field.state.value}
@@ -103,22 +102,21 @@ function ChoiceCardsField({
   options: (Option & { what: string })[];
   detail?: ReactNode;
 }) {
-  const { field, invalid, errors } = useFieldValidity<string>();
-  const hintId = `${field.name}-hint`;
-  const errorId = `${field.name}-error`;
+  const { field, invalid, errors, ids } = useFieldValidity<string>();
+  const { control: controlId, hint: hintId, error: errorId } = ids;
   return (
     <>
       <Field data-invalid={invalid || undefined}>
         <FieldLabel>{label}</FieldLabel>
         <RadioGroup
-          id={field.name}
+          id={controlId}
           value={field.state.value}
           onValueChange={(value) => field.handleChange(String(value))}
           aria-label={label}
           aria-describedby={describedBy(description && hintId, invalid && errorId)}
         >
           {options.map((option) => (
-            <FieldLabel key={option.value} htmlFor={`${field.name}-${option.value}`}>
+            <FieldLabel key={option.value} htmlFor={`${controlId}-${option.value}`}>
               <Field orientation="horizontal">
                 <FieldContent>
                   <FieldTitle>{option.label}</FieldTitle>
@@ -126,7 +124,7 @@ function ChoiceCardsField({
                 </FieldContent>
                 <RadioGroupItem
                   value={option.value}
-                  id={`${field.name}-${option.value}`}
+                  id={`${controlId}-${option.value}`}
                   aria-invalid={invalid || undefined}
                 />
               </Field>

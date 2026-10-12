@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { withFieldGroup } from "@/components/form/app-form";
+import { fieldIds } from "@/components/form/field-ids";
 import { useFieldValidity } from "@/components/form/form-context";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -55,7 +56,7 @@ const UseCaseStepFields = withFieldGroup({
     const currency = useStore(group.store, (state) => state.values.currency);
     const toBeDetermined = useStore(group.store, (state) => state.values.budgetToBeDetermined);
     const maxWeeks = useStore(group.store, (state) => state.values.timelineMaxWeeks);
-    const closesHintId = `${group.getFormFieldName("closesDay")}-hint`;
+    const closesIds = fieldIds({ form: group.form, name: group.getFormFieldName("closesDay") });
 
     if (step === "challenge") {
       return (
@@ -274,23 +275,23 @@ const UseCaseStepFields = withFieldGroup({
             )}
           </group.AppField>
           <Field>
-            <FieldLabel htmlFor={group.getFormFieldName("closesDay")}>{t("closes")}</FieldLabel>
+            <FieldLabel htmlFor={closesIds.control}>{t("closes")}</FieldLabel>
             <div className="grid grid-cols-2 gap-2">
               <group.AppField name="closesDay">
-                {() => <ClosesInput type="date" describedBy={closesHintId} readOnly={readOnly} />}
+                {() => <ClosesInput type="date" describedBy={closesIds.hint} readOnly={readOnly} />}
               </group.AppField>
               <group.AppField name="closesTime">
                 {() => (
                   <ClosesInput
                     type="time"
                     label={t("closesTime")}
-                    describedBy={closesHintId}
+                    describedBy={closesIds.hint}
                     readOnly={readOnly}
                   />
                 )}
               </group.AppField>
             </div>
-            <FieldDescription id={closesHintId}>{t("closesHint")}</FieldDescription>
+            <FieldDescription id={closesIds.hint}>{t("closesHint")}</FieldDescription>
           </Field>
         </div>
         <group.AppField name="hideOrganizationName">
@@ -302,16 +303,16 @@ const UseCaseStepFields = withFieldGroup({
 });
 
 /** The id of a field's error when it has words to point at. */
-function errorIdOf(name: string, invalid: boolean, errors: ({ message: string } | undefined)[]) {
-  return invalid && errors.some((error) => error?.message) ? `${name}-error` : undefined;
+function errorIdOf(id: string, invalid: boolean, errors: ({ message: string } | undefined)[]) {
+  return invalid && errors.some((error) => error?.message) ? id : undefined;
 }
 
 /** The kinds of AI the use case needs, each a box to tick. */
 function TechnologiesField({ readOnly }: { readOnly: boolean }) {
   const t = useTranslations("Organization.useCases.wizard");
   const technologyName = useVocabulary("technology");
-  const { field, invalid, errors } = useFieldValidity<string[]>();
-  const errorId = errorIdOf(field.name, invalid, errors);
+  const { field, invalid, errors, ids } = useFieldValidity<string[]>();
+  const errorId = errorIdOf(ids.error, invalid, errors);
 
   return (
     <Field data-invalid={invalid || undefined}>
@@ -344,10 +345,10 @@ function TechnologiesField({ readOnly }: { readOnly: boolean }) {
 
 /** The files that explain the use case, held by the form. */
 function UseCaseAttachments({ readOnly }: { readOnly: boolean }) {
-  const { field, invalid, errors } = useFieldValidity<UploadedAttachment[]>();
+  const { field, invalid, errors, ids } = useFieldValidity<UploadedAttachment[]>();
   return (
     <AttachmentsField
-      id="attachments"
+      id={ids.control}
       readOnly={readOnly}
       value={field.state.value}
       onChange={field.handleChange}
@@ -366,14 +367,14 @@ type TimelineFieldProps = {
 /** The preferred timeline: one of the presets, kept as the weeks it stands for. */
 function TimelineField({ maxWeeks, onMaxWeeks, readOnly }: TimelineFieldProps) {
   const t = useTranslations("Organization.useCases.wizard");
-  const { field, invalid, errors } = useFieldValidity<number | null>();
-  const errorId = errorIdOf(field.name, invalid, errors);
+  const { field, invalid, errors, ids } = useFieldValidity<number | null>();
+  const errorId = errorIdOf(ids.error, invalid, errors);
   const options = timelineCodes.map((value) => ({ value, label: t(`timeline.${value}`) }));
   const chosen = timelineOf({ timelineMinWeeks: field.state.value, timelineMaxWeeks: maxWeeks });
 
   return (
     <Field data-invalid={invalid || undefined}>
-      <FieldLabel htmlFor={field.name}>{t("timeline.label")}</FieldLabel>
+      <FieldLabel htmlFor={ids.control}>{t("timeline.label")}</FieldLabel>
       <Select
         items={options}
         value={chosen || null}
@@ -385,7 +386,7 @@ function TimelineField({ maxWeeks, onMaxWeeks, readOnly }: TimelineFieldProps) {
         }}
       >
         <SelectTrigger
-          id={field.name}
+          id={ids.control}
           aria-invalid={invalid || undefined}
           aria-describedby={errorId}
           className="w-full"
@@ -418,13 +419,13 @@ type ClosesInputProps = {
 
 /** The day or the time proposals close, one of the two inputs under one label. */
 function ClosesInput({ type, label, describedBy, readOnly }: ClosesInputProps) {
-  const { field, invalid, errors } = useFieldValidity<string>();
-  const errorId = errorIdOf(field.name, invalid, errors);
+  const { field, invalid, errors, ids } = useFieldValidity<string>();
+  const errorId = errorIdOf(ids.error, invalid, errors);
 
   return (
     <div className="flex flex-col gap-1">
       <Input
-        id={field.name}
+        id={ids.control}
         name={field.name}
         type={type}
         disabled={readOnly}

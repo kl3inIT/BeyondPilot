@@ -411,7 +411,7 @@ test.describe("admin programs", () => {
       }
       return route.fulfill({ status: 204 });
     });
-    await page.locator("#coverFileId").setInputFiles({
+    await page.locator('input[type="file"][id$="coverFileId"]').setInputFiles({
       name: "cover.png",
       mimeType: "image/png",
       buffer: Buffer.from(

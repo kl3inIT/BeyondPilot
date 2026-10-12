@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/actions/button";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm, type ServerErrors } from "@/components/form/app-form";
+import { fieldIdOf, fieldIds } from "@/components/form/field-ids";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -251,6 +252,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
             (missing || program.publishIssues.length > 0) && (
               <PublishChecklist
                 missing={missing ? (missing.split(" ") as typeof program.publishIssues) : []}
+                fieldId={(field) => fieldIdOf(form, field)}
               />
             )
           }
@@ -323,9 +325,9 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
               );
               return (
                 <Field data-invalid={errors.length > 0 || undefined}>
-                  <FieldLabel htmlFor={field.name}>{t("basics.cover")}</FieldLabel>
+                  <FieldLabel htmlFor={fieldIds(field).control}>{t("basics.cover")}</FieldLabel>
                   <CoverUpload
-                    id={field.name}
+                    id={fieldIds(field).control}
                     value={field.state.value}
                     onChange={field.handleChange}
                     invalid={errors.length > 0}

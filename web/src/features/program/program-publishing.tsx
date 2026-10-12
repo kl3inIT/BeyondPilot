@@ -36,7 +36,7 @@ function addressOf(slug: string) {
 
 type PublishIssue = AdminProgram["publishIssues"][number];
 
-/** The field each thing that blocks publishing is filled in at, in the order the form shows them. */
+/** The form's field each thing that blocks publishing is filled in at, in the order the form shows them. */
 const fieldOfIssue: Record<PublishIssue, string> = {
   summary: "summary",
   cover: "coverFileId",
@@ -66,7 +66,14 @@ function missingToPublish(
  * What a draft needs before it can be published, ticked as the operator fills it in; each line still
  * missing leads to the field to fill in.
  */
-function PublishChecklist({ missing }: { missing: PublishIssue[] }) {
+function PublishChecklist({
+  missing,
+  fieldId,
+}: {
+  missing: PublishIssue[];
+  /** The id of the control of a field of the settings form. */
+  fieldId: (field: string) => string;
+}) {
   const t = useTranslations("Admin.programs.settings.publish.checklist");
   return (
     <section
@@ -85,11 +92,11 @@ function PublishChecklist({ missing }: { missing: PublishIssue[] }) {
             <li key={issue} className="flex items-center gap-2">
               <CircleIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               <a
-                href={`#${fieldOfIssue[issue]}`}
+                href={`#${fieldId(fieldOfIssue[issue])}`}
                 className="text-sm font-medium text-primary underline-offset-4 hover:underline"
                 onClick={(event) => {
                   // The field is focused, not only scrolled to, so the operator can type at once.
-                  const field = document.getElementById(fieldOfIssue[issue]);
+                  const field = document.getElementById(fieldId(fieldOfIssue[issue]));
                   if (field) {
                     event.preventDefault();
                     field.scrollIntoView({ block: "center" });

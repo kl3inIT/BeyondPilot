@@ -48,18 +48,17 @@ import { useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
 function IndustriesField({ required }: { required: boolean }) {
   const t = useTranslations("Organization.form");
   const industryName = useVocabulary("industry");
-  const { field, invalid, errors } = useFieldValidity<string[]>();
-  const hintId = `${field.name}-hint`;
-  const errorId = `${field.name}-error`;
+  const { field, invalid, errors, ids } = useFieldValidity<string[]>();
+  const { control: controlId, hint: hintId, error: errorId } = ids;
 
   return (
     <Field data-invalid={invalid || undefined}>
-      <FieldLabel htmlFor={field.name}>
+      <FieldLabel htmlFor={controlId}>
         {t("industries")}
         {required && <RequiredMark />}
       </FieldLabel>
       <ChoiceCombobox
-        id={field.name}
+        id={controlId}
         label={t("industries")}
         placeholder={t("industriesPlaceholder")}
         emptyLabel={t("industriesEmpty")}

@@ -56,13 +56,13 @@ function ChosenSolutions({
   onCatalog,
 }: ProposalSolutionsStepProps) {
   const t = useTranslations("UseCaseProposal.wizard.solutions");
-  const { field, invalid, errors } = useFieldValidity<string[]>();
+  const { field, invalid, errors, ids: fieldIds } = useFieldValidity<string[]>();
   const [picking, setPicking] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
 
   const ids = field.state.value;
   const rows = ids.flatMap((id) => catalog.find((solution) => solution.id === id) ?? []);
-  const errorId = `${field.name}-error`;
+  const errorId = fieldIds.error;
 
   async function closeEditor() {
     const created = editing;
