@@ -1,5 +1,6 @@
 import { useLocale, useTranslations } from "next-intl";
 
+import { Status } from "@/components/composites/status";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -180,7 +181,9 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
 
         <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-6 shadow-sm lg:sticky lg:top-23 lg:w-75 lg:shrink-0 xl:w-95">
           <div className="flex items-center justify-between gap-2">
-            <Badge variant="success">{t("detail.open.status")}</Badge>
+            <Status tone="success" appearance="pill">
+              {t("detail.open.status")}
+            </Status>
             <span className="text-sm text-muted-foreground">{proposalDeadline}</span>
           </div>
           <ProposalActions

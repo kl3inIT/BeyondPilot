@@ -9,7 +9,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
-import { Badge } from "@/components/ui/badge";
+import { ReviewStatus } from "@/components/composites/review-status";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { MyOrganization, Organization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -127,7 +127,11 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             titleAs="h2"
             title={t("inReview.title")}
             description={<p>{t("inReview.lead", { name: organization.name })}</p>}
-            badge={<Badge variant="info">{t("status.in_review")}</Badge>}
+            badge={
+              <ReviewStatus state="in_review" appearance="pill">
+                {t("status.in_review")}
+              </ReviewStatus>
+            }
             foot={t("inReview.foot")}
             actions={
               toProfile && (
@@ -147,7 +151,11 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
                 <p className="whitespace-pre-line">{organization.decisionMessage}</p>
               )
             }
-            badge={<Badge variant="info">{t("status.needs_changes")}</Badge>}
+            badge={
+              <ReviewStatus state="needs_changes" appearance="pill">
+                {t("status.needs_changes")}
+              </ReviewStatus>
+            }
             foot={t(owner ? "needsChanges.owner" : "needsChanges.member")}
             actions={
               toProfile && (
@@ -174,7 +182,11 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
                 )}
               </>
             }
-            badge={<Badge variant="info">{t("status.rejected")}</Badge>}
+            badge={
+              <ReviewStatus state="rejected" appearance="pill">
+                {t("status.rejected")}
+              </ReviewStatus>
+            }
             foot={t("rejected.foot")}
           />
         )}
@@ -195,7 +207,11 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
                 )}
               </>
             }
-            badge={<Badge variant="info">{t("status.suspended")}</Badge>}
+            badge={
+              <ReviewStatus state="suspended" appearance="pill">
+                {t("status.suspended")}
+              </ReviewStatus>
+            }
             foot={t("suspended.foot")}
           />
         )}
@@ -205,7 +221,11 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             titleAs="h2"
             title={t("merged.title", { name: mergedFrom.name, kept: organization.name })}
             description={<p>{t("merged.lead", { kept: organization.name })}</p>}
-            badge={<Badge variant="info">{t("merged.badge")}</Badge>}
+            badge={
+              <ReviewStatus state="merged" appearance="pill">
+                {t("merged.badge")}
+              </ReviewStatus>
+            }
             foot={t("merged.foot", { slug: mergedFrom.slug })}
             actions={
               <OrganizationAction action="dismissMergeNotice" prominence="secondary">

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { Badge } from "@/components/ui/badge";
+import { Status } from "@/components/composites/status";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
@@ -172,7 +172,11 @@ function ModelsField({ reported, probe }: ModelsFieldProps) {
                       <span className="flex flex-wrap items-center gap-2">
                         <ModelLogo modelName={model.modelName} />
                         <span className="break-all">{model.modelName}</span>
-                        {model.configured && <Badge variant="success">{t("configured")}</Badge>}
+                        {model.configured && (
+                          <Status tone="success" appearance="pill">
+                            {t("configured")}
+                          </Status>
+                        )}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">{tokens(model.contextWindow)}</TableCell>
