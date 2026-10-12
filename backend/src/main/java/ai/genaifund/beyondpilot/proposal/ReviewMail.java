@@ -20,8 +20,8 @@ class ReviewMail {
 
 	@EventListener
 	void invite(ReviewerInvited invited) {
-		email.sendReviewerInvitation(invited.email(), invited.programName(), invited.inviterName(),
-				invited.expiresAt());
+		email.sendReviewerInvitation(invited.email(), invited.programName(), invited.programId(),
+				invited.inviterName(), invited.expiresAt());
 	}
 
 	@EventListener

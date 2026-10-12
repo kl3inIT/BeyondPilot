@@ -245,6 +245,9 @@ class SolutionTest {
 		assertThat(JsonPath.<String>read(sentBack, "$.decisionMessage")).isEqualTo("Say who it is for.");
 		assertThat(mail.latestSubjectTo("founder@reviewed.test")).isEqualTo("Changes needed: Reviewed Desk");
 		assertThat(mail.latestTextTo("founder@reviewed.test")).contains("Say who it is for.");
+		// The email leads to where a member edits it.
+		assertThat(mail.latestTextTo("founder@reviewed.test"))
+			.containsPattern("https?://[^/ ]+/workspace/organization/solutions/" + id + "(?![\\w/-])");
 		assertProblem(post(operator, ADMIN + "/" + id + "/approve", null), 409, "SOLUTION_NOT_AWAITING_REVIEW");
 		assertProblem(post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "Again.")), 409,
 				"SOLUTION_NOT_AWAITING_REVIEW");
@@ -259,6 +262,9 @@ class SolutionTest {
 		assertThat(JsonPath.<String>read(approved, "$.status")).isEqualTo("approved");
 		assertThat(JsonPath.<String>read(approved, "$.organizationName")).isEqualTo("Reviewed Co");
 		assertThat(mail.latestSubjectTo("founder@reviewed.test")).isEqualTo("Reviewed Desk is approved on BeyondPilot");
+		// Approved, it is opened at its public address.
+		assertThat(mail.latestTextTo("founder@reviewed.test"))
+			.containsPattern("https?://[^/ ]+/solutions/[a-z0-9-]+(?![\\w/-])");
 		assertThat(events(id)).containsExactly("solution.send_back", "solution.approve");
 		// A decision is made once.
 		assertProblem(post(operator, ADMIN + "/" + id + "/approve", null), 409, "SOLUTION_NOT_AWAITING_REVIEW");
@@ -468,6 +474,8 @@ class SolutionTest {
 			.isNull();
 		assertThat(names(operator, ADMIN + "?q=removed desk&status=approved")).containsExactly("Removed Desk");
 		assertThat(mail.latestSubjectTo("founder@removed.test")).isEqualTo("Removed Desk is back on BeyondPilot");
+		assertThat(mail.latestTextTo("founder@removed.test"))
+			.containsPattern("https?://[^/ ]+/solutions/removed-desk(?![\\w/-])");
 		assertThat(events(id)).containsExactly("solution.approve", "solution.take_down", "solution.restore");
 	}
 

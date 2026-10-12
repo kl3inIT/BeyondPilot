@@ -3,9 +3,11 @@ package ai.genaifund.beyondpilot.notification.template;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -102,6 +104,47 @@ class EmailRendererTest {
 		assertThat(email.subject()).isEqualTo("We have your application to Claims challenge");
 		assertThat(email.text()).startsWith("Thank you for applying to Claims challenge.")
 			.doesNotContain("/applications/42");
+	}
+
+	@Test
+	void everyLinkAKindOffersIsAButtonInItsDefaultWordingAndAWordingWithoutItStillRenders() {
+		List<String> linked = new ArrayList<>();
+		for (EmailKind kind : EmailKind.values()) {
+			List<String> links = kind.variables()
+				.stream()
+				.filter(variable -> !variable.required() && variable.name().endsWith("Url"))
+				.map(EmailKind.Variable::name)
+				.toList();
+			if (links.isEmpty()) {
+				continue;
+			}
+			linked.add(kind.value());
+			String url = "https://beyondpilot.test/opened/" + kind.value();
+			Map<String, Object> values = new HashMap<>();
+			kind.variables().forEach(variable -> values.put(variable.name(), variable.sample()));
+			links.forEach(link -> values.put(link, url));
+
+			RenderedEmail email = renderer.render(kind, defaults.template(kind), values, APPEARANCE);
+			assertThat(email.html()).as(kind.value())
+				.containsPattern("<a [^>]*href=\"" + url + "\" style=\"display:inline-block;[^\"]*\">[^<]+</a>");
+			assertThat(email.text()).as(kind.value()).contains(url);
+
+			// What an operator saved before the kind offered the link: the required variables and nothing else.
+			EmailTemplate saved = new EmailTemplate("Saved wording", "Saved wording." + kind.variables()
+				.stream()
+				.filter(EmailKind.Variable::required)
+				.map(variable -> " {{" + variable.name() + "}}")
+				.collect(Collectors.joining()));
+			assertThat(renderer.problems(kind, saved)).as(kind.value()).isEmpty();
+			RenderedEmail kept = renderer.render(kind, saved, values, APPEARANCE);
+			assertThat(kept.text()).as(kind.value()).startsWith("Saved wording.").doesNotContain(url);
+		}
+		assertThat(linked).containsExactlyInAnyOrder("organization_invitation", "organization_approved",
+				"organization_sent_back", "organization_request_approved", "organization_restored",
+				"application_received", "reviewer_invitation", "application_outcome", "introduction_request",
+				"solution_approved", "solution_sent_back", "solution_restored", "use_case_approved",
+				"use_case_sent_back", "talent_approved", "talent_changes_requested", "talent_restored",
+				"talent_enquiry", "talent_enquiry_reminder", "talent_enquiry_declined", "talent_enquiry_closed");
 	}
 
 	@Test

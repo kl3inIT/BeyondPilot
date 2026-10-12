@@ -339,7 +339,8 @@ public class UseCaseAdministration {
 		String title = titleOf(useCase);
 		for (Person member : identity.people(organizations.memberAccountIds(useCase.getOrganizationId())).values()) {
 			try {
-				email.sendUseCaseDecision(member.email(), organization.name(), title, approved, reason);
+				email.sendUseCaseDecision(member.email(), organization.name(), title, approved, reason,
+						useCase.getId());
 			}
 			catch (NotificationException notSent) {
 				// The decision stands; EmailService has logged that this member was not told.
