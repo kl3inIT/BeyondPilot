@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { Analytics } from "@/components/layout/analytics";
 import { Providers } from "@/components/layout/providers";
 import { MessageScope } from "@/i18n/message-scope";
 import { routing } from "@/i18n/routing";
@@ -52,6 +53,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       <body className="flex min-h-full flex-col">
         <MessageScope>
           <Providers>{children}</Providers>
+          <Analytics />
         </MessageScope>
       </body>
     </html>
