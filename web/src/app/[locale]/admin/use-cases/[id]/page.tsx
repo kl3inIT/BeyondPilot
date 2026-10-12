@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { readProposalCounts } from "@/features/proposal/received-queries";
 import { AdminUseCasePage } from "@/features/usecase/admin-use-case-page";
 import { readAdminUseCase } from "@/features/usecase/admin-use-case-queries";
 import { ApiError } from "@/lib/api/client";
@@ -34,5 +35,7 @@ export default async function AdminUseCaseRoute({
     notFound();
   }
 
-  return <AdminUseCasePage useCase={useCase} />;
+  const proposals = useCase.publishedAt ? await readProposalCounts([id]).catch(() => null) : null;
+
+  return <AdminUseCasePage useCase={useCase} proposals={proposals?.get(id)} />;
 }
