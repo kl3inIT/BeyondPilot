@@ -230,6 +230,7 @@ function MatchingSettingsPage({ settings }: { settings: MatchingSettings }) {
       </AdminPageHeader>
 
       <form
+        id={form.formId}
         noValidate
         className="flex flex-col gap-8"
         onSubmit={(event) => {

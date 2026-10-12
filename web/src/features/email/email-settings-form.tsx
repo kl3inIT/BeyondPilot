@@ -19,6 +19,7 @@ import { z } from "zod";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
+import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
 import {
   Field,
   FieldContent,
@@ -395,6 +396,7 @@ function EmailSettingsForm({
   async function test(to: string) {
     const errors = await form.validateAllFields("submit");
     if (errors.length > 0 || !form.state.isValid) {
+      focusFirstInvalidSoon(() => document.getElementById(form.formId));
       return;
     }
     setTesting(true);
@@ -429,6 +431,7 @@ function EmailSettingsForm({
 
   return (
     <form
+      id={form.formId}
       noValidate
       className="flex flex-col gap-8"
       onSubmit={(event) => {
@@ -477,8 +480,7 @@ function EmailSettingsForm({
                   autoCapitalize="none"
                   spellCheck={false}
                   maxLength={254}
-                  aria-describedby="from-address-hint"
-                  description={<span id="from-address-hint">{t("sender.fromAddressHint")}</span>}
+                  description={t("sender.fromAddressHint")}
                 />
               )}
             </form.AppField>
@@ -544,8 +546,7 @@ function EmailSettingsForm({
                       autoCapitalize="none"
                       spellCheck={false}
                       maxLength={40}
-                      aria-describedby="ses-region-hint"
-                      description={<span id="ses-region-hint">{t("ses.regionHint")}</span>}
+                      description={t("ses.regionHint")}
                     />
                   )}
                 </form.AppField>
@@ -584,12 +585,7 @@ function EmailSettingsForm({
                   autoComplete="off"
                   maxLength={500}
                   placeholder={current.resend.apiKeySet ? "••••••••••••" : undefined}
-                  aria-describedby="resend-api-key-hint"
-                  description={
-                    <span id="resend-api-key-hint">
-                      {secretHint(current.resend.apiKeySet, t("resend.apiKeyHint"))}
-                    </span>
-                  }
+                  description={secretHint(current.resend.apiKeySet, t("resend.apiKeyHint"))}
                 />
               )}
             </form.AppField>
@@ -604,12 +600,7 @@ function EmailSettingsForm({
                   autoComplete="off"
                   maxLength={256}
                   placeholder={current.brevo.apiKeySet ? "••••••••••••" : undefined}
-                  aria-describedby="brevo-api-key-hint"
-                  description={
-                    <span id="brevo-api-key-hint">
-                      {secretHint(current.brevo.apiKeySet, t("brevo.apiKeyHint"))}
-                    </span>
-                  }
+                  description={secretHint(current.brevo.apiKeySet, t("brevo.apiKeyHint"))}
                 />
               )}
             </form.AppField>
@@ -626,8 +617,7 @@ function EmailSettingsForm({
                         autoCapitalize="none"
                         spellCheck={false}
                         maxLength={255}
-                        aria-describedby="smtp-host-hint"
-                        description={<span id="smtp-host-hint">{t("smtp.hostHint")}</span>}
+                        description={t("smtp.hostHint")}
                       />
                     )}
                   </form.AppField>

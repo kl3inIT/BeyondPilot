@@ -90,6 +90,7 @@ function NewProgramDialog({ locale }: { locale: string }) {
       >
         <DialogContent className="sm:max-w-md">
           <form
+            id={form.formId}
             noValidate
             className="flex flex-col gap-4"
             onSubmit={(event) => {
