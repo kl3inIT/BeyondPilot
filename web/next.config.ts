@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
+import { untrackedPaths } from "./src/lib/analytics";
+
 // Paths Spring owns. In deployed environments a reverse proxy in front of both apps routes them;
 // during local development Next.js forwards them so the browser stays on one origin.
 const springPaths = [
@@ -33,6 +35,14 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
         ],
       },
+      // A private page names only the site to the page a person opens next, so its address never
+      // reaches Google Analytics as the referrer of a public page. The later rule wins.
+      ...untrackedPaths
+        .flatMap((path) => [`${path}/:path*`, `/vi${path}/:path*`])
+        .map((source) => ({
+          source,
+          headers: [{ key: "Referrer-Policy", value: "strict-origin" }],
+        })),
     ];
   },
   async rewrites() {

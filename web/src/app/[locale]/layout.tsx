@@ -52,8 +52,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>
           <Providers>{children}</Providers>
+          <Analytics />
         </NextIntlClientProvider>
-        <Analytics />
       </body>
     </html>
   );
