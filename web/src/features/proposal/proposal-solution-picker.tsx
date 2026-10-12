@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { TextButton } from "@/components/actions/text-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -14,7 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
-import { CreateSolution } from "@/features/solution/create-solution";
+import { NewSolutionForm } from "@/features/solution/create-solution";
 import { catalogRowProps, ProposalSolutionRow } from "./proposal-solution-list";
 import { useNotify } from "@/hooks/use-notify";
 import { listMySolutions, type SolutionSummary } from "@/lib/api/generated";
@@ -60,10 +61,12 @@ function PickerBody({
   onCreated,
 }: PickerBodyProps) {
   const t = useTranslations("UseCaseProposal.wizard.solutions.pick");
+  const tCreate = useTranslations("Solution.mine.create");
   const notify = useNotify();
   const [items, setItems] = useState<SolutionSummary[]>(known);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string[]>(chosen);
+  const [naming, setNaming] = useState(false);
 
   // The list is read again each time the popup opens.
   useEffect(() => {
@@ -102,6 +105,11 @@ function PickerBody({
     onOpenChange(false);
   }
 
+  // Naming a new solution takes the popup's place, so there is never a popup over a popup.
+  if (naming) {
+    return <NewSolutionForm onCancel={() => setNaming(false)} onCreated={onCreated} />;
+  }
+
   return (
     <>
       <DialogHeader>
@@ -132,7 +140,7 @@ function PickerBody({
       </div>
       <p className="flex flex-wrap items-center gap-x-1 text-xs text-muted-foreground">
         {t("note")}
-        <CreateSolution onCreated={onCreated} />
+        <TextButton onClick={() => setNaming(true)}>{tCreate("title")}</TextButton>
       </p>
       <DialogFooter>
         <Button prominence="secondary" onClick={() => onOpenChange(false)}>
