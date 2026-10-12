@@ -134,6 +134,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		String one = body(get(poster.colleague, API + "/use-case-proposals/" + id).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(one, "$.approach")).isEqualTo("We adapt it to your onboarding flow.");
 		assertThat(JsonPath.<String>read(one, "$.sender.headline")).isEqualTo("Builds claims AI");
+		assertThat(JsonPath.<String>read(one, "$.sender.email")).isEqualTo(provider.founderEmail);
 		assertThat(JsonPath.<List<String>>read(one, "$.sender.skills")).containsExactly("Python", "LangGraph");
 		assertThat(one).doesNotContain("rateBand");
 		assertThat(JsonPath.<List<String>>read(one, "$.team[*].role")).containsExactly("Project lead", "AI engineer");

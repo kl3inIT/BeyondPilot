@@ -1,11 +1,10 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
 import { Person } from "@/components/composites/person";
 import { TextButton } from "@/components/actions/text-button";
-import { useVocabulary } from "@/i18n/vocabulary";
 import type {
   ProposingOrganization,
   SolutionSummary,
@@ -13,7 +12,9 @@ import type {
   TeamCandidate,
 } from "@/lib/api/generated";
 
+import { Rows } from "./proposal-card";
 import type { ProposalValues, Step } from "./proposal-draft";
+import { useSenderRows } from "./proposal-sender-card";
 import { catalogHref, catalogRowProps, ProposalSolutionRow } from "./proposal-solution-list";
 
 type ProposalReviewStepProps = {
@@ -50,6 +51,11 @@ function Section({ step, title, onEdit, children }: SectionProps) {
   );
 }
 
+/** The profile as the organization will read it. */
+function ProfileRows({ profile }: { profile: TalentProfile }) {
+  return <Rows rows={useSenderRows(profile)} />;
+}
+
 /** What the proposal holds, step by step, each with the way back to change it. */
 function ProposalReviewStep({
   organization,
@@ -60,8 +66,6 @@ function ProposalReviewStep({
   onEdit,
 }: ProposalReviewStepProps) {
   const t = useTranslations("UseCaseProposal.wizard");
-  const role = useVocabulary("talentRole");
-  const format = useFormatter();
   const empty = <p className="text-sm text-muted-foreground">{t("review.nothing")}</p>;
   const solutions = values.solutionIds.flatMap(
     (id) => catalog.find((solution) => solution.id === id) ?? [],
@@ -69,10 +73,6 @@ function ProposalReviewStep({
 
   return (
     <div className="flex flex-col gap-5">
-      <Section step="organization" title={t("steps.organization")} onEdit={onEdit}>
-        <p className="text-sm">{organization.name}</p>
-      </Section>
-
       <Section step="solutions" title={t("steps.solutions")} onEdit={onEdit}>
         {solutions.length > 0 ? (
           <ul className="flex flex-col gap-2">
@@ -96,17 +96,7 @@ function ProposalReviewStep({
       </Section>
 
       <Section step="profile" title={t("steps.profile")} onEdit={onEdit}>
-        {profile?.complete ? (
-          <div className="flex flex-col gap-1 text-sm">
-            <span className="font-medium">{profile.name}</span>
-            <span className="text-muted-foreground">{profile.headline}</span>
-            <span className="text-muted-foreground">
-              {format.list(profile.roles.map((entry) => role(entry)))}
-            </span>
-          </div>
-        ) : (
-          empty
-        )}
+        {profile?.complete ? <ProfileRows profile={profile} /> : empty}
       </Section>
 
       <Section step="team" title={t("steps.team")} onEdit={onEdit}>
