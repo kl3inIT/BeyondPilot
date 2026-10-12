@@ -5945,11 +5945,11 @@
       "facts": {
         "closes": {
           "label": "Applications close",
-          "value": "15 Nov, 23:59 ICT"
+          "value": "22 Nov, 23:59 ICT"
         },
         "matchingDay": {
           "label": "Matching Day",
-          "value": "3 Dec, Ho Chi Minh City"
+          "value": "15 Dec, Ho Chi Minh City"
         },
         "opportunity": {
           "label": "The opportunity",
@@ -6190,12 +6190,12 @@
         },
         "hearBack": {
           "q": "When do I hear back?",
-          "a": "Everyone hears back by 20 November."
+          "a": "Everyone hears back by 27 November."
         }
       }
     },
     "closing": {
-      "title": "Will your solution be in the room on 3 December?",
+      "title": "Will your solution be in the room on 15 December?",
       "text": "The shortlist is taking shape—submit today for your chance to be selected.",
       "closes": "Applications close {closes}."
     },
