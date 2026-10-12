@@ -20907,6 +20907,12 @@ components:
           - string
           - "null"
           description: ISO 3166-1 alpha-2.
+        email:
+          type:
+          - string
+          - "null"
+          description: The sign-in address of the sender's account when the proposal
+            is read; not part of the copy kept at sending.
         engagement:
           type: array
           items:

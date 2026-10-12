@@ -47,7 +47,7 @@ describe("accessOfForm", () => {
 
 describe("accessOfRefusal", () => {
   it("offers nothing for the own use case or a closed one", () => {
-    expect(accessOfRefusal(403, "PROPOSAL_OWN_USE_CASE")).toEqual({ kind: "hidden" });
+    expect(accessOfRefusal(403, "PROPOSAL_OWN_USE_CASE")).toEqual({ kind: "own" });
     expect(accessOfRefusal(409, "PROPOSAL_USE_CASE_CLOSED")).toEqual({ kind: "hidden" });
     expect(accessOfRefusal(404, undefined)).toEqual({ kind: "hidden" });
   });

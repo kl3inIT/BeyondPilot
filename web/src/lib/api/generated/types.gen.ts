@@ -5250,6 +5250,10 @@ export type SenderProfile = {
      * ISO 3166-1 alpha-2.
      */
     country?: string | null;
+    /**
+     * The sign-in address of the sender's account when the proposal is read; not part of the copy kept at sending.
+     */
+    email?: string | null;
     engagement: Array<string>;
     headline?: string | null;
     industries: Array<string>;

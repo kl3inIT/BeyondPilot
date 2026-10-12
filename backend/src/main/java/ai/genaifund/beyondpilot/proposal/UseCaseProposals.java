@@ -498,7 +498,13 @@ public class UseCaseProposals {
 	}
 
 	private @Nullable SenderProfileResponse senderOf(UseCaseProposal proposal) {
-		return proposal.getTalent() == null ? null : json.readValue(proposal.getTalent(), SenderProfileResponse.class);
+		if (proposal.getTalent() == null) {
+			return null;
+		}
+		SenderProfileResponse kept = json.readValue(proposal.getTalent(), SenderProfileResponse.class);
+		UUID sentBy = proposal.getSentByAccountId();
+		Person person = sentBy == null ? null : identity.people(List.of(sentBy)).get(sentBy);
+		return person == null ? kept : kept.withEmail(person.email());
 	}
 
 	private List<ProposalTeamMemberResponse> team(UseCaseProposal proposal) {
@@ -602,7 +608,8 @@ public class UseCaseProposals {
 					.stream()
 					.map(project -> new SenderProfileResponse.Project(project.title(), project.summary(), project.url(),
 							project.year(), project.stage()))
-					.toList());
+					.toList(),
+				null);
 	}
 
 	private static ProposalUseCaseResponse useCase(UseCaseTarget target) {

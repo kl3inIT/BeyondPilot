@@ -6,13 +6,24 @@ import type { SenderProfile } from "@/lib/api/generated";
 
 import { Card, Rows } from "./proposal-card";
 
-type ProposalSenderCardProps = {
-  sender: SenderProfile;
-  title: string;
-};
-
-/** The sender's talent profile as it was when the proposal was sent. */
-function ProposalSenderCard({ sender, title }: ProposalSenderCardProps) {
+/** What a sender's profile shows, each with its label; the review and the proposal as read draw the same lines. */
+function useSenderRows(
+  sender: Pick<
+    SenderProfile,
+    | "name"
+    | "headline"
+    | "bio"
+    | "roles"
+    | "skills"
+    | "country"
+    | "city"
+    | "worksAt"
+    | "languages"
+    | "industries"
+    | "engagement"
+    | "website"
+  > & { email?: string | null },
+) {
   const t = useTranslations("UseCaseProposal.received.detail");
   const view = useTranslations("Talent.view");
   const role = useVocabulary("talentRole");
@@ -23,14 +34,16 @@ function ProposalSenderCard({ sender, title }: ProposalSenderCardProps) {
   const place = [sender.city, sender.country && countryName(sender.country)]
     .filter(Boolean)
     .join(", ");
-  const rows = [
+  return [
     { label: t("sender.name"), value: sender.name },
     { label: t("sender.headline"), value: sender.headline },
     { label: view("roles"), value: sender.roles.map(role).join(", ") },
     { label: view("skills"), value: sender.skills.join(", ") },
     { label: view("about"), value: sender.bio },
-    { label: view("worksAt"), value: sender.worksAt },
-    { label: view("place"), value: place },
+    {
+      label: view("place"),
+      value: [place, sender.worksAt].filter(Boolean).join(" · "),
+    },
     { label: view("industries"), value: sender.industries.map(industry).join(", ") },
     { label: view("languages"), value: sender.languages.map(language).join(", ") },
     { label: view("engagement"), value: sender.engagement.map(engagement).join(", ") },
@@ -42,7 +55,18 @@ function ProposalSenderCard({ sender, title }: ProposalSenderCardProps) {
         </TextButton>
       ),
     },
+    { label: t("sender.email"), value: sender.email },
   ].filter((row) => row.value);
+}
+
+type ProposalSenderCardProps = {
+  sender: SenderProfile;
+  title: string;
+};
+
+/** The sender's talent profile as it was when the proposal was sent. */
+function ProposalSenderCard({ sender, title }: ProposalSenderCardProps) {
+  const rows = useSenderRows(sender);
 
   return (
     <Card id="proposal-sender" title={title}>
@@ -64,4 +88,4 @@ function ProposalSenderCard({ sender, title }: ProposalSenderCardProps) {
   );
 }
 
-export { ProposalSenderCard };
+export { ProposalSenderCard, useSenderRows };

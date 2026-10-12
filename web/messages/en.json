@@ -7183,10 +7183,8 @@
       },
       "detail": {
         "metaTitle": "Proposal",
-        "back": "Proposals",
         "decline": "Decline",
         "shortlist": "Shortlist",
-        "meta": "{useCase} · sent {sent}",
         "solutions": {
           "title": "AI solutions",
           "approach": "Approach",
@@ -7195,7 +7193,8 @@
         "sender": {
           "title": "Sender profile",
           "name": "Name",
-          "headline": "Headline"
+          "headline": "Headline",
+          "email": "Email"
         },
         "team": {
           "title": "Team",
@@ -7208,12 +7207,16 @@
           "download": "Download PDF",
           "none": "No PDF attached."
         },
-        "edited": "Edited {date}"
+        "edited": "Edited {date}",
+        "sent": "Sent {date}",
+        "crumbs": "Where you are",
+        "useCases": "Use cases"
       },
       "edited": "Edited {date}"
     },
     "actions": {
       "proposals": "Proposals",
+      "viewReceived": "View proposals",
       "continue": "Continue your proposal",
       "sent": "Your organization sent a proposal.",
       "sentOn": "Your organization sent a proposal on {date}.",
@@ -7230,7 +7233,6 @@
       "metaTitle": "Send a proposal · BeyondPilot",
       "headerTitle": "Proposal",
       "stepsHeading": "Your proposal",
-      "saveNote": "Only people at {name} can see your draft.",
       "saving": "Saving…",
       "notSaved": "Not saved",
       "saved": "Saved {time}",
@@ -7248,27 +7250,12 @@
         "pdf": "Proposal PDF",
         "review": "Review"
       },
-      "leads": {
-        "organization": "The proposal is sent for your organization.",
-        "solutions": "Choose the AI solutions of your organization that you offer for this use case, and explain how they solve it.",
-        "profile": "Your talent profile.",
-        "team": "Name the people who would work on this use case, the role of each, and who the posting organization should speak to.",
-        "pdf": "Upload one PDF with your proposal: what you would do, how, and in what time.",
-        "review": "Check what you are sending. You cannot change a proposal after you send it."
-      },
-      "organization": {
-        "approved": "Approved by GenAI Fund"
-      },
       "solutions": {
         "count": "{count, plural, one {# solution} other {# solutions}}",
         "add": "Add solution",
-        "empty": {
-          "title": "No solutions yet",
-          "lead": "Add at least one solution of your organization."
-        },
+        "empty": "No solutions yet",
         "remove": "Remove {name}",
         "approach": "How the solutions solve this use case",
-        "approachHint": "Say what each solution does for this use case, and what you would adapt.",
         "needed": {
           "solution": "Add at least one solution.",
           "approach": "Explain how the solutions solve this use case."
@@ -7298,10 +7285,7 @@
       "team": {
         "count": "{count, plural, one {# member} other {# members}}",
         "add": "Add member",
-        "empty": {
-          "title": "No team yet",
-          "lead": "Add the people of your organization who would work on this use case."
-        },
+        "empty": "No team yet",
         "columns": {
           "member": "Member",
           "role": "Role",
@@ -7360,11 +7344,9 @@
       "sent": {
         "metaTitle": "Proposal sent · BeyondPilot",
         "title": "Your proposal was sent",
-        "lead": "The organization that posted the use case can now read it.",
         "rows": {
           "useCase": "Use case",
           "organization": "Sent for",
-          "solutions": "Solutions",
           "sent": "Sent"
         },
         "backToUseCase": "Back to the use case",
@@ -7385,13 +7367,11 @@
     },
     "view": {
       "metaTitle": "Your proposal · BeyondPilot",
-      "back": "Back to the use case",
       "title": "Your proposal",
       "edit": "Edit proposal",
-      "meta": "{useCase}",
       "sent": "Sent {date}",
       "edited": "Edited {date}",
-      "editUntil": "You can edit it until {when}."
+      "until": "edit until {when}"
     },
     "solutionList": {
       "newTab": "(opens in a new tab)"

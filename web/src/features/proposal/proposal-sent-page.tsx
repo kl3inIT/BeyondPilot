@@ -28,7 +28,6 @@ function ProposalSentPage({ form, proposal }: ProposalSentPageProps) {
   const rows = [
     { key: "useCase", value: form.useCase.title },
     { key: "organization", value: form.organization?.name ?? "" },
-    { key: "solutions", value: format.list(proposal.solutions.map((solution) => solution.name)) },
     { key: "sent", value: sent },
   ] as const;
 
@@ -39,7 +38,6 @@ function ProposalSentPage({ form, proposal }: ProposalSentPageProps) {
           <CircleCheckIcon className="size-8 text-success" aria-hidden="true" />
           {t("title")}
         </h1>
-        <p className="text-base text-muted-foreground">{t("lead")}</p>
 
         <dl className="flex flex-col divide-y border-y text-sm">
           {rows.map((row) => (
