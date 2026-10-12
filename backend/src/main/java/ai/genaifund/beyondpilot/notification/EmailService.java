@@ -42,6 +42,12 @@ public class EmailService {
 	/** Deadlines are set in Vietnam time, whoever reads them. */
 	private static final ZoneId VIETNAM = ZoneId.of("Asia/Ho_Chi_Minh");
 
+	/** The signed-in person's organization on the site; its solutions, use cases and introductions open under it. */
+	private static final String MY_ORGANIZATION = "/workspace/organization";
+
+	/** The signed-in person's talent profile on the site, with the messages people sent them. */
+	private static final String MY_TALENT = "/workspace/talent";
+
 	/** What the log keeps of a sign-in code in place of the code. */
 	private static final String MASKED_CODE = "••••••";
 
@@ -96,8 +102,8 @@ public class EmailService {
 	}
 
 	/**
-	 * Tells an address that it was asked to join an organization. The email carries no link that acts: the person
-	 * signs in with this address and finds the invitation there.
+	 * Tells an address that it was asked to join an organization. The link opens My organization, where the person who
+	 * signs in with this address finds the invitation and answers it; the link itself accepts nothing.
 	 * @param organizationName the organization that asks
 	 * @param inviterName who asked, as they are shown
 	 * @param owner whether the person is asked to own the organization, not only to belong to it
@@ -106,17 +112,20 @@ public class EmailService {
 	public void sendOrganizationInvitation(String recipient, String organizationName, String inviterName,
 			boolean owner) {
 		queue(EmailKind.ORGANIZATION_INVITATION, recipient,
-				values("organizationName", organizationName, "inviterName", inviterName, "owner", owner));
+				values("organizationName", organizationName, "inviterName", inviterName, "owner", owner,
+						"organizationUrl", url(MY_ORGANIZATION)));
 	}
 
 	/**
-	 * Tells an owner what GenAI Fund decided about their organization.
+	 * Tells an owner what GenAI Fund decided about their organization. An approval links to the organization's public
+	 * page.
+	 * @param slug the organization's address on the site, which the link of an approval opens
 	 * @param approved whether the organization was approved; a refusal's reason is read after signing in
 	 */
 	@Transactional
-	public void sendOrganizationDecision(String recipient, String organizationName, boolean approved) {
+	public void sendOrganizationDecision(String recipient, String organizationName, String slug, boolean approved) {
 		queue(approved ? EmailKind.ORGANIZATION_APPROVED : EmailKind.ORGANIZATION_REFUSED, recipient,
-				values("organizationName", organizationName));
+				values("organizationName", organizationName, "organizationUrl", url("/organizations/" + slug)));
 	}
 
 	/** What GenAI Fund decided about a talent profile. */
@@ -127,23 +136,28 @@ public class EmailService {
 	}
 
 	/**
-	 * Tells an owner that GenAI Fund sent their organization back with what to change.
+	 * Tells an owner that GenAI Fund sent their organization back with what to change. The link opens My organization,
+	 * where they correct it.
 	 * @param reason what GenAI Fund asks them to change
 	 */
 	@Transactional
 	public void sendOrganizationSentBack(String recipient, String organizationName, String reason) {
 		queue(EmailKind.ORGANIZATION_SENT_BACK, recipient,
-				values("organizationName", organizationName, "reason", reason));
+				values("organizationName", organizationName, "reason", reason, "organizationUrl",
+						url(MY_ORGANIZATION)));
 	}
 
 	/**
-	 * Tells an owner that GenAI Fund took their organization down or restored it. The reason is read after signing in.
+	 * Tells an owner that GenAI Fund took their organization down or restored it. The reason is read after signing in;
+	 * a restoration links to the organization's public page.
+	 * @param slug the organization's address on the site, which the link of a restoration opens
 	 * @param takenDown whether the organization was taken down; otherwise it is back
 	 */
 	@Transactional
-	public void sendOrganizationSuspension(String recipient, String organizationName, boolean takenDown) {
+	public void sendOrganizationSuspension(String recipient, String organizationName, String slug,
+			boolean takenDown) {
 		queue(takenDown ? EmailKind.ORGANIZATION_TAKEN_DOWN : EmailKind.ORGANIZATION_RESTORED, recipient,
-				values("organizationName", organizationName));
+				values("organizationName", organizationName, "organizationUrl", url("/organizations/" + slug)));
 	}
 
 	/**
@@ -157,7 +171,7 @@ public class EmailService {
 	}
 
 	/**
-	 * Tells a person the answer to their request to get into an organization.
+	 * Tells a person the answer to their request to get into an organization. An approval links to My organization.
 	 * @param claim whether they asked to own an organization nobody owned, which GenAI Fund decides; otherwise they
 	 * asked its owners to join
 	 * @param approved whether they are in now
@@ -166,30 +180,33 @@ public class EmailService {
 	public void sendOrganizationRequestDecision(String recipient, String organizationName, boolean claim,
 			boolean approved) {
 		queue(approved ? EmailKind.ORGANIZATION_REQUEST_APPROVED : EmailKind.ORGANIZATION_REQUEST_DECLINED, recipient,
-				values("organizationName", organizationName, "claim", claim));
+				values("organizationName", organizationName, "claim", claim, "organizationUrl", url(MY_ORGANIZATION)));
 	}
 
 	/**
 	 * Tells a person what GenAI Fund decided about their talent profile. The reason is read after signing in; the
-	 * operator's note, when there is one, is quoted as written.
+	 * operator's note, when there is one, is quoted as written. The link opens the profile's public page when it has
+	 * one, and otherwise the person's own talent profile, where they correct it.
 	 * @param profileName the profile, as it names its person
 	 * @param note what the operator wrote to the person; null when nothing
+	 * @param publicSlug the profile's address in the directory; null while it is not shown there
 	 */
 	@Transactional
 	public void sendTalentDecision(String recipient, String profileName, TalentDecision decision,
-			@Nullable String note) {
+			@Nullable String note, @Nullable String publicSlug) {
 		EmailKind kind = switch (decision) {
 			case APPROVED -> EmailKind.TALENT_APPROVED;
 			case CHANGES_REQUESTED -> EmailKind.TALENT_CHANGES_REQUESTED;
 			case REMOVED -> EmailKind.TALENT_REMOVED;
 			case RESTORED -> EmailKind.TALENT_RESTORED;
 		};
-		queue(kind, recipient, values("profileName", profileName, "note", note));
+		queue(kind, recipient, values("profileName", profileName, "note", note, "profileUrl",
+				url(publicSlug == null ? MY_TALENT : "/talent/" + publicSlug)));
 	}
 
 	/**
-	 * Tells a person with a talent profile that someone wrote to them. The sender's address is not in it: the person
-	 * signs in and answers under their talent profile, and only an acceptance shares the two addresses.
+	 * Tells a person with a talent profile that someone wrote to them. The sender's address is not in it: the link
+	 * opens their talent profile, where they answer under Enquiries, and only an acceptance shares the two addresses.
 	 * @param senderName who wrote, by the name they gave, never their address
 	 * @param senderOrganization the organization the sender belongs to; null when none
 	 * @param topic what the message is about: {@code project}, {@code role} or {@code other}
@@ -201,7 +218,8 @@ public class EmailService {
 		queue(EmailKind.TALENT_ENQUIRY, recipient,
 				values("senderName", senderName, "senderOrganization", senderOrganization, "aboutProject",
 						"project".equals(topic), "aboutRole", "role".equals(topic), "aboutOther",
-						!"project".equals(topic) && !"role".equals(topic), "message", message));
+						!"project".equals(topic) && !"role".equals(topic), "message", message, "enquiriesUrl",
+						url(MY_TALENT)));
 	}
 
 	/** What GenAI Fund decided about a solution. */
@@ -213,12 +231,15 @@ public class EmailService {
 
 	/**
 	 * Tells a member of an organization what GenAI Fund decided about one of its solutions. What to change, when GenAI
-	 * Fund sent it back, is quoted as written; any other reason is read after signing in.
+	 * Fund sent it back, is quoted as written; any other reason is read after signing in. The link opens the solution's
+	 * public page when it has one, and otherwise the solution in My organization, where a member edits it.
 	 * @param reason what GenAI Fund asked to change, when it sent the solution back; null otherwise
+	 * @param solutionId the solution, which the link opens in My organization
+	 * @param publicSlug the solution's address on the site; null while it has no public page
 	 */
 	@Transactional
 	public void sendSolutionDecision(String recipient, String organizationName, String solutionName,
-			SolutionDecision decision, @Nullable String reason) {
+			SolutionDecision decision, @Nullable String reason, UUID solutionId, @Nullable String publicSlug) {
 		EmailKind kind = switch (decision) {
 			case APPROVED -> EmailKind.SOLUTION_APPROVED;
 			case SENT_BACK -> EmailKind.SOLUTION_SENT_BACK;
@@ -227,31 +248,38 @@ public class EmailService {
 			case RESTORED -> EmailKind.SOLUTION_RESTORED;
 		};
 		queue(kind, recipient,
-				values("solutionName", solutionName, "organizationName", organizationName, "reason", reason));
+				values("solutionName", solutionName, "organizationName", organizationName, "reason", reason,
+						"solutionUrl", url(publicSlug == null ? MY_ORGANIZATION + "/solutions/" + solutionId
+								: "/solutions/" + publicSlug)));
 	}
 
 	/**
 	 * Tells a member of an organization what GenAI Fund decided about one of its use cases. The reason, when GenAI
-	 * Fund sent the use case back, is quoted as written.
+	 * Fund sent the use case back, is quoted as written. The link opens the published brief, or the use case in My
+	 * organization, where a member edits one sent back.
 	 * @param approved whether the use case was approved and published; otherwise it was sent back
 	 * @param reason what GenAI Fund asked to change, when it sent the use case back
+	 * @param useCaseId the use case, which the link opens
 	 */
 	@Transactional
 	public void sendUseCaseDecision(String recipient, String organizationName, String useCaseTitle, boolean approved,
-			@Nullable String reason) {
+			@Nullable String reason, UUID useCaseId) {
 		queue(approved ? EmailKind.USE_CASE_APPROVED : EmailKind.USE_CASE_SENT_BACK, recipient,
-				values("useCaseTitle", useCaseTitle, "organizationName", organizationName, "reason", reason));
+				values("useCaseTitle", useCaseTitle, "organizationName", organizationName, "reason", reason,
+						"useCaseUrl", url((approved ? "/use-cases/" : MY_ORGANIZATION + "/use-cases/") + useCaseId)));
 	}
 
 	/**
-	 * Reminds a person that a message waits for their answer and when it closes.
+	 * Reminds a person that a message waits for their answer and when it closes. The link opens their talent profile,
+	 * where they answer under Enquiries.
 	 * @param senderName who wrote, by the name they gave; null when they gave none, never their address
 	 * @param daysLeft the whole days before the message closes unanswered
 	 */
 	@Transactional
 	public void sendTalentEnquiryReminder(String recipient, @Nullable String senderName, long daysLeft) {
 		queue(EmailKind.TALENT_ENQUIRY_REMINDER, recipient,
-				values("senderName", senderName, "daysLeft", Long.toString(daysLeft)));
+				values("senderName", senderName, "daysLeft", Long.toString(daysLeft), "enquiriesUrl",
+						url(MY_TALENT)));
 	}
 
 	/**
@@ -269,26 +297,30 @@ public class EmailService {
 
 	/**
 	 * Tells the sender that the person will not take their message further. A report reads the same, so the person who
-	 * reported is not exposed. It carries no address and no reason.
+	 * reported is not exposed. It carries no address and no reason; the link opens the messages the sender sent.
 	 * @param talentName the person written to, as their profile names them
 	 */
 	@Transactional
 	public void sendTalentEnquiryDeclined(String recipient, String talentName) {
-		queue(EmailKind.TALENT_ENQUIRY_DECLINED, recipient, values("talentName", talentName));
+		queue(EmailKind.TALENT_ENQUIRY_DECLINED, recipient,
+				values("talentName", talentName, "messagesUrl", url(MY_TALENT + "/sent")));
 	}
 
 	/**
-	 * Tells the sender that their message closed because the person did not answer in time. They may write again.
+	 * Tells the sender that their message closed because the person did not answer in time. They may write again; the
+	 * link opens the messages they sent.
 	 * @param talentName the person written to, as their profile names them
 	 */
 	@Transactional
 	public void sendTalentEnquiryClosed(String recipient, String talentName) {
-		queue(EmailKind.TALENT_ENQUIRY_CLOSED, recipient, values("talentName", talentName));
+		queue(EmailKind.TALENT_ENQUIRY_CLOSED, recipient,
+				values("talentName", talentName, "messagesUrl", url(MY_TALENT + "/sent")));
 	}
 
 	/**
-	 * Tells an owner of a provider that someone asked for an introduction. The sender's address is not in it: the owner
-	 * signs in and answers, and only then do both sides learn each other's address.
+	 * Tells an owner of a provider that someone asked for an introduction. The sender's address is not in it: the link
+	 * opens the organization's introductions, where the owner answers, and only then do both sides learn each other's
+	 * address.
 	 * @param senderName who asks; null until they gave a name
 	 * @param senderOrganization the organization they ask as
 	 * @param solutionName what they asked about
@@ -298,7 +330,8 @@ public class EmailService {
 	public void sendIntroductionRequest(String recipient, @Nullable String senderName, String senderOrganization,
 			String solutionName, String message) {
 		queue(EmailKind.INTRODUCTION_REQUEST, recipient, values("senderName", senderName, "senderOrganization",
-				senderOrganization, "solutionName", solutionName, "message", message));
+				senderOrganization, "solutionName", solutionName, "message", message, "introductionsUrl",
+				url(MY_ORGANIZATION + "/introductions")));
 	}
 
 	/**
@@ -363,20 +396,24 @@ public class EmailService {
 		queue(EmailKind.PROPOSAL_SENT, recipient,
 				values("useCaseTitle", useCaseTitle, "organizationName", organizationName, "role", role, "primary",
 						primary, "senderName", senderName, "editableUntil", until, "proposalUrl",
-						settings.appearance().siteUrl() + "/use-cases/" + useCaseId + "/propose/view"));
+						url("/use-cases/" + useCaseId + "/propose/view")));
 	}
 
 	/**
-	 * Tells an address that it was asked to judge a program's applications. Like an organization invitation it carries
-	 * no link that acts: the person signs in with this address and finds the program under Reviews.
+	 * Tells an address that it was asked to judge a program's applications. The link opens the program's applications
+	 * under Reviews; like an organization invitation it carries nothing that lets anyone in, and only the person who
+	 * signs in with this address reads them.
+	 * @param programId the program, whose applications the link opens
 	 * @param inviterName who asked, as they are shown
 	 * @param expiresAt when the invitation lapses if nobody signs in with the address
 	 */
 	@Transactional
-	public void sendReviewerInvitation(String recipient, String programName, String inviterName, Instant expiresAt) {
+	public void sendReviewerInvitation(String recipient, String programName, UUID programId, String inviterName,
+			Instant expiresAt) {
 		String until = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH).withZone(VIETNAM).format(expiresAt);
 		queue(EmailKind.REVIEWER_INVITATION, recipient,
-				values("programName", programName, "inviterName", inviterName, "expiresOn", until));
+				values("programName", programName, "inviterName", inviterName, "expiresOn", until, "reviewsUrl",
+						url("/reviews/" + programId)));
 	}
 
 	/**
@@ -393,7 +430,12 @@ public class EmailService {
 
 	/** Where an applicant reads their own application on the site. */
 	private String applicationUrl(UUID applicationId) {
-		return settings.appearance().siteUrl() + "/applications/" + applicationId;
+		return url("/applications/" + applicationId);
+	}
+
+	/** The address of a page of the site, which is where every link of an email leads. */
+	private String url(String path) {
+		return settings.appearance().siteUrl() + path;
 	}
 
 	private void queue(EmailKind kind, String recipient, Map<String, @Nullable Object> values) {

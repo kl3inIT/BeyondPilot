@@ -242,7 +242,9 @@ public class TalentAdministration {
 	private void tell(TalentProfile profile, EmailService.TalentDecision decision, @Nullable String message) {
 		Person person = identity.people(List.of(profile.getAccountId())).get(profile.getAccountId());
 		if (person != null) {
-			email.sendTalentDecision(person.email(), profile.getName(), decision, message);
+			// Only a profile in the directory has a public page; any other is read by its person alone.
+			@Nullable String publicSlug = profile.isApproved() && profile.isListed() ? profile.getSlug() : null;
+			email.sendTalentDecision(person.email(), profile.getName(), decision, message, publicSlug);
 		}
 	}
 
