@@ -45,7 +45,7 @@ test.describe("admin introductions", () => {
 
     await page.goto("/admin/introductions?q=nothing");
     await expect(page.getByText("No request matches", { exact: true })).toBeVisible();
-    await page.getByRole("link", { name: "Clear search and filters" }).click();
+    await page.getByRole("link", { name: "Clear filters" }).click();
     await expect(page).toHaveURL("/admin/introductions");
   });
 

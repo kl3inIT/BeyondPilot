@@ -65,7 +65,7 @@
         "necessaryHint": "Keep you signed in and remember your language. Always on.",
         "analytics": "Analytics",
         "analyticsHint": "Help us see how the public pages are used.",
-        "save": "Save preferences"
+        "save": "Save"
       }
     },
     "footer": {
@@ -633,7 +633,7 @@
     "countryPlaceholder": "Select a country",
     "phone": "Phone number",
     "phoneInvalid": "Enter a phone number with its country code, such as +84 912 345 678.",
-    "save": "Save",
+    "save": "Save changes",
     "saved": "Your account is saved.",
     "failed": "We could not save your account. Try again.",
     "phoneHint": "With its country code, such as +84 912 345 678."
@@ -842,7 +842,7 @@
         },
         "edit": "Edit",
         "editNamed": "Edit {name}",
-        "delete": "Delete",
+        "delete": "Remove",
         "cancel": "Cancel",
         "errors": {
           "unknown": "The program was not saved. Try again in a moment."
@@ -871,7 +871,7 @@
           "note": "Note",
           "noteHint": "Shown under the date on the program's page.",
           "add": "Add date",
-          "update": "Update"
+          "update": "Save"
         },
         "event": {
           "addTitle": "Add an event",
@@ -889,7 +889,7 @@
           "registrationUrl": "Registration link",
           "registrationUrlHint": "Where people sign up, for example the event's Luma page.",
           "add": "Add event",
-          "update": "Update"
+          "update": "Save"
         },
         "more": "More actions",
         "copyLink": "Copy link",
@@ -948,7 +948,7 @@
       },
       "noMatch": {
         "title": "No programs match",
-        "clear": "Show all programs"
+        "clear": "Clear filters"
       },
       "countOf": "{count, plural, one {# program} other {# programs}} of {total}",
       "tabs": {
@@ -981,7 +981,7 @@
         "edit": "Edit",
         "editNamed": "Edit {label}",
         "add": "Add a question",
-        "save": "Save questions",
+        "save": "Save changes",
         "unsaved": "You have unsaved changes.",
         "saved": "Questions saved.",
         "addTitle": "Add a question",
@@ -997,9 +997,9 @@
         "maxLength": "Longest answer",
         "maxLengthHint": "In characters.",
         "required": "An answer is required",
-        "delete": "Delete",
+        "delete": "Remove",
         "cancel": "Cancel",
-        "update": "Update",
+        "update": "Save",
         "addQuestion": "Add question",
         "locks": "The questions lock when applications open on {opens}: from then on they can no longer change.",
         "locksUnset": "The questions lock when applications open. No opening is set yet: set it under Settings.",
@@ -1010,7 +1010,7 @@
       "metaTitle": "Accounts · BeyondPilot",
       "title": "Accounts",
       "search": "Search by name or email",
-      "clear": "Clear",
+      "clear": "Clear filters",
       "filters": {
         "status": {
           "label": "Status",
@@ -1076,14 +1076,14 @@
       },
       "empty": {
         "title": "No account matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       }
     },
     "auditLog": {
       "metaTitle": "Audit log · BeyondPilot",
       "title": "Audit log",
       "search": "Search people or accounts",
-      "clear": "Clear",
+      "clear": "Clear filters",
       "filters": {
         "period": {
           "label": "Period"
@@ -1396,7 +1396,7 @@
       "noMatch": {
         "title": "No event matches",
         "description": "{period, select, day {Nothing in the last 24 hours matches this search and this filter.} week {Nothing in the last 7 days matches this search and this filter.} month {Nothing in the last 30 days matches this search and this filter.} other {Nothing matches this search and this filter.}}",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       }
     },
     "organizations": {
@@ -1448,7 +1448,7 @@
       },
       "noMatch": {
         "title": "No organization matches",
-        "clear": "Clear search and filter"
+        "clear": "Clear filters"
       },
       "count": "{count, plural, one {# organization} other {# organizations}}",
       "create": {
@@ -1649,7 +1649,7 @@
       },
       "noMatch": {
         "title": "No solution matches",
-        "clear": "Clear search and filter"
+        "clear": "Clear filters"
       },
       "count": "{count, plural, one {# solution} other {# solutions}}",
       "open": "Open",
@@ -1836,7 +1836,7 @@
       },
       "noMatch": {
         "title": "No profile matches",
-        "clear": "Clear search and filter"
+        "clear": "Clear filters"
       },
       "count": "{count, plural, one {# profile} other {# profiles}}",
       "open": "Open",
@@ -1933,7 +1933,7 @@
       "overdueNotice": "{count, plural, one {# request has} other {# requests have}} waited more than 3 days for an answer.",
       "overdue": "Waiting over 3 days",
       "search": "Search by solution",
-      "clear": "Clear",
+      "clear": "Clear filters",
       "filter": {
         "label": "Filter by state",
         "all": "All"
@@ -1955,7 +1955,7 @@
       },
       "noMatch": {
         "title": "No request matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       }
     },
     "useCases": {
@@ -1963,7 +1963,7 @@
       "title": "Use cases",
       "create": "Create use case",
       "search": "Search by title or organization",
-      "clear": "Clear search",
+      "clear": "Clear filters",
       "filters": {
         "status": {
           "label": "Status",
@@ -2007,7 +2007,7 @@
       },
       "noMatch": {
         "title": "No use case matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       },
       "form": {
         "metaTitle": "Create a use case · BeyondPilot",
@@ -2216,7 +2216,7 @@
         "testButton": "Test",
         "testHint": "Embeds one sentence with this key and model, saved or not.",
         "cancel": "Cancel",
-        "save": "Save provider"
+        "save": "Save"
       },
       "probe": {
         "connected": "Connected · {model} · {dimensions, number} dimensions · {ms} ms",
@@ -2356,7 +2356,7 @@
           "testTitle": "Test connection",
           "testHint": "Lists the provider's models without spending tokens.",
           "cancel": "Cancel",
-          "save": "Save provider"
+          "save": "Save"
         },
         "modelsField": {
           "label": "Models",
@@ -2398,7 +2398,7 @@
           "testOk": "The model answered · {ms} ms",
           "testFailed": "The model did not answer · {ms} ms",
           "cancel": "Cancel",
-          "save": "Save model",
+          "save": "Save",
           "add": "Add model",
           "modelNameHint": "Use the name the provider's API expects.",
           "displayNameHint": "Left empty, the model name is shown."
@@ -2490,7 +2490,7 @@
           "testTitle": "Test connection",
           "testHint": "Sends one small picture and spends one call at the service.",
           "cancel": "Cancel",
-          "save": "Save provider"
+          "save": "Save"
         },
         "delete": {
           "title": "Delete {name}?",
@@ -2936,7 +2936,7 @@
         "count": "{count, plural, one {# call} other {# calls}}",
         "noMatch": {
           "title": "No call matches",
-          "clear": "Clear search and filters"
+          "clear": "Clear filters"
         },
         "empty": {
           "title": "No call in this period",
@@ -3164,8 +3164,8 @@
         "fixToSave": "{count, plural, one {Fix the problem marked below to save} other {Fix the # problems marked below to save}}",
         "previewBehind": "This is the last version that worked.",
         "testAfterFix": "A test can be sent once the wording has no problems.",
-        "discard": "Discard",
-        "save": "Save",
+        "discard": "Discard changes",
+        "save": "Save changes",
         "edited": "Edited",
         "lastEdited": "Last edited by {name}, {when}.",
         "viewAudit": "Audit log",
@@ -3201,7 +3201,7 @@
         "colorFaint": "White text on this colour is hard to read. A darker colour reads better.",
         "sampleLink": "A link in your colour",
         "footer": "Footer note",
-        "save": "Save appearance",
+        "save": "Save changes",
         "saved": "Appearance saved. The preview shows it.",
         "unknown": "The appearance could not be saved. Try again.",
         "previewTitle": "Preview of a sample email",
@@ -3323,7 +3323,7 @@
       "suppressions": {
         "metaTitle": "Email suppressions",
         "search": "Search by address",
-        "clear": "Clear",
+        "clear": "Clear filters",
         "filters": {
           "reason": {
             "label": "Reason",
@@ -3457,7 +3457,7 @@
         "unsaved": "You have unsaved changes.",
         "lastSaved": "Last saved by {name}, {when}.",
         "neverSaved": "Not saved yet.",
-        "save": "Save settings",
+        "save": "Save changes",
         "confirm": {
           "title": "Change how email is sent?",
           "lead": "Sign-in codes go out by email. If these settings do not work, nobody can sign in, you included.",
@@ -3466,7 +3466,7 @@
           "address": "Sender address: {from} → {to}",
           "untested": "No test was sent with these settings. Send test, beside Save, tries them without saving.",
           "tested": "A test with these settings was sent at {when}. Check that it arrived before you save.",
-          "save": "Save the change",
+          "save": "Save changes",
           "back": "Back"
         },
         "leave": {
@@ -3917,7 +3917,7 @@
       "description": "Short description",
       "descriptionHint": "What the organization does and for whom.",
       "save": "Save changes",
-      "create": "Submit for approval",
+      "create": "Send for review",
       "cancel": "Cancel",
       "emailDomain": "Verified email domain",
       "emailDomainHint": "Who can join with it is set in Members.",
@@ -4256,7 +4256,7 @@
         "backToList": "Back to use cases",
         "back": "Back",
         "continue": "Continue",
-        "submit": "Submit for approval",
+        "submit": "Send for review",
         "sentBack": {
           "title": "GenAI Fund asked for changes",
           "note": "“{note}”"
@@ -4361,8 +4361,8 @@
         "pullBack": "Pull back to draft"
       },
       "sent": {
-        "metaTitle": "Sent for approval · BeyondPilot",
-        "title": "Sent for approval",
+        "metaTitle": "Sent for review · BeyondPilot",
+        "title": "Sent for review",
         "rows": {
           "useCase": "Use case",
           "organization": "Organization",
@@ -4434,7 +4434,7 @@
       },
       "noMatch": {
         "title": "No solution matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       },
       "ownLead": "This is your organization's solution, as others see it.",
       "ownEdit": "Edit this solution",
@@ -4676,7 +4676,7 @@
         "delete": "Delete draft…",
         "viewSent": "View what was sent",
         "fix": "Read the reason and fix",
-        "sendAgain": "Send again",
+        "sendAgain": "Send for review again",
         "openByLink": "Open by its link",
         "copyLink": "Copy link",
         "hide": "Hide from the directory",
@@ -5082,7 +5082,7 @@
       },
       "noMatch": {
         "title": "No profile matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       },
       "edit": "Edit your profile",
       "noProject": "No project published yet",
@@ -5327,8 +5327,8 @@
         "stage": "Stage",
         "stageNone": "Not stated"
       },
-      "submit": "Submit for review",
-      "resubmit": "Submit for review again",
+      "submit": "Send for review",
+      "resubmit": "Send for review again",
       "saveDraft": "Save draft",
       "save": "Save changes",
       "needed": {
@@ -5555,7 +5555,7 @@
     "readPage": "See the program",
     "empty": {
       "title": "No programs here yet",
-      "clear": "Show all programs"
+      "clear": "Clear filters"
     }
   },
   "Tasco": {
@@ -6541,7 +6541,7 @@
         "scored": "Scored"
       },
       "search": "Search applicants",
-      "clear": "Clear",
+      "clear": "Clear filters",
       "allChoices": "{label}: all",
       "kind": "Applying as",
       "allKinds": "Applying as: all",
@@ -6603,7 +6603,7 @@
       },
       "noMatch": {
         "title": "No application matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       },
       "empty": {
         "title": "No applications yet",
@@ -6673,7 +6673,7 @@
       },
       "skip": "Skip",
       "saveAndNext": "Save and next",
-      "save": "Save assessment",
+      "save": "Save",
       "conflict": "I have a conflict with this applicant",
       "saved": "Assessment saved.",
       "conflictSaved": "Conflict recorded. Your score is left out.",
@@ -6830,7 +6830,7 @@
           "description": "{email} will no longer see this program's applications.",
           "note": "The scores they gave stay. You can invite them again.",
           "remove": "Remove",
-          "keep": "Keep"
+          "keep": "Keep it"
         }
       }
     },
@@ -6846,7 +6846,7 @@
       "remove": "Remove criterion {number}",
       "addOne": "Add a criterion",
       "cancel": "Cancel",
-      "save": "Save criteria",
+      "save": "Save",
       "saved": "Criteria saved.",
       "nameLabel": "Name",
       "nameHint": "Such as Practical impact.",
@@ -6873,7 +6873,7 @@
     "label": "Search BeyondPilot",
     "placeholder": "Search programs, solutions and talent",
     "submit": "Search",
-    "clear": "Clear the search",
+    "clear": "Clear search",
     "results": "{count, plural, one {# result} other {# results}} for <query>“{q}”</query>",
     "kindResults": {
       "program": "{count, plural, one {# program} other {# programs}} for <query>“{q}”</query>",
@@ -6976,7 +6976,7 @@
     "showing": "Showing {shown} of {total}",
     "empty": {
       "title": "No use cases match",
-      "clear": "Clear search and filters"
+      "clear": "Clear filters"
     },
     "publish": {
       "title": "Have a business problem AI could solve?",
@@ -7638,7 +7638,7 @@
       "reload": "Reload",
       "back": "Back",
       "continue": "Continue",
-      "saveAndReturn": "Save and return later",
+      "saveAndReturn": "Save and exit",
       "send": "Send proposal",
       "steps": {
         "organization": "Organization",

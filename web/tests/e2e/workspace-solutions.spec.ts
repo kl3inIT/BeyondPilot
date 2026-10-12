@@ -180,7 +180,10 @@ test.describe("workspace solutions", () => {
     await expect(page.getByRole("menuitem")).toHaveText(["View what was sent", /^Edit/]);
     await page.keyboard.press("Escape");
     await page.getByRole("button", { name: "Actions for Quote Bot" }).click();
-    await expect(page.getByRole("menuitem")).toHaveText(["Read the reason and fix", "Send again"]);
+    await expect(page.getByRole("menuitem")).toHaveText([
+      "Read the reason and fix",
+      "Send for review again",
+    ]);
     await page.keyboard.press("Escape");
 
     // A draft that lacks what a review needs cannot be sent yet, and only a draft is deleted.

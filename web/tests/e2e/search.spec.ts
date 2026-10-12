@@ -126,7 +126,7 @@ test.describe("search", () => {
 
     await expect(page).toHaveURL("/search?q=AI");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("8 results for “AI”");
-    await page.getByRole("link", { name: "Clear the search" }).click();
+    await page.getByRole("link", { name: "Clear search" }).click();
     await expect(page).toHaveURL("/search");
   });
 });

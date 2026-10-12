@@ -347,7 +347,7 @@ test.describe("a proposal to a use case", () => {
       storedApproach,
     );
 
-    await page.getByRole("button", { name: "Save and return later" }).click();
+    await page.getByRole("button", { name: "Save and exit" }).click();
     await expect(page).toHaveURL(`/use-cases/${proposalUseCaseId}`);
     expect(saves).toHaveLength(1);
   });
