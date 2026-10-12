@@ -251,6 +251,15 @@ function ProposalWizard({
   }
 
   async function leave() {
+    if (!editing && organization) {
+      // Saving to return later keeps the details and makes the draft, so the use case offers to continue it.
+      if (!(await saveDetails())) {
+        return;
+      }
+      if (proposalId.current === null) {
+        dirty.current = true;
+      }
+    }
     if (await flush()) {
       // Cancelling an edit drops what was changed and returns to the proposal as sent.
       dirty.current = false;
