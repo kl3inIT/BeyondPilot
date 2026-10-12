@@ -1,13 +1,12 @@
 "use client";
 
-import { CheckIcon, CopyIcon, MessageSquareIcon, SparklesIcon } from "lucide-react";
+import { MessageSquareIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useId } from "react";
 
-import { Button } from "@/components/actions/button";
-import { IconButton } from "@/components/actions/icon-button";
+import { CopyButton } from "@/components/actions/copy-button";
 import { HelpPopover } from "@/components/composites/help-popover";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppMark } from "@/features/identity/app-mark";
 
@@ -39,36 +38,22 @@ function stepParts(address: string) {
   };
 }
 
-/** Copies a text, and says so for a moment. */
-function useCopy() {
-  const [copied, setCopied] = useState(false);
-  return {
-    copied,
-    copy(text: string) {
-      void navigator.clipboard.writeText(text).then(() => {
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 1500);
-      });
-    },
-  };
-}
-
-/** A server's address, read-only, with a button that copies it. */
+/**
+ * A server's address, read-only, with a button that copies it. The field grows by a line where the
+ * address is wider than the screen, so the whole of it is read and selected on a phone.
+ */
 function AddressField({ address, label }: { address: string; label: string }) {
   const t = useTranslations("Mcp.connect");
   const id = useId();
-  const copy = useCopy();
 
   return (
     <div className="flex flex-col gap-2">
       <label htmlFor={id} className="text-sm font-medium">
         {label}
       </label>
-      <div className="flex gap-2">
-        <Input id={id} value={address} readOnly className="flex-1" />
-        <Button prominence="secondary" onClick={() => copy.copy(address)}>
-          {copy.copied ? t("copied") : t("copy")}
-        </Button>
+      <div className="flex items-start gap-2">
+        <Textarea id={id} value={address} readOnly rows={1} className="min-h-10 flex-1" />
+        <CopyButton value={address} label={t("copy")} />
       </div>
     </div>
   );
@@ -80,7 +65,6 @@ function AddressField({ address, label }: { address: string; label: string }) {
  */
 function AppSteps({ address, keys }: { address: string; keys: readonly AppKey[] }) {
   const t = useTranslations("Mcp.connect");
-  const promptCopy = useCopy();
   const prompt = t("prompt", { address });
 
   return (
@@ -127,14 +111,7 @@ function AppSteps({ address, keys }: { address: string; keys: readonly AppKey[] 
         </h2>
         <div className="flex items-start gap-3 rounded-lg bg-muted p-3">
           <p className="flex-1 text-xs break-words">{prompt}</p>
-          <IconButton
-            size="sm"
-            prominence="tertiary"
-            aria-label={promptCopy.copied ? t("copied") : t("copyPrompt")}
-            onClick={() => promptCopy.copy(prompt)}
-          >
-            {promptCopy.copied ? <CheckIcon /> : <CopyIcon />}
-          </IconButton>
+          <CopyButton appearance="icon" value={prompt} label={t("copyPrompt")} />
         </div>
         <p className="text-xs text-muted-foreground">{t("askNote")}</p>
       </section>

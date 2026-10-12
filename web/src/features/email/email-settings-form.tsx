@@ -2,9 +2,7 @@
 
 import { revalidateLogic, useStore } from "@tanstack/react-form";
 import {
-  CheckIcon,
   CloudIcon,
-  CopyIcon,
   KeyRoundIcon,
   MailIcon,
   SendIcon,
@@ -16,6 +14,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { z } from "zod";
 
+import { CopyButton } from "@/components/actions/copy-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
@@ -27,12 +26,7 @@ import {
   FieldLabel,
   FieldTitle,
 } from "@/components/ui/field";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from "@/components/ui/input-group";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useFailureWords, useNotify } from "@/hooks/use-notify";
 import { useFormatter } from "@/i18n/format";
@@ -179,25 +173,13 @@ function CopyField({
   description: string;
 }) {
   const t = useTranslations("Admin.email.settings");
-  const [copied, setCopied] = useState(false);
   return (
     <Field>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <InputGroup>
         <InputGroupInput id={id} value={value} readOnly />
         <InputGroupAddon align="inline-end">
-          <InputGroupButton
-            size="icon-xs"
-            aria-label={t("copy")}
-            onClick={() => {
-              void navigator.clipboard.writeText(value).then(() => {
-                setCopied(true);
-                window.setTimeout(() => setCopied(false), 1500);
-              });
-            }}
-          >
-            {copied ? <CheckIcon aria-hidden="true" /> : <CopyIcon aria-hidden="true" />}
-          </InputGroupButton>
+          <CopyButton appearance="icon" value={value} label={t("copy", { what: label })} />
         </InputGroupAddon>
       </InputGroup>
       <FieldDescription>{description}</FieldDescription>

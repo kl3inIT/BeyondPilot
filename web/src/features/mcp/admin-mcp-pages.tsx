@@ -35,8 +35,12 @@ async function McpAdminHeader({ current, counts }: { current: McpTab; counts: Mc
 
   return (
     <AdminPageHeader destination="mcp" title={t("title")}>
-      <nav aria-label={t("tabs.label")} className="border-b">
-        <ul className="flex gap-4 overflow-x-auto md:gap-6">
+      {/* Wider than a phone in Vietnamese: the row scrolls, and its edge fades where tabs wait. */}
+      <nav
+        aria-label={t("tabs.label")}
+        className="relative scrollbar-none overflow-x-auto max-md:scroll-fade-x"
+      >
+        <ul className="flex w-max min-w-full gap-4 border-b md:gap-6">
           {tabs.map((tab) => (
             <li key={tab.key}>
               <Link
@@ -106,7 +110,7 @@ async function McpSetupPage({
     <div className="flex flex-1 flex-col gap-8 px-4 pt-2 pb-12 md:px-6 lg:px-8">
       <McpAdminHeader current="setup" counts={counts} />
       <SettingsSection title={t("operator.title")} lead={t("operator.lead")} first>
-        <AddressField address={settings.operatorServerAddress} label={t("address")} />
+        <AddressField address={settings.operatorServerAddress} label={t("operator.address")} />
         <AppSteps
           address={settings.operatorServerAddress}
           keys={["codex", "claude", "chatgpt", "other"]}
@@ -114,7 +118,7 @@ async function McpSetupPage({
       </SettingsSection>
       <SettingsSection title={t("user.title")} lead={t("user.lead")}>
         <UserServerSwitch enabled={settings.userServerEnabled} apps={counts.userApps} />
-        <AddressField address={settings.userServerAddress} label={t("address")} />
+        <AddressField address={settings.userServerAddress} label={t("user.address")} />
       </SettingsSection>
       <SettingsSection title={t("hosts.title")} lead={t("hosts.lead")}>
         <OtherHostsSwitch allowed={hosts.allowOtherHosts} />
@@ -124,10 +128,11 @@ async function McpSetupPage({
               key={host.host}
               className="flex items-center gap-3 border-b px-3.5 py-2 last:border-b-0"
             >
-              <div className="flex min-w-0 flex-1 flex-col md:flex-row md:items-center md:gap-2">
-                <span className="text-sm font-medium">{host.host}</span>
+              {/* Which apps a host stands for decides whether to keep it, so every name shows. */}
+              <div className="flex min-w-0 flex-1 flex-col md:flex-row md:items-baseline md:gap-2">
+                <span className="text-sm font-medium break-all">{host.host}</span>
                 {host.apps.length > 0 && (
-                  <span className="truncate text-xs text-muted-foreground md:text-sm">
+                  <span className="min-w-0 text-xs break-words text-muted-foreground md:text-sm">
                     {host.apps.join(", ")}
                   </span>
                 )}
