@@ -7319,13 +7319,11 @@
     },
     "view": {
       "metaTitle": "Your proposal · BeyondPilot",
-      "back": "Back to the use case",
       "title": "Your proposal",
       "edit": "Edit proposal",
-      "meta": "{useCase}",
       "sent": "Sent {date}",
       "edited": "Edited {date}",
-      "editUntil": "You can edit it until {when}."
+      "until": "edit until {when}"
     },
     "solutionList": {
       "newTab": "(opens in a new tab)"

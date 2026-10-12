@@ -7319,13 +7319,11 @@
     },
     "view": {
       "metaTitle": "Đề xuất của bạn · BeyondPilot",
-      "back": "Quay lại bài toán",
       "title": "Đề xuất của bạn",
       "edit": "Chỉnh sửa đề xuất",
-      "meta": "{useCase}",
-      "sent": "Đã gửi {date}",
+      "sent": "Gửi {date}",
       "edited": "Đã chỉnh sửa {date}",
-      "editUntil": "Bạn có thể chỉnh sửa đến {when}."
+      "until": "sửa đến {when}"
     },
     "solutionList": {
       "newTab": "(mở trong thẻ mới)"
