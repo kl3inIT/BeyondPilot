@@ -5,7 +5,6 @@ import { answerDecisions, refusal } from "./reviews";
 import { signInAs } from "./session";
 
 const pocketPolicy = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03";
-const minh = "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a04";
 const siti = "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a12";
 const invitation = "9c4f6d85-3c31-4d86-8d88-3a6c9c9e0d11";
 const request = "9c4f6d85-3c31-4d86-8d88-3a6c9c9e0d12";
@@ -340,12 +339,15 @@ test.describe("workspace organization", () => {
     await expect(page.getByLabel("Verified email domain")).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
 
-    // Unsaved changes are dropped by leaving the page, where the leave guard asks; there is no discard.
-    await expect(page.getByRole("button", { name: "Discard changes" })).toHaveCount(0);
-
     const description = page.getByLabel("Short description");
     await description.fill("Assistants for insurers and brokers.");
     await expect(save).toBeEnabled();
+    // Cancel on a changed profile asks once before it drops the changes; kept, the form stays.
+    await page.getByRole("button", { name: "Cancel" }).click();
+    const discard = page.getByRole("alertdialog");
+    await expect(discard.getByRole("heading")).toHaveText("Discard your changes?");
+    await discard.getByRole("button", { name: "Keep editing" }).click();
+    await expect(description).toHaveValue("Assistants for insurers and brokers.");
     await page.getByRole("combobox", { name: "Industries" }).fill("Health");
     await page.getByRole("option", { name: "Healthcare" }).click();
     await save.click();
@@ -731,7 +733,7 @@ test.describe("workspace organization", () => {
     await expect(tabs.last()).toBeInViewport();
   });
 
-  test("the last owner cannot leave, in the words of the refusal's code", async ({
+  test("the one owner is not offered the ways out, and a refusal is told in the words of its code", async ({
     page,
     context,
     baseURL,
@@ -745,16 +747,29 @@ test.describe("workspace organization", () => {
     );
     await page.goto("/workspace/organization/members");
 
+    // The one owner cannot give up the role or leave: the menu says why instead of offering it.
     await page.getByRole("button", { name: "Actions for Minh Trần" }).click();
-    await page.getByRole("menuitem", { name: "Leave organization" }).click();
-    await page.getByRole("alertdialog").getByRole("button", { name: "Leave organization" }).click();
+    await expect(page.getByRole("menuitem", { name: "Make member" })).toBeDisabled();
+    await expect(page.getByRole("menuitem", { name: "Leave organization" })).toBeDisabled();
+    await expect(
+      page
+        .getByRole("menu")
+        .getByText("An organization needs an owner. Make someone else an owner first."),
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
+    expect(changes).toEqual([]);
+
+    // The backend decides again on each request, and its refusal is said by its code.
+    await page.getByRole("button", { name: "Actions for Siti Rahma" }).click();
+    await page.getByRole("menuitem", { name: "Remove from organization" }).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: "Remove member" }).click();
 
     await expect(
       page.getByText("An organization needs an owner. Make someone else an owner first."),
     ).toBeVisible();
     await expect(page.getByText("text of the backend that must not be shown")).toHaveCount(0);
     expect(changes.map((change) => change.call)).toEqual([
-      `POST /api/organization/mine/members/${minh}/remove`,
+      `POST /api/organization/mine/members/${siti}/remove`,
     ]);
   });
 

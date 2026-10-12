@@ -52,6 +52,10 @@ function OrganizationMembersPage({
   const emailDomain = organization.emailDomain ?? null;
   const day = (at: string) => format.dateTime(new Date(at), { dateStyle: "medium" });
 
+  // The one owner is known only when the page holds every member; past that the backend decides.
+  const owners = members.members.filter((member) => member.role === "owner");
+  const onlyOwnerId =
+    members.total <= members.members.length && owners.length === 1 ? owners[0].accountId : null;
   const people = members.members.map((member) => ({
     key: member.accountId,
     person: (
@@ -64,7 +68,9 @@ function OrganizationMembersPage({
     role: <MemberRole role={member.role} />,
     jobTitle: member.jobTitle ?? t("none"),
     joined: <span className="text-muted-foreground">{day(member.joinedAt)}</span>,
-    actions: <MemberActions member={member} owner={owner} />,
+    actions: (
+      <MemberActions member={member} owner={owner} onlyOwner={member.accountId === onlyOwnerId} />
+    ),
   }));
   // The open invitations are not paged: they close the list, on its last page.
   const lastPage = members.page * members.pageSize >= members.total;
