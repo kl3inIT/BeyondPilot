@@ -344,6 +344,10 @@ const programUseCases = {
     "Voice assistant for vehicle owners",
     "Claims triage with document intelligence",
   ],
+  "nestle-vietnam-ai-reinvention": [
+    "Demand forecasting for a retail chain",
+    "Claims triage with document intelligence",
+  ],
 };
 
 const missing = [404, { status: 404, code: "NOT_FOUND" }];

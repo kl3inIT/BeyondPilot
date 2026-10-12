@@ -18,6 +18,26 @@ import {
 
 type Format = ProgramFormat;
 
+/** The heading of a section of a page written for one program, with the line under it. */
+export function SectionHead({ title, lead }: { title: string; lead?: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 className="text-2xl font-semibold tracking-title md:text-3xl">{title}</h2>
+      {lead && <p className="max-w-3xl text-muted-foreground">{lead}</p>}
+    </div>
+  );
+}
+
+/** A remark that stands beside a section's content: a rule, a condition, a thing to know. */
+export function Note({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="flex flex-col gap-0.5 rounded-xl border bg-accent p-4">
+      <h3 className="font-medium">{title}</h3>
+      <p className="text-sm text-muted-foreground">{text}</p>
+    </div>
+  );
+}
+
 /** One step of a program's timeline, from its key dates or its application window. */
 type Step = { title: string; when: string; at: string; note?: string | null };
 
