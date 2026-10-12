@@ -168,7 +168,7 @@ async function UsageCallsPage({
                   render={
                     <button
                       type="button"
-                      className="text-muted-foreground outline-none hover:underline focus-visible:underline"
+                      className="rounded-sm text-muted-foreground outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                     />
                   }
                 >

@@ -117,6 +117,8 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
   const router = useRouter();
   const [keyDate, setKeyDate] = useState<Editing>(null);
   const [event, setEvent] = useState<Editing>(null);
+  const addKeyDate = useRef<HTMLButtonElement>(null);
+  const addEvent = useRef<HTMLButtonElement>(null);
   // The program as the last save answered it, for Save and publish; null when that save was refused.
   const saved = useRef<AdminProgram | null>(null);
   // The key dates and events as stored, to mark those added or changed since the last save.
@@ -187,7 +189,8 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
     return saved.current;
   }
 
-  const dirty = useStore(form.store, (formState) => formState.isDirty);
+  // A value changed and then put back is no change: there is nothing to save or to lose.
+  const dirty = useStore(form.store, (formState) => !formState.isDefaultValue);
   const blocked = useStore(
     form.store,
     (formState) => missingToPublish(formState.values).length > 0,
@@ -512,7 +515,12 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
             }}
           </form.Subscribe>
           <div>
-            <Button prominence="tertiary" size="sm" onClick={() => setKeyDate({ index: null })}>
+            <Button
+              ref={addKeyDate}
+              prominence="tertiary"
+              size="sm"
+              onClick={() => setKeyDate({ index: null })}
+            >
               <PlusIcon aria-hidden="true" />
               {t("keyDates.add")}
             </Button>
@@ -559,7 +567,12 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
             }
           </form.Subscribe>
           <div>
-            <Button prominence="tertiary" size="sm" onClick={() => setEvent({ index: null })}>
+            <Button
+              ref={addEvent}
+              prominence="tertiary"
+              size="sm"
+              onClick={() => setEvent({ index: null })}
+            >
               <PlusIcon aria-hidden="true" />
               {t("events.add")}
             </Button>
@@ -625,6 +638,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
             keyDate.index === null ? null : (form.getFieldValue("keyDates")[keyDate.index] ?? null)
           }
           onClose={() => setKeyDate(null)}
+          addButton={addKeyDate}
           onSave={(value: KeyDateValue) => {
             const list = [...form.getFieldValue("keyDates")];
             if (keyDate.index === null) {
@@ -652,6 +666,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
         <EventDialog
           value={event.index === null ? null : (form.getFieldValue("events")[event.index] ?? null)}
           onClose={() => setEvent(null)}
+          addButton={addEvent}
           onSave={(value: EventValue) => {
             const list = [...form.getFieldValue("events")];
             if (event.index === null) {

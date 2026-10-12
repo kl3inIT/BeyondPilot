@@ -12,7 +12,7 @@ import {
   TextareaField,
   TextField,
 } from "@/components/form/form-fields";
-import { clearingServerErrors } from "@/components/form/validation-logic";
+import { clearingServerErrors, keepingSubmitErrors } from "@/components/form/validation-logic";
 
 const appForm = createFormHook({
   fieldContext,
@@ -29,6 +29,8 @@ const elementOf = (formApi: AnyFormApi) => () => document.getElementById(formApi
  * shared shadcn `Field` controls and `form.AppForm` the form-level parts. A refused submission's
  * errors, set with {@link setServerErrors}, clear when the person edits the form or submits again,
  * and a field may carry a validator of its own beside the form's ({@link clearingServerErrors}).
+ * What the form's rules refused stays on its field until the value is accepted, whether the rules
+ * are `onDynamic` ones under `revalidateLogic()` or `onSubmit` ones ({@link keepingSubmitErrors}).
  * The pattern is MemoryOS's.
  *
  * The form's id, React's own unless the caller names one, also starts the id of every control in
@@ -42,7 +44,7 @@ export const useAppForm: typeof appForm.useAppForm = (options) => {
   return appForm.useAppForm({
     ...options,
     formId: options.formId ?? id,
-    validationLogic: clearingServerErrors(options.validationLogic),
+    validationLogic: keepingSubmitErrors(clearingServerErrors(options.validationLogic)),
     onSubmitInvalid: (props) => {
       options.onSubmitInvalid?.(props);
       focusFirstInvalidSoon(elementOf(props.formApi));

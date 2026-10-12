@@ -5503,6 +5503,7 @@
   },
   "Form": {
     "optional": "Optional",
+    "required": "required",
     "noMatch": "Nothing matches.",
     "steps": {
       "progress": "Step {step} of {count} · {name}",

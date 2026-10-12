@@ -170,7 +170,7 @@ function KindTabs({
               href={tab.href}
               aria-current={tab.key === current ? "page" : undefined}
               className={cn(
-                "inline-flex min-h-11 items-center gap-1.5 border-b-2 text-sm outline-none focus-visible:underline",
+                "inline-flex min-h-11 items-center gap-1.5 border-b-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset",
                 tab.key === current
                   ? "border-foreground font-medium"
                   : "border-transparent text-muted-foreground hover:text-foreground",

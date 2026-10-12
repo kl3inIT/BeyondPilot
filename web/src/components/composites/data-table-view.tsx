@@ -250,6 +250,9 @@ function DataTableView<TData extends RowData>({
 
   // A row that is a link is covered by it, the cell at its end included: nothing is pinned above.
   const pinned = !rowLinks;
+  // The column that names the record keeps its width on a phone: the one that fills the table, or
+  // the first one, which is where a list puts the name. Its cell truncates, so nothing else holds it.
+  const named = (columns.find((column) => column.meta?.fill) ?? columns[0])?.id;
 
   const matching = selection?.matching ?? [];
   const wholePage = table.getIsAllPageRowsSelected();
@@ -275,7 +278,8 @@ function DataTableView<TData extends RowData>({
                   <TableHead
                     key={header.id}
                     className={cn(
-                      header.column.columnDef.meta?.fill && "w-full max-md:min-w-56",
+                      header.column.columnDef.meta?.fill && "w-full",
+                      header.column.id === named && "max-md:min-w-56",
                       header.column.columnDef.meta?.nowrap && "whitespace-nowrap",
                       header.column.columnDef.meta?.numeric && "text-right",
                       header.column.columnDef.meta?.narrow && "w-10",
@@ -331,7 +335,8 @@ function DataTableView<TData extends RowData>({
                 <TableCell
                   key={cell.id}
                   className={cn(
-                    cell.column.columnDef.meta?.fill && "w-full max-w-0 max-md:min-w-56",
+                    cell.column.columnDef.meta?.fill && "w-full max-w-0",
+                    cell.column.id === named && "max-md:min-w-56",
                     cell.column.columnDef.meta?.nowrap && "whitespace-nowrap",
                     cell.column.columnDef.meta?.numeric && "text-right",
                     cell.column.columnDef.meta?.narrow && "w-10",

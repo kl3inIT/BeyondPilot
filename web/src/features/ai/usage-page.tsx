@@ -61,8 +61,8 @@ async function UsageHeader({
                 aria-current={tab.key === current ? "page" : undefined}
                 className={
                   tab.key === current
-                    ? "inline-flex min-h-11 items-center border-b-2 border-foreground text-sm font-medium whitespace-nowrap outline-none focus-visible:underline"
-                    : "inline-flex min-h-11 items-center border-b-2 border-transparent text-sm whitespace-nowrap text-muted-foreground outline-none hover:text-foreground focus-visible:underline"
+                    ? "inline-flex min-h-11 items-center border-b-2 border-foreground text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
+                    : "inline-flex min-h-11 items-center border-b-2 border-transparent text-sm whitespace-nowrap text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
                 }
               >
                 {t(`tabs.${tab.key}`)}
@@ -340,7 +340,7 @@ async function UsageOverviewPage({
                   name: (
                     <Link
                       href={row.href}
-                      className="flex items-center gap-1 font-medium outline-none hover:underline focus-visible:underline"
+                      className="flex items-center gap-1 rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                     >
                       <span className="flex flex-col">
                         {row.name}

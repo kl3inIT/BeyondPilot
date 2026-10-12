@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
@@ -21,6 +22,11 @@ type ChoiceChipsProps = {
   onValueChange: (value: string[]) => void;
   /** How many may be chosen; at the limit the other chips cannot be chosen. */
   max?: number;
+  /**
+   * At least one must be chosen. The group's name says so, "Roles (required)": a group cannot carry
+   * `aria-required`.
+   */
+  required?: boolean;
   disabled?: boolean;
 };
 
@@ -36,17 +42,19 @@ function ChoiceChips({
   value,
   onValueChange,
   max,
+  required,
   disabled,
   "aria-describedby": describedBy,
   "aria-invalid": invalid,
 }: ChoiceChipsProps) {
+  const t = useTranslations("Form");
   const full = max !== undefined && value.length >= max;
 
   return (
     <ToggleGroup
       id={id}
       multiple
-      aria-label={label}
+      aria-label={required ? `${label} (${t("required")})` : label}
       aria-describedby={describedBy}
       variant="outline"
       size="sm"

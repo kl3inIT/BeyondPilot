@@ -5503,6 +5503,7 @@
   },
   "Form": {
     "optional": "Không bắt buộc",
+    "required": "bắt buộc",
     "noMatch": "Không có kết quả phù hợp.",
     "steps": {
       "progress": "Bước {step}/{count} · {name}",
