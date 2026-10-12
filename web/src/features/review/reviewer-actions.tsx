@@ -1,7 +1,7 @@
 "use client";
 
 import { revalidateLogic, useStore } from "@tanstack/react-form";
-import { MoreHorizontalIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -9,15 +9,11 @@ import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
+import { RowMenuTrigger } from "@/components/actions/row-menu-trigger";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { FormDialog } from "@/components/composites/form-dialog";
 import { useAppForm } from "@/components/form/app-form";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
 import {
   inviteReviewer,
@@ -118,13 +114,7 @@ function ReviewerRowActions({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <IconButton aria-label={t("actions", { email })} size="sm" prominence="tertiary" />
-          }
-        >
-          <MoreHorizontalIcon aria-hidden="true" />
-        </DropdownMenuTrigger>
+        <RowMenuTrigger aria-label={t("actions", { email })} />
         <DropdownMenuContent align="end">
           {canResend && (
             <DropdownMenuItem onClick={() => act("resend")}>{t("resend")}</DropdownMenuItem>

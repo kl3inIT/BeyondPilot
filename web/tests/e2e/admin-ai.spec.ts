@@ -39,16 +39,14 @@ test.describe("admin AI", () => {
     await expect(picker).toContainText("Medium");
 
     // A connection says where it is and that it is in use; its key is never shown. The models are a
-    // table with prices from 768px, and name and context below it.
+    // table with prices at every width: on a phone it scrolls sideways.
     const connections = page.getByRole("region", { name: "Available connections" });
     await expect(connections.getByRole("heading", { name: "Claude" })).toBeVisible();
     await expect(connections.getByText("In use")).toBeVisible();
     await expect(connections.getByText("http://10.0.0.12:20128/v1")).toBeVisible();
     const models = connections.getByRole("table", { name: "Models enabled on Claude" });
     await expect(models.getByRole("row")).toHaveCount(4);
-    await expect(models.getByRole("columnheader", { name: "In / 1M" })).toHaveCount(
-      isMobile ? 0 : 1,
-    );
+    await expect(models.getByRole("columnheader", { name: "In / 1M" })).toHaveCount(1);
     await expect(
       connections
         .getByRole("button", { name: isMobile ? "Actions for Claude" : "Test connection" })

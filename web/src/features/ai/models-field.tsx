@@ -5,17 +5,11 @@ import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { DataTable } from "@/components/composites/data-table";
 import { Status } from "@/components/composites/status";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useNotify } from "@/hooks/use-notify";
 import {
   listReportedChatModels,
@@ -146,54 +140,54 @@ function ModelsField({ reported, probe }: ModelsFieldProps) {
               onChange={(event) => setQuery(event.target.value)}
             />
           </InputGroup>
-          <div className="max-h-64 overflow-y-auto rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-8" />
-                  <TableHead>{tm("model")}</TableHead>
-                  <TableHead className="text-right">{tm("context")}</TableHead>
-                  <TableHead className="hidden text-right sm:table-cell">{tm("input")}</TableHead>
-                  <TableHead className="hidden text-right sm:table-cell">{tm("output")}</TableHead>
+          {/* The frame is a column no taller than 16rem, so the one scroller inside it scrolls the
+              list both ways and every column is in reach of a phone. */}
+          <DataTable label={t("label")} className="flex max-h-64 flex-col">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-8" />
+                <TableHead>{tm("model")}</TableHead>
+                <TableHead className="text-right">{tm("context")}</TableHead>
+                <TableHead className="text-right">{tm("input")}</TableHead>
+                <TableHead className="text-right">{tm("output")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {shown.map((model) => (
+                <TableRow key={model.modelName}>
+                  <TableCell>
+                    <Checkbox
+                      aria-label={t("select", { name: model.modelName })}
+                      checked={model.configured || selected.has(model.modelName)}
+                      disabled={model.configured}
+                      onCheckedChange={(on) => reported.toggle(model.modelName, on)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <span className="flex flex-wrap items-center gap-2">
+                      <ModelLogo modelName={model.modelName} />
+                      <span className="break-all">{model.modelName}</span>
+                      {model.configured && (
+                        <Status tone="success" appearance="pill">
+                          {t("configured")}
+                        </Status>
+                      )}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">{tokens(model.contextWindow)}</TableCell>
+                  <TableCell className="text-right">{price(model.inputPrice)}</TableCell>
+                  <TableCell className="text-right">{price(model.outputPrice)}</TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {shown.map((model) => (
-                  <TableRow key={model.modelName}>
-                    <TableCell>
-                      <Checkbox
-                        aria-label={t("select", { name: model.modelName })}
-                        checked={model.configured || selected.has(model.modelName)}
-                        disabled={model.configured}
-                        onCheckedChange={(on) => reported.toggle(model.modelName, on)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex flex-wrap items-center gap-2">
-                        <ModelLogo modelName={model.modelName} />
-                        <span className="break-all">{model.modelName}</span>
-                        {model.configured && (
-                          <Status tone="success" appearance="pill">
-                            {t("configured")}
-                          </Status>
-                        )}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">{tokens(model.contextWindow)}</TableCell>
-                    <TableCell className="hidden text-right sm:table-cell">
-                      {price(model.inputPrice)}
-                    </TableCell>
-                    <TableCell className="hidden text-right sm:table-cell">
-                      {price(model.outputPrice)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {shown.length === 0 && (
-              <p className="p-3 text-sm text-muted-foreground">{t("noMatch")}</p>
-            )}
-          </div>
+              ))}
+              {shown.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5}>
+                    <span className="text-muted-foreground">{t("noMatch")}</span>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </DataTable>
         </>
       )}
     </section>
