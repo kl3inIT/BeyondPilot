@@ -2,11 +2,12 @@
 
 import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { StepsNav } from "@/components/composites/steps-nav";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
+import { focusFirstInvalid } from "@/components/form/focus-first-invalid";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useNotify } from "@/hooks/use-notify";
@@ -92,7 +93,7 @@ function stepOfField(field: string): Step {
   if (
     field === "requirements" ||
     field.startsWith("requirements[") ||
-    ["dataReadiness", "integrationRequirements", "attachments"].includes(field)
+    ["dataReadiness", "integrationRequirements", "attachments", "attachmentFileIds"].includes(field)
   ) {
     return "requirements";
   }
@@ -110,8 +111,22 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
   const notify = useNotify();
   const router = useRouter();
   const [step, setStep] = useState<Step>("challenge");
-  // What the step shown must have corrected; it leaves with the step and with the next change.
+  // A refusal no field can say: it stands above the step, and leaves with the step and with the next change.
   const [problem, setProblem] = useState<string | null>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const shown = useRef(step);
+
+  // A step that opens takes the focus: on its first field in error when it opened for one, on its
+  // heading otherwise.
+  useEffect(() => {
+    if (shown.current === step) {
+      return;
+    }
+    shown.current = step;
+    if (!focusFirstInvalid(heading.current?.closest("form"))) {
+      heading.current?.focus({ preventScroll: true });
+    }
+  }, [step]);
   const schema = useMemo(
     () =>
       adminUseCaseSchema((key, parameters) =>
@@ -155,15 +170,13 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
           : { form: issues[0].message, fields: problemsOf(value) };
       },
     },
-    // What the step shown must have corrected leaves with the next change.
     listeners: { onChange: () => setProblem(null) },
-    // The step that holds the first problem opens, with the problem said above its fields.
+    // The step that holds the first problem opens, and its fields say what is wrong with them.
     onSubmitInvalid: ({ value }) => {
       const issue = issuesOf(value).at(0);
       if (issue) {
         show(Object.keys(problemsOf(value)));
         go(stepOfField(String(issue.path[0] ?? "organizationId")));
-        setProblem(issue.message);
       }
     },
     onSubmit: async ({ value }) => {
@@ -191,11 +204,10 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
     }
   }
 
-  /** Opens the step a refusal is about, says it above the fields and on the fields it names. */
-  function refuse(target: Step, words: string, fields: Record<string, { message: string }>) {
+  /** Opens the step a refusal is about and puts it on the fields it names. */
+  function refuse(target: Step, fields: Record<string, { message: string }>) {
     show(Object.keys(fields));
     go(target);
-    setProblem(words);
     setServerErrors(form, { fields });
   }
 
@@ -248,16 +260,18 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
       const code = error instanceof ApiError ? error.code : undefined;
       if (code && code in refusalSteps) {
         const refusal = code as RefusalCode;
-        const words = t(`errors.${refusal}`);
-        refuse(refusalSteps[refusal], words, { [refusalFields[refusal]]: { message: words } });
+        refuse(refusalSteps[refusal], {
+          [refusalFields[refusal]]: { message: t(`errors.${refusal}`) },
+        });
       } else if (error instanceof ApiError && error.violations.length > 0) {
-        // The fields the backend points at are marked; it gives no words this screen may show.
+        // The fields the backend points at are marked; it gives no words this screen may show, so
+        // the line above the step says that nothing was saved.
         const names = error.violations.map(({ pointer }) => fieldOfPointer(pointer));
         refuse(
           stepOfField(names[0]),
-          t("errors.unknown"),
           Object.fromEntries(names.map((name) => [formFieldOf(name), { message: "" }])),
         );
+        setProblem(t("errors.unknown"));
       } else {
         notify.error("Admin.useCases.form.errors.unknown");
       }
@@ -287,7 +301,11 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
           )}
 
           <div className="flex flex-col gap-3">
-            <h2 className="text-3xl font-semibold tracking-tight">
+            <h2
+              ref={heading}
+              tabIndex={-1}
+              className="text-3xl font-semibold tracking-tight outline-none"
+            >
               {step === "review" ? t("review.title") : w(`steps.${step}.title`)}
             </h2>
             {step === "review" ? (

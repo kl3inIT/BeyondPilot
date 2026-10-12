@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 /** The words a schema's messages are written in; the form passes its translator. */
-type Say = (key: "solution" | "approach" | "required" | "phoneInvalid" | "role" | "deck") => string;
+type Say = (
+  key: "solution" | "approach" | "required" | "phoneInvalid" | "role" | "primary" | "deck",
+) => string;
 
 /** A number as the backend takes it: digits with spaces, brackets, dots or dashes, and a leading plus. */
 export const PHONE = /^\+?[0-9 ().-]*$/;
@@ -29,14 +31,14 @@ export function proposalStepSchemas(say: Say) {
         phone: phoneSchema(say).min(1, say("required")),
       }),
     }),
-    // No team, or roles filled and exactly one primary contact; the catalog has no words for the latter.
+    // No team, or roles filled and exactly one primary contact.
     team: z.object({
       team: z
         .array(z.looseObject({ role: z.string().trim().min(1, say("role")) }))
-        // Without words: zod would put its own in their place, so the rule is marked instead.
-        .refine((team) => team.length === 0 || team.filter((row) => row.primary).length === 1, {
-          params: { wordless: true },
-        }),
+        .refine(
+          (team) => team.length === 0 || team.filter((row) => row.primary).length === 1,
+          say("primary"),
+        ),
     }),
     pdf: z.object({ deck: z.custom((deck) => Boolean(deck), say("deck")) }),
   };
@@ -63,8 +65,7 @@ export function stepProblems(
   const fields: Record<string, { message: string }> = {};
   for (const issue of issues) {
     const name = issue.path[0] === "team" ? "team" : issue.path.join(".");
-    const wordless = issue.code === "custom" && issue.params?.wordless === true;
-    fields[name] ??= { message: wordless ? "" : issue.message };
+    fields[name] ??= { message: issue.message };
   }
   return fields;
 }

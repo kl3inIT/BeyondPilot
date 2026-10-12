@@ -161,7 +161,6 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
   async function go(target: Step) {
     if (await flush()) {
       setStep(target);
-      window.scrollTo({ top: 0 });
     }
   }
 
@@ -264,7 +263,10 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
         )}
 
         <div className="flex flex-col gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}.title`)}</h1>
+          {/* The shell moves the focus here when the step changes. */}
+          <h1 tabIndex={-1} className="text-3xl font-semibold tracking-tight outline-none">
+            {t(`steps.${step}.title`)}
+          </h1>
           {(step === "challenge" || step === "requirements" || step === "review") && (
             <p className="text-base text-muted-foreground">{t(`steps.${step}.lead`)}</p>
           )}

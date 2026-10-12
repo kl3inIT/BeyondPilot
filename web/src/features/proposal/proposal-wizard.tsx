@@ -26,6 +26,7 @@ import {
   type TalentProfile,
   type UseCaseProposalForm,
 } from "@/lib/api/generated";
+import { focusField } from "@/lib/focus-field";
 import { cn } from "@/lib/utils";
 import { proposalViewRoute, proposeToUseCaseRoute as proposeRoute, briefRoute } from "@/lib/site";
 
@@ -113,11 +114,12 @@ function ProposalWizard({
   );
   const [state, setState] = useState<"idle" | "saving" | "failed">("idle");
   const [changed, setChanged] = useState(false);
-  const [sending, setSending] = useState(false);
+  // Whether the account lacks what the fields hold. It starts true when the talent profile filled a
+  // field the account has not, and is true again after every change until the account keeps it; a
+  // field's own `isDirty` never returns to false, so it cannot say this.
   const [detailsChanged, setDetailsChanged] = useState(
     () => !account.displayName || !account.country,
   );
-  const [edited, setEdited] = useState(false);
 
   const version = useRef<number | null>(opened.proposal?.version ?? null);
   const proposalId = useRef<string | null>(opened.proposal?.id ?? null);
@@ -138,6 +140,7 @@ function ProposalWizard({
             required: t("details.required"),
             phoneInvalid: t("details.phoneInvalid"),
             role: t("team.needed.role"),
+            primary: t("team.needed.primary"),
             deck: t("pdf.needed"),
           })[key],
       ),
@@ -147,7 +150,7 @@ function ProposalWizard({
   const form = useAppForm({
     defaultValues: initial,
     validationLogic: revalidateLogic(),
-    // Continue checks the step on the screen and nothing else; the last step has nothing to check.
+    // Going forward checks the step on the screen and nothing else; the last step has nothing to check.
     validators: {
       onDynamic: ({ value }) => {
         const fields = stepProblems(schemas, step, value);
@@ -159,15 +162,23 @@ function ProposalWizard({
         if (fieldApi.name.startsWith("details.")) {
           // The details are the account's: they are kept when the step is left, not with the draft.
           setDetailsChanged(true);
-          setEdited(true);
         } else if (fieldApi.name !== "confirmed") {
           change();
         }
       },
     },
-    onSubmit: async () => {
-      if (step !== "review") {
-        await go(steps[steps.indexOf(step) + 1]);
+    // The upload marks no control as the one in error, so its button is given the focus by name.
+    onSubmitInvalid: () => {
+      if (step === "pdf") {
+        focusField("proposal-deck");
+      }
+    },
+    // Continue opens the next step; the list of steps names the one it opens.
+    onSubmitMeta: {} as { to?: Step },
+    onSubmit: async ({ meta }) => {
+      const target = meta.to ?? (step === "review" ? null : steps[steps.indexOf(step) + 1]);
+      if (target) {
+        await open(target);
       } else if (editing) {
         await saveChanges();
       } else {
@@ -177,6 +188,9 @@ function ProposalWizard({
   });
   const values = useStore(form.store, (held) => held.values);
   const { details, confirmed } = values;
+  const submitting = useStore(form.store, (held) => held.isSubmitting);
+  // A sent proposal is saved only on request, so "changed" is the form's own word for it.
+  const edited = useStore(form.store, (held) => held.isDirty);
 
   async function saveOnce(): Promise<boolean> {
     dirty.current = false;
@@ -227,7 +241,6 @@ function ProposalWizard({
       return;
     }
     dirty.current = true;
-    setEdited(true);
     clearTimeout(timer.current);
     if (!editing) {
       timer.current = setTimeout(() => void flush(), AUTOSAVE_MS);
@@ -252,7 +265,10 @@ function ProposalWizard({
   const done = (name: Step) =>
     name === "organization" || (name !== "review" && !missing.includes(name));
 
-  /** Keeps the details on the account; false when they cannot be kept yet. */
+  /**
+   * Keeps the details on the account as far as they are written; false when they cannot be kept
+   * yet. Going forward has checked them all by then; going back keeps what there is, as a draft does.
+   */
   async function saveDetails(): Promise<boolean> {
     if (!detailsChanged) {
       return true;
@@ -279,21 +295,37 @@ function ProposalWizard({
     }
   }
 
+  /**
+   * Opens a step from the list, the review or Back. A later step is reached as Continue reaches it:
+   * the step on the screen is checked first. An earlier one is always open to go back to.
+   */
   async function go(target: Step) {
     // Without an organization there is nothing to write yet.
     if (!organization && target !== "organization") {
       return;
     }
+    if (steps.indexOf(target) > stepIndex) {
+      await form.handleSubmit({ to: target });
+    } else {
+      await open(target);
+    }
+  }
+
+  /** Saves what the step on the screen holds, then shows the step asked for. */
+  async function open(target: Step) {
     if (step === "details" && target !== "details" && !(await saveDetails())) {
       return;
     }
     if (await flush()) {
       setStep(target);
-      window.scrollTo({ top: 0 });
     }
   }
 
   async function leave() {
+    // What was typed into the details is kept too, unless an edit is being dropped.
+    if (!editing && step === "details" && !(await saveDetails())) {
+      return;
+    }
     if (await flush()) {
       // Cancelling an edit drops what was changed and returns to the proposal as sent.
       dirty.current = false;
@@ -303,7 +335,6 @@ function ProposalWizard({
 
   /** Saves every change to the sent proposal at once, then returns to it. */
   async function saveChanges() {
-    setSending(true);
     try {
       if (!(await saveDetails())) {
         return;
@@ -330,13 +361,10 @@ function ProposalWizard({
       } else {
         notify.error(describeProposalError(error));
       }
-    } finally {
-      setSending(false);
     }
   }
 
   async function send() {
-    setSending(true);
     try {
       if (!(await saveDetails())) {
         return;
@@ -360,8 +388,6 @@ function ProposalWizard({
         return;
       }
       notify.error(describeProposalError(error));
-    } finally {
-      setSending(false);
     }
   }
 
@@ -433,7 +459,10 @@ function ProposalWizard({
         </Alert>
       )}
 
-      <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}`)}</h1>
+      {/* The shell moves the focus here when the step changes. */}
+      <h1 tabIndex={-1} className="text-3xl font-semibold tracking-tight outline-none">
+        {t(`steps.${step}`)}
+      </h1>
 
       {organization ? (
         <form
@@ -442,9 +471,8 @@ function ProposalWizard({
           className="flex flex-col gap-5"
           onSubmit={(event) => {
             event.preventDefault();
-            // A form in a dialog opened from here sends its own event up; and only the last step
-            // sends on Enter, as before.
-            if (event.target === event.currentTarget && step === "review") {
+            // A form in a dialog opened from here sends its own event up.
+            if (event.target === event.currentTarget) {
               void form.handleSubmit();
             }
           }}
@@ -540,7 +568,12 @@ function ProposalWizard({
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
-            <Button prominence="tertiary" size="lg" disabled={sending} onClick={() => void leave()}>
+            <Button
+              prominence="tertiary"
+              size="lg"
+              disabled={submitting}
+              onClick={() => void leave()}
+            >
               {editing ? t("edit.cancel") : t("saveAndReturn")}
             </Button>
             <div className="flex items-center gap-3">
@@ -548,31 +581,29 @@ function ProposalWizard({
                 <Button
                   prominence="tertiary"
                   size="lg"
-                  disabled={sending}
+                  disabled={submitting}
                   onClick={() => void go(steps[stepIndex - 1])}
                 >
                   {t("back")}
                 </Button>
               )}
-              {step === "review" ? (
-                <Button
-                  size="lg"
-                  pending={sending}
-                  disabled={
-                    missing.length > 0 ||
-                    (!editing && !confirmed) ||
-                    changed ||
-                    (editing && !edited)
-                  }
-                  onClick={() => void form.handleSubmit()}
-                >
-                  {editing ? t("edit.save") : t("send")}
-                </Button>
-              ) : (
-                <Button size="lg" onClick={() => void form.handleSubmit()}>
-                  {t("continue")}
-                </Button>
-              )}
+              <form.AppForm>
+                {step === "review" ? (
+                  <form.SubmitButton
+                    size="lg"
+                    disabled={
+                      missing.length > 0 ||
+                      (!editing && !confirmed) ||
+                      changed ||
+                      (editing && !edited)
+                    }
+                  >
+                    {editing ? t("edit.save") : t("send")}
+                  </form.SubmitButton>
+                ) : (
+                  <form.SubmitButton size="lg">{t("continue")}</form.SubmitButton>
+                )}
+              </form.AppForm>
             </div>
           </div>
         </form>

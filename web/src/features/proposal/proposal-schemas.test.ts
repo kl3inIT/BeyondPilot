@@ -63,7 +63,7 @@ describe("stepProblems", () => {
     expect(stepProblems(schemas, "team", { ...held, team })).toEqual({ team: { message: "role" } });
   });
 
-  it("refuses a team without exactly one primary contact, without words", () => {
+  it("asks for exactly one primary contact once the roles are filled", () => {
     const none = [{ accountId: "a1", role: "Lead", primary: false }];
     const two = [
       { accountId: "a1", role: "Lead", primary: true },
@@ -71,10 +71,10 @@ describe("stepProblems", () => {
     ];
 
     expect(stepProblems(schemas, "team", { ...held, team: none })).toEqual({
-      team: { message: "" },
+      team: { message: "primary" },
     });
     expect(stepProblems(schemas, "team", { ...held, team: two })).toEqual({
-      team: { message: "" },
+      team: { message: "primary" },
     });
     expect(stepProblems(schemas, "team", { ...held, team: [] })).toBeUndefined();
   });

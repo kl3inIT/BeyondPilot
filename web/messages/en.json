@@ -7408,8 +7408,8 @@
         "remove": "Remove {name}",
         "rolePlaceholder": "Project lead",
         "needed": {
-          "member": "Add at least one member.",
-          "role": "Give every member a role."
+          "role": "Give every member a role.",
+          "primary": "Choose one primary contact."
         },
         "dialog": {
           "title": "Add a team member",

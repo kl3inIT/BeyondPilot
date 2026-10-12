@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import { StepsNav } from "@/components/composites/steps-nav";
 import { Link } from "@/i18n/navigation";
@@ -30,7 +30,8 @@ type WizardShellProps<S extends string = Step> = {
 /**
  * The frame of the use case pages that stand apart from the site: a header with the brand and the use case,
  * the list of steps on the left, and the use case in a card on the right. Below 1024px the steps are
- * a bar that stays at the top of the screen.
+ * a bar that stays at the top of the screen. When the step changes, the page starts again at its top
+ * and the focus goes to the step's heading, the `h1` its content gives with `tabIndex={-1}`.
  */
 function WizardShell<S extends string = Step>({
   title,
@@ -46,6 +47,19 @@ function WizardShell<S extends string = Step>({
 }: WizardShellProps<S>) {
   const t = useTranslations("Organization.useCases.wizard");
   const names = (own?.names ?? steps) as readonly S[];
+  const column = useRef<HTMLDivElement>(null);
+  const shown = useRef(current);
+
+  useEffect(() => {
+    if (shown.current === current) {
+      return;
+    }
+    shown.current = current;
+    // From 1024px the column scrolls, below that the page does.
+    column.current?.scrollTo({ top: 0 });
+    window.scrollTo({ top: 0 });
+    column.current?.querySelector<HTMLElement>("h1")?.focus({ preventScroll: true });
+  }, [current]);
 
   return (
     <div className="flex min-h-svh flex-col bg-muted lg:fixed lg:inset-0 lg:min-h-0 lg:overflow-hidden">
@@ -98,7 +112,7 @@ function WizardShell<S extends string = Step>({
         </aside>
 
         {/* From 1024px the steps stay where they are and only this column scrolls. */}
-        <div className="lg:col-span-2 lg:overflow-y-auto lg:py-12">
+        <div ref={column} className="lg:col-span-2 lg:overflow-y-auto lg:py-12">
           <main className="flex flex-col gap-5 rounded-3xl border bg-background p-6 md:p-10">
             {children}
           </main>

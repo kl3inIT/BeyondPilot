@@ -121,6 +121,7 @@ function Team({ members }: ProposalTeamStepProps) {
                         value={row.accountId}
                         aria-label={t("primaryOf", { name })}
                         aria-invalid={noPrimary || undefined}
+                        aria-describedby={noPrimary ? errorId : undefined}
                       />
                     </TableCell>
                     <TableCell>
