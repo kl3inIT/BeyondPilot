@@ -197,6 +197,14 @@ test.describe("apply", () => {
     );
   });
 
+  test("the link of an email asks to sign in and returns to the application", async ({ page }) => {
+    const visitor = await page.request.get(`/applications/${submittedId}`, { maxRedirects: 0 });
+    expect(visitor.status()).toBe(307);
+    expect(visitor.headers()["location"]).toBe(
+      `/sign-in?returnTo=${encodeURIComponent(`/applications/${submittedId}`)}`,
+    );
+  });
+
   test("a person on their own applies in four steps", async ({
     page,
     context,

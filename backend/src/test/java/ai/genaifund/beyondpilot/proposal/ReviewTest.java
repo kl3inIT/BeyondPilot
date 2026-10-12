@@ -274,7 +274,8 @@ class ReviewTest extends ApplicationsHttpTest {
 
 		post(operator, release, emails()).expectStatus().isOk();
 		assertThat(mail.latestSubjectTo("chosen@released.test")).isEqualTo("Shortlisted: Released challenge");
-		assertThat(mail.latestTextTo("chosen@released.test")).contains("Hi Chosen Builder");
+		assertThat(mail.latestTextTo("chosen@released.test")).contains("Hi Chosen Builder")
+			.containsPattern("https?://[^/ ]+/applications/" + chosen.id());
 		assertThat(mail.latestSubjectTo("other@released.test")).isEqualTo("Your application to Released challenge");
 		assertThat(JsonPath.<List<String>>read(body(get(chosen.session(), API + "/applications").expectStatus().isOk()),
 				"$.items[*].outcome")).containsExactly("shortlisted");

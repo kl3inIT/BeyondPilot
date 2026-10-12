@@ -325,19 +325,22 @@ public class EmailService {
 	}
 
 	/**
-	 * Confirms to an applicant that their application reached the program.
+	 * Confirms to an applicant that their application reached the program. The link opens the application after signing
+	 * in, so a person who closed the page comes back to it; it acts on nothing.
+	 * @param applicationId the application, which the link opens
 	 * @param version which submission this is: 1 for the first, more when it was submitted again
 	 * @param editableUntil until when the application can still change; null when it cannot
 	 */
 	@Transactional
-	public void sendApplicationReceived(String recipient, String programName, int version,
+	public void sendApplicationReceived(String recipient, String programName, UUID applicationId, int version,
 			@Nullable Instant editableUntil) {
 		String until = editableUntil == null ? null
 				: DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH)
 					.withZone(VIETNAM)
 					.format(editableUntil) + " ICT";
 		queue(EmailKind.APPLICATION_RECEIVED, recipient,
-				values("programName", programName, "resubmitted", version > 1, "editableUntil", until));
+				values("programName", programName, "resubmitted", version > 1, "editableUntil", until,
+						"applicationUrl", applicationUrl(applicationId)));
 	}
 
 	/**
@@ -378,11 +381,19 @@ public class EmailService {
 
 	/**
 	 * Sends an applicant the outcome of their application, as the operator wrote it for the applicant's group. The
-	 * message is plain text; its line breaks are kept.
+	 * message is plain text; its line breaks are kept. A link to the application follows it, which opens after signing
+	 * in and acts on nothing.
+	 * @param applicationId the application, which the link opens
 	 */
 	@Transactional
-	public void sendApplicationOutcome(String recipient, String subject, String message) {
-		queue(EmailKind.APPLICATION_OUTCOME, recipient, values("subject", subject, "message", message.strip()));
+	public void sendApplicationOutcome(String recipient, String subject, String message, UUID applicationId) {
+		queue(EmailKind.APPLICATION_OUTCOME, recipient, values("subject", subject, "message", message.strip(),
+				"applicationUrl", applicationUrl(applicationId)));
+	}
+
+	/** Where an applicant reads their own application on the site. */
+	private String applicationUrl(UUID applicationId) {
+		return settings.appearance().siteUrl() + "/applications/" + applicationId;
 	}
 
 	private void queue(EmailKind kind, String recipient, Map<String, @Nullable Object> values) {
