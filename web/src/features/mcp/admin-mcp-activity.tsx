@@ -3,7 +3,7 @@ import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
-import { DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
+import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AppMark } from "@/features/identity/app-mark";
@@ -15,7 +15,7 @@ import { McpActivityToolbar } from "./admin-mcp-activity-toolbar";
 import { EveryConnectedApp } from "./admin-mcp-apps";
 import { McpAdminHeader, type McpCounts } from "./admin-mcp-pages";
 import { mcpActivitySearch, type McpActivitySearch } from "./admin-mcp-search";
-import { PageSizeSelect } from "@/components/composites/page-size-select";
+import { ListFooter } from "@/components/composites/list-footer";
 
 const address = createSerializer(mcpActivitySearch);
 
@@ -95,8 +95,6 @@ async function McpActivityPage({
       ),
     };
   });
-
-  const pages = Math.max(1, Math.ceil(calls.total / calls.pageSize));
   const pageHref = (number: number) =>
     address(siteRoutes.adminMcpActivity, { ...search, page: number });
   const filtered =
@@ -183,20 +181,12 @@ async function McpActivityPage({
         {empty && <li>{empty}</li>}
       </ul>
 
-      <DataTableFooter
+      <ListFooter
         count={t("count", { count: calls.total })}
         page={calls.page}
-        pages={pages}
+        pageSize={calls.pageSize}
+        total={calls.total}
         href={pageHref}
-        sizer={<PageSizeSelect size={calls.pageSize} total={calls.total} />}
-        labels={{
-          navigation: t("pagination.label"),
-          previous: t("pagination.previous"),
-          next: t("pagination.next"),
-          goToPrevious: t("pagination.goToPrevious"),
-          goToNext: t("pagination.goToNext"),
-          page: (number) => t("pagination.page", { page: number }),
-        }}
       />
     </div>
   );
