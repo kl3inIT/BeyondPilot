@@ -11,5 +11,7 @@ public record OwnOfferResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIR
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "How many of the organization's solutions come with it; it is deleted only when none does.") int solutions,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Sent back with a save, which is refused when the offer changed since.") long version) {
+				description = "Sent back with a save, which is refused when the offer changed since.") long version,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "True once it is closed to new solutions; the solutions that come with it keep it.") boolean closed) {
 }

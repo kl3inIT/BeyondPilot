@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AdminOffersPage } from "@/features/solution/admin-offers-page";
+import { loadAdminOffersSearch } from "@/features/solution/offers-search";
 import { readAdminOffers } from "@/features/solution/solution-queries";
 import { ApiError } from "@/lib/api/client";
 import { requireRole } from "@/lib/auth/session";
@@ -17,10 +18,14 @@ export async function generateMetadata({
   return { title: t("metaTitle"), robots: { index: false } };
 }
 
-export default async function AdminOffersRoute({ params }: PageProps<"/[locale]/admin/offers">) {
+export default async function AdminOffersRoute({
+  params,
+  searchParams,
+}: PageProps<"/[locale]/admin/offers">) {
   const { locale } = await params;
   setRequestLocale(locale);
   await requireRole("operator", siteRoutes.adminOffers);
+  const search = await loadAdminOffersSearch(searchParams);
   const offers = await readAdminOffers().catch((error: unknown) => {
     // The role was withdrawn, or the session ended, between the check above and this read.
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
@@ -29,5 +34,5 @@ export default async function AdminOffersRoute({ params }: PageProps<"/[locale]/
     throw error;
   });
 
-  return <AdminOffersPage offers={offers} />;
+  return <AdminOffersPage offers={offers} search={search} />;
 }

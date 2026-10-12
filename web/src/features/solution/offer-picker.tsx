@@ -73,13 +73,19 @@ function OfferPicker({
     ...value.filter((chosen) => !listed.some((offer) => offer.id === chosen.id)),
   ];
 
+  // A closed offer a solution keeps is chosen by no other, which its label says.
+  const label = (offer: Offer) => {
+    const named = offer.fromGenAiFund ? t("fromGenAiFund", { title: offer.title }) : offer.title;
+    return offer.closed ? t("closed", { title: named }) : named;
+  };
+
   return (
     <div className="flex flex-col items-start gap-2">
       <CodeCombobox
         id={id}
         options={options.map((offer) => ({
           value: offer.id,
-          label: offer.fromGenAiFund ? t("fromGenAiFund", { title: offer.title }) : offer.title,
+          label: label(offer),
         }))}
         value={value.map((offer) => offer.id)}
         onValueChange={(ids) =>
