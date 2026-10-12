@@ -39,7 +39,7 @@ describe("profileSchema", () => {
   it("asks for every fact of an empty company, each in its own words", () => {
     expect(refusedAt(profileValuesOf())).toEqual({
       name: "nameRequired",
-      website: "websiteInvalid",
+      website: "websiteRequired",
       teamSize: "teamSizeRequired",
       industries: "industriesRequired",
       country: "countryRequired",
@@ -51,7 +51,7 @@ describe("profileSchema", () => {
   it("takes text that is only spaces as nothing", () => {
     expect(refusedAt({ ...filled, name: "  ", website: " ", description: "\n" })).toEqual({
       name: "nameRequired",
-      website: "websiteInvalid",
+      website: "websiteRequired",
       description: "descriptionRequired",
     });
   });
@@ -128,7 +128,7 @@ describe("profileValuesOf and profileBodyOf", () => {
     });
   });
 
-  it("trims the website and the description, and sends the name as written", () => {
+  it("trims the name, the website and the description", () => {
     expect(
       profileBodyOf({
         ...filled,
@@ -136,6 +136,6 @@ describe("profileValuesOf and profileBodyOf", () => {
         website: " https://a.example ",
         description: " Routes. ",
       }),
-    ).toMatchObject({ name: " Sài Gòn ", website: "https://a.example", description: "Routes." });
+    ).toMatchObject({ name: "Sài Gòn", website: "https://a.example", description: "Routes." });
   });
 });

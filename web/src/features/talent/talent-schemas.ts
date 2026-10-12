@@ -122,11 +122,11 @@ export function missingForReview(values: TalentValues): ReviewField[] {
   return reviewFields.filter((field) => refused.includes(field));
 }
 
-/** The save the backend takes: empty text is no value, and the name and the titles go as written. */
+/** The save the backend takes: empty text is no value, the name goes trimmed and the titles as written. */
 export function talentBodyOf(values: TalentValues, version: number | null): SaveTalentProfile {
   const text = (value: string) => value.trim() || null;
   return {
-    name: values.name,
+    name: values.name.trim(),
     headline: text(values.headline),
     bio: text(values.bio),
     roles: values.roles,

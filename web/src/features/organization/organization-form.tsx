@@ -144,7 +144,8 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
           );
         }
       } catch (error) {
-        const rejected = [...rejectedFields(error)].filter(
+        // An operator's save holds the profile under `profile`.
+        const rejected = [...rejectedFields(error, admin ? "profile" : undefined)].filter(
           (field): field is keyof typeof profileRefusals => field in profileRefusals,
         );
         setServerErrors(formApi, {

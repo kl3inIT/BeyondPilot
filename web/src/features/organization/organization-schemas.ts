@@ -17,7 +17,9 @@ export const profileRefusals = {
 } as const;
 
 /** The words a schema's messages are written in; the form passes its translator. */
-type Say = (key: (typeof profileRefusals)[keyof typeof profileRefusals]) => string;
+type Say = (
+  key: (typeof profileRefusals)[keyof typeof profileRefusals] | "websiteRequired",
+) => string;
 
 /** An organization's profile as its form holds it: every field as text, so none is uncontrolled. */
 export type ProfileValues = {
@@ -49,14 +51,14 @@ export function profileValuesOf(organization?: Organization): ProfileValues {
 
 /**
  * What the form checks before it asks the backend: that every fact is there. Whether the website is
- * an address is the backend's to say, and its refusal is worded as the missing one is.
+ * an address is the backend's to say.
  */
 export function profileSchema(say: Say) {
   const filled = (text: string) => text.trim() !== "";
   return z
     .object({
       name: z.string().refine(filled, say("nameRequired")),
-      website: z.string().refine(filled, say("websiteInvalid")),
+      website: z.string().refine(filled, say("websiteRequired")),
       type: z.enum(organizationTypes),
       teamSize: z.string().min(1, say("teamSizeRequired")),
       industries: z.array(z.string()),
@@ -80,7 +82,7 @@ export function profileSchema(say: Say) {
 /** The profile the backend takes, from values the schema passed. */
 export function profileBodyOf(values: ProfileValues): Omit<SaveOrganization, "version"> {
   return {
-    name: values.name,
+    name: values.name.trim(),
     type: values.type,
     country: values.country,
     teamSize: values.teamSize as SaveOrganization["teamSize"],
