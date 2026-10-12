@@ -52,7 +52,16 @@ import {
   saveBodyOf,
   settingsValuesOf,
 } from "./program-values";
-import { EventDialog, KeyDateDialog } from "./schedule-dialogs";
+import { EventDialog, KeyDateDialog, WindowTitleDialog } from "./schedule-dialogs";
+
+/** The dates the application window puts on the timeline, by the field that holds each one's title. */
+const windowTitles = {
+  opens: "opensTitle",
+  closes: "closesTitle",
+  outcomes: "outcomesTitle",
+} as const;
+
+type WindowDate = keyof typeof windowTitles;
 
 /**
  * One part of Settings: its title beside its fields, with what the title alone does not say, ruled
@@ -114,6 +123,7 @@ const refusals = [
   "PROGRAM_COVER_NOT_USABLE",
   "PROGRAM_KEY_DATE_OUT_OF_ORDER",
   "PROGRAM_EVENT_OUT_OF_ORDER",
+  "PROGRAM_EVENT_CITY_REQUIRED",
   "PROGRAM_OPENING_FIXED",
   "PROGRAM_PUBLISHED_INCOMPLETE",
 ] as const satisfies readonly ErrorCode[];
@@ -135,6 +145,8 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
   const t = useTranslations("Admin.programs.settings");
   const states = useTranslations("Admin.programs.state");
   const types = useTranslations("Program.type");
+  // The words a date of the window shows on the program's page until the operator gives it a title.
+  const timeline = useTranslations("Program.timeline");
   const say = useTranslations("Form.errors");
   const format = programFormatter(useLocale());
   const notify = useNotify();
@@ -142,6 +154,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
   const router = useRouter();
   const [keyDate, setKeyDate] = useState<Editing>(null);
   const [event, setEvent] = useState<Editing>(null);
+  const [renaming, setRenaming] = useState<WindowDate | null>(null);
   const addKeyDate = useRef<HTMLButtonElement>(null);
   const addEvent = useRef<HTMLButtonElement>(null);
   // The program as the last save answered it, for Save and publish; null when that save was refused.
@@ -152,6 +165,11 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
     return {
       keyDates: new Set(values.keyDates.map((value) => JSON.stringify(value))),
       events: new Set(values.events.map((value) => JSON.stringify(value))),
+      titles: {
+        opens: values.opensTitle,
+        closes: values.closesTitle,
+        outcomes: values.outcomesTitle,
+      },
     };
   });
 
@@ -498,44 +516,46 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
           <form.Subscribe
             selector={(formState) => ({
               keyDates: formState.values.keyDates,
+              titles: {
+                opens: formState.values.opensTitle,
+                closes: formState.values.closesTitle,
+                outcomes: formState.values.outcomesTitle,
+              },
               takes: formState.values.takesApplications,
               opens: [formState.values.opensDay, formState.values.opensTime],
               closes: [formState.values.closesDay, formState.values.closesTime],
               outcomes: formState.values.outcomesDueOn,
             })}
           >
-            {({ keyDates, takes, opens, closes, outcomes }) => {
-              // The window's dates belong in the timeline; they are edited under Applications.
+            {({ keyDates, titles, takes, opens, closes, outcomes }) => {
+              // The window's dates belong in the timeline. Their day and time are edited under
+              // Applications; their title is the operator's, or the words the page shows without one.
+              const windowDate = (date: WindowDate, startsAt: string, allDay: boolean) => ({
+                window: date,
+                title: titles[date].trim() || timeline(date),
+                startsAt,
+                endsAt: null,
+                allDay,
+                index: null,
+                note: t("keyDates.fromWindow"),
+                unsaved: titles[date].trim() !== stored.titles[date],
+              });
               const locked = takes
                 ? [
                     opens[0] &&
-                      opens[1] && {
-                        title: t("keyDates.opens"),
-                        startsAt: instantInVietnam(opens[0], opens[1]),
-                      },
+                      opens[1] &&
+                      windowDate("opens", instantInVietnam(opens[0], opens[1]), false),
                     closes[0] &&
-                      closes[1] && {
-                        title: t("keyDates.closes"),
-                        startsAt: instantInVietnam(closes[0], closes[1]),
-                      },
-                    outcomes && {
-                      title: t("keyDates.outcomes"),
-                      startsAt: instantInVietnam(outcomes, "00:00"),
-                      allDay: true,
-                    },
+                      closes[1] &&
+                      windowDate("closes", instantInVietnam(closes[0], closes[1]), false),
+                    outcomes && windowDate("outcomes", instantInVietnam(outcomes, "00:00"), true),
                   ].filter((entry) => !!entry)
                 : [];
               const rows = [
-                ...locked.map((entry) => ({
-                  ...entry,
-                  endsAt: null,
-                  allDay: "allDay" in entry,
-                  index: null,
-                  note: t("keyDates.fromWindow"),
-                  unsaved: false,
-                })),
+                ...locked,
                 ...keyDates.map((value, index) => ({
                   ...keyDateOf(value),
+                  window: null,
                   index,
                   note: value.note || null,
                   unsaved: !stored.keyDates.has(JSON.stringify(value)),
@@ -547,7 +567,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
                   <ul className="flex flex-col border-b">
                     {rows.map((row) => (
                       <li
-                        key={row.index === null ? `window-${row.title}` : `date-${row.index}`}
+                        key={row.window ? `window-${row.window}` : `date-${row.index}`}
                         className="flex items-center gap-3 border-t py-3"
                       >
                         <ScheduleEntry
@@ -556,12 +576,23 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
                           note={row.note}
                         />
                         {row.unsaved && <Badge variant="outline">{t("notSaved")}</Badge>}
-                        {row.index === null ? (
-                          <LockIcon
-                            role="img"
-                            className="size-4 shrink-0 text-muted-foreground"
-                            aria-label={t("keyDates.locked")}
-                          />
+                        {row.window ? (
+                          <>
+                            {/* The date is the window's and stays closed here; its title is not. */}
+                            <LockIcon
+                              role="img"
+                              className="size-4 shrink-0 text-muted-foreground"
+                              aria-label={t("keyDates.locked")}
+                            />
+                            <Button
+                              prominence="tertiary"
+                              size="sm"
+                              aria-label={t("windowTitle.renameNamed", { name: row.title })}
+                              onClick={() => setRenaming(row.window)}
+                            >
+                              {t("windowTitle.rename")}
+                            </Button>
+                          </>
                         ) : (
                           <Button
                             prominence="tertiary"
@@ -722,6 +753,17 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
                   setKeyDate(null);
                 }
           }
+        />
+      )}
+      {renaming && (
+        <WindowTitleDialog
+          value={form.getFieldValue(windowTitles[renaming])}
+          defaultTitle={timeline(renaming)}
+          onClose={() => setRenaming(null)}
+          onSave={(title) => {
+            form.setFieldValue(windowTitles[renaming], title);
+            setRenaming(null);
+          }}
         />
       )}
       {event && (

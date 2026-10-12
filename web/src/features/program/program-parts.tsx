@@ -43,7 +43,7 @@ type Step = { title: string; when: string; at: string; note?: string | null };
 
 /**
  * The steps of a program in order: its key dates, and the opening, the closing and the day outcomes
- * are due, named in the visitor's language.
+ * are due, each under the title the operator gave it or, without one, named in the visitor's language.
  */
 export async function timelineOf(program: Program, format: Format): Promise<Step[]> {
   const t = await getTranslations("Program.timeline");
@@ -57,16 +57,20 @@ export async function timelineOf(program: Program, format: Format): Promise<Step
   if (applications) {
     steps.push(
       {
-        title: t("opens"),
+        title: applications.opensTitle ?? t("opens"),
         when: whenText(format, { startsAt: applications.opensAt }),
         at: applications.opensAt,
       },
-      { title: t("closes"), when: deadlineText(format, applications), at: applications.closesAt },
+      {
+        title: applications.closesTitle ?? t("closes"),
+        when: deadlineText(format, applications),
+        at: applications.closesAt,
+      },
     );
     if (applications.outcomesDueOn) {
       const due = vietnamDay(applications.outcomesDueOn).toISOString();
       steps.push({
-        title: t("outcomes"),
+        title: applications.outcomesTitle ?? t("outcomes"),
         when: whenText(format, { startsAt: due, allDay: true }),
         at: due,
       });

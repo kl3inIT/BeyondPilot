@@ -41,6 +41,9 @@ public enum ProgramErrorCode implements ErrorCode {
 
 	EVENT_OUT_OF_ORDER("PROGRAM_EVENT_OUT_OF_ORDER", ErrorCategory.VALIDATION, "An event ends before it starts."),
 
+	EVENT_CITY_REQUIRED("PROGRAM_EVENT_CITY_REQUIRED", ErrorCategory.VALIDATION,
+			"An event held in person needs its city."),
+
 	EXTERNAL_URL_REQUIRED("PROGRAM_EXTERNAL_URL_REQUIRED", ErrorCategory.VALIDATION,
 			"A program whose page is somewhere else needs the address of that page."),
 
