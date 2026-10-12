@@ -242,7 +242,7 @@ test.describe("admin", () => {
     await expect(page.getByRole("navigation", { name: "Steps of the use case" })).toContainText(
       "Review and publish",
     );
-    await expect(page.getByText("Submit for approval", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Send for review", { exact: true })).toHaveCount(0);
     await expect(page.getByText("Save draft", { exact: true })).toHaveCount(0);
 
     await page.getByRole("combobox", { name: "Create this use case for" }).click();

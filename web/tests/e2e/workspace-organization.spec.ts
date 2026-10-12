@@ -145,7 +145,7 @@ test.describe("workspace organization", () => {
     const changes = await answerDecisions(page, changesPath, 201, {});
     await page.goto("/workspace/organization/new");
 
-    await page.getByRole("button", { name: "Submit for approval" }).click();
+    await page.getByRole("button", { name: "Send for review" }).click();
     await expect(page.getByText("Enter the organization's name.")).toBeVisible();
     await expect(page.getByText("Select a team size.")).toBeVisible();
     await expect(page.getByText("Choose at least one industry.")).toBeVisible();
@@ -173,7 +173,7 @@ test.describe("workspace organization", () => {
     await page.getByRole("option", { name: "Vietnam" }).click();
     await page.getByLabel("Year founded").fill("2019");
     await page.getByLabel("Short description").fill("Route planning for fleets.");
-    await page.getByRole("button", { name: "Submit for approval" }).click();
+    await page.getByRole("button", { name: "Send for review" }).click();
 
     await expect(page.getByText("Organization created and sent for review.")).toBeVisible();
     await expect(page).toHaveURL("/workspace/organization");
