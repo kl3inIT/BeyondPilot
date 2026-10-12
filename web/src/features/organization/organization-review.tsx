@@ -1,18 +1,21 @@
 "use client";
 
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { ShieldCheckIcon, Undo2Icon } from "lucide-react";
-import { useId, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { ReasonDialog } from "@/components/composites/reason-dialog";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
+import { ApiError } from "@/lib/api/client";
 import {
   approveOrganization,
   refuseOrganization,
@@ -23,9 +26,9 @@ import {
 
 import { refusalReasons } from "./organization-codes";
 import { organizationError } from "./organization-errors";
-import { websiteHost } from "./organization-format";
+import { domainOf, isDomain, websiteHost } from "./organization-format";
 import { OrganizationMark } from "./organization-mark";
-import { useAdminOrganization, useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
+import { useAdminOrganization } from "./verified-domain";
 
 /** The longest reason for a send back that the backend takes. */
 const MAX_REASON = 1000;
@@ -52,15 +55,44 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
   const notify = useNotify();
   const router = useRouter();
   const detail = useAdminOrganization(organization.id);
-  const domain = useVerifiedDomain(detail?.suggestedDomain);
   const [refusing, setRefusing] = useState(false);
   const [sendingBack, setSendingBack] = useState(false);
-  const [sendBackReason, setSendBackReason] = useState("");
-  const sendBackId = useId();
   const [pending, setPending] = useState(false);
   // Set at the first press, before the pending state has rendered, so presses in one tick decide once.
   const deciding = useRef(false);
   const { id, name } = organization;
+
+  // The domain starts from what the backend proposes, which can still arrive after the dialog
+  // opened: the form takes new default values until the operator has touched it.
+  const approval = useAppForm({
+    defaultValues: { emailDomain: detail?.suggestedDomain ?? "" },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({
+        emailDomain: z
+          .string()
+          .refine((text) => domainOf(text) === "" || isDomain(domainOf(text)), t("domainInvalid")),
+      }),
+    },
+    onSubmit: ({ value }) =>
+      decide(
+        () =>
+          approveOrganization({
+            path: { id },
+            body: { emailDomain: domainOf(value.emailDomain) || null },
+          }),
+        "Organization.done.organizationApproved",
+      ),
+  });
+  const sendBack = useAppForm({
+    defaultValues: { reason: "" },
+    onSubmit: ({ value }) =>
+      decide(
+        () => sendBackOrganization({ path: { id }, body: { reason: value.reason.trim() } }),
+        "Organization.done.organizationSentBack",
+      ),
+  });
+  const sendBackReason = useStore(sendBack.store, (state) => state.values.reason);
 
   async function decide(run: () => Promise<unknown>, done: Parameters<typeof notify.success>[0]) {
     if (deciding.current) {
@@ -75,7 +107,9 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
       router.refresh();
     } catch (error) {
       // A domain another organization has is said at the field; anything else in a toast.
-      if (!domain.refused(error)) {
+      if (error instanceof ApiError && error.code === "ORGANIZATION_DOMAIN_TAKEN") {
+        setServerErrors(approval, { fields: { emailDomain: { message: t("domainTaken") } } });
+      } else {
         notify.error(organizationError(error));
       }
       deciding.current = false;
@@ -83,16 +117,6 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
     }
   }
 
-  function approve() {
-    const emailDomain = domain.read();
-    if (emailDomain === undefined) {
-      return;
-    }
-    void decide(
-      () => approveOrganization({ path: { id }, body: { emailDomain } }),
-      "Organization.done.organizationApproved",
-    );
-  }
   const refuse = (reason: string, message: string) =>
     decide(
       () =>
@@ -103,53 +127,27 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
       "Organization.done.organizationRefused",
     );
 
-  const sendBack = () =>
-    decide(
-      () => sendBackOrganization({ path: { id }, body: { reason: sendBackReason.trim() } }),
-      "Organization.done.organizationSentBack",
-    );
-
   if (sendingBack) {
     return (
-      // Leaving the reason goes back to the review, where the organization can still be approved.
-      <Dialog open onOpenChange={(open) => !open && !pending && setSendingBack(false)}>
-        <DialogContent showCloseButton={false} className="sm:max-w-lg">
-          <DecisionDialogHeader
-            tone="warning"
-            icon={Undo2Icon}
-            title={t("sendBackTitle", { name })}
-            description={t("sendBackLead")}
-          />
-          <Field>
-            <FieldLabel htmlFor={sendBackId}>{t("sendBackLabel")}</FieldLabel>
-            <Textarea
-              id={sendBackId}
-              rows={4}
-              maxLength={MAX_REASON}
-              value={sendBackReason}
-              onChange={(event) => setSendBackReason(event.target.value)}
-            />
-          </Field>
-          <DialogFooter variant="plain">
-            <Button
-              size="lg"
-              prominence="secondary"
-              disabled={pending}
-              onClick={() => setSendingBack(false)}
-            >
-              {t("back")}
-            </Button>
-            <Button
-              size="lg"
-              pending={pending}
-              disabled={sendBackReason.trim() === ""}
-              onClick={() => void sendBack()}
-            >
-              {t("sendBackConfirm")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open
+        // Leaving the reason goes back to the review, where the organization can still be approved.
+        onOpenChange={(open) => !open && setSendingBack(false)}
+        form={sendBack}
+        title={t("sendBackTitle", { name })}
+        description={t("sendBackLead")}
+        mark={{ tone: "warning", icon: Undo2Icon }}
+        width="lg"
+        submitLabel={t("sendBackConfirm")}
+        cancelLabel={t("back")}
+        submitDisabled={sendBackReason.trim() === ""}
+      >
+        <sendBack.AppField name="reason">
+          {(field) => (
+            <field.TextareaField label={t("sendBackLabel")} rows={4} maxLength={MAX_REASON} />
+          )}
+        </sendBack.AppField>
+      </FormDialog>
     );
   }
 
@@ -183,46 +181,67 @@ function OrganizationReview({ organization, onClose }: OrganizationReviewProps) 
   return (
     <Dialog open onOpenChange={(open) => !open && !pending && onClose()}>
       <DialogContent showCloseButton={false} className="sm:max-w-xl">
-        <DecisionDialogHeader tone="success" icon={ShieldCheckIcon} title={t("title", { name })} />
-        <div className="flex items-center gap-3 rounded-lg border bg-muted p-3">
-          <OrganizationMark name={name} logoFileId={detail?.organization.logoFileId} />
-          <div className="grid min-w-0 gap-0.5 text-sm">
-            <span className="font-medium break-words">{kind.join(" · ")}</span>
-            <span className="text-muted-foreground">
-              {detail ? t("lead", { creator: detail.createdBy, day }) : t("leadUnknown", { day })}
-            </span>
+        <form
+          id={approval.formId}
+          noValidate
+          className="flex flex-col gap-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void approval.handleSubmit();
+          }}
+        >
+          <DecisionDialogHeader
+            tone="success"
+            icon={ShieldCheckIcon}
+            title={t("title", { name })}
+          />
+          <div className="flex items-center gap-3 rounded-lg border bg-muted p-3">
+            <OrganizationMark name={name} logoFileId={detail?.organization.logoFileId} />
+            <div className="grid min-w-0 gap-0.5 text-sm">
+              <span className="font-medium break-words">{kind.join(" · ")}</span>
+              <span className="text-muted-foreground">
+                {detail ? t("lead", { creator: detail.createdBy, day }) : t("leadUnknown", { day })}
+              </span>
+            </div>
           </div>
-        </div>
-        <VerifiedDomainField
-          id="review-domain"
-          domain={domain}
-          label={t("domain")}
-          hint={t("domainHint")}
-          problems={{ invalid: t("domainInvalid"), taken: t("domainTaken") }}
-          disabled={pending}
-        />
-        <DialogFooter variant="plain">
-          <Button
-            size="lg"
-            tone="danger"
-            prominence="secondary"
-            disabled={pending}
-            onClick={() => setRefusing(true)}
-          >
-            {t("refuse")}
-          </Button>
-          <Button
-            size="lg"
-            prominence="secondary"
-            disabled={pending}
-            onClick={() => setSendingBack(true)}
-          >
-            {t("sendBack")}
-          </Button>
-          <Button size="lg" pending={pending} onClick={approve}>
-            {t("approve")}
-          </Button>
-        </DialogFooter>
+          <approval.AppField name="emailDomain">
+            {(field) => (
+              <field.TextField
+                label={t("domain")}
+                description={t("domainHint")}
+                inputMode="url"
+                autoCapitalize="none"
+                autoComplete="off"
+                spellCheck={false}
+                maxLength={253}
+                uncounted
+                disabled={pending}
+              />
+            )}
+          </approval.AppField>
+          <DialogFooter variant="plain">
+            <Button
+              size="lg"
+              tone="danger"
+              prominence="secondary"
+              disabled={pending}
+              onClick={() => setRefusing(true)}
+            >
+              {t("refuse")}
+            </Button>
+            <Button
+              size="lg"
+              prominence="secondary"
+              disabled={pending}
+              onClick={() => setSendingBack(true)}
+            >
+              {t("sendBack")}
+            </Button>
+            <Button type="submit" size="lg" pending={pending}>
+              {t("approve")}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

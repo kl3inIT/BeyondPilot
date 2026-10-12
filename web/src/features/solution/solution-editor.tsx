@@ -588,7 +588,7 @@ function SolutionEditor({
       >
         <nav
           aria-label={t("steps.label")}
-          className="flex w-70 shrink-0 flex-col gap-4 max-lg:hidden"
+          className="flex w-70 shrink-0 flex-col gap-4 self-start max-lg:hidden lg:sticky lg:top-24"
         >
           <p className="text-xs font-medium text-muted-foreground">{t("steps.label")}</p>
           <ol className="flex flex-col">

@@ -1,20 +1,15 @@
 "use client";
 
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { FormDialog } from "@/components/composites/form-dialog";
+import { useAppForm } from "@/components/form/app-form";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useNotify } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
 import { createSolution } from "@/lib/api/generated";
@@ -31,54 +26,70 @@ type NewSolutionFormProps = {
   onCreated?: (id: string) => void;
 };
 
-/** Asks for the name of a new solution. It is created as a draft and opens in its editor. */
-function NewSolutionForm({ onCancel, onCreated }: NewSolutionFormProps) {
+/**
+ * The form that names a new solution. It is created as a draft and opens in its editor, or is
+ * handed to `onCreated`.
+ */
+function useNewSolutionForm(onCreated?: (id: string) => void) {
   const t = useTranslations("Solution.mine.create");
   const locale = useLocale();
   const notify = useNotify();
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [pending, setPending] = useState(false);
-  const [invalid, setInvalid] = useState(false);
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!name.trim()) {
-      setInvalid(true);
-      return;
-    }
-    setPending(true);
-    try {
-      const { data } = await createSolution({ body: { name } });
-      if (onCreated) {
-        onCreated(data.id);
+  return useAppForm({
+    defaultValues: { name: "" },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({
+        name: z.string().refine((text) => text.trim() !== "", t("nameRequired")),
+      }),
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        const { data } = await createSolution({ body: { name: value.name } });
+        if (onCreated) {
+          onCreated(data.id);
+        } else {
+          router.push(getPathname({ href: `${siteRoutes.workspaceSolutions}/${data.id}`, locale }));
+        }
+      } catch (error) {
+        notify.error(solutionError(error));
         return;
       }
       // The form stays pending until the editor arrives, so a second press cannot create twice.
-      router.push(getPathname({ href: `${siteRoutes.workspaceSolutions}/${data.id}`, locale }));
-    } catch (error) {
-      notify.error(solutionError(error));
-      setPending(false);
-    }
-  }
+      await new Promise(() => undefined);
+    },
+  });
+}
+
+/**
+ * Asks for the name of a new solution, inside a dialog that is someone else's: the frame is drawn
+ * here, by hand, because the popup that shows it swaps it with its own content.
+ */
+function NewSolutionForm({ onCancel, onCreated }: NewSolutionFormProps) {
+  const t = useTranslations("Solution.mine.create");
+  const form = useNewSolutionForm(onCreated);
+  const pending = useStore(form.store, (state) => state.isSubmitting);
 
   return (
-    <form noValidate onSubmit={submit} className="flex flex-col gap-4">
+    <form
+      id={form.formId}
+      noValidate
+      className="flex flex-col gap-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        // React passes the event to the page's own form, when the dialog was opened from one.
+        event.stopPropagation();
+        void form.handleSubmit();
+      }}
+    >
       <DialogHeader>
         <DialogTitle>{t("title")}</DialogTitle>
         <DialogDescription>{t("lead")}</DialogDescription>
       </DialogHeader>
-      <Field data-invalid={invalid || undefined}>
-        <FieldLabel htmlFor="solution-new-name">{t("name")}</FieldLabel>
-        <Input
-          id="solution-new-name"
-          maxLength={120}
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          aria-invalid={invalid || undefined}
-        />
-        {invalid && <FieldError>{t("nameRequired")}</FieldError>}
-      </Field>
+      <form.AppField name="name">
+        {(field) => <field.TextField label={t("name")} maxLength={120} />}
+      </form.AppField>
       <DialogFooter>
         <Button prominence="secondary" disabled={pending} onClick={onCancel}>
           {t("cancel")}
@@ -95,17 +106,26 @@ function NewSolutionForm({ onCancel, onCreated }: NewSolutionFormProps) {
 function CreateSolution() {
   const t = useTranslations("Solution.mine.create");
   const [open, setOpen] = useState(false);
+  const form = useNewSolutionForm();
 
   return (
     <>
       <Button size="lg" onClick={() => setOpen(true)}>
         {t("title")}
       </Button>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent showCloseButton={false}>
-          <NewSolutionForm onCancel={() => setOpen(false)} />
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        form={form}
+        title={t("title")}
+        description={t("lead")}
+        submitLabel={t("submit")}
+        cancelLabel={t("cancel")}
+      >
+        <form.AppField name="name">
+          {(field) => <field.TextField label={t("name")} maxLength={120} />}
+        </form.AppField>
+      </FormDialog>
     </>
   );
 }
