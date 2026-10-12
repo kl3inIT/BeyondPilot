@@ -3762,6 +3762,7 @@
       "notStated": "Chưa nêu",
       "website": "Website",
       "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
+      "websiteRequired": "Hãy nhập website của tổ chức.",
       "description": "Mô tả ngắn",
       "descriptionHint": "Tổ chức làm gì và cho ai.",
       "counter": "{count} / {max}",

@@ -3762,6 +3762,7 @@
       "notStated": "Not stated",
       "website": "Website",
       "websiteInvalid": "Enter a full address that starts with https://",
+      "websiteRequired": "Enter the organization's website.",
       "description": "Short description",
       "descriptionHint": "What the organization does and for whom.",
       "counter": "{count} / {max}",
