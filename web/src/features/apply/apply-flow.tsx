@@ -1,14 +1,7 @@
 "use client";
 
 import { useStore } from "@tanstack/react-form";
-import {
-  CheckIcon,
-  Clock3Icon,
-  CloudCheckIcon,
-  CloudUploadIcon,
-  PencilIcon,
-  XIcon,
-} from "lucide-react";
+import { Clock3Icon, CloudCheckIcon, CloudUploadIcon, PencilIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { parseAsInteger, useQueryState } from "nuqs";
@@ -16,12 +9,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { EntryList } from "@/components/composites/entry-list";
+import { StepsNav } from "@/components/composites/steps-nav";
 import { useAppForm } from "@/components/form/app-form";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Progress } from "@/components/ui/progress";
 import { OrganizationFinder } from "@/features/organization/organization-finder";
 import { maturities } from "@/features/solution/solution-codes";
 import { getPathname, Link } from "@/i18n/navigation";
@@ -333,8 +326,19 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   function goTo(next: number) {
     setProblem(null);
     void setStepNumber(next + 1);
-    window.scrollTo({ top: 0 });
   }
+
+  // A step that opens starts at the top of the page, with the focus on its heading.
+  const heading = useRef<HTMLHeadingElement>(null);
+  const shown = useRef(step);
+  useEffect(() => {
+    if (shown.current === step) {
+      return;
+    }
+    shown.current = step;
+    window.scrollTo({ top: 0 });
+    heading.current?.focus({ preventScroll: true });
+  }, [step]);
 
   /** Continue, once the step holds what it needs: saves it and opens the next one. */
   async function next(values: ApplyValues) {
@@ -442,74 +446,41 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pt-6 pb-32 md:flex-row md:items-start md:gap-12 md:px-8 md:pt-12">
-        <aside className="hidden w-64 shrink-0 flex-col gap-6 md:flex">
-          <p className="text-xs text-muted-foreground">{t("yourApplication")}</p>
-          <ol className="flex flex-col">
-            {steps.map((key, position) => {
-              const done = position < index;
-              const current = position === index;
-              return (
-                <li key={key} className="relative flex gap-3 pb-6 last:pb-0">
-                  {position < steps.length - 1 && (
-                    <span
-                      aria-hidden="true"
-                      className={
-                        done
-                          ? "absolute top-7 bottom-0 left-3 w-0.5 bg-primary"
-                          : "absolute top-7 bottom-0 left-3 w-0.5 bg-border"
-                      }
-                    />
-                  )}
-                  <span
-                    aria-hidden="true"
-                    className={
-                      done
-                        ? "flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-                        : current
-                          ? "flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-background text-xs font-semibold text-primary"
-                          : "flex size-6 shrink-0 items-center justify-center rounded-full border bg-background text-xs text-muted-foreground"
-                    }
-                  >
-                    {done ? <CheckIcon className="size-3.5" /> : position + 1}
-                  </span>
-                  <div className="flex flex-col" aria-current={current ? "step" : undefined}>
-                    <span
-                      className={current ? "text-sm font-medium" : "text-sm text-muted-foreground"}
-                    >
-                      {t(`steps.${key}.title`)}
-                    </span>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-          <p className="flex gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground">
+      {/* A column below 1024px, so the bar of steps has the whole form to stick along. */}
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pt-6 pb-32 md:px-8 md:pt-12 lg:flex-row lg:items-start lg:gap-12">
+        {/* From 1024px the steps stay in view beside the form; below that they are the bar under the header. */}
+        <aside className="flex w-64 shrink-0 flex-col gap-6 max-lg:contents lg:sticky lg:top-28">
+          {/* The steps show where the person is: the way on is Continue, the way back Back or the review's Edit. */}
+          <StepsNav
+            label={t("yourApplication")}
+            heading={t("yourApplication")}
+            steps={steps.map((key, position) => ({
+              id: key,
+              title: t(`steps.${key}.title`),
+              done: position < index,
+            }))}
+            current={step}
+            className="max-lg:top-16 max-lg:-mx-4 max-lg:-mt-6 max-lg:px-4 md:max-lg:-mx-8 md:max-lg:-mt-12 md:max-lg:px-8"
+          />
+          <p className="flex gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground max-lg:hidden">
             <CloudCheckIcon className="size-4 shrink-0 text-success" aria-hidden="true" />
             {t("savesAsYouType", { when: closes })}
           </p>
         </aside>
 
-        <div className="flex flex-col gap-2 md:hidden">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-medium">
-              {t("stepOf", {
-                step: index + 1,
-                count: steps.length,
-                title: t(`steps.${step}.title`),
-              })}
-            </span>
-            <span className="flex items-center gap-1 text-muted-foreground">
-              <Clock3Icon className="size-3.5" aria-hidden="true" />
-              {closes}
-            </span>
-          </div>
-          <Progress value={((index + 1) / steps.length) * 100} aria-label={t("progress")} />
-        </div>
+        {/* Below 768px the header has no room for the deadline; it is said here. */}
+        <p className="flex items-center gap-1 text-xs text-muted-foreground md:hidden">
+          <Clock3Icon className="size-3.5 shrink-0" aria-hidden="true" />
+          {t("closes", { when: closes })}
+        </p>
 
         <main className="flex min-w-0 flex-1 flex-col gap-8 rounded-3xl border bg-card p-5 md:p-10">
           <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-semibold tracking-title md:text-3xl">
+            <h1
+              ref={heading}
+              tabIndex={-1}
+              className="text-2xl font-semibold tracking-title outline-none md:text-3xl"
+            >
               {t(`steps.${step}.title`)}
             </h1>
             <p className="text-muted-foreground">

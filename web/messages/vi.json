@@ -6224,8 +6224,6 @@
     "saveAndExit": "Lưu và thoát",
     "yourApplication": "Đơn của bạn",
     "savesAsYouType": "Câu trả lời được lưu khi bạn gõ. Quay lại bất cứ lúc nào trước {when}.",
-    "stepOf": "Bước {step}/{count} · {title}",
-    "progress": "Tiến độ điền đơn",
     "allRequired": "Mọi ô đều bắt buộc, trừ ô ghi Không bắt buộc.",
     "optional": "Không bắt buộc",
     "closed": "Đợt nhận đơn đã đóng lúc {when}. Giờ không sửa hay nộp được nữa.",

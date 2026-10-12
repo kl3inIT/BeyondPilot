@@ -6224,8 +6224,6 @@
     "saveAndExit": "Save and exit",
     "yourApplication": "Your application",
     "savesAsYouType": "Answers save as you type. Come back any time before {when}.",
-    "stepOf": "Step {step} of {count} · {title}",
-    "progress": "Progress through the application",
     "allRequired": "All fields are required unless marked Optional.",
     "optional": "Optional",
     "closed": "Applications closed on {when}. Nothing can be changed or submitted now.",
