@@ -116,7 +116,6 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
       <AdminPageHeader
         destination="solutions"
         title={t("title")}
-        lead={t("lead")}
         actions={
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             {/* How much waits, whatever the list is narrowed to, and the way to only that. */}

@@ -86,7 +86,6 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
       <AdminPageHeader
         destination="talent"
         title={t("title")}
-        lead={t("lead")}
         actions={
           <TextButton href={siteRoutes.adminTalentReported}>{t("reported.link")}</TextButton>
         }

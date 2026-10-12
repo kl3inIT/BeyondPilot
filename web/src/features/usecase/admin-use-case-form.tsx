@@ -246,7 +246,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
         if (step === "review") void form.handleSubmit();
       }}
     >
-      <AdminPageHeader title={t("title")} lead={t("lead")} />
+      <AdminPageHeader title={t("title")} />
 
       <div className="grid items-start gap-8 xl:grid-cols-3">
         <main className="flex min-w-0 flex-col gap-5 rounded-3xl border bg-background p-6 md:p-10 xl:col-span-2">

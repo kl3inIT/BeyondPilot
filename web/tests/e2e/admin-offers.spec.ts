@@ -85,6 +85,104 @@ test.describe("admin offers", () => {
     ]);
   });
 
+  test("an operator closes an offer to new solutions with the version the list read, and opens it again", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const writes = await answerDecisions(
+      page,
+      `**/api/solution/admin/offers/${cloudCredits.id}/closed`,
+      200,
+      {
+        id: cloudCredits.id,
+        title: cloudCredits.title,
+        url: cloudCredits.url,
+        organizationId: null,
+        organizationName: null,
+        solutions: 2,
+        version: 1,
+        updatedAt: "2026-10-03T07:32:00Z",
+        closed: true,
+      },
+    );
+    await page.goto("/admin/offers");
+    // Both offers are open to new solutions.
+    await expect(page.getByText("Open", { exact: true }).filter({ visible: true })).toHaveCount(2);
+
+    await page
+      .getByRole("button", { name: "Actions for $1,000 in cloud credits" })
+      .filter({ visible: true })
+      .click();
+    await page
+      .getByRole("menu", { name: "Actions for $1,000 in cloud credits" })
+      .getByRole("menuitem", { name: "Close to new solutions" })
+      .click();
+
+    await expect(
+      page.getByText("$1,000 in cloud credits is closed to new solutions."),
+    ).toBeVisible();
+    expect(writes).toEqual([
+      {
+        call: `PUT /api/solution/admin/offers/${cloudCredits.id}/closed`,
+        body: { closed: true, version: 0 },
+      },
+    ]);
+    if (!isMobile) {
+      await expectNoSeriousA11yViolations(page);
+    }
+  });
+
+  test("an operator filters the offers by whether they are open", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/offers?state=closed");
+    // None of the stub's offers is closed.
+    await expect(
+      page.getByText("No offer matches the search.").filter({ visible: true }),
+    ).toBeVisible();
+    await page.goto("/admin/offers?state=open&q=onboarding");
+    await expect(
+      page.getByText("Ten hours of onboarding support").filter({ visible: true }),
+    ).toHaveCount(1);
+    await expect(page.getByText("$1,000 in cloud credits")).toHaveCount(0);
+  });
+
+  test("an operator reads the record of an offer with the solutions that come with it", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/offers");
+    await page
+      .getByRole("link", { name: "$1,000 in cloud credits" })
+      .filter({ visible: true })
+      .click();
+
+    await expect(page).toHaveURL(`/admin/offers/${cloudCredits.id}`);
+    if (!isMobile) {
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("$1,000 in cloud credits");
+    }
+    await expect(page.getByRole("button", { name: "Close to new solutions" })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Policy Chat" }).filter({ visible: true }),
+    ).toHaveAttribute("href", `/admin/solutions/ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e03`);
+    await expect(page.getByText("Lumen Health").filter({ visible: true })).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    // An offer there is none of answers as a page that does not exist.
+    expect((await page.goto("/admin/offers/0ffe7a11-0000-4000-8000-0000000000ff"))?.status()).toBe(
+      404,
+    );
+  });
+
   test("an offer is one line and an https address, and a title another offer has is said under the field", async ({
     page,
     context,

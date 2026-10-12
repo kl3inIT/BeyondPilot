@@ -37,7 +37,6 @@ function AdminReportedEnquiriesPage({
       <AdminPageHeader
         back={{ href: siteRoutes.adminTalent, label: t("back") }}
         title={t("title")}
-        lead={t("lead")}
       />
       {enquiries.items.length === 0 ? (
         <div className="rounded-lg border bg-background">

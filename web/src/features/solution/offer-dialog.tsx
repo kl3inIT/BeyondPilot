@@ -31,14 +31,14 @@ type OfferDialogProps = {
   onOpenChange: (open: boolean) => void;
   /** The offer to change; none for a new one. */
   offer?: Pick<AdminOffer, "id" | "title" | "url" | "version"> &
-    Partial<Pick<AdminOffer, "organizationId">>;
+    Partial<Pick<AdminOffer, "organizationId" | "closed">>;
   /**
    * True where a member writes an offer of their organization, which only its solutions come with.
    * Without it the offer is of GenAI Fund's list, which an operator writes.
    */
   own?: boolean;
   /** Called with the offer as the backend keeps it. */
-  onSaved: (offer: Pick<Offer, "id" | "title" | "url" | "fromGenAiFund">) => void;
+  onSaved: (offer: Pick<Offer, "id" | "title" | "url" | "fromGenAiFund" | "closed">) => void;
 };
 
 /**
@@ -90,6 +90,7 @@ function OfferForm({
           title: data.title,
           url: data.url,
           fromGenAiFund: !own && !offer?.organizationId,
+          closed: offer?.closed ?? false,
         });
         onClose();
       } catch (error) {

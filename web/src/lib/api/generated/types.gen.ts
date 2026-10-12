@@ -183,6 +183,10 @@ export type AdminIntroductionList = {
  * An offer as an operator reads it: GenAI Fund's, or an organization's own.
  */
 export type AdminOffer = {
+    /**
+     * True once it is closed to new solutions; the solutions that come with it keep it.
+     */
+    closed: boolean;
     id: string;
     /**
      * The organization that wrote it; null for an offer of GenAI Fund's list.
@@ -203,6 +207,37 @@ export type AdminOffer = {
      * Sent back with a save, which is refused when the offer changed since.
      */
     version: number;
+};
+
+/**
+ * An offer with the solutions that come with it, as an operator reads its record.
+ */
+export type AdminOfferDetail = {
+    createdAt: string;
+    offer: AdminOffer;
+    /**
+     * The solutions that come with it, by name.
+     */
+    solutionList: Array<AdminOfferSolution>;
+};
+
+/**
+ * A solution that comes with an offer, as the operators' record of it lists it.
+ */
+export type AdminOfferSolution = {
+    id: string;
+    name: string;
+    organizationId: string;
+    organizationName: string;
+    slug: string;
+    /**
+     * Where it stands in review, as the solution records it.
+     */
+    status: string;
+    /**
+     * When GenAI Fund took it down, while it is down; its status stays approved.
+     */
+    suspendedAt?: string | null;
 };
 
 /**
@@ -1092,7 +1127,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -2913,6 +2948,10 @@ export type OcrSettings = {
  */
 export type Offer = {
     /**
+     * True once it is closed to new solutions; the solutions that come with it keep it.
+     */
+    closed: boolean;
+    /**
      * True for an offer of GenAI Fund's list; false for one the organization wrote.
      */
     fromGenAiFund: boolean;
@@ -3114,6 +3153,10 @@ export type OrganizationSearch = {
  * An offer an organization wrote for its solutions, as its members read it.
  */
 export type OwnOffer = {
+    /**
+     * True once it is closed to new solutions; the solutions that come with it keep it.
+     */
+    closed: boolean;
     id: string;
     /**
      * How many of the organization's solutions come with it; it is deleted only when none does.
@@ -5539,6 +5582,20 @@ export type SetDocumentReader = {
 };
 
 /**
+ * Closes an offer to new solutions, or opens it again.
+ */
+export type SetOfferClosedRequest = {
+    /**
+     * True to close it, false to open it. Asking for the state it has changes nothing.
+     */
+    closed: boolean;
+    /**
+     * The version the form read; the change is refused when the offer changed since.
+     */
+    version: number;
+};
+
+/**
  * Turns semantic search on or off. Off, search matches keywords only and nothing is sent to the provider.
  */
 export type SetSemanticSearch = {
@@ -6863,7 +6920,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -12313,6 +12370,41 @@ export type DeleteOfferResponses = {
 
 export type DeleteOfferResponse = DeleteOfferResponses[keyof DeleteOfferResponses];
 
+export type GetAdminOfferData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/offers/{id}';
+};
+
+export type GetAdminOfferErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such offer.
+     */
+    404: Problem;
+};
+
+export type GetAdminOfferError = GetAdminOfferErrors[keyof GetAdminOfferErrors];
+
+export type GetAdminOfferResponses = {
+    /**
+     * The offer and its solutions, by name.
+     */
+    200: AdminOfferDetail;
+};
+
+export type GetAdminOfferResponse = GetAdminOfferResponses[keyof GetAdminOfferResponses];
+
 export type SaveOfferData = {
     body: SaveOffer;
     path: {
@@ -12355,6 +12447,45 @@ export type SaveOfferResponses = {
 };
 
 export type SaveOfferResponse = SaveOfferResponses[keyof SaveOfferResponses];
+
+export type SetOfferClosedData = {
+    body: SetOfferClosedRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/admin/offers/{id}/closed';
+};
+
+export type SetOfferClosedErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such offer.
+     */
+    404: Problem;
+    /**
+     * The offer changed since it was read.
+     */
+    409: Problem;
+};
+
+export type SetOfferClosedError = SetOfferClosedErrors[keyof SetOfferClosedErrors];
+
+export type SetOfferClosedResponses = {
+    /**
+     * The offer as saved, with its new version.
+     */
+    200: AdminOffer;
+};
+
+export type SetOfferClosedResponse = SetOfferClosedResponses[keyof SetOfferClosedResponses];
 
 export type ListAdminSolutionsData = {
     body?: never;
@@ -13638,6 +13769,45 @@ export type SaveOwnOfferResponses = {
 };
 
 export type SaveOwnOfferResponse = SaveOwnOfferResponses[keyof SaveOwnOfferResponses];
+
+export type SetOwnOfferClosedData = {
+    body: SetOfferClosedRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/solution/offers/{id}/closed';
+};
+
+export type SetOwnOfferClosedErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no organization.
+     */
+    403: Problem;
+    /**
+     * The caller's organization wrote no such offer.
+     */
+    404: Problem;
+    /**
+     * The offer changed since it was read.
+     */
+    409: Problem;
+};
+
+export type SetOwnOfferClosedError = SetOwnOfferClosedErrors[keyof SetOwnOfferClosedErrors];
+
+export type SetOwnOfferClosedResponses = {
+    /**
+     * The offer as saved, with its new version.
+     */
+    200: OwnOffer;
+};
+
+export type SetOwnOfferClosedResponse = SetOwnOfferClosedResponses[keyof SetOwnOfferClosedResponses];
 
 export type ListSolutionsData = {
     body?: never;
