@@ -10,6 +10,7 @@ It changes what [BEY-33](../bey-33-organization-solution-talent/design.md) built
 - **Hear of it, as the person.** The person gets an email with the sender's name, organization, topic and message, and no address. A sender who gave no name is "Someone", never their address. It tells them to sign in and answer under their talent profile › Enquiries.
 - **Answer.** The person accepts, declines or reports the enquiry. On acceptance both get an email with the other's name and address. On a decline, and on a report, the sender gets an email that the person will not take it further, with no address; the sender cannot tell a report from a decline.
 - **Let it close.** An enquiry nobody answers closes after 14 days, and the sender is told so. The person gets one reminder on the seventh day.
+- **Read what they sent, as the sender.** Under Messages you sent, reached from the account menu, from the dialog once a message is sent and from a profile where a message waits: one row a person with the latest message and its state, and beside it that message in full with the earlier ones to the same person. The person's address shows only on a message they accepted. A message the person reported reads as declined here, as its email did. There is no conversation on BeyondPilot: after an acceptance the two write by email.
 - **Hear of a decision on their profile.** The person gets an email when GenAI Fund approves the profile, asks for changes, or removes it, with the reason when there is one. A profile asked to change and a removed profile can both be corrected and sent again.
 - **Delete their profile.** The person deletes it with its projects and enquiries; the audit log keeps that it happened.
 - **Read reported enquiries, as an operator.** Under `/admin/talent/reported`, linked from the talent list, the enquiries that were reported, with sender, person and message.
@@ -48,27 +49,29 @@ The new edges are `talent → organization` and `talent → storage`. Neither mo
 
 ## HTTP
 
-| Path                                                                   | Use                                                                                                                                       |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST /api/talent/profiles/{slug}/enquiries`                           | Contact: topic and message (changed body)                                                                                                 |
-| `GET /api/talent/profiles/{slug}`                                      | Adds when the caller's waiting enquiry was sent, if one waits                                                                             |
-| `GET /api/talent/mine`                                                 | The person's enquiries, waiting first, with topic, status and when a waiting one closes; the sender's name and address only once accepted |
-| `POST /api/talent/mine/enquiries/{id}/accept`, `…/decline`, `…/report` | The person's answer                                                                                                                       |
-| `DELETE /api/talent/mine`                                              | The person deletes their profile                                                                                                          |
-| `POST /api/talent/admin/profiles/{id}/request-changes`, `…/remove`     | Replace `…/reject`                                                                                                                        |
-| `GET /api/talent/admin/reported-enquiries`                             | The reported enquiries, the most recently reported first                                                                                  |
-| `GET /api/talent/profiles`                                             | Adds the filters `country` and `engagement`                                                                                               |
+| Path                                                                   | Use                                                                                                                                                                                                             |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/talent/profiles/{slug}/enquiries`                           | Contact: topic and message (changed body)                                                                                                                                                                       |
+| `GET /api/talent/profiles/{slug}`                                      | Adds when the caller's waiting enquiry was sent, if one waits                                                                                                                                                   |
+| `GET /api/talent/mine`                                                 | The person's enquiries, waiting first, with topic, status and when a waiting one closes; the sender's name and address only once accepted                                                                       |
+| `GET /api/talent/mine/sent`                                            | The caller's own messages to any profile, waiting first: the person's name, headline and public address, the message, its state with `reported` read as `declined`, and the person's address only once accepted |
+| `POST /api/talent/mine/enquiries/{id}/accept`, `…/decline`, `…/report` | The person's answer                                                                                                                                                                                             |
+| `DELETE /api/talent/mine`                                              | The person deletes their profile                                                                                                                                                                                |
+| `POST /api/talent/admin/profiles/{id}/request-changes`, `…/remove`     | Replace `…/reject`                                                                                                                                                                                              |
+| `GET /api/talent/admin/reported-enquiries`                             | The reported enquiries, the most recently reported first                                                                                                                                                        |
+| `GET /api/talent/profiles`                                             | Adds the filters `country` and `engagement`                                                                                                                                                                     |
 
 The exact contract is `openapi.yml`.
 
 ## Web
 
-| Where               | What                                                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `/talent`           | Role chips, the filters for what the person is open to and country, the new card                       |
-| `/talent/[slug]`    | The redesigned page: counts, the projects as a timeline, one Contact, the dialog (a sheet on a phone)  |
-| `/workspace/talent` | Tabs Profile and Enquiries with its count; accept, decline, report; delete the profile; the new fields |
-| `/admin/talent`     | Ask for changes and Remove as two decisions; the reported enquiries                                    |
+| Where                    | What                                                                                                                                                                  |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/talent`                | Role chips, the filters for what the person is open to and country, the new card                                                                                      |
+| `/talent/[slug]`         | The redesigned page: counts, the projects as a timeline, one Contact, the dialog (a sheet on a phone)                                                                 |
+| `/workspace/talent`      | Tabs Profile and Enquiries with its count; accept, decline, report; delete the profile; the new fields                                                                |
+| `/workspace/talent/sent` | Messages you sent: the people written to and the latest message to the one chosen, with the earlier ones; a person who wrote to nobody is shown how a message travels |
+| `/admin/talent`          | Ask for changes and Remove as two decisions; the reported enquiries                                                                                                   |
 
 ## Data
 

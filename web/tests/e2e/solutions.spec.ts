@@ -276,7 +276,7 @@ test.describe("solutions directory", () => {
     await expect(page).toHaveTitle("Pocket Policy · BeyondPilot");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Pocket Policy");
     await expect(
-      page.locator('header img[src$="/0b6f2f0e-5d0e-4c57-9a55-6f6f3c1d2a10"]'),
+      page.locator('header img[src*="0b6f2f0e-5d0e-4c57-9a55-6f6f3c1d2a10"]'),
     ).toBeVisible();
     await expect(page.getByText("Company · Singapore")).toBeVisible();
     await expect(page.getByText("Insurance, Banking and finance")).toBeVisible();

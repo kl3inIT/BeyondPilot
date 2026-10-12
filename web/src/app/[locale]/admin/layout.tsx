@@ -8,6 +8,7 @@ import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { getCurrentAccount } from "@/lib/auth/session";
+import { MessageScope } from "@/i18n/message-scope";
 import { siteRoutes } from "@/lib/site";
 
 /**
@@ -19,7 +20,7 @@ import { siteRoutes } from "@/lib/site";
 export default async function AdminLayout({ children }: LayoutProps<"/[locale]/admin">) {
   const account = await getCurrentAccount();
   if (account?.role !== "operator") {
-    return children;
+    return <MessageScope area="admin">{children}</MessageScope>;
   }
   const [t, s, cookieStore] = await Promise.all([
     getTranslations("Admin"),
@@ -129,34 +130,36 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
   const destinations = groups.flatMap((group) => group.items);
 
   return (
-    // The sidebar records open or collapsed in this cookie; reading it here draws the right width
-    // from the first paint.
-    <SidebarProvider defaultOpen={cookieStore.get("sidebar_state")?.value !== "false"}>
-      <a
-        href="#content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2"
-      >
-        {s("skipToContent")}
-      </a>
-      <AdminSidebar
-        account={{ name: account.displayName ?? null, email: account.email, operator: true }}
-        groups={groups}
-      />
-      <SidebarInset id="content">
-        <header className="flex h-12 shrink-0 items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" aria-label={t("toggleSidebar")} />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-vertical:h-4 data-vertical:self-auto"
-          />
-          <AdminBreadcrumb
-            area={{ href: siteRoutes.admin, label: t("title") }}
-            items={destinations}
-            subpages={[{ href: siteRoutes.adminUseCasesNew, label: t("nav.useCasesNew") }]}
-          />
-        </header>
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <MessageScope area="admin">
+      {/* The sidebar records open or collapsed in this cookie; reading it here draws the right
+          width from the first paint. */}
+      <SidebarProvider defaultOpen={cookieStore.get("sidebar_state")?.value !== "false"}>
+        <a
+          href="#content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2"
+        >
+          {s("skipToContent")}
+        </a>
+        <AdminSidebar
+          account={{ name: account.displayName ?? null, email: account.email, operator: true }}
+          groups={groups}
+        />
+        <SidebarInset id="content">
+          <header className="flex h-12 shrink-0 items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" aria-label={t("toggleSidebar")} />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-vertical:h-4 data-vertical:self-auto"
+            />
+            <AdminBreadcrumb
+              area={{ href: siteRoutes.admin, label: t("title") }}
+              items={destinations}
+              subpages={[{ href: siteRoutes.adminUseCasesNew, label: t("nav.useCasesNew") }]}
+            />
+          </header>
+          {children}
+        </SidebarInset>
+      </SidebarProvider>
+    </MessageScope>
   );
 }

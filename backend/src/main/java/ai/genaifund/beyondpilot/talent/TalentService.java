@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
@@ -23,6 +25,8 @@ import ai.genaifund.beyondpilot.storage.StorageService;
 import ai.genaifund.beyondpilot.talent.dto.MyTalentResponse;
 import ai.genaifund.beyondpilot.talent.dto.SaveTalentProfileRequest;
 import ai.genaifund.beyondpilot.talent.dto.SendTalentEnquiryRequest;
+import ai.genaifund.beyondpilot.talent.dto.SentTalentEnquiryListResponse;
+import ai.genaifund.beyondpilot.talent.dto.SentTalentEnquiryResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentEnquiryResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentProfileResponse;
 import ai.genaifund.beyondpilot.talent.persistence.TalentDetailRepository;
@@ -249,6 +253,46 @@ public class TalentService {
 			.addKeyValue("event", "talent.enquiry.sent")
 			.addKeyValue("profile_id", profile.getId())
 			.log("Talent enquiry sent");
+	}
+
+	/**
+	 * The messages the caller sent through talent profiles, with what became of each. The person's address is shown only
+	 * on a message they accepted, and a message they reported reads as declined, as its email did.
+	 */
+	@Transactional(readOnly = true)
+	public SentTalentEnquiryListResponse sent(Actor actor) {
+		identity.requireActive(actor);
+		List<TalentDetailRepository.Enquiry> enquiries = details.sentBy(actor.accountId(), ENQUIRIES_SHOWN);
+		Map<UUID, TalentProfile> recipients = profiles
+			.findAllById(enquiries.stream().map(TalentDetailRepository.Enquiry::profileId).distinct().toList())
+			.stream()
+			.collect(Collectors.toMap(TalentProfile::getId, Function.identity()));
+		Map<UUID, Person> accepters = identity.people(enquiries.stream()
+			.filter(enquiry -> TalentDetailRepository.ACCEPTED.equals(enquiry.status()))
+			.map(enquiry -> recipients.get(enquiry.profileId()))
+			.filter(Objects::nonNull)
+			.map(TalentProfile::getAccountId)
+			.distinct()
+			.toList());
+		return new SentTalentEnquiryListResponse(enquiries.stream()
+			.filter(enquiry -> recipients.containsKey(enquiry.profileId()))
+			.map(enquiry -> sent(enquiry, recipients.get(enquiry.profileId()), accepters))
+			.toList());
+	}
+
+	/** A message as its sender reads it: a report reads as a decline, and no address comes before an acceptance. */
+	private static SentTalentEnquiryResponse sent(TalentDetailRepository.Enquiry enquiry, TalentProfile recipient,
+			Map<UUID, Person> accepters) {
+		Person accepter = TalentDetailRepository.ACCEPTED.equals(enquiry.status())
+				? accepters.get(recipient.getAccountId()) : null;
+		boolean waiting = TalentDetailRepository.PENDING.equals(enquiry.status());
+		return new SentTalentEnquiryResponse(enquiry.id(), recipient.getId(), recipient.getName(),
+				recipient.getHeadline(), recipient.isApproved() && recipient.isListed() ? recipient.getSlug() : null,
+				accepter == null ? null : accepter.email(), enquiry.senderName(), enquiry.topic(), enquiry.message(),
+				TalentDetailRepository.REPORTED.equals(enquiry.status()) ? TalentDetailRepository.DECLINED
+						: enquiry.status(),
+				enquiry.createdAt(), enquiry.answeredAt(),
+				waiting ? enquiry.createdAt().plus(ENQUIRY_LIFETIME) : null);
 	}
 
 	/**

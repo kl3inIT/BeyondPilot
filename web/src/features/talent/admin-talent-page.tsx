@@ -133,12 +133,12 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
               </p>
               <div className="flex flex-wrap gap-2">
                 <TalentFeature
-                  key={profile.id}
+                  key={`feature-${profile.id}`}
                   profile={{ id: profile.id, name: profile.name, featuredAt: detail.featuredAt }}
                 />
                 {(state === "in_review" || state === "approved" || state === "suspended") && (
                   <TalentReview
-                    key={profile.id}
+                    key={`review-${profile.id}`}
                     profile={profile}
                     nextHref={next?.href ?? `${siteRoutes.adminTalent}?status=in_review`}
                   />
