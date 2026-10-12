@@ -3,8 +3,10 @@
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { useLayoutEffect, useRef, useSyncExternalStore } from "react";
 
+import { CookieConsent } from "@/components/layout/cookie-consent";
 import { usePathname } from "@/i18n/navigation";
 import { isTrackedPath } from "@/lib/analytics";
+import { readConsent, subscribeConsent } from "@/lib/analytics-consent";
 import { analyticsMeasurementId, siteOrigin } from "@/lib/site";
 
 const subscribe = () => () => {};
@@ -23,7 +25,8 @@ function openWithoutReferrer() {
 /**
  * Google Analytics 4 for the public pages of the public address only. Staging and a local run
  * serve the same build, so the browser decides by its host when it hydrates; on any other host,
- * and on a page `isTrackedPath` refuses, nothing is loaded or sent.
+ * and on a page `isTrackedPath` refuses, nothing is loaded or sent. On a page it may measure, the
+ * visitor is asked first, and Google's script is loaded only after they accept.
  *
  * Google's script stays in the document after its component is gone and reports every later change
  * of address by itself. A person who walks from a public page into a private one is therefore
@@ -36,7 +39,9 @@ function Analytics() {
     () => window.location.origin === siteOrigin,
     () => false,
   );
-  const tracked = live && isTrackedPath(pathname);
+  const consent = useSyncExternalStore(subscribeConsent, readConsent, () => null);
+  const measurable = live && isTrackedPath(pathname);
+  const tracked = measurable && consent === "granted";
   const loaded = useRef(false);
 
   // A layout effect, so the flag is set in the task that changes the address, before Google's
@@ -50,7 +55,11 @@ function Analytics() {
     }
   }, [tracked]);
 
-  return tracked ? <GoogleAnalytics gaId={analyticsMeasurementId} /> : null;
+  if (tracked) {
+    return <GoogleAnalytics gaId={analyticsMeasurementId} />;
+  }
+
+  return measurable && consent === null ? <CookieConsent /> : null;
 }
 
 export { Analytics };

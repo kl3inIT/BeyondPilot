@@ -50,6 +50,12 @@
       "dark": "Tối",
       "system": "Theo hệ thống"
     },
+    "cookies": {
+      "label": "Đồng ý dùng cookie",
+      "message": "Chúng tôi muốn dùng cookie của Google Analytics để biết các trang công khai được sử dụng thế nào. Không có gì được đo lường nếu bạn không đồng ý. <privacy>Quyền riêng tư</privacy>",
+      "accept": "Đồng ý",
+      "decline": "Từ chối"
+    },
     "footer": {
       "platform": "Nền tảng",
       "company": "Công ty",
@@ -6621,7 +6627,7 @@
         {
           "heading": "Cookie",
           "body": [
-            "Chúng tôi dùng một cookie phiên để giữ bạn đăng nhập và một cookie để nhớ ngôn ngữ. Chúng tôi không dùng cookie quảng cáo hay theo dõi của bên thứ ba."
+            "Chúng tôi dùng một cookie phiên để giữ bạn đăng nhập và một cookie để nhớ ngôn ngữ. Nếu bạn đồng ý, Google Analytics đặt cookie để đo lượt truy cập các trang công khai; công cụ này không bao giờ chạy trên các trang cần đăng nhập. Chúng tôi không dùng cookie quảng cáo."
           ]
         },
         {

@@ -50,6 +50,12 @@
       "dark": "Dark",
       "system": "System"
     },
+    "cookies": {
+      "label": "Cookie consent",
+      "message": "We would like to use Google Analytics cookies to see how the public pages are used. Nothing is measured unless you accept. <privacy>Privacy</privacy>",
+      "accept": "Accept",
+      "decline": "Decline"
+    },
     "footer": {
       "platform": "Platform",
       "company": "Company",
@@ -6621,7 +6627,7 @@
         {
           "heading": "Cookies",
           "body": [
-            "We use a session cookie to keep you signed in and a cookie to remember your language. We do not use advertising or third-party tracking cookies."
+            "We use a session cookie to keep you signed in and a cookie to remember your language. If you accept, Google Analytics sets cookies to measure visits to our public pages; it never runs on pages you sign in to see. We do not use advertising cookies."
           ]
         },
         {
