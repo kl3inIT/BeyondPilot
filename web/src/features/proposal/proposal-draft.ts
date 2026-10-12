@@ -2,7 +2,7 @@ import type { PdfFile } from "@/components/composites/pdf-upload";
 import type { SaveUseCaseProposal, UseCaseProposal } from "@/lib/api/generated";
 
 /** The steps of the proposal, in the order the member goes through them. */
-export const steps = ["organization", "solutions", "profile", "team", "pdf", "review"] as const;
+export const steps = ["organization", "solutions", "details", "team", "pdf", "review"] as const;
 export type Step = (typeof steps)[number];
 
 /** The longest approach the backend takes. */
@@ -17,8 +17,6 @@ export type ProposalValues = {
   approach: string;
   deck: PdfFile | null;
   team: TeamRow[];
-  /** Whether the sender's talent profile goes with the proposal. */
-  attachProfile: boolean;
 };
 
 /** The values a saved proposal holds, or empty ones before anything was saved. */
@@ -39,7 +37,6 @@ export function valuesOf(proposal: UseCaseProposal | null | undefined): Proposal
         role: member.role,
         primary: member.primary,
       })) ?? [],
-    attachProfile: proposal?.attachProfile ?? false,
   };
 }
 
@@ -54,7 +51,6 @@ export function bodyOf(values: ProposalValues, version: number | null): SaveUseC
       role: member.role,
       primary: member.primary,
     })),
-    attachProfile: values.attachProfile,
     version,
   };
 }
@@ -106,13 +102,17 @@ export function teamComplete(team: TeamRow[]): boolean {
 }
 
 /**
- * The steps whose content a proposal still lacks, in order. The organization step has nothing to fill, the
- * profile is optional and the review step is not content, so none of them is ever listed.
+ * The steps whose content a proposal still lacks, in order. The organization step has nothing to fill and the
+ * review step is not content, so neither is ever listed. The details are the account's, not the draft's, so
+ * whether they are complete comes from the caller.
  */
-export function incompleteSteps(values: ProposalValues): Step[] {
+export function incompleteSteps(values: ProposalValues, detailsDone: boolean): Step[] {
   const missing: Step[] = [];
   if (values.solutionIds.length === 0 || values.approach.trim() === "") {
     missing.push("solutions");
+  }
+  if (!detailsDone) {
+    missing.push("details");
   }
   if (!teamComplete(values.team)) {
     missing.push("team");
@@ -121,4 +121,25 @@ export function incompleteSteps(values: ProposalValues): Step[] {
     missing.push("pdf");
   }
   return missing;
+}
+
+/** A number as the backend takes it: digits with spaces, brackets, dots or dashes, and a leading plus. */
+const PHONE = /^\+?[0-9 ().-]*$/;
+
+/** The submitting identity the sender gives: the account's name, country and number. */
+export type Details = { name: string; country: string; phone: string };
+
+/** Whether the number is written in a form the backend takes. */
+export function phoneValid(phone: string): boolean {
+  return PHONE.test(phone.trim());
+}
+
+/** Whether the details are what a proposal is sent with: a name, a country and a number. */
+export function detailsComplete(details: Details): boolean {
+  return (
+    details.name.trim() !== "" &&
+    details.country !== "" &&
+    details.phone.trim() !== "" &&
+    phoneValid(details.phone)
+  );
 }

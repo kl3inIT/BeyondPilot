@@ -17,6 +17,8 @@ import {
   saveUseCaseProposal,
   getUseCaseProposalForm,
   sendUseCaseProposal,
+  updateMyContact,
+  type Me,
   type ProposingOrganization,
   type SolutionSummary,
   type TalentProfile,
@@ -27,15 +29,18 @@ import { proposalViewRoute, proposeToUseCaseRoute as proposeRoute, briefRoute } 
 
 import {
   bodyOf,
+  detailsComplete,
   incompleteSteps,
+  phoneValid,
   steps,
   valuesOf,
+  type Details,
   type ProposalValues,
   type Step,
 } from "./proposal-draft";
 import { codeOfProposalError, describeProposalError } from "./proposal-errors";
 import { ProposalOrganizationStep } from "./proposal-organization-step";
-import { ProposalProfileStep } from "./proposal-profile-step";
+import { ProposalDetailsStep } from "./proposal-details-step";
 import { ProposalReviewStep } from "./proposal-review-step";
 import { ProposalSolutionsStep } from "./proposal-solutions-step";
 import { ProposalTeamStep } from "./proposal-team-step";
@@ -52,8 +57,8 @@ type ProposalWizardProps = {
   solutions: SolutionSummary[];
   /** The caller's talent profile, or none yet. */
   profile: TalentProfile | null;
-  /** The name of the caller's account, to start a profile with. */
-  accountName: string;
+  /** The caller's account, whose name, address, country and number the proposal is sent with. */
+  account: Me;
 };
 
 /**
@@ -72,7 +77,7 @@ function ProposalWizard({
   organization,
   solutions,
   profile,
-  accountName,
+  account,
 }: ProposalWizardProps) {
   const t = useTranslations("UseCaseProposal.wizard");
   const notify = useNotify();
@@ -92,7 +97,12 @@ function ProposalWizard({
   const [checked, setChecked] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [sending, setSending] = useState(false);
-  const [creatingProfile, setCreatingProfile] = useState(false);
+  const [details, setDetails] = useState<Details>(() => ({
+    name: account.displayName ?? "",
+    country: account.country ?? "",
+    phone: account.phone ?? "",
+  }));
+  const [detailsChanged, setDetailsChanged] = useState(false);
   const [edited, setEdited] = useState(false);
 
   const latest = useRef(values);
@@ -178,13 +188,59 @@ function ProposalWizard({
   }, []);
 
   const stepIndex = steps.indexOf(step);
-  const missing = incompleteSteps(values);
+  const missing = incompleteSteps(values, detailsComplete(details));
   const done = (name: Step) =>
     name === "organization" || (name !== "review" && !missing.includes(name));
+
+  /** Keeps the details on the account; false when they cannot be kept yet. */
+  async function saveDetails(): Promise<boolean> {
+    if (!detailsChanged) {
+      return true;
+    }
+    if (!phoneValid(details.phone)) {
+      setChecked(true);
+      return false;
+    }
+    try {
+      await updateMyContact({
+        body: {
+          country: details.country || null,
+          phone: details.phone.trim() || null,
+          name: details.name.trim() || null,
+        },
+      });
+      setDetailsChanged(false);
+      return true;
+    } catch (error) {
+      notify.error(describeProposalError(error));
+      return false;
+    }
+  }
+
+  /** Fills the details from the talent profile; a name the account has is kept. */
+  function fillFromProfile() {
+    if (!profile) {
+      return;
+    }
+    changeDetails({
+      name: account.displayName ? details.name : (profile.name ?? details.name),
+      country: profile.country ?? details.country,
+      phone: details.phone,
+    });
+  }
+
+  function changeDetails(next: Details) {
+    setDetails(next);
+    setDetailsChanged(true);
+    setEdited(true);
+  }
 
   async function go(target: Step) {
     // Without an organization there is nothing to write yet.
     if (!organization && target !== "organization") {
+      return;
+    }
+    if (step === "details" && target !== "details" && !(await saveDetails())) {
       return;
     }
     if (await flush()) {
@@ -215,6 +271,9 @@ function ProposalWizard({
   async function saveChanges() {
     setSending(true);
     try {
+      if (!(await saveDetails())) {
+        return;
+      }
       const { data } = await saveUseCaseProposal({
         path: { useCaseId },
         body: bodyOf(latest.current, version.current),
@@ -245,6 +304,9 @@ function ProposalWizard({
   async function send() {
     setSending(true);
     try {
+      if (!(await saveDetails())) {
+        return;
+      }
       // A proposal that was never saved has no identity to send yet.
       if (proposalId.current === null) {
         dirty.current = true;
@@ -337,17 +399,20 @@ function ProposalWizard({
         </Alert>
       )}
 
-      {step === "profile" && creatingProfile ? (
-        <h1 className="sr-only">{t("steps.profile")}</h1>
-      ) : (
+      <div className="flex items-start justify-between gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}`)}</h1>
-      )}
+        {organization && step === "details" && profile && (
+          <Button prominence="secondary" onClick={fillFromProfile}>
+            {t("details.use")}
+          </Button>
+        )}
+      </div>
 
       {step === "organization" && (
         <ProposalOrganizationStep
           useCaseId={useCaseId}
           organization={organization}
-          accountName={accountName}
+          accountName={account.displayName ?? account.email}
         />
       )}
 
@@ -364,22 +429,13 @@ function ProposalWizard({
         />
       )}
 
-      {step === "profile" && editing && values.attachProfile && !creatingProfile && (
-        <Alert>
-          <AlertDescription>{t("edit.profileHint")}</AlertDescription>
-        </Alert>
-      )}
-
-      {organization && step === "profile" && (
-        <ProposalProfileStep
-          profile={profile}
-          attached={values.attachProfile}
-          onAttach={(attachProfile) => change({ attachProfile })}
-          creating={creatingProfile}
-          onCreating={setCreatingProfile}
-          locked={editing}
-          accountName={accountName}
-          onLeave={() => void leave()}
+      {organization && step === "details" && (
+        <ProposalDetailsStep
+          details={details}
+          onDetails={changeDetails}
+          email={account.email}
+          nameLocked={Boolean(account.displayName)}
+          checked={checked}
         />
       )}
 
@@ -417,7 +473,8 @@ function ProposalWizard({
             organization={organization}
             values={values}
             catalog={catalog}
-            profile={profile}
+            details={details}
+            email={account.email}
             members={form.members}
             onEdit={(target) => void go(target)}
           />
@@ -446,7 +503,7 @@ function ProposalWizard({
         </>
       )}
 
-      {organization && !(step === "profile" && creatingProfile) && (
+      {organization && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
           <Button prominence="tertiary" size="lg" disabled={sending} onClick={() => void leave()}>
             {editing ? t("edit.cancel") : t("saveAndReturn")}
