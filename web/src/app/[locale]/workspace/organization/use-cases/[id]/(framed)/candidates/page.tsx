@@ -2,29 +2,29 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { WorkspaceFrame } from "@/components/layout/workspace-frame";
+import { MatchingPage } from "@/features/matching/matching-page";
+import { readMatching } from "@/features/matching/matching-queries";
 import { readMyOrganization } from "@/features/organization/organization-queries";
 import { hasUseCases, readMyUseCase } from "@/features/usecase/my-use-case-queries";
-import { UseCaseSentPage } from "@/features/usecase/use-case-sent-page";
 import { getPathname } from "@/i18n/navigation";
 import { requireAccount } from "@/lib/auth/session";
-import { siteRoutes } from "@/lib/site";
+import { siteRoutes, workspaceUseCaseCandidatesRoute } from "@/lib/site";
 
 export async function generateMetadata({
   params,
-}: PageProps<"/[locale]/workspace/organization/use-cases/[id]/sent">): Promise<Metadata> {
+}: PageProps<"/[locale]/workspace/organization/use-cases/[id]/candidates">): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Organization.useCases.sent" });
+  const t = await getTranslations({ locale, namespace: "Matching" });
 
   return { title: t("metaTitle"), robots: { index: false } };
 }
 
-export default async function OrganizationUseCaseSentRoute({
+export default async function OrganizationUseCaseCandidatesRoute({
   params,
-}: PageProps<"/[locale]/workspace/organization/use-cases/[id]/sent">) {
+}: PageProps<"/[locale]/workspace/organization/use-cases/[id]/candidates">) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  await requireAccount(`${siteRoutes.workspaceUseCases}/${id}/sent`);
+  await requireAccount(workspaceUseCaseCandidatesRoute(id));
   const { organization } = await readMyOrganization();
   if (!organization || !hasUseCases(organization)) {
     redirect(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
@@ -33,14 +33,14 @@ export default async function OrganizationUseCaseSentRoute({
   if (!useCase) {
     notFound();
   }
-  // Only a use case that was just sent has this page; any other opens where it stands.
-  if (useCase.status !== "in_review") {
+  // Only a use case that was published is matched; before that there is its brief alone.
+  if (!useCase.publishedAt) {
     redirect(getPathname({ href: `${siteRoutes.workspaceUseCases}/${id}`, locale }));
   }
+  const matching = await readMatching(id);
+  if (!matching) {
+    notFound();
+  }
 
-  return (
-    <WorkspaceFrame>
-      <UseCaseSentPage useCase={useCase} />
-    </WorkspaceFrame>
-  );
+  return <MatchingPage area="workspace" useCase={useCase} matching={matching} />;
 }

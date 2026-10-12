@@ -1,11 +1,12 @@
 "use client";
 
-import { EllipsisIcon, ShieldCheckIcon, ShieldOffIcon, UserMinusIcon, XIcon } from "lucide-react";
+import { ShieldCheckIcon, ShieldOffIcon, UserMinusIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { IconButton } from "@/components/actions/icon-button";
+import { RowMenuTrigger } from "@/components/actions/row-menu-trigger";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { Person } from "@/components/composites/person";
 import {
@@ -14,7 +15,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -25,9 +25,6 @@ import {
   type OrganizationInvitation,
   type OrganizationMember,
 } from "@/lib/api/generated";
-
-const triggerClass =
-  "hit-area flex size-8 shrink-0 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted";
 
 type Asking = "demote" | "remove" | null;
 
@@ -89,18 +86,7 @@ function AdminMemberActions({ organizationId, member, onlyOwner }: AdminMemberAc
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <button
-              type="button"
-              aria-label={t("actions.open", { name })}
-              disabled={pending || refreshing}
-              className={triggerClass}
-            />
-          }
-        >
-          <EllipsisIcon className="size-4" aria-hidden="true" />
-        </DropdownMenuTrigger>
+        <RowMenuTrigger aria-label={t("actions.open", { name })} disabled={pending || refreshing} />
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuGroup>
             {demote ? (

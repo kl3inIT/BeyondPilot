@@ -4,7 +4,6 @@ import {
   BookmarkPlusIcon,
   CheckIcon,
   CircleDashedIcon,
-  EllipsisIcon,
   ExternalLinkIcon,
   FileQuestionIcon,
   Loader2Icon,
@@ -13,14 +12,13 @@ import {
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
-import { IconButton } from "@/components/actions/icon-button";
+import { RowMenuTrigger } from "@/components/actions/row-menu-trigger";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SolutionLogo } from "@/features/solution/solution-logo";
 import { Link } from "@/i18n/navigation";
@@ -140,17 +138,7 @@ function MatchingRow({
               <span className="max-sm:sr-only">{t(shortlisted ? "shortlisted" : "shortlist")}</span>
             </Button>
             <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <IconButton
-                    prominence="tertiary"
-                    size="sm"
-                    aria-label={t("menu", { name: candidate.solutionName })}
-                  />
-                }
-              >
-                <EllipsisIcon aria-hidden="true" />
-              </DropdownMenuTrigger>
+              <RowMenuTrigger aria-label={t("menu", { name: candidate.solutionName })} />
               <DropdownMenuContent align="end" className="w-60">
                 {candidate.listed && (
                   <>

@@ -17,6 +17,7 @@ import { useId, useState } from "react";
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { DataTable } from "@/components/composites/data-table";
 import { HelpPopover } from "@/components/composites/help-popover";
 import { Status } from "@/components/composites/status";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +37,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Table,
   TableBody,
   TableCaption,
   TableCell,
@@ -309,96 +309,86 @@ function ConnectionCard({ provider, startOpen }: { provider: ChatProvider; start
           {provider.models.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("noModels")}</p>
           ) : (
-            <div className="overflow-hidden rounded-lg border">
-              <Table>
-                <TableCaption className="sr-only">
-                  {tm("caption", { name: provider.name })}
-                </TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>
-                      <span className="flex items-center gap-1">
-                        {tm("model")}
-                        <HelpPopover label={tm("columnsHelp")}>
-                          <p>{tm("columnsAbout")}</p>
-                        </HelpPopover>
+            <DataTable label={tm("caption", { name: provider.name })}>
+              <TableCaption className="sr-only">
+                {tm("caption", { name: provider.name })}
+              </TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    <span className="flex items-center gap-1">
+                      {tm("model")}
+                      <HelpPopover label={tm("columnsHelp")}>
+                        <p>{tm("columnsAbout")}</p>
+                      </HelpPopover>
+                    </span>
+                  </TableHead>
+                  <TableHead className="text-right">{tm("context")}</TableHead>
+                  <TableHead className="text-right">{tm("maxOutput")}</TableHead>
+                  <TableHead className="text-right">{tm("input")}</TableHead>
+                  <TableHead className="text-right">{tm("output")}</TableHead>
+                  <TableHead className="w-20">
+                    <span className="sr-only">{tm("actions")}</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {provider.models.map((model) => (
+                  <TableRow key={model.id}>
+                    <TableCell>
+                      <span className="flex flex-wrap items-center gap-2">
+                        <ModelLogo modelName={model.modelName} />
+                        <span className="font-medium break-all">{model.displayName}</span>
+                        {/* What the model can do: a task is chosen by it. */}
+                        <span className="flex items-center gap-0.5">
+                          {model.toolCalling && (
+                            <Capability label={tm("tools")}>
+                              <WrenchIcon aria-hidden="true" />
+                            </Capability>
+                          )}
+                          {model.vision && (
+                            <Capability label={tm("vision")}>
+                              <EyeIcon aria-hidden="true" />
+                            </Capability>
+                          )}
+                          {model.reasoning && (
+                            <Capability label={tm("reasons")}>
+                              <BrainIcon aria-hidden="true" />
+                            </Capability>
+                          )}
+                        </span>
                       </span>
-                    </TableHead>
-                    <TableHead className="text-right">{tm("context")}</TableHead>
-                    <TableHead className="hidden text-right md:table-cell">
-                      {tm("maxOutput")}
-                    </TableHead>
-                    <TableHead className="hidden text-right md:table-cell">{tm("input")}</TableHead>
-                    <TableHead className="hidden text-right md:table-cell">
-                      {tm("output")}
-                    </TableHead>
-                    <TableHead className="w-20">
-                      <span className="sr-only">{tm("actions")}</span>
-                    </TableHead>
+                    </TableCell>
+                    <TableCell className="text-right">{tokens(model.contextWindow)}</TableCell>
+                    <TableCell className="text-right">
+                      {model.maxOutputTokens ? tokens(model.maxOutputTokens) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">{price(model.inputPrice)}</TableCell>
+                    <TableCell className="text-right">{price(model.outputPrice)}</TableCell>
+                    <TableCell>
+                      <span className="flex justify-end">
+                        <IconButton
+                          prominence="tertiary"
+                          size="sm"
+                          aria-label={tm("edit", { name: model.displayName })}
+                          onClick={() => setEditing(model)}
+                        >
+                          <Settings2Icon aria-hidden="true" />
+                        </IconButton>
+                        <IconButton
+                          prominence="tertiary"
+                          size="sm"
+                          aria-label={tm("delete", { name: model.displayName })}
+                          onClick={() => setRemoving(model)}
+                        >
+                          <Trash2Icon aria-hidden="true" />
+                        </IconButton>
+                      </span>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {provider.models.map((model) => (
-                    <TableRow key={model.id}>
-                      <TableCell>
-                        <span className="flex flex-wrap items-center gap-2">
-                          <ModelLogo modelName={model.modelName} />
-                          <span className="font-medium break-all">{model.displayName}</span>
-                          {/* What the model can do: a task is chosen by it. */}
-                          <span className="flex items-center gap-0.5">
-                            {model.toolCalling && (
-                              <Capability label={tm("tools")}>
-                                <WrenchIcon aria-hidden="true" />
-                              </Capability>
-                            )}
-                            {model.vision && (
-                              <Capability label={tm("vision")}>
-                                <EyeIcon aria-hidden="true" />
-                              </Capability>
-                            )}
-                            {model.reasoning && (
-                              <Capability label={tm("reasons")}>
-                                <BrainIcon aria-hidden="true" />
-                              </Capability>
-                            )}
-                          </span>
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">{tokens(model.contextWindow)}</TableCell>
-                      <TableCell className="hidden text-right md:table-cell">
-                        {model.maxOutputTokens ? tokens(model.maxOutputTokens) : "—"}
-                      </TableCell>
-                      <TableCell className="hidden text-right md:table-cell">
-                        {price(model.inputPrice)}
-                      </TableCell>
-                      <TableCell className="hidden text-right md:table-cell">
-                        {price(model.outputPrice)}
-                      </TableCell>
-                      <TableCell>
-                        <span className="flex justify-end">
-                          <IconButton
-                            prominence="tertiary"
-                            size="sm"
-                            aria-label={tm("edit", { name: model.displayName })}
-                            onClick={() => setEditing(model)}
-                          >
-                            <Settings2Icon aria-hidden="true" />
-                          </IconButton>
-                          <IconButton
-                            prominence="tertiary"
-                            size="sm"
-                            aria-label={tm("delete", { name: model.displayName })}
-                            onClick={() => setRemoving(model)}
-                          >
-                            <Trash2Icon aria-hidden="true" />
-                          </IconButton>
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </DataTable>
           )}
           <div className="flex flex-col gap-2 md:flex-row">
             <Button

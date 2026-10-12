@@ -84,7 +84,6 @@
   },
   "Campaign": {
     "name": "AI for Insurance Challenge × Tasco",
-    "shortName": "Tasco challenge",
     "partners": "GenAI Fund × Tasco",
     "kind": "Enterprise challenge · Insurance · Vietnam",
     "question": "How might we make insurance in Vietnam something people are glad to hold?",
@@ -93,7 +92,6 @@
     "applyNow": "Apply now",
     "readBrief": "Read the brief",
     "submissionsClose": "Submissions close 15 Oct, 23:59 ICT",
-    "closesShort": "closes 15 Oct",
     "closes": "Closes 15 Oct, 23:59 ICT",
     "countdown": "{days, plural, =0 {Last day} one {# day left} other {# days left}} · closes 15 Oct, 23:59 ICT",
     "closed": "Submissions closed on 15 Oct, 23:59 ICT",
@@ -314,7 +312,9 @@
     "title": "Something went wrong",
     "description": "We could not load this page.",
     "retry": "Try again",
-    "reference": "Reference: {digest}"
+    "reference": "Reference: {digest}",
+    "backToUseCases": "Back to use cases",
+    "backToSolutions": "Back to solutions"
   },
   "Errors": {
     "unknown": "That did not work. Try again.",
@@ -2576,9 +2576,6 @@
           "use_case": "Use cases"
         },
         "embeddedShare": "{count} · {share}",
-        "embeddedOf": "{embedded} of {total} embedded",
-        "mobileFacts": "{listed} in public results · {waiting} waiting",
-        "heldBackCount": "{count} failed",
         "note": "Unlisted solutions and talent stay in the index for operators matching use cases, never in public results.",
         "noteHelp": "Why the two counts differ"
       },
@@ -2594,7 +2591,6 @@
         "next": "Next try",
         "actions": "Actions",
         "soon": "at the next run",
-        "mobileNext": "{count, plural, one {# attempt} other {# attempts}} · next {next}",
         "reasons": {
           "bad_request": "The provider refused the text (400 Bad request).",
           "unprocessable": "The provider refused the text (422 Unprocessable).",
@@ -2778,11 +2774,7 @@
         "failureRate": "Failure rate",
         "tokens": "Tokens",
         "time": "Avg. time",
-        "cost": "Est. cost",
-        "callsLine": "{calls} calls · {failed} failed ({rate})",
-        "timeLine": "{time} on average",
-        "costLine": "{cost} estimated",
-        "noPrice": "no known price"
+        "cost": "Est. cost"
       },
       "estimate": "Costs are estimates from the usage providers report and from list prices, not invoices.",
       "calls": {
@@ -4670,8 +4662,7 @@
         "demo": "Watch the demo",
         "deck": "Download the deck",
         "registeredIn": "Registered in",
-        "deckSize": "Download the deck ({size})",
-        "basedIn": "Based in"
+        "deckSize": "Download the deck ({size})"
       },
       "facts": {
         "stage": "Stage",
@@ -7790,7 +7781,6 @@
         "title": "You are editing a sent proposal",
         "banner": "Your changes are visible to the organization that posted the use case once you save them. Editing closes {until}.",
         "note": "Nothing is saved until you choose Save changes.",
-        "reviewLead": "Check your changes. They replace what you sent as soon as you save.",
         "unsaved": "Changes not saved yet",
         "pristine": "No changes yet",
         "save": "Save changes",
