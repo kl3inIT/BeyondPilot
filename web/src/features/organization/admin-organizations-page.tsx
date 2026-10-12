@@ -1,5 +1,5 @@
 import { Building2Icon, SearchXIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -9,6 +9,7 @@ import { ListFooter } from "@/components/composites/list-footer";
 import { reviewState } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganizationList } from "@/lib/api/generated";
@@ -99,9 +100,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
     ),
     received: (
       <span className="text-muted-foreground">
-        {format.dateTime(new Date(organization.requestedAt ?? organization.createdAt), {
-          dateStyle: "medium",
-        })}
+        {format.dateTime(new Date(organization.requestedAt ?? organization.createdAt), "date")}
       </span>
     ),
     actions: <AdminOrganizationRowActions organization={organization} />,
@@ -135,10 +134,9 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       />
       <AdminOrganizationsToolbar countries={organizations.countries} />
 
-      {/* From 768px: a table. Who asked and when give way first, so the name keeps its room. */}
+      {/* Who asked and when give way first where the table is made to fit, so the name keeps its room. */}
       <DataTableRows
         sortKeys={adminOrganizationSortKeys}
-        className="hidden md:flex"
         columns={[
           { id: "name", header: t("columns.organization"), layout: { fill: true } },
           { id: "request", header: t("columns.request"), layout: { width: "md" } },
@@ -174,24 +172,6 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per organization, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-            <div className="flex items-start justify-between gap-3">
-              {row.organization}
-              {row.actions}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-11 text-sm">
-              {row.status}
-              {row.request}
-              {row.received}
-            </div>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <ListFooter
         count={t(queue ? "needReview" : "count", { count: organizations.total })}

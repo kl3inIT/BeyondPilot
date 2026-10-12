@@ -25,7 +25,6 @@ import {
   type SaveChatProvider,
 } from "@/lib/api/generated";
 
-import { chatError } from "./chat-errors";
 import type { ChatPreset } from "./chat-presets";
 import { ModelsField, useReportedModels } from "./models-field";
 
@@ -126,7 +125,7 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
         });
         change(false);
       } catch (error) {
-        notify.error(chatError(error));
+        notify.failure(error);
       }
       // The provider may be saved even when its models were refused, so the page is read again either way.
       router.refresh();
@@ -175,7 +174,7 @@ function ProviderDialog({ open, onOpenChange, preset, provider }: ProviderDialog
       const { data } = await testChatProvider({ body: probe });
       setResult(data);
     } catch (error) {
-      notify.error(chatError(error));
+      notify.failure(error);
     } finally {
       setTesting(false);
     }

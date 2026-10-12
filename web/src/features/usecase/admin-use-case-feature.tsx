@@ -8,7 +8,6 @@ import { Button } from "@/components/actions/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api/client";
 import { featureAdminUseCase, unfeatureAdminUseCase } from "@/lib/api/generated";
 
 type AdminUseCaseFeatureProps = {
@@ -41,11 +40,7 @@ function AdminUseCaseFeature({ id, title, featured, appearance }: AdminUseCaseFe
       );
       router.refresh();
     } catch (error) {
-      notify.error(
-        error instanceof ApiError && error.code === "USECASE_NOT_FOUND"
-          ? "Admin.useCases.errors.USECASE_NOT_FOUND"
-          : "Admin.useCases.errors.unknown",
-      );
+      notify.failure(error, { otherwise: "Admin.useCases.errors.unknown" });
     } finally {
       setPending(false);
     }

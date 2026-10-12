@@ -11,7 +11,6 @@ import { listSolutionOffers, type Offer } from "@/lib/api/generated";
 import { CodeCombobox } from "./code-combobox";
 import { OfferDialog } from "./offer-dialog";
 import { limits } from "./solution-editor-state";
-import { solutionError } from "./solution-errors";
 
 type OfferPickerProps = {
   id: string;
@@ -57,7 +56,7 @@ function OfferPicker({
       },
       (error) => {
         if (current) {
-          notify.error(solutionError(error));
+          notify.failure(error);
         }
       },
     );
@@ -73,13 +72,19 @@ function OfferPicker({
     ...value.filter((chosen) => !listed.some((offer) => offer.id === chosen.id)),
   ];
 
+  // A closed offer a solution keeps is chosen by no other, which its label says.
+  const label = (offer: Offer) => {
+    const named = offer.fromGenAiFund ? t("fromGenAiFund", { title: offer.title }) : offer.title;
+    return offer.closed ? t("closed", { title: named }) : named;
+  };
+
   return (
     <div className="flex flex-col items-start gap-2">
       <CodeCombobox
         id={id}
         options={options.map((offer) => ({
           value: offer.id,
-          label: offer.fromGenAiFund ? t("fromGenAiFund", { title: offer.title }) : offer.title,
+          label: label(offer),
         }))}
         value={value.map((offer) => offer.id)}
         onValueChange={(ids) =>

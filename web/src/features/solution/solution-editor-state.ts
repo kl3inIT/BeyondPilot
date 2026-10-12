@@ -1,5 +1,7 @@
 import type { Offer, SaveSolution, Solution } from "@/lib/api/generated";
 
+import { draftSchema, linkSchema } from "./solution-schemas";
+
 /** The steps of the editor, in order; the name is what the address carries. */
 export const editorSteps = ["basics", "fit", "evidence", "review"] as const;
 
@@ -147,18 +149,20 @@ export type ReviewField = (typeof reviewFields)[number]["field"];
 
 /** The fields a review needs and the draft does not hold yet. The backend checks the same. */
 export function missingForReview(draft: SolutionDraft): ReviewField[] {
-  return reviewFields
-    .map((entry) => entry.field)
-    .filter((field) => {
-      const value = draft[field];
-      if (value === null) {
-        return true;
-      }
-      if (typeof value === "string") {
-        return value.trim() === "";
-      }
-      return Array.isArray(value) && value.length === 0;
-    });
+  const result = draftSchema(() => "").safeParse(draft);
+  const refused = result.success ? [] : result.error.issues.map((issue) => issue.path[0]);
+  return reviewFields.map((entry) => entry.field).filter((field) => refused.includes(field));
+}
+
+/** What each field a review needs says while the draft lacks it, in the words `say` gives. */
+export function neededOf(
+  draft: SolutionDraft,
+  say: Parameters<typeof draftSchema>[0],
+): Partial<Record<ReviewField, string>> {
+  const result = draftSchema(say).safeParse(draft);
+  return result.success
+    ? {}
+    : Object.fromEntries(result.error.issues.map((issue) => [issue.path[0], issue.message]));
 }
 
 /** The links of a solution, which the backend takes only as full `http(s)` addresses. */
@@ -168,10 +172,7 @@ export type LinkField = (typeof linkFields)[number];
 
 /** The links that hold something the backend would refuse. An empty link is no link, which is fine. */
 export function badLinks(draft: SolutionDraft): LinkField[] {
-  return linkFields.filter((field) => {
-    const value = draft[field].trim();
-    return value !== "" && !/^https?:\/\/\S+$/.test(value);
-  });
+  return linkFields.filter((field) => !linkSchema().safeParse(draft[field]).success);
 }
 
 /** The step that holds each member of a save, so that a refused one can be shown where it is. */
@@ -199,7 +200,10 @@ export const fieldSteps: Record<string, EditorStep> = {
   listed: "review",
 };
 
-/** The id of the control of a field, which a link from another step moves focus to. */
+/**
+ * The id of the control of a field, which a link from another step moves focus to: the field's name
+ * in the editor's form, which holds the draft under `solution`.
+ */
 export function fieldId(field: string) {
-  return `solution-${field}`;
+  return `solution.${field}`;
 }

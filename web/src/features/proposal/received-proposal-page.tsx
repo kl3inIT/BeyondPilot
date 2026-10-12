@@ -1,10 +1,11 @@
 import { ArrowLeftIcon, DownloadIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
 import { TextButton } from "@/components/actions/text-button";
 import { useFileSize } from "@/features/solution/solution-deck";
+import { useFormatter } from "@/i18n/format";
 import type { ReceivedUseCaseProposal } from "@/lib/api/generated";
 import { adminUseCaseProposalsRoute, siteRoutes, workspaceUseCaseProposalsRoute } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -32,8 +33,7 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
   const format = useFormatter();
   const size = useFileSize();
   const { deck, team, solutions, useCase } = proposal;
-  const day = (instant: string) =>
-    format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
+  const day = (instant: string) => format.dateTime(new Date(instant), "date");
   const sent = day(proposal.sentAt);
   const edited = proposal.editedAt ? day(proposal.editedAt) : null;
   return (

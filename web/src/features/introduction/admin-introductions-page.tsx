@@ -1,5 +1,5 @@
 import { HandshakeIcon, SearchXIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -8,6 +8,7 @@ import { ListFooter } from "@/components/composites/list-footer";
 import { Status } from "@/components/composites/status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useFormatter } from "@/i18n/format";
 import type { AdminIntroduction, AdminIntroductionList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -61,9 +62,10 @@ function AdminIntroductionCard({ introduction }: { introduction: AdminIntroducti
         {introduction.status === "pending"
           ? t("waitingSince", { time: format.relativeTime(when) })
           : t("answered", {
-              date: format.dateTime(new Date(introduction.answeredAt ?? introduction.createdAt), {
-                dateStyle: "medium",
-              }),
+              date: format.dateTime(
+                new Date(introduction.answeredAt ?? introduction.createdAt),
+                "date",
+              ),
             })}
       </p>
     </li>
@@ -82,7 +84,7 @@ function AdminIntroductionsPage({ introductions, search }: AdminIntroductionsPag
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <AdminPageHeader destination="introductions" title={t("title")} lead={t("lead")} />
+      <AdminPageHeader destination="introductions" title={t("title")} />
       <AdminIntroductionsToolbar />
 
       {introductions.overdue > 0 && (

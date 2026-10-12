@@ -7,9 +7,9 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { FormDialog } from "@/components/composites/form-dialog";
 import { useAppForm } from "@/components/form/app-form";
-import { useNotify, type MessageKey } from "@/hooks/use-notify";
+import { useNotify } from "@/hooks/use-notify";
+import type { FailureWords } from "@/lib/api/failure";
 import { useRouter } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api/client";
 import { approveAdminUseCase, sendBackAdminUseCase } from "@/lib/api/generated";
 
 const MAX_REASON = 1000;
@@ -22,15 +22,10 @@ type AdminUseCaseDecisionProps = {
   organization: string;
 };
 
-/** The words for a decision that was refused: by its code when the screen knows it. */
-function refusal(error: unknown): MessageKey {
-  const code = error instanceof ApiError ? error.code : undefined;
-  return code === "USECASE_NOT_AWAITING_REVIEW"
-    ? "Admin.useCases.errors.USECASE_NOT_AWAITING_REVIEW"
-    : code === "USECASE_NOT_FOUND"
-      ? "Admin.useCases.errors.USECASE_NOT_FOUND"
-      : "Admin.useCases.errors.unknown";
-}
+/** What did not happen, for a refusal that has no words of its own. */
+const decisionWords = {
+  otherwise: "Admin.useCases.errors.unknown",
+} as const satisfies FailureWords;
 
 /**
  * What an operator decides about a use case in review: approve it, which publishes it at once, or send it
@@ -57,7 +52,7 @@ function AdminUseCaseDecision({
         setOpen(false);
         router.refresh();
       } catch (error) {
-        notify.error(refusal(error));
+        notify.failure(error, decisionWords);
       }
     },
   });
@@ -70,7 +65,7 @@ function AdminUseCaseDecision({
       notify.success("Admin.useCases.decision.approved", { name: title });
       router.refresh();
     } catch (error) {
-      notify.error(refusal(error));
+      notify.failure(error, decisionWords);
       router.refresh();
     } finally {
       setApproving(false);

@@ -10,12 +10,13 @@ import {
   CopyIcon,
   RefreshCwIcon,
 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Spinner } from "@/components/ui/spinner";
+import { useFormatter } from "@/i18n/format";
 import { checkEmailSetup, type EmailSetup } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
 
@@ -123,11 +124,7 @@ function EmailSetupChecklist() {
             <p className="text-sm text-muted-foreground">
               {t("lead", {
                 domain: setup.domain,
-                when: format.dateTime(new Date(setup.checkedAt), {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hourCycle: "h23",
-                }),
+                when: format.dateTime(new Date(setup.checkedAt), "time"),
               })}
             </p>
           )}
@@ -181,9 +178,7 @@ function EmailSetupChecklist() {
       {setup && setup.records.length > 0 && (
         <div className="flex flex-col gap-2">
           <h3 className="text-sm font-medium">{t("records.title", { domain: setup.domain })}</h3>
-          {/* From 768px: a table. Below it, one stacked record each, never a table scrolled sideways. */}
           <DataTableRows
-            className="hidden md:flex"
             columns={[
               { id: "status", header: t("records.status"), layout: { width: "sm" } },
               { id: "type", header: t("records.type"), layout: { nowrap: true } },
@@ -224,30 +219,6 @@ function EmailSetupChecklist() {
               },
             }))}
           />
-          <ul className="flex flex-col divide-y rounded-lg border md:hidden">
-            {setup.records.map((record) => (
-              <li
-                key={`${record.purpose}-${record.type}-${record.host}`}
-                className="flex flex-col gap-1.5 p-3"
-              >
-                <span className="flex items-center gap-1.5 text-xs">
-                  <StateIcon state={record.state} />
-                  {t(`records.states.${record.state}`)}
-                  <span className="font-mono text-muted-foreground">
-                    · {record.type}
-                    {record.priority != null && ` ${record.priority}`}
-                  </span>
-                </span>
-                <Copyable value={record.host} label={t("records.copy", { what: record.host })} />
-                <Copyable value={record.value} label={t("records.copy", { what: record.type })} />
-                {record.purpose === "dmarc" && record.state === "unknown" && (
-                  <span className="text-xs whitespace-normal text-muted-foreground">
-                    {t("records.dmarc")}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
         </div>
       )}
     </section>

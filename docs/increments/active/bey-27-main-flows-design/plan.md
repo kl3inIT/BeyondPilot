@@ -16,4 +16,4 @@ The steps of this increment and where each stands on 3 October 2026. The outcome
 
 ## After this increment
 
-The screens are built by later increments, each with its own design and plan: the program pages, the application submission and the directory. The composites drawn here (`ChoiceCard`, `StepItem`, `FileUpload`, `ApplyHeader`) arrive in code with the first screen that uses them.
+The screens are built by later increments, each with its own design and plan: the program pages, the application submission and the directory. The composites drawn here (`ChoiceCard`, `StepItem`, `FileUpload`, `ApplyHeader`) arrive in code with the first screen that uses them. (Correction, BEY-153: the stepper arrived as the `StepsNav` composite; no `StepItem` exists in code.)

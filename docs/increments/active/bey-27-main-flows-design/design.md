@@ -108,6 +108,8 @@ Drawn in Figma and still to be written in code, with their first screen:
 | `FileUpload`    | a composite with empty, uploading, uploaded and error states | Apply, step 2                                       |
 | `ApplyHeader`   | the focused header of the application flow                   | Apply                                               |
 
+Correction (BEY-153): `StepItem` was not written; the stepper of every form in steps is the `StepsNav` composite (`web/src/components/composites/steps-nav.tsx`).
+
 `SiteHeader` gains a signed-in variant: an avatar with the person's initials that opens the account menu, which holds My applications, My organization (draft, see Boundaries) and Sign out.
 
 ## Boundaries

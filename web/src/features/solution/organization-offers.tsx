@@ -7,6 +7,7 @@ import { OrganizationSection } from "@/features/organization/organization-sectio
 import type { OwnOffer } from "@/lib/api/generated";
 
 import { CreateOffer, OfferRowMenu } from "./offer-actions";
+import { OfferState } from "./offer-state";
 
 type OrganizationOffersProps = {
   offers: OwnOffer[];
@@ -49,59 +50,38 @@ function OrganizationOffers({ offers, editable }: OrganizationOffersProps) {
           />
         </div>
       ) : (
-        <>
-          {/* From 768px: a table. */}
-          <DataTableRows
-            className="hidden md:flex"
-            surface
-            columns={[
-              { id: "title", header: t("columns.offer"), layout: { fill: true } },
-              { id: "url", header: t("columns.url"), layout: { width: "lg" } },
-              { id: "solutions", header: t("columns.solutions"), layout: { numeric: true } },
-              ...(editable
-                ? [
-                    {
-                      id: "actions",
-                      header: <span className="sr-only">{t("columns.actions")}</span>,
-                      layout: { width: "action" as const },
-                    },
-                  ]
-                : []),
-            ]}
-            rows={offers.map((offer) => ({
-              id: offer.id,
-              cells: {
-                title: <span className="truncate font-medium">{offer.title}</span>,
-                url: address(offer.url),
-                solutions: offer.solutions,
-                actions: (
-                  <div className="flex justify-end">
-                    <OfferRowMenu offer={offer} own />
-                  </div>
-                ),
-              },
-            }))}
-          />
-
-          {/* Below 768px: one stacked row per offer, never a table scrolled sideways. */}
-          <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
-            {offers.map((offer) => (
-              <li
-                key={offer.id}
-                className="flex items-start justify-between gap-3 border-b p-3 last:border-b-0"
-              >
-                <div className="flex min-w-0 flex-col gap-1">
-                  <span className="text-sm font-medium wrap-break-word">{offer.title}</span>
-                  <span className="min-w-0 text-sm">{address(offer.url)}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {t("solutions", { count: offer.solutions })}
-                  </span>
+        <DataTableRows
+          surface
+          columns={[
+            { id: "title", header: t("columns.offer"), layout: { fill: true } },
+            { id: "state", header: t("columns.state") },
+            { id: "url", header: t("columns.url"), layout: { width: "lg" } },
+            { id: "solutions", header: t("columns.solutions"), layout: { numeric: true } },
+            ...(editable
+              ? [
+                  {
+                    id: "actions",
+                    header: <span className="sr-only">{t("columns.actions")}</span>,
+                    layout: { width: "action" as const },
+                  },
+                ]
+              : []),
+          ]}
+          rows={offers.map((offer) => ({
+            id: offer.id,
+            cells: {
+              title: <span className="truncate font-medium">{offer.title}</span>,
+              state: <OfferState closed={offer.closed} />,
+              url: address(offer.url),
+              solutions: offer.solutions,
+              actions: (
+                <div className="flex justify-end">
+                  <OfferRowMenu offer={offer} own />
                 </div>
-                {editable && <OfferRowMenu offer={offer} own />}
-              </li>
-            ))}
-          </ul>
-        </>
+              ),
+            },
+          }))}
+        />
       )}
     </OrganizationSection>
   );

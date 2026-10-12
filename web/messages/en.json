@@ -52,6 +52,23 @@
       "dark": "Dark",
       "system": "System"
     },
+    "cookies": {
+      "title": "We value your privacy",
+      "message": "We use cookies to keep the site working, improve your browsing experience and analyze our traffic. If you choose “Reject All”, only the necessary cookies are used. <privacy>Read more</privacy>",
+      "accept": "Accept All",
+      "decline": "Reject All",
+      "settings": "Cookie settings",
+      "customize": "Customize",
+      "preferences": {
+        "title": "Cookie preferences",
+        "description": "Choose which cookies we may use.",
+        "necessary": "Necessary",
+        "necessaryHint": "Keep you signed in and remember your language. Always on.",
+        "analytics": "Analytics",
+        "analyticsHint": "Help us see how the public pages are used.",
+        "save": "Save"
+      }
+    },
     "footer": {
       "platform": "Platform",
       "company": "Company",
@@ -68,7 +85,6 @@
   },
   "Campaign": {
     "name": "AI for Insurance Challenge × Tasco",
-    "shortName": "Tasco challenge",
     "partners": "GenAI Fund × Tasco",
     "kind": "Enterprise challenge · Insurance · Vietnam",
     "question": "How might we make insurance in Vietnam something people are glad to hold?",
@@ -77,7 +93,6 @@
     "applyNow": "Apply now",
     "readBrief": "Read the brief",
     "submissionsClose": "Submissions close 15 Oct, 23:59 ICT",
-    "closesShort": "closes 15 Oct",
     "closes": "Closes 15 Oct, 23:59 ICT",
     "countdown": "{days, plural, =0 {Last day} one {# day left} other {# days left}} · closes 15 Oct, 23:59 ICT",
     "closed": "Submissions closed on 15 Oct, 23:59 ICT",
@@ -298,7 +313,240 @@
     "title": "Something went wrong",
     "description": "We could not load this page.",
     "retry": "Try again",
-    "reference": "Reference: {digest}"
+    "reference": "Reference: {digest}",
+    "backToUseCases": "Back to use cases",
+    "backToSolutions": "Back to solutions"
+  },
+  "Errors": {
+    "unknown": "That did not work. Try again.",
+    "REQUEST_INVALID": "Check the marked fields and try again.",
+    "AI_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
+    "AI_PROVIDER_NAME_TAKEN": "Another provider already has this name.",
+    "AI_PROVIDER_CHANGED": "Someone changed this provider since you opened it. Reload and try again.",
+    "AI_PROVIDER_IN_USE": "This provider is in use. Choose another one where it is used first.",
+    "AI_PROVIDER_KEY_MISSING": "Enter the API key. A saved key is only used with the address it was saved for.",
+    "AI_ENCRYPTION_KEY_MISSING": "Keys cannot be saved: the server has no encryption key for them. Ask the team to add it.",
+    "AI_PROVIDER_ENDPOINT_INVALID": "The address must be an http or https URL, not link-local, without credentials, a query or a fragment.",
+    "AI_PROVIDER_ADAPTER_UNKNOWN": "BeyondPilot does not speak this provider's API.",
+    "AI_PROVIDER_CREDENTIAL_REJECTED": "The provider rejected the API key.",
+    "AI_PROVIDER_UNREACHABLE": "The provider did not answer. Check the address, or try again in a moment.",
+    "AI_PROVIDER_INCOMPATIBLE": "The address answered, but not as this API does.",
+    "AI_MODEL_NOT_FOUND": "This model no longer exists. Reload the page.",
+    "AI_MODEL_NAME_TAKEN": "This provider already has that model.",
+    "AI_MODEL_CHANGED": "Someone changed this model since you opened it. Reload and try again.",
+    "AI_MODEL_INVALID": "The max output must be smaller than the context window.",
+    "AI_MODEL_UNAVAILABLE": "This model cannot be used: its provider is switched off or has no key.",
+    "AI_MODEL_WITHOUT_VISION": "This task needs a model that reads images.",
+    "AI_READER_AMBIGUOUS": "Pages are read by a model or by an OCR service, not both.",
+    "AI_OCR_PROVIDER_UNAVAILABLE": "This OCR service cannot be used: it is switched off or has no key.",
+    "AI_TASK_UNKNOWN": "There is no such task. Reload the page.",
+    "AI_TASK_CHANGED": "Someone changed this task's model since you opened it. Reload and try again.",
+    "AI_TASK_NOT_CONFIGURED": "No model is chosen for this task, or its provider cannot be used. Choose one in Admin › AI.",
+    "AI_BUSY": "Too many models are in use at once. Try again in a moment.",
+    "IDENTITY_ACCOUNT_DISABLED": "This account has been disabled, so it can no longer be used. Ask GenAI Fund if you need it back.",
+    "IDENTITY_OPERATOR_REQUIRED": "You are no longer an operator.",
+    "IDENTITY_ACCOUNT_NOT_FOUND": "This account no longer exists.",
+    "IDENTITY_APP_HOST_INVALID": "Enter a host name such as app.example.com.",
+    "IDENTITY_APP_HOST_NOT_FOUND": "This host is no longer in the list. Reload the page.",
+    "IDENTITY_APP_NOT_CONNECTED": "This app is no longer connected. Reload the page.",
+    "IDENTITY_APP_REQUEST_NOT_FOUND": "This connection request has ended. Go back to your AI app and connect again.",
+    "IDENTITY_OWN_ACCOUNT": "You cannot disable your own account or withdraw your own role.",
+    "IDENTITY_OPERATOR_CONFIGURED": "This operator is set in the server configuration, so the role cannot be withdrawn here.",
+    "INTRODUCTION_SOLUTION_NOT_FOUND": "This solution is no longer listed.",
+    "INTRODUCTION_NEEDS_ORGANIZATION": "Create or join an organization before you ask for an introduction.",
+    "INTRODUCTION_ORGANIZATION_NOT_APPROVED": "Your organization has not been approved yet, so it cannot ask for an introduction.",
+    "INTRODUCTION_OWN_SOLUTION": "This solution belongs to your own organization.",
+    "INTRODUCTION_ALREADY_PENDING": "You already asked for an introduction to this solution. Wait for the answer.",
+    "INTRODUCTION_UNREACHABLE": "Nobody at this organization can be asked right now. Try again later.",
+    "INTRODUCTION_REQUEST_NOT_FOUND": "This request no longer exists.",
+    "INTRODUCTION_OWNERS_ONLY": "Only an owner of your organization answers a request for an introduction.",
+    "INTRODUCTION_NOT_PENDING": "This request was already answered.",
+    "MATCHING_USE_CASE_NOT_FOUND": "This use case no longer exists.",
+    "MATCHING_CANDIDATE_NOT_FOUND": "This solution is no longer on the list. Reload the page.",
+    "MATCHING_SOLUTION_NOT_FOUND": "This solution is no longer approved, so it cannot be added.",
+    "MATCHING_OPERATORS_ONLY": "Only GenAI Fund can do this.",
+    "MATCHING_NO_MODEL": "We can't look for solutions now: no AI model is chosen for it.",
+    "MATCHING_RUN_OPEN": "AI is already looking for solutions for this use case.",
+    "MATCHING_RUN_LIMIT": "You have used every run for this use case today. Try again tomorrow.",
+    "MATCHING_CANDIDATE_REMOVED": "This solution was removed. Restore it first.",
+    "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund removed this solution, so only GenAI Fund can restore it.",
+    "MATCHING_ALREADY_CANDIDATE": "This solution is already on the list for this use case.",
+    "MATCHING_OWN_SOLUTION": "This solution belongs to the organization that owns the use case.",
+    "MATCHING_SETTINGS_CHANGED": "Someone else changed these settings. Reload and try again.",
+    "MATCHING_FEEDBACK_NOT_JUDGED": "AI has not read this solution yet, so there is no group to answer about.",
+    "MATCHING_FEEDBACK_GROUP_INVALID": "Agree with the group, or say which other group the solution belongs in.",
+    "MATCHING_FEEDBACK_REQUIREMENT_UNKNOWN": "This use case no longer has one of these requirements. Reload the page and answer again.",
+    "MCP_TOOL_NOT_FOUND": "This tool no longer exists. Reload the page.",
+    "NOTIFICATION_EMAIL_NOT_SENT": "The email could not be sent. Try again in a moment.",
+    "NOTIFICATION_SETTINGS_INCOMPLETE": "The provider needs more: fill in the fields marked as required.",
+    "NOTIFICATION_SETTINGS_CHANGED": "Someone saved the settings while you were editing. Reload the page and save again.",
+    "NOTIFICATION_ENCRYPTION_KEY_MISSING": "The server has no encryption key, so it cannot keep secrets. Ask whoever runs it.",
+    "NOTIFICATION_TEMPLATE_NOT_FOUND": "There is no such kind of email. Go back to Templates and open it from there.",
+    "NOTIFICATION_TEMPLATE_NOT_EDITABLE": "This email is written in full each time it is sent, so it has no template to edit.",
+    "NOTIFICATION_TEMPLATE_INVALID": "The wording has problems. Fix those marked under the fields.",
+    "NOTIFICATION_TEMPLATE_CHANGED": "Someone saved this email while you were editing. Reload the page to see their wording.",
+    "NOTIFICATION_TEST_RECIPIENT_INVALID": "Write one plain email address, without a name or a second address.",
+    "NOTIFICATION_TEST_LIMIT_REACHED": "You have sent as many test emails to other people as an hour allows. Send one to yourself, or try later.",
+    "NOTIFICATION_MESSAGE_NOT_FOUND": "This email no longer exists. Reload the page.",
+    "NOTIFICATION_MESSAGE_NOT_RESENDABLE": "This email cannot be sent again.",
+    "NOTIFICATION_ADDRESS_SUPPRESSED": "The address receives no email. Remove it from Suppressions first.",
+    "NOTIFICATION_SUPPRESSION_NOT_FOUND": "This address is no longer in Suppressions. Reload the page.",
+    "NOTIFICATION_SUPPRESSION_EXISTS": "This address already receives no email.",
+    "ORGANIZATION_NOT_FOUND": "This organization no longer exists.",
+    "ORGANIZATION_INDUSTRIES_REQUIRED": "Choose at least one industry the company works in or serves.",
+    "ORGANIZATION_LOGO_NOT_USABLE": "This logo cannot be used. Upload the image again.",
+    "ORGANIZATION_MEMBERSHIP_REQUIRED": "You are no longer a member of this organization.",
+    "ORGANIZATION_OWNER_REQUIRED": "Only an owner can do this.",
+    "ORGANIZATION_ALREADY_MEMBER": "You already belong to an organization. Leave it first.",
+    "ORGANIZATION_REQUEST_PENDING": "You already have a request waiting. Withdraw it first.",
+    "ORGANIZATION_INVITATION_NOT_FOUND": "This invitation is no longer open.",
+    "ORGANIZATION_REQUEST_NOT_FOUND": "This request is no longer open.",
+    "ORGANIZATION_MEMBER_NOT_FOUND": "This person is no longer a member.",
+    "ORGANIZATION_ALREADY_INVITED": "This address already has an invitation.",
+    "ORGANIZATION_INVITEE_IS_MEMBER": "This person already belongs to an organization.",
+    "ORGANIZATION_LAST_OWNER": "An organization needs an owner. Make someone else an owner first.",
+    "ORGANIZATION_CHANGED_MEANWHILE": "Someone else changed this profile. Reload the page and try again.",
+    "ORGANIZATION_NOT_AWAITING_REVIEW": "This organization has already been reviewed.",
+    "ORGANIZATION_CANNOT_TAKE_DOWN": "Only an approved organization can be taken down. Reload the page to see where it stands.",
+    "ORGANIZATION_NOT_TAKEN_DOWN": "This organization is not taken down any more. Reload the page.",
+    "ORGANIZATION_MERGED": "This organization was merged into another and can no longer be changed.",
+    "ORGANIZATION_CANNOT_MERGE": "An organization merges only into another one that is approved and shown.",
+    "ORGANIZATION_DOMAIN_TAKEN": "Another organization already uses this email domain.",
+    "ORGANIZATION_DOMAIN_NOT_VERIFIED": "People join at once only on a domain GenAI Fund verified for an approved organization.",
+    "ORGANIZATION_NOT_APPROVED": "You can invite people once GenAI Fund has approved the organization.",
+    "ORGANIZATION_INVITATION_DAILY_LIMIT": "The organization has sent the most invitations it can in a day. Invite more people tomorrow.",
+    "ORGANIZATION_INVITATION_OPEN_LIMIT": "The organization has the most invitations it can keep open. Revoke some, or wait for people to answer.",
+    "PROGRAM_NOT_FOUND": "This program no longer exists. Reload the page.",
+    "PROGRAM_SLUG_TAKEN": "Another program already has this address.",
+    "PROGRAM_SLUG_FIXED": "The address cannot change once the program has been published.",
+    "PROGRAM_QUESTIONS_FIXED": "Applications have opened, so the questions can no longer change.",
+    "PROGRAM_OPENING_FIXED": "The applications have opened, so when they open can no longer change.",
+    "PROGRAM_PUBLISHED_INCOMPLETE": "A published program keeps its summary, cover and days. Unpublish it first to remove one.",
+    "PROGRAM_CHOICES_REQUIRED": "A question answered by a choice needs at least two choices.",
+    "PROGRAM_CHANGED_MEANWHILE": "Someone else saved this program in the meantime. Reload the page and make your changes again.",
+    "PROGRAM_DAYS_OUT_OF_ORDER": "The program ends before it starts.",
+    "PROGRAM_WINDOW_OUT_OF_ORDER": "Applications close before they open.",
+    "PROGRAM_OUTCOMES_BEFORE_CLOSE": "Outcomes are due before applications close.",
+    "PROGRAM_KEY_DATE_OUT_OF_ORDER": "A key date ends before it starts.",
+    "PROGRAM_EVENT_OUT_OF_ORDER": "An event ends before it starts.",
+    "PROGRAM_EXTERNAL_URL_REQUIRED": "Enter the address of the page somewhere else.",
+    "PROGRAM_NOT_READY_TO_PUBLISH": "The program still lacks what the list above names.",
+    "PROGRAM_COVER_NOT_USABLE": "This image cannot be the cover. Upload it again.",
+    "PROPOSAL_APPLICATION_NOT_FOUND": "This application no longer exists. Reload the page.",
+    "PROPOSAL_NOT_OPEN": "This program is not taking applications on BeyondPilot now.",
+    "PROPOSAL_CLOSED": "Applications to this program have closed.",
+    "PROPOSAL_LOCKED": "This program takes no changes after submission.",
+    "PROPOSAL_WITHDRAWN_FOR_GOOD": "You withdrew this application, and this program takes no changes after submission, so it cannot be submitted again.",
+    "PROPOSAL_CHANGED_MEANWHILE": "Someone saved this proposal in the meantime. Reload it to see their changes.",
+    "PROPOSAL_ALREADY_IN_ORGANIZATION": "You already belong to an organization.",
+    "PROPOSAL_ORGANIZATION_REQUIRED": "Say who applies in step 1.",
+    "PROPOSAL_ORGANIZATION_APPLIED": "Someone in your organization has already applied to this program.",
+    "PROPOSAL_CONTACT_INCOMPLETE": "Your contact details in step 1 are incomplete.",
+    "PROPOSAL_TEAM_BACKGROUND_REQUIRED": "Describe your team's background in step 1.",
+    "PROPOSAL_SOLUTION_NOT_FOUND": "Choose a solution of your organization.",
+    "PROPOSAL_SOLUTION_REQUIRED": "Choose the solution you send.",
+    "PROPOSAL_SOLUTION_INCOMPLETE": "Your solution in step 2 needs what it does, the problem it solves and its stage.",
+    "PROPOSAL_DECK_REQUIRED": "Add your solution deck in step 2.",
+    "PROPOSAL_ANSWER_INVALID": "An answer does not fit its question.",
+    "PROPOSAL_ANSWER_REQUIRED": "Answer every question of the program.",
+    "PROPOSAL_NOT_SUBMITTED": "Only a submitted application can be withdrawn. Reload the page to see where yours stands.",
+    "PROPOSAL_REVIEW_PROGRAM_NOT_FOUND": "There is no such program with applications to review. Reload the page.",
+    "PROPOSAL_OWN_APPLICATION": "You cannot score or decide an application of your own or of your organization.",
+    "PROPOSAL_REVIEW_NOT_ALLOWED": "You do not review this program's applications.",
+    "PROPOSAL_CRITERIA_FIXED": "Applications have been scored on these criteria, so they can no longer change.",
+    "PROPOSAL_CRITERIA_INVALID": "Give each criterion its own name.",
+    "PROPOSAL_NO_CRITERIA": "This program has no judging criteria yet. GenAI Fund sets them first.",
+    "PROPOSAL_REVIEWER_INVITED": "This address is already invited to judge this program.",
+    "PROPOSAL_REVIEWER_NOT_FOUND": "This judge is no longer on the list. Reload the page.",
+    "PROPOSAL_REVIEWER_JOINED": "This judge has already signed in; there is no invitation to send again.",
+    "PROPOSAL_ASSESSMENT_INVALID": "Score every criterion from 1 to 5, or declare a conflict.",
+    "PROPOSAL_RELEASED": "The outcomes of this program have been released, so the review no longer changes.",
+    "PROPOSAL_OUTCOMES_NOT_READY": "Outcomes are released once applications have closed and every application has a decision.",
+    "PROPOSAL_USE_CASE_NOT_FOUND": "There is no such use case.",
+    "PROPOSAL_USE_CASE_CLOSED": "This use case no longer takes proposals.",
+    "PROPOSAL_OWN_USE_CASE": "Your organization posted this use case, so it cannot send a proposal to it.",
+    "PROPOSAL_NO_ORGANIZATION": "Join or set up an organization to send a proposal.",
+    "PROPOSAL_NOT_FOUND": "There is no such proposal.",
+    "PROPOSAL_ALREADY_SENT": "This proposal was sent, so it can no longer change.",
+    "PROPOSAL_APPROACH_REQUIRED": "Say how the solution solves this use case.",
+    "PROPOSAL_CONTACT_REQUIRED": "Add your name, country and phone number first.",
+    "PROPOSAL_TEAM_INVALID": "The team can name only members of your organization, each once, and at most one primary contact.",
+    "PROPOSAL_TEAM_INCOMPLETE": "Name at least one person, give each a role and choose the primary contact.",
+    "PROPOSAL_PDF_REQUIRED": "Add the proposal as a PDF.",
+    "PROPOSAL_EDIT_WINDOW_CLOSED": "The time to edit this proposal has ended, so your changes were not saved.",
+    "SEARCH_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
+    "SEARCH_PROVIDER_INVALID": "The address must be the provider's own API address.",
+    "SEARCH_PROVIDER_NAME_TAKEN": "Another provider already has this name.",
+    "SEARCH_PROVIDER_CHANGED": "Someone changed this provider since you opened it. Reload and try again.",
+    "SEARCH_PROVIDER_IN_USE": "Search embeds with this provider. Change the model to another provider first.",
+    "SEARCH_PROVIDER_KEY_MISSING": "Enter the API key. A saved key is only used with the address it was saved for.",
+    "SEARCH_MODEL_UNKNOWN": "This provider does not offer that model.",
+    "SEARCH_MODEL_REJECTED": "The provider did not embed a test sentence with this key and model. Test the connection to see why.",
+    "SEARCH_RETRY_ITEM_INCOMPLETE": "Name the kind of the item to try again.",
+    "SEARCH_SETTINGS_CHANGED": "Someone changed the search settings since you opened them. Reload and try again.",
+    "SEARCH_ENCRYPTION_KEY_MISSING": "Keys cannot be saved: the server has no encryption key for them. Ask the team to add it.",
+    "SOLUTION_NOT_FOUND": "This solution no longer exists.",
+    "SOLUTION_MEMBER_REQUIRED": "Only a member of an organization can do this.",
+    "SOLUTION_ORGANIZATION_NOT_APPROVED": "This organization is not approved yet, so it cannot have a solution.",
+    "SOLUTION_INCOMPLETE": "Fill in the marked fields before sending for review.",
+    "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review, approved, or refused for good.",
+    "SOLUTION_NOT_EDITABLE": "This solution was refused for good and can no longer be changed.",
+    "SOLUTION_NOT_A_DRAFT": "This solution is not a draft any more.",
+    "SOLUTION_NOT_AWAITING_REVIEW": "This solution has already been reviewed.",
+    "SOLUTION_NOT_APPROVED": "Only an approved solution that is not taken down can be taken down.",
+    "SOLUTION_NOT_TAKEN_DOWN": "This solution is not taken down.",
+    "SOLUTION_CHANGED_MEANWHILE": "Someone else changed this solution. Reload the page and try again.",
+    "SOLUTION_DECK_NOT_USABLE": "This file cannot be the deck. Upload the PDF again.",
+    "SOLUTION_IMAGE_NOT_USABLE": "This image cannot be used. Upload it again.",
+    "SOLUTION_DEPLOYMENT_NOT_FOUND": "This customer deployment no longer exists.",
+    "SOLUTION_TOO_MANY_DEPLOYMENTS": "A solution lists at most 12 customer deployments. Remove one before adding another.",
+    "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "This customer deployment is not waiting for review.",
+    "SOLUTION_DEPLOYMENT_NOT_DELETABLE": "This customer deployment was sent for review, so it is removed from the page and kept, not deleted. Reload the page.",
+    "SOLUTION_DEPLOYMENT_WITHDRAWN": "This customer deployment is removed from the page. Restore it first.",
+    "SOLUTION_DEPLOYMENT_NOT_WITHDRAWN": "This customer deployment is already back on the solution.",
+    "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
+    "SOLUTION_OFFER_NOT_FOUND": "This offer no longer exists. Reload the page.",
+    "SOLUTION_OFFER_TITLE_TAKEN": "Another offer already reads the same.",
+    "SOLUTION_OFFER_IN_USE": "A solution still comes with this offer. Take it off those solutions first.",
+    "SOLUTION_OFFER_CHANGED_MEANWHILE": "Someone else saved this offer in the meantime. Reload the page and make your changes again.",
+    "SOLUTION_OFFER_NOT_USABLE": "One of the chosen offers no longer exists. Reload the page and choose again.",
+    "STORAGE_MEDIA_TYPE_NOT_ALLOWED": "This kind of file cannot be uploaded here. Choose another file.",
+    "STORAGE_FILE_TOO_LARGE": "This file is larger than the limit here. Choose a smaller one.",
+    "STORAGE_UPLOAD_NOT_PERMITTED": "You cannot upload this kind of file.",
+    "STORAGE_FILE_NOT_FOUND": "This file no longer exists. Upload it again.",
+    "STORAGE_TICKET_REFUSED": "This upload is not valid or has already been used. Choose the file again.",
+    "STORAGE_TICKET_EXPIRED": "The upload took too long. Choose the file again.",
+    "STORAGE_UPLOAD_MISSING": "The file did not arrive. Upload it again.",
+    "STORAGE_CONTENT_MISMATCH": "The file is not what its name and size say. Choose the file again.",
+    "TALENT_PROFILE_NOT_FOUND": "This profile no longer exists.",
+    "TALENT_INCOMPLETE": "Fill in the marked fields before sending for review.",
+    "TALENT_NOT_SUBMITTABLE": "This profile is already in review or approved.",
+    "TALENT_NOT_AWAITING_REVIEW": "This profile has already been reviewed.",
+    "TALENT_NOT_APPROVED": "Only an approved profile that is not taken down can be taken down.",
+    "TALENT_NOT_TAKEN_DOWN": "This profile is not taken down.",
+    "TALENT_PHOTO_NOT_USABLE": "This photo cannot be used on your profile. Upload it again.",
+    "TALENT_CHANGED_MEANWHILE": "This profile changed in another tab. Reload the page and try again.",
+    "TALENT_OWN_PROFILE": "This is your own profile.",
+    "TALENT_ENQUIRY_PENDING": "Your message to this person waits for their answer.",
+    "TALENT_ENQUIRY_LIMIT": "You started ten conversations today. Write again tomorrow.",
+    "TALENT_ENQUIRY_NOT_FOUND": "This message no longer exists.",
+    "TALENT_ENQUIRY_NOT_PENDING": "This message was answered already, or it closed.",
+    "USECASE_NOT_FOUND": "This use case does not exist any more.",
+    "USECASE_ORGANIZATION_NOT_ELIGIBLE": "This organization is not an approved enterprise.",
+    "USECASE_CLOSES_IN_THE_PAST": "Choose a close date after today.",
+    "USECASE_BUDGET_INCOMPLETE": "Give both amounts, or mark the budget to be determined.",
+    "USECASE_BUDGET_OUT_OF_ORDER": "The maximum budget is below the minimum.",
+    "USECASE_PROGRAM_NOT_FOUND": "One of the programs no longer exists. Reload the page and choose again.",
+    "USECASE_ENTERPRISE_REQUIRED": "Only the members of an approved organization can write its use cases.",
+    "USECASE_CHANGED_MEANWHILE": "Someone saved this use case in the meantime. Reload it to see their changes.",
+    "USECASE_NOT_EDITABLE": "This use case cannot be edited now: it waits for GenAI Fund, or its deadline has passed.",
+    "USECASE_INCOMPLETE": "Fill in every section before sending the use case.",
+    "USECASE_NOT_SUBMITTABLE": "Only a draft, or one GenAI Fund sent back, can be sent for review.",
+    "USECASE_NOT_CHANGED": "Change the use case before sending it again.",
+    "USECASE_CANNOT_MOVE_TO_DRAFT": "Only a use case in review or published can move back to Draft.",
+    "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
+    "USECASE_ATTACHMENT_NOT_USABLE": "Upload the file again: it cannot be attached.",
+    "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest."
   },
   "SignIn": {
     "metaTitle": "Sign in · BeyondPilot",
@@ -386,7 +634,7 @@
     "countryPlaceholder": "Select a country",
     "phone": "Phone number",
     "phoneInvalid": "Enter a phone number with its country code, such as +84 912 345 678.",
-    "save": "Save",
+    "save": "Save changes",
     "saved": "Your account is saved.",
     "failed": "We could not save your account. Try again.",
     "phoneHint": "With its country code, such as +84 912 345 678."
@@ -519,13 +767,7 @@
         "type": "Type",
         "cancel": "Cancel",
         "submit": "Create program",
-        "errors": {
-          "slugTaken": "Another program already has this address."
-        },
         "typePlaceholder": "Choose a type"
-      },
-      "errors": {
-        "unknown": "That did not work. Try again in a moment."
       },
       "settings": {
         "metaTitle": "Program settings · BeyondPilot",
@@ -601,24 +843,10 @@
         },
         "edit": "Edit",
         "editNamed": "Edit {name}",
-        "delete": "Delete",
+        "delete": "Remove",
         "cancel": "Cancel",
         "errors": {
-          "unknown": "The program was not saved. Try again in a moment.",
-          "changedMeanwhile": "Someone else saved this program in the meantime. Reload the page and make your changes again.",
-          "codes": {
-            "PROGRAM_SLUG_TAKEN": "Another program already has this address.",
-            "PROGRAM_SLUG_FIXED": "The address cannot change once the program has been published.",
-            "PROGRAM_DAYS_OUT_OF_ORDER": "The program ends before it starts.",
-            "PROGRAM_WINDOW_OUT_OF_ORDER": "Applications close before they open.",
-            "PROGRAM_OUTCOMES_BEFORE_CLOSE": "Outcomes are due before applications close.",
-            "PROGRAM_EXTERNAL_URL_REQUIRED": "Enter the address of the page somewhere else.",
-            "PROGRAM_COVER_NOT_USABLE": "This image cannot be the cover. Upload it again.",
-            "PROGRAM_KEY_DATE_OUT_OF_ORDER": "A key date ends before it starts.",
-            "PROGRAM_EVENT_OUT_OF_ORDER": "An event ends before it starts.",
-            "PROGRAM_OPENING_FIXED": "The applications have opened, so when they open can no longer change.",
-            "PROGRAM_PUBLISHED_INCOMPLETE": "A published program keeps its summary, cover and days. Unpublish it first to remove one."
-          }
+          "unknown": "The program was not saved. Try again in a moment."
         },
         "cover": {
           "alt": "The program's cover",
@@ -644,7 +872,7 @@
           "note": "Note",
           "noteHint": "Shown under the date on the program's page.",
           "add": "Add date",
-          "update": "Update"
+          "update": "Save"
         },
         "event": {
           "addTitle": "Add an event",
@@ -662,7 +890,7 @@
           "registrationUrl": "Registration link",
           "registrationUrlHint": "Where people sign up, for example the event's Luma page.",
           "add": "Add event",
-          "update": "Update"
+          "update": "Save"
         },
         "more": "More actions",
         "copyLink": "Copy link",
@@ -688,7 +916,6 @@
             "noQuestions": "Its application form asks no question of its own yet: applicants give only themselves, their team and their solution. Questions can be added until applications open."
           },
           "done": "{name} is published.",
-          "notReady": "The program still lacks what the list above names.",
           "missing": "{count, plural, one {# thing is} other {# things are}} missing before you can publish"
         },
         "unpublish": {
@@ -722,7 +949,7 @@
       },
       "noMatch": {
         "title": "No programs match",
-        "clear": "Show all programs"
+        "clear": "Clear filters"
       },
       "countOf": "{count, plural, one {# program} other {# programs}} of {total}",
       "tabs": {
@@ -755,7 +982,7 @@
         "edit": "Edit",
         "editNamed": "Edit {label}",
         "add": "Add a question",
-        "save": "Save questions",
+        "save": "Save changes",
         "unsaved": "You have unsaved changes.",
         "saved": "Questions saved.",
         "addTitle": "Add a question",
@@ -771,15 +998,10 @@
         "maxLength": "Longest answer",
         "maxLengthHint": "In characters.",
         "required": "An answer is required",
-        "delete": "Delete",
+        "delete": "Remove",
         "cancel": "Cancel",
-        "update": "Update",
+        "update": "Save",
         "addQuestion": "Add question",
-        "errors": {
-          "PROGRAM_QUESTIONS_FIXED": "Applications have opened, so the questions can no longer change.",
-          "PROGRAM_CHANGED_MEANWHILE": "Someone else changed this program in the meantime. Reload and make your changes again.",
-          "PROGRAM_CHOICES_REQUIRED": "A question answered by a choice needs at least two choices."
-        },
         "locks": "The questions lock when applications open on {opens}: from then on they can no longer change.",
         "locksUnset": "The questions lock when applications open. No opening is set yet: set it under Settings.",
         "fixedStill": "Applicants answer them as they are. The program's page, its closing date and its judges can still change."
@@ -789,7 +1011,7 @@
       "metaTitle": "Accounts · BeyondPilot",
       "title": "Accounts",
       "search": "Search by name or email",
-      "clear": "Clear",
+      "clear": "Clear filters",
       "filters": {
         "status": {
           "label": "Status",
@@ -853,23 +1075,16 @@
         "operatorGranted": "{name} is now an operator.",
         "operatorWithdrawn": "{name} is no longer an operator."
       },
-      "errors": {
-        "ownAccount": "You cannot disable your own account or withdraw your own role.",
-        "operatorConfigured": "This operator is set in the server configuration, so the role cannot be withdrawn here.",
-        "accountNotFound": "This account no longer exists.",
-        "operatorRequired": "You are no longer an operator.",
-        "unknown": "That did not work. Try again."
-      },
       "empty": {
         "title": "No account matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       }
     },
     "auditLog": {
       "metaTitle": "Audit log · BeyondPilot",
       "title": "Audit log",
       "search": "Search people or accounts",
-      "clear": "Clear",
+      "clear": "Clear filters",
       "filters": {
         "period": {
           "label": "Period"
@@ -935,6 +1150,8 @@
           "offers_choose": "Chose the offers of a solution",
           "offer_create": "Added an offer",
           "offer_update": "Changed an offer",
+          "offer_close": "Closed an offer to new solutions",
+          "offer_reopen": "Opened an offer to new solutions again",
           "offer_delete": "Deleted an offer"
         },
         "introduction": {
@@ -1069,6 +1286,8 @@
           "offers_choose": "Chose the offers of the solution <resource></resource>",
           "offer_create": "Added the offer <resource></resource>",
           "offer_update": "Changed the offer <resource></resource>",
+          "offer_close": "Closed the offer <resource></resource> to new solutions",
+          "offer_reopen": "Opened the offer <resource></resource> to new solutions again",
           "offer_delete": "Deleted the offer <resource></resource>"
         },
         "introduction": {
@@ -1178,7 +1397,7 @@
       "noMatch": {
         "title": "No event matches",
         "description": "{period, select, day {Nothing in the last 24 hours matches this search and this filter.} week {Nothing in the last 7 days matches this search and this filter.} month {Nothing in the last 30 days matches this search and this filter.} other {Nothing matches this search and this filter.}}",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       }
     },
     "organizations": {
@@ -1230,7 +1449,7 @@
       },
       "noMatch": {
         "title": "No organization matches",
-        "clear": "Clear search and filter"
+        "clear": "Clear filters"
       },
       "count": "{count, plural, one {# organization} other {# organizations}}",
       "create": {
@@ -1339,10 +1558,8 @@
         "moves": "{members, plural, one {# member} other {# members}} and {invitations, plural, one {# open invitation} other {# open invitations}} move with it, and so do its solutions and use cases.",
         "cancel": "Cancel",
         "continue": "Continue",
-        "confirmTitle": "Merge into {kept}?",
-        "confirmLabel": "Type {name} to confirm",
-        "cannotUndo": "This cannot be undone.",
-        "back": "Back",
+        "confirmTitle": "Merge {name} into {kept}?",
+        "confirmNote": "{name} stays only as a record of where it went, and its members are told by email. This cannot be undone.",
         "merge": "Merge"
       },
       "people": {
@@ -1404,9 +1621,8 @@
       "create": {
         "action": "Create solution",
         "title": "Create a solution",
-        "lead": "You write it in the editor and publish it without a review. It belongs to the organization you choose.",
         "organization": "Organization",
-        "organizationPlaceholder": "Select an organization",
+        "organizationPlaceholder": "Search or select an organization",
         "organizationRequired": "Choose an organization.",
         "noOrganizations": "No organization is approved yet.",
         "name": "Solution name",
@@ -1415,7 +1631,6 @@
         "submit": "Create and open editor"
       },
       "title": "Solutions",
-      "lead": "Every solution providers sent for review.",
       "columns": {
         "solution": "Solution",
         "organization": "Organization",
@@ -1433,7 +1648,7 @@
       },
       "noMatch": {
         "title": "No solution matches",
-        "clear": "Clear search and filter"
+        "clear": "Clear filters"
       },
       "count": "{count, plural, one {# solution} other {# solutions}}",
       "open": "Open",
@@ -1571,16 +1786,42 @@
     "offers": {
       "metaTitle": "Offers · BeyondPilot",
       "title": "Offers",
-      "lead": "GenAI Fund's list first, then what each organization wrote for its own solutions. A change shows on every solution that comes with the offer.",
       "genAiFund": "GenAI Fund",
       "columns": {
-        "writer": "Written by"
+        "writer": "Written by",
+        "state": "Status"
+      },
+      "filters": {
+        "search": "Search offers",
+        "state": {
+          "label": "Status",
+          "all": "All statuses"
+        }
+      },
+      "noMatch": "No offer matches the search.",
+      "detail": {
+        "back": "Offers",
+        "fields": {
+          "writer": "Written by",
+          "address": "Claimed at",
+          "created": "Created",
+          "updated": "Last changed"
+        },
+        "closedNote": "Closed to new solutions. The solutions below keep it and still show it.",
+        "solutions": {
+          "title": "Solutions that come with it",
+          "empty": "No solution comes with this offer.",
+          "columns": {
+            "solution": "Solution",
+            "organization": "Organization",
+            "review": "Review"
+          }
+        }
       }
     },
     "talent": {
       "metaTitle": "Talent · BeyondPilot",
       "title": "Talent",
-      "lead": "Every profile people sent for review.",
       "columns": {
         "person": "Person",
         "headline": "Headline",
@@ -1594,7 +1835,7 @@
       },
       "noMatch": {
         "title": "No profile matches",
-        "clear": "Clear search and filter"
+        "clear": "Clear filters"
       },
       "count": "{count, plural, one {# profile} other {# profiles}}",
       "open": "Open",
@@ -1665,7 +1906,6 @@
         "link": "Reported messages",
         "metaTitle": "Reported messages · BeyondPilot",
         "title": "Reported messages",
-        "lead": "The sender was told the message was declined.",
         "back": "All talent",
         "from": "From {sender}",
         "to": "To {name}",
@@ -1689,11 +1929,10 @@
     "introductions": {
       "metaTitle": "Introductions · BeyondPilot",
       "title": "Introductions",
-      "lead": "The owners of each organization answer; you read, and see which requests wait too long.",
       "overdueNotice": "{count, plural, one {# request has} other {# requests have}} waited more than 3 days for an answer.",
       "overdue": "Waiting over 3 days",
       "search": "Search by solution",
-      "clear": "Clear",
+      "clear": "Clear filters",
       "filter": {
         "label": "Filter by state",
         "all": "All"
@@ -1715,7 +1954,7 @@
       },
       "noMatch": {
         "title": "No request matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       }
     },
     "useCases": {
@@ -1723,7 +1962,7 @@
       "title": "Use cases",
       "create": "Create use case",
       "search": "Search by title or organization",
-      "clear": "Clear search",
+      "clear": "Clear filters",
       "filters": {
         "status": {
           "label": "Status",
@@ -1767,12 +2006,11 @@
       },
       "noMatch": {
         "title": "No use case matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       },
       "form": {
         "metaTitle": "Create a use case · BeyondPilot",
         "title": "Create a use case",
-        "lead": "The audit log records it as created by GenAI Fund.",
         "organization": "Create this use case for",
         "organizationPlaceholder": "Choose an organization",
         "organizationHint": "Only approved organizations are listed.",
@@ -1788,12 +2026,7 @@
         "errors": {
           "fix": "Check this step",
           "budgetOutOfOrder": "The maximum is below the minimum.",
-          "USECASE_ORGANIZATION_NOT_ELIGIBLE": "This organization is not an approved enterprise.",
-          "USECASE_CLOSES_IN_THE_PAST": "Choose a day after today.",
-          "USECASE_BUDGET_INCOMPLETE": "Give both amounts, or mark the budget to be determined.",
-          "USECASE_BUDGET_OUT_OF_ORDER": "The maximum is below the minimum.",
-          "unknown": "The use case was not saved. Try again.",
-          "USECASE_ATTACHMENT_NOT_USABLE": "Upload the file again: it cannot be attached."
+          "unknown": "The use case was not saved. Try again."
         },
         "attachments": {
           "label": "Attachments",
@@ -1835,8 +2068,6 @@
         }
       },
       "errors": {
-        "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
-        "USECASE_NOT_FOUND": "This use case does not exist any more.",
         "unknown": "The decision was not saved. Try again."
       },
       "decision": {
@@ -1984,7 +2215,7 @@
         "testButton": "Test",
         "testHint": "Embeds one sentence with this key and model, saved or not.",
         "cancel": "Cancel",
-        "save": "Save provider"
+        "save": "Save"
       },
       "probe": {
         "connected": "Connected · {model} · {dimensions, number} dimensions · {ms} ms",
@@ -2008,20 +2239,6 @@
         "saved": "{name} saved",
         "deleted": "{name} deleted",
         "modelChosen": "Search embeds with {model} from now on"
-      },
-      "errors": {
-        "SEARCH_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
-        "SEARCH_PROVIDER_INVALID": "The address must be the provider's own API address.",
-        "SEARCH_PROVIDER_NAME_TAKEN": "Another provider already has this name.",
-        "SEARCH_PROVIDER_CHANGED": "Someone changed this provider since you opened it. Reload and try again.",
-        "SEARCH_PROVIDER_IN_USE": "Search embeds with this provider. Change the model to another provider first.",
-        "SEARCH_PROVIDER_KEY_MISSING": "Enter the API key. A saved key is only used with the address it was saved for.",
-        "SEARCH_MODEL_UNKNOWN": "This provider does not offer that model.",
-        "SEARCH_MODEL_REJECTED": "The provider did not embed a test sentence with this key and model. Test the connection to see why.",
-        "SEARCH_RETRY_ITEM_INCOMPLETE": "Name the kind of the item to try again.",
-        "SEARCH_SETTINGS_CHANGED": "Someone changed the search settings since you opened them. Reload and try again.",
-        "SEARCH_ENCRYPTION_KEY_MISSING": "Keys cannot be saved: the server has no encryption key for them. Ask the team to add it.",
-        "unknown": "Something went wrong. Try again in a moment."
       },
       "chat": {
         "tasks": {
@@ -2138,7 +2355,7 @@
           "testTitle": "Test connection",
           "testHint": "Lists the provider's models without spending tokens.",
           "cancel": "Cancel",
-          "save": "Save provider"
+          "save": "Save"
         },
         "modelsField": {
           "label": "Models",
@@ -2180,7 +2397,7 @@
           "testOk": "The model answered · {ms} ms",
           "testFailed": "The model did not answer · {ms} ms",
           "cancel": "Cancel",
-          "save": "Save model",
+          "save": "Save",
           "add": "Add model",
           "modelNameHint": "Use the name the provider's API expects.",
           "displayNameHint": "Left empty, the model name is shown."
@@ -2202,31 +2419,6 @@
           "modelSaved": "{name} saved",
           "modelRemoved": "{name} removed",
           "taskSet": "{task} uses {model} from now on"
-        },
-        "errors": {
-          "AI_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
-          "AI_PROVIDER_NAME_TAKEN": "Another provider already has this name.",
-          "AI_PROVIDER_CHANGED": "Someone changed this provider since you opened it. Reload and try again.",
-          "AI_PROVIDER_IN_USE": "This provider is in use. Choose another one where it is used first.",
-          "AI_PROVIDER_KEY_MISSING": "Enter the API key. A saved key is only used with the address it was saved for.",
-          "AI_ENCRYPTION_KEY_MISSING": "Keys cannot be saved: the server has no encryption key for them. Ask the team to add it.",
-          "AI_PROVIDER_ENDPOINT_INVALID": "The address must be an http or https URL, not link-local, without credentials, a query or a fragment.",
-          "AI_PROVIDER_ADAPTER_UNKNOWN": "BeyondPilot does not speak this provider's API.",
-          "AI_PROVIDER_CREDENTIAL_REJECTED": "The provider rejected the API key.",
-          "AI_PROVIDER_UNREACHABLE": "The provider did not answer. Check the address, or try again in a moment.",
-          "AI_PROVIDER_INCOMPATIBLE": "The address answered, but not as this API does.",
-          "AI_MODEL_NOT_FOUND": "This model no longer exists. Reload the page.",
-          "AI_MODEL_NAME_TAKEN": "This provider already has that model.",
-          "AI_MODEL_CHANGED": "Someone changed this model since you opened it. Reload and try again.",
-          "AI_MODEL_INVALID": "The max output must be smaller than the context window.",
-          "AI_MODEL_UNAVAILABLE": "This model cannot be used: its provider is switched off or has no key.",
-          "AI_MODEL_WITHOUT_VISION": "This task needs a model that reads images.",
-          "AI_READER_AMBIGUOUS": "Pages are read by a model or by an OCR service, not both.",
-          "AI_OCR_PROVIDER_UNAVAILABLE": "This OCR service cannot be used: it is switched off or has no key.",
-          "AI_TASK_UNKNOWN": "There is no such task. Reload the page.",
-          "AI_TASK_CHANGED": "Someone changed this task's model since you opened it. Reload and try again.",
-          "AI_BUSY": "Too many models are in use at once. Try again in a moment.",
-          "unknown": "Something went wrong. Try again in a moment."
         }
       },
       "ocr": {
@@ -2297,7 +2489,7 @@
           "testTitle": "Test connection",
           "testHint": "Sends one small picture and spends one call at the service.",
           "cancel": "Cancel",
-          "save": "Save provider"
+          "save": "Save"
         },
         "delete": {
           "title": "Delete {name}?",
@@ -2369,9 +2561,6 @@
           "use_case": "Use cases"
         },
         "embeddedShare": "{count} · {share}",
-        "embeddedOf": "{embedded} of {total} embedded",
-        "mobileFacts": "{listed} in public results · {waiting} waiting",
-        "heldBackCount": "{count} failed",
         "note": "Unlisted solutions and talent stay in the index for operators matching use cases, never in public results.",
         "noteHelp": "Why the two counts differ"
       },
@@ -2387,7 +2576,6 @@
         "next": "Next try",
         "actions": "Actions",
         "soon": "at the next run",
-        "mobileNext": "{count, plural, one {# attempt} other {# attempts}} · next {next}",
         "reasons": {
           "bad_request": "The provider refused the text (400 Bad request).",
           "unprocessable": "The provider refused the text (422 Unprocessable).",
@@ -2409,7 +2597,6 @@
     "matching": {
       "metaTitle": "Matching",
       "title": "Matching",
-      "lead": "A run is one search for solutions for one use case.",
       "blocks": {
         "run": {
           "title": "One run"
@@ -2572,11 +2759,7 @@
         "failureRate": "Failure rate",
         "tokens": "Tokens",
         "time": "Avg. time",
-        "cost": "Est. cost",
-        "callsLine": "{calls} calls · {failed} failed ({rate})",
-        "timeLine": "{time} on average",
-        "costLine": "{cost} estimated",
-        "noPrice": "no known price"
+        "cost": "Est. cost"
       },
       "estimate": "Costs are estimates from the usage providers report and from list prices, not invoices.",
       "calls": {
@@ -2640,7 +2823,6 @@
       "metaApps": "Connected apps · MCP · Admin · BeyondPilot",
       "metaActivity": "Activity · MCP · Admin · BeyondPilot",
       "title": "MCP",
-      "lead": "The servers AI apps reach BeyondPilot through, and what they may do.",
       "tabs": {
         "label": "MCP",
         "setup": "Setup",
@@ -2745,7 +2927,7 @@
         "count": "{count, plural, one {# call} other {# calls}}",
         "noMatch": {
           "title": "No call matches",
-          "clear": "Clear search and filters"
+          "clear": "Clear filters"
         },
         "empty": {
           "title": "No call in this period",
@@ -2943,10 +3125,7 @@
         "throttled": "The provider is limiting sending right now. Try again in a minute.",
         "unavailable": "The provider could not be reached. Try again in a minute.",
         "rejected": "The provider refused the email. Check that the sender's domain is verified.",
-        "invalidRecipient": "The provider refused your address as a recipient.",
-        "recipientInvalid": "Write one plain email address, without a name or a second address.",
-        "suppressed": "This address is suppressed, so no email goes to it. Remove it from the suppression list first.",
-        "limitReached": "You have sent as many test emails to other people as an hour allows. Send one to yourself, or try later."
+        "invalidRecipient": "The provider refused your address as a recipient."
       },
       "templates": {
         "metaTitle": "Email templates",
@@ -2964,8 +3143,6 @@
         "resetDone": "Default wording restored.",
         "testSent": "Test email sent to {email}.",
         "errors": {
-          "changed": "Someone saved this email while you were editing. Reload the page to see their wording.",
-          "invalid": "The wording has problems. Fix those marked under the fields.",
           "unknown": "The wording could not be saved. Try again."
         },
         "problems": {
@@ -2978,8 +3155,8 @@
         "fixToSave": "{count, plural, one {Fix the problem marked below to save} other {Fix the # problems marked below to save}}",
         "previewBehind": "This is the last version that worked.",
         "testAfterFix": "A test can be sent once the wording has no problems.",
-        "discard": "Discard",
-        "save": "Save",
+        "discard": "Discard changes",
+        "save": "Save changes",
         "edited": "Edited",
         "lastEdited": "Last edited by {name}, {when}.",
         "viewAudit": "Audit log",
@@ -3008,7 +3185,6 @@
         "metaTitle": "Email appearance",
         "back": "Templates",
         "title": "Appearance",
-        "lead": "What every email shares.",
         "color": "Accent colour",
         "colorPicker": "Pick a colour",
         "colorHint": "The colour of links and buttons.",
@@ -3016,9 +3192,8 @@
         "colorFaint": "White text on this colour is hard to read. A darker colour reads better.",
         "sampleLink": "A link in your colour",
         "footer": "Footer note",
-        "save": "Save appearance",
+        "save": "Save changes",
         "saved": "Appearance saved. The preview shows it.",
-        "changed": "Someone changed the email settings meanwhile. Reload the page and save again.",
         "unknown": "The appearance could not be saved. Try again.",
         "previewTitle": "Preview of a sample email",
         "leave": {
@@ -3131,8 +3306,6 @@
           "cancel": "Cancel",
           "done": "Sent again to {email}.",
           "errors": {
-            "notResendable": "This email cannot be sent again.",
-            "suppressed": "The address receives no email. Remove it from Suppressions first.",
             "notReady": "Email is not set up. Complete Settings first.",
             "unknown": "The email could not be sent again. Try again."
           }
@@ -3141,7 +3314,7 @@
       "suppressions": {
         "metaTitle": "Email suppressions",
         "search": "Search by address",
-        "clear": "Clear",
+        "clear": "Clear filters",
         "filters": {
           "reason": {
             "label": "Reason",
@@ -3174,20 +3347,19 @@
         "add": {
           "open": "Add address",
           "title": "Stop email to an address",
-          "lead": "BeyondPilot sends nothing more to it, sign-in codes included, until you remove it.",
+          "lead": "BeyondPilot sends nothing more to it, sign-in codes included, until you allow it again.",
           "address": "Email address",
           "invalid": "Write one email address.",
-          "exists": "This address already receives no email.",
           "cancel": "Cancel",
           "confirm": "Stop email",
           "done": "{email} receives no more email."
         },
         "remove": {
-          "open": "Let email reach {email} again",
-          "title": "Let email reach this address again?",
+          "open": "Allow email to {email} again",
+          "title": "Allow email to this address again?",
           "lead": "BeyondPilot writes to {email} again from now.",
           "noteProvider": "If mail to it bounces or is reported as spam again, the provider counts it against your sending.",
-          "confirm": "Remove",
+          "confirm": "Allow email",
           "cancel": "Cancel",
           "done": "{email} receives email again."
         },
@@ -3205,9 +3377,6 @@
           "address": "Write one email address.",
           "port": "Write a port number.",
           "token": "Write 32 to 256 letters, digits or any of . _ ~ + / = -",
-          "changed": "Someone saved the settings while you were editing. Reload the page and save again.",
-          "incomplete": "The provider needs more: fill in the fields marked as required.",
-          "encryption": "The server has no encryption key, so it cannot keep secrets. Ask whoever runs it.",
           "unknown": "The settings could not be saved. Try again."
         },
         "encryption": {
@@ -3279,7 +3448,7 @@
         "unsaved": "You have unsaved changes.",
         "lastSaved": "Last saved by {name}, {when}.",
         "neverSaved": "Not saved yet.",
-        "save": "Save settings",
+        "save": "Save changes",
         "confirm": {
           "title": "Change how email is sent?",
           "lead": "Sign-in codes go out by email. If these settings do not work, nobody can sign in, you included.",
@@ -3288,7 +3457,7 @@
           "address": "Sender address: {from} → {to}",
           "untested": "No test was sent with these settings. Send test, beside Save, tries them without saving.",
           "tested": "A test with these settings was sent at {when}. Check that it arrived before you save.",
-          "save": "Save the change",
+          "save": "Save changes",
           "back": "Back"
         },
         "leave": {
@@ -3426,7 +3595,8 @@
       "selectPage": "Select every row on this page",
       "selectOne": "Select {name}",
       "selectMatching": "Select all {count} that match",
-      "clear": "Clear selection"
+      "clear": "Clear selection",
+      "scroll": "Table, scrolls sideways"
     }
   },
   "Vocabulary": {
@@ -3687,33 +3857,6 @@
       "reason": "Reason: {reason}.",
       "foot": "This decision is final. Write to GenAI Fund if you think it is wrong. To create or join another organization, leave this one on the Members tab."
     },
-    "errors": {
-      "ORGANIZATION_NOT_FOUND": "This organization no longer exists.",
-      "ORGANIZATION_MEMBERSHIP_REQUIRED": "You are no longer a member of this organization.",
-      "ORGANIZATION_OWNER_REQUIRED": "Only an owner can do this.",
-      "ORGANIZATION_LOGO_NOT_USABLE": "This logo cannot be used. Upload the image again.",
-      "ORGANIZATION_ALREADY_MEMBER": "You already belong to an organization. Leave it first.",
-      "ORGANIZATION_REQUEST_PENDING": "You already have a request waiting. Withdraw it first.",
-      "ORGANIZATION_INVITATION_NOT_FOUND": "This invitation is no longer open.",
-      "ORGANIZATION_REQUEST_NOT_FOUND": "This request is no longer open.",
-      "ORGANIZATION_MEMBER_NOT_FOUND": "This person is no longer a member.",
-      "ORGANIZATION_ALREADY_INVITED": "This address already has an invitation.",
-      "ORGANIZATION_INVITEE_IS_MEMBER": "This person already belongs to an organization.",
-      "ORGANIZATION_LAST_OWNER": "An organization needs an owner. Make someone else an owner first.",
-      "ORGANIZATION_CHANGED_MEANWHILE": "Someone else changed this profile. Reload the page and try again.",
-      "ORGANIZATION_NOT_AWAITING_REVIEW": "This organization has already been reviewed.",
-      "ORGANIZATION_DOMAIN_TAKEN": "Another organization already uses this email domain.",
-      "ORGANIZATION_MERGED": "This organization was merged into another and can no longer be changed.",
-      "ORGANIZATION_CANNOT_MERGE": "An organization merges only into another one that is approved and shown.",
-      "REQUEST_INVALID": "Check the marked fields and try again.",
-      "unknown": "That did not work. Try again.",
-      "ORGANIZATION_DOMAIN_NOT_VERIFIED": "People join at once only on a domain GenAI Fund verified for an approved organization.",
-      "ORGANIZATION_NOT_APPROVED": "You can invite people once GenAI Fund has approved the organization.",
-      "ORGANIZATION_CANNOT_TAKE_DOWN": "Only an approved organization can be taken down. Reload the page to see where it stands.",
-      "ORGANIZATION_NOT_TAKEN_DOWN": "This organization is not taken down any more. Reload the page.",
-      "ORGANIZATION_INVITATION_DAILY_LIMIT": "The organization has sent the most invitations it can in a day. Invite more people tomorrow.",
-      "ORGANIZATION_INVITATION_OPEN_LIMIT": "The organization has the most invitations it can keep open. Revoke some, or wait for people to answer."
-    },
     "done": {
       "invitationAccepted": "You joined the organization.",
       "invitationDeclined": "Invitation declined.",
@@ -3762,11 +3905,11 @@
       "notStated": "Not stated",
       "website": "Website",
       "websiteInvalid": "Enter a full address that starts with https://",
+      "websiteRequired": "Enter the organization's website.",
       "description": "Short description",
       "descriptionHint": "What the organization does and for whom.",
-      "counter": "{count} / {max}",
       "save": "Save changes",
-      "create": "Submit for approval",
+      "create": "Send for review",
       "cancel": "Cancel",
       "emailDomain": "Verified email domain",
       "emailDomainHint": "Who can join with it is set in Members.",
@@ -4068,21 +4211,8 @@
         "draft": "“{name}” is a draft again."
       },
       "errors": {
-        "USECASE_NOT_FOUND": "This organization has no such use case.",
-        "USECASE_ENTERPRISE_REQUIRED": "Only the members of an approved organization can write its use cases.",
-        "USECASE_CHANGED_MEANWHILE": "Someone saved this use case in the meantime. Reload it to see their changes.",
-        "USECASE_NOT_EDITABLE": "This use case cannot be edited now: it waits for GenAI Fund, or its deadline has passed.",
-        "USECASE_INCOMPLETE": "Fill in every section before sending the use case.",
-        "USECASE_NOT_SUBMITTABLE": "Only a draft, or one GenAI Fund sent back, can be sent for review.",
-        "USECASE_CANNOT_MOVE_TO_DRAFT": "Only a use case in review or published can move back to Draft.",
-        "USECASE_CLOSES_IN_THE_PAST": "Choose a close date after today.",
-        "USECASE_BUDGET_INCOMPLETE": "Give both amounts, or mark the budget to be determined.",
-        "USECASE_BUDGET_OUT_OF_ORDER": "The maximum budget is below the minimum.",
-        "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest.",
-        "USECASE_ATTACHMENT_NOT_USABLE": "Upload the attachment again: it cannot be attached.",
         "REQUEST_INVALID": "Something you wrote is not valid. Check the fields and try again.",
-        "unknown": "The use case was not saved. Try again.",
-        "USECASE_NOT_CHANGED": "Change the use case before sending it again."
+        "unknown": "The use case was not saved. Try again."
       },
       "wizard": {
         "brand": "BeyondPilot",
@@ -4118,7 +4248,7 @@
         "backToList": "Back to use cases",
         "back": "Back",
         "continue": "Continue",
-        "submit": "Submit for approval",
+        "submit": "Send for review",
         "sentBack": {
           "title": "GenAI Fund asked for changes",
           "note": "“{note}”"
@@ -4223,8 +4353,8 @@
         "pullBack": "Pull back to draft"
       },
       "sent": {
-        "metaTitle": "Sent for approval · BeyondPilot",
-        "title": "Sent for approval",
+        "metaTitle": "Sent for review · BeyondPilot",
+        "title": "Sent for review",
         "rows": {
           "useCase": "Use case",
           "organization": "Organization",
@@ -4253,34 +4383,7 @@
   },
   "Solution": {
     "errors": {
-      "SOLUTION_NOT_FOUND": "This solution no longer exists.",
-      "SOLUTION_INCOMPLETE": "Fill in the marked fields before sending for review.",
-      "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review, approved, or refused for good.",
-      "SOLUTION_NOT_EDITABLE": "This solution was refused for good and can no longer be changed.",
-      "SOLUTION_NOT_A_DRAFT": "This solution is not a draft any more.",
-      "SOLUTION_ORGANIZATION_NOT_APPROVED": "This organization is not approved yet, so it cannot have a solution.",
-      "SOLUTION_NOT_AWAITING_REVIEW": "This solution has already been reviewed.",
-      "SOLUTION_CHANGED_MEANWHILE": "Someone else changed this solution. Reload the page and try again.",
-      "REQUEST_INVALID": "Check the marked fields and try again.",
-      "SOLUTION_DEPLOYMENT_NOT_FOUND": "This customer deployment no longer exists.",
-      "SOLUTION_TOO_MANY_DEPLOYMENTS": "A solution lists at most 12 customer deployments. Remove one before adding another.",
-      "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW": "This customer deployment is not waiting for review.",
-      "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
-      "SOLUTION_DEPLOYMENT_NOT_DELETABLE": "This customer deployment was sent for review, so it is removed from the page and kept, not deleted. Reload the page.",
-      "SOLUTION_DEPLOYMENT_WITHDRAWN": "This customer deployment is removed from the page. Restore it first.",
-      "SOLUTION_DEPLOYMENT_NOT_WITHDRAWN": "This customer deployment is already back on the solution.",
-      "SOLUTION_MEMBER_REQUIRED": "Only a member of an organization can do this.",
-      "SOLUTION_DECK_NOT_USABLE": "This file cannot be the deck. Upload the PDF again.",
-      "unknown": "That did not work. Try again.",
-      "SOLUTION_IMAGE_NOT_USABLE": "This image cannot be used. Upload it again.",
-      "linkNotCopied": "The link was not copied. Try again.",
-      "SOLUTION_NOT_APPROVED": "Only an approved solution that is not taken down can be taken down.",
-      "SOLUTION_NOT_TAKEN_DOWN": "This solution is not taken down.",
-      "SOLUTION_OFFER_NOT_FOUND": "This offer no longer exists. Reload the page.",
-      "SOLUTION_OFFER_TITLE_TAKEN": "Another offer already reads the same.",
-      "SOLUTION_OFFER_IN_USE": "A solution still comes with this offer. Take it off those solutions first.",
-      "SOLUTION_OFFER_CHANGED_MEANWHILE": "Someone else saved this offer in the meantime. Reload the page and make your changes again.",
-      "SOLUTION_OFFER_NOT_USABLE": "One of the chosen offers no longer exists. Reload the page and choose again."
+      "linkNotCopied": "The link was not copied. Try again."
     },
     "done": {
       "saved": "Solution saved.",
@@ -4323,7 +4426,7 @@
       },
       "noMatch": {
         "title": "No solution matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       },
       "ownLead": "This is your organization's solution, as others see it.",
       "ownEdit": "Edit this solution",
@@ -4344,7 +4447,8 @@
         "noMatch": "No offer matches.",
         "remove": "Remove {name}",
         "add": "New offer…",
-        "fromGenAiFund": "{title} (GenAI Fund)"
+        "fromGenAiFund": "{title} (GenAI Fund)",
+        "closed": "{title} (closed)"
       },
       "form": {
         "newTitle": "New offer",
@@ -4360,9 +4464,15 @@
       "done": {
         "created": "{name} added.",
         "saved": "{name} saved.",
-        "deleted": "{name} deleted."
+        "deleted": "{name} deleted.",
+        "closed": "{name} is closed to new solutions.",
+        "reopened": "{name} is open to new solutions again."
       },
       "fromGenAiFund": "From GenAI Fund",
+      "state": {
+        "open": "Open",
+        "closed": "Closed"
+      },
       "manage": {
         "title": "Offers",
         "create": "New offer",
@@ -4370,13 +4480,16 @@
           "offer": "Offer",
           "url": "Claimed at",
           "solutions": "Solutions",
-          "actions": "Actions"
+          "actions": "Actions",
+          "state": "Status"
         },
         "solutions": "{count, plural, =0 {No solution comes with it} one {# solution} other {# solutions}}",
         "openNamed": "Actions for {name}",
         "actions": {
           "edit": "Edit…",
-          "delete": "Delete…"
+          "delete": "Delete…",
+          "close": "Close to new solutions",
+          "reopen": "Open to new solutions"
         },
         "empty": {
           "title": "No offers yet",
@@ -4506,9 +4619,7 @@
         "demo": "Watch the demo",
         "deck": "Download the deck",
         "registeredIn": "Registered in",
-        "deckSize": "Download the deck ({size})",
-        "basedIn": "Based in",
-        "lead": "Your email stays private until you reply."
+        "deckSize": "Download the deck ({size})"
       },
       "facts": {
         "stage": "Stage",
@@ -4556,7 +4667,7 @@
         "delete": "Delete draft…",
         "viewSent": "View what was sent",
         "fix": "Read the reason and fix",
-        "sendAgain": "Send again",
+        "sendAgain": "Send for review again",
         "openByLink": "Open by its link",
         "copyLink": "Copy link",
         "hide": "Hide from the directory",
@@ -4629,7 +4740,6 @@
       },
       "steps": {
         "label": "Your solution",
-        "progress": "Step {step} of {count} · {name}",
         "toAdd": "{count, plural, one {# field to add} other {# fields to add}}",
         "toCheck": "{count, plural, one {# field to check} other {# fields to check}}",
         "complete": "Complete",
@@ -4891,44 +5001,7 @@
   },
   "Introduction": {
     "errors": {
-      "INTRODUCTION_SOLUTION_NOT_FOUND": "This solution is no longer listed.",
-      "INTRODUCTION_NEEDS_ORGANIZATION": "Create or join an organization before you ask for an introduction.",
-      "INTRODUCTION_ORGANIZATION_NOT_APPROVED": "Your organization has not been approved yet, so it cannot ask for an introduction.",
-      "INTRODUCTION_OWN_SOLUTION": "This solution belongs to your own organization.",
-      "INTRODUCTION_ALREADY_PENDING": "You already asked for an introduction to this solution. Wait for the answer.",
-      "INTRODUCTION_UNREACHABLE": "Nobody at this organization can be asked right now. Try again later.",
-      "INTRODUCTION_REQUEST_NOT_FOUND": "This request no longer exists.",
-      "INTRODUCTION_OWNERS_ONLY": "Only an owner of your organization answers a request for an introduction.",
-      "INTRODUCTION_NOT_PENDING": "This request was already answered.",
-      "REQUEST_INVALID": "Check the message and try again.",
-      "unknown": "That did not work. Try again."
-    },
-    "request": {
-      "open": "Request an introduction",
-      "by": "By {provider}",
-      "title": "Request an introduction to {provider}",
-      "lead": "Neither email address is shown until {provider} replies.",
-      "organization": "Your organization",
-      "message": "What do you need?",
-      "hint": "{provider} reads your name, your organization and this message before it answers.",
-      "required": "Write a message first.",
-      "send": "Send request",
-      "cancel": "Cancel",
-      "sent": {
-        "title": "Your request is with {provider}",
-        "lead": "When they reply, you both get an email with the other's name and address.",
-        "done": "Done"
-      },
-      "blocked": {
-        "organization": {
-          "title": "Join an organization first",
-          "lead": "An introduction is asked on behalf of an organization, so that the provider knows who is asking.",
-          "action": "Set up your organization"
-        },
-        "approval": {
-          "title": "Your organization is not approved yet"
-        }
-      }
+      "REQUEST_INVALID": "Check the message and try again."
     },
     "received": {
       "metaTitle": "Introductions · BeyondPilot",
@@ -4968,22 +5041,6 @@
     }
   },
   "Talent": {
-    "errors": {
-      "TALENT_PROFILE_NOT_FOUND": "This profile no longer exists.",
-      "TALENT_INCOMPLETE": "Fill in the marked fields before sending for review.",
-      "TALENT_NOT_SUBMITTABLE": "This profile is already in review or approved.",
-      "TALENT_NOT_AWAITING_REVIEW": "This profile has already been reviewed.",
-      "TALENT_CHANGED_MEANWHILE": "This profile changed in another tab. Reload the page and try again.",
-      "TALENT_OWN_PROFILE": "This is your own profile.",
-      "TALENT_ENQUIRY_PENDING": "Your message to this person waits for their answer.",
-      "TALENT_ENQUIRY_LIMIT": "You started ten conversations today. Write again tomorrow.",
-      "TALENT_ENQUIRY_NOT_FOUND": "This message no longer exists.",
-      "TALENT_ENQUIRY_NOT_PENDING": "This message was answered already, or it closed.",
-      "TALENT_NOT_APPROVED": "Only an approved profile that is not taken down can be taken down.",
-      "TALENT_NOT_TAKEN_DOWN": "This profile is not taken down.",
-      "REQUEST_INVALID": "Check the marked fields and try again.",
-      "unknown": "That did not work. Try again."
-    },
     "done": {
       "saved": "Profile saved.",
       "submitted": "Sent to GenAI Fund for review.",
@@ -5016,7 +5073,7 @@
       },
       "noMatch": {
         "title": "No profile matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       },
       "edit": "Edit your profile",
       "noProject": "No project published yet",
@@ -5261,8 +5318,8 @@
         "stage": "Stage",
         "stageNone": "Not stated"
       },
-      "submit": "Submit for review",
-      "resubmit": "Submit for review again",
+      "submit": "Send for review",
+      "resubmit": "Send for review again",
       "saveDraft": "Save draft",
       "save": "Save changes",
       "needed": {
@@ -5387,6 +5444,11 @@
   },
   "Form": {
     "optional": "Optional",
+    "noMatch": "Nothing matches.",
+    "steps": {
+      "progress": "Step {step} of {count} · {name}",
+      "all": "All steps"
+    },
     "errors": {
       "required": "Fill this in.",
       "tooLong": "Keep it to {max} characters.",
@@ -5484,7 +5546,7 @@
     "readPage": "See the program",
     "empty": {
       "title": "No programs here yet",
-      "clear": "Show all programs"
+      "clear": "Clear filters"
     }
   },
   "Tasco": {
@@ -5919,23 +5981,19 @@
     }
   },
   "Nestle": {
-    "banner": {
-      "text": "Applications close <strong>{closes}</strong>. Apply before 5 November to get the full brief first."
-    },
     "hero": {
       "tagline": "Nestlé has picked their problems. Now they're looking for those who can solve them.",
       "explore": "Explore the challenges",
       "lead": "Bring your working AI solution to real business challenges at Nestlé Vietnam. Selected providers can connect with relevant Nestlé teams, demonstrate their solutions and explore opportunities for collaboration.",
       "open": "Open to working prototypes, pilots and established products that can be adapted to the challenges.",
-      "imageAlt": "A builder holding a tablet beside a friendly AI robot, with a laptop and a light bulb",
       "facts": {
         "closes": {
           "label": "Applications close",
-          "value": "15 Nov, 23:59 ICT"
+          "value": "22 Nov, 23:59 ICT"
         },
         "matchingDay": {
           "label": "Matching Day",
-          "value": "3 Dec, Ho Chi Minh City"
+          "value": "15 Dec, Ho Chi Minh City"
         },
         "opportunity": {
           "label": "The opportunity",
@@ -6044,7 +6102,6 @@
     },
     "early": {
       "ask": "Recognise one of these?",
-      "title": "Start early.",
       "text": "Apply before 5 November to be considered for the early briefing process. Pre-screened applicants receive detailed briefings from 6 November."
     },
     "useCases": {
@@ -6177,16 +6234,14 @@
         },
         "hearBack": {
           "q": "When do I hear back?",
-          "a": "Everyone hears back by 20 November."
+          "a": "Everyone hears back by 27 November."
         }
       }
     },
     "closing": {
-      "title": "Will your solution be in the room on 3 December?",
+      "title": "Will your solution be in the room on 15 December?",
       "text": "The shortlist is taking shape—submit today for your chance to be selected.",
-      "closes": "Applications close {closes}.",
-      "session": "View info session timing",
-      "share": "Know a team that fits? Send them this page"
+      "closes": "Applications close {closes}."
     },
     "about": {
       "label": "About the programme",
@@ -6211,8 +6266,6 @@
     "saveAndExit": "Save and exit",
     "yourApplication": "Your application",
     "savesAsYouType": "Answers save as you type. Come back any time before {when}.",
-    "stepOf": "Step {step} of {count} · {title}",
-    "progress": "Progress through the application",
     "allRequired": "All fields are required unless marked Optional.",
     "optional": "Optional",
     "closed": "Applications closed on {when}. Nothing can be changed or submitted now.",
@@ -6306,7 +6359,6 @@
       "deckRequired": "Add the solution's deck, a PDF.",
       "demoUrl": "Demo link",
       "demoUrlHint": "A video, prototype or live demo that opens without signing in.",
-      "required": "Fill this in.",
       "tractionHint": "Customers, pilots, users or revenue so far.",
       "builtWithHint": "A model, tool or framework; press Enter to add each."
     },
@@ -6344,22 +6396,10 @@
     "errors": {
       "saveFailed": "Your latest changes could not be saved. Check your connection; they are kept on this page.",
       "saveInvalid": "Part of what you typed was not accepted, so it is not saved. Check the fields of this step.",
-      "unknown": "Something went wrong. Try again.",
       "codes": {
-        "PROPOSAL_CLOSED": "Applications to this program have closed.",
-        "PROPOSAL_LOCKED": "This program takes no changes after submission.",
         "PROPOSAL_CHANGED_MEANWHILE": "This application was changed in another tab. Reload the page and continue there.",
-        "PROPOSAL_ORGANIZATION_REQUIRED": "Say who applies in step 1.",
-        "PROPOSAL_ORGANIZATION_APPLIED": "Someone in your organization has already applied to this program.",
-        "PROPOSAL_CONTACT_INCOMPLETE": "Your contact details in step 1 are incomplete.",
-        "PROPOSAL_TEAM_BACKGROUND_REQUIRED": "Describe your team's background in step 1.",
         "PROPOSAL_SOLUTION_REQUIRED": "Choose or add your solution in step 2.",
-        "PROPOSAL_SOLUTION_INCOMPLETE": "Your solution in step 2 needs what it does, the problem it solves and its stage.",
-        "PROPOSAL_DECK_REQUIRED": "Add your solution deck in step 2.",
-        "PROPOSAL_ANSWER_REQUIRED": "Answer every question of the program.",
-        "PROPOSAL_ANSWER_INVALID": "An answer does not fit its question.",
-        "ORGANIZATION_ALREADY_MEMBER": "You already belong to an organization. Reload the page.",
-        "PROPOSAL_WITHDRAWN_FOR_GOOD": "You withdrew this application, and this program takes no changes after submission, so it cannot be submitted again."
+        "ORGANIZATION_ALREADY_MEMBER": "You already belong to an organization. Reload the page."
       }
     }
   },
@@ -6480,18 +6520,6 @@
   "Review": {
     "nav": "Reviews",
     "area": "Judging",
-    "errors": {
-      "unknown": "That did not go through. Try again in a moment.",
-      "released": "The outcomes of this program have been released, so the review no longer changes.",
-      "PROPOSAL_RELEASED": "The outcomes of this program have been released, so the review no longer changes.",
-      "PROPOSAL_NO_CRITERIA": "This program has no judging criteria yet. GenAI Fund sets them first.",
-      "PROPOSAL_ASSESSMENT_INVALID": "Score every criterion from 1 to 5, or declare a conflict.",
-      "PROPOSAL_OUTCOMES_NOT_READY": "Outcomes are released once applications have closed and every application has a decision.",
-      "PROPOSAL_REVIEWER_INVITED": "This address is already invited to judge this program.",
-      "PROPOSAL_REVIEWER_JOINED": "This judge has already signed in; there is no invitation to send again.",
-      "PROPOSAL_CRITERIA_FIXED": "Applications have been scored on these criteria, so they can no longer change.",
-      "PROPOSAL_CRITERIA_INVALID": "Give each criterion its own name."
-    },
     "list": {
       "metaTitle": "Applications",
       "tabs": {
@@ -6504,7 +6532,7 @@
         "scored": "Scored"
       },
       "search": "Search applicants",
-      "clear": "Clear",
+      "clear": "Clear filters",
       "allChoices": "{label}: all",
       "kind": "Applying as",
       "allKinds": "Applying as: all",
@@ -6566,7 +6594,7 @@
       },
       "noMatch": {
         "title": "No application matches",
-        "clear": "Clear search and filters"
+        "clear": "Clear filters"
       },
       "empty": {
         "title": "No applications yet",
@@ -6636,7 +6664,7 @@
       },
       "skip": "Skip",
       "saveAndNext": "Save and next",
-      "save": "Save assessment",
+      "save": "Save",
       "conflict": "I have a conflict with this applicant",
       "saved": "Assessment saved.",
       "conflictSaved": "Conflict recorded. Your score is left out.",
@@ -6676,7 +6704,9 @@
         "files": "Files and links"
       },
       "applyingAs": "Applying as",
-      "contact": "Contact",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
       "country": "Country",
       "teamSize": "Team size",
       "linkedin": "LinkedIn",
@@ -6791,7 +6821,7 @@
           "description": "{email} will no longer see this program's applications.",
           "note": "The scores they gave stay. You can invite them again.",
           "remove": "Remove",
-          "keep": "Keep"
+          "keep": "Keep it"
         }
       }
     },
@@ -6807,7 +6837,7 @@
       "remove": "Remove criterion {number}",
       "addOne": "Add a criterion",
       "cancel": "Cancel",
-      "save": "Save criteria",
+      "save": "Save",
       "saved": "Criteria saved.",
       "nameLabel": "Name",
       "nameHint": "Such as Practical impact.",
@@ -6834,7 +6864,7 @@
     "label": "Search BeyondPilot",
     "placeholder": "Search programs, solutions and talent",
     "submit": "Search",
-    "clear": "Clear the search",
+    "clear": "Clear search",
     "results": "{count, plural, one {# result} other {# results}} for <query>“{q}”</query>",
     "kindResults": {
       "program": "{count, plural, one {# program} other {# programs}} for <query>“{q}”</query>",
@@ -6937,7 +6967,7 @@
     "showing": "Showing {shown} of {total}",
     "empty": {
       "title": "No use cases match",
-      "clear": "Clear search and filters"
+      "clear": "Clear filters"
     },
     "publish": {
       "title": "Have a business problem AI could solve?",
@@ -7011,7 +7041,7 @@
         {
           "heading": "Cookies",
           "body": [
-            "We use a session cookie to keep you signed in and a cookie to remember your language. We do not use advertising or third-party tracking cookies."
+            "We use a session cookie to keep you signed in and a cookie to remember your language. If you accept, Google Analytics sets cookies to measure visits to our public pages; it never runs on pages you sign in to see. We do not use advertising cookies."
           ]
         },
         {
@@ -7485,20 +7515,7 @@
       "restored": "{name} restored."
     },
     "errors": {
-      "MATCHING_USE_CASE_NOT_FOUND": "This use case no longer exists.",
-      "MATCHING_CANDIDATE_NOT_FOUND": "This solution is no longer on the list. Reload the page.",
-      "MATCHING_SOLUTION_NOT_FOUND": "This solution is no longer approved, so it cannot be added.",
-      "MATCHING_OPERATORS_ONLY": "Only GenAI Fund can do this.",
-      "MATCHING_NO_MODEL": "We can't look for solutions now: no AI model is chosen for it.",
-      "MATCHING_RUN_OPEN": "AI is already looking for solutions for this use case.",
-      "MATCHING_RUN_LIMIT": "You have used every run for this use case today. Try again tomorrow.",
-      "MATCHING_CANDIDATE_REMOVED": "This solution was removed. Restore it first.",
-      "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund removed this solution, so only GenAI Fund can restore it.",
-      "MATCHING_ALREADY_CANDIDATE": "This solution is already on the list for this use case.",
-      "MATCHING_OWN_SOLUTION": "This solution belongs to the organization that owns the use case.",
-      "MATCHING_SETTINGS_CHANGED": "Someone else changed these settings. Reload and try again.",
-      "REQUEST_INVALID": "That was not accepted. Pick a reason and try again.",
-      "unknown": "That did not work. Try again."
+      "REQUEST_INVALID": "That was not accepted. Pick a reason and try again."
     },
     "feedback": {
       "question": "Is this the right group?",
@@ -7518,24 +7535,7 @@
   },
   "UseCaseProposal": {
     "errors": {
-      "PROPOSAL_USE_CASE_NOT_FOUND": "There is no such use case.",
-      "PROPOSAL_USE_CASE_CLOSED": "This use case no longer takes proposals.",
-      "PROPOSAL_OWN_USE_CASE": "Your organization posted this use case, so it cannot send a proposal to it.",
-      "PROPOSAL_NO_ORGANIZATION": "Join or set up an organization to send a proposal.",
-      "PROPOSAL_NOT_FOUND": "There is no such proposal.",
-      "PROPOSAL_ALREADY_SENT": "This proposal was sent, so it can no longer change.",
-      "PROPOSAL_SOLUTION_REQUIRED": "Choose the solution you send.",
-      "PROPOSAL_SOLUTION_NOT_FOUND": "Choose a solution of your organization.",
-      "PROPOSAL_APPROACH_REQUIRED": "Say how the solution solves this use case.",
-      "PROPOSAL_CONTACT_REQUIRED": "Add your name, country and phone number first.",
-      "PROPOSAL_TEAM_INVALID": "The team can name only members of your organization, each once, and at most one primary contact.",
-      "PROPOSAL_TEAM_INCOMPLETE": "Name at least one person, give each a role and choose the primary contact.",
-      "PROPOSAL_PDF_REQUIRED": "Add the proposal as a PDF.",
-      "PROPOSAL_CHANGED_MEANWHILE": "Someone saved this proposal in the meantime. Reload it to see their changes.",
-      "REQUEST_INVALID": "Something in the proposal is not valid. Check it and try again.",
-      "unknown": "Something went wrong. Try again in a moment.",
-      "PROPOSAL_EDIT_WINDOW_CLOSED": "The time to edit this proposal has ended, so your changes were not saved.",
-      "PROPOSAL_ALREADY_IN_ORGANIZATION": "You already belong to an organization."
+      "REQUEST_INVALID": "Something in the proposal is not valid. Check it and try again."
     },
     "received": {
       "admin": {
@@ -7629,7 +7629,7 @@
       "reload": "Reload",
       "back": "Back",
       "continue": "Continue",
-      "saveAndReturn": "Save and return later",
+      "saveAndReturn": "Save and exit",
       "send": "Send proposal",
       "steps": {
         "organization": "Organization",
@@ -7686,8 +7686,8 @@
         "remove": "Remove {name}",
         "rolePlaceholder": "Project lead",
         "needed": {
-          "member": "Add at least one member.",
-          "role": "Give every member a role."
+          "role": "Give every member a role.",
+          "primary": "Choose one primary contact."
         },
         "dialog": {
           "title": "Add a team member",
@@ -7737,7 +7737,6 @@
         "title": "You are editing a sent proposal",
         "banner": "Your changes are visible to the organization that posted the use case once you save them. Editing closes {until}.",
         "note": "Nothing is saved until you choose Save changes.",
-        "reviewLead": "Check your changes. They replace what you sent as soon as you save.",
         "unsaved": "Changes not saved yet",
         "pristine": "No changes yet",
         "save": "Save changes",

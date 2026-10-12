@@ -1,6 +1,7 @@
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
+import { getFormatter } from "@/i18n/format-server";
 import { ApiError } from "@/lib/api/client";
 import { getUseCaseProposalForm } from "@/lib/api/generated";
 import { getCurrentAccount, sessionRequest } from "@/lib/auth/session";
@@ -110,8 +111,7 @@ async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: Propos
   if (access.kind === "hidden" || (closed && access.kind !== "sent")) {
     return null;
   }
-  const day = (instant: string) =>
-    format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
+  const day = (instant: string) => format.dateTime(new Date(instant), "date");
   const edit =
     access.kind === "sent" ? editStateOf(access.proposal, { closesAt, proposalEditDays }) : null;
 

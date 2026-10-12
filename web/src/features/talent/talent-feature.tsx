@@ -9,8 +9,6 @@ import { Button } from "@/components/actions/button";
 import { useNotify } from "@/hooks/use-notify";
 import { featureTalent, unfeatureTalent, type TalentSummary } from "@/lib/api/generated";
 
-import { talentError } from "./talent-errors";
-
 type TalentFeatureProps = {
   profile: Pick<TalentSummary, "id" | "name" | "featuredAt">;
 };
@@ -38,7 +36,7 @@ function TalentFeature({ profile }: TalentFeatureProps) {
       );
       router.refresh();
     } catch (error) {
-      notify.error(talentError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }

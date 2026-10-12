@@ -63,7 +63,7 @@ test.describe("talent directory", () => {
 
     await page.goto("/talent?q=nobody");
     await expect(page.getByText("No profile matches")).toBeVisible();
-    await page.getByRole("link", { name: "Clear search and filters" }).click();
+    await page.getByRole("link", { name: "Clear filters" }).click();
     await expect(page).toHaveURL("/talent");
     await expect(shownPeople(page)).toHaveCount(3);
   });

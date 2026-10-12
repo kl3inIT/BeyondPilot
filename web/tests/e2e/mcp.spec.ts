@@ -120,6 +120,12 @@ test.describe("MCP", () => {
     await operator.getByRole("switch", { name: "Turn search on or off" }).click();
     const ask = page.getByRole("alertdialog", { name: "Turn search off?" });
     await expect(ask).toContainText("1 app is connected to it now.");
+    // Read with the question open, once it has faded in. Read while it fades, its confirm button
+    // is measured through the fade: white on its red came out at 4.19:1, and is 4.76:1 at rest.
+    await ask.evaluate((dialog) =>
+      Promise.all(dialog.getAnimations().map((animation) => animation.finished)),
+    );
+    await expectNoSeriousA11yViolations(page);
     await ask.getByRole("button", { name: "Cancel" }).click();
     expect(switched).toHaveLength(1);
     await operator.getByRole("switch", { name: "Turn search on or off" }).click();
@@ -133,10 +139,6 @@ test.describe("MCP", () => {
         ["/api/mcp/admin/tools/user/fetch", { enabled: true }],
         ["/api/mcp/admin/tools/operator/search", { enabled: false }],
       ]);
-    // Read at rest, once the question has closed. The red of its confirm button is 4.19:1 under
-    // white text, which BEY-144 corrects for every dangerous action at once.
-    await expect(page.getByRole("alertdialog")).toHaveCount(0);
-    await expectNoSeriousA11yViolations(page);
   });
 
   test("someone who is not an operator is not shown the MCP admin", async ({
@@ -153,7 +155,6 @@ test.describe("MCP", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/ai/mcp/apps");
@@ -181,7 +182,7 @@ test.describe("MCP", () => {
     ]);
 
     await page.goto("/admin/ai/mcp/activity");
-    const calls = isMobile ? page.getByRole("listitem") : page.getByRole("row");
+    const calls = page.getByRole("row");
     await expect(calls.filter({ hasText: "Minh Tran" })).toContainText("Refused");
     await expect(calls.filter({ hasText: "Đạt Phan" })).toContainText("Succeeded");
     await expect(page.getByText("2 calls")).toBeVisible();

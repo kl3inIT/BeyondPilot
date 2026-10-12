@@ -50,12 +50,7 @@ test.describe("admin programs", () => {
     expect((await page.goto(`/admin/programs/${tasco}/settings`))?.status()).toBe(404);
   });
 
-  test("the list shows each program's state and window", async ({
-    page,
-    context,
-    baseURL,
-    isMobile,
-  }) => {
+  test("the list shows each program's state and window", async ({ page, context, baseURL }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/programs");
 
@@ -68,7 +63,7 @@ test.describe("admin programs", () => {
     await expect(
       page.getByText("23 Sept – 15 Oct 2026, 23:59 ICT").and(page.locator(":visible")),
     ).toBeVisible();
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    await expect(page.getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
 
     // The tabs count each state; a tab and a search narrow the list, and the address keeps them.
@@ -84,10 +79,7 @@ test.describe("admin programs", () => {
     await expect(page.getByRole("link", { name: "GenAI Monthly Meetup" })).toHaveCount(0);
     await page.getByRole("searchbox", { name: "Search programs by name" }).fill("nothing like it");
     await expect(page.getByText("No programs match").and(page.locator(":visible"))).toBeVisible();
-    await page
-      .getByRole("link", { name: "Show all programs" })
-      .and(page.locator(":visible"))
-      .click();
+    await page.getByRole("link", { name: "Clear filters" }).and(page.locator(":visible")).click();
     await expect(page).toHaveURL("/admin/programs");
 
     await page.getByRole("link", { name: "AI for Insurance Challenge × Tasco" }).click();
@@ -411,7 +403,7 @@ test.describe("admin programs", () => {
       }
       return route.fulfill({ status: 204 });
     });
-    await page.locator("#coverFileId").setInputFiles({
+    await page.locator('input[type="file"][id$="coverFileId"]').setInputFiles({
       name: "cover.png",
       mimeType: "image/png",
       buffer: Buffer.from(
@@ -483,7 +475,7 @@ test.describe("admin programs", () => {
     await choices.press("Enter");
     await dialog.getByRole("button", { name: "Add question" }).click();
     await expect(page.getByText("Several choices · 3 choices")).toBeVisible();
-    await page.getByRole("button", { name: "Save questions" }).click();
+    await page.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByText("Questions saved.")).toBeVisible();
     expect(saved).toEqual([
       {

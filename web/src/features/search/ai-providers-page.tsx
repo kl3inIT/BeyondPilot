@@ -1,9 +1,10 @@
 import { PlugZapIcon, ScanSearchIcon } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { HelpPopover } from "@/components/composites/help-popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Status } from "@/components/composites/status";
 import { Badge } from "@/components/ui/badge";
 import {
   Empty,
@@ -12,6 +13,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { getFormatter } from "@/i18n/format-server";
 import type { AiProviders } from "@/lib/api/generated";
 import { SettingsBlock } from "@/features/ai/settings-block";
 import { siteRoutes } from "@/lib/site";
@@ -61,7 +63,9 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium break-all">{embedding.model}</span>
-                    <Badge variant="success">{t("model.active")}</Badge>
+                    <Status tone="success" appearance="pill">
+                      {t("model.active")}
+                    </Status>
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {t("model.through", { name: embedding.providerName })}
@@ -97,12 +101,7 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
                 <div className="flex flex-col gap-0.5 px-4 py-3">
                   <dt className="text-xs text-muted-foreground">{t("model.since")}</dt>
                   <dd className="text-sm font-medium">
-                    {embedding.since
-                      ? format.dateTime(new Date(embedding.since), {
-                          dateStyle: "medium",
-                          timeZone: "Asia/Ho_Chi_Minh",
-                        })
-                      : "—"}
+                    {embedding.since ? format.dateTime(new Date(embedding.since), "date") : "—"}
                   </dd>
                 </div>
               </dl>
@@ -159,7 +158,11 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
                     <div className="flex min-w-0 flex-1 flex-col gap-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium">{provider.name}</span>
-                        {provider.inUse && <Badge variant="success">{t("connected.inUse")}</Badge>}
+                        {provider.inUse && (
+                          <Status tone="success" appearance="pill">
+                            {t("connected.inUse")}
+                          </Status>
+                        )}
                         <Badge variant="outline">
                           {provider.hasKey ? t("connected.keySaved") : t("connected.noKey")}
                         </Badge>
@@ -168,11 +171,7 @@ async function EmbeddingTab({ data }: { data: AiProviders }) {
                         {t("connected.meta", {
                           address: provider.baseUrl,
                           name: provider.updatedBy,
-                          date: format.dateTime(new Date(provider.updatedAt), {
-                            day: "numeric",
-                            month: "short",
-                            timeZone: "Asia/Ho_Chi_Minh",
-                          }),
+                          date: format.dateTime(new Date(provider.updatedAt), "day"),
                         })}
                       </span>
                       {provider.inUse && (

@@ -397,7 +397,7 @@ class MatchingRunTest {
 		assertThat(JsonPath.<Integer>read(answers, "$.answers")).isEqualTo(2);
 		assertThat(JsonPath.<Integer>read(answers, "$.agreements")).isEqualTo(1);
 		assertThat(JsonPath.<Integer>read(answers, "$.page")).isEqualTo(1);
-		assertThat(JsonPath.<Integer>read(answers, "$.pageSize")).isEqualTo(20);
+		assertThat(JsonPath.<Integer>read(answers, "$.pageSize")).isEqualTo(25);
 		assertThat(JsonPath.<Integer>read(answers, "$.total")).isEqualTo(1);
 		assertThat(JsonPath.<List<String>>read(answers, "$.items[*].useCaseId")).containsExactly(useCase.toString());
 		assertThat(JsonPath.<String>read(answers, "$.items[0].useCaseTitle")).isEqualTo("Claims triage " + word);

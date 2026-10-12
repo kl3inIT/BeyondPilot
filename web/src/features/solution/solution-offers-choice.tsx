@@ -2,16 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 
-import { Button } from "@/components/actions/button";
+import { useAppForm } from "@/components/form/app-form";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
 import { chooseSolutionOffers, type Solution } from "@/lib/api/generated";
 
 import { OfferPicker } from "./offer-picker";
 import { limits } from "./solution-editor-state";
-import { solutionError } from "./solution-errors";
 
 /**
  * The offers a solution that was sent for review comes with, as an operator chooses them. Its owners
@@ -26,29 +24,29 @@ function SolutionOffersChoice({
   const t = useTranslations("Admin.solutions.offers");
   const notify = useNotify();
   const router = useRouter();
-  const [chosen, setChosen] = useState(solution.offers);
-  const [pending, setPending] = useState(false);
-
-  async function save(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPending(true);
-    try {
-      await chooseSolutionOffers({
-        path: { id: solution.id },
-        body: { offerIds: chosen.map((offer) => offer.id) },
-      });
-      notify.success("Admin.solutions.offers.saved", { name: solution.name });
-      router.refresh();
-    } catch (error) {
-      notify.error(solutionError(error));
-    } finally {
-      setPending(false);
-    }
-  }
+  const form = useAppForm({
+    defaultValues: { offers: solution.offers },
+    onSubmit: async ({ value }) => {
+      try {
+        await chooseSolutionOffers({
+          path: { id: solution.id },
+          body: { offerIds: value.offers.map((offer) => offer.id) },
+        });
+        notify.success("Admin.solutions.offers.saved", { name: solution.name });
+        router.refresh();
+      } catch (error) {
+        notify.failure(error);
+      }
+    },
+  });
 
   return (
     <form
-      onSubmit={save}
+      id={form.formId}
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.handleSubmit();
+      }}
       aria-labelledby="solution-offers-choice"
       className="flex flex-col gap-4 rounded-lg border bg-card p-5"
     >
@@ -58,23 +56,29 @@ function SolutionOffersChoice({
         </h2>
         <p className="text-sm text-muted-foreground">{t("lead")}</p>
       </div>
-      <Field>
-        <FieldLabel htmlFor="solution-offers-choice-field">{t("field")}</FieldLabel>
-        <OfferPicker
-          id="solution-offers-choice-field"
-          solutionId={solution.id}
-          value={chosen}
-          onValueChange={setChosen}
-          operator
-          aria-describedby="solution-offers-choice-hint"
-        />
-        <FieldDescription id="solution-offers-choice-hint">
-          {t("hint", { max: limits.offers })}
-        </FieldDescription>
-      </Field>
-      <Button type="submit" prominence="secondary" pending={pending} className="self-start">
-        {t("save")}
-      </Button>
+      <form.Field name="offers">
+        {(field) => (
+          <Field>
+            <FieldLabel htmlFor="solution-offers-choice-field">{t("field")}</FieldLabel>
+            <OfferPicker
+              id="solution-offers-choice-field"
+              solutionId={solution.id}
+              value={field.state.value}
+              onValueChange={field.handleChange}
+              operator
+              aria-describedby="solution-offers-choice-hint"
+            />
+            <FieldDescription id="solution-offers-choice-hint">
+              {t("hint", { max: limits.offers })}
+            </FieldDescription>
+          </Field>
+        )}
+      </form.Field>
+      <form.AppForm>
+        <form.SubmitButton prominence="secondary" className="self-start">
+          {t("save")}
+        </form.SubmitButton>
+      </form.AppForm>
     </form>
   );
 }

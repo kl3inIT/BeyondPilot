@@ -11,7 +11,6 @@ import { DataTableView, dataTableColumns } from "@/components/composites/data-ta
 import { Badge } from "@/components/ui/badge";
 import { useNotify } from "@/hooks/use-notify";
 import { Link } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api/client";
 import { decideApplications } from "@/lib/api/generated";
 
 /** One application as the list shows it, its words already formatted. */
@@ -85,10 +84,7 @@ function ReviewTable({
       clear();
       router.refresh();
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      notify.error(
-        code === "PROPOSAL_RELEASED" ? "Review.errors.released" : "Review.errors.unknown",
-      );
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(undefined);
@@ -149,6 +145,7 @@ function ReviewTable({
     column.display({
       id: "open",
       header: () => <span className="sr-only">{t("columns.open")}</span>,
+      meta: { width: "action" },
       cell: ({ row }) => (
         <Link
           href={row.original.href}
@@ -164,7 +161,6 @@ function ReviewTable({
   return (
     <div className="flex flex-col gap-3">
       <DataTableView
-        className="hidden md:flex"
         columns={columns}
         data={rows}
         getRowId={(row) => row.id}
@@ -199,27 +195,6 @@ function ReviewTable({
             : undefined
         }
       />
-
-      {/* Below 768px: one card per application, each opening its review. */}
-      <ul className="flex flex-col gap-2 md:hidden">
-        {rows.map((row) => (
-          <li key={row.id}>
-            <Link
-              href={row.href}
-              className="flex flex-col gap-1 rounded-lg border bg-card p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <span className="flex items-start justify-between gap-3">
-                <span className="font-medium">{row.solution}</span>
-                <Badge variant={row.status.variant}>{row.status.label}</Badge>
-              </span>
-              <span className="text-sm text-muted-foreground">{row.applicant}</span>
-              <span className="text-sm text-muted-foreground">
-                {[row.choice, row.submitted, row.scores].filter(Boolean).join(" · ")}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
 
       <ConfirmDialog
         open={asking !== undefined}

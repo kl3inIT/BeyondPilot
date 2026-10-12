@@ -1,5 +1,6 @@
 "use client";
 
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { Building2Icon, FileTextIcon, ShieldCheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -7,13 +8,14 @@ import { useState, useTransition } from "react";
 
 import { Button } from "@/components/actions/button";
 import { ChoiceCombobox } from "@/components/composites/choice-combobox";
-import { ChoiceSelect } from "@/components/composites/choice-select";
-import { RequiredMark } from "@/components/composites/required-mark";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { RequiredMark } from "@/components/composites/required-mark";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
+import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
+import { useFieldValidity } from "@/components/form/form-context";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -22,29 +24,58 @@ import {
   saveAdminOrganization,
   saveMyOrganization,
   type Organization,
-  type SaveOrganization,
 } from "@/lib/api/generated";
 import { rejectedFields } from "@/lib/api/rejected-fields";
-import { focusField } from "@/lib/focus-field";
 import { siteRoutes } from "@/lib/site";
 
 import { industries, organizationTypes, teamSizes } from "./organization-codes";
-import { organizationError } from "./organization-errors";
-import { OrganizationProfileSection } from "./organization-profile-section";
-import { MAX_DESCRIPTION, MAX_INDUSTRIES, yearOf } from "./organization-format";
-import { useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
+import { MAX_DESCRIPTION, MAX_INDUSTRIES } from "./organization-format";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
+import { OrganizationProfileSection } from "./organization-profile-section";
+import {
+  profileBodyOf,
+  profileRefusals,
+  profileSchema,
+  profileValuesOf,
+} from "./organization-schemas";
+import { useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
 
-/** The fields the form checks before it asks the backend, in the order the page shows them. */
-const checkedFields = [
-  { name: "name", id: "organization-name" },
-  { name: "website", id: "organization-website" },
-  { name: "teamSize", id: "organization-team-size" },
-  { name: "industries", id: "organization-industries" },
-  { name: "country", id: "organization-country" },
-  { name: "foundedYear", id: "organization-founded-year" },
-  { name: "description", id: "organization-description" },
-] as const;
+/**
+ * The industries of the profile, found by typing: the form's field, with how many are chosen under
+ * it. Only a company has to name one, so the star follows the type.
+ */
+function IndustriesField({ required }: { required: boolean }) {
+  const t = useTranslations("Organization.form");
+  const industryName = useVocabulary("industry");
+  const { field, invalid, errors, ids } = useFieldValidity<string[]>();
+  const { control: controlId, hint: hintId, error: errorId } = ids;
+
+  return (
+    <Field data-invalid={invalid || undefined}>
+      <FieldLabel htmlFor={controlId}>
+        {t("industries")}
+        {required && <RequiredMark />}
+      </FieldLabel>
+      <ChoiceCombobox
+        id={controlId}
+        label={t("industries")}
+        placeholder={t("industriesPlaceholder")}
+        emptyLabel={t("industriesEmpty")}
+        removeLabel={(industry) => t("industriesRemove", { industry })}
+        aria-describedby={invalid ? `${hintId} ${errorId}` : hintId}
+        aria-invalid={invalid || undefined}
+        options={industries.map((value) => ({ value, label: industryName(value) }))}
+        value={field.state.value}
+        onValueChange={field.handleChange}
+        max={MAX_INDUSTRIES}
+      />
+      <FieldDescription id={hintId}>
+        {t("industriesHint", { count: MAX_INDUSTRIES, chosen: field.state.value.length })}
+      </FieldDescription>
+      {invalid && <FieldError id={errorId} errors={errors} />}
+    </Field>
+  );
+}
 
 type OrganizationFormProps = {
   /** The organization to change; without one the form creates it. */
@@ -63,142 +94,90 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
   const t = useTranslations("Organization.form");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
-  const industryName = useVocabulary("industry");
   const countryName = useCountryName();
   const notify = useNotify();
   const router = useRouter();
   const locale = useLocale();
-  const [name, setName] = useState(organization?.name ?? "");
-  const [type, setType] = useState<Organization["type"]>(organization?.type ?? "company");
-  const [country, setCountry] = useState(organization?.country ?? "");
-  const [teamSize, setTeamSize] = useState<string>(organization?.teamSize ?? "");
-  const [chosenIndustries, setChosenIndustries] = useState<string[]>(
-    organization?.industries ?? [],
-  );
-  const [website, setWebsite] = useState(organization?.website ?? "");
-  const [description, setDescription] = useState(organization?.description ?? "");
-  const [foundedYear, setFoundedYear] = useState(String(organization?.foundedYear ?? ""));
-  const [logoFileId, setLogoFileId] = useState(organization?.logoFileId ?? "");
+  // The domain keeps its own state: the same field stands in the decision dialogs, outside a form.
   const domain = useVerifiedDomain(organization?.emailDomain);
-  const [sending, setSending] = useState(false);
-  // A saved profile is compared with the one the page holds, which is the old one until it is read again.
-  const [refreshing, startRefresh] = useTransition();
-  const pending = sending || refreshing;
+  // A saved profile is compared with the one the page holds, which is the old one until it is read
+  // again; a new organization stays pending until its pages arrive.
+  const [leaving, startLeaving] = useTransition();
   const [discarding, setDiscarding] = useState(false);
-  const [invalid, setInvalid] = useState<Set<string>>(new Set());
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const missing = new Set<string>();
-    if (!name.trim()) {
-      missing.add("name");
-    }
-    if (!country) {
-      missing.add("country");
-    }
-    if (!teamSize) {
-      missing.add("teamSize");
-    }
-    // A company names its industries; a team or a builder on their own may not have settled on one.
-    if (type === "company" && chosenIndustries.length === 0) {
-      missing.add("industries");
-    }
-    if (!website.trim()) {
-      missing.add("website");
-    }
-    if (!description.trim()) {
-      missing.add("description");
-    }
-    const year = yearOf(foundedYear);
-    if (year === null) {
-      missing.add("foundedYear");
-    }
-    setInvalid(missing);
-    const emailDomain = admin ? domain.read() : null;
-    if (missing.size > 0 || year === null || emailDomain === undefined) {
-      focusField(checkedFields.find((field) => missing.has(field.name))?.id ?? checkedFields[0].id);
-      return;
-    }
-    const body = {
-      name,
-      type,
-      country,
-      teamSize: teamSize as SaveOrganization["teamSize"],
-      industries: chosenIndustries,
-      website: website.trim(),
-      description: description.trim(),
-      foundedYear: year,
-      logoFileId: logoFileId || null,
-    };
-    setSending(true);
-    try {
-      if (organization && admin) {
-        await saveAdminOrganization({
-          path: { id: organization.id },
-          body: { profile: { ...body, version: organization.version }, emailDomain },
+  const form = useAppForm({
+    defaultValues: profileValuesOf(organization),
+    validationLogic: revalidateLogic(),
+    validators: { onDynamic: profileSchema(t) },
+    // The domain is checked with the other fields, so every problem shows at once.
+    onSubmitInvalid: () => {
+      if (admin) {
+        void domain.read();
+      }
+    },
+    onSubmit: async ({ value, formApi }) => {
+      const emailDomain = admin ? domain.read() : null;
+      if (emailDomain === undefined) {
+        focusFirstInvalidSoon(() => document.getElementById(formApi.formId));
+        return;
+      }
+      const body = profileBodyOf(value);
+      try {
+        if (organization && admin) {
+          await saveAdminOrganization({
+            path: { id: organization.id },
+            body: { profile: { ...body, version: organization.version }, emailDomain },
+          });
+          notify.success("Organization.done.saved");
+          startLeaving(() => router.refresh());
+        } else if (organization) {
+          await saveMyOrganization({ body: { ...body, version: organization.version } });
+          notify.success("Organization.done.saved");
+          startLeaving(() => router.refresh());
+        } else {
+          await createOrganization({ body });
+          notify.success("Organization.done.created");
+          startLeaving(() =>
+            router.push(getPathname({ href: siteRoutes.workspaceOrganization, locale })),
+          );
+        }
+      } catch (error) {
+        // An operator's save holds the profile under `profile`.
+        const rejected = [...rejectedFields(error, admin ? "profile" : undefined)].filter(
+          (field): field is keyof typeof profileRefusals => field in profileRefusals,
+        );
+        setServerErrors(formApi, {
+          fields: Object.fromEntries(
+            rejected.map((field) => [field, { message: t(profileRefusals[field]) }]),
+          ),
         });
-        notify.success("Organization.done.saved");
-        startRefresh(() => router.refresh());
-        setSending(false);
-      } else if (organization) {
-        await saveMyOrganization({ body: { ...body, version: organization.version } });
-        notify.success("Organization.done.saved");
-        startRefresh(() => router.refresh());
-        setSending(false);
-      } else {
-        await createOrganization({ body });
-        notify.success("Organization.done.created");
-        // The new organization opens on its own pages; the form stays pending until they arrive.
-        router.push(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
+        // A domain another organization has is said at its field; anything else in a toast.
+        if (!domain.refused(error)) {
+          notify.failure(error);
+        }
       }
-    } catch (error) {
-      setInvalid(rejectedFields(error));
-      // A domain another organization has is said at its field; anything else in a toast.
-      if (!domain.refused(error)) {
-        notify.error(organizationError(error));
-      }
-      setSending(false);
-    }
-  }
+    },
+  });
 
-  const bad = (field: string) => invalid.has(field) || undefined;
-
+  const type = useStore(form.store, (state) => state.values.type);
+  const pending = useStore(form.store, (state) => state.isSubmitting) || leaving;
+  const changed =
+    useStore(form.store, (state) => !state.isDefaultValue) ||
+    domain.text !== (organization?.emailDomain ?? "");
   // Only a saved profile can differ from what was saved; a new one has nothing to lose yet.
-  const dirty =
-    organization !== undefined &&
-    !pending &&
-    JSON.stringify([
-      name,
-      type,
-      country,
-      teamSize,
-      chosenIndustries,
-      website,
-      description,
-      foundedYear,
-      logoFileId,
-      domain.text,
-    ]) !==
-      JSON.stringify([
-        organization.name,
-        organization.type,
-        organization.country ?? "",
-        organization.teamSize ?? "",
-        organization.industries,
-        organization.website ?? "",
-        organization.description ?? "",
-        String(organization.foundedYear ?? ""),
-        organization.logoFileId ?? "",
-        organization.emailDomain ?? "",
-      ]);
+  const dirty = organization !== undefined && !pending && changed;
 
   // The form's title is the page's on the create page; on the profile it sits under the organization's name.
   const Title = organization ? "h2" : "h1";
 
   return (
     <form
+      id={form.formId}
       noValidate
-      onSubmit={submit}
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.handleSubmit();
+      }}
       className="flex flex-col gap-7 rounded-3xl border bg-card p-5 md:p-10"
     >
       <div className="flex flex-col gap-2">
@@ -210,42 +189,31 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
 
       <OrganizationProfileSection icon={Building2Icon} title={t("basics")}>
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
-          <Field data-invalid={bad("name")}>
-            <FieldLabel htmlFor="organization-name">
-              {t("name")} <RequiredMark />
-            </FieldLabel>
-            <Input
-              id="organization-name"
-              name="name"
-              autoComplete="organization"
-              maxLength={120}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              aria-invalid={bad("name")}
-            />
-            {bad("name") && <FieldError>{t("nameRequired")}</FieldError>}
-          </Field>
-          <Field data-invalid={bad("website")}>
-            <FieldLabel htmlFor="organization-website">
-              {t("website")} <RequiredMark />
-            </FieldLabel>
-            <Input
-              id="organization-website"
-              name="website"
-              type="url"
-              inputMode="url"
-              autoComplete="url"
-              maxLength={300}
-              value={website}
-              aria-describedby="organization-website-hint"
-              onChange={(event) => setWebsite(event.target.value)}
-              aria-invalid={bad("website")}
-            />
-            {bad("website") && <FieldError>{t("websiteInvalid")}</FieldError>}
-            <p id="organization-website-hint" className="text-xs text-muted-foreground">
-              {t(type === "independent_builder" ? "websiteHint" : "websiteFormatHint")}
-            </p>
-          </Field>
+          <form.AppField name="name">
+            {(field) => (
+              <field.TextField
+                label={t("name")}
+                requiredMark
+                autoComplete="organization"
+                maxLength={120}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="website">
+            {(field) => (
+              <field.TextField
+                label={t("website")}
+                requiredMark
+                type="url"
+                inputMode="url"
+                autoComplete="url"
+                maxLength={300}
+                description={t(
+                  type === "independent_builder" ? "websiteHint" : "websiteFormatHint",
+                )}
+              />
+            )}
+          </form.AppField>
         </div>
         {/* An operator changes the verified domain in its own section below. */}
         {organization?.emailDomain && !admin && (
@@ -264,118 +232,79 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
           </Field>
         )}
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="organization-type">
-              {t("type")} <RequiredMark />
-            </FieldLabel>
-            <ChoiceSelect
-              id="organization-type"
-              options={organizationTypes.map((value) => ({ value, label: typeName(value) }))}
-              value={type}
-              onValueChange={(value) => setType(value as Organization["type"])}
-            />
-          </Field>
-          <Field data-invalid={bad("teamSize")}>
-            <FieldLabel htmlFor="organization-team-size">
-              {t("teamSize")} <RequiredMark />
-            </FieldLabel>
-            <ChoiceSelect
-              id="organization-team-size"
-              placeholder={t("teamSizePlaceholder")}
-              options={teamSizes.map((value) => ({ value, label: sizeName(value) }))}
-              value={teamSize}
-              onValueChange={setTeamSize}
-              aria-invalid={bad("teamSize")}
-            />
-            {bad("teamSize") && <FieldError>{t("teamSizeRequired")}</FieldError>}
-          </Field>
+          <form.AppField name="type">
+            {(field) => (
+              <field.SelectField
+                label={t("type")}
+                requiredMark
+                options={organizationTypes.map((value) => ({ value, label: typeName(value) }))}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="teamSize">
+            {(field) => (
+              <field.SelectField
+                label={t("teamSize")}
+                requiredMark
+                placeholder={t("teamSizePlaceholder")}
+                options={teamSizes.map((value) => ({ value, label: sizeName(value) }))}
+              />
+            )}
+          </form.AppField>
         </div>
       </OrganizationProfileSection>
 
       <OrganizationProfileSection icon={FileTextIcon} title={t("about")}>
-        <Field data-invalid={bad("industries")}>
-          <FieldLabel htmlFor="organization-industries">
-            {t("industries")} {type === "company" && <RequiredMark />}
-          </FieldLabel>
-          <ChoiceCombobox
-            id="organization-industries"
-            label={t("industries")}
-            placeholder={t("industriesPlaceholder")}
-            emptyLabel={t("industriesEmpty")}
-            removeLabel={(industry) => t("industriesRemove", { industry })}
-            aria-describedby="organization-industries-hint"
-            aria-invalid={bad("industries")}
-            options={industries.map((value) => ({ value, label: industryName(value) }))}
-            value={chosenIndustries}
-            onValueChange={setChosenIndustries}
-            max={MAX_INDUSTRIES}
-          />
-          {bad("industries") && <FieldError>{t("industriesRequired")}</FieldError>}
-          <p id="organization-industries-hint" className="text-xs text-muted-foreground">
-            {t("industriesHint", { count: MAX_INDUSTRIES, chosen: chosenIndustries.length })}
-          </p>
-        </Field>
+        <form.AppField name="industries">
+          {() => <IndustriesField required={type === "company"} />}
+        </form.AppField>
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
-          <Field data-invalid={bad("country")}>
-            <FieldLabel htmlFor="organization-country">
-              {t("country")} <RequiredMark />
-            </FieldLabel>
-            <ChoiceSelect
-              id="organization-country"
-              placeholder={t("countryPlaceholder")}
-              options={countryCodes.map((value) => ({ value, label: countryName(value) }))}
-              value={country}
-              onValueChange={setCountry}
-              aria-invalid={bad("country")}
-            />
-            {bad("country") && <FieldError>{t("countryRequired")}</FieldError>}
-          </Field>
-          <Field data-invalid={bad("foundedYear")}>
-            <FieldLabel htmlFor="organization-founded-year">
-              {t("foundedYear")} <RequiredMark />
-            </FieldLabel>
-            <Input
-              id="organization-founded-year"
-              name="foundedYear"
-              inputMode="numeric"
-              maxLength={4}
-              value={foundedYear}
-              aria-describedby="organization-founded-year-hint"
-              onChange={(event) => setFoundedYear(event.target.value)}
-              aria-invalid={bad("foundedYear")}
-            />
-            {bad("foundedYear") && <FieldError>{t("foundedYearInvalid")}</FieldError>}
-            <p id="organization-founded-year-hint" className="text-xs text-muted-foreground">
-              {t(type === "independent_builder" ? "foundedYearHint" : "foundedYearFormatHint")}
-            </p>
-          </Field>
+          <form.AppField name="country">
+            {(field) => (
+              <field.SelectField
+                label={t("country")}
+                requiredMark
+                placeholder={t("countryPlaceholder")}
+                options={countryCodes.map((value) => ({ value, label: countryName(value) }))}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="foundedYear">
+            {(field) => (
+              <field.TextField
+                label={t("foundedYear")}
+                requiredMark
+                inputMode="numeric"
+                maxLength={4}
+                description={t(
+                  type === "independent_builder" ? "foundedYearHint" : "foundedYearFormatHint",
+                )}
+              />
+            )}
+          </form.AppField>
         </div>
         <div className="flex flex-col gap-x-6 gap-y-6 sm:flex-row">
-          <Field data-invalid={bad("description")} className="sm:flex-1">
-            <FieldLabel htmlFor="organization-description">
-              {t("description")} <RequiredMark />
-            </FieldLabel>
-            <Textarea
-              id="organization-description"
-              className="field-sizing-fixed h-28 resize-none"
-              maxLength={MAX_DESCRIPTION}
-              value={description}
-              aria-describedby="organization-description-hint"
-              onChange={(event) => setDescription(event.target.value)}
-              aria-invalid={bad("description")}
-            />
-            {bad("description") && <FieldError>{t("descriptionRequired")}</FieldError>}
-            <div className="flex justify-between gap-3 text-xs text-muted-foreground">
-              <p id="organization-description-hint">{t("descriptionHint")}</p>
-              <span className="shrink-0 tabular-nums">
-                {t("counter", { count: description.length, max: MAX_DESCRIPTION })}
-              </span>
-            </div>
-          </Field>
-          <Field className="sm:w-28 sm:shrink-0">
-            <FieldLabel htmlFor="organization-logo">{t("logo.label")}</FieldLabel>
-            <OrganizationLogoUpload value={logoFileId} onChange={setLogoFileId} />
-          </Field>
+          <div className="sm:flex-1">
+            <form.AppField name="description">
+              {(field) => (
+                <field.TextareaField
+                  label={t("description")}
+                  requiredMark
+                  className="field-sizing-fixed h-28 resize-none"
+                  maxLength={MAX_DESCRIPTION}
+                  description={t("descriptionHint")}
+                />
+              )}
+            </form.AppField>
+          </div>
+          <form.Field name="logoFileId">
+            {(field) => (
+              <Field className="sm:w-28 sm:shrink-0">
+                <FieldLabel htmlFor="organization-logo">{t("logo.label")}</FieldLabel>
+                <OrganizationLogoUpload value={field.state.value} onChange={field.handleChange} />
+              </Field>
+            )}
+          </form.Field>
         </div>
       </OrganizationProfileSection>
 

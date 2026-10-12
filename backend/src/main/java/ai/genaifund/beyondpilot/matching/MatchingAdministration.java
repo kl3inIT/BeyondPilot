@@ -42,7 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MatchingAdministration {
 
 	/** How many disagreements a page holds. */
-	static final int FEEDBACK_PAGE_SIZE = 20;
+	static final int FEEDBACK_PAGE_SIZE = 25;
 
 	/** How far back the answers are counted. */
 	private static final Duration FEEDBACK_PERIOD = Duration.ofDays(30);

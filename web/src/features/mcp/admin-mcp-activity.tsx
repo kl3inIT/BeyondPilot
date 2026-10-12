@@ -1,5 +1,5 @@
 import { ActivityIcon, SearchXIcon } from "lucide-react";
-import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -7,6 +7,7 @@ import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AppMark } from "@/features/identity/app-mark";
+import { getFormatter } from "@/i18n/format-server";
 import type { McpCall, McpCallList, PersonConnectedApp } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -57,10 +58,10 @@ async function McpActivityPage({
 
   /** "Today, 09:41" for a call of today in Vietnam time, "3 Oct, 14:32" before that. */
   function shortTime(at: Date) {
-    const time = format.dateTime(at, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    const time = format.dateTime(at, "time");
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
-      : t("dayAndTime", { day: format.dateTime(at, { day: "numeric", month: "short" }), time });
+      : t("dayAndTime", { day: format.dateTime(at, "day"), time });
   }
 
   const rows = calls.items.map((call, index) => {
@@ -69,7 +70,6 @@ async function McpActivityPage({
       key: `${call.calledAt}-${index}`,
       at: call.calledAt,
       time: shortTime(at),
-      toolName: call.tool,
       fullTime: format.dateTime(at, { dateStyle: "full", timeStyle: "medium", hourCycle: "h23" }),
       person: call.personName ?? call.personEmail ?? t("goneAccount"),
       app: (
@@ -122,9 +122,8 @@ async function McpActivityPage({
       <McpAdminHeader current="activity" counts={counts} />
       <McpActivityToolbar apps={calls.apps} tools={calls.tools} />
 
-      {/* From 768px: a table. A click on the short time opens the full date and time, to the second. */}
+      {/* A click on the short time opens the full date and time, to the second. */}
       <DataTableRows
-        className="hidden md:flex"
         columns={[
           { id: "time", header: t("columns.time") },
           { id: "person", header: t("columns.person") },
@@ -160,26 +159,6 @@ async function McpActivityPage({
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per call, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.key} className="flex flex-col gap-1.5 border-b p-3 text-sm last:border-b-0">
-            <div className="flex items-center justify-between gap-3">
-              <span className="truncate font-medium">{row.person}</span>
-              {row.outcome}
-            </div>
-            <div className="flex items-center justify-between gap-3 text-muted-foreground">
-              {row.app}
-              <code className="text-xs">{row.toolName}</code>
-            </div>
-            <time dateTime={row.at} className="text-xs text-muted-foreground">
-              {row.time}
-            </time>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <ListFooter
         count={t("count", { count: calls.total })}

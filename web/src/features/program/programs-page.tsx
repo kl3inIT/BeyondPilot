@@ -374,10 +374,7 @@ async function UpcomingProgram({
       <p className="text-xs text-muted-foreground">
         {applications
           ? t("opensOn", {
-              date: format.dateTime(new Date(applications.opensAt), {
-                day: "numeric",
-                month: "short",
-              }),
+              date: format.dateTime(new Date(applications.opensAt), "day"),
             })
           : program.startsOn && program.endsOn
             ? daysText(format, program.startsOn, program.endsOn)
@@ -398,13 +395,7 @@ async function DoneProgram({
   format: Format;
 }) {
   const t = await getTranslations("Programs");
-  const ended = program.endsOn
-    ? format.dateTime(vietnamDay(program.endsOn), {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-    : null;
+  const ended = program.endsOn ? format.dateTime(vietnamDay(program.endsOn), "date") : null;
   const external = program.pageKind === "external" && program.externalUrl;
   return (
     <li className="relative flex flex-col overflow-hidden rounded-2xl border bg-card shadow-card">

@@ -3,14 +3,17 @@
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 
 type ErrorNoticeProps = {
   error: Error & { digest?: string };
   retry: () => void;
+  /** The way out of a page that stands apart from the site and so has no navigation around it. */
+  back?: { href: string; label: string };
 };
 
 /** What a failed page shows in its place: safe copy, Next's digest to quote, and a way to retry. */
-function ErrorNotice({ error, retry }: ErrorNoticeProps) {
+function ErrorNotice({ error, retry, back }: ErrorNoticeProps) {
   const t = useTranslations("Error");
 
   return (
@@ -23,6 +26,11 @@ function ErrorNotice({ error, retry }: ErrorNoticeProps) {
       <Button type="button" className="w-fit" onClick={() => retry()}>
         {t("retry")}
       </Button>
+      {back && (
+        <Link href={back.href} className="w-fit text-primary underline-offset-4 hover:underline">
+          {back.label}
+        </Link>
+      )}
     </div>
   );
 }

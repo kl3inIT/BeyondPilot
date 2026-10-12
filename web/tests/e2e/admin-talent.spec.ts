@@ -12,7 +12,7 @@ const dewi = "cf7c9ab8-6f64-4ab9-9ab1-6d9f2f2b3a05";
 
 const decisionsPath = "**/api/talent/admin/**";
 
-/** The profiles shown, by the name each row leads with, whichever layout the viewport has. */
+/** The profiles shown, by the name each row leads with. */
 function shownProfiles(page: Page) {
   return page.locator('[data-slot="person"]:visible >> span.font-medium');
 }
@@ -34,7 +34,6 @@ test.describe("admin talent", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/talent");
@@ -56,8 +55,8 @@ test.describe("admin talent", () => {
     ]);
     await expect(page.getByText("Sent 5 hours ago").and(page.locator(":visible"))).toHaveCount(1);
     await expect(page.getByText("5 profiles")).toBeVisible();
-    // A table from 768px, stacked rows below it.
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    // A table at every width: on a phone it scrolls sideways.
+    await expect(page.getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -85,7 +84,7 @@ test.describe("admin talent", () => {
       "No profile matches",
     );
 
-    await page.getByRole("link", { name: "Clear search and filter" }).click();
+    await page.getByRole("link", { name: "Clear filters" }).click();
     await expect(page).toHaveURL("/admin/talent");
     await expect(shownProfiles(page)).toHaveCount(5);
   });
@@ -277,7 +276,7 @@ test.describe("admin talent", () => {
     await expect(page.getByText("Siti Rahma is featured.")).toBeVisible();
 
     await page.goto(`/admin/talent/${arif}`);
-    await expect(page.locator("[data-featured]")).toHaveText("Featured Oct 1, 2026");
+    await expect(page.locator("[data-featured]")).toHaveText("Featured 1 Oct 2026");
     await expectNoSeriousA11yViolations(page);
     await page.getByRole("button", { name: "Stop featuring" }).click();
     await expect(page.getByText("Arif Hidayat is no longer featured.")).toBeVisible();

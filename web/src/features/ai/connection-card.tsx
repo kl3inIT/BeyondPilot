@@ -15,8 +15,11 @@ import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { IconButton } from "@/components/actions/icon-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { DataTable } from "@/components/composites/data-table";
 import { HelpPopover } from "@/components/composites/help-popover";
+import { Status } from "@/components/composites/status";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -34,7 +37,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Table,
   TableBody,
   TableCaption,
   TableCell,
@@ -55,16 +57,12 @@ import {
   type ProbeChatProvider,
 } from "@/lib/api/generated";
 
-import { chatError } from "./chat-errors";
 import { ChatLogo } from "./chat-logo";
 import { chatPresets, presetOf, price, tokens } from "./chat-presets";
 import { ModelDialog } from "./model-dialog";
 import { ModelLogo } from "./model-logo";
 import { ModelsField, useReportedModels } from "./models-field";
 import { ProviderDialog, ProviderTestResult } from "./provider-dialog";
-
-const iconButton =
-  "hit-area flex size-8 shrink-0 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 data-popup-open:bg-muted [&>svg]:size-4";
 
 /**
  * One thing a model can do, as an icon that says it in words: on hover, on Enter from the keyboard,
@@ -122,7 +120,7 @@ function FetchModels({
       onOpenChange(false);
       router.refresh();
     } catch (error) {
-      notify.error(chatError(error));
+      notify.failure(error);
     } finally {
       setSaving(false);
     }
@@ -184,7 +182,7 @@ function ConnectionCard({ provider, startOpen }: { provider: ChatProvider; start
       const { data } = await testChatProvider({ body: probe });
       setResult(data);
     } catch (error) {
-      notify.error(chatError(error));
+      notify.failure(error);
     } finally {
       setTesting(false);
     }
@@ -197,7 +195,7 @@ function ConnectionCard({ provider, startOpen }: { provider: ChatProvider; start
       done();
       router.refresh();
     } catch (error) {
-      notify.error(chatError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(null);
@@ -217,7 +215,11 @@ function ConnectionCard({ provider, startOpen }: { provider: ChatProvider; start
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
             <h3 className="text-sm font-medium">{provider.name}</h3>
-            {provider.inUse && <Badge variant="success">{t("inUse")}</Badge>}
+            {provider.inUse && (
+              <Status tone="success" appearance="pill">
+                {t("inUse")}
+              </Status>
+            )}
             {!provider.hasKey && <Badge variant="outline">{t("noKey")}</Badge>}
             {!provider.enabled && <Badge variant="outline">{t("off")}</Badge>}
           </div>
@@ -227,42 +229,44 @@ function ConnectionCard({ provider, startOpen }: { provider: ChatProvider; start
           {t("count", { count: provider.models.length })}
         </span>
         <div className="hidden items-center md:flex">
-          <button
-            type="button"
-            className={iconButton}
+          <IconButton
+            prominence="tertiary"
+            size="sm"
             aria-label={t("test")}
             title={t("test")}
             disabled={testing || !provider.hasKey}
             onClick={test}
           >
             <PlugZapIcon aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={iconButton}
+          </IconButton>
+          <IconButton
+            prominence="tertiary"
+            size="sm"
             aria-label={t("edit")}
             title={t("edit")}
             onClick={() => setAsking("edit")}
           >
             <Settings2Icon aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={`${iconButton} text-destructive`}
+          </IconButton>
+          <IconButton
+            tone="danger"
+            prominence="tertiary"
+            size="sm"
             aria-label={t("delete")}
             title={t("delete")}
             onClick={() => setAsking("delete")}
           >
             <Trash2Icon aria-hidden="true" />
-          </button>
+          </IconButton>
         </div>
         {/* On a phone the three actions fold into one menu. */}
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <button
-                type="button"
-                className={`${iconButton} md:hidden`}
+              <IconButton
+                prominence="tertiary"
+                size="sm"
+                className="md:hidden"
                 aria-label={t("more", { name: provider.name })}
               />
             }
@@ -286,16 +290,16 @@ function ConnectionCard({ provider, startOpen }: { provider: ChatProvider; start
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-        <button
-          type="button"
-          className={iconButton}
+        <IconButton
+          prominence="tertiary"
+          size="sm"
           aria-label={t("toggle", { name: provider.name })}
           aria-expanded={expanded}
           aria-controls={`${id}-models`}
           onClick={() => setExpanded(!expanded)}
         >
           <ChevronDownIcon className={expanded ? "rotate-180" : undefined} aria-hidden="true" />
-        </button>
+        </IconButton>
       </div>
 
       {result && <ProviderTestResult result={result} className="border-t px-4" />}
@@ -305,96 +309,86 @@ function ConnectionCard({ provider, startOpen }: { provider: ChatProvider; start
           {provider.models.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("noModels")}</p>
           ) : (
-            <div className="overflow-hidden rounded-lg border">
-              <Table>
-                <TableCaption className="sr-only">
-                  {tm("caption", { name: provider.name })}
-                </TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>
-                      <span className="flex items-center gap-1">
-                        {tm("model")}
-                        <HelpPopover label={tm("columnsHelp")}>
-                          <p>{tm("columnsAbout")}</p>
-                        </HelpPopover>
+            <DataTable label={tm("caption", { name: provider.name })}>
+              <TableCaption className="sr-only">
+                {tm("caption", { name: provider.name })}
+              </TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    <span className="flex items-center gap-1">
+                      {tm("model")}
+                      <HelpPopover label={tm("columnsHelp")}>
+                        <p>{tm("columnsAbout")}</p>
+                      </HelpPopover>
+                    </span>
+                  </TableHead>
+                  <TableHead className="text-right">{tm("context")}</TableHead>
+                  <TableHead className="text-right">{tm("maxOutput")}</TableHead>
+                  <TableHead className="text-right">{tm("input")}</TableHead>
+                  <TableHead className="text-right">{tm("output")}</TableHead>
+                  <TableHead className="w-20">
+                    <span className="sr-only">{tm("actions")}</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {provider.models.map((model) => (
+                  <TableRow key={model.id}>
+                    <TableCell>
+                      <span className="flex flex-wrap items-center gap-2">
+                        <ModelLogo modelName={model.modelName} />
+                        <span className="font-medium break-all">{model.displayName}</span>
+                        {/* What the model can do: a task is chosen by it. */}
+                        <span className="flex items-center gap-0.5">
+                          {model.toolCalling && (
+                            <Capability label={tm("tools")}>
+                              <WrenchIcon aria-hidden="true" />
+                            </Capability>
+                          )}
+                          {model.vision && (
+                            <Capability label={tm("vision")}>
+                              <EyeIcon aria-hidden="true" />
+                            </Capability>
+                          )}
+                          {model.reasoning && (
+                            <Capability label={tm("reasons")}>
+                              <BrainIcon aria-hidden="true" />
+                            </Capability>
+                          )}
+                        </span>
                       </span>
-                    </TableHead>
-                    <TableHead className="text-right">{tm("context")}</TableHead>
-                    <TableHead className="hidden text-right md:table-cell">
-                      {tm("maxOutput")}
-                    </TableHead>
-                    <TableHead className="hidden text-right md:table-cell">{tm("input")}</TableHead>
-                    <TableHead className="hidden text-right md:table-cell">
-                      {tm("output")}
-                    </TableHead>
-                    <TableHead className="w-20">
-                      <span className="sr-only">{tm("actions")}</span>
-                    </TableHead>
+                    </TableCell>
+                    <TableCell className="text-right">{tokens(model.contextWindow)}</TableCell>
+                    <TableCell className="text-right">
+                      {model.maxOutputTokens ? tokens(model.maxOutputTokens) : "—"}
+                    </TableCell>
+                    <TableCell className="text-right">{price(model.inputPrice)}</TableCell>
+                    <TableCell className="text-right">{price(model.outputPrice)}</TableCell>
+                    <TableCell>
+                      <span className="flex justify-end">
+                        <IconButton
+                          prominence="tertiary"
+                          size="sm"
+                          aria-label={tm("edit", { name: model.displayName })}
+                          onClick={() => setEditing(model)}
+                        >
+                          <Settings2Icon aria-hidden="true" />
+                        </IconButton>
+                        <IconButton
+                          prominence="tertiary"
+                          size="sm"
+                          aria-label={tm("delete", { name: model.displayName })}
+                          onClick={() => setRemoving(model)}
+                        >
+                          <Trash2Icon aria-hidden="true" />
+                        </IconButton>
+                      </span>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {provider.models.map((model) => (
-                    <TableRow key={model.id}>
-                      <TableCell>
-                        <span className="flex flex-wrap items-center gap-2">
-                          <ModelLogo modelName={model.modelName} />
-                          <span className="font-medium break-all">{model.displayName}</span>
-                          {/* What the model can do: a task is chosen by it. */}
-                          <span className="flex items-center gap-0.5">
-                            {model.toolCalling && (
-                              <Capability label={tm("tools")}>
-                                <WrenchIcon aria-hidden="true" />
-                              </Capability>
-                            )}
-                            {model.vision && (
-                              <Capability label={tm("vision")}>
-                                <EyeIcon aria-hidden="true" />
-                              </Capability>
-                            )}
-                            {model.reasoning && (
-                              <Capability label={tm("reasons")}>
-                                <BrainIcon aria-hidden="true" />
-                              </Capability>
-                            )}
-                          </span>
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">{tokens(model.contextWindow)}</TableCell>
-                      <TableCell className="hidden text-right md:table-cell">
-                        {model.maxOutputTokens ? tokens(model.maxOutputTokens) : "—"}
-                      </TableCell>
-                      <TableCell className="hidden text-right md:table-cell">
-                        {price(model.inputPrice)}
-                      </TableCell>
-                      <TableCell className="hidden text-right md:table-cell">
-                        {price(model.outputPrice)}
-                      </TableCell>
-                      <TableCell>
-                        <span className="flex justify-end">
-                          <button
-                            type="button"
-                            className={iconButton}
-                            aria-label={tm("edit", { name: model.displayName })}
-                            onClick={() => setEditing(model)}
-                          >
-                            <Settings2Icon aria-hidden="true" />
-                          </button>
-                          <button
-                            type="button"
-                            className={iconButton}
-                            aria-label={tm("delete", { name: model.displayName })}
-                            onClick={() => setRemoving(model)}
-                          >
-                            <Trash2Icon aria-hidden="true" />
-                          </button>
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </DataTable>
           )}
           <div className="flex flex-col gap-2 md:flex-row">
             <Button

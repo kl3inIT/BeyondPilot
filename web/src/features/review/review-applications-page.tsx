@@ -43,7 +43,7 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
   const format = applyFormatter(locale);
   const dates = programFormatter(locale);
   /** "3 Oct", the day of an instant in Vietnam time. */
-  const day = (at: string) => dates.dateTime(new Date(at), { day: "numeric", month: "short" });
+  const day = (at: string) => dates.dateTime(new Date(at), "day");
   const { head } = data;
   const list = listApplications(data.items, search, head.operator);
   const { ordered: shown, counts } = list;

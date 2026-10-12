@@ -1,5 +1,5 @@
 import { ArrowLeftIcon, InboxIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { DataTableEmpty } from "@/components/composites/data-table";
@@ -7,6 +7,7 @@ import { DataTableRows } from "@/components/composites/data-table-view";
 import { Badge } from "@/components/ui/badge";
 import { Status } from "@/components/composites/status";
 import { OrganizationMark } from "@/features/organization/organization-mark";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import type { ReceivedUseCaseProposals } from "@/lib/api/generated";
 import { siteRoutes, workspaceUseCaseProposalRoute } from "@/lib/site";
@@ -29,8 +30,7 @@ function ReceivedProposalsPage({ proposals }: ReceivedProposalsPageProps) {
   const t = useTranslations("UseCaseProposal.received");
   const format = useFormatter();
   const { useCase, items } = proposals;
-  const day = (instant: string) =>
-    format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
+  const day = (instant: string) => format.dateTime(new Date(instant), "date");
 
   const rows = items.map((proposal) => {
     const detail = proposalLine(proposal.solutionNames, proposal.contactName);
@@ -116,35 +116,18 @@ function ReceivedProposalsPage({ proposals }: ReceivedProposalsPageProps) {
             />
           </div>
         ) : (
-          <>
-            {/* From 768px: a table. */}
-            <DataTableRows
-              className="hidden md:flex"
-              surface
-              columns={[
-                { id: "proposal", header: t("list.columns.proposal"), layout: { fill: true } },
-                { id: "status", header: t("list.columns.status"), layout: { width: "md" } },
-                { id: "sent", header: t("list.columns.sent"), layout: { width: "md" } },
-              ]}
-              rows={rows.map((row) => ({
-                id: row.id,
-                cells: { proposal: row.proposal, status: row.status, sent: row.sent },
-              }))}
-            />
-
-            {/* Below 768px: one stacked row per proposal, never a table scrolled sideways. */}
-            <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
-              {rows.map((row) => (
-                <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-                  {row.proposal}
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                    {row.status}
-                    {row.sent}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </>
+          <DataTableRows
+            surface
+            columns={[
+              { id: "proposal", header: t("list.columns.proposal"), layout: { fill: true } },
+              { id: "status", header: t("list.columns.status"), layout: { width: "md" } },
+              { id: "sent", header: t("list.columns.sent"), layout: { width: "md" } },
+            ]}
+            rows={rows.map((row) => ({
+              id: row.id,
+              cells: { proposal: row.proposal, status: row.status, sent: row.sent },
+            }))}
+          />
         )}
       </div>
     </div>

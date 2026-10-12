@@ -82,7 +82,19 @@ GenAI Fund's full export of 8 October 2026 (`genai_platform_full_db_export_2026-
 
 ## Duplicates
 
-A company that registered several times on the old platform became several organizations, each with its own solution ([design](../../docs/increments/active/bey-74-v1-import/design.md), decision 18, BEY-156). `python -I infrastructure/legacy-import/duplicates.py <full-export.xlsx> <out>` writes `duplicates.sql`. After a dump, run it with the operator account, then rebuild the search index. Two organizations are merged when they have one name, read without its legal form, and one website. The one whose solution has a deck is kept, then the one active on the old platform, then the fuller record, then the one updated last there; the others go into it and stay as a record of where they went. The solutions with one name under the kept organization are one product: the best stays and the others are refused with the reason `duplicate`, as an operator refuses a solution, and never deleted. Taking them off the list would not do, since search and matching read an approved solution listed or not. A matching result on a refused solution is removed unless a person decided or answered on it. A group in which an organization has members, or whose keeper is not approved, is left for a person. The file ends with a notice of the counts and the reasons for what it left. A second run changes nothing. The rebuild of the index takes about a minute; start no matching run before the page says it was rebuilt. On staging, 12 October 2026: 93 organizations merged into 80, 93 solutions refused as duplicates, 14 groups left.
+A company that registered several times on the old platform, or once there and once here, became several organizations, each with its own solution ([design](../../docs/increments/active/bey-74-v1-import/design.md), decision 18, BEY-156).
+
+1. `python -I infrastructure/legacy-import/duplicates.py <full-export.xlsx> <out> [<same-company.json>]` writes `duplicates.sql`. After a dump, run it with the operator account.
+2. Rebuild the search index from Admin › AI › Search index. The rebuild takes about a minute and answers only when it is done; start no matching run before the page says it was rebuilt.
+
+What it does:
+
+- **One company.** Organizations with one name, read without its legal form, are one company when they have one website domain among them, which at least one names. Those with different domains are merged only when the name is in `same-company.json`, written by a person who looked at the websites: `{"<name key>": {"website": "<the one to keep, or null>", "several": <true when the records are different products>}}`. The file names companies and stays with the export.
+- **The one kept.** An approved one before another, then the one whose solution has a deck, then the one active on the old platform, then the fuller record, then the one updated last there. The others go into it as the application's merge moves them, members included, and stay with the status `merged` and where they went. The kept one takes a website when it has none, or the one the person chose.
+- **The solutions.** Those with one name under the kept organization are one product: the best stays and the others are refused with the reason `duplicate`, never deleted. Taking them off the list would not do, since search and matching read an approved solution listed or not. Where the person found different products of one company, every solution stays. A matching result on a refused solution is removed unless a person decided or answered on it.
+- **Left for a person.** A group in which a member has signed in: the application's merge tells the people it moves, and this file sends nothing.
+
+It ends with a notice of the counts. A second run changes nothing. On staging, 12 October 2026, in three runs: 155 organizations merged, 131 solutions refused as duplicates; 34 of the merged names came from `same-company.json`, 9 of them with several products; three names with different websites were left (two different companies, two test records, two that may be related).
 
 ## Passages for matching
 

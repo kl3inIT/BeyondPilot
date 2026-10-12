@@ -13,9 +13,8 @@ import { programFormatter } from "@/features/program/program-format";
 async function ApplicationTracker({ item, now }: { item: MyApplication; now: number }) {
   const [t, locale] = await Promise.all([getTranslations("MyApplications.tracker"), getLocale()]);
   const format = programFormatter(locale);
-  const day = (at: string) => format.dateTime(new Date(at), { day: "numeric", month: "short" });
-  const dueDay = (date: string) =>
-    format.dateTime(new Date(`${date}T00:00:00+07:00`), { day: "numeric", month: "short" });
+  const day = (at: string) => format.dateTime(new Date(at), "day");
+  const dueDay = (date: string) => format.dateTime(new Date(`${date}T00:00:00+07:00`), "day");
 
   const stages = [
     {

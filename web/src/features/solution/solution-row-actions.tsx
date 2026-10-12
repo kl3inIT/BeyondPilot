@@ -2,7 +2,6 @@
 
 import {
   CircleAlertIcon,
-  EllipsisIcon,
   ExternalLinkIcon,
   EyeIcon,
   EyeOffIcon,
@@ -15,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { RowMenuTrigger } from "@/components/actions/row-menu-trigger";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import {
   DropdownMenu,
@@ -22,7 +22,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
 import { getPathname, Link } from "@/i18n/navigation";
@@ -35,7 +34,6 @@ import {
 import { siteRoutes } from "@/lib/site";
 
 import { held, reviewFields, toRequest } from "./solution-editor-state";
-import { solutionError } from "./solution-errors";
 
 type SolutionRowActionsProps = {
   solution: Pick<
@@ -83,7 +81,7 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
       );
       router.refresh();
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }
@@ -96,7 +94,7 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
       notify.success("Solution.done.deleted", { name: solution.name });
       router.refresh();
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
       setConfirming(null);
@@ -117,17 +115,7 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <button
-              type="button"
-              aria-label={t("open", { name: solution.name })}
-              className="hit-area flex size-8 shrink-0 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
-            />
-          }
-        >
-          <EllipsisIcon className="size-4" aria-hidden="true" />
-        </DropdownMenuTrigger>
+        <RowMenuTrigger aria-label={t("open", { name: solution.name })} />
         <DropdownMenuContent align="end" className="w-64">
           {!editable && (
             <DropdownMenuGroup>

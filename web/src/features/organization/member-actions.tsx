@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  EllipsisIcon,
   LogOutIcon,
   PencilIcon,
   ShieldCheckIcon,
@@ -13,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { RowMenuTrigger } from "@/components/actions/row-menu-trigger";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { FormDialog } from "@/components/composites/form-dialog";
 import { Person } from "@/components/composites/person";
@@ -23,7 +23,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
 import {
@@ -32,8 +31,6 @@ import {
   removeOrganizationMember,
   type OrganizationMember,
 } from "@/lib/api/generated";
-
-import { organizationError } from "./organization-errors";
 
 type MemberActionsProps = {
   member: OrganizationMember;
@@ -53,7 +50,7 @@ type MemberActionsProps = {
  */
 function MemberActions({ member, owner, onlyOwner }: MemberActionsProps) {
   const t = useTranslations("Organization.members");
-  const refusal = useTranslations("Organization.errors");
+  const refusal = useTranslations("Errors");
   const notify = useNotify();
   const router = useRouter();
   const [asking, setAsking] = useState<"remove" | "demote" | null>(null);
@@ -78,7 +75,7 @@ function MemberActions({ member, owner, onlyOwner }: MemberActionsProps) {
       notify.success(done, { name }, undo && { undo });
       startRefresh(() => router.refresh());
     } catch (error) {
-      notify.error(organizationError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(null);
@@ -101,18 +98,7 @@ function MemberActions({ member, owner, onlyOwner }: MemberActionsProps) {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <button
-              type="button"
-              aria-label={t("actions.open", { name })}
-              disabled={pending || refreshing}
-              className="hit-area flex size-8 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
-            />
-          }
-        >
-          <EllipsisIcon className="size-4" aria-hidden="true" />
-        </DropdownMenuTrigger>
+        <RowMenuTrigger aria-label={t("actions.open", { name })} disabled={pending || refreshing} />
         <DropdownMenuContent align="end" className="w-56">
           {member.self && (
             <DropdownMenuGroup>
@@ -235,7 +221,7 @@ function JobTitleDialog({ jobTitle, open, onOpenChange, onSaved }: JobTitleDialo
         onOpenChange(false);
         onSaved();
       } catch (error) {
-        notify.error(organizationError(error));
+        notify.failure(error);
       }
     },
   });

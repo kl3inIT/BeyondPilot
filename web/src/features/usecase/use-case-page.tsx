@@ -1,5 +1,6 @@
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
+import { Status } from "@/components/composites/status";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { ProposalActions } from "@/features/proposal/proposal-actions";
 import { OrganizationMark } from "@/features/organization/organization-mark";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCase } from "@/lib/api/generated";
@@ -93,11 +95,7 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
     : t("deadline.none");
   const proposalDeadline = useCase.closesAt
     ? t("detail.open.closes", {
-        when: format.dateTime(new Date(useCase.closesAt), {
-          month: "short",
-          day: "numeric",
-          timeZone: "Asia/Ho_Chi_Minh",
-        }),
+        when: format.dateTime(new Date(useCase.closesAt), "day"),
       })
     : t("detail.open.noDeadline");
   const sections = [
@@ -183,7 +181,9 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
 
         <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-6 shadow-sm lg:sticky lg:top-23 lg:w-75 lg:shrink-0 xl:w-95">
           <div className="flex items-center justify-between gap-2">
-            <Badge variant="success">{t("detail.open.status")}</Badge>
+            <Status tone="success" appearance="pill">
+              {t("detail.open.status")}
+            </Status>
             <span className="text-sm text-muted-foreground">{proposalDeadline}</span>
           </div>
           <ProposalActions

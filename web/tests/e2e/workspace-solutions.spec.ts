@@ -19,7 +19,7 @@ const coverFile = "c0fea2b3-4c5d-4e6f-8a9b-0c1d2e3f4a62";
 const list = "/workspace/organization/solutions";
 const changesPath = "**/api/solution/mine**";
 
-/** The solutions shown, by name, whichever layout the viewport has. */
+/** The solutions shown, by name. */
 function shownSolutions(page: Page) {
   return page.locator(`a[href^="${list}/"]:visible`);
 }
@@ -123,7 +123,6 @@ test.describe("workspace solutions", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "owner", baseURL!);
     await page.goto(list);
@@ -140,11 +139,9 @@ test.describe("workspace solutions", () => {
     await expect(shown("Not public yet")).toBeVisible();
     await expect(shown("Draft · 1 of 7 required fields filled")).toBeVisible();
     await expect(shown("Sent back: It is Policy Chat under another name.")).toBeVisible();
-    // A table from 768px, stacked rows below it.
+    // A table at every width: on a phone it scrolls sideways.
     // The solutions' own table; the organization's offers have theirs under it.
-    await expect(page.getByRole("region", { name: "Solutions" }).getByRole("table")).toHaveCount(
-      isMobile ? 0 : 1,
-    );
+    await expect(page.getByRole("region", { name: "Solutions" }).getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
 
     await page.getByRole("button", { name: "Actions for Policy Chat" }).click();
@@ -180,7 +177,10 @@ test.describe("workspace solutions", () => {
     await expect(page.getByRole("menuitem")).toHaveText(["View what was sent", /^Edit/]);
     await page.keyboard.press("Escape");
     await page.getByRole("button", { name: "Actions for Quote Bot" }).click();
-    await expect(page.getByRole("menuitem")).toHaveText(["Read the reason and fix", "Send again"]);
+    await expect(page.getByRole("menuitem")).toHaveText([
+      "Read the reason and fix",
+      "Send for review again",
+    ]);
     await page.keyboard.press("Escape");
 
     // A draft that lacks what a review needs cannot be sent yet, and only a draft is deleted.
@@ -454,6 +454,48 @@ test.describe("workspace solutions", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("an owner closes an offer of the organization to new solutions, and opens it again", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const writes = await answerDecisions(
+      page,
+      "**/api/solution/offers/0ffe7a11-0000-4000-8000-000000000002/closed",
+      200,
+      {
+        id: "0ffe7a11-0000-4000-8000-000000000002",
+        title: "Ten hours of onboarding support",
+        url: "https://offers.example/onboarding",
+        solutions: 1,
+        version: 1,
+        closed: true,
+      },
+    );
+    await page.goto(list);
+
+    const offers = page.getByRole("region", { name: "Offers" });
+    await expect(offers.getByText("Open", { exact: true }).filter({ visible: true })).toHaveCount(
+      1,
+    );
+    await offers
+      .getByRole("button", { name: "Actions for Ten hours of onboarding support" })
+      .filter({ visible: true })
+      .click();
+    await page.getByRole("menuitem", { name: "Close to new solutions" }).click();
+
+    await expect(
+      page.getByText("Ten hours of onboarding support is closed to new solutions."),
+    ).toBeVisible();
+    expect(writes).toEqual([
+      {
+        call: "PUT /api/solution/offers/0ffe7a11-0000-4000-8000-000000000002/closed",
+        body: { closed: true, version: 0 },
+      },
+    ]);
+  });
+
   test("the review names what a draft lacks and leads to each field", async ({
     page,
     context,
@@ -663,7 +705,7 @@ test.describe("workspace solutions", () => {
       "href",
       "/api/solution/solutions/policy-chat/deck",
     );
-    await expect(page.getByText("3.1 MB · Uploaded Oct 1, 10:00")).toBeVisible();
+    await expect(page.getByText("3.1 MB · Uploaded 1 Oct, 10:00")).toBeVisible();
 
     await expect(async () => {
       await deployments.getByRole("button", { name: "Add a deployment" }).click();

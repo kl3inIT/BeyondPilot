@@ -1,5 +1,5 @@
 import { MailCheckIcon, SearchXIcon } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -7,6 +7,7 @@ import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Badge } from "@/components/ui/badge";
+import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { EmailSuppressionList } from "@/lib/api/generated";
 import { adminEmailMessageRoute, siteRoutes } from "@/lib/site";
@@ -38,8 +39,7 @@ async function EmailSuppressionsPage({
   ready: boolean;
 }) {
   const [t, format] = await Promise.all([getTranslations("Admin.email"), getFormatter()]);
-  const date = (at: string) =>
-    format.dateTime(new Date(at), { day: "numeric", month: "short", year: "numeric" });
+  const date = (at: string) => format.dateTime(new Date(at), "date");
   const filtered = search.q.trim() !== "" || search.reason !== null;
 
   const empty =
@@ -85,7 +85,6 @@ async function EmailSuppressionsPage({
 
       <DataTableRows
         sortKeys={emailSuppressionSortKeys}
-        className="hidden md:flex"
         columns={[
           { id: "address", header: t("suppressions.columns.address") },
           { id: "reason", header: t("suppressions.columns.reason"), layout: { width: "md" } },
@@ -117,23 +116,6 @@ async function EmailSuppressionsPage({
         }))}
         empty={empty}
       />
-
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {suppressions.items.map((item) => (
-          <li key={item.address} className="flex items-start gap-3 border-b p-3 last:border-b-0">
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <span className="truncate text-sm font-medium">{item.address}</span>
-              <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <Badge variant="outline">{t(`suppressions.reasons.${item.reason}`)}</Badge>
-                <time dateTime={item.createdAt}>{date(item.createdAt)}</time>
-              </span>
-              <span className="text-xs text-muted-foreground">{origin(item)}</span>
-            </div>
-            <RemoveSuppressionButton address={item.address} reason={item.reason} />
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       {suppressions.total > 0 && (
         <ListFooter

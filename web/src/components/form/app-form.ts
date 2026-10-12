@@ -1,52 +1,25 @@
-import {
-  createFormHook,
-  defaultValidationLogic,
-  type AnyFormApi,
-  type ValidationLogicFn,
-} from "@tanstack/react-form";
+import { createFormHook, type AnyFormApi } from "@tanstack/react-form";
 import { useId } from "react";
 
 import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
 import { fieldContext, formContext } from "@/components/form/form-context";
 import {
   CheckboxField,
+  ComboboxField,
   FormError,
   SelectField,
   SubmitButton,
   TextareaField,
   TextField,
 } from "@/components/form/form-fields";
+import { clearingServerErrors } from "@/components/form/validation-logic";
 
 const appForm = createFormHook({
   fieldContext,
   formContext,
-  fieldComponents: { TextField, TextareaField, SelectField, CheckboxField },
+  fieldComponents: { TextField, TextareaField, SelectField, ComboboxField, CheckboxField },
   formComponents: { SubmitButton, FormError },
 });
-
-/**
- * Runs the form's validation logic and, on submit, also re-evaluates each field's `onServer` entry.
- * Submitting validates the fields without the form's validators, so a field with no validator of
- * its own would keep the violation the server placed on it and block every later submit.
- */
-function clearingServerErrors(
-  logic: ValidationLogicFn = defaultValidationLogic,
-): ValidationLogicFn {
-  return (props) =>
-    logic({
-      ...props,
-      runValidation: ({ validators, form }) =>
-        props.runValidation({
-          validators:
-            props.event.type === "submit" &&
-            !props.event.async &&
-            !validators.some((validator) => validator?.cause === "server")
-              ? [...validators, { fn: undefined, cause: "server" }]
-              : validators,
-          form,
-        }),
-    });
-}
 
 /** The `<form>` element of a form: the one that carries `id={form.formId}`. */
 const elementOf = (formApi: AnyFormApi) => () => document.getElementById(formApi.formId);
@@ -54,8 +27,12 @@ const elementOf = (formApi: AnyFormApi) => () => document.getElementById(formApi
 /**
  * The application's TanStack Form hook (docs/conventions.md › Stack): `form.AppField` binds the
  * shared shadcn `Field` controls and `form.AppForm` the form-level parts. A refused submission's
- * errors, set with {@link setServerErrors}, clear when the person edits the form or submits again.
+ * errors, set with {@link setServerErrors}, clear when the person edits the form or submits again,
+ * and a field may carry a validator of its own beside the form's ({@link clearingServerErrors}).
  * The pattern is MemoryOS's.
+ *
+ * The form's id, React's own unless the caller names one, also starts the id of every control in
+ * it (`fieldIds`), so two forms in one document never share an id.
  *
  * A submit that validation refuses moves focus to the first field in error. The form is found by
  * its id, so its element is written `<form id={form.formId}>`.
@@ -72,6 +49,12 @@ export const useAppForm: typeof appForm.useAppForm = (options) => {
     },
   });
 };
+
+/**
+ * Fields that several forms draw the same way, bound to the part of each form that holds them:
+ * `<Fields form={form} fields="content" />`.
+ */
+export const withFieldGroup = appForm.withFieldGroup;
 
 /** A refused submission's errors: the message under the form and the messages on its fields. */
 export type ServerErrors = {

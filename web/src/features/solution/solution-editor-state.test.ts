@@ -7,6 +7,7 @@ import {
   contentOf,
   held,
   missingForReview,
+  neededOf,
   toRequest,
   type SolutionDraft,
 } from "./solution-editor-state";
@@ -158,5 +159,15 @@ describe("badLinks", () => {
     expect(
       badLinks(draft({ demoUrl: "example.com/demo", website: "javascript:alert(1)" })),
     ).toEqual(["demoUrl", "website"]);
+  });
+});
+
+describe("neededOf", () => {
+  it("words each field a review needs and the draft lacks, and no other", () => {
+    expect(neededOf(draft({ summary: " ", logo: null }), (key) => key)).toEqual({
+      summary: "needed.summary",
+      logo: "needed.logo",
+    });
+    expect(neededOf(draft(), (key) => key)).toEqual({});
   });
 });

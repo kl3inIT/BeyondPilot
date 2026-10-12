@@ -10,7 +10,6 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api/client";
 import { decideApplications } from "@/lib/api/generated";
 
 type Decision = "under_review" | "shortlisted" | "not_selected";
@@ -62,10 +61,7 @@ function DecisionPanel({
         router.refresh();
       }
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      notify.error(
-        code === "PROPOSAL_RELEASED" ? "Review.errors.released" : "Review.errors.unknown",
-      );
+      notify.failure(error);
     } finally {
       setPending(null);
     }

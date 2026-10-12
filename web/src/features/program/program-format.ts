@@ -1,23 +1,11 @@
-import { createFormatter } from "next-intl";
-
+import { deadlineText as deadlineAt, formatterOf, type Formatter } from "@/i18n/formats";
 import type { ProgramApplications, ProgramEvent, ProgramKeyDate } from "@/lib/api/generated";
 
-export type ProgramFormat = ReturnType<typeof createFormatter>;
+export type ProgramFormat = Formatter;
 type Format = ProgramFormat;
 
-/**
- * Dates as GenAI Fund writes them, day before month ("15 Oct"), in Vietnam time. English would
- * otherwise follow the American order ("Oct 15"), which the campaign copy never uses.
- */
-export function programFormatter(locale: string): ProgramFormat {
-  return createFormatter({
-    locale: locale === "en" ? "en-GB" : locale,
-    timeZone: "Asia/Ho_Chi_Minh",
-  });
-}
-
-const time = { hour: "2-digit", minute: "2-digit", hourCycle: "h23" } as const;
-const dayMonth = { day: "numeric", month: "short" } as const;
+/** The app's formatter (`@/i18n/formats`), for the program pages, which are given their locale. */
+export const programFormatter = formatterOf;
 
 /**
  * The moment a page is rendered, which places each step of a timeline before or after it. A page is
@@ -34,8 +22,7 @@ export function vietnamDay(day: string) {
 
 /** "15 Oct, 23:59 ICT": a deadline as an applicant reads it. */
 export function deadlineText(format: Format, applications: ProgramApplications) {
-  const closes = new Date(applications.closesAt);
-  return `${format.dateTime(closes, dayMonth)}, ${format.dateTime(closes, time)} ICT`;
+  return deadlineAt(format, new Date(applications.closesAt));
 }
 
 /** "7 Oct, 15:30–17:00 ICT", "16 Oct": a key date or an event as a line of a timeline. */
@@ -44,21 +31,20 @@ export function whenText(
   entry: Pick<ProgramKeyDate, "startsAt" | "endsAt"> & { allDay?: boolean },
 ) {
   const starts = new Date(entry.startsAt);
-  const day = format.dateTime(starts, dayMonth);
+  const day = format.dateTime(starts, "day");
   if (entry.allDay) {
     return day;
   }
   return entry.endsAt
-    ? `${day}, ${format.dateTime(starts, time)}–${format.dateTime(new Date(entry.endsAt), time)} ICT`
-    : `${day}, ${format.dateTime(starts, time)} ICT`;
+    ? `${day}, ${format.dateTime(starts, "time")}–${format.dateTime(new Date(entry.endsAt), "time")} ICT`
+    : `${day}, ${format.dateTime(starts, "time")} ICT`;
 }
 
 /** "23 Sep – 5 Dec 2026", or one day. */
 export function daysText(format: Format, startsOn: string, endsOn: string) {
-  const options = { day: "numeric", month: "short", year: "numeric" } as const;
   return startsOn === endsOn
-    ? format.dateTime(vietnamDay(startsOn), options)
-    : format.dateTimeRange(vietnamDay(startsOn), vietnamDay(endsOn), options);
+    ? format.dateTime(vietnamDay(startsOn), "date")
+    : format.dateTimeRange(vietnamDay(startsOn), vietnamDay(endsOn), "date");
 }
 
 /** Where an event happens: online, or its city and country. */

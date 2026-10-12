@@ -79,6 +79,8 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<String>read(submitted, "$.application.status")).isEqualTo("submitted");
 		assertThat(JsonPath.<Integer>read(submitted, "$.application.submissions")).isEqualTo(1);
 		assertThat(mail.latestSubjectTo(email)).isEqualTo("Application submitted: Claims challenge");
+		// The copy leads back to the application, at the site's own address.
+		assertThat(mail.latestTextTo(email)).containsPattern("https?://[^/ ]+/applications/" + id);
 		assertThat(snapshotName(id, 1)).isEqualTo("Dat Phan");
 		// The account keeps the country and the number of a first submission, for the next form to start from.
 		String me = body(get(applicant, "/api/identity/me").expectStatus().isOk());

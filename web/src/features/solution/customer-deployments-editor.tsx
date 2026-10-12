@@ -27,7 +27,6 @@ import {
 import { rejectedFields } from "@/lib/api/rejected-fields";
 
 import { deploymentStages } from "./solution-codes";
-import { solutionError } from "./solution-errors";
 
 /** The most customer deployments one solution lists; the backend refuses more. */
 const MAX_DEPLOYMENTS = 12;
@@ -110,7 +109,7 @@ function DeploymentForm({ solutionId, deployment, onClose }: DeploymentFormProps
               .map((field) => [field, { message: say("invalid") }]),
           ),
         });
-        notify.error(solutionError(error));
+        notify.failure(error);
       }
     },
   });
@@ -225,7 +224,7 @@ function CustomerDeploymentsEditor({
       router.refresh();
       setRemoving(null);
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }
@@ -242,7 +241,7 @@ function CustomerDeploymentsEditor({
       );
       router.refresh();
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }
@@ -255,7 +254,7 @@ function CustomerDeploymentsEditor({
       notify.success("Solution.done.deploymentRestored", { name: deployment.title });
       router.refresh();
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }

@@ -18,7 +18,7 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 
 - `pnpm dev` serves the app on port 3000 and forwards Spring's paths to `BEYONDPILOT_API_ORIGIN` ([development runtime](../docs/runbooks/development-runtime.md#web-application)).
 - `pnpm check` is the gate: the generated-client drift check, ESLint with the shadcn rules, Prettier, `tsc`, the unit tests, the message-catalog check and knip.
-- `pnpm test:unit` runs the Vitest files (`src/**/*.test.ts`).
+- `pnpm test:unit` runs the Vitest files: `src/**/*.test.ts` in Node and `src/**/*.test.tsx`, the component tests, in jsdom ([component tests](../docs/guidelines/testing.md#component-tests)).
 - `pnpm generate:api` regenerates `src/lib/api/generated` from the repository's `openapi.yml` ([refresh the API contract](../docs/runbooks/development-runtime.md#refresh-the-api-contract)). Never edit the generated files.
 - `pnpm test:e2e` builds the app and runs Playwright with axe on desktop and mobile Chrome.
 - `pnpm format` applies Prettier, including Tailwind class order.
@@ -44,6 +44,7 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 | `src/instrumentation.ts`     | Logs server rendering errors as JSON                                                                                                                  |
 | `src/proxy.ts`               | Locale routing, and the rewrite of `Accept: text/markdown` requests to `app/markdown/route.ts`                                                        |
 | `messages/`                  | `en.json` and `vi.json`                                                                                                                               |
+| `src/test/`                  | What the component tests share: `render`, the stand-in router and the setup file                                                                      |
 | `tests/e2e/`                 | Playwright specs and the axe helper                                                                                                                   |
 
 ## Rules to check before you edit
@@ -51,7 +52,7 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 - **Structure and imports**: thin pages, app screens in flat domain features, marketing pages stacked from sections, feature imports follow backend module dependencies, `components/` imports nothing from `features/` or `app/` ([structure](../docs/conventions.md#structure)).
 - **Server or client**: Server Components by default, `"use client"` on the smallest leaf; writes go to Spring with the CSRF header, never through Server Actions ([rendering, data and auth](../docs/conventions.md#rendering-data-and-auth)).
 - **Text**: every visible string in both catalogs; dates in `Asia/Ho_Chi_Minh`; backend failures shown by code ([internationalization](../docs/conventions.md#internationalization)).
-- **Errors and states**: `error.tsx`, `not-found.tsx` and `loading.tsx` per area; problem codes mapped to fields ([errors, loading and empty states](../docs/conventions.md#errors-loading-and-empty-states)).
+- **Errors and states**: `error.tsx` and `not-found.tsx` per area, a `loading.tsx` only on a segment with no account check, redirect or not-found at or below it; failure words by code from `Errors`, problem pointers mapped to fields ([errors, loading and empty states](../docs/conventions.md#errors-loading-and-empty-states)).
 - **Forms**: `useAppForm` and the shared controls for every form that sends data, one field or many; hint and error tied to the field, a counter where a limit is set, focus on the first field in error ([forms](../docs/conventions.md#forms)).
 - **Styling**: semantic tokens only, no raw colours, inline styles or arbitrary values ([design tokens and styling](../docs/conventions.md#design-tokens-and-styling)).
 - **Components**: layer choice, naming, props, the `tone`/`prominence`/`size` action wrappers, states and accessibility ([components](../docs/conventions.md#components)).

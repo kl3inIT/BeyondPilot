@@ -567,22 +567,59 @@ const lists = {
  */
 export function answerReview(url, account) {
   // The list of offers an operator keeps. The picker reads its own from the browser, which a test answers.
+  const listed = offers.map(({ fromGenAiFund, ...offer }, index) => ({
+    ...offer,
+    // The second is an organization's own.
+    organizationId: fromGenAiFund ? null : "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+    organizationName: fromGenAiFund ? null : "Pocket Policy",
+    // The first goes with two solutions, so it cannot be deleted; the second with none.
+    solutions: index === 0 ? 2 : 0,
+    version: 0,
+    updatedAt: day,
+    closed: false,
+  }));
   if (url.pathname === "/api/solution/admin/offers") {
     if (account?.role !== "operator") {
       return [account ? 403 : 401, {}];
     }
+    return [200, listed];
+  }
+  // The record of one offer: the offer and the solutions that come with it.
+  const offerRecord = url.pathname.match(/^\/api\/solution\/admin\/offers\/([^/]+)$/);
+  if (offerRecord) {
+    if (account?.role !== "operator") {
+      return [account ? 403 : 401, {}];
+    }
+    const offer = listed.find((item) => item.id === offerRecord[1]);
+    if (!offer) {
+      return [404, { status: 404, code: "SOLUTION_OFFER_NOT_FOUND" }];
+    }
     return [
       200,
-      offers.map(({ fromGenAiFund, ...offer }, index) => ({
-        ...offer,
-        // The second is an organization's own.
-        organizationId: fromGenAiFund ? null : "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
-        organizationName: fromGenAiFund ? null : "Pocket Policy",
-        // The first goes with two solutions, so it cannot be deleted; the second with none.
-        solutions: index === 0 ? 2 : 0,
-        version: 0,
-        updatedAt: day,
-      })),
+      {
+        offer,
+        createdAt: day,
+        solutionList: [
+          {
+            id: "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e03",
+            slug: "policy-chat",
+            name: "Policy Chat",
+            organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+            organizationName: "Pocket Policy",
+            status: "approved",
+            suspendedAt: null,
+          },
+          {
+            id: "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e04",
+            slug: "clinic-triage",
+            name: "Clinic Triage",
+            organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
+            organizationName: "Lumen Health",
+            status: "in_review",
+            suspendedAt: null,
+          },
+        ],
+      },
     ];
   }
   // The editor of an operator reads a draft, which no list of submitted solutions holds, and the organizations.

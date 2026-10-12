@@ -19,7 +19,7 @@ const claim = "9c4f6d85-3c31-4d86-8d88-3a6c9c9e0d01";
 
 const decisionsPath = "**/api/organization/admin/**";
 
-/** The organizations shown, by the name each row leads with, whichever layout the viewport has. */
+/** The organizations shown, by the name each row leads with. */
 /** The organizations the list shows, by the link to each one's record. */
 function shownOrganizations(page: Page) {
   return page.locator('a[href*="/admin/organizations/"]:visible');
@@ -88,7 +88,6 @@ test.describe("admin organizations", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/organizations");
@@ -103,18 +102,15 @@ test.describe("admin organizations", () => {
       "Harbor Bank",
     ]);
     await expect(page.getByText("6 organizations")).toBeVisible();
-    // Each row is in the page twice, as a table row and as a stacked one; the viewport shows one.
     const shown = page.locator(":visible");
     await expect(page.getByText("Company · Singapore · 2 members").and(shown)).toHaveCount(1);
     await expect(page.getByText("Builder team · Vietnam · No owner").and(shown)).toHaveCount(1);
     await expect(page.getByText("New organization", { exact: true }).and(shown)).toHaveCount(1);
     await expect(page.getByText("Claim", { exact: true }).and(shown)).toHaveCount(1);
-    // Who asked is a column from 1024px.
-    if (!isMobile) {
-      await expect(page.getByRole("cell", { name: "Arif Hidayat" })).toBeVisible();
-    }
-    // A table from 768px, stacked rows below it.
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    // Who asked is a column where the table has the room, and on a phone, where it scrolls.
+    await expect(page.getByRole("cell", { name: "Arif Hidayat" })).toBeVisible();
+    // A table at every width: on a phone it scrolls sideways.
+    await expect(page.getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -139,7 +135,7 @@ test.describe("admin organizations", () => {
       "No organization matches",
     );
 
-    await page.getByRole("link", { name: "Clear search and filter" }).click();
+    await page.getByRole("link", { name: "Clear filters" }).click();
     await expect(page).toHaveURL("/admin/organizations");
     await expect(shownOrganizations(page)).toHaveCount(6);
   });
@@ -189,7 +185,7 @@ test.describe("admin organizations", () => {
 
     await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
     // Who created it and its website are read when the dialog opens.
-    await expect(dialog.getByText(/Created by Linh Nguyễn on Oct 1, 2026/)).toBeVisible();
+    await expect(dialog.getByText(/Created by Linh Nguyễn on 1 Oct 2026/)).toBeVisible();
     await expect(dialog.getByText("Company · Vietnam · lumenhealth.example")).toBeVisible();
     // The creator's work domain is proposed, for the operator to confirm.
     await expect(dialog.getByLabel("Email domain to verify (optional)")).toHaveValue(
@@ -375,7 +371,7 @@ test.describe("admin organizations", () => {
     await expect(page).toHaveURL(`/admin/organizations/${openKitchen}`);
     await expect(page).toHaveTitle("Open Kitchen · BeyondPilot");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Open Kitchen");
-    await expect(page.getByText("Created by Đạt Phan on Oct 1, 2026")).toBeVisible();
+    await expect(page.getByText("Created by Đạt Phan on 1 Oct 2026")).toBeVisible();
     const claims = page.getByRole("region", { name: "Claims to own it" });
     await expect(claims.getByText("I founded the team.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
@@ -405,7 +401,7 @@ test.describe("admin organizations", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     await page.goto(`/admin/organizations/${quietMill}`);
 
-    await expect(page.getByText("Taken down on Oct 6, 2026")).toBeVisible();
+    await expect(page.getByText("Taken down on 6 Oct 2026")).toBeVisible();
     await expect(page.getByText("Reason: Misleading or false information.")).toBeVisible();
     await expect(page.getByText("Send us the contract or remove the customer.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
@@ -457,7 +453,7 @@ test.describe("admin organizations", () => {
     ]);
   });
 
-  test("a duplicate is merged into the organization kept, once its name is typed", async ({
+  test("a duplicate is merged into the organization kept, once that is confirmed", async ({
     page,
     context,
     baseURL,
@@ -503,14 +499,24 @@ test.describe("admin organizations", () => {
     await expectNoSeriousA11yViolations(page);
     await dialog.getByRole("button", { name: "Continue" }).click();
 
-    await expect(dialog.getByRole("heading", { name: "Merge into Pocket Policy?" })).toBeVisible();
-    await expect(dialog.getByText("This cannot be undone.")).toBeVisible();
-    const merge = dialog.getByRole("button", { name: "Merge" });
-    await expect(merge).toBeDisabled();
-    await dialog.getByLabel("Type Harbor Bank to confirm").fill("Harbor");
-    await expect(merge).toBeDisabled();
-    await dialog.getByLabel("Type Harbor Bank to confirm").fill("Harbor Bank");
-    await merge.click();
+    // The merge is asked once, naming both organizations and what it does; nothing is typed.
+    const confirmation = page.getByRole("alertdialog");
+    await expect(
+      confirmation.getByRole("heading", { name: "Merge Harbor Bank into Pocket Policy?" }),
+    ).toBeVisible();
+    await expect(
+      confirmation.getByText(
+        "12 members and 1 open invitation move with it, and so do its solutions and use cases.",
+      ),
+    ).toBeVisible();
+    await expect(
+      confirmation.getByText(
+        "Harbor Bank stays only as a record of where it went, and its members are told by email. This cannot be undone.",
+      ),
+    ).toBeVisible();
+    await expect(confirmation.getByRole("textbox")).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+    await confirmation.getByRole("button", { name: "Merge" }).click();
 
     await expect(
       page.getByText("Harbor Bank was merged into Pocket Policy. Its members were told."),
@@ -532,7 +538,7 @@ test.describe("admin organizations", () => {
     await page.goto(`/admin/organizations/${pocketPolicyLtd}`);
 
     await expect(
-      page.getByRole("heading", { name: "Merged into Pocket Policy on Oct 7, 2026 by Young Xv" }),
+      page.getByRole("heading", { name: "Merged into Pocket Policy on 7 Oct 2026 by Young Xv" }),
     ).toBeVisible();
     await expect(
       page.getByText(
@@ -613,9 +619,8 @@ test.describe("admin organizations", () => {
       "Teller 12",
       "newhire@harborbank.example",
     ]);
-    // The row is drawn as a table row and as a stacked row; one of them shows.
     await expect(
-      page.getByText("Invited Oct 1, 2026 · expires Oct 8, 2026").filter({ visible: true }),
+      page.getByText("Invited 1 Oct 2026 · expires 8 Oct 2026").filter({ visible: true }),
     ).toHaveCount(1);
   });
 
@@ -640,7 +645,6 @@ test.describe("admin organizations", () => {
     const decisions = await answerDecisions(page, decisionsPath, 204);
     const record = `/api/organization/admin/organizations/${harborBank}`;
     await page.goto(`/admin/organizations/${harborBank}?tab=members`);
-    // Each person is in the page twice, as a table row and as a stacked one; the viewport shows one.
     const actions = (name: string) =>
       page.getByRole("button", { name: `Actions for ${name}` }).and(page.locator(":visible"));
 

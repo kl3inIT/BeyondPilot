@@ -18,7 +18,7 @@ async function answerSearch(page: Page, items: object[]) {
   );
 }
 
-/** The people shown, by the name each row leads with, whichever layout the viewport has. */
+/** The people shown, by the name each row leads with. */
 /** The people of the members list, not those asking to join above it. */
 function shownPeople(page: Page) {
   return page
@@ -145,13 +145,13 @@ test.describe("workspace organization", () => {
     const changes = await answerDecisions(page, changesPath, 201, {});
     await page.goto("/workspace/organization/new");
 
-    await page.getByRole("button", { name: "Submit for approval" }).click();
+    await page.getByRole("button", { name: "Send for review" }).click();
     await expect(page.getByText("Enter the organization's name.")).toBeVisible();
     await expect(page.getByText("Select a team size.")).toBeVisible();
     await expect(page.getByText("Choose at least one industry.")).toBeVisible();
     await expect(page.getByText("Select a country.")).toBeVisible();
-    // The website, the year and the description are asked as the mockup asks them.
-    await expect(page.getByText("Enter a full address that starts with https://")).toBeVisible();
+    // The year and the description are asked as the mockup asks them.
+    await expect(page.getByText("Enter the organization's website.")).toBeVisible();
     await expect(
       page.getByText("Enter a four-digit year no later than this year, such as 2021."),
     ).toBeVisible();
@@ -173,7 +173,7 @@ test.describe("workspace organization", () => {
     await page.getByRole("option", { name: "Vietnam" }).click();
     await page.getByLabel("Year founded").fill("2019");
     await page.getByLabel("Short description").fill("Route planning for fleets.");
-    await page.getByRole("button", { name: "Submit for approval" }).click();
+    await page.getByRole("button", { name: "Send for review" }).click();
 
     await expect(page.getByText("Organization created and sent for review.")).toBeVisible();
     await expect(page).toHaveURL("/workspace/organization");
@@ -203,7 +203,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Join Pocket Policy on BeyondPilot",
     );
-    await expect(page.getByText("Invited by Minh Trần on Oct 1, 2026")).toBeVisible();
+    await expect(page.getByText("Invited by Minh Trần on 1 Oct 2026")).toBeVisible();
     await expect(
       page.getByText(
         "As a member you are shown on Pocket Policy's team; only owners edit its profile and solutions.",
@@ -233,7 +233,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Your request to join Pocket Policy is with its owners",
     );
-    await expect(page.getByText("Company · Singapore · asked on Oct 1, 2026")).toBeVisible();
+    await expect(page.getByText("Company · Singapore · asked on 1 Oct 2026")).toBeVisible();
     // Whoever asked to join one organization does not create another.
     await page.goto("/workspace/organization/new");
     await expect(page).toHaveURL("/workspace/organization");
@@ -280,7 +280,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Your request to join Pocket Policy was declined",
     );
-    await expect(page.getByText("Company · Singapore · declined on Oct 1, 2026")).toBeVisible();
+    await expect(page.getByText("Company · Singapore · declined on 1 Oct 2026")).toBeVisible();
     await expect(
       page.getByText(
         "Ask an owner of Pocket Policy directly if this is a mistake, or create your own organization.",
@@ -451,7 +451,6 @@ test.describe("workspace organization", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "owner", baseURL!);
     const changes = await answerDecisions(page, changesPath, 204);
@@ -461,12 +460,11 @@ test.describe("workspace organization", () => {
     await expect(
       page.getByText("2 members · 1 invitation pending · 19 of 20 invitations left in 24 hours"),
     ).toBeVisible();
-    // The row is drawn as a table row and as a stacked row; one of them shows.
     await expect(
-      page.getByText("Invited Oct 1, 2026 · expires Oct 8, 2026").filter({ visible: true }),
+      page.getByText("Invited 1 Oct 2026 · expires 8 Oct 2026").filter({ visible: true }),
     ).toHaveCount(1);
-    // A table from 768px, stacked rows below it.
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    // A table at every width: on a phone it scrolls sideways.
+    await expect(page.getByRole("table")).toHaveCount(1);
     await expect(page.getByText("On pocketpolicy.example")).toBeVisible();
     await expect(page.getByText("I joined the claims team.")).toBeVisible();
     // One page of members needs no count under it: the section's summary already says it.

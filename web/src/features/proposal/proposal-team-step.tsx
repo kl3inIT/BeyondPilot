@@ -1,21 +1,19 @@
 "use client";
 
+import { revalidateLogic } from "@tanstack/react-form";
 import { Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
 import { DataTable } from "@/components/composites/data-table";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { Person } from "@/components/composites/person";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { useAppForm, withFieldGroup } from "@/components/form/app-form";
+import { fieldIds } from "@/components/form/field-ids";
+import { useFieldValidity } from "@/components/form/form-context";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -30,24 +28,39 @@ const maxRole = 120;
 type ProposalTeamStepProps = {
   /** The people of the organization the proposal may name. */
   members: TeamCandidate[];
-  team: TeamRow[];
-  onTeam: (team: TeamRow[]) => void;
-  /** Whether to say what is missing, once the person tried to go on. */
-  checked: boolean;
 };
 
 /**
  * The people who would work on the use case: each with the role typed for this proposal, and one of
  * them the primary contact the posting organization speaks to.
  */
-function ProposalTeamStep({ members, team, onTeam, checked }: ProposalTeamStepProps) {
+const ProposalTeamStep = withFieldGroup({
+  defaultValues: { team: [] as TeamRow[] },
+  props: { members: [] } as ProposalTeamStepProps,
+  render: function ProposalTeamStepRender({ group, members }) {
+    return <group.AppField name="team">{() => <Team members={members} />}</group.AppField>;
+  },
+});
+
+/**
+ * The team as one field of the form. Its rows change through the functions of the draft, which keep
+ * exactly one primary contact; a row that lacks its role is marked from what the row holds.
+ */
+function Team({ members }: ProposalTeamStepProps) {
   const t = useTranslations("UseCaseProposal.wizard.team");
+  const { field, invalid, errors, ids } = useFieldValidity<TeamRow[]>();
   const [adding, setAdding] = useState(false);
 
+  const team = field.state.value;
+  const onTeam = field.handleChange;
   const candidateOf = (accountId: string) =>
     members.find((member) => member.accountId === accountId);
   const primary = team.find((member) => member.primary)?.accountId ?? "";
   const free = members.filter((member) => !team.some((row) => row.accountId === member.accountId));
+  const worded = invalid && errors.some((error) => error?.message);
+  const errorId = worded ? ids.error : undefined;
+  // Roles are filled and still the team is refused: nobody, or more than one, is the primary contact.
+  const noPrimary = invalid && team.every((row) => row.role.trim() !== "");
 
   return (
     <div className="flex flex-col gap-3">
@@ -85,7 +98,7 @@ function ProposalTeamStep({ members, team, onTeam, checked }: ProposalTeamStepPr
               {team.map((row) => {
                 const person = candidateOf(row.accountId);
                 const name = person?.name ?? person?.email ?? "";
-                const missing = checked && row.role.trim() === "";
+                const missing = invalid && row.role.trim() === "";
                 return (
                   <TableRow key={row.accountId}>
                     <TableCell className="min-w-56">
@@ -97,6 +110,7 @@ function ProposalTeamStep({ members, team, onTeam, checked }: ProposalTeamStepPr
                         maxLength={maxRole}
                         value={row.role}
                         aria-invalid={missing || undefined}
+                        aria-describedby={missing ? errorId : undefined}
                         placeholder={t("rolePlaceholder")}
                         onChange={(event) =>
                           onTeam(setRole(team, row.accountId, event.target.value))
@@ -104,7 +118,12 @@ function ProposalTeamStep({ members, team, onTeam, checked }: ProposalTeamStepPr
                       />
                     </TableCell>
                     <TableCell>
-                      <RadioGroupItem value={row.accountId} aria-label={t("primaryOf", { name })} />
+                      <RadioGroupItem
+                        value={row.accountId}
+                        aria-label={t("primaryOf", { name })}
+                        aria-invalid={noPrimary || undefined}
+                        aria-describedby={noPrimary ? errorId : undefined}
+                      />
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end">
@@ -125,16 +144,7 @@ function ProposalTeamStep({ members, team, onTeam, checked }: ProposalTeamStepPr
           </DataTable>
         </RadioGroup>
       )}
-      {checked && team.length === 0 && (
-        <p role="alert" className="text-sm text-destructive">
-          {t("needed.member")}
-        </p>
-      )}
-      {checked && team.length > 0 && team.some((row) => row.role.trim() === "") && (
-        <p role="alert" className="text-sm text-destructive">
-          {t("needed.role")}
-        </p>
-      )}
+      {worded && <FieldError id={errorId} errors={errors} />}
       <AddMemberDialog
         open={adding}
         onOpenChange={setAdding}
@@ -158,42 +168,43 @@ type AddMemberDialogProps = {
 /** The popup in which a person of the organization joins the team with the role typed for them. */
 function AddMemberDialog({ open, onOpenChange, candidates, onAdd }: AddMemberDialogProps) {
   const t = useTranslations("UseCaseProposal.wizard.team.dialog");
-  const id = useId();
-  const [chosen, setChosen] = useState("");
-  const [role, setRoleText] = useState("");
-  const [tried, setTried] = useState(false);
-
-  const accountId = candidates.some((person) => person.accountId === chosen)
-    ? chosen
-    : (candidates[0]?.accountId ?? "");
-  const roleMissing = tried && role.trim() === "";
-
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (role.trim() === "") {
-      setTried(true);
-      return;
-    }
-    onAdd(accountId, role);
-    setChosen("");
-    setRoleText("");
-    setTried(false);
-  }
+  /** The person chosen, or the first who can be added while none is. */
+  const personOf = (chosen: string) =>
+    candidates.some((person) => person.accountId === chosen)
+      ? chosen
+      : (candidates[0]?.accountId ?? "");
+  const form = useAppForm({
+    defaultValues: { accountId: "", role: "" },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({
+        accountId: z.string(),
+        role: z.string().refine((text) => text.trim() !== "", t("roleRequired")),
+      }),
+    },
+    onSubmit: ({ value }) => onAdd(personOf(value.accountId), value.role),
+  });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false}>
-        <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-          <DialogHeader>
-            <DialogTitle size="lg">{t("title")}</DialogTitle>
-            <DialogDescription>{t("lead")}</DialogDescription>
-          </DialogHeader>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      form={form}
+      title={t("title")}
+      description={t("lead")}
+      submitLabel={t("submit")}
+      cancelLabel={t("cancel")}
+      submitDisabled={candidates.length === 0}
+    >
+      <form.Field name="accountId">
+        {(field) => (
           <Field>
-            <FieldLabel htmlFor={`${id}-person`}>{t("person")}</FieldLabel>
+            <FieldLabel htmlFor={fieldIds(field).control}>{t("person")}</FieldLabel>
             <NativeSelect
-              id={`${id}-person`}
-              value={accountId}
-              onChange={(event) => setChosen(event.target.value)}
+              id={fieldIds(field).control}
+              value={personOf(field.state.value)}
+              onBlur={field.handleBlur}
+              onChange={(event) => field.handleChange(event.target.value)}
             >
               {candidates.map((person) => (
                 <NativeSelectOption key={person.accountId} value={person.accountId}>
@@ -202,28 +213,12 @@ function AddMemberDialog({ open, onOpenChange, candidates, onAdd }: AddMemberDia
               ))}
             </NativeSelect>
           </Field>
-          <Field data-invalid={roleMissing || undefined}>
-            <FieldLabel htmlFor={`${id}-role`}>{t("role")}</FieldLabel>
-            <Input
-              id={`${id}-role`}
-              maxLength={maxRole}
-              value={role}
-              aria-invalid={roleMissing || undefined}
-              onChange={(event) => setRoleText(event.target.value)}
-            />
-            {roleMissing && <FieldError>{t("roleRequired")}</FieldError>}
-          </Field>
-          <DialogFooter>
-            <Button prominence="secondary" onClick={() => onOpenChange(false)}>
-              {t("cancel")}
-            </Button>
-            <Button type="submit" disabled={accountId === ""}>
-              {t("submit")}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        )}
+      </form.Field>
+      <form.AppField name="role">
+        {(field) => <field.TextField label={t("role")} maxLength={maxRole} />}
+      </form.AppField>
+    </FormDialog>
   );
 }
 

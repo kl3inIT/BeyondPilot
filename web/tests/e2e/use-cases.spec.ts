@@ -26,7 +26,7 @@ test.describe("use cases", () => {
     await expect(first.getByText("USD 15,000–40,000")).toBeVisible();
     // A featured use case leads the list, but no card says it is featured.
     await expect(page.locator("[data-featured]")).toHaveCount(0);
-    await expect(first.getByText("Apply by Dec 31, 2026")).toBeVisible();
+    await expect(first.getByText("Apply by 31 Dec 2026")).toBeVisible();
     await expect(first.getByText("23:59 ICT")).toBeVisible();
     await expect(
       first.getByRole("link", { name: "Voice assistant for vehicle owners" }),
@@ -89,7 +89,7 @@ test.describe("use cases", () => {
     );
     await expect(page.getByText("No use cases match")).toBeVisible();
     // The way back is a plain link to the list without filters.
-    await expect(page.getByRole("link", { name: "Clear search and filters" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "Clear filters" })).toHaveAttribute(
       "href",
       "/use-cases",
     );

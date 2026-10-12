@@ -9,8 +9,6 @@ import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { useNotify } from "@/hooks/use-notify";
 import { deleteAiProvider, type AiProvider } from "@/lib/api/generated";
 
-import { aiError } from "./admin-ai-errors";
-
 /**
  * Deletes a provider and its key, after asking. Search keeps its provider: one in use cannot be
  * deleted, so its button is off and its row says why.
@@ -29,7 +27,7 @@ function DeleteProvider({ provider }: { provider: AiProvider }) {
       notify.success("Admin.ai.done.deleted", { name: provider.name });
       router.refresh();
     } catch (error) {
-      notify.error(aiError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
       setOpen(false);

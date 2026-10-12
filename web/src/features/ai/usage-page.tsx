@@ -5,7 +5,7 @@ import {
   InfoIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
@@ -14,6 +14,7 @@ import { DataTableRows } from "@/components/composites/data-table-view";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
+import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { AiUsageOverview } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -139,12 +140,9 @@ async function UsageOverviewPage({
     format.number(whole === 0 ? 0 : part / whole, { style: "percent", maximumFractionDigits: 1 });
   const seconds = (milliseconds: number) =>
     t("seconds", { seconds: format.number(milliseconds / 1000, { maximumFractionDigits: 1 }) });
-  const clock = (at: Date) =>
-    format.dateTime(at, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  const clock = (at: Date) => format.dateTime(at, "time");
   const bucketLabel = (start: string) =>
-    byHour
-      ? clock(new Date(start))
-      : format.dateTime(new Date(start), { day: "numeric", month: "short" });
+    byHour ? clock(new Date(start)) : format.dateTime(new Date(start), "day");
 
   // What a task still runs on comes first: failures of what it used before are no longer an alarm.
   const worst = failing.find((item) => item.assigned) ?? failing[0];
@@ -321,9 +319,8 @@ async function UsageOverviewPage({
               <UsageGroupingSwitch />
             </div>
 
-            {/* From 768px: a table. Each name opens the calls of its row in the log. */}
+            {/* Each name opens the calls of its row in the log. */}
             <DataTableRows
-              className="hidden md:flex"
               columns={[
                 { id: "name", header: t(`breakdown.by.${overview.by}`) },
                 ...(overview.by === "model"
@@ -393,55 +390,6 @@ async function UsageOverviewPage({
                 },
               }))}
             />
-
-            {/* Below 768px: one stacked row per group, never a table scrolled sideways. */}
-            <ul className="overflow-hidden rounded-lg border md:hidden">
-              {rows.map((row) => (
-                <li key={row.key} className="border-b last:border-b-0">
-                  <Link
-                    href={row.href}
-                    className="flex flex-col gap-2 p-3 text-sm outline-none focus-visible:bg-muted"
-                  >
-                    <span className="flex items-start justify-between gap-3">
-                      <span className="flex flex-col">
-                        <span className="font-medium">{row.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {[row.under, row.task].filter(Boolean).join(" · ")}
-                        </span>
-                      </span>
-                      <ChevronRightIcon
-                        aria-hidden="true"
-                        className="size-4 text-muted-foreground"
-                      />
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Progress
-                        value={row.share}
-                        aria-label={t("breakdown.shareOf", { name: row.name })}
-                        className="flex-1"
-                      />
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {format.number(row.share / 100, { style: "percent" })}
-                      </span>
-                    </span>
-                    <span className={row.failing ? "text-xs text-destructive" : "text-xs"}>
-                      {t("breakdown.callsLine", {
-                        calls: row.calls,
-                        failed: row.failed,
-                        rate: row.failureRate,
-                      })}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {t("breakdown.timeLine", { time: row.time })}
-                      {" · "}
-                      {row.cost
-                        ? t("breakdown.costLine", { cost: row.cost })
-                        : t("breakdown.noPrice")}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
           </section>
 
           <p className="text-xs text-muted-foreground">{t("estimate")}</p>

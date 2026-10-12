@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  CheckIcon,
-  Clock3Icon,
-  CloudCheckIcon,
-  CloudUploadIcon,
-  PencilIcon,
-  XIcon,
-} from "lucide-react";
+import { useStore } from "@tanstack/react-form";
+import { Clock3Icon, CloudCheckIcon, CloudUploadIcon, PencilIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { parseAsInteger, useQueryState } from "nuqs";
@@ -15,32 +9,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { EntryList } from "@/components/composites/entry-list";
-import { PdfUpload } from "@/components/composites/pdf-upload";
+import { StepsNav } from "@/components/composites/steps-nav";
+import { useAppForm } from "@/components/form/app-form";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-  FieldTitle,
-} from "@/components/ui/field";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Progress } from "@/components/ui/progress";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
 import { OrganizationFinder } from "@/features/organization/organization-finder";
 import { maturities } from "@/features/solution/solution-codes";
 import { getPathname, Link } from "@/i18n/navigation";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
+import { useFailureWords } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
 import {
   createSolution,
+  getApplicationForm,
   getMySolution,
   organizeApplicant,
   saveApplication,
@@ -50,12 +33,39 @@ import {
   type FormQuestion,
   type Me,
 } from "@/lib/api/generated";
-import { answerOfChosen, chosenOptions } from "@/lib/chosen-options";
-import { focusField } from "@/lib/focus-field";
+import { chosenOptions } from "@/lib/chosen-options";
 import { myApplicationRoute, programRoute, siteRoutes } from "@/lib/site";
 
-import { draftOf, invalidContact, savable, saveBodyOf, type ApplyDraft } from "./apply-draft";
+import { savable, saveBodyOf, type ApplyDraft } from "./apply-draft";
+import { applyWords } from "./apply-errors";
+import {
+  AgreementField,
+  ChoiceCardsField,
+  ChoicesField,
+  NativeSelectField,
+  Optional,
+  PdfField,
+} from "./apply-fields";
+import { applyFormOptions, checkAgain } from "./apply-form";
 import { applyFormatter } from "./apply-format";
+import {
+  applyStepSchema,
+  contactShapeSchema,
+  problemsOf,
+  type ApplyStep,
+  type ApplyWords,
+} from "./apply-schemas";
+import {
+  answersFor,
+  appliesAlone,
+  likelySolutionId,
+  organizationBodyOf,
+  solutionBodyOf,
+  solutionDraftOf,
+  valuesOf,
+  type ApplyValues,
+  type SolutionDraft,
+} from "./apply-values";
 
 /** The sizes a team names; one person applies as an individual, a larger company as a company. */
 const teamSizes = ["2_9", "10_49", "50_99"] as const;
@@ -63,61 +73,42 @@ const teamSizes = ["2_9", "10_49", "50_99"] as const;
 /** How long the form waits after the last change before it saves. */
 const SAVE_AFTER_MS = 1200;
 
-type Who = "individual" | "team" | "company";
-type StepKey = "you" | "solution" | "questions" | "review";
+/** A value the form writes itself, such as an identifier a save answered: nobody typed it. */
+const quietly = { dontUpdateMeta: true, dontRunListeners: true, dontValidate: true } as const;
 
-/** A solution as step 2 edits it; a new one has no identifier until it is saved. */
-type SolutionDraft = {
-  id: string | null;
-  name: string;
-  summary: string;
-  problemsSolved: string;
-  maturity: string;
-  demoUrl: string;
-};
-
-function solutionDraftOf(view: ApplicationView, id: string | null): SolutionDraft {
-  const found = view.solutions.find((solution) => solution.id === id);
-  return {
-    id: found?.id ?? null,
-    name: found?.name ?? "",
-    summary: found?.summary ?? "",
-    problemsSolved: found?.problemsSolved ?? "",
-    maturity: found?.maturity ?? "",
-    demoUrl: "",
-  };
+/** The form of the flow, a hook of its own so that the steps can name its type. */
+function useApplyForm(options: Parameters<typeof applyFormOptions>[0]) {
+  return useAppForm(applyFormOptions(options));
 }
+
+type ApplyForm = ReturnType<typeof useApplyForm>;
 
 /**
  * Applying to a program in four steps: who applies, the solution, the program's own questions and a
- * review before submitting. What is typed is saved as the person goes; a step checks what it needs
- * only when the person moves on, and the backend checks everything again on submission.
+ * review before submitting. One form holds all of it. What is typed is saved as the person goes; a
+ * step checks what it needs when the person moves on, and the backend checks everything again on
+ * submission.
  */
 function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me }) {
   const t = useTranslations("Apply");
+  const say = useTranslations("Form.errors");
   const locale = useLocale();
   const router = useRouter();
   const format = applyFormatter(locale);
   const [view, setView] = useState(initial);
-  const [draft, setDraft] = useState<ApplyDraft>(() => draftOf(initial, account));
-  const [solution, setSolution] = useState<SolutionDraft>(() =>
-    solutionDraftOf(initial, draftOf(initial, account).solutionId),
-  );
-  // Nobody is chosen for the person: who applies is kept with the account once step 1 is left.
-  const [who, setWho] = useState<Who | null>(null);
-  const [team, setTeam] = useState({ name: "", size: "2_9" as string, website: "" });
-  const [missing, setMissing] = useState<Set<string>>(new Set());
+  // Read once: the form starts from the stored draft and is never started again under the person.
+  const [defaults] = useState(() => valuesOf(initial, account));
   const [savedAt, setSavedAt] = useState<string | null>(
     initial.application ? initial.application.updatedAt : null,
   );
-  const [pending, setPending] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [unsaved, setUnsaved] = useState(false);
+  // Submitted, and on the way to the receipt: nothing is sent twice meanwhile.
+  const [leaving, setLeaving] = useState(false);
 
   const program = view.program;
   const hasQuestions = program.questions.length > 0;
-  const steps: StepKey[] = hasQuestions
+  const steps: ApplyStep[] = hasQuestions
     ? ["you", "solution", "questions", "review"]
     : ["you", "solution", "review"];
   const [stepNumber, setStepNumber] = useQueryState("step", parseAsInteger.withDefault(1));
@@ -127,37 +118,68 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   // Saves run one after another, each with the version the one before answered.
   const version = useRef<number | null>(initial.application?.version ?? null);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
+  // Whether something waits to be saved. It is not the form's `isDirty`, which compares with what
+  // the form started from: a draft saved a moment ago differs from that and has nothing waiting,
+  // and a save that failed has something waiting again.
   const changed = useRef(false);
   // The solution of step 2 is a record of its own: whether it waits to be saved, the identifier it
   // was saved under, and the one the application already names.
   const solutionChanged = useRef(false);
-  const solutionId = useRef(solution.id);
-  const linked = useRef(draft.solutionId);
+  const solutionId = useRef(defaults.solution.id);
+  const linked = useRef(defaults.application.solutionId);
 
-  const errorText = useCallback(
-    (error: unknown) => {
-      const code = error instanceof ApiError ? error.code : undefined;
-      const known = [
-        "PROPOSAL_CLOSED",
-        "PROPOSAL_LOCKED",
-        "PROPOSAL_WITHDRAWN_FOR_GOOD",
-        "PROPOSAL_CHANGED_MEANWHILE",
-        "PROPOSAL_ORGANIZATION_REQUIRED",
-        "PROPOSAL_ORGANIZATION_APPLIED",
-        "PROPOSAL_CONTACT_INCOMPLETE",
-        "PROPOSAL_TEAM_BACKGROUND_REQUIRED",
-        "PROPOSAL_SOLUTION_REQUIRED",
-        "PROPOSAL_SOLUTION_INCOMPLETE",
-        "PROPOSAL_DECK_REQUIRED",
-        "PROPOSAL_ANSWER_REQUIRED",
-        "PROPOSAL_ANSWER_INVALID",
-        "ORGANIZATION_ALREADY_MEMBER",
-      ] as const;
-      return code && (known as readonly string[]).includes(code)
-        ? t(`errors.codes.${code as (typeof known)[number]}`)
-        : t("errors.unknown");
+  const words: ApplyWords = {
+    required: t("you.required"),
+    whoRequired: t("you.whoRequired"),
+    companyRequired: t("you.companyRequired"),
+    phoneRequired: t("you.phoneRequired"),
+    countryRequired: t("you.countryRequired"),
+    linkedinInvalid: t("you.linkedinInvalid"),
+    webAddress: say("webAddress"),
+    maturityRequired: t("solution.maturityRequired"),
+    deckRequired: t("solution.deckRequired"),
+    answerRequired: t("questions.required"),
+    answerConfirmRequired: t("questions.confirmRequired"),
+    answerChoicesRequired: t("questions.choicesRequired"),
+    confirmRequired: t("review.confirmRequired"),
+  };
+
+  const form = useApplyForm({
+    defaults,
+    problems: (values) =>
+      problemsOf(
+        applyStepSchema(step, words, {
+          organization: view.organization,
+          who: values.who,
+          questions: program.questions,
+        }),
+        values,
+      ),
+    // A number or an address the backend would refuse is left out of the saves made while the
+    // person types, so its field says so once it is left.
+    problemsOnLeaving: (values) =>
+      step === "you" ? problemsOf(contactShapeSchema(words), values) : undefined,
+    changed: (field) => {
+      // Who applies and the team are kept when step 1 is left, and the confirmation never is.
+      if (field.startsWith("application.")) {
+        changed.current = true;
+        setUnsaved(true);
+      } else if (field.startsWith("solution.")) {
+        solutionChanged.current = true;
+        setUnsaved(true);
+      }
     },
-    [t],
+    submit: (values) => (step === "review" ? submit(values) : next(values)),
+  });
+  // Each changes only when a field of its own does, so a save waits on its own record alone.
+  const draft = useStore(form.store, (state) => state.values.application);
+  const solution = useStore(form.store, (state) => state.values.solution);
+  const submitting = useStore(form.store, (state) => state.isSubmitting);
+
+  const failureWords = useFailureWords();
+  const errorText = useCallback(
+    (error: unknown) => failureWords(error, applyWords),
+    [failureWords],
   );
 
   /** Why a save made while the person types failed: no answer at all, a refused value, or a rule. */
@@ -171,6 +193,19 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
     [t, errorText],
   );
 
+  /** Shows what the backend answered; a question it did not ask before gets an empty answer to hold. */
+  const show = useCallback(
+    (data: ApplicationView) => {
+      setView(data);
+      const answers = form.state.values.application.answers;
+      const held = answersFor(answers, data.program.questions);
+      if (held !== answers) {
+        form.setFieldValue("application.answers", held, quietly);
+      }
+    },
+    [form],
+  );
+
   const save = useCallback(
     (next: ApplyDraft) => {
       changed.current = false;
@@ -180,7 +215,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
           body: saveBodyOf(next, version.current),
         });
         version.current = data.application?.version ?? null;
-        setView(data);
+        show(data);
         setSavedAt(new Date().toISOString());
         setUnsaved(changed.current || solutionChanged.current);
         return data;
@@ -188,7 +223,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
       queue.current = run.catch(() => undefined);
       return run;
     },
-    [program.slug, setUnsaved],
+    [program.slug, show],
   );
 
   /** Saves the solution step 2 edits, making it first when it is new; answers its identifier. */
@@ -205,33 +240,11 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
         const { data: found } = await getMySolution({ path: { id } });
         const { data: saved } = await saveSolution({
           path: { id },
-          body: {
-            name: next.name.trim(),
-            summary: next.summary.trim() || null,
-            problemsSolved: next.problemsSolved.trim() || null,
-            valueProposition: found.valueProposition ?? null,
-            focusAreas: found.focusAreas,
-            industries: found.industries,
-            maturity: (next.maturity || undefined) as (typeof maturities)[number] | undefined,
-            deployment: found.deployment,
-            website: found.website ?? null,
-            demoUrl: next.demoUrl.trim() || found.demoUrl || null,
-            traction: found.traction ?? null,
-            builtWith: found.builtWith,
-            languages: found.languages,
-            bestCustomerProfile: found.bestCustomerProfile ?? null,
-            deckFileId: found.deck?.fileId ?? null,
-            logoFileId: found.logo?.fileId ?? null,
-            coverFileId: found.cover?.fileId ?? null,
-            imageFileIds: found.images.map((image) => image.fileId),
-            offerIds: found.offers.map((offer) => offer.id),
-            listed: found.listed,
-            version: found.version,
-          },
+          body: solutionBodyOf(next, found),
         });
-        setSolution((current) =>
-          current.id === saved.id ? current : { ...current, id: saved.id },
-        );
+        if (form.state.values.solution.id !== saved.id) {
+          form.setFieldValue("solution.id", saved.id, quietly);
+        }
         setSavedAt(new Date().toISOString());
         setUnsaved(changed.current || solutionChanged.current);
         return saved.id;
@@ -239,7 +252,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
       queue.current = run.catch(() => undefined);
       return run;
     },
-    [setSolution, setUnsaved],
+    [form],
   );
 
   useEffect(() => {
@@ -247,11 +260,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
       return;
     }
     const timer = setTimeout(() => {
-      // A value the backend would refuse is said beside its field and left out of this save.
-      const invalid = invalidContact(draft);
-      if (invalid.length > 0) {
-        setMissing((current) => new Set([...current, ...invalid]));
-      }
+      // A value the backend would refuse is left out of this save; its field says so when it is left.
       save(savable(draft))
         .then(() => setProblem(null))
         .catch((error: unknown) => {
@@ -274,7 +283,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
           if (linked.current !== id) {
             linked.current = id;
             changed.current = true;
-            setDraft((current) => ({ ...current, solutionId: id }));
+            form.setFieldValue("application.solutionId", id, quietly);
           }
         })
         .catch((error: unknown) => {
@@ -283,156 +292,108 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
         });
     }, SAVE_AFTER_MS);
     return () => clearTimeout(timer);
-  }, [solution, keepSolution, saveProblem]);
+  }, [solution, keepSolution, saveProblem, form]);
 
-  function change(update: (current: ApplyDraft) => ApplyDraft) {
+  /** Step 2 turns to another of the organization's solutions, or to a new one. */
+  function choose(id: string | null, from: ApplicationView = view) {
+    solutionChanged.current = false;
+    solutionId.current = id;
+    linked.current = id;
     changed.current = true;
     setUnsaved(true);
-    setDraft((current) => update(current));
+    form.setFieldValue("solution", solutionDraftOf(from, id), quietly);
+    form.setFieldValue("application.solutionId", id, quietly);
+    // What the step refused about the solution before is checked against the one chosen.
+    checkAgain(form);
   }
 
-  const settle = (field: string) =>
-    setMissing((current) => {
-      if (!current.has(field)) {
-        return current;
+  /**
+   * The company finder of step 1 was answered: the person joined a company, or asked to. The page
+   * was read before that and this form is never started again, so what the backend says of the
+   * person now is read here, after any save under way: no older answer then comes after it, and
+   * nothing typed is touched. A read that fails is said, and the next save answers the same.
+   */
+  function readOrganization() {
+    const run = queue.current.then(async () => {
+      const { data } = await getApplicationForm({ path: { slug: program.slug } });
+      version.current = data.application?.version ?? null;
+      show(data);
+      // As a form opened now would start: the company's only solution, unless one was begun here.
+      const likely = likelySolutionId(data, form.state.values.solution);
+      if (likely && linked.current === null && !solutionChanged.current) {
+        choose(likely, data);
       }
-      const next = new Set(current);
-      next.delete(field);
-      return next;
     });
-
-  function writeContact(field: keyof ApplyDraft["contact"], value: string) {
-    change((current) => ({ ...current, contact: { ...current.contact, [field]: value } }));
-    settle(field);
+    queue.current = run.catch(() => undefined);
+    return run.catch((error: unknown) => setProblem(errorText(error)));
   }
 
   function goTo(next: number) {
     setProblem(null);
-    setMissing(new Set());
     void setStepNumber(next + 1);
-    window.scrollTo({ top: 0 });
   }
 
-  /** What a step lacks before the person may leave it forward, by field, in the order of the form. */
-  function lacking(key: StepKey): string[] {
-    const blank = (value: string) => value.trim() === "";
-    if (key === "you") {
-      const contact = draft.contact;
-      const invalid = invalidContact(draft);
-      const fields = [
-        !view.organization && who === null ? "who" : null,
-        !view.organization && who === "team" && blank(team.name) ? "teamName" : null,
-        !view.organization && who === "company" ? "company" : null,
-        blank(contact.firstName) ? "firstName" : null,
-        blank(contact.lastName) ? "lastName" : null,
-        blank(contact.phone) || invalid.includes("phone") ? "phone" : null,
-        blank(contact.country) ? "country" : null,
-        invalid.includes("linkedin") ? "linkedin" : null,
-        alone() ? null : blank(draft.teamBackground) ? "teamBackground" : null,
-      ];
-      return fields.filter((field): field is string => field !== null);
-    }
-    if (key === "solution") {
-      return [
-        blank(solution.name) ? "solutionName" : null,
-        blank(solution.summary) ? "summary" : null,
-        blank(solution.problemsSolved) ? "problemsSolved" : null,
-        blank(solution.maturity) ? "maturity" : null,
-        draft.deck ? null : "deck",
-      ].filter((field): field is string => field !== null);
-    }
-    if (key === "questions") {
-      return program.questions
-        .filter((question) => question.required && !(draft.answers[question.id] ?? "").trim())
-        .map((question) => `question-${question.id}`);
-    }
-    return [];
-  }
-
-  /** One person applying on their own is not asked about a team. */
-  function alone() {
-    return view.organization
-      ? view.organization.type === "independent_builder"
-      : who !== "team" && who !== "company";
-  }
-
-  async function next() {
-    const lack = lacking(step);
-    if (lack.length > 0) {
-      setMissing(new Set(lack));
-      focusField(lack[0]);
+  // A step that opens starts at the top of the page, with the focus on its heading.
+  const heading = useRef<HTMLHeadingElement>(null);
+  const shown = useRef(step);
+  useEffect(() => {
+    if (shown.current === step) {
       return;
     }
-    setPending(true);
+    shown.current = step;
+    window.scrollTo({ top: 0 });
+    heading.current?.focus({ preventScroll: true });
+  }, [step]);
+
+  /** Continue, once the step holds what it needs: saves it and opens the next one. */
+  async function next(values: ApplyValues) {
     setProblem(null);
     try {
-      let current = draft;
       if (step === "solution") {
-        const id = await keepSolution(solution);
+        const id = await keepSolution(values.solution);
         linked.current = id;
-        current = { ...draft, solutionId: id };
-        setDraft(current);
+        form.setFieldValue("application.solutionId", id, quietly);
       }
       // The step is saved before who applies is kept: a refused save then leaves nothing behind.
-      await save(current);
-      if (step === "you" && !view.organization && who !== null) {
-        const contact = draft.contact;
+      await save(form.state.values.application);
+      if (step === "you" && !view.organization && values.who !== "") {
         const { data } = await organizeApplicant({
           path: { slug: program.slug },
-          body:
-            who === "individual"
-              ? {
-                  kind: "individual",
-                  name: `${contact.firstName.trim()} ${contact.lastName.trim()}`,
-                  country: contact.country,
-                }
-              : {
-                  kind: "team",
-                  name: team.name.trim(),
-                  country: contact.country,
-                  teamSize: team.size as "2_9",
-                  website: team.website.trim() || null,
-                },
+          body: organizationBodyOf(values),
         });
-        setView(data);
+        show(data);
         version.current = data.application?.version ?? version.current;
       }
       goTo(index + 1);
     } catch (error) {
       setProblem(errorText(error));
-    } finally {
-      setPending(false);
     }
   }
 
-  async function submit() {
-    if (!confirmed) {
-      setMissing(new Set(["confirm"]));
-      focusField("confirm");
-      return;
-    }
-    setPending(true);
+  /** Submit, once the information is confirmed: saves the application, then sends it. */
+  async function submit(values: ApplyValues) {
     setProblem(null);
     try {
-      const saved = await save(draft);
+      const saved = await save(values.application);
       const id = saved.application?.id;
       if (!id) {
         throw new Error("The application was not saved");
       }
       await submitApplication({ path: { id } });
+      setLeaving(true);
       router.push(getPathname({ href: `${myApplicationRoute(id)}/submitted`, locale }));
     } catch (error) {
       setProblem(errorText(error));
-      setPending(false);
     }
   }
 
   async function saveAndExit() {
-    let current = savable(draft);
+    const values = form.state.values;
+    let current = savable(values.application);
     // A save that fails keeps the person on the page, where what they typed still is.
     try {
-      if (solutionChanged.current && solution.name.trim() !== "") {
-        const id = await keepSolution(solution);
+      if (solutionChanged.current && values.solution.name.trim() !== "") {
+        const id = await keepSolution(values.solution);
         if (id !== linked.current) {
           linked.current = id;
           changed.current = true;
@@ -443,7 +404,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
         await save(current);
       }
     } catch (error) {
-      solutionChanged.current = solutionChanged.current || solution.id === null;
+      solutionChanged.current = solutionChanged.current || values.solution.id === null;
       changed.current = true;
       setProblem(saveProblem(error));
       return;
@@ -452,7 +413,6 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   }
 
   const closes = format.deadline(program.closesAt);
-  const bad = (field: string) => missing.has(field) || undefined;
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-muted">
@@ -491,74 +451,41 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pt-6 pb-32 md:flex-row md:items-start md:gap-12 md:px-8 md:pt-12">
-        <aside className="hidden w-64 shrink-0 flex-col gap-6 md:flex">
-          <p className="text-xs text-muted-foreground">{t("yourApplication")}</p>
-          <ol className="flex flex-col">
-            {steps.map((key, position) => {
-              const done = position < index;
-              const current = position === index;
-              return (
-                <li key={key} className="relative flex gap-3 pb-6 last:pb-0">
-                  {position < steps.length - 1 && (
-                    <span
-                      aria-hidden="true"
-                      className={
-                        done
-                          ? "absolute top-7 bottom-0 left-3 w-0.5 bg-primary"
-                          : "absolute top-7 bottom-0 left-3 w-0.5 bg-border"
-                      }
-                    />
-                  )}
-                  <span
-                    aria-hidden="true"
-                    className={
-                      done
-                        ? "flex size-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-                        : current
-                          ? "flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-background text-xs font-semibold text-primary"
-                          : "flex size-6 shrink-0 items-center justify-center rounded-full border bg-background text-xs text-muted-foreground"
-                    }
-                  >
-                    {done ? <CheckIcon className="size-3.5" /> : position + 1}
-                  </span>
-                  <div className="flex flex-col" aria-current={current ? "step" : undefined}>
-                    <span
-                      className={current ? "text-sm font-medium" : "text-sm text-muted-foreground"}
-                    >
-                      {t(`steps.${key}.title`)}
-                    </span>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-          <p className="flex gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground">
+      {/* A column below 1024px, so the bar of steps has the whole form to stick along. */}
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pt-6 pb-32 md:px-8 md:pt-12 lg:flex-row lg:items-start lg:gap-12">
+        {/* From 1024px the steps stay in view beside the form; below that they are the bar under the header. */}
+        <aside className="flex w-64 shrink-0 flex-col gap-6 max-lg:contents lg:sticky lg:top-28">
+          {/* The steps show where the person is: the way on is Continue, the way back Back or the review's Edit. */}
+          <StepsNav
+            label={t("yourApplication")}
+            heading={t("yourApplication")}
+            steps={steps.map((key, position) => ({
+              id: key,
+              title: t(`steps.${key}.title`),
+              done: position < index,
+            }))}
+            current={step}
+            className="max-lg:top-16 max-lg:-mx-4 max-lg:-mt-6 max-lg:px-4 md:max-lg:-mx-8 md:max-lg:-mt-12 md:max-lg:px-8"
+          />
+          <p className="flex gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground max-lg:hidden">
             <CloudCheckIcon className="size-4 shrink-0 text-success" aria-hidden="true" />
             {t("savesAsYouType", { when: closes })}
           </p>
         </aside>
 
-        <div className="flex flex-col gap-2 md:hidden">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-medium">
-              {t("stepOf", {
-                step: index + 1,
-                count: steps.length,
-                title: t(`steps.${step}.title`),
-              })}
-            </span>
-            <span className="flex items-center gap-1 text-muted-foreground">
-              <Clock3Icon className="size-3.5" aria-hidden="true" />
-              {closes}
-            </span>
-          </div>
-          <Progress value={((index + 1) / steps.length) * 100} aria-label={t("progress")} />
-        </div>
+        {/* Below 768px the header has no room for the deadline; it is said here. */}
+        <p className="flex items-center gap-1 text-xs text-muted-foreground md:hidden">
+          <Clock3Icon className="size-3.5 shrink-0" aria-hidden="true" />
+          {t("closes", { when: closes })}
+        </p>
 
         <main className="flex min-w-0 flex-1 flex-col gap-8 rounded-3xl border bg-card p-5 md:p-10">
           <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-semibold tracking-title md:text-3xl">
+            <h1
+              ref={heading}
+              tabIndex={-1}
+              className="text-2xl font-semibold tracking-title outline-none md:text-3xl"
+            >
               {t(`steps.${step}.title`)}
             </h1>
             <p className="text-muted-foreground">
@@ -575,151 +502,101 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
             </p>
           )}
 
-          {step === "you" && (
-            <StepYou
-              view={view}
-              draft={draft}
-              who={who}
-              setWho={(value) => {
-                setWho(value);
-                settle("who");
-              }}
-              team={team}
-              setTeam={setTeam}
-              writeContact={writeContact}
-              setBackground={(value) => {
-                change((current) => ({ ...current, teamBackground: value }));
-                settle("teamBackground");
-              }}
-              alone={alone()}
-              bad={bad}
-            />
-          )}
-          {step === "solution" && (
-            <StepSolution
-              view={view}
-              draft={draft}
-              solution={solution}
-              choose={(id) => {
-                solutionChanged.current = false;
-                solutionId.current = id;
-                linked.current = id;
-                setSolution(solutionDraftOf(view, id));
-                change((current) => ({ ...current, solutionId: id }));
-              }}
-              edit={(field, value) => {
-                solutionChanged.current = true;
-                setUnsaved(true);
-                setSolution((current) => ({ ...current, [field]: value }));
-                settle(field === "name" ? "solutionName" : field);
-              }}
-              change={change}
-              settle={settle}
-              bad={bad}
-            />
-          )}
-          {step === "questions" && (
-            <StepQuestions
-              questions={program.questions}
-              answers={draft.answers}
-              files={view.application?.files ?? {}}
-              answer={(id, value) => {
-                change((current) => ({ ...current, answers: { ...current.answers, [id]: value } }));
-                settle(`question-${id}`);
-              }}
-              bad={bad}
-            />
-          )}
-          {step === "review" && (
-            <StepReview
-              view={view}
-              draft={draft}
-              solution={solution}
-              steps={steps}
-              edit={goTo}
-              confirmed={confirmed}
-              confirm={(value) => {
-                setConfirmed(value);
-                settle("confirm");
-              }}
-              bad={bad}
-            />
-          )}
-
-          <div className="fixed inset-x-0 bottom-0 z-10 flex flex-col gap-3 border-t bg-background px-4 pt-3 pb-6 md:static md:border-t md:bg-transparent md:px-0 md:pt-6 md:pb-0">
-            {/* With the actions, so on a phone it is not under the bar they are fixed in. */}
-            {problem && (
-              <p role="alert" className="text-sm text-destructive">
-                {problem}
-              </p>
+          <form
+            id={form.formId}
+            noValidate
+            className="flex flex-col gap-8"
+            onSubmit={(event) => {
+              event.preventDefault();
+              // A form in a dialog opened from here sends its own event up, and Enter in the search
+              // box of the company finder searches: neither is Continue.
+              const active = document.activeElement;
+              if (
+                event.target !== event.currentTarget ||
+                (active instanceof HTMLInputElement && active.type === "search") ||
+                !program.open ||
+                leaving
+              ) {
+                return;
+              }
+              // What another step, or a choice the form made itself, left in error is checked against
+              // what the form holds now: a field that is not on the screen must not hold this step back.
+              checkAgain(form);
+              void form.handleSubmit();
+            }}
+          >
+            {step === "you" && (
+              <StepYou form={form} view={view} onOrganization={readOrganization} />
             )}
-            <div className="flex items-center justify-between gap-3">
-              {index === 0 ? (
-                <Button prominence="tertiary" href={programRoute(program.slug)}>
-                  {t("backToProgram")}
-                </Button>
-              ) : (
-                <Button prominence="tertiary" disabled={pending} onClick={() => goTo(index - 1)}>
-                  {t("back")}
-                </Button>
+            {step === "solution" && <StepSolution form={form} view={view} choose={choose} />}
+            {step === "questions" && (
+              <StepQuestions
+                form={form}
+                questions={program.questions}
+                files={view.application?.files ?? {}}
+              />
+            )}
+            {step === "review" && <StepReview form={form} view={view} steps={steps} edit={goTo} />}
+
+            <div className="fixed inset-x-0 bottom-0 z-10 flex flex-col gap-3 border-t bg-background px-4 pt-3 pb-6 md:static md:border-t md:bg-transparent md:px-0 md:pt-6 md:pb-0">
+              {/* With the actions, so on a phone it is not under the bar they are fixed in. */}
+              {problem && (
+                <p role="alert" className="text-sm text-destructive">
+                  {problem}
+                </p>
               )}
-              {step === "review" ? (
-                <Button pending={pending} disabled={!program.open} onClick={() => void submit()}>
-                  {view.application?.status === "submitted" ? t("submitAgain") : t("submit")}
-                </Button>
-              ) : (
-                <Button pending={pending} disabled={!program.open} onClick={() => void next()}>
-                  {t("continue")}
-                </Button>
-              )}
+              <div className="flex items-center justify-between gap-3">
+                {index === 0 ? (
+                  <Button prominence="tertiary" href={programRoute(program.slug)}>
+                    {t("backToProgram")}
+                  </Button>
+                ) : (
+                  <Button
+                    prominence="tertiary"
+                    disabled={submitting || leaving}
+                    onClick={() => goTo(index - 1)}
+                  >
+                    {t("back")}
+                  </Button>
+                )}
+                <form.AppForm>
+                  <form.SubmitButton disabled={!program.open || leaving}>
+                    {step !== "review"
+                      ? t("continue")
+                      : view.application?.status === "submitted"
+                        ? t("submitAgain")
+                        : t("submit")}
+                  </form.SubmitButton>
+                </form.AppForm>
+              </div>
             </div>
-          </div>
+          </form>
         </main>
       </div>
     </div>
   );
 }
 
-type Bad = (field: string) => true | undefined;
-
-function Optional() {
-  const t = useTranslations("Apply");
-  return <span className="text-xs font-normal text-muted-foreground">{t("optional")}</span>;
-}
-
-function Required({ show, children }: { show: true | undefined; children: React.ReactNode }) {
-  return show ? <FieldError>{children}</FieldError> : null;
-}
-
 function StepYou({
+  form,
   view,
-  draft,
-  who,
-  setWho,
-  team,
-  setTeam,
-  writeContact,
-  setBackground,
-  alone,
-  bad,
+  onOrganization,
 }: {
+  form: ApplyForm;
   view: ApplicationView;
-  draft: ApplyDraft;
-  who: Who | null;
-  setWho: (who: Who) => void;
-  team: { name: string; size: string; website: string };
-  setTeam: (team: { name: string; size: string; website: string }) => void;
-  writeContact: (field: keyof ApplyDraft["contact"], value: string) => void;
-  setBackground: (value: string) => void;
-  alone: boolean;
-  bad: Bad;
+  /** The person joined a company through the finder, or asked to. */
+  onOrganization: () => Promise<void>;
 }) {
   const t = useTranslations("Apply.you");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
   const countryName = useCountryName();
   const organization = view.organization;
-  const contact = draft.contact;
+  const who = useStore(form.store, (state) => state.values.who);
+  const name = useStore(form.store, (state) => {
+    const contact = state.values.application.contact;
+    return contact.firstName.trim() ? `${contact.firstName.trim()} ${contact.lastName.trim()}` : "";
+  });
 
   return (
     <>
@@ -746,225 +623,151 @@ function StepYou({
           )}
         </section>
       ) : (
-        <Field data-invalid={bad("who")}>
-          <FieldLabel>{t("applyingAs")}</FieldLabel>
-          <RadioGroup
-            id="who"
-            value={who ?? ""}
-            onValueChange={(value) => setWho(value as Who)}
-            aria-label={t("applyingAs")}
-            aria-invalid={bad("who")}
-          >
-            {(["individual", "team", "company"] as const).map((kind) => (
-              <FieldLabel key={kind} htmlFor={`who-${kind}`}>
-                <Field orientation="horizontal">
-                  <FieldContent>
-                    <FieldTitle>{t(`who.${kind}.title`)}</FieldTitle>
-                    <FieldDescription>{t(`who.${kind}.what`)}</FieldDescription>
-                  </FieldContent>
-                  <RadioGroupItem value={kind} id={`who-${kind}`} />
-                </Field>
-              </FieldLabel>
-            ))}
-          </RadioGroup>
-          <FieldDescription>{t("applyingAsHint")}</FieldDescription>
-          <Required show={bad("who")}>{t("whoRequired")}</Required>
-          {who === "individual" && contact.firstName.trim() && (
-            <FieldDescription>
-              {t("individualHint", {
-                name: `${contact.firstName.trim()} ${contact.lastName.trim()}`.trim(),
-              })}
-            </FieldDescription>
+        <form.AppField name="who">
+          {() => (
+            <ChoiceCardsField
+              label={t("applyingAs")}
+              description={t("applyingAsHint")}
+              note={
+                who === "individual" && name ? t("individualHint", { name: name.trim() }) : null
+              }
+              options={(["individual", "team", "company"] as const).map((kind) => ({
+                value: kind,
+                label: t(`who.${kind}.title`),
+                what: t(`who.${kind}.what`),
+              }))}
+              detail={
+                who === "company" && (
+                  <>
+                    <h2 className="text-lg font-medium">{t("yourCompany")}</h2>
+                    <OrganizationFinder suggestion={null} embedded onAnswered={onOrganization} />
+                  </>
+                )
+              }
+            />
           )}
-        </Field>
-      )}
-
-      {!organization && who === "company" && (
-        <section className="flex flex-col gap-3" id="company" tabIndex={-1}>
-          <h2 className="text-lg font-medium">{t("yourCompany")}</h2>
-          <OrganizationFinder suggestion={null} embedded />
-          {bad("company") && <FieldError>{t("companyRequired")}</FieldError>}
-        </section>
+        </form.AppField>
       )}
 
       <section className="flex flex-col gap-5 border-t pt-8">
         <h2 className="text-lg font-medium">{t("aboutYou")}</h2>
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field data-invalid={bad("firstName")}>
-            <FieldLabel htmlFor="firstName">{t("firstName")}</FieldLabel>
-            <Input
-              id="firstName"
-              autoComplete="given-name"
-              maxLength={80}
-              value={contact.firstName}
-              onChange={(event) => writeContact("firstName", event.target.value)}
-              aria-invalid={bad("firstName")}
-            />
-            <Required show={bad("firstName")}>{t("required")}</Required>
-          </Field>
-          <Field data-invalid={bad("lastName")}>
-            <FieldLabel htmlFor="lastName">{t("lastName")}</FieldLabel>
-            <Input
-              id="lastName"
-              autoComplete="family-name"
-              maxLength={80}
-              value={contact.lastName}
-              onChange={(event) => writeContact("lastName", event.target.value)}
-              aria-invalid={bad("lastName")}
-            />
-            <Required show={bad("lastName")}>{t("required")}</Required>
-          </Field>
+          <form.AppField name="application.contact.firstName">
+            {(field) => (
+              <field.TextField label={t("firstName")} autoComplete="given-name" maxLength={80} />
+            )}
+          </form.AppField>
+          <form.AppField name="application.contact.lastName">
+            {(field) => (
+              <field.TextField label={t("lastName")} autoComplete="family-name" maxLength={80} />
+            )}
+          </form.AppField>
         </div>
         <Field>
           <FieldLabel htmlFor="email">{t("email")}</FieldLabel>
           <Input id="email" value={view.email} readOnly disabled aria-describedby="email-hint" />
           <FieldDescription id="email-hint">{t("emailHint")}</FieldDescription>
         </Field>
-        <Field data-invalid={bad("phone")}>
-          <FieldLabel htmlFor="phone">{t("phone")}</FieldLabel>
-          <Input
-            id="phone"
-            type="tel"
-            autoComplete="tel"
-            inputMode="tel"
-            maxLength={40}
-            value={contact.phone}
-            onChange={(event) => writeContact("phone", event.target.value)}
-            aria-invalid={bad("phone")}
-            aria-describedby="phone-hint"
-          />
-          <FieldDescription id="phone-hint">{t("phoneHint")}</FieldDescription>
-          <Required show={bad("phone")}>{t("phoneRequired")}</Required>
-        </Field>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field data-invalid={bad("country")}>
-            <FieldLabel htmlFor="country">{t("country")}</FieldLabel>
-            <NativeSelect
-              id="country"
-              className="w-full"
-              value={contact.country}
-              onChange={(event) => writeContact("country", event.target.value)}
-              aria-invalid={bad("country")}
-            >
-              <NativeSelectOption value="">{t("countryPlaceholder")}</NativeSelectOption>
-              {countryCodes.map((code) => (
-                <NativeSelectOption key={code} value={code}>
-                  {countryName(code)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-            <Required show={bad("country")}>{t("countryRequired")}</Required>
-          </Field>
-          <Field data-invalid={bad("linkedin")}>
-            <FieldLabel htmlFor="linkedin">{t("linkedin")}</FieldLabel>
-            <Input
-              id="linkedin"
-              type="url"
-              inputMode="url"
-              maxLength={300}
-              value={contact.linkedin}
-              onChange={(event) => writeContact("linkedin", event.target.value)}
-              aria-invalid={bad("linkedin")}
-              aria-describedby="linkedin-hint"
+        <form.AppField name="application.contact.phone">
+          {(field) => (
+            <field.TextField
+              label={t("phone")}
+              type="tel"
+              autoComplete="tel"
+              inputMode="tel"
+              maxLength={40}
+              description={t("phoneHint")}
             />
-            <FieldDescription id="linkedin-hint">{t("addressHint")}</FieldDescription>
-            <Required show={bad("linkedin")}>{t("linkedinInvalid")}</Required>
-          </Field>
+          )}
+        </form.AppField>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <form.AppField name="application.contact.country">
+            {() => (
+              <NativeSelectField
+                label={t("country")}
+                placeholder={t("countryPlaceholder")}
+                options={countryCodes.map((code) => ({ value: code, label: countryName(code) }))}
+              />
+            )}
+          </form.AppField>
+          <form.AppField name="application.contact.linkedin">
+            {(field) => (
+              <field.TextField
+                label={t("linkedin")}
+                type="url"
+                inputMode="url"
+                maxLength={300}
+                description={t("addressHint")}
+              />
+            )}
+          </form.AppField>
         </div>
       </section>
 
       {!organization && who === "team" && (
         <section className="flex flex-col gap-5 border-t pt-8">
           <h2 className="text-lg font-medium">{t("yourTeam")}</h2>
-          <Field data-invalid={bad("teamName")}>
-            <FieldLabel htmlFor="teamName">{t("teamName")}</FieldLabel>
-            <Input
-              id="teamName"
-              maxLength={120}
-              value={team.name}
-              onChange={(event) => setTeam({ ...team, name: event.target.value })}
-              aria-invalid={bad("teamName")}
-              aria-describedby="teamName-hint"
-            />
-            <FieldDescription id="teamName-hint">{t("teamNameHint")}</FieldDescription>
-            <Required show={bad("teamName")}>{t("required")}</Required>
-          </Field>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor="teamSize">{t("teamSize")}</FieldLabel>
-              <NativeSelect
-                id="teamSize"
-                className="w-full"
-                value={team.size}
-                onChange={(event) => setTeam({ ...team, size: event.target.value })}
-              >
-                {teamSizes.map((size) => (
-                  <NativeSelectOption key={size} value={size}>
-                    {sizeName(size)}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="website">
-                {t("website")}
-                <Optional />
-              </FieldLabel>
-              <Input
-                id="website"
-                type="url"
-                inputMode="url"
-                maxLength={300}
-                value={team.website}
-                onChange={(event) => setTeam({ ...team, website: event.target.value })}
-                aria-describedby="website-hint"
+          <form.AppField name="team.name">
+            {(field) => (
+              <field.TextField
+                label={t("teamName")}
+                maxLength={120}
+                description={t("teamNameHint")}
               />
-              <FieldDescription id="website-hint">{t("addressHint")}</FieldDescription>
-            </Field>
+            )}
+          </form.AppField>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <form.AppField name="team.size">
+              {() => (
+                <NativeSelectField
+                  label={t("teamSize")}
+                  options={teamSizes.map((size) => ({ value: size, label: sizeName(size) }))}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="team.website">
+              {(field) => (
+                <field.TextField
+                  label={t("website")}
+                  optional
+                  type="url"
+                  inputMode="url"
+                  maxLength={300}
+                  description={t("addressHint")}
+                />
+              )}
+            </form.AppField>
           </div>
         </section>
       )}
 
-      {!alone && (
-        <Field data-invalid={bad("teamBackground")}>
-          <FieldLabel htmlFor="teamBackground">{t("teamBackground")}</FieldLabel>
-          <Textarea
-            id="teamBackground"
-            maxLength={2000}
-            value={draft.teamBackground}
-            onChange={(event) => setBackground(event.target.value)}
-            aria-invalid={bad("teamBackground")}
-            aria-describedby="teamBackground-hint"
-          />
-          <FieldDescription id="teamBackground-hint">{t("teamBackgroundHint")}</FieldDescription>
-          <Required show={bad("teamBackground")}>{t("required")}</Required>
-        </Field>
+      {!appliesAlone(organization, who) && (
+        <form.AppField name="application.teamBackground">
+          {(field) => (
+            <field.TextareaField
+              label={t("teamBackground")}
+              maxLength={2000}
+              description={t("teamBackgroundHint")}
+            />
+          )}
+        </form.AppField>
       )}
     </>
   );
 }
 
 function StepSolution({
+  form,
   view,
-  draft,
-  solution,
   choose,
-  edit,
-  change,
-  settle,
-  bad,
 }: {
+  form: ApplyForm;
   view: ApplicationView;
-  draft: ApplyDraft;
-  solution: SolutionDraft;
   choose: (id: string | null) => void;
-  edit: (field: keyof SolutionDraft, value: string) => void;
-  change: (update: (current: ApplyDraft) => ApplyDraft) => void;
-  settle: (field: string) => void;
-  bad: Bad;
 }) {
   const t = useTranslations("Apply.solution");
   const maturity = useVocabulary("maturity");
+  const solution = useStore(form.store, (state) => state.values.solution);
   // The rest of the step can only be kept once the solution has the name it is made with.
   const unnamed =
     solution.name.trim() === "" &&
@@ -975,6 +778,7 @@ function StepSolution({
   return (
     <>
       {view.solutions.length > 0 && (
+        // Not a field of the form: choosing fills the fields below from the solution chosen.
         <Field>
           <FieldLabel htmlFor="solutionChoice">{t("choice")}</FieldLabel>
           <NativeSelect
@@ -994,268 +798,172 @@ function StepSolution({
           <FieldDescription id="solutionChoice-hint">{t("choiceHint")}</FieldDescription>
         </Field>
       )}
-      <Field data-invalid={bad("solutionName")}>
-        <FieldLabel htmlFor="solutionName">{t("name")}</FieldLabel>
-        <Input
-          id="solutionName"
-          maxLength={120}
-          value={solution.name}
-          onChange={(event) => edit("name", event.target.value)}
-          aria-invalid={bad("solutionName")}
-          aria-describedby={unnamed ? "solutionName-hint" : undefined}
-        />
-        {unnamed && <FieldDescription id="solutionName-hint">{t("nameToSave")}</FieldDescription>}
-        <Required show={bad("solutionName")}>{t("required")}</Required>
-      </Field>
-      <Field data-invalid={bad("summary")}>
-        <FieldLabel htmlFor="summary">{t("summary")}</FieldLabel>
-        <Textarea
-          id="summary"
-          maxLength={300}
-          value={solution.summary}
-          onChange={(event) => edit("summary", event.target.value)}
-          aria-invalid={bad("summary")}
-          aria-describedby="summary-hint"
-        />
-        <FieldDescription id="summary-hint">{t("summaryHint")}</FieldDescription>
-        <Required show={bad("summary")}>{t("required")}</Required>
-      </Field>
-      <Field data-invalid={bad("problemsSolved")}>
-        <FieldLabel htmlFor="problemsSolved">{t("problemsSolved")}</FieldLabel>
-        <Textarea
-          id="problemsSolved"
-          maxLength={4000}
-          value={solution.problemsSolved}
-          onChange={(event) => edit("problemsSolved", event.target.value)}
-          aria-invalid={bad("problemsSolved")}
-          aria-describedby="problemsSolved-hint"
-        />
-        <FieldDescription id="problemsSolved-hint">{t("problemsSolvedHint")}</FieldDescription>
-        <Required show={bad("problemsSolved")}>{t("required")}</Required>
-      </Field>
-      <Field data-invalid={bad("maturity")}>
-        <FieldLabel htmlFor="maturity">{t("maturity")}</FieldLabel>
-        <NativeSelect
-          id="maturity"
-          className="w-full"
-          value={solution.maturity}
-          onChange={(event) => edit("maturity", event.target.value)}
-          aria-invalid={bad("maturity")}
-        >
-          <NativeSelectOption value="">{t("maturityPlaceholder")}</NativeSelectOption>
-          {maturities.map((code) => (
-            <NativeSelectOption key={code} value={code}>
-              {maturity(code)}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
-        <Required show={bad("maturity")}>{t("maturityRequired")}</Required>
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="traction">
-          {t("traction")}
-          <Optional />
-        </FieldLabel>
-        <Textarea
-          id="traction"
-          maxLength={600}
-          value={draft.traction}
-          onChange={(event) => change((current) => ({ ...current, traction: event.target.value }))}
-          aria-describedby="traction-hint"
-        />
-        <FieldDescription id="traction-hint">{t("tractionHint")}</FieldDescription>
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="builtWith">
-          {t("builtWith")}
-          <Optional />
-        </FieldLabel>
-        <EntryList
-          id="builtWith"
-          label={t("builtWith")}
-          value={draft.builtWith}
-          onChange={(value) => change((current) => ({ ...current, builtWith: value }))}
-          describedBy="builtWith-hint"
-          max={10}
-          maxLength={60}
-        />
-        <FieldDescription id="builtWith-hint">{t("builtWithHint")}</FieldDescription>
-      </Field>
-      <Field data-invalid={bad("deck")}>
-        <FieldLabel htmlFor="deck">{t("deck")}</FieldLabel>
-        <PdfUpload
-          id="deck"
-          value={draft.deck}
-          invalid={!!bad("deck")}
-          describedBy="deck-hint"
-          onChange={(file) => {
-            change((current) => ({ ...current, deck: file && { ...file } }));
-            settle("deck");
-          }}
-        />
-        <FieldDescription id="deck-hint">{t("deckHint")}</FieldDescription>
-        <Required show={bad("deck")}>{t("deckRequired")}</Required>
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="demoUrl">
-          {t("demoUrl")}
-          <Optional />
-        </FieldLabel>
-        <Input
-          id="demoUrl"
-          type="url"
-          inputMode="url"
-          maxLength={300}
-          value={solution.demoUrl}
-          onChange={(event) => edit("demoUrl", event.target.value)}
-          aria-describedby="demoUrl-hint"
-        />
-        <FieldDescription id="demoUrl-hint">{t("demoUrlHint")}</FieldDescription>
-      </Field>
+      <form.AppField name="solution.name">
+        {(field) => (
+          <field.TextField
+            label={t("name")}
+            maxLength={120}
+            description={unnamed ? t("nameToSave") : undefined}
+          />
+        )}
+      </form.AppField>
+      <form.AppField name="solution.summary">
+        {(field) => (
+          <field.TextareaField
+            label={t("summary")}
+            maxLength={300}
+            description={t("summaryHint")}
+          />
+        )}
+      </form.AppField>
+      <form.AppField name="solution.problemsSolved">
+        {(field) => (
+          <field.TextareaField
+            label={t("problemsSolved")}
+            maxLength={4000}
+            description={t("problemsSolvedHint")}
+          />
+        )}
+      </form.AppField>
+      <form.AppField name="solution.maturity">
+        {() => (
+          <NativeSelectField
+            label={t("maturity")}
+            placeholder={t("maturityPlaceholder")}
+            options={maturities.map((code) => ({ value: code, label: maturity(code) }))}
+          />
+        )}
+      </form.AppField>
+      <form.AppField name="application.traction">
+        {(field) => (
+          <field.TextareaField
+            label={t("traction")}
+            optional
+            maxLength={600}
+            description={t("tractionHint")}
+          />
+        )}
+      </form.AppField>
+      <form.Field name="application.builtWith">
+        {(field) => (
+          <Field>
+            <FieldLabel htmlFor="builtWith">
+              {t("builtWith")}
+              <Optional />
+            </FieldLabel>
+            <EntryList
+              id="builtWith"
+              label={t("builtWith")}
+              value={field.state.value}
+              onChange={field.handleChange}
+              describedBy="builtWith-hint"
+              max={10}
+              maxLength={60}
+            />
+            <FieldDescription id="builtWith-hint">{t("builtWithHint")}</FieldDescription>
+          </Field>
+        )}
+      </form.Field>
+      <form.AppField name="application.deck">
+        {(field) => (
+          <PdfField
+            id="deck"
+            label={t("deck")}
+            description={t("deckHint")}
+            value={field.state.value}
+            onChange={(file) => field.handleChange(file && { ...file })}
+          />
+        )}
+      </form.AppField>
+      <form.AppField name="solution.demoUrl">
+        {(field) => (
+          <field.TextField
+            label={t("demoUrl")}
+            optional
+            type="url"
+            inputMode="url"
+            maxLength={300}
+            description={t("demoUrlHint")}
+          />
+        )}
+      </form.AppField>
     </>
   );
 }
 
 function StepQuestions({
+  form,
   questions,
-  answers,
   files,
-  answer,
-  bad,
 }: {
+  form: ApplyForm;
   questions: FormQuestion[];
-  answers: Record<string, string>;
   files: Record<string, { fileId: string; fileName: string; sizeBytes: number }>;
-  answer: (id: string, value: string) => void;
-  bad: Bad;
 }) {
   const t = useTranslations("Apply.questions");
   return (
     <>
       {questions.map((question) => {
         const id = `question-${question.id}`;
-        const value = answers[question.id] ?? "";
-        const label = (
-          <>
-            {question.label}
-            {!question.required && <Optional />}
-          </>
-        );
-        const help = question.help && (
-          <FieldDescription id={`${id}-hint`}>{question.help}</FieldDescription>
-        );
-        if (question.kind === "confirm") {
-          return (
-            <Field key={question.id} orientation="horizontal" data-invalid={bad(id)}>
-              <Checkbox
-                id={id}
-                checked={value === "true"}
-                onCheckedChange={(checked) => answer(question.id, checked ? "true" : "")}
-                aria-invalid={bad(id)}
-              />
-              <FieldContent>
-                <FieldLabel htmlFor={id}>{question.label}</FieldLabel>
-                {help}
-                <Required show={bad(id)}>{t("confirmRequired")}</Required>
-              </FieldContent>
-            </Field>
-          );
-        }
-        if (question.kind === "multi_choice") {
-          const chosen = chosenOptions(value);
-          return (
-            <FieldSet
-              key={question.id}
-              id={id}
-              aria-describedby={question.help ? `${id}-hint` : undefined}
-            >
-              <FieldLegend variant="label">
-                {question.label} {!question.required && <Optional />}
-              </FieldLegend>
-              {help}
-              <FieldGroup data-slot="checkbox-group">
-                {question.options.map((option, position) => (
-                  <Field key={option} orientation="horizontal">
-                    <Checkbox
-                      id={`${id}-${position}`}
-                      checked={chosen.includes(option)}
-                      onCheckedChange={(checked) =>
-                        answer(
-                          question.id,
-                          // Kept in the order the question offers them, whatever order they were ticked in.
-                          answerOfChosen(
-                            question.options.filter((other) =>
-                              other === option ? checked : chosen.includes(other),
-                            ),
-                          ),
-                        )
-                      }
-                      aria-invalid={bad(id)}
-                    />
-                    <FieldLabel htmlFor={`${id}-${position}`}>{option}</FieldLabel>
-                  </Field>
-                ))}
-              </FieldGroup>
-              <Required show={bad(id)}>{t("choicesRequired")}</Required>
-            </FieldSet>
-          );
-        }
+        const help = question.help ?? undefined;
         return (
-          <Field key={question.id} data-invalid={bad(id)}>
-            <FieldLabel htmlFor={id}>{label}</FieldLabel>
-            {question.kind === "single_choice" ? (
-              <NativeSelect
-                id={id}
-                className="w-full"
-                value={value}
-                onChange={(event) => answer(question.id, event.target.value)}
-                aria-invalid={bad(id)}
-              >
-                <NativeSelectOption value="">{t("choose")}</NativeSelectOption>
-                {question.options.map((option) => (
-                  <NativeSelectOption key={option} value={option}>
-                    {option}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
-            ) : question.kind === "file" ? (
-              <PdfUpload
-                id={id}
-                value={
-                  value
-                    ? (files[question.id] ?? {
-                        fileId: value,
-                        fileName: t("uploaded"),
-                        sizeBytes: 0,
-                      })
-                    : null
-                }
-                invalid={!!bad(id)}
-                onChange={(file) => answer(question.id, file?.fileId ?? "")}
-              />
-            ) : question.kind === "long_text" ? (
-              <Textarea
-                id={id}
-                maxLength={question.maxLength}
-                value={value}
-                onChange={(event) => answer(question.id, event.target.value)}
-                aria-invalid={bad(id)}
-              />
-            ) : (
-              <Input
-                id={id}
-                type={question.kind === "link" ? "url" : "text"}
-                inputMode={question.kind === "link" ? "url" : undefined}
-                placeholder={question.kind === "link" ? "https://" : undefined}
-                maxLength={question.maxLength}
-                value={value}
-                onChange={(event) => answer(question.id, event.target.value)}
-                aria-invalid={bad(id)}
-              />
-            )}
-            {help}
-            <Required show={bad(id)}>{t("required")}</Required>
-          </Field>
+          <form.AppField key={question.id} name={`application.answers.${question.id}`}>
+            {(field) =>
+              question.kind === "confirm" ? (
+                <AgreementField id={id} label={question.label} description={help} />
+              ) : question.kind === "multi_choice" ? (
+                <ChoicesField
+                  id={id}
+                  label={question.label}
+                  optional={!question.required}
+                  description={help}
+                  options={question.options}
+                />
+              ) : question.kind === "single_choice" ? (
+                <NativeSelectField
+                  label={question.label}
+                  optional={!question.required}
+                  description={help}
+                  placeholder={t("choose")}
+                  options={question.options.map((option) => ({ value: option, label: option }))}
+                />
+              ) : question.kind === "file" ? (
+                <PdfField
+                  id={id}
+                  label={question.label}
+                  optional={!question.required}
+                  description={help}
+                  value={
+                    field.state.value
+                      ? (files[question.id] ?? {
+                          fileId: field.state.value,
+                          fileName: t("uploaded"),
+                          sizeBytes: 0,
+                        })
+                      : null
+                  }
+                  onChange={(file) => field.handleChange(file?.fileId ?? "")}
+                />
+              ) : question.kind === "long_text" ? (
+                <field.TextareaField
+                  label={question.label}
+                  optional={!question.required}
+                  description={help}
+                  maxLength={question.maxLength}
+                />
+              ) : (
+                <field.TextField
+                  label={question.label}
+                  optional={!question.required}
+                  description={help}
+                  type={question.kind === "link" ? "url" : "text"}
+                  inputMode={question.kind === "link" ? "url" : undefined}
+                  placeholder={question.kind === "link" ? "https://" : undefined}
+                  maxLength={question.maxLength}
+                />
+              )
+            }
+          </form.AppField>
         );
       })}
     </>
@@ -1263,23 +971,15 @@ function StepQuestions({
 }
 
 function StepReview({
+  form,
   view,
-  draft,
-  solution,
   steps,
   edit,
-  confirmed,
-  confirm,
-  bad,
 }: {
+  form: ApplyForm;
   view: ApplicationView;
-  draft: ApplyDraft;
-  solution: SolutionDraft;
-  steps: StepKey[];
+  steps: ApplyStep[];
   edit: (index: number) => void;
-  confirmed: boolean;
-  confirm: (value: boolean) => void;
-  bad: Bad;
 }) {
   const t = useTranslations("Apply.review");
   const you = useTranslations("Apply.you");
@@ -1287,11 +987,13 @@ function StepReview({
   const sizeName = useVocabulary("teamSize");
   const maturity = useVocabulary("maturity");
   const countryName = useCountryName();
+  const draft = useStore(form.store, (state) => state.values.application);
+  const solution = useStore(form.store, (state) => state.values.solution);
   const contact = draft.contact;
   const organization = view.organization;
   const none = t("notAdded");
 
-  const blocks: { step: Exclude<StepKey, "review">; rows: [string, string][] }[] = [
+  const blocks: { step: Exclude<ApplyStep, "review">; rows: [string, string][] }[] = [
     {
       step: "you",
       rows: [
@@ -1375,18 +1077,9 @@ function StepReview({
           </dl>
         </section>
       ))}
-      <Field orientation="horizontal" data-invalid={bad("confirm")}>
-        <Checkbox
-          id="confirm"
-          checked={confirmed}
-          onCheckedChange={(checked) => confirm(checked === true)}
-          aria-invalid={bad("confirm")}
-        />
-        <FieldContent>
-          <FieldLabel htmlFor="confirm">{t("confirm")}</FieldLabel>
-          <Required show={bad("confirm")}>{t("confirmRequired")}</Required>
-        </FieldContent>
-      </Field>
+      <form.AppField name="confirmed">
+        {(field) => <field.CheckboxField label={t("confirm")} />}
+      </form.AppField>
     </>
   );
 }

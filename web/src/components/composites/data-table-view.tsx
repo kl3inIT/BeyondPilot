@@ -36,7 +36,10 @@ import { cn } from "@/lib/utils";
  * lays its columns out the same way.
  */
 type DataTableColumnMeta = {
-  /** The column takes the room left, and its text is cut short with an ellipsis. */
+  /**
+   * The column takes the room left, and its text is cut short with an ellipsis. Below 768px, where
+   * the table scrolls, it keeps 14rem, so the name of the record stays readable.
+   */
   fill?: boolean;
   /** Its text stays on one line. */
   nowrap?: boolean;
@@ -44,10 +47,16 @@ type DataTableColumnMeta = {
   numeric?: boolean;
   /** As narrow as a checkbox. */
   narrow?: boolean;
-  /** A fixed width: `action` holds one icon button, `sm` 8rem, `md` 9rem, `lg` 14rem. */
+  /**
+   * A fixed width: `action` holds one icon button, `sm` 8rem, `md` 9rem, `lg` 14rem. Below 768px
+   * the `action` column stays at the end of the frame while the others scroll under it.
+   */
   width?: "action" | "sm" | "md" | "lg";
-  /** Shown only from this width on: a column the table does without when narrower. */
-  from?: "sm" | "md" | "lg" | "xl" | "2xl";
+  /**
+   * Left out between 768px and this width, where the table is made to fit. Below 768px the table
+   * scrolls sideways and shows every column: a hidden one would be out of a phone's reach.
+   */
+  from?: "lg" | "xl" | "2xl";
   /** Its cells start at the top of a row that other cells make tall. */
   top?: boolean;
   /** Its first click sorts the largest or latest first, as for a score or a date. */
@@ -120,7 +129,10 @@ type DataTableViewProps<TData extends RowData> = {
   selection?: DataTableSelection<TData>;
   /** What the table shows in place of rows: an empty list or a search that found nothing. */
   empty?: React.ReactNode;
-  /** The name of the table for assistive technology, when no heading beside it names it. */
+  /**
+   * The name of the table for assistive technology, when no heading beside it names it. It also
+   * names the region the table becomes while it scrolls sideways.
+   */
   caption?: string;
   /** A cell of each row holds a link stretched over the row, so the row is its frame. */
   rowLinks?: boolean;
@@ -135,6 +147,9 @@ type DataTableViewProps<TData extends RowData> = {
  * `?sort=` and returns to page 1; a second click turns the order round. Selected rows gather in a
  * bar at the bottom of the screen with their actions, and selecting a whole page offers every row
  * that matches. Rows that leave the list leave the selection, and Escape empties it.
+ *
+ * The table is a table at every width. When it does not fit, on a phone above all, its frame
+ * scrolls it sideways (`TableScroll`); a page writes no second list.
  */
 function DataTableView<TData extends RowData>({
   columns,
@@ -233,6 +248,9 @@ function DataTableView<TData extends RowData>({
     },
   });
 
+  // A row that is a link is covered by it, the cell at its end included: nothing is pinned above.
+  const pinned = !rowLinks;
+
   const matching = selection?.matching ?? [];
   const wholePage = table.getIsAllPageRowsSelected();
   const selectableMatching = matching.filter((id) => {
@@ -242,7 +260,10 @@ function DataTableView<TData extends RowData>({
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <DataTable className={cn(rowLinks && "[&_tbody_tr]:relative", surface && "bg-background")}>
+      <DataTable
+        label={caption}
+        className={cn(rowLinks && "[&_tbody_tr]:relative", surface && "bg-background")}
+      >
         {caption && <TableCaption className="sr-only">{caption}</TableCaption>}
         <TableHeader>
           {table.getHeaderGroups().map((group) => (
@@ -254,7 +275,7 @@ function DataTableView<TData extends RowData>({
                   <TableHead
                     key={header.id}
                     className={cn(
-                      header.column.columnDef.meta?.fill && "w-full",
+                      header.column.columnDef.meta?.fill && "w-full max-md:min-w-56",
                       header.column.columnDef.meta?.nowrap && "whitespace-nowrap",
                       header.column.columnDef.meta?.numeric && "text-right",
                       header.column.columnDef.meta?.narrow && "w-10",
@@ -262,13 +283,14 @@ function DataTableView<TData extends RowData>({
                       header.column.columnDef.meta?.width === "sm" && "w-32",
                       header.column.columnDef.meta?.width === "md" && "w-36",
                       header.column.columnDef.meta?.width === "lg" && "w-56",
-                      header.column.columnDef.meta?.from === "sm" && "hidden sm:table-cell",
-                      header.column.columnDef.meta?.from === "md" && "hidden md:table-cell",
-                      header.column.columnDef.meta?.from === "lg" && "hidden lg:table-cell",
-                      header.column.columnDef.meta?.from === "xl" && "hidden xl:table-cell",
-                      header.column.columnDef.meta?.from === "2xl" && "hidden 2xl:table-cell",
+                      header.column.columnDef.meta?.from === "lg" && "md:max-lg:hidden",
+                      header.column.columnDef.meta?.from === "xl" && "md:max-xl:hidden",
+                      header.column.columnDef.meta?.from === "2xl" && "md:max-2xl:hidden",
                       header.column.columnDef.meta?.top && "align-top",
                     )}
+                    data-pinned={
+                      pinned && header.column.columnDef.meta?.width === "action" ? "" : undefined
+                    }
                     aria-sort={
                       direction === null ? undefined : direction ? "descending" : "ascending"
                     }
@@ -309,7 +331,7 @@ function DataTableView<TData extends RowData>({
                 <TableCell
                   key={cell.id}
                   className={cn(
-                    cell.column.columnDef.meta?.fill && "w-full max-w-0",
+                    cell.column.columnDef.meta?.fill && "w-full max-w-0 max-md:min-w-56",
                     cell.column.columnDef.meta?.nowrap && "whitespace-nowrap",
                     cell.column.columnDef.meta?.numeric && "text-right",
                     cell.column.columnDef.meta?.narrow && "w-10",
@@ -317,13 +339,14 @@ function DataTableView<TData extends RowData>({
                     cell.column.columnDef.meta?.width === "sm" && "w-32",
                     cell.column.columnDef.meta?.width === "md" && "w-36",
                     cell.column.columnDef.meta?.width === "lg" && "w-56",
-                    cell.column.columnDef.meta?.from === "sm" && "hidden sm:table-cell",
-                    cell.column.columnDef.meta?.from === "md" && "hidden md:table-cell",
-                    cell.column.columnDef.meta?.from === "lg" && "hidden lg:table-cell",
-                    cell.column.columnDef.meta?.from === "xl" && "hidden xl:table-cell",
-                    cell.column.columnDef.meta?.from === "2xl" && "hidden 2xl:table-cell",
+                    cell.column.columnDef.meta?.from === "lg" && "md:max-lg:hidden",
+                    cell.column.columnDef.meta?.from === "xl" && "md:max-xl:hidden",
+                    cell.column.columnDef.meta?.from === "2xl" && "md:max-2xl:hidden",
                     cell.column.columnDef.meta?.top && "align-top",
                   )}
+                  data-pinned={
+                    pinned && cell.column.columnDef.meta?.width === "action" ? "" : undefined
+                  }
                 >
                   {drawn(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>

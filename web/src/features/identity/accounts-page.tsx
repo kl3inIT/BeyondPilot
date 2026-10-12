@@ -1,5 +1,5 @@
 import { SearchXIcon } from "lucide-react";
-import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -9,6 +9,7 @@ import { Person } from "@/components/composites/person";
 import { Status } from "@/components/composites/status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
+import { getFormatter } from "@/i18n/format-server";
 import type { AccountList, AccountSummary, Me } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -44,10 +45,10 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
       return t("never");
     }
     const at = new Date(account.lastSignInAt);
-    const time = format.dateTime(at, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    const time = format.dateTime(at, "time");
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
-      : t("dayAndTime", { day: format.dateTime(at, { day: "numeric", month: "short" }), time });
+      : t("dayAndTime", { day: format.dateTime(at, "day"), time });
   }
 
   const rows = accounts.items.map((account) => {
@@ -76,7 +77,7 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
         </Status>
       ),
       lastSignIn: lastSignIn(account),
-      created: format.dateTime(new Date(account.createdAt), { dateStyle: "medium" }),
+      created: format.dateTime(new Date(account.createdAt), "date"),
       // An operator does not disable or demote themselves; the backend refuses it as well.
       actions: you ? null : <AccountRowActions account={account} />,
     };
@@ -97,17 +98,20 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
       <AdminPageHeader destination="accounts" title={t("title")} />
       <AccountsToolbar />
 
-      {/* From 768px: a table. The Created column gives way first. */}
+      {/* The Created column gives way first where the table is made to fit. */}
       <DataTableRows
         sortKeys={accountSortKeys}
-        className="hidden md:flex"
         columns={[
           { id: "name", header: t("columns.account") },
           { id: "role", header: t("columns.role") },
           { id: "status", header: t("columns.status") },
           { id: "lastSignIn", header: t("columns.lastSignIn"), layout: { descFirst: true } },
           { id: "created", header: t("columns.created"), layout: { from: "xl", descFirst: true } },
-          { id: "actions", header: <span className="sr-only">{t("columns.actions")}</span> },
+          {
+            id: "actions",
+            header: <span className="sr-only">{t("columns.actions")}</span>,
+            layout: { width: "action" },
+          },
         ]}
         rows={rows.map((row) => ({
           id: row.account.id,
@@ -126,24 +130,6 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per account, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.account.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-            <div className="flex items-center justify-between gap-2">
-              {row.person}
-              {row.actions}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-11">
-              {row.role}
-              {row.status}
-              <span className="text-xs text-muted-foreground">{row.lastSignIn}</span>
-            </div>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <ListFooter
         count={t("count", { count: accounts.total })}

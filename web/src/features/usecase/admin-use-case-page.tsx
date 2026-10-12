@@ -1,10 +1,11 @@
 import { CheckIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { ReviewStatus } from "@/components/composites/review-status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useFormatter } from "@/i18n/format";
 import type { AdminUseCase } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
 
@@ -36,16 +37,8 @@ function AdminUseCasePage({ useCase, proposals }: AdminUseCasePageProps) {
   const title = useCase.title ?? t("untitled");
   const status = useCase.status;
   const when = (instant: string) =>
-    `${format.dateTime(new Date(instant), {
-      dateStyle: "medium",
-      timeZone: "Asia/Ho_Chi_Minh",
-    })}, ${format.dateTime(new Date(instant), {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Asia/Ho_Chi_Minh",
-    })} ICT`;
-  const day = (instant: string) =>
-    format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
+    `${format.dateTime(new Date(instant), "date")}, ${format.dateTime(new Date(instant), "time")} ICT`;
+  const day = (instant: string) => format.dateTime(new Date(instant), "date");
   const closes = useCase.closesAt ? when(useCase.closesAt) : "";
 
   /** What happened to the use case, oldest first, and where it waits now. */

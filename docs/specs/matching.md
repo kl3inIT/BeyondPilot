@@ -31,13 +31,13 @@ Designed in [a run seen while it works](../increments/active/bey-39-matching/liv
 - **The stream.** `GET /api/matching/use-cases/{id}/events` is a stream of server-sent events from Spring MVC, for whoever may read the use case's matching; the right is checked once, when the stream opens. It answers with `Cache-Control: no-store` and `X-Accel-Buffering: no`, sends a comment line when it opens and every 20 seconds, and has no end of its own.
 - **An event says that something changed, not what the state is.** Its name is the kind of change and its body is `{}`; the page reads `GET /api/matching/use-cases/{id}` again. Nothing is replayed: every change is in the database when it is told, so a page that lost its stream reads the state once when the stream is back.
 
-  | Event | Told when |
-  | --- | --- |
-  | `run` | A run is queued, has its start moved or brought forward, is taken by the worker, has to wait, ends or fails |
-  | `brief` | The requirements are read |
-  | `found` | The candidates are found and kept |
-  | `reading` | The judgment of one solution starts; the body is `{"solutionId": "…"}` |
-  | `read` | The judgment of one solution ended: it was kept, was not needed because nothing changed, or failed; the body is `{"solutionId": "…"}` |
+  | Event      | Told when                                                                                                                                       |
+  | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `run`      | A run is queued, has its start moved or brought forward, is taken by the worker, has to wait, ends or fails                                     |
+  | `brief`    | The requirements are read                                                                                                                       |
+  | `found`    | The candidates are found and kept                                                                                                               |
+  | `reading`  | The judgment of one solution starts; the body is `{"solutionId": "…"}`                                                                          |
+  | `read`     | The judgment of one solution ended: it was kept, was not needed because nothing changed, or failed; the body is `{"solutionId": "…"}`           |
   | `decision` | A person shortlisted, removed or restored a candidate, an operator added one by hand, or someone said whether the AI put one in the right group |
 
 - **Which solutions are being read now is not stored**; `reading` and `read` are the only place it is said, which is why they carry the solution.
@@ -103,35 +103,35 @@ Matching has a page of its own in Admin › AI, after Search index in the sideba
 
 Limits is one form in three parts (One run, After an edit, Runs per day) with the six limits of the table below. Each has its name, its number beside its unit, the range it may take and a sentence on what it does, written for an operator who is not an engineer. A number outside its range is refused beside its field and not sent. Save changes is disabled until a number differs from what is stored, and sends the version that was read. When someone else saved meanwhile (409 `MATCHING_SETTINGS_CHANGED`), the page reads the limits again, shows their numbers in place of what was typed and says so, and the operator makes the change again. Leaving with unsaved numbers asks first. The answer does not say who changed the limits last or when, so the page does not either; the audit log does.
 
-Feedback is what people said about the AI's groups: "3 of 5 answers agreed in the last 30 days", then the disagreements as a table from 768px and as stacked rows below that, with the solution and its use case, the AI's group, the group the person chose, the requirements, the note, who and when, the count, and page links when there are more than 20 (`?page=`). The solution's name links to the Matched solutions page of its use case in Admin with that solution open (`?solution=` and the candidate's identifier), its group opened if it folds; a use case that is no longer published has no link. Where nobody has answered the tab says "Nobody has answered yet." and lists nothing. Going from Limits to Feedback with a number unsaved asks first, as leaving by any link does: a form that is saved and a list that is read are two tasks, which is why they are two pages.
+Feedback is what people said about the AI's groups: "3 of 5 answers agreed in the last 30 days", then the disagreements as a table, scrolled sideways on a phone, with the solution and its use case, the AI's group, the group the person chose, the requirements, the note, who and when, the count, and page links when there are more than 20 (`?page=`). The solution's name links to the Matched solutions page of its use case in Admin with that solution open (`?solution=` and the candidate's identifier), its group opened if it folds; a use case that is no longer published has no link. Where nobody has answered the tab says "Nobody has answered yet." and lists nothing. Going from Limits to Feedback with a number unsaved asks first, as leaving by any link does: a form that is saved and a list that is read are two tasks, which is why they are two pages.
 
 ## Limits
 
 `matching_settings` holds one row, which operators read and change at `/api/matching/admin/settings`; a change made on a version someone else changed is refused. The row is the only source of these numbers: none of them is deploy configuration.
 
-| Setting | Default | Allowed |
-| --- | --- | --- |
-| Settle minutes: how long a use case stays unchanged before the run its change asked for starts | 10 | 0 to 1,440 |
-| Edit runs per day, for one use case | 3 | 0 to 100 |
-| Member runs per day, for one use case | 3 | 0 to 100 |
-| Runs per day in all; empty for no limit | 200 | 1 to 100,000 |
-| Candidates a run judges | 40 | 5 to 200 |
-| Solutions read at once: how many candidates a run judges at the same time | 8 | 1 to 16 |
+| Setting                                                                                        | Default | Allowed      |
+| ---------------------------------------------------------------------------------------------- | ------- | ------------ |
+| Settle minutes: how long a use case stays unchanged before the run its change asked for starts | 10      | 0 to 1,440   |
+| Edit runs per day, for one use case                                                            | 3       | 0 to 100     |
+| Member runs per day, for one use case                                                          | 3       | 0 to 100     |
+| Runs per day in all; empty for no limit                                                        | 200     | 1 to 100,000 |
+| Candidates a run judges                                                                        | 40      | 5 to 200     |
+| Solutions read at once: how many candidates a run judges at the same time                      | 8       | 1 to 16      |
 
 Why 8 at once: measured on 10 October 2026 through the provider route staging uses, with 48 calls, 4, 8 and 16 at once each had every call answered, in the same time a call (about 20 seconds), so the time a run takes fell in proportion to how many were read at once. 8 halves a run against the 4 that was configured until then and stays well under what the provider took; nothing was measured past 16, so 16 is the most allowed. When the provider does refuse, the run waits and continues ([failure and recovery](#failure-and-recovery)).
 
 ## HTTP
 
-| Request | Who | Answer |
-| --- | --- | --- |
-| `GET /api/matching/use-cases/{id}` | Member, operator | The requirements, the last run, the candidates with their findings and decisions, the sources of each that could not be read and the address of each quoted web page |
-| `GET /api/matching/use-cases/{id}/events` | Member, operator | The stream of changes, as server-sent events; 404 for anyone else |
-| `POST /api/matching/use-cases/{id}/runs` | Member, operator | Starts a run; 409 while one works, 429 past a member's limit, 503 without a model |
-| `POST /api/matching/use-cases/{id}/candidates` | Operator | Adds a solution by hand |
-| `POST /api/matching/candidates/{id}/shortlist`, `/remove`, `/restore` | Member, operator | Records the decision |
-| `POST /api/matching/candidates/{id}/feedback` | Member, operator | Keeps whether the group is right, and where the candidate belongs when it is not; answers the whole state |
-| `GET`, `PUT /api/matching/admin/settings` | Operator | The limits |
-| `GET /api/matching/admin/feedback?page=` | Operator | The answers of 30 days counted, and a page of the disagreements |
+| Request                                                               | Who              | Answer                                                                                                                                                               |
+| --------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/matching/use-cases/{id}`                                    | Member, operator | The requirements, the last run, the candidates with their findings and decisions, the sources of each that could not be read and the address of each quoted web page |
+| `GET /api/matching/use-cases/{id}/events`                             | Member, operator | The stream of changes, as server-sent events; 404 for anyone else                                                                                                    |
+| `POST /api/matching/use-cases/{id}/runs`                              | Member, operator | Starts a run; 409 while one works, 429 past a member's limit, 503 without a model                                                                                    |
+| `POST /api/matching/use-cases/{id}/candidates`                        | Operator         | Adds a solution by hand                                                                                                                                              |
+| `POST /api/matching/candidates/{id}/shortlist`, `/remove`, `/restore` | Member, operator | Records the decision                                                                                                                                                 |
+| `POST /api/matching/candidates/{id}/feedback`                         | Member, operator | Keeps whether the group is right, and where the candidate belongs when it is not; answers the whole state                                                            |
+| `GET`, `PUT /api/matching/admin/settings`                             | Operator         | The limits                                                                                                                                                           |
+| `GET /api/matching/admin/feedback?page=`                              | Operator         | The answers of 30 days counted, and a page of the disagreements                                                                                                      |
 
 ## Failure and recovery
 

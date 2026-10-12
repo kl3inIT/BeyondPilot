@@ -75,7 +75,7 @@ test.describe("admin email", () => {
     await expect(page.getByRole("button", { name: "Send test" })).toBeDisabled();
     // Wording with a problem is not offered for saving, and the preview says it is behind.
     await expect(page.getByText("Fix the problem marked below to save")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Save changes" })).toBeDisabled();
     await expect(page.getByText("This is the last version that worked.")).toBeVisible();
     await expect(
       page.getByText("A test can be sent once the wording has no problems."),
@@ -87,13 +87,12 @@ test.describe("admin email", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/email/activity");
 
     await expect(page.getByText("Emails, 7 days")).toBeVisible();
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    await expect(page.getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);
 
     await page.goto("/admin/email/activity?status=bounced");
@@ -121,7 +120,7 @@ test.describe("admin email", () => {
     await expect(page.getByText("Bounced").filter({ visible: true }).first()).toBeVisible();
     await expect(
       page
-        .getByRole("button", { name: "Let email reach bounced@nowhere.example again" })
+        .getByRole("button", { name: "Allow email to bounced@nowhere.example again" })
         .filter({ visible: true }),
     ).toBeVisible();
     await expectNoSeriousA11yViolations(page);
@@ -139,7 +138,7 @@ test.describe("admin email", () => {
     await expect(page.getByLabel("Address for the provider")).toHaveValue(
       "https://beyondpilot.vadan.app/api/notification/email/events/resend",
     );
-    await page.getByRole("button", { name: "Save settings" }).click();
+    await page.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByRole("textbox", { name: "API key" })).toHaveAttribute(
       "aria-invalid",
       "true",
@@ -151,7 +150,7 @@ test.describe("admin email", () => {
       "https://beyondpilot.vadan.app/api/notification/email/events/brevo",
     );
     await page.getByRole("textbox", { name: /Webhook token/ }).fill("too-short");
-    await page.getByRole("button", { name: "Save settings" }).click();
+    await page.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByRole("textbox", { name: "API key" })).toHaveAttribute(
       "aria-invalid",
       "true",
@@ -170,7 +169,6 @@ test.describe("admin email", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "emailer", baseURL!);
     // What SES says of beyondpilot.ai: verified, DKIM still waiting, the account still in its sandbox.
@@ -222,7 +220,7 @@ test.describe("admin email", () => {
     await expect(setup).toContainText("Sandbox: only verified addresses receive email");
     await expect(setup).toContainText("Waiting for the DKIM records");
     await expect(setup).toContainText("The domain is verified");
-    const records = isMobile ? setup.locator("ul li") : setup.getByRole("row");
+    const records = setup.getByRole("row");
     await expect(records.filter({ hasText: "a1b2c3._domainkey" })).toHaveCount(1);
     await expect(setup.getByText("v=DMARC1; p=none;").filter({ visible: true })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
@@ -237,7 +235,7 @@ test.describe("admin email", () => {
     });
     await page.getByRole("radio", { name: /Resend/ }).check();
     await page.getByRole("textbox", { name: "API key" }).fill("re_test_key_for_the_question");
-    await page.getByRole("button", { name: "Save settings" }).click();
+    await page.getByRole("button", { name: "Save changes" }).click();
     const ask = page.getByRole("alertdialog", { name: "Change how email is sent?" });
     await expect(ask).toContainText("nobody can sign in, you included");
     await expect(ask).toContainText("Provider: Amazon SES → Resend");

@@ -21,7 +21,6 @@ import { useAppForm } from "@/components/form/app-form";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import {
   saveProgramQuestions,
@@ -98,14 +97,7 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
       notify.success("Admin.programs.questions.saved");
       router.refresh();
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      notify.error(
-        code === "PROGRAM_QUESTIONS_FIXED" ||
-          code === "PROGRAM_CHANGED_MEANWHILE" ||
-          code === "PROGRAM_CHOICES_REQUIRED"
-          ? `Admin.programs.questions.errors.${code}`
-          : "Admin.programs.errors.unknown",
-      );
+      notify.failure(error);
     } finally {
       setPending(false);
     }

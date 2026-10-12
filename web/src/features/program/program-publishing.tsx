@@ -23,7 +23,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
 import { publishProgram, unpublishProgram, type AdminProgram } from "@/lib/api/generated";
 import { publicSiteHost, siteRoutes } from "@/lib/site";
 
@@ -36,7 +35,7 @@ function addressOf(slug: string) {
 
 type PublishIssue = AdminProgram["publishIssues"][number];
 
-/** The field each thing that blocks publishing is filled in at, in the order the form shows them. */
+/** The form's field each thing that blocks publishing is filled in at, in the order the form shows them. */
 const fieldOfIssue: Record<PublishIssue, string> = {
   summary: "summary",
   cover: "coverFileId",
@@ -66,7 +65,14 @@ function missingToPublish(
  * What a draft needs before it can be published, ticked as the operator fills it in; each line still
  * missing leads to the field to fill in.
  */
-function PublishChecklist({ missing }: { missing: PublishIssue[] }) {
+function PublishChecklist({
+  missing,
+  fieldId,
+}: {
+  missing: PublishIssue[];
+  /** The id of the control of a field of the settings form. */
+  fieldId: (field: string) => string;
+}) {
   const t = useTranslations("Admin.programs.settings.publish.checklist");
   return (
     <section
@@ -85,11 +91,11 @@ function PublishChecklist({ missing }: { missing: PublishIssue[] }) {
             <li key={issue} className="flex items-center gap-2">
               <CircleIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               <a
-                href={`#${fieldOfIssue[issue]}`}
+                href={`#${fieldId(fieldOfIssue[issue])}`}
                 className="text-sm font-medium text-primary underline-offset-4 hover:underline"
                 onClick={(event) => {
                   // The field is focused, not only scrolled to, so the operator can type at once.
-                  const field = document.getElementById(fieldOfIssue[issue]);
+                  const field = document.getElementById(fieldId(fieldOfIssue[issue]));
                   if (field) {
                     event.preventDefault();
                     field.scrollIntoView({ block: "center" });
@@ -144,18 +150,14 @@ function PublishButton({ program, dirty, blocked, save, className }: PublishButt
         return;
       }
       if (saved.publishIssues.length > 0) {
-        notify.error("Admin.programs.settings.publish.notReady");
+        notify.error("Errors.PROGRAM_NOT_READY_TO_PUBLISH");
         return;
       }
       await publishProgram({ path: { id: program.id } });
       notify.success("Admin.programs.settings.publish.done", { name: saved.name });
       router.refresh();
     } catch (error) {
-      notify.error(
-        error instanceof ApiError && error.code === "PROGRAM_NOT_READY_TO_PUBLISH"
-          ? "Admin.programs.settings.publish.notReady"
-          : "Admin.programs.errors.unknown",
-      );
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(false);
@@ -205,8 +207,8 @@ function ProgramMenu({ program }: { program: AdminProgram }) {
       await unpublishProgram({ path: { id: program.id } });
       notify.success("Admin.programs.settings.unpublish.done", { name: program.name });
       router.refresh();
-    } catch {
-      notify.error("Admin.programs.errors.unknown");
+    } catch (error) {
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(false);

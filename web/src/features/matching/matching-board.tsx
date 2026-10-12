@@ -35,7 +35,7 @@ import {
 
 import { MatchingAdd } from "./matching-add";
 import { useMatchingChanges } from "./matching-changes";
-import { describeMatchingError } from "./matching-errors";
+import { matchingWords } from "./matching-errors";
 import { MatchingPanel } from "./matching-panel";
 import { MatchingRemove } from "./matching-remove";
 import { MatchingRemoved } from "./matching-removed";
@@ -320,7 +320,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
       done?.();
       return true;
     } catch (error) {
-      notify.error(describeMatchingError(error));
+      notify.failure(error, matchingWords);
       return false;
     } finally {
       setPending(null);

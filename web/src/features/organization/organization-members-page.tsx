@@ -1,10 +1,11 @@
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
 import { Badge } from "@/components/ui/badge";
+import { useFormatter } from "@/i18n/format";
 import type { MyOrganization, Organization, OrganizationMembers } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -57,7 +58,7 @@ function OrganizationMembersPage({
   const { organization } = mine;
   const owner = mine.role === "owner";
   const emailDomain = organization.emailDomain ?? null;
-  const day = (at: string) => format.dateTime(new Date(at), { dateStyle: "medium" });
+  const day = (at: string) => format.dateTime(new Date(at), "date");
 
   // The one owner is known only when the page holds every member; past that the backend decides.
   const owners = members.members.filter((member) => member.role === "owner");
@@ -149,11 +150,9 @@ function OrganizationMembersPage({
           )
         }
       >
-        {/* From 768px: a table. */}
         <DataTableRows
           sortKeys={organizationMemberSortKeys}
           defaultSort={defaultMemberSort}
-          className="hidden md:flex"
           surface
           columns={[
             { id: "member", header: t("columns.member") },
@@ -171,29 +170,12 @@ function OrganizationMembersPage({
             cells: {
               member: row.person,
               role: row.role,
-              jobTitle: <span className="whitespace-normal">{row.jobTitle}</span>,
+              jobTitle: <span className="block min-w-40 whitespace-normal">{row.jobTitle}</span>,
               joined: row.joined,
               actions: <div className="flex justify-end">{row.actions}</div>,
             },
           }))}
         />
-
-        {/* Below 768px: one stacked row per person, never a table scrolled sideways. */}
-        <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
-          {rows.map((row) => (
-            <li key={row.key} className="flex flex-col gap-2 border-b px-5 py-3 last:border-b-0">
-              <div className="flex items-start justify-between gap-3">
-                {row.person}
-                {row.actions}
-              </div>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-11 text-sm">
-                {row.role}
-                {row.jobTitle !== t("none") && <span>{row.jobTitle}</span>}
-                {row.joined}
-              </div>
-            </li>
-          ))}
-        </ul>
 
         {/* Keep the chosen size available even when all members now fit on one page. */}
         {(size !== null || members.total > Math.min(tablePageSizes[0], members.pageSize)) && (

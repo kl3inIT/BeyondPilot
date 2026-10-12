@@ -35,6 +35,9 @@ public class Offer {
 	@Column(nullable = false)
 	private String url;
 
+	/** When it was closed to new solutions; null while it is open. */
+	private @Nullable Instant closedAt;
+
 	@Version
 	private long version;
 
@@ -63,6 +66,19 @@ public class Offer {
 		this.url = url;
 	}
 
+	/** Closes it to new solutions, or opens it again; answers whether that changed it. */
+	public boolean closeTo(boolean closed) {
+		if (closed == isClosed()) {
+			return false;
+		}
+		this.closedAt = closed ? Instant.now() : null;
+		return true;
+	}
+
+	public boolean isClosed() {
+		return closedAt != null;
+	}
+
 	public UUID getId() {
 		return id;
 	}
@@ -86,6 +102,10 @@ public class Offer {
 
 	public long getVersion() {
 		return version;
+	}
+
+	public Instant getCreatedAt() {
+		return createdAt;
 	}
 
 	public Instant getUpdatedAt() {

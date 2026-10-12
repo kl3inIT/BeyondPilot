@@ -1,6 +1,14 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
 /**
+ * A danger action that is text until the pointer is on it. The red reads on the page at 4.5:1, not
+ * on its own tint, so by day the hovered text turns to the ink of a danger tint (`rose-foreground`),
+ * as the tinted button's text always is; at night the red reads on its tint as it is.
+ */
+const dangerText =
+  "text-destructive hover:bg-destructive/10 hover:text-rose-foreground dark:hover:text-destructive";
+
+/**
  * Product action appearance by role, not by look: `prominence` says how important the action is,
  * `tone` whether it is destructive, or the approving one of a pair of decisions. Mirrors the Figma `Button` component set
  * (docs/guidelines/figma.md › Components): full pills, except the tertiary action's 6px corners
@@ -57,17 +65,17 @@ const actionVariants = cva(
       {
         tone: "danger",
         prominence: "secondary",
-        class: "text-destructive hover:bg-destructive/10",
+        class: dangerText,
       },
       {
         tone: "danger",
         prominence: "tertiary",
-        class: "text-destructive hover:bg-destructive/10",
+        class: dangerText,
       },
       {
         tone: "danger",
         prominence: "internal",
-        class: "bg-destructive/10 text-destructive hover:bg-destructive/20",
+        class: "bg-destructive/10 text-rose-foreground hover:bg-destructive/20",
       },
       {
         tone: "success",

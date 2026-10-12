@@ -1,8 +1,9 @@
-import { EllipsisIcon, FileTextIcon, SearchXIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { FileTextIcon, SearchXIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
+import { RowMenuTrigger } from "@/components/actions/row-menu-trigger";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
@@ -15,8 +16,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import type { AdminUseCaseList, UseCaseOrganization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -48,8 +49,7 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
   const format = useFormatter();
   const locale = useLocale();
 
-  const day = (instant: string) =>
-    format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
+  const day = (instant: string) => format.dateTime(new Date(instant), "date");
 
   const rows = useCases.items.map((useCase) => ({
     id: useCase.id,
@@ -88,17 +88,7 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
     updated: <span className="text-muted-foreground">{day(useCase.updatedAt)}</span>,
     actions: (
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <button
-              type="button"
-              aria-label={t("actions.open", { name: useCase.title ?? t("untitled") })}
-              className="hit-area flex size-8 shrink-0 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
-            />
-          }
-        >
-          <EllipsisIcon className="size-4" aria-hidden="true" />
-        </DropdownMenuTrigger>
+        <RowMenuTrigger aria-label={t("actions.open", { name: useCase.title ?? t("untitled") })} />
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuGroup>
             <DropdownMenuItem render={<Link href={`${siteRoutes.adminUseCases}/${useCase.id}`} />}>
@@ -150,10 +140,9 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
       />
       <AdminUseCasesToolbar organizations={organizations} />
 
-      {/* From 768px: a table. The Updated column gives way first. */}
+      {/* The Updated column gives way first where the table is made to fit. */}
       <DataTableRows
         sortKeys={adminUseCaseSortKeys}
-        className="hidden md:flex"
         columns={[
           { id: "title", header: t("columns.useCase"), layout: { fill: true } },
           { id: "organization", header: t("columns.organization"), layout: { width: "md" } },
@@ -179,26 +168,6 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per use case, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-            <div className="flex items-start justify-between gap-3">
-              {row.title}
-              {row.actions}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-11 text-sm">
-              {row.status}
-              {row.organization}
-              <span className="text-muted-foreground">
-                {t("columns.closes")}: {row.closes}
-              </span>
-            </div>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <ListFooter
         count={

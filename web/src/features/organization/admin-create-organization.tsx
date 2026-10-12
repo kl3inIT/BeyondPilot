@@ -20,7 +20,6 @@ import { createAdminOrganization, type AdminCreateOrganization } from "@/lib/api
 import { rejectedFields } from "@/lib/api/rejected-fields";
 
 import { industries, organizationTypes, teamSizes } from "./organization-codes";
-import { organizationError } from "./organization-errors";
 import { MAX_DESCRIPTION, MAX_INDUSTRIES, yearOf } from "./organization-format";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
 import { useVerifiedDomain } from "./verified-domain";
@@ -133,7 +132,7 @@ function AdminCreateOrganization() {
           ),
         });
         if (!domain.refused(error)) {
-          notify.error(organizationError(error));
+          notify.failure(error);
         }
       }
     },

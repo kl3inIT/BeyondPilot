@@ -39,16 +39,14 @@ test.describe("admin AI", () => {
     await expect(picker).toContainText("Medium");
 
     // A connection says where it is and that it is in use; its key is never shown. The models are a
-    // table with prices from 768px, and name and context below it.
+    // table with prices at every width: on a phone it scrolls sideways.
     const connections = page.getByRole("region", { name: "Available connections" });
     await expect(connections.getByRole("heading", { name: "Claude" })).toBeVisible();
     await expect(connections.getByText("In use")).toBeVisible();
     await expect(connections.getByText("http://10.0.0.12:20128/v1")).toBeVisible();
     const models = connections.getByRole("table", { name: "Models enabled on Claude" });
     await expect(models.getByRole("row")).toHaveCount(4);
-    await expect(models.getByRole("columnheader", { name: "In / 1M" })).toHaveCount(
-      isMobile ? 0 : 1,
-    );
+    await expect(models.getByRole("columnheader", { name: "In / 1M" })).toHaveCount(1);
     await expect(
       connections
         .getByRole("button", { name: isMobile ? "Actions for Claude" : "Test connection" })
@@ -71,7 +69,7 @@ test.describe("admin AI", () => {
     await expect(dialog.getByLabel("Endpoint URL")).toBeEditable();
     await expect(dialog.getByLabel("API key")).toHaveAttribute("type", "password");
     await expect(dialog.getByRole("button", { name: "List models" })).toBeDisabled();
-    await expect(dialog.getByRole("button", { name: "Save provider" })).toBeDisabled();
+    await expect(dialog.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -105,7 +103,7 @@ test.describe("admin AI", () => {
     await expect(dialog.getByLabel("Base URL")).toHaveValue("https://api.openai.com/v1");
     await expect(dialog.getByLabel("Base URL")).toHaveAttribute("readonly", "");
     await expect(dialog.getByLabel("API key")).toHaveAttribute("type", "password");
-    await expect(dialog.getByRole("button", { name: "Save provider" })).toBeDisabled();
+    await expect(dialog.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -158,7 +156,7 @@ test.describe("admin AI", () => {
     await expect(dialog.getByLabel("Price per 1,000 pages (USD)")).toHaveValue("");
     await expect(dialog.getByLabel("API key")).toHaveAttribute("type", "password");
     await expect(dialog.getByRole("button", { name: "Test connection" })).toBeDisabled();
-    await expect(dialog.getByRole("button", { name: "Save provider" })).toBeDisabled();
+    await expect(dialog.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -166,7 +164,6 @@ test.describe("admin AI", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/ai/search-index");
@@ -178,8 +175,8 @@ test.describe("admin AI", () => {
     await expect(
       page.getByText("The provider refused the text (400 Bad request).").filter({ visible: true }),
     ).toBeVisible();
-    // A table from 768px, stacked rows below it.
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 2);
+    // A table at every width: on a phone it scrolls sideways.
+    await expect(page.getByRole("table")).toHaveCount(2);
     await expectNoSeriousA11yViolations(page);
   });
 });

@@ -1,17 +1,11 @@
 "use client";
 
-import {
-  BanIcon,
-  CircleCheckIcon,
-  EllipsisIcon,
-  MailIcon,
-  ShieldCheckIcon,
-  ShieldOffIcon,
-} from "lucide-react";
+import { BanIcon, CircleCheckIcon, MailIcon, ShieldCheckIcon, ShieldOffIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { RowMenuTrigger } from "@/components/actions/row-menu-trigger";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { Person } from "@/components/composites/person";
 import {
@@ -20,11 +14,9 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify, type MessageKey } from "@/hooks/use-notify";
 import { Link } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api/client";
 import {
   disableAccount,
   enableAccount,
@@ -63,14 +55,6 @@ const confirmed: Record<Confirmed, Change & { tone: "default" | "danger" }> = {
   },
 };
 
-/** The refusals this screen can meet, each with its own words; anything else gets the general ones. */
-const refusals: Record<string, MessageKey> = {
-  IDENTITY_OWN_ACCOUNT: "Admin.accounts.errors.ownAccount",
-  IDENTITY_OPERATOR_CONFIGURED: "Admin.accounts.errors.operatorConfigured",
-  IDENTITY_ACCOUNT_NOT_FOUND: "Admin.accounts.errors.accountNotFound",
-  IDENTITY_OPERATOR_REQUIRED: "Admin.accounts.errors.operatorRequired",
-};
-
 /**
  * What an operator can do to one account, in a menu at the end of its row. A change that is hard to
  * take back asks first; after any change the list is read again, so the row shows what the backend
@@ -94,8 +78,7 @@ function AccountRowActions({ account }: { account: AccountSummary }) {
       notify.success(done, { name });
       router.refresh();
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      notify.error((code && refusals[code]) || "Admin.accounts.errors.unknown");
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(null);
@@ -123,18 +106,7 @@ function AccountRowActions({ account }: { account: AccountSummary }) {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <button
-              type="button"
-              aria-label={t("actions.open", { name })}
-              disabled={pending}
-              className="hit-area flex size-8 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
-            />
-          }
-        >
-          <EllipsisIcon className="size-4" aria-hidden="true" />
-        </DropdownMenuTrigger>
+        <RowMenuTrigger aria-label={t("actions.open", { name })} disabled={pending} />
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuGroup>
             <DropdownMenuItem

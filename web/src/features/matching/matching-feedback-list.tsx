@@ -1,8 +1,9 @@
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { TextButton } from "@/components/actions/text-button";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { getFormatter } from "@/i18n/format-server";
 import type { MatchingDisagreement, MatchingFeedbackList } from "@/lib/api/generated";
 import { adminUseCaseCandidatesRoute, siteRoutes } from "@/lib/site";
 
@@ -14,8 +15,8 @@ import { ListFooter } from "@/components/composites/list-footer";
 /**
  * Admin › AI › Matching, the Feedback tab: what people said about the groups the AI gave. How many
  * answered in the last 30 days and how many of them agreed, then each answer that says a group is
- * wrong, newest first, with a link to the solution among those matched to its use case. A table from
- * 768px, one stacked row an answer below that. The page of the list is the URL.
+ * wrong, newest first, with a link to the solution among those matched to its use case. The page
+ * of the list is the URL.
  */
 async function MatchingFeedbackPage({
   feedback,
@@ -85,8 +86,8 @@ async function MatchingFeedbackPage({
       {feedback.total > 0 && (
         <>
           {/* The solution, the requirements and the note wrap; a cell keeps one line otherwise. */}
+          {/* Each keeps a width to wrap in when the table scrolls on a phone. */}
           <DataTableRows
-            className="hidden md:flex"
             columns={[
               { id: "solution", header: t("columns.solution"), layout: { top: true } },
               { id: "ai", header: t("columns.ai"), layout: { top: true } },
@@ -99,15 +100,17 @@ async function MatchingFeedbackPage({
               id: row.key,
               cells: {
                 solution: (
-                  <span className="flex flex-col items-start gap-0.5 whitespace-normal">
+                  <span className="flex min-w-40 flex-col items-start gap-0.5 whitespace-normal">
                     {row.solution}
                     <span className="text-xs text-muted-foreground">{row.useCase}</span>
                   </span>
                 ),
                 ai: row.ai,
                 expected: <span className="font-medium">{row.expected}</span>,
-                requirements: <span className="whitespace-normal">{row.requirements}</span>,
-                note: <span className="whitespace-normal">{row.note}</span>,
+                requirements: (
+                  <span className="block min-w-48 whitespace-normal">{row.requirements}</span>
+                ),
+                note: <span className="block min-w-56 whitespace-normal">{row.note}</span>,
                 who: (
                   <span className="flex flex-col">
                     <span>{row.by}</span>
@@ -119,39 +122,6 @@ async function MatchingFeedbackPage({
               },
             }))}
           />
-
-          <ul
-            data-slot="matching-disagreements"
-            className="overflow-hidden rounded-lg border md:hidden"
-          >
-            {rows.map((row) => (
-              <li
-                key={row.key}
-                className="flex flex-col items-start gap-1.5 border-b p-3 text-sm last:border-b-0"
-              >
-                {row.solution}
-                <span className="text-xs text-muted-foreground">{row.useCase}</span>
-                <dl className="grid grid-cols-2 gap-x-3 gap-y-1">
-                  <dt className="text-xs text-muted-foreground">{t("columns.ai")}</dt>
-                  <dt className="text-xs text-muted-foreground">{t("columns.expected")}</dt>
-                  <dd>{row.ai}</dd>
-                  <dd className="font-medium">{row.expected}</dd>
-                </dl>
-                {row.requirements && (
-                  <p className="wrap-break-word">
-                    <span className="text-xs text-muted-foreground">
-                      {t("columns.requirements")}:{" "}
-                    </span>
-                    {row.requirements}
-                  </p>
-                )}
-                {row.note && <p className="wrap-break-word">{row.note}</p>}
-                <p className="text-xs text-muted-foreground">
-                  {row.by} · <time dateTime={row.at}>{row.when}</time>
-                </p>
-              </li>
-            ))}
-          </ul>
 
           <ListFooter
             count={t("count", { count: feedback.total })}

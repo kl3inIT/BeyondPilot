@@ -11,7 +11,8 @@ import {
   XIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useStore } from "@tanstack/react-form";
+import { useLocale, useTranslations } from "next-intl";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
@@ -21,17 +22,17 @@ import { TextButton } from "@/components/actions/text-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
-import { StepItem } from "@/components/composites/step-item";
+import { StepsNav } from "@/components/composites/steps-nav";
 import { BrandLockup } from "@/components/layout/brand-lockup";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { FieldGroup } from "@/components/ui/field";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useNotify, type MessageKey } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
 import { getPathname } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
-import { ApiError } from "@/lib/api/client";
+import { failedWith, failureKey } from "@/lib/api/failure";
 import {
   publishAdminSolution,
   saveAdminSolutionDraft,
@@ -44,6 +45,7 @@ import { focusField } from "@/lib/focus-field";
 import { siteRoutes } from "@/lib/site";
 
 import { deckAddress } from "./solution-deck";
+import { useSolutionForm } from "./solution-editor-form";
 import {
   badLinks,
   contentOf,
@@ -52,16 +54,16 @@ import {
   fieldSteps,
   held,
   limits,
+  linkFields,
   missingForReview,
+  neededOf,
   reviewFields,
   toRequest,
   type EditorStep,
   type HeldImage,
-  type LinkField,
   type SolutionDraft,
 } from "./solution-editor-state";
 import { BasicsStep, EvidenceStep, FitStep } from "./solution-editor-steps";
-import { solutionError } from "./solution-errors";
 import { ReviewStep } from "./solution-review-step";
 
 /** How long the editor waits after the last change before it saves a draft. */
@@ -112,12 +114,27 @@ function SolutionEditor({
   const [server, setServer] = useState(solution);
   const latest = useRef(solution);
   const inFlight = useRef<Promise<boolean> | null>(null);
-  const [draft, setDraft] = useState(() => held(solution));
   const [saving, setSaving] = useState(false);
   const [savedNow, setSavedNow] = useState<Date | null>(null);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [refused, setRefused] = useState<Set<string>>(new Set());
-  const [leftLinks, setLeftLinks] = useState<Set<LinkField>>(new Set());
+  // A field that changes is no longer marked: the backend's refusal was about what it held before.
+  const form = useSolutionForm(solution, (field) =>
+    setRefused((current) => {
+      if (!current.has(field)) {
+        return current;
+      }
+      const next = new Set(current);
+      next.delete(field);
+      return next;
+    }),
+  );
+  const draft = useStore(form.store, (state) => state.values.solution);
+  // The links a person has left: from then on, what is wrong with one is said under it. The form
+  // keeps that as each field's blur; they are read as one word, which compares equal while unchanged.
+  const leftLinks = useStore(form.store, (state) =>
+    linkFields.filter((field) => state.fieldMeta[`solution.${field}`]?.isBlurred).join(" "),
+  ).split(" ");
   const [checked, setChecked] = useState(false);
   // The person's word that what they wrote is right; a review is not sent without it.
   const [confirmed, setConfirmed] = useState(false);
@@ -163,22 +180,17 @@ function SolutionEditor({
     return id === "evidence" ? [...lacking, ...wrongLinks] : lacking;
   }
 
-  function change(patch: Partial<SolutionDraft>) {
-    setDraft((current) => ({ ...current, ...patch }));
-    // A field that changes is no longer marked: the backend's refusal was about what it held before.
-    setRefused((current) => {
-      const next = new Set(current);
-      Object.keys(patch).forEach((field) => next.delete(field));
-      return next.size === current.size ? current : next;
-    });
-  }
-
   /** An image under the cover whose upload ended; the list may have changed while it was on its way. */
   function addImage(image: HeldImage) {
-    setDraft((current) =>
-      current.images.length < limits.images
-        ? { ...current, images: [...current.images, image] }
-        : current,
+    form.setFieldValue("solution.images", (current) =>
+      current.length < limits.images ? [...current, image] : current,
+    );
+  }
+
+  /** From now on the links that are no address say so, left or not: the person asked to go on. */
+  function showWrongLinks() {
+    wrongLinks.forEach((field) =>
+      form.setFieldMeta(`solution.${field}`, (meta) => ({ ...meta, isBlurred: true })),
     );
   }
 
@@ -198,18 +210,19 @@ function SolutionEditor({
       setFailure(null);
       setRefused(new Set());
       // The deck the solution now names carries when it took it.
-      setDraft((current) =>
-        current.deck && data.deck && current.deck.fileId === data.deck.fileId
-          ? { ...current, deck: data.deck }
-          : current,
+      form.setFieldValue(
+        "solution.deck",
+        (current) =>
+          current && data.deck && current.fileId === data.deck.fileId ? data.deck : current,
+        { dontUpdateMeta: true },
       );
       return true;
     } catch (error) {
       setRefused(rejectedFields(error));
       setFailure({
-        message: solutionError(error),
+        message: failureKey(error, (key) => say.has(key)),
         content: contentOf(body),
-        conflict: error instanceof ApiError && error.code === "SOLUTION_CHANGED_MEANWHILE",
+        conflict: failedWith(error, "SOLUTION_CHANGED_MEANWHILE") !== undefined,
       });
       return false;
     } finally {
@@ -288,16 +301,16 @@ function SolutionEditor({
       return;
     }
     setTried((current) => new Set(current).add(step));
-    setLeftLinks(new Set(wrongLinks));
+    showWrongLinks();
     const onlyLinks = blocking.every((field) => field === "demoUrl" || field === "website");
-    notify.error(onlyLinks ? "Solution.errors.REQUEST_INVALID" : "Solution.editor.stepIncomplete");
+    notify.error(onlyLinks ? "Errors.REQUEST_INVALID" : "Solution.editor.stepIncomplete");
     focusField(fieldId(blocking[0]));
   }
 
   /** Shows what keeps the editor from saving: a missing name, or a link that is not an address. */
   function showWhatBlocks() {
-    setLeftLinks(new Set(wrongLinks));
-    notify.error("Solution.errors.REQUEST_INVALID");
+    showWrongLinks();
+    notify.error("Errors.REQUEST_INVALID");
     open(nameless ? "basics" : "evidence", fieldId(nameless ? "name" : wrongLinks[0]));
   }
 
@@ -322,7 +335,7 @@ function SolutionEditor({
     if (missing.length > 0) {
       // What others read keeps what a review needs.
       setChecked(true);
-      notify.error("Solution.errors.SOLUTION_INCOMPLETE");
+      notify.error("Errors.SOLUTION_INCOMPLETE");
       const first = reviewFields.find((entry) => entry.field === missing[0]);
       open(first?.step ?? "basics", fieldId(missing[0]));
       return;
@@ -352,27 +365,26 @@ function SolutionEditor({
         leave();
       }
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
       setConfirming(null);
     } finally {
       setPending(null);
     }
   }
 
+  // What each field a review needs says while the draft lacks it, from the editor's schema.
+  const needed = neededOf(draft, t);
+
   function errorOf(field: keyof SolutionDraft): string | undefined {
     if (field === "name") {
-      return nameless ? t("needed.name") : undefined;
+      return needed.name;
     }
     if (field === "demoUrl" || field === "website") {
-      const shown = leftLinks.has(field) || refused.has(field);
+      const shown = leftLinks.includes(field) || refused.has(field);
       return shown && wrongLinks.includes(field) ? t("fields.linkInvalid") : undefined;
     }
-    const needed = missing.find((candidate) => candidate === field);
-    if (!needed || needed === "name") {
-      return undefined;
-    }
-    const holder = reviewFields.find((entry) => entry.field === needed)?.step;
-    return holder && asked(holder) ? t(`needed.${needed}`) : undefined;
+    const entry = reviewFields.find((candidate) => candidate.field === field);
+    return entry && asked(entry.step) ? needed[entry.field] : undefined;
   }
 
   /** What a step still lacks or holds wrongly, as the line under its title; nothing when it is in order. */
@@ -380,7 +392,7 @@ function SolutionEditor({
     const wrong =
       [...refused].filter((field) => fieldSteps[field] === id).length +
       (id === "evidence"
-        ? wrongLinks.filter((field) => leftLinks.has(field) && !refused.has(field)).length
+        ? wrongLinks.filter((field) => leftLinks.includes(field) && !refused.has(field)).length
         : 0) +
       (id === "basics" && nameless && !refused.has("name") ? 1 : 0);
     if (wrong > 0) {
@@ -411,7 +423,7 @@ function SolutionEditor({
   const stepLead =
     step !== "review" ? t(`steps.${step}.lead`) : live ? t("steps.review.leadLive") : undefined;
   const savedAt = savedNow
-    ? format.dateTime(savedNow, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+    ? format.dateTime(savedNow, "time")
     : format.dateTime(new Date(server.updatedAt), {
         day: "numeric",
         month: "short",
@@ -556,73 +568,54 @@ function SolutionEditor({
         </div>
       </header>
 
-      <div className="border-b bg-background px-5 py-3 md:px-8 lg:hidden">
-        <div className="mx-auto flex w-full max-w-170 flex-col gap-2">
-          <div className="flex items-center justify-between gap-3">
-            <p className="min-w-0 truncate text-sm font-medium">
-              {t("steps.progress", {
-                step: index + 1,
-                count: editorSteps.length,
-                name: step === "review" ? t("steps.review.titleLive") : stepTitle(step),
-              })}
+      {/* A column below 1024px, so the bar of steps has the whole form to stick along. */}
+      <main
+        id="content"
+        className="mx-auto flex w-full max-w-360 flex-1 gap-10 px-5 py-6 max-lg:flex-col max-lg:gap-6 md:px-8 md:py-8 lg:py-10"
+      >
+        {/*
+          From 1024px the steps stay in view beside the form, under the header that sticks above
+          them; below that they are the bar under that header. Both offsets are from the top of
+          what scrolls the editor: the page, or the dialog of a proposal.
+        */}
+        <div className="flex w-70 shrink-0 flex-col gap-4 max-lg:contents lg:sticky lg:top-24 lg:self-start">
+          {/* The steps show where the person is: the way forward is the editor's own Continue. */}
+          <StepsNav
+            label={t("steps.label")}
+            heading={t("steps.label")}
+            steps={editorSteps.map((id, position) => {
+              const problem = problemOf(id);
+              return {
+                id,
+                title: stepTitle(id),
+                done: position < index && !problem && !lacks(id),
+                problem,
+              };
+            })}
+            current={step}
+            doneLabel={t("steps.complete")}
+            className="max-lg:top-14 max-lg:-mx-5 max-lg:-mt-6 max-lg:px-5 md:max-lg:-mx-8 md:max-lg:-mt-8 md:max-lg:px-8"
+          />
+          {live && (
+            <p className="flex gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground max-lg:hidden">
+              <InfoIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
+              {t("noteLive")}
             </p>
+          )}
+        </div>
+
+        <div className="flex w-full min-w-0 flex-col gap-4 max-lg:mx-auto max-lg:max-w-170">
+          {/* Below 1024px the header has no room for where the solution stands; it is said here. */}
+          <div className="lg:hidden">
             {server.status === "draft" ? (
-              <p className="flex shrink-0 items-center gap-1 text-xs whitespace-nowrap text-muted-foreground">
-                <ClockIcon className="size-3.5" aria-hidden="true" />
+              <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                <ClockIcon className="size-3.5 shrink-0" aria-hidden="true" />
                 {t("visibility.draftShort", { organization: server.organizationName })}
               </p>
             ) : (
               <ReviewStatus state={standing}>{reviewStatus(standing)}</ReviewStatus>
             )}
           </div>
-          <Progress
-            value={((index + 1) / editorSteps.length) * 100}
-            aria-label={t("steps.label")}
-          />
-        </div>
-      </div>
-
-      <main
-        id="content"
-        className="mx-auto flex w-full max-w-360 flex-1 gap-10 px-5 py-6 md:px-8 md:py-8 lg:py-10"
-      >
-        <nav
-          aria-label={t("steps.label")}
-          className="flex w-70 shrink-0 flex-col gap-4 self-start max-lg:hidden lg:sticky lg:top-24"
-        >
-          <p className="text-xs font-medium text-muted-foreground">{t("steps.label")}</p>
-          <ol className="flex flex-col">
-            {editorSteps.map((id, position) => {
-              const problem = problemOf(id);
-              return (
-                <StepItem
-                  key={id}
-                  number={position + 1}
-                  title={stepTitle(id)}
-                  meta={problem}
-                  tone={problem ? "danger" : "default"}
-                  state={
-                    position === index
-                      ? "current"
-                      : position < index && !problem && !lacks(id)
-                        ? "done"
-                        : "upcoming"
-                  }
-                  doneLabel={t("steps.complete")}
-                  last={position === editorSteps.length - 1}
-                />
-              );
-            })}
-          </ol>
-          {live && (
-            <p className="flex gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground">
-              <InfoIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-              {t("noteLive")}
-            </p>
-          )}
-        </nav>
-
-        <div className="flex w-full min-w-0 flex-col gap-4 max-lg:mx-auto max-lg:max-w-170">
           {standing === "in_review" && (
             <Alert>
               <TimerIcon aria-hidden="true" />
@@ -689,7 +682,7 @@ function SolutionEditor({
               <h1
                 id={STEP_HEADING_ID}
                 tabIndex={-1}
-                className="scroll-mt-20 text-2xl font-semibold tracking-tight outline-none md:text-3xl"
+                className="scroll-mt-20 text-2xl font-semibold tracking-tight outline-none max-lg:scroll-mt-32 md:text-3xl"
               >
                 {stepTitle(step)}
               </h1>
@@ -706,31 +699,27 @@ function SolutionEditor({
               <FieldGroup>
                 {step === "basics" && (
                   <BasicsStep
-                    draft={draft}
-                    change={change}
+                    form={form}
                     errorOf={errorOf}
                     solutionId={solution.id}
                     operator={operator}
                   />
                 )}
-                {step === "fit" && <FitStep draft={draft} change={change} errorOf={errorOf} />}
+                {step === "fit" && <FitStep form={form} errorOf={errorOf} />}
                 {step === "evidence" && (
                   <EvidenceStep
-                    draft={draft}
-                    change={change}
+                    form={form}
                     errorOf={errorOf}
                     solutionId={solution.id}
                     deckHref={deckHref}
                     onImageAdded={addImage}
                     unsent={solution.status === "draft"}
                     customerDeployments={operator ? null : solution.customerDeployments}
-                    onLinkLeft={(field) => setLeftLinks((current) => new Set(current).add(field))}
                   />
                 )}
                 {step === "review" && (
                   <ReviewStep
-                    draft={draft}
-                    change={change}
+                    form={form}
                     customerDeployments={
                       operator
                         ? null
@@ -751,7 +740,7 @@ function SolutionEditor({
               </FieldGroup>
             </fieldset>
 
-            {/* Below 1024px the steps and their note are not drawn; the review's own lead says it. */}
+            {/* Below 1024px the note beside the steps is not drawn; the review's own lead says it. */}
             {live && !finallyRefused && step !== "review" && (
               <p className="text-xs text-muted-foreground lg:hidden">{t("noteLive")}</p>
             )}

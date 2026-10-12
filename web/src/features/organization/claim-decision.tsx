@@ -2,7 +2,7 @@
 
 import { revalidateLogic } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { UserCheckIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { z } from "zod";
@@ -13,14 +13,14 @@ import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
 import { useNotify } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
+import { useFormatter } from "@/i18n/format";
+import { failedWith } from "@/lib/api/failure";
 import {
   approveOrganizationClaim,
   declineOrganizationClaim,
   type AdminOrganizationSummary,
 } from "@/lib/api/generated";
 
-import { organizationError } from "./organization-errors";
 import { domainOf, isDomain } from "./organization-format";
 import { useAdminOrganization } from "./verified-domain";
 
@@ -91,10 +91,10 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
       router.refresh();
     } catch (error) {
       // A domain another organization has is said at the field; anything else in a toast.
-      if (error instanceof ApiError && error.code === "ORGANIZATION_DOMAIN_TAKEN") {
+      if (failedWith(error, "ORGANIZATION_DOMAIN_TAKEN")) {
         setServerErrors(form, { fields: { emailDomain: { message: t("domainTaken") } } });
       } else {
-        notify.error(organizationError(error));
+        notify.failure(error);
       }
       deciding.current = false;
       setPending(null);
@@ -127,7 +127,7 @@ function ClaimDecision({ organization, claimId, onClose }: ClaimDecisionProps) {
             description={
               claim
                 ? t("lead", {
-                    day: format.dateTime(new Date(claim.createdAt), { dateStyle: "medium" }),
+                    day: format.dateTime(new Date(claim.createdAt), "date"),
                   })
                 : undefined
             }

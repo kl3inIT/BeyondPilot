@@ -1,4 +1,4 @@
-import { ApiError } from "@/lib/api/client";
+import { failedWith } from "@/lib/api/failure";
 import {
   getReceivedIntroductions,
   listAdminIntroductions,
@@ -15,7 +15,7 @@ export async function readReceivedIntroductions(): Promise<ReceivedIntroductions
     const { data } = await getReceivedIntroductions(await sessionRequest());
     return data;
   } catch (error) {
-    if (error instanceof ApiError && error.code === "INTRODUCTION_NEEDS_ORGANIZATION") {
+    if (failedWith(error, "INTRODUCTION_NEEDS_ORGANIZATION")) {
       return null;
     }
     throw error;

@@ -1,13 +1,14 @@
 "use client";
 
 import { Trash2Icon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Textarea } from "@/components/ui/textarea";
+import { withFieldGroup } from "@/components/form/app-form";
+import { useFieldValidity } from "@/components/form/form-context";
+import { FieldError } from "@/components/ui/field";
 import { listMySolutions, type SolutionSummary } from "@/lib/api/generated";
 
 import { addSolutions, maxApproach, removeSolution } from "./proposal-draft";
@@ -21,12 +22,6 @@ type ProposalSolutionsStepProps = {
   /** The organization's logo, shown for a solution that has none of its own. */
   organizationLogoFileId?: string | null;
   onCatalog: (solutions: SolutionSummary[]) => void;
-  ids: string[];
-  onIds: (ids: string[]) => void;
-  approach: string;
-  onApproach: (approach: string) => void;
-  /** Whether to say what is missing, once the person tried to go on. */
-  checked: boolean;
 };
 
 /**
@@ -34,23 +29,40 @@ type ProposalSolutionsStepProps = {
  * and how they solve the use case. Solutions are added from a popup; a new one is written in the
  * editor, in a dialog over this page.
  */
-function ProposalSolutionsStep({
+const ProposalSolutionsStep = withFieldGroup({
+  defaultValues: { solutionIds: [] as string[], approach: "" },
+  props: { catalog: [], onCatalog: () => undefined } as ProposalSolutionsStepProps,
+  render: function ProposalSolutionsStepRender({ group, ...solutions }) {
+    const t = useTranslations("UseCaseProposal.wizard.solutions");
+    return (
+      <div className="flex flex-col gap-6">
+        <group.AppField name="solutionIds">
+          {() => <ChosenSolutions {...solutions} />}
+        </group.AppField>
+        <group.AppField name="approach">
+          {(field) => (
+            <field.TextareaField label={t("approach")} rows={5} maxLength={maxApproach} />
+          )}
+        </group.AppField>
+      </div>
+    );
+  },
+});
+
+/** The solutions chosen, with the popup that adds to them and the editor of a new one. */
+function ChosenSolutions({
   catalog,
   organizationLogoFileId,
   onCatalog,
-  ids,
-  onIds,
-  approach,
-  onApproach,
-  checked,
 }: ProposalSolutionsStepProps) {
   const t = useTranslations("UseCaseProposal.wizard.solutions");
-  const format = useFormatter();
+  const { field, invalid, errors, ids: fieldIds } = useFieldValidity<string[]>();
   const [picking, setPicking] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
 
+  const ids = field.state.value;
   const rows = ids.flatMap((id) => catalog.find((solution) => solution.id === id) ?? []);
-  const noApproach = checked && approach.trim() === "";
+  const errorId = fieldIds.error;
 
   async function closeEditor() {
     const created = editing;
@@ -63,7 +75,7 @@ function ProposalSolutionsStep({
       onCatalog(data.items);
       // A draft deleted in the editor is gone, and so is not offered.
       if (data.items.some((solution) => solution.id === created)) {
-        onIds(addSolutions(ids, [created]));
+        field.handleChange(addSolutions(ids, [created]));
       }
     } catch {
       // The list is read again the next time the popup opens.
@@ -71,7 +83,7 @@ function ProposalSolutionsStep({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
           {rows.length > 0 ? (
@@ -79,7 +91,12 @@ function ProposalSolutionsStep({
           ) : (
             <span />
           )}
-          <Button prominence="secondary" onClick={() => setPicking(true)}>
+          <Button
+            prominence="secondary"
+            aria-invalid={invalid || undefined}
+            aria-describedby={invalid ? errorId : undefined}
+            onClick={() => setPicking(true)}
+          >
             {t("add")}
           </Button>
         </div>
@@ -101,7 +118,7 @@ function ProposalSolutionsStep({
                   prominence="tertiary"
                   size="sm"
                   aria-label={t("remove", { name: solution.name })}
-                  onClick={() => onIds(removeSolution(ids, solution.id))}
+                  onClick={() => field.handleChange(removeSolution(ids, solution.id))}
                 >
                   <Trash2Icon aria-hidden="true" />
                 </IconButton>
@@ -109,31 +126,8 @@ function ProposalSolutionsStep({
             ))}
           </ul>
         )}
-        {checked && ids.length === 0 && (
-          <p role="alert" className="text-sm text-destructive">
-            {t("needed.solution")}
-          </p>
-        )}
+        {invalid && <FieldError id={errorId} errors={errors} />}
       </div>
-
-      <Field data-invalid={noApproach || undefined}>
-        <FieldLabel htmlFor="proposal-approach">{t("approach")}</FieldLabel>
-        <Textarea
-          id="proposal-approach"
-          rows={5}
-          maxLength={maxApproach}
-          value={approach}
-          aria-invalid={noApproach || undefined}
-          onChange={(event) => onApproach(event.target.value)}
-        />
-        <div className="flex items-start justify-between gap-3">
-          <span />
-          <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-            {format.number(approach.length)} / {format.number(maxApproach)}
-          </span>
-        </div>
-        {noApproach && <FieldError>{t("needed.approach")}</FieldError>}
-      </Field>
 
       <ProposalSolutionPicker
         open={picking}
@@ -143,7 +137,7 @@ function ProposalSolutionsStep({
         organizationLogoFileId={organizationLogoFileId}
         onPick={(picked, all) => {
           onCatalog(all);
-          onIds(picked);
+          field.handleChange(picked);
         }}
         onCreated={(id) => {
           setPicking(false);
@@ -151,7 +145,7 @@ function ProposalSolutionsStep({
         }}
       />
       <ProposalSolutionEditorDialog solutionId={editing} onClose={() => void closeEditor()} />
-    </div>
+    </>
   );
 }
 

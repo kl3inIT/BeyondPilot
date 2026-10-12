@@ -1,14 +1,15 @@
 "use client";
 
 import { FileTextIcon, FileUpIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { Spinner } from "@/components/ui/spinner";
-import { ApiError } from "@/lib/api/client";
-import { uploadFile } from "@/lib/storage/upload";
+import { useFailureWords } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
+import { uploadFile, uploadWords } from "@/lib/storage/upload";
 
 import { useFileSize } from "./solution-deck";
 import type { HeldDeck } from "./solution-editor-state";
@@ -32,20 +33,21 @@ type DeckUploadProps = {
  */
 function DeckUpload({ id, deck, href, onChange }: DeckUploadProps) {
   const t = useTranslations("Solution.editor.deck");
+  const words = useFailureWords();
   const format = useFormatter();
   const size = useFileSize();
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState<string | null>(null);
-  const [problem, setProblem] = useState<"type" | "size" | "failed" | null>(null);
+  const [problem, setProblem] = useState<string | null>(null);
 
   async function upload(file: File) {
     setProblem(null);
     if (file.type !== accepted) {
-      setProblem("type");
+      setProblem(t("errors.type"));
       return;
     }
     if (file.size > maxBytes) {
-      setProblem("size");
+      setProblem(t("errors.size"));
       return;
     }
     setUploading(file.name);
@@ -58,13 +60,15 @@ function DeckUpload({ id, deck, href, onChange }: DeckUploadProps) {
         attachedAt: null,
       });
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
       setProblem(
-        code === "STORAGE_MEDIA_TYPE_NOT_ALLOWED" || code === "STORAGE_CONTENT_MISMATCH"
-          ? "type"
-          : code === "STORAGE_FILE_TOO_LARGE"
-            ? "size"
-            : "failed",
+        words(
+          error,
+          uploadWords({
+            type: "Solution.editor.deck.errors.type",
+            size: "Solution.editor.deck.errors.size",
+            failed: "Solution.editor.deck.errors.failed",
+          }),
+        ),
       );
     } finally {
       setUploading(null);
@@ -160,7 +164,7 @@ function DeckUpload({ id, deck, href, onChange }: DeckUploadProps) {
       )}
       {problem && (
         <p id={`${id}-problem`} role="alert" className="text-sm text-destructive">
-          {t(`errors.${problem}`)}
+          {problem}
         </p>
       )}
     </div>

@@ -18,9 +18,10 @@ type MessagePath = Path<Messages>;
  * Server Components read the whole catalog and need nothing from this list.
  */
 const rootPaths = [
-  // The header, footer, toasts and the error screen, on every page.
+  // The header, footer, toasts, the error screen and the words for a failed request, on every page.
   "Site",
   "Error",
+  "Errors",
   "Actions",
   // Shared controls: form fields, list paging and sorting, and the words for a code.
   "Form",
@@ -33,7 +34,6 @@ const areaPaths = {
   public: [
     "Account",
     "Application",
-    "Introduction",
     "Mcp",
     "Program",
     "Programs",
@@ -79,6 +79,12 @@ const areaPaths = {
 
 type Area = keyof typeof areaPaths;
 
+/**
+ * The modules whose requests only an operator's screens make. The words for their failure codes are
+ * a quarter of `Errors` and go to the admin area alone; elsewhere such a code gets the general words.
+ */
+const operatorCodes = /^(AI|SEARCH|NOTIFICATION|PROGRAM)_/;
+
 /** The given paths of the catalog; a path under a path that is also given is already included. */
 function pick(messages: Record<string, unknown>, paths: readonly string[]) {
   const wanted = new Set(paths);
@@ -107,12 +113,16 @@ function pick(messages: Record<string, unknown>, paths: readonly string[]) {
  */
 async function MessageScope({ area, children }: { area?: Area; children: React.ReactNode }) {
   const paths: readonly string[] = [...rootPaths, ...(area ? areaPaths[area] : [])];
+  const messages = pick(await getMessages(), paths);
+  if (area !== "admin") {
+    messages.Errors = Object.fromEntries(
+      Object.entries(messages.Errors as Record<string, string>).filter(
+        ([code]) => !operatorCodes.test(code),
+      ),
+    );
+  }
 
-  return (
-    <NextIntlClientProvider messages={pick(await getMessages(), paths)}>
-      {children}
-    </NextIntlClientProvider>
-  );
+  return <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>;
 }
 
 export { MessageScope };

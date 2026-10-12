@@ -34,7 +34,6 @@ test.describe("judging applications", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     const calls = await recordWrites(page);
@@ -50,16 +49,15 @@ test.describe("judging applications", () => {
       page.getByText("3 applications · 4 drafts were not submitted · 1 withdrawn"),
     ).toBeVisible();
     await expect(page.getByRole("tab", { name: "To decide 1" })).toBeVisible();
-    if (!isMobile) {
-      // Once any application has a score the highest mean comes first, and a header turns the order.
-      const score = page.getByRole("columnheader", { name: "Scores" });
-      await expect(score).toHaveAttribute("aria-sort", "descending");
-      await score.getByRole("button").click();
-      await expect(page).toHaveURL(/sort=score/);
-      await expect(score).toHaveAttribute("aria-sort", "ascending");
-      await page.getByRole("columnheader", { name: "Submitted" }).getByRole("button").click();
-      await expect(page).toHaveURL(/sort=submitted/);
-    }
+    // Once any application has a score the highest mean comes first, and a header turns the order.
+    // On a phone the table is the same one, scrolled sideways.
+    const score = page.getByRole("columnheader", { name: "Scores" });
+    await expect(score).toHaveAttribute("aria-sort", "descending");
+    await score.getByRole("button").click();
+    await expect(page).toHaveURL(/sort=score/);
+    await expect(score).toHaveAttribute("aria-sort", "ascending");
+    await page.getByRole("columnheader", { name: "Submitted" }).getByRole("button").click();
+    await expect(page).toHaveURL(/sort=submitted/);
     await page.goto(`${admin}/applications`);
     await settled(page);
     await expectNoSeriousA11yViolations(page);
@@ -78,18 +76,17 @@ test.describe("judging applications", () => {
     expect((calls[0].body as { applicationIds: string[] }).applicationIds).toHaveLength(1);
     calls.length = 0;
 
-    if (!isMobile) {
-      await page.goto(`${admin}/applications`);
-      await page.getByRole("checkbox", { name: "Select Plain Cover" }).click();
-      await page.getByRole("checkbox", { name: "Select Renew in a Minute" }).click();
-      const selection = page.getByRole("region", { name: "Selected rows" });
-      await expect(selection).toContainText("2 selected");
-      await selection.getByRole("button", { name: "Shortlist" }).click();
-      await expect.poll(() => calls.length).toBe(1);
-      expect(calls[0].url).toContain(`/programs/${judgedProgramId}/decisions`);
-      expect(calls[0].body).toMatchObject({ decision: "shortlisted" });
-      expect((calls[0].body as { applicationIds: string[] }).applicationIds).toHaveLength(2);
-    }
+    // Rows are selected and decided on together, on a phone as well.
+    await page.goto(`${admin}/applications`);
+    await page.getByRole("checkbox", { name: "Select Plain Cover" }).click();
+    await page.getByRole("checkbox", { name: "Select Renew in a Minute" }).click();
+    const selection = page.getByRole("region", { name: "Selected rows" });
+    await expect(selection).toContainText("2 selected");
+    await selection.getByRole("button", { name: "Shortlist" }).click();
+    await expect.poll(() => calls.length).toBe(1);
+    expect(calls[0].url).toContain(`/programs/${judgedProgramId}/decisions`);
+    expect(calls[0].body).toMatchObject({ decision: "shortlisted" });
+    expect((calls[0].body as { applicationIds: string[] }).applicationIds).toHaveLength(2);
   });
 
   test("an operator scores an application on every criterion, reads the judges' scores and decides", async ({
@@ -118,6 +115,32 @@ test.describe("judging applications", () => {
     await expect(demo).toHaveAttribute("href", "https://plaincover.example/demo");
     await expect(demo).toHaveAttribute("target", "_blank");
     await expect(demo).toHaveAttribute("rel", "noopener noreferrer");
+    // The applicant's contact is a row each, so an email or a phone number is copied on its own;
+    // the email writes, the phone dials, and the profile opens in a tab of its own.
+    const team = page.getByRole("region", { name: "You and your team" });
+    await expect(team.getByRole("term")).toHaveText([
+      "Applying as",
+      "Name",
+      "Email",
+      "Phone",
+      "Country",
+      "Team size",
+      "LinkedIn",
+      "Team background",
+    ]);
+    await expect(team.getByRole("definition").nth(1)).toHaveText("Wei Ling Tan");
+    const email = team.getByRole("link", { name: "wei.ling@plaincover.example" });
+    await expect(team.getByRole("definition").nth(2)).toHaveText("wei.ling@plaincover.example");
+    await expect(email).toHaveAttribute("href", "mailto:wei.ling@plaincover.example");
+    await expect(team.getByRole("definition").nth(3)).toHaveText("+65 8123 4567");
+    await expect(team.getByRole("link", { name: "+65 8123 4567" })).toHaveAttribute(
+      "href",
+      "tel:+6581234567",
+    );
+    const profile = team.getByRole("link", { name: "https://www.linkedin.com/in/weilingtan" });
+    await expect(profile).toHaveAttribute("href", "https://www.linkedin.com/in/weilingtan");
+    await expect(profile).toHaveAttribute("target", "_blank");
+    await expect(profile).toHaveAttribute("rel", "noopener noreferrer");
     const scores = page.getByRole("region", { name: "Judges' scores" });
     await expect(scores).toContainText("Minh Anh Le");
     await expect(scores).toContainText("on version 1");

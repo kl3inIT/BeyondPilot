@@ -1,15 +1,17 @@
 "use client";
 
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
+import { useAppForm } from "@/components/form/app-form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNotify } from "@/hooks/use-notify";
@@ -19,7 +21,7 @@ import { initials } from "@/lib/initials";
 import { siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
-import { describeProposalError } from "./proposal-errors";
+import { proposalWords } from "./proposal-errors";
 import { ProposalOrganizationDialog } from "./proposal-organization-dialog";
 
 /** The sizes a team names. */
@@ -88,131 +90,154 @@ function NewOrganization({
   const router = useRouter();
   const countryName = useCountryName();
   const sizeName = useVocabulary("teamSize");
-  const [kind, setKind] = useState<Kind>("individual");
-  const [name, setName] = useState("");
-  const [country, setCountry] = useState("");
-  const [size, setSize] = useState<string>("2_9");
-  const [website, setWebsite] = useState("");
-  const [tried, setTried] = useState(false);
-  const [pending, setPending] = useState(false);
+  // The answer is a page read again; until it arrives the form stays as sent.
+  const [created, setCreated] = useState(false);
 
-  const team = kind === "team";
-  const nameMissing = tried && team && name.trim() === "";
-  const countryMissing = tried && country === "";
-
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setTried(true);
-    if ((team && name.trim() === "") || country === "") {
-      return;
-    }
-    setPending(true);
-    try {
-      await organizeUseCaseProposal({
-        path: { useCaseId },
-        body: team
-          ? {
-              kind: "team",
-              name: name.trim(),
-              country,
-              teamSize: size as "2_9",
-              website: website.trim() || null,
-            }
-          : { kind: "individual", name: accountName, country },
-      });
-      router.refresh();
-    } catch (error) {
-      notify.error(describeProposalError(error));
-      setPending(false);
-    }
-  }
+  const form = useAppForm({
+    defaultValues: { kind: "individual" as Kind, name: "", country: "", size: "2_9", website: "" },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z
+        .object({
+          kind: z.enum(["individual", "team"]),
+          name: z.string(),
+          country: z.string(),
+          size: z.string(),
+          website: z.string(),
+        })
+        // A person on their own is named by their account; only a team has a name to give.
+        .superRefine((value, context) => {
+          if (value.kind === "team" && value.name.trim() === "") {
+            context.addIssue({ code: "custom", path: ["name"], message: t("required") });
+          }
+          if (value.country === "") {
+            context.addIssue({ code: "custom", path: ["country"], message: t("required") });
+          }
+        }),
+    },
+    onSubmit: async ({ value }) => {
+      try {
+        await organizeUseCaseProposal({
+          path: { useCaseId },
+          body:
+            value.kind === "team"
+              ? {
+                  kind: "team",
+                  name: value.name.trim(),
+                  country: value.country,
+                  teamSize: value.size as "2_9",
+                  website: value.website.trim() || null,
+                }
+              : { kind: "individual", name: accountName, country: value.country },
+        });
+        setCreated(true);
+        router.refresh();
+      } catch (error) {
+        notify.failure(error, proposalWords);
+      }
+    },
+  });
+  const team = useStore(form.store, (state) => state.values.kind === "team");
+  const submitting = useStore(form.store, (state) => state.isSubmitting);
 
   return (
-    <form noValidate onSubmit={submit} className="flex flex-col gap-5">
-      <RadioGroup
-        value={kind}
-        onValueChange={(value) => setKind(value as Kind)}
-        aria-label={t("kind")}
-      >
-        {(["individual", "team"] as const).map((choice) => (
-          <FieldLabel key={choice} htmlFor={`proposal-kind-${choice}`}>
-            <Field orientation="horizontal">
-              <span className="text-sm font-medium">{t(choice)}</span>
-              <RadioGroupItem value={choice} id={`proposal-kind-${choice}`} />
-            </Field>
-          </FieldLabel>
-        ))}
-      </RadioGroup>
+    <form
+      id={form.formId}
+      noValidate
+      className="flex flex-col gap-5"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.handleSubmit();
+      }}
+    >
+      <form.Field name="kind">
+        {(field) => (
+          <RadioGroup
+            value={field.state.value}
+            onValueChange={(value) => field.handleChange(value as Kind)}
+            aria-label={t("kind")}
+          >
+            {(["individual", "team"] as const).map((choice) => (
+              <FieldLabel key={choice} htmlFor={`proposal-kind-${choice}`}>
+                <Field orientation="horizontal">
+                  <span className="text-sm font-medium">{t(choice)}</span>
+                  <RadioGroupItem value={choice} id={`proposal-kind-${choice}`} />
+                </Field>
+              </FieldLabel>
+            ))}
+          </RadioGroup>
+        )}
+      </form.Field>
 
       {team && (
-        <Field data-invalid={nameMissing || undefined}>
-          <FieldLabel htmlFor="proposal-team-name">{t("teamName")}</FieldLabel>
-          <Input
-            id="proposal-team-name"
-            maxLength={120}
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            aria-invalid={nameMissing || undefined}
-          />
-          {nameMissing && <FieldError>{t("required")}</FieldError>}
-        </Field>
+        <form.AppField name="name">
+          {(field) => <field.TextField label={t("teamName")} maxLength={120} />}
+        </form.AppField>
       )}
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field data-invalid={countryMissing || undefined}>
-          <FieldLabel htmlFor="proposal-country">{t("country")}</FieldLabel>
-          <NativeSelect
-            id="proposal-country"
-            className="w-full"
-            value={country}
-            onChange={(event) => setCountry(event.target.value)}
-            aria-invalid={countryMissing || undefined}
-          >
-            <NativeSelectOption value="">{t("countryPlaceholder")}</NativeSelectOption>
-            {countryCodes.map((code) => (
-              <NativeSelectOption key={code} value={code}>
-                {countryName(code)}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-          {countryMissing && <FieldError>{t("required")}</FieldError>}
-        </Field>
+        <form.Field name="country">
+          {(field) => {
+            const invalid = field.state.meta.isTouched && !field.state.meta.isValid;
+            return (
+              <Field data-invalid={invalid || undefined}>
+                <FieldLabel htmlFor="proposal-country">{t("country")}</FieldLabel>
+                <NativeSelect
+                  id="proposal-country"
+                  className="w-full"
+                  value={field.state.value}
+                  aria-invalid={invalid || undefined}
+                  aria-describedby={invalid ? "proposal-country-error" : undefined}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                >
+                  <NativeSelectOption value="">{t("countryPlaceholder")}</NativeSelectOption>
+                  {countryCodes.map((code) => (
+                    <NativeSelectOption key={code} value={code}>
+                      {countryName(code)}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+                {invalid && <FieldError id="proposal-country-error">{t("required")}</FieldError>}
+              </Field>
+            );
+          }}
+        </form.Field>
         {team && (
-          <Field>
-            <FieldLabel htmlFor="proposal-team-size">{t("teamSize")}</FieldLabel>
-            <NativeSelect
-              id="proposal-team-size"
-              className="w-full"
-              value={size}
-              onChange={(event) => setSize(event.target.value)}
-            >
-              {teamSizes.map((option) => (
-                <NativeSelectOption key={option} value={option}>
-                  {sizeName(option)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
-          </Field>
+          <form.Field name="size">
+            {(field) => (
+              <Field>
+                <FieldLabel htmlFor="proposal-team-size">{t("teamSize")}</FieldLabel>
+                <NativeSelect
+                  id="proposal-team-size"
+                  className="w-full"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                >
+                  {teamSizes.map((option) => (
+                    <NativeSelectOption key={option} value={option}>
+                      {sizeName(option)}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+              </Field>
+            )}
+          </form.Field>
         )}
       </div>
 
       {team && (
-        <Field>
-          <FieldLabel htmlFor="proposal-website">{t("website")}</FieldLabel>
-          <Input
-            id="proposal-website"
-            type="url"
-            inputMode="url"
-            maxLength={300}
-            value={website}
-            onChange={(event) => setWebsite(event.target.value)}
-          />
-        </Field>
+        <form.AppField name="website">
+          {(field) => (
+            <field.TextField label={t("website")} type="url" inputMode="url" maxLength={300} />
+          )}
+        </form.AppField>
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
         <TextButton href={siteRoutes.workspaceOrganization}>{t("existing")}</TextButton>
-        <Button type="submit" size="lg" pending={pending}>
+        <Button type="submit" size="lg" pending={submitting || created}>
           {t("continue")}
         </Button>
       </div>

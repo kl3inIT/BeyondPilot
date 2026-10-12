@@ -2,7 +2,7 @@
 
 import { CloudAlertIcon, CloudCheckIcon, CloudUploadIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
+import { useFormatter } from "@/i18n/format";
 import { keepReleaseDraft, releaseOutcomes, type ReleaseEmails } from "@/lib/api/generated";
 
 /** How long after the last key the emails are saved. */
@@ -92,12 +92,7 @@ function ReleaseForm({ programId, emails, counts, ready, blocked, released }: Re
       notify.success("Review.release.done");
       router.refresh();
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      notify.error(
-        code === "PROPOSAL_RELEASED" || code === "PROPOSAL_OUTCOMES_NOT_READY"
-          ? `Review.errors.${code}`
-          : "Review.errors.unknown",
-      );
+      notify.failure(error);
     } finally {
       setPending(false);
     }
@@ -156,11 +151,7 @@ function ReleaseForm({ programId, emails, counts, ready, blocked, released }: Re
                 : unsaved || !savedAt
                   ? t("draft.unsaved")
                   : t("draft.saved", {
-                      time: format.dateTime(savedAt, {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hourCycle: "h23",
-                      }),
+                      time: format.dateTime(savedAt, "time"),
                     })}
             </span>
           )}

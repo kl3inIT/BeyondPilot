@@ -1,5 +1,5 @@
 import { ScrollTextIcon, SearchXIcon, ServerCogIcon } from "lucide-react";
-import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -7,6 +7,7 @@ import { DataTableEmpty, DataTablePager } from "@/components/composites/data-tab
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Person } from "@/components/composites/person";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { getFormatter } from "@/i18n/format-server";
 import type { AuditEvent, AuditEventList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -48,7 +49,7 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
       : t("dayAndTime", {
-          day: format.dateTime(at, { day: "numeric", month: "short", year: "numeric" }),
+          day: format.dateTime(at, "date"),
           time,
         });
   }
@@ -116,9 +117,8 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
       <AdminPageHeader destination="auditLog" title={t("title")} />
       <AuditLogToolbar />
 
-      {/* From 768px: a table. The time is exact to the second, with its year, on every width. */}
+      {/* The time is exact to the second, with its year, on every width. */}
       <DataTableRows
-        className="hidden md:flex"
         columns={[
           { id: "time", header: t("columns.time"), layout: { nowrap: true } },
           { id: "person", header: t("columns.person") },
@@ -138,22 +138,6 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per event, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-            {row.person}
-            <div className="flex flex-col gap-0.5 pl-11 text-sm">
-              {row.activity}
-              <time dateTime={row.at} className="text-xs text-muted-foreground">
-                {row.time}
-              </time>
-            </div>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <DataTablePager
         previous={events.newer ? pageHref({ after: events.newer }) : undefined}

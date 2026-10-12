@@ -1,9 +1,9 @@
 "use client";
 
-import { EllipsisIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { RowMenuTrigger } from "@/components/actions/row-menu-trigger";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import {
   DropdownMenu,
@@ -11,14 +11,13 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
 import { Link, useRouter } from "@/i18n/navigation";
 import { moveMyUseCaseToDraft, type MyUseCaseSummary } from "@/lib/api/generated";
 import { siteRoutes, workspaceUseCaseProposalsRoute } from "@/lib/site";
 
-import { describeUseCaseError } from "./my-use-case-errors";
+import { useCaseWords } from "./my-use-case-errors";
 
 type MyUseCaseActionsProps = {
   useCase: Pick<MyUseCaseSummary, "id" | "status" | "title">;
@@ -54,7 +53,7 @@ function MyUseCaseActions({ useCase, viewProposals }: MyUseCaseActionsProps) {
       setConfirming(null);
       router.refresh();
     } catch (error) {
-      notify.error(describeUseCaseError(error));
+      notify.failure(error, useCaseWords);
       setConfirming(null);
     } finally {
       setPending(false);
@@ -64,17 +63,7 @@ function MyUseCaseActions({ useCase, viewProposals }: MyUseCaseActionsProps) {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <button
-              type="button"
-              aria-label={t("actions.open", { name })}
-              className="hit-area flex size-8 shrink-0 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
-            />
-          }
-        >
-          <EllipsisIcon className="size-4" aria-hidden="true" />
-        </DropdownMenuTrigger>
+        <RowMenuTrigger aria-label={t("actions.open", { name })} />
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuGroup>
             {editable && (

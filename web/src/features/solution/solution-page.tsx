@@ -22,7 +22,7 @@ import {
   TrendingUpIcon,
   UsersIcon,
 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
@@ -39,6 +39,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { PublicSolution } from "@/lib/api/generated";
@@ -128,8 +129,6 @@ type SolutionPageProps = {
   solution: PublicSolution;
   /** The editor of this solution, when the visitor may change it. */
   editHref?: string;
-  /** The way to ask for an introduction to its company, put in by the route that knows the visitor. */
-  introduction?: React.ReactNode;
 };
 
 /**
@@ -137,7 +136,7 @@ type SolutionPageProps = {
  * it says and its proof, beside the one way to reach its company and its facts. An absent value
  * keeps its criterion visible without inventing a placeholder.
  */
-function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
+function SolutionPage({ solution, editHref }: SolutionPageProps) {
   const t = useTranslations("Solution.detail");
   const directory = useTranslations("Solution.directory");
   const view = useTranslations("Solution.view");
@@ -497,9 +496,7 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                         aria-hidden="true"
                       />
                       {t("proof.byGenAiFund", {
-                        date: format.dateTime(new Date(solution.backing.updatedAt), {
-                          dateStyle: "medium",
-                        }),
+                        date: format.dateTime(new Date(solution.backing.updatedAt), "date"),
                       })}
                     </p>
                   </Evidence>
@@ -630,11 +627,9 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
             <h2 className="text-base font-medium">
               {t("contact.title", { name: solution.organizationName })}
             </h2>
-            {introduction && <p className="text-xs text-muted-foreground">{t("contact.lead")}</p>}
           </div>
-          {(introduction || solution.website || solution.demoUrl || solution.deck) && (
+          {(solution.website || solution.demoUrl || solution.deck) && (
             <div className="flex flex-col gap-2">
-              {introduction}
               {(
                 [
                   ["website", solution.website],

@@ -21,7 +21,7 @@ async function answerCommands(page: Page, status: number, problem?: object) {
   return requests;
 }
 
-/** The accounts shown, by the name each row leads with, whichever layout the viewport has. */
+/** The accounts shown, by the name each row leads with. */
 function shownAccounts(page: Page) {
   return page.locator('[data-slot="person"]:visible >> span.font-medium');
 }
@@ -62,8 +62,17 @@ test.describe("admin accounts", () => {
     ).toHaveCount(1);
     await expect(page.getByRole("button", { name: "Actions for Đạt Phan" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Actions for Minh Trần" })).toBeVisible();
-    // A table from 768px, stacked rows below it.
-    await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);
+    // A table at every width: on a phone it scrolls sideways.
+    await expect(page.getByRole("table")).toHaveCount(1);
+    if (isMobile) {
+      // While it scrolls, its frame is a named region the keyboard reaches.
+      await expect(page.getByRole("region", { name: "Table, scrolls sideways" })).toHaveAttribute(
+        "tabindex",
+        "0",
+      );
+      // The menu of a row stays at the end of the frame while the other columns scroll under it.
+      await expect(page.getByRole("button", { name: "Actions for Minh Trần" })).toBeInViewport();
+    }
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -136,11 +145,10 @@ test.describe("admin accounts", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/admin/accounts?q=nobody&status=disabled");
 
-    // The table and the stacked rows both hold this state; the viewport shows one of them.
     await expect(page.locator('[data-slot="empty-title"]:visible')).toHaveText(
       "No account matches",
     );
-    await page.getByRole("link", { name: "Clear search and filters" }).click();
+    await page.getByRole("link", { name: "Clear filters" }).click();
 
     await expect(page).toHaveURL("/admin/accounts");
     await expect(shownAccounts(page)).toHaveCount(5);

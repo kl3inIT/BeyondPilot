@@ -1,7 +1,8 @@
 import { BanIcon, CircleAlertIcon } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { EmailMessage } from "@/lib/api/generated";
 import { adminEmailTemplateRoute, siteRoutes } from "@/lib/site";

@@ -517,7 +517,7 @@ export function answerMatching(url, account) {
         agreements: none ? 0 : 3,
         items: none || !first ? [] : disagreements,
         page: Number(url.searchParams.get("page") ?? 1),
-        pageSize: 20,
+        pageSize: 25,
         total: none ? 0 : disagreements.length,
       },
     ];

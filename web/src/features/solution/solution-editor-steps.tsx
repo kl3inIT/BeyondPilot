@@ -25,6 +25,7 @@ import { DeckUpload } from "./deck-upload";
 import { GalleryUpload, ImageUpload } from "./image-upload";
 import { OfferPicker } from "./offer-picker";
 import { deployments, focusAreas, industries, languages, maturities } from "./solution-codes";
+import type { SolutionForm } from "./solution-editor-form";
 import {
   fieldId,
   limits,
@@ -36,8 +37,8 @@ import {
 import { TagInput } from "./tag-input";
 
 type StepProps = {
-  draft: SolutionDraft;
-  change: (patch: Partial<SolutionDraft>) => void;
+  /** The editor's form, which holds the draft; each field of a step is one of its fields. */
+  form: SolutionForm;
   /** What is wrong with a field, in words, when something is to be shown under it. */
   errorOf: (field: keyof SolutionDraft) => string | undefined;
 };
@@ -83,7 +84,7 @@ function EditorField({
         {icon && <span className="shrink-0 [&_svg]:size-4">{icon}</span>}
         {label}
         {required && <RequiredMark />}
-        {optional && <span className="text-xs font-normal text-muted-foreground">{optional}</span>}
+        {optional && <span className="font-normal text-muted-foreground">{optional}</span>}
       </FieldLabel>
       {children}
       {error && <FieldError id={`${id}-error`}>{error}</FieldError>}
@@ -114,140 +115,146 @@ type BasicsStepProps = StepProps & {
 };
 
 /** Step 1: what the solution is, how far it has come, what it is built with and what it comes with. */
-function BasicsStep({ draft, change, errorOf, solutionId, operator }: BasicsStepProps) {
+function BasicsStep({ form, errorOf, solutionId, operator }: BasicsStepProps) {
   const t = useTranslations("Solution.editor");
   const maturity = useVocabulary("maturity");
-  const counter = (value: string, max: number) => t("counter", { count: value.length, max });
 
   return (
     <>
-      <EditorField field="name" label={t("fields.name")} error={errorOf("name")}>
-        <Input
-          id={fieldId("name")}
-          maxLength={limits.name}
-          value={draft.name}
-          onChange={(event) => change({ name: event.target.value })}
-          aria-required
-          aria-invalid={errorOf("name") ? true : undefined}
-          aria-describedby={about("name", errorOf("name"), false)}
-        />
-      </EditorField>
-      <EditorField
-        field="summary"
-        label={t("fields.summary")}
-        hint={t("fields.summaryHint")}
-        counter={counter(draft.summary, limits.summary)}
-        error={errorOf("summary")}
-      >
-        <Textarea
-          id={fieldId("summary")}
-          rows={3}
-          maxLength={limits.summary}
-          value={draft.summary}
-          onChange={(event) => change({ summary: event.target.value })}
-          aria-required
-          aria-invalid={errorOf("summary") ? true : undefined}
-          aria-describedby={about("summary", errorOf("summary"), true)}
-        />
-      </EditorField>
-      <EditorField
-        field="problemsSolved"
-        label={t("fields.problemsSolved")}
-        optional={t("optional")}
-        hint={t("fields.problemsSolvedHint")}
-        counter={counter(draft.problemsSolved, limits.longAnswer)}
-      >
-        <Textarea
-          id={fieldId("problemsSolved")}
-          rows={4}
-          maxLength={limits.longAnswer}
-          value={draft.problemsSolved}
-          onChange={(event) => change({ problemsSolved: event.target.value })}
-          aria-describedby={about("problemsSolved", undefined, true)}
-        />
-      </EditorField>
-      <EditorField
-        field="valueProposition"
-        label={t("fields.valueProposition")}
-        optional={t("optional")}
-        hint={t("fields.valuePropositionHint")}
-        counter={counter(draft.valueProposition, limits.longAnswer)}
-      >
-        <Textarea
-          id={fieldId("valueProposition")}
-          rows={4}
-          maxLength={limits.longAnswer}
-          value={draft.valueProposition}
-          onChange={(event) => change({ valueProposition: event.target.value })}
-          aria-describedby={about("valueProposition", undefined, true)}
-        />
-      </EditorField>
-      <EditorField field="maturity" label={t("fields.maturity")} error={errorOf("maturity")}>
-        <ChoiceSelect
-          id={fieldId("maturity")}
-          options={maturities.map((value) => ({ value, label: maturity(value) }))}
-          value={draft.maturity}
-          onValueChange={(next) => change({ maturity: next })}
-          placeholder={t("fields.maturityPlaceholder")}
-          aria-required
-          aria-invalid={errorOf("maturity") ? true : undefined}
-          aria-describedby={about("maturity", errorOf("maturity"), false)}
-        />
-      </EditorField>
-      <EditorField
-        field="traction"
-        label={t("fields.traction")}
-        optional={t("optional")}
-        hint={t("fields.tractionHint")}
-        counter={counter(draft.traction, limits.traction)}
-      >
-        <Textarea
-          id={fieldId("traction")}
-          rows={3}
-          maxLength={limits.traction}
-          value={draft.traction}
-          onChange={(event) => change({ traction: event.target.value })}
-          aria-describedby={about("traction", undefined, true)}
-        />
-      </EditorField>
-      <EditorField
-        field="builtWith"
-        label={t("fields.builtWith")}
-        optional={t("optional")}
-        hint={t("fields.builtWithHint", { max: limits.builtWith })}
-      >
-        <TagInput
-          id={fieldId("builtWith")}
-          value={draft.builtWith}
-          onValueChange={(builtWith) => change({ builtWith })}
-          placeholder={t("fields.builtWithPlaceholder")}
-          max={limits.builtWith}
-          maxLength={limits.builtWithName}
-          removeLabel={(name) => t("fields.removeTag", { name })}
-          aria-describedby={about("builtWith", undefined, true)}
-        />
-      </EditorField>
-      <EditorField
-        field="offers"
-        label={t("fields.offers")}
-        optional={t("optional")}
-        hint={t("fields.offersHint", { max: limits.offers })}
-      >
-        <OfferPicker
-          id={fieldId("offers")}
-          solutionId={solutionId}
-          value={draft.offers}
-          onValueChange={(offers) => change({ offers })}
-          operator={operator}
-          aria-describedby={about("offers", undefined, true)}
-        />
-      </EditorField>
+      <form.Field name="solution.name">
+        {(field) => (
+          <EditorField field="name" label={t("fields.name")} error={errorOf("name")}>
+            <Input
+              id={fieldId("name")}
+              maxLength={limits.name}
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(event) => field.handleChange(event.target.value)}
+              aria-required
+              aria-invalid={errorOf("name") ? true : undefined}
+              aria-describedby={about("name", errorOf("name"), false)}
+            />
+          </EditorField>
+        )}
+      </form.Field>
+      <form.Field name="solution.summary">
+        {(field) => (
+          <EditorField
+            field="summary"
+            label={t("fields.summary")}
+            hint={t("fields.summaryHint")}
+            counter={t("counter", { count: field.state.value.length, max: limits.summary })}
+            error={errorOf("summary")}
+          >
+            <Textarea
+              id={fieldId("summary")}
+              rows={3}
+              maxLength={limits.summary}
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(event) => field.handleChange(event.target.value)}
+              aria-required
+              aria-invalid={errorOf("summary") ? true : undefined}
+              aria-describedby={about("summary", errorOf("summary"), true)}
+            />
+          </EditorField>
+        )}
+      </form.Field>
+      <form.AppField name="solution.problemsSolved">
+        {(field) => (
+          <field.TextareaField
+            label={t("fields.problemsSolved")}
+            optional
+            rows={4}
+            maxLength={limits.longAnswer}
+            description={t("fields.problemsSolvedHint")}
+          />
+        )}
+      </form.AppField>
+      <form.AppField name="solution.valueProposition">
+        {(field) => (
+          <field.TextareaField
+            label={t("fields.valueProposition")}
+            optional
+            rows={4}
+            maxLength={limits.longAnswer}
+            description={t("fields.valuePropositionHint")}
+          />
+        )}
+      </form.AppField>
+      <form.Field name="solution.maturity">
+        {(field) => (
+          <EditorField field="maturity" label={t("fields.maturity")} error={errorOf("maturity")}>
+            <ChoiceSelect
+              id={fieldId("maturity")}
+              options={maturities.map((value) => ({ value, label: maturity(value) }))}
+              value={field.state.value}
+              onValueChange={field.handleChange}
+              placeholder={t("fields.maturityPlaceholder")}
+              aria-required
+              aria-invalid={errorOf("maturity") ? true : undefined}
+              aria-describedby={about("maturity", errorOf("maturity"), false)}
+            />
+          </EditorField>
+        )}
+      </form.Field>
+      <form.AppField name="solution.traction">
+        {(field) => (
+          <field.TextareaField
+            label={t("fields.traction")}
+            optional
+            rows={3}
+            maxLength={limits.traction}
+            description={t("fields.tractionHint")}
+          />
+        )}
+      </form.AppField>
+      <form.Field name="solution.builtWith">
+        {(field) => (
+          <EditorField
+            field="builtWith"
+            label={t("fields.builtWith")}
+            optional={t("optional")}
+            hint={t("fields.builtWithHint", { max: limits.builtWith })}
+          >
+            <TagInput
+              id={fieldId("builtWith")}
+              value={field.state.value}
+              onValueChange={field.handleChange}
+              placeholder={t("fields.builtWithPlaceholder")}
+              max={limits.builtWith}
+              maxLength={limits.builtWithName}
+              removeLabel={(name) => t("fields.removeTag", { name })}
+              aria-describedby={about("builtWith", undefined, true)}
+            />
+          </EditorField>
+        )}
+      </form.Field>
+      <form.Field name="solution.offers">
+        {(field) => (
+          <EditorField
+            field="offers"
+            label={t("fields.offers")}
+            optional={t("optional")}
+            hint={t("fields.offersHint", { max: limits.offers })}
+          >
+            <OfferPicker
+              id={fieldId("offers")}
+              solutionId={solutionId}
+              value={field.state.value}
+              onValueChange={field.handleChange}
+              operator={operator}
+              aria-describedby={about("offers", undefined, true)}
+            />
+          </EditorField>
+        )}
+      </form.Field>
     </>
   );
 }
 
 /** Step 2: who should find the solution and where it can run. */
-function FitStep({ draft, change, errorOf }: StepProps) {
+function FitStep({ form, errorOf }: StepProps) {
   const t = useTranslations("Solution.editor");
   const industry = useVocabulary("industry");
   const focusArea = useVocabulary("focusArea");
@@ -256,103 +263,107 @@ function FitStep({ draft, change, errorOf }: StepProps) {
 
   return (
     <>
-      <EditorField
-        field="industries"
-        label={t("fields.industries")}
-        hint={t("fields.upTo", { max: limits.choices, chosen: draft.industries.length })}
-        error={errorOf("industries")}
-      >
-        <CodeCombobox
-          id={fieldId("industries")}
-          options={industries.map((value) => ({ value, label: industry(value) }))}
-          value={draft.industries}
-          onValueChange={(next) => change({ industries: next })}
-          placeholder={t("fields.industriesPlaceholder")}
-          emptyLabel={t("fields.noMatch")}
-          removeLabel={(name) => t("fields.removeTag", { name })}
-          max={limits.choices}
-          invalid={errorOf("industries") !== undefined}
-          aria-describedby={about("industries", errorOf("industries"), true)}
-        />
-      </EditorField>
-      <EditorField
-        field="focusAreas"
-        label={t("fields.focusAreas")}
-        hint={t("fields.upTo", { max: limits.choices, chosen: draft.focusAreas.length })}
-        error={errorOf("focusAreas")}
-      >
-        <CodeCombobox
-          id={fieldId("focusAreas")}
-          options={focusAreas.map((value) => ({ value, label: focusArea(value) }))}
-          value={draft.focusAreas}
-          onValueChange={(next) => change({ focusAreas: next })}
-          placeholder={t("fields.focusAreasPlaceholder")}
-          emptyLabel={t("fields.noMatch")}
-          removeLabel={(name) => t("fields.removeTag", { name })}
-          max={limits.choices}
-          invalid={errorOf("focusAreas") !== undefined}
-          aria-describedby={about("focusAreas", errorOf("focusAreas"), true)}
-        />
-      </EditorField>
-      <EditorField field="languages" label={t("fields.languages")} optional={t("optional")}>
-        <CodeCombobox
-          id={fieldId("languages")}
-          options={languages.map((value) => ({ value, label: language(value) }))}
-          value={draft.languages}
-          onValueChange={(next) => change({ languages: next })}
-          placeholder={t("fields.languagesPlaceholder")}
-          emptyLabel={t("fields.noMatch")}
-          removeLabel={(name) => t("fields.removeTag", { name })}
-          max={limits.languages}
-        />
-      </EditorField>
-      <EditorField
-        field="deployment"
-        label={t("fields.deployment")}
-        optional={t("optional")}
-        labelled={false}
-      >
-        <ChoiceChips
-          id={fieldId("deployment")}
-          label={t("fields.deployment")}
-          options={deployments.map((value) => ({ value, label: deployment(value) }))}
-          value={draft.deployment}
-          onValueChange={(next) => change({ deployment: next })}
-        />
-      </EditorField>
-      <EditorField
-        field="channels"
-        label={t("fields.channels")}
-        optional={t("optional")}
-        hint={t("fields.channelsHint")}
-      >
-        <Input
-          id={fieldId("channels")}
-          maxLength={limits.channels}
-          value={draft.channels}
-          onChange={(event) => change({ channels: event.target.value })}
-          aria-describedby={about("channels", undefined, true)}
-        />
-      </EditorField>
-      <EditorField
-        field="bestCustomerProfile"
-        label={t("fields.bestCustomerProfile")}
-        optional={t("optional")}
-        hint={t("fields.bestCustomerProfileHint")}
-        counter={t("counter", {
-          count: draft.bestCustomerProfile.length,
-          max: limits.bestCustomerProfile,
-        })}
-      >
-        <Textarea
-          id={fieldId("bestCustomerProfile")}
-          rows={3}
-          maxLength={limits.bestCustomerProfile}
-          value={draft.bestCustomerProfile}
-          onChange={(event) => change({ bestCustomerProfile: event.target.value })}
-          aria-describedby={about("bestCustomerProfile", undefined, true)}
-        />
-      </EditorField>
+      <form.Field name="solution.industries">
+        {(field) => (
+          <EditorField
+            field="industries"
+            label={t("fields.industries")}
+            hint={t("fields.upTo", { max: limits.choices, chosen: field.state.value.length })}
+            error={errorOf("industries")}
+          >
+            <CodeCombobox
+              id={fieldId("industries")}
+              options={industries.map((value) => ({ value, label: industry(value) }))}
+              value={field.state.value}
+              onValueChange={field.handleChange}
+              placeholder={t("fields.industriesPlaceholder")}
+              emptyLabel={t("fields.noMatch")}
+              removeLabel={(name) => t("fields.removeTag", { name })}
+              max={limits.choices}
+              invalid={errorOf("industries") !== undefined}
+              aria-describedby={about("industries", errorOf("industries"), true)}
+            />
+          </EditorField>
+        )}
+      </form.Field>
+      <form.Field name="solution.focusAreas">
+        {(field) => (
+          <EditorField
+            field="focusAreas"
+            label={t("fields.focusAreas")}
+            hint={t("fields.upTo", { max: limits.choices, chosen: field.state.value.length })}
+            error={errorOf("focusAreas")}
+          >
+            <CodeCombobox
+              id={fieldId("focusAreas")}
+              options={focusAreas.map((value) => ({ value, label: focusArea(value) }))}
+              value={field.state.value}
+              onValueChange={field.handleChange}
+              placeholder={t("fields.focusAreasPlaceholder")}
+              emptyLabel={t("fields.noMatch")}
+              removeLabel={(name) => t("fields.removeTag", { name })}
+              max={limits.choices}
+              invalid={errorOf("focusAreas") !== undefined}
+              aria-describedby={about("focusAreas", errorOf("focusAreas"), true)}
+            />
+          </EditorField>
+        )}
+      </form.Field>
+      <form.Field name="solution.languages">
+        {(field) => (
+          <EditorField field="languages" label={t("fields.languages")} optional={t("optional")}>
+            <CodeCombobox
+              id={fieldId("languages")}
+              options={languages.map((value) => ({ value, label: language(value) }))}
+              value={field.state.value}
+              onValueChange={field.handleChange}
+              placeholder={t("fields.languagesPlaceholder")}
+              emptyLabel={t("fields.noMatch")}
+              removeLabel={(name) => t("fields.removeTag", { name })}
+              max={limits.languages}
+            />
+          </EditorField>
+        )}
+      </form.Field>
+      <form.Field name="solution.deployment">
+        {(field) => (
+          <EditorField
+            field="deployment"
+            label={t("fields.deployment")}
+            optional={t("optional")}
+            labelled={false}
+          >
+            <ChoiceChips
+              id={fieldId("deployment")}
+              label={t("fields.deployment")}
+              options={deployments.map((value) => ({ value, label: deployment(value) }))}
+              value={field.state.value}
+              onValueChange={field.handleChange}
+            />
+          </EditorField>
+        )}
+      </form.Field>
+      <form.AppField name="solution.channels">
+        {(field) => (
+          <field.TextField
+            label={t("fields.channels")}
+            optional
+            maxLength={limits.channels}
+            description={t("fields.channelsHint")}
+          />
+        )}
+      </form.AppField>
+      <form.AppField name="solution.bestCustomerProfile">
+        {(field) => (
+          <field.TextareaField
+            label={t("fields.bestCustomerProfile")}
+            optional
+            rows={3}
+            maxLength={limits.bestCustomerProfile}
+            description={t("fields.bestCustomerProfileHint")}
+          />
+        )}
+      </form.AppField>
     </>
   );
 }
@@ -365,8 +376,6 @@ type EvidenceStepProps = StepProps & {
   unsent: boolean;
   /** The projects customers put the solution to work in; null where an operator writes it, since the organization adds them. */
   customerDeployments: CustomerDeployment[] | null;
-  /** A link field was left: from then on, what is wrong with it is said under it. */
-  onLinkLeft: (field: LinkField) => void;
   /** An image under the cover finished uploading. */
   onImageAdded: (image: HeldImage) => void;
 };
@@ -376,110 +385,108 @@ type EvidenceStepProps = StepProps & {
  * deck, a demo, the product's page and the projects customers put it to work in.
  */
 function EvidenceStep({
-  draft,
-  change,
+  form,
   errorOf,
   solutionId,
   deckHref,
   unsent,
   customerDeployments,
-  onLinkLeft,
   onImageAdded,
 }: EvidenceStepProps) {
   const t = useTranslations("Solution.editor");
+  // A link says what is wrong with it once it was left, which the form keeps as the field's blur.
   const link = (field: LinkField, hint: string, icon: React.ReactNode) => (
-    <EditorField
-      field={field}
-      label={t(`fields.${field}`)}
-      icon={icon}
-      optional={t("optional")}
-      hint={hint}
-      error={errorOf(field)}
-    >
-      <Input
-        id={fieldId(field)}
-        type="url"
-        inputMode="url"
-        autoComplete="off"
-        maxLength={limits.link}
-        value={draft[field]}
-        onChange={(event) =>
-          change(
-            field === "demoUrl" ? { demoUrl: event.target.value } : { website: event.target.value },
-          )
-        }
-        onBlur={() => onLinkLeft(field)}
-        aria-invalid={errorOf(field) ? true : undefined}
-        aria-describedby={about(field, errorOf(field), true)}
-      />
-    </EditorField>
+    <form.Field name={`solution.${field}`}>
+      {(bound) => (
+        <EditorField
+          field={field}
+          label={t(`fields.${field}`)}
+          icon={icon}
+          optional={t("optional")}
+          hint={hint}
+          error={errorOf(field)}
+        >
+          <Input
+            id={fieldId(field)}
+            type="url"
+            inputMode="url"
+            autoComplete="off"
+            maxLength={limits.link}
+            value={bound.state.value}
+            onChange={(event) => bound.handleChange(event.target.value)}
+            onBlur={bound.handleBlur}
+            aria-invalid={errorOf(field) ? true : undefined}
+            aria-describedby={about(field, errorOf(field), true)}
+          />
+        </EditorField>
+      )}
+    </form.Field>
+  );
+  const image = (place: "logo" | "cover", icon: React.ReactNode) => (
+    <form.Field name={`solution.${place}`}>
+      {(bound) => (
+        <EditorField
+          field={place}
+          label={t(`fields.${place}`)}
+          icon={icon}
+          hint={t(`images.${place}.hint`)}
+          error={errorOf(place)}
+          labelled={false}
+        >
+          <ImageUpload
+            id={fieldId(place)}
+            place={place}
+            image={bound.state.value}
+            invalid={errorOf(place) !== undefined}
+            describedBy={about(place, errorOf(place), true)}
+            onChange={bound.handleChange}
+          />
+        </EditorField>
+      )}
+    </form.Field>
   );
 
   return (
     <>
-      <EditorField
-        field="logo"
-        label={t("fields.logo")}
-        icon={<ImageIcon aria-hidden="true" />}
-        hint={t("images.logo.hint")}
-        error={errorOf("logo")}
-        labelled={false}
-      >
-        <ImageUpload
-          id={fieldId("logo")}
-          place="logo"
-          image={draft.logo}
-          invalid={errorOf("logo") !== undefined}
-          describedBy={about("logo", errorOf("logo"), true)}
-          onChange={(logo) => change({ logo })}
-        />
-      </EditorField>
-      <EditorField
-        field="cover"
-        label={t("fields.cover")}
-        icon={<PanelTopIcon aria-hidden="true" />}
-        hint={t("images.cover.hint")}
-        error={errorOf("cover")}
-        labelled={false}
-      >
-        <ImageUpload
-          id={fieldId("cover")}
-          place="cover"
-          image={draft.cover}
-          invalid={errorOf("cover") !== undefined}
-          describedBy={about("cover", errorOf("cover"), true)}
-          onChange={(cover) => change({ cover })}
-        />
-      </EditorField>
-      <EditorField
-        field="images"
-        label={t("fields.images")}
-        icon={<ImagesIcon aria-hidden="true" />}
-        optional={t("optional")}
-        hint={t("images.more.hint")}
-        labelled={false}
-      >
-        <GalleryUpload
-          id={fieldId("images")}
-          images={draft.images}
-          onAdd={onImageAdded}
-          onChange={(images) => change({ images })}
-        />
-      </EditorField>
-      <EditorField
-        field="deck"
-        label={t("fields.deck")}
-        icon={<FileTextIcon aria-hidden="true" />}
-        optional={t("optional")}
-        labelled={false}
-      >
-        <DeckUpload
-          id={fieldId("deck")}
-          deck={draft.deck}
-          href={deckHref}
-          onChange={(deck) => change({ deck })}
-        />
-      </EditorField>
+      {image("logo", <ImageIcon aria-hidden="true" />)}
+      {image("cover", <PanelTopIcon aria-hidden="true" />)}
+      <form.Field name="solution.images">
+        {(field) => (
+          <EditorField
+            field="images"
+            label={t("fields.images")}
+            icon={<ImagesIcon aria-hidden="true" />}
+            optional={t("optional")}
+            hint={t("images.more.hint")}
+            labelled={false}
+          >
+            <GalleryUpload
+              id={fieldId("images")}
+              images={field.state.value}
+              onAdd={onImageAdded}
+              onChange={field.handleChange}
+            />
+          </EditorField>
+        )}
+      </form.Field>
+      <form.Field name="solution.deck">
+        {(field) => (
+          <EditorField
+            field="deck"
+            label={t("fields.deck")}
+            icon={<FileTextIcon aria-hidden="true" />}
+            optional={t("optional")}
+            labelled={false}
+          >
+            <DeckUpload
+              id={fieldId("deck")}
+              deck={field.state.value}
+              href={deckHref}
+              onChange={field.handleChange}
+            />
+          </EditorField>
+        )}
+      </form.Field>
       {link("demoUrl", t("fields.demoUrlHint"), <CirclePlayIcon aria-hidden="true" />)}
       {link("website", t("fields.websiteHint"), <LinkIcon aria-hidden="true" />)}
       {customerDeployments && (

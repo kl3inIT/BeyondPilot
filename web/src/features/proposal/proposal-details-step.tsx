@@ -2,85 +2,89 @@
 
 import { useTranslations } from "next-intl";
 
+import { withFieldGroup } from "@/components/form/app-form";
+import { useFieldValidity } from "@/components/form/form-context";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { countryCodes, useCountryName } from "@/i18n/vocabulary";
 
-import { phoneValid, type Details } from "./proposal-draft";
+import type { Details } from "./proposal-draft";
+import { phoneSchema } from "./proposal-schemas";
 
 type ProposalDetailsStepProps = {
-  details: Details;
-  onDetails: (details: Details) => void;
   /** The address of the account, which is not changed here. */
   email: string;
-  /** Whether the missing parts are pointed out. */
-  checked: boolean;
 };
 
 /** The submitting identity: the account's name, address, country and number, the fields the brief asks for. */
-function ProposalDetailsStep({ details, onDetails, email, checked }: ProposalDetailsStepProps) {
+const ProposalDetailsStep = withFieldGroup({
+  defaultValues: { name: "", country: "", phone: "" } as Details,
+  props: { email: "" } as ProposalDetailsStepProps,
+  render: function ProposalDetailsStepRender({ group, email }) {
+    const t = useTranslations("UseCaseProposal.wizard.details");
+
+    return (
+      <div className="grid gap-5 sm:grid-cols-2">
+        <group.AppField name="name">
+          {(field) => <field.TextField label={t("name")} autoComplete="name" maxLength={120} />}
+        </group.AppField>
+        <Field>
+          <FieldLabel htmlFor="proposal-email">{t("email")}</FieldLabel>
+          <Input id="proposal-email" value={email} readOnly disabled />
+        </Field>
+        <group.AppField name="country">{() => <CountryField />}</group.AppField>
+        {/* A number that cannot be one is said while it is typed, before the step is left. */}
+        <group.AppField
+          name="phone"
+          validators={{ onChange: phoneSchema(() => t("phoneInvalid")) }}
+        >
+          {(field) => (
+            <field.TextField
+              label={t("phone")}
+              type="tel"
+              autoComplete="tel"
+              inputMode="tel"
+              maxLength={40}
+              placeholder="+84 912 345 678"
+            />
+          )}
+        </group.AppField>
+      </div>
+    );
+  },
+});
+
+/** The country, in the browser's own list so a phone shows its picker. */
+function CountryField() {
   const t = useTranslations("UseCaseProposal.wizard.details");
   const countryName = useCountryName();
-  const nameMissing = checked && details.name.trim() === "";
-  const countryMissing = checked && details.country === "";
-  const phoneMissing = checked && details.phone.trim() === "";
-  const phoneBad = details.phone.trim() !== "" && !phoneValid(details.phone);
+  const { field, invalid, errors, ids } = useFieldValidity<string>();
+  const errorId = ids.error;
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
-      <Field data-invalid={nameMissing || undefined}>
-        <FieldLabel htmlFor="proposal-name">{t("name")}</FieldLabel>
-        <Input
-          id="proposal-name"
-          autoComplete="name"
-          maxLength={120}
-          value={details.name}
-          onChange={(event) => onDetails({ ...details, name: event.target.value })}
-          aria-invalid={nameMissing || undefined}
-        />
-        {nameMissing && <FieldError>{t("required")}</FieldError>}
-      </Field>
-      <Field>
-        <FieldLabel htmlFor="proposal-email">{t("email")}</FieldLabel>
-        <Input id="proposal-email" value={email} readOnly disabled />
-      </Field>
-      <Field data-invalid={countryMissing || undefined}>
-        <FieldLabel htmlFor="proposal-country">{t("country")}</FieldLabel>
-        <NativeSelect
-          id="proposal-country"
-          className="w-full"
-          autoComplete="country"
-          value={details.country}
-          onChange={(event) => onDetails({ ...details, country: event.target.value })}
-          aria-invalid={countryMissing || undefined}
-        >
-          <NativeSelectOption value="">{t("countryPlaceholder")}</NativeSelectOption>
-          {countryCodes.map((code) => (
-            <NativeSelectOption key={code} value={code}>
-              {countryName(code)}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
-        {countryMissing && <FieldError>{t("required")}</FieldError>}
-      </Field>
-      <Field data-invalid={phoneMissing || phoneBad || undefined}>
-        <FieldLabel htmlFor="proposal-phone">{t("phone")}</FieldLabel>
-        <Input
-          id="proposal-phone"
-          type="tel"
-          autoComplete="tel"
-          inputMode="tel"
-          maxLength={40}
-          placeholder="+84 912 345 678"
-          value={details.phone}
-          onChange={(event) => onDetails({ ...details, phone: event.target.value })}
-          aria-invalid={phoneMissing || phoneBad || undefined}
-        />
-        {phoneMissing && <FieldError>{t("required")}</FieldError>}
-        {phoneBad && <FieldError>{t("phoneInvalid")}</FieldError>}
-      </Field>
-    </div>
+    <Field data-invalid={invalid || undefined}>
+      <FieldLabel htmlFor={ids.control}>{t("country")}</FieldLabel>
+      <NativeSelect
+        id={ids.control}
+        name={field.name}
+        className="w-full"
+        autoComplete="country"
+        value={field.state.value}
+        aria-invalid={invalid || undefined}
+        aria-describedby={invalid ? errorId : undefined}
+        onBlur={field.handleBlur}
+        onChange={(event) => field.handleChange(event.target.value)}
+      >
+        <NativeSelectOption value="">{t("countryPlaceholder")}</NativeSelectOption>
+        {countryCodes.map((code) => (
+          <NativeSelectOption key={code} value={code}>
+            {countryName(code)}
+          </NativeSelectOption>
+        ))}
+      </NativeSelect>
+      {invalid && <FieldError id={errorId} errors={errors} />}
+    </Field>
   );
 }
 

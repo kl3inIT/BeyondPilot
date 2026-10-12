@@ -22,20 +22,24 @@ public enum EmailKind {
 
 	ORGANIZATION_INVITATION("organization_invitation", EmailGroup.ORGANIZATIONS, true, null,
 			Variable.required("organizationName", "Plain Cover"), Variable.required("inviterName", "Hà Lê"),
-			Variable.optional("owner", Boolean.FALSE)),
+			Variable.optional("owner", Boolean.FALSE),
+			Variable.optional("organizationUrl", "https://beyondpilot.example/workspace/organization")),
 
 	ORGANIZATION_APPROVED("organization_approved", EmailGroup.ORGANIZATIONS, true, null,
-			Variable.required("organizationName", "Plain Cover")),
+			Variable.required("organizationName", "Plain Cover"),
+			Variable.optional("organizationUrl", "https://beyondpilot.example/organizations/plain-cover")),
 
 	ORGANIZATION_REFUSED("organization_refused", EmailGroup.ORGANIZATIONS, true, null,
 			Variable.required("organizationName", "Plain Cover")),
 
 	ORGANIZATION_SENT_BACK("organization_sent_back", EmailGroup.ORGANIZATIONS, true, "reason",
 			Variable.required("organizationName", "Plain Cover"),
-			Variable.quote("reason", "Add the website of the company.")),
+			Variable.quote("reason", "Add the website of the company."),
+			Variable.optional("organizationUrl", "https://beyondpilot.example/workspace/organization")),
 
 	ORGANIZATION_REQUEST_APPROVED("organization_request_approved", EmailGroup.ORGANIZATIONS, true, null,
-			Variable.required("organizationName", "Plain Cover"), Variable.optional("claim", Boolean.FALSE)),
+			Variable.required("organizationName", "Plain Cover"), Variable.optional("claim", Boolean.FALSE),
+			Variable.optional("organizationUrl", "https://beyondpilot.example/workspace/organization")),
 
 	ORGANIZATION_REQUEST_DECLINED("organization_request_declined", EmailGroup.ORGANIZATIONS, true, null,
 			Variable.required("organizationName", "Plain Cover"), Variable.optional("claim", Boolean.FALSE)),
@@ -44,7 +48,8 @@ public enum EmailKind {
 			Variable.required("organizationName", "Plain Cover")),
 
 	ORGANIZATION_RESTORED("organization_restored", EmailGroup.ORGANIZATIONS, true, null,
-			Variable.required("organizationName", "Plain Cover")),
+			Variable.required("organizationName", "Plain Cover"),
+			Variable.optional("organizationUrl", "https://beyondpilot.example/organizations/plain-cover")),
 
 	ORGANIZATION_MERGED("organization_merged", EmailGroup.ORGANIZATIONS, true, null,
 			Variable.required("organizationName", "Plain Cover Ltd"), Variable.required("keptName", "Plain Cover")),
@@ -52,21 +57,25 @@ public enum EmailKind {
 	APPLICATION_RECEIVED("application_received", EmailGroup.APPLICATIONS, true, null,
 			Variable.required("programName", "AI for Insurance Challenge × Tasco"),
 			Variable.optional("resubmitted", Boolean.FALSE),
-			Variable.optional("editableUntil", "15 Oct 2026, 23:59 ICT")),
+			Variable.optional("editableUntil", "15 Oct 2026, 23:59 ICT"),
+			Variable.optional("applicationUrl", "https://beyondpilot.example/applications/1")),
 
 	REVIEWER_INVITATION("reviewer_invitation", EmailGroup.APPLICATIONS, true, null,
 			Variable.required("programName", "AI for Insurance Challenge × Tasco"),
-			Variable.required("inviterName", "Hà Lê"), Variable.required("expiresOn", "20 Oct 2026")),
+			Variable.required("inviterName", "Hà Lê"), Variable.required("expiresOn", "20 Oct 2026"),
+			Variable.optional("reviewsUrl", "https://beyondpilot.example/reviews/1")),
 
 	/** The subject and the message are what an operator wrote for one release of outcomes; nobody edits a template. */
 	APPLICATION_OUTCOME("application_outcome", EmailGroup.APPLICATIONS, false, null,
 			Variable.required("subject", "Shortlisted: AI for Insurance Challenge × Tasco"),
-			Variable.required("message", "Hi Minh,\n\nYour team is on the shortlist.")),
+			Variable.required("message", "Hi Minh,\n\nYour team is on the shortlist."),
+			Variable.optional("applicationUrl", "https://beyondpilot.example/applications/1")),
 
 	INTRODUCTION_REQUEST("introduction_request", EmailGroup.INTRODUCTIONS, true, "message",
 			Variable.optional("senderName", "Minh Trần"), Variable.required("senderOrganization", "Pocket Policy"),
 			Variable.required("solutionName", "ClaimLens"),
-			Variable.quote("message", "We need claims triage for motor insurance.")),
+			Variable.quote("message", "We need claims triage for motor insurance."),
+			Variable.optional("introductionsUrl", "https://beyondpilot.example/workspace/organization/introductions")),
 
 	INTRODUCTION_MADE("introduction_made", EmailGroup.INTRODUCTIONS, true, null,
 			Variable.optional("otherName", "Siti Rahma"), Variable.required("otherEmail", "siti@plaincover.example"),
@@ -76,11 +85,13 @@ public enum EmailKind {
 			Variable.required("providerName", "Plain Cover"), Variable.required("solutionName", "ClaimLens")),
 
 	SOLUTION_APPROVED("solution_approved", EmailGroup.SOLUTIONS, true, null,
-			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover")),
+			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover"),
+			Variable.optional("solutionUrl", "https://beyondpilot.example/solutions/claimlens")),
 
 	SOLUTION_SENT_BACK("solution_sent_back", EmailGroup.SOLUTIONS, true, "reason",
 			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover"),
-			Variable.quote("reason", "Name a customer who uses it.")),
+			Variable.quote("reason", "Name a customer who uses it."),
+			Variable.optional("solutionUrl", "https://beyondpilot.example/workspace/organization/solutions/1")),
 
 	SOLUTION_REJECTED("solution_rejected", EmailGroup.SOLUTIONS, true, null,
 			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover")),
@@ -89,16 +100,19 @@ public enum EmailKind {
 			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover")),
 
 	SOLUTION_RESTORED("solution_restored", EmailGroup.SOLUTIONS, true, null,
-			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover")),
+			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover"),
+			Variable.optional("solutionUrl", "https://beyondpilot.example/solutions/claimlens")),
 
 	USE_CASE_APPROVED("use_case_approved", EmailGroup.USE_CASES, true, null,
 			Variable.required("useCaseTitle", "Claims triage for motor insurance"),
-			Variable.required("organizationName", "Plain Cover")),
+			Variable.required("organizationName", "Plain Cover"),
+			Variable.optional("useCaseUrl", "https://beyondpilot.example/use-cases/1")),
 
 	USE_CASE_SENT_BACK("use_case_sent_back", EmailGroup.USE_CASES, true, "reason",
 			Variable.required("useCaseTitle", "Claims triage for motor insurance"),
 			Variable.required("organizationName", "Plain Cover"),
-			Variable.quote("reason", "Say which lines of business it covers.")),
+			Variable.quote("reason", "Say which lines of business it covers."),
+			Variable.optional("useCaseUrl", "https://beyondpilot.example/workspace/organization/use-cases/1")),
 
 	PROPOSAL_SENT("proposal_sent", EmailGroup.USE_CASES, true, null,
 			Variable.required("useCaseTitle", "Claims triage for motor insurance"),
@@ -108,34 +122,41 @@ public enum EmailKind {
 			Variable.optional("editableUntil", "19 Oct 2026, 23:59 ICT")),
 
 	TALENT_APPROVED("talent_approved", EmailGroup.TALENT, true, "note",
-			Variable.required("profileName", "Mei Tan"), Variable.quote("note", null)),
+			Variable.required("profileName", "Mei Tan"), Variable.quote("note", null),
+			Variable.optional("profileUrl", "https://beyondpilot.example/talent/mei-tan")),
 
 	TALENT_CHANGES_REQUESTED("talent_changes_requested", EmailGroup.TALENT, true, "note",
-			Variable.required("profileName", "Mei Tan"), Variable.quote("note", "Say what you built.")),
+			Variable.required("profileName", "Mei Tan"), Variable.quote("note", "Say what you built."),
+			Variable.optional("profileUrl", "https://beyondpilot.example/workspace/talent")),
 
 	TALENT_REMOVED("talent_removed", EmailGroup.TALENT, true, "note",
 			Variable.required("profileName", "Mei Tan"), Variable.quote("note", null)),
 
-	TALENT_RESTORED("talent_restored", EmailGroup.TALENT, true, null, Variable.required("profileName", "Mei Tan")),
+	TALENT_RESTORED("talent_restored", EmailGroup.TALENT, true, null, Variable.required("profileName", "Mei Tan"),
+			Variable.optional("profileUrl", "https://beyondpilot.example/talent/mei-tan")),
 
 	TALENT_ENQUIRY("talent_enquiry", EmailGroup.TALENT, true, "message",
 			Variable.optional("senderName", "Minh Trần"), Variable.optional("senderOrganization", "Pocket Policy"),
 			Variable.optional("aboutProject", Boolean.TRUE), Variable.optional("aboutRole", Boolean.FALSE),
 			Variable.optional("aboutOther", Boolean.FALSE),
-			Variable.quote("message", "We are building claims triage and would like your help.")),
+			Variable.quote("message", "We are building claims triage and would like your help."),
+			Variable.optional("enquiriesUrl", "https://beyondpilot.example/workspace/talent")),
 
 	TALENT_ENQUIRY_REMINDER("talent_enquiry_reminder", EmailGroup.TALENT, true, null,
-			Variable.optional("senderName", "Minh Trần"), Variable.required("daysLeft", "7")),
+			Variable.optional("senderName", "Minh Trần"), Variable.required("daysLeft", "7"),
+			Variable.optional("enquiriesUrl", "https://beyondpilot.example/workspace/talent")),
 
 	TALENT_INTRODUCTION("talent_introduction", EmailGroup.TALENT, true, null,
 			Variable.required("otherName", "Mei Tan"), Variable.required("otherEmail", "mei.tan@renewminute.example"),
 			Variable.optional("otherOrganization", "RenewMinute")),
 
 	TALENT_ENQUIRY_DECLINED("talent_enquiry_declined", EmailGroup.TALENT, true, null,
-			Variable.required("talentName", "Mei Tan")),
+			Variable.required("talentName", "Mei Tan"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/talent/sent")),
 
 	TALENT_ENQUIRY_CLOSED("talent_enquiry_closed", EmailGroup.TALENT, true, null,
-			Variable.required("talentName", "Mei Tan"));
+			Variable.required("talentName", "Mei Tan"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/talent/sent"));
 
 	private final String value;
 
