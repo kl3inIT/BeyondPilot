@@ -1,13 +1,13 @@
 "use client";
 
+import { revalidateLogic } from "@tanstack/react-form";
 import { CircleAlertIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useId, useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
+import { z } from "zod";
 
-import { Button } from "@/components/actions/button";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { requestSignInCode, type CodeRequestOutcome } from "@/features/identity/identity-api";
 
 /** The backend accepts the same plain shape; anything else is refused there too. */
@@ -30,10 +30,8 @@ type EmailSignInProps = {
 function EmailSignIn({ initialEmail = "", disabled, onPendingChange, onSent }: EmailSignInProps) {
   const t = useTranslations("SignIn");
   const locale = useLocale();
-  const errorId = useId();
-  const [email, setEmail] = useState(initialEmail);
-  const [pending, setPending] = useState(false);
-  const [problem, setProblem] = useState<"invalid" | "failed" | null>(null);
+  // The address is in order and still no code went out: said under the button until the next try.
+  const [failed, setFailed] = useState(false);
   // Until the page is interactive a click would submit the form the browser's way: a page load with
   // the address in the URL and no code sent. The button waits for the script instead.
   const interactive = useSyncExternalStore(
@@ -42,59 +40,65 @@ function EmailSignIn({ initialEmail = "", disabled, onPendingChange, onSent }: E
     () => false,
   );
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const address = email.trim();
-    if (!emailPattern.test(address)) {
-      setProblem("invalid");
-      return;
-    }
-    setProblem(null);
-    setPending(true);
-    onPendingChange(true);
-    const outcome = await requestSignInCode({ email: address, locale });
-    setPending(false);
-    onPendingChange(false);
-    if (outcome.kind === "sent" || outcome.kind === "limited") {
-      onSent(address, outcome);
-    } else {
-      setProblem(outcome.kind);
-    }
-  }
+  const form = useAppForm({
+    defaultValues: { email: initialEmail },
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({ email: z.string().trim().regex(emailPattern, t("invalidEmail")) }),
+    },
+    onSubmitInvalid: () => setFailed(false),
+    onSubmit: async ({ value, formApi }) => {
+      const address = value.email.trim();
+      setFailed(false);
+      onPendingChange(true);
+      const outcome = await requestSignInCode({ email: address, locale });
+      onPendingChange(false);
+      if (outcome.kind === "sent" || outcome.kind === "limited") {
+        onSent(address, outcome);
+      } else if (outcome.kind === "invalid") {
+        setServerErrors(formApi, { fields: { email: { message: t("invalidEmail") } } });
+      } else {
+        setFailed(true);
+      }
+    },
+  });
 
   return (
-    <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-      <Field data-invalid={problem === "invalid" || undefined}>
-        <FieldLabel htmlFor="sign-in-email">{t("emailLabel")}</FieldLabel>
-        <Input
-          id="sign-in-email"
-          name="email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          autoCapitalize="none"
-          spellCheck={false}
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          aria-invalid={problem === "invalid" || undefined}
-          aria-describedby={problem === "invalid" ? errorId : undefined}
-        />
-        {problem === "invalid" && <FieldError id={errorId}>{t("invalidEmail")}</FieldError>}
-      </Field>
-      <Button
-        type="submit"
-        size="lg"
-        className="w-full"
-        pending={pending}
-        disabled={disabled || !interactive}
-      >
-        {t("submit")}
-      </Button>
-      {problem === "failed" && (
+    <form
+      id={form.formId}
+      noValidate
+      className="flex flex-col gap-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void form.handleSubmit();
+      }}
+    >
+      <form.AppField name="email">
+        {(field) => (
+          <field.TextField
+            label={t("emailLabel")}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            spellCheck={false}
+          />
+        )}
+      </form.AppField>
+      <form.AppForm>
+        <form.SubmitButton size="lg" className="w-full" disabled={disabled || !interactive}>
+          {t("submit")}
+        </form.SubmitButton>
+      </form.AppForm>
+      {failed && (
         <Alert variant="destructive">
           <CircleAlertIcon aria-hidden="true" />
           <AlertTitle>{t("sendFailedTitle")}</AlertTitle>
-          <AlertDescription>{t("sendFailedBody", { email: email.trim() })}</AlertDescription>
+          <AlertDescription>
+            <form.Subscribe selector={(state) => state.values.email}>
+              {(email) => t("sendFailedBody", { email: email.trim() })}
+            </form.Subscribe>
+          </AlertDescription>
         </Alert>
       )}
     </form>

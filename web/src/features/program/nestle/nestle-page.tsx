@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { readProgramUseCases } from "@/features/usecase/use-cases-queries";
-import { Link } from "@/i18n/navigation";
 import type { Program } from "@/lib/api/generated";
 import { genaiFundLinks, programApplyRoute } from "@/lib/site";
 
@@ -30,7 +29,6 @@ import {
   ApplyCard,
   DraftBanner,
   EventList,
-  Note,
   SectionHead,
   Timeline,
   timelineOf,
@@ -83,21 +81,6 @@ async function NestlePage({ program }: { program: Program }) {
   return (
     <div id="top" lang={locale}>
       <DraftBanner program={program} />
-      {open && closes && (
-        <div className="border-b bg-accent">
-          <p className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2.5 text-center text-sm md:px-8">
-            <span>
-              {t.rich("banner.text", {
-                closes,
-                strong: (chunks) => <strong className="font-semibold">{chunks}</strong>,
-              })}
-            </span>
-            <Link href={apply} className="font-semibold text-primary underline underline-offset-4">
-              {page("applyNow")}
-            </Link>
-          </p>
-        </div>
-      )}
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pt-6 pb-16 md:px-8">
         <ProgramBreadcrumb name={program.name} />
 
@@ -253,7 +236,6 @@ async function NestlePage({ program }: { program: Program }) {
 
             <section id="dates" className="flex scroll-mt-6 flex-col gap-6">
               <SectionHead title={t("dates.title")} />
-              <Note title={t("early.title")} text={t("early.text")} />
               <Timeline steps={steps} now={now} />
               {program.events.length > 0 && (
                 <div className="flex flex-col gap-3">
@@ -337,18 +319,6 @@ async function NestlePage({ program }: { program: Program }) {
                   {page("applyNow")}
                 </Button>
               </div>
-              <ul className="flex flex-col gap-1 text-sm font-medium">
-                <li>
-                  <a href="#dates" className="text-primary underline underline-offset-4">
-                    {t("closing.session")}
-                  </a>
-                </li>
-                <li>
-                  <a href="#top" className="text-primary underline underline-offset-4">
-                    {t("closing.share")}
-                  </a>
-                </li>
-              </ul>
             </div>
             <Image
               src="/programs/nestle/key-visual.webp"
