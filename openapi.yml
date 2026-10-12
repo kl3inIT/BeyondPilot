@@ -13484,8 +13484,8 @@ components:
           type:
           - string
           - "null"
-          description: The name to show when the account has none yet; one it already
-            has is kept.
+          description: The name the account shows from now on; left out or blank keeps
+            the one it has.
           maxLength: 120
           minLength: 0
         phone:

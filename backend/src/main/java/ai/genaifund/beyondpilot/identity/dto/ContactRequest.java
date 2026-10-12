@@ -13,6 +13,6 @@ public record ContactRequest(
 		@Schema(types = { "string", "null" }, description = "With its country code, such as +84 912 345 678.") @Size(
 				max = 40) @Pattern(regexp = "^\\+?[0-9 ().-]*$") @Nullable String phone,
 		@Schema(types = { "string", "null" },
-				description = "The name to show when the account has none yet; one it already has is kept.") @Size(
+				description = "The name the account shows from now on; left out or blank keeps the one it has.") @Size(
 						max = 120) @Nullable String name) {
 }

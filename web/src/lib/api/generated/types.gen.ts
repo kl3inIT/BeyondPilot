@@ -1354,7 +1354,7 @@ export type ContactRequest = {
      */
     country?: string | null;
     /**
-     * The name to show when the account has none yet; one it already has is kept.
+     * The name the account shows from now on; left out or blank keeps the one it has.
      */
     name?: string | null;
     /**
