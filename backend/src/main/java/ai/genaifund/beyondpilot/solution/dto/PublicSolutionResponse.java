@@ -64,5 +64,7 @@ public record PublicSolutionResponse(@Schema(requiredMode = Schema.RequiredMode.
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether it is approved and not taken down. False only on a shared page read by its key.") boolean approved,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Its approved customer deployments, the most recently approved first.") List<PublicCustomerDeploymentResponse> customerDeployments) {
+				description = "Its approved customer deployments, the most recently approved first.") List<PublicCustomerDeploymentResponse> customerDeployments,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The offers it comes with, by title.") List<PublicOfferResponse> offers) {
 }

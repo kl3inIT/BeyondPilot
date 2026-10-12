@@ -1,10 +1,12 @@
 "use client";
 
+import { useStore } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { useAppForm } from "@/components/form/app-form";
 import {
   Combobox,
   ComboboxContent,
@@ -21,7 +23,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { useNotify } from "@/hooks/use-notify";
 import {
   listAdminOrganizations,
@@ -48,126 +49,140 @@ type MergeDialogProps = {
 /**
  * Merges a duplicate organization into the one to keep, in two steps: choose the one kept, then type
  * the duplicate's name to confirm, since a merge cannot be undone. It stays open while the merge is
- * sent; whoever opened it closes it.
+ * sent; whoever opened it closes it. Both steps are one form, drawn by hand because the second
+ * takes the first one's place in the open dialog.
  */
 function MergeDialog({ organization, members, invitations, onClose }: MergeDialogProps) {
   const t = useTranslations("Admin.organizations.merge");
   const notify = useNotify();
   const router = useRouter();
   const keepId = useId();
-  const confirmId = useId();
-  const [kept, setKept] = useState<Kept | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [typed, setTyped] = useState("");
-  const [pending, setPending] = useState(false);
   const candidates = useCandidates(organization.id);
 
-  async function merge() {
-    if (!kept) {
-      return;
-    }
-    setPending(true);
-    try {
-      await mergeOrganization({ path: { id: organization.id }, body: { intoId: kept.id } });
-      notify.success("Organization.done.merged", { name: organization.name, kept: kept.name });
-      onClose();
-      router.refresh();
-    } catch (error) {
-      notify.error(organizationError(error));
-    } finally {
-      setPending(false);
-    }
-  }
+  const form = useAppForm({
+    defaultValues: { kept: null as Kept | null, typed: "" },
+    onSubmit: async ({ value: { kept } }) => {
+      if (!kept) {
+        return;
+      }
+      try {
+        await mergeOrganization({ path: { id: organization.id }, body: { intoId: kept.id } });
+        notify.success("Organization.done.merged", { name: organization.name, kept: kept.name });
+        onClose();
+        router.refresh();
+      } catch (error) {
+        notify.error(organizationError(error));
+      }
+    },
+  });
+  const kept = useStore(form.store, (state) => state.values.kept);
+  const typed = useStore(form.store, (state) => state.values.typed);
+  const pending = useStore(form.store, (state) => state.isSubmitting);
 
   return (
     <Dialog open onOpenChange={(open) => !open && !pending && onClose()}>
       <DialogContent showCloseButton={false} className="sm:max-w-md">
-        {confirming && kept ? (
-          <>
-            <DialogHeader>
-              <DialogTitle size="lg">{t("confirmTitle", { kept: kept.name })}</DialogTitle>
-            </DialogHeader>
-            <Field>
-              <FieldLabel htmlFor={confirmId}>
-                {t("confirmLabel", { name: organization.name })}
-              </FieldLabel>
-              <Input
-                id={confirmId}
-                autoComplete="off"
-                value={typed}
-                onChange={(event) => setTyped(event.target.value)}
-              />
-              <p className="text-sm text-destructive">{t("cannotUndo")}</p>
-            </Field>
-            <DialogFooter>
-              <Button
-                prominence="secondary"
-                disabled={pending}
-                onClick={() => setConfirming(false)}
-              >
-                {t("back")}
-              </Button>
-              <Button
-                tone="danger"
-                pending={pending}
-                disabled={typed.trim() !== organization.name}
-                onClick={merge}
-              >
-                {t("merge")}
-              </Button>
-            </DialogFooter>
-          </>
-        ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle size="lg">{t("title", { name: organization.name })}</DialogTitle>
-            </DialogHeader>
-            <Field>
-              <FieldLabel htmlFor={keepId}>{t("keep")}</FieldLabel>
-              <Combobox
-                items={candidates.items(kept)}
-                filter={null}
-                value={kept}
-                onValueChange={(next: Kept | null) => setKept(next)}
-                onInputValueChange={candidates.search}
-                itemToStringLabel={(item: Kept) => item.name}
-                isItemEqualToValue={(item: Kept, other: Kept) => item.id === other.id}
-              >
-                <ComboboxInput
-                  id={keepId}
-                  className="w-full"
-                  placeholder={t("keepPlaceholder")}
-                  showTrigger={false}
-                />
-                <ComboboxContent>
-                  <ComboboxEmpty>{t("noMatch")}</ComboboxEmpty>
-                  <ComboboxList aria-label={t("keep")}>
-                    {(item: Kept) => (
-                      <ComboboxItem key={item.id} value={item}>
-                        {item.name}
-                      </ComboboxItem>
-                    )}
-                  </ComboboxList>
-                </ComboboxContent>
-              </Combobox>
-              <FieldDescription>{t("moves", { members, invitations })}</FieldDescription>
-            </Field>
-            <DialogFooter>
-              <Button prominence="secondary" onClick={onClose}>
-                {t("cancel")}
-              </Button>
-              <Button
-                disabled={!kept}
-                onClick={() => {
-                  setTyped("");
-                  setConfirming(true);
-                }}
-              >
-                {t("continue")}
-              </Button>
-            </DialogFooter>
-          </>
-        )}
+        <form
+          id={form.formId}
+          noValidate
+          className="flex flex-col gap-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            // Only the second step merges: Enter in the search of the first sends nothing.
+            if (confirming) {
+              void form.handleSubmit();
+            }
+          }}
+        >
+          {confirming && kept ? (
+            <>
+              <DialogHeader>
+                <DialogTitle size="lg">{t("confirmTitle", { kept: kept.name })}</DialogTitle>
+              </DialogHeader>
+              <form.AppField name="typed">
+                {(field) => (
+                  <field.TextField
+                    label={t("confirmLabel", { name: organization.name })}
+                    autoComplete="off"
+                    description={<span className="text-destructive">{t("cannotUndo")}</span>}
+                  />
+                )}
+              </form.AppField>
+              <DialogFooter>
+                <Button
+                  prominence="secondary"
+                  disabled={pending}
+                  onClick={() => setConfirming(false)}
+                >
+                  {t("back")}
+                </Button>
+                <Button
+                  type="submit"
+                  tone="danger"
+                  pending={pending}
+                  disabled={typed.trim() !== organization.name}
+                >
+                  {t("merge")}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle size="lg">{t("title", { name: organization.name })}</DialogTitle>
+              </DialogHeader>
+              <form.Field name="kept">
+                {(field) => (
+                  <Field>
+                    <FieldLabel htmlFor={keepId}>{t("keep")}</FieldLabel>
+                    <Combobox
+                      items={candidates.items(field.state.value)}
+                      filter={null}
+                      value={field.state.value}
+                      onValueChange={(next: Kept | null) => field.handleChange(next)}
+                      onInputValueChange={candidates.search}
+                      itemToStringLabel={(item: Kept) => item.name}
+                      isItemEqualToValue={(item: Kept, other: Kept) => item.id === other.id}
+                    >
+                      <ComboboxInput
+                        id={keepId}
+                        className="w-full"
+                        placeholder={t("keepPlaceholder")}
+                        showTrigger={false}
+                      />
+                      <ComboboxContent>
+                        <ComboboxEmpty>{t("noMatch")}</ComboboxEmpty>
+                        <ComboboxList aria-label={t("keep")}>
+                          {(item: Kept) => (
+                            <ComboboxItem key={item.id} value={item}>
+                              {item.name}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
+                    <FieldDescription>{t("moves", { members, invitations })}</FieldDescription>
+                  </Field>
+                )}
+              </form.Field>
+              <DialogFooter>
+                <Button prominence="secondary" onClick={onClose}>
+                  {t("cancel")}
+                </Button>
+                <Button
+                  disabled={!kept}
+                  onClick={() => {
+                    form.setFieldValue("typed", "");
+                    setConfirming(true);
+                  }}
+                >
+                  {t("continue")}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </form>
       </DialogContent>
     </Dialog>
   );

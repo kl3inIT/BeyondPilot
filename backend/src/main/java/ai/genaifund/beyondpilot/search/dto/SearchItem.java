@@ -69,5 +69,7 @@ public record SearchItem(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "A use case's technologies.") List<String> technologies,
 		@Schema(types = { "integer", "null" }, format = "int32", description = "A use case's minimum delivery time in weeks.") @Nullable Integer timelineMinWeeks,
 		@Schema(types = { "integer", "null" }, format = "int32", description = "A use case's maximum delivery time in weeks.") @Nullable Integer timelineMaxWeeks,
-		@Schema(types = { "string", "null" }, format = "uuid", description = "The logo of a use case's organization, absent when anonymous.") @Nullable UUID organizationLogoFileId) {
+		@Schema(types = { "string", "null" }, format = "uuid", description = "The logo of a use case's organization, absent when anonymous.") @Nullable UUID organizationLogoFileId,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The offers a solution comes with, by title.") List<SearchOffer> offers) {
 }

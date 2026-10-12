@@ -1,25 +1,18 @@
 "use client";
 
+import { revalidateLogic } from "@tanstack/react-form";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useState } from "react";
+import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
-import { ChoiceSelect } from "@/components/composites/choice-select";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { FormDialog } from "@/components/composites/form-dialog";
 import { ReviewStatus } from "@/components/composites/review-status";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
+import { FieldGroup } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
 import { useVocabulary } from "@/i18n/vocabulary";
 import {
@@ -31,6 +24,7 @@ import {
   type CustomerDeployment,
   type SaveCustomerDeployment,
 } from "@/lib/api/generated";
+import { rejectedFields } from "@/lib/api/rejected-fields";
 
 import { deploymentStages } from "./solution-codes";
 import { solutionError } from "./solution-errors";
@@ -47,7 +41,7 @@ function held(deployment: CustomerDeployment | null) {
     customer: deployment?.customer ?? "",
     problem: deployment?.problem ?? "",
     delivered: deployment?.delivered ?? "",
-    stage: deployment?.stage ?? "production",
+    stage: (deployment?.stage ?? "production") as string,
     channels: deployment?.channels ?? "",
     languages: deployment?.languages ?? "",
     period: deployment?.period ?? "",
@@ -68,139 +62,126 @@ function DeploymentForm({ solutionId, deployment, onClose }: DeploymentFormProps
   const stage = useVocabulary("deploymentStage");
   const notify = useNotify();
   const router = useRouter();
-  const id = useId();
-  const [text, setText] = useState(held(deployment));
-  const [pending, setPending] = useState(false);
-  const write =
-    (field: keyof typeof text) =>
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-      setText((current) => ({ ...current, [field]: event.target.value }));
-
-  async function save(event: React.FormEvent) {
-    event.preventDefault();
-    setPending(true);
-    const body: SaveCustomerDeployment = {
-      title: text.title,
-      customer: text.customer,
-      problem: text.problem,
-      delivered: text.delivered,
-      stage: text.stage as SaveCustomerDeployment["stage"],
-      channels: text.channels.trim() || null,
-      languages: text.languages.trim() || null,
-      period: text.period.trim() || null,
-      result: text.result.trim() || null,
-      version: deployment?.version ?? null,
-    };
-    try {
-      await (deployment
-        ? saveCustomerDeployment({ path: { solutionId, id: deployment.id }, body })
-        : addCustomerDeployment({ path: { solutionId }, body }));
-      notify.success("Solution.done.deploymentSaved", { name: text.title.trim() });
-      router.refresh();
-      onClose();
-    } catch (error) {
-      notify.error(solutionError(error));
-      setPending(false);
-    }
-  }
+  const say = useTranslations("Form.errors");
+  // What the form must hold is what the browser asked for before: something, even a space.
+  const filled = z.string().min(1, say("required"));
+  const form = useAppForm({
+    defaultValues: held(deployment),
+    validationLogic: revalidateLogic(),
+    validators: {
+      onDynamic: z.object({
+        title: filled,
+        customer: filled,
+        problem: filled,
+        delivered: filled,
+        stage: z.string(),
+        channels: z.string(),
+        languages: z.string(),
+        period: z.string(),
+        result: z.string(),
+      }),
+    },
+    onSubmit: async ({ value, formApi }) => {
+      const body: SaveCustomerDeployment = {
+        title: value.title,
+        customer: value.customer,
+        problem: value.problem,
+        delivered: value.delivered,
+        stage: value.stage as SaveCustomerDeployment["stage"],
+        channels: value.channels.trim() || null,
+        languages: value.languages.trim() || null,
+        period: value.period.trim() || null,
+        result: value.result.trim() || null,
+        version: deployment?.version ?? null,
+      };
+      try {
+        await (deployment
+          ? saveCustomerDeployment({ path: { solutionId, id: deployment.id }, body })
+          : addCustomerDeployment({ path: { solutionId }, body }));
+        notify.success("Solution.done.deploymentSaved", { name: value.title.trim() });
+        router.refresh();
+        onClose();
+      } catch (error) {
+        // The fields the backend rejected are marked; why is said in the toast, as before.
+        setServerErrors(formApi, {
+          fields: Object.fromEntries(
+            [...rejectedFields(error)]
+              .filter((field) => field in value)
+              .map((field) => [field, { message: say("invalid") }]),
+          ),
+        });
+        notify.error(solutionError(error));
+      }
+    },
+  });
 
   return (
-    <Dialog open onOpenChange={(next) => (pending || next ? undefined : onClose())}>
-      <DialogContent showCloseButton={false} className="max-h-dvh overflow-y-auto sm:max-w-2xl">
-        <form className="flex flex-col gap-4" onSubmit={save}>
-          <DialogHeader>
-            <DialogTitle>{t(deployment ? "editTitle" : "addTitle")}</DialogTitle>
-            <DialogDescription>{t("lead")}</DialogDescription>
-          </DialogHeader>
-          <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor={`${id}-title`}>{t("title")}</FieldLabel>
-              <Input
-                id={`${id}-title`}
+    <FormDialog
+      open
+      onOpenChange={(next) => !next && onClose()}
+      form={form}
+      title={t(deployment ? "editTitle" : "addTitle")}
+      description={t("lead")}
+      width="3xl"
+      submitLabel={t("save")}
+      cancelLabel={t("cancel")}
+    >
+      <FieldGroup>
+        <form.AppField name="title">
+          {(field) => (
+            <field.TextField
+              label={t("title")}
+              required
+              maxLength={120}
+              description={t("titleHint")}
+            />
+          )}
+        </form.AppField>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <form.AppField name="customer">
+            {(field) => (
+              <field.TextField
+                label={t("customer")}
                 required
                 maxLength={120}
-                value={text.title}
-                onChange={write("title")}
+                description={t("customerHint")}
               />
-              <FieldDescription>{t("titleHint")}</FieldDescription>
-            </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field>
-                <FieldLabel htmlFor={`${id}-customer`}>{t("customer")}</FieldLabel>
-                <Input
-                  id={`${id}-customer`}
-                  required
-                  maxLength={120}
-                  value={text.customer}
-                  onChange={write("customer")}
+            )}
+          </form.AppField>
+          <form.AppField name="stage">
+            {(field) => (
+              <field.SelectField
+                label={t("stage")}
+                options={deploymentStages.map((value) => ({ value, label: stage(value) }))}
+              />
+            )}
+          </form.AppField>
+        </div>
+        <form.AppField name="problem">
+          {(field) => (
+            <field.TextareaField label={t("problem")} required rows={3} maxLength={1000} />
+          )}
+        </form.AppField>
+        <form.AppField name="delivered">
+          {(field) => (
+            <field.TextareaField label={t("delivered")} required rows={3} maxLength={1000} />
+          )}
+        </form.AppField>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {optionalFields.map((name) => (
+            <form.AppField key={name} name={name}>
+              {(field) => (
+                <field.TextField
+                  label={t(name)}
+                  maxLength={name === "result" ? 300 : 120}
+                  description={name === "languages" ? undefined : t(`${name}Hint`)}
                 />
-                <FieldDescription>{t("customerHint")}</FieldDescription>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor={`${id}-stage`}>{t("stage")}</FieldLabel>
-                <ChoiceSelect
-                  id={`${id}-stage`}
-                  options={deploymentStages.map((value) => ({ value, label: stage(value) }))}
-                  value={text.stage}
-                  onValueChange={(next) =>
-                    setText((current) => ({
-                      ...current,
-                      stage: deploymentStages.find((value) => value === next) ?? current.stage,
-                    }))
-                  }
-                />
-              </Field>
-            </div>
-            <Field>
-              <FieldLabel htmlFor={`${id}-problem`}>{t("problem")}</FieldLabel>
-              <Textarea
-                id={`${id}-problem`}
-                required
-                rows={3}
-                maxLength={1000}
-                value={text.problem}
-                onChange={write("problem")}
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor={`${id}-delivered`}>{t("delivered")}</FieldLabel>
-              <Textarea
-                id={`${id}-delivered`}
-                required
-                rows={3}
-                maxLength={1000}
-                value={text.delivered}
-                onChange={write("delivered")}
-              />
-            </Field>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {optionalFields.map((field) => (
-                <Field key={field}>
-                  <FieldLabel htmlFor={`${id}-${field}`}>{t(field)}</FieldLabel>
-                  <Input
-                    id={`${id}-${field}`}
-                    maxLength={field === "result" ? 300 : 120}
-                    value={text[field]}
-                    onChange={write(field)}
-                  />
-                  {field !== "languages" && (
-                    <FieldDescription>{t(`${field}Hint`)}</FieldDescription>
-                  )}
-                </Field>
-              ))}
-            </div>
-          </FieldGroup>
-          <DialogFooter>
-            <Button prominence="secondary" disabled={pending} onClick={onClose}>
-              {t("cancel")}
-            </Button>
-            <Button type="submit" pending={pending}>
-              {t("save")}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+              )}
+            </form.AppField>
+          ))}
+        </div>
+      </FieldGroup>
+    </FormDialog>
   );
 }
 
