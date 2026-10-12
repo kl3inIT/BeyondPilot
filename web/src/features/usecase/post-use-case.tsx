@@ -9,7 +9,7 @@ import { useRouter } from "@/i18n/navigation";
 import { createMyUseCase } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { describeUseCaseError } from "./my-use-case-errors";
+import { useCaseWords } from "./my-use-case-errors";
 
 /**
  * Starts an empty draft for the organization and opens it, so that what the members write is saved from
@@ -37,7 +37,7 @@ function PostUseCase({
       const { data } = await createMyUseCase();
       router.push(`${siteRoutes.workspaceUseCases}/${data.id}`);
     } catch (error) {
-      notify.error(describeUseCaseError(error));
+      notify.failure(error, useCaseWords);
       setPending(false);
     }
   }

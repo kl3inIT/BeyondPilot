@@ -1,12 +1,13 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { Person } from "@/components/composites/person";
 import { Status } from "@/components/composites/status";
+import { useFormatter } from "@/i18n/format";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { SentTalentEnquiry } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -74,7 +75,7 @@ function TalentSent({ enquiries }: { enquiries: SentTalentEnquiry[] }) {
                 <span className="flex justify-between gap-3 text-sm text-muted-foreground">
                   <span className="truncate">{topic(latest.topic)}</span>
                   <span className="shrink-0 tabular-nums">
-                    {format.dateTime(new Date(latest.createdAt), { dateStyle: "medium" })}
+                    {format.dateTime(new Date(latest.createdAt), "date")}
                   </span>
                 </span>
               </button>
@@ -95,7 +96,7 @@ function SentDetail({ thread: { latest, earlier } }: { thread: Thread }) {
   const t = useTranslations("Talent.sent");
   const topic = useVocabulary("enquiryTopic");
   const format = useFormatter();
-  const date = (value: string) => format.dateTime(new Date(value), { dateStyle: "medium" });
+  const date = (value: string) => format.dateTime(new Date(value), "date");
   const name = latest.recipientName;
   const email = latest.status === "accepted" ? latest.recipientEmail : null;
   const over = latest.status === "declined" || latest.status === "closed";

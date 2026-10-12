@@ -10,8 +10,6 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
 import { featureSolution, unfeatureSolution, type AdminSolutionSummary } from "@/lib/api/generated";
 
-import { solutionError } from "./solution-errors";
-
 type SolutionFeatureProps = {
   solution: Pick<AdminSolutionSummary, "id" | "name" | "featuredAt">;
   /** A button on the solution's record, or an item of its row's menu in the list. */
@@ -41,7 +39,7 @@ function SolutionFeature({ solution, appearance }: SolutionFeatureProps) {
       );
       router.refresh();
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }

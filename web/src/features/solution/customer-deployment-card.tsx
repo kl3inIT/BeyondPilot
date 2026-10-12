@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRightIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useFormatter } from "@/i18n/format";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicCustomerDeployment } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -65,7 +66,7 @@ function CustomerDeploymentCard({ deployment, organization }: CustomerDeployment
             <DialogDescription>
               {t("lead", {
                 stage: stage(deployment.stage),
-                day: format.dateTime(new Date(deployment.approvedAt), { dateStyle: "medium" }),
+                day: format.dateTime(new Date(deployment.approvedAt), "date"),
               })}
             </DialogDescription>
           </DialogHeader>

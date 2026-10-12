@@ -8,8 +8,6 @@ import { FieldDescription } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
 import { backSolution, type Solution } from "@/lib/api/generated";
 
-import { solutionError } from "./solution-errors";
-
 /** The longest line the backend takes. */
 const MAX = 120;
 
@@ -43,7 +41,7 @@ function SolutionBacking({ solution }: { solution: Pick<Solution, "id" | "name" 
         notify.success("Admin.solutions.backing.saved", { name: solution.name });
         router.refresh();
       } catch (error) {
-        notify.error(solutionError(error));
+        notify.failure(error);
       }
     },
   });

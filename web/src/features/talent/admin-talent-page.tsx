@@ -1,10 +1,11 @@
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { QueueNext } from "@/components/composites/queue-next";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { useFormatter } from "@/i18n/format";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalent } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -47,7 +48,7 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
     (profile.status === "in_review"
       ? t("waitingSince", { time: format.relativeTime(new Date(profile.submittedAt)) })
       : t("submitted", {
-          day: format.dateTime(new Date(profile.submittedAt), { dateStyle: "medium" }),
+          day: format.dateTime(new Date(profile.submittedAt), "date"),
         }));
 
   return (
@@ -121,7 +122,7 @@ function AdminTalentPage({ detail, next, queue }: AdminTalentPageProps) {
                 {detail.featuredAt && (
                   <FeaturedBadge>
                     {feature("since", {
-                      day: format.dateTime(new Date(detail.featuredAt), { dateStyle: "medium" }),
+                      day: format.dateTime(new Date(detail.featuredAt), "date"),
                     })}
                   </FeaturedBadge>
                 )}

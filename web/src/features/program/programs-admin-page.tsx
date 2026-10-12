@@ -59,9 +59,9 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
     }
     const closes = new Date(applications.closesAt);
     return t("window", {
-      opens: format.dateTime(new Date(applications.opensAt), { day: "numeric", month: "short" }),
-      closes: format.dateTime(closes, { day: "numeric", month: "short", year: "numeric" }),
-      time: format.dateTime(closes, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }),
+      opens: format.dateTime(new Date(applications.opensAt), "day"),
+      closes: format.dateTime(closes, "date"),
+      time: format.dateTime(closes, "time"),
     });
   }
 
@@ -73,8 +73,8 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
     const starts = new Date(`${program.startsOn}T00:00:00+07:00`);
     const ends = new Date(`${program.endsOn}T00:00:00+07:00`);
     return program.startsOn === program.endsOn
-      ? format.dateTime(starts, { day: "numeric", month: "short", year: "numeric" })
-      : format.dateTimeRange(starts, ends, { day: "numeric", month: "short", year: "numeric" });
+      ? format.dateTime(starts, "date")
+      : format.dateTimeRange(starts, ends, "date");
   }
 
   const rows = list.items.map((program) => {

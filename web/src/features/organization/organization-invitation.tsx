@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { useAppForm } from "@/components/form/app-form";
 import { useNotify } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
 import {
   acceptOrganizationInvitation,
   changeMyJobTitle,
@@ -14,7 +15,6 @@ import {
   type OrganizationInvitation as Invitation,
 } from "@/lib/api/generated";
 
-import { organizationError } from "./organization-errors";
 import { OrganizationMark } from "./organization-mark";
 
 /**
@@ -43,7 +43,7 @@ function OrganizationInvitation({ invitation }: { invitation: Invitation }) {
         notify.success("Organization.done.invitationAccepted");
         router.refresh();
       } catch (error) {
-        notify.error(organizationError(error));
+        notify.failure(error);
         setPending(null);
       }
     },
@@ -56,7 +56,7 @@ function OrganizationInvitation({ invitation }: { invitation: Invitation }) {
       notify.success("Organization.done.invitationDeclined");
       router.refresh();
     } catch (error) {
-      notify.error(organizationError(error));
+      notify.failure(error);
       setPending(null);
     }
   }
@@ -73,7 +73,7 @@ function OrganizationInvitation({ invitation }: { invitation: Invitation }) {
           <span className="text-xs text-muted-foreground">
             {t("invitedOn", {
               name: invitation.invitedBy,
-              day: format.dateTime(new Date(invitation.createdAt), { dateStyle: "medium" }),
+              day: format.dateTime(new Date(invitation.createdAt), "date"),
             })}
           </span>
         </div>

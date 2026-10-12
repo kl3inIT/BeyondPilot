@@ -705,7 +705,7 @@ test.describe("workspace solutions", () => {
       "href",
       "/api/solution/solutions/policy-chat/deck",
     );
-    await expect(page.getByText("3.1 MB · Uploaded Oct 1, 10:00")).toBeVisible();
+    await expect(page.getByText("3.1 MB · Uploaded 1 Oct, 10:00")).toBeVisible();
 
     await expect(async () => {
       await deployments.getByRole("button", { name: "Add a deployment" }).click();

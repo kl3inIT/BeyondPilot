@@ -19,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
 import {
   inviteReviewer,
   removeReviewer,
@@ -27,16 +26,6 @@ import {
   saveReviewCriteria,
   type ReviewCriterion,
 } from "@/lib/api/generated";
-
-function errorKey(error: unknown) {
-  const code = error instanceof ApiError ? error.code : undefined;
-  return code === "PROPOSAL_REVIEWER_INVITED" ||
-    code === "PROPOSAL_REVIEWER_JOINED" ||
-    code === "PROPOSAL_CRITERIA_FIXED" ||
-    code === "PROPOSAL_CRITERIA_INVALID"
-    ? (`Review.errors.${code}` as const)
-    : ("Review.errors.unknown" as const);
-}
 
 /** Invites an address to judge the program; the person signs in with it and finds the program. */
 function InviteReviewer({ programId, programName }: { programId: string; programName: string }) {
@@ -64,7 +53,7 @@ function InviteReviewer({ programId, programName }: { programId: string; program
         setOpen(false);
         router.refresh();
       } catch (error) {
-        notify.error(errorKey(error));
+        notify.failure(error);
       }
     },
   });
@@ -120,7 +109,7 @@ function ReviewerRowActions({
       }
       router.refresh();
     } catch (error) {
-      notify.error(errorKey(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }
@@ -205,7 +194,7 @@ function CriteriaEditor({
         setOpen(false);
         router.refresh();
       } catch (error) {
-        notify.error(errorKey(error));
+        notify.failure(error);
       }
     },
   });

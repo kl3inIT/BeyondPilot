@@ -1,7 +1,7 @@
 "use client";
 
 import { CableIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ import { Empty, EmptyContent, EmptyHeader, EmptyMedia, EmptyTitle } from "@/comp
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppMark } from "@/features/identity/app-mark";
 import { useNotify } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
 import { revokeConnectedApp, type ConnectedApp } from "@/lib/api/generated";
 
 type McpTabsProps = {
@@ -75,8 +76,7 @@ function AppRow({ app }: { app: ConnectedApp }) {
   const t = useTranslations("Mcp.apps");
   const format = useFormatter();
   const facts = [
-    app.allowedAt &&
-      t("allowed", { date: format.dateTime(new Date(app.allowedAt), { dateStyle: "medium" }) }),
+    app.allowedAt && t("allowed", { date: format.dateTime(new Date(app.allowedAt), "date") }),
     app.usedAt && t("used", { time: format.relativeTime(new Date(app.usedAt)) }),
   ].filter(Boolean);
 
@@ -106,8 +106,8 @@ function RevokeApp({ app }: { app: ConnectedApp }) {
       await revokeConnectedApp({ path: { id: app.id } });
       notify.success("Mcp.revoke.done", { name: app.name });
       router.refresh();
-    } catch {
-      notify.error("Mcp.revoke.failed");
+    } catch (error) {
+      notify.failure(error, { otherwise: "Mcp.revoke.failed" });
     } finally {
       setPending(false);
       setOpen(false);

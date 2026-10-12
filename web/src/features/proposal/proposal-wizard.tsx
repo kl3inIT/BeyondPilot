@@ -2,17 +2,20 @@
 
 import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { CloudAlertIcon, CloudCheckIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
+import { useUnloadWarning } from "@/components/composites/leave-guard";
 import { PdfUpload } from "@/components/composites/pdf-upload";
 import { useAppForm } from "@/components/form/app-form";
 import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Field, FieldDescription, FieldError } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
+import { failedWith } from "@/lib/api/failure";
 import { useRouter } from "@/i18n/navigation";
 import { WizardShell } from "@/features/usecase/wizard-shell";
 import {
@@ -41,7 +44,7 @@ import {
   type ProposalValues,
   type Step,
 } from "./proposal-draft";
-import { codeOfProposalError, describeProposalError } from "./proposal-errors";
+import { proposalWords } from "./proposal-errors";
 import { ProposalOrganizationStep } from "./proposal-organization-step";
 import { ProposalDetailsStep } from "./proposal-details-step";
 import { ProposalReviewStep } from "./proposal-review-step";
@@ -206,12 +209,12 @@ function ProposalWizard({
       setState("idle");
       return true;
     } catch (error) {
-      if (codeOfProposalError(error) === "PROPOSAL_CHANGED_MEANWHILE") {
+      if (failedWith(error, "PROPOSAL_CHANGED_MEANWHILE")) {
         // Saving again cannot help: the person must read the proposal as it stands now.
         stopped.current = true;
         setChanged(true);
       } else {
-        notify.error(describeProposalError(error));
+        notify.failure(error, proposalWords);
       }
       dirty.current = true;
       setState("failed");
@@ -249,16 +252,8 @@ function ProposalWizard({
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  // Leaving the page with something unsaved asks first.
-  useEffect(() => {
-    const warn = (event: BeforeUnloadEvent) => {
-      if (dirty.current) {
-        event.preventDefault();
-      }
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, []);
+  // Closing or reloading the page between two saves asks first.
+  useUnloadWarning(() => dirty.current);
 
   const stepIndex = steps.indexOf(step);
   const missing = incompleteSteps(values, detailsComplete(details));
@@ -290,7 +285,7 @@ function ProposalWizard({
       setDetailsChanged(false);
       return true;
     } catch (error) {
-      notify.error(describeProposalError(error));
+      notify.failure(error, proposalWords);
       return false;
     }
   }
@@ -354,17 +349,17 @@ function ProposalWizard({
       notify.success("UseCaseProposal.wizard.edit.saved");
       router.push(proposalViewRoute(useCaseId));
     } catch (error) {
-      const code = codeOfProposalError(error);
+      const code = failedWith(error, "PROPOSAL_CHANGED_MEANWHILE", "PROPOSAL_EDIT_WINDOW_CLOSED");
       if (code === "PROPOSAL_CHANGED_MEANWHILE") {
         stopped.current = true;
         setChanged(true);
       } else if (code === "PROPOSAL_EDIT_WINDOW_CLOSED") {
         // The window ended while the form was open: the page reads the proposal and shows it as sent.
         dirty.current = false;
-        notify.error(describeProposalError(error));
+        notify.failure(error, proposalWords);
         router.refresh();
       } else {
-        notify.error(describeProposalError(error));
+        notify.failure(error, proposalWords);
       }
     }
   }
@@ -392,15 +387,11 @@ function ProposalWizard({
         router.push(`${proposeRoute(useCaseId)}/sent`);
         return;
       }
-      notify.error(describeProposalError(error));
+      notify.failure(error, proposalWords);
     }
   }
 
-  const time = format.dateTime(savedAt, {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Ho_Chi_Minh",
-  });
+  const time = format.dateTime(savedAt, "time");
 
   const saveStatus = editing ? (
     <span role="status" className="text-xs text-muted-foreground">

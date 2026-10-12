@@ -19,8 +19,6 @@ import {
 } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { solutionError } from "./solution-errors";
-
 /**
  * Starts a solution for an organization, as an operator. The organization is one GenAI Fund approved
  * and the name is what the draft is called; it opens in the editor, which the operator publishes from.
@@ -51,7 +49,7 @@ function CreateAdminSolution() {
         });
         router.push(getPathname({ href: `${siteRoutes.adminSolutions}/${data.id}/edit`, locale }));
       } catch (error) {
-        notify.error(solutionError(error));
+        notify.failure(error);
         return;
       }
       // The dialog stays pending until the editor arrives, so a second press cannot create twice.
@@ -68,7 +66,7 @@ function CreateAdminSolution() {
       const { data } = await listAdminSolutionOrganizations({ query: {} });
       setOrganizations(data);
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
       setOpen(false);
     }
   }

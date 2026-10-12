@@ -1,8 +1,9 @@
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
 import { OrganizationMark } from "@/features/organization/organization-mark";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCaseSummary } from "@/lib/api/generated";
@@ -114,20 +115,11 @@ function UseCaseCard({
           {deadline ? (
             <>
               {t("deadline.date", {
-                date: format.dateTime(deadline, {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                }),
+                date: format.dateTime(deadline, "date"),
               })}
               <br />
               {t("deadline.time", {
-                time: format.dateTime(deadline, {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hourCycle: "h23",
-                  timeZone: "Asia/Ho_Chi_Minh",
-                }),
+                time: format.dateTime(deadline, "time"),
               })}
             </>
           ) : (

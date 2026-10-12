@@ -1,16 +1,17 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { useNotify } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
 import { useRouter } from "@/i18n/navigation";
 import { moveMyUseCaseToDraft, type MyUseCase } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { describeUseCaseError } from "./my-use-case-errors";
+import { useCaseWords } from "./my-use-case-errors";
 import { draftValuesOf } from "./use-case-draft";
 import { UseCaseSummary } from "./use-case-summary";
 import { UseCaseTabs } from "./use-case-tabs";
@@ -41,17 +42,12 @@ function UseCaseView({ useCase }: { useCase: MyUseCase }) {
       // The use case is a draft now: the same address opens it for editing.
       router.refresh();
     } catch (error) {
-      notify.error(describeUseCaseError(error));
+      notify.failure(error, useCaseWords);
       setPending(false);
     }
   }
 
-  const closes = useCase.closesAt
-    ? format.dateTime(new Date(useCase.closesAt), {
-        dateStyle: "medium",
-        timeZone: "Asia/Ho_Chi_Minh",
-      })
-    : "";
+  const closes = useCase.closesAt ? format.dateTime(new Date(useCase.closesAt), "date") : "";
 
   return (
     <WizardShell

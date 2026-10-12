@@ -13,8 +13,6 @@ import {
   withdrawJoinRequest,
 } from "@/lib/api/generated";
 
-import { organizationError } from "./organization-errors";
-
 /**
  * The one-click changes of the organization screens: the call, and the words that say it was made
  * when the screen itself does not show it.
@@ -80,7 +78,7 @@ function OrganizationAction({ action, id = "", children, ...look }: Organization
       }
       startRefresh(() => router.refresh());
     } catch (error) {
-      notify.error(organizationError(error));
+      notify.failure(error);
     } finally {
       deciding.current = false;
       setPending(false);

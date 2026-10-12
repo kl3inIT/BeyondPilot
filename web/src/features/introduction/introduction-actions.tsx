@@ -9,7 +9,7 @@ import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { useNotify } from "@/hooks/use-notify";
 import { declineIntroduction, replyToIntroduction } from "@/lib/api/generated";
 
-import { introductionError } from "./introduction-errors";
+import { introductionWords } from "./introduction-errors";
 
 type IntroductionActionsProps = {
   id: string;
@@ -36,7 +36,7 @@ function IntroductionActions({ id, solutionName }: IntroductionActionsProps) {
       setDeclining(false);
       router.refresh();
     } catch (error) {
-      notify.error(introductionError(error));
+      notify.failure(error, introductionWords);
       setPending(null);
       return;
     }

@@ -11,8 +11,7 @@ import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useNotify } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
+import { useFailureWords, useNotify } from "@/hooks/use-notify";
 import {
   previewEmailTemplate,
   saveEmailAppearance,
@@ -45,6 +44,7 @@ function EmailAppearanceForm({
   sample: { subject: string; body: string };
 }) {
   const t = useTranslations("Admin.email.appearance");
+  const words = useFailureWords();
   const say = useTranslations("Form.errors");
   const notify = useNotify();
   const router = useRouter();
@@ -68,9 +68,8 @@ function EmailAppearanceForm({
         notify.success("Admin.email.appearance.saved");
         router.refresh();
       } catch (error) {
-        const code = error instanceof ApiError ? error.code : undefined;
         setServerErrors(formApi, {
-          form: code === "NOTIFICATION_SETTINGS_CHANGED" ? t("changed") : t("unknown"),
+          form: words(error, { otherwise: "Admin.email.appearance.unknown" }),
           fields: {},
         });
       }

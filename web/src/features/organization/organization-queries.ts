@@ -1,5 +1,6 @@
 import { knownSort } from "@/lib/list-sort";
 import { ApiError } from "@/lib/api/client";
+import { failedWith } from "@/lib/api/failure";
 import {
   getAdminOrganization,
   getMyOrganization,
@@ -37,7 +38,7 @@ export async function readMembers(
     });
     return data;
   } catch (error) {
-    if (error instanceof ApiError && error.code === "ORGANIZATION_MEMBERSHIP_REQUIRED") {
+    if (failedWith(error, "ORGANIZATION_MEMBERSHIP_REQUIRED")) {
       return null;
     }
     throw error;

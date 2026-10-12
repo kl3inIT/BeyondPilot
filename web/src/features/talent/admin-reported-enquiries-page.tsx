@@ -1,10 +1,11 @@
 import { InboxIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { ListFooter } from "@/components/composites/list-footer";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { useFormatter } from "@/i18n/format";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentEnquiryList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -30,7 +31,7 @@ function AdminReportedEnquiriesPage({
   const topic = useVocabulary("enquiryTopic");
   const format = useFormatter();
   const locale = useLocale();
-  const date = (value: string) => format.dateTime(new Date(value), { dateStyle: "medium" });
+  const date = (value: string) => format.dateTime(new Date(value), "date");
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>

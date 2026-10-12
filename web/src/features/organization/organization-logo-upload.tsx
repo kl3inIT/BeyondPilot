@@ -6,8 +6,8 @@ import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { IconButton } from "@/components/actions/icon-button";
-import { ApiError } from "@/lib/api/client";
-import { publicFileUrl, uploadFile } from "@/lib/storage/upload";
+import { useFailureWords } from "@/hooks/use-notify";
+import { publicFileUrl, uploadFile, uploadWords } from "@/lib/storage/upload";
 import { cn } from "cn";
 
 /** What the backend accepts as an organization logo (storage › FilePurpose.ORGANIZATION_LOGO). */
@@ -28,6 +28,7 @@ type OrganizationLogoUploadProps = {
  */
 function OrganizationLogoUpload({ value, onChange }: OrganizationLogoUploadProps) {
   const t = useTranslations("Organization.form.logo");
+  const words = useFailureWords();
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -48,13 +49,15 @@ function OrganizationLogoUpload({ value, onChange }: OrganizationLogoUploadProps
       const stored = await uploadFile(file, "organization_logo");
       onChange(stored.id);
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
       setProblem(
-        code === "STORAGE_MEDIA_TYPE_NOT_ALLOWED" || code === "STORAGE_CONTENT_MISMATCH"
-          ? t("errors.type")
-          : code === "STORAGE_FILE_TOO_LARGE"
-            ? t("errors.size")
-            : t("errors.failed"),
+        words(
+          error,
+          uploadWords({
+            type: "Organization.form.logo.errors.type",
+            size: "Organization.form.logo.errors.size",
+            failed: "Organization.form.logo.errors.failed",
+          }),
+        ),
       );
     } finally {
       setUploading(false);

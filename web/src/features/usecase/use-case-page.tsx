@@ -1,4 +1,4 @@
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { ProposalActions } from "@/features/proposal/proposal-actions";
 import { OrganizationMark } from "@/features/organization/organization-mark";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCase } from "@/lib/api/generated";
@@ -93,11 +94,7 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
     : t("deadline.none");
   const proposalDeadline = useCase.closesAt
     ? t("detail.open.closes", {
-        when: format.dateTime(new Date(useCase.closesAt), {
-          month: "short",
-          day: "numeric",
-          timeZone: "Asia/Ho_Chi_Minh",
-        }),
+        when: format.dateTime(new Date(useCase.closesAt), "day"),
       })
     : t("detail.open.noDeadline");
   const sections = [

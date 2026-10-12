@@ -2,20 +2,23 @@
 
 import { useStore } from "@tanstack/react-form";
 import { CloudAlertIcon, CloudCheckIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
+import { useUnloadWarning } from "@/components/composites/leave-guard";
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { useAppForm } from "@/components/form/app-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useNotify } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
+import { failedWith } from "@/lib/api/failure";
 import { useRouter } from "@/i18n/navigation";
 import { saveMyUseCase, submitMyUseCase, type MyUseCase } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
 import { siteRoutes } from "@/lib/site";
 
-import { describeUseCaseError, codeOfUseCaseError } from "./my-use-case-errors";
+import { useCaseWords } from "./my-use-case-errors";
 import {
   bodyOf,
   draftValuesOf,
@@ -49,7 +52,7 @@ type UseCaseWizardProps = {
  */
 function UseCaseWizard({ useCase }: UseCaseWizardProps) {
   const t = useTranslations("Organization.useCases.wizard");
-  const e = useTranslations("Organization.useCases.errors");
+  const e = useTranslations("Errors");
   const notify = useNotify();
   const router = useRouter();
   const format = useFormatter();
@@ -105,13 +108,13 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
       setState("idle");
       return true;
     } catch (error) {
-      const code = codeOfUseCaseError(error);
-      if (code === "USECASE_CHANGED_MEANWHILE" || code === "USECASE_NOT_EDITABLE") {
+      const code = failedWith(error, "USECASE_CHANGED_MEANWHILE", "USECASE_NOT_EDITABLE");
+      if (code) {
         // Saving again cannot help: the person must read the use case as it stands now.
         stopped.current = true;
         setProblem(code === "USECASE_CHANGED_MEANWHILE" ? "changed" : "locked");
       } else {
-        notify.error(describeUseCaseError(error));
+        notify.failure(error, useCaseWords);
       }
       dirty.current = true;
       setState("failed");
@@ -143,16 +146,8 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  // Leaving the page with something unsaved asks first.
-  useEffect(() => {
-    const warn = (event: BeforeUnloadEvent) => {
-      if (dirty.current) {
-        event.preventDefault();
-      }
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, []);
+  // Closing or reloading the page between two saves asks first.
+  useUnloadWarning(() => dirty.current);
 
   const stepIndex = steps.indexOf(step);
   const missing = incompleteSteps(values);
@@ -179,16 +174,12 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
       stopped.current = true;
       router.push(`${siteRoutes.workspaceUseCases}/${useCase.id}/sent`);
     } catch (error) {
-      notify.error(describeUseCaseError(error));
+      notify.failure(error, useCaseWords);
     }
   }
 
   const title = values.title.trim() || t("untitled");
-  const time = format.dateTime(savedAt, {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Ho_Chi_Minh",
-  });
+  const time = format.dateTime(savedAt, "time");
 
   const saveStatus = (
     <span

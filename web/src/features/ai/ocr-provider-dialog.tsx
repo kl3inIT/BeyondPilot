@@ -25,7 +25,6 @@ import {
   type SaveOcrProvider,
 } from "@/lib/api/generated";
 
-import { chatError } from "./chat-errors";
 import type { OcrPreset } from "./ocr-presets";
 
 /** The price typed: none when the field is empty. */
@@ -125,7 +124,7 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
         change(false);
         router.refresh();
       } catch (error) {
-        notify.error(chatError(error));
+        notify.failure(error);
       }
     },
   });
@@ -169,7 +168,7 @@ function OcrProviderDialog({ open, onOpenChange, preset, provider }: OcrProvider
       const { data } = await testOcrProvider({ body: probe });
       setResult(data);
     } catch (error) {
-      notify.error(chatError(error));
+      notify.failure(error);
     } finally {
       setTesting(false);
     }

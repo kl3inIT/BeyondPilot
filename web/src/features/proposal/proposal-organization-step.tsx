@@ -21,7 +21,7 @@ import { initials } from "@/lib/initials";
 import { siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
-import { describeProposalError } from "./proposal-errors";
+import { proposalWords } from "./proposal-errors";
 import { ProposalOrganizationDialog } from "./proposal-organization-dialog";
 
 /** The sizes a team names. */
@@ -133,7 +133,7 @@ function NewOrganization({
         setCreated(true);
         router.refresh();
       } catch (error) {
-        notify.error(describeProposalError(error));
+        notify.failure(error, proposalWords);
       }
     },
   });

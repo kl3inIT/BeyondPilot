@@ -9,7 +9,6 @@ import { useNotify } from "@/hooks/use-notify";
 import { changeOrganizationAutoJoin } from "@/lib/api/generated";
 
 import { NoticeCard } from "./notice-card";
-import { organizationError } from "./organization-errors";
 
 type JoinAccessProps = {
   /** The email domain GenAI Fund verified, which vouches for colleagues; null when it verified none. */
@@ -40,7 +39,7 @@ function JoinAccess({ emailDomain, autoJoin }: JoinAccessProps) {
       notify.success(autoJoin ? "Organization.done.autoJoinOff" : "Organization.done.autoJoinOn");
       startRefresh(() => router.refresh());
     } catch (error) {
-      notify.error(organizationError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }

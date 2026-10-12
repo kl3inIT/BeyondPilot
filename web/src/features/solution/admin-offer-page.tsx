@@ -1,9 +1,10 @@
 import { BoxesIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
+import { useFormatter } from "@/i18n/format";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";

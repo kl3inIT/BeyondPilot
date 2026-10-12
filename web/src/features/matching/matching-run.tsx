@@ -13,7 +13,7 @@ import {
   ScanSearchIcon,
   SparklesIcon,
 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/empty";
 import { Progress } from "@/components/ui/progress";
 import { LiveRefresh } from "@/features/usecase/live-refresh";
+import { useFormatter } from "@/i18n/format";
 import type { Matching, MatchingStep } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -208,12 +209,7 @@ function MatchingRun({
   const [asking, setAsking] = useState<"run" | "judgeAll" | null>(null);
   const { run, operator, modelChosen, runsLeftToday } = matching;
 
-  const time = (instant: string) =>
-    format.dateTime(new Date(instant), {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "Asia/Ho_Chi_Minh",
-    });
+  const time = (instant: string) => format.dateTime(new Date(instant), "time");
   const open = run?.state === "queued" || run?.state === "running" || run?.state === "waiting";
   // The stages of a run at work, and of one this screen watched until its end.
   const at = run?.state === "running" || watched ? stageOf(run) : undefined;

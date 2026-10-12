@@ -8,7 +8,6 @@ import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { useNotify } from "@/hooks/use-notify";
 import { setTaskModel, type ChatProvider, type ChatTask } from "@/lib/api/generated";
 
-import { chatError } from "./chat-errors";
 import { ModelPicker, type ModelChoice } from "./model-picker";
 
 /**
@@ -47,7 +46,7 @@ function TaskModel({ task, providers }: { task: ChatTask; providers: ChatProvide
       }
     } catch (error) {
       setChoice(before);
-      notify.error(chatError(error));
+      notify.failure(error);
     } finally {
       setSaving(false);
       setAsked(null);

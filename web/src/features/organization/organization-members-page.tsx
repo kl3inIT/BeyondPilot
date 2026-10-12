@@ -1,10 +1,11 @@
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
 import { Badge } from "@/components/ui/badge";
+import { useFormatter } from "@/i18n/format";
 import type { MyOrganization, Organization, OrganizationMembers } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -57,7 +58,7 @@ function OrganizationMembersPage({
   const { organization } = mine;
   const owner = mine.role === "owner";
   const emailDomain = organization.emailDomain ?? null;
-  const day = (at: string) => format.dateTime(new Date(at), { dateStyle: "medium" });
+  const day = (at: string) => format.dateTime(new Date(at), "date");
 
   // The one owner is known only when the page holds every member; past that the backend decides.
   const owners = members.members.filter((member) => member.role === "owner");

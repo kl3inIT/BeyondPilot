@@ -1,11 +1,12 @@
 import { LightbulbIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { ReviewStatus } from "@/components/composites/review-status";
 import { OrganizationFrame } from "@/features/organization/organization-frame";
 import { OrganizationSection } from "@/features/organization/organization-section";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import type { MyOrganization, MyUseCases, Organization } from "@/lib/api/generated";
 import { siteRoutes, workspaceUseCaseProposalsRoute } from "@/lib/site";
@@ -49,8 +50,7 @@ function MyUseCasesPage({
   const t = useTranslations("Organization.useCases");
   const p = useTranslations("UseCaseProposal.received");
   const format = useFormatter();
-  const day = (instant: string) =>
-    format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
+  const day = (instant: string) => format.dateTime(new Date(instant), "date");
 
   const sorted = sortMyUseCases(useCases.items, proposals, search);
   const rows = sorted.items.map((useCase) => {

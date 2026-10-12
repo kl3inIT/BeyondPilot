@@ -1,5 +1,5 @@
 import { ActivityIcon, SearchXIcon } from "lucide-react";
-import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -7,6 +7,7 @@ import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AppMark } from "@/features/identity/app-mark";
+import { getFormatter } from "@/i18n/format-server";
 import type { McpCall, McpCallList, PersonConnectedApp } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -57,10 +58,10 @@ async function McpActivityPage({
 
   /** "Today, 09:41" for a call of today in Vietnam time, "3 Oct, 14:32" before that. */
   function shortTime(at: Date) {
-    const time = format.dateTime(at, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    const time = format.dateTime(at, "time");
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
-      : t("dayAndTime", { day: format.dateTime(at, { day: "numeric", month: "short" }), time });
+      : t("dayAndTime", { day: format.dateTime(at, "day"), time });
   }
 
   const rows = calls.items.map((call, index) => {

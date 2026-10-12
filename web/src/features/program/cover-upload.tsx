@@ -7,8 +7,8 @@ import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { Spinner } from "@/components/ui/spinner";
-import { ApiError } from "@/lib/api/client";
-import { publicFileUrl, uploadFile } from "@/lib/storage/upload";
+import { useFailureWords } from "@/hooks/use-notify";
+import { publicFileUrl, uploadFile, uploadWords } from "@/lib/storage/upload";
 
 /** What the backend accepts as a program's image (storage › FilePurpose.PROGRAM_IMAGE). */
 const accepted = ["image/png", "image/jpeg", "image/webp"];
@@ -29,6 +29,7 @@ type CoverUploadProps = {
  */
 function CoverUpload({ id, value, onChange, invalid }: CoverUploadProps) {
   const t = useTranslations("Admin.programs.settings.cover");
+  const words = useFailureWords();
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -48,13 +49,15 @@ function CoverUpload({ id, value, onChange, invalid }: CoverUploadProps) {
       const stored = await uploadFile(file, "program_image");
       onChange(stored.id);
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
       setProblem(
-        code === "STORAGE_MEDIA_TYPE_NOT_ALLOWED" || code === "STORAGE_CONTENT_MISMATCH"
-          ? t("errors.type")
-          : code === "STORAGE_FILE_TOO_LARGE"
-            ? t("errors.size")
-            : t("errors.failed"),
+        words(
+          error,
+          uploadWords({
+            type: "Admin.programs.settings.cover.errors.type",
+            size: "Admin.programs.settings.cover.errors.size",
+            failed: "Admin.programs.settings.cover.errors.failed",
+          }),
+        ),
       );
     } finally {
       setUploading(false);

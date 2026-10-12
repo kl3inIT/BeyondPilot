@@ -8,7 +8,7 @@ import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { Spinner } from "@/components/ui/spinner";
-import { ApiError } from "@/lib/api/client";
+import { failedWith } from "@/lib/api/failure";
 import { publicFileUrl, uploadFile } from "@/lib/storage/upload";
 
 import { useFileSize } from "./solution-deck";
@@ -38,10 +38,9 @@ async function store(file: File, place: Place): Promise<HeldImage | Problem> {
     const stored = await uploadFile(file, places[place].purpose);
     return { fileId: stored.id, fileName: stored.fileName, sizeBytes: stored.sizeBytes };
   } catch (error) {
-    const code = error instanceof ApiError ? error.code : undefined;
-    return code === "STORAGE_MEDIA_TYPE_NOT_ALLOWED" || code === "STORAGE_CONTENT_MISMATCH"
+    return failedWith(error, "STORAGE_MEDIA_TYPE_NOT_ALLOWED", "STORAGE_CONTENT_MISMATCH")
       ? "type"
-      : code === "STORAGE_FILE_TOO_LARGE"
+      : failedWith(error, "STORAGE_FILE_TOO_LARGE")
         ? "size"
         : "failed";
   }

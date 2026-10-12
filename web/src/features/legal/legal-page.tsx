@@ -1,4 +1,6 @@
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
+
+import { getFormatter } from "@/i18n/format-server";
 
 type LegalDoc = "privacy" | "terms";
 

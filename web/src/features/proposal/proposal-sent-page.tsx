@@ -1,7 +1,8 @@
 import { CircleCheckIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
+import { useFormatter } from "@/i18n/format";
 import type { UseCaseProposal, UseCaseProposalForm } from "@/lib/api/generated";
 import { siteRoutes, useCaseRoute } from "@/lib/site";
 
@@ -15,14 +16,7 @@ function ProposalSentPage({ form, proposal }: ProposalSentPageProps) {
   const t = useTranslations("UseCaseProposal.wizard.sent");
   const format = useFormatter();
   const sent = proposal.sentAt
-    ? `${format.dateTime(new Date(proposal.sentAt), {
-        dateStyle: "medium",
-        timeZone: "Asia/Ho_Chi_Minh",
-      })}, ${format.dateTime(new Date(proposal.sentAt), {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "Asia/Ho_Chi_Minh",
-      })} ICT`
+    ? `${format.dateTime(new Date(proposal.sentAt), "date")}, ${format.dateTime(new Date(proposal.sentAt), "time")} ICT`
     : "";
 
   const rows = [

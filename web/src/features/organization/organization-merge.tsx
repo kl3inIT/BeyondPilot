@@ -31,8 +31,6 @@ import {
   type Organization,
 } from "@/lib/api/generated";
 
-import { organizationError } from "./organization-errors";
-
 /** How long typing rests before the list of organizations is asked again, in milliseconds. */
 const SEARCH_DELAY = 250;
 
@@ -72,7 +70,7 @@ function MergeDialog({ organization, members, invitations, onClose }: MergeDialo
         onClose();
         router.refresh();
       } catch (error) {
-        notify.error(organizationError(error));
+        notify.failure(error);
       }
     },
   });

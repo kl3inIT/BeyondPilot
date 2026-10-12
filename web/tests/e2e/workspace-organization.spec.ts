@@ -203,7 +203,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Join Pocket Policy on BeyondPilot",
     );
-    await expect(page.getByText("Invited by Minh Trần on Oct 1, 2026")).toBeVisible();
+    await expect(page.getByText("Invited by Minh Trần on 1 Oct 2026")).toBeVisible();
     await expect(
       page.getByText(
         "As a member you are shown on Pocket Policy's team; only owners edit its profile and solutions.",
@@ -233,7 +233,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Your request to join Pocket Policy is with its owners",
     );
-    await expect(page.getByText("Company · Singapore · asked on Oct 1, 2026")).toBeVisible();
+    await expect(page.getByText("Company · Singapore · asked on 1 Oct 2026")).toBeVisible();
     // Whoever asked to join one organization does not create another.
     await page.goto("/workspace/organization/new");
     await expect(page).toHaveURL("/workspace/organization");
@@ -280,7 +280,7 @@ test.describe("workspace organization", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Your request to join Pocket Policy was declined",
     );
-    await expect(page.getByText("Company · Singapore · declined on Oct 1, 2026")).toBeVisible();
+    await expect(page.getByText("Company · Singapore · declined on 1 Oct 2026")).toBeVisible();
     await expect(
       page.getByText(
         "Ask an owner of Pocket Policy directly if this is a mistake, or create your own organization.",
@@ -463,7 +463,7 @@ test.describe("workspace organization", () => {
     ).toBeVisible();
     // The row is drawn as a table row and as a stacked row; one of them shows.
     await expect(
-      page.getByText("Invited Oct 1, 2026 · expires Oct 8, 2026").filter({ visible: true }),
+      page.getByText("Invited 1 Oct 2026 · expires 8 Oct 2026").filter({ visible: true }),
     ).toHaveCount(1);
     // A table from 768px, stacked rows below it.
     await expect(page.getByRole("table")).toHaveCount(isMobile ? 0 : 1);

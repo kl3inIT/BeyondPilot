@@ -16,27 +16,23 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useNotify } from "@/hooks/use-notify";
 import { useVocabulary } from "@/i18n/vocabulary";
-import { ApiError } from "@/lib/api/client";
+import { failedWith } from "@/lib/api/failure";
 import {
   inviteOrganizationMember,
   type InvitationAllowance,
   type InviteMember,
 } from "@/lib/api/generated";
 
-import { organizationError } from "./organization-errors";
-
 /** The addresses written in the field: one or several, apart by commas, semicolons or spaces. */
 const addressesOf = (text: string) => [...new Set(text.split(/[\s,;]+/).filter(Boolean))];
 
 /** The refusals that say a limit was reached, after which no further address is tried. */
-const limitCodes = ["ORGANIZATION_INVITATION_DAILY_LIMIT", "ORGANIZATION_INVITATION_OPEN_LIMIT"];
-
 const reachedLimit = (error: unknown) =>
-  error instanceof ApiError && limitCodes.includes(error.code ?? "");
+  failedWith(error, "ORGANIZATION_INVITATION_DAILY_LIMIT", "ORGANIZATION_INVITATION_OPEN_LIMIT") !==
+  undefined;
 
 /** The one refusal that is about how an address is written; the others are said by their own words alone. */
-const badAddress = (error: unknown) =>
-  error instanceof ApiError && error.code === "REQUEST_INVALID";
+const badAddress = (error: unknown) => failedWith(error, "REQUEST_INVALID") !== undefined;
 
 type InvitePeopleProps = {
   organizationName: string;
@@ -93,7 +89,7 @@ function InvitePeople({ organizationName, allowance }: InvitePeopleProps) {
         if (badAddress(refused[0].error)) {
           setServerErrors(formApi, { fields: { emails: { message: t("emailsInvalid") } } });
         }
-        notify.error(organizationError(refused[0].error));
+        notify.failure(refused[0].error);
       } else {
         formApi.reset();
         setOpen(false);

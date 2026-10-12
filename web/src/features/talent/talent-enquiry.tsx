@@ -23,8 +23,6 @@ import { useNotify } from "@/hooks/use-notify";
 import { sendTalentEnquiry, type SendTalentEnquiry } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { talentError } from "./talent-errors";
-
 type EnquiryTopic = SendTalentEnquiry["topic"];
 
 const topics = ["project", "role", "other"] as const satisfies readonly EnquiryTopic[];
@@ -70,7 +68,7 @@ function TalentEnquiry({ slug, name, senderName, open, onOpenChange }: TalentEnq
         });
         setSent(true);
       } catch (error) {
-        notify.error(talentError(error));
+        notify.failure(error);
       }
     },
   });

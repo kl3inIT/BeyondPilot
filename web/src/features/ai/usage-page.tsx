@@ -5,7 +5,7 @@ import {
   InfoIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
@@ -14,6 +14,7 @@ import { DataTableRows } from "@/components/composites/data-table-view";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
+import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { AiUsageOverview } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -139,12 +140,9 @@ async function UsageOverviewPage({
     format.number(whole === 0 ? 0 : part / whole, { style: "percent", maximumFractionDigits: 1 });
   const seconds = (milliseconds: number) =>
     t("seconds", { seconds: format.number(milliseconds / 1000, { maximumFractionDigits: 1 }) });
-  const clock = (at: Date) =>
-    format.dateTime(at, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  const clock = (at: Date) => format.dateTime(at, "time");
   const bucketLabel = (start: string) =>
-    byHour
-      ? clock(new Date(start))
-      : format.dateTime(new Date(start), { day: "numeric", month: "short" });
+    byHour ? clock(new Date(start)) : format.dateTime(new Date(start), "day");
 
   // What a task still runs on comes first: failures of what it used before are no longer an alarm.
   const worst = failing.find((item) => item.assigned) ?? failing[0];

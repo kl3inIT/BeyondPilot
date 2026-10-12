@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { ApiError } from "@/lib/api/client";
+import { failedWith } from "@/lib/api/failure";
 import { getAdminOrganization, type AdminOrganization } from "@/lib/api/generated";
 
 import { domainOf, isDomain } from "./organization-format";
@@ -61,7 +61,7 @@ function useVerifiedDomain(suggested: string | null | undefined) {
     },
     /** Marks the field when the backend refused the domain; says whether it did. */
     refused(error: unknown): boolean {
-      if (error instanceof ApiError && error.code === "ORGANIZATION_DOMAIN_TAKEN") {
+      if (failedWith(error, "ORGANIZATION_DOMAIN_TAKEN")) {
         setProblem("taken");
         return true;
       }

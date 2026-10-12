@@ -18,7 +18,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { moveMyUseCaseToDraft, type MyUseCaseSummary } from "@/lib/api/generated";
 import { siteRoutes, workspaceUseCaseProposalsRoute } from "@/lib/site";
 
-import { describeUseCaseError } from "./my-use-case-errors";
+import { useCaseWords } from "./my-use-case-errors";
 
 type MyUseCaseActionsProps = {
   useCase: Pick<MyUseCaseSummary, "id" | "status" | "title">;
@@ -54,7 +54,7 @@ function MyUseCaseActions({ useCase, viewProposals }: MyUseCaseActionsProps) {
       setConfirming(null);
       router.refresh();
     } catch (error) {
-      notify.error(describeUseCaseError(error));
+      notify.failure(error, useCaseWords);
       setConfirming(null);
     } finally {
       setPending(false);

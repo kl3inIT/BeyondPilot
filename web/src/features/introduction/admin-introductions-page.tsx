@@ -1,5 +1,5 @@
 import { HandshakeIcon, SearchXIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -8,6 +8,7 @@ import { ListFooter } from "@/components/composites/list-footer";
 import { Status } from "@/components/composites/status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useFormatter } from "@/i18n/format";
 import type { AdminIntroduction, AdminIntroductionList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -61,9 +62,10 @@ function AdminIntroductionCard({ introduction }: { introduction: AdminIntroducti
         {introduction.status === "pending"
           ? t("waitingSince", { time: format.relativeTime(when) })
           : t("answered", {
-              date: format.dateTime(new Date(introduction.answeredAt ?? introduction.createdAt), {
-                dateStyle: "medium",
-              }),
+              date: format.dateTime(
+                new Date(introduction.answeredAt ?? introduction.createdAt),
+                "date",
+              ),
             })}
       </p>
     </li>

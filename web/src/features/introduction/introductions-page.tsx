@@ -1,10 +1,11 @@
 import { InboxIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { Status } from "@/components/composites/status";
 import { OrganizationFrame } from "@/features/organization/organization-frame";
 import { OrganizationSection } from "@/features/organization/organization-section";
+import { useFormatter } from "@/i18n/format";
 import type {
   Introduction,
   MyOrganization,
@@ -37,7 +38,7 @@ function IntroductionCard({
 }) {
   const t = useTranslations("Introduction.received");
   const format = useFormatter();
-  const date = (value: string) => format.dateTime(new Date(value), { dateStyle: "medium" });
+  const date = (value: string) => format.dateTime(new Date(value), "date");
   const sender = introduction.senderName
     ? t("sender", { name: introduction.senderName, organization: introduction.senderOrganization })
     : t("senderUnnamed", { organization: introduction.senderOrganization });

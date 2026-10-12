@@ -1,4 +1,4 @@
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -8,6 +8,7 @@ import { Person } from "@/components/composites/person";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganization } from "@/lib/api/generated";
@@ -66,7 +67,7 @@ function AdminOrganizationPage({ detail, tab, page, size, sort }: AdminOrganizat
   const locale = useLocale();
   const { organization } = detail;
   const record = `${siteRoutes.adminOrganizations}/${organization.id}`;
-  const day = (at: string) => format.dateTime(new Date(at), { dateStyle: "medium" });
+  const day = (at: string) => format.dateTime(new Date(at), "date");
   const state = reviewState(organization);
   const suspended = state === "suspended";
   const { merged } = detail;
@@ -251,7 +252,7 @@ function AdminMembers({
   const lastPage = Math.max(1, Math.ceil(total / pageSize));
   const current = Math.min(Math.max(1, page), lastPage);
   const owners = members.filter((member) => member.role === "owner").length;
-  const day = (at: string) => format.dateTime(new Date(at), { dateStyle: "medium" });
+  const day = (at: string) => format.dateTime(new Date(at), "date");
 
   const people = membersInOrder(members, sort)
     .slice((current - 1) * pageSize, current * pageSize)

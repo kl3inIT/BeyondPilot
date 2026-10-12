@@ -22,7 +22,7 @@ import {
   TrendingUpIcon,
   UsersIcon,
 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
@@ -39,6 +39,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { PublicSolution } from "@/lib/api/generated";
@@ -495,9 +496,7 @@ function SolutionPage({ solution, editHref }: SolutionPageProps) {
                         aria-hidden="true"
                       />
                       {t("proof.byGenAiFund", {
-                        date: format.dateTime(new Date(solution.backing.updatedAt), {
-                          dateStyle: "medium",
-                        }),
+                        date: format.dateTime(new Date(solution.backing.updatedAt), "date"),
                       })}
                     </p>
                   </Evidence>
