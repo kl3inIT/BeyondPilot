@@ -6,6 +6,7 @@ import { saveBodyOf } from "./apply-draft";
 import {
   answersFor,
   appliesAlone,
+  likelySolutionId,
   organizationBodyOf,
   solutionBodyOf,
   solutionDraftOf,
@@ -271,5 +272,26 @@ describe("solutionBodyOf", () => {
     expect(solutionBodyOf({ ...step, demoUrl: " https://new.example " }, found).demoUrl).toBe(
       "https://new.example",
     );
+  });
+});
+
+describe("likelySolutionId", () => {
+  const blank = { id: null, name: "", summary: "", problemsSolved: "", maturity: "", demoUrl: "" };
+  const routeCopilot = { ...claimCopilot, id: "5a0b7c1d-0000-4000-8000-000000000011" };
+
+  it("is the only solution of the organization just joined", () => {
+    expect(likelySolutionId(view({ solutions: [claimCopilot] }), blank)).toBe(claimCopilot.id);
+  });
+
+  it("is none when the organization has no solution, or several to choose from", () => {
+    expect(likelySolutionId(view(), blank)).toBeNull();
+    expect(likelySolutionId(view({ solutions: [claimCopilot, routeCopilot] }), blank)).toBeNull();
+  });
+
+  it("leaves a solution the person began or chose as it is", () => {
+    const joined = view({ solutions: [claimCopilot] });
+    expect(likelySolutionId(joined, { ...blank, name: "Route Copilot" })).toBeNull();
+    expect(likelySolutionId(joined, { ...blank, maturity: "pilot" })).toBeNull();
+    expect(likelySolutionId(joined, { ...blank, id: routeCopilot.id })).toBeNull();
   });
 });
