@@ -11,7 +11,6 @@ import { DataTableView, dataTableColumns } from "@/components/composites/data-ta
 import { Badge } from "@/components/ui/badge";
 import { useNotify } from "@/hooks/use-notify";
 import { Link } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api/client";
 import { decideApplications } from "@/lib/api/generated";
 
 /** One application as the list shows it, its words already formatted. */
@@ -85,10 +84,7 @@ function ReviewTable({
       clear();
       router.refresh();
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      notify.error(
-        code === "PROPOSAL_RELEASED" ? "Review.errors.released" : "Review.errors.unknown",
-      );
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(undefined);

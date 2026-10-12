@@ -1,29 +1,10 @@
 import type { MessageKey } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
+import type { FailureWords } from "@/lib/api/failure";
 
-/** The refusals the candidates screen can meet, each with its own words in the catalog. */
-const known = [
-  "MATCHING_USE_CASE_NOT_FOUND",
-  "MATCHING_CANDIDATE_NOT_FOUND",
-  "MATCHING_SOLUTION_NOT_FOUND",
-  "MATCHING_OPERATORS_ONLY",
-  "MATCHING_NO_MODEL",
-  "MATCHING_RUN_OPEN",
-  "MATCHING_RUN_LIMIT",
-  "MATCHING_CANDIDATE_REMOVED",
-  "MATCHING_REMOVED_BY_OPERATOR",
-  "MATCHING_ALREADY_CANDIDATE",
-  "MATCHING_OWN_SOLUTION",
-  "MATCHING_SETTINGS_CHANGED",
-  "REQUEST_INVALID",
-] as const;
-
-/** The words for a failed matching request: by its code when the screen knows it, general otherwise. */
-export function describeMatchingError(error: unknown): MessageKey {
-  const code = error instanceof ApiError ? error.code : undefined;
-  const found = known.find((candidate) => candidate === code);
-  return found ? `Matching.errors.${found}` : "Matching.errors.unknown";
-}
+/** What the candidates screen says in its own words: the one thing a request can get wrong is its reason. */
+export const matchingWords = {
+  REQUEST_INVALID: "Matching.errors.REQUEST_INVALID",
+} as const satisfies FailureWords;
 
 /** Why a run ended as failed, as the backend codes it. */
 const failures = [

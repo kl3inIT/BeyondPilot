@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { SolutionEditor } from "@/features/solution/solution-editor";
-import { solutionError } from "@/features/solution/solution-errors";
 import { useNotify } from "@/hooks/use-notify";
 import { getMySolution, type Solution } from "@/lib/api/generated";
 
@@ -40,7 +39,7 @@ function ProposalSolutionEditorDialog({ solutionId, onClose }: ProposalSolutionE
       },
       (error) => {
         if (current) {
-          notify.error(solutionError(error));
+          notify.failure(error);
           onClose();
         }
       },

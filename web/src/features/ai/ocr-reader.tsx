@@ -17,7 +17,6 @@ import {
 } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { chatError } from "./chat-errors";
 import { ModelPicker, type ModelChoice } from "./model-picker";
 
 type Kind = "model" | "ocr";
@@ -63,7 +62,7 @@ function OcrReader({
       done();
     } catch (error) {
       undo();
-      notify.error(chatError(error));
+      notify.failure(error);
     } finally {
       setSaving(false);
       router.refresh();

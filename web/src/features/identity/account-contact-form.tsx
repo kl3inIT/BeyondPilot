@@ -41,8 +41,8 @@ function AccountContactForm({ account }: { account: Me }) {
         });
         notify.success("Account.saved");
         router.refresh();
-      } catch {
-        notify.error("Account.failed");
+      } catch (error) {
+        notify.failure(error, { otherwise: "Account.failed" });
       }
     },
   });

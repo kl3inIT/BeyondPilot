@@ -1,8 +1,9 @@
 import { PencilIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { isValidElement } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
+import { useFormatter } from "@/i18n/format";
 import { useVocabulary } from "@/i18n/vocabulary";
 
 import { timelinePresets } from "./admin-use-case-codes";
@@ -148,10 +149,7 @@ function UseCaseSummary({ values, onEdit, viewLabel, hideEmpty = false }: UseCas
           key: "closes",
           value: values.closesDay ? (
             r("closesAt", {
-              date: format.dateTime(new Date(`${values.closesDay}T00:00:00+07:00`), {
-                dateStyle: "medium",
-                timeZone: "Asia/Ho_Chi_Minh",
-              }),
+              date: format.dateTime(new Date(`${values.closesDay}T00:00:00+07:00`), "date"),
               time: values.closesTime,
             })
           ) : (

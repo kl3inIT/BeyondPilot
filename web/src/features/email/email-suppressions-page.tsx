@@ -1,5 +1,5 @@
 import { MailCheckIcon, SearchXIcon } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -7,6 +7,7 @@ import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Badge } from "@/components/ui/badge";
+import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { EmailSuppressionList } from "@/lib/api/generated";
 import { adminEmailMessageRoute, siteRoutes } from "@/lib/site";
@@ -38,8 +39,7 @@ async function EmailSuppressionsPage({
   ready: boolean;
 }) {
   const [t, format] = await Promise.all([getTranslations("Admin.email"), getFormatter()]);
-  const date = (at: string) =>
-    format.dateTime(new Date(at), { day: "numeric", month: "short", year: "numeric" });
+  const date = (at: string) => format.dateTime(new Date(at), "date");
   const filtered = search.q.trim() !== "" || search.reason !== null;
 
   const empty =

@@ -1,9 +1,10 @@
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useFormatter } from "@/i18n/format";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { MyTalent, TalentProfile } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -270,7 +271,7 @@ function Decision({ profile }: { profile: TalentProfile }) {
         foot={
           profile.submittedAt
             ? t("submitted.foot", {
-                date: format.dateTime(new Date(profile.submittedAt), { dateStyle: "medium" }),
+                date: format.dateTime(new Date(profile.submittedAt), "date"),
               })
             : t("submitted.footUndated")
         }

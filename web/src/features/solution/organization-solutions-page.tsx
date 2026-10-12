@@ -1,10 +1,11 @@
 import { BoxesIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { OrganizationFrame } from "@/features/organization/organization-frame";
 import { OrganizationSection } from "@/features/organization/organization-section";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import type { MyOrganization, MySolutions, Organization, OwnOffer } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -49,7 +50,7 @@ function OrganizationSolutionsPage({
   const waiting =
     mine.role === "owner" &&
     (mine.organization.status !== "approved" || !!mine.organization.suspendedAt);
-  const day = (instant: string) => format.dateTime(new Date(instant), { dateStyle: "medium" });
+  const day = (instant: string) => format.dateTime(new Date(instant), "date");
 
   const sorted = sortOrganizationSolutions(solutions.items, search);
   const rows = sorted.items.map((solution) => {

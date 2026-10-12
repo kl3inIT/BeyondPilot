@@ -29,8 +29,6 @@ import {
   type SaveChatModel,
 } from "@/lib/api/generated";
 
-import { chatError } from "./chat-errors";
-
 /** A number typed into a field: null when left empty or not a number. */
 function numberOf(text: string): number | null {
   const value = Number(text.trim());
@@ -100,7 +98,7 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
         change(false);
         router.refresh();
       } catch (error) {
-        notify.error(chatError(error));
+        notify.failure(error);
       }
     },
   });
@@ -129,7 +127,7 @@ function ModelDialog({ open, onOpenChange, provider, model }: ModelDialogProps) 
       const { data } = await testChatModel({ path: { id: model.id } });
       setResult(data);
     } catch (error) {
-      notify.error(chatError(error));
+      notify.failure(error);
     } finally {
       setTesting(false);
     }

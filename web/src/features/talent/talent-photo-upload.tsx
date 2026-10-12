@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { ApiError } from "@/lib/api/client";
-import { uploadFile } from "@/lib/storage/upload";
+import { useFailureWords } from "@/hooks/use-notify";
+import { uploadFile, uploadWords } from "@/lib/storage/upload";
 
 import { TalentPhoto } from "./talent-photo";
 
@@ -27,6 +27,7 @@ type TalentPhotoUploadProps = {
  */
 function TalentPhotoUpload({ name, value, onChange }: TalentPhotoUploadProps) {
   const t = useTranslations("Talent.form.photo");
+  const words = useFailureWords();
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -46,13 +47,15 @@ function TalentPhotoUpload({ name, value, onChange }: TalentPhotoUploadProps) {
       const stored = await uploadFile(file, "talent_photo");
       onChange(stored.id);
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
       setProblem(
-        code === "STORAGE_MEDIA_TYPE_NOT_ALLOWED" || code === "STORAGE_CONTENT_MISMATCH"
-          ? t("errors.type")
-          : code === "STORAGE_FILE_TOO_LARGE"
-            ? t("errors.size")
-            : t("errors.failed"),
+        words(
+          error,
+          uploadWords({
+            type: "Talent.form.photo.errors.type",
+            size: "Talent.form.photo.errors.size",
+            failed: "Talent.form.photo.errors.failed",
+          }),
+        ),
       );
     } finally {
       setUploading(false);

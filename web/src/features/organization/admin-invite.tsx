@@ -14,10 +14,8 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { useNotify } from "@/hooks/use-notify";
 import { useVocabulary } from "@/i18n/vocabulary";
-import { ApiError } from "@/lib/api/client";
+import { failedWith } from "@/lib/api/failure";
 import { inviteAdminOrganizationMember, type InviteMember } from "@/lib/api/generated";
-
-import { organizationError } from "./organization-errors";
 
 /**
  * Asks one address to own or join any organization. An operator's invitations stay out of the
@@ -51,10 +49,10 @@ function AdminInvite({ organization }: { organization: { id: string; name: strin
         router.refresh();
       } catch (error) {
         // Only a badly written address is the field's to say; any other refusal has its own words.
-        if (error instanceof ApiError && error.code === "REQUEST_INVALID") {
+        if (failedWith(error, "REQUEST_INVALID")) {
           setServerErrors(formApi, { fields: { email: { message: t("emailInvalid") } } });
         }
-        notify.error(organizationError(error));
+        notify.failure(error);
       }
     },
   });

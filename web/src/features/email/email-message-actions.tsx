@@ -7,17 +7,16 @@ import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
-import { useNotify, type MessageKey } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
+import { useNotify } from "@/hooks/use-notify";
+import type { FailureWords } from "@/lib/api/failure";
 import { resendEmailMessage, type EmailMessage } from "@/lib/api/generated";
 import { adminEmailMessageRoute } from "@/lib/site";
 
-/** The refusals of a resend, each with its own words. */
-const refusals: Record<string, MessageKey> = {
-  NOTIFICATION_MESSAGE_NOT_RESENDABLE: "Admin.email.message.resend.errors.notResendable",
-  NOTIFICATION_ADDRESS_SUPPRESSED: "Admin.email.message.resend.errors.suppressed",
+/** What a resend says in its own words: here incomplete settings are another screen's to fix. */
+const resendWords = {
   NOTIFICATION_SETTINGS_INCOMPLETE: "Admin.email.message.resend.errors.notReady",
-};
+  otherwise: "Admin.email.message.resend.errors.unknown",
+} as const satisfies FailureWords;
 
 /**
  * Sends an email again, as a new email with the content of this one. A sign-in code is never sent
@@ -41,8 +40,7 @@ function EmailMessageActions({ message }: { message: EmailMessage }) {
       notify.success("Admin.email.message.resend.done", { email: message.recipient });
       router.push(adminEmailMessageRoute(data.id));
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      notify.error((code && refusals[code]) || "Admin.email.message.resend.errors.unknown");
+      notify.failure(error, resendWords);
     } finally {
       setPending(false);
       setAsking(false);

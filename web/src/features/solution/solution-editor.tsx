@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@tanstack/react-form";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 
@@ -30,9 +30,10 @@ import { FieldGroup } from "@/components/ui/field";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useNotify, type MessageKey } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
 import { getPathname } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
-import { ApiError } from "@/lib/api/client";
+import { failedWith, failureKey } from "@/lib/api/failure";
 import {
   publishAdminSolution,
   saveAdminSolutionDraft,
@@ -64,7 +65,6 @@ import {
   type SolutionDraft,
 } from "./solution-editor-state";
 import { BasicsStep, EvidenceStep, FitStep } from "./solution-editor-steps";
-import { solutionError } from "./solution-errors";
 import { ReviewStep } from "./solution-review-step";
 
 /** How long the editor waits after the last change before it saves a draft. */
@@ -221,9 +221,9 @@ function SolutionEditor({
     } catch (error) {
       setRefused(rejectedFields(error));
       setFailure({
-        message: solutionError(error),
+        message: failureKey(error, (key) => say.has(key)),
         content: contentOf(body),
-        conflict: error instanceof ApiError && error.code === "SOLUTION_CHANGED_MEANWHILE",
+        conflict: failedWith(error, "SOLUTION_CHANGED_MEANWHILE") !== undefined,
       });
       return false;
     } finally {
@@ -304,14 +304,14 @@ function SolutionEditor({
     setTried((current) => new Set(current).add(step));
     showWrongLinks();
     const onlyLinks = blocking.every((field) => field === "demoUrl" || field === "website");
-    notify.error(onlyLinks ? "Solution.errors.REQUEST_INVALID" : "Solution.editor.stepIncomplete");
+    notify.error(onlyLinks ? "Errors.REQUEST_INVALID" : "Solution.editor.stepIncomplete");
     focusField(fieldId(blocking[0]));
   }
 
   /** Shows what keeps the editor from saving: a missing name, or a link that is not an address. */
   function showWhatBlocks() {
     showWrongLinks();
-    notify.error("Solution.errors.REQUEST_INVALID");
+    notify.error("Errors.REQUEST_INVALID");
     open(nameless ? "basics" : "evidence", fieldId(nameless ? "name" : wrongLinks[0]));
   }
 
@@ -336,7 +336,7 @@ function SolutionEditor({
     if (missing.length > 0) {
       // What others read keeps what a review needs.
       setChecked(true);
-      notify.error("Solution.errors.SOLUTION_INCOMPLETE");
+      notify.error("Errors.SOLUTION_INCOMPLETE");
       const first = reviewFields.find((entry) => entry.field === missing[0]);
       open(first?.step ?? "basics", fieldId(missing[0]));
       return;
@@ -366,7 +366,7 @@ function SolutionEditor({
         leave();
       }
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
       setConfirming(null);
     } finally {
       setPending(null);
@@ -424,7 +424,7 @@ function SolutionEditor({
   const stepLead =
     step !== "review" ? t(`steps.${step}.lead`) : live ? t("steps.review.leadLive") : undefined;
   const savedAt = savedNow
-    ? format.dateTime(savedNow, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+    ? format.dateTime(savedNow, "time")
     : format.dateTime(new Date(server.updatedAt), {
         day: "numeric",
         month: "short",

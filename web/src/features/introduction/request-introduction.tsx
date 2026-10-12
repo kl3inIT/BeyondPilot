@@ -19,7 +19,7 @@ import { useNotify } from "@/hooks/use-notify";
 import { requestIntroduction } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { introductionError } from "./introduction-errors";
+import { introductionWords } from "./introduction-errors";
 
 type RequestIntroductionProps = {
   /** The address of the solution the visitor asks about. */
@@ -70,7 +70,7 @@ function RequestIntroduction({
         await requestIntroduction({ body: { solutionSlug: slug, message: value.message } });
         setSent(true);
       } catch (error) {
-        notify.error(introductionError(error));
+        notify.failure(error, introductionWords);
       }
     },
   });

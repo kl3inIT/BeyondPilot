@@ -23,7 +23,6 @@ import {
 } from "@/lib/api/generated";
 
 import { talentRejections } from "./talent-codes";
-import { talentError } from "./talent-errors";
 
 type TalentReviewProps = {
   profile: Pick<TalentProfile, "id" | "name" | "status" | "suspendedAt">;
@@ -81,7 +80,7 @@ function TalentReview({ profile, nextHref }: TalentReviewProps) {
         setPending(null);
       }
     } catch (error) {
-      notify.error(talentError(error));
+      notify.failure(error);
       deciding.current = false;
       setPending(null);
     }

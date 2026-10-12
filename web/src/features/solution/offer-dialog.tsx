@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useNotify } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
+import { failedWith } from "@/lib/api/failure";
 import {
   createOffer,
   createOwnOffer,
@@ -23,7 +23,6 @@ import {
   type Offer,
 } from "@/lib/api/generated";
 
-import { solutionError } from "./solution-errors";
 import { offerLimits, offerSchema } from "./solution-schemas";
 
 type OfferDialogProps = {
@@ -94,10 +93,10 @@ function OfferForm({
         onClose();
       } catch (error) {
         // The backend keeps titles apart; its refusal is said where the title is typed.
-        if (error instanceof ApiError && error.code === "SOLUTION_OFFER_TITLE_TAKEN") {
+        if (failedWith(error, "SOLUTION_OFFER_TITLE_TAKEN")) {
           setServerErrors(formApi, { fields: { title: { message: t("titleTaken") } } });
         } else {
-          notify.error(solutionError(error));
+          notify.failure(error);
         }
       }
     },

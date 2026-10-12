@@ -3,7 +3,7 @@
 import { useStore } from "@tanstack/react-form";
 import { AsteriskIcon, CircleAlertIcon, CircleDotIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
@@ -15,8 +15,9 @@ import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api/client";
+import type { FailureWords } from "@/lib/api/failure";
 import {
   previewEmailTemplate,
   resetEmailTemplate,
@@ -28,7 +29,7 @@ import {
 import { siteRoutes } from "@/lib/site";
 
 import { EmailPreview } from "./email-preview";
-import { testFailures, testRefusals } from "./email-test-failures";
+import { testFailures } from "./email-test-failures";
 import { TestSend } from "./test-send";
 import { TemplateCodeEditor, type TemplateCodeEditorHandle } from "./template-code-editor";
 
@@ -63,6 +64,11 @@ function Problems({ id, problems }: { id: string; problems: { message: string }[
  * sending the draft to oneself. A stored template always renders, because the backend refuses one
  * that does not pass its checks.
  */
+/** What did not happen, for a refusal that has no words of its own. */
+const editorWords = {
+  otherwise: "Admin.email.editor.errors.unknown",
+} as const satisfies FailureWords;
+
 function EmailTemplateEditor({
   template,
   name,
@@ -105,14 +111,7 @@ function EmailTemplateEditor({
         notify.success("Admin.email.editor.saved");
         router.refresh();
       } catch (error) {
-        const code = error instanceof ApiError ? error.code : undefined;
-        notify.error(
-          code === "NOTIFICATION_TEMPLATE_CHANGED"
-            ? "Admin.email.editor.errors.changed"
-            : code === "NOTIFICATION_TEMPLATE_INVALID"
-              ? "Admin.email.editor.errors.invalid"
-              : "Admin.email.editor.errors.unknown",
-        );
+        notify.failure(error, editorWords);
       }
     },
   });
@@ -147,8 +146,8 @@ function EmailTemplateEditor({
       form.reset({ subject: data.subject, body: data.body });
       notify.success("Admin.email.editor.resetDone");
       router.refresh();
-    } catch {
-      notify.error("Admin.email.editor.errors.unknown");
+    } catch (error) {
+      notify.failure(error, editorWords);
     } finally {
       setResetting(null);
     }
@@ -168,13 +167,7 @@ function EmailTemplateEditor({
         notify.error(testFailures[data.failure ?? "unavailable"]);
       }
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      notify.error(
-        (code === undefined ? undefined : testRefusals[code]) ??
-          (code === "NOTIFICATION_TEMPLATE_INVALID"
-            ? "Admin.email.editor.errors.invalid"
-            : "Admin.email.editor.errors.unknown"),
-      );
+      notify.failure(error, editorWords);
     } finally {
       setTesting(false);
     }

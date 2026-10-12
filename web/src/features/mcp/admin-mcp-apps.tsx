@@ -1,7 +1,7 @@
 "use client";
 
 import { CableIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { AppMark } from "@/features/identity/app-mark";
 import { useNotify } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
 import { revokePersonsApp, type PersonConnectedApp } from "@/lib/api/generated";
 
 /** Every person's connected apps, the latest used first, each with a way to end it. */
@@ -82,8 +83,8 @@ function RevokePersonsApp({ app, person }: { app: PersonConnectedApp; person: st
       await revokePersonsApp({ path: { accountId: app.accountId, id: app.id } });
       notify.success("Admin.mcp.apps.revoke.done", { name: app.name, person });
       router.refresh();
-    } catch {
-      notify.error("Admin.mcp.apps.revoke.failed");
+    } catch (error) {
+      notify.failure(error, { otherwise: "Admin.mcp.apps.revoke.failed" });
     } finally {
       setPending(false);
       setOpen(false);

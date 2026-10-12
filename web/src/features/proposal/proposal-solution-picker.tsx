@@ -78,9 +78,9 @@ function PickerBody({
           setLoading(false);
         }
       },
-      () => {
+      (error: unknown) => {
         if (current) {
-          notify.error("UseCaseProposal.errors.unknown");
+          notify.failure(error);
           setLoading(false);
         }
       },

@@ -13,8 +13,6 @@ import {
   reportTalentEnquiry,
 } from "@/lib/api/generated";
 
-import { talentError } from "./talent-errors";
-
 type Answer = "accept" | "decline" | "report";
 
 const send = {
@@ -47,7 +45,7 @@ function TalentEnquiryActions({ id }: { id: string }) {
       setConfirming(null);
       router.refresh();
     } catch (error) {
-      notify.error(talentError(error));
+      notify.failure(error);
     } finally {
       setPending(null);
     }

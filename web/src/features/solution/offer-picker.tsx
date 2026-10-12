@@ -11,7 +11,6 @@ import { listSolutionOffers, type Offer } from "@/lib/api/generated";
 import { CodeCombobox } from "./code-combobox";
 import { OfferDialog } from "./offer-dialog";
 import { limits } from "./solution-editor-state";
-import { solutionError } from "./solution-errors";
 
 type OfferPickerProps = {
   id: string;
@@ -57,7 +56,7 @@ function OfferPicker({
       },
       (error) => {
         if (current) {
-          notify.error(solutionError(error));
+          notify.failure(error);
         }
       },
     );

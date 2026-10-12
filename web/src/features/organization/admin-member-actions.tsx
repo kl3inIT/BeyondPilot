@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { IconButton } from "@/components/actions/icon-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { Person } from "@/components/composites/person";
 import {
@@ -24,8 +25,6 @@ import {
   type OrganizationInvitation,
   type OrganizationMember,
 } from "@/lib/api/generated";
-
-import { organizationError } from "./organization-errors";
 
 const triggerClass =
   "hit-area flex size-8 shrink-0 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted";
@@ -61,7 +60,7 @@ function AdminMemberActions({ organizationId, member, onlyOwner }: AdminMemberAc
       notify.success(done, { name });
       startRefresh(() => router.refresh());
     } catch (error) {
-      notify.error(organizationError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(null);
@@ -177,7 +176,7 @@ function AdminInvitationActions({
       notify.success("Organization.done.invitationRevoked");
       router.refresh();
     } catch (error) {
-      notify.error(organizationError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(false);
@@ -186,14 +185,14 @@ function AdminInvitationActions({
 
   return (
     <>
-      <button
-        type="button"
+      <IconButton
+        prominence="tertiary"
+        size="sm"
         aria-label={t("revoke.open", { email: invitation.email })}
-        className={triggerClass}
         onClick={() => setAsking(true)}
       >
         <XIcon className="size-4" aria-hidden="true" />
-      </button>
+      </IconButton>
       {asking && (
         <ConfirmDialog
           open

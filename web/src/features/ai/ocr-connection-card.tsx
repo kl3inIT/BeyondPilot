@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { IconButton } from "@/components/actions/icon-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -23,12 +24,8 @@ import {
   type OcrProviderTest,
 } from "@/lib/api/generated";
 
-import { chatError } from "./chat-errors";
 import { ocrPresets, type OcrPreset } from "./ocr-presets";
 import { OcrProviderDialog, OcrTestResult } from "./ocr-provider-dialog";
-
-const iconButton =
-  "hit-area flex size-8 shrink-0 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 data-popup-open:bg-muted [&>svg]:size-4";
 
 /** The sign of an OCR service in a framed square, beside its name. */
 function OcrLogo() {
@@ -91,7 +88,7 @@ function OcrConnectionCard({ provider }: { provider: OcrProvider }) {
       });
       setResult(data);
     } catch (error) {
-      notify.error(chatError(error));
+      notify.failure(error);
     } finally {
       setTesting(false);
     }
@@ -104,7 +101,7 @@ function OcrConnectionCard({ provider }: { provider: OcrProvider }) {
       notify.success("Admin.ai.ocr.done.deleted", { name: provider.name });
       router.refresh();
     } catch (error) {
-      notify.error(chatError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(null);
@@ -130,42 +127,44 @@ function OcrConnectionCard({ provider }: { provider: OcrProvider }) {
           </span>
         )}
         <div className="hidden items-center md:flex">
-          <button
-            type="button"
-            className={iconButton}
+          <IconButton
+            prominence="tertiary"
+            size="sm"
             aria-label={t("test")}
             title={t("test")}
             disabled={testing || !provider.hasKey}
             onClick={test}
           >
             <PlugZapIcon aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={iconButton}
+          </IconButton>
+          <IconButton
+            prominence="tertiary"
+            size="sm"
             aria-label={t("edit")}
             title={t("edit")}
             onClick={() => setAsking("edit")}
           >
             <Settings2Icon aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className={`${iconButton} text-destructive`}
+          </IconButton>
+          <IconButton
+            tone="danger"
+            prominence="tertiary"
+            size="sm"
             aria-label={t("delete")}
             title={t("delete")}
             onClick={() => setAsking("delete")}
           >
             <Trash2Icon aria-hidden="true" />
-          </button>
+          </IconButton>
         </div>
         {/* On a phone the three actions fold into one menu. */}
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <button
-                type="button"
-                className={`${iconButton} md:hidden`}
+              <IconButton
+                prominence="tertiary"
+                size="sm"
+                className="md:hidden"
                 aria-label={t("more", { name: provider.name })}
               />
             }

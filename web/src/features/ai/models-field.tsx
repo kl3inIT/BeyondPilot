@@ -24,7 +24,6 @@ import {
   type SaveChatModel,
 } from "@/lib/api/generated";
 
-import { chatError } from "./chat-errors";
 import { price, tokens } from "./chat-presets";
 import { ModelLogo } from "./model-logo";
 
@@ -47,7 +46,7 @@ function useReportedModels() {
         setModels(data.models);
         setSelected(new Set());
       } catch (error) {
-        notify.error(chatError(error));
+        notify.failure(error);
       } finally {
         setListing(false);
       }

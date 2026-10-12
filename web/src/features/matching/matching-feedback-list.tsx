@@ -1,8 +1,9 @@
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 
 import { TextButton } from "@/components/actions/text-button";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { getFormatter } from "@/i18n/format-server";
 import type { MatchingDisagreement, MatchingFeedbackList } from "@/lib/api/generated";
 import { adminUseCaseCandidatesRoute, siteRoutes } from "@/lib/site";
 

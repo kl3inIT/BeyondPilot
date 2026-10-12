@@ -29,7 +29,6 @@ import { rejectedFields } from "@/lib/api/rejected-fields";
 import { siteRoutes } from "@/lib/site";
 
 import { industries, organizationTypes, teamSizes } from "./organization-codes";
-import { organizationError } from "./organization-errors";
 import { MAX_DESCRIPTION, MAX_INDUSTRIES } from "./organization-format";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
 import { OrganizationProfileSection } from "./organization-profile-section";
@@ -155,7 +154,7 @@ function OrganizationForm({ organization, admin, onCancel }: OrganizationFormPro
         });
         // A domain another organization has is said at its field; anything else in a toast.
         if (!domain.refused(error)) {
-          notify.error(organizationError(error));
+          notify.failure(error);
         }
       }
     },

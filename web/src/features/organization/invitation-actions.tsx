@@ -15,8 +15,6 @@ import {
 import { useNotify } from "@/hooks/use-notify";
 import { revokeOrganizationInvitation, type OrganizationInvitation } from "@/lib/api/generated";
 
-import { organizationError } from "./organization-errors";
-
 /** What an owner can do to an invitation that waits for an answer, in a menu at the end of its row. */
 function InvitationActions({ invitation }: { invitation: OrganizationInvitation }) {
   const t = useTranslations("Organization.members.actions");
@@ -33,7 +31,7 @@ function InvitationActions({ invitation }: { invitation: OrganizationInvitation 
       notify.success("Organization.done.invitationRevoked");
       startRefresh(() => router.refresh());
     } catch (error) {
-      notify.error(organizationError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }

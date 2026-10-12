@@ -35,7 +35,6 @@ import {
 import { siteRoutes } from "@/lib/site";
 
 import { held, reviewFields, toRequest } from "./solution-editor-state";
-import { solutionError } from "./solution-errors";
 
 type SolutionRowActionsProps = {
   solution: Pick<
@@ -83,7 +82,7 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
       );
       router.refresh();
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
     }
@@ -96,7 +95,7 @@ function SolutionRowActions({ solution, editable }: SolutionRowActionsProps) {
       notify.success("Solution.done.deleted", { name: solution.name });
       router.refresh();
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
     } finally {
       setPending(false);
       setConfirming(null);

@@ -22,7 +22,6 @@ import {
   type SaveAiProvider,
 } from "@/lib/api/generated";
 
-import { aiError } from "./admin-ai-errors";
 import { ProbeResult } from "./provider-probe";
 
 type ProviderEditorProps = {
@@ -79,7 +78,7 @@ function ProviderEditor({ vendor, provider }: ProviderEditorProps) {
         change(false);
         router.refresh();
       } catch (error) {
-        notify.error(aiError(error));
+        notify.failure(error);
       }
     },
   });
@@ -111,7 +110,7 @@ function ProviderEditor({ vendor, provider }: ProviderEditorProps) {
       });
       setResult(data);
     } catch (error) {
-      notify.error(aiError(error));
+      notify.failure(error);
     } finally {
       setTesting(false);
     }

@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useNotify } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api/client";
 import { saveAssessment, type Assessment, type ReviewCriterion } from "@/lib/api/generated";
 
 const SCORES = ["1", "2", "3", "4", "5"] as const;
@@ -96,14 +95,7 @@ function AssessmentPanel({
         router.refresh();
       }
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      notify.error(
-        code === "PROPOSAL_RELEASED" ||
-          code === "PROPOSAL_NO_CRITERIA" ||
-          code === "PROPOSAL_ASSESSMENT_INVALID"
-          ? `Review.errors.${code}`
-          : "Review.errors.unknown",
-      );
+      notify.failure(error);
     } finally {
       setPending(null);
     }

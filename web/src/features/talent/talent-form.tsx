@@ -48,7 +48,6 @@ import {
   talentRoles,
   talentSections,
 } from "./talent-codes";
-import { talentError } from "./talent-errors";
 import { TalentPhotoUpload } from "./talent-photo-upload";
 import {
   blankProject,
@@ -161,7 +160,7 @@ function TalentForm({ profile, suggestedName, aside }: TalentFormProps) {
     },
     onSubmitInvalid: ({ formApi }) => {
       const saveable = talentSchema(t, false).safeParse(formApi.state.values).success;
-      notify.error(saveable ? "Talent.errors.TALENT_INCOMPLETE" : "Talent.errors.REQUEST_INVALID");
+      notify.error(saveable ? "Errors.TALENT_INCOMPLETE" : "Errors.REQUEST_INVALID");
       // The chips of the roles cannot say they are refused, so the form's own move to the first
       // field in error passes them; when they come first, the focus goes to them afterwards.
       const refused = (field: string) =>
@@ -200,7 +199,7 @@ function TalentForm({ profile, suggestedName, aside }: TalentFormProps) {
           });
         }
         setServerErrors(formApi, { fields });
-        notify.error(talentError(error));
+        notify.failure(error);
         // The save may have gone through before the submission was refused; the page shows which.
         router.refresh();
       }

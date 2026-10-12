@@ -20,8 +20,9 @@ import {
   FieldTitle,
 } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useNotify } from "@/hooks/use-notify";
+import { useFailureWords, useNotify } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
+import { failedWith, type ErrorCode } from "@/lib/api/failure";
 import { saveProgram, type AdminProgram } from "@/lib/api/generated";
 import { fieldOfPointer } from "@/lib/api/problem-fields";
 import { programRoute, publicSiteHost, siteRoutes } from "@/lib/site";
@@ -89,7 +90,7 @@ const refusals = [
   "PROGRAM_EVENT_OUT_OF_ORDER",
   "PROGRAM_OPENING_FIXED",
   "PROGRAM_PUBLISHED_INCOMPLETE",
-] as const;
+] as const satisfies readonly ErrorCode[];
 
 function isRefusal(code: string): code is (typeof refusals)[number] {
   return (refusals as readonly string[]).includes(code);
@@ -111,6 +112,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
   const say = useTranslations("Form.errors");
   const format = programFormatter(useLocale());
   const notify = useNotify();
+  const words = useFailureWords();
   const router = useRouter();
   const [keyDate, setKeyDate] = useState<Editing>(null);
   const [event, setEvent] = useState<Editing>(null);
@@ -149,12 +151,12 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
     if (!(error instanceof ApiError) || !code) {
       return { form: t("errors.unknown"), fields: {} };
     }
-    if (code === "PROGRAM_CHANGED_MEANWHILE") {
-      return { form: t("errors.changedMeanwhile"), fields: {} };
+    if (failedWith(error, "PROGRAM_CHANGED_MEANWHILE")) {
+      return { form: words(error), fields: {} };
     }
     if (isRefusal(code)) {
       const field = fieldOfCode[code];
-      const message = t(`errors.codes.${code}`);
+      const message = words(error);
       return field ? { fields: { [field]: { message } } } : { form: message, fields: {} };
     }
     const fields = Object.fromEntries(
@@ -169,12 +171,11 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
   /** "7 Oct 2026, 15:30–17:00", "5 Dec 2026", from an instant and its end. */
   function when(startsAt: string, endsAt: string | null | undefined, allDay: boolean) {
     const starts = new Date(startsAt);
-    const day = format.dateTime(starts, { day: "numeric", month: "short", year: "numeric" });
+    const day = format.dateTime(starts, "date");
     if (allDay) {
       return day;
     }
-    const time = (at: Date) =>
-      format.dateTime(at, { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    const time = (at: Date) => format.dateTime(at, "time");
     return endsAt ? `${day}, ${time(starts)}–${time(new Date(endsAt))}` : `${day}, ${time(starts)}`;
   }
 

@@ -12,7 +12,7 @@ import {
   TriangleAlertIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { z } from "zod";
 
@@ -34,8 +34,8 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useNotify } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
+import { useFailureWords, useNotify } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
 import {
   saveEmailSettings,
   testEmailSettings,
@@ -43,7 +43,7 @@ import {
   type SaveEmailSettings,
 } from "@/lib/api/generated";
 
-import { testFailures, testRefusals } from "./email-test-failures";
+import { testFailures } from "./email-test-failures";
 import { TestSend } from "./test-send";
 
 const providers = ["ses", "resend", "brevo", "smtp"] as const;
@@ -221,6 +221,7 @@ function EmailSettingsForm({
   operatorEmail: string;
 }) {
   const t = useTranslations("Admin.email.settings");
+  const words = useFailureWords();
   const names = useTranslations("Admin.email.providers");
   const say = useTranslations("Form.errors");
   const format = useFormatter();
@@ -314,16 +315,8 @@ function EmailSettingsForm({
         notify.success("Admin.email.settings.saved");
         router.refresh();
       } catch (error) {
-        const code = error instanceof ApiError ? error.code : undefined;
         setServerErrors(formApi, {
-          form:
-            code === "NOTIFICATION_SETTINGS_CHANGED"
-              ? t("errors.changed")
-              : code === "NOTIFICATION_SETTINGS_INCOMPLETE"
-                ? t("errors.incomplete")
-                : code === "NOTIFICATION_ENCRYPTION_KEY_MISSING"
-                  ? t("errors.encryption")
-                  : t("errors.unknown"),
+          form: words(error, { otherwise: "Admin.email.settings.errors.unknown" }),
           fields: {},
         });
       }
@@ -412,15 +405,7 @@ function EmailSettingsForm({
         notify.error(testFailures[data.failure ?? "unavailable"]);
       }
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      notify.error(
-        (code === undefined ? undefined : testRefusals[code]) ??
-          (code === "NOTIFICATION_SETTINGS_INCOMPLETE"
-            ? "Admin.email.settings.errors.incomplete"
-            : code === "NOTIFICATION_ENCRYPTION_KEY_MISSING"
-              ? "Admin.email.settings.errors.encryption"
-              : "Admin.email.settings.errors.unknown"),
-      );
+      notify.failure(error, { otherwise: "Admin.email.settings.errors.unknown" });
     } finally {
       setTesting(false);
     }
@@ -799,11 +784,7 @@ function EmailSettingsForm({
         note={
           tested && tested.values === JSON.stringify(values)
             ? t("confirm.tested", {
-                when: format.dateTime(tested.at, {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hourCycle: "h23",
-                }),
+                when: format.dateTime(tested.at, "time"),
               })
             : t("confirm.untested")
         }

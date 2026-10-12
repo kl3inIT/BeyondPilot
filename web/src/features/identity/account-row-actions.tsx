@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useNotify, type MessageKey } from "@/hooks/use-notify";
 import { Link } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api/client";
 import {
   disableAccount,
   enableAccount,
@@ -63,14 +62,6 @@ const confirmed: Record<Confirmed, Change & { tone: "default" | "danger" }> = {
   },
 };
 
-/** The refusals this screen can meet, each with its own words; anything else gets the general ones. */
-const refusals: Record<string, MessageKey> = {
-  IDENTITY_OWN_ACCOUNT: "Admin.accounts.errors.ownAccount",
-  IDENTITY_OPERATOR_CONFIGURED: "Admin.accounts.errors.operatorConfigured",
-  IDENTITY_ACCOUNT_NOT_FOUND: "Admin.accounts.errors.accountNotFound",
-  IDENTITY_OPERATOR_REQUIRED: "Admin.accounts.errors.operatorRequired",
-};
-
 /**
  * What an operator can do to one account, in a menu at the end of its row. A change that is hard to
  * take back asks first; after any change the list is read again, so the row shows what the backend
@@ -94,8 +85,7 @@ function AccountRowActions({ account }: { account: AccountSummary }) {
       notify.success(done, { name });
       router.refresh();
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      notify.error((code && refusals[code]) || "Admin.accounts.errors.unknown");
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(null);

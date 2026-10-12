@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import type { ComponentProps, ReactNode } from "react";
 
 import { Button } from "@/components/actions/button";
@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useFormatter } from "@/i18n/format";
 
 type Labelled = {
   label: string;

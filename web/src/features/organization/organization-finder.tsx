@@ -15,7 +15,6 @@ import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import { joinOrganization, searchOrganizations, type OrganizationMatch } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { organizationError } from "./organization-errors";
 import { OrganizationMark } from "./organization-mark";
 
 /** What each outcome of joining is said as. */
@@ -96,7 +95,7 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
       setAsking(null);
       startRefresh(() => router.refresh());
     } catch (error) {
-      notify.error(organizationError(error));
+      notify.failure(error);
     } finally {
       setPending(null);
     }

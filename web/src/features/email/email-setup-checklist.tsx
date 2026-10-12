@@ -10,12 +10,13 @@ import {
   CopyIcon,
   RefreshCwIcon,
 } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { Spinner } from "@/components/ui/spinner";
+import { useFormatter } from "@/i18n/format";
 import { checkEmailSetup, type EmailSetup } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
 
@@ -123,11 +124,7 @@ function EmailSetupChecklist() {
             <p className="text-sm text-muted-foreground">
               {t("lead", {
                 domain: setup.domain,
-                when: format.dateTime(new Date(setup.checkedAt), {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hourCycle: "h23",
-                }),
+                when: format.dateTime(new Date(setup.checkedAt), "time"),
               })}
             </p>
           )}

@@ -1,14 +1,15 @@
 "use client";
 
 import { FileTextIcon, PlusIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
-import { ApiError } from "@/lib/api/client";
-import { uploadFile } from "@/lib/storage/upload";
+import { useFailureWords } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
+import { uploadFile, uploadWords } from "@/lib/storage/upload";
 
 /** What the backend accepts as an attachment (storage › FilePurpose.USE_CASE_ATTACHMENT). */
 const accepted = [
@@ -59,6 +60,7 @@ function AttachmentsField({
   errors,
 }: AttachmentsFieldProps) {
   const t = useTranslations("Admin.useCases.form.attachments");
+  const words = useFailureWords();
   const format = useFormatter();
   const input = useRef<HTMLInputElement>(null);
   /** Which file the next choice replaces; none when it adds one. */
@@ -97,13 +99,15 @@ function AttachmentsField({
           : value.map((old, at) => (at === index ? uploaded : old)),
       );
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
       setProblem(
-        code === "STORAGE_MEDIA_TYPE_NOT_ALLOWED" || code === "STORAGE_CONTENT_MISMATCH"
-          ? t("errors.type")
-          : code === "STORAGE_FILE_TOO_LARGE"
-            ? t("errors.size")
-            : t("errors.failed"),
+        words(
+          error,
+          uploadWords({
+            type: "Admin.useCases.form.attachments.errors.type",
+            size: "Admin.useCases.form.attachments.errors.size",
+            failed: "Admin.useCases.form.attachments.errors.failed",
+          }),
+        ),
       );
     } finally {
       setUploading(false);

@@ -9,13 +9,14 @@ import {
   TrophyIcon,
   UserRoundIcon,
 } from "lucide-react";
-import { getFormatter, getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { HelpPopover } from "@/components/composites/help-popover";
 import { Status } from "@/components/composites/status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { getFormatter } from "@/i18n/format-server";
 import type { SearchIndex, SearchIndexKind } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -51,13 +52,7 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
   const total = sum((kind) => kind.total);
   const embedded = sum((kind) => kind.embedded);
   const semantic = data.semantic;
-  const time = (value: string) =>
-    format.dateTime(new Date(value), {
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-      timeZone: "Asia/Ho_Chi_Minh",
-    });
+  const time = (value: string) => format.dateTime(new Date(value), "time");
   const dayAndTime = (value: string) =>
     format.dateTime(new Date(value), {
       day: "numeric",

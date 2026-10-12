@@ -1,7 +1,8 @@
 import { CircleCheckIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
+import { useFormatter } from "@/i18n/format";
 import type { MyUseCase } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -15,14 +16,7 @@ function UseCaseSentPage({ useCase }: { useCase: MyUseCase }) {
   const format = useFormatter();
   const when = (instant: string | null | undefined) =>
     instant
-      ? `${format.dateTime(new Date(instant), {
-          dateStyle: "medium",
-          timeZone: "Asia/Ho_Chi_Minh",
-        })}, ${format.dateTime(new Date(instant), {
-          hour: "2-digit",
-          minute: "2-digit",
-          timeZone: "Asia/Ho_Chi_Minh",
-        })} ICT`
+      ? `${format.dateTime(new Date(instant), "date")}, ${format.dateTime(new Date(instant), "time")} ICT`
       : "";
 
   const rows: { key: "useCase" | "organization" | "status" | "sent" | "closes"; value: string }[] =

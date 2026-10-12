@@ -1,6 +1,7 @@
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
+import { useFormatter } from "@/i18n/format";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { MyOrganization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -75,7 +76,7 @@ function OrganizationEntry({ mine, finding }: OrganizationEntryProps) {
   const format = useFormatter();
   const { request, declined } = mine;
   const invitation = mine.invitations.at(0);
-  const day = (at: string) => format.dateTime(new Date(at), { dateStyle: "medium" });
+  const day = (at: string) => format.dateTime(new Date(at), "date");
 
   if (request) {
     const kind = request.claim ? "claim" : "join";

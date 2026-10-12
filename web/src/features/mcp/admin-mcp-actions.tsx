@@ -33,8 +33,8 @@ function useChange() {
         await change();
         notify.success("Admin.mcp.saved");
         router.refresh();
-      } catch {
-        notify.error("Admin.mcp.failed");
+      } catch (error) {
+        notify.failure(error, { otherwise: "Admin.mcp.failed" });
       } finally {
         setPending(false);
       }

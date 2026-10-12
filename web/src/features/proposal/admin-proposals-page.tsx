@@ -1,5 +1,5 @@
 import { InboxIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { DataTable, DataTableEmpty } from "@/components/composites/data-table";
 import { ReviewStatus } from "@/components/composites/review-status";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { UseCaseTabs } from "@/features/usecase/use-case-tabs";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import type { MyUseCase, ReceivedUseCaseProposals } from "@/lib/api/generated";
 import { adminUseCaseProposalRoute } from "@/lib/site";
@@ -34,8 +35,7 @@ function AdminProposalsPage({ useCase, proposals }: AdminProposalsPageProps) {
   const statusLabel = useTranslations("Admin.useCases.status");
   const format = useFormatter();
   const { items } = proposals;
-  const day = (instant: string) =>
-    format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
+  const day = (instant: string) => format.dateTime(new Date(instant), "date");
 
   const rows = items.map((proposal) => {
     const detail = proposalLine(proposal.solutionNames, proposal.contactName);

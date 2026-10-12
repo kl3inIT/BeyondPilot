@@ -8,11 +8,13 @@ import { useState } from "react";
 import { z } from "zod";
 
 import { Button } from "@/components/actions/button";
+import { IconButton } from "@/components/actions/icon-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { FormDialog } from "@/components/composites/form-dialog";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
-import { useNotify } from "@/hooks/use-notify";
+import { useFailureWords, useNotify } from "@/hooks/use-notify";
 import { ApiError } from "@/lib/api/client";
+import { failedWith, type FailureWords } from "@/lib/api/failure";
 import {
   addEmailSuppression,
   removeEmailSuppression,
@@ -23,8 +25,14 @@ import {
 const ADDRESS = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Stops email to an address an operator names, as when its reader asks for no more email. */
+/** What did not happen, for a refusal that has no words of its own. */
+const suppressionWords = {
+  otherwise: "Admin.email.suppressions.errors.unknown",
+} as const satisfies FailureWords;
+
 function AddSuppressionButton() {
   const t = useTranslations("Admin.email.suppressions.add");
+  const words = useFailureWords();
   const notify = useNotify();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -43,13 +51,12 @@ function AddSuppressionButton() {
         setOpen(false);
         router.refresh();
       } catch (error) {
-        const code = error instanceof ApiError ? error.code : undefined;
-        if (code === "NOTIFICATION_SUPPRESSION_EXISTS") {
-          setServerErrors(formApi, { fields: { address: { message: t("exists") } } });
+        if (failedWith(error, "NOTIFICATION_SUPPRESSION_EXISTS")) {
+          setServerErrors(formApi, { fields: { address: { message: words(error) } } });
         } else if (error instanceof ApiError && error.violations.length > 0) {
           setServerErrors(formApi, { fields: { address: { message: t("invalid") } } });
         } else {
-          notify.error("Admin.email.suppressions.errors.unknown");
+          notify.failure(error, suppressionWords);
         }
       }
     },
@@ -117,8 +124,8 @@ function RemoveSuppressionButton({
         reason === "manual" ? { undo: () => void addBack() } : undefined,
       );
       router.refresh();
-    } catch {
-      notify.error("Admin.email.suppressions.errors.unknown");
+    } catch (error) {
+      notify.failure(error, suppressionWords);
     } finally {
       setPending(false);
       setAsking(false);
@@ -130,23 +137,23 @@ function RemoveSuppressionButton({
       await addEmailSuppression({ body: { address } });
       notify.success("Admin.email.suppressions.add.done", { email: address });
       router.refresh();
-    } catch {
-      notify.error("Admin.email.suppressions.errors.unknown");
+    } catch (error) {
+      notify.failure(error, suppressionWords);
     }
   }
 
   return (
     <>
-      <button
-        type="button"
+      <IconButton
+        prominence="tertiary"
+        size="sm"
         aria-label={t("open", { email: address })}
         aria-busy={pending || undefined}
         disabled={pending}
         onClick={() => (reason === "manual" ? void remove() : setAsking(true))}
-        className="hit-area flex size-8 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <Trash2Icon aria-hidden="true" className="size-4" />
-      </button>
+      </IconButton>
       <ConfirmDialog
         open={asking}
         onOpenChange={(open) => !open && setAsking(false)}

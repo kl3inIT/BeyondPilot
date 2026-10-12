@@ -1,10 +1,11 @@
 import { MailIcon, SearchXIcon } from "lucide-react";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
 import { DataTableEmpty, DataTablePager } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { EmailMessageList } from "@/lib/api/generated";
 import { adminEmailMessageRoute, siteRoutes } from "@/lib/site";

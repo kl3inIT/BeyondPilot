@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "next typegen && tsc --noEmit",
-    "check:messages": "node scripts/check-messages.mjs",
+    "check:messages": "node scripts/check-messages.mjs && node scripts/check-error-codes.mjs",
     "generate:api": "openapi-ts",
     "check:api": "node scripts/check-api.mjs",
     "knip": "knip",

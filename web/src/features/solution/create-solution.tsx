@@ -15,8 +15,6 @@ import { getPathname } from "@/i18n/navigation";
 import { createSolution } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import { solutionError } from "./solution-errors";
-
 type NewSolutionFormProps = {
   onCancel: () => void;
   /**
@@ -53,7 +51,7 @@ function useNewSolutionForm(onCreated?: (id: string) => void) {
           router.push(getPathname({ href: `${siteRoutes.workspaceSolutions}/${data.id}`, locale }));
         }
       } catch (error) {
-        notify.error(solutionError(error));
+        notify.failure(error);
         return;
       }
       // The form stays pending until the editor arrives, so a second press cannot create twice.

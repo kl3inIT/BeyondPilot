@@ -10,9 +10,10 @@ import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { focusFirstInvalid } from "@/components/form/focus-first-invalid";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useNotify } from "@/hooks/use-notify";
+import { useFailureWords, useNotify } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
+import { failedWith, type ErrorCode } from "@/lib/api/failure";
 import { createAdminUseCase, type UseCaseOrganization } from "@/lib/api/generated";
 import { fieldOfPointer } from "@/lib/api/problem-fields";
 import { siteRoutes } from "@/lib/site";
@@ -50,9 +51,11 @@ const refusalSteps = {
   USECASE_BUDGET_INCOMPLETE: "budget",
   USECASE_BUDGET_OUT_OF_ORDER: "budget",
   USECASE_ATTACHMENT_NOT_USABLE: "requirements",
-} as const satisfies Record<string, Step>;
+} as const satisfies Partial<Record<ErrorCode, Step>>;
 
 type RefusalCode = keyof typeof refusalSteps;
+
+const refusalCodes = Object.keys(refusalSteps) as RefusalCode[];
 
 /** The field each refusal is about, where the form shows it as well. */
 const refusalFields = {
@@ -109,6 +112,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
   const w = useTranslations("Organization.useCases.wizard");
   const say = useTranslations("Form.errors");
   const notify = useNotify();
+  const words = useFailureWords();
   const router = useRouter();
   const [step, setStep] = useState<Step>("challenge");
   // A refusal no field can say: it stands above the step, and leaves with the step and with the next change.
@@ -257,11 +261,10 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
       notify.success("Admin.useCases.form.published", { title: values.title.trim() });
       router.push(siteRoutes.adminUseCases);
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
-      if (code && code in refusalSteps) {
-        const refusal = code as RefusalCode;
+      const refusal = failedWith(error, ...refusalCodes);
+      if (refusal) {
         refuse(refusalSteps[refusal], {
-          [refusalFields[refusal]]: { message: t(`errors.${refusal}`) },
+          [refusalFields[refusal]]: { message: words(error) },
         });
       } else if (error instanceof ApiError && error.violations.length > 0) {
         // The fields the backend points at are marked; it gives no words this screen may show, so
@@ -273,7 +276,7 @@ function AdminUseCaseForm({ organizations }: { organizations: UseCaseOrganizatio
         );
         setProblem(t("errors.unknown"));
       } else {
-        notify.error("Admin.useCases.form.errors.unknown");
+        notify.failure(error, { otherwise: "Admin.useCases.form.errors.unknown" });
       }
     }
   }

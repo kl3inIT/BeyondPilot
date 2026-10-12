@@ -1,5 +1,5 @@
 import { SearchXIcon, UsersIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -11,6 +11,7 @@ import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { Person } from "@/components/composites/person";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { useFormatter } from "@/i18n/format";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminTalentList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -52,7 +53,7 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
       ? ""
       : profile.status === "in_review"
         ? t("waitingSince", { time: format.relativeTime(new Date(profile.submittedAt)) })
-        : format.dateTime(new Date(profile.submittedAt), { dateStyle: "medium" }),
+        : format.dateTime(new Date(profile.submittedAt), "date"),
     waiting: profile.status === "in_review",
   }));
 

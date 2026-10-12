@@ -7,7 +7,6 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { useNotify } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
 import { withdrawApplication } from "@/lib/api/generated";
 
 /**
@@ -37,11 +36,11 @@ function WithdrawApplication({
       notify.success("Application.withdraw.done");
       router.refresh();
     } catch (error) {
-      notify.error(
-        error instanceof ApiError && error.code === "PROPOSAL_CLOSED"
-          ? "Application.withdraw.closed"
-          : "Application.withdraw.failed",
-      );
+      // Here a closed program means one thing: the application stays where it is.
+      notify.failure(error, {
+        PROPOSAL_CLOSED: "Application.withdraw.closed",
+        otherwise: "Application.withdraw.failed",
+      });
     } finally {
       setPending(false);
       setAsking(false);

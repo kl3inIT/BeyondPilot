@@ -19,7 +19,6 @@ import { useNotify } from "@/hooks/use-notify";
 import { deleteOffer, deleteOwnOffer, type AdminOffer } from "@/lib/api/generated";
 
 import { OfferDialog } from "./offer-dialog";
-import { solutionError } from "./solution-errors";
 
 /** An offer as a list shows it: the operators' list, or an organization's own. */
 type ListedOffer = Pick<AdminOffer, "id" | "title" | "url" | "version" | "solutions"> &
@@ -69,7 +68,7 @@ function OfferRowMenu({ offer, own = false }: Scope & { offer: ListedOffer }) {
       setAsking(null);
       router.refresh();
     } catch (error) {
-      notify.error(solutionError(error));
+      notify.failure(error);
       setAsking(null);
       // Someone chose it or changed it meanwhile: the list says what is true now.
       router.refresh();

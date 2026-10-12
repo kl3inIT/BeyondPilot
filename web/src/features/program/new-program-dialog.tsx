@@ -9,9 +9,10 @@ import { useState } from "react";
 import { Button } from "@/components/actions/button";
 import { FormDialog } from "@/components/composites/form-dialog";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
-import { useNotify } from "@/hooks/use-notify";
+import { useFailureWords, useNotify } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
+import { failedWith } from "@/lib/api/failure";
 import { createProgram } from "@/lib/api/generated";
 import { fieldOfPointer } from "@/lib/api/problem-fields";
 import { adminProgramRoute, publicSiteHost, siteRoutes } from "@/lib/site";
@@ -28,6 +29,7 @@ function NewProgramDialog({ locale }: { locale: string }) {
   const types = useTranslations("Program.type");
   const say = useTranslations("Form.errors");
   const notify = useNotify();
+  const words = useFailureWords();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [slugEdited, setSlugEdited] = useState(false);
@@ -47,8 +49,8 @@ function NewProgramDialog({ locale }: { locale: string }) {
         setOpen(false);
         router.push(getPathname({ href: adminProgramRoute(data.id), locale }));
       } catch (error) {
-        if (error instanceof ApiError && error.code === "PROGRAM_SLUG_TAKEN") {
-          setServerErrors(formApi, { fields: { slug: { message: t("errors.slugTaken") } } });
+        if (failedWith(error, "PROGRAM_SLUG_TAKEN")) {
+          setServerErrors(formApi, { fields: { slug: { message: words(error) } } });
         } else if (error instanceof ApiError && error.violations.length > 0) {
           setServerErrors(formApi, {
             fields: Object.fromEntries(
@@ -59,7 +61,7 @@ function NewProgramDialog({ locale }: { locale: string }) {
             ),
           });
         } else {
-          notify.error("Admin.programs.errors.unknown");
+          notify.failure(error);
         }
       }
     },

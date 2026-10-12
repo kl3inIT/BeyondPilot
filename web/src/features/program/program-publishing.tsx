@@ -23,7 +23,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
-import { ApiError } from "@/lib/api/client";
 import { publishProgram, unpublishProgram, type AdminProgram } from "@/lib/api/generated";
 import { publicSiteHost, siteRoutes } from "@/lib/site";
 
@@ -144,18 +143,14 @@ function PublishButton({ program, dirty, blocked, save, className }: PublishButt
         return;
       }
       if (saved.publishIssues.length > 0) {
-        notify.error("Admin.programs.settings.publish.notReady");
+        notify.error("Errors.PROGRAM_NOT_READY_TO_PUBLISH");
         return;
       }
       await publishProgram({ path: { id: program.id } });
       notify.success("Admin.programs.settings.publish.done", { name: saved.name });
       router.refresh();
     } catch (error) {
-      notify.error(
-        error instanceof ApiError && error.code === "PROGRAM_NOT_READY_TO_PUBLISH"
-          ? "Admin.programs.settings.publish.notReady"
-          : "Admin.programs.errors.unknown",
-      );
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(false);
@@ -205,8 +200,8 @@ function ProgramMenu({ program }: { program: AdminProgram }) {
       await unpublishProgram({ path: { id: program.id } });
       notify.success("Admin.programs.settings.unpublish.done", { name: program.name });
       router.refresh();
-    } catch {
-      notify.error("Admin.programs.errors.unknown");
+    } catch (error) {
+      notify.failure(error);
     } finally {
       setPending(false);
       setAsking(false);

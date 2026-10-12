@@ -1,5 +1,5 @@
 import { BoxesIcon, EllipsisIcon, SearchXIcon } from "lucide-react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminSolutionList, AdminSolutionSummary } from "@/lib/api/generated";
@@ -76,7 +77,7 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
       ? ""
       : solution.status === "in_review"
         ? t("waitingSince", { time: format.relativeTime(new Date(solution.submittedAt)) })
-        : format.dateTime(new Date(solution.submittedAt), { dateStyle: "medium" }),
+        : format.dateTime(new Date(solution.submittedAt), "date"),
     waiting: solution.status === "in_review" || solution.deploymentsAwaitingReview > 0,
   }));
 

@@ -1,14 +1,15 @@
 "use client";
 
 import { FileTextIcon, FileUpIcon, PlusIcon } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "cn";
-import { ApiError } from "@/lib/api/client";
-import { uploadFile } from "@/lib/storage/upload";
+import { useFailureWords } from "@/hooks/use-notify";
+import { useFormatter } from "@/i18n/format";
+import { uploadFile, uploadWords } from "@/lib/storage/upload";
 
 /** What the backend accepts as a file of an application (storage › FilePurpose.APPLICATION_FILE). */
 const maxBytes = 25 * 1024 * 1024;
@@ -32,6 +33,7 @@ type PdfUploadProps = {
  */
 function PdfUpload({ id, value, onChange, invalid, describedBy, zone }: PdfUploadProps) {
   const t = useTranslations("PdfUpload");
+  const words = useFailureWords();
   const format = useFormatter();
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -52,13 +54,15 @@ function PdfUpload({ id, value, onChange, invalid, describedBy, zone }: PdfUploa
       const stored = await uploadFile(file, "application_file");
       onChange({ fileId: stored.id, fileName: stored.fileName, sizeBytes: stored.sizeBytes });
     } catch (error) {
-      const code = error instanceof ApiError ? error.code : undefined;
       setProblem(
-        code === "STORAGE_MEDIA_TYPE_NOT_ALLOWED" || code === "STORAGE_CONTENT_MISMATCH"
-          ? t("errors.type")
-          : code === "STORAGE_FILE_TOO_LARGE"
-            ? t("errors.size")
-            : t("errors.failed"),
+        words(
+          error,
+          uploadWords({
+            type: "PdfUpload.errors.type",
+            size: "PdfUpload.errors.size",
+            failed: "PdfUpload.errors.failed",
+          }),
+        ),
       );
     } finally {
       setUploading(false);
