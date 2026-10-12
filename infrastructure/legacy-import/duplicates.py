@@ -1,22 +1,30 @@
-"""Merges the organizations the old platform holds twice, and takes their duplicate solutions off the list.
+"""Merges the organizations that are one company, and refuses their duplicate solutions.
 
-    python duplicates.py <full-export.xlsx> <output directory>
+    python duplicates.py <full-export.xlsx> <output directory> [<same-company.json>]
 
-Writes `<output>/duplicates.sql`. A company that registered several times on the old platform became several
-organizations here, each with its own solution. Two organizations are surely one company when they have one name,
-read without its legal form, and one website. Of each such group one is kept: the one whose solution has a deck, then
-the one active on the old platform, then the fuller record, then the one updated last there. The others are merged
-into it as `OrganizationAdministration.merge` does it: their open invitations, requests, solutions, offers, use cases,
-proposals, introductions and enquiries move to the kept one, and each stays as a record of where it went.
+Writes `<output>/duplicates.sql`. A company that registered several times on the old platform, or once there and once
+here, became several organizations, each with its own solution. Organizations are one company when they have one name,
+read without its legal form, and one website domain among them, which at least one of them names. Those with one name
+and different domains are merged only when a person found them to be one company: `same-company.json` lists such
+names as `{"<name key>": {"website": "<the one to keep, or null>", "several": <true when the records are different
+products of the company>}}`.
+
+Of each group one is kept: an approved one before another, then the one whose solution has a deck, then the one
+active on the old platform, then the fuller record, then the one updated last there. The others are merged into it as
+`OrganizationAdministration.merge` does it: their members, open invitations, requests, solutions, offers, use cases,
+proposals, introductions and enquiries move to the kept one, and each stays as a record of where it went. The kept
+one takes a website when it has none.
 
 The solutions that are then several under the kept organization are the same product described several times: the
-best one by the same order stays, and the others are refused as duplicates, as an operator refuses a solution. Taking
+best one by the same order stays, and the others are refused as duplicates, as an operator refuses a solution. Where a
+person found the records to be different products of one company, each registered with its own website, every
+solution stays. Taking
 one off the list would not do: search and matching read an approved solution listed or not. A refused solution is in
 neither, keeps everything it holds, and can be reviewed again.
 
-A group is left for a person when an organization in it has members, or when the one to keep is not approved: merging
-it moves people or needs a review, which a rule does not decide. The file ends by listing what it merged and what it
-left. It takes the operator account as `-v operator=<uuid>`; rebuild the search index after it.
+A group is left for a person when a member of one of its organizations has signed in: the application's merge tells
+the people it moves, and this file sends nothing. The file ends by counting what it merged and what it left. It takes
+the operator account as `-v operator=<uuid>`; rebuild the search index after it.
 """
 
 import json
@@ -63,32 +71,50 @@ create function pg_temp.filled(s solution) returns integer language sql stable a
          + (cardinality(s.industries) > 0)::int + (s.deck_file_id is not null)::int * 3
 $$;
 
+-- The domain a company owns, as mapping.registrable_domain reads it, without the hosts anyone has a page on.
+create function pg_temp.domain(host text) returns text language sql immutable as $$
+    select case
+        when host = '' or host !~ '\.' then ''
+        when host ~ '(^|\.)(linkedin\.com|x\.com|twitter\.com|facebook\.com|instagram\.com|github\.com|github\.io|medium\.com|notion\.site|wixsite\.com|vercel\.app|netlify\.app|google\.com|youtube\.com|test\.com|bit\.ly|linktr\.ee|tiktok\.com|t\.me|wordpress\.com|webflow\.io|framer\.website|framer\.ai|carrd\.co|substack\.com|apple\.com)$'
+            then ''
+        when host ~ '\.(com|co|net|org|gov|edu|ac)\.[a-z]{2}$' then substring(host from '[^.]+\.[^.]+\.[^.]+$')
+        else substring(host from '[^.]+\.[^.]+$') end
+$$;
+
 create temp table candidate on commit drop as
-select o.id, o.name, o.status, pg_temp.name_key(o.name) as key, pg_temp.host(o.website) as host,
-       (select count(*) from organization_member m where m.organization_id = o.id) as members,
+select o.id, o.name, o.status, o.website, pg_temp.name_key(o.name) as key,
+       pg_temp.domain(pg_temp.host(o.website)) as domain,
+       (select count(*) from organization_member m join identity_account a on a.id = m.account_id
+        where m.organization_id = o.id and a.last_login_at is not null) as signed_in,
        exists (select 1 from solution s where s.organization_id = o.id and s.deck_file_id is not null) as has_deck,
        coalesce((select max(pg_temp.filled(s)) from solution s where s.organization_id = o.id), 0)
            + (o.description is not null)::int + (o.logo_file_id is not null)::int + (o.country is not null)::int as filled,
        coalesce(v.active, true) as active, coalesce(v.updated, '') as updated
 from organization o left join legacy_company v on v.id = o.id
-where o.status <> 'merged';
+where o.status not in ('merged', 'rejected');
+
+-- The names that are one company: one domain among several organizations, which at least one of them names, or a
+-- name a person found to be one company.
+create temp table one_company on commit drop as
+select c.key from candidate c where c.key <> '' group by c.key
+having count(*) > 1
+   and ((count(distinct c.domain) filter (where c.domain <> '') = 1)
+        or c.key in (select key from legacy_same));
 
 create temp table ranked on commit drop as
 select c.*,
-       row_number() over (partition by c.key, c.host
-                          order by c.has_deck desc, c.active desc, c.filled desc, c.updated desc, c.id) as place,
-       bool_or(c.members > 0) over (partition by c.key, c.host) as has_people
-from candidate c
-where c.key <> '' and c.host <> ''
-  and (c.key, c.host) in (select key, host from candidate where key <> '' and host <> ''
-                          group by key, host having count(*) > 1);
+       row_number() over (partition by c.key
+                          order by (c.status = 'approved') desc, c.has_deck desc, c.active desc, c.filled desc,
+                                   c.updated desc, c.id) as place,
+       bool_or(c.signed_in > 0) over (partition by c.key) as has_people
+from candidate c where c.key in (select key from one_company);
 
 -- Each duplicate and the organization it goes into; a group a rule does not decide says why instead.
 create temp table merge_plan on commit drop as
-select d.id as duplicate, k.id as kept, d.name as duplicate_name, k.name as kept_name,
-       case when d.has_people then 'an organization of the group has members'
-            when k.status <> 'approved' then 'the one to keep is not approved' end as left_because
-from ranked d join ranked k on k.key = d.key and k.host = d.host and k.place = 1
+select d.id as duplicate, k.id as kept, d.key,
+       coalesce((select website from legacy_same l where l.key = d.key), nullif(d.website, '')) as website,
+       case when d.has_people then 'a member of the group has signed in' end as left_because
+from ranked d join ranked k on k.key = d.key and k.place = 1
 where d.place > 1;
 
 do $$
@@ -99,7 +125,9 @@ declare
     results_gone integer := 0;
 begin
     for pair in select * from merge_plan where left_because is null loop
-        -- As MembershipRepository.moveOpenInvitations and moveOpenRequests.
+        -- As MembershipRepository.moveMembers, moveOpenInvitations and moveOpenRequests.
+        update organization_member set organization_id = pair.kept, role = 'member', merged_from_id = pair.duplicate
+        where organization_id = pair.duplicate;
         update organization_invitation set status = 'expired', decided_at = now()
         where organization_id in (pair.duplicate, pair.kept) and status = 'pending' and expires_at <= now();
         update organization_invitation moved set status = 'revoked', decided_at = now()
@@ -134,24 +162,36 @@ begin
             merged_by_account_id = current_setting('legacy.operator')::uuid, email_domain = null, auto_join = false,
             version = version + 1, updated_at = now()
         where id = pair.duplicate;
+        -- The kept one takes a website when it has none, and the one a person chose for the name when they chose one.
+        update organization
+        set website = pair.website, version = version + 1, updated_at = now()
+        where id = pair.kept and pair.website is not null and website is distinct from pair.website
+          and (nullif(website, '') is null
+               or exists (select 1 from legacy_same l where l.key = pair.key and l.website is not null));
         merged := merged + 1;
     end loop;
 
-    -- Under an organization others were merged into, the solutions with one name are one product described several
-    -- times. The best stays; the others are refused as duplicates, as an operator refuses one, which takes them out
-    -- of the directory, of search and of matching, and can be reviewed again.
+    -- Under an organization others were merged into now, the solutions with one name are one product described
+    -- several times. The best stays; the others are refused as duplicates, as an operator refuses one, which takes
+    -- them out of the directory, of search and of matching, and can be reviewed again. A company a person found to
+    -- have registered different products keeps them all.
     with product as (
         select s.id,
                row_number() over (partition by s.organization_id, pg_temp.name_key(s.name)
-                                  order by (s.deck_file_id is not null) desc, coalesce(v.active, true) desc,
-                                           pg_temp.filled(s) desc, coalesce(v.updated, '') desc, s.id) as place,
+                                  order by (s.status = 'approved') desc, (s.status <> 'draft') desc,
+                                           (s.deck_file_id is not null) desc, coalesce(v.active, true) desc, pg_temp.filled(s) desc,
+                                           coalesce(v.updated, '') desc, s.id) as place,
                first_value(s.name) over (partition by s.organization_id, pg_temp.name_key(s.name)
-                                         order by (s.deck_file_id is not null) desc, coalesce(v.active, true) desc,
-                                                  pg_temp.filled(s) desc, coalesce(v.updated, '') desc, s.id) as best
+                                         order by (s.status = 'approved') desc, (s.status <> 'draft') desc,
+                                                  (s.deck_file_id is not null) desc, coalesce(v.active, true) desc, pg_temp.filled(s) desc,
+                                                  coalesce(v.updated, '') desc, s.id) as best
         from solution s
         left join legacy_company v on v.solution_id = s.id
-        where s.status = 'approved'
-          and s.organization_id in (select merged_into_id from organization where status = 'merged')),
+        -- A draft counts when it is a record of the old platform; one a member began here is theirs to finish.
+        where (s.status in ('approved', 'in_review') or (s.status = 'draft' and v.solution_id is not null))
+          and s.organization_id in (select kept from merge_plan
+                                    where left_because is null
+                                      and key not in (select key from legacy_same where several))),
     refused as (
         update solution s
         set status = 'rejected', decision_reason = 'duplicate', decided_at = now(),
@@ -182,13 +222,18 @@ commit;
 """
 
 
-def sql(facts: list[tuple[str, str | None, bool, str]]) -> str:
+def sql(facts: list[tuple[str, str | None, bool, str]], same: dict[str, dict] | None = None) -> str:
     lines = [
         "-- Merges the organizations the old platform holds twice, built by infrastructure/legacy-import/duplicates.py.",
         build.HEAD,
         "create temp table legacy_company (id uuid primary key, solution_id uuid, active boolean not null, "
         "updated text not null) on commit drop;",
     ]
+    lines.append("create temp table legacy_same (key text primary key, website text, several boolean not null) "
+                 "on commit drop;")
+    for key, found in sorted((same or {}).items()):
+        lines.append(f"insert into legacy_same values ({build.lit(key)}, {build.lit(found.get('website'))}, "
+                     f"{build.lit(found.get('several') is True)});")
     for organization_id, solution_id, active, updated in facts:
         lines.append(f"insert into legacy_company (id, solution_id, active, updated) values ("
                      f"{build.lit(organization_id)}, {build.lit(solution_id)}, {build.lit(active)}, "
@@ -196,13 +241,15 @@ def sql(facts: list[tuple[str, str | None, bool, str]]) -> str:
     return "\n".join(lines) + MERGE
 
 
-def main(workbook_path: Path, out: Path) -> dict:
+def main(workbook_path: Path, out: Path, same_path: Path | None = None) -> dict:
     workbook = openpyxl.load_workbook(workbook_path, read_only=True, data_only=True)
     facts = v1_facts(report.sheet(workbook, "startups"), report.sheet(workbook, "enterprises"))
+    same = json.loads(same_path.read_text(encoding="utf-8")) if same_path else {}
     out.mkdir(parents=True, exist_ok=True)
-    (out / "duplicates.sql").write_text(sql(facts), encoding="utf-8", newline="\n")
-    return {"companies_of_v1": len(facts)}
+    (out / "duplicates.sql").write_text(sql(facts, same), encoding="utf-8", newline="\n")
+    return {"companies_of_v1": len(facts), "names_a_person_found_to_be_one_company": len(same)}
 
 
 if __name__ == "__main__":
-    print(json.dumps(main(Path(sys.argv[1]), Path(sys.argv[2])), indent=2, ensure_ascii=False))
+    print(json.dumps(main(Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3]) if len(sys.argv) > 3 else None),
+                     indent=2, ensure_ascii=False))
