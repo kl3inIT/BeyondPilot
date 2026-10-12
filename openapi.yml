@@ -14245,10 +14245,13 @@ components:
           maxLength: 280
           minLength: 0
         foundedYear:
-          type: integer
+          type:
+          - integer
+          - "null"
           format: int32
           description: "The year it started; for an independent builder, the year\
-            \ the practice did."
+            \ the practice did. A company gives it; a team, a builder or another organization\
+            \ may leave it out."
           maximum: 2100
           minimum: 1800
         industries:
@@ -14289,19 +14292,21 @@ components:
           - other
           pattern: company|builder_team|independent_builder|other
         website:
-          type: string
+          type:
+          - string
+          - "null"
+          description: "A company gives one; a team, a builder or another organization\
+            \ may leave it out."
           maxLength: 300
           minLength: 0
           pattern: "https?://[^\\s]+"
       required:
       - country
       - description
-      - foundedYear
       - industries
       - name
       - teamSize
       - type
-      - website
     CreateProgram:
       type: object
       description: What a program cannot do without. It is created as a draft.
@@ -20770,10 +20775,13 @@ components:
           maxLength: 280
           minLength: 0
         foundedYear:
-          type: integer
+          type:
+          - integer
+          - "null"
           format: int32
           description: "The year it started; for an independent builder, the year\
-            \ the practice did."
+            \ the practice did. A company gives it; a team, a builder or another organization\
+            \ may leave it out."
           maximum: 2100
           minimum: 1800
         industries:
@@ -20811,20 +20819,22 @@ components:
           format: int64
           description: The version the screen read.
         website:
-          type: string
+          type:
+          - string
+          - "null"
+          description: "A company gives one; a team, a builder or another organization\
+            \ may leave it out."
           maxLength: 300
           minLength: 0
           pattern: "https?://[^\\s]+"
       required:
       - country
       - description
-      - foundedYear
       - industries
       - name
       - teamSize
       - type
       - version
-      - website
     SaveOrganizationBasics:
       type: object
       description: The facts a person gives when they make an organization. The rest
