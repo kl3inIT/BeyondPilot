@@ -39,30 +39,42 @@ async function readAccess(useCaseId: string): Promise<SenderAccess> {
 
 type SentProposalProps = {
   useCaseId: string;
-  /** Whether it may be edited, and the line that says so or why not. */
+  /** Until when it may be edited; null when it may not. */
   editable: boolean;
-  text: { sent: string; view: string; edit: string; note: string };
+  text: {
+    sent: string;
+    sentOn: string;
+    until: string;
+    untilValue: string;
+    view: string;
+    edit: string;
+  };
 };
 
-/** The card of an organization whose proposal was sent: when, and the way to read or edit it. */
+/** The card of an organization whose proposal was sent: when, until when it may change, and the way to read or edit it. */
 function SentProposal({ useCaseId, editable, text }: SentProposalProps) {
   return (
     <>
-      <p className="text-sm font-medium">{text.sent}</p>
-      <Button className="w-full" size="lg" href={site.proposalViewRoute(useCaseId)}>
-        {text.view}
-      </Button>
-      {editable && (
-        <Button
-          className="w-full"
-          prominence="secondary"
-          size="lg"
-          href={site.proposeToUseCaseRoute(useCaseId)}
-        >
-          {text.edit}
+      <dl className="flex flex-col gap-1.5 text-sm">
+        <div className="flex items-center justify-between gap-3">
+          <dt className="text-muted-foreground">{text.sent}</dt>
+          <dd>{text.sentOn}</dd>
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <dt className="text-muted-foreground">{text.until}</dt>
+          <dd>{text.untilValue}</dd>
+        </div>
+      </dl>
+      <div className="flex gap-2">
+        <Button className="flex-1" size="lg" href={site.proposalViewRoute(useCaseId)}>
+          {text.view}
         </Button>
-      )}
-      <p className="text-sm text-muted-foreground">{text.note}</p>
+        {editable && (
+          <Button prominence="secondary" size="lg" href={site.proposeToUseCaseRoute(useCaseId)}>
+            {text.edit}
+          </Button>
+        )}
+      </div>
     </>
   );
 }
@@ -74,13 +86,12 @@ function SentProposal({ useCaseId, editable, text }: SentProposalProps) {
  */
 async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: ProposalActionsProps) {
   const closed = closedAt(closesAt);
-  const [t, e, o, account, format, c] = await Promise.all([
+  const [t, e, o, account, format] = await Promise.all([
     getTranslations("UseCases.detail.open"),
     getTranslations("UseCaseProposal.errors"),
     getTranslations("UseCaseProposal.actions"),
     getCurrentAccount(),
     getFormatter(),
-    getTranslations("UseCaseProposal.actions.editClosed"),
   ]);
   // A use case that no longer takes proposals still shows the proposal the organization sent.
   if (closed && !account) {
@@ -100,55 +111,41 @@ async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: Propos
   if (access.kind === "hidden" || (closed && access.kind !== "sent")) {
     return null;
   }
-  const when = (instant: string) =>
-    format.dateTime(new Date(instant), {
-      dateStyle: "medium",
-      timeStyle: "short",
-      timeZone: "Asia/Ho_Chi_Minh",
-    });
+  const day = (instant: string) =>
+    format.dateTime(new Date(instant), { dateStyle: "medium", timeZone: "Asia/Ho_Chi_Minh" });
   const edit =
     access.kind === "sent" ? editStateOf(access.proposal, { closesAt, proposalEditDays }) : null;
 
+  if (access.kind === "sent") {
+    return (
+      <SentProposal
+        useCaseId={useCaseId}
+        editable={edit?.kind === "editable"}
+        text={{
+          sent: o("sent"),
+          sentOn: access.proposal.sentAt ? day(access.proposal.sentAt) : "",
+          until: o("until"),
+          untilValue: edit?.kind === "editable" ? day(edit.until) : o("closed"),
+          view: o("view"),
+          edit: o("edit"),
+        }}
+      />
+    );
+  }
+
   return (
     <>
-      <div className="flex flex-col gap-2">
-        {access.kind === "sent" ? (
-          <SentProposal
-            useCaseId={useCaseId}
-            editable={edit?.kind === "editable"}
-            text={{
-              sent: access.proposal.sentAt
-                ? o("sentOn", { date: when(access.proposal.sentAt) })
-                : o("sent"),
-              view: o("view"),
-              edit: o("edit"),
-              note:
-                edit?.kind === "editable"
-                  ? o("editUntil", { when: when(edit.until) })
-                  : c(edit?.reason ?? "windowPassed"),
-            }}
-          />
-        ) : (
-          <>
-            {access.kind === "blocked" ? (
-              <Button className="w-full" size="lg" disabled>
-                {t("send")}
-              </Button>
-            ) : (
-              <Button className="w-full" size="lg" href={site.proposeToUseCaseRoute(useCaseId)}>
-                {access.kind === "open" && access.draft ? o("continue") : t("send")}
-              </Button>
-            )}
-            {access.kind === "blocked" && (
-              <p className="text-sm text-muted-foreground">{e(access.code)}</p>
-            )}
-          </>
-        )}
-      </div>
-      {access.kind !== "sent" && access.kind !== "blocked" && (proposalEditDays ?? 0) > 0 && (
-        <p className="text-xs leading-5 text-muted-foreground">
-          {t("note", { days: proposalEditDays ?? 0 })}
-        </p>
+      {access.kind === "blocked" ? (
+        <Button className="w-full" size="lg" disabled>
+          {t("send")}
+        </Button>
+      ) : (
+        <Button className="w-full" size="lg" href={site.proposeToUseCaseRoute(useCaseId)}>
+          {access.kind === "open" && access.draft ? o("continue") : t("send")}
+        </Button>
+      )}
+      {access.kind === "blocked" && (
+        <p className="text-sm text-muted-foreground">{e(access.code)}</p>
       )}
     </>
   );
