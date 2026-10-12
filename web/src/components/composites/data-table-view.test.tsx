@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { render } from "@/test/render";
@@ -59,23 +59,28 @@ describe("DataTableView", () => {
 
       await user.click(screen.getByRole("button", { name: "Solution" }));
 
-      expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe("?sort=name");
+      await waitFor(() => expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe("?sort=name"));
     });
 
     it("turns the order round on the second click", async () => {
       const { user, onUrlUpdate } = render(sorted());
 
       await user.click(screen.getByRole("button", { name: "Solution" }));
-      expect(screen.getByRole("columnheader", { name: "Solution" })).toHaveAttribute(
-        "aria-sort",
-        "ascending",
+      // The URL is written a moment after the click, and the header follows the URL.
+      await waitFor(() =>
+        expect(screen.getByRole("columnheader", { name: "Solution" })).toHaveAttribute(
+          "aria-sort",
+          "ascending",
+        ),
       );
       await user.click(screen.getByRole("button", { name: "Solution" }));
 
-      expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe("?sort=-name");
-      expect(screen.getByRole("columnheader", { name: "Solution" })).toHaveAttribute(
-        "aria-sort",
-        "descending",
+      await waitFor(() => expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe("?sort=-name"));
+      await waitFor(() =>
+        expect(screen.getByRole("columnheader", { name: "Solution" })).toHaveAttribute(
+          "aria-sort",
+          "descending",
+        ),
       );
     });
 
@@ -97,10 +102,10 @@ describe("DataTableView", () => {
       );
 
       await user.click(screen.getByRole("button", { name: "Score" }));
-      expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe("?sort=score");
+      await waitFor(() => expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe("?sort=score"));
 
       await user.click(screen.getByRole("button", { name: "Score" }));
-      expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe("");
+      await waitFor(() => expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe(""));
     });
 
     it("sorts a column of scores from the highest on its first click", async () => {
@@ -108,7 +113,7 @@ describe("DataTableView", () => {
 
       await user.click(screen.getByRole("button", { name: "Score" }));
 
-      expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe("");
+      await waitFor(() => expect(onUrlUpdate.mock.lastCall?.[0].queryString).toBe(""));
     });
 
     it("offers no sorting on a column the server does not sort by", () => {

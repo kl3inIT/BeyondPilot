@@ -38,6 +38,9 @@ test.describe("admin", () => {
     const answer = await page.goto("/admin");
     expect(answer?.status()).toBe(404);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Page not found");
+    // Nothing of the admin frame comes with the refusal: no sidebar, no way to the admin home.
+    await expect(page.getByRole("button", { name: "Toggle sidebar" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Back to Admin home" })).toHaveCount(0);
     const refused = await page.locator("body").innerText();
 
     await page.goto("/no-such-page");

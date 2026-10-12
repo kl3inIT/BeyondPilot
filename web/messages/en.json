@@ -560,7 +560,7 @@
     "sendFailedTitle": "We couldn't send the email",
     "sendFailedBody": "Nothing was sent to {email}. Try again in a moment.",
     "googleFailedTitle": "Google sign-in did not finish",
-    "googleFailedBody": "Try again, or get a sign-in code by email instead.",
+    "googleFailedBody": "Try again, or get a code by email instead.",
     "sent": {
       "title": "Check your email",
       "enterCode": "Enter the 6-digit code we sent to",
@@ -733,6 +733,10 @@
       "email": "Email"
     },
     "toggleSidebar": "Toggle sidebar",
+    "notFound": {
+      "description": "The record may have been deleted, or the address may be wrong.",
+      "home": "Back to Admin home"
+    },
     "programs": {
       "metaTitle": "Programs · BeyondPilot",
       "title": "Programs",
@@ -2354,6 +2358,13 @@
           "enabledHint": "Switched off, the provider keeps its key and its models, and no task can use it.",
           "testTitle": "Test connection",
           "testHint": "Lists the provider's models without spending tokens.",
+          "saveNeeds": {
+            "name": "Give the provider a name to save.",
+            "endpoint": "Enter the endpoint URL to save.",
+            "endpointInvalid": "Correct the endpoint URL to save.",
+            "keyAgain": "Enter the key again to save.",
+            "key": "Add an API key to save."
+          },
           "cancel": "Cancel",
           "save": "Save"
         },
@@ -2781,6 +2792,7 @@
           "time": "Time",
           "task": "Task",
           "model": "Model",
+          "outcome": "Outcome",
           "tokens": "Tokens",
           "duration": "Duration",
           "cost": "Cost",
@@ -3568,7 +3580,9 @@
     }
   },
   "Actions": {
-    "undo": "Undo"
+    "undo": "Undo",
+    "copied": "Copied",
+    "copyFailed": "The text was not copied. Select it and copy it yourself."
   },
   "Lists": {
     "loadMore": "Load more",
@@ -6883,6 +6897,13 @@
     "seeAll": "See all {count}",
     "count": "{count, plural, one {# result} other {# results}}",
     "pastTheEnd": "No more results on this page.",
+    "kindNone": {
+      "program": "No program matches “{q}”",
+      "solution": "No AI solution matches “{q}”",
+      "talent": "No AI talent matches “{q}”",
+      "use_case": "No use case matches “{q}”",
+      "all": "{count, plural, one {See the # result} other {See all # results}}"
+    },
     "directory": {
       "program": "Browse the programs by type and phase",
       "solution": "Narrow by industry, capability and stage in the AI solutions directory",
@@ -6890,7 +6911,7 @@
       "use_case": "Narrow by industry in the use cases"
     },
     "by": "By {name}",
-    "customerCases": "{count, plural, =0 {No customer case yet} one {# customer case} other {# customer cases}}",
+    "customerCases": "{count, plural, one {# customer case} other {# customer cases}}",
     "start": {
       "title": "Search BeyondPilot"
     },

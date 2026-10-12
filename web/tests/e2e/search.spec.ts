@@ -48,9 +48,11 @@ test.describe("search", () => {
     await expect(row("Hieu Nguyen").getByText("AI engineer · Vietnam")).toBeVisible();
     await expect(row("AI Voice Agent").getByText("By Revve AI")).toBeVisible();
     await expect(row("AI Voice Agent").getByText("1 customer case")).toBeVisible();
+    // A solution without a customer case says nothing about it.
     await expect(
-      row("Claims Desk").getByText("No customer case yet", { exact: false }),
+      row("Claims Desk").getByText("Conversational AI · Speech and voice"),
     ).toBeVisible();
+    await expect(row("Claims Desk").getByText("customer case")).toBeHidden();
     await expect(row("AI Youth Challenge").getByText("Done")).toBeVisible();
     await expect(row("AI Youth Challenge").getByText("27 Apr 2026")).toBeVisible();
     await expect(page.getByRole("link", { name: "AI Youth Challenge" })).toHaveAttribute(
@@ -112,6 +114,29 @@ test.describe("search", () => {
     await expect(
       page.getByRole("main").getByRole("link", { name: "AI solutions" }),
     ).toHaveAttribute("href", "/solutions");
+    await expectNoSeriousA11yViolations(page);
+  });
+
+  test("a kind that found nothing says so and offers the kinds that did", async ({ page }) => {
+    await page.goto("/search?q=voice&kind=program");
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("No program matches “voice”");
+    await expect(page.getByText("No more results on this page.")).toBeHidden();
+    const offered = page.getByRole("main").getByRole("listitem");
+    await expect(offered.getByRole("link", { name: "See all 2 results" })).toHaveAttribute(
+      "href",
+      "/search?q=voice",
+    );
+    await expect(offered.getByRole("link", { name: "AI solutions 1" }).last()).toHaveAttribute(
+      "href",
+      "/search?q=voice&kind=solution",
+    );
+    await expect(offered.getByRole("link", { name: "AI talent 1" }).last()).toHaveAttribute(
+      "href",
+      "/search?q=voice&kind=talent",
+    );
+    // A kind that found nothing is not offered.
+    await expect(page.getByRole("main").getByRole("link", { name: /Use cases/ })).toBeHidden();
     await expectNoSeriousA11yViolations(page);
   });
 

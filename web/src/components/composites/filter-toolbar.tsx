@@ -2,7 +2,7 @@
 
 import { SearchIcon, XIcon } from "lucide-react";
 import { useQueryStates, type UseQueryStatesKeysMap } from "nuqs";
-import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
+import { Fragment, useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 
 import { Button } from "@/components/actions/button";
 import {
@@ -17,6 +17,8 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -27,6 +29,11 @@ const ALL = "all";
 /** How long typing rests before the list is asked for. */
 const SEARCH_DELAY_MS = 300;
 
+type Option = { value: string; label: string };
+
+/** Options that belong together, under the name of what they share. */
+type OptionGroup = { label: string; options: Option[] };
+
 type Filter = {
   /** The parameter of the URL the select writes. */
   key: string;
@@ -36,8 +43,16 @@ type Filter = {
    * always holds one of its options, and its parser's default is the one the URL leaves out (a period).
    */
   all?: string;
-  options: { value: string; label: string }[];
+  /**
+   * What the select offers. A long list is given in groups, each under its name, so a reader finds
+   * the part it is in before the option; options given outside a group come first.
+   */
+  options: (Option | OptionGroup)[];
 };
+
+function isGroup(entry: Option | OptionGroup): entry is OptionGroup {
+  return "options" in entry;
+}
 
 type TextFilter = {
   /** The parameter of the URL the field writes. */
@@ -255,14 +270,17 @@ function FilterToolbar({
             </InputGroup>
           ))}
           {filters.map((filter) => {
-            const items =
-              filter.all === undefined
-                ? filter.options
-                : [{ value: ALL, label: filter.all }, ...filter.options];
+            const groups = filter.options.filter(isGroup);
+            // What stands outside a group: the words for "off", then the options given alone.
+            const loose = [
+              ...(filter.all === undefined ? [] : [{ value: ALL, label: filter.all }]),
+              ...filter.options.filter((entry): entry is Option => !isGroup(entry)),
+            ];
             return (
               <Select
                 key={filter.key}
-                items={items}
+                // Every option by its value: the trigger finds the words of the chosen one there.
+                items={[...loose, ...groups.flatMap((group) => group.options)]}
                 value={String(values[filter.key] ?? ALL)}
                 onValueChange={(value) =>
                   setSearch({
@@ -279,13 +297,28 @@ function FilterToolbar({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectGroup>
-                    {items.map((item) => (
-                      <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
+                  {loose.length > 0 && (
+                    <SelectGroup>
+                      {loose.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  )}
+                  {groups.map((group, index) => (
+                    <Fragment key={group.label}>
+                      {(index > 0 || loose.length > 0) && <SelectSeparator />}
+                      <SelectGroup>
+                        <SelectLabel>{group.label}</SelectLabel>
+                        {group.options.map((item) => (
+                          <SelectItem key={item.value} value={item.value}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </Fragment>
+                  ))}
                 </SelectContent>
               </Select>
             );

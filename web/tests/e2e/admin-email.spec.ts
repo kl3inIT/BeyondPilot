@@ -54,6 +54,19 @@ test.describe("admin email", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("a kind of email that has no template to edit answers not-found, as an unknown kind does", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+
+    // Written in full each time it is sent: the log filters by it, and nothing words it.
+    expect((await page.goto("/admin/email/templates/application_outcome"))?.status()).toBe(404);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Page not found");
+    expect((await page.goto("/admin/email/templates/no_such_kind"))?.status()).toBe(404);
+  });
+
   test("an operator words an email and sees what keeps it from being saved", async ({
     page,
     context,

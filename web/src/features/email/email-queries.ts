@@ -16,6 +16,7 @@ import {
   type EmailTemplateList,
 } from "@/lib/api/generated";
 import { ApiError } from "@/lib/api/client";
+import { failedWith } from "@/lib/api/failure";
 import { sessionRequest } from "@/lib/auth/session";
 
 import type { EmailActivitySearch, EmailSuppressionsSearch } from "./email-search";
@@ -55,10 +56,20 @@ export async function readEmailTemplates(): Promise<EmailTemplateList> {
   return data;
 }
 
-/** One kind's wording, its default and its variables. Server only. */
+/**
+ * One kind's wording, its default and its variables. Server only. A kind that is written in full each
+ * time it is sent (the outcome of an application) is a kind of email, so the log filters by it, but
+ * it has no wording to edit: the backend refuses it with a conflict, and its address shows the
+ * not-found page as the address of an unknown kind does.
+ */
 export async function readEmailTemplate(kind: string): Promise<EmailTemplate> {
   const { data } = await getEmailTemplate({ ...(await sessionRequest()), path: { kind } }).catch(
-    notFoundWhenRefused,
+    (error: unknown) => {
+      if (failedWith(error, "NOTIFICATION_TEMPLATE_NOT_EDITABLE")) {
+        notFound();
+      }
+      return notFoundWhenRefused(error);
+    },
   );
   return data;
 }

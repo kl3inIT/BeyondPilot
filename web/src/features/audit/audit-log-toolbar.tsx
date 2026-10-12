@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { FilterToolbar } from "@/components/composites/filter-toolbar";
 
-import { auditActions, auditLogSearch, auditPeriods } from "./audit-log-search";
+import { auditActionGroups, auditLogSearch, auditPeriods } from "./audit-log-search";
 
 /**
  * Search, the period and the action filter of the audit log. The log is paged by cursor, so a change
@@ -12,6 +12,7 @@ import { auditActions, auditLogSearch, auditPeriods } from "./audit-log-search";
  */
 function AuditLogToolbar() {
   const t = useTranslations("Admin.auditLog");
+  const nav = useTranslations("Admin.nav");
 
   return (
     <FilterToolbar
@@ -29,7 +30,11 @@ function AuditLogToolbar() {
           key: "action",
           label: t("filters.action.label"),
           all: t("filters.action.all"),
-          options: auditActions.map((value) => ({ value, label: t(`action.${value}`) })),
+          // The actions are read by area, the areas named and ordered as the sidebar has them.
+          options: auditActionGroups.map((group) => ({
+            label: nav(group.area),
+            options: group.actions.map((value) => ({ value, label: t(`action.${value}`) })),
+          })),
         },
       ]}
     />

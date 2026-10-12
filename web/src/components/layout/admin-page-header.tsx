@@ -1,6 +1,7 @@
 import { ArrowLeftIcon } from "lucide-react";
 
 import { TextButton } from "@/components/actions/text-button";
+import { AdminCrumb } from "@/components/layout/admin-crumb";
 import { AdminPageTitle, type AdminDestination } from "@/components/layout/admin-icons";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +27,8 @@ type AdminPageHeaderProps = {
 /**
  * The top of every admin page, in one order: the way back, then the title with its lead on the left and the
  * actions on the right, then the tabs. The search and filters of a list follow it as `FilterToolbar`
- * (docs/conventions.md › Admin page frame).
+ * (docs/conventions.md › Admin page frame). A page below a destination is named by its title in the breadcrumb
+ * of the bar above, after its destination.
  */
 function AdminPageHeader({
   title,
@@ -44,6 +46,7 @@ function AdminPageHeader({
 
   return (
     <header className={cn("flex flex-col gap-4", titleOnly && "max-md:contents")}>
+      {!destination && typeof title === "string" && <AdminCrumb label={title} />}
       {back && (
         <TextButton href={back.href} className="self-start">
           <ArrowLeftIcon aria-hidden="true" />

@@ -70,7 +70,20 @@ test.describe("admin AI", () => {
     await expect(dialog.getByLabel("API key")).toHaveAttribute("type", "password");
     await expect(dialog.getByRole("button", { name: "List models" })).toBeDisabled();
     await expect(dialog.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
+    // While Save is off, a line beside it says what it waits for.
+    await expect(dialog.getByText("Enter the endpoint URL to save.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
+
+    // An address that will not do is said at its field when the field is left.
+    await dialog.getByLabel("Endpoint URL").fill("not a url");
+    await dialog.getByLabel("API key").focus();
+    await expect(dialog.getByLabel("Endpoint URL")).toHaveAttribute("aria-invalid", "true");
+    await expect(dialog.getByText("The address must be an http or https URL")).toBeVisible();
+    await expect(dialog.getByText("Correct the endpoint URL to save.")).toBeVisible();
+    await dialog.getByLabel("Endpoint URL").fill("http://10.0.0.12:20128/v1");
+    await dialog.getByLabel("API key").focus();
+    await expect(dialog.getByText("The address must be an http or https URL")).toBeHidden();
+    await expect(dialog.getByText("Add an API key to save.")).toBeVisible();
   });
 
   test("an operator sees the model in use, the provider connected and the ones that can be", async ({

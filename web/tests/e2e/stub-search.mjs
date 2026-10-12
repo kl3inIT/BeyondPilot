@@ -1,5 +1,5 @@
 // What GET /api/search answers in the end-to-end tests: one query, "AI", with programs, solutions and
-// a person; "nothing" finds nothing. Matched words in a snippet are between U+0002 and U+0003, as the
+// a person; "voice" finds a solution and a person only; "nothing" finds nothing. Matched words in a snippet are between U+0002 and U+0003, as the
 // backend sends them.
 import { directorySearchItems } from "./stub-directories.mjs";
 
@@ -159,12 +159,23 @@ export function answerSearch(url, programs = {}) {
     return [400, { code: "REQUEST_INVALID" }];
   }
   const kind = url.searchParams.get("kind");
-  const directory = kind && q.toLowerCase() !== "ai" ? directorySearchItems(url) : null;
+  // "voice" is the query some kinds find nothing for: a solution and a person, no program or use case.
+  const voice = q.toLowerCase() === "voice";
+  const directory = kind && q.toLowerCase() !== "ai" && !voice ? directorySearchItems(url) : null;
   const found =
-    q.toLowerCase() === "ai" ? results : { solution: [], program: [], talent: [], use_case: [] };
+    q.toLowerCase() === "ai"
+      ? results
+      : voice
+        ? {
+            solution: results.solution.slice(0, 1),
+            program: [],
+            talent: results.talent,
+            use_case: [],
+          }
+        : { solution: [], program: [], talent: [], use_case: [] };
   if (directory) {
     found[kind] = directory.map(item);
-  } else if (kind === "program" && q.toLowerCase() !== "ai") {
+  } else if (kind === "program" && q.toLowerCase() !== "ai" && !voice) {
     found.program = Object.values(programs)
       .filter(
         (program) =>

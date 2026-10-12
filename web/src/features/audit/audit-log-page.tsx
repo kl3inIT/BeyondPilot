@@ -8,10 +8,12 @@ import { DataTableRows } from "@/components/composites/data-table-view";
 import { Person } from "@/components/composites/person";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { getFormatter } from "@/i18n/format-server";
+import { Link } from "@/i18n/navigation";
 import type { AuditEvent, AuditEventList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { auditLogSearch, type AuditLogSearch } from "./audit-log-search";
+import { auditResourceRoute } from "./audit-resource";
 import { AuditLogToolbar } from "./audit-log-toolbar";
 import { PageSizeSelect } from "@/components/composites/page-size-select";
 
@@ -54,9 +56,22 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
         });
   }
 
-  /** The sentence of an action, ending in what it was done to. */
+  /**
+   * The sentence of an action, ending in what it was done to. The name leads to the record where the
+   * admin area has a page for one of its kind, so the log is a way to what changed.
+   */
   function activity(event: AuditEvent) {
-    const resource = <span className="font-medium">{event.resource.label}</span>;
+    const href = auditResourceRoute(event);
+    const resource = href ? (
+      <Link
+        href={href}
+        className="rounded-sm font-medium underline underline-offset-4 outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        {event.resource.label}
+      </Link>
+    ) : (
+      <span className="font-medium">{event.resource.label}</span>
+    );
     return t.rich(`activity.${event.action}`, { resource: () => resource });
   }
 
@@ -67,7 +82,11 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
       at: event.occurredAt,
       time: exactTime(at),
       person: event.actor ? (
-        <Person name={event.actor.label} email={event.actor.email} />
+        // An actor without a name is labelled by the address, which is then said once.
+        <Person
+          name={event.actor.label === event.actor.email ? null : event.actor.label}
+          email={event.actor.email}
+        />
       ) : (
         // The server configuration made the change, as when a configured address becomes an operator.
         <Person

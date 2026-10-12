@@ -163,6 +163,10 @@ export function answerEmail(url, account) {
     return [200, { items: templates }];
   }
   if (path.startsWith("/templates/")) {
+    // The outcome of an application is written in full each time: a kind of email without a template.
+    if (path === "/templates/application_outcome") {
+      return [409, { code: "NOTIFICATION_TEMPLATE_NOT_EDITABLE" }];
+    }
     return path === "/templates/organization_approved" ? [200, approved] : [404, {}];
   }
   if (path === "/messages") {
