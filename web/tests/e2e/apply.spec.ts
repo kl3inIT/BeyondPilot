@@ -207,11 +207,18 @@ test.describe("apply", () => {
     await expect(page.getByRole("radio", { name: /Individual/ })).not.toBeChecked();
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByText("Choose who is applying.")).toBeVisible();
+    // The step was refused: the first field in error takes the focus, here the first of the choices.
+    await expect(page.getByRole("radio", { name: /Individual/ })).toBeFocused();
     await page.getByRole("radio", { name: /Individual/ }).check();
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByLabel("First name")).toBeFocused();
     await expect(page.getByLabel("First name")).toBeInViewport();
     await expect(page.getByText("Enter a phone number with its country code.")).toBeVisible();
+    // An error is tied to its field, after the field's hint.
+    await expect(page.getByLabel("Phone number")).toHaveAccessibleDescription(
+      "With its country code, such as +84 912 345 678. Enter a phone number with its country code.",
+    );
+    await expect(page.getByLabel("First name")).toHaveAccessibleDescription("Fill this in.");
     await settled(page);
     await shot(page, `apply-1-errors-${label}`);
 
@@ -276,12 +283,17 @@ test.describe("apply", () => {
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByText("Choose at least one.")).toBeVisible();
     const areas = page.getByRole("group", { name: "Challenge areas" });
-    await expect(areas).toHaveAccessibleDescription("Every area your solution works in.");
+    // The group is described by its help and, while it is refused, by what is missing.
+    await expect(areas).toHaveAccessibleDescription(
+      "Every area your solution works in. Choose at least one.",
+    );
     await expect(areas.getByRole("checkbox")).toHaveCount(3);
+    await expect(areas.getByRole("checkbox", { name: "Claims" })).toBeFocused();
     // Ticked last to first: the answer keeps the order the question offers them in.
     await areas.getByRole("checkbox", { name: "Fraud" }).check();
     await areas.getByRole("checkbox", { name: "Claims" }).check();
     await expect(page.getByText("Choose at least one.")).toHaveCount(0);
+    await expect(areas).toHaveAccessibleDescription("Every area your solution works in.");
     await settled(page);
     await shot(page, `apply-3-${label}`);
     await page.getByRole("button", { name: "Continue" }).click();
