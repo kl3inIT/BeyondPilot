@@ -81,14 +81,13 @@ function SentProposal({ useCaseId, editable, text }: SentProposalProps) {
 
 /**
  * Send a proposal, in the card of a public use case. Nobody sees them for a use case
- * that takes no more proposals, and the posting organization sees a way to the proposals it received instead; an organization GenAI Fund has not approved sees the
- * button disabled with the reason. Reading what the caller may do never stops the page from showing.
+ * that takes no more proposals, and the posting organization sees a way to the proposals it received instead; an organization still waiting for GenAI Fund's review, or
+ * none yet, sends all the same. Reading what the caller may do never stops the page from showing.
  */
 async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: ProposalActionsProps) {
   const closed = closedAt(closesAt);
-  const [t, e, o, account, format] = await Promise.all([
+  const [t, o, account, format] = await Promise.all([
     getTranslations("UseCases.detail.open"),
-    getTranslations("UseCaseProposal.errors"),
     getTranslations("UseCaseProposal.actions"),
     getCurrentAccount(),
     getFormatter(),
@@ -134,20 +133,9 @@ async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: Propos
   }
 
   return (
-    <>
-      {access.kind === "blocked" ? (
-        <Button className="w-full" size="lg" disabled>
-          {t("send")}
-        </Button>
-      ) : (
-        <Button className="w-full" size="lg" href={site.proposeToUseCaseRoute(useCaseId)}>
-          {access.kind === "open" && access.draft ? o("continue") : t("send")}
-        </Button>
-      )}
-      {access.kind === "blocked" && (
-        <p className="text-sm text-muted-foreground">{e(access.code)}</p>
-      )}
-    </>
+    <Button className="w-full" size="lg" href={site.proposeToUseCaseRoute(useCaseId)}>
+      {access.kind === "open" && access.draft ? o("continue") : t("send")}
+    </Button>
   );
 }
 

@@ -88,4 +88,9 @@ function ProposalSenderCard({ sender, title }: ProposalSenderCardProps) {
   );
 }
 
-export { ProposalSenderCard, useSenderRows };
+/** The lines of a profile, as the review and the step draw them. */
+function ProfileRows({ profile }: { profile: Parameters<typeof useSenderRows>[0] }) {
+  return <Rows rows={useSenderRows(profile)} />;
+}
+
+export { ProfileRows, ProposalSenderCard };

@@ -13,7 +13,6 @@ import { useNotify } from "@/hooks/use-notify";
 import { useRouter } from "@/i18n/navigation";
 import { Tick } from "@/features/usecase/wizard-fields";
 import { WizardShell } from "@/features/usecase/wizard-shell";
-import { TalentForm } from "@/features/talent/talent-form";
 import {
   saveUseCaseProposal,
   getUseCaseProposalForm,
@@ -29,7 +28,6 @@ import { proposalViewRoute, proposeToUseCaseRoute as proposeRoute, briefRoute } 
 import {
   bodyOf,
   incompleteSteps,
-  profileComplete,
   steps,
   valuesOf,
   type ProposalValues,
@@ -37,6 +35,7 @@ import {
 } from "./proposal-draft";
 import { codeOfProposalError, describeProposalError } from "./proposal-errors";
 import { ProposalOrganizationStep } from "./proposal-organization-step";
+import { ProposalProfileStep } from "./proposal-profile-step";
 import { ProposalReviewStep } from "./proposal-review-step";
 import { ProposalSolutionsStep } from "./proposal-solutions-step";
 import { ProposalTeamStep } from "./proposal-team-step";
@@ -47,8 +46,8 @@ const AUTOSAVE_MS = 800;
 type ProposalWizardProps = {
   useCaseId: string;
   form: UseCaseProposalForm;
-  /** The caller's organization; the wizard is only drawn for one that is approved. */
-  organization: ProposingOrganization;
+  /** The caller's organization, approved or waiting for review; none for a person who belongs to none yet. */
+  organization: ProposingOrganization | null;
   /** What the organization offers, to resolve the solutions the proposal holds. */
   solutions: SolutionSummary[];
   /** The caller's talent profile, or none yet. */
@@ -58,7 +57,8 @@ type ProposalWizardProps = {
 };
 
 /**
- * The six steps in which a member of an approved organization writes a proposal to a use case. What is
+ * The six steps in which a member of an organization, one still waiting for GenAI Fund's review included, writes a
+ * proposal to a use case. What is
  * written is saved as it changes, so nothing is lost and anyone of the organization can pick the draft
  * up; the last step reviews it and sends it.
  *
@@ -92,6 +92,7 @@ function ProposalWizard({
   const [checked, setChecked] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [sending, setSending] = useState(false);
+  const [creatingProfile, setCreatingProfile] = useState(false);
   const [edited, setEdited] = useState(false);
 
   const latest = useRef(values);
@@ -177,12 +178,15 @@ function ProposalWizard({
   }, []);
 
   const stepIndex = steps.indexOf(step);
-  const complete = profileComplete(profile);
-  const missing = incompleteSteps(values, complete);
+  const missing = incompleteSteps(values);
   const done = (name: Step) =>
     name === "organization" || (name !== "review" && !missing.includes(name));
 
   async function go(target: Step) {
+    // Without an organization there is nothing to write yet.
+    if (!organization && target !== "organization") {
+      return;
+    }
     if (await flush()) {
       setChecked(false);
       setStep(target);
@@ -333,15 +337,21 @@ function ProposalWizard({
         </Alert>
       )}
 
-      {step === "profile" ? (
+      {step === "profile" && creatingProfile ? (
         <h1 className="sr-only">{t("steps.profile")}</h1>
       ) : (
         <h1 className="text-3xl font-semibold tracking-tight">{t(`steps.${step}`)}</h1>
       )}
 
-      {step === "organization" && <ProposalOrganizationStep organization={organization} />}
+      {step === "organization" && (
+        <ProposalOrganizationStep
+          useCaseId={useCaseId}
+          organization={organization}
+          accountName={accountName}
+        />
+      )}
 
-      {step === "solutions" && (
+      {organization && step === "solutions" && (
         <ProposalSolutionsStep
           catalog={catalog}
           organizationLogoFileId={organization.logoFileId}
@@ -354,23 +364,22 @@ function ProposalWizard({
         />
       )}
 
-      {step === "profile" && editing && (
+      {step === "profile" && editing && values.attachProfile && !creatingProfile && (
         <Alert>
           <AlertDescription>{t("edit.profileHint")}</AlertDescription>
         </Alert>
       )}
 
-      {step === "profile" && (
-        <TalentForm
-          // A saved profile gets a fresh form, so it holds the new version.
-          key={profile ? `${profile.version}-${profile.status}` : "new"}
+      {organization && step === "profile" && (
+        <ProposalProfileStep
           profile={profile}
-          suggestedName={accountName}
-          embedded={{
-            onBack: () => void go("solutions"),
-            onLeave: () => void leave(),
-            onContinue: () => void go("team"),
-          }}
+          attached={values.attachProfile}
+          onAttach={(attachProfile) => change({ attachProfile })}
+          creating={creatingProfile}
+          onCreating={setCreatingProfile}
+          locked={editing}
+          accountName={accountName}
+          onLeave={() => void leave()}
         />
       )}
 
@@ -402,7 +411,7 @@ function ProposalWizard({
         </Field>
       )}
 
-      {step === "review" && (
+      {organization && step === "review" && (
         <>
           <ProposalReviewStep
             organization={organization}
@@ -437,7 +446,7 @@ function ProposalWizard({
         </>
       )}
 
-      {step !== "profile" && (
+      {organization && !(step === "profile" && creatingProfile) && (
         <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
           <Button prominence="tertiary" size="lg" disabled={sending} onClick={() => void leave()}>
             {editing ? t("edit.cancel") : t("saveAndReturn")}

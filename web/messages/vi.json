@@ -7134,7 +7134,6 @@
       "PROPOSAL_USE_CASE_CLOSED": "Use case này không còn nhận proposal.",
       "PROPOSAL_OWN_USE_CASE": "Tổ chức của bạn đã đăng use case này nên không gửi proposal cho nó được.",
       "PROPOSAL_NO_ORGANIZATION": "Hãy tham gia hoặc lập một tổ chức để gửi proposal.",
-      "PROPOSAL_ORGANIZATION_NOT_APPROVED": "Tổ chức của bạn gửi được proposal sau khi GenAI Fund duyệt.",
       "PROPOSAL_NOT_FOUND": "Không có proposal này.",
       "PROPOSAL_ALREADY_SENT": "Proposal này đã gửi nên không sửa được nữa.",
       "PROPOSAL_SOLUTION_REQUIRED": "Hãy chọn giải pháp bạn gửi.",
@@ -7147,7 +7146,8 @@
       "PROPOSAL_CHANGED_MEANWHILE": "Có người đã lưu proposal này trong lúc bạn xem. Hãy tải lại để thấy thay đổi.",
       "REQUEST_INVALID": "Có chỗ trong proposal chưa hợp lệ. Hãy kiểm tra và thử lại.",
       "unknown": "Đã có lỗi. Hãy thử lại sau một lát.",
-      "PROPOSAL_EDIT_WINDOW_CLOSED": "Đã hết thời gian chỉnh sửa đề xuất này nên các thay đổi của bạn chưa được lưu."
+      "PROPOSAL_EDIT_WINDOW_CLOSED": "Đã hết thời gian chỉnh sửa đề xuất này nên các thay đổi của bạn chưa được lưu.",
+      "PROPOSAL_ALREADY_IN_ORGANIZATION": "Bạn đã thuộc một tổ chức."
     },
     "received": {
       "admin": {
@@ -7279,7 +7279,11 @@
         "readiness": {
           "missing": "Hãy bổ sung những mục này trước khi tiếp tục",
           "note": "Proposal hiển thị tiêu đề, vai trò, kỹ năng và phần giới thiệu của bạn cho tổ chức nhận. Họ giữ một bản sao như lúc bạn gửi."
-        }
+        },
+        "use": "Dùng hồ sơ talent của tôi",
+        "create": "Tạo hồ sơ talent",
+        "remove": "Bỏ",
+        "none": "Proposal này không kèm hồ sơ talent."
       },
       "team": {
         "count": "{count, plural, other {# thành viên}}",
@@ -7318,19 +7322,11 @@
         "nothing": "Chưa có gì.",
         "primary": "Đầu mối liên hệ",
         "missing": "Hoàn tất các bước này trước khi gửi",
-        "confirm": "Tôi xác nhận những gì tôi gửi là chính xác và tôi được phép đưa chúng vào proposal thay mặt tổ chức của mình."
+        "confirm": "Tôi xác nhận những gì tôi gửi là chính xác và tôi được phép đưa chúng vào proposal thay mặt tổ chức của mình.",
+        "none": "Không có"
       },
       "blocked": {
-        "organization": "Đến tổ chức của tôi",
         "backToUseCase": "Quay lại use case",
-        "noOrganization": {
-          "title": "Bạn cần có tổ chức để gửi proposal",
-          "lead": "Proposal được gửi thay mặt một tổ chức. Hãy tạo hoặc tham gia một tổ chức rồi quay lại."
-        },
-        "notApproved": {
-          "title": "Tổ chức của bạn chưa được phê duyệt",
-          "lead": "Chỉ các tổ chức đã được GenAI Fund phê duyệt mới gửi được proposal. Bạn sẽ gửi được khi tổ chức của bạn được phê duyệt."
-        },
         "own": {
           "title": "Bạn không thể gửi proposal cho use case của chính mình",
           "lead": "Use case này do tổ chức của bạn đăng."
@@ -7362,6 +7358,19 @@
         "save": "Lưu thay đổi",
         "cancel": "Hủy",
         "saved": "Đã lưu các thay đổi của đề xuất."
+      },
+      "organization": {
+        "kind": "Ai gửi proposal",
+        "individual": "Một mình tôi",
+        "team": "Một nhóm",
+        "teamName": "Tên nhóm",
+        "country": "Quốc gia",
+        "countryPlaceholder": "Chọn quốc gia",
+        "teamSize": "Quy mô nhóm",
+        "website": "Website (không bắt buộc)",
+        "required": "Bắt buộc.",
+        "existing": "Công ty tôi đã có trên BeyondPilot",
+        "continue": "Tiếp tục"
       }
     },
     "view": {
