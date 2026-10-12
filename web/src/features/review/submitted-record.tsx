@@ -225,8 +225,12 @@ async function SubmittedRecord({
                   />
                 )}
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate font-medium">{item.label}</span>
-                  <span className="truncate text-muted-foreground">{item.meta}</span>
+                  <span title={item.label} className="truncate font-medium">
+                    {item.label}
+                  </span>
+                  <span title={item.meta} className="truncate text-muted-foreground">
+                    {item.meta}
+                  </span>
                 </span>
                 {!item.text && (
                   <a

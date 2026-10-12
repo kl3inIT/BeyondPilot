@@ -2,7 +2,10 @@
 
 import { Radio as RadioPrimitive } from "@base-ui/react/radio";
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group";
+import { type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
+
+import { toggleVariants } from "@/components/ui/toggle";
 
 function RadioGroup({ className, ...props }: RadioGroupPrimitive.Props) {
   return (
@@ -34,4 +37,28 @@ function RadioGroupItem({ className, ...props }: RadioPrimitive.Root.Props) {
   );
 }
 
-export { RadioGroup, RadioGroupItem };
+/**
+ * One choice of a radio group drawn as a toggle rather than a dot, for a short scale such as a
+ * score from 1 to 5: the look of `toggleVariants`, and a radio to the keyboard and to assistive
+ * technology, so the arrow keys move along the scale and exactly one is chosen.
+ */
+function RadioGroupToggle({
+  className,
+  variant = "rating",
+  size = "default",
+  ...props
+}: RadioPrimitive.Root.Props & VariantProps<typeof toggleVariants>) {
+  return (
+    <RadioPrimitive.Root
+      data-slot="radio-group-toggle"
+      className={cn(
+        toggleVariants({ variant, size }),
+        "shrink-0 cursor-default select-none data-disabled:pointer-events-none data-disabled:opacity-50",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export { RadioGroup, RadioGroupItem, RadioGroupToggle };

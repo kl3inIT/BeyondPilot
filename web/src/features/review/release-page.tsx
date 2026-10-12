@@ -116,6 +116,7 @@ async function ReleasePage({ release }: { release: Release }) {
                       <span className="flex min-w-0 flex-col">
                         <Link
                           href={`${applications}/${item.id}`}
+                          title={item.solutionName}
                           className="truncate font-medium outline-none hover:underline focus-visible:underline"
                         >
                           {item.solutionName}

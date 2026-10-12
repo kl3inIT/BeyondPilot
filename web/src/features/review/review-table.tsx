@@ -106,13 +106,17 @@ function ReviewTable({
       meta: { fill: true },
       cell: ({ row }) => (
         <div className="flex min-w-0 flex-col">
+          {/* A name cut by the column is whole in its title. */}
           <Link
             href={row.original.href}
+            title={row.original.solution}
             className="truncate font-medium outline-none hover:underline focus-visible:underline"
           >
             {row.original.solution}
           </Link>
-          <span className="truncate text-muted-foreground">{row.original.applicant}</span>
+          <span title={row.original.applicant} className="truncate text-muted-foreground">
+            {row.original.applicant}
+          </span>
         </div>
       ),
     }),

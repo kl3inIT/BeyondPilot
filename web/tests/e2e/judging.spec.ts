@@ -93,7 +93,6 @@ test.describe("judging applications", () => {
     page,
     context,
     baseURL,
-    isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
     const calls = await recordWrites(page);
@@ -152,18 +151,25 @@ test.describe("judging applications", () => {
     const assessment = page.getByRole("region", { name: /^Your assessment/ });
     const save = assessment.getByRole("button", { name: "Save and next" }).first();
     await expect(save).toBeDisabled();
+    // The save is held until every criterion has a score, and the panel says so beside it.
+    await expect(assessment.getByText("Scored 0 of 2").first()).toBeVisible();
+    await expect(
+      assessment.getByText("2 criteria still need a score before you can save."),
+    ).toBeVisible();
+    // A score is one choice of five: a radio group, which the arrow keys move along.
+    const first = page.getByRole("radiogroup", { name: criteria[0].name });
+    await first.getByRole("radio", { name: "3 out of 5" }).click();
+    await page.keyboard.press("ArrowRight");
+    await expect(first.getByRole("radio", { name: "4 out of 5" })).toBeChecked();
+    await expect(first.getByRole("radio", { name: "3 out of 5" })).not.toBeChecked();
     await page
-      .getByRole("group", { name: criteria[0].name })
-      .getByRole("button", { name: "4 out of 5" })
-      .click();
-    await page
-      .getByRole("group", { name: criteria[1].name })
-      .getByRole("button", { name: "3 out of 5" })
+      .getByRole("radiogroup", { name: criteria[1].name })
+      .getByRole("radio", { name: "3 out of 5" })
       .click();
     await expect(assessment.getByText("Average 3.5")).toBeVisible();
-    if (isMobile) {
-      await expect(page.getByText("Scored 2 of 2")).toBeVisible();
-    }
+    // How far the scoring is stands in the panel at every width; a narrow screen repeats it in its bar.
+    await expect(assessment.getByText("Scored 2 of 2").first()).toBeVisible();
+    await expect(assessment.getByText(/still need/)).toHaveCount(0);
     await page.getByLabel("Private note").fill("Clear on consent.");
     await save.click();
     await expect.poll(() => calls.length).toBe(1);
