@@ -84,7 +84,7 @@ function AdminIntroductionsPage({ introductions, search }: AdminIntroductionsPag
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <AdminPageHeader destination="introductions" title={t("title")} lead={t("lead")} />
+      <AdminPageHeader destination="introductions" title={t("title")} />
       <AdminIntroductionsToolbar />
 
       {introductions.overdue > 0 && (

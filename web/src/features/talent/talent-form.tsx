@@ -16,6 +16,7 @@ import { RequiredMark } from "@/components/composites/required-mark";
 import { ReviewReadiness } from "@/components/composites/review-readiness";
 import { TagInput } from "@/components/composites/tag-input";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
+import { fieldIdOf } from "@/components/form/field-ids";
 import { useFieldValidity } from "@/components/form/form-context";
 import {
   Field,
@@ -94,21 +95,20 @@ function ControlField({
   children,
 }: ControlFieldProps) {
   const t = useTranslations("Form");
-  const { field, invalid, errors } = useFieldValidity<unknown>();
-  const hintId = `${field.name}-hint`;
-  const errorId = `${field.name}-error`;
+  const { invalid, errors, ids } = useFieldValidity<unknown>();
+  const { control: controlId, hint: hintId, error: errorId } = ids;
   const describedBy =
     [hint ? hintId : undefined, invalid ? errorId : undefined].filter(Boolean).join(" ") ||
     undefined;
 
   return (
     <Field data-invalid={invalid || undefined}>
-      <FieldLabel htmlFor={labelled ? field.name : undefined}>
+      <FieldLabel htmlFor={labelled ? controlId : undefined}>
         {label}
         {required && <RequiredMark />}
         {optional && <span className="font-normal text-muted-foreground">{t("optional")}</span>}
       </FieldLabel>
-      {children({ id: field.name, describedBy, invalid: invalid || undefined })}
+      {children({ id: controlId, describedBy, invalid: invalid || undefined })}
       {hint && <FieldDescription id={hintId}>{hint}</FieldDescription>}
       {invalid && <FieldError id={errorId} errors={errors} />}
     </Field>
@@ -161,13 +161,6 @@ function TalentForm({ profile, suggestedName, aside }: TalentFormProps) {
     onSubmitInvalid: ({ formApi }) => {
       const saveable = talentSchema(t, false).safeParse(formApi.state.values).success;
       notify.error(saveable ? "Errors.TALENT_INCOMPLETE" : "Errors.REQUEST_INVALID");
-      // The chips of the roles cannot say they are refused, so the form's own move to the first
-      // field in error passes them; when they come first, the focus goes to them afterwards.
-      const refused = (field: string) =>
-        (formApi.state.fieldMeta[field as "roles"]?.errors.length ?? 0) > 0;
-      if (refused("roles") && !refused("name") && !refused("headline")) {
-        requestAnimationFrame(() => requestAnimationFrame(() => focusField("roles")));
-      }
     },
     onSubmit: async ({ value, formApi }) => {
       try {
@@ -224,8 +217,8 @@ function TalentForm({ profile, suggestedName, aside }: TalentFormProps) {
   );
   /** What is still to add before a review, in the order of the form; each id is its field's. */
   const toAdd = [
-    ...(values.name.trim() ? [] : [{ id: "name", label: t("name") }]),
-    ...missingForReview(values).map((field) => ({ id: field, label: t(field) })),
+    ...(values.name.trim() ? [] : [{ id: fieldIdOf(form, "name"), label: t("name") }]),
+    ...missingForReview(values).map((field) => ({ id: fieldIdOf(form, field), label: t(field) })),
   ];
   const group = "scroll-mt-24 border-t pt-6 text-lg font-semibold";
 
@@ -346,6 +339,7 @@ function TalentForm({ profile, suggestedName, aside }: TalentFormProps) {
                 <ChoiceChips
                   id={control.id}
                   aria-describedby={control.describedBy}
+                  aria-invalid={control.invalid}
                   label={t("roles")}
                   options={talentRoles.map((value) => ({ value, label: role(value) }))}
                   value={field.state.value}
@@ -398,6 +392,8 @@ function TalentForm({ profile, suggestedName, aside }: TalentFormProps) {
                 {(control) => (
                   <ChoiceChips
                     id={control.id}
+                    aria-describedby={control.describedBy}
+                    aria-invalid={control.invalid}
                     label={t("engagement")}
                     options={engagements.map((value) => ({ value, label: engagement(value) }))}
                     value={field.state.value}
@@ -607,7 +603,9 @@ function TalentForm({ profile, suggestedName, aside }: TalentFormProps) {
                     const added = list.state.value.length;
                     list.pushValue(blankProject);
                     // The new row takes the focus once it is drawn.
-                    requestAnimationFrame(() => focusField(`projects[${added}].title`));
+                    requestAnimationFrame(() =>
+                      focusField(fieldIdOf(form, `projects[${added}].title`)),
+                    );
                   }}
                 >
                   <PlusIcon aria-hidden="true" />

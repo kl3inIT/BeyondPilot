@@ -101,16 +101,16 @@ function LimitField({
   range: string;
   hint: string;
 }) {
-  const { field, invalid, errors } = useFieldValidity<string>();
-  const rangeId = `${field.name}-range`;
-  const hintId = `${field.name}-hint`;
+  const { field, invalid, errors, ids } = useFieldValidity<string>();
+  const rangeId = `${ids.control}-range`;
+  const hintId = ids.hint;
   return (
     <Field data-invalid={invalid || undefined}>
-      <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+      <FieldLabel htmlFor={ids.control}>{label}</FieldLabel>
       <div className="flex items-center gap-3">
         <InputGroup className="w-44 shrink-0">
           <InputGroupInput
-            id={field.name}
+            id={ids.control}
             name={field.name}
             inputMode="numeric"
             autoComplete="off"
@@ -229,7 +229,7 @@ function MatchingSettingsPage({ settings }: { settings: MatchingSettings }) {
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <AdminPageHeader destination="aiMatching" title={t("title")} lead={t("lead")}>
+      <AdminPageHeader destination="aiMatching" title={t("title")}>
         <MatchingAdminTabs current="limits" />
       </AdminPageHeader>
 

@@ -10,9 +10,8 @@ type Problems = Record<string, { message: string }> | undefined;
  * screen is checked on that submit and from then on as the person types, and a field the backend
  * would refuse says so when it is left.
  *
- * Every rule is the form's, none a field's own. A field with a validator of its own drops what the
- * form found for it each time a submit checks the fields, and a submit that another field refuses
- * stops before the form looks again: the field would lose its error while still being wrong.
+ * Every rule is the form's, none a field's own: the check on leaving a field reads the same schema
+ * as the backend's, for the whole contact at once.
  */
 export function applyFormOptions(options: {
   defaults: ApplyValues;

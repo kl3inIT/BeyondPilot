@@ -22,12 +22,11 @@ import { TextButton } from "@/components/actions/text-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
-import { StepItem } from "@/components/composites/step-item";
+import { StepsNav } from "@/components/composites/steps-nav";
 import { BrandLockup } from "@/components/layout/brand-lockup";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { FieldGroup } from "@/components/ui/field";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useNotify, type MessageKey } from "@/hooks/use-notify";
 import { useFormatter } from "@/i18n/format";
@@ -569,73 +568,54 @@ function SolutionEditor({
         </div>
       </header>
 
-      <div className="border-b bg-background px-5 py-3 md:px-8 lg:hidden">
-        <div className="mx-auto flex w-full max-w-170 flex-col gap-2">
-          <div className="flex items-center justify-between gap-3">
-            <p className="min-w-0 truncate text-sm font-medium">
-              {t("steps.progress", {
-                step: index + 1,
-                count: editorSteps.length,
-                name: step === "review" ? t("steps.review.titleLive") : stepTitle(step),
-              })}
+      {/* A column below 1024px, so the bar of steps has the whole form to stick along. */}
+      <main
+        id="content"
+        className="mx-auto flex w-full max-w-360 flex-1 gap-10 px-5 py-6 max-lg:flex-col max-lg:gap-6 md:px-8 md:py-8 lg:py-10"
+      >
+        {/*
+          From 1024px the steps stay in view beside the form, under the header that sticks above
+          them; below that they are the bar under that header. Both offsets are from the top of
+          what scrolls the editor: the page, or the dialog of a proposal.
+        */}
+        <div className="flex w-70 shrink-0 flex-col gap-4 max-lg:contents lg:sticky lg:top-24 lg:self-start">
+          {/* The steps show where the person is: the way forward is the editor's own Continue. */}
+          <StepsNav
+            label={t("steps.label")}
+            heading={t("steps.label")}
+            steps={editorSteps.map((id, position) => {
+              const problem = problemOf(id);
+              return {
+                id,
+                title: stepTitle(id),
+                done: position < index && !problem && !lacks(id),
+                problem,
+              };
+            })}
+            current={step}
+            doneLabel={t("steps.complete")}
+            className="max-lg:top-14 max-lg:-mx-5 max-lg:-mt-6 max-lg:px-5 md:max-lg:-mx-8 md:max-lg:-mt-8 md:max-lg:px-8"
+          />
+          {live && (
+            <p className="flex gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground max-lg:hidden">
+              <InfoIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
+              {t("noteLive")}
             </p>
+          )}
+        </div>
+
+        <div className="flex w-full min-w-0 flex-col gap-4 max-lg:mx-auto max-lg:max-w-170">
+          {/* Below 1024px the header has no room for where the solution stands; it is said here. */}
+          <div className="lg:hidden">
             {server.status === "draft" ? (
-              <p className="flex shrink-0 items-center gap-1 text-xs whitespace-nowrap text-muted-foreground">
-                <ClockIcon className="size-3.5" aria-hidden="true" />
+              <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                <ClockIcon className="size-3.5 shrink-0" aria-hidden="true" />
                 {t("visibility.draftShort", { organization: server.organizationName })}
               </p>
             ) : (
               <ReviewStatus state={standing}>{reviewStatus(standing)}</ReviewStatus>
             )}
           </div>
-          <Progress
-            value={((index + 1) / editorSteps.length) * 100}
-            aria-label={t("steps.label")}
-          />
-        </div>
-      </div>
-
-      <main
-        id="content"
-        className="mx-auto flex w-full max-w-360 flex-1 gap-10 px-5 py-6 md:px-8 md:py-8 lg:py-10"
-      >
-        <nav
-          aria-label={t("steps.label")}
-          className="flex w-70 shrink-0 flex-col gap-4 self-start max-lg:hidden lg:sticky lg:top-24"
-        >
-          <p className="text-xs font-medium text-muted-foreground">{t("steps.label")}</p>
-          <ol className="flex flex-col">
-            {editorSteps.map((id, position) => {
-              const problem = problemOf(id);
-              return (
-                <StepItem
-                  key={id}
-                  number={position + 1}
-                  title={stepTitle(id)}
-                  meta={problem}
-                  tone={problem ? "danger" : "default"}
-                  state={
-                    position === index
-                      ? "current"
-                      : position < index && !problem && !lacks(id)
-                        ? "done"
-                        : "upcoming"
-                  }
-                  doneLabel={t("steps.complete")}
-                  last={position === editorSteps.length - 1}
-                />
-              );
-            })}
-          </ol>
-          {live && (
-            <p className="flex gap-2 rounded-xl border bg-background p-3 text-xs text-muted-foreground">
-              <InfoIcon className="mt-px size-3.5 shrink-0" aria-hidden="true" />
-              {t("noteLive")}
-            </p>
-          )}
-        </nav>
-
-        <div className="flex w-full min-w-0 flex-col gap-4 max-lg:mx-auto max-lg:max-w-170">
           {standing === "in_review" && (
             <Alert>
               <TimerIcon aria-hidden="true" />
@@ -702,7 +682,7 @@ function SolutionEditor({
               <h1
                 id={STEP_HEADING_ID}
                 tabIndex={-1}
-                className="scroll-mt-20 text-2xl font-semibold tracking-tight outline-none md:text-3xl"
+                className="scroll-mt-20 text-2xl font-semibold tracking-tight outline-none max-lg:scroll-mt-32 md:text-3xl"
               >
                 {stepTitle(step)}
               </h1>
@@ -760,7 +740,7 @@ function SolutionEditor({
               </FieldGroup>
             </fieldset>
 
-            {/* Below 1024px the steps and their note are not drawn; the review's own lead says it. */}
+            {/* Below 1024px the note beside the steps is not drawn; the review's own lead says it. */}
             {live && !finallyRefused && step !== "review" && (
               <p className="text-xs text-muted-foreground lg:hidden">{t("noteLive")}</p>
             )}

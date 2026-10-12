@@ -113,7 +113,6 @@ function EmailAppearanceForm({
       <AdminPageHeader
         back={{ href: siteRoutes.adminEmailTemplates, label: t("back") }}
         title={t("title")}
-        lead={t("lead")}
       />
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">

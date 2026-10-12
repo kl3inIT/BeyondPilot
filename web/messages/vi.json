@@ -1149,6 +1149,8 @@
           "offers_choose": "Chọn ưu đãi cho giải pháp",
           "offer_create": "Thêm ưu đãi",
           "offer_update": "Sửa ưu đãi",
+          "offer_close": "Đóng ưu đãi với giải pháp mới",
+          "offer_reopen": "Mở lại ưu đãi với giải pháp mới",
           "offer_delete": "Xóa ưu đãi"
         },
         "introduction": {
@@ -1283,6 +1285,8 @@
           "offers_choose": "Chọn ưu đãi cho giải pháp <resource></resource>",
           "offer_create": "Thêm ưu đãi <resource></resource>",
           "offer_update": "Sửa ưu đãi <resource></resource>",
+          "offer_close": "Đóng ưu đãi <resource></resource> với giải pháp mới",
+          "offer_reopen": "Mở lại ưu đãi <resource></resource> với giải pháp mới",
           "offer_delete": "Xóa ưu đãi <resource></resource>"
         },
         "introduction": {
@@ -1618,9 +1622,8 @@
       "create": {
         "action": "Tạo giải pháp",
         "title": "Tạo giải pháp",
-        "lead": "Bạn viết trong trình soạn rồi đăng ngay, không qua duyệt. Giải pháp thuộc tổ chức bạn chọn.",
         "organization": "Tổ chức",
-        "organizationPlaceholder": "Chọn tổ chức",
+        "organizationPlaceholder": "Tìm hoặc chọn tổ chức",
         "organizationRequired": "Hãy chọn một tổ chức.",
         "noOrganizations": "Chưa có tổ chức nào được duyệt.",
         "name": "Tên giải pháp",
@@ -1629,7 +1632,6 @@
         "submit": "Tạo và mở trình soạn"
       },
       "title": "Giải pháp",
-      "lead": "Mọi giải pháp nhà cung cấp đã gửi duyệt.",
       "columns": {
         "solution": "Giải pháp",
         "organization": "Tổ chức",
@@ -1785,16 +1787,42 @@
     "offers": {
       "metaTitle": "Ưu đãi · BeyondPilot",
       "title": "Ưu đãi",
-      "lead": "Danh sách của GenAI Fund trước, rồi tới ưu đãi mỗi tổ chức tự viết cho giải pháp của mình. Sửa một ưu đãi là sửa trên mọi giải pháp đi kèm nó.",
       "genAiFund": "GenAI Fund",
       "columns": {
-        "writer": "Người tạo"
+        "writer": "Người tạo",
+        "state": "Trạng thái"
+      },
+      "filters": {
+        "search": "Tìm ưu đãi",
+        "state": {
+          "label": "Trạng thái",
+          "all": "Mọi trạng thái"
+        }
+      },
+      "noMatch": "Không có ưu đãi nào khớp với tìm kiếm.",
+      "detail": {
+        "back": "Ưu đãi",
+        "fields": {
+          "writer": "Người tạo",
+          "address": "Nhận tại",
+          "created": "Ngày tạo",
+          "updated": "Sửa lần cuối"
+        },
+        "closedNote": "Đã đóng với giải pháp mới. Các giải pháp bên dưới vẫn giữ và vẫn hiển thị ưu đãi này.",
+        "solutions": {
+          "title": "Giải pháp đi kèm",
+          "empty": "Chưa giải pháp nào đi kèm ưu đãi này.",
+          "columns": {
+            "solution": "Giải pháp",
+            "organization": "Tổ chức",
+            "review": "Duyệt"
+          }
+        }
       }
     },
     "talent": {
       "metaTitle": "Nhân lực · BeyondPilot",
       "title": "Nhân lực",
-      "lead": "Mọi hồ sơ đã được gửi duyệt.",
       "columns": {
         "person": "Người",
         "headline": "Giới thiệu ngắn",
@@ -1879,7 +1907,6 @@
         "link": "Lời nhắn bị báo cáo",
         "metaTitle": "Lời nhắn bị báo cáo · BeyondPilot",
         "title": "Lời nhắn bị báo cáo",
-        "lead": "Người gửi chỉ được báo là bị từ chối.",
         "back": "Tất cả nhân lực",
         "from": "Từ {sender}",
         "to": "Gửi {name}",
@@ -1903,7 +1930,6 @@
     "introductions": {
       "metaTitle": "Giới thiệu · BeyondPilot",
       "title": "Giới thiệu",
-      "lead": "Chủ sở hữu của từng tổ chức trả lời; bạn đọc và thấy yêu cầu nào chờ quá lâu.",
       "overdueNotice": "{count} yêu cầu đã chờ câu trả lời quá 3 ngày.",
       "overdue": "Chờ quá 3 ngày",
       "search": "Tìm theo giải pháp",
@@ -1986,7 +2012,6 @@
       "form": {
         "metaTitle": "Tạo use case · BeyondPilot",
         "title": "Tạo use case",
-        "lead": "Nhật ký thao tác ghi nhận use case do GenAI Fund tạo.",
         "organization": "Tạo use case này cho",
         "organizationPlaceholder": "Chọn một tổ chức",
         "organizationHint": "Chỉ liệt kê các tổ chức đã được duyệt.",
@@ -2577,7 +2602,6 @@
     "matching": {
       "metaTitle": "Ghép nối",
       "title": "Ghép nối",
-      "lead": "Một lượt là một lần tìm giải pháp cho một use case.",
       "blocks": {
         "run": {
           "title": "Trong một lượt"
@@ -2808,7 +2832,6 @@
       "metaApps": "Ứng dụng đã kết nối · MCP · Quản trị · BeyondPilot",
       "metaActivity": "Hoạt động · MCP · Quản trị · BeyondPilot",
       "title": "MCP",
-      "lead": "Các server để ứng dụng AI kết nối với BeyondPilot, và những gì chúng được làm.",
       "tabs": {
         "label": "MCP",
         "setup": "Thiết lập",
@@ -3171,7 +3194,6 @@
         "metaTitle": "Giao diện email",
         "back": "Mẫu",
         "title": "Giao diện",
-        "lead": "Những gì mọi email dùng chung.",
         "color": "Màu nhấn",
         "colorPicker": "Chọn màu",
         "colorHint": "Màu của liên kết và nút bấm.",
@@ -3894,7 +3916,6 @@
       "websiteRequired": "Hãy nhập website của tổ chức.",
       "description": "Mô tả ngắn",
       "descriptionHint": "Tổ chức làm gì và cho ai.",
-      "counter": "{count} / {max}",
       "save": "Lưu thay đổi",
       "create": "Gửi để duyệt",
       "cancel": "Hủy",
@@ -4434,7 +4455,8 @@
         "noMatch": "Không có ưu đãi nào khớp.",
         "remove": "Bỏ {name}",
         "add": "Ưu đãi mới…",
-        "fromGenAiFund": "{title} (GenAI Fund)"
+        "fromGenAiFund": "{title} (GenAI Fund)",
+        "closed": "{title} (đã đóng)"
       },
       "form": {
         "newTitle": "Ưu đãi mới",
@@ -4450,9 +4472,15 @@
       "done": {
         "created": "Đã thêm {name}.",
         "saved": "Đã lưu {name}.",
-        "deleted": "Đã xóa {name}."
+        "deleted": "Đã xóa {name}.",
+        "closed": "{name} không còn nhận thêm giải pháp mới.",
+        "reopened": "{name} nhận giải pháp mới trở lại."
       },
       "fromGenAiFund": "Từ GenAI Fund",
+      "state": {
+        "open": "Đang mở",
+        "closed": "Đã đóng"
+      },
       "manage": {
         "title": "Ưu đãi",
         "create": "Ưu đãi mới",
@@ -4460,13 +4488,16 @@
           "offer": "Ưu đãi",
           "url": "Nhận tại",
           "solutions": "Giải pháp",
-          "actions": "Thao tác"
+          "actions": "Thao tác",
+          "state": "Trạng thái"
         },
         "solutions": "{count, plural, =0 {Chưa giải pháp nào đi kèm} other {# giải pháp}}",
         "openNamed": "Thao tác với {name}",
         "actions": {
           "edit": "Sửa…",
-          "delete": "Xóa…"
+          "delete": "Xóa…",
+          "close": "Đóng với giải pháp mới",
+          "reopen": "Mở với giải pháp mới"
         },
         "empty": {
           "title": "Chưa có ưu đãi nào",
@@ -4597,8 +4628,7 @@
         "deck": "Tải tài liệu giới thiệu",
         "registeredIn": "Đăng ký tại",
         "deckSize": "Tải tài liệu giới thiệu ({size})",
-        "basedIn": "Trụ sở tại",
-        "lead": "Email của bạn được giữ kín cho đến khi bạn trả lời."
+        "basedIn": "Trụ sở tại"
       },
       "facts": {
         "stage": "Giai đoạn",
@@ -4719,7 +4749,6 @@
       },
       "steps": {
         "label": "Giải pháp của bạn",
-        "progress": "Bước {step}/{count} · {name}",
         "toAdd": "{count, plural, other {Còn # mục cần bổ sung}}",
         "toCheck": "{count, plural, other {# mục cần xem lại}}",
         "complete": "Đã xong",
@@ -4982,33 +5011,6 @@
   "Introduction": {
     "errors": {
       "REQUEST_INVALID": "Hãy kiểm tra lời nhắn và thử lại."
-    },
-    "request": {
-      "open": "Nhờ giới thiệu",
-      "by": "Bởi {provider}",
-      "title": "Nhờ giới thiệu tới {provider}",
-      "lead": "Địa chỉ email của hai bên được giấu cho đến khi {provider} trả lời.",
-      "organization": "Tổ chức của bạn",
-      "message": "Bạn cần gì?",
-      "hint": "{provider} đọc tên bạn, tổ chức của bạn và lời nhắn này trước khi trả lời.",
-      "required": "Hãy viết lời nhắn trước.",
-      "send": "Gửi yêu cầu",
-      "cancel": "Hủy",
-      "sent": {
-        "title": "Yêu cầu của bạn đã tới {provider}",
-        "lead": "Khi họ trả lời, cả hai bên sẽ nhận email có tên và địa chỉ của nhau.",
-        "done": "Xong"
-      },
-      "blocked": {
-        "organization": {
-          "title": "Hãy tham gia một tổ chức trước",
-          "lead": "Việc nhờ giới thiệu được thực hiện nhân danh một tổ chức, để bên cung cấp biết ai đang hỏi.",
-          "action": "Thiết lập tổ chức của bạn"
-        },
-        "approval": {
-          "title": "Tổ chức của bạn chưa được duyệt"
-        }
-      }
     },
     "received": {
       "metaTitle": "Giới thiệu · BeyondPilot",
@@ -5451,6 +5453,7 @@
   },
   "Form": {
     "optional": "Không bắt buộc",
+    "noMatch": "Không có kết quả phù hợp.",
     "steps": {
       "progress": "Bước {step}/{count} · {name}",
       "all": "Tất cả bước"
@@ -6272,8 +6275,6 @@
     "saveAndExit": "Lưu và thoát",
     "yourApplication": "Đơn của bạn",
     "savesAsYouType": "Câu trả lời được lưu khi bạn gõ. Quay lại bất cứ lúc nào trước {when}.",
-    "stepOf": "Bước {step}/{count} · {title}",
-    "progress": "Tiến độ điền đơn",
     "allRequired": "Mọi ô đều bắt buộc, trừ ô ghi Không bắt buộc.",
     "optional": "Không bắt buộc",
     "closed": "Đợt nhận đơn đã đóng lúc {when}. Giờ không sửa hay nộp được nữa.",
@@ -6367,7 +6368,6 @@
       "deckRequired": "Thêm deck của giải pháp, dạng PDF.",
       "demoUrl": "Link demo",
       "demoUrlHint": "Video, bản thử hoặc demo chạy thật, mở được mà không cần đăng nhập.",
-      "required": "Điền ô này.",
       "tractionHint": "Khách hàng, dự án thử, người dùng hoặc doanh thu tới nay.",
       "builtWithHint": "Model, công cụ hoặc framework; bấm Enter để thêm từng mục."
     },

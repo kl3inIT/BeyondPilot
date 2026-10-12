@@ -12,6 +12,7 @@ import { DataTable } from "@/components/composites/data-table";
 import { FormDialog } from "@/components/composites/form-dialog";
 import { Person } from "@/components/composites/person";
 import { useAppForm, withFieldGroup } from "@/components/form/app-form";
+import { fieldIds } from "@/components/form/field-ids";
 import { useFieldValidity } from "@/components/form/form-context";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -47,7 +48,7 @@ const ProposalTeamStep = withFieldGroup({
  */
 function Team({ members }: ProposalTeamStepProps) {
   const t = useTranslations("UseCaseProposal.wizard.team");
-  const { field, invalid, errors } = useFieldValidity<TeamRow[]>();
+  const { field, invalid, errors, ids } = useFieldValidity<TeamRow[]>();
   const [adding, setAdding] = useState(false);
 
   const team = field.state.value;
@@ -57,7 +58,7 @@ function Team({ members }: ProposalTeamStepProps) {
   const primary = team.find((member) => member.primary)?.accountId ?? "";
   const free = members.filter((member) => !team.some((row) => row.accountId === member.accountId));
   const worded = invalid && errors.some((error) => error?.message);
-  const errorId = worded ? `${field.name}-error` : undefined;
+  const errorId = worded ? ids.error : undefined;
   // Roles are filled and still the team is refused: nobody, or more than one, is the primary contact.
   const noPrimary = invalid && team.every((row) => row.role.trim() !== "");
 
@@ -198,9 +199,9 @@ function AddMemberDialog({ open, onOpenChange, candidates, onAdd }: AddMemberDia
       <form.Field name="accountId">
         {(field) => (
           <Field>
-            <FieldLabel htmlFor={field.name}>{t("person")}</FieldLabel>
+            <FieldLabel htmlFor={fieldIds(field).control}>{t("person")}</FieldLabel>
             <NativeSelect
-              id={field.name}
+              id={fieldIds(field).control}
               value={personOf(field.state.value)}
               onBlur={field.handleBlur}
               onChange={(event) => field.handleChange(event.target.value)}

@@ -4,4 +4,6 @@ subject: A message waits for your answer on BeyondPilot
 
 {{#senderName}}A message from {{senderName}}{{/senderName}}{{^senderName}}A message{{/senderName}} waits for your answer on BeyondPilot. It closes in {{daysLeft}} days if you do not answer.
 
-Sign in and open your talent profile › Enquiries.
+[Answer the message]({{enquiriesUrl}})
+
+The link opens your talent profile after you sign in. Accept or decline under Enquiries.

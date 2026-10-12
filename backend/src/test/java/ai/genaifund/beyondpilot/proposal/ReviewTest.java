@@ -53,7 +53,9 @@ class ReviewTest extends ApplicationsHttpTest {
 		String invited = body(post(operator, reviewers, Map.of("email", judgeEmail)).expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(invited, "$.items[*].status")).containsExactly("invited");
 		assertThat(mail.latestSubjectTo(judgeEmail)).isEqualTo("Judge the applications to Judged challenge");
-		assertThat(mail.latestTextTo(judgeEmail)).doesNotContain("http");
+		// The email leads to the program's applications under Reviews.
+		assertThat(mail.latestTextTo(judgeEmail))
+			.containsPattern("https?://[^/ ]+/reviews/" + form.programId() + "(?![\\w/-])");
 		assertProblem(post(operator, reviewers, Map.of("email", "JUDGE@review.test")), 409,
 				"PROPOSAL_REVIEWER_INVITED");
 

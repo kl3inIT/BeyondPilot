@@ -9,6 +9,7 @@ import ai.genaifund.beyondpilot.solution.SolutionOffers;
 import ai.genaifund.beyondpilot.solution.dto.OfferResponse;
 import ai.genaifund.beyondpilot.solution.dto.OwnOfferResponse;
 import ai.genaifund.beyondpilot.solution.dto.SaveOfferRequest;
+import ai.genaifund.beyondpilot.solution.dto.SetOfferClosedRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -101,6 +102,23 @@ class SolutionOffersController {
 	OwnOfferResponse save(@CurrentActor Actor actor, @PathVariable UUID id,
 			@Valid @RequestBody SaveOfferRequest request) {
 		return offers.saveOwn(actor, id, request);
+	}
+
+	@PutMapping(path = "/{id}/closed", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "setOwnOfferClosed",
+			summary = "Close an offer of the caller's organization to new solutions, or open it again",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The offer as saved, with its new version.")
+	@ApiResponse(responseCode = "403", description = "The caller belongs to no organization.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "The caller's organization wrote no such offer.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The offer changed since it was read.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	OwnOfferResponse setClosed(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody SetOfferClosedRequest request) {
+		return offers.setClosedOwn(actor, id, request);
 	}
 
 	@DeleteMapping("/{id}")

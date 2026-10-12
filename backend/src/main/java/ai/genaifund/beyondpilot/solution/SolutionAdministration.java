@@ -17,6 +17,7 @@ import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.organization.OrganizationProfile;
 import ai.genaifund.beyondpilot.solution.dto.AdminCreateSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListResponse;
@@ -491,8 +492,13 @@ public class SolutionAdministration {
 	private void tell(Solution solution, EmailService.SolutionDecision decision, @Nullable String reason) {
 		UUID organizationId = solution.getOrganizationId();
 		String organization = name(organizations.names(List.of(organizationId)), organizationId);
+		// The public page answers only for an approved solution of an approved organization.
+		@Nullable String publicSlug = solution.isApproved()
+				&& organizations.profile(organizationId).filter(OrganizationProfile::approved).isPresent()
+						? solution.getSlug() : null;
 		for (Person member : identity.people(organizations.memberAccountIds(organizationId)).values()) {
-			email.sendSolutionDecision(member.email(), organization, solution.getName(), decision, reason);
+			email.sendSolutionDecision(member.email(), organization, solution.getName(), decision, reason,
+					solution.getId(), publicSlug);
 		}
 	}
 

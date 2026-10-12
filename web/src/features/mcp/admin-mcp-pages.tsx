@@ -34,7 +34,7 @@ async function McpAdminHeader({ current, counts }: { current: McpTab; counts: Mc
   ] as const;
 
   return (
-    <AdminPageHeader destination="mcp" title={t("title")} lead={t("lead")}>
+    <AdminPageHeader destination="mcp" title={t("title")}>
       <nav aria-label={t("tabs.label")} className="border-b">
         <ul className="flex gap-4 overflow-x-auto md:gap-6">
           {tabs.map((tab) => (

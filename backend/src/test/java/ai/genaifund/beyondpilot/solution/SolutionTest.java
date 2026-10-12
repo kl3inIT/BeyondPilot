@@ -245,6 +245,9 @@ class SolutionTest {
 		assertThat(JsonPath.<String>read(sentBack, "$.decisionMessage")).isEqualTo("Say who it is for.");
 		assertThat(mail.latestSubjectTo("founder@reviewed.test")).isEqualTo("Changes needed: Reviewed Desk");
 		assertThat(mail.latestTextTo("founder@reviewed.test")).contains("Say who it is for.");
+		// The email leads to where a member edits it.
+		assertThat(mail.latestTextTo("founder@reviewed.test"))
+			.containsPattern("https?://[^/ ]+/workspace/organization/solutions/" + id + "(?![\\w/-])");
 		assertProblem(post(operator, ADMIN + "/" + id + "/approve", null), 409, "SOLUTION_NOT_AWAITING_REVIEW");
 		assertProblem(post(operator, ADMIN + "/" + id + "/send-back", Map.of("reason", "Again.")), 409,
 				"SOLUTION_NOT_AWAITING_REVIEW");
@@ -259,6 +262,9 @@ class SolutionTest {
 		assertThat(JsonPath.<String>read(approved, "$.status")).isEqualTo("approved");
 		assertThat(JsonPath.<String>read(approved, "$.organizationName")).isEqualTo("Reviewed Co");
 		assertThat(mail.latestSubjectTo("founder@reviewed.test")).isEqualTo("Reviewed Desk is approved on BeyondPilot");
+		// Approved, it is opened at its public address.
+		assertThat(mail.latestTextTo("founder@reviewed.test"))
+			.containsPattern("https?://[^/ ]+/solutions/[a-z0-9-]+(?![\\w/-])");
 		assertThat(events(id)).containsExactly("solution.send_back", "solution.approve");
 		// A decision is made once.
 		assertProblem(post(operator, ADMIN + "/" + id + "/approve", null), 409, "SOLUTION_NOT_AWAITING_REVIEW");
@@ -468,6 +474,8 @@ class SolutionTest {
 			.isNull();
 		assertThat(names(operator, ADMIN + "?q=removed desk&status=approved")).containsExactly("Removed Desk");
 		assertThat(mail.latestSubjectTo("founder@removed.test")).isEqualTo("Removed Desk is back on BeyondPilot");
+		assertThat(mail.latestTextTo("founder@removed.test"))
+			.containsPattern("https?://[^/ ]+/solutions/removed-desk(?![\\w/-])");
 		assertThat(events(id)).containsExactly("solution.approve", "solution.take_down", "solution.restore");
 	}
 
@@ -1569,6 +1577,95 @@ class SolutionTest {
 		assertThat(JsonPath.<List<String>>read(card, "$.items[0].offers[*].title")).containsExactly("A free Echidna trial");
 		assertThat(names(DIRECTORY + "?q=echidna cloud")).isEmpty();
 		assertThat(events(id)).contains("solution.offers_choose");
+	}
+
+	@Test
+	void aClosedOfferIsChosenNoMoreAndTheSolutionsThatComeWithItKeepIt() {
+		String founder = approvedOwner("founder@closed-offers.test", "Closed Offers Co");
+		String neighbour = approvedOwner("founder@closed-neighbour.test", "Closed Neighbour Co");
+		UUID offer = offer("Dunnart credits for the first hundred", "https://offers.example.test/dunnart");
+		Map<String, Object> description = described("Dunnart Desk", 0);
+		description.put("offerIds", List.of(offer));
+		UUID partner = approved(founder, "Dunnart Desk", description);
+
+		// An operator reads the record of the offer with the solutions that come with it; nobody else does.
+		String open = body(get(operator, OFFER_LIST + "/" + offer).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(open, "$.offer.closed")).isFalse();
+		assertThat(JsonPath.<List<String>>read(open, "$.solutionList[*].name")).containsExactly("Dunnart Desk");
+		assertThat(JsonPath.<List<String>>read(open, "$.solutionList[*].organizationName"))
+			.containsExactly("Closed Offers Co");
+		assertProblem(get(founder, OFFER_LIST + "/" + offer), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(get(operator, OFFER_LIST + "/" + UUID.randomUUID()), 404, "SOLUTION_OFFER_NOT_FOUND");
+
+		// Closing is an operator's here, sends the version its form read, and moves it.
+		long version = JsonPath.<Number>read(open, "$.offer.version").longValue();
+		Map<String, Object> close = Map.of("closed", true, "version", version);
+		assertProblem(put(founder, OFFER_LIST + "/" + offer + "/closed", close), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(put(operator, OFFER_LIST + "/" + UUID.randomUUID() + "/closed", close), 404,
+				"SOLUTION_OFFER_NOT_FOUND");
+		assertProblem(put(operator, OFFER_LIST + "/" + offer + "/closed", Map.of("closed", true, "version", 99)), 409,
+				"SOLUTION_OFFER_CHANGED_MEANWHILE");
+		String closed = body(put(operator, OFFER_LIST + "/" + offer + "/closed", close).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(closed, "$.closed")).isTrue();
+		assertThat(JsonPath.<Number>read(closed, "$.version").longValue()).isGreaterThan(version);
+		// Asking for the state it has changes nothing, and the audit trail keeps one close.
+		Map<String, Object> again = Map.of("closed", true, "version", JsonPath.<Number>read(closed, "$.version").longValue());
+		String unchanged = body(put(operator, OFFER_LIST + "/" + offer + "/closed", again).expectStatus().isOk());
+		assertThat(JsonPath.<Number>read(unchanged, "$.version").longValue())
+			.isEqualTo(JsonPath.<Number>read(closed, "$.version").longValue());
+
+		// Another solution does not choose it, nor is it offered to it.
+		UUID other = create(neighbour, "Dunnart Rival");
+		assertThat(JsonPath.<List<String>>read(body(get(neighbour, OFFERS + "?solutionId=" + other).expectStatus().isOk()),
+				"$[*].id"))
+			.doesNotContain(offer.toString());
+		Map<String, Object> rival = described("Dunnart Rival", 0);
+		rival.put("offerIds", List.of(offer));
+		assertProblem(put(neighbour, MINE + "/" + other, rival), 400, "SOLUTION_OFFER_NOT_USABLE");
+
+		// The solution that comes with it keeps it: it is offered to it as closed, its card and page show it as
+		// before, and saving the solution again is not refused.
+		String options = body(get(founder, OFFERS + "?solutionId=" + partner).expectStatus().isOk());
+		assertThat(JsonPath.<List<Boolean>>read(options, "$[?(@.id == '" + offer + "')].closed")).containsExactly(true);
+		String page = body(client.get().uri(DIRECTORY + "/dunnart-desk").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(page, "$.offers[*].url")).containsExactly("https://offers.example.test/dunnart");
+		String mine = body(get(founder, MINE + "/" + partner).expectStatus().isOk());
+		Map<String, Object> resave = keeping(mine, described("Dunnart Desk", versionOf(mine)));
+		resave.put("offerIds", List.of(offer));
+		put(founder, MINE + "/" + partner, resave).expectStatus().isOk();
+		assertThat(solutionsOf(offer)).isEqualTo(1);
+
+		// Opening it again makes it chosen as before.
+		Map<String, Object> reopen = Map.of("closed", false, "version", JsonPath.<Number>read(closed, "$.version").longValue());
+		assertThat(JsonPath.<Boolean>read(body(put(operator, OFFER_LIST + "/" + offer + "/closed", reopen).expectStatus().isOk()),
+				"$.closed"))
+			.isFalse();
+		assertThat(JsonPath.<List<String>>read(body(get(neighbour, OFFERS + "?solutionId=" + other).expectStatus().isOk()),
+				"$[*].id"))
+			.contains(offer.toString());
+
+		// An organization closes and opens an offer of its own, and no other organization's.
+		String written = body(post(founder, OFFERS, Map.of("title", "Dunnart pilot package", "url",
+				"https://offers.example.test/dunnart-pilot")).expectStatus().isCreated());
+		UUID own = UUID.fromString(JsonPath.read(written, "$.id"));
+		long ownVersion = JsonPath.<List<Number>>read(body(get(founder, OFFERS + "/mine").expectStatus().isOk()), "$[*].version")
+			.get(0)
+			.longValue();
+		Map<String, Object> closeOwn = Map.of("closed", true, "version", ownVersion);
+		assertProblem(put(neighbour, OFFERS + "/" + own + "/closed", closeOwn), 404, "SOLUTION_OFFER_NOT_FOUND");
+		assertProblem(put(founder, OFFERS + "/" + offer + "/closed", closeOwn), 404, "SOLUTION_OFFER_NOT_FOUND");
+		assertProblem(put(founder, OFFERS + "/" + own + "/closed", Map.of("closed", true, "version", 99)), 409,
+				"SOLUTION_OFFER_CHANGED_MEANWHILE");
+		String ownClosed = body(put(founder, OFFERS + "/" + own + "/closed", closeOwn).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(ownClosed, "$.closed")).isTrue();
+		assertThat(JsonPath.<List<Boolean>>read(body(get(founder, OFFERS + "/mine").expectStatus().isOk()), "$[*].closed"))
+			.containsExactly(true);
+
+		assertThat(jdbc.sql("""
+				select action from audit_event where resource_type = 'solution_offer' and resource_id = ?
+				order by occurred_at, id
+				""").param(offer.toString()).query(String.class).list())
+			.containsExactly("solution.offer_create", "solution.offer_close", "solution.offer_reopen");
 	}
 
 	/** An offer of the list GenAI Fund keeps, added by the operator. */

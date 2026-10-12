@@ -454,6 +454,48 @@ test.describe("workspace solutions", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("an owner closes an offer of the organization to new solutions, and opens it again", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const writes = await answerDecisions(
+      page,
+      "**/api/solution/offers/0ffe7a11-0000-4000-8000-000000000002/closed",
+      200,
+      {
+        id: "0ffe7a11-0000-4000-8000-000000000002",
+        title: "Ten hours of onboarding support",
+        url: "https://offers.example/onboarding",
+        solutions: 1,
+        version: 1,
+        closed: true,
+      },
+    );
+    await page.goto(list);
+
+    const offers = page.getByRole("region", { name: "Offers" });
+    await expect(offers.getByText("Open", { exact: true }).filter({ visible: true })).toHaveCount(
+      1,
+    );
+    await offers
+      .getByRole("button", { name: "Actions for Ten hours of onboarding support" })
+      .filter({ visible: true })
+      .click();
+    await page.getByRole("menuitem", { name: "Close to new solutions" }).click();
+
+    await expect(
+      page.getByText("Ten hours of onboarding support is closed to new solutions."),
+    ).toBeVisible();
+    expect(writes).toEqual([
+      {
+        call: "PUT /api/solution/offers/0ffe7a11-0000-4000-8000-000000000002/closed",
+        body: { closed: true, version: 0 },
+      },
+    ]);
+  });
+
   test("the review names what a draft lacks and leads to each field", async ({
     page,
     context,

@@ -158,6 +158,9 @@ class TalentTest {
 		assertThat(mail.latestSubjectTo("reviewed@profile.test"))
 			.isEqualTo("Changes asked for your BeyondPilot talent profile");
 		assertThat(mail.latestTextTo("reviewed@profile.test")).contains("Say what you built.");
+		// A profile nobody else sees yet is opened where its person corrects it.
+		assertThat(mail.latestTextTo("reviewed@profile.test"))
+			.containsPattern("https?://[^/ ]+/workspace/talent(?![\\w/-])");
 		assertProblem(post(operator, ADMIN + "/" + id + "/approve", null), 409, "TALENT_NOT_AWAITING_REVIEW");
 
 		post(person, MINE + "/submit", null).expectStatus().isOk();
@@ -165,6 +168,9 @@ class TalentTest {
 
 		assertThat(JsonPath.<String>read(mine(person), "$.profile.status")).isEqualTo("approved");
 		assertThat(mail.latestSubjectTo("reviewed@profile.test")).isEqualTo("Your BeyondPilot talent profile is approved");
+		// Approved and listed, it is opened as the directory shows it.
+		assertThat(mail.latestTextTo("reviewed@profile.test"))
+			.containsPattern("https?://[^/ ]+/talent/[a-z0-9-]+(?![\\w/-])");
 		assertThat(events(id)).containsExactly("talent.request_changes", "talent.approve");
 		// A decision is made once.
 		assertProblem(post(operator, ADMIN + "/" + id + "/approve", null), 409, "TALENT_NOT_AWAITING_REVIEW");
@@ -204,6 +210,8 @@ class TalentTest {
 		client.get().uri(DIRECTORY + "/removed-person").exchange().expectStatus().isOk();
 		assertThat(JsonPath.<String>read(mine(person), "$.profile.suspendedAt")).isNull();
 		assertThat(mail.latestSubjectTo("removed@profile.test")).isEqualTo("Your BeyondPilot talent profile is restored");
+		assertThat(mail.latestTextTo("removed@profile.test"))
+			.containsPattern("https?://[^/ ]+/talent/removed-person(?![\\w/-])");
 		assertThat(listed("approved")).contains(id.toString());
 		assertThat(events(id)).containsExactly("talent.approve", "talent.remove", "talent.restore");
 	}
@@ -499,6 +507,7 @@ class TalentTest {
 			.isEqualTo("A message through your BeyondPilot talent profile");
 		assertThat(mail.latestTextTo("numbat@profile.test")).contains("Numbat Insurance")
 			.contains("about a project")
+			.containsPattern("https?://[^/ ]+/workspace/talent(?![\\w/-])")
 			.doesNotContain("buyer@numbat.test");
 		assertProblem(post(buyer, path, message), 409, "TALENT_ENQUIRY_PENDING");
 		assertThat(JsonPath.<String>read(body(get(buyer, DIRECTORY + "/numbat-person").expectStatus().isOk()),
@@ -553,6 +562,9 @@ class TalentTest {
 		post(person, MINE + "/enquiries/" + fromSecond + "/report", null).expectStatus().isNoContent();
 
 		String declined = mail.latestTextTo("first@quokka.test");
+		// The sender is led to the messages they sent.
+		assertThat(mail.latestTextTo("first@quokka.test"))
+			.containsPattern("https?://[^/ ]+/workspace/talent/sent(?![\\w/-])");
 		String reported = mail.latestTextTo("second@quokka.test");
 		assertThat(declined).isEqualTo(reported).contains("Quokka Person").doesNotContain("quokka@profile.test");
 		assertThat(mail.latestSubjectTo("second@quokka.test")).isEqualTo("Your message to Quokka Person");
@@ -646,6 +658,7 @@ class TalentTest {
 
 		assertThat(clock.remind(now.plus(Duration.ofDays(8)))).isPositive();
 		String reminder = mail.latestTextTo("koala@profile.test");
+		assertThat(reminder).containsPattern("https?://[^/ ]+/workspace/talent(?![\\w/-])");
 		assertThat(mail.latestSubjectTo("koala@profile.test"))
 			.isEqualTo("A message waits for your answer on BeyondPilot");
 		clock.remind(now.plus(Duration.ofDays(9)));
@@ -656,6 +669,8 @@ class TalentTest {
 
 		assertThat(JsonPath.<String>read(mine(person), "$.enquiries[0].status")).isEqualTo("closed");
 		assertThat(mail.latestSubjectTo("patient@koala.test")).isEqualTo("Your message to Koala Person closed");
+		assertThat(mail.latestTextTo("patient@koala.test"))
+			.containsPattern("https?://[^/ ]+/workspace/talent/sent(?![\\w/-])");
 		assertThat(mail.latestTextTo("patient@koala.test")).doesNotContain("koala@profile.test");
 		// The sender may write again.
 		post(sender, DIRECTORY + "/koala-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "project", "message", "Once more"))
