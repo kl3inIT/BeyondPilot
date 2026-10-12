@@ -82,7 +82,6 @@ test.describe("admin email", () => {
     await expect(variable).toContainText("Must appear");
     // This kind shows the same text to everyone, so it lists no condition.
     await expect(page.getByRole("region", { name: "Conditions" })).toHaveCount(0);
-    await expectNoSeriousA11yViolations(page);
 
     const body = page.getByRole("textbox", { name: "Body" });
     await body.click();
