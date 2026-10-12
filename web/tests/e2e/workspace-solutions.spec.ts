@@ -300,7 +300,8 @@ test.describe("workspace solutions", () => {
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Review and submit");
     await expect(page.getByRole("note").getByText("Ready to send for review")).toBeVisible();
-    await expect(page.getByText("Finds claims that do not add up.")).toBeVisible();
+    // Read back in the answers and on the preview card, so the first of them is enough.
+    await expect(page.getByText("Finds claims that do not add up.").first()).toBeVisible();
     await expect(page.getByText("Insurance", { exact: true })).toBeVisible();
     await expect(page.getByText("Not published yet").first()).toBeVisible();
     // The card the directory would show is drawn from what was written, with its images.

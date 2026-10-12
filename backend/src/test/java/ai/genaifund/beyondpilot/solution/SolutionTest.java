@@ -1222,16 +1222,17 @@ class SolutionTest {
 	void anOperatorWritesADraftForAnApprovedOrganizationAndPublishesItWithNoReview() {
 		String founder = approvedOwner("founder@published.test", "Published Co");
 		UUID organization = organizationOf(founder);
-		UUID unreviewed = organization(signIn("waiting@unreviewed.test"), "Unreviewed Co");
+		UUID unreviewed = organization(signIn("waiting@unreviewed.test"), "Operator Waiting Inc");
 
 		// The operator picks among the approved organizations: one that waits for review is not offered.
 		assertProblem(get(founder, ADMIN + "/organizations"), 403, "IDENTITY_OPERATOR_REQUIRED");
-		String offered = body(get(operator, ADMIN + "/organizations").expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(offered, "$[*].name")).contains("Published Co")
-			.doesNotContain("Unreviewed Co");
-		assertThat(JsonPath.<List<String>>read(body(get(operator, ADMIN + "/organizations?q=publish").expectStatus().isOk()),
-				"$[*].name"))
+		// The list is cut at 50 by name, so the test asks by name rather than reading all of it.
+		assertThat(JsonPath.<List<String>>read(
+				body(get(operator, ADMIN + "/organizations?q=Published Co").expectStatus().isOk()), "$[*].name"))
 			.containsExactly("Published Co");
+		assertThat(JsonPath.<List<String>>read(
+				body(get(operator, ADMIN + "/organizations?q=Operator Waiting Inc").expectStatus().isOk()), "$[*].name"))
+			.isEmpty();
 
 		// Only an operator starts one, and only for an organization GenAI Fund approved.
 		assertProblem(post(founder, ADMIN, Map.of("organizationId", organization, "name", "Operator Desk")), 403,
