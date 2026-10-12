@@ -58,7 +58,6 @@ function SolutionImageDialog({
               alt={t("image", { name, position: openIndex + 1, count })}
               fill
               sizes="(min-width: 896px) 864px, 100vw"
-              unoptimized
               className="object-contain"
             />
           </div>

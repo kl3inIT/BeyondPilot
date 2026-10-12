@@ -250,7 +250,6 @@ async function OpenProgram({
             src={publicFileUrl(program.coverFileId)}
             alt=""
             fill
-            unoptimized
             preload={preload}
             sizes="(min-width: 1280px) 30rem, 100vw"
             className="object-cover"
@@ -432,7 +431,6 @@ async function DoneProgram({
           alt=""
           width={480}
           height={180}
-          unoptimized
           className="h-37.5 w-full object-cover"
         />
       ) : (

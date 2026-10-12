@@ -42,7 +42,6 @@ function SolutionCard({
               alt=""
               fill
               sizes="(min-width: 1280px) 400px, (min-width: 768px) 50vw, 100vw"
-              unoptimized
               preload={preload}
               className="object-cover"
             />

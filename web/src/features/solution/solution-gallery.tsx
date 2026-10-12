@@ -47,7 +47,6 @@ function SolutionGallery({ name, coverFileId, imageFileIds }: SolutionGalleryPro
             fill
             priority
             sizes="(min-width: 1024px) 60vw, 100vw"
-            unoptimized
             className="object-cover"
           />
         </button>
@@ -68,7 +67,6 @@ function SolutionGallery({ name, coverFileId, imageFileIds }: SolutionGalleryPro
                   alt={t("image", { name, position: index + offset + 1, count })}
                   fill
                   sizes="(min-width: 768px) 15vw, 160px"
-                  unoptimized
                   className="object-cover"
                 />
               </button>
