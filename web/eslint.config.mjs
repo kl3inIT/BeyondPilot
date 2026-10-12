@@ -3,6 +3,23 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import prettier from "eslint-config-prettier/flat";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import jestDom from "eslint-plugin-jest-dom";
+import testingLibrary from "eslint-plugin-testing-library";
+
+// Dates are written one way (docs/conventions.md › Internationalization): next-intl's own formatter
+// would write an English date the American way, so only src/i18n may take it.
+const appFormatters = [
+  {
+    name: "next-intl",
+    importNames: ["useFormatter", "createFormatter"],
+    message: "Use useFormatter from @/i18n/format.",
+  },
+  {
+    name: "next-intl/server",
+    importNames: ["getFormatter"],
+    message: "Use getFormatter from @/i18n/format-server.",
+  },
+];
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -25,24 +42,29 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    // Dates are written one way (docs/conventions.md › Internationalization): next-intl's own
-    // formatter would write an English date the American way, so only src/i18n may take it.
     files: ["src/**/*.{ts,tsx}"],
     ignores: ["src/i18n/**"],
+    rules: { "no-restricted-imports": ["error", { paths: appFormatters }] },
+  },
+  {
+    // Component tests (docs/guidelines/testing.md › Component tests) ask the screen as a person
+    // does and assert with the DOM matchers. They draw through @/test/render, which gives a
+    // component the application's messages, URL state and router.
+    files: ["src/**/*.test.tsx", "src/test/**"],
+    extends: [testingLibrary.configs["flat/react"], jestDom.configs["flat/recommended"]],
+  },
+  {
+    files: ["src/**/*.test.tsx"],
     rules: {
       "no-restricted-imports": [
         "error",
         {
           paths: [
+            ...appFormatters,
             {
-              name: "next-intl",
-              importNames: ["useFormatter", "createFormatter"],
-              message: "Use useFormatter from @/i18n/format.",
-            },
-            {
-              name: "next-intl/server",
-              importNames: ["getFormatter"],
-              message: "Use getFormatter from @/i18n/format-server.",
+              name: "@testing-library/react",
+              importNames: ["render"],
+              message: "Use render from @/test/render.",
             },
           ],
         },

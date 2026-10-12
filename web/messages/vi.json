@@ -85,7 +85,6 @@
   },
   "Campaign": {
     "name": "AI for Insurance Challenge × Tasco",
-    "shortName": "Tasco",
     "partners": "GenAI Fund × Tasco",
     "kind": "Thử thách doanh nghiệp · Bảo hiểm · Việt Nam",
     "question": "Làm sao để bảo hiểm ở Việt Nam trở thành thứ người dân thấy đáng có?",
@@ -94,7 +93,6 @@
     "applyNow": "Ứng tuyển ngay",
     "readBrief": "Đọc đề bài",
     "submissionsClose": "Hạn nộp 23:59 ICT, 15/10",
-    "closesShort": "hạn 15/10",
     "closes": "Hạn nộp 23:59 ICT, 15/10",
     "countdown": "{days, plural, =0 {Ngày cuối} other {Còn # ngày}} · hạn nộp 23:59 ICT, 15/10",
     "closed": "Đã đóng nhận hồ sơ lúc 23:59 ICT, 15/10",
@@ -315,7 +313,9 @@
     "title": "Đã có lỗi xảy ra",
     "description": "Không tải được trang này.",
     "retry": "Thử lại",
-    "reference": "Mã tham chiếu: {digest}"
+    "reference": "Mã tham chiếu: {digest}",
+    "backToUseCases": "Về danh sách use case",
+    "backToSolutions": "Về danh sách giải pháp"
   },
   "Errors": {
     "unknown": "Chưa thực hiện được. Hãy thử lại.",
@@ -1558,10 +1558,8 @@
         "moves": "{members, plural, other {# thành viên}} và {invitations, plural, other {# lời mời đang mở}} chuyển theo, cùng với giải pháp và bài toán của nó.",
         "cancel": "Hủy",
         "continue": "Tiếp tục",
-        "confirmTitle": "Gộp vào {kept}?",
-        "confirmLabel": "Gõ {name} để xác nhận",
-        "cannotUndo": "Không thể hoàn tác.",
-        "back": "Quay lại",
+        "confirmTitle": "Gộp {name} vào {kept}?",
+        "confirmNote": "{name} chỉ còn là bản ghi cho biết đã được gộp vào đâu, và các thành viên của nó được báo qua email. Không thể hoàn tác.",
         "merge": "Gộp"
       },
       "people": {
@@ -2563,9 +2561,6 @@
           "use_case": "Use case"
         },
         "embeddedShare": "{count} · {share}",
-        "embeddedOf": "{embedded} / {total} đã embed",
-        "mobileFacts": "{listed} công khai · {waiting} đang chờ",
-        "heldBackCount": "{count} lỗi",
         "note": "Giải pháp và hồ sơ nhân lực đã ẩn vẫn nằm trong chỉ mục để operator ghép với use case, nhưng không bao giờ hiện trong kết quả công khai.",
         "noteHelp": "Vì sao hai con số khác nhau"
       },
@@ -2581,7 +2576,6 @@
         "next": "Thử lại lúc",
         "actions": "Thao tác",
         "soon": "ở lượt chạy tới",
-        "mobileNext": "{count} lần thử · lần tới {next}",
         "reasons": {
           "bad_request": "Nhà cung cấp từ chối văn bản (400 Bad request).",
           "unprocessable": "Nhà cung cấp từ chối văn bản (422 Unprocessable).",
@@ -2765,11 +2759,7 @@
         "failureRate": "Tỷ lệ lỗi",
         "tokens": "Token",
         "time": "Thời gian TB",
-        "cost": "Chi phí ƯT",
-        "callsLine": "{calls} lượt · {failed} lỗi ({rate})",
-        "timeLine": "trung bình {time}",
-        "costLine": "ước tính {cost}",
-        "noPrice": "chưa có giá"
+        "cost": "Chi phí ƯT"
       },
       "estimate": "Chi phí là ước tính từ lượng sử dụng nhà cung cấp báo và giá niêm yết, không phải hóa đơn.",
       "calls": {
@@ -4629,8 +4619,7 @@
         "demo": "Xem demo",
         "deck": "Tải tài liệu giới thiệu",
         "registeredIn": "Đăng ký tại",
-        "deckSize": "Tải tài liệu giới thiệu ({size})",
-        "basedIn": "Trụ sở tại"
+        "deckSize": "Tải tài liệu giới thiệu ({size})"
       },
       "facts": {
         "stage": "Giai đoạn",
@@ -7748,7 +7737,6 @@
         "title": "Bạn đang chỉnh sửa một đề xuất đã gửi",
         "banner": "Tổ chức đăng bài toán sẽ thấy các thay đổi của bạn ngay khi bạn lưu. Thời hạn chỉnh sửa kết thúc vào {until}.",
         "note": "Sẽ không có gì được lưu cho đến khi bạn chọn Lưu thay đổi.",
-        "reviewLead": "Kiểm tra lại các thay đổi. Chúng sẽ thay thế nội dung bạn đã gửi ngay khi bạn lưu.",
         "unsaved": "Chưa lưu các thay đổi",
         "pristine": "Chưa có thay đổi",
         "save": "Lưu thay đổi",

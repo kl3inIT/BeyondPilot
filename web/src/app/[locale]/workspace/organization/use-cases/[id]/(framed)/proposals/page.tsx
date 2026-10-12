@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { WorkspaceFrame } from "@/components/layout/workspace-frame";
 import { ReceivedProposalsPage } from "@/features/proposal/received-proposals-page";
 import { readReceivedProposals } from "@/features/proposal/received-queries";
 import { requireAccount } from "@/lib/auth/session";
@@ -28,9 +27,5 @@ export default async function OrganizationUseCaseProposalsRoute({
     notFound();
   }
 
-  return (
-    <WorkspaceFrame>
-      <ReceivedProposalsPage proposals={proposals} />
-    </WorkspaceFrame>
-  );
+  return <ReceivedProposalsPage proposals={proposals} />;
 }

@@ -1,16 +1,16 @@
 "use client";
 
-import { EllipsisIcon, MailXIcon } from "lucide-react";
+import { MailXIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
+import { RowMenuTrigger } from "@/components/actions/row-menu-trigger";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
 import { revokeOrganizationInvitation, type OrganizationInvitation } from "@/lib/api/generated";
@@ -39,18 +39,10 @@ function InvitationActions({ invitation }: { invitation: OrganizationInvitation 
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <button
-            type="button"
-            aria-label={t("openInvitation", { email: invitation.email })}
-            disabled={pending || refreshing}
-            className="hit-area flex size-8 items-center justify-center rounded-md outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:bg-muted"
-          />
-        }
-      >
-        <EllipsisIcon className="size-4" aria-hidden="true" />
-      </DropdownMenuTrigger>
+      <RowMenuTrigger
+        aria-label={t("openInvitation", { email: invitation.email })}
+        disabled={pending || refreshing}
+      />
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuGroup>
           <DropdownMenuItem variant="destructive" onClick={revoke}>

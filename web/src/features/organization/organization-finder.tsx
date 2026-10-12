@@ -31,6 +31,11 @@ type OrganizationFinderProps = {
   suggestion: OrganizationMatch | null;
   /** Shown inside another form, such as an application, without its own heading. */
   embedded?: boolean;
+  /**
+   * Called once the person has joined or asked to, in place of reading the page again: for a caller
+   * that keeps what the backend answered itself and reads it anew. It says its own failure.
+   */
+  onAnswered?: () => Promise<void>;
 };
 
 /**
@@ -40,7 +45,7 @@ type OrganizationFinderProps = {
  * is asked in one dialog first: joining shows the person to the organization's members at once.
  * Creating a new one is always offered beside it.
  */
-function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinderProps) {
+function OrganizationFinder({ suggestion, embedded = false, onAnswered }: OrganizationFinderProps) {
   const t = useTranslations("Organization.find");
   const typeName = useVocabulary("organizationType");
   const countryName = useCountryName();
@@ -93,11 +98,17 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
       });
       notify.success(done[data.outcome], { name: match.name });
       setAsking(null);
-      startRefresh(() => router.refresh());
     } catch (error) {
       notify.failure(error);
-    } finally {
       setPending(null);
+      return;
+    }
+    if (onAnswered) {
+      // The button stays busy until the caller has read what joining made of the person.
+      void onAnswered().finally(() => setPending(null));
+    } else {
+      setPending(null);
+      startRefresh(() => router.refresh());
     }
   }
 
