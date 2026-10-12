@@ -906,6 +906,10 @@ paths:
           - solution.back
           - solution.feature
           - solution.unfeature
+          - solution.offers_choose
+          - solution.offer_create
+          - solution.offer_update
+          - solution.offer_delete
           - solution.deployment_approve
           - solution.deployment_reject
           - solution.deployment_withdraw
@@ -7458,6 +7462,182 @@ paths:
         \ one off its solution"
       tags:
       - Customer deployments
+  /api/solution/admin/offers:
+    get:
+      operationId: listAdminOffers
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminOffer"
+          description: "The offers, by title."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "Every offer, by title, with how many solutions come with it"
+      tags:
+      - Solution administration
+    post:
+      operationId: createOffer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveOffer"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOffer"
+          description: The offer.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The title is blank or too long, or the address is not an https\
+            \ one."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Another offer reads the same.
+      security:
+      - session: []
+      summary: Add an offer to the list solutions choose from
+      tags:
+      - Solution administration
+  /api/solution/admin/offers/{id}:
+    delete:
+      operationId: deleteOffer
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The offer is gone.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such offer.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A solution still comes with the offer.
+      security:
+      - session: []
+      summary: Delete an offer no solution comes with
+      tags:
+      - Solution administration
+    put:
+      operationId: saveOffer
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveOffer"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOffer"
+          description: "The offer as saved, with its new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The title is blank or too long, or the address is not an https\
+            \ one."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such offer.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The offer changed since it was read, or another reads the\
+            \ same."
+      security:
+      - session: []
+      summary: Save an offer; every solution that comes with it shows the change at
+        once
+      tags:
+      - Solution administration
   /api/solution/admin/solutions:
     get:
       operationId: listAdminSolutions
@@ -7927,6 +8107,55 @@ paths:
       - session: []
       summary: "Feature a solution: it comes first in the opening view of the public\
         \ directory"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/offers:
+    put:
+      operationId: chooseSolutionOffers
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetSolutionOffers"
+        required: true
+      responses:
+        "204":
+          description: The solution comes with the offers named.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "More than five offers, or one that is not in the list."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such submitted solution.
+      security:
+      - session: []
+      summary: "Choose the offers a submitted solution comes with, from the list GenAI\
+        \ Fund keeps"
       tags:
       - Solution administration
   /api/solution/admin/solutions/{id}/publish:
@@ -8788,6 +9017,214 @@ paths:
       summary: "Take a customer deployment off its solution, keeping it and its review"
       tags:
       - Customer deployments
+  /api/solution/offers:
+    get:
+      operationId: listSolutionOffers
+      parameters:
+      - in: query
+        name: solutionId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Offer"
+          description: "The offers, by title."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller writes no such solution.
+      security:
+      - session: []
+      summary: "The offers a solution may come with, by title: GenAI Fund's list and\
+        \ its organization's own"
+      tags:
+      - My solutions
+    post:
+      operationId: createOwnOffer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveOffer"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Offer"
+          description: The offer.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The title is blank or too long, or the address is not an https\
+            \ one."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no organization.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Another offer of the organization reads the same.
+      security:
+      - session: []
+      summary: "Add an offer of the caller's organization, which only its solutions\
+        \ may come with"
+      tags:
+      - My solutions
+  /api/solution/offers/mine:
+    get:
+      operationId: listOwnOffers
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OwnOffer"
+          description: The offers; none for a caller who belongs to no organization.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: "The offers the caller's organization wrote, by title"
+      tags:
+      - My solutions
+  /api/solution/offers/{id}:
+    delete:
+      operationId: deleteOwnOffer
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The offer is gone.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no organization.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization wrote no such offer.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A solution still comes with the offer.
+      security:
+      - session: []
+      summary: Delete an offer of the caller's organization no solution comes with
+      tags:
+      - My solutions
+    put:
+      operationId: saveOwnOffer
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveOffer"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OwnOffer"
+          description: "The offer as saved, with its new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The title is blank or too long, or the address is not an https\
+            \ one."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no organization.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization wrote no such offer.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The offer changed since it was read, or another reads the\
+            \ same."
+      security:
+      - session: []
+      summary: Save an offer of the caller's organization; its solutions show the
+        change at once
+      tags:
+      - My solutions
   /api/solution/solutions:
     get:
       operationId: listSolutions
@@ -11145,6 +11582,51 @@ components:
       - page
       - pageSize
       - total
+    AdminOffer:
+      type: object
+      description: "An offer as an operator reads it: GenAI Fund's, or an organization's\
+        \ own."
+      properties:
+        id:
+          type: string
+          format: uuid
+        organizationId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The organization that wrote it; null for an offer of GenAI
+            Fund's list.
+        organizationName:
+          type:
+          - string
+          - "null"
+          description: The name of that organization; null for an offer of GenAI Fund's
+            list.
+        solutions:
+          type: integer
+          format: int32
+          description: How many solutions come with it; it is deleted only when none
+            does.
+        title:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+        url:
+          type: string
+        version:
+          type: integer
+          format: int64
+          description: "Sent back with a save, which is refused when the offer changed\
+            \ since."
+      required:
+      - id
+      - solutions
+      - title
+      - updatedAt
+      - url
+      - version
     AdminOrganization:
       type: object
       description: One organization as an operator reviews it.
@@ -12919,6 +13401,10 @@ components:
           - solution.back
           - solution.feature
           - solution.unfeature
+          - solution.offers_choose
+          - solution.offer_create
+          - solution.offer_update
+          - solution.offer_delete
           - solution.deployment_approve
           - solution.deployment_reject
           - solution.deployment_withdraw
@@ -16304,6 +16790,29 @@ components:
       - keysCanBeStored
       - providers
       - reader
+    Offer:
+      type: object
+      description: "An offer a solution comes with, such as cloud credits."
+      properties:
+        fromGenAiFund:
+          type: boolean
+          description: True for an offer of GenAI Fund's list; false for one the organization
+            wrote.
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          description: "The line that names it, such as \"$1,000 in cloud credits\"\
+            ."
+        url:
+          type: string
+          description: The https address where it is claimed.
+      required:
+      - fromGenAiFund
+      - id
+      - title
+      - url
     Organization:
       type: object
       description: "An organization as the people who belong to it, and operators,\
@@ -16671,6 +17180,34 @@ components:
             $ref: "#/components/schemas/OrganizationMatch"
       required:
       - items
+    OwnOffer:
+      type: object
+      description: "An offer an organization wrote for its solutions, as its members\
+        \ read it."
+      properties:
+        id:
+          type: string
+          format: uuid
+        solutions:
+          type: integer
+          format: int32
+          description: How many of the organization's solutions come with it; it is
+            deleted only when none does.
+        title:
+          type: string
+        url:
+          type: string
+        version:
+          type: integer
+          format: int64
+          description: "Sent back with a save, which is refused when the offer changed\
+            \ since."
+      required:
+      - id
+      - solutions
+      - title
+      - url
+      - version
     PersonConnectedApp:
       type: object
       description: "An AI app someone connected to BeyondPilot, as operators see it."
@@ -17470,6 +18007,25 @@ components:
       - page
       - pageSize
       - total
+    PublicOffer:
+      type: object
+      description: "An offer a solution comes with, as anyone reads it."
+      properties:
+        fromGenAiFund:
+          type: boolean
+          description: "True for an offer of GenAI Fund's list, which its card marks;\
+            \ false for one the solution's organization wrote."
+        title:
+          type: string
+          description: "The line that names it, such as \"$1,000 in cloud credits\"\
+            ."
+        url:
+          type: string
+          description: The https address where it is claimed.
+      required:
+      - fromGenAiFund
+      - title
+      - url
     PublicOrganization:
       type: object
       description: An approved organization as anyone reads it.
@@ -17647,6 +18203,11 @@ components:
           - "null"
           description: Customers named by the company; these are not reviewed customer
             deployments.
+        offers:
+          type: array
+          description: "The offers it comes with, by title."
+          items:
+            $ref: "#/components/schemas/PublicOffer"
         organizationCompanySizeLabel:
           type:
           - string
@@ -17722,6 +18283,7 @@ components:
       - languages
       - listed
       - name
+      - offers
       - organizationName
       - organizationSlug
       - productNames
@@ -17820,6 +18382,11 @@ components:
           - scaled
         name:
           type: string
+        offers:
+          type: array
+          description: "The offers it comes with, by title; its card links to each."
+          items:
+            $ref: "#/components/schemas/PublicOffer"
         organizationName:
           type: string
         organizationSlug:
@@ -17837,6 +18404,7 @@ components:
       - focusAreas
       - industries
       - name
+      - offers
       - organizationName
       - organizationSlug
       - slug
@@ -19901,6 +20469,30 @@ components:
       - key
       - name
       - version
+    SaveOffer:
+      type: object
+      description: An offer as its form holds it.
+      properties:
+        title:
+          type: string
+          description: The line that names it on a card.
+          maxLength: 80
+          minLength: 0
+        url:
+          type: string
+          description: The https address where it is claimed.
+          maxLength: 2048
+          minLength: 0
+          pattern: "https://[^\\s]+"
+        version:
+          type:
+          - integer
+          - "null"
+          format: int64
+          description: The version the form read; left out for a new offer.
+      required:
+      - title
+      - url
     SaveOrganization:
       type: object
       description: The profile of an organization as its Profile screen holds it.
@@ -20236,6 +20828,15 @@ components:
           type: string
           maxLength: 120
           minLength: 0
+        offerIds:
+          type: array
+          description: "The offers it comes with, from the list GenAI Fund keeps;\
+            \ empty for none."
+          items:
+            type: string
+            format: uuid
+          maxItems: 5
+          minItems: 0
         problemsSolved:
           type:
           - string
@@ -20282,6 +20883,7 @@ components:
       - languages
       - listed
       - name
+      - offerIds
       - version
     SaveTalentProfile:
       type: object
@@ -20726,6 +21328,11 @@ components:
           - pilot
           - production
           - scaled
+        offers:
+          type: array
+          description: "The offers a solution comes with, by title."
+          items:
+            $ref: "#/components/schemas/SearchOffer"
         organizationLogoFileId:
           type:
           - string
@@ -20834,6 +21441,7 @@ components:
       - focusAreas
       - industries
       - kind
+      - offers
       - roles
       - skills
       - slug
@@ -20841,6 +21449,22 @@ components:
       - summary
       - technologies
       - title
+    SearchOffer:
+      type: object
+      description: An offer a solution in the results comes with.
+      properties:
+        fromGenAiFund:
+          type: boolean
+          description: True for an offer of GenAI Fund's list.
+        title:
+          type: string
+        url:
+          type: string
+          description: The https address where it is claimed.
+      required:
+      - fromGenAiFund
+      - title
+      - url
     SearchResults:
       type: object
       description: "One page of what matches, best first, with the counts of every\
@@ -21237,6 +21861,20 @@ components:
       required:
       - enabled
       - version
+    SetSolutionOffers:
+      type: object
+      description: "The offers a solution comes with, as an operator chooses them."
+      properties:
+        offerIds:
+          type: array
+          description: Offers of the list GenAI Fund keeps; empty for none.
+          items:
+            type: string
+            format: uuid
+          maxItems: 5
+          minItems: 0
+      required:
+      - offerIds
     SetTaskModel:
       type: object
       description: The model a task uses from now on.
@@ -21394,6 +22032,11 @@ components:
           - scaled
         name:
           type: string
+        offers:
+          type: array
+          description: "The offers it comes with, by title."
+          items:
+            $ref: "#/components/schemas/Offer"
         organizationId:
           type: string
           format: uuid
@@ -21484,6 +22127,7 @@ components:
       - languages
       - listed
       - name
+      - offers
       - organizationId
       - organizationName
       - slug

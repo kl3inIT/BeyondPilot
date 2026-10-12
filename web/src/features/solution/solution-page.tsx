@@ -48,6 +48,7 @@ import { CustomerDeploymentCard } from "./customer-deployment-card";
 import { deckAddress, useFileSize } from "./solution-deck";
 import { SolutionGallery } from "./solution-gallery";
 import { SolutionLogo } from "./solution-logo";
+import { OfferPanel } from "./solution-offers";
 import { SolutionSection } from "./solution-section";
 
 /** How many chips a heading group names before the rest waits under "+N more". */
@@ -668,6 +669,12 @@ function SolutionPage({ solution, editHref, introduction }: SolutionPageProps) {
                 </Button>
               )}
             </div>
+          )}
+          {solution.offers.length > 0 && (
+            <>
+              <Separator />
+              <OfferPanel offers={solution.offers} />
+            </>
           )}
           <Separator />
           <dl className="flex flex-col gap-3">

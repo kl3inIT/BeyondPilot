@@ -23,6 +23,34 @@ const lumenHealth = {
 };
 const organizations = [pocketPolicy, lumenHealth];
 
+// The offers GenAI Fund keeps. Policy Chat comes with one, so the gift on its card is the link itself;
+// Clinic Triage comes with two, so the gift opens their list.
+const cloudCredits = {
+  id: "0ffe7a11-0000-4000-8000-000000000001",
+  title: "$1,000 in cloud credits",
+  url: "https://offers.example/cloud-credits",
+  fromGenAiFund: true,
+};
+const supportHours = {
+  id: "0ffe7a11-0000-4000-8000-000000000002",
+  title: "Ten hours of onboarding support",
+  url: "https://offers.example/onboarding",
+  // Written by the organization of the solution, so it carries no mark of GenAI Fund.
+  fromGenAiFund: false,
+};
+export const offers = [cloudCredits, supportHours];
+const offersBySlug = {
+  "policy-chat": [cloudCredits],
+  "clinic-triage": [cloudCredits, supportHours],
+};
+/** The offers a solution comes with as the public reads them: what each is called and where it is claimed. */
+const offersOf = (slug) =>
+  (offersBySlug[slug] ?? []).map(({ title, url, fromGenAiFund }) => ({
+    title,
+    url,
+    fromGenAiFund,
+  }));
+
 function solution(organization, name, more) {
   return {
     slug: name.toLowerCase().replaceAll(" ", "-"),
@@ -156,6 +184,7 @@ const summaryOf = (item) => ({
   customerDeployments: deploymentsOf(item.slug).length,
   // GenAI Fund features one solution; the stub orders nothing by it.
   featured: item.slug === "policy-chat",
+  offers: offersOf(item.slug),
 });
 
 function person(name, more) {
@@ -367,7 +396,9 @@ export function answerDirectory(url) {
   if (area === "solution" && list === "solutions") {
     if (slug) {
       const found = [...solutions, unlisted].find((item) => item.slug === slug);
-      return found ? [200, { ...found, customerDeployments: deploymentsOf(slug) }] : missing;
+      return found
+        ? [200, { ...found, customerDeployments: deploymentsOf(slug), offers: offersOf(slug) }]
+        : missing;
     }
     const items = solutions.filter(
       (item) =>
@@ -445,6 +476,7 @@ export function directorySearchItems(url) {
     city: record.city ?? null,
     photoFileId: record.photoFileId ?? null,
     featured: record.featured ?? false,
+    offers: record.offers ?? [],
     coverFileId: solutions.find((entry) => entry.slug === record.slug)?.coverFileId ?? null,
     backing: null,
     projectCount: record.projectCount ?? null,
