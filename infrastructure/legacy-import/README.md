@@ -17,6 +17,7 @@ A one-off load of GenAI Fund's v1 export (startups and use cases) into BeyondPil
 | `enrich_images.py` | Writes the found logos and covers into the object store's layout and `images.sql` |
 | `usecase_extract.py`, `usecase_check.py` | Fill the imported use cases' empty fields from their v1 briefs, and approve them |
 | `passages.py` | Writes `passages.sql`: the saved website text of each imported solution as the passages search keeps for matching, without the lines every page of a site repeats |
+| `enterprises.py` | Reads the `enterprises` sheet of the full export and writes `enterprise-profiles.sql`, which completes the organizations the use cases' load made from a name and an industry |
 
 ## Run
 
@@ -66,6 +67,12 @@ After the load, empty parts of the imported records are filled from public sourc
 5. Rebuild the search index.
 
 The work folders hold the companies' pages and decks: they stay under `.tmp/` and are never committed.
+
+## People and enterprises of the full export
+
+GenAI Fund's full export of 8 October 2026 (`genai_platform_full_db_export_2026-10-08.xlsx`, 13 sheets named as the database's tables) adds the enterprises' profiles and who belongs to which company ([design](../../docs/increments/active/bey-74-v1-import/design.md#the-full-export), BEY-147). It is loaded in small steps, each on staging first and reported before the next.
+
+1. Enterprise profiles: `python -I infrastructure/legacy-import/enterprises.py <full-export.xlsx> <out>` writes `enterprise-profiles.sql` and prints the counts. On the host, after a dump: `docker compose exec -T postgres psql -U beyondpilot -d beyondpilot -v ON_ERROR_STOP=1 -f - < enterprise-profiles.sql`. It runs in one transaction, fills only what is empty on an organization that exists, and ends with a notice of how many it completed; a second run completes none.
 
 ## Passages for matching
 
