@@ -897,6 +897,8 @@ paths:
           - organization.member_remove
           - organization.merge
           - solution.approve
+          - solution.create
+          - solution.publish
           - solution.send_back
           - solution.reject
           - solution.take_down
@@ -7531,6 +7533,86 @@ paths:
       summary: "The submitted solutions, those waiting for review first"
       tags:
       - Solution administration
+    post:
+      operationId: createAdminSolution
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminCreateSolution"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Solution"
+          description: The draft.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The name is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The organization is not approved.
+      security:
+      - session: []
+      summary: Start a solution as a draft of an approved organization
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/organizations:
+    get:
+      operationId: listAdminSolutionOrganizations
+      parameters:
+      - in: query
+        name: q
+        required: false
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminSolutionOrganizationOption"
+          description: "The organizations, by name."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The approved organizations a solution can be started for, by name;\
+        \ at most 50"
+      tags:
+      - Solution administration
   /api/solution/admin/solutions/{id}:
     get:
       operationId: getAdminSolution
@@ -7662,6 +7744,110 @@ paths:
         \ programme and its funding"
       tags:
       - Solution administration
+  /api/solution/admin/solutions/{id}/draft:
+    get:
+      operationId: getAdminSolutionDraft
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Solution"
+          description: The draft.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution is not a draft.
+      security:
+      - session: []
+      summary: A draft as the editor of an operator reads it
+      tags:
+      - Solution administration
+    put:
+      operationId: saveAdminSolutionDraft
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveSolution"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Solution"
+          description: "The draft as saved, with its new version."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The draft changed since it was read, or the solution is not\
+            \ a draft."
+      security:
+      - session: []
+      summary: Save a draft as the editor of an operator holds it
+      tags:
+      - Solution administration
   /api/solution/admin/solutions/{id}/feature:
     post:
       operationId: featureSolution
@@ -7697,6 +7883,54 @@ paths:
       - session: []
       summary: "Feature a solution: it comes first in the opening view of the public\
         \ directory"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/{id}/publish:
+    post:
+      operationId: publishAdminSolution
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The solution is approved.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The draft lacks what a submission needs.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such solution.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The solution is not a draft. Or its organization is not approved.
+      security:
+      - session: []
+      summary: "Publish a draft at once, with no review"
       tags:
       - Solution administration
   /api/solution/admin/solutions/{id}/reject:
@@ -10638,6 +10872,22 @@ components:
       required:
       - name
       - type
+    AdminCreateSolution:
+      type: object
+      description: What an operator needs to start a solution for an organization.
+        It is created as a draft.
+      properties:
+        name:
+          type: string
+          maxLength: 120
+          minLength: 0
+        organizationId:
+          type: string
+          format: uuid
+          description: The approved organization the solution belongs to.
+      required:
+      - name
+      - organizationId
     AdminIntroduction:
       type: object
       description: "A request for an introduction as an operator reads it: the message\
@@ -12481,6 +12731,8 @@ components:
           - organization.member_remove
           - organization.merge
           - solution.approve
+          - solution.create
+          - solution.publish
           - solution.send_back
           - solution.reject
           - solution.take_down

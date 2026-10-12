@@ -11,9 +11,10 @@ import {
 import { useTranslations } from "next-intl";
 
 import { ChoiceChips } from "@/components/composites/choice-chips";
+import { ChoiceSelect } from "@/components/composites/choice-select";
+import { RequiredMark } from "@/components/composites/required-mark";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { CustomerDeployment } from "@/lib/api/generated";
@@ -26,6 +27,7 @@ import { deployments, focusAreas, industries, languages, maturities } from "./so
 import {
   fieldId,
   limits,
+  reviewFields,
   type HeldImage,
   type LinkField,
   type SolutionDraft,
@@ -68,6 +70,8 @@ function EditorField({
   children,
 }: EditorFieldProps) {
   const id = fieldId(field);
+  // What a review needs is what the editor asks for, so the asterisk follows that list.
+  const required = reviewFields.some((entry) => entry.field === field);
 
   return (
     <Field
@@ -77,6 +81,7 @@ function EditorField({
       <FieldLabel htmlFor={labelled ? id : undefined} id={`${id}-label`}>
         {icon && <span className="shrink-0 [&_svg]:size-4">{icon}</span>}
         {label}
+        {required && <RequiredMark />}
         {optional && <span className="text-xs font-normal text-muted-foreground">{optional}</span>}
       </FieldLabel>
       {children}
@@ -171,22 +176,16 @@ function BasicsStep({ draft, change, errorOf }: StepProps) {
         />
       </EditorField>
       <EditorField field="maturity" label={t("fields.maturity")} error={errorOf("maturity")}>
-        <NativeSelect
+        <ChoiceSelect
           id={fieldId("maturity")}
-          className="w-full"
+          options={maturities.map((value) => ({ value, label: maturity(value) }))}
           value={draft.maturity}
-          onChange={(event) => change({ maturity: event.target.value })}
+          onValueChange={(next) => change({ maturity: next })}
+          placeholder={t("fields.maturityPlaceholder")}
           aria-required
           aria-invalid={errorOf("maturity") ? true : undefined}
           aria-describedby={about("maturity", errorOf("maturity"), false)}
-        >
-          <NativeSelectOption value="">{t("fields.maturityPlaceholder")}</NativeSelectOption>
-          {maturities.map((value) => (
-            <NativeSelectOption key={value} value={value}>
-              {maturity(value)}
-            </NativeSelectOption>
-          ))}
-        </NativeSelect>
+        />
       </EditorField>
       <EditorField
         field="traction"
@@ -340,7 +339,8 @@ type EvidenceStepProps = StepProps & {
   solutionId: string;
   /** Where the deck is read, once the solution names the file the editor holds. */
   deckHref: string | undefined;
-  customerDeployments: CustomerDeployment[];
+  /** The projects customers put the solution to work in; null where an operator writes it, since the organization adds them. */
+  customerDeployments: CustomerDeployment[] | null;
   /** A link field was left: from then on, what is wrong with it is said under it. */
   onLinkLeft: (field: LinkField) => void;
   /** An image under the cover finished uploading. */
@@ -457,7 +457,9 @@ function EvidenceStep({
       </EditorField>
       {link("demoUrl", t("fields.demoUrlHint"), <CirclePlayIcon aria-hidden="true" />)}
       {link("website", t("fields.websiteHint"), <LinkIcon aria-hidden="true" />)}
-      <CustomerDeploymentsEditor solutionId={solutionId} deployments={customerDeployments} />
+      {customerDeployments && (
+        <CustomerDeploymentsEditor solutionId={solutionId} deployments={customerDeployments} />
+      )}
     </>
   );
 }

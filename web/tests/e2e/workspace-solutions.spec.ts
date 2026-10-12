@@ -240,9 +240,15 @@ test.describe("workspace solutions", () => {
     await expect(page.getByText("All fields are required unless marked Optional.")).toBeVisible();
     if (!isMobile) {
       await expect(page.getByText("Only Pocket Policy sees a draft")).toBeVisible();
-      await expect(
-        page.getByRole("navigation", { name: "Your solution" }).getByRole("button"),
-      ).toHaveText([/Basics/, /Who it is for/, /Evidence/, /Review and submit/]);
+      // The steps show where the person is; they are not a way to move, so none is a button.
+      const steps = page.getByRole("navigation", { name: "Your solution" });
+      await expect(steps.getByRole("listitem")).toHaveText([
+        /Basics/,
+        /Who it is for/,
+        /Evidence/,
+        /Review and submit/,
+      ]);
+      await expect(steps.getByRole("button")).toHaveCount(0);
     }
     await expectNoSeriousA11yViolations(page);
 
@@ -251,7 +257,8 @@ test.describe("workspace solutions", () => {
       await page.getByLabel("What it does").fill("Finds claims that do not add up.");
       await expect(page.getByText("32 / 600")).toBeVisible({ timeout: 1000 });
     }).toPass();
-    await page.getByLabel("Stage").selectOption({ label: "Prototype" });
+    await page.getByLabel("Stage").click();
+    await page.getByRole("option", { name: "Prototype" }).click();
     await page.getByLabel("Built with").fill("Python");
     await page.getByLabel("Built with").press("Enter");
     await expect(page.getByRole("button", { name: "Remove Python" })).toBeVisible();
@@ -293,11 +300,17 @@ test.describe("workspace solutions", () => {
     await page.getByRole("button", { name: "Continue" }).click();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Review and submit");
     await expect(page.getByRole("note").getByText("Ready to send for review")).toBeVisible();
-    await expect(page.getByText("Finds claims that do not add up.")).toBeVisible();
+    // Read back in the answers and on the preview card, so the first of them is enough.
+    await expect(page.getByText("Finds claims that do not add up.").first()).toBeVisible();
     await expect(page.getByText("Insurance", { exact: true })).toBeVisible();
     await expect(page.getByText("Not published yet").first()).toBeVisible();
+    // The card the directory would show is drawn from what was written, with its images.
+    await expect(page.getByRole("heading", { name: "Preview" })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
+    // It is not sent until the person says that what they wrote is right.
+    await expect(page.getByRole("button", { name: "Send for review" })).toBeDisabled();
+    await page.getByRole("checkbox", { name: /information above is accurate/ }).check();
     await page.getByRole("button", { name: "Send for review" }).click();
     const confirm = page.getByRole("alertdialog");
     await expect(confirm.getByRole("heading")).toHaveText("Send this solution for review?");
@@ -456,24 +469,6 @@ test.describe("workspace solutions", () => {
     expect(writes[1].body).toMatchObject({ deckFileId: null });
   });
 
-  test("a draft is deleted only after a confirmation", async ({ page, context, baseURL }) => {
-    await signInAs(context, "owner", baseURL!);
-    const changes = await answerDecisions(page, changesPath, 204);
-    await openEditor(page, fraudLens, "review");
-
-    await expect(async () => {
-      await page.getByRole("button", { name: "Delete draft…" }).click();
-      await expect(page.getByRole("alertdialog")).toBeVisible({ timeout: 1000 });
-    }).toPass();
-    const confirm = page.getByRole("alertdialog");
-    await expect(confirm.getByRole("heading")).toHaveText("Delete Fraud Lens?");
-    await confirm.getByRole("button", { name: "Delete draft" }).click();
-
-    await expect(page.getByText("Fraud Lens deleted.")).toBeVisible();
-    await expect(page).toHaveURL(list);
-    expect(changes).toEqual([{ call: `DELETE /api/solution/mine/${fraudLens}`, body: null }]);
-  });
-
   test("a solution in review, and one sent back, say so with what happens next", async ({
     page,
     context,
@@ -487,11 +482,12 @@ test.describe("workspace solutions", () => {
     await expect(page.getByRole("button", { name: "Save changes" }).first()).toBeDisabled();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Review");
     await expect(page.getByRole("button", { name: "Send for review" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Delete draft…" })).toHaveCount(0);
 
     await openEditor(page, quoteBot, "review");
     await expect(page.getByText("GenAI Fund sent this solution back")).toBeVisible();
     await expect(page.getByText("It is Policy Chat under another name.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send for review again" })).toBeDisabled();
+    await page.getByRole("checkbox", { name: /information above is accurate/ }).check();
     await expect(page.getByRole("button", { name: "Send for review again" })).toBeEnabled();
     await expectNoSeriousA11yViolations(page);
   });
@@ -568,7 +564,8 @@ test.describe("workspace solutions", () => {
     await expectNoSeriousA11yViolations(page);
     await dialog.getByLabel("Title").fill("Voice agent for claims");
     await dialog.getByLabel("Customer").fill("A retail bank in Vietnam");
-    await dialog.getByLabel("Stage").selectOption({ label: "In pilot" });
+    await dialog.getByLabel("Stage").click();
+    await page.getByRole("option", { name: "In pilot" }).click();
     await dialog.getByLabel("The business problem").fill("Callers waited ten minutes.");
     await dialog.getByLabel("What was deployed").fill("A voice agent on the claims line.");
     await dialog.getByLabel("Result (optional)").fill("Half of calls answered at once.");

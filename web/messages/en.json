@@ -923,6 +923,8 @@
         },
         "solution": {
           "approve": "Approved a solution",
+          "create": "Started a solution",
+          "publish": "Published a solution",
           "send_back": "Sent a solution back",
           "reject": "Refused or sent back a solution",
           "take_down": "Took a solution down",
@@ -1049,6 +1051,8 @@
         },
         "solution": {
           "approve": "Approved the solution <resource></resource>",
+          "create": "Started the solution <resource></resource>",
+          "publish": "Published the solution <resource></resource>",
           "send_back": "Sent the solution <resource></resource> back",
           "reject": "Rejected the solution <resource></resource>",
           "take_down": "Took the solution <resource></resource> down",
@@ -1390,6 +1394,19 @@
     },
     "solutions": {
       "metaTitle": "Solutions · BeyondPilot",
+      "create": {
+        "action": "Create solution",
+        "title": "Create a solution",
+        "lead": "You write it in the editor and publish it without a review. It belongs to the organization you choose.",
+        "organization": "Organization",
+        "organizationPlaceholder": "Select an organization",
+        "organizationRequired": "Choose an organization.",
+        "noOrganizations": "No organization is approved yet.",
+        "name": "Solution name",
+        "nameRequired": "Enter the solution's name.",
+        "cancel": "Cancel",
+        "submit": "Create and open editor"
+      },
       "title": "Solutions",
       "lead": "Every solution providers sent for review.",
       "columns": {
@@ -4226,7 +4243,8 @@
       "SOLUTION_INCOMPLETE": "Fill in the marked fields before sending for review.",
       "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review, approved, or refused for good.",
       "SOLUTION_NOT_EDITABLE": "This solution was refused for good and can no longer be changed.",
-      "SOLUTION_NOT_A_DRAFT": "Only a draft can be deleted.",
+      "SOLUTION_NOT_A_DRAFT": "This solution is not a draft any more.",
+      "SOLUTION_ORGANIZATION_NOT_APPROVED": "This organization is not approved yet, so it cannot have a solution.",
       "SOLUTION_NOT_AWAITING_REVIEW": "This solution has already been reviewed.",
       "SOLUTION_CHANGED_MEANWHILE": "Someone else changed this solution. Reload the page and try again.",
       "REQUEST_INVALID": "Check the marked fields and try again.",
@@ -4245,6 +4263,7 @@
     "done": {
       "saved": "Solution saved.",
       "submitted": "Sent to GenAI Fund for review.",
+      "published": "{name} is published.",
       "deleted": "{name} deleted.",
       "approved": "{name} is approved.",
       "rejected": "{name} is rejected.",
@@ -4607,6 +4626,7 @@
         "logo": "Add a logo.",
         "cover": "Add a cover image."
       },
+      "stepIncomplete": "Fill in the marked fields to continue.",
       "deck": {
         "empty": "Upload the deck",
         "limits": "PDF, up to 100 MB",
@@ -4632,11 +4652,21 @@
         "deploymentsWaiting": "{count} waiting for review",
         "deploymentsSentBack": "{count} sent back",
         "customerDeployments": "Customer deployments",
-        "listed": "List this solution in the public directory.",
+        "listed": "Show this solution in the public directory.",
         "readiness": {
           "missing": "Before you send it for review, add:",
           "ready": "Ready to send for review",
-          "note": "Review usually takes one or two working days, and the decision shows on this page."
+          "note": "Review usually takes one or two working days, and the decision shows on this page.",
+          "missingOperator": "Before you publish it, add:",
+          "readyOperator": "Ready to publish",
+          "noteOperator": "It is published at once, with no review."
+        },
+        "publish": "Publish",
+        "confirmPublish": {
+          "title": "Publish this solution?",
+          "lead": "It appears in the directory at once, with no review. The members of the organization are told that it is approved.",
+          "confirm": "Publish",
+          "cancel": "Keep editing"
         },
         "submit": "Send for review",
         "resubmit": "Send for review again",
@@ -4646,15 +4676,13 @@
           "confirm": "Send for review",
           "cancel": "Keep editing"
         },
-        "delete": "Delete draft…",
-        "confirmDelete": {
-          "title": "Delete {name}?",
-          "lead": "This cannot be undone.",
-          "confirm": "Delete draft",
-          "cancel": "Cancel"
-        },
         "images": "{count, plural, one {# image} other {# images}}",
-        "listedHint": "Turned off, anyone with the link can still open it."
+        "listedHint": "If you turn this off, it is not listed in the directory, but anyone with its link can still open it.",
+        "preview": {
+          "title": "Preview",
+          "unlisted": "This card is not shown in the directory while the option below is off."
+        },
+        "confirmAccurate": "I confirm that the information above is accurate."
       },
       "leave": {
         "title": "Leave without saving?",
