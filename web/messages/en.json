@@ -4277,7 +4277,7 @@
       "deploymentApproved": "{name} approved.",
       "deploymentRejected": "{name} sent back.",
       "shown": "{name} is listed in the directory.",
-      "hidden": "{name} is hidden from the directory.",
+      "hidden": "{name} is hidden from the directory. People with the link can still open it.",
       "linkCopied": "Link copied",
       "sentBack": "{name} sent back with what to change.",
       "takenDown": "{name} is taken down.",

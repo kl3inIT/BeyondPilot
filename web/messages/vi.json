@@ -4277,7 +4277,7 @@
       "deploymentApproved": "Đã duyệt {name}.",
       "deploymentRejected": "Đã trả lại {name}.",
       "shown": "{name} đã được đăng trong danh mục.",
-      "hidden": "{name} đã ẩn khỏi danh mục.",
+      "hidden": "{name} đã ẩn khỏi danh mục. Người có link vẫn mở được.",
       "linkCopied": "Đã sao chép liên kết",
       "sentBack": "Đã trả lại {name} kèm nội dung cần sửa.",
       "takenDown": "Đã gỡ {name} xuống.",

@@ -139,11 +139,19 @@ test.describe("workspace solutions", () => {
       "href",
       "/solutions/policy-chat",
     );
-    // Hiding asks first, and says what stays.
+    // Hiding runs at once, since showing it again undoes it: the toast says what stays and offers that.
+    await page.route("**/api/solution/mine/ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e11", (route) =>
+      route.request().method() === "GET"
+        ? route.fallback()
+        : route.fulfill({ status: 200, contentType: "application/json", body: "{}" }),
+    );
     await page.getByRole("menuitem", { name: "Hide from the directory" }).click();
-    const hiding = page.getByRole("alertdialog", { name: "Hide from the directory?" });
-    await expect(hiding.getByText("People with the link can still open it.")).toBeVisible();
-    await hiding.getByRole("button", { name: "Cancel" }).click();
+    await expect(
+      page.getByText(
+        "Policy Chat is hidden from the directory. People with the link can still open it.",
+      ),
+    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Undo" })).toBeVisible();
 
     // What is in review is read or edited; what was sent back is fixed and sent again.
     await page.getByRole("button", { name: "Actions for Claims Vision" }).click();
