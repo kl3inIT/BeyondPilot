@@ -89,18 +89,6 @@ type TalentFormProps = {
   suggestedName: string;
   /** What the side column shows above who can see the profile, such as where it stands. */
   aside?: ReactNode;
-  /**
-   * Set when a step of a proposal holds the form: it is drawn without its own card, review wording and
-   * actions, and its foot goes back, saves and leaves, or saves and goes on once a review would have
-   * what it needs.
-   */
-  embedded?: Embedded;
-};
-
-type Embedded = {
-  onBack: () => void;
-  onLeave: () => void;
-  onContinue: () => void;
 };
 
 /** What the form holds for a profile as it was last saved, or for none. */
@@ -150,9 +138,8 @@ function saved(profile: TalentProfile | null, suggestedName: string) {
  * combobox that narrows as one types (industries, languages), and skills are free words kept as
  * tags.
  */
-function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps) {
+function TalentForm({ profile, suggestedName, aside }: TalentFormProps) {
   const t = useTranslations("Talent.form");
-  const p = useTranslations("UseCaseProposal.wizard.profile");
   const role = useVocabulary("talentRole");
   const engagement = useVocabulary("engagement");
   const rateBand = useVocabulary("rateBand");
@@ -291,9 +278,7 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
       if (thenSubmit) {
         await submitMyTalentProfile();
       }
-      if (!embedded) {
-        notify.success(thenSubmit ? "Talent.done.submitted" : "Talent.done.saved");
-      }
+      notify.success(thenSubmit ? "Talent.done.submitted" : "Talent.done.saved");
       router.refresh();
       return true;
     } catch (error) {
@@ -328,46 +313,17 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
   ];
   const group = "scroll-mt-24 border-t pt-6 text-lg font-semibold";
 
-  /** The step goes on once the profile has what a proposal asks and what changed is saved. */
-  async function carryOn() {
-    const lackingNow = missingForReview();
-    if (lackingNow.size > 0) {
-      setInvalid(lackingNow);
-      focusField(
-        reviewFields.find((entry) => lackingNow.has(entry.field))?.id ?? "talent-headline",
-      );
-      return;
-    }
-    if (!dirty || (await save(false))) {
-      embedded?.onContinue();
-    }
-  }
-
-  async function leave() {
-    if (!dirty || (await save(false))) {
-      embedded?.onLeave();
-    }
-  }
-
   return (
     <form
       noValidate
       aria-labelledby="talent-form-title"
-      className={
-        embedded ? "flex flex-col gap-6" : "flex flex-col gap-6 lg:flex-row lg:items-start xl:gap-8"
-      }
+      className="flex flex-col gap-6 lg:flex-row lg:items-start xl:gap-8"
       onSubmit={(event) => {
         event.preventDefault();
         void save(false);
       }}
     >
-      <div
-        className={
-          embedded
-            ? "flex min-w-0 flex-1 flex-col gap-7"
-            : "flex min-w-0 flex-1 flex-col gap-7 rounded-3xl border bg-card p-5 md:p-10"
-        }
-      >
+      <div className="flex min-w-0 flex-1 flex-col gap-7 rounded-3xl border bg-card p-5 md:p-10">
         <div id={talentSections.profile} className="flex scroll-mt-24 flex-col gap-2">
           <h2 id="talent-form-title" className="text-3xl font-semibold tracking-title">
             {t("title")}
@@ -769,14 +725,8 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
         </Field>
       </div>
 
-      <div
-        className={
-          embedded
-            ? "flex min-w-0 flex-col gap-4"
-            : "flex min-w-0 flex-col gap-4 max-lg:contents lg:sticky lg:top-24 lg:w-80 lg:shrink-0"
-        }
-      >
-        {!embedded && aside}
+      <div className="flex min-w-0 flex-col gap-4 max-lg:contents lg:sticky lg:top-24 lg:w-80 lg:shrink-0">
+        {aside}
         <section
           aria-labelledby="talent-visibility"
           className="flex scroll-mt-24 flex-col gap-4 rounded-2xl border bg-card p-5"
@@ -809,102 +759,60 @@ function TalentForm({ profile, suggestedName, aside, embedded }: TalentFormProps
           </RadioGroup>
         </section>
 
-        {embedded ? (
-          <div className="flex flex-col gap-4">
-            {toAdd.length > 0 && (
-              <ReviewReadiness
-                missingTitle={p("readiness.missing")}
-                readyTitle={p("readiness.missing")}
-                note={p("readiness.note")}
-                missing={toAdd}
-                refused={reviewFields.some((entry) => invalid.has(entry.field))}
-              />
-            )}
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
+        <div className="sticky bottom-0 z-10 flex flex-col gap-4 rounded-2xl border bg-card p-5 lg:static">
+          {submittable && (
+            <ReviewReadiness
+              missingTitle={t("readiness.missing")}
+              readyTitle={t("readiness.ready")}
+              note={t("readiness.note")}
+              missing={toAdd}
+              refused={
+                invalid.has("name") || reviewFields.some((entry) => invalid.has(entry.field))
+              }
+            />
+          )}
+
+          <div className="flex flex-wrap items-center gap-3">
+            {submittable && (
               <Button
+                type="submit"
                 prominence="tertiary"
                 size="lg"
-                disabled={pending !== null}
-                onClick={() => void leave()}
+                pending={pending === "save"}
+                disabled={pending !== null || !dirty}
               >
-                {p("saveAndReturn")}
+                {t("saveDraft")}
               </Button>
-              <div className="flex items-center gap-3">
-                <Button
-                  prominence="tertiary"
-                  size="lg"
-                  disabled={pending !== null}
-                  onClick={embedded.onBack}
-                >
-                  {p("back")}
-                </Button>
-                <Button
-                  size="lg"
-                  pending={pending === "save"}
-                  disabled={pending !== null}
-                  onClick={() => void carryOn()}
-                >
-                  {p("continue")}
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="sticky bottom-0 z-10 flex flex-col gap-4 rounded-2xl border bg-card p-5 lg:static">
-            {submittable && (
-              <ReviewReadiness
-                missingTitle={t("readiness.missing")}
-                readyTitle={t("readiness.ready")}
-                note={t("readiness.note")}
-                missing={toAdd}
-                refused={
-                  invalid.has("name") || reviewFields.some((entry) => invalid.has(entry.field))
-                }
-              />
             )}
-
-            <div className="flex flex-wrap items-center gap-3">
-              {submittable && (
+            {dirty && <span className="text-sm text-muted-foreground">{t("unsaved")}</span>}
+            <div className="ml-auto flex flex-wrap items-center gap-3">
+              {submittable && toAdd.length > 0 && (
+                <TextButton className="max-sm:hidden" onClick={() => focusField(toAdd[0].id)}>
+                  {t("readiness.count", { count: toAdd.length })}
+                </TextButton>
+              )}
+              {submittable ? (
+                <Button
+                  size="lg"
+                  pending={pending === "submit"}
+                  disabled={pending !== null}
+                  onClick={() => save(true)}
+                >
+                  {t(returned ? "resubmit" : "submit")}
+                </Button>
+              ) : (
                 <Button
                   type="submit"
-                  prominence="tertiary"
                   size="lg"
                   pending={pending === "save"}
                   disabled={pending !== null || !dirty}
                 >
-                  {t("saveDraft")}
+                  {t("save")}
                 </Button>
               )}
-              {dirty && <span className="text-sm text-muted-foreground">{t("unsaved")}</span>}
-              <div className="ml-auto flex flex-wrap items-center gap-3">
-                {submittable && toAdd.length > 0 && (
-                  <TextButton className="max-sm:hidden" onClick={() => focusField(toAdd[0].id)}>
-                    {t("readiness.count", { count: toAdd.length })}
-                  </TextButton>
-                )}
-                {submittable ? (
-                  <Button
-                    size="lg"
-                    pending={pending === "submit"}
-                    disabled={pending !== null}
-                    onClick={() => save(true)}
-                  >
-                    {t(returned ? "resubmit" : "submit")}
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    size="lg"
-                    pending={pending === "save"}
-                    disabled={pending !== null || !dirty}
-                  >
-                    {t("save")}
-                  </Button>
-                )}
-              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
       <LeaveGuard
         active={dirty}
