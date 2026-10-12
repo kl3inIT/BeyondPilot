@@ -8,6 +8,7 @@ import { useId, useState } from "react";
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
+import { useAppForm } from "@/components/form/app-form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useNotify } from "@/hooks/use-notify";
@@ -228,36 +229,52 @@ function RemoveHost({
   );
 }
 
-/** Adds a host to the reviewed list. */
+/** Adds a host to the reviewed list. The field has no label of its own: the button names it. */
 function AddHost() {
   const t = useTranslations("Admin.mcp.setup.hosts");
   const change = useChange();
-  const [host, setHost] = useState("");
   const id = useId();
+  const form = useAppForm({
+    defaultValues: { host: "" },
+    onSubmit: async ({ value, formApi }) => {
+      const host = value.host.trim();
+      if (host) {
+        await change.run(async () => {
+          await addAppHost({ body: { host } });
+          formApi.reset();
+        });
+      }
+    },
+  });
   return (
     <form
+      id={form.formId}
       className="flex flex-col gap-2"
       onSubmit={(event) => {
         event.preventDefault();
-        if (host.trim()) {
-          void change.run(async () => {
-            await addAppHost({ body: { host: host.trim() } });
-            setHost("");
-          });
-        }
+        void form.handleSubmit();
       }}
     >
       <div className="flex gap-2">
-        <Input
-          aria-label={t("add")}
-          aria-describedby={`${id}-hint`}
-          value={host}
-          onChange={(event) => setHost(event.target.value)}
-          className="flex-1"
-        />
-        <Button type="submit" prominence="secondary" pending={change.pending}>
-          {t("add")}
-        </Button>
+        <form.Field name="host">
+          {(field) => (
+            <Input
+              aria-label={t("add")}
+              aria-describedby={`${id}-hint`}
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(event) => field.handleChange(event.target.value)}
+              className="flex-1"
+            />
+          )}
+        </form.Field>
+        <form.Subscribe selector={(state) => state.values.host.trim() === ""}>
+          {(blank) => (
+            <Button type="submit" prominence="secondary" disabled={blank} pending={change.pending}>
+              {t("add")}
+            </Button>
+          )}
+        </form.Subscribe>
       </div>
       <p id={`${id}-hint`} className="text-sm text-muted-foreground">
         {t("addHint")}
