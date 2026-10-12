@@ -908,6 +908,8 @@ paths:
           - solution.unfeature
           - solution.deployment_approve
           - solution.deployment_reject
+          - solution.deployment_withdraw
+          - solution.deployment_restore
           - solution.enrich
           - use_case.create
           - use_case.submit
@@ -7353,7 +7355,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The deployment is not waiting for review.
+          description: "The deployment is not waiting for review, or is withdrawn."
       security:
       - session: []
       summary: Approve a customer deployment that waits for review
@@ -7407,7 +7409,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The deployment is neither waiting for review nor approved.
+          description: "The deployment is neither waiting for review nor approved,\
+            \ or is withdrawn."
       security:
       - session: []
       summary: "Reject a customer deployment that waits for review, or take an approved\
@@ -8563,9 +8566,16 @@ paths:
               schema:
                 $ref: "#/components/schemas/Problem"
           description: There is no such customer deployment for this caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The solution was sent for review, so its deployments are withdrawn,\
+            \ not deleted."
       security:
       - session: []
-      summary: Remove a customer deployment
+      summary: Delete a customer deployment of a solution that is still a draft
       tags:
       - Customer deployments
     put:
@@ -8625,10 +8635,116 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The deployment changed since it was read.
+          description: "The deployment changed since it was read, or is withdrawn."
       security:
       - session: []
       summary: "Save a customer deployment, which sends it to review again"
+      tags:
+      - Customer deployments
+  /api/solution/mine/{solutionId}/deployments/{id}/restore:
+    post:
+      operationId: restoreCustomerDeployment
+      parameters:
+      - in: path
+        name: solutionId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerDeployment"
+          description: "The deployment, no longer withdrawn."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of an approved organization.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such customer deployment for this caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The deployment is not withdrawn, or the solution already lists\
+            \ as many as it may."
+      security:
+      - session: []
+      summary: Put a withdrawn customer deployment back on its solution with the review
+        it had
+      tags:
+      - Customer deployments
+  /api/solution/mine/{solutionId}/deployments/{id}/withdraw:
+    post:
+      operationId: withdrawCustomerDeployment
+      parameters:
+      - in: path
+        name: solutionId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerDeployment"
+          description: "The deployment, withdrawn: only its organization reads it."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of an approved organization.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such customer deployment for this caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The deployment is already withdrawn.
+      security:
+      - session: []
+      summary: "Take a customer deployment off its solution, keeping it and its review"
       tags:
       - Customer deployments
   /api/solution/solutions:
@@ -12742,6 +12858,8 @@ components:
           - solution.unfeature
           - solution.deployment_approve
           - solution.deployment_reject
+          - solution.deployment_withdraw
+          - solution.deployment_restore
           - solution.enrich
           - use_case.create
           - use_case.submit
@@ -13661,6 +13779,12 @@ components:
           format: int64
           description: "Sent back with a save, which is refused when the deployment\
             \ changed since."
+        withdrawnAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When its organization withdrew it; null while it is shown.
       required:
       - customer
       - delivered

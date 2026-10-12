@@ -37,8 +37,9 @@ type OrganizationFinderProps = {
 
 /**
  * How a person without an organization finds theirs: the one their email domain points at, then a
- * search by name. What happens on a click depends on the organization: joining at once on its
- * verified domain, asking its owners, or claiming one that nobody owns yet, which GenAI Fund reviews.
+ * search by name. What happens on a click depends on the organization: joining on its verified
+ * domain, asking its owners, or claiming one that nobody owns yet, which GenAI Fund reviews. Each
+ * is asked in one dialog first: joining shows the person to the organization's members at once.
  * Creating a new one is always offered beside it.
  */
 function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinderProps) {
@@ -103,14 +104,9 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
     }
   }
 
-  /** Joining by domain needs no words; a request or a claim is read by someone, so it may carry some. */
   function choose(match: OrganizationMatch) {
-    if (match.way === "join") {
-      void join(match);
-    } else {
-      setMessage("");
-      setAsking(match);
-    }
+    setMessage("");
+    setAsking(match);
   }
 
   const typed = query.trim().length >= 2;
@@ -118,8 +114,8 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
   const results = typed ? found : suggestion ? [suggestion] : null;
   const nothing = typed && found !== null && found.length === 0 && !searching;
   const only = results?.length === 1 ? results[0] : null;
-  // Joining by domain opens no dialog, so what is asked is a request or a claim.
-  const askingWay = asking?.way === "claim" ? "claim" : "request";
+  // Joining by domain needs no words; a request or a claim is read by someone, so it may carry some.
+  const askingWay = asking?.way ?? "request";
 
   return (
     <div
@@ -215,24 +211,32 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
               tone="info"
               icon={SendIcon}
               title={t(`ask.${askingWay}.title`, { name: asking.name })}
-              description={askingWay === "claim" ? t("ask.claim.lead") : undefined}
+              description={
+                askingWay === "claim"
+                  ? t("ask.claim.lead")
+                  : askingWay === "join"
+                    ? t("ask.join.lead")
+                    : undefined
+              }
             />
-            <Field>
-              <FieldLabel htmlFor="join-message">{t("ask.message")}</FieldLabel>
-              <Textarea
-                id="join-message"
-                rows={4}
-                maxLength={500}
-                value={message}
-                aria-describedby="join-message-hint"
-                onChange={(event) => setMessage(event.target.value)}
-              />
-              <FieldDescription id="join-message-hint">
-                {askingWay === "claim"
-                  ? t("ask.claim.messageHint")
-                  : t("ask.request.messageHint", { name: asking.name })}
-              </FieldDescription>
-            </Field>
+            {askingWay !== "join" && (
+              <Field>
+                <FieldLabel htmlFor="join-message">{t("ask.message")}</FieldLabel>
+                <Textarea
+                  id="join-message"
+                  rows={4}
+                  maxLength={500}
+                  value={message}
+                  aria-describedby="join-message-hint"
+                  onChange={(event) => setMessage(event.target.value)}
+                />
+                <FieldDescription id="join-message-hint">
+                  {askingWay === "claim"
+                    ? t("ask.claim.messageHint")
+                    : t("ask.request.messageHint", { name: asking.name })}
+                </FieldDescription>
+              </Field>
+            )}
             <DialogFooter variant="plain">
               <Button
                 size="lg"
@@ -242,7 +246,11 @@ function OrganizationFinder({ suggestion, embedded = false }: OrganizationFinder
               >
                 {t("ask.cancel")}
               </Button>
-              <Button size="lg" pending={pending !== null} onClick={() => join(asking, message)}>
+              <Button
+                size="lg"
+                pending={pending !== null}
+                onClick={() => join(asking, askingWay === "join" ? undefined : message)}
+              >
                 {t(`action.${askingWay}`)}
               </Button>
             </DialogFooter>

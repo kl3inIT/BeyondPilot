@@ -50,6 +50,15 @@ public enum SolutionErrorCode implements ErrorCode {
 	DEPLOYMENT_NOT_AWAITING_REVIEW("SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW", ErrorCategory.CONFLICT,
 			"This customer deployment is not waiting for review."),
 
+	DEPLOYMENT_NOT_DELETABLE("SOLUTION_DEPLOYMENT_NOT_DELETABLE", ErrorCategory.CONFLICT,
+			"A customer deployment that was sent for review is withdrawn, not deleted."),
+
+	DEPLOYMENT_WITHDRAWN("SOLUTION_DEPLOYMENT_WITHDRAWN", ErrorCategory.CONFLICT,
+			"This customer deployment is withdrawn. Restore it first."),
+
+	DEPLOYMENT_NOT_WITHDRAWN("SOLUTION_DEPLOYMENT_NOT_WITHDRAWN", ErrorCategory.CONFLICT,
+			"This customer deployment is not withdrawn."),
+
 	DEPLOYMENT_CHANGED_MEANWHILE("SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
 			"Someone else saved this customer deployment in the meantime. Reload it and make your changes again.");
 

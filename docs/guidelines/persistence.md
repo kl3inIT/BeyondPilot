@@ -32,6 +32,13 @@ A temporary runtime profile, command or endpoint is not a substitute for a missi
 - An entity that concurrent commands may change carries `@Version`, or every writer takes an explicit lock first.
 - Defer Querydsl or jOOQ until measured dynamic-query or type-safety pressure justifies them.
 
+## Deletion
+
+- Soft delete is not a default of every table. A record that others have seen or that GenAI Fund has approved changes status instead of being deleted: it carries the time it was taken down, withdrawn or closed, keeps its row and its history, leaves every public read, and can be restored.
+- A draft nobody else saw, and personal data its owner deletes, are really deleted.
+- Technical data (logs, expired tokens, delivered messages) is deleted by retention, not by a person.
+- What a person may do with each kind on the screen is in [Actions](../conventions.md#actions).
+
 ## Schema evolution
 
 - **Until the first staging deployment holds data**, migrations may be rewritten and local databases recreated. A pull request that rewrites a merged migration says so, because every developer must recreate their local database.

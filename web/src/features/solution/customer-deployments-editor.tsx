@@ -25,7 +25,9 @@ import { useVocabulary } from "@/i18n/vocabulary";
 import {
   addCustomerDeployment,
   deleteCustomerDeployment,
+  restoreCustomerDeployment,
   saveCustomerDeployment,
+  withdrawCustomerDeployment,
   type CustomerDeployment,
   type SaveCustomerDeployment,
 } from "@/lib/api/generated";
@@ -204,14 +206,23 @@ function DeploymentForm({ solutionId, deployment, onClose }: DeploymentFormProps
 
 type CustomerDeploymentsEditorProps = {
   solutionId: string;
+  /** True while the solution was never sent for review: nobody else read its deployments. */
+  draft: boolean;
   deployments: CustomerDeployment[];
 };
 
 /**
  * The customer deployments of a solution as its owners keep them: each with where its review
  * stands, and a form to add or change one. A change sends the deployment to review again.
+ * Removing one from a solution that was sent for review withdraws it: it runs at once, nobody is
+ * told, and the toast offers Undo; the deployment stays in the list, where it is restored later.
+ * On a draft nobody else read it, so it is really deleted, and that is asked once.
  */
-function CustomerDeploymentsEditor({ solutionId, deployments }: CustomerDeploymentsEditorProps) {
+function CustomerDeploymentsEditor({
+  solutionId,
+  draft,
+  deployments,
+}: CustomerDeploymentsEditorProps) {
   const t = useTranslations("Solution.deployments");
   const status = useVocabulary("reviewStatus");
   const reason = useVocabulary("deploymentRejection");
@@ -222,6 +233,8 @@ function CustomerDeploymentsEditor({ solutionId, deployments }: CustomerDeployme
   const [editing, setEditing] = useState<CustomerDeployment | null | undefined>(undefined);
   const [removing, setRemoving] = useState<CustomerDeployment | null>(null);
   const [pending, setPending] = useState(false);
+  // A withdrawn deployment does not take one of the places.
+  const listed = deployments.filter((deployment) => !deployment.withdrawnAt).length;
 
   async function remove(deployment: CustomerDeployment) {
     setPending(true);
@@ -237,6 +250,36 @@ function CustomerDeploymentsEditor({ solutionId, deployments }: CustomerDeployme
     }
   }
 
+  async function withdraw(deployment: CustomerDeployment) {
+    setPending(true);
+    try {
+      await withdrawCustomerDeployment({ path: { solutionId, id: deployment.id } });
+      notify.success(
+        "Solution.done.deploymentRemoved",
+        { name: deployment.title },
+        { undo: () => void restore(deployment) },
+      );
+      router.refresh();
+    } catch (error) {
+      notify.error(solutionError(error));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function restore(deployment: CustomerDeployment) {
+    setPending(true);
+    try {
+      await restoreCustomerDeployment({ path: { solutionId, id: deployment.id } });
+      notify.success("Solution.done.deploymentRestored", { name: deployment.title });
+      router.refresh();
+    } catch (error) {
+      notify.error(solutionError(error));
+    } finally {
+      setPending(false);
+    }
+  }
+
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -244,7 +287,7 @@ function CustomerDeploymentsEditor({ solutionId, deployments }: CustomerDeployme
           <h2 className="text-sm font-medium">{t("title")}</h2>
           <p className="text-sm text-muted-foreground">{t("lead")}</p>
         </div>
-        {deployments.length < MAX_DEPLOYMENTS ? (
+        {listed < MAX_DEPLOYMENTS ? (
           <Button prominence="secondary" size="sm" onClick={() => setEditing(null)}>
             <PlusIcon aria-hidden="true" />
             {t("add")}
@@ -279,19 +322,36 @@ function CustomerDeploymentsEditor({ solutionId, deployments }: CustomerDeployme
                   {deployment.decisionMessage && <> {deployment.decisionMessage}</>}
                 </p>
               )}
-              <div className="flex flex-wrap gap-2">
-                <Button prominence="secondary" size="sm" onClick={() => setEditing(deployment)}>
-                  {t("edit")}
-                </Button>
-                <Button
-                  prominence="tertiary"
-                  tone="danger"
-                  size="sm"
-                  onClick={() => setRemoving(deployment)}
-                >
-                  {t("remove")}
-                </Button>
-              </div>
+              {deployment.withdrawnAt ? (
+                <>
+                  <p className="text-sm text-muted-foreground">{t("withdrawn")}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      prominence="secondary"
+                      size="sm"
+                      disabled={pending || listed >= MAX_DEPLOYMENTS}
+                      onClick={() => void restore(deployment)}
+                    >
+                      {t("restore")}
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  <Button prominence="secondary" size="sm" onClick={() => setEditing(deployment)}>
+                    {t("edit")}
+                  </Button>
+                  <Button
+                    prominence="tertiary"
+                    tone="danger"
+                    size="sm"
+                    disabled={pending}
+                    onClick={() => (draft ? setRemoving(deployment) : void withdraw(deployment))}
+                  >
+                    {t("remove")}
+                  </Button>
+                </div>
+              )}
             </li>
           ))}
         </ul>

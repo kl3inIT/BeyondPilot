@@ -18,18 +18,22 @@ type OrganizationProfileEditorProps = {
 /**
  * An organization's profile for whoever may change it: it reads as facts until they choose to edit,
  * so a change is always meant. A save gives the page a new version, and the editor that the page
- * keys by it opens reading again.
+ * keys by it opens reading again. Cancel returns the focus to the button that opened the form.
  */
 function OrganizationProfileEditor({ organization, admin }: OrganizationProfileEditorProps) {
   const t = useTranslations("Organization.form");
   const [editing, setEditing] = useState(false);
+  const [cancelled, setCancelled] = useState(false);
 
   if (editing) {
     return (
       <OrganizationForm
         organization={organization}
         admin={admin}
-        onCancel={() => setEditing(false)}
+        onCancel={() => {
+          setCancelled(true);
+          setEditing(false);
+        }}
       />
     );
   }
@@ -37,7 +41,7 @@ function OrganizationProfileEditor({ organization, admin }: OrganizationProfileE
     <OrganizationProfileView
       organization={organization}
       action={
-        <Button prominence="secondary" onClick={() => setEditing(true)}>
+        <Button prominence="secondary" autoFocus={cancelled} onClick={() => setEditing(true)}>
           {t("edit")}
         </Button>
       }

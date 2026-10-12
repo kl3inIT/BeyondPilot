@@ -21,7 +21,7 @@ type AdminUseCaseFeatureProps = {
 
 /**
  * Features a use case, or stops featuring it. Nobody is emailed and nothing else about the use case
- * changes, so it asks for no confirmation: the other press undoes it.
+ * changes, so it runs at once and its toast offers Undo (docs/conventions.md › Actions).
  */
 function AdminUseCaseFeature({ id, title, featured, appearance }: AdminUseCaseFeatureProps) {
   const t = useTranslations("Admin.useCases.feature");
@@ -29,18 +29,15 @@ function AdminUseCaseFeature({ id, title, featured, appearance }: AdminUseCaseFe
   const router = useRouter();
   const [pending, setPending] = useState(false);
 
-  async function toggle() {
-    if (pending) {
-      return;
-    }
+  /** Features the use case or stops featuring it; what Undo sends offers no Undo of its own. */
+  async function feature(next: boolean, undoable: boolean) {
     setPending(true);
     try {
-      await (featured ? unfeatureAdminUseCase : featureAdminUseCase)({ path: { id } });
+      await (next ? featureAdminUseCase : unfeatureAdminUseCase)({ path: { id } });
       notify.success(
-        featured
-          ? "Admin.useCases.feature.done.unfeatured"
-          : "Admin.useCases.feature.done.featured",
+        next ? "Admin.useCases.feature.done.featured" : "Admin.useCases.feature.done.unfeatured",
         { name: title },
+        undoable ? { undo: () => void feature(!next, false) } : undefined,
       );
       router.refresh();
     } catch (error) {
@@ -53,6 +50,8 @@ function AdminUseCaseFeature({ id, title, featured, appearance }: AdminUseCaseFe
       setPending(false);
     }
   }
+
+  const toggle = () => (pending ? undefined : feature(!featured, true));
 
   if (appearance === "item") {
     return (

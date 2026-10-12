@@ -92,7 +92,13 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
       })
     : t("deadline.none");
   const proposalDeadline = useCase.closesAt
-    ? t("detail.open.closes", { when: format.relativeTime(new Date(useCase.closesAt)) })
+    ? t("detail.open.closes", {
+        when: format.dateTime(new Date(useCase.closesAt), {
+          month: "short",
+          day: "numeric",
+          timeZone: "Asia/Ho_Chi_Minh",
+        }),
+      })
     : t("detail.open.noDeadline");
   const sections = [
     ["problem", "problemStatement" as const],
@@ -176,7 +182,7 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
         </div>
 
         <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-6 shadow-sm lg:sticky lg:top-23 lg:w-75 lg:shrink-0 xl:w-95">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2">
             <Badge variant="success">{t("detail.open.status")}</Badge>
             <span className="text-sm text-muted-foreground">{proposalDeadline}</span>
           </div>
