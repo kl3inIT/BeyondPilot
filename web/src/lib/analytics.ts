@@ -36,4 +36,18 @@ function isTrackedPath(pathname: string): boolean {
   return listed && !privatePages.some((page) => page.test(pathname));
 }
 
-export { isTrackedPath, trackedSections };
+/**
+ * What a link to an apply or propose page leads to, as the parameters of the `apply_click` event:
+ * the kind of page and the program's slug or the use case's id. `pathname` may carry a locale prefix.
+ */
+function applyTarget(pathname: string): { content_type: string; item_id: string } | null {
+  const match = /^(?:\/[a-z]{2})?\/(programs|use-cases)\/([^/]+)\/(?:apply|propose)\/?$/.exec(
+    pathname,
+  );
+
+  return match
+    ? { content_type: match[1] === "programs" ? "program" : "use_case", item_id: match[2] }
+    : null;
+}
+
+export { applyTarget, isTrackedPath, trackedSections };

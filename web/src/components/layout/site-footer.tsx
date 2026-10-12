@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 
 import { BrandLockup } from "@/components/layout/brand-lockup";
+import { CookieSettings } from "@/components/layout/cookie-settings";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Link } from "@/i18n/navigation";
@@ -91,6 +92,7 @@ function SiteFooter() {
             <Link href={siteRoutes.terms} className={legalLinkClass}>
               {t("footer.terms")}
             </Link>
+            <CookieSettings className={`${legalLinkClass} cursor-pointer`} />
           </div>
           <div className="flex items-center gap-4">
             <LanguageSwitcher />

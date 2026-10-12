@@ -57,6 +57,7 @@
       "message": "We use cookies to keep the site working, improve your browsing experience and analyze our traffic. If you choose “Reject All”, only the necessary cookies are used. <privacy>Read more</privacy>",
       "accept": "Accept All",
       "decline": "Reject All",
+      "settings": "Cookie settings",
       "customize": "Customize",
       "preferences": {
         "title": "Cookie preferences",

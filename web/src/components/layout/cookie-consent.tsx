@@ -15,8 +15,49 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
-import { saveConsent } from "@/lib/analytics-consent";
+import { readConsent, saveConsent } from "@/lib/analytics-consent";
 import { siteRoutes } from "@/lib/site";
+
+/**
+ * The switches and the button that keeps them. It is mounted when the dialog opens, so it starts
+ * from the answer the visitor gave before, and saving again without a change keeps that answer.
+ */
+function CookiePreferencesForm({ onSaved }: { onSaved: () => void }) {
+  const t = useTranslations("Site.cookies.preferences");
+  const id = useId();
+  const [analytics, setAnalytics] = useState(() => readConsent() === "granted");
+
+  return (
+    <>
+      <FieldGroup>
+        <Field orientation="horizontal">
+          <Switch id={`${id}-necessary`} checked disabled />
+          <div className="flex flex-col gap-0.5">
+            <FieldLabel htmlFor={`${id}-necessary`}>{t("necessary")}</FieldLabel>
+            <FieldDescription>{t("necessaryHint")}</FieldDescription>
+          </div>
+        </Field>
+        <Field orientation="horizontal">
+          <Switch id={`${id}-analytics`} checked={analytics} onCheckedChange={setAnalytics} />
+          <div className="flex flex-col gap-0.5">
+            <FieldLabel htmlFor={`${id}-analytics`}>{t("analytics")}</FieldLabel>
+            <FieldDescription>{t("analyticsHint")}</FieldDescription>
+          </div>
+        </Field>
+      </FieldGroup>
+      <DialogFooter>
+        <Button
+          onClick={() => {
+            saveConsent(analytics ? "granted" : "denied");
+            onSaved();
+          }}
+        >
+          {t("save")}
+        </Button>
+      </DialogFooter>
+    </>
+  );
+}
 
 type CookiePreferencesProps = {
   open: boolean;
@@ -29,8 +70,6 @@ type CookiePreferencesProps = {
  */
 function CookiePreferences({ open, onOpenChange }: CookiePreferencesProps) {
   const t = useTranslations("Site.cookies.preferences");
-  const id = useId();
-  const [analytics, setAnalytics] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -39,25 +78,7 @@ function CookiePreferences({ open, onOpenChange }: CookiePreferencesProps) {
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
-        <FieldGroup>
-          <Field orientation="horizontal">
-            <Switch id={`${id}-necessary`} checked disabled />
-            <div className="flex flex-col gap-0.5">
-              <FieldLabel htmlFor={`${id}-necessary`}>{t("necessary")}</FieldLabel>
-              <FieldDescription>{t("necessaryHint")}</FieldDescription>
-            </div>
-          </Field>
-          <Field orientation="horizontal">
-            <Switch id={`${id}-analytics`} checked={analytics} onCheckedChange={setAnalytics} />
-            <div className="flex flex-col gap-0.5">
-              <FieldLabel htmlFor={`${id}-analytics`}>{t("analytics")}</FieldLabel>
-              <FieldDescription>{t("analyticsHint")}</FieldDescription>
-            </div>
-          </Field>
-        </FieldGroup>
-        <DialogFooter>
-          <Button onClick={() => saveConsent(analytics ? "granted" : "denied")}>{t("save")}</Button>
-        </DialogFooter>
+        <CookiePreferencesForm onSaved={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   );
@@ -108,4 +129,4 @@ function CookieConsent() {
   );
 }
 
-export { CookieConsent };
+export { CookieConsent, CookiePreferences };
