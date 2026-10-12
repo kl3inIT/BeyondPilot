@@ -139,6 +139,8 @@ Every test must identify the observable contract and the regression it would cat
 - Retries must not turn a flaky required test into accepted evidence. Classify the failure from diagnostics; do not weaken assertions or quarantine a test as a fix.
 - Coverage is a diagnostic, not a percentage gate.
 
+The web application names its three boundaries, a function in Node, a component with Testing Library and a flow in the browser, under [quality gates](#quality-gates).
+
 The boundary, context-reuse, parallelism and mutation principles are based on Philip Riecks' [Spring I/O 2026 talk](https://www.youtube.com/watch?v=DPi2Borv96I). Commands and gates are in the [testing guideline](guidelines/testing.md).
 
 ## API discovery and product boundaries
@@ -260,7 +262,7 @@ The browser application in `web/` follows [ADR 0002](decisions/0002-nextjs-front
 
 - Next.js 16 App Router with the React Compiler, React 19, TypeScript in strict mode, Tailwind CSS 4, shadcn/ui (`base-nova` style on Base UI primitives) and next-intl. New scaffolding comes from the official CLIs (`create-next-app`, `shadcn`); the lockfile is authoritative and upgrades are deliberate changes.
 - pnpm is installed directly, not through Corepack; `packageManager` in `web/package.json` records the version.
-- A library arrives with its first consumer, never ahead of it. A list is read by a Server Component from the parameters of the URL and drawn with the registry `table` through the `DataTable` composite; a write ends in a router refresh. The libraries in use are nuqs for URL state, TanStack Form with zod for forms, TanStack Table for every table of rows, in manual mode behind the `DataTableView` composite (the server sorts and pages; the library keeps the header state and the selection), Hey API for the generated client, and Vitest with Testing Library and MSW for unit tests. TanStack Query is the choice for server data a screen keeps in the browser (polling, optimistic updates, a draft that outlives navigation); no screen needs it yet, so it is not installed and arrives with its first consumer. Until then every write ends in a router refresh.
+- A library arrives with its first consumer, never ahead of it. A list is read by a Server Component from the parameters of the URL and drawn with the registry `table` through the `DataTable` composite; a write ends in a router refresh. The libraries in use are nuqs for URL state, TanStack Form with zod for forms, TanStack Table for every table of rows, in manual mode behind the `DataTableView` composite (the server sorts and pages; the library keeps the header state and the selection), Hey API for the generated client, and Vitest for unit tests, with Testing Library on jsdom for the tests of a component. MSW is not installed: it arrives with the first component test that needs an answer from the API. TanStack Query is the choice for server data a screen keeps in the browser (polling, optimistic updates, a draft that outlives navigation); no screen needs it yet, so it is not installed and arrives with its first consumer. Until then every write ends in a router refresh.
 
 ### Structure
 
@@ -417,6 +419,8 @@ One action has one word, on a button, a menu item, a link that acts and the `ari
 ### Quality gates
 
 - `pnpm check` runs ESLint (Next.js core web vitals, TypeScript, React Hooks including the React Compiler rules, and the `@shadcn/lint` rules), Prettier with Tailwind class sorting, `tsc`, the unit tests, the message-catalog check with the failure-code check ([API errors](#api-errors)) and knip.
-- Unit tests are Vitest files named `*.test.ts` next to what they test, run by `pnpm test:unit` in Node. They cover what a browser test reaches poorly: a function with many edge inputs, and the API client against stood-in answers.
-- `pnpm test:e2e` runs Playwright on desktop and mobile Chrome against the production build. Every spec runs axe and fails on any serious or critical WCAG 2.2 A/AA finding.
+- A web test is written at one of three boundaries, the narrowest that can catch the regression ([testing](#testing)); the name of the file says which. The first two are Vitest files next to what they test, run together by `pnpm test:unit`.
+  - **A function, in Node** (`*.test.ts`): a rule that needs no screen, such as a schema, a parser, the wording of a value, or the API client against stood-in answers. Pick it whenever the behavior can be asked of a function.
+  - **A component, with Testing Library** (`*.test.tsx`, drawn in jsdom): what one component does with its props and a person's clicks and keys, such as which element takes the focus, what a control is named and described by, what is written to the URL, what a dialog refuses while it sends. Pick it when the behavior is in the markup or in the state of a component and needs no layout, no navigation and no server. It draws through `render` of `src/test/render.tsx`, never Testing Library's own, and finds elements by role and name as a person does ([component tests](guidelines/testing.md#component-tests)).
+  - **A flow, in the browser with Playwright** (`tests/e2e`, `pnpm test:e2e`, on desktop and mobile Chrome against the production build): what needs a real browser or the whole application, such as routing, cookies and the session, layout and scrolling, a journey across pages. Every spec runs axe and fails on any serious or critical WCAG 2.2 A/AA finding.
 - Baseline security headers are set in `next.config.ts`. A strict Content Security Policy with nonces is a separate decision.
