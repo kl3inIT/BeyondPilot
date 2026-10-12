@@ -3,6 +3,9 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import type { AttachedFile, SubmittedApplication } from "@/lib/api/generated";
 import { chosenOptions } from "@/lib/chosen-options";
+import { cn } from "cn";
+
+import { linkedinAddress, mailAddress, phoneAddress, webAddress } from "./applicant-links";
 
 type Row = [string, React.ReactNode];
 
@@ -11,17 +14,16 @@ function fileHref(applicationId: string, file: AttachedFile) {
   return `/api/proposal/review/applications/${applicationId}/files/${file.fileId}`;
 }
 
-/**
- * A link an applicant gave, when it is a web address. The backend takes only https links, but an
- * answer is shown as it was stored, so anything else is shown as text and never becomes a link.
- */
-function webAddress(value: string): string | null {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" || url.protocol === "http:" ? url.href : null;
-  } catch {
-    return null;
-  }
+const link =
+  "font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:underline";
+
+/** A web address the applicant gave, opened in a tab of its own, away from the review. */
+function Outside({ href, children }: { href: string; children: string }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={link}>
+      {children}
+    </a>
+  );
 }
 
 function size(bytes: number) {
@@ -55,6 +57,25 @@ async function SubmittedRecord({
   ) => (!code ? none : words.has(`${set}.${code}`) ? words(`${set}.${code}`) : code);
   const contact = submitted.contact;
   const demo = submitted.demoUrl ? webAddress(submitted.demoUrl) : null;
+  const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ");
+  // What the applicant typed is a link only where it leads to what its row says; otherwise text.
+  const mail = mailAddress(submitted.email);
+  const email = mail ? (
+    <a href={mail} className={link}>
+      {submitted.email}
+    </a>
+  ) : (
+    submitted.email
+  );
+  const dial = contact.phone ? phoneAddress(contact.phone) : null;
+  const phone = dial ? (
+    <a href={dial} className={link}>
+      {contact.phone}
+    </a>
+  ) : (
+    (contact.phone ?? none)
+  );
+  const linkedin = contact.linkedin ? linkedinAddress(contact.linkedin) : null;
 
   const files: {
     label: string;
@@ -98,21 +119,22 @@ async function SubmittedRecord({
           t("applyingAs"),
           `${submitted.organizationName} · ${word("organizationType", submitted.organizationType)}`,
         ],
-        [
-          t("contact"),
-          [
-            [contact.firstName, contact.lastName].filter(Boolean).join(" "),
-            submitted.email,
-            contact.phone,
-          ]
-            .filter(Boolean)
-            .join(" · "),
-        ],
+        // One row each: the email and the phone are copied from here to reach the applicant.
+        [t("name"), name || none],
+        [t("email"), email],
+        [t("phone"), phone],
         [t("country"), word("country", submitted.country ?? contact.country)],
         ...(submitted.teamSize
           ? [[t("teamSize"), word("teamSize", submitted.teamSize)] as Row]
           : []),
-        ...(contact.linkedin ? [[t("linkedin"), contact.linkedin] as Row] : []),
+        ...(contact.linkedin
+          ? [
+              [
+                t("linkedin"),
+                linkedin ? <Outside href={linkedin}>{contact.linkedin}</Outside> : contact.linkedin,
+              ] as Row,
+            ]
+          : []),
         ...(submitted.website ? [[t("website"), submitted.website] as Row] : []),
         ...(submitted.teamBackground
           ? [[t("teamBackground"), submitted.teamBackground] as Row]
@@ -131,18 +153,7 @@ async function SubmittedRecord({
           ? [
               [
                 t("demoUrl"),
-                demo ? (
-                  <a
-                    href={demo}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:underline"
-                  >
-                    {submitted.demoUrl}
-                  </a>
-                ) : (
-                  submitted.demoUrl
-                ),
+                demo ? <Outside href={demo}>{submitted.demoUrl}</Outside> : submitted.demoUrl,
               ] as Row,
             ]
           : []),
@@ -222,7 +233,7 @@ async function SubmittedRecord({
                     href={item.link ?? fileHref(applicationId, item.file as AttachedFile)}
                     target={item.link ? "_blank" : undefined}
                     rel={item.link ? "noreferrer" : undefined}
-                    className="shrink-0 font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:underline"
+                    className={cn("shrink-0", link)}
                   >
                     {item.link ? t("openLink") : t("open")}
                   </a>
