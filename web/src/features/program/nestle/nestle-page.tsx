@@ -117,12 +117,12 @@ async function NestlePage({ program }: { program: Program }) {
                   </p>
                 )}
               </div>
-              {/* The key visual keeps its white ground, which is the tile it stands on. */}
+              {/* The photograph GenAI Fund chose for the program: Nestlé's logo on its building. */}
               <Image
-                src="/programs/nestle/key-visual.webp"
+                src="/programs/nestle/hero-photo.webp"
                 alt={t("hero.imageAlt")}
-                width={1100}
-                height={900}
+                width={880}
+                height={550}
                 priority
                 sizes="(min-width: 1024px) 26rem, (min-width: 640px) 24rem, 100vw"
                 className="h-auto w-full max-w-sm self-center rounded-3xl lg:w-104 lg:max-w-none"
