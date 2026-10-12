@@ -70,7 +70,6 @@ async function McpActivityPage({
       key: `${call.calledAt}-${index}`,
       at: call.calledAt,
       time: shortTime(at),
-      toolName: call.tool,
       fullTime: format.dateTime(at, { dateStyle: "full", timeStyle: "medium", hourCycle: "h23" }),
       person: call.personName ?? call.personEmail ?? t("goneAccount"),
       app: (
@@ -123,9 +122,8 @@ async function McpActivityPage({
       <McpAdminHeader current="activity" counts={counts} />
       <McpActivityToolbar apps={calls.apps} tools={calls.tools} />
 
-      {/* From 768px: a table. A click on the short time opens the full date and time, to the second. */}
+      {/* A click on the short time opens the full date and time, to the second. */}
       <DataTableRows
-        className="hidden md:flex"
         columns={[
           { id: "time", header: t("columns.time") },
           { id: "person", header: t("columns.person") },
@@ -161,26 +159,6 @@ async function McpActivityPage({
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per call, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.key} className="flex flex-col gap-1.5 border-b p-3 text-sm last:border-b-0">
-            <div className="flex items-center justify-between gap-3">
-              <span className="truncate font-medium">{row.person}</span>
-              {row.outcome}
-            </div>
-            <div className="flex items-center justify-between gap-3 text-muted-foreground">
-              {row.app}
-              <code className="text-xs">{row.toolName}</code>
-            </div>
-            <time dateTime={row.at} className="text-xs text-muted-foreground">
-              {row.time}
-            </time>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <ListFooter
         count={t("count", { count: calls.total })}

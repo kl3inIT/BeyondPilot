@@ -56,12 +56,12 @@ function ReviewersPage({
             defaultSort={sorted.defaultSort}
             columns={[
               { id: "reviewer", header: t("columns.reviewer"), layout: { fill: true } },
-              { id: "role", header: t("columns.role"), layout: { from: "sm" } },
+              { id: "role", header: t("columns.role") },
               { id: "status", header: t("columns.status") },
               {
                 id: "assessed",
                 header: t("columns.assessed"),
-                layout: { from: "sm", nowrap: true, descFirst: true },
+                layout: { nowrap: true, descFirst: true },
               },
               { id: "actions", header: <span className="sr-only">{t("columns.actions")}</span> },
             ]}

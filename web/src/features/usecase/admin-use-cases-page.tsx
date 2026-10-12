@@ -150,10 +150,9 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
       />
       <AdminUseCasesToolbar organizations={organizations} />
 
-      {/* From 768px: a table. The Updated column gives way first. */}
+      {/* The Updated column gives way first where the table is made to fit. */}
       <DataTableRows
         sortKeys={adminUseCaseSortKeys}
-        className="hidden md:flex"
         columns={[
           { id: "title", header: t("columns.useCase"), layout: { fill: true } },
           { id: "organization", header: t("columns.organization"), layout: { width: "md" } },
@@ -179,26 +178,6 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per use case, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-            <div className="flex items-start justify-between gap-3">
-              {row.title}
-              {row.actions}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-11 text-sm">
-              {row.status}
-              {row.organization}
-              <span className="text-muted-foreground">
-                {t("columns.closes")}: {row.closes}
-              </span>
-            </div>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <ListFooter
         count={

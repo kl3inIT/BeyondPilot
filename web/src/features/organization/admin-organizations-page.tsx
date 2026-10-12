@@ -134,10 +134,9 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       />
       <AdminOrganizationsToolbar countries={organizations.countries} />
 
-      {/* From 768px: a table. Who asked and when give way first, so the name keeps its room. */}
+      {/* Who asked and when give way first where the table is made to fit, so the name keeps its room. */}
       <DataTableRows
         sortKeys={adminOrganizationSortKeys}
-        className="hidden md:flex"
         columns={[
           { id: "name", header: t("columns.organization"), layout: { fill: true } },
           { id: "request", header: t("columns.request"), layout: { width: "md" } },
@@ -173,24 +172,6 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per organization, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-            <div className="flex items-start justify-between gap-3">
-              {row.organization}
-              {row.actions}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-11 text-sm">
-              {row.status}
-              {row.request}
-              {row.received}
-            </div>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <ListFooter
         count={t(queue ? "needReview" : "count", { count: organizations.total })}

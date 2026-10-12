@@ -106,57 +106,36 @@ function OrganizationSolutionsPage({
             />
           </div>
         ) : (
-          <>
-            {/* From 768px: a table. */}
-            <DataTableRows
-              className="hidden md:flex"
-              surface
-              sortKeys={sorted.sortKeys}
-              defaultSort={sorted.defaultSort}
-              columns={[
-                { id: "solution", header: t("columns.solution"), layout: { fill: true } },
-                { id: "status", header: t("columns.status"), layout: { width: "md" } },
-                { id: "listing", header: t("columns.listing"), layout: { width: "md" } },
-                {
-                  id: "updated",
-                  header: t("columns.updated"),
-                  layout: { width: "md", descFirst: true },
-                },
-                {
-                  id: "actions",
-                  header: <span className="sr-only">{t("columns.actions")}</span>,
-                  layout: { width: "action" },
-                },
-              ]}
-              rows={rows.map((row) => ({
-                id: row.id,
-                cells: {
-                  solution: row.name,
-                  status: row.status,
-                  listing: row.listing,
-                  updated: row.updated,
-                  actions: <div className="flex justify-end">{row.actions}</div>,
-                },
-              }))}
-            />
-
-            {/* Below 768px: one stacked row per solution, never a table scrolled sideways. */}
-            <ul className="overflow-hidden rounded-lg border bg-background md:hidden">
-              {rows.map((row) => (
-                <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-                  <div className="flex items-start justify-between gap-3">
-                    {row.name}
-                    {row.actions}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                    {row.status}
-                    {row.listing}
-                    {row.updated}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </>
+          <DataTableRows
+            surface
+            sortKeys={sorted.sortKeys}
+            defaultSort={sorted.defaultSort}
+            columns={[
+              { id: "solution", header: t("columns.solution"), layout: { fill: true } },
+              { id: "status", header: t("columns.status"), layout: { width: "md" } },
+              { id: "listing", header: t("columns.listing"), layout: { width: "md" } },
+              {
+                id: "updated",
+                header: t("columns.updated"),
+                layout: { width: "md", descFirst: true },
+              },
+              {
+                id: "actions",
+                header: <span className="sr-only">{t("columns.actions")}</span>,
+                layout: { width: "action" },
+              },
+            ]}
+            rows={rows.map((row) => ({
+              id: row.id,
+              cells: {
+                solution: row.name,
+                status: row.status,
+                listing: row.listing,
+                updated: row.updated,
+                actions: <div className="flex justify-end">{row.actions}</div>,
+              },
+            }))}
+          />
         )}
       </OrganizationSection>
       <OrganizationOffers offers={offers} editable={solutions.editable} />

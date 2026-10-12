@@ -115,10 +115,9 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
       />
       <ProgramsToolbar counts={list.counts} total={list.total} />
 
-      {/* From 768px: a table. The window gives way to the days on narrower desktops. */}
+      {/* The window gives way to the days on narrower desktops, where the table is made to fit. */}
       {/* Each row is the containing block of its link's overlay, so the overlay covers that row only. */}
       <DataTableRows
-        className="hidden md:flex"
         rowLinks
         sortKeys={list.sortKeys}
         defaultSort={list.defaultSort}
@@ -169,37 +168,6 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one card a program. */}
-      <ul className="flex flex-col gap-3 md:hidden">
-        {rows.map((row) => (
-          <li
-            key={row.program.id}
-            className="relative flex flex-col gap-2 rounded-xl border bg-card p-4"
-          >
-            <div className="flex items-start gap-3">
-              <Thumbnail program={row.program} alt="" />
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <Link
-                  href={row.href}
-                  className="text-sm font-medium outline-none after:absolute after:inset-0 focus-visible:underline"
-                >
-                  {row.program.name}
-                </Link>
-                <span className="text-xs text-muted-foreground">{row.kind}</span>
-              </div>
-              {row.state}
-            </div>
-            <span className={row.program.startsOn ? "text-xs" : "text-xs text-muted-foreground"}>
-              {row.runs}
-            </span>
-            <span className={row.quietWindow ? "text-xs text-muted-foreground" : "text-xs"}>
-              {row.window}
-            </span>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <p className="text-sm text-muted-foreground">
         {narrowed

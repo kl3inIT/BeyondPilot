@@ -43,7 +43,7 @@ function Rows({ rows }: RowsProps) {
   );
 }
 
-/** The people a proposal names with their roles: a table from 768px, stacked rows below. */
+/** The people a proposal names with their roles. */
 function ProposalTeamList({ team }: { team: ProposalTeamMember[] }) {
   const t = useTranslations("UseCaseProposal.received.detail.team");
   const people = team.map((member) => {
@@ -62,37 +62,21 @@ function ProposalTeamList({ team }: { team: ProposalTeamMember[] }) {
   });
 
   return (
-    <>
-      {/* From 768px: a table. */}
-      <DataTableRows
-        className="hidden md:flex"
-        columns={[
-          { id: "person", header: t("person"), layout: { fill: true } },
-          { id: "role", header: t("role") },
-          {
-            id: "primary",
-            header: <span className="sr-only">{t("primary")}</span>,
-            layout: { width: "md" },
-          },
-        ]}
-        rows={people.map((person) => ({
-          id: person.id,
-          cells: { person: person.who, role: person.role, primary: person.primary },
-        }))}
-      />
-      {/* Below 768px: stacked, never a table scrolled sideways. */}
-      <ul className="flex flex-col divide-y md:hidden">
-        {people.map((person) => (
-          <li key={person.id} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
-            {person.who}
-            <div className="flex flex-wrap items-center gap-2">
-              {person.role}
-              {person.primary}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </>
+    <DataTableRows
+      columns={[
+        { id: "person", header: t("person"), layout: { fill: true } },
+        { id: "role", header: t("role") },
+        {
+          id: "primary",
+          header: <span className="sr-only">{t("primary")}</span>,
+          layout: { width: "md" },
+        },
+      ]}
+      rows={people.map((person) => ({
+        id: person.id,
+        cells: { person: person.who, role: person.role, primary: person.primary },
+      }))}
+    />
   );
 }
 

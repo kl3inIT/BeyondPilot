@@ -93,10 +93,9 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
       />
       <TalentToolbar />
 
-      {/* From 768px: a table. The Headline column gives way first. */}
+      {/* The Headline column gives way first where the table is made to fit. */}
       <DataTableRows
         sortKeys={adminTalentSortKeys}
-        className="hidden md:flex"
         columns={[
           { id: "name", header: t("columns.person") },
           { id: "headline", header: t("columns.headline"), layout: { from: "xl" } },
@@ -118,23 +117,6 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
         }))}
         empty={empty}
       />
-
-      {/* Below 768px: one stacked row per profile, never a table scrolled sideways. */}
-      <ul className="overflow-hidden rounded-lg border md:hidden">
-        {rows.map((row) => (
-          <li key={row.id} className="flex flex-col gap-2 border-b p-3 last:border-b-0">
-            <div className="flex items-center justify-between gap-3">
-              {row.person}
-              {open(row)}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-11">
-              {row.status}
-              <span className="text-xs text-muted-foreground">{row.submitted}</span>
-            </div>
-          </li>
-        ))}
-        {empty && <li>{empty}</li>}
-      </ul>
 
       <ListFooter
         count={t("count", { count: talent.total })}
