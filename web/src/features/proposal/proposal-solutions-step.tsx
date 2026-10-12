@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { listMySolutions, type SolutionSummary } from "@/lib/api/generated";
 
