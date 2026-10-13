@@ -15,6 +15,7 @@ import {
 
 import { IconButton } from "@/components/actions/icon-button";
 import { TextButton } from "@/components/actions/text-button";
+import { PresenceItem, PresenceList } from "@/components/composites/presence-list";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Sheet, SheetClose, SheetContent } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -453,37 +454,40 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
     const view = views[section];
     return (
       <ul className="flex flex-col">
-        {sections[section].slice(0, view.shown).map((candidate) =>
-          candidate.id === removingId ? (
-            <li key={candidate.id} className="p-1">
-              <MatchingRemove
-                candidate={candidate}
-                pending={pending === candidate.id}
-                onCancel={() => setRemovingId(null)}
-                onRemove={(body) => void remove(candidate, body)}
-              />
-            </li>
-          ) : (
-            <MatchingRow
-              key={candidate.id}
-              candidate={candidate}
-              needs={needs}
-              selected={chosen?.id === candidate.id && (wide || sheetOpen)}
-              pending={pending === candidate.id}
-              reading={
-                running && stream.reading.includes(candidate.solutionId)
-                  ? "now"
-                  : reads && section === "waiting"
-                    ? "waiting"
-                    : undefined
-              }
-              arrived={seen.fresh.includes(candidate.id)}
-              onSelect={() => select(candidate)}
-              onShortlist={() => void shortlist(candidate)}
-              onRemove={() => askWhy(candidate)}
-            />
-          ),
-        )}
+        <PresenceList>
+          {sections[section].slice(0, view.shown).map((candidate) =>
+            candidate.id === removingId ? (
+              <PresenceItem key={candidate.id} className="p-1">
+                <MatchingRemove
+                  candidate={candidate}
+                  pending={pending === candidate.id}
+                  onCancel={() => setRemovingId(null)}
+                  onRemove={(body) => void remove(candidate, body)}
+                />
+              </PresenceItem>
+            ) : (
+              <PresenceItem key={candidate.id}>
+                <MatchingRow
+                  candidate={candidate}
+                  needs={needs}
+                  selected={chosen?.id === candidate.id && (wide || sheetOpen)}
+                  pending={pending === candidate.id}
+                  reading={
+                    running && stream.reading.includes(candidate.solutionId)
+                      ? "now"
+                      : reads && section === "waiting"
+                        ? "waiting"
+                        : undefined
+                  }
+                  arrived={seen.fresh.includes(candidate.id)}
+                  onSelect={() => select(candidate)}
+                  onShortlist={() => void shortlist(candidate)}
+                  onRemove={() => askWhy(candidate)}
+                />
+              </PresenceItem>
+            ),
+          )}
+        </PresenceList>
       </ul>
     );
   };

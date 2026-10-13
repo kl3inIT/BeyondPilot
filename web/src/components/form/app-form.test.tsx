@@ -1,5 +1,5 @@
 import { revalidateLogic } from "@tanstack/react-form";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, waitForElementToBeRemoved } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
@@ -88,7 +88,8 @@ describe("a form made with useAppForm", () => {
 
     await user.type(screen.getByLabelText("Email"), "x");
 
-    expect(screen.queryByText("The invitation was not sent.")).not.toBeInTheDocument();
+    // The message shrinks away before it leaves the page.
+    await waitForElementToBeRemoved(() => screen.queryByText("The invitation was not sent."));
     expect(screen.getByLabelText("Email")).toBeValid();
   });
 });

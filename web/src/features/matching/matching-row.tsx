@@ -25,7 +25,6 @@ import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { MatchingCandidate } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
-import { cn } from "@/lib/utils";
 
 import { SourceChip, StatusCounts } from "./matching-marks";
 import { rowQuoteOf, statusCounts, unreadOf, type Need } from "./matching-view";
@@ -88,15 +87,10 @@ function MatchingRow({
   const shortlisted = candidate.decision === "shortlisted";
 
   return (
-    <li
+    <div
       data-selected={selected}
       data-reading={reading}
-      className={cn(
-        "relative flex items-start gap-3 rounded-xl border border-transparent p-3 hover:bg-muted/50 data-[selected=true]:border-primary data-[selected=true]:bg-primary/5",
-        // Opacity and a short slide only: the rows under it take their place at once.
-        arrived &&
-          "animate-in ease-entrance animation-duration-200 fade-in slide-in-from-top-2 motion-reduce:animate-none",
-      )}
+      className="relative flex items-start gap-3 rounded-xl border border-transparent p-3 hover:bg-muted/50 data-[selected=true]:border-primary data-[selected=true]:bg-primary/5"
     >
       {arrived && (
         <span
@@ -205,7 +199,7 @@ function MatchingRow({
         )}
         {meta && <p className="text-xs text-muted-foreground">{meta}</p>}
       </div>
-    </li>
+    </div>
   );
 }
 

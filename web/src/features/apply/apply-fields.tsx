@@ -16,10 +16,8 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSet,
-  FieldTitle,
 } from "@/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { answerOfChosen, chosenOptions } from "@/lib/chosen-options";
 
 // The controls of the application form that the shared set lacks. Each is rendered inside
@@ -85,68 +83,6 @@ function NativeSelectField({
       {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
       {invalid && <FieldError id={errorId} errors={errors} />}
     </Field>
-  );
-}
-
-/**
- * One choice among a few, each with a line that says what it means. `detail` goes under the group
- * with its own error, for a choice that asks for more than the choice itself.
- */
-function ChoiceCardsField({
-  label,
-  description,
-  note,
-  options,
-  detail,
-}: {
-  label: string;
-  description?: ReactNode;
-  /** A line about the choice made, under the hint. */
-  note?: ReactNode;
-  options: (Option & { what: string })[];
-  detail?: ReactNode;
-}) {
-  const { field, invalid, errors, ids, required } = useFieldValidity<string>();
-  const { control: controlId, hint: hintId, error: errorId } = ids;
-  return (
-    <>
-      <Field data-invalid={invalid || undefined}>
-        <FieldLabel>{label}</FieldLabel>
-        <RadioGroup
-          id={controlId}
-          value={field.state.value}
-          onValueChange={(value) => field.handleChange(String(value))}
-          aria-label={label}
-          aria-required={required}
-          aria-describedby={describedBy(description && hintId, invalid && errorId)}
-        >
-          {options.map((option) => (
-            <FieldLabel key={option.value} htmlFor={`${controlId}-${option.value}`}>
-              <Field orientation="horizontal">
-                <FieldContent>
-                  <FieldTitle>{option.label}</FieldTitle>
-                  <FieldDescription>{option.what}</FieldDescription>
-                </FieldContent>
-                <RadioGroupItem
-                  value={option.value}
-                  id={`${controlId}-${option.value}`}
-                  aria-invalid={invalid || undefined}
-                />
-              </Field>
-            </FieldLabel>
-          ))}
-        </RadioGroup>
-        {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
-        {invalid && !detail && <FieldError id={errorId} errors={errors} />}
-        {note && <FieldDescription>{note}</FieldDescription>}
-      </Field>
-      {detail && (
-        <section className="flex flex-col gap-3">
-          {detail}
-          {invalid && <FieldError id={errorId} errors={errors} />}
-        </section>
-      )}
-    </>
   );
 }
 
@@ -305,4 +241,4 @@ function AgreementField({
   );
 }
 
-export { AgreementField, ChoiceCardsField, ChoicesField, NativeSelectField, Optional, PdfField };
+export { AgreementField, ChoicesField, NativeSelectField, Optional, PdfField };
