@@ -379,6 +379,8 @@
     "MATCHING_RUN_LIMIT": "Hôm nay bạn đã dùng hết lượt cho use case này. Hãy thử lại vào ngày mai.",
     "MATCHING_CANDIDATE_REMOVED": "Giải pháp này đã bị loại. Hãy khôi phục trước.",
     "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund đã loại giải pháp này nên chỉ GenAI Fund khôi phục được.",
+    "MATCHING_CANDIDATE_NOT_REMOVED": "Giải pháp này không còn bị loại nên không cần lý do.",
+    "MATCHING_REMOVED_BY_SOMEONE_ELSE": "Người khác đã loại giải pháp này; chỉ họ nêu được lý do.",
     "MATCHING_ALREADY_CANDIDATE": "Giải pháp này đã có trong danh sách của use case.",
     "MATCHING_OWN_SOLUTION": "Giải pháp này thuộc chính tổ chức sở hữu use case.",
     "MATCHING_SETTINGS_CHANGED": "Có người khác vừa đổi các thiết lập này. Hãy tải lại rồi thử lần nữa.",
@@ -1280,6 +1282,7 @@
           "candidate_add": "Thêm ứng viên bằng tay",
           "candidate_shortlist": "Lưu một ứng viên",
           "candidate_remove": "Loại một ứng viên",
+          "candidate_reason": "Nêu lý do đã loại một ứng viên",
           "candidate_restore": "Khôi phục một ứng viên",
           "settings_change": "Đổi giới hạn của matching"
         }
@@ -1417,6 +1420,7 @@
           "candidate_add": "Thêm ứng viên bằng tay cho use case <resource></resource>",
           "candidate_shortlist": "Lưu một ứng viên của use case <resource></resource>",
           "candidate_remove": "Loại một ứng viên của use case <resource></resource>",
+          "candidate_reason": "Nêu lý do đã loại một ứng viên của use case <resource></resource>",
           "candidate_restore": "Khôi phục một ứng viên của use case <resource></resource>",
           "settings_change": "Đổi giới hạn của matching"
         }
@@ -7481,6 +7485,44 @@
       "agreed": "Bạn đã đồng ý.",
       "said": "Bạn chọn: {group}.",
       "counts": "{n} câu trả lời, {d} không đồng ý"
+    },
+    "review": {
+      "view": {
+        "label": "Cách xem các giải pháp",
+        "one": "Từng cái một",
+        "list": "Danh sách"
+      },
+      "left": "Còn {left} trên {total}",
+      "group": "{group} · đáp ứng {met} trên {total} yêu cầu bắt buộc",
+      "actions": {
+        "label": "Quyết định cho {name}",
+        "save": "Lưu",
+        "remove": "Không phù hợp",
+        "later": "Để sau",
+        "undo": "Hoàn tác"
+      },
+      "last": {
+        "saved": "Đã lưu {name}.",
+        "removed": "{name} không phù hợp. Vì sao?",
+        "later": "{name} đã chuyển xuống cuối hàng."
+      },
+      "reasons": "Vì sao {name} không phù hợp",
+      "hint": "Phím: → lưu, ← không phù hợp, ↓ để sau, Z hoàn tác.",
+      "shared": "Nhóm của bạn và GenAI Fund thấy cùng một danh sách. Nhà cung cấp không được báo.",
+      "meanwhile": {
+        "shortlisted": "Trong lúc bạn xem, một người khác đã lưu giải pháp này.",
+        "removed": "Trong lúc bạn xem, một người khác đã loại giải pháp này."
+      },
+      "noDeck": "Giải pháp này không có trang deck nào để hiện.",
+      "summary": "Tóm tắt của AI",
+      "needs": "Những gì use case của bạn cần",
+      "end": {
+        "title": "Bạn đã xem hết các giải pháp.",
+        "reading": "Bạn đã xem hết các giải pháp đã đọc. AI vẫn đang đọc: giải pháp mới sẽ hiện ở đây.",
+        "saved": "{count, plural, =0 {Chưa lưu cái nào.} other {Đã lưu #.}}",
+        "list": "Xem danh sách"
+      },
+      "none": "Mọi giải pháp ở đây đã có quyết định. Thay đổi trong danh sách."
     }
   },
   "Messaging": {

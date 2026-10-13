@@ -379,6 +379,8 @@
     "MATCHING_RUN_LIMIT": "You have used every run for this use case today. Try again tomorrow.",
     "MATCHING_CANDIDATE_REMOVED": "This solution was removed. Restore it first.",
     "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund removed this solution, so only GenAI Fund can restore it.",
+    "MATCHING_CANDIDATE_NOT_REMOVED": "This solution is no longer removed, so it takes no reason.",
+    "MATCHING_REMOVED_BY_SOMEONE_ELSE": "Someone else removed this solution; only they can say why.",
     "MATCHING_ALREADY_CANDIDATE": "This solution is already on the list for this use case.",
     "MATCHING_OWN_SOLUTION": "This solution belongs to the organization that owns the use case.",
     "MATCHING_SETTINGS_CHANGED": "Someone else changed these settings. Reload and try again.",
@@ -1280,6 +1282,7 @@
           "candidate_add": "Added a candidate by hand",
           "candidate_shortlist": "Saved a candidate",
           "candidate_remove": "Removed a candidate",
+          "candidate_reason": "Said why a candidate was removed",
           "candidate_restore": "Restored a candidate",
           "settings_change": "Changed the limits of matching"
         }
@@ -1417,6 +1420,7 @@
           "candidate_add": "Added a candidate by hand to the use case <resource></resource>",
           "candidate_shortlist": "Saved a candidate of the use case <resource></resource>",
           "candidate_remove": "Removed a candidate of the use case <resource></resource>",
+          "candidate_reason": "Said why a candidate of the use case <resource></resource> was removed",
           "candidate_restore": "Restored a candidate of the use case <resource></resource>",
           "settings_change": "Changed the limits of matching"
         }
@@ -7481,6 +7485,44 @@
       "agreed": "You agreed.",
       "said": "You said: {group}.",
       "counts": "{n, plural, one {# answer} other {# answers}}, {d, plural, one {# disagrees} other {# disagree}}"
+    },
+    "review": {
+      "view": {
+        "label": "How to read the solutions",
+        "one": "One by one",
+        "list": "List"
+      },
+      "left": "{left} left of {total}",
+      "group": "{group} · meets {met} of {total} required",
+      "actions": {
+        "label": "Decide on {name}",
+        "save": "Save",
+        "remove": "Not a fit",
+        "later": "Later",
+        "undo": "Undo"
+      },
+      "last": {
+        "saved": "{name} is saved.",
+        "removed": "{name} is not a fit. Why?",
+        "later": "{name} moved to the end of the line."
+      },
+      "reasons": "Why {name} is not a fit",
+      "hint": "Keys: → save, ← not a fit, ↓ later, Z undo.",
+      "shared": "Your team and GenAI Fund see the same list. The provider is not told.",
+      "meanwhile": {
+        "shortlisted": "Someone saved this solution meanwhile.",
+        "removed": "Someone removed this solution meanwhile."
+      },
+      "noDeck": "No page of a deck to show for this solution.",
+      "summary": "AI summary",
+      "needs": "What your use case asks for",
+      "end": {
+        "title": "You have looked at every solution.",
+        "reading": "You have looked at every solution read so far. AI is still reading: new ones appear here.",
+        "saved": "{count, plural, =0 {None saved.} one {# saved.} other {# saved.}}",
+        "list": "See the list"
+      },
+      "none": "Every solution here has a decision. Change one from the list."
     }
   },
   "Messaging": {

@@ -335,6 +335,9 @@ public enum AuditAction {
 	/** {@code reason} is the code of the reason given. */
 	MATCHING_CANDIDATE_REMOVE("matching.candidate_remove", "solution", "reason"),
 
+	/** Someone said why they removed a candidate, after the removal. {@code reason} is the code of the reason. */
+	MATCHING_CANDIDATE_REASON("matching.candidate_reason", "solution", "reason"),
+
 	MATCHING_CANDIDATE_RESTORE("matching.candidate_restore", "solution"),
 
 	/** An operator changed the limits of matching. */
