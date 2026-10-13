@@ -7807,7 +7807,6 @@
         },
         "dialog": {
           "title": "Thêm thành viên vào đội ngũ",
-          "lead": "Chọn một người trong tổ chức và nhập vai trò của họ trong proposal này.",
           "person": "Người",
           "role": "Vai trò",
           "roleRequired": "Hãy nhập vai trò.",
@@ -7816,7 +7815,6 @@
         }
       },
       "pdf": {
-        "hint": "Một tệp PDF, tối đa 25 MB.",
         "needed": "Hãy tải proposal lên dưới dạng PDF."
       },
       "review": {
