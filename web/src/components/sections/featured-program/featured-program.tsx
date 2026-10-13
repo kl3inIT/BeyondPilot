@@ -109,7 +109,7 @@ function FeaturedProgram() {
               width={880}
               height={550}
               sizes="(min-width: 640px) 28rem, 100vw"
-              className="aspect-video w-full object-cover"
+              className="h-auto w-full"
             />
           </div>
           <DialogClose
