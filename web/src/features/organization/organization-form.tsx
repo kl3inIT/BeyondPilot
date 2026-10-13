@@ -11,6 +11,7 @@ import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard, onGuardEntry } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
+import { ChoiceCardsField } from "@/components/form/form-fields";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useNotify } from "@/hooks/use-notify";
@@ -18,6 +19,7 @@ import { getPathname } from "@/i18n/navigation";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import {
   createOrganization,
+  createOrganizationFromBasics,
   saveAdminOrganization,
   saveMyOrganization,
   type Organization,
@@ -32,6 +34,9 @@ import { OrganizationIndustriesField } from "./organization-industries-field";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
 import { OrganizationProfileSection } from "./organization-profile-section";
 import {
+  aloneBodyOf,
+  createsAlone,
+  creationSchema,
   givesCompanyFacts,
   profileBodyOf,
   profileRefusals,
@@ -40,11 +45,16 @@ import {
 } from "./organization-schemas";
 import { useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
 
+/** Who a person may create an organization for, in the order the create page offers them. */
+const creators = ["independent_builder", "builder_team", "company"] as const;
+
 type OrganizationFormProps = {
   /** The organization to change; without one the form creates it. */
   organization?: Organization;
   /** The name a new organization starts from: what the person typed in the finder. */
   initialName?: string;
+  /** The person's own name, which a new organization of one starts from. */
+  ownName?: string;
   /** Set when an operator changes the organization: the form then also holds its verified domain. */
   admin?: boolean;
   /** Leaves a saved profile unchanged and closes the form. */
@@ -56,8 +66,17 @@ type OrganizationFormProps = {
  * own. The backend decides what is valid; a member it rejects is marked here by its name. A new
  * organization is checked against those that exist when its name or its website is left, and what
  * may be the same one is named above the submit button, as a warning the person may pass.
+ *
+ * A new organization starts from who it is for. A builder on their own gives their name and their
+ * country and writes the rest on the profile later; a team or a company gives the whole profile.
  */
-function OrganizationForm({ organization, initialName, admin, onCancel }: OrganizationFormProps) {
+function OrganizationForm({
+  organization,
+  initialName = "",
+  ownName = "",
+  admin,
+  onCancel,
+}: OrganizationFormProps) {
   const t = useTranslations("Organization.form");
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
@@ -72,12 +91,15 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
   const [leaving, startLeaving] = useTransition();
   const [discarding, setDiscarding] = useState(false);
 
+  const rules: ReturnType<typeof creationSchema> = organization
+    ? profileSchema(t)
+    : creationSchema(t);
   const form = useAppForm({
     defaultValues: organization
       ? profileValuesOf(organization)
-      : { ...profileValuesOf(), name: initialName ?? "" },
+      : { ...profileValuesOf(), name: initialName },
     validationLogic: revalidateLogic(),
-    validators: { onDynamic: profileSchema(t) },
+    validators: { onDynamic: rules },
     // The domain is checked with the other fields, so every problem shows at once.
     onSubmitInvalid: () => {
       if (admin) {
@@ -104,7 +126,9 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
           notify.success("Organization.done.saved");
           startLeaving(() => router.refresh());
         } else {
-          await createOrganization({ body });
+          await (createsAlone(value.type)
+            ? createOrganizationFromBasics({ body: aloneBodyOf(value) })
+            : createOrganization({ body }));
           notify.success("Organization.done.created");
           const next = getPathname({ href: siteRoutes.workspaceOrganization, locale });
           // The entry the guard added to catch Back gives way to the organization's page.
@@ -132,6 +156,9 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
   const type = useStore(form.store, (state) => state.values.type);
   // A company gives its website, its industries and the year it started; anyone else may.
   const company = givesCompanyFacts(type);
+  // A new organization of one asks for a name and a country, and nothing else.
+  const alone = !organization && createsAlone(type);
+  const name = useStore(form.store, (state) => state.values.name);
   const pending = useStore(form.store, (state) => state.isSubmitting) || leaving;
   const changed =
     useStore(form.store, (state) => !state.isDefaultValue) ||
@@ -140,6 +167,19 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
   const dirty = !pending && changed;
   // A saved profile has nothing to save until it differs from what was saved.
   const unchanged = organization !== undefined && !pending && !changed;
+
+  const country = (
+    <form.AppField name="country">
+      {(field) => (
+        <field.SelectField
+          label={t("country")}
+          requiredMark
+          placeholder={t("countryPlaceholder")}
+          options={countryCodes.map((value) => ({ value, label: countryName(value) }))}
+        />
+      )}
+    </form.AppField>
+  );
 
   // The form's title is the page's on the create page; on the profile it sits under the organization's name.
   const Title = organization ? "h2" : "h1";
@@ -161,44 +201,77 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
         {!organization && <p className="text-muted-foreground">{t("createLead")}</p>}
       </div>
 
+      {!organization && (
+        <form.AppField
+          name="type"
+          listeners={{
+            onChange: ({ value, fieldApi }) => {
+              // The name follows the choice while it is still the one the page filled in.
+              const written = fieldApi.form.getFieldValue("name").trim();
+              const mine = createsAlone(value);
+              if (written === (mine ? initialName : ownName).trim()) {
+                fieldApi.form.setFieldValue("name", mine ? ownName : initialName);
+              }
+            },
+          }}
+        >
+          {() => (
+            <ChoiceCardsField
+              label={t("creator.label")}
+              note={alone && name.trim() ? t("creator.aloneNote", { name: name.trim() }) : null}
+              options={creators.map((value) => ({
+                value,
+                label: t(`creator.${value}.title`),
+                what: t(`creator.${value}.what`),
+              }))}
+            />
+          )}
+        </form.AppField>
+      )}
+
       <OrganizationProfileSection icon={Building2Icon} title={t("basics")}>
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
           <form.AppField
             name="name"
             listeners={
-              organization ? undefined : { onBlur: ({ value }) => existing.checkName(value) }
+              organization || alone
+                ? undefined
+                : { onBlur: ({ value }) => existing.checkName(value) }
             }
           >
             {(field) => (
               <field.TextField
-                label={t("name")}
+                label={t(alone ? "ownName" : "name")}
                 requiredMark
-                autoComplete="organization"
+                autoComplete={alone ? "name" : "organization"}
                 maxLength={120}
               />
             )}
           </form.AppField>
-          <form.AppField
-            name="website"
-            listeners={
-              organization ? undefined : { onBlur: ({ value }) => existing.checkWebsite(value) }
-            }
-          >
-            {(field) => (
-              <field.TextField
-                label={t("website")}
-                requiredMark={company}
-                optional={!company}
-                type="url"
-                inputMode="url"
-                autoComplete="url"
-                maxLength={300}
-                description={t(
-                  type === "independent_builder" ? "websiteHint" : "websiteFormatHint",
-                )}
-              />
-            )}
-          </form.AppField>
+          {alone && country}
+          {!alone && (
+            <form.AppField
+              name="website"
+              listeners={
+                organization ? undefined : { onBlur: ({ value }) => existing.checkWebsite(value) }
+              }
+            >
+              {(field) => (
+                <field.TextField
+                  label={t("website")}
+                  requiredMark={company}
+                  optional={!company}
+                  type="url"
+                  inputMode="url"
+                  autoComplete="url"
+                  maxLength={300}
+                  description={t(
+                    type === "independent_builder" ? "websiteHint" : "websiteFormatHint",
+                  )}
+                />
+              )}
+            </form.AppField>
+          )}
         </div>
         {/* An operator changes the verified domain in its own section below. */}
         {organization?.emailDomain && !admin && (
@@ -216,83 +289,81 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
             </p>
           </Field>
         )}
-        <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
-          <form.AppField name="type">
-            {(field) => (
-              <field.SelectField
-                label={t("type")}
-                requiredMark
-                options={organizationTypes.map((value) => ({ value, label: typeName(value) }))}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="teamSize">
-            {(field) => (
-              <field.SelectField
-                label={t("teamSize")}
-                requiredMark
-                placeholder={t("teamSizePlaceholder")}
-                options={teamSizes.map((value) => ({ value, label: sizeName(value) }))}
-              />
-            )}
-          </form.AppField>
-        </div>
-      </OrganizationProfileSection>
-
-      <OrganizationProfileSection icon={FileTextIcon} title={t("about")}>
-        <form.AppField name="industries">
-          {() => <OrganizationIndustriesField required={company} />}
-        </form.AppField>
-        <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
-          <form.AppField name="country">
-            {(field) => (
-              <field.SelectField
-                label={t("country")}
-                requiredMark
-                placeholder={t("countryPlaceholder")}
-                options={countryCodes.map((value) => ({ value, label: countryName(value) }))}
-              />
-            )}
-          </form.AppField>
-          <form.AppField name="foundedYear">
-            {(field) => (
-              <field.TextField
-                label={t("foundedYear")}
-                requiredMark={company}
-                optional={!company}
-                inputMode="numeric"
-                maxLength={4}
-                description={t(
-                  type === "independent_builder" ? "foundedYearHint" : "foundedYearFormatHint",
+        {!alone && (
+          <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
+            {/* A new organization says its type with the choice above. */}
+            {organization && (
+              <form.AppField name="type">
+                {(field) => (
+                  <field.SelectField
+                    label={t("type")}
+                    requiredMark
+                    options={organizationTypes.map((value) => ({ value, label: typeName(value) }))}
+                  />
                 )}
-              />
+              </form.AppField>
             )}
-          </form.AppField>
-        </div>
-        <div className="flex flex-col gap-x-6 gap-y-6 sm:flex-row">
-          <div className="sm:flex-1">
-            <form.AppField name="description">
+            <form.AppField name="teamSize">
               {(field) => (
-                <field.TextareaField
-                  label={t("description")}
+                <field.SelectField
+                  label={t("teamSize")}
                   requiredMark
-                  className="field-sizing-fixed h-28 resize-none"
-                  maxLength={MAX_DESCRIPTION}
-                  description={t("descriptionHint")}
+                  placeholder={t("teamSizePlaceholder")}
+                  options={teamSizes.map((value) => ({ value, label: sizeName(value) }))}
                 />
               )}
             </form.AppField>
           </div>
-          <form.Field name="logoFileId">
-            {(field) => (
-              <Field className="sm:w-28 sm:shrink-0">
-                <FieldLabel htmlFor="organization-logo">{t("logo.label")}</FieldLabel>
-                <OrganizationLogoUpload value={field.state.value} onChange={field.handleChange} />
-              </Field>
-            )}
-          </form.Field>
-        </div>
+        )}
       </OrganizationProfileSection>
+
+      {!alone && (
+        <OrganizationProfileSection icon={FileTextIcon} title={t("about")}>
+          <form.AppField name="industries">
+            {() => <OrganizationIndustriesField required={company} />}
+          </form.AppField>
+          <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
+            {country}
+            <form.AppField name="foundedYear">
+              {(field) => (
+                <field.TextField
+                  label={t("foundedYear")}
+                  requiredMark={company}
+                  optional={!company}
+                  inputMode="numeric"
+                  maxLength={4}
+                  description={t(
+                    type === "independent_builder" ? "foundedYearHint" : "foundedYearFormatHint",
+                  )}
+                />
+              )}
+            </form.AppField>
+          </div>
+          <div className="flex flex-col gap-x-6 gap-y-6 sm:flex-row">
+            <div className="sm:flex-1">
+              <form.AppField name="description">
+                {(field) => (
+                  <field.TextareaField
+                    label={t("description")}
+                    requiredMark
+                    className="field-sizing-fixed h-28 resize-none"
+                    maxLength={MAX_DESCRIPTION}
+                    description={t("descriptionHint")}
+                  />
+                )}
+              </form.AppField>
+            </div>
+            <form.Field name="logoFileId">
+              {(field) => (
+                <Field className="sm:w-28 sm:shrink-0">
+                  <FieldLabel htmlFor="organization-logo">{t("logo.label")}</FieldLabel>
+                  <OrganizationLogoUpload value={field.state.value} onChange={field.handleChange} />
+                </Field>
+              )}
+            </form.Field>
+          </div>
+        </OrganizationProfileSection>
+      )}
 
       {type === "builder_team" && (
         <form.AppField name="teamBackground">
@@ -325,7 +396,7 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
         </OrganizationProfileSection>
       )}
 
-      {!organization && (
+      {!organization && !alone && (
         <div aria-live="polite" className="empty:hidden">
           {existing.matches.length > 0 && <ExistingOrganizations matches={existing.matches} />}
         </div>

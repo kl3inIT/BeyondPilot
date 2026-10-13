@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { Organization, SaveOrganization } from "@/lib/api/generated";
+import type { Organization, SaveOrganization, SaveOrganizationBasics } from "@/lib/api/generated";
 
 import { organizationTypes } from "./organization-codes";
 import { MAX_TEAM_BACKGROUND, yearOf } from "./organization-format";
@@ -60,50 +60,85 @@ export function givesCompanyFacts(type: Organization["type"]): boolean {
   return type === "company";
 }
 
+const filled = (text: string) => text.trim() !== "";
+
+/** Each fact of the profile on its own, before what one fact asks of another. */
+function profileFacts(say: Say) {
+  return z.object({
+    name: z.string().refine(filled, say("nameRequired")),
+    website: z.string(),
+    type: z.enum(organizationTypes),
+    teamSize: z.string().min(1, say("teamSizeRequired")),
+    industries: z.array(z.string()),
+    country: z.string().min(1, say("countryRequired")),
+    foundedYear: z
+      .string()
+      .refine((text) => !filled(text) || yearOf(text) !== null, say("foundedYearInvalid")),
+    description: z.string().refine(filled, say("descriptionRequired")),
+    teamBackground: z.string().max(MAX_TEAM_BACKGROUND, say("teamBackgroundRequired")),
+    logoFileId: z.string(),
+  });
+}
+
 /**
  * What the form checks before it asks the backend: that every fact is there, and for a team or a
  * builder every fact but the three only a company must give. A year that is written is checked
  * whoever writes it. Whether the website is an address is the backend's to say.
  */
 export function profileSchema(say: Say) {
-  const filled = (text: string) => text.trim() !== "";
-  return z
-    .object({
-      name: z.string().refine(filled, say("nameRequired")),
-      website: z.string(),
-      type: z.enum(organizationTypes),
-      teamSize: z.string().min(1, say("teamSizeRequired")),
-      industries: z.array(z.string()),
-      country: z.string().min(1, say("countryRequired")),
-      foundedYear: z
-        .string()
-        .refine((text) => !filled(text) || yearOf(text) !== null, say("foundedYearInvalid")),
-      description: z.string().refine(filled, say("descriptionRequired")),
-      teamBackground: z.string().max(MAX_TEAM_BACKGROUND, say("teamBackgroundRequired")),
-      logoFileId: z.string(),
-    })
-    .superRefine((values, context) => {
-      if (values.type === "builder_team" && !filled(values.teamBackground)) {
-        context.addIssue({
-          code: "custom",
-          path: ["teamBackground"],
-          message: say("teamBackgroundRequired"),
-        });
+  return profileFacts(say).superRefine((values, context) => {
+    if (values.type === "builder_team" && !filled(values.teamBackground)) {
+      context.addIssue({
+        code: "custom",
+        path: ["teamBackground"],
+        message: say("teamBackgroundRequired"),
+      });
+    }
+    if (!givesCompanyFacts(values.type)) {
+      return;
+    }
+    const missing = {
+      website: !filled(values.website) && say("websiteRequired"),
+      industries: values.industries.length === 0 && say("industriesRequired"),
+      foundedYear: !filled(values.foundedYear) && say("foundedYearInvalid"),
+    };
+    for (const [field, message] of Object.entries(missing)) {
+      if (message) {
+        context.addIssue({ code: "custom", path: [field], message });
       }
-      if (!givesCompanyFacts(values.type)) {
-        return;
-      }
-      const missing = {
-        website: !filled(values.website) && say("websiteRequired"),
-        industries: values.industries.length === 0 && say("industriesRequired"),
-        foundedYear: !filled(values.foundedYear) && say("foundedYearInvalid"),
-      };
-      for (const [field, message] of Object.entries(missing)) {
-        if (message) {
-          context.addIssue({ code: "custom", path: [field], message });
-        }
-      }
-    });
+    }
+  });
+}
+
+/** Whether a new organization is a builder on their own, who is asked a name and a country only. */
+export function createsAlone(type: Organization["type"]): boolean {
+  return type === "independent_builder";
+}
+
+/**
+ * What the create page checks. A builder on their own gives a name and a country, and writes the
+ * rest of the profile later; a team or a company gives the whole profile.
+ */
+export function creationSchema(say: Say): z.ZodType<ProfileValues, ProfileValues> {
+  const whole = profileSchema(say);
+  const alone = profileFacts(say).pick({ name: true, country: true });
+  return z.custom<ProfileValues>().superRefine((values, context) => {
+    const checked = (createsAlone(values.type) ? alone : whole).safeParse(values);
+    for (const issue of checked.error?.issues ?? []) {
+      context.addIssue({ code: "custom", path: issue.path, message: issue.message });
+    }
+  });
+}
+
+/** What a builder on their own sends to be created: their name and country, as an organization of one. */
+export function aloneBodyOf(values: ProfileValues): SaveOrganizationBasics {
+  return {
+    name: values.name.trim(),
+    type: "independent_builder",
+    teamSize: "just_me",
+    industries: [],
+    country: values.country,
+  };
 }
 
 /** A fact of the profile the form may ask for, by its field. */

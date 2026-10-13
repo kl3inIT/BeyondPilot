@@ -3940,7 +3940,7 @@
     "form": {
       "metaTitle": "Create an organization · BeyondPilot",
       "createTitle": "Create your organization",
-      "createLead": "Independent builders can create a practice or team.",
+      "createLead": "Everyone takes part through an organization. On your own, yours is just you.",
       "profileTitle": "Organization profile",
       "edit": "Edit profile",
       "complete": "Complete profile",
@@ -4018,6 +4018,23 @@
       "existing": {
         "title": "Your organization may already be on BeyondPilot",
         "lead": "{count, plural, =1 {If this is yours, join it instead of creating it again. If yours is a different organization, continue below.} other {If one of these is yours, join it instead of creating it again. If yours is a different organization, continue below.}}"
+      },
+      "ownName": "Your name",
+      "creator": {
+        "label": "Who is this for?",
+        "independent_builder": {
+          "title": "Just me",
+          "what": "A builder on your own. Your name and your country, nothing more."
+        },
+        "builder_team": {
+          "title": "A team",
+          "what": "Two or more people, such as a student or hackathon team."
+        },
+        "company": {
+          "title": "A company",
+          "what": "A registered business, with its website and its industries."
+        },
+        "aloneNote": "You take part as {name} · Independent builder. A description, a website and a logo can be added later on your profile."
       }
     },
     "find": {

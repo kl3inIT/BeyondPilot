@@ -27,8 +27,10 @@ import {
   FieldDescription,
   FieldError,
   FieldLabel,
+  FieldTitle,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -386,6 +388,65 @@ function ComboboxField({
   );
 }
 
+type ChoiceCardsFieldProps = {
+  label: string;
+  description?: ReactNode;
+  /** A line about the choice made, under the hint. */
+  note?: ReactNode;
+  options: { value: string; label: string; what: string }[];
+  /** What a choice asks for beyond itself, under the group with the field's error. */
+  detail?: ReactNode;
+};
+
+/**
+ * One choice among a few, each on a card with a line that says what it means. Rendered inside
+ * `form.AppField`, which holds its value.
+ */
+function ChoiceCardsField({ label, description, note, options, detail }: ChoiceCardsFieldProps) {
+  const { field, invalid, errors, controlId, hintId, errorId, describedBy, required } =
+    useDescribedField<string>(description);
+  return (
+    <>
+      <Field data-invalid={invalid || undefined}>
+        <FieldLabel>{label}</FieldLabel>
+        <RadioGroup
+          id={controlId}
+          value={field.state.value}
+          onValueChange={(value) => field.handleChange(String(value))}
+          aria-label={label}
+          aria-required={required}
+          aria-describedby={describedBy}
+        >
+          {options.map((option) => (
+            <FieldLabel key={option.value} htmlFor={`${controlId}-${option.value}`}>
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldTitle>{option.label}</FieldTitle>
+                  <FieldDescription>{option.what}</FieldDescription>
+                </FieldContent>
+                <RadioGroupItem
+                  value={option.value}
+                  id={`${controlId}-${option.value}`}
+                  aria-invalid={invalid || undefined}
+                />
+              </Field>
+            </FieldLabel>
+          ))}
+        </RadioGroup>
+        {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
+        {invalid && !detail && <FieldError id={errorId} errors={errors} />}
+        {note && <FieldDescription>{note}</FieldDescription>}
+      </Field>
+      {detail && (
+        <section className="flex flex-col gap-3">
+          {detail}
+          {invalid && <FieldError id={errorId} errors={errors} />}
+        </section>
+      )}
+    </>
+  );
+}
+
 type CheckboxFieldProps = {
   label: string;
   disabled?: boolean;
@@ -460,6 +521,7 @@ function FormError() {
 export {
   AllRequired,
   CheckboxField,
+  ChoiceCardsField,
   ComboboxField,
   FormError,
   SelectField,
