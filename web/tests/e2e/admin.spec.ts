@@ -84,7 +84,7 @@ test.describe("admin", () => {
     ] as const) {
       await expect(main.getByRole("link", { name: queue })).toHaveAttribute("href", href);
       await expect(cells.filter({ hasText: queue }).getByRole("definition")).toContainText(
-        count === 0 ? "0Nothing waiting" : `${count}Open the queue`,
+        count === 0 ? "0Nothing waiting" : `${count}The oldest has waited 3 days`,
       );
     }
 
@@ -374,15 +374,17 @@ test.describe("admin", () => {
     ]);
     await expectNoSeriousA11yViolations(page);
 
-    await menu.getByRole("menuitem", { name: /^Appearance/ }).click();
-    await page.getByRole("menuitemradio", { name: "Dark" }).click();
+    // The submenus are driven from the keyboard: a mouse on its way to an item crosses the other
+    // submenu's trigger and the sidebar's links, which open or catch it while the page settles.
+    await menu.getByRole("menuitem", { name: /^Appearance/ }).press("Enter");
+    await page.getByRole("menuitemradio", { name: "Dark" }).press("Enter");
     await expect(page.locator("html")).toHaveClass(/dark/);
     await page.keyboard.press("Escape");
     await page.keyboard.press("Escape");
 
     menu = await openMenu();
-    await menu.getByRole("menuitem", { name: /^Language/ }).click();
-    await page.getByRole("menuitemradio", { name: "Tiếng Việt" }).click();
+    await menu.getByRole("menuitem", { name: /^Language/ }).press("Enter");
+    await page.getByRole("menuitemradio", { name: "Tiếng Việt" }).press("Enter");
     await expect(page).toHaveURL("/vi/admin");
     await expect(page.locator("html")).toHaveAttribute("lang", "vi");
 

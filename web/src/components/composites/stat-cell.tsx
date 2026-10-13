@@ -44,11 +44,13 @@ type StatCellProps = Omit<React.ComponentProps<"div">, "children"> & {
   quiet?: boolean;
   /** The odd cell out fills the row at phone width. */
   wide?: boolean;
+  /** What stands beside the figure, such as its `Sparkline`. */
+  aside?: React.ReactNode;
   /** The one line under the figure: what it is made of, or what to do about it. */
   children?: React.ReactNode;
 };
 
-/** One figure of a `StatStrip`: its label above it and one line below. */
+/** One figure of a `StatStrip`: its label above it, one line below, and room at its side. */
 function StatCell({
   label,
   value,
@@ -56,6 +58,7 @@ function StatCell({
   icon,
   quiet = false,
   wide = false,
+  aside,
   className,
   children,
   ...props
@@ -86,18 +89,21 @@ function StatCell({
           </Link>
         )}
       </dt>
-      <dd className="flex flex-col gap-1">
-        <span
-          className={cn(
-            "text-2xl tracking-tight tabular-nums",
-            quiet ? "font-normal text-muted-foreground" : "font-semibold",
+      <dd className="flex items-end justify-between gap-3">
+        <span className="flex min-w-0 flex-col gap-1">
+          <span
+            className={cn(
+              "text-2xl tracking-tight tabular-nums",
+              quiet ? "font-normal text-muted-foreground" : "font-semibold",
+            )}
+          >
+            {value}
+          </span>
+          {children !== undefined && (
+            <span className="text-xs text-muted-foreground">{children}</span>
           )}
-        >
-          {value}
         </span>
-        {children !== undefined && (
-          <span className="text-xs text-muted-foreground">{children}</span>
-        )}
+        {aside}
       </dd>
     </div>
   );

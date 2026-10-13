@@ -10,6 +10,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { TextButton } from "@/components/actions/text-button";
 import { ChartFrame } from "@/components/composites/chart-frame";
+import { Sparkline } from "@/components/composites/sparkline";
 import { StatCell, StatStrip } from "@/components/composites/stat-cell";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Progress } from "@/components/ui/progress";
@@ -18,17 +19,26 @@ import { usageOverviewAddress } from "@/features/ai/usage-search";
 import { applyFormatter } from "@/features/apply/apply-format";
 import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
-import type { AiUsageOverview, EmailCounts, ReviewProgram, SearchIndex } from "@/lib/api/generated";
+import type {
+  AiUsageOverview,
+  EmailCounts,
+  ReviewProgram,
+  SearchIndex,
+  TalentReviewQueue,
+} from "@/lib/api/generated";
 import { reviewProgramRoute, siteRoutes } from "@/lib/site";
 
+/** What every module answers of its review queue: now, the oldest, and the last 14 days. */
+type ReviewQueue = TalentReviewQueue;
+
 type AdminHomePageProps = {
-  /** How many records of each kind wait for a decision now. */
-  waiting: {
-    useCases: number;
-    solutions: number;
-    talent: number;
-    organizations: number;
-    deployments: number;
+  /** The review queue of each kind of record GenAI Fund decides on. */
+  queues: {
+    useCases: ReviewQueue;
+    solutions: ReviewQueue;
+    talent: ReviewQueue;
+    organizations: ReviewQueue;
+    deployments: ReviewQueue;
   };
   /** Every program with a submitted application, as the operator reviews it. */
   programs: ReviewProgram[];
@@ -39,12 +49,17 @@ type AdminHomePageProps = {
   index: SearchIndex;
 };
 
+/** Whole days since an instant, at the time of the request: the page is drawn once per request. */
+function daysSince(at: string) {
+  return Math.max(0, Math.floor((Date.now() - Date.parse(at)) / 86_400_000));
+}
+
 /**
  * Admin home: what waits for a decision, which programs have applications to read, and whether the
  * system is well (docs/increments/active/bey-175-admin-home). Every block is a way to the page
  * behind it. Nothing here moves but the chart as it draws: the page is opened many times a day.
  */
-async function AdminHomePage({ waiting, programs, usage, email, index }: AdminHomePageProps) {
+async function AdminHomePage({ queues, programs, usage, email, index }: AdminHomePageProps) {
   const [t, review, aiUsage, format, locale] = await Promise.all([
     getTranslations("Admin"),
     getTranslations("Review.programs"),
@@ -55,7 +70,7 @@ async function AdminHomePage({ waiting, programs, usage, email, index }: AdminHo
   const dates = applyFormatter(locale);
   const count = (value: number) => format.number(value);
 
-  const queues: { key: keyof typeof waiting; Icon: LucideIcon; href: string }[] = [
+  const cells: { key: keyof typeof queues; Icon: LucideIcon; href: string }[] = [
     { key: "useCases", Icon: LightbulbIcon, href: `${siteRoutes.adminUseCases}?status=in_review` },
     { key: "solutions", Icon: BoxesIcon, href: `${siteRoutes.adminSolutions}?status=in_review` },
     { key: "talent", Icon: UsersIcon, href: `${siteRoutes.adminTalent}?status=in_review` },
@@ -67,7 +82,7 @@ async function AdminHomePage({ waiting, programs, usage, email, index }: AdminHo
     // A deployment is reviewed on its solution; the list puts the solutions holding one first.
     { key: "deployments", Icon: RocketIcon, href: siteRoutes.adminSolutions },
   ];
-  const total = queues.reduce((sum, queue) => sum + waiting[queue.key], 0);
+  const total = cells.reduce((sum, cell) => sum + queues[cell.key].waiting, 0);
 
   // Once the outcomes are out there is nothing left to read.
   const open = programs.filter((program) => !program.released);
@@ -92,20 +107,26 @@ async function AdminHomePage({ waiting, programs, usage, email, index }: AdminHo
       />
 
       <StatStrip columns={5} aria-label={t("home.queues")}>
-        {queues.map(({ key, Icon, href }, position) => (
-          <StatCell
-            key={key}
-            label={t(`home.${key}`)}
-            value={count(waiting[key])}
-            href={href}
-            // The destination's icon in the sidebar, so the cell and the menu read as one place.
-            icon={<Icon aria-hidden="true" strokeWidth={1.75} className="size-4 shrink-0" />}
-            quiet={waiting[key] === 0}
-            wide={position === queues.length - 1}
-          >
-            {t(waiting[key] > 0 ? "home.review" : "home.none")}
-          </StatCell>
-        ))}
+        {cells.map(({ key, Icon, href }, position) => {
+          const { waiting, oldestSince, days } = queues[key];
+          return (
+            <StatCell
+              key={key}
+              label={t(`home.${key}`)}
+              value={count(waiting)}
+              href={href}
+              // The destination's icon in the sidebar, so the cell and the menu read as one place.
+              icon={<Icon aria-hidden="true" strokeWidth={1.75} className="size-4 shrink-0" />}
+              quiet={waiting === 0}
+              wide={position === cells.length - 1}
+              aside={<Sparkline values={days} quiet={days.every((day) => day === 0)} />}
+            >
+              {waiting > 0 && oldestSince
+                ? t("home.oldest", { days: daysSince(oldestSince) })
+                : t("home.none")}
+            </StatCell>
+          );
+        })}
       </StatStrip>
 
       <section aria-labelledby="home-applications" className="flex flex-col gap-3">

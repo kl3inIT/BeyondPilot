@@ -1,6 +1,6 @@
 # Admin home: every queue, the applications to judge and the state of the system
 
-Status: accepted on 13 October 2026; the first slice is being built ([plan](plan.md)). Tracked in Linear as BEY-175. It changes one screen and adds shared web components; the second slice adds one read-only endpoint to each module that owns a review queue. No new module and no new dependency between modules, so there is no boundary discovery.
+Status: accepted on 13 October 2026; both slices are built ([plan](plan.md)). Tracked in Linear as BEY-175. It changes one screen and adds shared web components; the second slice adds one read-only endpoint to each module that owns a review queue. No new module and no new dependency between modules, so there is no boundary discovery.
 
 The layout is the prototype Đạt approved on 13 October (`.tmp/admin-home.html`, not committed), less the two blocks it marked as needing larger reads, and corrected below where the code on `main` differs from what the prototype assumed. The rules it is built on are [conventions › Motion](../../../conventions.md#motion) and [Charts](../../../conventions.md#charts) (BEY-174), from the [research note](../../../research/2026-10-13-motion-and-charts.md).
 
@@ -62,23 +62,21 @@ Corrections to the prototype:
 
 ## Slice 2: a queue's history
 
-Each module that owns a queue answers one read, for operators only:
+Each module that owns a queue answers one read, for operators only. Đạt decided on 13 October that this increment adds it to every module, those of other owners included.
 
-`GET /api/<module>/admin/<records>/queue` answers `{ waiting, oldestSince, days: [{ day, waiting }] }`, with one entry for each of the last 14 days in `Asia/Ho_Chi_Minh`, today last.
+`GET …/queue` answers `{ waiting, oldestSince, from, days }`: how many wait now, when the one that has waited longest was sent, the first of the days, and how many waited at the end of each of the 14 days from `from` to today in `Asia/Ho_Chi_Minh`, today last and equal to `waiting`.
 
-| Module         | Address                                       | A record waits from … until …                |
-| -------------- | --------------------------------------------- | -------------------------------------------- |
-| `organization` | `/api/organization/admin/organizations/queue` | The request's creation until `decided_at`    |
-| `solution`     | `/api/solution/admin/solutions/queue`         | `submitted_at` until `decided_at`            |
-| `solution`     | `/api/solution/admin/deployments/queue`       | The deployment's creation until `decided_at` |
-| `talent`       | `/api/talent/admin/profiles/queue`            | `submitted_at` until `decided_at`            |
-| `usecase`      | `/api/usecase/admin/use-cases/queue`          | Its sending until its decision               |
+| Module         | Address                                       | A record waits from … until …                                                                                   |
+| -------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `organization` | `/api/organization/admin/organizations/queue` | A new organization from its creation until `decided_at`; a claim to own one from the request until its decision |
+| `solution`     | `/api/solution/admin/solutions/queue`         | `submitted_at` until `decided_at`                                                                               |
+| `solution`     | `/api/solution/admin/deployments/queue`       | The deployment's creation until `decided_at`, or until it is withdrawn                                          |
+| `talent`       | `/api/talent/admin/profiles/queue`            | `submitted_at` until `decided_at`                                                                               |
+| `usecase`      | `/api/usecase/admin/use-cases/queue`          | `submitted_at` until `reviewed_at`, while it has not closed                                                     |
 
-It is computed when read, from what the row keeps: a record counts as waiting on a day when it was sent on or before that day and was undecided at the day's end. A row keeps only its last sending and its last decision, so a record sent back and sent again loses its first wait: the history is exact for today and an approximation behind it, good for a direction and not for an audit. The columns each table keeps are to be read again when the slice starts. No snapshot table and no scheduler: the alternative, a count written every night, would be exact but would show nothing for its first 14 days and adds a job to every module.
+It is computed when read, from what the row keeps: a record counts as waiting on a day when it was sent before that day ended and was still waiting, or decided only after, at its end. A row keeps only its last sending and its last decision, so a record sent back and sent again loses its first wait, and an organization sent back counts from its creation: the history is exact for today and an approximation behind it, good for a direction and not for an audit. An organization waiting both as new and on a claim counts once. No snapshot table and no scheduler: the alternative, a count written every night, would be exact but would show nothing for its first 14 days and adds a job to every module. No migration was needed: every table already keeps the two moments.
 
-The home then reads `queue` instead of the lists, each cell gains "Oldest: n days" and a small chart, and the small chart's component is written with it.
-
-**Open, for the owner.** Solution and talent are Việt's and use case is Nhật's. The read is additive and read-only (a repository query, a service method, a controller method and a record in `dto`), but it lands in their modules. Either this increment adds it there, or each owner does and the home follows.
+Each queue cell then shows "The oldest has waited n days" and the queue's `Sparkline` from 768px, drawn in grey when nothing waited in the 14 days.
 
 ## How slice 1 is built
 
@@ -100,17 +98,17 @@ Motion: the cells change colour on hover in `duration-fast`; the chart draws in 
 
 ## Decisions
 
-| Decision                                                          | Why                                                                                                                       |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| One strip with hairlines, not a card a queue                      | Five bordered cards on a white page read as five unrelated things. Dub's stat tabs and our own usage totals are one band  |
-| The label above the number                                        | The reader learns what it is before how many, as in Dub's stat tab and in the usage totals                                |
-| Two slices                                                        | The first needs no endpoint and can ship; the second changes five endpoints in four modules, three of them other people's |
-| No trend on some queues before all have one                       | A strip where two cells have a chart and three do not reads as broken                                                     |
-| History computed from the rows, not a nightly count               | See [slice 2](#slice-2-a-queues-history)                                                                                  |
-| Recharts' `monotone` for the small chart, not Dub's natural curve | Tried in the prototype on queues of 0 to 8: the natural curve overshoots and draws values the data does not have          |
-| No counting numbers on the home                                   | The numbers change only when the page is loaded again, so the animation would never be seen                               |
-| "Submitted and decided by week" and "records by status" left out  | Each needs a larger read than slice 2's, and the site is days old: both would draw almost nothing                         |
-| The whole page fails when one read fails                          | See the failure list above                                                                                                |
+| Decision                                                          | Why                                                                                                                            |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| One strip with hairlines, not a card a queue                      | Five bordered cards on a white page read as five unrelated things. Dub's stat tabs and our own usage totals are one band       |
+| The label above the number                                        | The reader learns what it is before how many, as in Dub's stat tab and in the usage totals                                     |
+| Two slices                                                        | The first needs no endpoint and could ship alone; the second adds five endpoints in four modules, three of them other people's |
+| No trend on some queues before all have one                       | A strip where two cells have a chart and three do not reads as broken                                                          |
+| History computed from the rows, not a nightly count               | See [slice 2](#slice-2-a-queues-history)                                                                                       |
+| Recharts' `monotone` for the small chart, not Dub's natural curve | Tried in the prototype on queues of 0 to 8: the natural curve overshoots and draws values the data does not have               |
+| No counting numbers on the home                                   | The numbers change only when the page is loaded again, so the animation would never be seen                                    |
+| "Submitted and decided by week" and "records by status" left out  | Each needs a larger read than slice 2's, and the site is days old: both would draw almost nothing                              |
+| The whole page fails when one read fails                          | See the failure list above                                                                                                     |
 
 ## Left out
 

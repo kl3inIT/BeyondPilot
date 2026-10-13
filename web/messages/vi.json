@@ -1950,7 +1950,6 @@
       "solutions": "Giải pháp chờ duyệt",
       "talent": "Hồ sơ nhân lực chờ duyệt",
       "deployments": "Triển khai khách hàng chờ duyệt",
-      "review": "Mở hàng chờ, chờ lâu nhất ở trên",
       "none": "Không có gì đang chờ",
       "queues": "Đang chờ duyệt",
       "useCases": "Use case chờ duyệt",
@@ -1978,7 +1977,8 @@
           "upToDate": "Hồ sơ khách tìm được · đã cập nhật",
           "behind": "Hồ sơ khách tìm được · {waiting} đang chờ, {heldBack} bị giữ lại"
         }
-      }
+      },
+      "oldest": "{days, plural, =0 {Hồ sơ lâu nhất gửi hôm nay} other {Hồ sơ lâu nhất đã chờ # ngày}}"
     },
     "useCases": {
       "metaTitle": "Use case · BeyondPilot",

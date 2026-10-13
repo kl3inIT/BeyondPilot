@@ -16,6 +16,8 @@ import {
   type PublicTalent,
   type PublicTalentList,
   type SentTalentEnquiry,
+  getTalentReviewQueue,
+  type TalentReviewQueue,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 import { maxSearchPage } from "@/lib/page-size";
@@ -149,4 +151,10 @@ export async function readAdminTalent(id: string): Promise<AdminTalent | null> {
   } catch (error) {
     return absent(error);
   }
+}
+
+/** How many talent profiles wait for review now, and each of the last 14 days. Server only. */
+export async function readTalentQueue(): Promise<TalentReviewQueue> {
+  const { data } = await getTalentReviewQueue(await sessionRequest());
+  return data;
 }

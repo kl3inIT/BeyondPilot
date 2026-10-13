@@ -514,6 +514,35 @@ const lists = {
   },
 };
 
+/** How many records of each kind wait now, as the admin home reads each queue. */
+const queues = {
+  "/api/usecase/admin/use-cases/queue": () => 0,
+  "/api/solution/admin/solutions/queue": () =>
+    solutions.filter((record) => record.status === "in_review").length,
+  "/api/solution/admin/deployments/queue": () =>
+    solutions
+      .flatMap((record) => record.customerDeployments)
+      .filter((item) => item.status === "in_review").length,
+  "/api/talent/admin/profiles/queue": () =>
+    talent.filter((record) => record.profile.status === "in_review").length,
+  "/api/organization/admin/organizations/queue": () =>
+    organizations.filter(
+      (record) => record.organization.status === "in_review" || record.claims.length > 0,
+    ).length,
+};
+
+/** A queue that grew to what waits now: one fewer until four days ago. The oldest was sent 3 days ago. */
+function queueOf(waiting) {
+  const today = new Date();
+  const from = new Date(today.getTime() - 13 * 86_400_000).toISOString().slice(0, 10);
+  return {
+    waiting,
+    oldestSince: waiting > 0 ? new Date(today.getTime() - 3 * 86_400_000).toISOString() : null,
+    from,
+    days: Array.from({ length: 14 }, (_, day) => (day < 10 ? Math.max(0, waiting - 1) : waiting)),
+  };
+}
+
 /**
  * The answer to an operator's read of a review list or of one of its records, as `[status, body]`;
  * nothing when the path is neither.
@@ -588,6 +617,10 @@ export function answerReview(url, account) {
     return draft[1] === operatorDraft.id
       ? [200, operatorDraft]
       : [404, { status: 404, code: "SOLUTION_NOT_FOUND" }];
+  }
+  const queue = queues[url.pathname];
+  if (queue) {
+    return account?.role === "operator" ? [200, queueOf(queue())] : [account ? 403 : 401, {}];
   }
   const path = Object.keys(lists).find(
     (candidate) => url.pathname === candidate || url.pathname.startsWith(`${candidate}/`),

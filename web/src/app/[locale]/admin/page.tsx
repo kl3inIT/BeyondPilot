@@ -4,12 +4,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AdminHomePage } from "@/features/admin-home/admin-home-page";
 import { readUsageOverview } from "@/features/ai/usage-queries";
 import { readEmailActivity } from "@/features/email/email-queries";
-import { readAdminOrganizations } from "@/features/organization/organization-queries";
+import { readOrganizationQueue } from "@/features/organization/organization-queries";
 import { readReviewPrograms } from "@/features/review/review-queries";
 import { readSearchIndex } from "@/features/search/admin-ai-queries";
-import { readAdminSolutions } from "@/features/solution/solution-queries";
-import { readAdminTalentList } from "@/features/talent/talent-queries";
-import { readAdminUseCases } from "@/features/usecase/admin-use-case-queries";
+import { readDeploymentQueue, readSolutionQueue } from "@/features/solution/solution-queries";
+import { readTalentQueue } from "@/features/talent/talent-queries";
+import { readUseCaseQueue } from "@/features/usecase/admin-use-case-queries";
 import { requireRole } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
 
@@ -24,49 +24,19 @@ export async function generateMetadata({
 
 /**
  * Admin home: what waits for a decision, the applications to read and the state of the system. Each
- * figure is read from the list or the page it leads to, so the two always agree.
+ * figure comes from the module that owns it; a queue's today is the count its list gives.
  */
 export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/admin">) {
   const { locale } = await params;
   setRequestLocale(locale);
   await requireRole("operator", siteRoutes.admin);
-  const [organizations, solutions, talent, useCases, programs, usage, email, index] =
+  const [useCases, solutions, talent, organizations, deployments, programs, usage, email, index] =
     await Promise.all([
-      readAdminOrganizations({
-        q: "",
-        status: "in_review",
-        country: null,
-        sort: "",
-        page: 1,
-        size: null,
-      }),
-      readAdminSolutions({
-        q: "",
-        organizationId: null,
-        status: "in_review",
-        industry: null,
-        featured: null,
-        sort: "",
-        page: 1,
-        size: null,
-      }),
-      readAdminTalentList({
-        q: "",
-        status: "in_review",
-        featured: null,
-        sort: "",
-        page: 1,
-        size: null,
-      }),
-      readAdminUseCases({
-        q: "",
-        status: "in_review",
-        organization: null,
-        featured: null,
-        sort: "",
-        page: 1,
-        size: null,
-      }),
+      readUseCaseQueue(),
+      readSolutionQueue(),
+      readTalentQueue(),
+      readOrganizationQueue(),
+      readDeploymentQueue(),
       readReviewPrograms(),
       readUsageOverview({ period: "7d", by: "model" }),
       readEmailActivity({
@@ -83,13 +53,7 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
 
   return (
     <AdminHomePage
-      waiting={{
-        useCases: useCases.inReview,
-        solutions: solutions.total,
-        talent: talent.total,
-        organizations: organizations.total,
-        deployments: solutions.deploymentsAwaitingReview,
-      }}
+      queues={{ useCases, solutions, talent, organizations, deployments }}
       programs={programs.items}
       usage={usage}
       email={email.counts}

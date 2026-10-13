@@ -1950,7 +1950,6 @@
       "solutions": "Solutions to review",
       "talent": "Talent profiles to review",
       "deployments": "Customer deployments to review",
-      "review": "Open the queue, longest wait first",
       "none": "Nothing waiting",
       "queues": "Waiting for a review",
       "useCases": "Use cases to review",
@@ -1978,7 +1977,8 @@
           "upToDate": "Records visitors can find · up to date",
           "behind": "Records visitors can find · {waiting} waiting, {heldBack} held back"
         }
-      }
+      },
+      "oldest": "{days, plural, =0 {The oldest was sent today} one {The oldest has waited # day} other {The oldest has waited # days}}"
     },
     "useCases": {
       "metaTitle": "Use cases · BeyondPilot",

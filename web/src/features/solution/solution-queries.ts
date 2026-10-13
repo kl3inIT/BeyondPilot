@@ -25,6 +25,9 @@ import {
   type PublicSolution,
   type PublicSolutionList,
   type Solution,
+  getDeploymentReviewQueue,
+  getSolutionReviewQueue,
+  type SolutionReviewQueue,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 import { maxSearchPage } from "@/lib/page-size";
@@ -239,4 +242,16 @@ export async function readAdminSolutionDraft(id: string): Promise<Solution | nul
   } catch (error) {
     return absent(error);
   }
+}
+
+/** How many solutions wait for review now, and each of the last 14 days. Server only. */
+export async function readSolutionQueue(): Promise<SolutionReviewQueue> {
+  const { data } = await getSolutionReviewQueue(await sessionRequest());
+  return data;
+}
+
+/** How many customer deployments wait for review now, and each of the last 14 days. Server only. */
+export async function readDeploymentQueue(): Promise<SolutionReviewQueue> {
+  const { data } = await getDeploymentReviewQueue(await sessionRequest());
+  return data;
 }
