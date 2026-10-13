@@ -487,6 +487,9 @@ test.describe("solutions matched to a use case", () => {
     await expect(deck.getByText("Deck, page 2 of 3")).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(deck).toHaveCount(0);
+    // The sheet gives the focus back to what opened it once it has gone: a letter typed before that
+    // lands on the control, not in the field the test goes on to type in.
+    await expect(panel.getByRole("button", { name: "Found in their deck, page 2" })).toBeFocused();
     await expect(open("Staple AI")).toBeVisible();
     await expect(page.getByRole("region", { name: "Why is Staple AI not a fit?" })).toHaveCount(0);
     expect(asked).toEqual(["shortlist"]);
