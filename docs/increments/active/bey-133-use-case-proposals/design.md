@@ -102,7 +102,7 @@ create table use_case_proposal_member (
 );
 create unique index use_case_proposal_primary_key on use_case_proposal_member (proposal_id) where is_primary;
 
--- The table above is no longer read or written: a proposal names no team members. Its rows stay, since dropping them loses data; V87 adds the team background to use_case_proposal:
+-- The table above is no longer read or written: a proposal names no team members. Its rows stay, since dropping them loses data; V88 adds the team background to use_case_proposal:
 --   alter table use_case_proposal add column team_background text;
 
 -- The solutions the proposal offers; deleting a draft solution takes it off the proposals that offered it.
