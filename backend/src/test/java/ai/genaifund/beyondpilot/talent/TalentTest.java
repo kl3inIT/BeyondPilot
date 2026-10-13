@@ -5,11 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
@@ -727,6 +730,43 @@ class TalentTest {
 
 		client.get().uri(MINE).exchange().expectStatus().isUnauthorized();
 		client.get().uri(ADMIN).exchange().expectStatus().isUnauthorized();
+	}
+
+	@Test
+	void theQueueCountsWhatWaitedAtTheEndOfEachOfTheLast14Days() {
+		assertProblem(get(signIn("queue-member@profile.test"), ADMIN + "/queue"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		List<Long> before = queueDays(body(get(operator, ADMIN + "/queue").expectStatus().isOk()));
+		UUID waiting = submitted(signIn("queue-waiting@profile.test"), "Queue Waiting");
+		UUID decided = approved(signIn("queue-decided@profile.test"), "Queue Decided");
+		// One has waited since three days ago; the other waited from six days ago until it was decided two days ago.
+		jdbc.sql("update talent_profile set submitted_at = now() - interval '3 days' where id = ?")
+			.param(waiting)
+			.update();
+		jdbc.sql("update talent_profile set submitted_at = now() - interval '6 days', "
+				+ "decided_at = now() - interval '2 days' where id = ?")
+			.param(decided)
+			.update();
+
+		String queue = body(get(operator, ADMIN + "/queue").expectStatus().isOk());
+
+		// Days run from 13 days ago to today: the first counts on the last four, the second on the four before its
+		// decision, so both on the day three days ago.
+		assertThat(difference(queueDays(queue), before)).containsExactly(0L, 0L, 0L, 0L, 0L, 0L, 0L, 1L, 1L, 1L, 2L, 1L,
+				1L, 1L);
+		assertThat(JsonPath.<Number>read(queue, "$.waiting").longValue()).isEqualTo(queueDays(queue).getLast());
+		assertThat(JsonPath.<String>read(queue, "$.from"))
+			.isEqualTo(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).minusDays(13).toString());
+		assertThat(JsonPath.<String>read(queue, "$.oldestSince")).isNotNull();
+	}
+
+	/** How many waited at the end of each of the 14 days, oldest first, as a queue answers it. */
+	private static List<Long> queueDays(String queue) {
+		return JsonPath.<List<Number>>read(queue, "$.days").stream().map(Number::longValue).toList();
+	}
+
+	/** What changed on each day between two readings of a queue; other tests share the database. */
+	private static List<Long> difference(List<Long> after, List<Long> before) {
+		return IntStream.range(0, after.size()).mapToObj(day -> after.get(day) - before.get(day)).toList();
 	}
 
 	/** A profile as its edit screen sends it, with what a submission needs. */

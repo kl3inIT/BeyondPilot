@@ -3062,6 +3062,28 @@ export type OrganizationMembers = {
 };
 
 /**
+ * How many organizations (new, or claimed by someone who asks to own one) wait for review now, since when, and how many waited at the end of each of the last 14 days.
+ */
+export type OrganizationReviewQueue = {
+    /**
+     * How many waited at the end of each day from `from` to today, oldest first; today's is `waiting`. A day behind today is an approximation: a record keeps only its last sending and its last decision.
+     */
+    days: Array<number>;
+    /**
+     * The first of the days, in Asia/Ho_Chi_Minh.
+     */
+    from: string;
+    /**
+     * When the one that has waited longest was sent; null when none waits.
+     */
+    oldestSince?: string;
+    /**
+     * How many wait now.
+     */
+    waiting: number;
+};
+
+/**
  * The approved organizations a search finds, by name; ten at most.
  */
 export type OrganizationSearch = {
@@ -5709,6 +5731,28 @@ export type SolutionOption = {
 };
 
 /**
+ * How many solutions or customer deployments wait for review now, since when, and how many waited at the end of each of the last 14 days.
+ */
+export type SolutionReviewQueue = {
+    /**
+     * How many waited at the end of each day from `from` to today, oldest first; today's is `waiting`. A day behind today is an approximation: a record keeps only its last sending and its last decision.
+     */
+    days: Array<number>;
+    /**
+     * The first of the days, in Asia/Ho_Chi_Minh.
+     */
+    from: string;
+    /**
+     * When the one that has waited longest was sent; null when none waits.
+     */
+    oldestSince?: string;
+    /**
+     * How many wait now.
+     */
+    waiting: number;
+};
+
+/**
  * One solution in a list of its organization or of the operators.
  */
 export type SolutionSummary = {
@@ -5972,6 +6016,28 @@ export type TalentProject = {
 };
 
 /**
+ * How many talent profiles wait for review now, since when, and how many waited at the end of each of the last 14 days.
+ */
+export type TalentReviewQueue = {
+    /**
+     * How many waited at the end of each day from `from` to today, oldest first; today's is `waiting`. A day behind today is an approximation: a record keeps only its last sending and its last decision.
+     */
+    days: Array<number>;
+    /**
+     * The first of the days, in Asia/Ho_Chi_Minh.
+     */
+    from: string;
+    /**
+     * When the one that has waited longest was sent; null when none waits.
+     */
+    oldestSince?: string;
+    /**
+     * How many wait now.
+     */
+    waiting: number;
+};
+
+/**
  * One talent profile in the operators' list.
  */
 export type TalentSummary = {
@@ -6175,6 +6241,28 @@ export type UseCaseProposalForm = {
 export type UseCaseRequirement = {
     necessity: 'required' | 'optional';
     statement: string;
+};
+
+/**
+ * How many use cases wait for review now, since when, and how many waited at the end of each of the last 14 days.
+ */
+export type UseCaseReviewQueue = {
+    /**
+     * How many waited at the end of each day from `from` to today, oldest first; today's is `waiting`. A day behind today is an approximation: a record keeps only its last sending and its last decision.
+     */
+    days: Array<number>;
+    /**
+     * The first of the days, in Asia/Ho_Chi_Minh.
+     */
+    from: string;
+    /**
+     * When the one that has waited longest was sent; null when none waits.
+     */
+    oldestSince?: string;
+    /**
+     * How many wait now.
+     */
+    waiting: number;
 };
 
 export type GetChatSettingsData = {
@@ -8790,6 +8878,35 @@ export type CreateAdminOrganizationResponses = {
 };
 
 export type CreateAdminOrganizationResponse = CreateAdminOrganizationResponses[keyof CreateAdminOrganizationResponses];
+
+export type GetOrganizationReviewQueueData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/organization/admin/organizations/queue';
+};
+
+export type GetOrganizationReviewQueueErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetOrganizationReviewQueueError = GetOrganizationReviewQueueErrors[keyof GetOrganizationReviewQueueErrors];
+
+export type GetOrganizationReviewQueueResponses = {
+    /**
+     * The queue now and its last 14 days.
+     */
+    200: OrganizationReviewQueue;
+};
+
+export type GetOrganizationReviewQueueResponse = GetOrganizationReviewQueueResponses[keyof GetOrganizationReviewQueueResponses];
 
 export type GetAdminOrganizationData = {
     body?: never;
@@ -11856,6 +11973,31 @@ export type SetSemanticSearchResponses = {
 
 export type SetSemanticSearchResponse = SetSemanticSearchResponses[keyof SetSemanticSearchResponses];
 
+export type GetDeploymentReviewQueueData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/solution/admin/deployments/queue';
+};
+
+export type GetDeploymentReviewQueueErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type GetDeploymentReviewQueueError = GetDeploymentReviewQueueErrors[keyof GetDeploymentReviewQueueErrors];
+
+export type GetDeploymentReviewQueueResponses = {
+    /**
+     * The queue now and its last 14 days.
+     */
+    200: SolutionReviewQueue;
+};
+
+export type GetDeploymentReviewQueueResponse = GetDeploymentReviewQueueResponses[keyof GetDeploymentReviewQueueResponses];
+
 export type ApproveCustomerDeploymentData = {
     body?: never;
     path: {
@@ -12293,6 +12435,35 @@ export type ListAdminSolutionOrganizationsResponses = {
 };
 
 export type ListAdminSolutionOrganizationsResponse = ListAdminSolutionOrganizationsResponses[keyof ListAdminSolutionOrganizationsResponses];
+
+export type GetSolutionReviewQueueData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/solution/admin/solutions/queue';
+};
+
+export type GetSolutionReviewQueueErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetSolutionReviewQueueError = GetSolutionReviewQueueErrors[keyof GetSolutionReviewQueueErrors];
+
+export type GetSolutionReviewQueueResponses = {
+    /**
+     * The queue now and its last 14 days.
+     */
+    200: SolutionReviewQueue;
+};
+
+export type GetSolutionReviewQueueResponse = GetSolutionReviewQueueResponses[keyof GetSolutionReviewQueueResponses];
 
 export type GetAdminSolutionData = {
     body?: never;
@@ -13815,6 +13986,35 @@ export type ListAdminTalentResponses = {
 
 export type ListAdminTalentResponse = ListAdminTalentResponses[keyof ListAdminTalentResponses];
 
+export type GetTalentReviewQueueData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/talent/admin/profiles/queue';
+};
+
+export type GetTalentReviewQueueErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetTalentReviewQueueError = GetTalentReviewQueueErrors[keyof GetTalentReviewQueueErrors];
+
+export type GetTalentReviewQueueResponses = {
+    /**
+     * The queue now and its last 14 days.
+     */
+    200: TalentReviewQueue;
+};
+
+export type GetTalentReviewQueueResponse = GetTalentReviewQueueResponses[keyof GetTalentReviewQueueResponses];
+
 export type GetAdminTalentData = {
     body?: never;
     path: {
@@ -14640,6 +14840,35 @@ export type CreateAdminUseCaseResponses = {
 };
 
 export type CreateAdminUseCaseResponse = CreateAdminUseCaseResponses[keyof CreateAdminUseCaseResponses];
+
+export type GetUseCaseReviewQueueData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/usecase/admin/use-cases/queue';
+};
+
+export type GetUseCaseReviewQueueErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetUseCaseReviewQueueError = GetUseCaseReviewQueueErrors[keyof GetUseCaseReviewQueueErrors];
+
+export type GetUseCaseReviewQueueResponses = {
+    /**
+     * The queue now and its last 14 days.
+     */
+    200: UseCaseReviewQueue;
+};
+
+export type GetUseCaseReviewQueueResponse = GetUseCaseReviewQueueResponses[keyof GetUseCaseReviewQueueResponses];
 
 export type GetAdminUseCaseData = {
     body?: never;

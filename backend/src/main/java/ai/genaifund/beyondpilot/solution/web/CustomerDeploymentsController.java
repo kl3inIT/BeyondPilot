@@ -9,6 +9,7 @@ import ai.genaifund.beyondpilot.solution.SolutionService;
 import ai.genaifund.beyondpilot.solution.dto.CustomerDeploymentResponse;
 import ai.genaifund.beyondpilot.solution.dto.RejectCustomerDeploymentRequest;
 import ai.genaifund.beyondpilot.solution.dto.SaveCustomerDeploymentRequest;
+import ai.genaifund.beyondpilot.solution.dto.SolutionReviewQueueResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,6 +20,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -139,6 +141,15 @@ class CustomerDeploymentsController {
 	CustomerDeploymentResponse restore(@CurrentActor Actor actor, @PathVariable UUID solutionId,
 			@PathVariable UUID id) {
 		return solutions.restoreDeployment(actor, solutionId, id);
+	}
+
+	@GetMapping(path = "/admin/deployments/queue", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getDeploymentReviewQueue",
+			summary = "How many customer deployments wait for review, and how many waited each of the last 14 days",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The queue now and its last 14 days.")
+	SolutionReviewQueueResponse deploymentQueue(@CurrentActor Actor actor) {
+		return administration.deploymentQueue(actor);
 	}
 
 	@PostMapping("/admin/deployments/{id}/approve")
