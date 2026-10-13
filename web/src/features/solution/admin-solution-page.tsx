@@ -1,6 +1,7 @@
 import { useLocale, useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
+import { DetailList } from "@/components/composites/detail-list";
 import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { QueueNext } from "@/components/composites/queue-next";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
@@ -122,14 +123,10 @@ function AdminSolutionPage({ solution, next, queue }: AdminSolutionPageProps) {
             <h2 id="solution-decision" className="text-base font-semibold">
               {t("decision")}
             </h2>
-            <dl className="grid grid-cols-3 gap-x-4 gap-y-2 text-sm">
-              {facts.map((fact) => (
-                <div key={fact.label} className="contents">
-                  <dt className="text-muted-foreground">{fact.label}</dt>
-                  <dd className="col-span-2 min-w-0 break-words">{fact.value}</dd>
-                </div>
-              ))}
-            </dl>
+            <DetailList
+              layout="rows"
+              details={facts.map((fact) => ({ key: fact.label, ...fact }))}
+            />
 
             {solution.status === "rejected" && (
               <p className="rounded-lg border bg-muted p-3 text-sm">

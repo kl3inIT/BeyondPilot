@@ -1,6 +1,7 @@
 import { BanIcon, CircleAlertIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { DetailList } from "@/components/composites/detail-list";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
@@ -119,16 +120,13 @@ async function EmailMessagePage({ message }: { message: EmailMessage }) {
             <h2 id="message-facts" className="text-base font-medium">
               {t("message.facts")}
             </h2>
-            <dl className="flex flex-col divide-y rounded-lg border">
-              {facts.map((fact) => (
-                <div key={fact.key} className="flex flex-col gap-0.5 px-4 py-2.5">
-                  <dt className="text-xs text-muted-foreground">
-                    {t(`message.fields.${fact.key}`)}
-                  </dt>
-                  <dd className="min-w-0 text-sm break-words">{fact.value}</dd>
-                </div>
-              ))}
-            </dl>
+            <DetailList
+              layout="framed"
+              details={facts.map((fact) => ({
+                ...fact,
+                label: t(`message.fields.${fact.key}`),
+              }))}
+            />
           </section>
 
           <section className="flex flex-col gap-3" aria-labelledby="message-events">

@@ -2,8 +2,8 @@ import { TriangleAlertIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
+import { PageTabs } from "@/components/composites/page-tabs";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
-import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
 type EmailTab = "templates" | "activity" | "suppressions" | "settings";
@@ -47,25 +47,11 @@ async function EmailHeader({
           </Button>
         </div>
       )}
-      <nav aria-label={t("tabs.label")} className="border-b">
-        <ul className="flex gap-4 overflow-x-auto md:gap-6">
-          {tabs.map((tab) => (
-            <li key={tab.key}>
-              <Link
-                href={tab.href}
-                aria-current={tab.key === current ? "page" : undefined}
-                className={
-                  tab.key === current
-                    ? "inline-flex min-h-11 items-center border-b-2 border-foreground text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
-                    : "inline-flex min-h-11 items-center border-b-2 border-transparent text-sm whitespace-nowrap text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
-                }
-              >
-                {t(`tabs.${tab.key}`)}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <PageTabs
+        label={t("tabs.label")}
+        current={current}
+        tabs={tabs.map((tab) => ({ ...tab, label: t(`tabs.${tab.key}`) }))}
+      />
     </AdminPageHeader>
   );
 }

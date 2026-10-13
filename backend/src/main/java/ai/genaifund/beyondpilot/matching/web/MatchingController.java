@@ -9,6 +9,7 @@ import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.matching.MatchingService;
 import ai.genaifund.beyondpilot.matching.dto.AddCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.GiveFeedbackRequest;
+import ai.genaifund.beyondpilot.matching.dto.GiveRemovalReasonRequest;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange;
 import ai.genaifund.beyondpilot.matching.dto.MatchingResponse;
 import ai.genaifund.beyondpilot.matching.dto.RemoveCandidateRequest;
@@ -143,15 +144,33 @@ class MatchingController {
 
 	@PostMapping(path = "/candidates/{candidateId}/remove", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "removeMatchingCandidate", summary = "Take a candidate off the list, with the reason",
+	@Operation(operationId = "removeMatchingCandidate", summary = "Take a candidate off the list, with the reason if one is given",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The candidate is removed, and off the shortlist.")
-	@ApiResponse(responseCode = "400", description = "The reason is not valid, or is other and nothing says what.",
+	@ApiResponse(responseCode = "400", description = "The reason is not one of the five.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "The candidate is unknown to the caller.", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	MatchingResponse remove(@CurrentActor Actor actor, @PathVariable UUID candidateId,
 			@Valid @RequestBody RemoveCandidateRequest request) {
 		return matching.remove(actor, candidateId, request);
+	}
+
+	@PostMapping(path = "/candidates/{candidateId}/removal-reason", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "giveMatchingRemovalReason",
+			summary = "Say why the caller removed a candidate, after the removal",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The reason is on the removal and who removed it is unchanged.")
+	@ApiResponse(responseCode = "400", description = "The reason is not one of the five.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "403", description = "Someone else removed the candidate.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "The candidate is unknown to the caller.", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "The candidate is no longer removed.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	MatchingResponse giveRemovalReason(@CurrentActor Actor actor, @PathVariable UUID candidateId,
+			@Valid @RequestBody GiveRemovalReasonRequest request) {
+		return matching.giveRemovalReason(actor, candidateId, request);
 	}
 
 	@PostMapping(path = "/candidates/{candidateId}/restore", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -69,6 +69,38 @@ public class TestMailbox {
 		throw new AssertionError("No email with a code was sent to " + recipient);
 	}
 
+	/**
+	 * The subjects of every email sent to the address. Emails leave the queue side by side, so one queued later can
+	 * arrive first: a test that sent several to one address finds the one it means here, not by which came last.
+	 */
+	public List<String> subjectsTo(String recipient) {
+		return to(recipient).stream().map(TestMailbox::subject).toList();
+	}
+
+	/** The plain-text part of the email with this subject sent to the address; the newest when there are several. */
+	public String textTo(String recipient, String subject) {
+		return to(recipient).reversed()
+			.stream()
+			.filter(message -> subject.equals(subject(message)))
+			.findFirst()
+			.map(TestMailbox::plainText)
+			.orElseThrow(() -> new AssertionError("No email \"" + subject + "\" was sent to " + recipient));
+	}
+
+	/** The plain-text parts of every email sent to the address. */
+	public List<String> textsTo(String recipient) {
+		return to(recipient).stream().map(TestMailbox::plainText).toList();
+	}
+
+	private static String subject(MimeMessage message) {
+		try {
+			return message.getSubject();
+		}
+		catch (MessagingException exception) {
+			throw new IllegalStateException(exception);
+		}
+	}
+
 	public String latestSubjectTo(String recipient) {
 		try {
 			return latestTo(recipient).getSubject();

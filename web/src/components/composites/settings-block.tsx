@@ -1,6 +1,8 @@
+import { cn } from "@/lib/utils";
+
 /**
- * One block of an Admin › AI screen: what it is for on the left from 1024px, its content on the
- * right. A lead is a line most people need; `help` is a "?" beside the title for what only some do.
+ * One block of a settings screen (AI, search, matching): what it is for on the left from 1024px,
+ * its content on the right. A lead is a line most people need; `help` is a "?" beside the title for what only some do.
  */
 function SettingsBlock({
   id,
@@ -20,7 +22,7 @@ function SettingsBlock({
   return (
     <section
       aria-labelledby={id}
-      className={`flex flex-col gap-4 lg:flex-row lg:gap-12 ${first ? "" : "border-t pt-8"}`}
+      className={cn("flex flex-col gap-4 lg:flex-row lg:gap-12", !first && "border-t pt-8")}
     >
       <div className="flex flex-col gap-1 lg:w-65 lg:shrink-0">
         <div className="flex items-center gap-1">

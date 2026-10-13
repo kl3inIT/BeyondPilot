@@ -1,7 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { PageTabs } from "@/components/composites/page-tabs";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
-import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
 
 const tabs = ["chat", "embedding", "ocr"] as const;
@@ -23,22 +23,18 @@ async function ProvidersShell({ tab, children }: { tab: ProvidersTab; children: 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <AdminPageHeader destination="aiProviders" title={t("title")}>
-        <nav aria-label={t("tabs")} className="flex items-end gap-5 border-b">
-          {tabs.map((each) => (
-            <Link
-              key={each}
-              href={
-                each === "chat"
-                  ? siteRoutes.adminAiProviders
-                  : { pathname: siteRoutes.adminAiProviders, query: { tab: each } }
-              }
-              aria-current={each === tab ? "page" : undefined}
-              className="-mb-px border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
-            >
-              {t(each)}
-            </Link>
-          ))}
-        </nav>
+        <PageTabs
+          label={t("tabs")}
+          current={tab}
+          tabs={tabs.map((each) => ({
+            key: each,
+            label: t(each),
+            href:
+              each === "chat"
+                ? siteRoutes.adminAiProviders
+                : { pathname: siteRoutes.adminAiProviders, query: { tab: each } },
+          }))}
+        />
       </AdminPageHeader>
 
       {children}

@@ -123,6 +123,12 @@ const lastGroupHeader = (page: Page) =>
 test.describe("solutions matched to a use case", () => {
   test.use({ locale: "en-US" });
 
+  // These read the list. A person who never chose a way meets the one-by-one review while a solution
+  // waits for a decision, so each starts as one who chose the list before.
+  test.beforeEach(async ({ context }) => {
+    await context.addInitScript(() => window.localStorage.setItem("matching-view", "list"));
+  });
+
   test("a member reads the groups and one solution in full", async ({
     page,
     context,
@@ -481,6 +487,9 @@ test.describe("solutions matched to a use case", () => {
     await expect(deck.getByText("Deck, page 2 of 3")).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(deck).toHaveCount(0);
+    // The sheet gives the focus back to what opened it once it has gone: a letter typed before that
+    // lands on the control, not in the field the test goes on to type in.
+    await expect(panel.getByRole("button", { name: "Found in their deck, page 2" })).toBeFocused();
     await expect(open("Staple AI")).toBeVisible();
     await expect(page.getByRole("region", { name: "Why is Staple AI not a fit?" })).toHaveCount(0);
     expect(asked).toEqual(["shortlist"]);
@@ -1157,5 +1166,203 @@ test.describe("solutions matched to a use case", () => {
     await expect(
       page.getByText("Added Sentosa Finance to Experience in your industry"),
     ).toBeVisible();
+  });
+});
+
+test.describe("matched solutions, one at a time", () => {
+  test.use({ locale: "en-US" });
+
+  /** The card in front, by the solution it names; the one behind it is out of reach until it comes forward. */
+  const front = (page: Page, name: string) => page.getByRole("heading", { level: 2, name });
+  const decisions = (page: Page, name: string) =>
+    page.getByRole("group", { name: `Decide on ${name}` });
+
+  /**
+   * Answers the four requests of the review as the backend does, with the whole state after the
+   * change, and keeps what was asked.
+   */
+  async function decide(page: Page, start: Matching) {
+    let state = start;
+    const asked: { path: string; body: unknown }[] = [];
+    const answer = (
+      action: string,
+      change: (name: string, body: Record<string, unknown>) => Record<string, unknown>,
+    ) =>
+      page.route(`**/api/matching/candidates/*/${action}`, async (route) => {
+        expect(route.request().headers()["x-beyondpilot-csrf"]).toBe("1");
+        const path = new URL(route.request().url()).pathname;
+        const body = (route.request().postDataJSON() ?? null) as Record<string, unknown> | null;
+        asked.push({ path, body });
+        const id = path.split("/").at(-2);
+        const name = state.candidates.find((one) => one.id === id)!.solutionName;
+        state = withCandidate(state, name, change(name, body ?? {}));
+        await route.fulfill({ json: state });
+      });
+    await answer("shortlist", () => ({ decision: "shortlisted" }));
+    await answer("remove", () => ({
+      decision: "removed",
+      removedBy: "Minh Trần",
+      removedByOperator: false,
+      removedAt: "2026-10-13T02:00:00Z",
+    }));
+    await answer("removal-reason", (_, body) => ({ removedReason: body.reason }));
+    await answer("restore", () => ({ decision: "none", removedReason: undefined }));
+    return asked;
+  }
+
+  test("a member who never chose a way meets the cards, and decides with the buttons and the keys", async ({
+    page,
+    context,
+    baseURL,
+    request,
+  }, testInfo) => {
+    await signInAs(context, "owner", baseURL!);
+    const asked = await decide(page, await matchingAs(request, "owner"));
+    await serveDecks(page);
+    await page.goto(memberPath);
+
+    // Three solutions wait for a decision, of the five a run put in a group; the strongest comes first.
+    await expect(page.getByRole("button", { name: "One by one" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(front(page, "Staple AI")).toBeVisible();
+    await expect(page.getByText("3 left of 5")).toBeVisible();
+    // Its deck stands in the card, at the page of the first requirement whose words are in the deck.
+    await expect(page.getByText(/^Deck, page 2/)).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+    await picture(page, testInfo, "one-by-one");
+
+    // A button saves, and the line under the card says so with the way back.
+    await decisions(page, "Staple AI").getByRole("button", { name: /^Save/ }).click();
+    await expect(page.getByText("Staple AI is saved.")).toBeVisible();
+    await expect(front(page, "Sentosa Finance")).toBeVisible();
+    await expect(page.getByText("2 left of 5")).toBeVisible();
+    expect(asked.at(-1)).toEqual({
+      path: `/api/matching/candidates/${candidateId(1)}/shortlist`,
+      body: null,
+    });
+
+    // A key sets a solution aside, with no reason asked; the reasons are offered after it.
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.getByText("Sentosa Finance is not a fit. Why?")).toBeVisible();
+    await expect(front(page, "Docbase")).toBeVisible();
+    expect(asked.at(-1)).toEqual({
+      path: `/api/matching/candidates/${candidateId(2)}/remove`,
+      body: {},
+    });
+    const reasons = page.getByRole("group", { name: "Why Sentosa Finance is not a fit" });
+    await reasons.getByRole("button", { name: "Listed twice" }).click();
+    await expect(reasons.getByRole("button", { name: "Listed twice" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(asked.at(-1)).toEqual({
+      path: `/api/matching/candidates/${candidateId(2)}/removal-reason`,
+      body: { reason: "duplicate" },
+    });
+    // A solution whose deck nobody may read at its address says so where the deck would be.
+    await expect(page.getByText("No page of a deck to show for this solution.")).toBeVisible();
+    await picture(page, testInfo, "one-by-one-reasons");
+
+    // Undo takes the last decision back and brings its card to the front.
+    await page.getByRole("button", { name: /^Undo/ }).click();
+    await expect(front(page, "Sentosa Finance")).toBeVisible();
+    await expect(page.getByText("Staple AI is saved.")).toBeVisible();
+    expect(asked.at(-1)).toEqual({
+      path: `/api/matching/candidates/${candidateId(2)}/restore`,
+      body: null,
+    });
+
+    // Later asks the backend nothing: the card goes behind the other.
+    const before = asked.length;
+    await decisions(page, "Sentosa Finance")
+      .getByRole("button", { name: /^Later/ })
+      .click();
+    await expect(page.getByText("Sentosa Finance moved to the end of the line.")).toBeVisible();
+    await expect(front(page, "Docbase")).toBeVisible();
+    expect(asked).toHaveLength(before);
+    await page.keyboard.press("z");
+    await expect(front(page, "Sentosa Finance")).toBeVisible();
+
+    // The list is one press away, and the choice is kept for the next visit.
+    await page.getByRole("button", { name: "List", exact: true }).click();
+    await expect(page.getByRole("tab", { name: "Saved 1" })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("tab", { name: "Saved 0" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "List", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  test("the head of a card drags it to a decision, and the rest of the card does not", async ({
+    page,
+    context,
+    baseURL,
+    request,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "A mouse drags here; a finger does the same on a phone.");
+    await signInAs(context, "owner", baseURL!);
+    const asked = await decide(page, await matchingAs(request, "owner"));
+    await serveDecks(page);
+    await page.goto(memberPath);
+    await expect(front(page, "Staple AI")).toBeVisible();
+
+    const drag = async (from: { x: number; y: number }, by: number) => {
+      await page.mouse.move(from.x, from.y);
+      await page.mouse.down();
+      await page.mouse.move(from.x + by, from.y + 4, { steps: 20 });
+      // Held still before it is let go, so that the distance decides and not the speed of a flick.
+      await page.waitForTimeout(300);
+      await page.mouse.up();
+    };
+    // By the evidence: nothing is decided.
+    const evidence = (await page.getByText("AI summary").first().boundingBox())!;
+    await drag({ x: evidence.x + 20, y: evidence.y + 5 }, 320);
+    await expect(front(page, "Staple AI")).toBeVisible();
+    expect(asked).toHaveLength(0);
+
+    // By the head, a short way: the card settles back. A long way to the right: it is saved.
+    // Selecting the evidence may have scrolled the page. The head is brought to the middle of the window,
+    // clear of the site's header, which stays at the top and would take the pointer.
+    const handle = page.locator('[data-slot="matching-card-head"]').first();
+    await handle.evaluate((element) => element.scrollIntoView({ block: "center" }));
+    const head = (await handle.boundingBox())!;
+    await drag({ x: head.x + 120, y: head.y + head.height / 2 }, 60);
+    await expect(front(page, "Staple AI")).toBeVisible();
+    expect(asked).toHaveLength(0);
+    await drag({ x: head.x + 120, y: head.y + head.height / 2 }, 320);
+    await expect(page.getByText("Staple AI is saved.")).toBeVisible();
+    await expect(front(page, "Sentosa Finance")).toBeVisible();
+    expect(asked.map((one) => one.path)).toEqual([
+      `/api/matching/candidates/${candidateId(1)}/shortlist`,
+    ]);
+    // Nothing made the page scroll sideways.
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
+    ).toBe(false);
+  });
+
+  test("an operator's address that asks for one solution opens the list, with that solution read in full", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    // Only the operators' page reads a solution from its address: their list of disagreements links to it.
+    await signInAs(context, "operator", baseURL!);
+    await page.goto(`${adminPath}?solution=${candidateId(2)}`);
+
+    await expect(page.getByRole("button", { name: "List", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    const panel = isMobile
+      ? page.getByRole("dialog")
+      : page.getByRole("complementary", { name: "The solution you picked" });
+    await expect(panel.getByRole("heading", { level: 2, name: "Sentosa Finance" })).toBeVisible();
   });
 });
