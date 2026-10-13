@@ -248,7 +248,12 @@ public class MatchingService {
 		}
 		String note = noteOf(request.note());
 		if (!request.reason().equals(candidate.reason()) || !Objects.equals(note, candidate.note())) {
-			matching.giveRemovalReason(candidate.id(), actor.accountId(), request.reason(), note);
+			// Someone may have restored or removed it again since it was read: then there is no removal of the
+			// caller's to write on.
+			if (!matching.giveRemovalReason(candidate.id(), actor.accountId(), request.reason(), note)) {
+				throw new MatchingException(MatchingErrorCode.CANDIDATE_NOT_REMOVED,
+						"Candidate " + candidateId + " is no longer removed by the caller");
+			}
 			changes.tell(candidate.useCaseId(), Kind.DECISION);
 			record(AuditAction.MATCHING_CANDIDATE_REASON, actor, access.brief(),
 					Map.of("solution", solutionName(candidate), "reason", request.reason()));
