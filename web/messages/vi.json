@@ -2162,8 +2162,7 @@
           "sentBackMeta": "{date}, bởi {name} · “{note}”"
         },
         "review": {
-          "title": "Duyệt use case",
-          "lead": "Bạn không sửa được nội dung {organization} đã viết."
+          "title": "Duyệt use case"
         },
         "readOnly": "Chỉ xem: đây là nội dung {organization} đã viết.",
         "viewDetails": "Xem chi tiết",

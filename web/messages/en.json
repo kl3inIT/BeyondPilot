@@ -2162,8 +2162,7 @@
           "sentBackMeta": "{date}, by {name} · “{note}”"
         },
         "review": {
-          "title": "Review the use case",
-          "lead": "You cannot edit what {organization} wrote."
+          "title": "Review the use case"
         },
         "readOnly": "Read only: this is what {organization} wrote.",
         "viewDetails": "View details",
