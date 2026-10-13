@@ -5,9 +5,11 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import type { Program } from "@/lib/api/generated";
 import { programApplyRoute } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 import { deadlineText, programFormatter } from "../program-format";
 import { DraftBanner, EventList, timelineOf } from "../program-parts";
+import { nestleBody, nestleDisplay } from "./nestle-fonts";
 import { NestleMenu } from "./nestle-menu";
 import {
   ChallengeAreas,
@@ -54,7 +56,7 @@ async function NestlePage({ program, askHref }: { program: Program; askHref?: st
   const day = (at: string) => format.dateTime(new Date(at), "day");
 
   return (
-    <div id="top" lang={locale} className={s.root}>
+    <div id="top" lang={locale} className={cn(s.root, nestleBody.variable, nestleDisplay.variable)}>
       <DraftBanner program={program} />
 
       <section className={s.hero}>

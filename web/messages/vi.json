@@ -111,6 +111,22 @@
     }
   },
   "Home": {
+    "featured": {
+      "eyebrow": "Chương trình nổi bật",
+      "name": "Nestlé Vietnam AI Reinvention",
+      "lead": "Đừng bỏ lỡ cơ hội hợp tác với Nestlé.",
+      "text": "Bạn có giải pháp AI đang chạy được? Hãy mang phần mềm, phần cứng hoặc tự động hóa AI của bạn đến với các bài toán kinh doanh thực tế.",
+      "early": "Briefing sớm",
+      "earlyValue": "Nộp trước 5/11",
+      "deadline": "Hạn chót",
+      "deadlineValue": "23:59 ICT, 22/11",
+      "explore": "Xem chương trình và nộp đơn",
+      "later": "Để sau",
+      "close": "Đóng",
+      "widget": "Nestlé AI Reinvention",
+      "view": "Xem chương trình",
+      "imageAlt": "Logo Nestlé trên mặt kính tòa văn phòng"
+    },
     "hero": {
       "titleStart": "Bước tiếp theo của bạn với",
       "titleEnd": "AI bắt đầu từ đây.",

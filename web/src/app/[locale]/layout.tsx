@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Lexend, Montserrat } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -11,14 +11,8 @@ import { routing } from "@/i18n/routing";
 
 import "../globals.css";
 
-// The text of the whole site, and the headings above it: the pair the programs' own pages are drawn with.
-const lexend = Lexend({
+const inter = Inter({
   variable: "--font-sans",
-  subsets: ["latin", "vietnamese"],
-});
-
-const montserrat = Montserrat({
-  variable: "--font-display",
   subsets: ["latin", "vietnamese"],
 });
 
@@ -54,7 +48,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${lexend.variable} ${montserrat.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <MessageScope>

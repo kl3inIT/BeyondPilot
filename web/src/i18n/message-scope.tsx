@@ -34,6 +34,7 @@ const areaPaths = {
   public: [
     "Account",
     "Application",
+    "Home.featured",
     "Mcp",
     "Program",
     "Programs",

@@ -111,6 +111,22 @@
     }
   },
   "Home": {
+    "featured": {
+      "eyebrow": "Featured program",
+      "name": "Nestlé Vietnam AI Reinvention",
+      "lead": "Don't miss your chance to collaborate with Nestlé.",
+      "text": "Have a working AI solution? Bring your software, hardware or AI automation to real business challenges.",
+      "early": "Early briefings",
+      "earlyValue": "Apply before 5 Nov",
+      "deadline": "Deadline",
+      "deadlineValue": "22 Nov, 23:59 ICT",
+      "explore": "Explore the program & apply",
+      "later": "Maybe later",
+      "close": "Close",
+      "widget": "Nestlé AI Reinvention",
+      "view": "View the program",
+      "imageAlt": "Nestlé's logo on the glass front of its office"
+    },
     "hero": {
       "titleStart": "Your next step in",
       "titleEnd": "AI starts here.",

@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.program;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -210,12 +211,17 @@ public class ProgramAdministration {
 	/**
 	 * Once applications have opened, when they open is settled: moving it later, or taking the window away, would make
 	 * the program look unopened and free its questions while answers to them exist. When they close can still move.
+	 * The form names a moment to the minute, so an opening that names the same minute is the same opening.
 	 */
 	private static void requireOpeningKept(Program program, @Nullable ProgramApplications applications) {
 		if (opened(program) && (applications == null
-				|| !applications.opensAt().equals(program.getApplicationsOpenAt()))) {
+				|| !sameMinute(applications.opensAt(), program.getApplicationsOpenAt()))) {
 			throw refused(ProgramErrorCode.OPENING_FIXED, program.getId());
 		}
+	}
+
+	private static boolean sameMinute(Instant one, @Nullable Instant other) {
+		return other != null && one.truncatedTo(ChronoUnit.MINUTES).equals(other.truncatedTo(ChronoUnit.MINUTES));
 	}
 
 	private static void takeApplications(Program program, @Nullable ProgramApplications applications) {
@@ -230,8 +236,11 @@ public class ProgramAdministration {
 		if (outcomesDueOn != null && outcomesDueOn.isBefore(applications.closesAt().atZone(ProgramPhase.ZONE).toLocalDate())) {
 			throw refused(ProgramErrorCode.OUTCOMES_BEFORE_CLOSE, program.getId());
 		}
-		program.takeApplications(applications.opensAt(), applications.closesAt(), applications.shortlistSize(),
-				outcomesDueOn, applications.allowUpdatesUntilClose());
+		// An opening that has passed stays the moment it was, to the second (requireOpeningKept).
+		Instant kept = program.getApplicationsOpenAt();
+		Instant opensAt = opened(program) && kept != null ? kept : applications.opensAt();
+		program.takeApplications(opensAt, applications.closesAt(), applications.shortlistSize(), outcomesDueOn,
+				applications.allowUpdatesUntilClose());
 		program.titleWindowDates(text(applications.opensTitle()), text(applications.closesTitle()),
 				text(applications.outcomesTitle()));
 	}

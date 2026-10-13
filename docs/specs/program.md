@@ -134,7 +134,8 @@ application window, key dates and events, all or nothing.
     answers `fixed: true`.
 - **The opening is fixed once passed.** Once `opensAt` has passed, a save that moves it or takes the window away is
   refused with `PROGRAM_OPENING_FIXED`, so the program cannot look unopened again and free its questions while answers
-  to them exist. `closesAt` and the rest of the window still change.
+  to them exist. `closesAt` and the rest of the window still change. The settings form names a moment to the minute, so
+  a save that names the minute of the stored opening keeps the stored opening, seconds included.
 
 ## Phase
 
