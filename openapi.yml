@@ -4982,6 +4982,47 @@ paths:
       summary: Create an organization the caller owns
       tags:
       - Organizations
+  /api/organization/organizations/basics:
+    post:
+      operationId: createOrganizationFromBasics
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveOrganizationBasics"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+          description: "The organization, waiting for GenAI Fund's review."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, or a company names no industry."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller already belongs to an organization, or waits on\
+            \ a request to join one."
+      security:
+      - session: []
+      summary: "Create an organization the caller owns from its name, kind, size,\
+        \ industries and country"
+      tags:
+      - Organizations
   /api/organization/organizations/{id}/join:
     post:
       operationId: joinOrganization
@@ -20861,8 +20902,8 @@ components:
       - version
     SaveOrganizationBasics:
       type: object
-      description: The facts a person gives when they make an organization. The rest
-        of the profile is left as it is.
+      description: "The facts a person gives when they make an organization, which\
+        \ a save changes alone. The rest of the profile is left as it is."
       properties:
         country:
           type: string
