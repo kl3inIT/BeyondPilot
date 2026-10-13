@@ -50,11 +50,11 @@ function SiteFooter() {
   return (
     <footer className="border-t bg-background">
       <div className="mx-auto flex w-full max-w-360 flex-col gap-10 px-5 pt-12 pb-8 md:gap-12 md:px-8 md:pt-16 xl:px-16 desktop:px-20">
-        <div className="flex flex-col gap-8 md:flex-row md:justify-between">
-          <div className="md:w-75">
+        <div className="flex flex-col gap-8 lg:flex-row lg:justify-between">
+          <div className="lg:w-75">
             <BrandLockup />
           </div>
-          <div className="flex flex-wrap gap-x-10 gap-y-8 md:flex-nowrap md:gap-x-24">
+          <div className="flex flex-wrap gap-x-10 gap-y-8 lg:flex-nowrap lg:gap-x-12 xl:gap-x-24">
             {columns.map((column) => (
               <div key={column.title} className="flex flex-col gap-3.5 pointer-coarse:gap-1">
                 <h2 className="text-sm font-semibold">{column.title}</h2>

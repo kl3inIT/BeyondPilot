@@ -15,8 +15,8 @@
   --nestle-rule: #07033830;
   --nestle-gradient: linear-gradient(90deg, #314df5, #981deb 45%, #f034a3 75%, #ffa44e);
   --nestle-gradient-short: linear-gradient(90deg, #314df5, #981deb 50%, #ff893b);
-  --nestle-body: var(--font-nestle-body), system-ui, sans-serif;
-  --nestle-display: var(--font-nestle-display), var(--font-nestle-body), system-ui, sans-serif;
+  --nestle-body: var(--font-sans), system-ui, sans-serif;
+  --nestle-display: var(--font-display), var(--font-sans), system-ui, sans-serif;
   --nestle-gutter: 24px;
   --nestle-section: 72px;
 

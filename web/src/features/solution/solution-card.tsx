@@ -14,7 +14,7 @@ import { SolutionLogo } from "./solution-logo";
 import { OfferCorner, OfferLine } from "./solution-offers";
 
 /** How many capabilities a card names before it counts the rest. */
-const CAPABILITY_LIMIT = 3;
+const CAPABILITY_LIMIT = 2;
 
 /**
  * One solution in the directory: its cover with its logo over the corner, what it is called, who

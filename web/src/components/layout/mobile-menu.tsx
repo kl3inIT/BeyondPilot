@@ -32,7 +32,7 @@ function MobileMenu({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
-        render={<IconButton aria-label={t("menu.open")} size="lg" className="md:hidden" />}
+        render={<IconButton aria-label={t("menu.open")} size="lg" className="lg:hidden" />}
       >
         <MenuIcon aria-hidden="true" />
       </SheetTrigger>

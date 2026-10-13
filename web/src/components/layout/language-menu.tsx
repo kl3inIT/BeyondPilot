@@ -59,7 +59,7 @@ function LanguageMenu({ className }: { className?: string }) {
       >
         <Flag locale={active} />
         <span className="sr-only">{t("label")}: </span>
-        <span className="max-md:sr-only">{active.toUpperCase()}</span>
+        <span className="max-lg:sr-only">{active.toUpperCase()}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-50">
         <DropdownMenuRadioGroup value={active} onValueChange={choose}>

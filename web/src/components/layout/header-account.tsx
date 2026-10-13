@@ -38,7 +38,7 @@ async function HeaderAccount() {
 
   return (
     <>
-      <Button prominence="secondary" className="hidden md:inline-flex" href={siteRoutes.signIn}>
+      <Button prominence="secondary" className="hidden lg:inline-flex" href={siteRoutes.signIn}>
         {t("signIn")}
       </Button>
       <Button prominence="inverse" href={siteRoutes.getStarted}>

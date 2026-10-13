@@ -37,8 +37,8 @@ test.describe("solutions directory", () => {
     // A featured solution leads the list, but no card says it is featured.
     await expect(page.locator("[data-featured]")).toHaveCount(0);
     await expect(card("Clinic Triage").getByText("No customer case published")).toBeVisible();
-    // A card names three capabilities and counts the rest.
-    await expect(card("Claims Vision").getByText("+1 more")).toBeVisible();
+    // A card names two capabilities and counts the rest.
+    await expect(card("Claims Vision").getByText("+2 more")).toBeVisible();
     await expect(page.getByRole("link", { name: "List your solution" })).toHaveAttribute(
       "href",
       "/workspace/organization/solutions",
