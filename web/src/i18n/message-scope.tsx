@@ -57,6 +57,7 @@ const areaPaths = {
     "EntryList",
     "Introduction",
     "Matching",
+    "Messaging",
     "Organization",
     "Solution",
     "Talent",

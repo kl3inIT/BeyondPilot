@@ -1127,7 +1127,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'messaging.request_accept' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -1422,6 +1422,188 @@ export type ContactRequest = {
      * With its country code, such as +84 912 345 678.
      */
     phone?: string | null;
+};
+
+/**
+ * A conversation as the caller's list shows it.
+ */
+export type Conversation = {
+    /**
+     * Whether the caller may accept, decline or report it now.
+     */
+    canAnswer: boolean;
+    /**
+     * Whether the caller may write in it now.
+     */
+    canWrite: boolean;
+    /**
+     * When a request closes if nobody answers; null once it is answered.
+     */
+    closesAt?: string | null;
+    /**
+     * The other side as it is shown: a person or an organization. Null for GenAI Fund, and for a person who gave no name.
+     */
+    counterpartName?: string | null;
+    /**
+     * The organization of the person who wrote first, for the side written to; null when they had none.
+     */
+    counterpartOrganization?: string | null;
+    createdAt: string;
+    id: string;
+    /**
+     * Who the conversation is with: the person behind a talent profile, the organization that offers a solution, or GenAI Fund about a program.
+     */
+    kind: 'talent' | 'solution' | 'program';
+    lastMessage?: LastMessage | null;
+    /**
+     * When the last message was written, which orders the list.
+     */
+    lastMessageAt: string;
+    /**
+     * Whether the caller wrote first or is the side written to.
+     */
+    side: 'starter' | 'recipient';
+    /**
+     * Where it stands. A request the other side reported reads as declined.
+     */
+    status: 'pending' | 'accepted' | 'declined' | 'closed';
+    /**
+     * What it is about: the name of the profile, solution or program when it started.
+     */
+    subjectName: string;
+    /**
+     * How many messages of the other side the caller has not read; 0 for a request.
+     */
+    unread: number;
+};
+
+/**
+ * One conversation: its latest messages, what it is about and who is on the other side.
+ */
+export type ConversationDetail = {
+    conversation: Conversation;
+    /**
+     * Whether messages earlier than these exist.
+     */
+    hasEarlier: boolean;
+    /**
+     * The latest messages, the oldest first, at most 50.
+     */
+    messages: Array<Message>;
+    /**
+     * Who reads and answers on the other side. Empty for GenAI Fund, whose programs team reads.
+     */
+    participants: Array<ConversationParticipant>;
+    /**
+     * How far the other side has read: the seq of the last message they read, 0 when none.
+     */
+    readByOtherSide: number;
+    subject: ConversationSubject;
+};
+
+/**
+ * The caller's conversations, the one written in last first, in the two lists the screen shows.
+ */
+export type ConversationList = {
+    /**
+     * The conversations that are open, and every one the caller started.
+     */
+    chats: Array<Conversation>;
+    /**
+     * The first messages that wait for the caller's side to answer.
+     */
+    requests: Array<Conversation>;
+    /**
+     * How many messages the caller has not read across the open conversations.
+     */
+    unread: number;
+};
+
+/**
+ * A person on the other side of a conversation.
+ */
+export type ConversationParticipant = {
+    /**
+     * The person as they are shown; null until they gave a name.
+     */
+    name?: string | null;
+    /**
+     * The organization they act for; null when none.
+     */
+    organizationName?: string | null;
+    /**
+     * A person on their own, or an owner or a member of the organization written to.
+     */
+    role: 'person' | 'owner' | 'member';
+};
+
+/**
+ * What the caller would write to before the first message is sent: who reads it and what it is about.
+ */
+export type ConversationProspect = {
+    /**
+     * The conversation the caller already has with this subject while it waits or is open; null when none.
+     */
+    conversationId?: string | null;
+    /**
+     * The other side as it is shown; null for GenAI Fund.
+     */
+    counterpartName?: string | null;
+    participants: Array<ConversationParticipant>;
+    /**
+     * Whether the first message waits as a request until the other side accepts it.
+     */
+    request: boolean;
+    subject: ConversationSubject;
+};
+
+/**
+ * What a conversation is about, as its public page says it now: a talent profile, a solution or a program.
+ */
+export type ConversationSubject = {
+    city?: string | null;
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    /**
+     * How many of a solution's customer deployments GenAI Fund approved; 0 for the other kinds.
+     */
+    customerDeployments: number;
+    /**
+     * A talent profile's headline; null for the other kinds.
+     */
+    headline?: string | null;
+    /**
+     * The industries of a solution or a person; empty for a program.
+     */
+    industries: Array<string>;
+    kind: 'talent' | 'solution' | 'program';
+    /**
+     * How far a solution has come; null for the other kinds.
+     */
+    maturity?: string | null;
+    name: string;
+    /**
+     * The organization that offers a solution; null for the other kinds.
+     */
+    organizationName?: string | null;
+    /**
+     * A person's roles; empty for the other kinds.
+     */
+    roles: Array<string>;
+    /**
+     * A person's skills; empty for the other kinds.
+     */
+    skills: Array<string>;
+    /**
+     * Its address on the site; null once it has no public page.
+     */
+    slug?: string | null;
+    /**
+     * A solution's summary or a person's bio; null when there is none.
+     */
+    summary?: string | null;
 };
 
 /**
@@ -2162,6 +2344,31 @@ export type JoinOutcome = {
 };
 
 /**
+ * The last message of a conversation, as its row in the list shows it.
+ */
+export type LastMessage = {
+    /**
+     * Whether the caller wrote it.
+     */
+    mine: boolean;
+    /**
+     * The start of the message, at most 140 characters.
+     */
+    preview: string;
+    /**
+     * Who wrote it, as they are shown; null until they gave a name.
+     */
+    senderName?: string | null;
+};
+
+export type MarkReadRequest = {
+    /**
+     * The seq of the last message the caller has read.
+     */
+    seq?: number;
+};
+
+/**
  * The solutions matched to a use case: what it asks for, its last run and its candidates.
  */
 export type Matching = {
@@ -2701,6 +2908,73 @@ export type MergedOrganization = {
      * The operator who merged it, as they are shown.
      */
     mergedBy: string;
+};
+
+/**
+ * One message of a conversation, as the caller reads it.
+ */
+export type Message = {
+    body: string;
+    createdAt: string;
+    /**
+     * Whether the person who started the conversation wrote it; otherwise the side they wrote to did.
+     */
+    fromStarter: boolean;
+    id: string;
+    /**
+     * Whether the caller wrote it.
+     */
+    mine: boolean;
+    /**
+     * Who wrote it, as they are shown; null until they gave a name.
+     */
+    senderName?: string | null;
+    /**
+     * Its place among all messages; a later message has a greater one.
+     */
+    seq: number;
+};
+
+/**
+ * Some messages of a conversation, the oldest first.
+ */
+export type MessagePage = {
+    /**
+     * Whether more messages exist in the direction asked for.
+     */
+    hasMore: boolean;
+    messages: Array<Message>;
+    /**
+     * How far the other side has read: the seq of the last message they read, 0 when none.
+     */
+    readByOtherSide: number;
+};
+
+/**
+ * The body of one event of the caller's stream. The name of the event says what happened.
+ */
+export type MessagingEvent = {
+    conversationId: string;
+    /**
+     * On a `read` event, whether the person who started the conversation is the reader; on a `typing` event, whether they are the one writing.
+     */
+    fromStarter?: boolean;
+    /**
+     * The message that was written, on a `message` event.
+     */
+    message?: Message;
+    /**
+     * On a `read` event, whether the caller is the reader, on another screen.
+     */
+    mine?: boolean;
+    /**
+     * Who is writing, on a `typing` event; absent until they gave a name.
+     */
+    name?: string;
+    /**
+     * How far the reader has read, on a `read` event.
+     */
+    seq?: number;
 };
 
 /**
@@ -4252,6 +4526,46 @@ export type ReportedChatModels = {
 };
 
 /**
+ * A first message the side written to reported as unwanted.
+ */
+export type ReportedRequest = {
+    createdAt: string;
+    id: string;
+    kind: 'talent' | 'solution' | 'program';
+    message: string;
+    /**
+     * When it was reported.
+     */
+    reportedAt?: string | null;
+    /**
+     * The sender's address; empty when the account no longer signs in.
+     */
+    senderEmail: string;
+    /**
+     * The sender's name; null when they gave none.
+     */
+    senderName?: string | null;
+    /**
+     * The organization the sender belonged to; null when none.
+     */
+    senderOrganization?: string | null;
+    /**
+     * The profile or solution it was sent about.
+     */
+    subjectName: string;
+};
+
+/**
+ * One page of the reported first messages, the newest first.
+ */
+export type ReportedRequestList = {
+    items: Array<ReportedRequest>;
+    page: number;
+    pageSize: number;
+    total: number;
+};
+
+/**
  * A request for an introduction to the organization behind a solution.
  */
 export type RequestIntroduction = {
@@ -5452,6 +5766,14 @@ export type SendBackUseCase = {
     reason: string;
 };
 
+export type SendMessageRequest = {
+    body: string;
+    /**
+     * An identifier the sender chooses for the message. Sending it again writes nothing more, so a send that got no answer is safe to repeat.
+     */
+    id: string;
+};
+
 /**
  * A message to the person behind a talent profile.
  */
@@ -5876,6 +6198,15 @@ export type SolutionSummary = {
     viewKey: string;
 };
 
+export type StartConversationRequest = {
+    body: string;
+    kind: 'talent' | 'solution' | 'program';
+    /**
+     * The address of the talent profile, solution or program on the site.
+     */
+    slug: string;
+};
+
 /**
  * A run of matching a person starts.
  */
@@ -6156,6 +6487,20 @@ export type TestAiProvider = {
      */
     providerId?: string | null;
     vendor: 'openai' | 'openrouter';
+};
+
+/**
+ * What waits for the caller in Messages.
+ */
+export type Unread = {
+    /**
+     * How many first messages wait for the caller's side to answer.
+     */
+    requests: number;
+    /**
+     * How many messages the caller has not read across the open conversations.
+     */
+    unread: number;
 };
 
 /**
@@ -6938,7 +7283,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'introduction.reply' | 'introduction.decline' | 'messaging.request_accept' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -8196,6 +8541,516 @@ export type SwitchMcpUserServerResponses = {
 };
 
 export type SwitchMcpUserServerResponse = SwitchMcpUserServerResponses[keyof SwitchMcpUserServerResponses];
+
+export type ListReportedConversationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
+    };
+    url: '/api/messaging/admin/reported';
+};
+
+export type ListReportedConversationsErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListReportedConversationsError = ListReportedConversationsErrors[keyof ListReportedConversationsErrors];
+
+export type ListReportedConversationsResponses = {
+    /**
+     * One page of the reported first messages.
+     */
+    200: ReportedRequestList;
+};
+
+export type ListReportedConversationsResponse = ListReportedConversationsResponses[keyof ListReportedConversationsResponses];
+
+export type ListConversationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/messaging/conversations';
+};
+
+export type ListConversationsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type ListConversationsError = ListConversationsErrors[keyof ListConversationsErrors];
+
+export type ListConversationsResponses = {
+    /**
+     * The open conversations and the first messages that wait.
+     */
+    200: ConversationList;
+};
+
+export type ListConversationsResponse = ListConversationsResponses[keyof ListConversationsResponses];
+
+export type StartConversationData = {
+    body: StartConversationRequest;
+    path?: never;
+    query?: never;
+    url: '/api/messaging/conversations';
+};
+
+export type StartConversationErrors = {
+    /**
+     * The request is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no approved organization and writes to a solution provider.
+     */
+    403: Problem;
+    /**
+     * No profile, solution or program is at the address.
+     */
+    404: Problem;
+    /**
+     * The address is the caller's own, or their earlier first message still waits for an answer.
+     */
+    409: Problem;
+    /**
+     * The caller started as many conversations as a day allows.
+     */
+    429: Problem;
+};
+
+export type StartConversationError = StartConversationErrors[keyof StartConversationErrors];
+
+export type StartConversationResponses = {
+    /**
+     * The conversation with the message in it.
+     */
+    200: ConversationDetail;
+};
+
+export type StartConversationResponse = StartConversationResponses[keyof StartConversationResponses];
+
+export type GetConversationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/messaging/conversations/{id}';
+};
+
+export type GetConversationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no such conversation.
+     */
+    404: Problem;
+};
+
+export type GetConversationError = GetConversationErrors[keyof GetConversationErrors];
+
+export type GetConversationResponses = {
+    /**
+     * The conversation.
+     */
+    200: ConversationDetail;
+};
+
+export type GetConversationResponse = GetConversationResponses[keyof GetConversationResponses];
+
+export type AcceptConversationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/messaging/conversations/{id}/accept';
+};
+
+export type AcceptConversationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * Only an owner of the organization answers.
+     */
+    403: Problem;
+    /**
+     * No such request waits for the caller's side.
+     */
+    404: Problem;
+    /**
+     * It was answered already.
+     */
+    409: Problem;
+};
+
+export type AcceptConversationError = AcceptConversationErrors[keyof AcceptConversationErrors];
+
+export type AcceptConversationResponses = {
+    /**
+     * The conversation is open, and the sender is told.
+     */
+    200: ConversationDetail;
+};
+
+export type AcceptConversationResponse = AcceptConversationResponses[keyof AcceptConversationResponses];
+
+export type DeclineConversationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/messaging/conversations/{id}/decline';
+};
+
+export type DeclineConversationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * Only an owner of the organization answers.
+     */
+    403: Problem;
+    /**
+     * No such request waits for the caller's side.
+     */
+    404: Problem;
+    /**
+     * It was answered already.
+     */
+    409: Problem;
+};
+
+export type DeclineConversationError = DeclineConversationErrors[keyof DeclineConversationErrors];
+
+export type DeclineConversationResponses = {
+    /**
+     * It is declined, and the sender is told without a reason.
+     */
+    204: void;
+};
+
+export type DeclineConversationResponse = DeclineConversationResponses[keyof DeclineConversationResponses];
+
+export type ListMessagesData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        /**
+         * Only the messages before the one with this seq, the latest of them.
+         */
+        before?: number | null;
+        /**
+         * Only the messages after the one with this seq, the earliest of them; it wins over before.
+         */
+        after?: number | null;
+    };
+    url: '/api/messaging/conversations/{id}/messages';
+};
+
+export type ListMessagesErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no such conversation.
+     */
+    404: Problem;
+};
+
+export type ListMessagesError = ListMessagesErrors[keyof ListMessagesErrors];
+
+export type ListMessagesResponses = {
+    /**
+     * At most 50 messages, the oldest first.
+     */
+    200: MessagePage;
+};
+
+export type ListMessagesResponse = ListMessagesResponses[keyof ListMessagesResponses];
+
+export type SendMessageData = {
+    body: SendMessageRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/messaging/conversations/{id}/messages';
+};
+
+export type SendMessageErrors = {
+    /**
+     * The request is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no such conversation.
+     */
+    404: Problem;
+    /**
+     * The conversation is not open, or the identifier belongs to another message.
+     */
+    409: Problem;
+    /**
+     * The caller writes too fast.
+     */
+    429: Problem;
+};
+
+export type SendMessageError = SendMessageErrors[keyof SendMessageErrors];
+
+export type SendMessageResponses = {
+    /**
+     * The message as it was kept.
+     */
+    200: Message;
+};
+
+export type SendMessageResponse = SendMessageResponses[keyof SendMessageResponses];
+
+export type MarkConversationReadData = {
+    body: MarkReadRequest;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/messaging/conversations/{id}/read';
+};
+
+export type MarkConversationReadErrors = {
+    /**
+     * The request is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no such conversation.
+     */
+    404: Problem;
+};
+
+export type MarkConversationReadError = MarkConversationReadErrors[keyof MarkConversationReadErrors];
+
+export type MarkConversationReadResponses = {
+    /**
+     * It is recorded, and the other side is told.
+     */
+    204: void;
+};
+
+export type MarkConversationReadResponse = MarkConversationReadResponses[keyof MarkConversationReadResponses];
+
+export type ReportConversationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/messaging/conversations/{id}/report';
+};
+
+export type ReportConversationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * Only an owner of the organization answers.
+     */
+    403: Problem;
+    /**
+     * No such request waits for the caller's side.
+     */
+    404: Problem;
+    /**
+     * It was answered already.
+     */
+    409: Problem;
+};
+
+export type ReportConversationError = ReportConversationErrors[keyof ReportConversationErrors];
+
+export type ReportConversationResponses = {
+    /**
+     * It is reported.
+     */
+    204: void;
+};
+
+export type ReportConversationResponse = ReportConversationResponses[keyof ReportConversationResponses];
+
+export type SayTypingData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/messaging/conversations/{id}/typing';
+};
+
+export type SayTypingErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller has no such conversation.
+     */
+    404: Problem;
+};
+
+export type SayTypingError = SayTypingErrors[keyof SayTypingErrors];
+
+export type SayTypingResponses = {
+    /**
+     * The others with a screen open are told.
+     */
+    204: void;
+};
+
+export type SayTypingResponse = SayTypingResponses[keyof SayTypingResponses];
+
+export type StreamMessagingEventsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/messaging/events';
+};
+
+export type StreamMessagingEventsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type StreamMessagingEventsError = StreamMessagingEventsErrors[keyof StreamMessagingEventsErrors];
+
+export type StreamMessagingEventsResponses = {
+    /**
+     * The stream; the schema is the body of each event.
+     */
+    200: MessagingEvent;
+};
+
+export type StreamMessagingEventsResponse = StreamMessagingEventsResponses[keyof StreamMessagingEventsResponses];
+
+export type GetConversationProspectData = {
+    body?: never;
+    path?: never;
+    query: {
+        kind: 'talent' | 'solution' | 'program';
+        /**
+         * The address of the talent profile, solution or program on the site.
+         */
+        slug: string;
+    };
+    url: '/api/messaging/prospect';
+};
+
+export type GetConversationProspectErrors = {
+    /**
+     * A parameter is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller belongs to no approved organization and means to write to a solution provider.
+     */
+    403: Problem;
+    /**
+     * No profile, solution or program is at the address.
+     */
+    404: Problem;
+    /**
+     * The address is the caller's own.
+     */
+    409: Problem;
+};
+
+export type GetConversationProspectError = GetConversationProspectErrors[keyof GetConversationProspectErrors];
+
+export type GetConversationProspectResponses = {
+    /**
+     * What it is about, who reads it, and the conversation the caller already has there.
+     */
+    200: ConversationProspect;
+};
+
+export type GetConversationProspectResponse = GetConversationProspectResponses[keyof GetConversationProspectResponses];
+
+export type GetUnreadMessagesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/messaging/unread';
+};
+
+export type GetUnreadMessagesErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+};
+
+export type GetUnreadMessagesError = GetUnreadMessagesErrors[keyof GetUnreadMessagesErrors];
+
+export type GetUnreadMessagesResponses = {
+    /**
+     * What waits for the caller in Messages.
+     */
+    200: Unread;
+};
+
+export type GetUnreadMessagesResponse = GetUnreadMessagesResponses[keyof GetUnreadMessagesResponses];
 
 export type ListEmailMessagesData = {
     body?: never;

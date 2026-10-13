@@ -7,7 +7,7 @@ import {
   FileTextIcon,
   LayoutDashboardIcon,
   LogOutIcon,
-  SendIcon,
+  MessagesSquareIcon,
   UserRoundCogIcon,
   UserRoundIcon,
 } from "lucide-react";
@@ -36,6 +36,8 @@ type AccountMenuProps = {
   operator: boolean;
   /** Whether they judge a program's applications, which their Reviews lead to. */
   reviewer?: boolean;
+  /** How many messages they have not read and first messages wait for them, together. */
+  waiting?: number;
 };
 
 /**
@@ -48,7 +50,7 @@ function AccountMenuPanel({
   email,
   operator,
   children,
-}: Omit<AccountMenuProps, "reviewer"> & { children: React.ReactNode }) {
+}: Omit<AccountMenuProps, "reviewer" | "waiting"> & { children: React.ReactNode }) {
   const t = useTranslations("Site.account");
   const router = useRouter();
   const [state, setState] = useState<"idle" | "pending" | "failed">("idle");
@@ -94,9 +96,11 @@ function AccountMenuPanel({
 function SiteAccountItems({
   operator,
   reviewer = false,
+  waiting = 0,
 }: {
   operator: boolean;
   reviewer?: boolean;
+  waiting?: number;
 }) {
   const t = useTranslations("Site.account");
 
@@ -114,9 +118,15 @@ function SiteAccountItems({
         <UserRoundIcon aria-hidden="true" />
         {t("talentProfile")}
       </DropdownMenuItem>
-      <DropdownMenuItem render={<Link href={siteRoutes.talentSent} />}>
-        <SendIcon aria-hidden="true" />
-        {t("talentSent")}
+      <DropdownMenuItem render={<Link href={siteRoutes.messages} />}>
+        <MessagesSquareIcon aria-hidden="true" />
+        {t("messages")}
+        {waiting > 0 && (
+          <Badge className="ml-auto">
+            <span aria-hidden="true">{waiting}</span>
+            <span className="sr-only">{t("messagesWaiting", { count: waiting })}</span>
+          </Badge>
+        )}
       </DropdownMenuItem>
       <DropdownMenuItem render={<Link href={siteRoutes.account} />}>
         <UserRoundCogIcon aria-hidden="true" />
@@ -143,7 +153,7 @@ function SiteAccountItems({
 }
 
 /** The signed-in person's place in the header: an avatar that opens their account menu. */
-function AccountMenu({ name, email, operator, reviewer }: AccountMenuProps) {
+function AccountMenu({ name, email, operator, reviewer, waiting = 0 }: AccountMenuProps) {
   const t = useTranslations("Site.account");
 
   return (
@@ -153,15 +163,22 @@ function AccountMenu({ name, email, operator, reviewer }: AccountMenuProps) {
           <button
             type="button"
             aria-label={t("open", { name: name ?? email })}
-            className="hit-area flex size-9 items-center justify-center rounded-full border bg-accent text-sm font-semibold text-primary transition-colors outline-none hover:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:border-ring"
+            className="hit-area relative flex size-9 items-center justify-center rounded-full border bg-accent text-sm font-semibold text-primary transition-colors outline-none hover:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:border-ring"
           />
         }
       >
         {initials(name, email)}
+        {waiting > 0 && (
+          // The count is in the menu, next to Messages; here a mark says that something waits.
+          <span
+            aria-hidden="true"
+            className="absolute -top-0.5 -right-0.5 size-3 rounded-full border-2 border-background bg-primary"
+          />
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-66">
         <AccountMenuPanel name={name} email={email} operator={operator}>
-          <SiteAccountItems operator={operator} reviewer={reviewer} />
+          <SiteAccountItems operator={operator} reviewer={reviewer} waiting={waiting} />
         </AccountMenuPanel>
       </DropdownMenuContent>
     </DropdownMenu>

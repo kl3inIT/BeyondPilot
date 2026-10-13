@@ -27,7 +27,8 @@
       "signOutFailed": "We could not sign you out. Try again.",
       "organization": "My organization",
       "talentProfile": "Talent profile",
-      "talentSent": "Messages you sent",
+      "messages": "Messages",
+      "messagesWaiting": "{count, plural, one {# waits for you} other {# wait for you}}",
       "admin": "Admin",
       "applications": "My applications",
       "reviews": "Reviews",
@@ -376,6 +377,18 @@
     "MATCHING_FEEDBACK_NOT_JUDGED": "AI has not read this solution yet, so there is no group to answer about.",
     "MATCHING_FEEDBACK_GROUP_INVALID": "Agree with the group, or say which other group the solution belongs in.",
     "MATCHING_FEEDBACK_REQUIREMENT_UNKNOWN": "This use case no longer has one of these requirements. Reload the page and answer again.",
+    "MESSAGING_CONVERSATION_NOT_FOUND": "There is no such conversation.",
+    "MESSAGING_SUBJECT_NOT_FOUND": "There is nobody to write to at this address.",
+    "MESSAGING_OWN_SUBJECT": "You cannot start a conversation with yourself.",
+    "MESSAGING_NEEDS_ORGANIZATION": "Create or join an organization before you write to a solution provider.",
+    "MESSAGING_ORGANIZATION_NOT_APPROVED": "Your organization has not been approved yet, so it cannot write to a solution provider.",
+    "MESSAGING_ALREADY_WAITING": "Your first message still waits for an answer. You can write again once it is accepted.",
+    "MESSAGING_TOO_MANY_REQUESTS": "You started as many conversations as a day allows. Try again tomorrow.",
+    "MESSAGING_TOO_MANY_MESSAGES": "You are writing too fast. Wait a moment and send again.",
+    "MESSAGING_NOT_OPEN": "This conversation is not open, so nothing can be written in it.",
+    "MESSAGING_NOT_WAITING": "This request was answered already.",
+    "MESSAGING_OWNERS_ONLY": "Only an owner of the organization answers a first message.",
+    "MESSAGING_MESSAGE_CONFLICT": "This message could not be sent. Write it again.",
     "MCP_TOOL_NOT_FOUND": "This tool no longer exists. Reload the page.",
     "NOTIFICATION_EMAIL_NOT_SENT": "The email could not be sent. Try again in a moment.",
     "NOTIFICATION_SETTINGS_INCOMPLETE": "The provider needs more: fill in the fields marked as required.",
@@ -1190,6 +1203,11 @@
           "reply": "Replied to a request for an introduction",
           "decline": "Declined a request for an introduction"
         },
+        "messaging": {
+          "request_accept": "Accepted a first message",
+          "request_decline": "Declined a first message",
+          "request_report": "Reported a first message"
+        },
         "talent": {
           "approve": "Approved a talent profile",
           "reject": "Sent a talent profile back",
@@ -1325,6 +1343,11 @@
         "introduction": {
           "reply": "Replied to the request for an introduction about <resource></resource>",
           "decline": "Declined the request for an introduction about <resource></resource>"
+        },
+        "messaging": {
+          "request_accept": "Accepted a first message about <resource></resource>",
+          "request_decline": "Declined a first message about <resource></resource>",
+          "request_report": "Reported a first message about <resource></resource>"
         },
         "talent": {
           "approve": "Approved the talent profile of <resource></resource>",
@@ -7648,6 +7671,168 @@
       "agreed": "You agreed.",
       "said": "You said: {group}.",
       "counts": "{n, plural, one {# answer} other {# answers}}, {d, plural, one {# disagrees} other {# disagree}}"
+    }
+  },
+  "Messaging": {
+    "metaTitle": "Messages",
+    "title": "Messages",
+    "search": "Search conversations",
+    "genaiFund": "GenAI Fund",
+    "someone": "Someone",
+    "tabs": {
+      "label": "Conversations",
+      "chats": "Chats",
+      "requests": "Requests",
+      "chatsCount": "{count, plural, one {# unread message} other {# unread messages}}",
+      "requestsCount": "{count, plural, one {# first message waits} other {# first messages wait}}"
+    },
+    "kind": {
+      "talent": "AI talent",
+      "solution": "AI solution",
+      "program": "Programs"
+    },
+    "row": {
+      "you": "You: {text}",
+      "from": "{name}: {text}",
+      "new": "New",
+      "unread": "{count, plural, one {# unread message} other {# unread messages}}",
+      "status": {
+        "pending": "Waiting",
+        "declined": "Declined",
+        "closed": "Closed"
+      }
+    },
+    "list": {
+      "empty": {
+        "chats": {
+          "title": "No conversations yet",
+          "lead": "Contact a solution provider or a person in AI talent, and the conversation appears here."
+        },
+        "requests": {
+          "title": "No first messages wait",
+          "lead": "A first message from someone new waits here until you accept or decline it."
+        }
+      },
+      "none": {
+        "title": "No conversation matches",
+        "lead": "Nobody in this list has that name.",
+        "clear": "Clear the search"
+      }
+    },
+    "choose": {
+      "title": "Choose a conversation",
+      "lead": "Your messages with solution providers, AI talent and GenAI Fund are read here. To start one, choose Contact on a profile or a solution.",
+      "solutions": "Browse AI solutions",
+      "talent": "Browse AI talent"
+    },
+    "thread": {
+      "back": "Back to conversations",
+      "about": "About {subject}",
+      "earlier": "Show earlier messages",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "sending": "Sending…",
+      "failed": "Not sent.",
+      "retry": "Try again",
+      "seenAt": "Seen · {time}",
+      "latest": "Go to the latest message",
+      "typing": "{name} is writing…",
+      "typingSomeone": "The other side is writing…",
+      "waiting": "Waiting for {name} to accept. You can write again once they do. Without an answer the request closes on {date}.",
+      "request": "{name} has not written to you before. They will not know you have read this until you accept.",
+      "declined": "{name} will not take this further. Nothing more can be written here.",
+      "closed": "Nobody answered in time, so this request closed. You can write to {name} again.",
+      "reconnecting": "The connection was lost. New messages will appear when it is back."
+    },
+    "composer": {
+      "label": "Write to {name}",
+      "send": "Send",
+      "left": "{count, plural, one {# character left} other {# characters left}}",
+      "locked": {
+        "pending": "You can write again when {name} accepts.",
+        "declined": "This conversation was declined.",
+        "closed": "This request closed without an answer."
+      }
+    },
+    "answer": {
+      "accept": "Accept",
+      "decline": "Decline",
+      "report": "Report as spam",
+      "cancel": "Cancel",
+      "declineTitle": "Decline the message from {name}?",
+      "declineLead": "{name} is told by email that you will not take it further, without a reason.",
+      "reportTitle": "Report the message from {name}?",
+      "reportLead": "GenAI Fund reads what you report. {name} is told only that you will not take it further.",
+      "final": "This cannot be changed afterwards. They may write to you again.",
+      "ownersOnly": "Only an owner of your organization accepts or declines a first message.",
+      "accepted": "Accepted. You can talk here now.",
+      "declined": "Declined.",
+      "reported": "Reported to GenAI Fund."
+    },
+    "first": {
+      "label": "Write your first message to {name}",
+      "beforeTitle": "Before you write",
+      "before": "Say who you are and what you need. {name} reads your name and your organization, never your email address.",
+      "beforeOpen": "Ask what you need to know about the program. The programs team of GenAI Fund answers here.",
+      "request": "You have not talked with {name} before. Your first message waits under their Requests until they accept.",
+      "open": "GenAI Fund reads your message at once; no request is needed.",
+      "existsTitle": "You already have a conversation with {name}",
+      "existsLead": "It waits for an answer or is open. Write there.",
+      "openExisting": "Open the conversation",
+      "refusedTitle": "You cannot write here",
+      "refused": "This conversation cannot be started."
+    },
+    "details": {
+      "title": "About this conversation",
+      "lead": "What the conversation is about and who reads it.",
+      "open": "About this conversation",
+      "close": "Close",
+      "by": "AI solution by {organization}",
+      "program": "Program by GenAI Fund",
+      "tags": "In short",
+      "view": {
+        "talent": "View profile",
+        "solution": "View solution",
+        "program": "View program"
+      },
+      "unlisted": "Its public page is not shown at the moment.",
+      "place": "Where",
+      "skills": "Skills",
+      "proof": "Proof",
+      "deployments": "{count, plural, one {# customer deployment, reviewed by GenAI Fund} other {# customer deployments, reviewed by GenAI Fund}}",
+      "someone": "Someone",
+      "people": {
+        "readers": "Who reads what you write",
+        "writer": "Who is writing"
+      },
+      "role": {
+        "owner": "Owner",
+        "member": "Member"
+      },
+      "note": {
+        "talent": "Only this person reads what you write here. Your email address is never shown to them.",
+        "solution": "Everyone at this organization can read and answer. Your email address is never shown to them.",
+        "program": "The programs team of GenAI Fund reads this conversation.",
+        "recipient": "Your email address is never shown to them."
+      }
+    },
+    "reported": {
+      "metaTitle": "Reported messages",
+      "title": "Reported messages",
+      "lead": "First messages the side written to reported as unwanted. Their senders were told only that the message was declined.",
+      "empty": {
+        "title": "Nothing was reported",
+        "lead": "A first message someone reports as unwanted is listed here."
+      },
+      "columns": {
+        "sender": "Sender",
+        "about": "About",
+        "message": "Message",
+        "reported": "Reported"
+      },
+      "noOrganization": "No organization",
+      "noAccount": "Account no longer signs in",
+      "count": "{count, plural, one {# reported message} other {# reported messages}}"
     }
   },
   "UseCaseProposal": {

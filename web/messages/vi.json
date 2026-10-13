@@ -27,7 +27,8 @@
       "signOutFailed": "Chưa đăng xuất được. Bạn thử lại.",
       "organization": "Tổ chức của tôi",
       "talentProfile": "Hồ sơ nhân lực",
-      "talentSent": "Lời nhắn đã gửi",
+      "messages": "Tin nhắn",
+      "messagesWaiting": "{count, plural, other {# đang chờ bạn}}",
       "admin": "Quản trị",
       "applications": "Đơn của tôi",
       "reviews": "Chấm đơn",
@@ -376,6 +377,18 @@
     "MATCHING_FEEDBACK_NOT_JUDGED": "AI chưa đọc giải pháp này nên chưa có nhóm nào để bạn trả lời.",
     "MATCHING_FEEDBACK_GROUP_INVALID": "Hãy đồng ý với nhóm, hoặc chọn nhóm khác mà giải pháp thuộc về.",
     "MATCHING_FEEDBACK_REQUIREMENT_UNKNOWN": "Use case này không còn một trong các yêu cầu đó. Hãy tải lại trang rồi trả lời lại.",
+    "MESSAGING_CONVERSATION_NOT_FOUND": "Không có hội thoại này.",
+    "MESSAGING_SUBJECT_NOT_FOUND": "Không có ai để viết tới ở địa chỉ này.",
+    "MESSAGING_OWN_SUBJECT": "Bạn không thể trò chuyện với chính mình.",
+    "MESSAGING_NEEDS_ORGANIZATION": "Hãy tạo hoặc tham gia một tổ chức trước khi viết cho nhà cung cấp giải pháp.",
+    "MESSAGING_ORGANIZATION_NOT_APPROVED": "Tổ chức của bạn chưa được duyệt nên chưa viết được cho nhà cung cấp giải pháp.",
+    "MESSAGING_ALREADY_WAITING": "Tin đầu tiên của bạn vẫn đang chờ trả lời. Bạn viết tiếp được sau khi nó được chấp nhận.",
+    "MESSAGING_TOO_MANY_REQUESTS": "Bạn đã bắt đầu đủ số hội thoại cho phép trong một ngày. Hãy thử lại vào ngày mai.",
+    "MESSAGING_TOO_MANY_MESSAGES": "Bạn viết quá nhanh. Hãy chờ một chút rồi gửi lại.",
+    "MESSAGING_NOT_OPEN": "Hội thoại này không mở nên không viết được.",
+    "MESSAGING_NOT_WAITING": "Yêu cầu này đã được trả lời.",
+    "MESSAGING_OWNERS_ONLY": "Chỉ chủ sở hữu của tổ chức mới trả lời một tin đầu tiên.",
+    "MESSAGING_MESSAGE_CONFLICT": "Chưa gửi được tin này. Hãy viết lại.",
     "MCP_TOOL_NOT_FOUND": "Công cụ này không còn nữa. Hãy tải lại trang.",
     "NOTIFICATION_EMAIL_NOT_SENT": "Chưa gửi được email. Hãy thử lại sau giây lát.",
     "NOTIFICATION_SETTINGS_INCOMPLETE": "Nhà cung cấp cần thêm thông tin: điền các ô bắt buộc.",
@@ -1190,6 +1203,11 @@
           "reply": "Trả lời yêu cầu giới thiệu",
           "decline": "Từ chối yêu cầu giới thiệu"
         },
+        "messaging": {
+          "request_accept": "Chấp nhận một tin đầu tiên",
+          "request_decline": "Từ chối một tin đầu tiên",
+          "request_report": "Báo cáo một tin đầu tiên"
+        },
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực",
           "reject": "Trả lại hồ sơ nhân lực",
@@ -1325,6 +1343,11 @@
         "introduction": {
           "reply": "Trả lời yêu cầu giới thiệu về <resource></resource>",
           "decline": "Từ chối yêu cầu giới thiệu về <resource></resource>"
+        },
+        "messaging": {
+          "request_accept": "Đã chấp nhận một tin đầu tiên về <resource></resource>",
+          "request_decline": "Đã từ chối một tin đầu tiên về <resource></resource>",
+          "request_report": "Đã báo cáo một tin đầu tiên về <resource></resource>"
         },
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực của <resource></resource>",
@@ -7648,6 +7671,168 @@
       "agreed": "Bạn đã đồng ý.",
       "said": "Bạn chọn: {group}.",
       "counts": "{n} câu trả lời, {d} không đồng ý"
+    }
+  },
+  "Messaging": {
+    "metaTitle": "Tin nhắn",
+    "title": "Tin nhắn",
+    "search": "Tìm hội thoại",
+    "genaiFund": "GenAI Fund",
+    "someone": "Ai đó",
+    "tabs": {
+      "label": "Hội thoại",
+      "chats": "Trò chuyện",
+      "requests": "Tin chờ",
+      "chatsCount": "{count, plural, other {# tin chưa đọc}}",
+      "requestsCount": "{count, plural, other {# tin đầu tiên đang chờ}}"
+    },
+    "kind": {
+      "talent": "Nhân tài AI",
+      "solution": "Giải pháp AI",
+      "program": "Chương trình"
+    },
+    "row": {
+      "you": "Bạn: {text}",
+      "from": "{name}: {text}",
+      "new": "Mới",
+      "unread": "{count, plural, other {# tin chưa đọc}}",
+      "status": {
+        "pending": "Đang chờ",
+        "declined": "Đã từ chối",
+        "closed": "Đã đóng"
+      }
+    },
+    "list": {
+      "empty": {
+        "chats": {
+          "title": "Chưa có hội thoại nào",
+          "lead": "Bấm Liên hệ trên trang một giải pháp hoặc một hồ sơ nhân tài AI, hội thoại sẽ hiện ở đây."
+        },
+        "requests": {
+          "title": "Không có tin đầu tiên nào đang chờ",
+          "lead": "Tin đầu tiên từ một người mới nằm chờ ở đây cho tới khi bạn chấp nhận hoặc từ chối."
+        }
+      },
+      "none": {
+        "title": "Không có hội thoại nào khớp",
+        "lead": "Không ai trong danh sách này có tên như vậy.",
+        "clear": "Xoá tìm kiếm"
+      }
+    },
+    "choose": {
+      "title": "Chọn một hội thoại",
+      "lead": "Tin nhắn của bạn với các nhà cung cấp giải pháp, nhân tài AI và GenAI Fund được đọc ở đây. Để bắt đầu, bấm Liên hệ trên một hồ sơ hoặc một giải pháp.",
+      "solutions": "Xem giải pháp AI",
+      "talent": "Xem nhân tài AI"
+    },
+    "thread": {
+      "back": "Quay lại danh sách hội thoại",
+      "about": "Về {subject}",
+      "earlier": "Xem các tin trước đó",
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua",
+      "sending": "Đang gửi…",
+      "failed": "Chưa gửi được.",
+      "retry": "Gửi lại",
+      "seenAt": "Đã xem · {time}",
+      "latest": "Tới tin mới nhất",
+      "typing": "{name} đang viết…",
+      "typingSomeone": "Bên kia đang viết…",
+      "waiting": "Đang chờ {name} chấp nhận. Bạn viết tiếp được sau khi họ chấp nhận. Nếu không có trả lời, yêu cầu sẽ đóng vào {date}.",
+      "request": "{name} chưa từng viết cho bạn. Họ không biết bạn đã đọc tin này cho tới khi bạn chấp nhận.",
+      "declined": "{name} không tiếp tục trao đổi này. Không viết thêm được ở đây.",
+      "closed": "Không ai trả lời kịp nên yêu cầu này đã đóng. Bạn có thể viết lại cho {name}.",
+      "reconnecting": "Mất kết nối. Tin mới sẽ hiện khi kết nối trở lại."
+    },
+    "composer": {
+      "label": "Viết cho {name}",
+      "send": "Gửi",
+      "left": "{count, plural, other {Còn # ký tự}}",
+      "locked": {
+        "pending": "Bạn viết tiếp được khi {name} chấp nhận.",
+        "declined": "Hội thoại này đã bị từ chối.",
+        "closed": "Yêu cầu này đã đóng vì không có trả lời."
+      }
+    },
+    "answer": {
+      "accept": "Chấp nhận",
+      "decline": "Từ chối",
+      "report": "Báo spam",
+      "cancel": "Huỷ",
+      "declineTitle": "Từ chối tin của {name}?",
+      "declineLead": "{name} được báo qua email rằng bạn không tiếp tục, không kèm lý do.",
+      "reportTitle": "Báo cáo tin của {name}?",
+      "reportLead": "GenAI Fund sẽ đọc tin bạn báo cáo. {name} chỉ được báo rằng bạn không tiếp tục.",
+      "final": "Không đổi lại được sau đó. Họ vẫn có thể viết cho bạn lần nữa.",
+      "ownersOnly": "Chỉ chủ sở hữu của tổ chức bạn mới chấp nhận hoặc từ chối một tin đầu tiên.",
+      "accepted": "Đã chấp nhận. Hai bên trò chuyện được ở đây.",
+      "declined": "Đã từ chối.",
+      "reported": "Đã báo cho GenAI Fund."
+    },
+    "first": {
+      "label": "Viết tin đầu tiên cho {name}",
+      "beforeTitle": "Trước khi viết",
+      "before": "Hãy nói bạn là ai và bạn cần gì. {name} đọc được tên và tổ chức của bạn, không bao giờ thấy email của bạn.",
+      "beforeOpen": "Hãy hỏi điều bạn cần biết về chương trình. Nhóm chương trình của GenAI Fund trả lời ở đây.",
+      "request": "Bạn chưa từng trò chuyện với {name}. Tin đầu tiên của bạn nằm chờ ở mục Tin chờ của họ cho tới khi họ chấp nhận.",
+      "open": "GenAI Fund đọc tin của bạn ngay; không cần chờ chấp nhận.",
+      "existsTitle": "Bạn đã có hội thoại với {name}",
+      "existsLead": "Hội thoại đó đang chờ trả lời hoặc đang mở. Hãy viết ở đó.",
+      "openExisting": "Mở hội thoại",
+      "refusedTitle": "Bạn không viết được ở đây",
+      "refused": "Không bắt đầu được hội thoại này."
+    },
+    "details": {
+      "title": "Về hội thoại này",
+      "lead": "Hội thoại nói về điều gì và ai đọc được.",
+      "open": "Về hội thoại này",
+      "close": "Đóng",
+      "by": "Giải pháp AI của {organization}",
+      "program": "Chương trình của GenAI Fund",
+      "tags": "Tóm tắt",
+      "view": {
+        "talent": "Xem hồ sơ",
+        "solution": "Xem giải pháp",
+        "program": "Xem chương trình"
+      },
+      "unlisted": "Trang công khai hiện không được hiển thị.",
+      "place": "Nơi làm việc",
+      "skills": "Kỹ năng",
+      "proof": "Bằng chứng",
+      "deployments": "{count, plural, other {# triển khai cho khách hàng, GenAI Fund đã duyệt}}",
+      "someone": "Ai đó",
+      "people": {
+        "readers": "Ai đọc tin bạn viết",
+        "writer": "Ai đang viết"
+      },
+      "role": {
+        "owner": "Chủ sở hữu",
+        "member": "Thành viên"
+      },
+      "note": {
+        "talent": "Chỉ người này đọc tin bạn viết ở đây. Họ không bao giờ thấy email của bạn.",
+        "solution": "Mọi người trong tổ chức này đều đọc và trả lời được. Họ không bao giờ thấy email của bạn.",
+        "program": "Nhóm chương trình của GenAI Fund đọc hội thoại này.",
+        "recipient": "Họ không bao giờ thấy email của bạn."
+      }
+    },
+    "reported": {
+      "metaTitle": "Tin bị báo cáo",
+      "title": "Tin bị báo cáo",
+      "lead": "Các tin đầu tiên bị bên nhận báo là không mong muốn. Người gửi chỉ được báo rằng tin đã bị từ chối.",
+      "empty": {
+        "title": "Chưa có tin nào bị báo cáo",
+        "lead": "Tin đầu tiên bị ai đó báo là không mong muốn sẽ hiện ở đây."
+      },
+      "columns": {
+        "sender": "Người gửi",
+        "about": "Về",
+        "message": "Nội dung",
+        "reported": "Ngày báo cáo"
+      },
+      "noOrganization": "Không có tổ chức",
+      "noAccount": "Tài khoản không còn đăng nhập",
+      "count": "{count, plural, other {# tin bị báo cáo}}"
     }
   },
   "UseCaseProposal": {

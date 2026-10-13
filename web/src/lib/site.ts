@@ -13,6 +13,7 @@ export const siteRoutes = {
   publishUseCase: "/use-cases/new",
   talentProfile: "/workspace/talent",
   talentSent: "/workspace/talent/sent",
+  messages: "/workspace/messages",
   account: "/account",
   accountMcp: "/account/mcp",
   founders: "/founders",
