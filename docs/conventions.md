@@ -410,6 +410,7 @@ One action has one word, on a button, a menu item, a link that acts and the `ari
 - Components use semantic tokens only. Tokens live in `src/styles/tokens.css` with light and dark values and are mapped to Tailwind in `src/app/globals.css`. The palette behind them is described in `DESIGN.md`.
 - Status roles (`success`, `warning`, `info`, `destructive`) always come with an icon or a label.
 - Raw colours, inline styles, arbitrary values, unknown classes and dynamically built class names are lint errors outside `src/components/ui`, through the `@shadcn/lint` rules `no-raw-colors`, `no-inline-styles`, `no-arbitrary-values`, `no-unknown-classes` and `require-static-classes`. A value several features repeat becomes a token.
+- A page a client drew for its own program (the written pages in `src/features/program`, [program spec](specs/program.md#pages)) is the one exception: it keeps the measures and colours of that drawing in a CSS module beside it, under custom properties prefixed by the program, so nothing reaches another page; it still uses the site's fonts and components where the drawing has no look of its own.
 - A component's appearance comes from its variants and sizes. `shadcn/no-restyle` allows only layout classes (margin, width, position) in `className` on a registry component; a new look is a new variant in the component, added only when the design calls for one.
 - `src/components/ui` is exempt from these design-system rules because primitives style their own internals; the rest of ESLint (React Hooks, accessibility, Next.js) still checks it.
 
@@ -420,13 +421,13 @@ Motion shows a change: where something came from, where it went, what an action 
 - An animation that explains nothing is removed. Decorative motion belongs to the marketing pages; in `admin/` and `workspace/` motion serves feedback, state and continuity only.
 - Durations are a named scale, never a number written on a page: `duration-fast` (100ms) for hover, press and focus, `duration-base` (200ms) for what appears, leaves or changes state, `duration-slow` (300ms) for a change of size or position. A chart draws in 400ms (`chartDrawMs` in `src/lib/motion.ts`). Which step a change takes is a judgement by how far it travels and how large it is. The landing keeps its own longer, authored sequences.
 - An entrance decelerates (`ease-entrance`); an exit is shorter than its entrance. A spring is allowed when it does not overshoot; nothing bounces.
-- Animate `transform` and `opacity`. Outside `components/ui`, `transition-all` is not written: the properties are named. A block that appears or goes inside a page, such as an error under a field, goes through `Reveal`, which grows it into place; a section a person opens is the registry `collapsible`. Neither is a height transition of its own.
+- Animate `transform` and `opacity`. Outside `components/ui`, `transition-all` is not written: the properties are named. A block that appears or goes inside a page, such as an error under a field, goes through `Reveal`, which grows it into place and follows its content's height; a section a person opens is the registry `collapsible`. Neither is a height transition of its own.
 - An entrance starts from at least 95% of its size and travels a short way, from the side of its trigger.
 - The interface answers at once. An animation never delays the next action, and it gives way when the person acts again.
 - An action repeated many times a day has no animation: a keyboard shortcut, the next page of a table, the next record of a queue.
 - A skeleton or spinner waits about 200ms before it shows, then stays long enough not to flash.
 - With `prefers-reduced-motion: reduce`, movement and scaling are dropped and the change is shown by opacity or at once. No screen depends on an animation to be understood.
-- CSS first. A motion library arrives with its first consumer, for what CSS cannot do (an item leaving a list, a number that counts), and is loaded only by the pages that use it.
+- CSS first, then `motion` for what CSS cannot do: a height that follows changing content, an item leaving a list, a number that counts. It is loaded as `LazyMotion` with `domAnimation` and `m` components, never the full `motion` component, and takes its durations and curves from `src/lib/motion.ts`, the same steps as the classes. Its height and position animations do not follow the motion preference by themselves: a component reads `useReducedMotion` and drops them.
 
 ### Charts
 

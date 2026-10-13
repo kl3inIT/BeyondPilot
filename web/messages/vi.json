@@ -5919,17 +5919,21 @@
           "label": "Ai được nộp",
           "value": "Từ cá nhân đến nhà cung cấp lâu năm"
         }
+      },
+      "name": {
+        "first": "Nestlé Vietnam",
+        "second": "AI Reinvention"
       }
     },
     "nav": {
       "label": "Trên trang này",
       "offers": "Quyền lợi",
       "areas": "Thách thức",
-      "use-cases": "Use case",
       "how": "Cách tham gia",
       "eligibility": "Điều kiện",
       "dates": "Mốc thời gian",
-      "faq": "Hỏi đáp"
+      "faq": "Hỏi đáp",
+      "top": "Về đầu trang"
     },
     "offers": {
       "title": "Chương trình mang lại gì",
@@ -6019,10 +6023,6 @@
     "early": {
       "ask": "Bạn thấy bài toán quen thuộc?",
       "text": "Nộp trước ngày 5 tháng 11 để được xét vào đợt briefing sớm. Ứng viên qua vòng sơ tuyển được briefing chi tiết từ ngày 6 tháng 11."
-    },
-    "useCases": {
-      "title": "Use case trong chương trình này",
-      "lead": "Các bài toán Nestlé Việt Nam đã đăng cho chương trình này. Mở từng bài để đọc mục tiêu, yêu cầu, ngân sách và thời gian."
     },
     "how": {
       "title": "Cách tham gia",
@@ -6115,7 +6115,8 @@
           "owner": "Mỗi kết nối có một người phụ trách đích danh"
         }
       },
-      "pocs": "PoC tùy thuộc vào việc tuyển chọn và phê duyệt."
+      "pocs": "PoC tùy thuộc vào việc tuyển chọn và phê duyệt.",
+      "start": "Hãy nộp sớm."
     },
     "faq": {
       "title": "Những câu hỏi bạn thật sự muốn hỏi.",
@@ -6157,18 +6158,16 @@
     "closing": {
       "title": "Giải pháp của bạn sẽ có mặt trong phòng ngày 15 tháng 12 chứ?",
       "text": "Danh sách rút gọn đang thành hình — nộp hôm nay để có cơ hội được chọn.",
-      "closes": "Hạn nộp đơn: {closes}."
+      "closes": "Hạn nộp đơn: {closes}.",
+      "info": "Xem lịch buổi giải đáp",
+      "share": "Biết đội phù hợp? Gửi trang này cho họ"
     },
-    "about": {
-      "label": "Về chương trình",
-      "tagline": "AI-First. Human-Led. Re-Inventing Nestlé.",
-      "text": "AI Solution Search là một phần của chương trình Nestlé Vietnam AI Reinvention và AI Hackathon 2026, do GenAI Fund điều hành cùng Nestlé Việt Nam. Việc tham gia và mọi hợp tác về sau tùy thuộc vào kết quả tuyển chọn, mức độ phù hợp kinh doanh và các yêu cầu hiện hành của Nestlé. Ứng viên giữ quyền sở hữu trí tuệ của mình."
-    },
-    "rail": {
-      "partners": "Đối tác",
-      "runBy": "Điều hành bởi",
-      "with": "Cùng với",
-      "questions": "Có câu hỏi về chương trình này?"
+    "pill": {
+      "label": "Nộp đơn",
+      "closes": "Hạn nộp {date}",
+      "time": "Khoảng 10 phút",
+      "opens": "Mở đơn {date}",
+      "closed": "Đã đóng đơn"
     }
   },
   "EntryList": {
