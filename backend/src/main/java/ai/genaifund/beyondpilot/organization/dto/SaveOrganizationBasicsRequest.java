@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Schema(name = "SaveOrganizationBasics",
-		description = "The facts a person gives when they make an organization. The rest of the profile is left as it is.")
+		description = "The facts a person gives when they make an organization, which a save changes alone. The rest of the profile is left as it is.")
 public record SaveOrganizationBasicsRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

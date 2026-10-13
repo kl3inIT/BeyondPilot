@@ -354,6 +354,25 @@ class OrganizationTest {
 	}
 
 	@Test
+	void aPersonWithoutAnOrganizationMakesOneFromItsNameKindSizeIndustriesAndCountry() {
+		String founder = signIn("founder@fromfew.test");
+		String path = API + "/organizations/basics";
+		Map<String, Object> request = new HashMap<>(Map.of("name", " Few Team ", "type", "builder_team", "teamSize",
+				"2_9", "industries", List.of(), "country", "VN"));
+
+		// A company names an industry; a team may leave them out.
+		request.put("type", "company");
+		assertProblem(post(founder, path, request), 400, "ORGANIZATION_INDUSTRIES_REQUIRED");
+		request.put("type", "builder_team");
+		String created = body(post(founder, path, request).expectStatus().isCreated());
+		assertThat(JsonPath.<String>read(created, "$.name")).isEqualTo("Few Team");
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
+		assertThat(JsonPath.<String>read(mine(founder), "$.role")).isEqualTo("owner");
+		// One organization for one person.
+		assertProblem(post(founder, path, request), 409, "ORGANIZATION_ALREADY_MEMBER");
+	}
+
+	@Test
 	void aRefusedOrganizationIsRefusedForGoodAndOnlyWhileItWaitsForReview() {
 		String founder = signIn("founder@refused.test");
 		UUID id = create(founder, "Refused Co");

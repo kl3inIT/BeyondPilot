@@ -12,6 +12,7 @@ import ai.genaifund.beyondpilot.organization.dto.JoinOutcomeResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationSearchResponse;
 import ai.genaifund.beyondpilot.organization.dto.PublicOrganizationResponse;
+import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationBasicsRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -90,6 +91,23 @@ class OrganizationsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	OrganizationResponse create(@CurrentActor Actor actor, @Valid @RequestBody CreateOrganizationRequest request) {
 		return organizations.create(actor, request);
+	}
+
+	@PostMapping(path = "/organizations/basics", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(HttpStatus.CREATED)
+	@Operation(operationId = "createOrganizationFromBasics",
+			summary = "Create an organization the caller owns from its name, kind, size, industries and country",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "201", description = "The organization, waiting for GenAI Fund's review.")
+	@ApiResponse(responseCode = "400", description = "A member is not valid, or a company names no industry.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "The caller already belongs to an organization, or waits on a request to join one.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	OrganizationResponse createFromBasics(@CurrentActor Actor actor,
+			@Valid @RequestBody SaveOrganizationBasicsRequest request) {
+		return organizations.createFromBasics(actor, request);
 	}
 
 	@PostMapping(path = "/organizations/{id}/join", consumes = MediaType.APPLICATION_JSON_VALUE,

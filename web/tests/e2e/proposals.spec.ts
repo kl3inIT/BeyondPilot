@@ -4,13 +4,11 @@ import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
 import { answerUploads } from "./stored-files";
 import {
-  minh,
   policyChat,
   proposalDeck,
   proposalForm,
   proposalId,
   proposalUseCaseId,
-  siti,
 } from "./stub-wizards.mjs";
 import { answerWorkspace } from "./stub-workspace.mjs";
 
@@ -20,8 +18,8 @@ const storedApproach = "Policy Chat answers a policyholder's question from the p
 type Saved = {
   solutionIds: string[];
   approach: string;
+  teamBackground: string;
   deckFileId: string | null;
-  team: { accountId: string; role: string; primary: boolean }[];
   version: number | null;
 };
 
@@ -62,7 +60,7 @@ async function fakeBackend(page: Page, baseURL: string, scene?: "draft" | "sent"
           approach: body.approach,
           deck: body.deckFileId ? proposalDeck : null,
           solutions: body.solutionIds.map(() => policyChat),
-          team: body.team.map((row) => ({ ...row, email: "", name: null })),
+          teamBackground: body.teamBackground || null,
           updatedAt: new Date().toISOString(),
           version,
         },
@@ -139,18 +137,38 @@ test.describe("a proposal to a use case", () => {
     const { saves, contacts, sends, uploads } = await fakeBackend(page, baseURL!);
     await page.goto(proposePath);
 
-    // Step 1: the organization the proposal is sent for.
-    await expect(heading(page)).toHaveText("Organization");
+    // Step 1: the organization the proposal is sent for, and who is sending; what the account
+    // lacks is said under the field, and the first field in error takes the focus.
+    await expect(heading(page)).toHaveText("You and your team");
     await expect(page.getByText("Pocket Policy", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("radio", { name: /Company/ })).toBeChecked();
+    await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Minh Trần");
+    await page.getByRole("button", { name: "Continue" }).click();
+    const country = page.getByLabel("Country");
+    await expect(country).toBeFocused();
+    await expect(country).toHaveAccessibleDescription("Required");
+    const phone = page.getByLabel("Phone");
+    await expect(phone).toHaveAttribute("aria-invalid", "true");
+    expect(contacts).toEqual([]);
+    await country.selectOption({ label: "Vietnam" });
+    // A number that cannot be one is said while it is typed.
+    await phone.fill("call me");
+    await expect(phone).toHaveAccessibleDescription(
+      "Use digits with the country code, such as +84 912 345 678.",
+    );
+    await phone.fill("+84 912 345 678");
+    await expect(phone).not.toHaveAttribute("aria-invalid", "true");
+    await settled(page);
     await page.getByRole("button", { name: "Continue" }).click();
 
-    // Step 2: a step that opens takes the focus on its heading; what it lacks is said under the
-    // field, and the first field in error takes the focus.
-    await expect(heading(page)).toHaveText("AI solutions");
+    // Step 2: a step that opens takes the focus on its heading. Leaving the first step kept the
+    // details on the account.
+    await expect(heading(page)).toHaveText("Your solution");
     await expect(heading(page)).toBeFocused();
+    expect(contacts).toEqual([{ country: "VN", phone: "+84 912 345 678", name: "Minh Trần" }]);
     if (isMobile) {
       await expect(
-        steps(page).getByRole("button", { name: /^Step 2 of 6 · AI solutions/ }),
+        steps(page).getByRole("button", { name: /^Step 2 of 3 · Your solution/ }),
       ).toBeVisible();
     }
     await page.getByRole("button", { name: "Continue" }).click();
@@ -162,7 +180,7 @@ test.describe("a proposal to a use case", () => {
     await expect(approach).toHaveAccessibleDescription(
       "Explain how the solutions solve this use case.",
     );
-    await expect(heading(page)).toHaveText("AI solutions");
+    await expect(heading(page)).toHaveText("Your solution");
     expect(saves).toEqual([]);
     await settled(page);
 
@@ -181,73 +199,15 @@ test.describe("a proposal to a use case", () => {
         solutionIds: [policyChat.id],
         approach: "Policy Chat reads each claim and names the team it belongs to.",
         deckFileId: null,
-        team: [],
       });
-    expect(saves[0].version).toBeNull();
     await expect(page.getByText(/^Saved /)).toBeVisible();
-    await page.getByRole("button", { name: "Continue" }).click();
 
-    // Step 3: the details the account lacks; a number that cannot be one is said while it is typed.
-    await expect(heading(page)).toHaveText("Your details");
-    await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Minh Trần");
-    await page.getByRole("button", { name: "Continue" }).click();
-    const country = page.getByLabel("Country");
-    await expect(country).toBeFocused();
-    await expect(country).toHaveAccessibleDescription("Required");
-    const phone = page.getByLabel("Phone");
-    await expect(phone).toHaveAttribute("aria-invalid", "true");
-    expect(contacts).toEqual([]);
-    await country.selectOption({ label: "Vietnam" });
-    await phone.fill("call me");
-    await expect(phone).toHaveAccessibleDescription(
-      "Use digits with the country code, such as +84 912 345 678.",
-    );
-    await phone.fill("+84 912 345 678");
-    await expect(phone).not.toHaveAttribute("aria-invalid", "true");
-    await page.getByRole("button", { name: "Continue" }).click();
-
-    // Step 4: the team. Leaving the details kept them on the account.
-    await expect(heading(page)).toHaveText("Team");
-    expect(contacts).toEqual([{ country: "VN", phone: "+84 912 345 678", name: "Minh Trần" }]);
-    await page.getByRole("button", { name: "Add member" }).click();
-    const dialog = page.getByRole("dialog");
-    await dialog.getByLabel("Person").selectOption({ label: `${siti.name} · ${siti.email}` });
-    await dialog.getByRole("button", { name: "Add member" }).click();
-    await expect(dialog.getByLabel("Role")).toBeFocused();
-    await expect(dialog.getByLabel("Role")).toHaveAccessibleDescription("Enter the role.");
-    await dialog.getByLabel("Role").fill("Engineer");
-    await dialog.getByRole("button", { name: "Add member" }).click();
-    await expect(dialog).toBeHidden();
-    await expect(page.getByLabel("Role of Siti Rahma")).toHaveValue("Engineer");
-    // The first person of a team is its primary contact.
-    await expect(
-      page.getByRole("radio", { name: "Siti Rahma is the primary contact" }),
-    ).toBeChecked();
-
-    await page.getByRole("button", { name: "Add member" }).click();
-    await dialog.getByLabel("Person").selectOption({ label: `${minh.name} · ${minh.email}` });
-    await dialog.getByLabel("Role").fill("Lead");
-    await dialog.getByRole("button", { name: "Add member" }).click();
-    await expect(dialog).toBeHidden();
-    await expect(page.getByPlaceholder("Project lead")).toHaveCount(2);
-    // When the primary contact leaves, the first who remains takes the place.
-    await page.getByRole("button", { name: "Remove Siti Rahma" }).click();
-    await expect(
-      page.getByRole("radio", { name: "Minh Trần is the primary contact" }),
-    ).toBeChecked();
-    await expect
-      .poll(() => saves.at(-1)?.team)
-      .toEqual([{ accountId: minh.accountId, role: "Lead", primary: true }]);
-    await settled(page);
-    await page.getByRole("button", { name: "Continue" }).click();
-
-    // Step 5: the PDF, uploaded at once and named by the next save.
-    await expect(heading(page)).toHaveText("Proposal PDF");
+    // The PDF is part of the step, uploaded at once and named by the next save.
     await page.getByRole("button", { name: "Continue" }).click();
     const choose = page.getByRole("button", { name: /Choose a PDF/ });
     await expect(page.getByText("Upload the proposal as a PDF.")).toBeVisible();
     await expect(choose).toBeFocused();
-    await expect(heading(page)).toHaveText("Proposal PDF");
+    await expect(heading(page)).toHaveText("Your solution");
     await page.locator("#proposal-deck").setInputFiles(pdf);
     await expect(page.getByText("deck.pdf")).toBeVisible();
     await expect(page.getByText("Upload the proposal as a PDF.")).toHaveCount(0);
@@ -255,7 +215,7 @@ test.describe("a proposal to a use case", () => {
     await expect.poll(() => saves.at(-1)?.deckFileId).toBe(proposalDeck.fileId);
     await page.getByRole("button", { name: "Continue" }).click();
 
-    // Step 6: everything once more, then a confirmation before it goes.
+    // Step 3: everything once more, then a confirmation before it goes.
     await expect(heading(page)).toHaveText("Review");
     await expect(page.getByText("Finish these steps before you send")).toHaveCount(0);
     await expect(
@@ -276,8 +236,8 @@ test.describe("a proposal to a use case", () => {
     expect(saves.at(-1)).toEqual({
       solutionIds: [policyChat.id],
       approach: "Policy Chat reads each claim and names the team it belongs to.",
+      teamBackground: "",
       deckFileId: proposalDeck.fileId,
-      team: [{ accountId: minh.accountId, role: "Lead", primary: true }],
       version: saves.length - 1,
     });
   });
@@ -289,67 +249,54 @@ test.describe("a proposal to a use case", () => {
     isMobile,
   }) => {
     await signInAs(context, "owner", baseURL!);
-    const { saves } = await fakeBackend(page, baseURL!, "draft");
+    const { saves, contacts } = await fakeBackend(page, baseURL!, "draft");
     await page.goto(proposePath);
-    await expect(heading(page)).toHaveText("Organization");
+    await expect(heading(page)).toHaveText("You and your team");
 
-    // Forward by the list of steps: the organization has nothing to check, so the team opens.
-    await openStep(page, isMobile, "Team");
-    await expect(heading(page)).toHaveText("Team");
-    await expect(heading(page)).toBeFocused();
-    if (isMobile) {
-      const bar = steps(page).getByRole("button", { name: /All steps/ });
-      await expect(bar).toHaveText(/Step 4 of 6 · Team/);
-      await expect(bar).toHaveAttribute("aria-expanded", "false");
-    } else {
-      await expect(steps(page).getByRole("button", { name: "Team", exact: true })).toHaveAttribute(
-        "aria-current",
-        "step",
-      );
-    }
-    // Both people of the draft are there, the one who has left the organization included.
-    const roles = page.getByPlaceholder("Project lead");
-    await expect(roles).toHaveCount(2);
-    await expect(roles.first()).toHaveValue("Advisor");
-    await expect(page.getByLabel("Role of Siti Rahma")).toHaveValue("Engineer");
-
-    // The draft names no primary contact: the team says so and the choice takes the focus.
-    await page.getByRole("button", { name: "Continue" }).click();
-    await expect(page.getByText("Choose one primary contact.")).toBeVisible();
-    await expect(page.getByRole("radio").first()).toBeFocused();
-    await expect(heading(page)).toHaveText("Team");
-    // The same refusal by the list of steps, which goes forward as Continue does.
+    // The list of steps goes forward as Continue does: the details are missing, so the first
+    // step refuses and the country takes the focus.
     await openStep(page, isMobile, "Review");
-    await expect(heading(page)).toHaveText("Team");
+    await expect(heading(page)).toHaveText("You and your team");
+    await expect(page.getByLabel("Country")).toBeFocused();
     expect(saves).toEqual([]);
     await settled(page);
 
-    await page.getByRole("radio", { name: "Siti Rahma is the primary contact" }).click();
-    await expect(page.getByText("Choose one primary contact.")).toHaveCount(0);
-    await expect
-      .poll(() => saves.at(-1))
-      .toEqual({
-        solutionIds: [policyChat.id],
-        approach: storedApproach,
-        deckFileId: null,
-        team: [
-          { accountId: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a99", role: "Advisor", primary: false },
-          { accountId: siti.accountId, role: "Engineer", primary: true },
-        ],
-        version: 4,
-      });
-
-    // Back is never refused, and shows what the draft held.
-    await openStep(page, isMobile, "AI solutions");
-    await expect(heading(page)).toHaveText("AI solutions");
+    await page.getByLabel("Country").selectOption({ label: "Vietnam" });
+    await page.getByLabel("Phone").fill("+84 912 345 678");
+    await openStep(page, isMobile, "Your solution");
+    await expect(heading(page)).toHaveText("Your solution");
+    await expect(heading(page)).toBeFocused();
+    if (isMobile) {
+      const bar = steps(page).getByRole("button", { name: /All steps/ });
+      await expect(bar).toHaveText(/Step 2 of 3 · Your solution/);
+      await expect(bar).toHaveAttribute("aria-expanded", "false");
+    } else {
+      await expect(
+        steps(page).getByRole("button", { name: "Your solution", exact: true }),
+      ).toHaveAttribute("aria-current", "step");
+    }
+    expect(contacts).toEqual([{ country: "VN", phone: "+84 912 345 678", name: "Minh Trần" }]);
+    // What the draft held is there.
     await expect(page.getByText("Policy Chat", { exact: true })).toBeVisible();
     await expect(page.getByLabel("How the solutions solve this use case")).toHaveValue(
       storedApproach,
     );
 
+    // The draft has no PDF: the step says so, and the choice takes the focus.
+    await page.getByRole("button", { name: "Continue" }).click();
+    await expect(page.getByText("Upload the proposal as a PDF.")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Choose a PDF/ })).toBeFocused();
+    await expect(heading(page)).toHaveText("Your solution");
+    await openStep(page, isMobile, "Review");
+    await expect(heading(page)).toHaveText("Your solution");
+
+    // Back is never refused.
+    await openStep(page, isMobile, "You and your team");
+    await expect(heading(page)).toHaveText("You and your team");
     await page.getByRole("button", { name: "Save and exit" }).click();
     await expect(page).toHaveURL(`/use-cases/${proposalUseCaseId}`);
-    expect(saves).toHaveLength(1);
+    // Nothing was changed, so nothing was saved.
+    expect(saves).toEqual([]);
   });
 
   test("a sent proposal is edited, and nothing is saved until Save changes", async ({
@@ -364,23 +311,23 @@ test.describe("a proposal to a use case", () => {
     await expect(page.getByText("You are editing a sent proposal")).toBeVisible();
     await expect(page.getByText("No changes yet")).toBeVisible();
 
-    await openStep(page, isMobile, "AI solutions");
+    // The account has no country or number yet; going forward asks for them first.
+    await openStep(page, isMobile, "Your solution");
+    await expect(heading(page)).toHaveText("You and your team");
+    await expect(page.getByLabel("Country")).toBeFocused();
+    await page.getByLabel("Country").selectOption({ label: "Vietnam" });
+    await page.getByLabel("Phone").fill("+84 912 345 678");
+    await openStep(page, isMobile, "Your solution");
+    await expect(heading(page)).toHaveText("Your solution");
     await page
       .getByLabel("How the solutions solve this use case")
       .fill("Policy Chat now also drafts the reply.");
     await expect(page.getByText("Changes not saved yet")).toBeVisible();
 
-    // The account has no country or number yet, so the review names the step that lacks them.
     await openStep(page, isMobile, "Review");
     await expect(heading(page)).toHaveText("Review");
-    await expect(page.getByText("Finish these steps before you send")).toBeVisible();
+    await expect(page.getByText("Finish these steps before you send")).toHaveCount(0);
     const save = page.getByRole("button", { name: "Save changes" });
-    await expect(save).toBeDisabled();
-    await openStep(page, isMobile, "Your details");
-    await page.getByLabel("Country").selectOption({ label: "Vietnam" });
-    await page.getByLabel("Phone").fill("+84 912 345 678");
-    await openStep(page, isMobile, "Review");
-    await expect(heading(page)).toHaveText("Review");
     expect(contacts).toEqual([{ country: "VN", phone: "+84 912 345 678", name: "Minh Trần" }]);
     // Longer than the wait of a draft's save: a sent proposal is not saved as it changes.
     await page.waitForTimeout(1200);
@@ -394,8 +341,8 @@ test.describe("a proposal to a use case", () => {
       {
         solutionIds: [policyChat.id],
         approach: "Policy Chat now also drafts the reply.",
+        teamBackground: "",
         deckFileId: proposalDeck.fileId,
-        team: [{ accountId: siti.accountId, role: "Engineer", primary: true }],
         version: 7,
       },
     ]);

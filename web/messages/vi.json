@@ -462,8 +462,6 @@
     "PROPOSAL_ALREADY_SENT": "Proposal này đã gửi nên không sửa được nữa.",
     "PROPOSAL_APPROACH_REQUIRED": "Hãy nói giải pháp giải quyết use case này như thế nào.",
     "PROPOSAL_CONTACT_REQUIRED": "Hãy thêm tên, quốc gia và số điện thoại của bạn trước.",
-    "PROPOSAL_TEAM_INVALID": "Nhóm chỉ gồm thành viên của tổ chức bạn, mỗi người một lần, và tối đa một người liên hệ chính.",
-    "PROPOSAL_TEAM_INCOMPLETE": "Hãy thêm ít nhất một người, ghi vai trò cho từng người và chọn người liên hệ chính.",
     "PROPOSAL_PDF_REQUIRED": "Hãy thêm proposal dưới dạng PDF.",
     "PROPOSAL_EDIT_WINDOW_CLOSED": "Đã hết thời gian chỉnh sửa đề xuất này nên các thay đổi của bạn chưa được lưu.",
     "SEARCH_PROVIDER_NOT_FOUND": "Nhà cung cấp này không còn nữa. Hãy tải lại trang.",
@@ -7646,11 +7644,8 @@
       "saveAndReturn": "Lưu và thoát",
       "send": "Gửi proposal",
       "steps": {
-        "organization": "Tổ chức",
-        "solutions": "Giải pháp AI",
-        "details": "Thông tin của bạn",
-        "team": "Đội ngũ",
-        "pdf": "PDF proposal",
+        "you": "Bạn và nhóm của bạn",
+        "solutions": "Giải pháp của bạn",
         "review": "Xem lại"
       },
       "solutions": {
@@ -7661,7 +7656,8 @@
         "approach": "Các giải pháp giải quyết use case này như thế nào",
         "needed": {
           "solution": "Hãy thêm ít nhất một giải pháp.",
-          "approach": "Hãy giải thích cách các giải pháp giải quyết use case này."
+          "approach": "Hãy giải thích cách các giải pháp giải quyết use case này.",
+          "deck": "Hãy tải proposal lên dưới dạng PDF."
         },
         "editorTitle": "Giải pháp mới",
         "editorLead": "Viết giải pháp qua bốn bước. Đóng trình soạn để quay lại proposal của bạn.",
@@ -7674,6 +7670,35 @@
           "note": "Bạn có thể thêm bất kỳ giải pháp nào. Không thấy giải pháp cần tìm?",
           "cancel": "Hủy",
           "add": "{count, plural, other {Thêm # giải pháp}}"
+        },
+        "deck": "PDF proposal"
+      },
+      "you": {
+        "who": "Ai gửi proposal này?",
+        "choice": {
+          "individual": {
+            "title": "Một mình tôi",
+            "what": "Tôi làm việc một mình"
+          },
+          "team": {
+            "title": "Một nhóm",
+            "what": "Vài người cùng xây dựng"
+          },
+          "company": {
+            "title": "Công ty",
+            "what": "Tổ chức có trang riêng"
+          }
+        },
+        "teamName": "Tên nhóm",
+        "teamSize": "Quy mô nhóm",
+        "teamBackground": "Giới thiệu nhóm",
+        "aboutYou": "Về bạn",
+        "asked": "Bạn đã xin tham gia {name}. Chúng tôi sẽ gửi email khi một chủ sở hữu duyệt, rồi bạn hoàn tất proposal này.",
+        "claiming": "Bạn đã xin nhận {name}. Chúng tôi sẽ gửi email khi GenAI Fund duyệt.",
+        "needed": {
+          "who": "Hãy chọn ai gửi proposal.",
+          "company": "Hãy tham gia hoặc tạo tổ chức của bạn để tiếp tục.",
+          "background": "Hãy cho biết nhóm bạn đã xây dựng những gì."
         }
       },
       "details": {
@@ -7685,43 +7710,11 @@
         "phoneInvalid": "Dùng chữ số và mã quốc gia, ví dụ +84 912 345 678.",
         "required": "Bắt buộc"
       },
-      "team": {
-        "count": "{count, plural, other {# thành viên}}",
-        "add": "Thêm thành viên",
-        "empty": "Chưa có thành viên nào",
-        "columns": {
-          "member": "Thành viên",
-          "role": "Vai trò",
-          "primary": "Đầu mối liên hệ",
-          "actions": "Thao tác"
-        },
-        "roleOf": "Vai trò của {name}",
-        "primaryOf": "{name} là đầu mối liên hệ",
-        "remove": "Gỡ {name}",
-        "rolePlaceholder": "Trưởng dự án",
-        "needed": {
-          "role": "Hãy nhập vai trò cho mọi thành viên.",
-          "primary": "Hãy chọn một đầu mối liên hệ."
-        },
-        "dialog": {
-          "title": "Thêm thành viên vào đội ngũ",
-          "person": "Người",
-          "role": "Vai trò",
-          "roleRequired": "Hãy nhập vai trò.",
-          "cancel": "Hủy",
-          "submit": "Thêm thành viên"
-        }
-      },
-      "pdf": {
-        "needed": "Hãy tải proposal lên dưới dạng PDF."
-      },
       "review": {
         "edit": "Sửa",
         "nothing": "Chưa có gì.",
-        "primary": "Đầu mối liên hệ",
         "missing": "Hoàn tất các bước này trước khi gửi",
-        "confirm": "Tôi xác nhận những gì tôi gửi là chính xác và tôi được phép đưa chúng vào proposal thay mặt tổ chức của mình.",
-        "none": "Không có"
+        "confirm": "Tôi xác nhận những gì tôi gửi là chính xác và tôi được phép đưa chúng vào proposal thay mặt tổ chức của mình."
       },
       "blocked": {
         "backToUseCase": "Quay lại use case",
@@ -7756,17 +7749,6 @@
         "saved": "Đã lưu các thay đổi của đề xuất."
       },
       "organization": {
-        "kind": "Ai gửi proposal",
-        "individual": "Một mình tôi",
-        "team": "Một nhóm",
-        "teamName": "Tên nhóm",
-        "country": "Quốc gia",
-        "countryPlaceholder": "Chọn quốc gia",
-        "teamSize": "Quy mô nhóm",
-        "website": "Website (không bắt buộc)",
-        "required": "Bắt buộc.",
-        "existing": "Công ty tôi đã có trên BeyondPilot",
-        "continue": "Tiếp tục",
         "pending": "Đang chờ duyệt",
         "edit": "Sửa",
         "dialog": {
@@ -7775,7 +7757,11 @@
           "cancel": "Hủy",
           "save": "Lưu",
           "saved": "Đã lưu tổ chức.",
-          "required": "Bắt buộc."
+          "required": "Bắt buộc.",
+          "createTitle": "Tổ chức mới",
+          "create": "Tạo",
+          "created": "Đã tạo tổ chức.",
+          "full": "Tạo bằng biểu mẫu đầy đủ"
         }
       }
     },

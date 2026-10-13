@@ -169,6 +169,19 @@ public class OrganizationService {
 	}
 
 	/**
+	 * Creates an organization the caller owns from the few facts a person gives in passing: the name, the kind, the
+	 * size, the industries and the country. The rest of the profile is theirs to write later. It waits for GenAI Fund's
+	 * review like any organization a person creates, which decides whether it is listed, not whether it sends a proposal.
+	 * @throws OrganizationException when the caller already belongs to an organization or waits on a request, or a
+	 * company names no industry
+	 */
+	@Transactional
+	public OrganizationResponse createFromBasics(Actor actor, SaveOrganizationBasicsRequest request) {
+		return createOwned(actor, new Profile(request.name().strip(), request.type(), null, request.country(),
+				request.teamSize(), request.industries(), null, null, null), null);
+	}
+
+	/**
 	 * Makes the organization a person applies through when they belong to none (BEY-37): a builder on their own or a
 	 * team, which provides AI solutions. Like any organization a person creates, it waits for GenAI Fund's review,
 	 * which decides whether it is listed, not whether it applies; the rest of the profile is theirs to write later.

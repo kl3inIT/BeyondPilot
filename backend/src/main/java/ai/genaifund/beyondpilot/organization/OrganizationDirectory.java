@@ -42,8 +42,8 @@ public class OrganizationDirectory {
 	public Optional<Membership> membershipOf(Actor actor) {
 		return memberships.memberOf(actor.accountId())
 			.flatMap(member -> organizations.findById(member.organizationId())
-				.map(organization -> new Membership(organization.getId(), organization.getName(), member.isOwner(),
-						organization.isApproved())));
+				.map(organization -> new Membership(organization.getId(), organization.getName(), organization.getType(),
+						member.isOwner(), organization.isApproved())));
 	}
 
 	/** The accounts of everyone who belongs to the organization, owners and members alike. */

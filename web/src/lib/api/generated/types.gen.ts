@@ -3467,17 +3467,6 @@ export type ProposalSolution = {
 };
 
 /**
- * One person a proposal names, with the role typed for it.
- */
-export type ProposalTeamMember = {
-    accountId: string;
-    email: string;
-    name?: string | null;
-    primary: boolean;
-    role: string;
-};
-
-/**
  * The use case a proposal is for.
  */
 export type ProposalUseCase = {
@@ -3504,6 +3493,10 @@ export type ProposingOrganization = {
      * Whether the caller is an owner of it, who may correct what they gave when they made it.
      */
     owner: boolean;
+    /**
+     * What kind of organization it is; a team writes what it has done.
+     */
+    type: 'company' | 'builder_team' | 'independent_builder' | 'other';
 };
 
 /**
@@ -3987,7 +3980,10 @@ export type ReceivedUseCaseProposal = {
     sentAt: string;
     sentBy: SentBy;
     solutions: Array<ProposalSolution>;
-    team: Array<ProposalTeamMember>;
+    /**
+     * What the sending team has done.
+     */
+    teamBackground?: string | null;
     useCase: ProposalUseCase;
 };
 
@@ -3996,7 +3992,7 @@ export type ReceivedUseCaseProposal = {
  */
 export type ReceivedUseCaseProposalSummary = {
     /**
-     * The primary contact, or the sender when no team was named.
+     * Who sent it.
      */
     contactName?: string | null;
     /**
@@ -4823,7 +4819,7 @@ export type SaveOrganization = {
 };
 
 /**
- * The facts a person gives when they make an organization. The rest of the profile is left as it is.
+ * The facts a person gives when they make an organization, which a save changes alone. The rest of the profile is left as it is.
  */
 export type SaveOrganizationBasics = {
     /**
@@ -5032,9 +5028,9 @@ export type SaveUseCaseProposal = {
      */
     solutionIds: Array<string>;
     /**
-     * The people named, in the order shown; at most one is primary. The team may be empty.
+     * What the team that sends it has done; a team writes it, one person does not.
      */
-    team: Array<TeamMemberRequest>;
+    teamBackground?: string | null;
     /**
      * The version the form read; null when the proposal does not exist yet.
      */
@@ -6005,34 +6001,6 @@ export type TalentSummary = {
 };
 
 /**
- * A member of the caller's organization the proposal may name.
- */
-export type TeamCandidate = {
-    accountId: string;
-    email: string;
-    name?: string | null;
-    /**
-     * Whether this is the caller.
-     */
-    self: boolean;
-};
-
-/**
- * One person of the organization the proposal names, with the role typed for it.
- */
-export type TeamMemberRequest = {
-    accountId: string;
-    /**
-     * Whether the posting organization is told to speak to this person; at most one.
-     */
-    primary: boolean;
-    /**
-     * What the person does on this proposal; a draft may leave it empty, a proposal cannot be sent with it empty.
-     */
-    role: string;
-};
-
-/**
  * A connection to try, saved or not. Without an apiKey the saved key of providerId is used, while the address is the one it was saved with.
  */
 export type TestAiProvider = {
@@ -6163,7 +6131,7 @@ export type UseCaseProposal = {
      */
     solutions: Array<ProposalSolution>;
     status: 'draft' | 'sent';
-    team: Array<ProposalTeamMember>;
+    teamBackground?: string | null;
     updatedAt: string;
     /**
      * Sent back with the next save, so a save made on a stale copy is refused.
@@ -6187,10 +6155,9 @@ export type UseCaseProposalCounts = {
 };
 
 /**
- * What the proposal form needs: the use case, the caller's organization with its members, and the proposal if one was saved.
+ * What the proposal form needs: the use case, the caller's organization, and the proposal if one was saved.
  */
 export type UseCaseProposalForm = {
-    members: Array<TeamCandidate>;
     /**
      * Null when the caller belongs to no organization.
      */
@@ -9937,6 +9904,39 @@ export type CreateOrganizationResponses = {
 
 export type CreateOrganizationResponse = CreateOrganizationResponses[keyof CreateOrganizationResponses];
 
+export type CreateOrganizationFromBasicsData = {
+    body: SaveOrganizationBasics;
+    path?: never;
+    query?: never;
+    url: '/api/organization/organizations/basics';
+};
+
+export type CreateOrganizationFromBasicsErrors = {
+    /**
+     * A member is not valid, or a company names no industry.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller already belongs to an organization, or waits on a request to join one.
+     */
+    409: Problem;
+};
+
+export type CreateOrganizationFromBasicsError = CreateOrganizationFromBasicsErrors[keyof CreateOrganizationFromBasicsErrors];
+
+export type CreateOrganizationFromBasicsResponses = {
+    /**
+     * The organization, waiting for GenAI Fund's review.
+     */
+    201: Organization;
+};
+
+export type CreateOrganizationFromBasicsResponse = CreateOrganizationFromBasicsResponses[keyof CreateOrganizationFromBasicsResponses];
+
 export type JoinOrganizationData = {
     body: JoinOrganization;
     path: {
@@ -11323,37 +11323,6 @@ export type SendUseCaseProposalResponses = {
 
 export type SendUseCaseProposalResponse = SendUseCaseProposalResponses[keyof SendUseCaseProposalResponses];
 
-export type OrganizeUseCaseProposalData = {
-    body: ApplicantOrganization;
-    path: {
-        useCaseId: string;
-    };
-    query?: never;
-    url: '/api/proposal/use-cases/{useCaseId}/organization';
-};
-
-export type OrganizeUseCaseProposalErrors = {
-    /**
-     * There is no such use case.
-     */
-    404: Problem;
-    /**
-     * The use case no longer takes proposals, or the caller already belongs to an organization.
-     */
-    409: Problem;
-};
-
-export type OrganizeUseCaseProposalError = OrganizeUseCaseProposalErrors[keyof OrganizeUseCaseProposalErrors];
-
-export type OrganizeUseCaseProposalResponses = {
-    /**
-     * The form, now with the new organization.
-     */
-    200: UseCaseProposalForm;
-};
-
-export type OrganizeUseCaseProposalResponse = OrganizeUseCaseProposalResponses[keyof OrganizeUseCaseProposalResponses];
-
 export type GetUseCaseProposalFormData = {
     body?: never;
     path: {
@@ -11382,7 +11351,7 @@ export type GetUseCaseProposalFormError = GetUseCaseProposalFormErrors[keyof Get
 
 export type GetUseCaseProposalFormResponses = {
     /**
-     * The use case, the caller's organization with its solutions and members, and the proposal if one was saved.
+     * The use case, the caller's organization, and the proposal if one was saved.
      */
     200: UseCaseProposalForm;
 };
@@ -11400,7 +11369,7 @@ export type SaveUseCaseProposalData = {
 
 export type SaveUseCaseProposalErrors = {
     /**
-     * The team names someone who is not a member, a member twice or two primary contacts, or the solution is not the organization's.
+     * A solution is not the organization's, or is named twice.
      */
     400: Problem;
     /**
