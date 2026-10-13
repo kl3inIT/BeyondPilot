@@ -10,6 +10,7 @@ const statStripVariants = cva("grid overflow-hidden rounded-lg border", {
       2: "grid-cols-2 lg:grid-cols-1",
       4: "grid-cols-2 lg:grid-cols-4",
       5: "grid-cols-2 md:grid-cols-3 xl:grid-cols-5",
+      6: "grid-cols-2 md:grid-cols-3 xl:grid-cols-6",
     },
   },
   defaultVariants: { columns: 4 },
@@ -42,6 +43,8 @@ type StatCellProps = Omit<React.ComponentProps<"div">, "children"> & {
   icon?: React.ReactNode;
   /** A figure nobody needs to act on, such as an empty queue: it reads quieter. */
   quiet?: boolean;
+  /** A figure that says something is wrong: it and its line are in the destructive colour. Pass the mark as `icon`. */
+  alert?: boolean;
   /** The odd cell out, last in a strip of five: it fills the rest of its row until the row holds all five. */
   wide?: boolean;
   /** What stands beside the figure, such as its `Sparkline`. */
@@ -57,6 +60,7 @@ function StatCell({
   href,
   icon,
   quiet = false,
+  alert = false,
   wide = false,
   aside,
   className,
@@ -96,12 +100,15 @@ function StatCell({
             className={cn(
               "text-2xl tracking-tight tabular-nums",
               quiet ? "font-normal text-muted-foreground" : "font-semibold",
+              alert && "text-destructive",
             )}
           >
             {value}
           </span>
           {children !== undefined && (
-            <span className="text-xs text-muted-foreground">{children}</span>
+            <span className={cn("text-xs", alert ? "text-destructive" : "text-muted-foreground")}>
+              {children}
+            </span>
           )}
         </span>
         {aside}
