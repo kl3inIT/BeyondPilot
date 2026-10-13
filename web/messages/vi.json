@@ -3940,7 +3940,7 @@
     "form": {
       "metaTitle": "Tạo tổ chức · BeyondPilot",
       "createTitle": "Tạo tổ chức của bạn",
-      "createLead": "Người làm độc lập có thể tạo một studio hoặc một nhóm.",
+      "createLead": "Mọi người tham gia qua một tổ chức. Nếu bạn đi một mình, tổ chức đó chỉ có bạn.",
       "edit": "Sửa hồ sơ",
       "complete": "Hoàn thiện hồ sơ",
       "profileTitle": "Hồ sơ tổ chức",
@@ -4018,6 +4018,13 @@
       "existing": {
         "title": "Tổ chức của bạn có thể đã có trên BeyondPilot",
         "lead": "{count, plural, =1 {Nếu đây là tổ chức của bạn, hãy tham gia thay vì tạo lại. Nếu của bạn là tổ chức khác, hãy tiếp tục bên dưới.} other {Nếu một trong số này là tổ chức của bạn, hãy tham gia thay vì tạo lại. Nếu của bạn là tổ chức khác, hãy tiếp tục bên dưới.}}"
+      },
+      "ownName": "Tên của bạn",
+      "creator": {
+        "label": "Tổ chức này dành cho ai?",
+        "independent_builder": "Chỉ mình tôi",
+        "builder_team": "Một nhóm",
+        "company": "Một công ty"
       }
     },
     "find": {

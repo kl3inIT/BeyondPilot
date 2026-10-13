@@ -27,7 +27,7 @@ export default async function CreateOrganizationRoute({
   // The finder sends the name the person searched for, so it is not typed twice.
   const { name } = await searchParams;
   setRequestLocale(locale);
-  await requireAccount(path);
+  const account = await requireAccount(path);
   const mine = await readMyOrganization();
   // A person belongs to one organization; whoever has one, or asked to join one, goes to its pages.
   if (mine.organization || mine.request) {
@@ -37,7 +37,10 @@ export default async function CreateOrganizationRoute({
   return (
     <div className="flex flex-1 justify-center bg-muted px-5 pt-10 pb-16 md:px-8 md:pt-14 md:pb-24 lg:px-16">
       <div className="w-full max-w-220">
-        <OrganizationForm initialName={typeof name === "string" ? name.slice(0, 120) : ""} />
+        <OrganizationForm
+          initialName={typeof name === "string" ? name.slice(0, 120) : ""}
+          ownName={account.displayName ?? ""}
+        />
       </div>
     </div>
   );

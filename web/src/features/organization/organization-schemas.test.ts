@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import type { Organization } from "@/lib/api/generated";
 
 import {
+  aloneBodyOf,
   basicsSchema,
+  creationSchema,
   missingProfileFacts,
   profileBodyOf,
   profileSchema,
@@ -239,5 +241,40 @@ describe("missingProfileFacts", () => {
         industries: [],
       } as unknown as Organization),
     ).toEqual(["teamSize", "country", "description", "teamBackground"]);
+  });
+});
+
+describe("creationSchema", () => {
+  const creation = creationSchema((key) => key);
+  const refused = (values: ProfileValues) =>
+    creation.safeParse(values).error?.issues.map((issue) => issue.path.join(".")) ?? [];
+  const alone: ProfileValues = { ...profileValuesOf(), type: "independent_builder" };
+
+  it("asks a builder on their own for a name and a country only", () => {
+    expect(refused(alone)).toEqual(["name", "country"]);
+    expect(refused({ ...alone, name: "An Tran", country: "VN" })).toEqual([]);
+  });
+
+  it("asks a team or a company for the whole profile", () => {
+    expect(refused({ ...alone, type: "company", name: "An Tran", country: "VN" })).toEqual([
+      "teamSize",
+      "description",
+      "website",
+      "industries",
+      "foundedYear",
+    ]);
+    expect(refused({ ...filled, type: "builder_team", teamBackground: "" })).toEqual([
+      "teamBackground",
+    ]);
+  });
+
+  it("sends a builder on their own as an organization of one", () => {
+    expect(aloneBodyOf({ ...filled, name: " An Tran ", type: "independent_builder" })).toEqual({
+      name: "An Tran",
+      type: "independent_builder",
+      teamSize: "just_me",
+      industries: [],
+      country: "VN",
+    });
   });
 });

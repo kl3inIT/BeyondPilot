@@ -12,7 +12,7 @@ import { TextButton } from "@/components/actions/text-button";
 import { EntryList } from "@/components/composites/entry-list";
 import { StepsNav } from "@/components/composites/steps-nav";
 import { useAppForm } from "@/components/form/app-form";
-import { AllRequired } from "@/components/form/form-fields";
+import { AllRequired, ChoiceCardsField } from "@/components/form/form-fields";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -42,7 +42,6 @@ import { savable, saveBodyOf, type ApplyDraft } from "./apply-draft";
 import { applyWords, refusedFields, type RefusedSave } from "./apply-errors";
 import {
   AgreementField,
-  ChoiceCardsField,
   ChoicesField,
   NativeSelectField,
   Optional,
