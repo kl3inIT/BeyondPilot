@@ -7676,18 +7676,9 @@
       "you": {
         "who": "Who is sending this proposal?",
         "choice": {
-          "individual": {
-            "title": "Just me",
-            "what": "I work on my own"
-          },
-          "team": {
-            "title": "A team",
-            "what": "A few of us build together"
-          },
-          "company": {
-            "title": "Company",
-            "what": "An organization with its own page"
-          }
+          "individual": "Just me",
+          "team": "A team",
+          "company": "Company"
         },
         "teamName": "Team name",
         "teamSize": "Team size",

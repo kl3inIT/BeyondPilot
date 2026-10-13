@@ -1,6 +1,7 @@
 "use client";
 
 import { useStore } from "@tanstack/react-form";
+import { Building2Icon, UserIcon, UsersIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -12,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Field,
   FieldContent,
-  FieldDescription,
   FieldError,
   FieldLabel,
   FieldLegend,
@@ -39,7 +39,11 @@ import { phoneSchema } from "./proposal-schemas";
 /** The sizes a team names. */
 const teamSizes = ["2_9", "10_49", "50_99"] as const;
 
-const choices = ["individual", "team", "company"] as const;
+const choices = [
+  { value: "individual", icon: UserIcon },
+  { value: "team", icon: UsersIcon },
+  { value: "company", icon: Building2Icon },
+] as const;
 
 type ProposalYouStepProps = {
   /** The organization the proposal is sent for; none yet for a person who belongs to none. */
@@ -207,12 +211,12 @@ function WhoCards({ value, locked }: { value: string; locked: boolean }) {
         aria-label={t("who")}
         aria-describedby={invalid ? ids.error : undefined}
       >
-        {choices.map((choice) => (
+        {choices.map(({ value: choice, icon: Icon }) => (
           <FieldLabel key={choice} htmlFor={`${ids.control}-${choice}`}>
             <Field orientation="horizontal">
+              <Icon className="size-5 text-muted-foreground" aria-hidden="true" />
               <FieldContent>
-                <FieldTitle>{t(`choice.${choice}.title`)}</FieldTitle>
-                <FieldDescription>{t(`choice.${choice}.what`)}</FieldDescription>
+                <FieldTitle>{t(`choice.${choice}`)}</FieldTitle>
               </FieldContent>
               <RadioGroupItem
                 value={choice}
