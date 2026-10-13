@@ -64,6 +64,8 @@ function MatchingReview({
   const [gone, setGone] = useState<ReadonlySet<string>>(new Set());
   const [trail, setTrail] = useState<Step[]>([]);
   const [leaving, setLeaving] = useState<Leaving>(null);
+  /** The decision Undo last took back: its card comes in from the side it left by. */
+  const [back, setBack] = useState<Leaving>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
   const line = lineOf(order, candidates, gone, front);
@@ -81,14 +83,16 @@ function MatchingReview({
   /** Moves on to the next card and remembers how the one in front left. */
   function advance(step: Step, next: string[]) {
     setLeaving(step.kind);
+    setBack(null);
     setTrail((before) => [...before, step]);
     setOrder(next);
     setFront(next[0] ?? null);
   }
 
   /** Puts a card back in front, as it was before its step. */
-  function bringBack(id: string) {
+  function bringBack(id: string, from: Leaving) {
     setLeaving(null);
+    setBack(from);
     setGone((before) => new Set([...before].filter((one) => one !== id)));
     setOrder((before) => toFront(before, id));
     setFront(id);
@@ -115,7 +119,7 @@ function MatchingReview({
     setBusy(null);
     if (!kept) {
       setTrail((before) => before.filter((one) => one !== step));
-      bringBack(current.id);
+      bringBack(current.id, kind);
     }
   }
 
@@ -132,7 +136,7 @@ function MatchingReview({
       }
     }
     setTrail((before) => before.slice(0, -1));
-    bringBack(last.id);
+    bringBack(last.id, last.kind);
   }
 
   // Four keys do what the controls under the card do. A key held with a modifier, typed in a field,
@@ -184,28 +188,43 @@ function MatchingReview({
         </p>
       )}
 
-      <AnimatePresence mode="popLayout" initial={false} custom={leaving}>
-        {current ? (
-          <MatchingReviewCard
-            key={current.id}
-            candidate={current}
-            needs={needs}
-            leaving={leaving}
-          />
-        ) : (
-          <div key="end" className="flex flex-col items-start gap-3 rounded-2xl border bg-card p-6">
-            <h2 className="text-lg font-semibold">
-              {trail.length > 0 ? t(reading ? "end.reading" : "end.title") : t("none")}
-            </h2>
-            {trail.length > 0 && (
-              <p className="text-sm text-muted-foreground">{t("end.saved", { count: saved })}</p>
-            )}
-            <Button prominence="secondary" onClick={onList}>
-              {t("end.list")}
-            </Button>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* A card on its way out is lifted out of the flow here, and what passes the edge is not scrolled to. */}
+      <div className="relative clip-stage">
+        <AnimatePresence mode="popLayout" initial={false} custom={leaving}>
+          {current ? (
+            <MatchingReviewCard
+              key={current.id}
+              candidate={current}
+              needs={needs}
+              leaving={leaving}
+              back={back}
+              onDecide={(kind) => {
+                // Nothing is decided while another decision is on its way: the card springs back.
+                if (busy !== null) {
+                  return false;
+                }
+                void decide(kind);
+                return true;
+              }}
+            />
+          ) : (
+            <div
+              key="end"
+              className="flex flex-col items-start gap-3 rounded-2xl border bg-card p-6"
+            >
+              <h2 className="text-lg font-semibold">
+                {trail.length > 0 ? t(reading ? "end.reading" : "end.title") : t("none")}
+              </h2>
+              {trail.length > 0 && (
+                <p className="text-sm text-muted-foreground">{t("end.saved", { count: saved })}</p>
+              )}
+              <Button prominence="secondary" onClick={onList}>
+                {t("end.list")}
+              </Button>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
 
       <div className="flex flex-col items-center gap-3">
         {current && (
