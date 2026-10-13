@@ -229,8 +229,10 @@ class EmailAdministrationTest {
 	@Test
 	void anOperatorRewordsAKindChecksItAndPutsItBack() {
 		String list = body(get(operator, API + "/templates").expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(list, "$.items[*].kind")).contains("sign_in_code", "talent_enquiry")
-			.doesNotContain("application_outcome");
+		assertThat(JsonPath.<List<String>>read(list, "$.items[*].kind")).contains("sign_in_code", "message_request")
+			.doesNotContain("application_outcome", "talent_enquiry");
+		// A kind that is no longer sent has no wording to read or change.
+		assertProblem(get(operator, API + "/templates/talent_enquiry"), 404, "NOTIFICATION_TEMPLATE_NOT_FOUND");
 
 		String preview = body(post(operator, API + "/templates/sign_in_code/preview",
 				Map.of("subject", "Your code", "body", "Use **{{codee}}**")).expectStatus().isOk());
@@ -300,6 +302,19 @@ class EmailAdministrationTest {
 		assertProblem(post(operator, API + "/messages/" + id + "/resend", null), 409,
 				"NOTIFICATION_MESSAGE_NOT_RESENDABLE");
 		assertProblem(get(operator, API + "/messages/" + UUID.randomUUID()), 404, "NOTIFICATION_MESSAGE_NOT_FOUND");
+
+		// An email of a kind that is no longer sent stays in the log under the kind it was stored with.
+		UUID former = UUID.randomUUID();
+		jdbc.sql("""
+				insert into email_message (id, kind, recipient, subject, html, text, status)
+				values (?, 'talent_enquiry', 'former@email.test', 'Hello', '<p>Hello</p>', 'Hello', 'sent')
+				""").param(former).update();
+		String ofFormerKind = body(get(operator, API + "/messages?kind=talent_enquiry").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(ofFormerKind, "$.items[*].id")).contains(former.toString());
+		assertThat(JsonPath.<List<String>>read(ofFormerKind, "$.items[*].kind")).containsOnly("talent_enquiry");
+		String kept = body(get(operator, API + "/messages/" + former).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(kept, "$.kind")).isEqualTo("talent_enquiry");
+		assertThat(JsonPath.<Boolean>read(kept, "$.resendable")).isTrue();
 	}
 
 	@Test
@@ -376,7 +391,7 @@ class EmailAdministrationTest {
 		UUID message = UUID.randomUUID();
 		jdbc.sql("""
 				insert into email_message (id, kind, recipient, subject, html, text, status, provider, provider_message_id)
-				values (?, 'talent_enquiry', 'Bounced@Email.test', 'Hello', '<p>Hello</p>', 'Hello', 'sent', 'resend', 'em_1')
+				values (?, 'message_request', 'Bounced@Email.test', 'Hello', '<p>Hello</p>', 'Hello', 'sent', 'resend', 'em_1')
 				""").param(message).update();
 		String payload = """
 				{"type":"email.bounced","created_at":"2026-10-06T08:00:00.000Z",
@@ -427,7 +442,7 @@ class EmailAdministrationTest {
 		UUID message = UUID.randomUUID();
 		jdbc.sql("""
 				insert into email_message (id, kind, recipient, subject, html, text, status, provider, provider_message_id)
-				values (?, 'talent_enquiry', 'Gone@Brevo.test', 'Hello', '<p>Hello</p>', 'Hello', 'sent', 'brevo',
+				values (?, 'message_request', 'Gone@Brevo.test', 'Hello', '<p>Hello</p>', 'Hello', 'sent', 'brevo',
 				        '202610110800.12345678901@smtp-relay.mailin.fr')
 				""").param(message).update();
 

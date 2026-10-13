@@ -160,17 +160,32 @@ public enum AuditAction {
 	/** An operator set the programs a use case belongs to. */
 	USE_CASE_SET_PROGRAMS("use_case.set_programs", "organization"),
 
+	/** The side written to accepted a first message, which opened the conversation. */
+	MESSAGING_REQUEST_ACCEPT("messaging.request_accept"),
+
+	MESSAGING_REQUEST_DECLINE("messaging.request_decline"),
+
+	/** The side written to reported a first message as unwanted; the sender was told it was declined. */
+	MESSAGING_REQUEST_REPORT("messaging.request_report"),
+
 	TALENT_APPROVE("talent.approve"),
 
 	/** Recorded before asking for changes and removing were two decisions. {@code reason} is the code given. */
 	TALENT_REJECT("talent.reject", "reason"),
 
-	/** The person behind a profile accepted a message, and both sides were told each other's address. */
+	/**
+	 * Recorded before conversations replaced the messages sent through a profile. The person behind a profile accepted
+	 * one, and both sides were told each other's address.
+	 */
 	TALENT_ENQUIRY_ACCEPT("talent.enquiry_accept"),
 
+	/** Recorded before conversations replaced the messages sent through a profile. The person declined one. */
 	TALENT_ENQUIRY_DECLINE("talent.enquiry_decline"),
 
-	/** The person reported a message as unwanted; the sender was told it was declined. */
+	/**
+	 * Recorded before conversations replaced the messages sent through a profile. The person reported one as unwanted;
+	 * the sender was told it was declined.
+	 */
 	TALENT_ENQUIRY_REPORT("talent.enquiry_report"),
 
 	/** An operator sent a profile back to its person. {@code reason} is the code of the reason given. */

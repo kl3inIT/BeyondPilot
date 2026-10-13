@@ -1,10 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
-import { answerDecisions, refusal } from "./reviews";
 import { signInAs } from "./session";
-
-const enquiriesPath = "**/api/talent/profiles/*/enquiries";
 
 /** The people shown, by the name each card leads with. */
 function shownPeople(page: Page) {
@@ -13,7 +10,7 @@ function shownPeople(page: Page) {
 
 /** The way to write to the person, in the card beside the profile. */
 function contact(page: Page, name: string) {
-  return page.getByRole("button", { name: `Contact ${name}` });
+  return page.getByRole("link", { name: `Contact ${name}` });
 }
 
 test.describe("talent directory", () => {
@@ -89,12 +86,18 @@ test.describe("talent directory", () => {
     // The person's address is on no public page.
     await expect(page.getByRole("main").getByText("@")).toHaveCount(0);
 
-    const signIn = "/sign-in?returnTo=%2Ftalent%2Flinh-nguyen";
-    await expect(page.getByRole("link", { name: "Contact Linh Nguyễn" })).toHaveAttribute(
+    // Contact leads to Messages; a visitor signs in first and comes back to the first message.
+    const messages = "/workspace/messages?to=talent&at=linh-nguyen";
+    await expect(contact(page, "Linh Nguyễn")).toHaveAttribute(
       "href",
-      signIn,
+      `/sign-in?returnTo=${encodeURIComponent(messages)}`,
     );
     await expect(page.getByText("Sign in to write to Linh Nguyễn.")).toBeVisible();
+    await expect(
+      page.getByText(
+        "A first message waits until they accept, and your email address is never shown.",
+      ),
+    ).toBeVisible();
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -110,59 +113,27 @@ test.describe("talent directory", () => {
     expect((await page.goto("/talent/no-such-person"))?.status()).toBe(404);
   });
 
-  test("a signed-in person writes to a profile about a topic, and a message is needed", async ({
+  test("a signed-in person's Contact leads to Messages, with the first message to write", async ({
     page,
     context,
     baseURL,
+    isMobile,
   }) => {
     await signInAs(context, "unnamed", baseURL!);
-    const sent = await answerDecisions(page, enquiriesPath, 204);
     await page.goto("/talent/arif-hidayat");
 
-    await contact(page, "Arif Hidayat").click();
-    const dialog = page.getByRole("dialog", { name: "Contact Arif Hidayat" });
-    await expect(dialog.getByText("Your email address stays hidden.")).toBeVisible();
-    await dialog.getByRole("button", { name: "Send message" }).click();
-    await expect(dialog.getByText("Write a message first.")).toBeVisible();
-    // An account without a name signs the message with one; an address is never shown in its place.
-    await expect(dialog.getByText("Say who is writing.")).toBeVisible();
-    expect(sent).toEqual([]);
+    const messages = "/workspace/messages?to=talent&at=arif-hidayat";
+    await expect(contact(page, "Arif Hidayat")).toHaveAttribute("href", messages);
+    await expect(page.getByText("Sign in to write to Arif Hidayat.")).toHaveCount(0);
+    // On a phone the action stays in reach in a bar at the foot of the screen.
+    const bar = page.getByRole("link", { name: "Contact", exact: true });
+    if (isMobile) {
+      await expect(bar).toBeVisible();
+      await expect(bar).toHaveAttribute("href", messages);
+    } else {
+      await expect(bar).toBeHidden();
+    }
     await expectNoSeriousA11yViolations(page);
-
-    await dialog.getByLabel("Your name").fill("Lan Trần");
-    await dialog.getByLabel("What it is about").selectOption("role");
-    await dialog.getByRole("textbox", { name: "Your message" }).fill("Would you lead our pilot?");
-    await dialog.getByRole("button", { name: "Send message" }).click();
-
-    await expect(page.getByText("Your message is on its way to Arif Hidayat")).toBeVisible();
-    expect(sent).toEqual([
-      {
-        call: "POST /api/talent/profiles/arif-hidayat/enquiries",
-        body: { senderName: "Lan Trần", topic: "role", message: "Would you lead our pilot?" },
-      },
-    ]);
-  });
-
-  test("a second message while the first waits is refused in the words of its code", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "unnamed", baseURL!);
-    await answerDecisions(page, enquiriesPath, 409, refusal("TALENT_ENQUIRY_PENDING"));
-    await page.goto("/talent/arif-hidayat");
-
-    await contact(page, "Arif Hidayat").click();
-    await page.getByLabel("Your name").fill("Lan Trần");
-    await page.getByRole("textbox", { name: "Your message" }).fill("Again.");
-    await page.getByRole("button", { name: "Send message" }).click();
-
-    await expect(
-      page.getByText("Your message to this person waits for their answer."),
-    ).toBeVisible();
-    await expect(page.getByText("text of the backend that must not be shown")).toHaveCount(0);
-    // The message is kept, so it can be sent another day.
-    await expect(page.getByRole("textbox", { name: "Your message" })).toHaveValue("Again.");
   });
 
   test("the person behind a profile edits it instead of writing to it", async ({

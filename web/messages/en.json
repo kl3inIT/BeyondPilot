@@ -22,12 +22,14 @@
     },
     "account": {
       "open": "Account menu for {name}",
+      "openWaiting": "Account menu for {name}, {count, plural, one {# waits for you} other {# wait for you}}",
       "operator": "Operator",
       "signOut": "Sign out",
       "signOutFailed": "We could not sign you out. Try again.",
       "organization": "My organization",
       "talentProfile": "Talent profile",
-      "talentSent": "Messages you sent",
+      "messages": "Messages",
+      "messagesWaiting": "{count, plural, one {# waits for you} other {# wait for you}}",
       "admin": "Admin",
       "applications": "My applications",
       "reviews": "Reviews",
@@ -367,6 +369,19 @@
     "MATCHING_FEEDBACK_NOT_JUDGED": "AI has not read this solution yet, so there is no group to answer about.",
     "MATCHING_FEEDBACK_GROUP_INVALID": "Agree with the group, or say which other group the solution belongs in.",
     "MATCHING_FEEDBACK_REQUIREMENT_UNKNOWN": "This use case no longer has one of these requirements. Reload the page and answer again.",
+    "MESSAGING_CONVERSATION_NOT_FOUND": "There is no such conversation.",
+    "MESSAGING_SUBJECT_NOT_FOUND": "There is nobody to write to at this address.",
+    "MESSAGING_OWN_SUBJECT": "You cannot start a conversation with yourself.",
+    "MESSAGING_NEEDS_ORGANIZATION": "Create or join an organization before you write to a solution provider.",
+    "MESSAGING_ORGANIZATION_NOT_APPROVED": "Your organization has not been approved yet, so it cannot write to a solution provider.",
+    "MESSAGING_ALREADY_WAITING": "Your first message still waits for an answer. You can write again once it is accepted.",
+    "MESSAGING_TOO_MANY_REQUESTS": "You started as many conversations as a day allows. Try again tomorrow.",
+    "MESSAGING_TOO_MANY_MESSAGES": "You are writing too fast. Wait a moment and send again.",
+    "MESSAGING_NOT_OPEN": "This conversation is not open, so nothing can be written in it.",
+    "MESSAGING_NOT_WAITING": "This request was answered already.",
+    "MESSAGING_OWNERS_ONLY": "Only an owner of the organization answers a first message.",
+    "MESSAGING_MESSAGE_CONFLICT": "This message could not be sent. Write it again.",
+    "MESSAGING_READ_BEYOND_LAST_MESSAGE": "That message is not in this conversation. Reload it and try again.",
     "MCP_TOOL_NOT_FOUND": "This tool no longer exists. Reload the page.",
     "NOTIFICATION_EMAIL_NOT_SENT": "The email could not be sent. Try again in a moment.",
     "NOTIFICATION_SETTINGS_INCOMPLETE": "The provider needs more: fill in the fields marked as required.",
@@ -516,11 +531,6 @@
     "TALENT_NOT_TAKEN_DOWN": "This profile is not taken down.",
     "TALENT_PHOTO_NOT_USABLE": "This photo cannot be used on your profile. Upload it again.",
     "TALENT_CHANGED_MEANWHILE": "This profile changed in another tab. Reload the page and try again.",
-    "TALENT_OWN_PROFILE": "This is your own profile.",
-    "TALENT_ENQUIRY_PENDING": "Your message to this person waits for their answer.",
-    "TALENT_ENQUIRY_LIMIT": "You started ten conversations today. Write again tomorrow.",
-    "TALENT_ENQUIRY_NOT_FOUND": "This message no longer exists.",
-    "TALENT_ENQUIRY_NOT_PENDING": "This message was answered already, or it closed.",
     "USECASE_NOT_FOUND": "This use case does not exist any more.",
     "USECASE_ORGANIZATION_NOT_ELIGIBLE": "This organization is not an approved enterprise.",
     "USECASE_CLOSES_IN_THE_PAST": "Choose a close date after today.",
@@ -713,6 +723,7 @@
       "solutions": "AI solutions",
       "offers": "Offers",
       "talent": "AI talent",
+      "reportedMessages": "Reported messages",
       "review": "Review",
       "system": "System",
       "useCases": "Use cases",
@@ -1174,6 +1185,11 @@
           "offer_reopen": "Opened an offer to new solutions again",
           "offer_delete": "Deleted an offer"
         },
+        "messaging": {
+          "request_accept": "Accepted a first message",
+          "request_decline": "Declined a first message",
+          "request_report": "Reported a first message"
+        },
         "talent": {
           "approve": "Approved a talent profile",
           "reject": "Sent a talent profile back",
@@ -1305,6 +1321,11 @@
           "offer_close": "Closed the offer <resource></resource> to new solutions",
           "offer_reopen": "Opened the offer <resource></resource> to new solutions again",
           "offer_delete": "Deleted the offer <resource></resource>"
+        },
+        "messaging": {
+          "request_accept": "Accepted a first message about <resource></resource>",
+          "request_decline": "Declined a first message about <resource></resource>",
+          "request_report": "Reported a first message about <resource></resource>"
         },
         "talent": {
           "approve": "Approved the talent profile of <resource></resource>",
@@ -1928,21 +1949,7 @@
         "title": "Nothing waits for review",
         "home": "Back to Admin home"
       },
-      "waitingSince": "Sent {time}",
-      "reported": {
-        "link": "Reported messages",
-        "metaTitle": "Reported messages · BeyondPilot",
-        "title": "Reported messages",
-        "back": "All talent",
-        "from": "From {sender}",
-        "to": "To {name}",
-        "sent": "Sent {date}",
-        "reportedAt": "Reported {date}",
-        "empty": {
-          "title": "Nothing reported"
-        },
-        "count": "{count, plural, one {# message} other {# messages}}"
-      }
+      "waitingSince": "Sent {time}"
     },
     "home": {
       "lead": "{count, plural, =0 {Nothing waits for a decision.} one {# record waits for a decision.} other {# records wait for a decision.}}",
@@ -3008,7 +3015,8 @@
         "applications": "Programs and applications",
         "solutions": "Solutions",
         "use_cases": "Use cases",
-        "talent": "Talent"
+        "talent": "Talent",
+        "messages": "Messages"
       },
       "kinds": {
         "sign_in_code": {
@@ -3089,24 +3097,27 @@
         "talent_restored": {
           "name": "Talent profile restored"
         },
-        "talent_enquiry": {
-          "name": "Message to a talent",
-          "description": "Tells a person someone wrote to them through their profile."
+        "message_request": {
+          "name": "First message",
+          "description": "Tells the side written to that someone wrote to them, without the sender's address."
         },
-        "talent_enquiry_reminder": {
-          "name": "Message reminder"
+        "message_request_reminder": {
+          "name": "First message reminder"
         },
-        "talent_introduction": {
-          "name": "Talent introduction",
-          "description": "Shares the two addresses once a message is accepted."
+        "message_request_accepted": {
+          "name": "First message accepted"
         },
-        "talent_enquiry_declined": {
-          "name": "Message declined",
-          "description": "Tells the sender the person will not take it further."
+        "message_request_declined": {
+          "name": "First message declined",
+          "description": "Tells the sender it will not be taken further, whether it was declined or reported."
         },
-        "talent_enquiry_closed": {
-          "name": "Message closed",
-          "description": "Tells the sender the message closed without an answer."
+        "message_request_closed": {
+          "name": "First message closed",
+          "description": "Tells the sender the message closed without an answer after 14 days."
+        },
+        "message_unread": {
+          "name": "Unread message",
+          "description": "Tells a person who is away that a message waits, once until they read it."
         }
       },
       "status": {
@@ -3205,9 +3216,6 @@
           "claim": "Shown when the request was a claim to own the organization",
           "resubmitted": "Shown when the application was changed and submitted again",
           "primary": "Shown when the person is the proposal's primary contact",
-          "aboutProject": "Shown when the message is about a project",
-          "aboutRole": "Shown when the message is about a role",
-          "aboutOther": "Shown when the message is about something else",
           "other": "Shown only in some cases of this email"
         },
         "previewTitle": "Preview of {name}",
@@ -3847,11 +3855,6 @@
       "pilot": "Pilot",
       "in_production": "In production",
       "internal_tool": "Internal tool"
-    },
-    "enquiryTopic": {
-      "project": "About a project",
-      "role": "About a role",
-      "other": "About something else"
     },
     "technology": {
       "recommendation": "Recommendation Systems / Personalization",
@@ -4675,6 +4678,8 @@
       "unlisted": "This solution is not in the directory.",
       "contact": {
         "title": "Work with {name}",
+        "lead": "Your first message waits until they accept, and your email address is never shown.",
+        "message": "Contact",
         "website": "Visit website",
         "demo": "Watch the demo",
         "deck": "Download the deck",
@@ -5065,9 +5070,6 @@
       "saved": "Profile saved.",
       "submitted": "Sent to GenAI Fund for review.",
       "approved": "{name} is approved.",
-      "accepted": "Accepted. You both have each other's email address now.",
-      "declined": "Declined. The sender was told.",
-      "reported": "Reported to GenAI Fund. The sender was told it was declined.",
       "sentBack": "{name} is sent back.",
       "takenDown": "{name} is taken down.",
       "restored": "{name} is back in the directory.",
@@ -5086,7 +5088,7 @@
       "allSkills": "Show all {count} skills",
       "strip": {
         "title": "Do you deploy AI for businesses?",
-        "body": "Enquiries reach you without showing your email address."
+        "body": "Messages reach you without showing your email address."
       },
       "empty": {
         "title": "Talent profiles open with the launch"
@@ -5111,7 +5113,7 @@
         },
         "reach": {
           "title": "3. Businesses reach you here",
-          "body": "Enquiries come through BeyondPilot. Your email address is shared only when you accept one."
+          "body": "They write to you in Messages. A first message waits until you accept, and your email address is never shown."
         }
       },
       "others": "Other AI talent you could look at"
@@ -5169,7 +5171,7 @@
         "languages": "Languages"
       },
       "notListed": "Not stated",
-      "note": "Neither email address is shared unless {name} accepts.",
+      "note": "A first message waits until they accept, and your email address is never shown.",
       "photoAlt": "Photo of {name}",
       "stats": {
         "projects": "{count, plural, one {project on the profile} other {projects on the profile}}",
@@ -5184,35 +5186,12 @@
         "industries": "Industries"
       }
     },
-    "enquiry": {
+    "contact": {
       "title": "Work with {name}",
       "open": "Contact {name}",
       "openShort": "Contact",
-      "dialogTitle": "Contact {name}",
-      "dialogLead": "{name} reads your message, your name and your organization.",
-      "topic": "What it is about",
-      "topics": {
-        "project": "A project",
-        "role": "A role",
-        "other": "Something else"
-      },
-      "message": "Your message",
-      "hint": "They have 14 days to answer.",
-      "required": "Write a message first.",
-      "send": "Send message",
-      "cancel": "Cancel",
-      "sentTitle": "Your message is on its way to {name}",
-      "sentLead": "You get an email when they answer. The message stays in Messages you sent.",
-      "done": "Done",
-      "waitingTitle": "Your message waits for {name}",
-      "waitingLead": "Sent {date}. You can write again once they answer or the message closes.",
       "signInLead": "Sign in to write to {name}.",
-      "ownEdit": "Edit your profile",
-      "senderName": "Your name",
-      "senderNameHint": "Your email address stays hidden.",
-      "senderNameRequired": "Say who is writing.",
-      "messageHint": "What you are building or hiring for, and what you need from them.",
-      "seeSent": "See your messages"
+      "ownEdit": "Edit your profile"
     },
     "mine": {
       "metaTitle": "Talent profile · BeyondPilot",
@@ -5230,42 +5209,6 @@
         "open": "Open your public profile",
         "unlistedLead": "Edit the profile and choose “Listed in the directory” to show it again; no new review.",
         "foot": "A change you save shows on your page at once, without a new review."
-      },
-      "inbox": {
-        "title": "Received",
-        "waiting": "{count} new",
-        "lead": "Accept to share your email address with the sender.",
-        "someone": "Someone",
-        "from": "{name} · {organization}",
-        "status": {
-          "pending": "Waits for you",
-          "accepted": "Accepted",
-          "declined": "Declined",
-          "reported": "Reported",
-          "closed": "Closed unanswered"
-        },
-        "sent": "Sent {date}",
-        "closes": "Closes {date}",
-        "answered": "Answered {date}",
-        "write": "Write to {email}",
-        "accept": "Accept",
-        "decline": "Decline",
-        "report": "Report",
-        "confirmDecline": {
-          "title": "Decline this message?",
-          "lead": "The sender is told you will not take it further. No address is shared.",
-          "confirm": "Decline",
-          "cancel": "Keep it"
-        },
-        "confirmReport": {
-          "title": "Report this message?",
-          "lead": "GenAI Fund reads it. The sender is told it was declined, not that you reported it.",
-          "confirm": "Report",
-          "cancel": "Keep it"
-        },
-        "none": "No enquiries yet.",
-        "choose": "Choose an enquiry to read it.",
-        "list": "Enquiries received"
       },
       "sentBack": {
         "title": "Sent back: {reason}",
@@ -5290,11 +5233,6 @@
         "action": "Preview",
         "note": "Changes you have not saved are not shown."
       },
-      "tabs": {
-        "label": "Your talent profile",
-        "profile": "Profile",
-        "enquiries": "Enquiries"
-      },
       "nav": {
         "label": "Sections of your profile"
       },
@@ -5304,10 +5242,9 @@
         "title": "How it shows in AI talent",
         "note": "As last saved. Your email address is never shown."
       },
-      "enquiriesCard": {
-        "title": "Enquiries",
-        "waiting": "{count, plural, =0 {No enquiry waits for you.} one {# enquiry waits for your answer.} other {# enquiries wait for your answer.}}",
-        "lead": "Contact details are shared only when you accept; an unanswered enquiry closes after 14 days."
+      "messages": {
+        "lead": "What people write to you through your profile arrives in Messages.",
+        "open": "Open Messages"
       }
     },
     "form": {
@@ -5381,7 +5318,7 @@
       "industries": "Industries you have worked in",
       "rateHint": "Only you and GenAI Fund see the rate.",
       "title": "Profile",
-      "lead": "Your email address is never shown; enquiries reach you through BeyondPilot.",
+      "lead": "Your email address is never shown; messages reach you through BeyondPilot.",
       "optional": "Optional",
       "skillsPlaceholder": "Add a skill",
       "remove": "Remove {label}",
@@ -5408,58 +5345,6 @@
       "skillsSuggested": "Suggested:",
       "headlineHint": "For example: ML engineer building document AI for banks.",
       "urlHint": "A full address that starts with https://."
-    },
-    "sent": {
-      "metaTitle": "Messages you sent",
-      "title": "Messages you sent",
-      "lead": "What you wrote to people in AI talent, and what they answered. An email address is shared only when they accept.",
-      "listTitle": "Sent",
-      "waiting": "{count} waiting",
-      "list": "People you wrote to",
-      "status": {
-        "pending": "Waiting",
-        "accepted": "Accepted",
-        "declined": "Declined",
-        "closed": "Closed unanswered"
-      },
-      "heading": {
-        "pending": "Your message waits for {name}",
-        "accepted": "{name} accepted your message",
-        "declined": "{name} declined your message",
-        "closed": "Your message to {name} closed unanswered"
-      },
-      "yourMessage": "Your message",
-      "sentOn": "Sent {date}",
-      "signedAs": "Signed as {name}",
-      "answeredOn": "Answered {date}",
-      "closedOn": "Closed {date}",
-      "address": {
-        "pending": "Their email address is shared only if they accept",
-        "accepted": "Their email address is no longer available",
-        "declined": "No email address was shared",
-        "closed": "No email address was shared"
-      },
-      "note": {
-        "pending": "{name} has until {date} to answer. You get an email when they do. Without an answer the message closes on that day, and you can write again.",
-        "accepted": "{name} received your email address too. From here you talk by email; BeyondPilot does not carry the conversation.",
-        "declined": "{name} will not take this message further. You can write to them again, or look for other people in AI talent.",
-        "closed": "{name} did not answer within 14 days. You can write to them again, or look for other people in AI talent."
-      },
-      "earlier": "Earlier messages to {name}",
-      "viewProfile": "View profile",
-      "write": "Write an email",
-      "writeTo": "Write to {email}",
-      "browse": "Browse AI talent",
-      "none": {
-        "title": "You have not written to anyone yet",
-        "lead": "When you contact someone in AI talent, your message and their answer show here."
-      },
-      "how": {
-        "title": "How a message travels",
-        "write": "You write to a person from their profile, under your name.",
-        "answer": "They have 14 days to accept or decline, and you are emailed their answer.",
-        "share": "If they accept, each of you receives the other's email address."
-      }
     }
   },
   "Form": {
@@ -5512,6 +5397,7 @@
         "done": "Done"
       },
       "applyNow": "Apply now",
+      "ask": "Ask GenAI Fund",
       "closesIn": "Applications close",
       "about": "About",
       "timeline": "Timeline",
@@ -7295,7 +7181,7 @@
       },
       "talent": {
         "title": "I'm AI talent or a small team",
-        "description": "Create a profile and get enquiries from enterprises.",
+        "description": "Create a profile and hear from enterprises in Messages.",
         "action": "Create a profile"
       }
     }
@@ -7573,6 +7459,167 @@
       "agreed": "You agreed.",
       "said": "You said: {group}.",
       "counts": "{n, plural, one {# answer} other {# answers}}, {d, plural, one {# disagrees} other {# disagree}}"
+    }
+  },
+  "Messaging": {
+    "metaTitle": "Messages",
+    "title": "Messages",
+    "search": "Search conversations",
+    "genaiFund": "GenAI Fund",
+    "someone": "Someone",
+    "tabs": {
+      "label": "Conversations",
+      "chats": "Chats",
+      "requests": "Requests",
+      "chatsCount": "{count, plural, one {# unread message} other {# unread messages}}",
+      "requestsCount": "{count, plural, one {# first message waits} other {# first messages wait}}"
+    },
+    "kind": {
+      "talent": "AI talent",
+      "solution": "AI solution",
+      "program": "Program"
+    },
+    "row": {
+      "you": "You: {text}",
+      "from": "{name}: {text}",
+      "new": "New",
+      "unread": "{count, plural, one {# unread message} other {# unread messages}}",
+      "status": {
+        "pending": "Waiting",
+        "declined": "Declined",
+        "closed": "Closed"
+      }
+    },
+    "list": {
+      "empty": {
+        "chats": {
+          "title": "No conversations yet",
+          "lead": "Contact a solution provider or a person in AI talent, and the conversation appears here."
+        },
+        "requests": {
+          "title": "No first messages wait",
+          "lead": "A first message from someone new waits here until you accept or decline it."
+        }
+      },
+      "none": {
+        "title": "No conversation matches",
+        "lead": "Nobody in this list has that name.",
+        "clear": "Clear search"
+      }
+    },
+    "choose": {
+      "title": "Choose a conversation",
+      "lead": "Your messages with solution providers, AI talent and GenAI Fund are read here. To start one, choose Contact on a profile or a solution.",
+      "solutions": "Browse AI solutions",
+      "talent": "Browse AI talent"
+    },
+    "thread": {
+      "back": "Back to conversations",
+      "about": "About {subject}",
+      "earlier": "Show earlier messages",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "sending": "Sending…",
+      "failed": "Not sent.",
+      "retry": "Try again",
+      "seen": "Seen",
+      "latest": "Go to the latest message",
+      "typing": "{name} is writing…",
+      "typingSomeone": "The other side is writing…",
+      "request": "{name} has not written to you before. They will not know you have read this until you accept.",
+      "reconnecting": "The connection was lost. New messages will appear when it is back."
+    },
+    "composer": {
+      "label": "Write to {name}",
+      "send": "Send",
+      "left": "{count, plural, one {# character left} other {# characters left}}",
+      "locked": {
+        "pending": "You can write again when {name} accepts.",
+        "declined": "{name} will not take this further. Nothing more can be written here.",
+        "closed": "Nobody answered in time, so this request closed. You can write to {name} again."
+      },
+      "closes": "Without an answer the request closes on {date}."
+    },
+    "answer": {
+      "accept": "Accept",
+      "decline": "Decline",
+      "report": "Report as spam",
+      "cancel": "Cancel",
+      "declineTitle": "Decline the message from {name}?",
+      "declineLead": "{name} is told by email that you will not take it further, without a reason.",
+      "reportTitle": "Report the message from {name}?",
+      "reportLead": "GenAI Fund reads what you report. {name} is told only that you will not take it further.",
+      "final": "This cannot be changed afterwards. They may write to you again.",
+      "ownersOnly": "Only an owner of your organization accepts or declines a first message.",
+      "accepted": "Accepted. You can talk here now.",
+      "declined": "Declined.",
+      "reported": "Reported to GenAI Fund."
+    },
+    "first": {
+      "label": "Write your first message to {name}",
+      "beforeTitle": "Before you write",
+      "before": "Say who you are and what you need. {name} reads your name and your organization, never your email address.",
+      "beforeOpen": "Ask what you need to know about the program. The programs team of GenAI Fund answers here.",
+      "request": "You have not talked with {name} before. Your first message waits under their Requests until they accept.",
+      "open": "GenAI Fund reads your message at once; no request is needed.",
+      "existsTitle": "You already have a conversation with {name}",
+      "existsLead": "It waits for an answer or is open. Write there.",
+      "openExisting": "Open the conversation",
+      "refusedTitle": "You cannot write here",
+      "refused": "This conversation cannot be started.",
+      "organization": "Create or join an organization"
+    },
+    "details": {
+      "title": "About this conversation",
+      "lead": "What the conversation is about and who reads it.",
+      "open": "About this conversation",
+      "close": "Close",
+      "by": "AI solution by {organization}",
+      "program": "Program by GenAI Fund",
+      "tags": "In short",
+      "view": {
+        "talent": "View profile",
+        "solution": "View solution",
+        "program": "View program"
+      },
+      "unlisted": "Its public page is not shown at the moment.",
+      "place": "Where",
+      "skills": "Skills",
+      "proof": "Proof",
+      "deployments": "{count, plural, one {# customer deployment, reviewed by GenAI Fund} other {# customer deployments, reviewed by GenAI Fund}}",
+      "someone": "Someone",
+      "people": {
+        "readers": "Who reads what you write",
+        "writer": "Who is writing"
+      },
+      "role": {
+        "owner": "Owner",
+        "member": "Member"
+      },
+      "note": {
+        "talent": "Only this person reads what you write here. Your email address is never shown to them.",
+        "solution": "Everyone at this organization can read and answer. Your email address is never shown to them.",
+        "program": "The programs team of GenAI Fund reads this conversation.",
+        "recipient": "Your email address is never shown to them."
+      }
+    },
+    "reported": {
+      "metaTitle": "Reported messages",
+      "title": "Reported messages",
+      "lead": "First messages the side written to reported as unwanted. Their senders were told only that the message was declined.",
+      "empty": {
+        "title": "Nothing was reported",
+        "lead": "A first message someone reports as unwanted is listed here."
+      },
+      "columns": {
+        "sender": "Sender",
+        "about": "About",
+        "message": "Message",
+        "reported": "Reported"
+      },
+      "noOrganization": "No organization",
+      "noAccount": "Account no longer signs in",
+      "count": "{count, plural, one {# reported message} other {# reported messages}}"
     }
   },
   "UseCaseProposal": {

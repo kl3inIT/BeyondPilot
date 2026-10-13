@@ -42,11 +42,12 @@ export const emailKinds = [
   "talent_changes_requested",
   "talent_removed",
   "talent_restored",
-  "talent_enquiry",
-  "talent_enquiry_reminder",
-  "talent_introduction",
-  "talent_enquiry_declined",
-  "talent_enquiry_closed",
+  "message_request",
+  "message_request_reminder",
+  "message_request_accepted",
+  "message_request_declined",
+  "message_request_closed",
+  "message_unread",
 ] as const;
 
 export type EmailKind = (typeof emailKinds)[number];

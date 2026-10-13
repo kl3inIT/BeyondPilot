@@ -63,7 +63,7 @@ const programmeSite = "innovation.genaifund.ai";
  * Its content is fixed for the campaign and lives in both catalogs; its dates, events and
  * application window are the program's.
  */
-async function NestlePage({ program }: { program: Program }) {
+async function NestlePage({ program, askHref }: { program: Program; askHref?: string }) {
   const [t, page, locale, useCases] = await Promise.all([
     getTranslations("Nestle"),
     getTranslations("Program.page"),
@@ -178,7 +178,7 @@ async function NestlePage({ program }: { program: Program }) {
 
         {/* On a phone the card to apply comes first; from lg it stands beside the content. */}
         <div className="flex flex-col gap-4 lg:hidden">
-          <ApplyCard program={program} steps={steps} now={now} />
+          <ApplyCard program={program} steps={steps} now={now} askHref={askHref} />
         </div>
 
         <div className="flex flex-col gap-12 lg:flex-row lg:items-start">
@@ -268,7 +268,7 @@ async function NestlePage({ program }: { program: Program }) {
 
           <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:w-80 lg:shrink-0">
             <div className="hidden flex-col gap-4 lg:flex">
-              <ApplyCard program={program} steps={steps} now={now} />
+              <ApplyCard program={program} steps={steps} now={now} askHref={askHref} />
             </div>
             <aside
               aria-label={t("rail.partners")}

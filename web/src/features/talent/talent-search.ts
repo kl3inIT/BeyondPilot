@@ -36,9 +36,4 @@ export const adminTalentSearch = {
 
 export const loadAdminTalentSearch = createLoader(adminTalentSearch);
 
-/** Which page of the reported messages operators read, as the URL holds it: `?page=&size=`. */
-export const reportedEnquiriesSearch = { page: parseAsInteger.withDefault(1), size: pageSize };
-
-export const loadReportedEnquiriesSearch = createLoader(reportedEnquiriesSearch);
-
 export type AdminTalentSearch = Awaited<ReturnType<typeof loadAdminTalentSearch>>;

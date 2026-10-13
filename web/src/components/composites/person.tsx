@@ -44,7 +44,7 @@ function Person({
           </span>
           {badge}
         </span>
-        {name && (
+        {name && email && (
           <span className={cn("text-muted-foreground", wrapEmail ? "break-all" : "truncate")}>
             {email}
           </span>

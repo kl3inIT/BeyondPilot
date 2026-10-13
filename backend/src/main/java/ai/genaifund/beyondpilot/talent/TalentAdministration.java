@@ -15,9 +15,6 @@ import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.notification.EmailService;
-import ai.genaifund.beyondpilot.talent.dto.AdminTalentEnquiryListRequest;
-import ai.genaifund.beyondpilot.talent.dto.AdminTalentEnquiryListResponse;
-import ai.genaifund.beyondpilot.talent.dto.AdminTalentEnquiryResponse;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentListRequest;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentListResponse;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentResponse;
@@ -35,9 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * What operators do with talent profiles: read those that were submitted, approve one, send one back with what to
- * change, take one down from the public and restore it, feature one in the public directory, and read the
- * messages people reported. Every operation first checks that the caller is an
- * operator now; every decision is recorded in the audit trail in the transaction of the change, and its person is told
+ * change, take one down from the public and restore it, and feature one in the public directory. Every operation first checks that the caller is an operator
+ * now; every decision is recorded in the audit trail in the transaction of the change, and its person is told
  * by email. A draft is its person's alone and is never shown here.
  */
 @Service
@@ -223,25 +219,6 @@ public class TalentAdministration {
 		if (profiles.unfeature(id) == 1) {
 			record(AuditAction.TALENT_UNFEATURE, operator, profile, Map.of());
 		}
-	}
-
-	/**
-	 * One page of the messages people reported as unwanted, the newest first, with who sent them and to whom.
-	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 */
-	@Transactional(readOnly = true)
-	public AdminTalentEnquiryListResponse reported(Actor actor, AdminTalentEnquiryListRequest request) {
-		identity.requireOperator(actor);
-		int page = request.page() == null ? 1 : request.page();
-		int size = request.size() == null ? PAGE_SIZE : request.size();
-		List<TalentDetailRepository.ReportedEnquiry> rows = details.reported(size, (long) (page - 1) * size);
-		Map<UUID, Person> senders = identity
-			.people(rows.stream().map(TalentDetailRepository.ReportedEnquiry::senderAccountId).distinct().toList());
-		return new AdminTalentEnquiryListResponse(rows.stream()
-			.map(row -> new AdminTalentEnquiryResponse(row.id(), row.profileId(), row.profileName(),
-					TalentViews.senderName(row.senderName(), senders.get(row.senderAccountId())),
-					email(senders, row.senderAccountId()), row.topic(), row.message(), row.createdAt(), row.answeredAt()))
-			.toList(), page, size, details.reportedCount());
 	}
 
 	/** Tells the person what GenAI Fund decided; an account that no longer signs in is told nothing. */

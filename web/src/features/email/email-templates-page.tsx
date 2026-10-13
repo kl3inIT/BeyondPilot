@@ -18,6 +18,7 @@ const groups = [
   "solutions",
   "use_cases",
   "talent",
+  "messages",
 ] as const;
 
 /**

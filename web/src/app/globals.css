@@ -8,7 +8,6 @@
    this list with its first import; globals-sources.test.ts fails while it is on both. */
 @source not "../components/ui/aspect-ratio.tsx";
 @source not "../components/ui/attachment.tsx";
-@source not "../components/ui/bubble.tsx";
 @source not "../components/ui/button-group.tsx";
 @source not "../components/ui/calendar.tsx";
 @source not "../components/ui/carousel.tsx";
@@ -16,11 +15,7 @@
 @source not "../components/ui/direction.tsx";
 @source not "../components/ui/drawer.tsx";
 @source not "../components/ui/hover-card.tsx";
-@source not "../components/ui/item.tsx";
-@source not "../components/ui/marker.tsx";
 @source not "../components/ui/menubar.tsx";
-@source not "../components/ui/message.tsx";
-@source not "../components/ui/message-scroller.tsx";
 @source not "../components/ui/navigation-menu.tsx";
 @source not "../components/ui/questionnaire.tsx";
 @source not "../components/ui/resizable.tsx";

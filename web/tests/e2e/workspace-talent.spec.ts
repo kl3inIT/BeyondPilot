@@ -125,7 +125,7 @@ test.describe("workspace talent profile", () => {
     });
   });
 
-  test("an approved profile shows its messages, and a stale save is told by its code", async ({
+  test("an approved profile leads to Messages, and a stale save is told by its code", async ({
     page,
     context,
     baseURL,
@@ -139,24 +139,18 @@ test.describe("workspace talent profile", () => {
       "href",
       "/talent/dat-phan",
     );
-    await page.getByRole("tab", { name: /Enquiries/ }).click();
-    const messages = page.getByRole("tabpanel", { name: /Enquiries/ });
+    // What people write through the profile is read in Messages; the page holds no list of its own.
     await expect(
-      messages.getByText("We are scoping a claims assistant and would like your view."),
+      page.getByText("What people write to you through your profile arrives in Messages."),
     ).toBeVisible();
-    await expect(messages.getByText("1 new")).toBeVisible();
-    // The first message that waits opens beside the list.
-    await expect(messages.getByRole("heading", { name: "Hà Lê · Mekong Insurance" })).toBeVisible();
-    // A waiting message shows no address; an accepted one gives the way to write.
-    await expect(messages.getByText("ha.le@")).toHaveCount(0);
-    await messages.getByRole("button", { name: /Minh Trần/ }).click();
-    await expect(
-      messages.getByRole("link", { name: "Write to minh.tran@example.com" }),
-    ).toHaveAttribute("href", "mailto:minh.tran@example.com");
+    await expect(page.getByRole("link", { name: "Open Messages" })).toHaveAttribute(
+      "href",
+      "/workspace/messages",
+    );
+    await expect(page.getByRole("tab")).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
 
     // An approved profile reads as people see it until the person asks to edit it.
-    await page.getByRole("tab", { name: "Profile" }).click();
     await page.getByRole("link", { name: "Edit profile" }).click();
     const save = page.getByRole("button", { name: "Save changes" });
     await expect(save).toBeDisabled();
@@ -170,35 +164,6 @@ test.describe("workspace talent profile", () => {
       page.getByText("This profile changed in another tab. Reload the page and try again."),
     ).toBeVisible();
     await expect(page.getByText("text of the backend that must not be shown")).toHaveCount(0);
-  });
-
-  test("the person accepts a waiting message, or reports one after confirming", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "operator", baseURL!);
-    const answers = await answerDecisions(page, changesPath, 204);
-    await page.goto(mine);
-    await page.getByRole("tab", { name: /Enquiries/ }).click();
-    const messages = page.getByRole("tabpanel", { name: /Enquiries/ });
-
-    await messages.getByRole("button", { name: "Accept", exact: true }).click();
-    await expect(
-      page.getByText("Accepted. You both have each other's email address now."),
-    ).toBeVisible();
-
-    await messages.getByRole("button", { name: "Report", exact: true }).click();
-    const confirm = page.getByRole("alertdialog", { name: "Report this message?" });
-    await expect(confirm.getByText("not that you reported it")).toBeVisible();
-    await expectNoSeriousA11yViolations(page);
-    await confirm.getByRole("button", { name: "Report" }).click();
-
-    await expect(page.getByText("Reported to GenAI Fund.", { exact: false })).toBeVisible();
-    expect(answers.map((answer) => answer.call)).toEqual([
-      "POST /api/talent/mine/enquiries/d08dabc9-7a75-4bca-8bc2-7e0a3a3c4b01/accept",
-      "POST /api/talent/mine/enquiries/d08dabc9-7a75-4bca-8bc2-7e0a3a3c4b01/report",
-    ]);
   });
 
   test("the person deletes their profile after confirming", async ({ page, context, baseURL }) => {

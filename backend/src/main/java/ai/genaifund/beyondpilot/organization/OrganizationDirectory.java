@@ -52,6 +52,16 @@ public class OrganizationDirectory {
 		return memberships.members(organizationId).stream().map(member -> member.accountId()).toList();
 	}
 
+	/** The accounts that own an organization, read now; empty when it has no owner. */
+	@Transactional(readOnly = true)
+	public List<UUID> ownersOf(UUID organizationId) {
+		return memberships.members(organizationId)
+			.stream()
+			.filter(MembershipRepository.Member::isOwner)
+			.map(MembershipRepository.Member::accountId)
+			.toList();
+	}
+
 	/** Who this organization is, read now; empty when it does not exist. */
 	@Transactional(readOnly = true)
 	public Optional<OrganizationProfile> profile(UUID organizationId) {
