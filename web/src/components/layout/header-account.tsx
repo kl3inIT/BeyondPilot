@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/actions/button";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { readUnread } from "@/features/messaging/messaging-queries";
 import { judgesAnyProgram } from "@/features/review/review-queries";
 import { getCurrentAccount } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
@@ -17,7 +18,10 @@ async function HeaderAccount() {
 
   if (account) {
     // An operator reviews from the admin area; anyone else finds the programs they judge here.
-    const reviewer = account.role !== "operator" && (await judgesAnyProgram());
+    const [reviewer, waiting] = await Promise.all([
+      account.role !== "operator" && judgesAnyProgram(),
+      readUnread(),
+    ]);
     return (
       <>
         <AccountMenu
@@ -25,6 +29,7 @@ async function HeaderAccount() {
           email={account.email}
           operator={account.role === "operator"}
           reviewer={reviewer}
+          waiting={waiting.unread + waiting.requests}
         />
         <MobileMenu signedIn />
       </>

@@ -4,8 +4,8 @@ import { switchVariables, tagFaults } from "./template-tags";
 
 const invitation =
   "{{inviterName}} invited you to {{#owner}}own{{/owner}}{{^owner}}join{{/owner}} {{organizationName}}.\n\n[Open]({{organizationUrl}})";
-const enquiry =
-  "{{#senderName}}{{senderName}}{{/senderName}}{{^senderName}}Someone{{/senderName}} wrote, {{#aboutProject}}about a project{{/aboutProject}}{{#aboutRole}}about a role{{/aboutRole}}.";
+const request =
+  "{{#senderName}}{{senderName}}{{/senderName}}{{^senderName}}Someone{{/senderName}}{{#senderOrganization}} of an organization{{/senderOrganization}} wrote about {{about}}.";
 
 describe("switchVariables", () => {
   it("names what the default wording only shows or hides text with", () => {
@@ -20,8 +20,8 @@ describe("switchVariables", () => {
 
   it("leaves out a value that is printed inside the piece it shows", () => {
     expect([
-      ...switchVariables(["senderName", "aboutProject", "aboutRole", "aboutOther"], "", enquiry),
-    ]).toEqual(["aboutProject", "aboutRole"]);
+      ...switchVariables(["senderName", "senderOrganization", "about", "message"], "", request),
+    ]).toEqual(["senderOrganization"]);
   });
 
   it("names nothing the kind does not offer, and nothing without a default wording", () => {
@@ -33,7 +33,7 @@ describe("switchVariables", () => {
 describe("tagFaults", () => {
   it("finds nothing wrong in wording that is written correctly", () => {
     expect(tagFaults(invitation)).toEqual([]);
-    expect(tagFaults(enquiry)).toEqual([]);
+    expect(tagFaults(request)).toEqual([]);
     expect(tagFaults("No tag at all, and a lone { or }.")).toEqual([]);
   });
 

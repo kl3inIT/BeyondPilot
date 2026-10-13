@@ -31,8 +31,6 @@ final class TalentCodes {
 
 	static final String URL = "https?://[^\\s]+";
 
-	static final String ENQUIRY_TOPIC = "project|role|other";
-
 	static final String DECISION_REASON = "incomplete|unverifiable|inappropriate|other";
 
 	private TalentCodes() {

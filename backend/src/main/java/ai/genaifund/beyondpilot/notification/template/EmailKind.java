@@ -8,7 +8,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * What an email is for. The values are stored with every message and with every operator's wording, so a value keeps
- * its meaning; adding a kind is an ordinary change.
+ * its meaning; adding a kind is an ordinary change. A kind that is no longer sent leaves this catalog, and the log
+ * keeps the messages of it under the value they were stored with.
  *
  * <p>
  * Each kind declares the variables its templates may use. A template that names any other is refused, and one that
@@ -121,28 +122,29 @@ public enum EmailKind {
 	TALENT_RESTORED("talent_restored", EmailGroup.TALENT, true, null, Variable.required("profileName", "Mei Tan"),
 			Variable.optional("profileUrl", "https://beyondpilot.example/talent/mei-tan")),
 
-	TALENT_ENQUIRY("talent_enquiry", EmailGroup.TALENT, true, "message",
+	MESSAGE_REQUEST("message_request", EmailGroup.MESSAGES, true, null,
 			Variable.optional("senderName", "Minh Trần"), Variable.optional("senderOrganization", "Pocket Policy"),
-			Variable.optional("aboutProject", Boolean.TRUE), Variable.optional("aboutRole", Boolean.FALSE),
-			Variable.optional("aboutOther", Boolean.FALSE),
-			Variable.quote("message", "We are building claims triage and would like your help."),
-			Variable.optional("enquiriesUrl", "https://beyondpilot.example/workspace/talent")),
+			Variable.required("about", "ClaimLens"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
 
-	TALENT_ENQUIRY_REMINDER("talent_enquiry_reminder", EmailGroup.TALENT, true, null,
+	MESSAGE_REQUEST_REMINDER("message_request_reminder", EmailGroup.MESSAGES, true, null,
 			Variable.optional("senderName", "Minh Trần"), Variable.required("daysLeft", "7"),
-			Variable.optional("enquiriesUrl", "https://beyondpilot.example/workspace/talent")),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
 
-	TALENT_INTRODUCTION("talent_introduction", EmailGroup.TALENT, true, null,
-			Variable.required("otherName", "Mei Tan"), Variable.required("otherEmail", "mei.tan@renewminute.example"),
-			Variable.optional("otherOrganization", "RenewMinute")),
+	MESSAGE_REQUEST_ACCEPTED("message_request_accepted", EmailGroup.MESSAGES, true, null,
+			Variable.optional("otherName", "Plain Cover"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
 
-	TALENT_ENQUIRY_DECLINED("talent_enquiry_declined", EmailGroup.TALENT, true, null,
-			Variable.required("talentName", "Mei Tan"),
-			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/talent/sent")),
+	MESSAGE_REQUEST_DECLINED("message_request_declined", EmailGroup.MESSAGES, true, null,
+			Variable.optional("otherName", "Plain Cover"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
 
-	TALENT_ENQUIRY_CLOSED("talent_enquiry_closed", EmailGroup.TALENT, true, null,
-			Variable.required("talentName", "Mei Tan"),
-			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/talent/sent"));
+	MESSAGE_REQUEST_CLOSED("message_request_closed", EmailGroup.MESSAGES, true, null,
+			Variable.optional("otherName", "Plain Cover"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
+
+	MESSAGE_UNREAD("message_unread", EmailGroup.MESSAGES, true, null, Variable.optional("senderName", "Mei Tan"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages"));
 
 	private final String value;
 

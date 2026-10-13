@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
+import { contactRoute } from "@/features/messaging/messaging-search";
 import { SolutionPage } from "@/features/solution/solution-page";
 import { readMySolutions, readSolution } from "@/features/solution/solution-queries";
 import { getCurrentAccount } from "@/lib/auth/session";
@@ -33,12 +34,20 @@ export default async function SolutionRoute({ params }: PageProps<"/[locale]/sol
 
   const account = await getCurrentAccount();
   const mine = account ? await readMySolutions().catch(() => null) : null;
-  const own = mine?.editable ? mine.items.find((item) => item.slug === slug) : undefined;
+  const theirs = mine?.items.find((item) => item.slug === slug);
+  const own = mine?.editable ? theirs : undefined;
 
   return (
     <SolutionPage
       solution={solution}
       editHref={own && `${siteRoutes.workspaceSolutions}/${own.id}`}
+      // The people of the organization that offers the solution have nobody to write to but
+      // themselves. A visitor signs in first and comes back to the first message.
+      contactHref={
+        theirs
+          ? undefined
+          : contactRoute({ kind: "solution", slug: solution.slug }, !!account, locale)
+      }
     />
   );
 }

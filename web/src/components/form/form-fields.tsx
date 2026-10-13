@@ -5,6 +5,7 @@ import type { ComponentProps, ReactNode } from "react";
 
 import { Button } from "@/components/actions/button";
 import { RequiredMark } from "@/components/composites/required-mark";
+import { Reveal } from "@/components/composites/reveal";
 import {
   RequiredUnlessOptional,
   useFieldValidity,
@@ -196,7 +197,9 @@ function TextField({
         used={field.state.value.length}
         limit={counted ? input.maxLength : undefined}
       />
-      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
+      <Reveal open={invalid}>
+        <FieldError id={errorId} role={errorRole} errors={errors} />
+      </Reveal>
     </Field>
   );
 }
@@ -245,7 +248,9 @@ function TextareaField({
         used={field.state.value.length}
         limit={textarea.maxLength}
       />
-      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
+      <Reveal open={invalid}>
+        <FieldError id={errorId} role={errorRole} errors={errors} />
+      </Reveal>
     </Field>
   );
 }
@@ -308,7 +313,9 @@ function SelectField({
         </SelectContent>
       </Select>
       {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
-      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
+      <Reveal open={invalid}>
+        <FieldError id={errorId} role={errorRole} errors={errors} />
+      </Reveal>
     </Field>
   );
 }
@@ -372,7 +379,9 @@ function ComboboxField({
         </ComboboxContent>
       </Combobox>
       {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
-      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
+      <Reveal open={invalid}>
+        <FieldError id={errorId} role={errorRole} errors={errors} />
+      </Reveal>
     </Field>
   );
 }
@@ -401,7 +410,9 @@ function CheckboxField({ label, disabled, required: mustTick = false }: Checkbox
       />
       <FieldContent>
         <FieldLabel htmlFor={controlId}>{label}</FieldLabel>
-        {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
+        <Reveal open={invalid}>
+          <FieldError id={errorId} role={errorRole} errors={errors} />
+        </Reveal>
       </FieldContent>
     </Field>
   );
@@ -436,7 +447,11 @@ function FormError() {
       {(error) => {
         // TanStack Form keeps the `form` part of the errors setServerErrors gave as the form's own error.
         const message = typeof error === "string" ? error : undefined;
-        return message ? <FieldError>{message}</FieldError> : null;
+        return (
+          <Reveal open={message !== undefined}>
+            <FieldError>{message}</FieldError>
+          </Reveal>
+        );
       }}
     </form.Subscribe>
   );

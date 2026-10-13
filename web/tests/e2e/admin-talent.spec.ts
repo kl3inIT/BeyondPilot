@@ -308,20 +308,4 @@ test.describe("admin talent", () => {
       { call: `POST /api/talent/admin/profiles/${arif}/unfeature`, body: null },
     ]);
   });
-
-  test("operators read the reported messages with who sent them", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "operator", baseURL!);
-    await page.goto("/admin/talent");
-    await page.getByRole("link", { name: "Reported messages" }).click();
-
-    await expect(page).toHaveURL("/admin/talent/reported");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Reported messages");
-    await expect(page.getByText("From growth@spam.example")).toBeVisible();
-    await expect(page.getByText("To Siti Rahma · About something else")).toBeVisible();
-    await expectNoSeriousA11yViolations(page);
-  });
 });

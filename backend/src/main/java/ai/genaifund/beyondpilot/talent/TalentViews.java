@@ -4,17 +4,13 @@ import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
 
-import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.talent.dto.TalentProfileResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentProjectDto;
 import ai.genaifund.beyondpilot.talent.persistence.TalentDetailRepository;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfile;
 import org.jspecify.annotations.Nullable;
 
-/**
- * What the application services of the module derive the same way: the response records, the name a sender is shown by
- * and a slug.
- */
+/** What the application services of the module derive the same way: the response records and a slug. */
 final class TalentViews {
 
 	private static final int MAX_SLUG_LENGTH = 60;
@@ -38,23 +34,6 @@ final class TalentViews {
 			.map(project -> new TalentProjectDto(project.title(), project.summary(), project.url(), project.year(),
 					project.stage()))
 			.toList();
-	}
-
-	/**
-	 * Who wrote a message, while their address is not shared: the name they gave with it, or else the account's name.
-	 * @param sender the account that wrote; null when it no longer signs in
-	 * @return null when neither has a name
-	 */
-	static @Nullable String senderName(@Nullable String given, @Nullable Person sender) {
-		if (given != null || sender == null) {
-			return given;
-		}
-		return sender.displayName();
-	}
-
-	/** Who wrote a message the person accepted: the name they gave with it, or else how their account is shown. */
-	static String acceptedSenderName(@Nullable String given, Person sender) {
-		return given != null ? given : sender.label();
 	}
 
 	/** The values once each, in the order they were given, without the space around them. */

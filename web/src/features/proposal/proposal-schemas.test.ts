@@ -5,7 +5,7 @@ import { proposalStepSchemas, stepProblems } from "./proposal-schemas";
 /** The rules with each key as its own words, so a test reads which rule spoke. */
 const schemasFor = (organization: { team: boolean } | null) =>
   proposalStepSchemas((key) => key, { organization });
-const schemas = schemasFor(null);
+const schemas = schemasFor({ team: false });
 
 const held = {
   who: "individual",
@@ -61,28 +61,14 @@ describe("stepProblems", () => {
     expect(stepProblems(schemas, "you", withPhone(" 0912 345 678 "))).toBeUndefined();
   });
 
-  it("asks a person in no organization to choose who sends, and a company to be joined or made first", () => {
-    expect(stepProblems(schemas, "you", { ...held, who: "" })).toEqual({
-      who: { message: "who" },
+  it("requires joining or creating an organization before proceeding, not a deferred team choice", () => {
+    const unorganized = schemasFor(null);
+    expect(stepProblems(unorganized, "you", held)).toEqual({
+      organization: { message: "company" },
     });
-    expect(stepProblems(schemas, "you", { ...held, who: "company" })).toEqual({
-      who: { message: "company" },
+    expect(stepProblems(unorganized, "you", { ...held, teamBackground: "Built two." })).toEqual({
+      organization: { message: "company" },
     });
-  });
-
-  it("asks a new team for its name and for what it has done", () => {
-    expect(stepProblems(schemas, "you", { ...held, who: "team" })).toEqual({
-      teamName: { message: "required" },
-      teamBackground: { message: "background" },
-    });
-    expect(
-      stepProblems(schemas, "you", {
-        ...held,
-        who: "team",
-        teamName: "Doc Team",
-        teamBackground: "Built two.",
-      }),
-    ).toBeUndefined();
   });
 
   it("asks the team an organization already is for what it has done, and nobody else", () => {

@@ -136,9 +136,10 @@ class EmailRendererTest {
 		assertThat(linked).containsExactlyInAnyOrder("organization_invitation", "organization_approved",
 				"organization_sent_back", "organization_request_approved", "organization_restored",
 				"application_received", "reviewer_invitation", "application_outcome", "solution_approved",
-				"solution_sent_back", "solution_restored", "use_case_approved", "use_case_sent_back", "talent_approved",
-				"talent_changes_requested", "talent_restored", "talent_enquiry", "talent_enquiry_reminder",
-				"talent_enquiry_declined", "talent_enquiry_closed");
+				"solution_sent_back", "solution_restored", "use_case_approved", "use_case_sent_back",
+				"talent_approved", "talent_changes_requested", "talent_restored", "message_request",
+				"message_request_reminder", "message_request_accepted", "message_request_declined",
+				"message_request_closed", "message_unread");
 	}
 
 	@Test
@@ -146,32 +147,36 @@ class EmailRendererTest {
 		Map<String, Object> values = new HashMap<>();
 		values.put("senderName", "<b>Mallory</b> **Claims**");
 		values.put("senderOrganization", "[click me](https://evil.example)");
-		values.put("aboutProject", Boolean.TRUE);
-		values.put("message", "line one\nline two <script>");
+		values.put("about", "**Claims**");
 
-		RenderedEmail email = renderer.render(EmailKind.TALENT_ENQUIRY, defaults.template(EmailKind.TALENT_ENQUIRY),
+		RenderedEmail email = renderer.render(EmailKind.MESSAGE_REQUEST, defaults.template(EmailKind.MESSAGE_REQUEST),
 				values, APPEARANCE);
 
 		assertThat(email.html()).contains("&lt;b&gt;Mallory&lt;/b&gt;")
 			.contains("[click me](https://evil.example)")
 			.doesNotContain("href=\"https://evil.example\"")
-			.contains("**Claims**")
-			.contains("line one<br>line two &lt;script&gt;")
-			.doesNotContain("<script>");
-		assertThat(email.text()).contains("Their message:").contains("line one\nline two <script>");
+			.contains("**Claims**");
+
+		// A text a person wrote is quoted with its lines kept and its markup shown as text.
+		Map<String, Object> sentBack = new HashMap<>();
+		sentBack.put("organizationName", "Plain Cover");
+		sentBack.put("reason", "line one\nline two <script>");
+		RenderedEmail quoted = renderer.render(EmailKind.ORGANIZATION_SENT_BACK,
+				defaults.template(EmailKind.ORGANIZATION_SENT_BACK), sentBack, APPEARANCE);
+		assertThat(quoted.html()).contains("line one<br>line two &lt;script&gt;").doesNotContain("<script>");
+		assertThat(quoted.text()).contains("line one\nline two <script>");
 	}
 
 	@Test
 	void anOptionalValueThatIsAbsentTakesItsOtherWording() {
 		Map<String, Object> values = new HashMap<>();
 		values.put("senderOrganization", "Pocket Policy");
-		values.put("aboutProject", Boolean.TRUE);
-		values.put("message", "Hello");
+		values.put("about", "ClaimLens");
 
-		RenderedEmail email = renderer.render(EmailKind.TALENT_ENQUIRY, defaults.template(EmailKind.TALENT_ENQUIRY),
+		RenderedEmail email = renderer.render(EmailKind.MESSAGE_REQUEST, defaults.template(EmailKind.MESSAGE_REQUEST),
 				values, APPEARANCE);
 
-		assertThat(email.text()).contains("Someone (Pocket Policy) wrote to you");
+		assertThat(email.text()).contains("Someone (Pocket Policy) wrote to you on BeyondPilot about ClaimLens");
 	}
 
 	@Test

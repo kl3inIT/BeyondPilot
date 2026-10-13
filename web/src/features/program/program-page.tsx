@@ -19,7 +19,14 @@ import { publicFileUrl } from "@/lib/storage/upload";
 
 import { ProgramCountdown } from "./program-countdown";
 import { daysText, deadlineText, programFormatter, renderedAt } from "./program-format";
-import { ApplyCard, DraftBanner, EventList, Timeline, timelineOf } from "./program-parts";
+import {
+  ApplyCard,
+  AskGenAiFund,
+  DraftBanner,
+  EventList,
+  Timeline,
+  timelineOf,
+} from "./program-parts";
 import { ProgramUseCases } from "./program-use-cases";
 
 /** The badge of a program's phase: open is the one that takes action. */
@@ -55,7 +62,14 @@ export async function ProgramBreadcrumb({ name }: { name: string }) {
  * the use cases attached to it, the timeline of its key dates and application window, its events,
  * and the card to apply.
  */
-async function ProgramPage({ program }: { program: Program }) {
+async function ProgramPage({
+  program,
+  askHref,
+}: {
+  program: Program;
+  /** Where "Ask GenAI Fund" leads; absent on a draft and for an operator. */
+  askHref?: string;
+}) {
   const [t, types, locale, useCases] = await Promise.all([
     getTranslations("Program.page"),
     getTranslations("Program.type"),
@@ -123,7 +137,7 @@ async function ProgramPage({ program }: { program: Program }) {
         {/* On a phone the card to apply comes first; from lg it stands beside the content. */}
         {card && (
           <div className="lg:hidden">
-            <ApplyCard program={program} steps={steps} now={now} />
+            <ApplyCard program={program} steps={steps} now={now} askHref={askHref} />
           </div>
         )}
 
@@ -162,10 +176,12 @@ async function ProgramPage({ program }: { program: Program }) {
               program.events.length === 0 && (
                 <p className="text-muted-foreground">{t("nothingYet")}</p>
               )}
+            {/* Without the card, which holds it otherwise. */}
+            {!card && askHref && <AskGenAiFund href={askHref} />}
           </div>
           {card && (
             <div className="hidden lg:sticky lg:top-6 lg:block lg:w-80 lg:shrink-0">
-              <ApplyCard program={program} steps={steps} now={now} />
+              <ApplyCard program={program} steps={steps} now={now} askHref={askHref} />
             </div>
           )}
         </div>

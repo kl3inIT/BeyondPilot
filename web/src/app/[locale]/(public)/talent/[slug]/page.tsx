@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
+import { contactRoute } from "@/features/messaging/messaging-search";
 import { TalentProfilePage } from "@/features/talent/talent-profile-page";
 import { readMyTalent, readTalentProfile } from "@/features/talent/talent-queries";
-import { getPathname } from "@/i18n/navigation";
 import { getCurrentAccount } from "@/lib/auth/session";
-import { siteRoutes, titleSuffix } from "@/lib/site";
+import { titleSuffix } from "@/lib/site";
 
 export async function generateMetadata({
   params,
@@ -26,20 +26,15 @@ export default async function TalentProfileRoute({ params }: PageProps<"/[locale
   if (!profile) {
     notFound();
   }
-  // A visitor signs in first and comes back to this profile to write.
-  const returnTo = getPathname({ href: `${siteRoutes.talent}/${profile.slug}`, locale });
-  const signInHref = account
-    ? undefined
-    : `${siteRoutes.signIn}?${new URLSearchParams({ returnTo })}`;
-
   const own = account ? (await readMyTalent()).profile?.slug === profile.slug : false;
 
   return (
     <TalentProfilePage
       profile={profile}
-      signInHref={signInHref}
+      // Contact leads to Messages; a visitor signs in first and comes back to the first message.
+      contactHref={contactRoute({ kind: "talent", slug: profile.slug }, !!account, locale)}
+      visitor={!account}
       own={own}
-      senderName={account?.displayName ?? ""}
     />
   );
 }

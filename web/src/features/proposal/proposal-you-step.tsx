@@ -2,28 +2,22 @@
 
 import { useStore } from "@tanstack/react-form";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
+import { Button } from "@/components/actions/button";
+import { ReviewStatus } from "@/components/composites/review-status";
+import { useNotify } from "@/hooks/use-notify";
+import { withdrawJoinRequest } from "@/lib/api/generated";
+import { useRouter } from "next/navigation";
 import { TextButton } from "@/components/actions/text-button";
 import { withFieldGroup } from "@/components/form/app-form";
 import { useFieldValidity } from "@/components/form/form-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-  FieldTitle,
-} from "@/components/ui/field";
+import { Field, FieldError, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { OrganizationFinder } from "@/features/organization/organization-finder";
-import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
+import { countryCodes, useCountryName } from "@/i18n/vocabulary";
 import type {
   OrganizationJoinRequest,
   OrganizationMatch,
@@ -32,14 +26,9 @@ import type {
 import { initials } from "@/lib/initials";
 import { publicFileUrl } from "@/lib/storage/upload";
 
-import { maxBackground, whoOf, type Who } from "./proposal-draft";
+import { maxBackground } from "./proposal-draft";
 import { ProposalOrganizationDialog } from "./proposal-organization-dialog";
 import { phoneSchema } from "./proposal-schemas";
-
-/** The sizes a team names. */
-const teamSizes = ["2_9", "10_49", "50_99"] as const;
-
-const choices = ["individual", "team", "company"] as const;
 
 type ProposalYouStepProps = {
   /** The organization the proposal is sent for; none yet for a person who belongs to none. */
@@ -55,16 +44,11 @@ type ProposalYouStepProps = {
 };
 
 /**
- * Who sends the proposal and how to reach them: one of three horizontal choices, then what the choice
- * asks. A person already in an organization has their choice made and sees the organization; a person in
- * none finds a company, makes one or writes their team. The team says what it has done, and the person
- * says who they are.
+ * Organization first: find or create it, or withdraw a pending request. Once a member, the person
+ * sees the organization and their contact fields. A team also supplies the proposal's background.
  */
 const ProposalYouStep = withFieldGroup({
   defaultValues: {
-    who: "",
-    teamName: "",
-    teamSize: "2_9",
     teamBackground: "",
     name: "",
     country: "",
@@ -87,21 +71,14 @@ const ProposalYouStep = withFieldGroup({
   }) {
     const t = useTranslations("UseCaseProposal.wizard.you");
     const d = useTranslations("UseCaseProposal.wizard.details");
-    const sizeName = useVocabulary("teamSize");
-    const chosen = useStore(group.store, (state) => state.values.who);
     const country = useStore(group.store, (state) => state.values.country);
     const [creating, setCreating] = useState<string | null>(null);
 
-    const locked = organization !== null || request !== null;
-    const who = (organization ? whoOf(organization.type) : request ? "company" : chosen) as
-      Who | "";
-    const team = who === "team";
+    const team = organization?.type === "builder_team";
 
     return (
       <div className="flex flex-col gap-6">
-        <group.AppField name="who">{() => <WhoCards value={who} locked={locked} />}</group.AppField>
-
-        {organization && <OrganizationSummary organization={organization} />}
+        {organization && <OrganizationSummary organization={organization} onSaved={onOrganized} />}
 
         {!organization && request && (
           <div className="flex flex-col gap-1 rounded-lg border p-4">
@@ -109,10 +86,11 @@ const ProposalYouStep = withFieldGroup({
             <p className="text-sm text-muted-foreground">
               {t(request.claim ? "claiming" : "asked", { name: request.organizationName })}
             </p>
+            <WithdrawRequest onOrganized={onOrganized} />
           </div>
         )}
 
-        {!organization && !request && who === "company" && (
+        {!organization && !request && (
           <>
             <OrganizationFinder
               embedded
@@ -128,22 +106,6 @@ const ProposalYouStep = withFieldGroup({
           </>
         )}
 
-        {!organization && who === "team" && (
-          <div className="grid gap-5 sm:grid-cols-2">
-            <group.AppField name="teamName">
-              {(field) => <field.TextField label={t("teamName")} maxLength={120} />}
-            </group.AppField>
-            <group.AppField name="teamSize">
-              {(field) => (
-                <field.SelectField
-                  label={t("teamSize")}
-                  options={teamSizes.map((value) => ({ value, label: sizeName(value) }))}
-                />
-              )}
-            </group.AppField>
-          </div>
-        )}
-
         {team && (
           <group.AppField name="teamBackground">
             {(field) => (
@@ -152,7 +114,7 @@ const ProposalYouStep = withFieldGroup({
           </group.AppField>
         )}
 
-        {(organization || who === "individual" || who === "team") && (
+        {organization && (
           <FieldSet>
             <FieldLegend>{t("aboutYou")}</FieldLegend>
             <div className="grid gap-5 sm:grid-cols-2">
@@ -190,46 +152,14 @@ const ProposalYouStep = withFieldGroup({
   },
 });
 
-/** Three choices side by side, all in view; a person in an organization sees theirs and cannot change it. */
-function WhoCards({ value, locked }: { value: string; locked: boolean }) {
-  const t = useTranslations("UseCaseProposal.wizard.you");
-  const { field, invalid, errors, ids } = useFieldValidity<string>();
-
-  return (
-    <FieldSet data-invalid={invalid || undefined}>
-      <FieldLegend variant="label">{t("who")}</FieldLegend>
-      <RadioGroup
-        id={ids.control}
-        className="sm:grid-cols-3"
-        value={value}
-        disabled={locked}
-        onValueChange={(next) => field.handleChange(String(next))}
-        aria-label={t("who")}
-        aria-describedby={invalid ? ids.error : undefined}
-      >
-        {choices.map((choice) => (
-          <FieldLabel key={choice} htmlFor={`${ids.control}-${choice}`}>
-            <Field orientation="horizontal">
-              <FieldContent>
-                <FieldTitle>{t(`choice.${choice}.title`)}</FieldTitle>
-                <FieldDescription>{t(`choice.${choice}.what`)}</FieldDescription>
-              </FieldContent>
-              <RadioGroupItem
-                value={choice}
-                id={`${ids.control}-${choice}`}
-                aria-invalid={invalid || undefined}
-              />
-            </Field>
-          </FieldLabel>
-        ))}
-      </RadioGroup>
-      {invalid && <FieldError id={ids.error} errors={errors} />}
-    </FieldSet>
-  );
-}
-
 /** The organization the proposal is sent for, with the way for its owner to correct what they gave. */
-function OrganizationSummary({ organization }: { organization: ProposingOrganization }) {
+function OrganizationSummary({
+  organization,
+  onSaved,
+}: {
+  organization: ProposingOrganization;
+  onSaved: () => Promise<void>;
+}) {
   const t = useTranslations("UseCaseProposal.wizard.organization");
   const [editing, setEditing] = useState(false);
 
@@ -242,14 +172,48 @@ function OrganizationSummary({ organization }: { organization: ProposingOrganiza
         <AvatarFallback>{initials(organization.name, "")}</AvatarFallback>
       </Avatar>
       <span className="min-w-0 flex-1 truncate text-base font-medium">{organization.name}</span>
-      {!organization.approved && <Badge variant="secondary">{t("pending")}</Badge>}
+      {!organization.approved && (
+        <ReviewStatus state="in_review" appearance="pill">
+          {t("pending")}
+        </ReviewStatus>
+      )}
       {organization.owner && (
         <>
           <TextButton onClick={() => setEditing(true)}>{t("edit")}</TextButton>
-          <ProposalOrganizationDialog open={editing} onOpenChange={setEditing} />
+          <ProposalOrganizationDialog open={editing} onOpenChange={setEditing} onSaved={onSaved} />
         </>
       )}
     </div>
+  );
+}
+
+/** A pending membership request can be withdrawn without discarding the proposal's values. */
+function WithdrawRequest({ onOrganized }: { onOrganized: () => Promise<void> }) {
+  const t = useTranslations("Organization");
+  const notify = useNotify();
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const running = useRef(false);
+  async function withdraw() {
+    if (running.current) return;
+    running.current = true;
+    setPending(true);
+    try {
+      await withdrawJoinRequest();
+      await onOrganized();
+      router.refresh();
+      notify.success("Organization.done.requestWithdrawn");
+    } catch (error) {
+      notify.failure(error);
+    } finally {
+      running.current = false;
+      setPending(false);
+    }
+  }
+  return (
+    <Button prominence="secondary" pending={pending} onClick={withdraw}>
+      {t("entry.request.withdraw")}
+    </Button>
   );
 }
 

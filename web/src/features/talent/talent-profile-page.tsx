@@ -3,6 +3,8 @@ import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { Badge } from "@/components/ui/badge";
+import { Empty, EmptyDescription, EmptyHeader } from "@/components/ui/empty";
+import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -21,12 +23,12 @@ import { TalentPhoto } from "./talent-photo";
 
 type TalentProfilePageProps = {
   profile: PublicTalent;
-  /** Where a visitor signs in to write to the person; absent for someone signed in, who writes here. */
-  signInHref?: string;
+  /** Where Contact leads: Messages, or for a visitor the sign-in screen that returns there. */
+  contactHref: string;
+  /** True when nobody is signed in: Contact then says that signing in comes first. */
+  visitor: boolean;
   /** True when the profile is the caller's own: they edit it instead of writing to it. */
   own: boolean;
-  /** The signed-in caller's name, to sign a message with; empty when the account has none. */
-  senderName?: string;
 };
 
 /** The host of an address, which is what a reader recognises of it: "linkedin.com". */
@@ -40,7 +42,7 @@ function hostOf(address: string) {
  * industries, and beside it the one way to write to them with the work they take on. On a phone
  * that card comes first, under the head.
  */
-function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfilePageProps) {
+function TalentProfilePage({ profile, contactHref, visitor, own }: TalentProfilePageProps) {
   const t = useTranslations("Talent.profile");
   const d = useTranslations("Talent.directory");
   const role = useVocabulary("talentRole");
@@ -115,12 +117,10 @@ function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfi
       <div className="flex flex-col gap-8 md:flex-row-reverse md:items-start xl:gap-12">
         <div className="md:w-75 md:shrink-0 xl:w-95">
           <TalentContact
-            slug={profile.slug}
             name={profile.name}
-            waitingSince={profile.waitingEnquirySentAt}
-            signInHref={signInHref}
+            href={contactHref}
+            visitor={visitor}
             own={own}
-            senderName={senderName}
             intro={
               profile.engagement.length > 0 && (
                 <p className="text-sm text-muted-foreground">
@@ -158,7 +158,7 @@ function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfi
                 </ContactFact>
               )}
             </dl>
-            <p className="text-xs text-muted-foreground">{t("note", { name: profile.name })}</p>
+            <p className="text-xs text-muted-foreground">{t("note")}</p>
           </TalentContact>
         </div>
 
@@ -188,9 +188,13 @@ function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfi
                 ))}
               </ol>
             ) : (
-              <p className="rounded-xl border border-dashed bg-muted p-4 text-sm text-muted-foreground">
-                {t("projects.empty")}
-              </p>
+              <div className="flex rounded-xl border border-dashed bg-muted">
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyDescription>{t("projects.empty")}</EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              </div>
             )}
           </section>
 
@@ -221,29 +225,32 @@ function ProjectEntry({ project }: { project: TalentProject }) {
   const stage = useVocabulary("projectStage");
 
   return (
-    <li className="flex flex-col gap-3 border-t py-5 md:flex-row md:gap-6">
-      <div className="flex shrink-0 flex-row items-center gap-2 md:w-32 md:flex-col md:items-start">
-        {project.year && <span className="text-sm text-muted-foreground">{project.year}</span>}
-        {project.stage && <Badge variant="outline">{stage(project.stage)}</Badge>}
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <h3 className="font-medium">{project.title}</h3>
-        {project.summary && (
-          <p className="max-w-180 text-sm whitespace-pre-line text-muted-foreground">
-            {project.summary}
-          </p>
-        )}
-        {project.url && (
-          <TextButton
-            href={project.url}
-            target="_blank"
-            rel="noreferrer"
-            className="self-start font-normal"
-          >
-            {t("open")}
-            <ArrowRightIcon aria-hidden="true" />
-          </TextButton>
-        )}
+    <li className="flex flex-col">
+      <Separator />
+      <div className="flex flex-col gap-3 py-5 md:flex-row md:gap-6">
+        <div className="flex shrink-0 flex-row items-center gap-2 md:w-32 md:flex-col md:items-start">
+          {project.year && <span className="text-sm text-muted-foreground">{project.year}</span>}
+          {project.stage && <Badge variant="outline">{stage(project.stage)}</Badge>}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <h3 className="font-medium">{project.title}</h3>
+          {project.summary && (
+            <p className="max-w-180 text-sm whitespace-pre-line text-muted-foreground">
+              {project.summary}
+            </p>
+          )}
+          {project.url && (
+            <TextButton
+              href={project.url}
+              target="_blank"
+              rel="noreferrer"
+              className="self-start font-normal"
+            >
+              {t("open")}
+              <ArrowRightIcon aria-hidden="true" />
+            </TextButton>
+          )}
+        </div>
       </div>
     </li>
   );

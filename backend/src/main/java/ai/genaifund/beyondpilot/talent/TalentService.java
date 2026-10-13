@@ -1,13 +1,9 @@
 package ai.genaifund.beyondpilot.talent;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
@@ -15,50 +11,26 @@ import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Person;
-import ai.genaifund.beyondpilot.notification.EmailService;
-import ai.genaifund.beyondpilot.organization.Membership;
-import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
-import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
 import ai.genaifund.beyondpilot.storage.StorageException;
 import ai.genaifund.beyondpilot.storage.StorageService;
 import ai.genaifund.beyondpilot.talent.dto.MyTalentResponse;
 import ai.genaifund.beyondpilot.talent.dto.SaveTalentProfileRequest;
-import ai.genaifund.beyondpilot.talent.dto.SendTalentEnquiryRequest;
-import ai.genaifund.beyondpilot.talent.dto.SentTalentEnquiryListResponse;
-import ai.genaifund.beyondpilot.talent.dto.SentTalentEnquiryResponse;
-import ai.genaifund.beyondpilot.talent.dto.TalentEnquiryResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentProfileResponse;
 import ai.genaifund.beyondpilot.talent.persistence.TalentDetailRepository;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfile;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfileRepository;
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * What a person does with their own talent profile, and what someone signed in does with another's: send a message
- * through it, which the person accepts, declines or reports. A person has one profile and only they write it.
- */
+/** What a person does with their own talent profile. A person has one profile and only they write it. */
 @Service
 public class TalentService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(TalentService.class);
-
-	/** How long a message waits for the person's answer before it closes. */
-	static final Duration ENQUIRY_LIFETIME = Duration.ofDays(14);
-
-	/** How many conversations a sender starts in a day, to any profiles. */
-	static final int ENQUIRIES_A_DAY = 10;
-
-	private static final Duration DAY = Duration.ofDays(1);
-
-	private static final int ENQUIRIES_SHOWN = 100;
-
-	private static final String ENQUIRY = "talent_enquiry";
 
 	private static final String TALENT = "talent";
 
@@ -68,10 +40,6 @@ public class TalentService {
 
 	private final IdentityService identity;
 
-	private final EmailService email;
-
-	private final OrganizationDirectory organizations;
-
 	private final AuditTrail audit;
 
 	private final StorageService storage;
@@ -79,57 +47,22 @@ public class TalentService {
 	private final ApplicationEventPublisher events;
 
 	TalentService(TalentProfileRepository profiles, TalentDetailRepository details, IdentityService identity,
-			EmailService email, OrganizationDirectory organizations, AuditTrail audit, StorageService storage,
-			ApplicationEventPublisher events) {
+			AuditTrail audit, StorageService storage, ApplicationEventPublisher events) {
 		this.profiles = profiles;
 		this.details = details;
 		this.identity = identity;
-		this.email = email;
-		this.organizations = organizations;
 		this.audit = audit;
 		this.storage = storage;
 		this.events = events;
 	}
 
-	/**
-	 * The caller's profile, when they have one, with the messages sent through it. A sender's address is shown only on
-	 * a message the caller accepted; a message from an account that no longer signs in is left out.
-	 */
+	/** The caller's profile, when they have one. */
 	@Transactional(readOnly = true)
 	public MyTalentResponse mine(Actor actor) {
 		identity.requireActive(actor);
-		TalentProfile profile = profiles.findByAccountId(actor.accountId()).orElse(null);
-		if (profile == null) {
-			return new MyTalentResponse(null, List.of());
-		}
-		List<TalentDetailRepository.Enquiry> enquiries = details.enquiries(profile.getId(), ENQUIRIES_SHOWN);
-		Map<UUID, Person> senders = identity
-			.people(enquiries.stream().map(TalentDetailRepository.Enquiry::senderAccountId).distinct().toList());
-		Map<UUID, OrganizationName> senderOrganizations = organizations.names(enquiries.stream()
-			.map(TalentDetailRepository.Enquiry::senderOrganizationId)
-			.filter(Objects::nonNull)
-			.distinct()
-			.toList());
-		return new MyTalentResponse(TalentViews.profile(profile, details.projects(profile.getId())),
-				enquiries.stream()
-					.filter(enquiry -> senders.containsKey(enquiry.senderAccountId()))
-					.map(enquiry -> enquiry(enquiry, senders.get(enquiry.senderAccountId()), senderOrganizations))
-					.toList());
-	}
-
-	/** A message as its person reads it: before an acceptance the sender is never named by their address. */
-	private static TalentEnquiryResponse enquiry(TalentDetailRepository.Enquiry enquiry, Person sender,
-			Map<UUID, OrganizationName> organizations) {
-		UUID organizationId = enquiry.senderOrganizationId();
-		OrganizationName organization = organizationId == null ? null : organizations.get(organizationId);
-		boolean accepted = TalentDetailRepository.ACCEPTED.equals(enquiry.status());
-		boolean waiting = TalentDetailRepository.PENDING.equals(enquiry.status());
-		return new TalentEnquiryResponse(enquiry.id(),
-				accepted ? TalentViews.acceptedSenderName(enquiry.senderName(), sender)
-						: TalentViews.senderName(enquiry.senderName(), sender),
-				organization == null ? null : organization.name(), accepted ? sender.email() : null, enquiry.topic(),
-				enquiry.message(), enquiry.status(), enquiry.createdAt(), enquiry.answeredAt(),
-				waiting ? enquiry.createdAt().plus(ENQUIRY_LIFETIME) : null);
+		return new MyTalentResponse(profiles.findByAccountId(actor.accountId())
+			.map(profile -> TalentViews.profile(profile, details.projects(profile.getId())))
+			.orElse(null));
 	}
 
 	/**
@@ -211,190 +144,13 @@ public class TalentService {
 		return TalentViews.profile(profile, details.projects(profile.getId()));
 	}
 
-	/**
-	 * Sends a message to the person behind a listed profile, signed with the name the sender gives. They are told by
-	 * email who wrote, about what and from which organization, without the sender's address; the two addresses are
-	 * shared only if they accept.
-	 * @throws TalentException when no approved, listed profile has the address, it is the caller's own, the caller's
-	 * earlier message to it still waits, or the caller started ten conversations within the last day
-	 */
-	@Transactional
-	public void enquire(Actor actor, String slug, SendTalentEnquiryRequest request) {
-		Person sender = identity.person(actor);
-		TalentProfile profile = profiles.findBySlug(slug)
-			.filter(found -> found.isApproved() && found.isListed())
-			.orElseThrow(() -> new TalentException(TalentErrorCode.PROFILE_NOT_FOUND, "No listed talent at " + slug));
-		if (profile.getAccountId().equals(actor.accountId())) {
-			throw new TalentException(TalentErrorCode.OWN_PROFILE, "Enquiry to the sender's own profile");
-		}
-		if (details.waitingSince(profile.getId(), actor.accountId()).isPresent()) {
-			throw pending(profile);
-		}
-		if (details.sentSince(actor.accountId(), Instant.now().minus(DAY)) >= ENQUIRIES_A_DAY) {
-			throw new TalentException(TalentErrorCode.ENQUIRY_LIMIT,
-					"Enquiry beyond " + ENQUIRIES_A_DAY + " in a day by account " + actor.accountId());
-		}
-		Person recipient = active(profile.getAccountId());
-		if (recipient == null) {
-			// The account behind the profile no longer signs in, so nobody would read the message.
-			throw new TalentException(TalentErrorCode.PROFILE_NOT_FOUND, "No active account behind talent at " + slug);
-		}
-		// The person reads the sender's organization only once GenAI Fund approved it.
-		Membership membership = organizations.membershipOf(actor).filter(Membership::approved).orElse(null);
-		String message = request.message().strip();
-		String senderName = request.senderName().strip();
-		if (!details.addEnquiry(profile.getId(), actor.accountId(), senderName,
-				membership == null ? null : membership.organizationId(), request.topic(), message)) {
-			throw pending(profile);
-		}
-		email.sendTalentEnquiry(recipient.email(), senderName,
-				membership == null ? null : membership.organizationName(), request.topic(), message);
-		LOG.atInfo()
-			.addKeyValue("event", "talent.enquiry.sent")
-			.addKeyValue("profile_id", profile.getId())
-			.log("Talent enquiry sent");
-	}
-
-	/**
-	 * The messages the caller sent through talent profiles, with what became of each. The person's address is shown only
-	 * on a message they accepted, and a message they reported reads as declined, as its email did.
-	 */
-	@Transactional(readOnly = true)
-	public SentTalentEnquiryListResponse sent(Actor actor) {
-		identity.requireActive(actor);
-		List<TalentDetailRepository.Enquiry> enquiries = details.sentBy(actor.accountId(), ENQUIRIES_SHOWN);
-		Map<UUID, TalentProfile> recipients = profiles
-			.findAllById(enquiries.stream().map(TalentDetailRepository.Enquiry::profileId).distinct().toList())
-			.stream()
-			.collect(Collectors.toMap(TalentProfile::getId, Function.identity()));
-		Map<UUID, Person> accepters = identity.people(enquiries.stream()
-			.filter(enquiry -> TalentDetailRepository.ACCEPTED.equals(enquiry.status()))
-			.map(enquiry -> recipients.get(enquiry.profileId()))
-			.filter(Objects::nonNull)
-			.map(TalentProfile::getAccountId)
-			.distinct()
-			.toList());
-		return new SentTalentEnquiryListResponse(enquiries.stream()
-			.filter(enquiry -> recipients.containsKey(enquiry.profileId()))
-			.map(enquiry -> sent(enquiry, recipients.get(enquiry.profileId()), accepters))
-			.toList());
-	}
-
-	/** A message as its sender reads it: a report reads as a decline, and no address comes before an acceptance. */
-	private static SentTalentEnquiryResponse sent(TalentDetailRepository.Enquiry enquiry, TalentProfile recipient,
-			Map<UUID, Person> accepters) {
-		Person accepter = TalentDetailRepository.ACCEPTED.equals(enquiry.status())
-				? accepters.get(recipient.getAccountId()) : null;
-		boolean waiting = TalentDetailRepository.PENDING.equals(enquiry.status());
-		return new SentTalentEnquiryResponse(enquiry.id(), recipient.getId(), recipient.getName(),
-				recipient.getHeadline(), recipient.isApproved() && recipient.isListed() ? recipient.getSlug() : null,
-				accepter == null ? null : accepter.email(), enquiry.senderName(), enquiry.topic(), enquiry.message(),
-				TalentDetailRepository.REPORTED.equals(enquiry.status()) ? TalentDetailRepository.DECLINED
-						: enquiry.status(),
-				enquiry.createdAt(), enquiry.answeredAt(),
-				waiting ? enquiry.createdAt().plus(ENQUIRY_LIFETIME) : null);
-	}
-
-	/**
-	 * Accepts a message to the caller's profile: the sender and the caller are each told the other's name and address.
-	 * @throws TalentException when the message is not to the caller's profile, was answered already or closed, or its
-	 * sender no longer signs in
-	 */
-	@Transactional
-	public void accept(Actor actor, UUID id) {
-		TalentProfile profile = own(actor);
-		TalentDetailRepository.Enquiry enquiry = waiting(profile, id);
-		Person sender = active(enquiry.senderAccountId());
-		if (sender == null) {
-			// The account that wrote no longer signs in, so nobody would read the introduction.
-			throw enquiryNotFound(id);
-		}
-		Person person = identity.person(actor);
-		UUID organizationId = enquiry.senderOrganizationId();
-		OrganizationName senderOrganization = organizationId == null ? null
-				: organizations.names(List.of(organizationId)).get(organizationId);
-		details.answer(id, TalentDetailRepository.ACCEPTED);
-		email.sendTalentIntroduction(sender.email(), profile.getName(), person.email(), null);
-		email.sendTalentIntroduction(person.email(), TalentViews.acceptedSenderName(enquiry.senderName(), sender),
-				sender.email(), senderOrganization == null ? null : senderOrganization.name());
-		record(AuditAction.TALENT_ENQUIRY_ACCEPT, person, actor, enquiry, profile);
-	}
-
-	/**
-	 * Declines a message to the caller's profile. The sender is told the person will not take it further.
-	 * @throws TalentException when the message is not to the caller's profile, or was answered already or closed
-	 */
-	@Transactional
-	public void decline(Actor actor, UUID id) {
-		refuse(actor, id, TalentDetailRepository.DECLINED, AuditAction.TALENT_ENQUIRY_DECLINE);
-	}
-
-	/**
-	 * Reports a message to the caller's profile as unwanted, for GenAI Fund to read. The sender is told the same as on
-	 * a decline, so the person who reported is not exposed.
-	 * @throws TalentException when the message is not to the caller's profile, or was answered already or closed
-	 */
-	@Transactional
-	public void report(Actor actor, UUID id) {
-		refuse(actor, id, TalentDetailRepository.REPORTED, AuditAction.TALENT_ENQUIRY_REPORT);
-	}
-
-	private void refuse(Actor actor, UUID id, String status, AuditAction action) {
-		TalentProfile profile = own(actor);
-		TalentDetailRepository.Enquiry enquiry = waiting(profile, id);
-		details.answer(id, status);
-		Person sender = active(enquiry.senderAccountId());
-		if (sender != null) {
-			email.sendTalentEnquiryDeclined(sender.email(), profile.getName());
-		}
-		record(action, identity.person(actor), actor, enquiry, profile);
-	}
-
-	/** The account's person; null when the account no longer signs in. */
-	private @Nullable Person active(UUID accountId) {
-		return identity.people(List.of(accountId)).get(accountId);
-	}
-
-	private TalentProfile own(Actor actor) {
-		identity.requireActive(actor);
-		return profiles.findByAccountId(actor.accountId())
-			.orElseThrow(() -> noProfile(actor));
-	}
-
-	/** The message to this profile that still waits; one to another profile answers the same as none. */
-	private TalentDetailRepository.Enquiry waiting(TalentProfile profile, UUID id) {
-		TalentDetailRepository.Enquiry enquiry = details.findEnquiryForUpdate(id)
-			.filter(found -> found.profileId().equals(profile.getId()))
-			.orElseThrow(() -> enquiryNotFound(id));
-		if (!TalentDetailRepository.PENDING.equals(enquiry.status())) {
-			throw new TalentException(TalentErrorCode.ENQUIRY_NOT_PENDING,
-					"Talent enquiry " + id + " is " + enquiry.status());
-		}
-		return enquiry;
-	}
-
-	private void record(AuditAction action, Person person, Actor actor, TalentDetailRepository.Enquiry enquiry,
-			TalentProfile profile) {
-		audit.record(new AuditRecord(action, new AuditRecord.Actor(actor.accountId(), person.label(), person.email()),
-				new AuditRecord.Resource(ENQUIRY, enquiry.id().toString(), profile.getName()), Map.of()));
-	}
-
 	private static TalentException noProfile(Actor actor) {
 		return new TalentException(TalentErrorCode.PROFILE_NOT_FOUND, "No talent profile for account " + actor.accountId());
 	}
 
-	private static TalentException pending(TalentProfile profile) {
-		return new TalentException(TalentErrorCode.ENQUIRY_PENDING,
-				"A second waiting enquiry to talent profile " + profile.getId());
-	}
-
-	private static TalentException enquiryNotFound(UUID id) {
-		return new TalentException(TalentErrorCode.ENQUIRY_NOT_FOUND, "No talent enquiry " + id);
-	}
-
 	/**
-	 * Deletes the caller's profile with its projects and the messages sent through it. The audit trail keeps that it
-	 * was deleted, and by whom.
+	 * Deletes the caller's profile with its projects, and with them the conversations started through it. The audit
+	 * trail keeps that it was deleted, and by whom.
 	 * @throws TalentException when the caller has no profile
 	 */
 	@Transactional

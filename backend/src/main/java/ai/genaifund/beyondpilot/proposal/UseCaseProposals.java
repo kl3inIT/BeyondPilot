@@ -418,7 +418,7 @@ public class UseCaseProposals {
 		return new UseCaseProposalFormResponse(useCase(target),
 				new ProposingOrganizationResponse(organizationId, membership.organizationName(),
 						name == null ? null : name.logoFileId(), membership.approved(), membership.type(),
-						membership.owner()),
+						membership.owner(), organizations.profile(organizationId).map(profile -> profile.teamBackground()).orElse(null)),
 				proposal == null ? null : response(proposal, target));
 	}
 

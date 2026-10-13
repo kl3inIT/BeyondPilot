@@ -27,20 +27,7 @@ public enum TalentErrorCode implements ErrorCode {
 			"Upload the photo again: this file cannot be used as the photo of your profile."),
 
 	CHANGED_MEANWHILE("TALENT_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
-			"This talent profile was saved somewhere else in the meantime. Reload it and make your changes again."),
-
-	OWN_PROFILE("TALENT_OWN_PROFILE", ErrorCategory.CONFLICT, "You cannot send a message to your own profile."),
-
-	ENQUIRY_PENDING("TALENT_ENQUIRY_PENDING", ErrorCategory.CONFLICT,
-			"Your message to this person waits for their answer. You can write again once they answer or it closes."),
-
-	ENQUIRY_LIMIT("TALENT_ENQUIRY_LIMIT", ErrorCategory.LIMIT_EXCEEDED,
-			"You started ten conversations today. Write again tomorrow."),
-
-	ENQUIRY_NOT_FOUND("TALENT_ENQUIRY_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such message."),
-
-	ENQUIRY_NOT_PENDING("TALENT_ENQUIRY_NOT_PENDING", ErrorCategory.CONFLICT,
-			"This message was answered already, or it closed.");
+			"This talent profile was saved somewhere else in the meantime. Reload it and make your changes again.");
 
 	private final String code;
 	private final ErrorCategory category;

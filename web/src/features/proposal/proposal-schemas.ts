@@ -2,15 +2,7 @@ import { z } from "zod";
 
 /** The words a schema's messages are written in; the form passes its translator. */
 type Say = (
-  key:
-    | "solution"
-    | "approach"
-    | "required"
-    | "phoneInvalid"
-    | "deck"
-    | "who"
-    | "company"
-    | "background",
+  key: "solution" | "approach" | "required" | "phoneInvalid" | "deck" | "company" | "background",
 ) => string;
 
 /** A number as the backend takes it: digits with spaces, brackets, dots or dashes, and a leading plus. */
@@ -44,23 +36,14 @@ export function proposalStepSchemas(say: Say, context: YouContext) {
   return {
     you: z
       .object({
-        who: z.string(),
-        teamName: z.string(),
         teamBackground: z.string(),
         details: detailsSchema(say),
       })
       .superRefine((value, ctx) => {
         const { organization } = context;
-        const team = organization ? organization.team : value.who === "team";
+        const team = organization?.team ?? false;
         if (!organization) {
-          if (value.who === "") {
-            ctx.addIssue({ code: "custom", path: ["who"], message: say("who") });
-          } else if (value.who === "company") {
-            // A company is joined or made first, in the step; only then does the person go on.
-            ctx.addIssue({ code: "custom", path: ["who"], message: say("company") });
-          } else if (value.who === "team" && value.teamName.trim() === "") {
-            ctx.addIssue({ code: "custom", path: ["teamName"], message: say("required") });
-          }
+          ctx.addIssue({ code: "custom", path: ["organization"], message: say("company") });
         }
         if (team && value.teamBackground.trim() === "") {
           ctx.addIssue({ code: "custom", path: ["teamBackground"], message: say("background") });

@@ -406,20 +406,6 @@ function page(url, records, statusOf, textOf, summaryOf, countryOf) {
   };
 }
 
-/** The messages people reported through their talent profiles. */
-const reportedEnquiries = [
-  {
-    id: "7c1d7f0e-2b9a-4f3e-9d52-6a1f0b3c2e91",
-    profileName: "Siti Rahma",
-    senderName: null,
-    senderEmail: "growth@spam.example",
-    topic: "other",
-    message: "Buy ten thousand followers for your profile.",
-    createdAt: "2026-10-03T03:00:00Z",
-    reportedAt: "2026-10-04T03:00:00Z",
-  },
-];
-
 const lists = {
   "/api/organization/admin/organizations": {
     records: organizations,
@@ -480,13 +466,6 @@ const lists = {
         (item) => item.status === "in_review",
       ).length,
     }),
-  },
-  "/api/talent/admin/reported-enquiries": {
-    records: reportedEnquiries,
-    idOf: (record) => record.id,
-    statusOf: () => "reported",
-    textOf: (record) => record.message,
-    summaryOf: (record) => record,
   },
   "/api/talent/admin/profiles": {
     records: talent,
