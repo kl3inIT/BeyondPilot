@@ -6500,6 +6500,8 @@
     "errors": {
       "saveFailed": "Chưa lưu được thay đổi mới nhất. Kiểm tra kết nối; thay đổi vẫn còn trên trang này.",
       "saveInvalid": "Một phần nội dung bạn nhập không được chấp nhận nên chưa được lưu. Kiểm tra lại các ô của bước này.",
+      "notAccepted": "Nội dung này không được chấp nhận. Hãy rút ngắn hoặc sửa lại.",
+      "refusedField": "Có ô không được chấp nhận nên chưa lưu được. Ô đó đã được đánh dấu bên dưới.",
       "codes": {
         "PROPOSAL_CHANGED_MEANWHILE": "Đơn vừa được sửa ở tab khác. Tải lại trang rồi tiếp tục.",
         "PROPOSAL_SOLUTION_REQUIRED": "Chọn hoặc thêm giải pháp ở bước 2.",

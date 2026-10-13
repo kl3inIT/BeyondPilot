@@ -6500,6 +6500,8 @@
     "errors": {
       "saveFailed": "Your latest changes could not be saved. Check your connection; they are kept on this page.",
       "saveInvalid": "Part of what you typed was not accepted, so it is not saved. Check the fields of this step.",
+      "notAccepted": "This was not accepted. Shorten or correct it.",
+      "refusedField": "A field was not accepted, so nothing is saved yet. It is marked below.",
       "codes": {
         "PROPOSAL_CHANGED_MEANWHILE": "This application was changed in another tab. Reload the page and continue there.",
         "PROPOSAL_SOLUTION_REQUIRED": "Choose or add your solution in step 2.",

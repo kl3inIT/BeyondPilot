@@ -11,7 +11,7 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { EntryList } from "@/components/composites/entry-list";
 import { StepsNav } from "@/components/composites/steps-nav";
-import { useAppForm } from "@/components/form/app-form";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { AllRequired } from "@/components/form/form-fields";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
@@ -39,7 +39,7 @@ import { chosenOptions } from "@/lib/chosen-options";
 import { myApplicationRoute, programRoute, siteRoutes } from "@/lib/site";
 
 import { savable, saveBodyOf, type ApplyDraft } from "./apply-draft";
-import { applyWords } from "./apply-errors";
+import { applyWords, refusedFields, type RefusedSave } from "./apply-errors";
 import {
   AgreementField,
   ChoiceCardsField,
@@ -385,12 +385,43 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
     heading.current?.focus({ preventScroll: true });
   }, [step, form]);
 
+  /**
+   * A save the backend refused: its fields are marked, and the step that holds the first of them is
+   * opened at it. Every save sends the whole application, so that step may not be the one shown. A
+   * refusal that names no field of the form is said in its own words.
+   */
+  function refused(error: unknown, save: RefusedSave) {
+    const fields = refusedFields(error, save).filter((field) => steps.includes(field.step));
+    const first = fields[0];
+    if (!first) {
+      setProblem(errorText(error));
+      return;
+    }
+    setServerErrors(form, {
+      fields: Object.fromEntries(
+        fields.map((field) => [field.name, { message: t("errors.notAccepted") }]),
+      ),
+    });
+    if (first.step === step) {
+      focusField(form, first.name);
+    } else {
+      goTo(steps.indexOf(first.step), first.name);
+    }
+    setProblem(t("errors.refusedField"));
+  }
+
   /** Continue, once the step holds what it needs: saves it and opens the next one. */
   async function next(values: ApplyValues) {
     setProblem(null);
     try {
       if (step === "solution") {
-        const id = await keepSolution(values.solution);
+        let id: string;
+        try {
+          id = await keepSolution(values.solution);
+        } catch (error) {
+          refused(error, "solution");
+          return;
+        }
         linked.current = id;
         form.setFieldValue("application.solutionId", id, quietly);
       }
@@ -406,7 +437,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
       }
       goTo(index + 1);
     } catch (error) {
-      setProblem(errorText(error));
+      refused(error, "application");
     }
   }
 
@@ -423,7 +454,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
       setLeaving(true);
       router.push(getPathname({ href: `${myApplicationRoute(id)}/submitted`, locale }));
     } catch (error) {
-      setProblem(errorText(error));
+      refused(error, "application");
     }
   }
 
