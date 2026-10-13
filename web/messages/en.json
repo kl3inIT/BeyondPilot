@@ -223,13 +223,13 @@
         "description": "Connect with the ecosystem through meetups, workshops, and demo days.",
         "action": "Discover events",
         "item1Month": "Oct",
-        "item1Day": "13",
-        "item1Title": "GenAI Builders Meetup",
-        "item1Meta": "Meetup series · Oct to Dec",
+        "item1Day": "22",
+        "item1Title": "Demo day · AI for Insurance Challenge",
+        "item1Meta": "Ten teams present live",
         "item2Month": "Oct",
-        "item2Day": "22",
-        "item2Title": "Demo day · AI for Insurance Challenge",
-        "item2Meta": "Ten teams present live"
+        "item2Day": "26",
+        "item2Title": "TinyFish, Big Minds",
+        "item2Meta": "Private dinner · Ho Chi Minh City"
       },
       "programs": {
         "title": "AI Programs",
