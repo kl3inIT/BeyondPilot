@@ -42,7 +42,7 @@ const ProposalSolutionsStep = withFieldGroup({
         </group.AppField>
         <group.AppField name="approach">
           {(field) => (
-            <field.TextareaField label={t("approach")} rows={5} maxLength={maxApproach} />
+            <field.TextareaField label={t("approach")} rows={10} maxLength={maxApproach} />
           )}
         </group.AppField>
         <group.AppField name="deck">{() => <DeckField />}</group.AppField>
