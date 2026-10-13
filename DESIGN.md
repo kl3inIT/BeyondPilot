@@ -21,39 +21,39 @@ colors:
   danger: "oklch(0.577 0.245 27.325)"
 typography:
   display:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Montserrat, system-ui, sans-serif"
     fontSize: "clamp(2.25rem, 6vw, 4.5rem)"
     fontWeight: 600
     lineHeight: 1
     letterSpacing: "-0.03em"
   headline:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Montserrat, system-ui, sans-serif"
     fontSize: "clamp(1.875rem, 3vw, 2.5rem)"
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: "-0.02em"
   title:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Montserrat, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 500
     lineHeight: 1.5
   body:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Lexend, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.5
   lead:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Lexend, system-ui, sans-serif"
     fontSize: "1.25rem"
     fontWeight: 500
     lineHeight: 1.4
   label:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Lexend, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: 1.43
   meta:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Lexend, system-ui, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 500
     lineHeight: 1.33
@@ -146,7 +146,7 @@ GenAI Fund has not provided a BeyondPilot identity. Until it does, this palette 
 **Key Characteristics:**
 
 - Navy ink on cool paper, hairlines over boxes, azure for the one action that matters.
-- Inter for everything; hierarchy from size and weight.
+- Lexend for text and Montserrat for headings; hierarchy from size and weight.
 - Sky light (glows, the rising arc) on marketing surfaces only, never as information.
 - Real content floats; nothing invented floats.
 - Three directory kinds keep one accent each: amber use cases, emerald solutions, rose talent.
@@ -198,9 +198,9 @@ A cool azure system with a sky light, three directory accents and the status rol
 
 ## Typography
 
-**Font:** Inter (with system-ui) everywhere, including Vietnamese.
+**Fonts:** Lexend for text (body, buttons, navigation, labels, metadata) and Montserrat for headings (`h1` to `h4`, and card, dialog and sheet titles through `font-heading`), both with system-ui behind them, both covering Vietnamese. Both are variable fonts loaded once in the locale layout (`--font-sans`, `--font-display`); a page never loads or names a font itself, the written pages of a program included.
 
-**Character:** one humanist sans at several weights, calm in English and Vietnamese, so partner logos, photos and real numbers carry identity.
+**Character:** a wide, open text face under a geometric heading face, so partner logos, photos and real numbers still carry identity. Both run wider than the Inter they replaced (Lexend about 8%, Montserrat about 10%), and Vietnamese runs 20–30% longer than English: the measures below leave that room.
 
 ### Hierarchy
 
@@ -210,6 +210,18 @@ A cool azure system with a sky light, three directory accents and the status rol
 - **Title** (500–600, 1rem): card titles, names.
 - **Body** (400, 1rem) and **Label** (500, 0.875rem): copy, buttons, navigation.
 - **Meta** (500–600, 0.75rem): eyebrows ("Build week · 8–12 Jul 2026"), dates, counts.
+
+### Headings
+
+- Every `h1` to `h4` is Montserrat, set once in the base layer of `globals.css`; a component never sets its own heading font. Display and Headline are 600; Title is 500–600.
+- A heading may wrap, and wraps balanced (`text-balance`); it never truncates.
+- Tracking tightens with size only (display −3%, headline −2%, title −1%); Montserrat at body sizes stays at 0.
+
+### Keeping a line on one line
+
+- A control (button, tab, chip, badge, navigation link) stays on one line in English at every width from 390 up, and in Vietnamese from 1280 up. Below that a navigation link may wrap to two lines, never three, and the bar never pushes a control past the window.
+- A chip or tag that can be long (an industry, a focus area) has room for its text at 1440 and may truncate with an ellipsis only after it has taken the whole width of its row; the full text is its accessible name.
+- A footer link has its column to itself at 1024 and up; the columns drop to two before a link wraps.
 
 ## Layout
 

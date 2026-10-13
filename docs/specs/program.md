@@ -159,8 +159,8 @@ The operators' list shows each program's phase whatever its status.
   both message catalogs; the deadline, the timeline, the events and Apply are the program's. Each written page has the
   look its client drew for it, so it may carry its own stylesheet (a CSS module beside the page, with its own custom
   properties prefixed by the program) instead of the site's tokens; nothing in it reaches another page. The Nestlé page
-  does: its text is Lexend and its headings Montserrat, as the client drew them, a navigation button and the way to
-  apply stay at the foot of the screen, and no breadcrumb or footer of its own is added to the site's.
+  does: a navigation button and the way to apply stay at the foot of the screen, and no breadcrumb or footer of its own
+  is added to the site's. Its text and headings are the site's own Lexend and Montserrat ([DESIGN.md](../../DESIGN.md)).
 - **Use cases.** A standard page and the Tasco page list the use cases an operator attached to the program (the Nestlé page, drawn without them, does not), read
   from the public use case list by the program's address (`GET /api/usecase/use-cases?program=`), newest first, its
   first page. A program with none has no such section and no entry for it in the page's navigation; `program` gains
