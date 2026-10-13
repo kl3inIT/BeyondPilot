@@ -806,19 +806,6 @@
   line-height: 21.25px;
 }
 
-.useCases {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin: 42.5px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.more {
-  margin: 17px 0 0;
-}
-
 .eventsTitle {
   margin: 42px 0 12px;
   font-family: var(--nestle-display);

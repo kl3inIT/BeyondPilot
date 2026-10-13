@@ -6033,7 +6033,6 @@
       "label": "Trên trang này",
       "offers": "Quyền lợi",
       "areas": "Thách thức",
-      "use-cases": "Use case",
       "how": "Cách tham gia",
       "eligibility": "Điều kiện",
       "dates": "Mốc thời gian",
@@ -6128,10 +6127,6 @@
     "early": {
       "ask": "Bạn thấy bài toán quen thuộc?",
       "text": "Nộp trước ngày 5 tháng 11 để được xét vào đợt briefing sớm. Ứng viên qua vòng sơ tuyển được briefing chi tiết từ ngày 6 tháng 11."
-    },
-    "useCases": {
-      "title": "Use case trong chương trình này",
-      "lead": "Các bài toán Nestlé Việt Nam đã đăng cho chương trình này. Mở từng bài để đọc mục tiêu, yêu cầu, ngân sách và thời gian."
     },
     "how": {
       "title": "Cách tham gia",

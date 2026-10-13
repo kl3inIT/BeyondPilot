@@ -6033,7 +6033,6 @@
       "label": "On this page",
       "offers": "Benefits",
       "areas": "Challenges",
-      "use-cases": "Use cases",
       "how": "How it works",
       "eligibility": "Eligibility",
       "dates": "Dates",
@@ -6128,10 +6127,6 @@
     "early": {
       "ask": "Recognise one of these?",
       "text": "Apply before 5 November to be considered for the early briefing process. Pre-screened applicants receive detailed briefings from 6 November."
-    },
-    "useCases": {
-      "title": "Use cases in this program",
-      "lead": "The business problems Nestlé Vietnam has published for this program. Open one to read its goal, requirements, budget and timeline."
     },
     "how": {
       "title": "How it works",

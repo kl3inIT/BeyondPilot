@@ -3,7 +3,6 @@ import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
-import { readProgramUseCases } from "@/features/usecase/use-cases-queries";
 import type { Program } from "@/lib/api/generated";
 import { programApplyRoute } from "@/lib/site";
 
@@ -15,7 +14,6 @@ import {
   Eligibility,
   Faq,
   NestleTimeline,
-  NestleUseCases,
   SupportingActivities,
 } from "./nestle-parts";
 import s from "./nestle.module.css";
@@ -35,7 +33,7 @@ const offers = [
 
 const stages = ["apply", "briefings", "matching", "collaboration"] as const;
 
-const sections = ["offers", "areas", "use-cases", "how", "eligibility", "dates", "faq"] as const;
+const sections = ["offers", "areas", "how", "eligibility", "dates", "faq"] as const;
 
 /**
  * The page written for Nestlé Vietnam AI Reinvention, drawn as the client drew it (nestle.module.css).
@@ -43,18 +41,16 @@ const sections = ["offers", "areas", "use-cases", "how", "eligibility", "dates",
  * window are the program's, and every way in to apply is the program's own.
  */
 async function NestlePage({ program }: { program: Program }) {
-  const [t, page, locale, useCases] = await Promise.all([
+  const [t, page, locale] = await Promise.all([
     getTranslations("Nestle"),
     getTranslations("Program.page"),
     getLocale(),
-    readProgramUseCases(program.slug),
   ]);
   const format = programFormatter(locale);
   const steps = await timelineOf(program, format);
   const applications = program.applications;
   const apply = programApplyRoute(program.slug);
   const open = program.phase === "open" && applications;
-  const hasUseCases = useCases.items.length > 0;
   const day = (at: string) => format.dateTime(new Date(at), "day");
 
   return (
@@ -180,8 +176,6 @@ async function NestlePage({ program }: { program: Program }) {
         </div>
       </section>
 
-      {hasUseCases && <NestleUseCases useCases={useCases} />}
-
       <section id="how" className={s.section}>
         <div className={s.container}>
           <h2 className={s.h2}>{t("how.title")}</h2>
@@ -258,9 +252,7 @@ async function NestlePage({ program }: { program: Program }) {
       )}
 
       <NestleMenu
-        items={sections
-          .filter((section) => section !== "use-cases" || hasUseCases)
-          .map((section) => ({ id: section, label: t(`nav.${section}`) }))}
+        items={sections.map((section) => ({ id: section, label: t(`nav.${section}`) }))}
         label={t("nav.label")}
         topLabel={t("nav.top")}
       />

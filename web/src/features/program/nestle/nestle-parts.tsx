@@ -1,10 +1,5 @@
 import { getTranslations } from "next-intl/server";
 
-import { UseCaseCard } from "@/features/usecase/use-case-card";
-import type { UseCaseList } from "@/features/usecase/use-cases-queries";
-import { Link } from "@/i18n/navigation";
-import { siteRoutes } from "@/lib/site";
-
 import type { ProgramFormat } from "../program-format";
 import type { Step } from "../program-parts";
 import { NestleAreas, type Area } from "./nestle-areas";
@@ -238,34 +233,5 @@ export async function Faq() {
         </details>
       ))}
     </div>
-  );
-}
-
-/** The use cases an operator attached to the program, one card each, under the page's own heading. */
-export async function NestleUseCases({ useCases }: { useCases: UseCaseList }) {
-  const [t, page] = await Promise.all([
-    getTranslations("Nestle.useCases"),
-    getTranslations("Program.page.useCases"),
-  ]);
-  return (
-    <section id="use-cases" className={s.section}>
-      <div className={s.container}>
-        <h2 className={s.h2}>{t("title")}</h2>
-        <p className={s.sectionLead}>{t("lead")}</p>
-        <ul className={s.useCases}>
-          {useCases.items.map((useCase) => (
-            <UseCaseCard key={useCase.id} useCase={useCase} heading="h3" />
-          ))}
-        </ul>
-        {useCases.total > useCases.items.length && (
-          <p className={s.more}>
-            {page("shown", { shown: useCases.items.length, total: useCases.total })}{" "}
-            <Link href={siteRoutes.useCases} className={s.link}>
-              {page("all")}
-            </Link>
-          </p>
-        )}
-      </div>
-    </section>
   );
 }

@@ -160,7 +160,7 @@ The operators' list shows each program's phase whatever its status.
   properties prefixed by the program) instead of the site's tokens; nothing in it reaches another page. The Nestlé page
   does: its text is Lexend and its headings Montserrat, as the client drew them, a navigation button and the way to
   apply stay at the foot of the screen, and no breadcrumb or footer of its own is added to the site's.
-- **Use cases.** A standard page and the written pages list the use cases an operator attached to the program, read
+- **Use cases.** A standard page and the Tasco page list the use cases an operator attached to the program (the Nestlé page, drawn without them, does not), read
   from the public use case list by the program's address (`GET /api/usecase/use-cases?program=`), newest first, its
   first page. A program with none has no such section and no entry for it in the page's navigation; `program` gains
   no dependency on `usecase`, the web page composes the two.

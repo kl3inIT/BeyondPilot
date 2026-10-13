@@ -224,7 +224,6 @@ test.describe("programs", () => {
     for (const [name, id] of [
       ["Benefits", "offers"],
       ["Challenges", "areas"],
-      ["Use cases", "use-cases"],
       ["How it works", "how"],
       ["Eligibility", "eligibility"],
       ["Dates", "dates"],
@@ -273,11 +272,6 @@ test.describe("programs", () => {
     ).toBeVisible();
     await expect(areas.getByText("Recognise one of these?")).toBeVisible();
 
-    // The use cases attached to the program, and only those.
-    await expect(page.locator("#use-cases").getByRole("heading", { level: 3 })).toHaveText([
-      "Claims triage with document intelligence",
-      "Demand forecasting for a retail chain",
-    ]);
     await expect(page.locator("#how").getByRole("listitem")).toHaveCount(4);
     const eligibility = page.locator("#eligibility");
     await expect(eligibility.getByRole("heading", { level: 3 })).toHaveText([
