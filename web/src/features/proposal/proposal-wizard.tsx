@@ -12,7 +12,7 @@ import { PdfUpload } from "@/components/composites/pdf-upload";
 import { useAppForm } from "@/components/form/app-form";
 import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Field, FieldDescription, FieldError } from "@/components/ui/field";
+import { Field, FieldError } from "@/components/ui/field";
 import { useNotify } from "@/hooks/use-notify";
 import { useFormatter } from "@/i18n/format";
 import { failedWith } from "@/lib/api/failure";
@@ -511,12 +511,9 @@ function ProposalWizard({
                       zone
                       value={field.state.value}
                       invalid={invalid}
-                      describedBy={
-                        invalid ? "proposal-deck-hint proposal-deck-error" : "proposal-deck-hint"
-                      }
+                      describedBy={invalid ? "proposal-deck-error" : undefined}
                       onChange={field.handleChange}
                     />
-                    <FieldDescription id="proposal-deck-hint">{t("pdf.hint")}</FieldDescription>
                     {invalid && <FieldError id="proposal-deck-error">{t("pdf.needed")}</FieldError>}
                   </Field>
                 );
