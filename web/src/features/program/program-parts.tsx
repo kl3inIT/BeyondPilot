@@ -40,7 +40,7 @@ export function Note({ title, text }: { title: string; text: string }) {
 }
 
 /** One step of a program's timeline, from its key dates or its application window. */
-type Step = { title: string; when: string; at: string; note?: string | null };
+export type Step = { title: string; when: string; at: string; note?: string | null };
 
 /**
  * The steps of a program in order: its key dates, and the opening, the closing and the day outcomes

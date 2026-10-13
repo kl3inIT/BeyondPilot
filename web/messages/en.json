@@ -5912,17 +5912,21 @@
           "label": "Who can apply",
           "value": "Solo builders to established providers"
         }
+      },
+      "name": {
+        "first": "Nestlé Vietnam",
+        "second": "AI Reinvention"
       }
     },
     "nav": {
       "label": "On this page",
       "offers": "Benefits",
       "areas": "Challenges",
-      "use-cases": "Use cases",
       "how": "How it works",
       "eligibility": "Eligibility",
       "dates": "Dates",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "top": "Back to top"
     },
     "offers": {
       "title": "What this program offers",
@@ -6012,10 +6016,6 @@
     "early": {
       "ask": "Recognise one of these?",
       "text": "Apply before 5 November to be considered for the early briefing process. Pre-screened applicants receive detailed briefings from 6 November."
-    },
-    "useCases": {
-      "title": "Use cases in this program",
-      "lead": "The business problems Nestlé Vietnam has published for this program. Open one to read its goal, requirements, budget and timeline."
     },
     "how": {
       "title": "How it works",
@@ -6108,7 +6108,8 @@
           "owner": "A named owner per match"
         }
       },
-      "pocs": "PoCs subject to selection and approvals."
+      "pocs": "PoCs subject to selection and approvals.",
+      "start": "Start early."
     },
     "faq": {
       "title": "The questions you're actually asking.",
@@ -6150,18 +6151,16 @@
     "closing": {
       "title": "Will your solution be in the room on 15 December?",
       "text": "The shortlist is taking shape—submit today for your chance to be selected.",
-      "closes": "Applications close {closes}."
+      "closes": "Applications close {closes}.",
+      "info": "View info session timing",
+      "share": "Know a team that fits? Send them this page"
     },
-    "about": {
-      "label": "About the programme",
-      "tagline": "AI-First. Human-Led. Re-Inventing Nestlé.",
-      "text": "The AI Solution Search is part of the Nestlé Vietnam AI Reinvention programme and AI Hackathon 2026, run by GenAI Fund with Nestlé Vietnam. Participation and any subsequent collaboration depend on selection, business fit and applicable Nestlé requirements. Applicants keep ownership of their IP."
-    },
-    "rail": {
-      "partners": "Partners",
-      "runBy": "Run by",
-      "with": "With",
-      "questions": "Questions about this program?"
+    "pill": {
+      "label": "Applications",
+      "closes": "Closes {date}",
+      "time": "About 10 minutes",
+      "opens": "Applications open {date}",
+      "closed": "Applications closed"
     }
   },
   "EntryList": {
