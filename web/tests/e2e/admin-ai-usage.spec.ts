@@ -33,14 +33,19 @@ test.describe("admin AI usage", () => {
     );
     await expect(alert).toContainText("The request was too large for the provider.");
 
+    // Each total is a figure that counts when the period changes; it is read by its whole value.
     const totals = page.getByRole("definition");
-    await expect(totals.filter({ hasText: "1,473 succeeded · 103 failed" })).toContainText("1,576");
-    await expect(totals.filter({ hasText: "103 of 1,576 calls" })).toContainText("6.5%");
-    await expect(totals.filter({ hasText: "2.17M in · 176K out" })).toContainText("2.35M");
-    await expect(totals.filter({ hasText: "From the 319 calls with a known price" })).toContainText(
-      "$0.14",
-    );
-    await expect(totals.filter({ hasText: "Model prices" })).toContainText("1,154");
+    for (const [made, figure] of [
+      ["1,473 succeeded · 103 failed", "1,576"],
+      ["103 of 1,576 calls", "6.5%"],
+      ["2.17M in · 176K out", "2.35M"],
+      ["From the 319 calls with a known price", "$0.14"],
+      ["Model prices", "1,154"],
+    ] as const) {
+      await expect(
+        totals.filter({ hasText: made }).getByRole("img", { name: figure, exact: true }),
+      ).toBeVisible();
+    }
 
     await expect(page.getByText("Calls by hour")).toBeVisible();
     await expect(page.getByText("Most at 15:00, 247 calls")).toBeVisible();
