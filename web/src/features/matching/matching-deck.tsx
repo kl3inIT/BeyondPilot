@@ -51,15 +51,20 @@ type DeckReaderProps = {
   page: number;
   /** The vendor's words on that page; absent when the deck is opened for itself. */
   quote?: string;
+  /**
+   * Whether the reader stands in the page, as in a card, rather than in a sheet: it then names the page
+   * alone, since the solution is named around it, and has nothing to close.
+   */
+  inline?: boolean;
 };
 
 /**
- * The inside of the sheet: whose deck it is and which page, the steps to the pages around it, the file
- * itself in a new tab, and the page with the quote highlighted. When the page's text does not hold the
- * quote, as on a page that is a picture, the quote is printed under the title and the page is framed
- * whole: nothing is marked that was not found.
+ * A solution's deck: which page it shows, the steps to the pages around it, the file itself in a new
+ * tab, and the page with the quote highlighted. When the page's text does not hold the quote, as on a
+ * page that is a picture, the quote is printed under the title and the page is framed whole: nothing is
+ * marked that was not found. In a sheet it is titled with the solution's name and can be closed.
  */
-function DeckReader({ solutionName, solutionSlug, page: first, quote }: DeckReaderProps) {
+function DeckReader({ solutionName, solutionSlug, page: first, quote, inline }: DeckReaderProps) {
   const t = useTranslations("Matching.deck");
   const [page, setPage] = useState(first);
   const [total, setTotal] = useState<number>();
@@ -77,22 +82,39 @@ function DeckReader({ solutionName, solutionSlug, page: first, quote }: DeckRead
     </TextButton>
   );
 
+  const where =
+    total === undefined ? t("page", { page: shown }) : t("pageOf", { page: shown, total });
+
   return (
     <>
-      <div className="flex items-start justify-between gap-3 px-5 pt-4">
+      <div
+        className={
+          inline
+            ? "flex items-start gap-3 px-4 pt-3"
+            : "flex items-start justify-between gap-3 px-5 pt-4"
+        }
+      >
         <div className="flex min-w-0 flex-col gap-1">
-          <SheetTitle className="wrap-break-word">{solutionName}</SheetTitle>
-          <SheetDescription>
-            {total === undefined ? t("page", { page: shown }) : t("pageOf", { page: shown, total })}
-          </SheetDescription>
+          {inline ? (
+            <p className="text-sm font-medium">{where}</p>
+          ) : (
+            <>
+              <SheetTitle className="wrap-break-word">{solutionName}</SheetTitle>
+              <SheetDescription>{where}</SheetDescription>
+            </>
+          )}
           {/* A live region from the start: it speaks once the text of the quote's page is read. */}
           <p role="status" className="text-sm text-muted-foreground">
             {!failed && onQuotePage && found !== undefined && t(found ? "highlighted" : "onPage")}
           </p>
         </div>
-        <SheetClose render={<IconButton prominence="tertiary" size="lg" aria-label={t("close")} />}>
-          <XIcon aria-hidden="true" />
-        </SheetClose>
+        {!inline && (
+          <SheetClose
+            render={<IconButton prominence="tertiary" size="lg" aria-label={t("close")} />}
+          >
+            <XIcon aria-hidden="true" />
+          </SheetClose>
+        )}
       </div>
 
       {failed ? (
@@ -136,6 +158,7 @@ function DeckReader({ solutionName, solutionSlug, page: first, quote }: DeckRead
           {/* A tall page scrolls here; the region takes the focus so that the keys scroll it too. */}
           <div
             role="group"
+            data-slot="matching-deck-page"
             aria-label={t("pageLabel", { page: shown })}
             tabIndex={0}
             className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-1 pb-6 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
@@ -181,4 +204,4 @@ function MatchingDeck({ children, ...deck }: MatchingDeckProps) {
   );
 }
 
-export { MatchingDeck };
+export { DeckReader, MatchingDeck };

@@ -253,6 +253,16 @@
 }
 
 /*
+ * The stage of a card that is dragged or leaves sideways (the one-by-one review of matched solutions):
+ * the card shows a good way past the stage's edges, and what goes further is cut off instead of making
+ * the page scroll sideways. A browser without `overflow-clip-margin` cuts at the edge itself.
+ */
+@utility clip-stage {
+  overflow: clip;
+  overflow-clip-margin: 24rem;
+}
+
+/*
  * A hit area of at least 44px on touch screens for a control drawn smaller (DESIGN.md › Buttons ›
  * Touch). The control keeps its size; an invisible box centred on it takes the tap.
  */
