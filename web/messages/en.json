@@ -471,8 +471,6 @@
     "PROPOSAL_ALREADY_SENT": "This proposal was sent, so it can no longer change.",
     "PROPOSAL_APPROACH_REQUIRED": "Say how the solution solves this use case.",
     "PROPOSAL_CONTACT_REQUIRED": "Add your name, country and phone number first.",
-    "PROPOSAL_TEAM_INVALID": "The team can name only members of your organization, each once, and at most one primary contact.",
-    "PROPOSAL_TEAM_INCOMPLETE": "Name at least one person, give each a role and choose the primary contact.",
     "PROPOSAL_PDF_REQUIRED": "Add the proposal as a PDF.",
     "PROPOSAL_EDIT_WINDOW_CLOSED": "The time to edit this proposal has ended, so your changes were not saved.",
     "SEARCH_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
@@ -7749,11 +7747,8 @@
       "saveAndReturn": "Save and exit",
       "send": "Send proposal",
       "steps": {
-        "organization": "Organization",
-        "solutions": "AI solutions",
-        "details": "Your details",
-        "team": "Team",
-        "pdf": "Proposal PDF",
+        "you": "You and your team",
+        "solutions": "Your solution",
         "review": "Review"
       },
       "solutions": {
@@ -7764,7 +7759,8 @@
         "approach": "How the solutions solve this use case",
         "needed": {
           "solution": "Add at least one solution.",
-          "approach": "Explain how the solutions solve this use case."
+          "approach": "Explain how the solutions solve this use case.",
+          "deck": "Upload the proposal as a PDF."
         },
         "editorTitle": "New solution",
         "editorLead": "Write the solution in four steps. Close the editor to return to your proposal.",
@@ -7777,6 +7773,35 @@
           "note": "Any solution can be added. Not in the list?",
           "cancel": "Cancel",
           "add": "{count, plural, one {Add # solution} other {Add # solutions}}"
+        },
+        "deck": "Proposal PDF"
+      },
+      "you": {
+        "who": "Who is sending this proposal?",
+        "choice": {
+          "individual": {
+            "title": "Just me",
+            "what": "I work on my own"
+          },
+          "team": {
+            "title": "A team",
+            "what": "A few of us build together"
+          },
+          "company": {
+            "title": "Company",
+            "what": "An organization with its own page"
+          }
+        },
+        "teamName": "Team name",
+        "teamSize": "Team size",
+        "teamBackground": "Team background",
+        "aboutYou": "About you",
+        "asked": "You asked to join {name}. We will email you when an owner approves, then you can finish this proposal.",
+        "claiming": "You asked to claim {name}. We will email you when GenAI Fund approves.",
+        "needed": {
+          "who": "Choose who is sending the proposal.",
+          "company": "Join or create your organization to continue.",
+          "background": "Tell us what your team has built before."
         }
       },
       "details": {
@@ -7788,43 +7813,11 @@
         "phoneInvalid": "Use digits with the country code, such as +84 912 345 678.",
         "required": "Required"
       },
-      "team": {
-        "count": "{count, plural, one {# member} other {# members}}",
-        "add": "Add member",
-        "empty": "No team yet",
-        "columns": {
-          "member": "Member",
-          "role": "Role",
-          "primary": "Primary contact",
-          "actions": "Actions"
-        },
-        "roleOf": "Role of {name}",
-        "primaryOf": "{name} is the primary contact",
-        "remove": "Remove {name}",
-        "rolePlaceholder": "Project lead",
-        "needed": {
-          "role": "Give every member a role.",
-          "primary": "Choose one primary contact."
-        },
-        "dialog": {
-          "title": "Add a team member",
-          "person": "Person",
-          "role": "Role",
-          "roleRequired": "Enter the role.",
-          "cancel": "Cancel",
-          "submit": "Add member"
-        }
-      },
-      "pdf": {
-        "needed": "Upload the proposal as a PDF."
-      },
       "review": {
         "edit": "Edit",
         "nothing": "Nothing yet.",
-        "primary": "Primary contact",
         "missing": "Finish these steps before you send",
-        "confirm": "I confirm that what I am sending is accurate and that I may offer it for my organization.",
-        "none": "None"
+        "confirm": "I confirm that what I am sending is accurate and that I may offer it for my organization."
       },
       "blocked": {
         "backToUseCase": "Back to the use case",
@@ -7859,17 +7852,6 @@
         "saved": "Your changes to the proposal were saved."
       },
       "organization": {
-        "kind": "Who sends the proposal",
-        "individual": "Just me",
-        "team": "A team",
-        "teamName": "Team name",
-        "country": "Country",
-        "countryPlaceholder": "Choose a country",
-        "teamSize": "Team size",
-        "website": "Website (optional)",
-        "required": "Required.",
-        "existing": "My company is already on BeyondPilot",
-        "continue": "Continue",
         "pending": "Pending review",
         "edit": "Edit",
         "dialog": {
@@ -7878,7 +7860,11 @@
           "cancel": "Cancel",
           "save": "Save",
           "saved": "Organization saved.",
-          "required": "Required."
+          "required": "Required.",
+          "createTitle": "New organization",
+          "create": "Create",
+          "created": "Organization created.",
+          "full": "Create with the full form"
         }
       }
     },
