@@ -30,14 +30,13 @@ import {
   type GiveMatchingFeedback,
   type Matching,
   type MatchingCandidate,
-  type RemoveMatchingCandidate,
 } from "@/lib/api/generated";
 
 import { MatchingAdd } from "./matching-add";
 import { useMatchingChanges } from "./matching-changes";
 import { matchingWords } from "./matching-errors";
 import { MatchingPanel } from "./matching-panel";
-import { MatchingRemove } from "./matching-remove";
+import { MatchingRemove, type Removal } from "./matching-remove";
 import { MatchingRemoved } from "./matching-removed";
 import { MatchingRow } from "./matching-row";
 import { MatchingRun } from "./matching-run";
@@ -358,7 +357,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
           () => notify.success("Matching.done.shortlisted", { name: candidate.solutionName }),
         );
 
-  const remove = (candidate: MatchingCandidate, body: RemoveMatchingCandidate) =>
+  const remove = (candidate: MatchingCandidate, body: Removal) =>
     send(
       candidate.id,
       () => removeMatchingCandidate({ path: { candidateId: candidate.id }, body }),

@@ -1797,7 +1797,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "GenAI Fund removed the candidate and the caller, a member, gives it a reason."
+          description: "GenAI Fund removed the candidate and the caller, a member,\
+            \ gives it a reason."
         "404":
           content:
             application/problem+json:
@@ -19018,7 +19019,8 @@ components:
       - solutionName
     RemoveMatchingCandidate:
       type: object
-      description: "Takes a candidate off the list. The reason is optional: it can be given with the removal or afterwards."
+      description: "Takes a candidate off the list. The reason is optional: it can\
+        \ be given with the removal or afterwards."
       properties:
         note:
           type: string
