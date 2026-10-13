@@ -418,10 +418,10 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
   // The way the page opened holds for the visit: deciding on the last card does not turn it into the list.
   const waits = matching.candidates.some(reviewable);
   if (openedAs === null && choice !== undefined) {
-    setOpenedAs(openingView(choice, waits));
+    setOpenedAs(openingView(choice, waits, selected !== undefined));
   }
   // Until the choice is known, a page with nothing to decide is the list; one with something waits.
-  const view = openedAs ?? (waits ? null : "list");
+  const view = openedAs ?? (waits && selected === undefined ? null : "list");
   const setView = (next: ViewName) => {
     setOpenedAs(next);
     saveViewChoice(next);

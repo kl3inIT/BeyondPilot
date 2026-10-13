@@ -47,8 +47,9 @@ export function subscribeViewChoice(onChange: () => void) {
 
 /**
  * The way the page opens: one by one while a solution waits for a decision, unless the person chose the
- * list before; the list otherwise.
+ * list before; the list otherwise. An address that asks for one solution opens the list, where that
+ * solution is the one read in full.
  */
-export function openingView(choice: ViewName | null, waits: boolean): ViewName {
-  return choice !== "list" && waits ? "one" : "list";
+export function openingView(choice: ViewName | null, waits: boolean, asked: boolean): ViewName {
+  return !asked && choice !== "list" && waits ? "one" : "list";
 }
