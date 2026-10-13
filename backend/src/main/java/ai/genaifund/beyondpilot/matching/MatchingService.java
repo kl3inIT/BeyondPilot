@@ -431,7 +431,7 @@ public class MatchingService {
 				.orElse(null);
 			candidates.add(new MatchingResponse.Candidate(candidate.id(), candidate.solutionId(), solution.slug(),
 					solution.name(), solution.organizationName(), solution.logoFileId(), solution.country(),
-					solution.maturity(), solution.listed(), candidate.origin(),
+					solution.maturity(), solution.listed(), material != null && material.deck(), candidate.origin(),
 					candidate.bucket(), candidate.requiredMet(), candidate.requiredTotal(), candidate.decision(),
 					candidate.reason(), candidate.note(), remover == null ? null : remover.label(),
 					removed ? candidate.decidedByOperator() : null, removed ? candidate.decidedAt() : null,

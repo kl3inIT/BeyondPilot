@@ -1326,7 +1326,11 @@ test.describe("matched solutions, one at a time", () => {
     expect(asked).toHaveLength(0);
 
     // By the head, a short way: the card settles back. A long way to the right: it is saved.
-    const head = (await page.locator('[data-slot="matching-card-head"]').first().boundingBox())!;
+    // Selecting the evidence may have scrolled the page. The head is brought to the middle of the window,
+    // clear of the site's header, which stays at the top and would take the pointer.
+    const handle = page.locator('[data-slot="matching-card-head"]').first();
+    await handle.evaluate((element) => element.scrollIntoView({ block: "center" }));
+    const head = (await handle.boundingBox())!;
     await drag({ x: head.x + 120, y: head.y + head.height / 2 }, 60);
     await expect(front(page, "Staple AI")).toBeVisible();
     expect(asked).toHaveLength(0);

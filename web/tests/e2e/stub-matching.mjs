@@ -149,6 +149,7 @@ const candidate = (number, name, bucket, findings, more = {}) => ({
   origin: "recommended",
   judged: true,
   listed: true,
+  hasDeck: true,
   country: "SG",
   maturity: "production",
   findings,

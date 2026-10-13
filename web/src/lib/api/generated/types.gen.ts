@@ -2330,6 +2330,10 @@ export type MatchingCandidate = {
      * One finding per requirement, in their order.
      */
     findings: Array<MatchingFinding>;
+    /**
+     * Whether it has a deck.
+     */
+    hasDeck: boolean;
     id: string;
     /**
      * Whether the vendor delivered a similar workflow in the use case's industry.

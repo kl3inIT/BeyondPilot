@@ -22,6 +22,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { deckAddress } from "@/features/solution/solution-deck";
+import { cn } from "@/lib/utils";
 
 /** Said while the deck, or the code that draws it, is on its way. */
 function DeckLoading() {
@@ -155,13 +156,19 @@ function DeckReader({ solutionName, solutionSlug, page: first, quote, inline }: 
             <div className="ml-auto">{openFile}</div>
           </div>
 
-          {/* A tall page scrolls here; the region takes the focus so that the keys scroll it too. */}
+          {/*
+            A tall page scrolls here; the region takes the focus so that the keys scroll it too. In a card a
+            page shorter than the space stands in its middle; a taller one starts at its top and scrolls.
+          */}
           <div
             role="group"
             data-slot="matching-deck-page"
             aria-label={t("pageLabel", { page: shown })}
             tabIndex={0}
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-1 pb-6 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
+            className={cn(
+              "min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-1 pb-6 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset",
+              inline && "flex flex-col *:my-auto",
+            )}
           >
             <DeckPages
               url={deckAddress(solutionSlug)}
