@@ -31,13 +31,16 @@ function bodyOf(event: MessageEvent<string>): MessagingEvent | undefined {
  *
  * The backend ends the stream every ten minutes and the browser opens it again by itself; a stream
  * that was refused, as a proxy refuses it while the backend restarts, is asked for again after a
- * while. `open` is false until the stream is open and whenever it is lost.
+ * while.
+ *
+ * Answers false once the stream was lost or refused, until it is open again. A stream that is
+ * still opening, or that this browser cannot ask for, was not lost: nothing is said of it.
  */
 export function useMessagingEvents(
   onEvent: (kind: EventKind, event: MessagingEvent) => void,
   onOpen: () => void,
 ) {
-  const [open, setOpen] = useState(false);
+  const [lost, setLost] = useState(false);
   const hear = useEffectEvent(onEvent);
   const opened = useEffectEvent(onOpen);
 
@@ -55,11 +58,11 @@ export function useMessagingEvents(
       source = stream;
       stream.addEventListener("open", () => {
         wait = RETRY.first;
-        setOpen(true);
+        setLost(false);
         opened();
       });
       stream.addEventListener("error", () => {
-        setOpen(false);
+        setLost(true);
         // The browser gives up on a stream that was answered with a failure.
         if (stream.readyState === EventSource.CLOSED && !gone) {
           retryTimer = window.setTimeout(listen, wait);
@@ -84,5 +87,5 @@ export function useMessagingEvents(
     };
   }, []);
 
-  return open;
+  return !lost;
 }

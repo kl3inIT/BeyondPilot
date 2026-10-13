@@ -5606,6 +5606,9 @@ export type SendBackUseCase = {
 };
 
 export type SendMessageRequest = {
+    /**
+     * The text; something other than spaces, in any script.
+     */
     body: string;
     /**
      * An identifier the sender chooses for the message. Sending it again writes nothing more, so a send that got no answer is safe to repeat.
@@ -5973,6 +5976,9 @@ export type SolutionSummary = {
 };
 
 export type StartConversationRequest = {
+    /**
+     * The text; something other than spaces, in any script.
+     */
     body: string;
     kind: 'talent' | 'solution' | 'program';
     /**

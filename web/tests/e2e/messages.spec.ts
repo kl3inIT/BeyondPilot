@@ -34,9 +34,9 @@ function title(page: Page, name: string) {
   return page.getByRole("heading", { level: 2, name }).first();
 }
 
-/** The conversations of the list that is shown, by who each is with. */
+/** The conversations of the list that is shown, each a link to its own address. */
 function rows(page: Page, list: "Chats" | "Requests") {
-  return page.getByRole("list", { name: list }).getByRole("button");
+  return page.getByRole("list", { name: list }).getByRole("link");
 }
 
 test.describe("messages", () => {
@@ -106,6 +106,61 @@ test.describe("messages", () => {
       await expect(arif).not.toContainText("unread");
     }
     await expectNoSeriousA11yViolations(page);
+  });
+
+  test("the browser's Back returns to the list, and Forward to the conversation", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await answerMessaging(page);
+    await page.goto(messages);
+
+    const arif = rows(page, "Chats").filter({ hasText: "Arif Hidayat" });
+    const composer = page.getByRole("textbox", { name: "Write to Arif Hidayat" });
+    const nothingOpen = page.getByText("Choose a conversation");
+    await expect(arif).toHaveAttribute("href", `${messages}?c=${arifChat}`);
+    await arif.click();
+    await expect(page).toHaveURL(new RegExp(`[?&]c=${arifChat}`));
+    await expect(title(page, "Arif Hidayat")).toBeVisible();
+    // The reader may write here, so that is where the focus goes.
+    await expect(composer).toBeFocused();
+
+    await page.goBack();
+
+    await expect(page).not.toHaveURL(/[?&]c=/);
+    await expect(composer).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    // The focus returns to the row the reader came from.
+    await expect(arif).toBeFocused();
+    if (!isMobile) {
+      await expect(nothingOpen).toBeVisible();
+      await expect(arif).not.toHaveAttribute("aria-current");
+    }
+
+    await page.goForward();
+
+    await expect(page).toHaveURL(new RegExp(`[?&]c=${arifChat}`));
+    await expect(title(page, "Arif Hidayat")).toBeVisible();
+    await expect(composer).toBeFocused();
+    if (isMobile) {
+      await expect(page.getByRole("heading", { level: 1 })).toBeHidden();
+    } else {
+      // Messages in the account menu is the list with nothing open, from a conversation too.
+      await page
+        .getByRole("banner")
+        .getByRole("button", { name: /Account menu/ })
+        .click();
+      await page
+        .getByRole("menu")
+        .getByRole("menuitem", { name: /Messages/ })
+        .click();
+      await expect(page).not.toHaveURL(/[?&]c=/);
+      await expect(nothingOpen).toBeVisible();
+      await expect(composer).toHaveCount(0);
+    }
   });
 
   test("a message is shown at once and written under an identifier the screen chose", async ({
@@ -192,6 +247,8 @@ test.describe("messages", () => {
     await expect(page.getByRole("button", { name: "Decline" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Report as spam" })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
+    // Whoever wrote it must not learn that it was read before it is accepted.
+    expect(written.filter((one) => one.call.endsWith("/read"))).toEqual([]);
 
     await page.getByRole("button", { name: "Accept" }).click();
 
@@ -265,9 +322,10 @@ test.describe("messages", () => {
     await signInAs(context, "owner", baseURL!);
     await page.goto("/");
 
+    // The button says that something waits, which its mark only shows.
     await page
       .getByRole("banner")
-      .getByRole("button", { name: "Account menu for Minh Trần" })
+      .getByRole("button", { name: "Account menu for Minh Trần, 3 wait for you" })
       .click();
     const item = page.getByRole("menu").getByRole("menuitem", { name: /Messages/ });
     // Two unread messages and one first message to answer.

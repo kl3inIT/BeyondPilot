@@ -1,13 +1,12 @@
 "use client";
 
-import { ArrowLeftIcon, MessagesSquareIcon } from "lucide-react";
+import { MessagesSquareIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useQueryStates } from "nuqs";
-import { useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
-import { IconButton } from "@/components/actions/icon-button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Empty,
   EmptyContent,
@@ -30,16 +29,16 @@ import type {
   ConversationList as Conversations,
   ConversationProspect,
 } from "@/lib/api/generated";
-import { initials } from "@/lib/initials";
 import { siteRoutes } from "@/lib/site";
 import { cn } from "cn";
 
 import { ConversationDetails } from "./conversation-details";
-import { ConversationList } from "./conversation-list";
+import { ConversationList, type ConversationListHandle } from "./conversation-list";
 import { Composer, ConversationThread } from "./conversation-thread";
 import type { ProspectRead } from "./messaging-queries";
 import { messagingSearch, type MessagingTab, type MessagingTarget } from "./messaging-search";
 import { unreadOf } from "./messaging-state";
+import { ThreadHeader } from "./thread-header";
 import { useMessaging } from "./use-messaging";
 
 type MessagesPageProps = {
@@ -53,8 +52,12 @@ type MessagesPageProps = {
 
 /**
  * Messages: the reader's conversations on one side, the one that is open in the middle, and what
- * it is about beside it. The address holds which conversation is open, so the browser's Back
- * returns to the list on a phone, where the list and the conversation take turns.
+ * it is about beside it.
+ *
+ * The address holds which conversation is open (`?c=`), and the screen follows it: the browser's
+ * Back and Forward, and a link to Messages, open and close a conversation as the list does. On a
+ * phone, where the list and the conversation take turns, Back therefore returns to the list. When
+ * the two swap, the focus goes with what the reader sees.
  */
 function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
   const t = useTranslations("Messaging");
@@ -69,12 +72,57 @@ function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
   );
   const { state } = messaging;
   const thread = state.thread;
+  const openId = thread?.conversation.id ?? null;
+  const canWrite = thread?.conversation.canWrite ?? false;
   // A first message is being written while the address names who it goes to and no conversation.
   const writing = target !== null && search.to !== null && search.c === null ? prospect : null;
   const active = thread !== null || writing !== null;
 
+  /**
+   * The conversation the address named when the screen last looked. What the screen writes there
+   * itself names the conversation it already shows, so following it changes nothing.
+   */
+  const followed = useRef(search.c);
+  const follow = useEffectEvent(async (c: string | null) => {
+    if (c === null) {
+      // Also when nothing is shown yet: a conversation still being read must not open afterwards.
+      messaging.close();
+      return;
+    }
+    if (c !== openId && (await messaging.open(c)) === "failed") {
+      // The address names a conversation that cannot be shown: it says again what is shown.
+      void setSearch({ c: openId }, { history: "replace" });
+    }
+  });
+  useEffect(() => {
+    if (search.c !== followed.current) {
+      followed.current = search.c;
+      void follow(search.c);
+    }
+  }, [search.c]);
+
+  const conversations = useRef<ConversationListHandle>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const composer = useRef<HTMLTextAreaElement>(null);
+  /** What the middle of the screen showed before, to tell a swap from a conversation that changed. */
+  const pane = useRef({ openId, canWrite });
+  useEffect(() => {
+    const was = pane.current;
+    pane.current = { openId, canWrite };
+    if (openId !== was.openId) {
+      if (openId === null) {
+        conversations.current?.focus(was.openId);
+      } else {
+        (composer.current ?? heading.current)?.focus();
+      }
+    } else if (canWrite && !was.canWrite) {
+      // The reader accepted it: the answers they chose from made way for the composer.
+      composer.current?.focus();
+    }
+  }, [openId, canWrite]);
+
   async function open(id: string) {
-    if (await messaging.open(id)) {
+    if (id !== openId && (await messaging.open(id)) === "opened") {
       void setSearch({ c: id, to: null, at: null });
     }
   }
@@ -105,20 +153,24 @@ function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
           )}
         >
           <ConversationList
+            ref={conversations}
             chats={state.chats}
             requests={state.requests}
             unread={unreadOf(state)}
             tab={search.tab}
             onTab={(tab: MessagingTab) => void setSearch({ tab })}
-            openId={thread?.conversation.id ?? null}
+            openId={openId}
             onOpen={(id) => void open(id)}
           />
         </div>
         <div className={cn("min-h-0 min-w-0 flex-1 flex-col lg:flex", active ? "flex" : "hidden")}>
           {thread ? (
             <ConversationThread
+              key={thread.conversation.id}
               thread={thread}
               connected={messaging.connected}
+              headingRef={heading}
+              composerRef={composer}
               onBack={back}
               onDetails={() => setDetailsOpen(true)}
               onSend={messaging.send}
@@ -129,8 +181,10 @@ function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
               onRefuse={(how) =>
                 answer(
                   async () => {
-                    await messaging.refuse(how);
-                    void setSearch({ c: null });
+                    // The reader may have gone to another conversation meanwhile; that one stays.
+                    if (await messaging.refuse(how)) {
+                      void setSearch({ c: null });
+                    }
                   },
                   how === "report" ? "Messaging.answer.reported" : "Messaging.answer.declined",
                 )
@@ -216,7 +270,8 @@ function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
 
 /**
  * The first message to someone the reader has not written to: who reads it, what becomes of it,
- * and the composer. A reader who may not write there is told why instead.
+ * and the composer. A reader who may not write there is told why instead, and what to do about it
+ * where there is something to do.
  */
 function FirstMessage({
   read,
@@ -242,32 +297,11 @@ function FirstMessage({
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <header className="flex items-center gap-3 border-b px-4 py-3 md:px-6">
-        <IconButton
-          prominence="tertiary"
-          size="sm"
-          className="lg:hidden"
-          aria-label={t("thread.back")}
-          onClick={onBack}
-        >
-          <ArrowLeftIcon aria-hidden="true" />
-        </IconButton>
-        {name && (
-          <Avatar>
-            <AvatarFallback>{initials(name, name)}</AvatarFallback>
-          </Avatar>
-        )}
-        <div className="grid min-w-0 flex-1 text-sm">
-          <h2 className="truncate font-medium">{name ?? t("first.refusedTitle")}</h2>
-          {prospect && (
-            <p className="truncate text-muted-foreground">
-              {[t(`kind.${prospect.subject.kind}`), prospect.subject.name]
-                .filter((part) => part !== name)
-                .join(" · ")}
-            </p>
-          )}
-        </div>
-      </header>
+      <ThreadHeader
+        name={name}
+        about={prospect && { kind: prospect.subject.kind, name: prospect.subject.name }}
+        onBack={onBack}
+      />
       {!prospect || !name ? (
         <Empty>
           <EmptyHeader>
@@ -278,6 +312,11 @@ function FirstMessage({
                 : t("first.refused")}
             </EmptyDescription>
           </EmptyHeader>
+          {read.refusal === "MESSAGING_NEEDS_ORGANIZATION" && (
+            <EmptyContent>
+              <Button href={siteRoutes.workspaceOrganization}>{t("first.organization")}</Button>
+            </EmptyContent>
+          )}
         </Empty>
       ) : prospect.conversationId ? (
         <Empty>
@@ -294,10 +333,12 @@ function FirstMessage({
       ) : (
         <>
           <div className="flex min-h-0 flex-1 flex-col justify-end gap-3 overflow-y-auto p-4 md:p-6">
-            <div className="rounded-lg border bg-muted p-3 text-sm">
-              <p className="text-xs text-muted-foreground">{t("first.beforeTitle")}</p>
-              <p>{t(prospect.request ? "first.before" : "first.beforeOpen", { name })}</p>
-            </div>
+            <Alert role="note">
+              <AlertTitle>{t("first.beforeTitle")}</AlertTitle>
+              <AlertDescription>
+                {t(prospect.request ? "first.before" : "first.beforeOpen", { name })}
+              </AlertDescription>
+            </Alert>
             <Marker>
               <MarkerContent>
                 {t(prospect.request ? "first.request" : "first.open", { name })}

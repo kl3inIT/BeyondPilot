@@ -2,13 +2,19 @@
 
 import { SearchIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useImperativeHandle, useRef, useState } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
 import { Status } from "@/components/composites/status";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
   Item,
@@ -20,14 +26,22 @@ import {
   ItemTitle,
 } from "@/components/ui/item";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "@/i18n/navigation";
 import type { Conversation } from "@/lib/api/generated";
 import { initials } from "@/lib/initials";
 import { cn } from "cn";
 
 import { useConversationWords } from "./conversation-words";
-import { messagingTabs, type MessagingTab } from "./messaging-search";
+import { conversationRoute, messagingTabs, type MessagingTab } from "./messaging-search";
+
+/** What the screen asks of the list when the conversation closes and the list is what is left. */
+type ConversationListHandle = {
+  /** Moves the focus to a conversation's row, or to the tab of the list when it has no row. */
+  focus: (id: string | null) => void;
+};
 
 type ConversationListProps = {
+  ref?: React.Ref<ConversationListHandle>;
   chats: Conversation[];
   requests: Conversation[];
   /** How many messages the reader has not read across the open conversations. */
@@ -45,6 +59,7 @@ type ConversationListProps = {
  * messages the reader has not read says how many, in bold.
  */
 function ConversationList({
+  ref,
   chats,
   requests,
   unread,
@@ -56,6 +71,17 @@ function ConversationList({
   const t = useTranslations("Messaging");
   const words = useConversationWords();
   const [query, setQuery] = useState("");
+  const rowsShown = useRef(new Map<string, HTMLAnchorElement>());
+  const tabShown = useRef<HTMLButtonElement>(null);
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus(id) {
+        ((id !== null && rowsShown.current.get(id)) || tabShown.current)?.focus();
+      },
+    }),
+    [],
+  );
   const all = tab === "requests" ? requests : chats;
   const wanted = query.trim().toLocaleLowerCase();
   const rows = wanted
@@ -87,13 +113,13 @@ function ConversationList({
             {messagingTabs.map((value) => {
               const count = value === "chats" ? unread : requests.length;
               return (
-                <TabsTrigger key={value} value={value}>
+                <TabsTrigger key={value} value={value} ref={value === tab ? tabShown : undefined}>
                   {t(`tabs.${value}`)}
                   {count > 0 && (
-                    <span className="text-xs text-primary tabular-nums">
+                    <Badge>
                       <span aria-hidden="true">{count}</span>
                       <span className="sr-only">{t(`tabs.${value}Count`, { count })}</span>
-                    </span>
+                    </Badge>
                   )}
                 </TabsTrigger>
               );
@@ -110,13 +136,30 @@ function ConversationList({
                 {t(wanted ? "list.none.lead" : `list.empty.${tab}.lead`)}
               </EmptyDescription>
             </EmptyHeader>
-            {wanted && <TextButton onClick={() => setQuery("")}>{t("list.none.clear")}</TextButton>}
+            {wanted && (
+              <EmptyContent>
+                <TextButton onClick={() => setQuery("")}>{t("list.none.clear")}</TextButton>
+              </EmptyContent>
+            )}
           </Empty>
         ) : (
           <ItemGroup aria-label={t(`tabs.${tab}`)}>
             {rows.map((row) => (
               <div key={row.id} role="listitem">
-                <ConversationRow row={row} active={row.id === openId} onOpen={onOpen} />
+                <ConversationRow
+                  ref={(node) => {
+                    if (node) {
+                      rowsShown.current.set(row.id, node);
+                    }
+                    return () => {
+                      rowsShown.current.delete(row.id);
+                    };
+                  }}
+                  row={row}
+                  href={conversationRoute(row.id, tab)}
+                  active={row.id === openId}
+                  onOpen={onOpen}
+                />
               </div>
             ))}
           </ItemGroup>
@@ -126,13 +169,22 @@ function ConversationList({
   );
 }
 
-/** One conversation of the list: who it is with, its last message, when, and what waits in it. */
+/**
+ * One conversation of the list: who it is with, its last message, when, and what waits in it. It
+ * is a link to the conversation's address, which is how the registry's `Item` shows that a row
+ * leads somewhere. A plain click opens the conversation in this screen; the address itself serves
+ * a new tab or a copied link.
+ */
 function ConversationRow({
+  ref,
   row,
+  href,
   active,
   onOpen,
 }: {
+  ref: React.Ref<HTMLAnchorElement>;
   row: Conversation;
+  href: string;
   active: boolean;
   onOpen: (id: string) => void;
 }) {
@@ -155,10 +207,19 @@ function ConversationRow({
       size="sm"
       variant={active ? "muted" : "default"}
       render={
-        <button
-          type="button"
+        <Link
+          ref={ref}
+          href={href}
+          // The screen reads the conversation itself, so the page is not asked for ahead of a click.
+          prefetch={false}
           aria-current={active ? "true" : undefined}
-          onClick={() => onOpen(row.id)}
+          onClick={(event) => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+              return;
+            }
+            event.preventDefault();
+            onOpen(row.id);
+          }}
         />
       }
     >
@@ -203,4 +264,4 @@ function ConversationRow({
   );
 }
 
-export { ConversationList };
+export { ConversationList, type ConversationListHandle };

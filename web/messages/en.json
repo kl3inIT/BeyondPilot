@@ -22,6 +22,7 @@
     },
     "account": {
       "open": "Account menu for {name}",
+      "openWaiting": "Account menu for {name}, {count, plural, one {# waits for you} other {# wait for you}}",
       "operator": "Operator",
       "signOut": "Sign out",
       "signOutFailed": "We could not sign you out. Try again.",
@@ -7445,7 +7446,7 @@
     "kind": {
       "talent": "AI talent",
       "solution": "AI solution",
-      "program": "Programs"
+      "program": "Program"
     },
     "row": {
       "you": "You: {text}",
@@ -7472,7 +7473,7 @@
       "none": {
         "title": "No conversation matches",
         "lead": "Nobody in this list has that name.",
-        "clear": "Clear the search"
+        "clear": "Clear search"
       }
     },
     "choose": {
@@ -7490,14 +7491,11 @@
       "sending": "Sending…",
       "failed": "Not sent.",
       "retry": "Try again",
-      "seenAt": "Seen · {time}",
+      "seen": "Seen",
       "latest": "Go to the latest message",
       "typing": "{name} is writing…",
       "typingSomeone": "The other side is writing…",
-      "waiting": "Waiting for {name} to accept. You can write again once they do. Without an answer the request closes on {date}.",
       "request": "{name} has not written to you before. They will not know you have read this until you accept.",
-      "declined": "{name} will not take this further. Nothing more can be written here.",
-      "closed": "Nobody answered in time, so this request closed. You can write to {name} again.",
       "reconnecting": "The connection was lost. New messages will appear when it is back."
     },
     "composer": {
@@ -7506,9 +7504,10 @@
       "left": "{count, plural, one {# character left} other {# characters left}}",
       "locked": {
         "pending": "You can write again when {name} accepts.",
-        "declined": "This conversation was declined.",
-        "closed": "This request closed without an answer."
-      }
+        "declined": "{name} will not take this further. Nothing more can be written here.",
+        "closed": "Nobody answered in time, so this request closed. You can write to {name} again."
+      },
+      "closes": "Without an answer the request closes on {date}."
     },
     "answer": {
       "accept": "Accept",
@@ -7536,7 +7535,8 @@
       "existsLead": "It waits for an answer or is open. Write there.",
       "openExisting": "Open the conversation",
       "refusedTitle": "You cannot write here",
-      "refused": "This conversation cannot be started."
+      "refused": "This conversation cannot be started.",
+      "organization": "Create or join an organization"
     },
     "details": {
       "title": "About this conversation",

@@ -22,6 +22,7 @@
     },
     "account": {
       "open": "Menu tài khoản của {name}",
+      "openWaiting": "Menu tài khoản của {name}, {count, plural, other {# đang chờ bạn}}",
       "operator": "Operator",
       "signOut": "Đăng xuất",
       "signOutFailed": "Chưa đăng xuất được. Bạn thử lại.",
@@ -7472,7 +7473,7 @@
       "none": {
         "title": "Không có hội thoại nào khớp",
         "lead": "Không ai trong danh sách này có tên như vậy.",
-        "clear": "Xoá tìm kiếm"
+        "clear": "Xóa tìm kiếm"
       }
     },
     "choose": {
@@ -7490,14 +7491,11 @@
       "sending": "Đang gửi…",
       "failed": "Chưa gửi được.",
       "retry": "Gửi lại",
-      "seenAt": "Đã xem · {time}",
+      "seen": "Đã xem",
       "latest": "Tới tin mới nhất",
       "typing": "{name} đang viết…",
       "typingSomeone": "Bên kia đang viết…",
-      "waiting": "Đang chờ {name} chấp nhận. Bạn viết tiếp được sau khi họ chấp nhận. Nếu không có trả lời, yêu cầu sẽ đóng vào {date}.",
       "request": "{name} chưa từng viết cho bạn. Họ không biết bạn đã đọc tin này cho tới khi bạn chấp nhận.",
-      "declined": "{name} không tiếp tục trao đổi này. Không viết thêm được ở đây.",
-      "closed": "Không ai trả lời kịp nên yêu cầu này đã đóng. Bạn có thể viết lại cho {name}.",
       "reconnecting": "Mất kết nối. Tin mới sẽ hiện khi kết nối trở lại."
     },
     "composer": {
@@ -7506,15 +7504,16 @@
       "left": "{count, plural, other {Còn # ký tự}}",
       "locked": {
         "pending": "Bạn viết tiếp được khi {name} chấp nhận.",
-        "declined": "Hội thoại này đã bị từ chối.",
-        "closed": "Yêu cầu này đã đóng vì không có trả lời."
-      }
+        "declined": "{name} không tiếp tục trao đổi này. Không viết thêm được ở đây.",
+        "closed": "Không ai trả lời kịp nên yêu cầu này đã đóng. Bạn có thể viết lại cho {name}."
+      },
+      "closes": "Nếu không có trả lời, yêu cầu sẽ đóng vào {date}."
     },
     "answer": {
       "accept": "Chấp nhận",
       "decline": "Từ chối",
       "report": "Báo spam",
-      "cancel": "Huỷ",
+      "cancel": "Hủy",
       "declineTitle": "Từ chối tin của {name}?",
       "declineLead": "{name} được báo qua email rằng bạn không tiếp tục, không kèm lý do.",
       "reportTitle": "Báo cáo tin của {name}?",
@@ -7536,7 +7535,8 @@
       "existsLead": "Hội thoại đó đang chờ trả lời hoặc đang mở. Hãy viết ở đó.",
       "openExisting": "Mở hội thoại",
       "refusedTitle": "Bạn không viết được ở đây",
-      "refused": "Không bắt đầu được hội thoại này."
+      "refused": "Không bắt đầu được hội thoại này.",
+      "organization": "Tạo hoặc tham gia tổ chức"
     },
     "details": {
       "title": "Về hội thoại này",
