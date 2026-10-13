@@ -45,7 +45,7 @@ public class UseCaseProposal {
 
 	private @Nullable UUID deckFileId;
 
-	private @Nullable UUID primaryContactAccountId;
+	private @Nullable String teamBackground;
 
 	@Column(nullable = false)
 	private String status = DRAFT;
@@ -83,13 +83,13 @@ public class UseCaseProposal {
 
 	/**
 	 * Keeps what the form holds now. The time it is kept is written too, so every save moves the version on, even one
-	 * that only changes the team, which another table holds.
+	 * that only changes the solutions, which another table holds.
 	 */
-	public void write(@Nullable String approach, @Nullable UUID deckFileId,
-			@Nullable UUID primaryContactAccountId, Instant at) {
+	public void write(@Nullable String approach, @Nullable String teamBackground, @Nullable UUID deckFileId,
+			Instant at) {
 		this.approach = approach;
+		this.teamBackground = teamBackground;
 		this.deckFileId = deckFileId;
-		this.primaryContactAccountId = primaryContactAccountId;
 		this.updatedAt = at;
 	}
 
@@ -97,9 +97,9 @@ public class UseCaseProposal {
 	 * Keeps what the form holds now for a proposal that was already sent; the sender and the snapshot stay as sent, and
 	 * the time of the change is noted.
 	 */
-	public void edit(@Nullable String approach, @Nullable UUID deckFileId, @Nullable UUID primaryContactAccountId,
+	public void edit(@Nullable String approach, @Nullable String teamBackground, @Nullable UUID deckFileId,
 			Instant at) {
-		write(approach, deckFileId, primaryContactAccountId, at);
+		write(approach, teamBackground, deckFileId, at);
 		this.editedAt = at;
 	}
 
@@ -142,8 +142,8 @@ public class UseCaseProposal {
 		return deckFileId;
 	}
 
-	public @Nullable UUID getPrimaryContactAccountId() {
-		return primaryContactAccountId;
+	public @Nullable String getTeamBackground() {
+		return teamBackground;
 	}
 
 	public String getStatus() {

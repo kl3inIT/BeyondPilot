@@ -58,7 +58,7 @@ class UseCaseProposalsController {
 	@Operation(operationId = "getUseCaseProposalForm", summary = "The proposal form of a use case for the caller",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200",
-			description = "The use case, the caller's organization with its solutions and members, and the proposal if one was saved.")
+			description = "The use case, the caller's organization, and the proposal if one was saved.")
 	@ApiResponse(responseCode = "403", description = "The caller's organization posted the use case.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "There is no such use case.",
@@ -69,29 +69,13 @@ class UseCaseProposalsController {
 		return proposals.form(actor, useCaseId);
 	}
 
-	@PostMapping(path = "/use-cases/{useCaseId}/organization", consumes = MediaType.APPLICATION_JSON_VALUE,
-			produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "organizeUseCaseProposal",
-			summary = "Make the organization a person sends a proposal for when they belong to none",
-			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "200", description = "The form, now with the new organization.")
-	@ApiResponse(responseCode = "404", description = "There is no such use case.",
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409",
-			description = "The use case no longer takes proposals, or the caller already belongs to an organization.",
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	UseCaseProposalFormResponse organize(@CurrentActor Actor actor, @PathVariable UUID useCaseId,
-			@Valid @RequestBody ApplicantOrganizationRequest request) {
-		return proposals.organize(actor, useCaseId, request);
-	}
-
 	@PutMapping(path = "/use-cases/{useCaseId}/proposal", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "saveUseCaseProposal", summary = "Keep what the proposal form holds",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The form with the proposal as saved.")
 	@ApiResponse(responseCode = "400",
-			description = "The team names someone who is not a member, a member twice or two primary contacts, or the solution is not the organization's.",
+			description = "A solution is not the organization's, or is named twice.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "403",
 			description = "The caller has no organization, or it posted the use case.",
