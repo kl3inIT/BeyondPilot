@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowUpRightIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
@@ -20,29 +21,43 @@ import {
 import { useNotify } from "@/hooks/use-notify";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import {
+  createOrganizationFromBasics,
   getMyOrganization,
   saveMyOrganizationBasics,
   type Organization,
 } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+/** What a new organization starts from, and what happens once it is made. */
+type NewOrganization = {
+  name: string;
+  country: string;
+  onCreated: () => Promise<void>;
+};
+
 type ProposalOrganizationDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Makes an organization in place of correcting the person's own. */
+  create?: NewOrganization;
 };
 
 /**
  * Corrects what a person gave when they made their organization, over the proposal: the name, the kind, the size,
- * the industries and the country. The rest of the profile is written on the organization's own page, which the
- * dialog points to so nothing is changed behind the person's back.
+ * the industries and the country, or makes the organization from the same facts. The rest of the profile is written
+ * on the organization's own page, which the dialog points to so nothing is changed behind the person's back.
  */
-function ProposalOrganizationDialog({ open, onOpenChange }: ProposalOrganizationDialogProps) {
+function ProposalOrganizationDialog({
+  open,
+  onOpenChange,
+  create,
+}: ProposalOrganizationDialogProps) {
   const t = useTranslations("UseCaseProposal.wizard.organization.dialog");
   const notify = useNotify();
   const [organization, setOrganization] = useState<Organization | null>(null);
 
   useEffect(() => {
-    if (!open) {
+    if (!open || create) {
       return;
     }
     let current = true;
@@ -62,7 +77,11 @@ function ProposalOrganizationDialog({ open, onOpenChange }: ProposalOrganization
     return () => {
       current = false;
     };
-  }, [open, notify, onOpenChange]);
+  }, [open, create, notify, onOpenChange]);
+
+  if (create) {
+    return <BasicsForm key={create.name} create={create} open={open} onOpenChange={onOpenChange} />;
+  }
 
   if (!organization) {
     // The facts are read first, so the form opens with them.
@@ -90,9 +109,9 @@ function ProposalOrganizationDialog({ open, onOpenChange }: ProposalOrganization
   );
 }
 
-type BasicsFormProps = ProposalOrganizationDialogProps & { organization: Organization };
+type BasicsFormProps = ProposalOrganizationDialogProps & { organization?: Organization };
 
-function BasicsForm({ organization, open, onOpenChange }: BasicsFormProps) {
+function BasicsForm({ organization, create, open, onOpenChange }: BasicsFormProps) {
   const t = useTranslations("UseCaseProposal.wizard.organization.dialog");
   const f = useTranslations("Organization.form");
   const notify = useNotify();
@@ -104,23 +123,29 @@ function BasicsForm({ organization, open, onOpenChange }: BasicsFormProps) {
 
   const form = useAppForm({
     defaultValues: {
-      name: organization.name,
-      type: organization.type as string,
-      teamSize: (organization.teamSize ?? "2_9") as string,
-      industries: organization.industries as string[],
-      country: organization.country ?? "",
+      name: organization?.name ?? create?.name ?? "",
+      type: (organization?.type ?? "company") as string,
+      teamSize: (organization?.teamSize ?? "2_9") as string,
+      industries: (organization?.industries ?? []) as string[],
+      country: organization?.country ?? create?.country ?? "",
     },
     onSubmit: async ({ value }) => {
+      const body = {
+        name: value.name.trim(),
+        type: value.type as Organization["type"],
+        teamSize: value.teamSize as NonNullable<Organization["teamSize"]>,
+        industries: value.industries as Organization["industries"],
+        country: value.country,
+      };
       try {
-        await saveMyOrganizationBasics({
-          body: {
-            name: value.name.trim(),
-            type: value.type as Organization["type"],
-            teamSize: value.teamSize as NonNullable<Organization["teamSize"]>,
-            industries: value.industries as Organization["industries"],
-            country: value.country,
-          },
-        });
+        if (create) {
+          await createOrganizationFromBasics({ body });
+          notify.success("UseCaseProposal.wizard.organization.dialog.created");
+          onOpenChange(false);
+          await create.onCreated();
+          return;
+        }
+        await saveMyOrganizationBasics({ body });
         notify.success("UseCaseProposal.wizard.organization.dialog.saved");
         onOpenChange(false);
         router.refresh();
@@ -135,9 +160,9 @@ function BasicsForm({ organization, open, onOpenChange }: BasicsFormProps) {
       open={open}
       onOpenChange={onOpenChange}
       form={form}
-      title={t("title")}
+      title={create ? t("createTitle") : t("title")}
       width="md"
-      submitLabel={t("save")}
+      submitLabel={create ? t("create") : t("save")}
       cancelLabel={t("cancel")}
     >
       <FieldGroup>
@@ -232,11 +257,14 @@ function BasicsForm({ organization, open, onOpenChange }: BasicsFormProps) {
         </form.AppField>
         <TextButton
           className="self-start"
-          href={siteRoutes.workspaceOrganization}
+          href={
+            create ? `${siteRoutes.workspaceOrganization}/new` : siteRoutes.workspaceOrganization
+          }
           target="_blank"
           rel="noreferrer"
         >
-          {t("more")}
+          {create ? t("full") : t("more")}
+          {create && <ArrowUpRightIcon aria-hidden="true" />}
         </TextButton>
       </FieldGroup>
     </FormDialog>
