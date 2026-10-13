@@ -1,104 +1,80 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  addMember,
   addSolutions,
   bodyOf,
   detailsComplete,
   incompleteSteps,
-  removeMember,
-  setPrimary,
-  teamComplete,
+  removeSolution,
   valuesOf,
+  whoOf,
+  youComplete,
   type ProposalValues,
 } from "./proposal-draft";
 
 const full: ProposalValues = {
   solutionIds: ["s1"],
   approach: "It reads claims.",
+  teamBackground: "",
   deck: { fileId: "f1", fileName: "deck.pdf", sizeBytes: 10 },
-  team: [{ accountId: "a1", role: "Lead", primary: true }],
 };
+
+const given = { name: "Lan Tran", country: "VN", phone: "+84 912 345 678" };
 
 describe("proposal draft", () => {
   it("starts empty before anything was saved", () => {
     expect(valuesOf(null)).toEqual({
       solutionIds: [],
       approach: "",
+      teamBackground: "",
       deck: null,
-      team: [],
     });
   });
 
   it("sends the version the form read", () => {
-    expect(bodyOf(full, 3)).toMatchObject({
+    expect(bodyOf({ ...full, teamBackground: "Four years of claims AI." }, 3)).toEqual({
       solutionIds: ["s1"],
+      approach: "It reads claims.",
+      teamBackground: "Four years of claims AI.",
       deckFileId: "f1",
       version: 3,
-      team: [{ accountId: "a1", role: "Lead", primary: true }],
     });
     expect(bodyOf(valuesOf(null), null).version).toBeNull();
   });
 
-  it("adds each solution once", () => {
+  it("adds each solution once and takes one out", () => {
     expect(addSolutions(["a"], ["b", "a", "b"])).toEqual(["a", "b"]);
+    expect(removeSolution(["a", "b"], "a")).toEqual(["b"]);
   });
 
-  it("makes the first member the primary contact and ignores a second add", () => {
-    const one = addMember([], "a1", " Lead ");
-    expect(one).toEqual([{ accountId: "a1", role: "Lead", primary: true }]);
-    expect(addMember(one, "a1", "x")).toBe(one);
-    expect(addMember(one, "a2", "Dev")[1].primary).toBe(false);
-  });
-
-  it("hands the primary contact on when that person leaves", () => {
-    const team = addMember(addMember([], "a1", "Lead"), "a2", "Dev");
-    expect(removeMember(team, "a1")).toEqual([{ accountId: "a2", role: "Dev", primary: true }]);
-    expect(setPrimary(team, "a2").map((member) => member.primary)).toEqual([false, true]);
-  });
-
-  it("takes no team, or asks for roles and exactly one primary contact", () => {
-    expect(teamComplete([])).toBe(true);
-    expect(teamComplete([{ accountId: "a1", role: " ", primary: true }])).toBe(false);
-    expect(teamComplete(full.team)).toBe(true);
-    expect(teamComplete([{ accountId: "a1", role: "Lead", primary: false }])).toBe(false);
-    expect(
-      teamComplete([
-        { accountId: "a1", role: "Lead", primary: true },
-        { accountId: "a2", role: "Dev", primary: true },
-      ]),
-    ).toBe(false);
-  });
-
-  it("reads a team as a stored draft may hold it", () => {
-    // A member who has left the organization stays in the draft, and counts like any other row.
-    const stored = valuesOf({
-      solutions: [],
-      team: [
-        { accountId: "gone", role: "Lead", primary: true },
-        { accountId: "a2", role: "", primary: false },
-      ],
-    } as unknown as Parameters<typeof valuesOf>[0]);
-
-    expect(stored.team).toEqual([
-      { accountId: "gone", role: "Lead", primary: true },
-      { accountId: "a2", role: "", primary: false },
-    ]);
-    expect(incompleteSteps(stored, true)).toEqual(["solutions", "team", "pdf"]);
+  it("says who an organization of each kind stands for", () => {
+    expect(whoOf("independent_builder")).toBe("individual");
+    expect(whoOf("builder_team")).toBe("team");
+    expect(whoOf("company")).toBe("company");
+    expect(whoOf("other")).toBe("company");
   });
 
   it("lists the steps that lack content", () => {
     expect(incompleteSteps(full, true)).toEqual([]);
-    expect(incompleteSteps(valuesOf(null), true)).toEqual(["solutions", "pdf"]);
+    expect(incompleteSteps(valuesOf(null), true)).toEqual(["solutions"]);
     expect(incompleteSteps({ ...full, approach: " " }, true)).toEqual(["solutions"]);
-    expect(incompleteSteps(full, false)).toEqual(["details"]);
-    expect(
-      incompleteSteps({ ...full, team: [{ accountId: "a1", role: "", primary: true }] }, true),
-    ).toEqual(["team"]);
+    expect(incompleteSteps({ ...full, deck: null }, true)).toEqual(["solutions"]);
+    expect(incompleteSteps(full, false)).toEqual(["you"]);
+  });
+
+  it("asks a team, and only a team, for what it has done", () => {
+    const company = { type: "company" as const };
+    const team = { type: "builder_team" as const };
+
+    expect(youComplete(full, given, null)).toBe(false);
+    expect(youComplete(full, given, company)).toBe(true);
+    expect(youComplete(full, given, team)).toBe(false);
+    expect(youComplete({ ...full, teamBackground: " " }, given, team)).toBe(false);
+    expect(youComplete({ ...full, teamBackground: "Built two." }, given, team)).toBe(true);
+    expect(youComplete(full, { ...given, phone: "" }, company)).toBe(false);
   });
 
   it("asks for a name, a country and a number written with its country code", () => {
-    const given = { name: "Lan Tran", country: "VN", phone: "+84 912 345 678" };
     expect(detailsComplete(given)).toBe(true);
     expect(detailsComplete({ ...given, name: " " })).toBe(false);
     expect(detailsComplete({ ...given, country: "" })).toBe(false);

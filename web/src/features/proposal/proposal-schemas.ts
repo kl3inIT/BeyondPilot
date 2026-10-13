@@ -2,7 +2,15 @@ import { z } from "zod";
 
 /** The words a schema's messages are written in; the form passes its translator. */
 type Say = (
-  key: "solution" | "approach" | "required" | "phoneInvalid" | "role" | "primary" | "deck",
+  key:
+    | "solution"
+    | "approach"
+    | "required"
+    | "phoneInvalid"
+    | "deck"
+    | "who"
+    | "company"
+    | "background",
 ) => string;
 
 /** A number as the backend takes it: digits with spaces, brackets, dots or dashes, and a leading plus. */
@@ -13,34 +21,56 @@ export function phoneSchema(say: Say) {
   return z.string().trim().regex(PHONE, say("phoneInvalid"));
 }
 
+/** What the account keeps of the person who sends: a name, a country and a number. */
+export function detailsSchema(say: Say) {
+  return z.object({
+    name: z.string().trim().min(1, say("required")),
+    country: z.string().min(1, say("required")),
+    phone: phoneSchema(say).min(1, say("required")),
+  });
+}
+
+/** What the rules of the first step depend on: the organization the person is in, if any. */
+type YouContext = {
+  /** The caller's organization, and whether it is a team, which says what it has done. */
+  organization: { team: boolean } | null;
+};
+
 /**
  * What each step of a proposal must hold before the next one opens, over what the wizard's form
- * holds. The organization step has nothing to fill and the review step is not content, so neither
- * has rules.
+ * holds. The review step is not content, so it has no rules.
  */
-export function proposalStepSchemas(say: Say) {
+export function proposalStepSchemas(say: Say, context: YouContext) {
   return {
+    you: z
+      .object({
+        who: z.string(),
+        teamName: z.string(),
+        teamBackground: z.string(),
+        details: detailsSchema(say),
+      })
+      .superRefine((value, ctx) => {
+        const { organization } = context;
+        const team = organization ? organization.team : value.who === "team";
+        if (!organization) {
+          if (value.who === "") {
+            ctx.addIssue({ code: "custom", path: ["who"], message: say("who") });
+          } else if (value.who === "company") {
+            // A company is joined or made first, in the step; only then does the person go on.
+            ctx.addIssue({ code: "custom", path: ["who"], message: say("company") });
+          } else if (value.who === "team" && value.teamName.trim() === "") {
+            ctx.addIssue({ code: "custom", path: ["teamName"], message: say("required") });
+          }
+        }
+        if (team && value.teamBackground.trim() === "") {
+          ctx.addIssue({ code: "custom", path: ["teamBackground"], message: say("background") });
+        }
+      }),
     solutions: z.object({
       solutionIds: z.array(z.unknown()).min(1, say("solution")),
       approach: z.string().trim().min(1, say("approach")),
+      deck: z.custom((deck) => Boolean(deck), say("deck")),
     }),
-    details: z.object({
-      details: z.object({
-        name: z.string().trim().min(1, say("required")),
-        country: z.string().min(1, say("required")),
-        phone: phoneSchema(say).min(1, say("required")),
-      }),
-    }),
-    // No team, or roles filled and exactly one primary contact.
-    team: z.object({
-      team: z
-        .array(z.looseObject({ role: z.string().trim().min(1, say("role")) }))
-        .refine(
-          (team) => team.length === 0 || team.filter((row) => row.primary).length === 1,
-          say("primary"),
-        ),
-    }),
-    pdf: z.object({ deck: z.custom((deck) => Boolean(deck), say("deck")) }),
   };
 }
 
@@ -48,7 +78,7 @@ type StepSchemas = ReturnType<typeof proposalStepSchemas>;
 
 /**
  * What a step refuses in what the form holds, by the form's field and the first problem of each;
- * nothing when the step may be left. The team is one field, whatever row the problem is in.
+ * nothing when the step may be left.
  */
 export function stepProblems(
   schemas: StepSchemas,
@@ -64,8 +94,7 @@ export function stepProblems(
   }
   const fields: Record<string, { message: string }> = {};
   for (const issue of issues) {
-    const name = issue.path[0] === "team" ? "team" : issue.path.join(".");
-    fields[name] ??= { message: issue.message };
+    fields[issue.path.join(".")] ??= { message: issue.message };
   }
   return fields;
 }
