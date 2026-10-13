@@ -24,6 +24,11 @@ type OrganizationFinderProps = {
    * that keeps what the backend answered itself and reads it anew. It says its own failure.
    */
   onAnswered?: () => Promise<void>;
+  /**
+   * Called with the name typed when the person chooses to create an organization, in place of
+   * opening the page that creates one: for a caller that creates it over its own page.
+   */
+  onCreate?: (name: string) => void;
 };
 
 /**
@@ -34,7 +39,12 @@ type OrganizationFinderProps = {
  * Creating a new one is offered beside it, and starts from the name typed here. A search that did
  * not run is not an empty result: it offers to try again, and never to create.
  */
-function OrganizationFinder({ suggestion, embedded = false, onAnswered }: OrganizationFinderProps) {
+function OrganizationFinder({
+  suggestion,
+  embedded = false,
+  onAnswered,
+  onCreate,
+}: OrganizationFinderProps) {
   const t = useTranslations("Organization.find");
   const joining = useOrganizationJoin(onAnswered);
   const [query, setQuery] = useState("");
@@ -87,6 +97,28 @@ function OrganizationFinder({ suggestion, embedded = false, onAnswered }: Organi
   // The form starts from the name the person already typed.
   const create = typed ? `${createHref}?name=${encodeURIComponent(query.trim())}` : createHref;
 
+  /** The way to create an organization: its page, or the caller's own dialog. */
+  const createAction = (prominence: "primary" | "secondary") =>
+    onCreate ? (
+      <Button
+        prominence={prominence}
+        size={prominence === "primary" ? "lg" : "md"}
+        className="w-full"
+        onClick={() => onCreate(query.trim())}
+      >
+        {t("create")}
+      </Button>
+    ) : (
+      <Button
+        prominence={prominence}
+        size={prominence === "primary" ? "lg" : "md"}
+        className="w-full"
+        href={create}
+      >
+        {t("create")}
+      </Button>
+    );
+
   return (
     <div
       className={embedded ? "flex w-full flex-col gap-6" : "flex w-full max-w-130 flex-col gap-6"}
@@ -129,9 +161,7 @@ function OrganizationFinder({ suggestion, embedded = false, onAnswered }: Organi
       </div>
 
       {broken ? null : nothing ? (
-        <Button size="lg" className="w-full" href={create}>
-          {t("create")}
-        </Button>
+        createAction("primary")
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -139,9 +169,7 @@ function OrganizationFinder({ suggestion, embedded = false, onAnswered }: Organi
             {t("or")}
             <span className="h-px flex-1 bg-border" />
           </div>
-          <Button prominence="secondary" className="w-full" href={create}>
-            {t("create")}
-          </Button>
+          {createAction("secondary")}
         </div>
       )}
 
