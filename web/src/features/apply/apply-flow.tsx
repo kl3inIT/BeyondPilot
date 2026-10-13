@@ -14,7 +14,7 @@ import { StepsNav } from "@/components/composites/steps-nav";
 import { useAppForm } from "@/components/form/app-form";
 import { AllRequired } from "@/components/form/form-fields";
 import { Badge } from "@/components/ui/badge";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { OrganizationFinder } from "@/features/organization/organization-finder";
@@ -966,24 +966,31 @@ function StepSolution({
         )}
       </form.AppField>
       <form.Field name="application.builtWith">
-        {(field) => (
-          <Field>
-            <FieldLabel htmlFor="builtWith">
-              {t("builtWith")}
-              <Optional />
-            </FieldLabel>
-            <EntryList
-              id="builtWith"
-              label={t("builtWith")}
-              value={field.state.value}
-              onChange={field.handleChange}
-              describedBy="builtWith-hint"
-              max={50}
-              maxLength={200}
-            />
-            <FieldDescription id="builtWith-hint">{t("builtWithHint")}</FieldDescription>
-          </Field>
-        )}
+        {(field) => {
+          // Nothing of the form's own refuses the list; only the backend can, and it then says so.
+          const errors = field.state.meta.errors as ({ message?: string } | undefined)[];
+          const invalid = errors.length > 0;
+          return (
+            <Field data-invalid={invalid || undefined}>
+              <FieldLabel htmlFor="builtWith">
+                {t("builtWith")}
+                <Optional />
+              </FieldLabel>
+              <EntryList
+                id="builtWith"
+                label={t("builtWith")}
+                value={field.state.value}
+                onChange={field.handleChange}
+                describedBy={invalid ? "builtWith-hint builtWith-error" : "builtWith-hint"}
+                invalid={invalid}
+                max={50}
+                maxLength={200}
+              />
+              <FieldDescription id="builtWith-hint">{t("builtWithHint")}</FieldDescription>
+              {invalid && <FieldError id="builtWith-error" errors={errors} />}
+            </Field>
+          );
+        }}
       </form.Field>
       <form.AppField name="application.deck">
         {(field) => (

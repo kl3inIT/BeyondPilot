@@ -236,4 +236,28 @@ describe("ApplyFlow", () => {
     await user.type(traction, "Two pilots.");
     await waitFor(() => expect(traction).toBeValid());
   });
+
+  it("says a refusal of the list of tools at the list, which has no rule of its own", async () => {
+    vi.mocked(saveApplication).mockRejectedValueOnce(
+      new ApiError(400, {
+        title: "Bad Request",
+        status: 400,
+        code: "REQUEST_INVALID",
+        requestId: "r1",
+        errors: [
+          { pointer: "#/builtWith/3", code: "SIZE", detail: "size must be between 0 and 60" },
+        ],
+      }),
+    );
+    const { user } = render(<ApplyFlow initial={complete} account={account} />);
+
+    await user.click(screen.getByRole("checkbox", { name: /I confirm/ }));
+    await user.click(screen.getByRole("button", { name: "Submit application" }));
+
+    await waitFor(() => expect(heading()).toHaveTextContent("Your solution"));
+    const tools = screen.getByRole("textbox", { name: /Built with/ });
+    await waitFor(() => expect(tools).toBeInvalid());
+    expect(tools).toHaveAccessibleDescription(/This was not accepted/);
+    expect(tools).toHaveFocus();
+  });
 });

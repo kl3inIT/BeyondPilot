@@ -10,6 +10,12 @@ const controls = [
   'input:not([type="file"]):not([type="hidden"]):not([aria-hidden="true"]):not([tabindex="-1"])',
 ].join(", ");
 
+/** The fields drawn by hand, under an id of their own. */
+const byHand: Record<string, string> = {
+  "application.deck": "deck",
+  "application.builtWith": "builtWith",
+};
+
 /**
  * The control a person fills the field `name` in with, once its step is on the screen. A shared
  * control carries the form's id for the field; the deck and the questions answered by a file, a
@@ -22,7 +28,7 @@ export function controlOf(form: { formId: string }, name: string): HTMLElement |
     : null;
   const named =
     document.getElementById(fieldIdOf(form, name)) ??
-    document.getElementById(name === "application.deck" ? "deck" : (question ?? ""));
+    document.getElementById(byHand[name] ?? question ?? "");
   if (!named) {
     return null;
   }
