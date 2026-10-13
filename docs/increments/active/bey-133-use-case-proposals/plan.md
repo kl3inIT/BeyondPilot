@@ -18,7 +18,7 @@ Design: [design.md](design.md). Tracked in Linear as BEY-133.
 - Implemented, verification pending: finder-first organization selection, quick-create for all types, pending-request withdrawal, no deferred organization creation on Continue.
 - Implemented: TanStack Query organization context scoped to the wizard, opening-time dialog reads, mutation refetch, preserving TanStack Form draft values.
 - Verified: frontend lint, formatting, message/failure-code catalogs, knip, 644 frontend unit tests with two workers; backend compilation, team-background validation tests and migration-version checks without PostgreSQL.
-- Pending: regenerate OpenAPI through the application test and regenerate the SDK; PostgreSQL integration tests; full backend/web gates and desktop/mobile browser tests. Docker Engine connects but does not answer `GET /_ping`; no bypass or hand-edited generated client.
+- Verified locally: application-generated OpenAPI and SDK drift check, the full backend gate (469 tests), and the full web gate (644 unit tests). All 14 proposal browser tests pass on desktop and mobile, including quick-create validation, versioned organization editing, and withdrawing a pending request. The complete browser suite and GitHub CI must pass before merging.
 
 ## Later features
 

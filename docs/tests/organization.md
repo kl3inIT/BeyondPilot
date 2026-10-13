@@ -1,6 +1,6 @@
 # Organization: verification matrix
 
-BEY-133 Apply v5 adds organization-owned team background, distinct from the short description. The full HTTP cases in `OrganizationTest` verify conditional requirement, length refusal, round-trip and trimming, clearing when changing away from a team, preserving the short description, and refusing a stale basics version. `organization-schemas.test.ts` covers the matching client rules. These updated PostgreSQL cases still require a responsive Docker Engine to run locally.
+BEY-133 Apply v5 adds organization-owned team background, distinct from the short description. The full HTTP cases in `OrganizationTest` verify conditional requirement, length refusal, round-trip and trimming, clearing when changing away from a team, preserving the short description, and refusing a stale basics version. `organization-schemas.test.ts` covers the matching client rules. `proposals.spec.ts` verifies quick-create validation, versioned organization editing and rereading, and withdrawing a pending request on desktop and mobile. The PostgreSQL cases pass in the full backend gate.
 
 Boundaries follow [conventions › Testing](../conventions.md#testing). Membership is rows in four tables read on every request, so `OrganizationTest` starts the full application against PostgreSQL and speaks real HTTP, signing in through the emailed code as the identity tests do.
 

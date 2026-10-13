@@ -42,6 +42,13 @@ async function fakeBackend(page: Page, baseURL: string, scene?: "draft" | "sent"
 
   await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/proposal`, async (route) => {
     const request = route.request();
+    if (request.method() === "GET") {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(proposalForm("owner", scene)),
+      });
+    }
     if (request.method() !== "PUT") {
       return route.fallback();
     }
@@ -119,6 +126,83 @@ async function openStep(page: Page, isMobile: boolean, name: string) {
 test.describe("a proposal to a use case", () => {
   test.use({ locale: "en-US", timezoneId: "Asia/Ho_Chi_Minh" });
 
+  test("quick-create validates company industries and team experience, then immediately shows About you", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "invited", baseURL!);
+    const [, mine] = answerWorkspace(new URL("http://stub/api/organization/mine"), "invited")!;
+    let organization: Record<string, unknown> | null = null;
+    const creations: Record<string, unknown>[] = [];
+    await page.route("**/api/organization/mine", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ...mine, organization, role: organization ? "owner" : null }),
+      }),
+    );
+    await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/proposal`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ...proposalForm("invited"),
+          organization: organization ? { ...organization, approved: false, owner: true } : null,
+        }),
+      }),
+    );
+    await page.route("**/api/organization/organizations/basics", async (route) => {
+      const body = route.request().postDataJSON();
+      creations.push(body);
+      organization = {
+        ...body,
+        id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c08",
+        version: 0,
+        logoFileId: null,
+      };
+      await route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify(organization),
+      });
+    });
+    await page.goto(proposePath);
+    await expect(page.getByRole("button", { name: "Continue" })).toBeDisabled();
+    await expect(page.getByLabel("Name", { exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Create a new organization" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Organization name").fill("Doc Team");
+    await dialog.getByRole("combobox", { name: "Country" }).click();
+    await page.getByRole("option", { name: "Vietnam", exact: true }).click();
+    await dialog.getByRole("button", { name: "Create", exact: true }).click();
+    await expect(dialog.getByRole("combobox", { name: "Industries" })).toBeFocused();
+    await expect(dialog.getByText("Choose at least one industry.")).toBeVisible();
+    await dialog.getByRole("combobox", { name: "Type", exact: true }).click();
+    await page.getByRole("option", { name: "Builder team", exact: true }).click();
+    await dialog.getByRole("button", { name: "Create", exact: true }).click();
+    await expect(dialog.getByLabel("Team background")).toBeFocused();
+    await dialog.getByLabel("Team background").fill("Built document assistants.");
+    await settled(page);
+    await dialog.getByRole("button", { name: "Create", exact: true }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText("Doc Team", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Team background")).toHaveValue("Built document assistants.");
+    await expect(page.getByLabel("Name", { exact: true })).toBeVisible();
+    expect(creations).toEqual([
+      {
+        name: "Doc Team",
+        type: "builder_team",
+        teamSize: "2_9",
+        industries: [],
+        country: "VN",
+        teamBackground: "Built document assistants.",
+        version: null,
+      },
+    ]);
+    await settled(page);
+  });
+
   test("editing an organization refreshes its card and reopening reads the latest version", async ({
     page,
     context,
@@ -179,6 +263,13 @@ test.describe("a proposal to a use case", () => {
     baseURL,
   }) => {
     await signInAs(context, "asked", baseURL!);
+    await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/proposal`, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(proposalForm("asked")),
+      }),
+    );
     const [, mine] = answerWorkspace(new URL("http://stub/api/organization/mine"), "asked")!;
     let withdrawn = false;
     await page.route("**/api/organization/mine", (route) =>

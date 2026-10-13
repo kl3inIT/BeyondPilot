@@ -8,18 +8,13 @@ import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
-import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { FormDialog } from "@/components/composites/form-dialog";
-import { RequiredMark } from "@/components/composites/required-mark";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { FieldGroup } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  industries,
-  organizationTypes,
-  teamSizes,
-} from "@/features/organization/organization-codes";
+import { organizationTypes, teamSizes } from "@/features/organization/organization-codes";
+import { OrganizationIndustriesField } from "@/features/organization/organization-industries-field";
 import { useNotify } from "@/hooks/use-notify";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import {
@@ -119,7 +114,6 @@ function BasicsForm({ organization, create, open, onOpenChange, onSaved }: Basic
   const router = useRouter();
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
-  const industryName = useVocabulary("industry");
   const countryName = useCountryName();
 
   const form = useAppForm({
@@ -220,31 +214,7 @@ function BasicsForm({ organization, create, open, onOpenChange, onSaved }: Basic
           </form.AppField>
         </div>
         <form.AppField name="industries">
-          {(field) => {
-            const company = type === "company";
-            const error = field.state.meta.errors.find((entry) => typeof entry === "string");
-            return (
-              <Field data-invalid={error ? true : undefined}>
-                <FieldLabel htmlFor="proposal-organization-industries">
-                  {f("industries")} {company && <RequiredMark />}
-                </FieldLabel>
-                <ChoiceCombobox
-                  id="proposal-organization-industries"
-                  label={f("industries")}
-                  placeholder={f("industriesPlaceholder")}
-                  emptyLabel={f("industriesEmpty")}
-                  removeLabel={(industry) => f("industriesRemove", { industry })}
-                  aria-invalid={error ? true : undefined}
-                  aria-required={company || undefined}
-                  options={industries.map((value) => ({ value, label: industryName(value) }))}
-                  value={field.state.value}
-                  onValueChange={field.handleChange}
-                  max={5}
-                />
-                {error && <FieldError>{error}</FieldError>}
-              </Field>
-            );
-          }}
+          {() => <OrganizationIndustriesField required={type === "company"} />}
         </form.AppField>
         <form.AppField name="country">
           {(field) => (

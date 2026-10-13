@@ -171,6 +171,6 @@ Accepted on 2026-10-13. Figma Screens section `684:53048`, frames `711:55409`, `
 
 ## Not verified
 
-API generation and PostgreSQL integration are currently blocked by an unresponsive local Docker Engine. Do not merge until the full gates and browser flows pass. Earlier increment items remain historical planning, not a current verification claim.
+Application-generated API contracts and PostgreSQL integration tests pass in the full backend gate. The full web gate and all desktop/mobile proposal flows also pass locally. The complete browser suite and GitHub CI remain merge gates. Earlier increment items remain historical planning, not a current verification claim.
 
 Earlier outstanding acceptance: Open until the plan's last step: the behaviour of the merge listener on a conflicting proposal; the load of `proposal-counts` with the public use case list.
