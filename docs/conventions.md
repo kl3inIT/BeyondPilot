@@ -410,6 +410,7 @@ One action has one word, on a button, a menu item, a link that acts and the `ari
 - Components use semantic tokens only. Tokens live in `src/styles/tokens.css` with light and dark values and are mapped to Tailwind in `src/app/globals.css`. The palette behind them is described in `DESIGN.md`.
 - Status roles (`success`, `warning`, `info`, `destructive`) always come with an icon or a label.
 - Raw colours, inline styles, arbitrary values, unknown classes and dynamically built class names are lint errors outside `src/components/ui`, through the `@shadcn/lint` rules `no-raw-colors`, `no-inline-styles`, `no-arbitrary-values`, `no-unknown-classes` and `require-static-classes`. A value several features repeat becomes a token.
+- A page a client drew for its own program (the written pages in `src/features/program`, [program spec](specs/program.md#pages)) is the one exception: it keeps the measures and colours of that drawing in a CSS module beside it, under custom properties prefixed by the program, so nothing reaches another page; it still uses the site's fonts and components where the drawing has no look of its own.
 - A component's appearance comes from its variants and sizes. `shadcn/no-restyle` allows only layout classes (margin, width, position) in `className` on a registry component; a new look is a new variant in the component, added only when the design calls for one.
 - `src/components/ui` is exempt from these design-system rules because primitives style their own internals; the rest of ESLint (React Hooks, accessibility, Next.js) still checks it.
 

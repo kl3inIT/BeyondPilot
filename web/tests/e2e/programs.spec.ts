@@ -192,10 +192,7 @@ test.describe("programs", () => {
     await expect(page.getByRole("heading", { name: "Thử thách", exact: true })).toBeVisible();
   });
 
-  test("the Nestlé page is the one made for it, with the program's dates", async ({
-    page,
-    isMobile,
-  }) => {
+  test("the Nestlé page is the one made for it, with the program's dates", async ({ page }) => {
     await page.goto("/programs/nestle-vietnam-ai-reinvention");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
@@ -208,12 +205,12 @@ test.describe("programs", () => {
     await expect(
       page.getByText(/Applications close \d+ \w+, \d\d:\d\d ICT\./).first(),
     ).toBeVisible();
-    const hero = page.locator("header").filter({ has: page.getByRole("heading", { level: 1 }) });
+    const hero = page.locator("section").filter({ has: page.getByRole("heading", { level: 1 }) });
     await expect(hero.getByRole("term")).toHaveText([
-      "Applications close",
-      "Matching Day",
-      "The opportunity",
-      "Who can apply",
+      "▦Applications close",
+      "⌖Matching Day",
+      "⚲The opportunity",
+      "⚇Who can apply",
     ]);
     await expect(hero.getByRole("definition").first()).toHaveText(/^\d+ \w+, \d\d:\d\d ICT$/);
     const applyUrl = "/programs/nestle-vietnam-ai-reinvention/apply";
@@ -222,7 +219,8 @@ test.describe("programs", () => {
       applyUrl,
     );
 
-    const nav = page.getByRole("navigation", { name: "On this page" });
+    // The page's own way round stays on the screen: a button that opens the list of sections.
+    const menu = page.getByRole("button", { name: "On this page" });
     for (const [name, id] of [
       ["Benefits", "offers"],
       ["Challenges", "areas"],
@@ -232,9 +230,19 @@ test.describe("programs", () => {
       ["Dates", "dates"],
       ["FAQ", "faq"],
     ]) {
-      await expect(nav.getByRole("link", { name, exact: true })).toHaveAttribute("href", `#${id}`);
+      await menu.click();
+      const link = page
+        .getByRole("navigation", { name: "On this page" })
+        .getByRole("link", { name, exact: true });
+      await expect(link).toHaveAttribute("href", `#${id}`);
+      await link.click();
+      await expect(page.getByRole("navigation", { name: "On this page" })).toHaveCount(0);
       await expect(page.locator(`#${id}`).getByRole("heading", { level: 2 })).toBeVisible();
     }
+    await menu.click();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("navigation", { name: "On this page" })).toHaveCount(0);
+    await expect(menu).toBeFocused();
     await expect(page.locator("#offers").getByRole("listitem")).toHaveCount(3);
 
     // Six tabs over one panel: the first area is open, another replaces it, the last is the invitation.
@@ -244,11 +252,9 @@ test.describe("programs", () => {
     await expect(panel.getByRole("heading", { level: 3 })).toHaveText(
       "Document processing & trade compliance",
     );
-    await expect(panel.getByRole("term")).toHaveText([
-      "What it looks like today",
-      "What good looks like",
-      "Bring us",
-    ]);
+    for (const label of ["What it looks like today", "What good looks like", "Bring us"]) {
+      await expect(panel.getByText(label, { exact: true })).toBeVisible();
+    }
     await expect(panel.getByRole("listitem")).toHaveCount(5);
     await areas.getByRole("tab", { name: "Smart manufacturing & AI automation" }).click();
     await expect(panel.getByRole("heading", { level: 3 })).toHaveText(
@@ -256,6 +262,11 @@ test.describe("programs", () => {
     );
     await expect(panel.getByText("Predictive maintenance")).toBeVisible();
     await expect(panel.getByText("HS-code decision support")).toHaveCount(0);
+    // The arrow keys move between the tabs.
+    await page.keyboard.press("ArrowDown");
+    await expect(
+      areas.getByRole("tab", { name: "Legal, regulatory & employee support" }),
+    ).toBeFocused();
     await areas.getByRole("tab", { name: "Something more" }).click();
     await expect(
       panel.getByText("Have experience applying AI in FMCG", { exact: false }),
@@ -272,16 +283,18 @@ test.describe("programs", () => {
     await expect(eligibility.getByRole("heading", { level: 3 })).toHaveText([
       "What you need",
       "The six questions you'll answer in the room",
-      "Screening also checks",
     ]);
+    await expect(eligibility.getByText("Screening also checks")).toBeVisible();
     await expect(
       eligibility.getByText("What capability does Nestlé keep afterwards?"),
     ).toBeVisible();
 
-    // The rail is the program's: its key date, its window and its event; the activities are the page's.
+    // The row of dates is the program's: its key date, its window and its event; the activities are the page's.
     const dates = page.locator("#dates");
-    await expect(dates.getByText("Matching Day", { exact: true })).toBeVisible();
-    await expect(dates.getByText("Applications close", { exact: true })).toBeVisible();
+    await expect(dates.getByRole("heading", { name: "Matching Day", exact: true })).toBeVisible();
+    await expect(
+      dates.getByRole("heading", { name: "Applications close", exact: true }),
+    ).toBeVisible();
     await expect(dates.getByText("Every applicant hears back")).toBeVisible();
     await expect(dates.getByRole("link", { name: "Register" })).toHaveAttribute(
       "href",
@@ -292,35 +305,27 @@ test.describe("programs", () => {
       "Before Matching Day",
       "After Matching Day",
     ]);
+    // Every question opens on its answer, none before it is asked.
     const faq = page.locator("#faq");
-    await expect(faq.getByRole("button")).toHaveCount(8);
-    await faq.getByRole("button", { name: "Is there prize money?" }).click();
+    await expect(faq.locator("summary")).toHaveCount(8);
+    await expect(faq.getByText("There is no cash prize.", { exact: false })).toBeHidden();
+    await faq.getByText("Is there prize money?").click();
     await expect(faq.getByText("There is no cash prize.", { exact: false })).toBeVisible();
     await expect(
       page.getByRole("heading", { name: /Will your solution be in the room on 15 December\?/ }),
     ).toBeVisible();
+    // The way to apply stays at the foot of the screen, and goes where every other Apply goes.
     await expect(
-      page.getByRole("region", { name: "About the programme" }).getByText("AI-First. Human-Led.", {
-        exact: false,
-      }),
-    ).toBeVisible();
-    // The navigation and the tabs wrap: the page is never wider than the screen.
+      page
+        .getByRole("complementary", { name: "Applications" })
+        .getByRole("link", { name: "Apply now" }),
+    ).toHaveAttribute("href", applyUrl);
+    // The page is never wider than the screen.
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
       ),
     ).toBe(true);
-    if (isMobile) {
-      // On a phone the card to apply comes before the first section.
-      const card = await page
-        .getByRole("complementary", { name: "Applying" })
-        .first()
-        .boundingBox();
-      const offers = await page
-        .getByRole("heading", { name: "What this program offers" })
-        .boundingBox();
-      expect(card!.y).toBeLessThan(offers!.y);
-    }
     await expectNoSeriousA11yViolations(page);
 
     await page.goto("/vi/programs/nestle-vietnam-ai-reinvention");

@@ -155,7 +155,11 @@ The operators' list shows each program's phase whatever its status.
   shown as a standard page (`web/src/app/[locale]/(public)/programs/[slug]/page.tsx`). `external`: the page is
   somewhere else, at `externalUrl`. The written pages are listed in `web/src/features/program/custom-pages.ts`:
   `insurance-ai-tasco` and `nestle-vietnam-ai-reinvention`. Their long content is fixed for the campaign and lives in
-  both message catalogs; the deadline, the timeline, the events and Apply are the program's.
+  both message catalogs; the deadline, the timeline, the events and Apply are the program's. Each written page has the
+  look its client drew for it, so it may carry its own stylesheet (a CSS module beside the page, with its own custom
+  properties prefixed by the program) instead of the site's tokens; nothing in it reaches another page. The Nestlé page
+  does: its text is Lexend and its headings Montserrat, as the client drew them, a navigation button and the way to
+  apply stay at the foot of the screen, and no breadcrumb or footer of its own is added to the site's.
 - **Use cases.** A standard page and the written pages list the use cases an operator attached to the program, read
   from the public use case list by the program's address (`GET /api/usecase/use-cases?program=`), newest first, its
   first page. A program with none has no such section and no entry for it in the page's navigation; `program` gains
