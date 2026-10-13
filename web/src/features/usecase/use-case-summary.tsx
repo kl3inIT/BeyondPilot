@@ -5,6 +5,7 @@ import { isValidElement } from "react";
 import { TextButton } from "@/components/actions/text-button";
 import { useFormatter } from "@/i18n/format";
 import { useVocabulary } from "@/i18n/vocabulary";
+import { cn } from "@/lib/utils";
 
 import { timelinePresets } from "./admin-use-case-codes";
 import { budgetFigures, budgetText } from "./use-case-budget";
@@ -41,13 +42,21 @@ type UseCaseSummaryProps = {
    * part its brief did not give, and only a draft is asked to complete it.
    */
   hideEmpty?: boolean;
+  /** Draws the sections on one surface, parted by a line, instead of a bordered card for each. */
+  flat?: boolean;
 };
 
 /**
  * What a use case says, section by section, as the review step of the wizard and the page of a use case
  * that can no longer be changed show it. A section that lacks something says so rather than staying blank.
  */
-function UseCaseSummary({ values, onEdit, viewLabel, hideEmpty = false }: UseCaseSummaryProps) {
+function UseCaseSummary({
+  values,
+  onEdit,
+  viewLabel,
+  hideEmpty = false,
+  flat = false,
+}: UseCaseSummaryProps) {
   const t = useTranslations("Organization.useCases.wizard");
   const r = useTranslations("Organization.useCases.review");
   const industryName = useVocabulary("industry");
@@ -165,12 +174,15 @@ function UseCaseSummary({ values, onEdit, viewLabel, hideEmpty = false }: UseCas
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className={flat ? "flex flex-col divide-y" : "flex flex-col gap-6"}>
       {blocks.map((block) => (
         <section
           key={block.step}
           aria-labelledby={`summary-${block.step}`}
-          className="flex flex-col gap-3 rounded-xl border p-5"
+          className={cn(
+            "flex flex-col gap-3",
+            flat ? "py-6 first:pt-0 last:pb-0" : "rounded-xl border p-5",
+          )}
         >
           <div className="flex items-center justify-between gap-3">
             <h3 id={`summary-${block.step}`} className="text-base font-medium">
