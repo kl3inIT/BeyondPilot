@@ -223,13 +223,13 @@
         "description": "Kết nối với hệ sinh thái qua meetup, workshop và demo day.",
         "action": "Xem sự kiện",
         "item1Month": "Th10",
-        "item1Day": "13",
-        "item1Title": "GenAI Builders Meetup",
-        "item1Meta": "Chuỗi meetup · tháng 10 đến tháng 12",
+        "item1Day": "22",
+        "item1Title": "Demo day · AI for Insurance Challenge",
+        "item1Meta": "Mười đội trình bày trực tiếp",
         "item2Month": "Th10",
-        "item2Day": "22",
-        "item2Title": "Demo day · AI for Insurance Challenge",
-        "item2Meta": "Mười đội trình bày trực tiếp"
+        "item2Day": "26",
+        "item2Title": "TinyFish, Big Minds",
+        "item2Meta": "Bữa tối riêng · TP. Hồ Chí Minh"
       },
       "programs": {
         "title": "Chương trình AI",
