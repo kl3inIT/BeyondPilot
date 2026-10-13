@@ -7574,6 +7574,44 @@
       "agreed": "Bạn đã đồng ý.",
       "said": "Bạn chọn: {group}.",
       "counts": "{n} câu trả lời, {d} không đồng ý"
+    },
+    "review": {
+      "view": {
+        "label": "Cách xem các giải pháp",
+        "one": "Từng cái một",
+        "list": "Danh sách"
+      },
+      "left": "Còn {left} trên {total}",
+      "group": "{group} · đáp ứng {met} trên {total} yêu cầu bắt buộc",
+      "actions": {
+        "label": "Quyết định cho {name}",
+        "save": "Lưu",
+        "remove": "Không phù hợp",
+        "later": "Để sau",
+        "undo": "Hoàn tác"
+      },
+      "last": {
+        "saved": "Đã lưu {name}.",
+        "removed": "{name} không phù hợp. Vì sao?",
+        "later": "{name} đã chuyển xuống cuối hàng."
+      },
+      "reasons": "Vì sao {name} không phù hợp",
+      "hint": "Phím: → lưu, ← không phù hợp, ↓ để sau, Z hoàn tác.",
+      "shared": "Nhóm của bạn và GenAI Fund thấy cùng một danh sách. Nhà cung cấp không được báo.",
+      "meanwhile": {
+        "shortlisted": "Trong lúc bạn xem, một người khác đã lưu giải pháp này.",
+        "removed": "Trong lúc bạn xem, một người khác đã loại giải pháp này."
+      },
+      "noDeck": "Giải pháp này không có trang deck nào để hiện.",
+      "summary": "Tóm tắt của AI",
+      "needs": "Những gì use case của bạn cần",
+      "end": {
+        "title": "Bạn đã xem hết các giải pháp.",
+        "reading": "Bạn đã xem hết các giải pháp đã đọc. AI vẫn đang đọc: giải pháp mới sẽ hiện ở đây.",
+        "saved": "{count, plural, =0 {Chưa lưu cái nào.} other {Đã lưu #.}}",
+        "list": "Xem danh sách"
+      },
+      "none": "Mọi giải pháp ở đây đã có quyết định. Thay đổi trong danh sách."
     }
   },
   "UseCaseProposal": {

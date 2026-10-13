@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDownIcon, CircleAlertIcon, XIcon } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import {
   useEffect,
@@ -22,6 +23,7 @@ import { useNotify } from "@/hooks/use-notify";
 import {
   addMatchingCandidate,
   giveMatchingFeedback,
+  giveMatchingRemovalReason,
   removeMatchingCandidate,
   restoreMatchingCandidate,
   shortlistMatchingCandidate,
@@ -35,6 +37,7 @@ import {
 import { MatchingAdd } from "./matching-add";
 import { useMatchingChanges } from "./matching-changes";
 import { matchingWords } from "./matching-errors";
+import { ARROWED, FIELDS, OVERLAYS } from "./matching-keys";
 import { MatchingPanel } from "./matching-panel";
 import { MatchingRemove, type Removal } from "./matching-remove";
 import { MatchingRemoved } from "./matching-removed";
@@ -65,23 +68,17 @@ function subscribeToWidth(onChange: () => void) {
   return () => query.removeEventListener("change", onChange);
 }
 
+// The one-by-one review and the code that moves its cards are loaded when it is first chosen.
+const MatchingReview = dynamic(() =>
+  import("./matching-review").then((module) => module.MatchingReview),
+);
+
+/** The two ways to read the matched solutions. */
+const viewNames = ["one", "list"] as const;
+type ViewName = (typeof viewNames)[number];
+
 const tabNames = ["matches", "shortlist", "removed"] as const;
 type TabName = (typeof tabNames)[number];
-
-/** Where a key is a letter being typed, not a shortcut. */
-const FIELDS =
-  'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="combobox"], [role="searchbox"]';
-
-/**
- * What lies over the page while it is open: a dialog, a menu, the deck's sheet. The sheet the panel
- * itself is read in on a narrow screen is not one of them.
- */
-const OVERLAYS =
-  '[role="dialog"]:not([data-panel="matching"]), [role="alertdialog"], [role="menu"], [role="listbox"]';
-
-/** Where the arrows already move something: between tabs, between the choices of a group. */
-const ARROWED =
-  '[role="tablist"], [role="radiogroup"], [role="toolbar"], [data-slot="toggle-group"]';
 
 /** How long a row that entered a group stays marked, in milliseconds: its highlight has faded by then. */
 const MARKED = 2500;
@@ -193,6 +190,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
   );
   const [held, setHeld] = useState({ over: read, state: read });
   const [tab, setTab] = useState<TabName>("matches");
+  const [view, setView] = useState<ViewName>("list");
   const [need, setNeed] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(selected ?? null);
   const [sheetOpen, setSheetOpen] = useState(selected !== undefined);
@@ -371,6 +369,22 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
       },
     );
 
+  // The one-by-one review says under its card what was just decided, with Undo, so no toast does.
+  const review = {
+    onShortlist: (candidate: MatchingCandidate) =>
+      send(candidate.id, () => shortlistMatchingCandidate({ path: { candidateId: candidate.id } })),
+    onRemove: (candidate: MatchingCandidate) =>
+      send(candidate.id, () =>
+        removeMatchingCandidate({ path: { candidateId: candidate.id }, body: {} }),
+      ),
+    onReason: (candidate: MatchingCandidate, reason: Removal["reason"]) =>
+      send(candidate.id, () =>
+        giveMatchingRemovalReason({ path: { candidateId: candidate.id }, body: { reason } }),
+      ),
+    onRestore: (candidate: MatchingCandidate) =>
+      send(candidate.id, () => restoreMatchingCandidate({ path: { candidateId: candidate.id } })),
+  };
+
   // The panel itself says what was answered, so no toast does.
   const giveFeedback = (candidate: MatchingCandidate, body: GiveMatchingFeedback) =>
     send(`feedback:${candidate.id}`, () =>
@@ -392,7 +406,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
   // it, S saves or unsaves it, N asks why it is not a fit. A key held with a modifier, typed in a
   // field, or pressed while a dialog, a menu or the deck lies over the page is left alone, and so is
   // an arrow where arrows already move something, as between tabs.
-  const panelOpen = chosen !== undefined && (wide || sheetOpen);
+  const panelOpen = view === "list" && chosen !== undefined && (wide || sheetOpen);
   const onKey = useEffectEvent((event: KeyboardEvent) => {
     if (
       !chosen ||
@@ -594,6 +608,33 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
       )}
 
       {anything && (
+        <ToggleGroup
+          aria-label={t("review.view.label")}
+          variant="outline"
+          size="sm"
+          className="self-start"
+          value={[view]}
+          onValueChange={(next) => setView(viewNames.find((name) => name === next[0]) ?? view)}
+        >
+          {viewNames.map((name) => (
+            <ToggleGroupItem key={name} value={name} className="pointer-coarse:min-h-11">
+              {t(`review.view.${name}`)}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      )}
+
+      {anything && view === "one" && (
+        <MatchingReview
+          candidates={matching.candidates}
+          needs={needs}
+          reading={reads}
+          {...review}
+          onList={() => setView("list")}
+        />
+      )}
+
+      {anything && view === "list" && (
         <>
           <div className="flex max-w-3xl flex-col gap-3">
             {several ? (

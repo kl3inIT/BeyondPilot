@@ -13,7 +13,7 @@ It adds no new kind of decision. A person shortlists or removes, as in the list,
 1. A member of the use case's organization, or an operator, opens the matched solutions and chooses **One by one**.
 2. The screen shows the first solution nobody has decided on, in the order of the list: strong fit, then experience in the industry, then the right technology.
 3. The person reads the page of the deck that the AI quotes, turns its pages, and opens a requirement to read the vendor's words in full. A requirement whose words are in the deck turns the deck to their page.
-4. The person decides: **Shortlist**, **Remove**, or **Later**. The card leaves and the next one comes up.
+4. The person decides: **Save** (shortlist), **Not a fit** (remove), or **Later**. The buttons use the words the list already uses for the same two decisions. The card leaves and the next one comes up.
 5. After a removal the screen offers the five reasons. Choosing one is optional.
 6. **Undo** takes back the last decision and brings its card back.
 7. When no card is left, the screen says how many are on the shortlist and shows the list.
@@ -54,15 +54,15 @@ No migration: the column already allows an empty reason.
 
 All in `web/src/features/matching/`.
 
-| File                        | Holds                                                                                                                  |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `matching-review.ts` + test | The line of cards as a pure function: who is in it, in what order, where a card sent to Later and a newly read card go |
-| `matching-review.tsx`       | The view: the line, the keys, the three actions, the row that says what was decided with Undo and the reasons          |
-| `matching-review-card.tsx`  | The card that is dragged; the only file that uses `motion`                                                             |
-| `matching-deck.tsx`         | `DeckReader` is split from its `Sheet` so that the same reader stands inside a card and inside the sheet               |
-| `matching-panel.tsx`        | `FindingItem` is exported for the card; the panel keeps using it                                                       |
-| `matching-board.tsx`        | The switch between One by one and List; the list itself is unchanged                                                   |
-| `matching-search.ts`        | `?view=` in the address, beside `?solution=`                                                                           |
+| File                       | Holds                                                                                                                  |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `matching-line.ts` + test  | The line of cards as a pure function: who is in it, in what order, where a card sent to Later and a newly read card go |
+| `matching-review.tsx`      | The view: the line, the keys, the three actions, the row that says what was decided with Undo and the reasons          |
+| `matching-review-card.tsx` | The card that is dragged; the only file that uses `motion`                                                             |
+| `matching-deck.tsx`        | `DeckReader` is split from its `Sheet` so that the same reader stands inside a card and inside the sheet               |
+| `matching-panel.tsx`       | `FindingItem` is exported for the card; the panel keeps using it                                                       |
+| `matching-board.tsx`       | The switch between One by one and List; the list itself is unchanged                                                   |
+| `matching-search.ts`       | `?view=` in the address, beside `?solution=`                                                                           |
 
 Reused as they are: `Button`, `Kbd`, `ToggleGroup`, `Empty`, `Spinner`, the status chip of `matching-marks.tsx`, the reason names of `matching-remove.tsx`, the deck pages and quote highlight of `matching-deck-pages.tsx`, and the run header of `matching-run.tsx`, which already says that matching never ran, that it is running, and that it found nothing. The new view stands under that header, so those three states need no new screen.
 
@@ -80,7 +80,7 @@ New dependency: `motion` 14.1.0. On 13 October 14.1.1 was hours old: the reposit
 
 - Head: the grip, the logo, the name, country and maturity, and the group with how many requirements are met. Body: the deck reader on the left, the summary and the requirements on the right. Below 860px the body is one column, deck first.
 - Only the head drags the card, and only sideways. The deck is turned, scrolled and selected like any deck, and the evidence scrolls; a drag that could start there would fight all three.
-- Right is Shortlist, left is Remove. There is no drag for Later: a vertical drag is the page's scroll on a phone.
+- Right is Save, left is Not a fit. There is no drag for Later: a vertical drag is the page's scroll on a phone.
 - The same four things happen however the decision is given, by drag, key or button: the card leaves to its side, the next comes up, the row under the actions says what was decided, and Undo is offered.
 - Keys: `→` shortlist, `←` remove, `↓` later, `Z` undo. They are ignored while the focus is in a field, in the deck's page, or a dialog is open. The list keeps its own `S` and `N`.
 - The actions are buttons first; the drag is a second way to press them. On a phone the actions stay at the bottom of the screen however long the evidence is.
@@ -88,13 +88,13 @@ New dependency: `motion` 14.1.0. On 13 October 14.1.1 was hours old: the reposit
 
 ### Motion
 
-`motion` gives the drag, the tilt, the spring back and the leaving. It is loaded with the view, not with the page: `LazyMotion` with the `domMax` features, imported when One by one is first opened.
+`motion` gives the drag, the tilt, the spring back and the leaving. It is loaded with the view, not with the page: the board imports the view with `next/dynamic` when One by one is first chosen, so neither the view nor `motion` is in the page's first load. One dynamic import of the view does what `LazyMotion` would do for `motion` alone.
 
 `react-tinder-card` was read on 13 October and is not used or adapted. It listens to mouse and touch events by hand and blocks every touch on the card, so nothing inside could scroll; it tilts by the speed of the hand, which shakes as the hand slows; it drags in four directions over the whole card; it has no keys and ignores reduced motion. Four of its ideas are kept:
 
 1. Letting go decides when the card went far enough **or** fast enough: a short quick flick counts.
 2. The card leaves along the direction and at the speed it was let go with, not on a fixed path.
-3. The stamp on the card (SHORTLIST, REMOVE) is faint while dragging and turns solid once letting go would decide.
+3. The stamp on the card (SAVE, NOT A FIT) is faint while dragging and turns solid once letting go would decide.
 4. Undo brings the card back from the side it left by.
 
 With reduced motion set on the device, the card does not tilt or fly: it fades, and the next one appears.
@@ -129,5 +129,5 @@ With reduced motion set on the device, the card does not tilt or fly: it fades, 
 
 - The old platform's one-by-one screen and "My Matches": [captures](../../../research/captures/old-platform/).
 - `react-tinder-card` (3DJakob), `index.js` at `master`, read on 13 October 2026.
-- `motion` (motiondivision/motion) 14.1.0: drag, `useDragControls`, `useTransform`, `AnimatePresence`, `LazyMotion`, `useReducedMotion`.
+- `motion` (motiondivision/motion) 14.1.0: drag, `useDragControls`, `useTransform`, `AnimatePresence`, `useReducedMotion`.
 - Dub and Medusa in `.tmp/`: both animate with `motion`.

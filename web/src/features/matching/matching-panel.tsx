@@ -43,7 +43,15 @@ type Quoted = Pick<MatchingCandidate, "solutionName" | "solutionSlug" | "listed"
  * that source word for word, the line says so with a tick, in the place of "From": that the words are
  * in the vendor's own material, not that what they say is true.
  */
-function SourceLine({ finding, solution }: { finding: MatchingFinding; solution: Quoted }) {
+function SourceLine({
+  finding,
+  solution,
+  onDeck,
+}: {
+  finding: MatchingFinding;
+  solution: Quoted;
+  onDeck?: (page: number, quote: string) => void;
+}) {
   const t = useTranslations("Matching.source");
   const found = finding.quoteState === "exact";
   const text = useSourceLine()(finding.source, found);
@@ -53,6 +61,14 @@ function SourceLine({ finding, solution }: { finding: MatchingFinding; solution:
   const opening = openingOf(finding, solution.listed);
   const tick = found && <CheckIcon data-slot="matching-found" aria-hidden="true" />;
 
+  if (opening?.how === "deck" && onDeck) {
+    return (
+      <TextButton size="sm" onClick={() => onDeck(opening.page, finding.quote)}>
+        {tick || <FileTextIcon aria-hidden="true" />}
+        {text}
+      </TextButton>
+    );
+  }
   if (opening?.how === "deck") {
     return (
       <MatchingDeck
@@ -114,6 +130,8 @@ type FindingItemProps = {
   tag?: string;
   finding: MatchingFinding | undefined;
   solution: Quoted;
+  /** Turns the deck that stands beside the finding to the page of its words, instead of a sheet. */
+  onDeck?: (page: number, quote: string) => void;
 };
 
 /**
@@ -122,7 +140,7 @@ type FindingItemProps = {
  * from under it, to open. Words that are only close to the vendor's, most of them there and not all,
  * say so before their source.
  */
-function FindingItem({ statement, tag, finding, solution }: FindingItemProps) {
+function FindingItem({ statement, tag, finding, solution, onDeck }: FindingItemProps) {
   const t = useTranslations("Matching.source");
   const quote = finding?.quote.trim();
   const reason = finding?.reason.trim();
@@ -150,7 +168,7 @@ function FindingItem({ statement, tag, finding, solution }: FindingItemProps) {
                 {t("close")}
               </span>
             )}
-            <SourceLine finding={finding} solution={solution} />
+            <SourceLine finding={finding} solution={solution} onDeck={onDeck} />
           </figcaption>
         </figure>
       )}
@@ -373,4 +391,4 @@ function MatchingPanel({
   );
 }
 
-export { MatchingPanel };
+export { FindingItem, MatchingPanel };
