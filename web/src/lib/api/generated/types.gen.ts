@@ -109,6 +109,10 @@ export type AdminCreateOrganization = {
      * The address invited to own it.
      */
     ownerEmail?: string | null;
+    /**
+     * What the team has built before, separate from its short description.
+     */
+    teamBackground?: string | null;
     teamSize?: string | null;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     website?: string | null;
@@ -1399,6 +1403,10 @@ export type CreateOrganization = {
      */
     logoFileId?: string | null;
     name: string;
+    /**
+     * What the team has built before, separate from its short description.
+     */
+    teamBackground?: string | null;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     /**
@@ -2942,6 +2950,7 @@ export type Organization = {
      * Why it was last taken down; kept after it is restored.
      */
     suspensionReason?: 'misleading_information' | 'not_a_real_organization' | 'breaks_the_rules' | 'other';
+    teamBackground?: string | null;
     /**
      * Null is unknown.
      */
@@ -3515,6 +3524,7 @@ export type ProposingOrganization = {
      * Whether the caller is an owner of it, who may correct what they gave when they made it.
      */
     owner: boolean;
+    teamBackground?: string | null;
     /**
      * What kind of organization it is; a team writes what it has done.
      */
@@ -4828,6 +4838,10 @@ export type SaveOrganization = {
      */
     logoFileId?: string | null;
     name: string;
+    /**
+     * What the team has built before, separate from its short description.
+     */
+    teamBackground?: string | null;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     /**
@@ -4853,8 +4867,16 @@ export type SaveOrganizationBasics = {
      */
     industries: Array<string>;
     name: string;
+    /**
+     * What the team has built before, separate from its short description.
+     */
+    teamBackground?: string | null;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
+    /**
+     * Required when editing; omitted when creating.
+     */
+    version?: number | null;
 };
 
 /**
