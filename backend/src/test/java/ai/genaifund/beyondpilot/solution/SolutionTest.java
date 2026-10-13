@@ -184,7 +184,7 @@ class SolutionTest {
 		request.put("demoUrl", "javascript:alert(1)");
 		request.put("languages", List.of("klingon"));
 		request.put("builtWith", List.of("Python", " "));
-		request.put("summary", "x".repeat(601));
+		request.put("summary", "x".repeat(10001));
 
 		String body = body(put(founder, MINE + "/" + JsonPath.<String>read(draft, "$.id"), request).expectStatus()
 			.isBadRequest());
