@@ -56,11 +56,6 @@ const templates = [
   ),
   template("organization_approved", "organizations", "{{organizationName}} on BeyondPilot", true),
   template("application_received", "applications", "Application submitted: {{programName}}"),
-  template(
-    "introduction_request",
-    "introductions",
-    "A request for an introduction to {{solutionName}}",
-  ),
   template("talent_approved", "talent", "Your BeyondPilot talent profile is approved"),
 ];
 

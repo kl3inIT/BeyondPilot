@@ -160,11 +160,6 @@ public enum AuditAction {
 	/** An operator set the programs a use case belongs to. */
 	USE_CASE_SET_PROGRAMS("use_case.set_programs", "organization"),
 
-	/** An owner answered a request for an introduction, and both sides were told each other's address. */
-	INTRODUCTION_REPLY("introduction.reply"),
-
-	INTRODUCTION_DECLINE("introduction.decline"),
-
 	TALENT_APPROVE("talent.approve"),
 
 	/** Recorded before asking for changes and removing were two decisions. {@code reason} is the code given. */

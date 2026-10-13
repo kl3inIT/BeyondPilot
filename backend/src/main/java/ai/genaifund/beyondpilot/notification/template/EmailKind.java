@@ -71,19 +71,6 @@ public enum EmailKind {
 			Variable.required("message", "Hi Minh,\n\nYour team is on the shortlist."),
 			Variable.optional("applicationUrl", "https://beyondpilot.example/applications/1")),
 
-	INTRODUCTION_REQUEST("introduction_request", EmailGroup.INTRODUCTIONS, true, "message",
-			Variable.optional("senderName", "Minh Trần"), Variable.required("senderOrganization", "Pocket Policy"),
-			Variable.required("solutionName", "ClaimLens"),
-			Variable.quote("message", "We need claims triage for motor insurance."),
-			Variable.optional("introductionsUrl", "https://beyondpilot.example/workspace/organization/introductions")),
-
-	INTRODUCTION_MADE("introduction_made", EmailGroup.INTRODUCTIONS, true, null,
-			Variable.optional("otherName", "Siti Rahma"), Variable.required("otherEmail", "siti@plaincover.example"),
-			Variable.required("otherOrganization", "Plain Cover"), Variable.required("solutionName", "ClaimLens")),
-
-	INTRODUCTION_DECLINED("introduction_declined", EmailGroup.INTRODUCTIONS, true, null,
-			Variable.required("providerName", "Plain Cover"), Variable.required("solutionName", "ClaimLens")),
-
 	SOLUTION_APPROVED("solution_approved", EmailGroup.SOLUTIONS, true, null,
 			Variable.required("solutionName", "ClaimLens"), Variable.required("organizationName", "Plain Cover"),
 			Variable.optional("solutionUrl", "https://beyondpilot.example/solutions/claimlens")),

@@ -23,7 +23,7 @@ class DuplicatesTest(unittest.TestCase):
         sql = duplicates.sql([("5d0f6c3e-4a51-4f43-9a1c-7e2b8f0c6a74", None, True, "2026-01-03")])
 
         for table in ("organization_invitation", "organization_join_request", "solution", "offer", "use_case",
-                      "proposal", "use_case_proposal", "introduction_request", "talent_enquiry"):
+                      "proposal", "use_case_proposal", "talent_enquiry"):
             self.assertIn(f"update {table}", sql)
         self.assertIn("set status = 'merged', merged_into_id = pair.kept", sql)
         self.assertNotIn("delete from organization ", sql)

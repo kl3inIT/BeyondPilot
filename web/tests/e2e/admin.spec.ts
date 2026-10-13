@@ -111,7 +111,6 @@ test.describe("admin", () => {
       "Offers",
       "AI talent",
       "Organizations",
-      "Introductions",
     ]);
     await expect(navigation.getByRole("list", { name: "System" }).getByRole("link")).toHaveText([
       "Accounts",

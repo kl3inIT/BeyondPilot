@@ -42,7 +42,7 @@ public class EmailService {
 	/** Deadlines are set in Vietnam time, whoever reads them. */
 	private static final ZoneId VIETNAM = ZoneId.of("Asia/Ho_Chi_Minh");
 
-	/** The signed-in person's organization on the site; its solutions, use cases and introductions open under it. */
+	/** The signed-in person's organization on the site; its solutions and use cases open under it. */
 	private static final String MY_ORGANIZATION = "/workspace/organization";
 
 	/** The signed-in person's talent profile on the site, with the messages people sent them. */
@@ -315,46 +315,6 @@ public class EmailService {
 	public void sendTalentEnquiryClosed(String recipient, String talentName) {
 		queue(EmailKind.TALENT_ENQUIRY_CLOSED, recipient,
 				values("talentName", talentName, "messagesUrl", url(MY_TALENT + "/sent")));
-	}
-
-	/**
-	 * Tells an owner of a provider that someone asked for an introduction. The sender's address is not in it: the link
-	 * opens the organization's introductions, where the owner answers, and only then do both sides learn each other's
-	 * address.
-	 * @param senderName who asks; null until they gave a name
-	 * @param senderOrganization the organization they ask as
-	 * @param solutionName what they asked about
-	 * @param message what the sender needs
-	 */
-	@Transactional
-	public void sendIntroductionRequest(String recipient, @Nullable String senderName, String senderOrganization,
-			String solutionName, String message) {
-		queue(EmailKind.INTRODUCTION_REQUEST, recipient, values("senderName", senderName, "senderOrganization",
-				senderOrganization, "solutionName", solutionName, "message", message, "introductionsUrl",
-				url(MY_ORGANIZATION + "/introductions")));
-	}
-
-	/**
-	 * Introduces two people once the provider answered: each is told who the other is and where to write.
-	 * @param otherName who the recipient is introduced to; null until they gave a name
-	 * @param otherEmail where the recipient writes to them
-	 * @param otherOrganization the organization the other person acts for
-	 * @param solutionName the solution the introduction is about
-	 */
-	@Transactional
-	public void sendIntroduction(String recipient, @Nullable String otherName, String otherEmail,
-			String otherOrganization, String solutionName) {
-		queue(EmailKind.INTRODUCTION_MADE, recipient, values("otherName", otherName, "otherEmail", otherEmail,
-				"otherOrganization", otherOrganization, "solutionName", solutionName));
-	}
-
-	/**
-	 * Tells the sender that the provider will not take their request further. It carries no address and no reason.
-	 */
-	@Transactional
-	public void sendIntroductionDeclined(String recipient, String providerName, String solutionName) {
-		queue(EmailKind.INTRODUCTION_DECLINED, recipient,
-				values("providerName", providerName, "solutionName", solutionName));
 	}
 
 	/**

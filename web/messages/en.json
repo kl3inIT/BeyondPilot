@@ -248,9 +248,9 @@
         "option2Title": "Shieldbase",
         "option2Why": "An AI operating system for the enterprise, with data privacy and governance built in.",
         "next": "Next step",
-        "introduce": "Request an introduction",
+        "proposals": "Receive proposals",
         "shortlist": "Shortlist matched solutions",
-        "alt": "an example of the three steps. Start by searching the directory or publishing a use case; the solutions listed on BeyondPilot include Revve AI and Shieldbase; the next step is to request an introduction or shortlist the solutions matched to a use case."
+        "alt": "an example of the three steps. Start by searching the directory or publishing a use case; the solutions listed on BeyondPilot include Revve AI and Shieldbase; the next step is to receive proposals or shortlist the solutions matched to a use case."
       }
     },
     "challenge": {
@@ -352,15 +352,6 @@
     "IDENTITY_APP_REQUEST_NOT_FOUND": "This connection request has ended. Go back to your AI app and connect again.",
     "IDENTITY_OWN_ACCOUNT": "You cannot disable your own account or withdraw your own role.",
     "IDENTITY_OPERATOR_CONFIGURED": "This operator is set in the server configuration, so the role cannot be withdrawn here.",
-    "INTRODUCTION_SOLUTION_NOT_FOUND": "This solution is no longer listed.",
-    "INTRODUCTION_NEEDS_ORGANIZATION": "Create or join an organization before you ask for an introduction.",
-    "INTRODUCTION_ORGANIZATION_NOT_APPROVED": "Your organization has not been approved yet, so it cannot ask for an introduction.",
-    "INTRODUCTION_OWN_SOLUTION": "This solution belongs to your own organization.",
-    "INTRODUCTION_ALREADY_PENDING": "You already asked for an introduction to this solution. Wait for the answer.",
-    "INTRODUCTION_UNREACHABLE": "Nobody at this organization can be asked right now. Try again later.",
-    "INTRODUCTION_REQUEST_NOT_FOUND": "This request no longer exists.",
-    "INTRODUCTION_OWNERS_ONLY": "Only an owner of your organization answers a request for an introduction.",
-    "INTRODUCTION_NOT_PENDING": "This request was already answered.",
     "MATCHING_USE_CASE_NOT_FOUND": "This use case no longer exists.",
     "MATCHING_CANDIDATE_NOT_FOUND": "This solution is no longer on the list. Reload the page.",
     "MATCHING_SOLUTION_NOT_FOUND": "This solution is no longer approved, so it cannot be added.",
@@ -722,7 +713,6 @@
       "solutions": "AI solutions",
       "offers": "Offers",
       "talent": "AI talent",
-      "introductions": "Introductions",
       "review": "Review",
       "system": "System",
       "useCases": "Use cases",
@@ -1184,10 +1174,6 @@
           "offer_reopen": "Opened an offer to new solutions again",
           "offer_delete": "Deleted an offer"
         },
-        "introduction": {
-          "reply": "Replied to a request for an introduction",
-          "decline": "Declined a request for an introduction"
-        },
         "talent": {
           "approve": "Approved a talent profile",
           "reject": "Sent a talent profile back",
@@ -1319,10 +1305,6 @@
           "offer_close": "Closed the offer <resource></resource> to new solutions",
           "offer_reopen": "Opened the offer <resource></resource> to new solutions again",
           "offer_delete": "Deleted the offer <resource></resource>"
-        },
-        "introduction": {
-          "reply": "Replied to the request for an introduction about <resource></resource>",
-          "decline": "Declined the request for an introduction about <resource></resource>"
         },
         "talent": {
           "approve": "Approved the talent profile of <resource></resource>",
@@ -1970,37 +1952,6 @@
       "deployments": "Customer deployments to review",
       "review": "Open the queue, longest wait first",
       "none": "Nothing waiting"
-    },
-    "introductions": {
-      "metaTitle": "Introductions · BeyondPilot",
-      "title": "Introductions",
-      "overdueNotice": "{count, plural, one {# request has} other {# requests have}} waited more than 3 days for an answer.",
-      "overdue": "Waiting over 3 days",
-      "search": "Search by solution",
-      "clear": "Clear filters",
-      "filter": {
-        "label": "Filter by state",
-        "all": "All"
-      },
-      "status": {
-        "pending": "Waiting",
-        "replied": "Replied",
-        "declined": "Declined"
-      },
-      "route": "{sender} → {provider}",
-      "about": "About {solution}",
-      "sender": "{name} · {organization}",
-      "senderUnnamed": "Someone at {organization}",
-      "waitingSince": "Waiting since {time}",
-      "answered": "Answered {date}",
-      "count": "{count, plural, one {# request} other {# requests}}",
-      "empty": {
-        "title": "No requests yet"
-      },
-      "noMatch": {
-        "title": "No request matches",
-        "clear": "Clear filters"
-      }
     },
     "useCases": {
       "metaTitle": "Use cases · BeyondPilot",
@@ -3028,7 +2979,6 @@
         "sign_in": "Sign-in",
         "organizations": "Organizations",
         "applications": "Programs and applications",
-        "introductions": "Introductions",
         "solutions": "Solutions",
         "use_cases": "Use cases",
         "talent": "Talent"
@@ -3074,17 +3024,6 @@
         "application_outcome": {
           "name": "Application outcome",
           "description": "The result of an application, written by an operator for each release."
-        },
-        "introduction_request": {
-          "name": "Introduction requested",
-          "description": "Tells a solution's provider that someone asked to meet them."
-        },
-        "introduction_made": {
-          "name": "Introduction made"
-        },
-        "introduction_declined": {
-          "name": "Introduction declined",
-          "description": "Tells the person who asked that the provider declined."
         },
         "solution_approved": {
           "name": "Solution approved"
@@ -3909,7 +3848,6 @@
       "profile": "Profile",
       "members": "Members",
       "solutions": "Solutions",
-      "introductions": "Introductions",
       "useCases": "Use cases"
     },
     "status": {
@@ -5090,47 +5028,6 @@
         "save": "Send for review"
       },
       "limitReached": "The limit of {max} customer deployments is reached."
-    }
-  },
-  "Introduction": {
-    "errors": {
-      "REQUEST_INVALID": "Check the message and try again."
-    },
-    "received": {
-      "metaTitle": "Introductions · BeyondPilot",
-      "title": "Introductions",
-      "waiting": "{count} waiting",
-      "sender": "{name} · {organization}",
-      "senderUnnamed": "Someone at {organization}",
-      "about": "About {solution}",
-      "sent": "Sent {date}",
-      "answered": "Answered {date}",
-      "introduced": "Introduced. Write to them at {email}.",
-      "ownersAnswer": "Only an owner of the organization answers a request.",
-      "status": {
-        "pending": "Waiting",
-        "replied": "Replied",
-        "declined": "Declined"
-      },
-      "empty": {
-        "title": "No introductions yet",
-        "description": "A request appears here when someone asks to be introduced to one of your solutions."
-      },
-      "actions": {
-        "reply": "Reply",
-        "decline": "Decline",
-        "confirmDecline": {
-          "title": "Decline the request about {name}?",
-          "lead": "The sender is told you will not take it further, and no address is shared.",
-          "confirm": "Decline",
-          "cancel": "Keep it"
-        },
-        "replyHint": "Replying sends you both an email with the other's address."
-      },
-      "done": {
-        "reply": "Introduced. Both of you got an email with the other's address.",
-        "decline": "Request declined."
-      }
     }
   },
   "Talent": {
@@ -7111,7 +7008,7 @@
           "items": [
             "Account details: your name and email address, and, when you add them, your phone number, country, job title, LinkedIn profile and photo.",
             "Sign-in with Google: your name, email address and profile picture from your Google account. We do not read your Gmail, contacts or files.",
-            "What you publish or submit: organization profiles, AI solutions, use cases, proposals, talent profiles, enquiries and introduction requests, and the files you upload with them, such as decks and attachments.",
+            "What you publish or submit: organization profiles, AI solutions, use cases, proposals, talent profiles and enquiries, and the files you upload with them, such as decks and attachments.",
             "Activity needed to run the service safely: sign-in times, security events and a record of administrative actions.",
             "Technical data: your IP address and browser type in server logs, kept for security and troubleshooting."
           ]
@@ -7135,7 +7032,7 @@
         {
           "heading": "What is public",
           "body": [
-            "Profiles, solutions and use cases are public only once they are approved and listed. An organization can keep a use case anonymous, and an owner can unlist a solution at any time. Proposals, enquiries, introductions, contact details and uploaded files that are not marked public are visible only to you, the people you send them to, and GenAI Fund operators."
+            "Profiles, solutions and use cases are public only once they are approved and listed. An organization can keep a use case anonymous, and an owner can unlist a solution at any time. Proposals, enquiries, contact details and uploaded files that are not marked public are visible only to you, the people you send them to, and GenAI Fund operators."
           ]
         },
         {
@@ -7205,7 +7102,7 @@
         {
           "heading": "The service",
           "body": [
-            "BeyondPilot helps enterprises and AI providers find each other. It lists AI solutions, talent, use cases, events and programs, and lets you publish your own, apply to programs and challenges, and request introductions. Some features are labelled as previews and may change."
+            "BeyondPilot helps enterprises and AI providers find each other. It lists AI solutions, talent, use cases, events and programs, and lets you publish your own and apply to programs and challenges. Some features are labelled as previews and may change."
           ]
         },
         {
@@ -7229,7 +7126,7 @@
           ]
         },
         {
-          "heading": "Applications, proposals and introductions",
+          "heading": "Applications and proposals",
           "body": [
             "When you apply to a program or send a proposal, its organizers and reviewers can read it. Program outcomes are decided by their organizers. Commercial terms, NDAs and any pilot are agreed directly between the parties; BeyondPilot is not a party to them."
           ]
