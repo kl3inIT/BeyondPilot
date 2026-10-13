@@ -4,15 +4,15 @@ Design: [design.md](design.md). Tracked in Linear as BEY-175; the convention it 
 
 One branch and one pull request for the convention and both slices. Each step is one commit or a few small ones, pushed as it is finished, in this order.
 
-| #   | Step                                                                                                                                                                                                   | State   |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
-| 1   | The research note and the Motion and Charts sections of the conventions (BEY-174)                                                                                                                      | Done    |
-| 2   | The design and this plan                                                                                                                                                                               | Done    |
-| 3   | **The shared pieces.** The duration tokens and `chartDrawMs`; `StatStrip` and `StatCell`; `ChartFrame`; Admin › AI › Usage moved onto them, its chart drawing in `chartDrawMs`                         | Done    |
-| 4   | **The home, slice 1.** `features/admin-home`: the five queues, the applications by program, the system block. Messages in English and Vietnamese. The end-to-end test of the home brought in line      | Done    |
-| 5   | Merged when CI is green; checked on staging at desktop and phone widths, light and dark                                                                                                                | Planned |
-| 6   | **Slice 2**, Đạt deciding on 13 October that this increment adds the read to every module: the `queue` read in each module, `openapi.yml` and the web client, the cells' "oldest" line and small chart | Done    |
-| 7   | `verification.md`; the increment moved to `completed`                                                                                                                                                  | Planned |
+| #   | Step                                                                                                                                                                                                   | State |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| 1   | The research note and the Motion and Charts sections of the conventions (BEY-174)                                                                                                                      | Done  |
+| 2   | The design and this plan                                                                                                                                                                               | Done  |
+| 3   | **The shared pieces.** The duration tokens and `chartDrawMs`; `StatStrip` and `StatCell`; `ChartFrame`; Admin › AI › Usage moved onto them, its chart drawing in `chartDrawMs`                         | Done  |
+| 4   | **The home, slice 1.** `features/admin-home`: the five queues, the applications by program, the system block. Messages in English and Vietnamese. The end-to-end test of the home brought in line      | Done  |
+| 5   | Merged when CI is green; checked on staging at desktop and phone widths, light and dark                                                                                                                | Done  |
+| 6   | **Slice 2**, Đạt deciding on 13 October that this increment adds the read to every module: the `queue` read in each module, `openapi.yml` and the web client, the cells' "oldest" line and small chart | Done  |
+| 7   | `verification.md`; the increment moved to `completed`                                                                                                                                                  | Done  |
 
 ## Verification
 
