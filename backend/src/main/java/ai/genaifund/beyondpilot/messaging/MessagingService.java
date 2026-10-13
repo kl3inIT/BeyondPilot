@@ -217,6 +217,8 @@ public class MessagingService {
 		Person person = identity.person(actor);
 		Target target = target(caller, request.kind(), request.slug());
 		String body = request.body().strip();
+		// One writer at a time for an account, so the limits count what its other requests are writing.
+		conversations.lockWriter(caller.accountId());
 		Conversation open = conversations.active(caller.accountId(), target.kind(), target.subjectId()).orElse(null);
 		if (open != null) {
 			if (!MessagingRepository.ACCEPTED.equals(open.status())) {
@@ -310,14 +312,20 @@ public class MessagingService {
 	}
 
 	/**
-	 * Records how far the caller has read a conversation, and tells the other side.
+	 * Records how far the caller has read a conversation, and tells the other side. Nothing is recorded or told for
+	 * a conversation that is not open: the sender of a first message is not told that it was read until it is
+	 * accepted. A reader is never recorded past the last message of the conversation.
 	 * @throws MessagingException when the caller has no such conversation
 	 */
 	@Transactional
 	public void read(Actor actor, UUID id, MarkReadRequest request) {
 		Caller caller = caller(actor);
 		Conversation conversation = visible(caller, id);
-		long seq = conversations.markRead(id, caller.accountId(), request.seq());
+		long last = conversations.lastSeq(id);
+		if (!MessagingRepository.ACCEPTED.equals(conversation.status()) || last == 0) {
+			return;
+		}
+		long seq = conversations.markRead(id, caller.accountId(), Math.min(request.seq(), last));
 		boolean fromStarter = side(caller, conversation) == Side.STARTER;
 		changes.tell(audience(conversation), listener -> new MessagingEvent(Kind.READ, id, null, seq, fromStarter,
 				listener.accountId().equals(caller.accountId()), null));
@@ -416,6 +424,8 @@ public class MessagingService {
 
 	/** Keeps a message, tells the screens that are open, and emails the people of the other side who have none. */
 	private Message write(Caller caller, Person person, Conversation conversation, UUID messageId, String body) {
+		// One writer at a time for an account, so the limit counts what its other requests are writing.
+		conversations.lockWriter(caller.accountId());
 		if (conversations.writtenSince(caller.accountId(), Instant.now().minus(1, ChronoUnit.MINUTES)) >= MESSAGES_A_MINUTE) {
 			throw new MessagingException(MessagingErrorCode.TOO_MANY_MESSAGES,
 					"More than " + MESSAGES_A_MINUTE + " messages in a minute by account " + caller.accountId(),

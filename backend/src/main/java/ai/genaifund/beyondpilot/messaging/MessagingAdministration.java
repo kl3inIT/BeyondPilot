@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * What operators read of conversations: the first messages the side written to reported as unwanted, and nothing else.
+ * What operators read of conversations in Messages: the first messages the side written to reported as unwanted.
  * A conversation that was not reported is its two sides' alone.
  */
 @Service

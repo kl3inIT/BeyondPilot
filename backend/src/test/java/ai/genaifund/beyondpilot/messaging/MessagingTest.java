@@ -114,6 +114,12 @@ class MessagingTest {
 			.containsExactly(id);
 		assertProblem(send(sender, id, "One more thing."), 409, "MESSAGING_NOT_OPEN");
 		assertProblem(start(sender, "talent", slug, "Hello again."), 409, "MESSAGING_ALREADY_WAITING");
+		// The person reads the request; the sender is not told so until it is accepted.
+		long first = JsonPath.<Number>read(started, "$.messages[0].seq").longValue();
+		post(talent, CONVERSATIONS + "/" + id + "/read", Map.of("seq", first)).expectStatus().isNoContent();
+		assertThat(JsonPath.<Number>read(body(get(sender, CONVERSATIONS + "/" + id).expectStatus().isOk()),
+				"$.readByOtherSide")
+			.longValue()).isZero();
 		assertThat(JsonPath.<String>read(
 				body(get(sender, MESSAGING + "/prospect?kind=talent&slug=" + slug).expectStatus().isOk()),
 				"$.conversationId")).isEqualTo(id);
@@ -134,9 +140,12 @@ class MessagingTest {
 		assertThat(JsonPath.<Number>read(sendersList, "$.unread").intValue()).isEqualTo(1);
 		assertThat(JsonPath.<String>read(sendersList, "$.chats[0].lastMessage.preview")).isEqualTo("Yes, gladly.");
 		assertThat(JsonPath.<Boolean>read(sendersList, "$.chats[0].lastMessage.mine")).isFalse();
-		post(sender, CONVERSATIONS + "/" + id + "/read", Map.of("seq", seq)).expectStatus().isNoContent();
+		// A reader is never recorded past the last message, whatever they say.
+		post(sender, CONVERSATIONS + "/" + id + "/read", Map.of("seq", Long.MAX_VALUE)).expectStatus().isNoContent();
 		assertThat(JsonPath.<Number>read(body(get(sender, CONVERSATIONS).expectStatus().isOk()), "$.unread").intValue())
 			.isZero();
+		// Spaces of another script are no message.
+		send(sender, id, "　 ").expectStatus().isBadRequest();
 		// The person who wrote sees how far the other side has read.
 		assertThat(JsonPath.<Number>read(body(get(talent, CONVERSATIONS + "/" + id).expectStatus().isOk()),
 				"$.readByOtherSide")
