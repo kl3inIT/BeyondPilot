@@ -1,7 +1,7 @@
 "use client";
 
 import { CheckIcon, ClockIcon, Undo2Icon, XIcon } from "lucide-react";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, domMax, LazyMotion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useEffectEvent, useState } from "react";
 
@@ -16,6 +16,9 @@ import type { Removal } from "./matching-remove";
 import { lineOf, listOrder, toEnd, toFront, type Step } from "./matching-line";
 import { MatchingReviewCard, type Leaving } from "./matching-review-card";
 import type { Need } from "./matching-view";
+
+/** What gave a decision: a drag of the card, a button, or a key. */
+type By = NonNullable<Leaving>["by"];
 
 /** The reasons for a solution that is not a fit, in the order the list's picker offers them. */
 const reasons = [
@@ -65,7 +68,9 @@ function MatchingReview({
   const [trail, setTrail] = useState<Step[]>([]);
   const [leaving, setLeaving] = useState<Leaving>(null);
   /** The decision Undo last took back: its card comes in from the side it left by. */
-  const [back, setBack] = useState<Leaving>(null);
+  const [back, setBack] = useState<Step["kind"] | null>(null);
+  /** Whether a key did the last thing: what a key does moves nothing. */
+  const [quick, setQuick] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
 
   const line = lineOf(order, candidates, gone, front);
@@ -81,8 +86,9 @@ function MatchingReview({
   const lastOne = last && candidates.find((one) => one.id === last.id);
 
   /** Moves on to the next card and remembers how the one in front left. */
-  function advance(step: Step, next: string[]) {
-    setLeaving(step.kind);
+  function advance(step: Step, by: By, next: string[]) {
+    setLeaving({ kind: step.kind, by });
+    setQuick(by === "key");
     setBack(null);
     setTrail((before) => [...before, step]);
     setOrder(next);
@@ -90,28 +96,30 @@ function MatchingReview({
   }
 
   /** Puts a card back in front, as it was before its step. */
-  function bringBack(id: string, from: Leaving) {
-    setLeaving(null);
+  function bringBack(id: string, from: Step["kind"], by: By) {
+    setLeaving(by === "key" ? { kind: from, by } : null);
+    setQuick(by === "key");
     setBack(from);
     setGone((before) => new Set([...before].filter((one) => one !== id)));
     setOrder((before) => toFront(before, id));
     setFront(id);
   }
 
-  async function decide(kind: Step["kind"]) {
+  async function decide(kind: Step["kind"], by: By) {
     if (!current || busy !== null) {
       return;
     }
     const step = { id: current.id, kind };
     if (kind === "later") {
       if (line.length > 1) {
-        advance(step, toEnd(ids, current.id));
+        advance(step, by, toEnd(ids, current.id));
       }
       return;
     }
     setGone((before) => new Set([...before, current.id]));
     advance(
       step,
+      by,
       ids.filter((id) => id !== current.id),
     );
     setBusy(current.id);
@@ -119,11 +127,11 @@ function MatchingReview({
     setBusy(null);
     if (!kept) {
       setTrail((before) => before.filter((one) => one !== step));
-      bringBack(current.id, kind);
+      bringBack(current.id, kind, by);
     }
   }
 
-  async function undo() {
+  async function undo(by: By) {
     if (!last || !lastOne || busy !== null) {
       return;
     }
@@ -136,7 +144,7 @@ function MatchingReview({
       }
     }
     setTrail((before) => before.slice(0, -1));
-    bringBack(last.id, last.kind);
+    bringBack(last.id, last.kind, by);
   }
 
   // Four keys do what the controls under the card do. A key held with a modifier, typed in a field,
@@ -166,10 +174,10 @@ function MatchingReview({
     };
     if (kinds[key] && !arrowed && current) {
       event.preventDefault();
-      void decide(kinds[key]);
+      void decide(kinds[key], "key");
     } else if (key === "z" && last) {
       event.preventDefault();
-      void undo();
+      void undo("key");
     }
   });
   useEffect(() => {
@@ -189,42 +197,47 @@ function MatchingReview({
       )}
 
       {/* A card on its way out is lifted out of the flow here, and what passes the edge is not scrolled to. */}
-      <div className="relative clip-stage">
-        <AnimatePresence mode="popLayout" initial={false} custom={leaving}>
-          {current ? (
-            <MatchingReviewCard
-              key={current.id}
-              candidate={current}
-              needs={needs}
-              leaving={leaving}
-              back={back}
-              onDecide={(kind) => {
-                // Nothing is decided while another decision is on its way: the card springs back.
-                if (busy !== null) {
-                  return false;
-                }
-                void decide(kind);
-                return true;
-              }}
-            />
-          ) : (
-            <div
-              key="end"
-              className="flex flex-col items-start gap-3 rounded-2xl border bg-card p-6"
-            >
-              <h2 className="text-lg font-semibold">
-                {trail.length > 0 ? t(reading ? "end.reading" : "end.title") : t("none")}
-              </h2>
-              {trail.length > 0 && (
-                <p className="text-sm text-muted-foreground">{t("end.saved", { count: saved })}</p>
-              )}
-              <Button prominence="secondary" onClick={onList}>
-                {t("end.list")}
-              </Button>
-            </div>
-          )}
-        </AnimatePresence>
-      </div>
+      <LazyMotion features={domMax} strict>
+        <div className="relative clip-stage">
+          <AnimatePresence mode="popLayout" initial={false} custom={leaving}>
+            {current ? (
+              <MatchingReviewCard
+                key={current.id}
+                candidate={current}
+                needs={needs}
+                leaving={leaving}
+                back={back}
+                quick={quick}
+                onDecide={(kind) => {
+                  // Nothing is decided while another decision is on its way: the card springs back.
+                  if (busy !== null) {
+                    return false;
+                  }
+                  void decide(kind, "drag");
+                  return true;
+                }}
+              />
+            ) : (
+              <div
+                key="end"
+                className="flex flex-col items-start gap-3 rounded-2xl border bg-card p-6"
+              >
+                <h2 className="text-lg font-semibold">
+                  {trail.length > 0 ? t(reading ? "end.reading" : "end.title") : t("none")}
+                </h2>
+                {trail.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("end.saved", { count: saved })}
+                  </p>
+                )}
+                <Button prominence="secondary" onClick={onList}>
+                  {t("end.list")}
+                </Button>
+              </div>
+            )}
+          </AnimatePresence>
+        </div>
+      </LazyMotion>
 
       <div className="flex flex-col items-center gap-3">
         {current && (
@@ -236,7 +249,7 @@ function MatchingReview({
             <Button
               prominence="secondary"
               aria-keyshortcuts="ArrowLeft"
-              onClick={() => void decide("removed")}
+              onClick={() => void decide("removed", "press")}
             >
               <XIcon aria-hidden="true" />
               {t("actions.remove")}
@@ -246,13 +259,16 @@ function MatchingReview({
               prominence="secondary"
               aria-keyshortcuts="ArrowDown"
               disabled={line.length < 2}
-              onClick={() => void decide("later")}
+              onClick={() => void decide("later", "press")}
             >
               <ClockIcon aria-hidden="true" />
               {t("actions.later")}
               <Kbd className="max-sm:hidden">↓</Kbd>
             </Button>
-            <Button aria-keyshortcuts="ArrowRight" onClick={() => void decide("shortlisted")}>
+            <Button
+              aria-keyshortcuts="ArrowRight"
+              onClick={() => void decide("shortlisted", "press")}
+            >
               <CheckIcon aria-hidden="true" />
               {t("actions.save")}
               <Kbd className="max-sm:hidden">→</Kbd>
@@ -300,7 +316,7 @@ function MatchingReview({
                 size="sm"
                 aria-keyshortcuts="Z"
                 disabled={busy !== null}
-                onClick={() => void undo()}
+                onClick={() => void undo("press")}
               >
                 <Undo2Icon aria-hidden="true" />
                 {t("actions.undo")}

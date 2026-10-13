@@ -3,20 +3,20 @@
 import { ExternalLinkIcon, FileQuestionIcon, GripVerticalIcon } from "lucide-react";
 import {
   animate,
-  motion,
   useDragControls,
   useMotionValue,
   useReducedMotion,
   useTransform,
   type PanInfo,
 } from "motion/react";
-import type { CSSProperties } from "react";
+import * as m from "motion/react-m";
 import { useTranslations } from "next-intl";
-import { useRef, useState, type Ref } from "react";
+import { useRef, useState, type CSSProperties, type Ref } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
 import { SolutionLogo } from "@/features/solution/solution-logo";
 import type { MatchingCandidate } from "@/lib/api/generated";
+import { baseSeconds, entranceEase } from "@/lib/motion";
 import { siteRoutes } from "@/lib/site";
 
 import { DeckReader } from "./matching-deck";
@@ -25,8 +25,12 @@ import { useCandidateMeta } from "./matching-row";
 import { deckPageOf, type Step } from "./matching-line";
 import { findingOf, type Need } from "./matching-view";
 
-/** Which way the card in front leaves: a saved card to the right, one not a fit to the left. */
-export type Leaving = Step["kind"] | null;
+/**
+ * How the card in front leaves: which decision, a saved card to the right and one not a fit to the left,
+ * and what gave it. A drag lets the card go on the way it was going; a button moves it a short way as
+ * it fades; a key, pressed many times in a row, moves nothing (docs/conventions.md › Motion).
+ */
+export type Leaving = { kind: Step["kind"]; by: "drag" | "press" | "key" } | null;
 
 /** What a drag by the head decides: to the right it saves, to the left it is not a fit. */
 type Dragged = Exclude<Step["kind"], "later">;
@@ -35,8 +39,12 @@ type Dragged = Exclude<Step["kind"], "later">;
 const FAR = 150;
 /** How fast a flick is, in pixels a second, for a shorter drag to decide all the same. */
 const FAST = 700;
-/** How far a card that leaves travels at least, so that it is off a narrow screen too. */
+/** How far a card let go by a drag travels at least, so that it is off a narrow screen too. */
 const AWAY = 640;
+/** The short way a card travels when a button decides, and when Undo brings it back. */
+const NEAR = 48;
+/** A spring that comes to rest without passing it: nothing bounces. */
+const SETTLE = { stiffness: 400, damping: 40 };
 
 type MatchingReviewCardProps = {
   candidate: MatchingCandidate;
@@ -44,7 +52,9 @@ type MatchingReviewCardProps = {
   /** How the card leaves when it goes, which the line sets before it goes. */
   leaving: Leaving;
   /** The decision Undo took back, when this card is the one it brought back: it comes in from that side. */
-  back: Leaving;
+  back: Step["kind"] | null;
+  /** Whether a key brought this card up: it is then there at once. */
+  quick: boolean;
   /**
    * Called when the head is let go far enough, or fast enough, to one side; answers whether the
    * decision is taken, since nothing is while another one is on its way.
@@ -63,15 +73,16 @@ type MatchingReviewCardProps = {
  * Its head, and only its head, drags it, and only sideways: the deck and the evidence stay free to turn,
  * scroll and select. The card follows the pointer and tilts with it; a stamp says what letting go would
  * decide, faint at first and solid once it would. Let go far enough or fast enough, it leaves the way
- * and at the speed it was going; otherwise it springs back. It leaves the same way when a button or a
- * key decides, and a card Undo brings back comes in from the side it left by. With reduced motion it
- * neither tilts nor flies: it fades.
+ * and at the speed it was going; otherwise it settles back. When a button decides it moves a short way
+ * to its side as it fades, and a card Undo brings back comes in from the side it left by. A key moves
+ * nothing: the next card is there at once. With reduced motion the card neither tilts nor travels.
  */
 function MatchingReviewCard({
   candidate,
   needs,
   leaving,
   back,
+  quick,
   onDecide,
   ref,
 }: MatchingReviewCardProps) {
@@ -93,26 +104,42 @@ function MatchingReviewCard({
   } as CSSProperties;
   /** The speed the head was let go with, which the card keeps as it leaves. */
   const flick = useRef(0);
-  const side = (how: Leaving) => (how === "shortlisted" ? 1 : how === "removed" ? -1 : 0);
+  const side = (kind: Step["kind"] | null | undefined) =>
+    kind === "shortlisted" ? 1 : kind === "removed" ? -1 : 0;
   // Read when the card leaves: the line hands the way it goes to the card that is no longer there.
   const variants = {
     enter: still
       ? { opacity: 0 }
-      : back && side(back) !== 0
-        ? { opacity: 0, x: side(back) * AWAY }
+      : side(back) !== 0
+        ? { opacity: 0, x: side(back) * NEAR }
         : { opacity: 0, y: 16, scale: 0.98 },
     shown: { opacity: 1, x: 0, y: 0, scale: 1 },
-    exit: (how: Leaving) =>
-      still
-        ? { opacity: 0 }
-        : {
-            opacity: 0,
-            x: side(how) * Math.max(AWAY, window.innerWidth),
-            y: how === "later" ? 24 : 0,
-            transition: {
-              x: { type: "spring" as const, stiffness: 200, damping: 30, velocity: flick.current },
-            },
+    exit: (how: Leaving) => {
+      if (how?.by === "key") {
+        return { opacity: 0, transition: { duration: 0 } };
+      }
+      // An exit is shorter than its entrance.
+      const fade = { duration: baseSeconds * 0.75, ease: "easeIn" as const };
+      if (still) {
+        return { opacity: 0, transition: fade };
+      }
+      if (how?.by === "drag") {
+        return {
+          opacity: 0,
+          x: side(how.kind) * Math.max(AWAY, window.innerWidth),
+          transition: {
+            x: { type: "spring" as const, ...SETTLE, stiffness: 200, velocity: flick.current },
+            opacity: { duration: baseSeconds },
           },
+        };
+      }
+      return {
+        opacity: 0,
+        x: side(how?.kind) * NEAR,
+        y: how?.kind === "later" ? 16 : 0,
+        transition: fade,
+      };
+    },
   };
   const letGo = (_: unknown, info: PanInfo) => {
     const far = Math.abs(info.offset.x) > FAR || Math.abs(info.velocity.x) > FAST;
@@ -121,11 +148,11 @@ function MatchingReviewCard({
       return;
     }
     // Not decided: the drag springs the card back, and what goes with it follows.
-    void animate(pull, 0, { type: "spring", stiffness: 400, damping: 32 });
+    void animate(pull, 0, { type: "spring", ...SETTLE });
   };
 
   return (
-    <motion.article
+    <m.article
       ref={ref}
       aria-labelledby={`review-${candidate.id}`}
       className="relative flex rotate-(--tilt) flex-col overflow-hidden rounded-2xl border bg-card shadow-sm lg:h-200"
@@ -135,14 +162,15 @@ function MatchingReviewCard({
       dragListener={false}
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.9}
+      dragTransition={{ bounceStiffness: SETTLE.stiffness, bounceDamping: SETTLE.damping }}
       onDrag={(_, info) => pull.set(info.offset.x)}
       onDragEnd={letGo}
       variants={variants}
       custom={leaving}
-      initial="enter"
+      initial={quick ? false : "enter"}
       animate="shown"
       exit="exit"
-      transition={{ type: "spring", stiffness: 320, damping: 30 }}
+      transition={{ duration: baseSeconds, ease: entranceEase }}
     >
       <header
         data-slot="matching-card-head"
@@ -250,7 +278,7 @@ function MatchingReviewCard({
           )}
         </div>
       </div>
-    </motion.article>
+    </m.article>
   );
 }
 

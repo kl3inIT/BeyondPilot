@@ -427,7 +427,7 @@ Motion shows a change: where something came from, where it went, what an action 
 - An action repeated many times a day has no animation: a keyboard shortcut, the next page of a table, the next record of a queue.
 - A skeleton or spinner waits about 200ms before it shows, then stays long enough not to flash.
 - With `prefers-reduced-motion: reduce`, movement and scaling are dropped and the change is shown by opacity or at once. No screen depends on an animation to be understood.
-- CSS first, then `motion` for what CSS cannot do: a height that follows changing content, an item leaving a list, a number that counts. It is loaded as `LazyMotion` with `domAnimation` and `m` components, never the full `motion` component, and takes its durations and curves from `src/lib/motion.ts`, the same steps as the classes. Its height and position animations do not follow the motion preference by themselves: a component reads `useReducedMotion` and drops them.
+- CSS first, then `motion` for what CSS cannot do: a height that follows changing content, an item leaving a list, a number that counts. It is loaded as `LazyMotion` with `domAnimation` and `m` components, never the full `motion` component; a drag needs `domMax`, which is loaded with the one screen that has one (the one-by-one review of matched solutions) and not with the page. It takes its durations and curves from `src/lib/motion.ts`, the same steps as the classes. Its height and position animations do not follow the motion preference by themselves: a component reads `useReducedMotion` and drops them.
 
 ### Charts
 

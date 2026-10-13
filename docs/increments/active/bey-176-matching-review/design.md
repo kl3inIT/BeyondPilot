@@ -88,14 +88,21 @@ New dependency: `motion` 14.1.0. On 13 October 14.1.1 was hours old: the reposit
 
 ### Motion
 
-`motion` gives the drag, the tilt, the spring back and the leaving. It is loaded with the view, not with the page: the board imports the view with `next/dynamic` when One by one is first chosen, so neither the view nor `motion` is in the page's first load. One dynamic import of the view does what `LazyMotion` would do for `motion` alone.
+`motion` gives the drag, the tilt, the settling back and the leaving, under [the motion rules](../../../conventions.md#motion), which were written on the same day:
+
+- It is loaded as `LazyMotion` with `m` components. A drag needs the `domMax` features, not `domAnimation`; they come with the view, which the board imports with `next/dynamic` when One by one is first chosen, so neither is in the page's first load.
+- A drag is the person's own movement, so the card follows it, and let go it leaves the way and at the speed it was going.
+- A button moves the card a short way to its side as it fades, in less time than the next card takes to come up.
+- A key moves nothing: the next card is there at once. A key is pressed many times in a row, and the rules give such an action no animation.
+- Nothing bounces: the card settles back on a spring that does not pass its place.
+- The tilt and the stamps read CSS custom properties that `motion` writes, since the lint allows no other inline style.
 
 `react-tinder-card` was read on 13 October and is not used or adapted. It listens to mouse and touch events by hand and blocks every touch on the card, so nothing inside could scroll; it tilts by the speed of the hand, which shakes as the hand slows; it drags in four directions over the whole card; it has no keys and ignores reduced motion. Four of its ideas are kept:
 
 1. Letting go decides when the card went far enough **or** fast enough: a short quick flick counts.
 2. The card leaves along the direction and at the speed it was let go with, not on a fixed path.
 3. The stamp on the card (SAVE, NOT A FIT) is faint while dragging and turns solid once letting go would decide.
-4. Undo brings the card back from the side it left by.
+4. Undo brings the card back from the side it left by, a short way.
 
 With reduced motion set on the device, the card does not tilt or fly: it fades, and the next one appears.
 
