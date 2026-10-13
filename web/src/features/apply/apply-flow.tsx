@@ -11,7 +11,7 @@ import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { EntryList } from "@/components/composites/entry-list";
 import { StepsNav } from "@/components/composites/steps-nav";
-import { setServerErrors, useAppForm } from "@/components/form/app-form";
+import { useAppForm } from "@/components/form/app-form";
 import { AllRequired } from "@/components/form/form-fields";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
@@ -167,22 +167,31 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
     confirmRequired: t("review.confirmRequired"),
   };
 
+  // What the backend refused in the last save, by field, until the person changes the field. They
+  // are among the form's own problems: a mark put on a field from outside is lost at the next
+  // check, and the field refused is often on a step that is not yet on the screen.
+  const refusals = useRef<Record<string, { message: string }>>({});
   const form = useApplyForm({
     defaults,
-    problems: (values) =>
-      problemsOf(
+    problems: (values) => {
+      const found = problemsOf(
         applyStepSchema(step, words, {
           organization: view.organization,
           who: values.who,
           questions: program.questions,
         }),
         values,
-      ),
+      );
+      return found || Object.keys(refusals.current).length > 0
+        ? { ...refusals.current, ...found }
+        : undefined;
+    },
     // A number or an address the backend would refuse is left out of the saves made while the
     // person types, so its field says so once it is left.
     problemsOnLeaving: (values) =>
       step === "you" ? problemsOf(contactShapeSchema(words), values) : undefined,
     changed: (field) => {
+      delete refusals.current[field];
       // Who applies and the team are kept when step 1 is left, and the confirmation never is.
       if (field.startsWith("application.")) {
         changed.current = true;
@@ -358,6 +367,23 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
     return run.catch((error: unknown) => setProblem(errorText(error)));
   }
 
+  /**
+   * Marks the fields the backend refused, once their step is on the screen. A field shows its error
+   * only after it was touched, and one of a step just opened never was.
+   */
+  const showRefusals = useCallback(() => {
+    const names = Object.keys(refusals.current);
+    if (names.length === 0) {
+      return;
+    }
+    for (const name of names) {
+      if (form.getFieldInfo(name as never).instance) {
+        form.setFieldMeta(name as never, (meta) => ({ ...meta, isTouched: true }));
+      }
+    }
+    void form.validate("change");
+  }, [form]);
+
   // The field a step was opened for, from a line of the review that says it is missing.
   const wanted = useRef<string | null>(null);
 
@@ -378,12 +404,13 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
     shown.current = step;
     const field = wanted.current;
     wanted.current = null;
+    showRefusals();
     if (field && focusField(form, field)) {
       return;
     }
     window.scrollTo({ top: 0 });
     heading.current?.focus({ preventScroll: true });
-  }, [step, form]);
+  }, [step, form, showRefusals]);
 
   /**
    * A save the backend refused: its fields are marked, and the step that holds the first of them is
@@ -397,14 +424,14 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
       setProblem(errorText(error));
       return;
     }
-    setServerErrors(form, {
-      fields: Object.fromEntries(
-        fields.map((field) => [field.name, { message: t("errors.notAccepted") }]),
-      ),
-    });
+    refusals.current = Object.fromEntries(
+      fields.map((field) => [field.name, { message: t("errors.notAccepted") }]),
+    );
     if (first.step === step) {
+      showRefusals();
       focusField(form, first.name);
     } else {
+      // The step's fields are marked once they are on the screen, where the step is shown.
       goTo(steps.indexOf(first.step), first.name);
     }
     setProblem(t("errors.refusedField"));

@@ -1,10 +1,16 @@
 import { screen, waitFor, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import type { ApplicationView, Me } from "@/lib/api/generated";
+import { ApiError } from "@/lib/api/client";
+import { saveApplication, type ApplicationView, type Me } from "@/lib/api/generated";
 import { render } from "@/test/render";
 
 import { ApplyFlow } from "./apply-flow";
+
+vi.mock("@/lib/api/generated", async (original) => ({
+  ...(await original<typeof import("@/lib/api/generated")>()),
+  saveApplication: vi.fn(),
+}));
 
 const text = "7c1e0a2b-0000-4000-8000-000000000002";
 const confirm = "7c1e0a2b-0000-4000-8000-000000000004";
@@ -201,5 +207,33 @@ describe("ApplyFlow", () => {
         screen.getByRole("checkbox", { name: "I have read the one hard constraint." }),
       ).toHaveFocus(),
     );
+  });
+
+  it("opens the step of a field the backend refuses and marks the field", async () => {
+    // Every save sends the whole application: the field refused is not on the step shown.
+    vi.mocked(saveApplication).mockRejectedValueOnce(
+      new ApiError(400, {
+        title: "Bad Request",
+        status: 400,
+        code: "REQUEST_INVALID",
+        requestId: "r1",
+        errors: [{ pointer: "#/traction", code: "SIZE", detail: "size must be between 0 and 600" }],
+      }),
+    );
+    const { user } = render(<ApplyFlow initial={complete} account={account} />);
+
+    await user.click(screen.getByRole("checkbox", { name: /I confirm/ }));
+    await user.click(screen.getByRole("button", { name: "Submit application" }));
+
+    await waitFor(() => expect(heading()).toHaveTextContent("Your solution"));
+    const traction = screen.getByRole("textbox", { name: /Milestones and traction/ });
+    await waitFor(() => expect(traction).toBeInvalid());
+    expect(traction).toHaveAccessibleDescription(/This was not accepted/);
+    expect(traction).toHaveFocus();
+    expect(screen.getByText(/A field was not accepted/)).toBeInTheDocument();
+
+    // The mark is the form's own: it stays until the person changes the field.
+    await user.type(traction, "Two pilots.");
+    await waitFor(() => expect(traction).toBeValid());
   });
 });
