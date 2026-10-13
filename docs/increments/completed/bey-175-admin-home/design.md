@@ -1,6 +1,6 @@
 # Admin home: every queue, the applications to judge and the state of the system
 
-Status: accepted on 13 October 2026; both slices are built ([plan](plan.md)). Tracked in Linear as BEY-175. It changes one screen and adds shared web components; the second slice adds one read-only endpoint to each module that owns a review queue. No new module and no new dependency between modules, so there is no boundary discovery.
+Status: done on 13 October 2026, live on staging ([plan](plan.md), [verification](verification.md)). Tracked in Linear as BEY-175. It changes one screen and adds shared web components; the second slice adds one read-only endpoint to each module that owns a review queue. No new module and no new dependency between modules, so there is no boundary discovery.
 
 The layout is the prototype Đạt approved on 13 October (`.tmp/admin-home.html`, not committed), less the two blocks it marked as needing larger reads, and corrected below where the code on `main` differs from what the prototype assumed. The rules it is built on are [conventions › Motion](../../../conventions.md#motion) and [Charts](../../../conventions.md#charts) (BEY-174), from the [research note](../../../research/2026-10-13-motion-and-charts.md).
 
@@ -90,7 +90,7 @@ Each queue cell then shows "The oldest has waited n days" and the queue's `Spark
 
 The page head is `AdminPageHeader` with the destination, the title and one line: how many records wait.
 
-1. **Waiting for a review.** One strip of five cells: use cases, solutions, talent profiles, organizations, customer deployments. Two a row on a phone, three from 768px, five from 1280px. Each cell is a link to its list, narrowed to what waits.
+1. **Waiting for a review.** One strip of five cells: use cases, solutions, talent profiles, organizations, customer deployments. Two a row on a phone, three from 768px with the last two filling the second row, five from 1280px. Each cell is a link to its list, narrowed to what waits.
 2. **Applications.** A list, one program a row: its name and the number of applications, a bar of assessed against submitted with "You assessed 12 of 37", and when it closes or that it has closed. A row opens the program's applications to judge.
 3. **System.** The AI block, two thirds wide from 1024px: "AI calls, last 7 days", the count and the share that failed, the way to Usage, and the calls by day as stacked bars. Beside it, a strip of two cells: email (sent, with delivered and bounced under it) and the search index (records listed, with what waits and what is held back under it).
 
