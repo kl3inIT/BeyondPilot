@@ -127,7 +127,7 @@ function PdfUpload({ id, value, onChange, invalid, describedBy, zone }: PdfUploa
           className={
             zone
               ? cn(
-                  "flex h-40 w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-wait",
+                  "flex h-24 w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-wait",
                   invalid ? "border-destructive" : "border-input",
                 )
               : invalid
