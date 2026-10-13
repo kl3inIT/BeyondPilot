@@ -3,8 +3,10 @@ import { getTranslations } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
+import { CountingNumber } from "@/components/composites/counting-number";
 import { DataTableEmpty, DataTablePager } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { StatCell, StatStrip } from "@/components/composites/stat-cell";
 import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { EmailMessageList } from "@/lib/api/generated";
@@ -73,18 +75,20 @@ async function EmailActivityPage({
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8">
       <EmailHeader current="activity" ready={ready} />
 
-      <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-lg border bg-border md:grid-cols-6">
+      {/* The figures count to their new value when the period changes. */}
+      <StatStrip columns={6}>
         {counts.map((count) => (
-          <div key={count.key} className="flex flex-col gap-0.5 bg-background px-4 py-3">
-            <dt className="text-xs text-muted-foreground">
-              {count.key === "total"
+          <StatCell
+            key={count.key}
+            label={
+              count.key === "total"
                 ? t("activity.counts.total", { period: search.period })
-                : t(`activity.counts.${count.key}`)}
-            </dt>
-            <dd className="text-xl font-semibold tabular-nums">{format.number(count.value)}</dd>
-          </div>
+                : t(`activity.counts.${count.key}`)
+            }
+            value={<CountingNumber value={count.value} />}
+          />
         ))}
-      </dl>
+      </StatStrip>
 
       <EmailActivityToolbar />
 
