@@ -28,6 +28,7 @@ The conversations people have on BeyondPilot: with the person behind a talent pr
 ## A request
 
 - **Who sees it.** The starter, among their chats, as waiting. The other side, under requests: the person behind the profile, or every member of the organization.
+- **Reading before an answer** tells the starter nothing: a pending request has no read mark or read event. Accepting it marks its first message read for the person who accepted.
 - **Who answers.** The person behind the profile; for an organization, an owner. A member who is not an owner reads it and is refused.
 - **Accept** opens the conversation, marks it read for whoever accepted, and emails the starter (`message_request_accepted`). **Decline** and **report** email the starter the same words (`message_request_declined`); the conversation is then gone for the side that answered, and reads `declined` to the starter whichever it was. Each answer is an audit event (`messaging.request_accept`, `request_decline`, `request_report`) and is given once: the row is locked, and a second answer is refused.
 - **The clock** (`MessagingClock`, every hour) reminds the people who answer once, seven days after the request (`message_request_reminder`), and closes it after fourteen, which the starter is told (`message_request_closed`). A closed request reads `closed` to the starter and is gone for the other side. The starter may write again after a decline or a close.
