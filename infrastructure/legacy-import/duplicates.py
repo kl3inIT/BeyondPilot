@@ -12,7 +12,7 @@ products of the company>}}`.
 Of each group one is kept: an approved one before another, then the one whose solution has a deck, then the one
 active on the old platform, then the fuller record, then the one updated last there. The others are merged into it as
 `OrganizationAdministration.merge` does it: their members, open invitations, requests, solutions, offers, use cases,
-proposals, introductions and enquiries move to the kept one, and each stays as a record of where it went. The kept
+proposals and enquiries move to the kept one, and each stays as a record of where it went. The kept
 one takes a website when it has none.
 
 The solutions that are then several under the kept organization are the same product described several times: the
@@ -152,9 +152,6 @@ begin
           and not exists (select 1 from use_case_proposal k
                           where k.use_case_id = p.use_case_id and k.organization_id = pair.kept);
         delete from use_case_proposal where organization_id = pair.duplicate and status = 'draft';
-        update introduction_request set provider_organization_id = pair.kept
-        where provider_organization_id = pair.duplicate;
-        update introduction_request set sender_organization_id = pair.kept where sender_organization_id = pair.duplicate;
         update talent_enquiry set sender_organization_id = pair.kept where sender_organization_id = pair.duplicate;
         -- As Organization.mergeInto: the duplicate stays as a record of where it went.
         update organization

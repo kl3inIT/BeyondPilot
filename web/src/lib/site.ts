@@ -30,7 +30,6 @@ export const siteRoutes = {
   adminUseCases: "/admin/use-cases",
   adminUseCasesNew: "/admin/use-cases/new",
   adminTalentReported: "/admin/talent/reported",
-  adminIntroductions: "/admin/introductions",
   adminAiProviders: "/admin/ai/providers",
   adminSearchIndex: "/admin/ai/search-index",
   adminAiMatching: "/admin/ai/matching",
@@ -53,7 +52,6 @@ export const siteRoutes = {
   workspaceMembers: "/workspace/organization/members",
   workspaceSolutions: "/workspace/organization/solutions",
   workspaceUseCases: "/workspace/organization/use-cases",
-  workspaceIntroductions: "/workspace/organization/introductions",
 } as const;
 
 /** The host the public site is served from, as an operator sees a program's address written out. */

@@ -28,7 +28,7 @@ const endings = new Set(["talent.delete", "solution.offer_delete"]);
 
 /**
  * Where the resource of an audit event is read in the admin area, or null when the app has no page
- * for its kind (an account, an introduction, an AI provider, an address) or the event deleted it.
+ * for its kind (an account, an AI provider, an address) or the event deleted it.
  */
 export function auditResourceRoute(event: {
   action: string;

@@ -18,7 +18,7 @@ module, `backend/src/main/java/ai/genaifund/beyondpilot/audit`. What each contra
   `AuditActionConverter`.
 - **No dependency.** The module is closed with `allowedDependencies = {}`. It knows no other module, so it never looks
   up a name: the caller passes the actor's and the resource's names with the event. The modules that record through
-  it are `identity`, `program`, `organization`, `solution`, `usecase`, `introduction`, `talent`, `proposal`,
+  it are `identity`, `program`, `organization`, `solution`, `usecase`, `talent`, `proposal`,
   `notification` and `search` ([ARCHITECTURE.md](../../ARCHITECTURE.md)).
 
 ## Record
@@ -56,7 +56,7 @@ meaning, and adding one is an ordinary change.
 - **Secrets.** Never stored as values. A changed AI provider key is recorded as `key`: `kept`, `replaced` or
   `removed`.
 - **Not only operators.** Most actions are an operator's; some record what an owner, a member or a person did, such
-  as `introduction.reply`, `organization.member_role`, `talent.enquiry_accept` and `talent.delete`.
+  as `organization.member_role`, `talent.enquiry_accept` and `talent.delete`.
 
 The 70 actions, by the module that records them, with their declared detail fields:
 
@@ -67,7 +67,6 @@ The 70 actions, by the module that records them, with their declared detail fiel
 | `organization` | `organization.create`; `organization.approve`; `organization.suspend` (`reason`); `organization.restore`; `organization.update`; `organization.invite` (`role`); `organization.invitation_revoke`; `organization.refuse` (`reason`); `organization.send_back`; `organization.claim_approve` (`account`); `organization.claim_decline` (`account`); `organization.member_role` (`account`, `role`); `organization.member_remove` (`account`); `organization.merge` (`into`: the organization kept) |
 | `solution`     | `solution.approve`; `solution.send_back`; `solution.reject` (`reason`; before BEY-76 it also recorded taking an approved solution out of the directory); `solution.take_down` (`reason`); `solution.restore`; `solution.back`; `solution.feature`; `solution.unfeature`; `solution.deployment_approve`; `solution.deployment_reject` (`reason`); `solution.deployment_withdraw` and `solution.deployment_restore`, by a member of the solution's organization                                     |
 | `usecase`      | `use_case.create` (`organization`, `status`: `draft` or `published`); `use_case.submit` (`organization`); `use_case.draft` (`organization`, `from`); `use_case.approve` (`organization`); `use_case.send_back` (`organization`); `use_case.feature` (`organization`); `use_case.unfeature` (`organization`); `use_case.set_programs` (`organization`)                                                                                                                                             |
-| `introduction` | `introduction.reply`; `introduction.decline`                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `talent`       | `talent.approve`; `talent.reject` (`reason`; recorded before asking for changes and removing were two decisions); `talent.enquiry_accept`; `talent.enquiry_decline`; `talent.enquiry_report`; `talent.request_changes` (`reason`); `talent.remove` (`reason`); `talent.restore`; `talent.feature`; `talent.unfeature`; `talent.delete`                                                                                                                                                            |
 | `proposal`     | `proposal.criteria_update` (`count`); `proposal.reviewer_invite` (`email`); `proposal.reviewer_remove` (`email`); `proposal.decide` (`decision`: `shortlisted` or `not_selected`); `proposal.release` (`shortlisted`, `not_selected`: how many applicants each group had); `proposal.file_open` (`application`, `file`: the identifiers of the application and of the file a reviewer opened); `proposal.export` (`count`: how many applications the download holds)                              |
 | `notification` | `email.settings_update` (`provider`); `email.appearance_update`; `email.template_update`; `email.template_reset`; `email.suppression_add`; `email.suppression_remove` (`reason`); `email.resend`; `email.test_send` (`subject`: `settings` or the kind of email whose draft was sent)                                                                                                                                                                                                             |

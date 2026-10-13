@@ -68,16 +68,6 @@ public class OrganizationDirectory {
 		return organizations.findById(organizationId).filter(Organization::isApproved).isPresent();
 	}
 
-	/** The accounts that own an organization, read now; empty when it has no owner. */
-	@Transactional(readOnly = true)
-	public List<UUID> ownersOf(UUID organizationId) {
-		return memberships.members(organizationId)
-			.stream()
-			.filter(MembershipRepository.Member::isOwner)
-			.map(MembershipRepository.Member::accountId)
-			.toList();
-	}
-
 	/** The approved organization at this address, as another module shows it; empty when there is none. */
 	@Transactional(readOnly = true)
 	public Optional<OrganizationName> approvedAt(String slug) {
