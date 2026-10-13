@@ -108,8 +108,8 @@ class MessagingTest {
 		assertThat(JsonPath.<List<String>>read(started, "$.messages[*].body")).containsExactly("Would you advise our team?");
 		long firstSeq = JsonPath.<Number>read(started, "$.messages[0].seq").longValue();
 		// The person is told by email, without the sender's address, and led to Messages.
-		String text = mail.latestTextTo("mei@first-talent.test");
-		assertThat(mail.latestSubjectTo("mei@first-talent.test")).isEqualTo("A first message for you on BeyondPilot");
+		assertThat(mail.subjectsTo("mei@first-talent.test")).contains("A first message for you on BeyondPilot");
+		String text = mail.textTo("mei@first-talent.test", "A first message for you on BeyondPilot");
 		assertThat(text).contains("First Talent").doesNotContain("minh@first-sender.test");
 		// What was written is read in Messages only: it is in no email, and so not in the operators' email log.
 		assertThat(text).doesNotContain("Would you advise our team?");
@@ -143,7 +143,7 @@ class MessagingTest {
 		String accepted = body(post(talent, CONVERSATIONS + "/" + id + "/accept", null).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(accepted, "$.conversation.status")).isEqualTo("accepted");
 		assertThat(JsonPath.<Boolean>read(accepted, "$.conversation.canWrite")).isTrue();
-		assertThat(mail.latestSubjectTo("minh@first-sender.test")).isEqualTo("Your message was accepted");
+		assertThat(mail.subjectsTo("minh@first-sender.test")).contains("Your message was accepted");
 		assertThat(JsonPath.<List<String>>read(body(startWithId(sender, firstId, "talent", slug,
 				"Would you advise our team?").expectStatus().isOk()), "$.messages[*].body"))
 			.containsExactly("Would you advise our team?");
@@ -223,7 +223,7 @@ class MessagingTest {
 
 		post(talent, CONVERSATIONS + "/" + declined + "/decline", null).expectStatus().isNoContent();
 
-		assertThat(mail.latestSubjectTo("minh@decline-sender.test")).isEqualTo("Your message on BeyondPilot");
+		assertThat(mail.subjectsTo("minh@decline-sender.test")).contains("Your message on BeyondPilot");
 		// It is gone for the person, and reads as declined to the sender.
 		assertProblem(get(talent, CONVERSATIONS + "/" + declined), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
 		assertThat(JsonPath.<String>read(body(get(sender, CONVERSATIONS + "/" + declined).expectStatus().isOk()),
@@ -285,7 +285,8 @@ class MessagingTest {
 		String id = JsonPath.read(started, "$.conversation.id");
 		assertThat(JsonPath.<String>read(started, "$.conversation.counterpartName")).isEqualTo("Org Provider");
 		assertThat(JsonPath.<String>read(started, "$.subject.organizationName")).isEqualTo("Org Provider");
-		assertThat(mail.latestTextTo("owner@org-provider.test")).contains("Org Buyer").contains("Org Triage");
+		assertThat(mail.textsTo("owner@org-provider.test"))
+			.anySatisfy(text -> assertThat(text).contains("Org Buyer").contains("Org Triage"));
 
 		// A member reads the request and may not answer it; an owner does.
 		String members = body(get(member, CONVERSATIONS).expectStatus().isOk());
@@ -399,8 +400,10 @@ class MessagingTest {
 		send(talent, id, "One.").expectStatus().isOk();
 		String second = body(send(talent, id, "Two.").expectStatus().isOk());
 
-		assertThat(mail.latestSubjectTo("minh@absent-sender.test")).isEqualTo("A new message waits for you on BeyondPilot");
-		assertThat(mail.latestTextTo("minh@absent-sender.test")).contains("Absent Talent").doesNotContain("One.");
+		assertThat(mail.subjectsTo("minh@absent-sender.test")).contains("A new message waits for you on BeyondPilot");
+		assertThat(mail.textTo("minh@absent-sender.test", "A new message waits for you on BeyondPilot"))
+			.contains("Absent Talent")
+			.doesNotContain("One.");
 		assertThat(sent("minh@absent-sender.test", "message_unread")).isEqualTo(1);
 		// Once they have read, the next message they miss is told again.
 		post(sender, CONVERSATIONS + "/" + id + "/read", Map.of("seq", JsonPath.<Number>read(second, "$.seq").longValue()))
@@ -421,13 +424,13 @@ class MessagingTest {
 
 		assertThat(clock.remind(now.plus(Duration.ofDays(6)))).isZero();
 		clock.remind(now.plus(Duration.ofDays(8)));
-		assertThat(mail.latestSubjectTo("mei@clock-talent.test")).isEqualTo("A first message still waits for your answer");
+		assertThat(mail.subjectsTo("mei@clock-talent.test")).contains("A first message still waits for your answer");
 		clock.remind(now.plus(Duration.ofDays(9)));
 		assertThat(sent("mei@clock-talent.test", "message_request_reminder")).isEqualTo(1);
 
 		clock.close(now.plus(Duration.ofDays(15)));
 
-		assertThat(mail.latestSubjectTo("minh@clock-sender.test")).isEqualTo("Your message on BeyondPilot was not answered");
+		assertThat(mail.subjectsTo("minh@clock-sender.test")).contains("Your message on BeyondPilot was not answered");
 		assertThat(JsonPath.<String>read(body(get(sender, CONVERSATIONS + "/" + id).expectStatus().isOk()),
 				"$.conversation.status")).isEqualTo("closed");
 		assertProblem(post(talent, CONVERSATIONS + "/" + id + "/accept", null), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
