@@ -569,6 +569,25 @@ public class MatchingRepository {
 	}
 
 	/**
+	 * Writes the reason and the note on a candidate's last decision when it is a removal by this account: the one
+	 * change a decision takes after it is added, since it changes neither the state nor who decided.
+	 * @return whether there was such a removal
+	 */
+	public boolean giveRemovalReason(UUID candidateId, UUID accountId, String reason, @Nullable String note) {
+		return jdbc.sql("""
+				update matching_decision set reason = :reason, note = :note
+				where id = (select id from matching_decision where candidate_id = :candidateId
+				            order by created_at desc, id limit 1)
+				  and kind = 'removed' and account_id = :accountId
+				""")
+			.param("candidateId", candidateId)
+			.param("accountId", accountId)
+			.param("reason", reason)
+			.param("note", note, Types.VARCHAR)
+			.update() == 1;
+	}
+
+	/**
 	 * Records what a person decided on a candidate. Decisions are only added; the last one is the candidate's state.
 	 * @param kind {@link #SHORTLISTED}, {@link #REMOVED} or {@link #RESTORED}
 	 */

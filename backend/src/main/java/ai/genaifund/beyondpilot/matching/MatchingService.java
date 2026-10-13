@@ -19,6 +19,7 @@ import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.matching.dto.AddCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.GiveFeedbackRequest;
+import ai.genaifund.beyondpilot.matching.dto.GiveRemovalReasonRequest;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange.Kind;
 import ai.genaifund.beyondpilot.matching.dto.MatchingResponse;
@@ -211,29 +212,52 @@ public class MatchingService {
 	}
 
 	/**
-	 * Takes a candidate off the list, with the reason if the caller gives one; it leaves the shortlist too. On a
-	 * candidate already removed, a reason or a note that differs from the ones it holds is recorded as a new removal,
-	 * so that a reason can be given after the card has left; anything else changes nothing.
-	 * @throws MatchingException when the candidate is unknown to the caller, or GenAI Fund removed it and the caller
-	 * is a member giving it a reason: the removal would become the member's
+	 * Takes a candidate off the list, with the reason if the caller gives one; it leaves the shortlist too. A candidate
+	 * already removed stays as it was.
+	 * @throws MatchingException when the candidate is unknown to the caller
 	 */
 	@Transactional
 	public MatchingResponse remove(Actor actor, UUID candidateId, RemoveCandidateRequest request) {
 		Candidate candidate = candidate(candidateId);
 		Access access = access(actor, candidate);
-		String note = request.note() == null || request.note().isBlank() ? null : request.note().strip();
-		boolean removed = MatchingRepository.REMOVED.equals(candidate.decision());
-		boolean said = request.reason() != null || note != null;
-		if (removed && said && candidate.decidedByOperator() && !access.operator()) {
-			throw new MatchingException(MatchingErrorCode.REMOVED_BY_OPERATOR,
-					"Candidate " + candidateId + " was removed by an operator");
-		}
-		boolean changed = !Objects.equals(request.reason(), candidate.reason()) || !Objects.equals(note, candidate.note());
-		if (!removed || (said && changed)) {
-			decide(actor, access, candidate, MatchingRepository.REMOVED, request.reason(), note,
+		if (!MatchingRepository.REMOVED.equals(candidate.decision())) {
+			decide(actor, access, candidate, MatchingRepository.REMOVED, request.reason(), noteOf(request.note()),
 					AuditAction.MATCHING_CANDIDATE_REMOVE);
 		}
 		return view(actor, access);
+	}
+
+	/**
+	 * Says why the caller removed a candidate, after the removal: the reason and the note are written on that removal,
+	 * which stays the caller's, so who removed it and who may restore it do not change. The same reason and note again
+	 * change nothing.
+	 * @throws MatchingException when the candidate is unknown to the caller, is no longer removed, or someone else
+	 * removed it
+	 */
+	@Transactional
+	public MatchingResponse giveRemovalReason(Actor actor, UUID candidateId, GiveRemovalReasonRequest request) {
+		Candidate candidate = candidate(candidateId);
+		Access access = access(actor, candidate);
+		if (!MatchingRepository.REMOVED.equals(candidate.decision())) {
+			throw new MatchingException(MatchingErrorCode.CANDIDATE_NOT_REMOVED,
+					"Candidate " + candidateId + " is not removed");
+		}
+		if (!actor.accountId().equals(candidate.decidedBy())) {
+			throw new MatchingException(MatchingErrorCode.REMOVED_BY_SOMEONE_ELSE,
+					"Candidate " + candidateId + " was removed by someone else");
+		}
+		String note = noteOf(request.note());
+		if (!request.reason().equals(candidate.reason()) || !Objects.equals(note, candidate.note())) {
+			matching.giveRemovalReason(candidate.id(), actor.accountId(), request.reason(), note);
+			changes.tell(candidate.useCaseId(), Kind.DECISION);
+			record(AuditAction.MATCHING_CANDIDATE_REASON, actor, access.brief(),
+					Map.of("solution", solutionName(candidate), "reason", request.reason()));
+		}
+		return view(actor, access);
+	}
+
+	private static @Nullable String noteOf(@Nullable String note) {
+		return note == null || note.isBlank() ? null : note.strip();
 	}
 
 	/**
@@ -300,6 +324,11 @@ public class MatchingService {
 		return view(actor, access);
 	}
 
+	private String solutionName(Candidate candidate) {
+		Shown shown = evidence.shown(List.of(candidate.solutionId())).get(candidate.solutionId());
+		return shown == null ? candidate.solutionId().toString() : shown.name();
+	}
+
 	private Candidate candidate(UUID candidateId) {
 		return matching.candidate(candidateId)
 			.orElseThrow(() -> new MatchingException(MatchingErrorCode.CANDIDATE_NOT_FOUND, "No candidate " + candidateId));
@@ -309,8 +338,7 @@ public class MatchingService {
 			@Nullable String note, AuditAction action) {
 		matching.decide(candidate.id(), kind, reason, note, actor.accountId(), access.operator());
 		changes.tell(candidate.useCaseId(), Kind.DECISION);
-		Shown shown = evidence.shown(List.of(candidate.solutionId())).get(candidate.solutionId());
-		String solution = shown == null ? candidate.solutionId().toString() : shown.name();
+		String solution = solutionName(candidate);
 		record(action, actor, access.brief(),
 				reason == null ? Map.of("solution", solution) : Map.of("solution", solution, "reason", reason));
 	}

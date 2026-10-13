@@ -972,6 +972,7 @@ paths:
           - matching.candidate_add
           - matching.candidate_shortlist
           - matching.candidate_remove
+          - matching.candidate_reason
           - matching.candidate_restore
           - matching.settings_change
       - description: "Events whose actor's name or address, or whose resource's name,\
@@ -1757,6 +1758,64 @@ paths:
         \ belongs when it did not"
       tags:
       - Matching
+  /api/matching/candidates/{candidateId}/removal-reason:
+    post:
+      operationId: giveMatchingRemovalReason
+      parameters:
+      - in: path
+        name: candidateId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GiveMatchingRemovalReason"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matching"
+          description: The reason is on the removal and who removed it is unchanged.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The reason is not one of the five.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Someone else removed the candidate.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The candidate is unknown to the caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The candidate is no longer removed.
+      security:
+      - session: []
+      summary: "Say why the caller removed a candidate, after the removal"
+      tags:
+      - Matching
   /api/matching/candidates/{candidateId}/remove:
     post:
       operationId: removeMatchingCandidate
@@ -1792,13 +1851,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/Problem"
           description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "GenAI Fund removed the candidate and the caller, a member,\
-            \ gives it a reason."
         "404":
           content:
             application/problem+json:
@@ -13398,6 +13450,7 @@ components:
           - matching.candidate_add
           - matching.candidate_shortlist
           - matching.candidate_remove
+          - matching.candidate_reason
           - matching.candidate_restore
           - matching.settings_change
         actor:
@@ -15254,6 +15307,26 @@ components:
           minItems: 0
       required:
       - agrees
+    GiveMatchingRemovalReason:
+      type: object
+      description: "Why the caller removed a candidate, said afterwards."
+      properties:
+        note:
+          type: string
+          description: "A few words more, if the person wants."
+          maxLength: 500
+          minLength: 0
+        reason:
+          type: string
+          enum:
+          - does_not_solve
+          - wrong_industry_or_size
+          - closed_or_wrong_website
+          - duplicate
+          - other
+          pattern: does_not_solve|wrong_industry_or_size|closed_or_wrong_website|duplicate|other
+      required:
+      - reason
     InvitationAllowance:
       type: object
       description: How many more people an organization's owners may invite now.

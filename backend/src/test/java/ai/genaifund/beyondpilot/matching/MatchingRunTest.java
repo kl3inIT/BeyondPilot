@@ -456,25 +456,31 @@ class MatchingRunTest {
 		assertThat(JsonPath.<String>read(removed, "$.candidates[0].removedAt")).isNotBlank();
 		assertProblem(call("POST", buyer, decide + "/shortlist", null), 409, "MATCHING_CANDIDATE_REMOVED");
 		assertThat(decision(call("POST", buyer, decide + "/restore", null))).isEqualTo("none");
-		// A removal needs no reason; one given after it is recorded, and the same again changes nothing.
+		// A removal needs no reason. The one who removed gives it afterwards, on that removal: it stays theirs, and
+		// nobody else gives it one.
+		assertProblem(call("POST", buyer, decide + "/removal-reason", Map.of("reason", "duplicate")), 409,
+				"MATCHING_CANDIDATE_NOT_REMOVED");
 		String unsaid = body(call("POST", buyer, decide + "/remove", Map.of()).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(unsaid, "$.candidates[0].decision")).isEqualTo("removed");
 		assertThat(JsonPath.<Object>read(unsaid, "$.candidates[0].removedReason")).isNull();
-		assertThat(JsonPath.<String>read(body(call("POST", buyer, decide + "/remove", Map.of("reason", "wrong_industry_or_size"))
+		assertProblem(call("POST", operator, decide + "/removal-reason", Map.of("reason", "duplicate")), 403,
+				"MATCHING_REMOVED_BY_SOMEONE_ELSE");
+		assertProblem(call("POST", buyer, decide + "/removal-reason", Map.of()), 400, "REQUEST_INVALID");
+		String given = body(call("POST", buyer, decide + "/removal-reason", Map.of("reason", "wrong_industry_or_size"))
 			.expectStatus()
-			.isOk()), "$.candidates[0].removedReason")).isEqualTo("wrong_industry_or_size");
-		call("POST", buyer, decide + "/remove", Map.of("reason", "wrong_industry_or_size")).expectStatus().isOk();
+			.isOk());
+		assertThat(JsonPath.<String>read(given, "$.candidates[0].removedReason")).isEqualTo("wrong_industry_or_size");
+		assertThat(JsonPath.<Boolean>read(given, "$.candidates[0].removedByOperator")).isFalse();
+		call("POST", buyer, decide + "/removal-reason", Map.of("reason", "wrong_industry_or_size")).expectStatus().isOk();
 		assertThat(jdbc.sql("select count(*) from matching_decision where candidate_id = ? and kind = 'removed'")
 			.param(UUID.fromString(candidate))
 			.query(Long.class)
-			.single()).isEqualTo(3L);
+			.single()).isEqualTo(2L);
 		assertThat(decision(call("POST", buyer, decide + "/restore", null))).isEqualTo("none");
-		// What GenAI Fund removed, only GenAI Fund restores, and a member gives it no reason of theirs.
+		// What GenAI Fund removed, only GenAI Fund restores.
 		assertThat(decision(call("POST", operator, decide + "/remove", Map.of("reason", "does_not_solve"))))
 			.isEqualTo("removed");
 		assertProblem(call("POST", buyer, decide + "/restore", null), 403, "MATCHING_REMOVED_BY_OPERATOR");
-		assertProblem(call("POST", buyer, decide + "/remove", Map.of("reason", "duplicate")), 403,
-				"MATCHING_REMOVED_BY_OPERATOR");
 		// The member reads that GenAI Fund removed it, and not which operator; the operator reads who.
 		String hidden = body(call("GET", buyer, path, null).expectStatus().isOk());
 		assertThat(JsonPath.<Boolean>read(hidden, "$.candidates[0].removedByOperator")).isTrue();
@@ -544,8 +550,8 @@ class MatchingRunTest {
 
 		assertThat(jdbc.sql("select action from audit_event where action like 'matching.%' order by occurred_at")
 			.query(String.class)
-			.list()).contains("matching.candidate_shortlist", "matching.candidate_remove", "matching.candidate_restore",
-					"matching.candidate_add", "matching.run_start");
+			.list()).contains("matching.candidate_shortlist", "matching.candidate_remove", "matching.candidate_reason",
+					"matching.candidate_restore", "matching.candidate_add", "matching.run_start");
 
 		// The limits are the operators' to set, one at a time.
 		String limits = "/api/matching/admin/settings";
