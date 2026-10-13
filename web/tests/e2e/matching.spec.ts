@@ -1339,14 +1339,15 @@ test.describe("matched solutions, one at a time", () => {
     ).toBe(false);
   });
 
-  test("an address that asks for one solution opens the list, with that solution read in full", async ({
+  test("an operator's address that asks for one solution opens the list, with that solution read in full", async ({
     page,
     context,
     baseURL,
     isMobile,
   }) => {
-    await signInAs(context, "owner", baseURL!);
-    await page.goto(`${memberPath}?solution=${candidateId(2)}`);
+    // Only the operators' page reads a solution from its address: their list of disagreements links to it.
+    await signInAs(context, "operator", baseURL!);
+    await page.goto(`${adminPath}?solution=${candidateId(2)}`);
 
     await expect(page.getByRole("button", { name: "List", exact: true })).toHaveAttribute(
       "aria-pressed",
