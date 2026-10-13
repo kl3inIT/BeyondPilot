@@ -1,9 +1,3 @@
-import { useTranslations } from "next-intl";
-
-import { DataTableRows } from "@/components/composites/data-table-view";
-import { Badge } from "@/components/ui/badge";
-import type { ProposalTeamMember } from "@/lib/api/generated";
-
 type CardProps = {
   id: string;
   title: string;
@@ -43,41 +37,4 @@ function Rows({ rows }: RowsProps) {
   );
 }
 
-/** The people a proposal names with their roles. */
-function ProposalTeamList({ team }: { team: ProposalTeamMember[] }) {
-  const t = useTranslations("UseCaseProposal.received.detail.team");
-  const people = team.map((member) => {
-    const name = member.name?.trim() || null;
-    return {
-      id: member.accountId,
-      who: (
-        <div className="grid min-w-0 text-sm">
-          <span className="truncate font-medium">{name ?? member.email}</span>
-          {name && <span className="truncate text-muted-foreground">{member.email}</span>}
-        </div>
-      ),
-      role: <span className="text-sm">{member.role}</span>,
-      primary: member.primary ? <Badge variant="secondary">{t("primary")}</Badge> : null,
-    };
-  });
-
-  return (
-    <DataTableRows
-      columns={[
-        { id: "person", header: t("person"), layout: { fill: true } },
-        { id: "role", header: t("role") },
-        {
-          id: "primary",
-          header: <span className="sr-only">{t("primary")}</span>,
-          layout: { width: "md" },
-        },
-      ]}
-      rows={people.map((person) => ({
-        id: person.id,
-        cells: { person: person.who, role: person.role, primary: person.primary },
-      }))}
-    />
-  );
-}
-
-export { Card, ProposalTeamList, Rows };
+export { Card, Rows };

@@ -10,7 +10,7 @@ import type { ReceivedUseCaseProposal } from "@/lib/api/generated";
 import { adminUseCaseProposalsRoute, siteRoutes, workspaceUseCaseProposalsRoute } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
-import { Card, ProposalTeamList, Rows } from "./proposal-card";
+import { Card, Rows } from "./proposal-card";
 import { ProposalSentBy } from "./proposal-sender-card";
 import { ProposalSolutionList } from "./proposal-solution-list";
 import { proposalFileAddress } from "./received-proposals";
@@ -32,7 +32,7 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
   const t = useTranslations("UseCaseProposal.received.detail");
   const format = useFormatter();
   const size = useFileSize();
-  const { deck, team, solutions, useCase } = proposal;
+  const { deck, solutions, useCase } = proposal;
   const day = (instant: string) => format.dateTime(new Date(instant), "date");
   const sent = day(proposal.sentAt);
   const edited = proposal.editedAt ? day(proposal.editedAt) : null;
@@ -107,9 +107,11 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
 
         <ProposalSentBy sentBy={proposal.sentBy} title={t("sentBy")} />
 
-        <Card id="proposal-team" title={t("team.title")}>
-          <ProposalTeamList team={team} />
-        </Card>
+        {proposal.teamBackground && (
+          <Card id="proposal-team" title={t("team.title")}>
+            <p className="text-sm whitespace-pre-line">{proposal.teamBackground}</p>
+          </Card>
+        )}
 
         <Card id="proposal-file" title={t("file.title")}>
           {deck ? (
