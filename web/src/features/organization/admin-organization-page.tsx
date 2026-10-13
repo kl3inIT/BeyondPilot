@@ -4,12 +4,12 @@ import { createSerializer } from "nuqs/server";
 import { Button } from "@/components/actions/button";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
+import { PageTabs } from "@/components/composites/page-tabs";
 import { Person } from "@/components/composites/person";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { useFormatter } from "@/i18n/format";
-import { Link } from "@/i18n/navigation";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganization } from "@/lib/api/generated";
 import { publicSiteHost, siteRoutes } from "@/lib/site";
@@ -117,21 +117,16 @@ function AdminOrganizationPage({ detail, tab, page, size, sort }: AdminOrganizat
           </>
         }
       >
-        <nav aria-label={t("tabs.label")} className="flex items-end gap-5 border-b">
-          {tabs.map((item) => (
-            <Link
-              key={item.key}
-              href={address(record, { tab: item.key })}
-              aria-current={item.key === tab ? "page" : undefined}
-              className="group -mb-px flex items-center gap-1.5 border-b-2 border-transparent px-0.5 py-2.5 text-sm font-medium whitespace-nowrap text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset aria-[current=page]:border-foreground aria-[current=page]:text-foreground"
-            >
-              {item.label}
-              {item.count !== undefined && (
-                <span className="text-xs group-aria-[current=page]:text-primary">{item.count}</span>
-              )}
-            </Link>
-          ))}
-        </nav>
+        <PageTabs
+          label={t("tabs.label")}
+          current={tab}
+          tabs={tabs.map((item) => ({
+            key: item.key,
+            label: item.label,
+            href: address(record, { tab: item.key }),
+            count: item.count,
+          }))}
+        />
       </AdminPageHeader>
 
       {state === "rejected" && (

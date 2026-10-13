@@ -3,6 +3,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { DetailList } from "@/components/composites/detail-list";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
 import { useFormatter } from "@/i18n/format";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
@@ -57,14 +58,10 @@ function AdminOfferPage({ detail }: { detail: AdminOfferDetail }) {
 
       {offer.closed && <p className="text-sm text-muted-foreground">{page("closedNote")}</p>}
 
-      <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-        {facts.map(([term, value]) => (
-          <div key={term} className="flex min-w-0 flex-col gap-0.5">
-            <dt className="text-xs text-muted-foreground">{term}</dt>
-            <dd className="min-w-0 text-sm">{value}</dd>
-          </div>
-        ))}
-      </dl>
+      <DetailList
+        columns={4}
+        details={facts.map(([term, value]) => ({ key: term, label: term, value }))}
+      />
 
       <section className="flex flex-col gap-3" aria-labelledby="offer-solutions">
         <h2 id="offer-solutions" className="text-base font-semibold">

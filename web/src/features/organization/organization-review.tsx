@@ -10,6 +10,7 @@ import { z } from "zod";
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { DecisionDialogHeader } from "@/components/composites/decision-dialog";
+import { DetailList } from "@/components/composites/detail-list";
 import { FormDialog } from "@/components/composites/form-dialog";
 import { ReasonDialog } from "@/components/composites/reason-dialog";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
@@ -95,31 +96,33 @@ function ReviewFacts({ detail }: { detail: AdminOrganization }) {
         <span className="text-xs text-muted-foreground">{t("description")}</span>
         <p className="break-words whitespace-pre-line">{organization.description || t("none")}</p>
       </div>
-      <dl className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
-        <div className="flex min-w-0 flex-col items-start gap-0.5">
-          <dt className="text-xs text-muted-foreground">{t("website")}</dt>
-          <dd className="max-w-full min-w-0">
-            {organization.website && host ? (
-              <a
-                href={organization.website}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-sm break-all underline underline-offset-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                {host}
-              </a>
-            ) : (
-              t("none")
-            )}
-          </dd>
-        </div>
-        {facts.map((fact) => (
-          <div key={fact.name} className="flex min-w-0 flex-col gap-0.5">
-            <dt className="text-xs text-muted-foreground">{fact.name}</dt>
-            <dd className="break-words">{fact.value || t("none")}</dd>
-          </div>
-        ))}
-      </dl>
+      <DetailList
+        columns={2}
+        details={[
+          {
+            key: "website",
+            label: t("website"),
+            value:
+              organization.website && host ? (
+                <a
+                  href={organization.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-sm break-all underline underline-offset-3 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {host}
+                </a>
+              ) : (
+                t("none")
+              ),
+          },
+          ...facts.map((fact) => ({
+            key: fact.name,
+            label: fact.name,
+            value: fact.value || t("none"),
+          })),
+        ]}
+      />
     </div>
   );
 }

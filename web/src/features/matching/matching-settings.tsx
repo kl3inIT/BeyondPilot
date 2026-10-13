@@ -7,6 +7,7 @@ import { useState } from "react";
 import { z } from "zod";
 
 import { LeaveGuard } from "@/components/composites/leave-guard";
+import { SettingsBlock } from "@/components/composites/settings-block";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { useFieldValidity } from "@/components/form/form-context";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
@@ -17,7 +18,6 @@ import {
   InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group";
-import { SettingsBlock } from "@/features/ai/settings-block";
 import { MatchingAdminTabs } from "@/features/matching/matching-admin-tabs";
 import { useFailureWords, useNotify } from "@/hooks/use-notify";
 import { useFormatter } from "@/i18n/format";
