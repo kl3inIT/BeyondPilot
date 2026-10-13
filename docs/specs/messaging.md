@@ -53,6 +53,7 @@ The conversations people have on BeyondPilot: with the person behind a talent pr
 
 - An event reaches the starter, the account behind the profile, the members of the organization written to, and operators for a program, as each was when their stream opened.
 - It is told after the transaction commits; a change that rolls back tells nothing. Nothing is kept for a screen that was not listening.
+- The response forbids transforming it (`Cache-Control: no-store, no-transform`, `X-Accel-Buffering: no`): a proxy that compresses or buffers the stream holds every event back.
 - A comment line leaves when the stream opens and every 20 seconds. The server ends the stream after ten minutes; the browser opens it again.
 - The events stay inside the instance (`MessagingChanges`).
 

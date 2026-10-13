@@ -261,8 +261,10 @@ class MessagingController {
 		Flux<ServerSentEvent<MessagingEvent>> alive = Flux.interval(Duration.ZERO, HEARTBEAT)
 			.map(tick -> ServerSentEvent.<MessagingEvent>builder().comment("alive").build());
 		return ResponseEntity.ok()
-			// The reverse proxy is nginx, which holds a response back until it is told not to.
-			.header(HttpHeaders.CACHE_CONTROL, "no-store")
+			// The reverse proxy is nginx, which holds a response back until it is told not to. `no-transform` keeps
+			// the development server of the web application from compressing the stream, which holds every event
+			// back until the stream ends.
+			.header(HttpHeaders.CACHE_CONTROL, "no-store, no-transform")
 			.header("X-Accel-Buffering", "no")
 			.body(events.mergeWith(alive).take(MessagingService.STREAM_LIFETIME));
 	}
