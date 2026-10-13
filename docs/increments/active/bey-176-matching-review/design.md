@@ -66,7 +66,7 @@ All in `web/src/features/matching/`.
 
 Reused as they are: `Button`, `Kbd`, `ToggleGroup`, `Empty`, `Spinner`, the status chip of `matching-marks.tsx`, the reason names of `matching-remove.tsx`, the deck pages and quote highlight of `matching-deck-pages.tsx`, and the run header of `matching-run.tsx`, which already says that matching never ran, that it is running, and that it found nothing. The new view stands under that header, so those three states need no new screen.
 
-New dependency: `motion`, at its newest stable release on the day it is installed (14.1.0 on 13 October 2026).
+New dependency: `motion` 14.1.0. On 13 October 14.1.1 was hours old: the repository waits a day before installing a release (`minimumReleaseAge` in `web/pnpm-workspace.yaml`) and nothing called for an exception.
 
 ## The line of cards
 
