@@ -158,7 +158,6 @@ function OrganizationForm({
   const company = givesCompanyFacts(type);
   // A new organization of one asks for a name and a country, and nothing else.
   const alone = !organization && createsAlone(type);
-  const name = useStore(form.store, (state) => state.values.name);
   const pending = useStore(form.store, (state) => state.isSubmitting) || leaving;
   const changed =
     useStore(form.store, (state) => !state.isDefaultValue) ||
@@ -218,12 +217,8 @@ function OrganizationForm({
           {() => (
             <ChoiceCardsField
               label={t("creator.label")}
-              note={alone && name.trim() ? t("creator.aloneNote", { name: name.trim() }) : null}
-              options={creators.map((value) => ({
-                value,
-                label: t(`creator.${value}.title`),
-                what: t(`creator.${value}.what`),
-              }))}
+              className="sm:grid-cols-3"
+              options={creators.map((value) => ({ value, label: t(`creator.${value}`) }))}
             />
           )}
         </form.AppField>

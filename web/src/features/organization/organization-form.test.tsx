@@ -12,7 +12,7 @@ vi.mock("@/lib/api/generated", async (original) => ({
   createOrganizationFromBasics: vi.fn(),
 }));
 
-const choice = (name: string) => screen.getByRole("radio", { name: new RegExp(`^${name}`) });
+const choice = (name: string) => screen.getByRole("radio", { name });
 
 describe("OrganizationForm, creating", () => {
   it("opens on a company, with the whole profile to write", () => {
@@ -33,7 +33,6 @@ describe("OrganizationForm, creating", () => {
     await user.click(choice("Just me"));
 
     expect(screen.getByLabelText(/^Your name/)).toHaveValue("An Tran");
-    expect(screen.getByText(/You take part as An Tran · Independent builder/)).toBeInTheDocument();
     for (const asked of [/^Website/, /^Short description/, /^Year founded/]) {
       expect(screen.queryByLabelText(asked)).not.toBeInTheDocument();
     }

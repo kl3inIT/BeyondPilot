@@ -4022,19 +4022,9 @@
       "ownName": "Tên của bạn",
       "creator": {
         "label": "Tổ chức này dành cho ai?",
-        "independent_builder": {
-          "title": "Chỉ mình tôi",
-          "what": "Bạn tự xây dựng một mình. Chỉ cần tên và quốc gia của bạn."
-        },
-        "builder_team": {
-          "title": "Một nhóm",
-          "what": "Từ hai người trở lên, như nhóm sinh viên hay nhóm hackathon."
-        },
-        "company": {
-          "title": "Một công ty",
-          "what": "Doanh nghiệp đã đăng ký, có website và lĩnh vực hoạt động."
-        },
-        "aloneNote": "Bạn tham gia với tên {name} · Nhà phát triển độc lập. Mô tả, website và logo có thể bổ sung sau trong hồ sơ."
+        "independent_builder": "Chỉ mình tôi",
+        "builder_team": "Một nhóm",
+        "company": "Một công ty"
       }
     },
     "find": {

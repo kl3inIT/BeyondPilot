@@ -4022,19 +4022,9 @@
       "ownName": "Your name",
       "creator": {
         "label": "Who is this for?",
-        "independent_builder": {
-          "title": "Just me",
-          "what": "A builder on your own. Your name and your country, nothing more."
-        },
-        "builder_team": {
-          "title": "A team",
-          "what": "Two or more people, such as a student or hackathon team."
-        },
-        "company": {
-          "title": "A company",
-          "what": "A registered business, with its website and its industries."
-        },
-        "aloneNote": "You take part as {name} · Independent builder. A description, a website and a logo can be added later on your profile."
+        "independent_builder": "Just me",
+        "builder_team": "A team",
+        "company": "A company"
       }
     },
     "find": {

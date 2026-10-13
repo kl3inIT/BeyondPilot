@@ -393,16 +393,25 @@ type ChoiceCardsFieldProps = {
   description?: ReactNode;
   /** A line about the choice made, under the hint. */
   note?: ReactNode;
-  options: { value: string; label: string; what: string }[];
+  options: { value: string; label: string; what?: string }[];
+  /** Classes of the group, for cards that stand side by side. */
+  className?: string;
   /** What a choice asks for beyond itself, under the group with the field's error. */
   detail?: ReactNode;
 };
 
 /**
- * One choice among a few, each on a card with a line that says what it means. Rendered inside
+ * One choice among a few, each on a card, with a line that says what it means where one is given. Rendered inside
  * `form.AppField`, which holds its value.
  */
-function ChoiceCardsField({ label, description, note, options, detail }: ChoiceCardsFieldProps) {
+function ChoiceCardsField({
+  label,
+  description,
+  note,
+  options,
+  className,
+  detail,
+}: ChoiceCardsFieldProps) {
   const { field, invalid, errors, controlId, hintId, errorId, describedBy, required } =
     useDescribedField<string>(description);
   return (
@@ -411,6 +420,7 @@ function ChoiceCardsField({ label, description, note, options, detail }: ChoiceC
         <FieldLabel>{label}</FieldLabel>
         <RadioGroup
           id={controlId}
+          className={className}
           value={field.state.value}
           onValueChange={(value) => field.handleChange(String(value))}
           aria-label={label}
@@ -422,7 +432,7 @@ function ChoiceCardsField({ label, description, note, options, detail }: ChoiceC
               <Field orientation="horizontal">
                 <FieldContent>
                   <FieldTitle>{option.label}</FieldTitle>
-                  <FieldDescription>{option.what}</FieldDescription>
+                  {option.what && <FieldDescription>{option.what}</FieldDescription>}
                 </FieldContent>
                 <RadioGroupItem
                   value={option.value}
