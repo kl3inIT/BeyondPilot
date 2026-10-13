@@ -311,23 +311,23 @@ test.describe("a proposal to a use case", () => {
     await expect(page.getByText("You are editing a sent proposal")).toBeVisible();
     await expect(page.getByText("No changes yet")).toBeVisible();
 
+    // The account has no country or number yet; going forward asks for them first.
     await openStep(page, isMobile, "Your solution");
+    await expect(heading(page)).toHaveText("You and your team");
+    await expect(page.getByLabel("Country")).toBeFocused();
+    await page.getByLabel("Country").selectOption({ label: "Vietnam" });
+    await page.getByLabel("Phone").fill("+84 912 345 678");
+    await openStep(page, isMobile, "Your solution");
+    await expect(heading(page)).toHaveText("Your solution");
     await page
       .getByLabel("How the solutions solve this use case")
       .fill("Policy Chat now also drafts the reply.");
     await expect(page.getByText("Changes not saved yet")).toBeVisible();
 
-    // The account has no country or number yet, so the review names the step that lacks them.
     await openStep(page, isMobile, "Review");
     await expect(heading(page)).toHaveText("Review");
-    await expect(page.getByText("Finish these steps before you send")).toBeVisible();
+    await expect(page.getByText("Finish these steps before you send")).toHaveCount(0);
     const save = page.getByRole("button", { name: "Save changes" });
-    await expect(save).toBeDisabled();
-    await openStep(page, isMobile, "You and your team");
-    await page.getByLabel("Country").selectOption({ label: "Vietnam" });
-    await page.getByLabel("Phone").fill("+84 912 345 678");
-    await openStep(page, isMobile, "Review");
-    await expect(heading(page)).toHaveText("Review");
     expect(contacts).toEqual([{ country: "VN", phone: "+84 912 345 678", name: "Minh Trần" }]);
     // Longer than the wait of a draft's save: a sent proposal is not saved as it changes.
     await page.waitForTimeout(1200);
