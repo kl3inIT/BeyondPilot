@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
+import { contactRoute } from "@/features/messaging/messaging-search";
 import { customProgramPages } from "@/features/program/custom-pages";
 import { ProgramPage } from "@/features/program/program-page";
 import { readProgram } from "@/features/program/program-public-queries";
+import { getCurrentAccount } from "@/lib/auth/session";
 
 export async function generateMetadata({
   params,
@@ -30,5 +32,17 @@ export default async function ProgramRoute({ params }: PageProps<"/[locale]/prog
   // A program marked as made for its page falls back to the standard page until that page exists.
   const Custom = program.pageKind === "custom" ? customProgramPages[program.slug] : undefined;
 
-  return Custom ? <Custom program={program} /> : <ProgramPage program={program} />;
+  // "Ask GenAI Fund" leads to Messages; a visitor signs in first and comes back to the first
+  // message. A draft is not written about, and an operator is the one who would answer.
+  const account = await getCurrentAccount();
+  const askHref =
+    program.status === "published" && account?.role !== "operator"
+      ? contactRoute({ kind: "program", slug: program.slug }, !!account, locale)
+      : undefined;
+
+  return Custom ? (
+    <Custom program={program} askHref={askHref} />
+  ) : (
+    <ProgramPage program={program} askHref={askHref} />
+  );
 }

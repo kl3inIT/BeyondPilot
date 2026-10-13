@@ -1,6 +1,6 @@
 # Motion and small charts: what the app does, what the references do
 
-Read on 13 October 2026, to decide how the web application moves and when a number gets a chart. The owner of the product asked what could make the admin home more than four counts, then why Dub's screens feel more alive than ours. This note records what the code holds, what the references do and what the sources say. The rules adopted from it are in [conventions › Motion](../conventions.md#motion) and [conventions › Charts](../conventions.md#charts); the first screen built on them is the admin home ([BEY-175](../increments/active/bey-175-admin-home/design.md)).
+Read on 13 October 2026, to decide how the web application moves and when a number gets a chart. The owner of the product asked what could make the admin home more than four counts, then why Dub's screens feel more alive than ours. This note records what the code holds, what the references do and what the sources say. The rules adopted from it are in [conventions › Motion](../conventions.md#motion) and [conventions › Charts](../conventions.md#charts); the first screen built on them is the admin home ([BEY-175](../increments/completed/bey-175-admin-home/design.md)).
 
 ## What the code holds
 

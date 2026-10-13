@@ -84,13 +84,7 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <AdminPageHeader
-        destination="talent"
-        title={t("title")}
-        actions={
-          <TextButton href={siteRoutes.adminTalentReported}>{t("reported.link")}</TextButton>
-        }
-      />
+      <AdminPageHeader destination="talent" title={t("title")} />
       <TalentToolbar />
 
       {/* The Headline column gives way first where the table is made to fit. */}

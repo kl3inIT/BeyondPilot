@@ -1,0 +1,27 @@
+# Messaging: what the old platform and other products do
+
+Read on 13 October 2026, before designing Messages (BEY-173). It records what was looked at and what each source shows; the decisions are in the [increment's design](../increments/active/bey-173-messaging/design.md).
+
+## The old platform's threads
+
+`app.genaifund.ai/threads`, from a screenshot of 13 October 2026 and the capture [gaf-threads.txt](captures/old-platform/gaf-threads.txt). The page needs a sign-in; an open thread was not seen.
+
+- The page is "Messages: your conversation threads with enterprises and partners". A list of conversations on the left; "Please select a thread" on the right until one is chosen.
+- A thread is named by the other organization ("Discussion with Arcanic AI", "Discussion with GenAI Fund"), not by a person. A startup's profile, as an enterprise sees it, has "Message" beside "Book meeting" ([existing products](2026-10-02-existing-products.md)).
+- The same organization appears in several threads, so a thread seems to belong to something narrower than the pair. What that is was not seen.
+- A row shows the last message with its writer's name, and a date.
+- A "Refresh" button reads new messages; nothing arrives by itself. There is no request step: anyone writes at once.
+
+## Other products (Mobbin)
+
+Screens found through Mobbin's search. The links open the screen on Mobbin.
+
+| What                                                                                                                                           | Where                                                                                                                                                                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| An inbox of two lists, the main one and requests from people new to the reader                                                                 | [Polywork](https://mobbin.com/screens/425edc42-ce57-466c-be5a-32175612a621) (Messages, Requests), [Threads](https://mobbin.com/screens/37765d40-c069-4456-999e-c186b2e600bc) (Inbox, Requests), [Messenger](https://mobbin.com/screens/2c3b366d-4278-4da4-907b-8fce8b16e3f4) (Message requests)                 |
+| A request shown as the message itself, with accept, delete and block or report under it, and "they won't know you've seen it until you accept" | [X](https://mobbin.com/screens/97299dc4-05d6-4630-83a2-8838e1080772), [Instagram](https://mobbin.com/screens/fa37dc74-c6a4-4627-b6ed-ce9fa1b42d21), [Meta Quest](https://mobbin.com/screens/c004f1e9-c9f7-4a4a-bcfd-725599506d4b)                                                                               |
+| One surface of three columns: the list, the conversation, the other side                                                                       | [Upwork](https://mobbin.com/screens/9aa6145c-770a-4149-8e35-9f1ccb0ccc72), [Preply](https://mobbin.com/screens/c0ee4fcd-9a13-44be-a86b-b39b59d60e04), [Wellfound](https://mobbin.com/screens/b04c87fb-741c-43d0-a959-b5d910657c18), [Intercom](https://mobbin.com/screens/d4d6efaf-d387-4211-9bdf-1c207d1f2714) |
+| Each message with its writer's picture, name and time                                                                                          | [LinkedIn](https://mobbin.com/screens/b5c3d81d-9ad8-4916-a95b-486cb7875e77)                                                                                                                                                                                                                                     |
+| The third column says what the conversation is about and its state                                                                             | [Airbnb](https://mobbin.com/screens/03e1fc5d-6d13-4945-a9f1-20125da58366) (the reservation), [Zillow](https://mobbin.com/screens/e765dd7a-eb13-44c5-a973-c3781eb2dfbd) (the home, and a "Next step")                                                                                                            |
+| The third column says who the other side is, by facts a reader weighs them by                                                                  | [Fiverr](https://mobbin.com/screens/dcb565d2-8fdc-4c58-9d32-8aa847ca2580) (level, response rate, rating), [Wellfound](https://mobbin.com/screens/b04c87fb-741c-43d0-a959-b5d910657c18)                                                                                                                          |
+| Who is in the conversation, and muting, blocking and reporting                                                                                 | [Whop](https://mobbin.com/screens/01f3db74-560d-4145-b306-f92b57822d61), [WhatsApp](https://mobbin.com/screens/69c39275-8505-4ab9-aacd-ff9481413e5d)                                                                                                                                                            |

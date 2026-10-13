@@ -7,7 +7,6 @@ import {
   incompleteSteps,
   removeSolution,
   valuesOf,
-  whoOf,
   youComplete,
   type ProposalValues,
 } from "./proposal-draft";
@@ -45,13 +44,6 @@ describe("proposal draft", () => {
   it("adds each solution once and takes one out", () => {
     expect(addSolutions(["a"], ["b", "a", "b"])).toEqual(["a", "b"]);
     expect(removeSolution(["a", "b"], "a")).toEqual(["b"]);
-  });
-
-  it("says who an organization of each kind stands for", () => {
-    expect(whoOf("independent_builder")).toBe("individual");
-    expect(whoOf("builder_team")).toBe("team");
-    expect(whoOf("company")).toBe("company");
-    expect(whoOf("other")).toBe("company");
   });
 
   it("lists the steps that lack content", () => {

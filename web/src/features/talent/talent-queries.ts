@@ -5,17 +5,13 @@ import {
   getMyTalentProfile,
   getTalent,
   listAdminTalent,
-  listReportedTalentEnquiries,
-  listSentTalentEnquiries,
   listTalent,
   search as searchDirectory,
   type AdminTalent,
-  type AdminTalentEnquiryList,
   type AdminTalentList,
   type MyTalent,
   type PublicTalent,
   type PublicTalentList,
-  type SentTalentEnquiry,
   getTalentReviewQueue,
   type TalentReviewQueue,
 } from "@/lib/api/generated";
@@ -103,16 +99,10 @@ export async function readTalentProfile(slug: string): Promise<PublicTalent | nu
   }
 }
 
-/** The caller's own profile and the messages sent through it. Server only. */
+/** The caller's own profile. Server only. */
 export async function readMyTalent(): Promise<MyTalent> {
   const { data } = await getMyTalentProfile(await sessionRequest());
   return data;
-}
-
-/** The messages the caller sent through talent profiles, with what became of each. Server only. */
-export async function readSentTalentEnquiries(): Promise<SentTalentEnquiry[]> {
-  const { data } = await listSentTalentEnquiries(await sessionRequest());
-  return data.items;
 }
 
 /** One page of submitted profiles for the operator behind this request. Server only. */
@@ -127,18 +117,6 @@ export async function readAdminTalentList(search: AdminTalentSearch): Promise<Ad
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },
-  });
-  return data;
-}
-
-/** One page of the messages people reported, for the operator behind this request. Server only. */
-export async function readReportedTalentEnquiries(
-  page: number,
-  size: number | null,
-): Promise<AdminTalentEnquiryList> {
-  const { data } = await listReportedTalentEnquiries({
-    ...(await sessionRequest()),
-    query: { page: Math.max(1, page), size: size ?? undefined },
   });
   return data;
 }

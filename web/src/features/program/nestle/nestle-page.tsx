@@ -40,7 +40,7 @@ const sections = ["offers", "areas", "how", "eligibility", "dates", "faq"] as co
  * Its content is fixed for the campaign and lives in both catalogs; its dates, events and application
  * window are the program's, and every way in to apply is the program's own.
  */
-async function NestlePage({ program }: { program: Program }) {
+async function NestlePage({ program, askHref }: { program: Program; askHref?: string }) {
   const [t, page, locale] = await Promise.all([
     getTranslations("Nestle"),
     getTranslations("Program.page"),
@@ -237,6 +237,11 @@ async function NestlePage({ program }: { program: Program }) {
                 <a href="#top" className={s.link}>
                   {t("closing.share")}
                 </a>
+                {askHref && (
+                  <Link href={askHref} className={s.link}>
+                    {page("ask")}
+                  </Link>
+                )}
               </div>
             </div>
             <Image

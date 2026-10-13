@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 
 import { TextButton } from "@/components/actions/text-button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { TalentProfile } from "@/lib/api/generated";
 
@@ -77,30 +78,33 @@ function TalentView({ profile }: { profile: TalentContent }) {
         {profile.projects.length > 0 && (
           <ul className="flex flex-col gap-3">
             {profile.projects.map((project) => (
-              <li
-                key={project.title}
-                className="flex flex-col items-start gap-2 rounded-xl border bg-card p-4"
-              >
-                {(project.stage || project.year) && (
-                  <div className="flex items-center gap-2">
-                    {project.stage && <Badge variant="outline">{stage(project.stage)}</Badge>}
-                    {project.year && (
-                      <span className="text-sm text-muted-foreground">{project.year}</span>
-                    )}
-                  </div>
-                )}
-                <h3 className="font-medium">{project.title}</h3>
-                {project.summary && (
-                  <p className="text-sm whitespace-pre-line text-muted-foreground">
-                    {project.summary}
-                  </p>
-                )}
-                {project.url && (
-                  <TextButton href={project.url} target="_blank" rel="noreferrer" size="sm">
-                    {t("openProject")}
-                    <ArrowRightIcon aria-hidden="true" />
-                  </TextButton>
-                )}
+              <li key={project.title}>
+                <Card>
+                  <CardContent>
+                    <div className="flex flex-col items-start gap-2">
+                      {(project.stage || project.year) && (
+                        <div className="flex items-center gap-2">
+                          {project.stage && <Badge variant="outline">{stage(project.stage)}</Badge>}
+                          {project.year && (
+                            <span className="text-sm text-muted-foreground">{project.year}</span>
+                          )}
+                        </div>
+                      )}
+                      <h3 className="font-medium">{project.title}</h3>
+                      {project.summary && (
+                        <p className="text-sm whitespace-pre-line text-muted-foreground">
+                          {project.summary}
+                        </p>
+                      )}
+                      {project.url && (
+                        <TextButton href={project.url} target="_blank" rel="noreferrer" size="sm">
+                          {t("openProject")}
+                          <ArrowRightIcon aria-hidden="true" />
+                        </TextButton>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </li>
             ))}
           </ul>

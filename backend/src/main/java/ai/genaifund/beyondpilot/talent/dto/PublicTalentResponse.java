@@ -1,6 +1,5 @@
 package ai.genaifund.beyondpilot.talent.dto;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +24,5 @@ public record PublicTalentResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> industries,
 		@Schema(types = { "string", "null" },
 				description = "Where the person works, as they state it.") @Nullable String worksAt,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<TalentProjectDto> projects,
-		@Schema(types = { "string", "null" }, format = "date-time",
-				description = "When the caller's message to this person was sent, while it waits for an answer; null for a visitor and when none waits.") @Nullable Instant waitingEnquirySentAt) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<TalentProjectDto> projects) {
 }

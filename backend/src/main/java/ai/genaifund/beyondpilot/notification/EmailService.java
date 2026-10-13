@@ -45,8 +45,11 @@ public class EmailService {
 	/** The signed-in person's organization on the site; its solutions and use cases open under it. */
 	private static final String MY_ORGANIZATION = "/workspace/organization";
 
-	/** The signed-in person's talent profile on the site, with the messages people sent them. */
+	/** The signed-in person's talent profile on the site. */
 	private static final String MY_TALENT = "/workspace/talent";
+
+	/** The signed-in person's conversations on the site. */
+	private static final String MESSAGES = "/workspace/messages";
 
 	/** What the log keeps of a sign-in code in place of the code. */
 	private static final String MASKED_CODE = "••••••";
@@ -204,24 +207,6 @@ public class EmailService {
 				url(publicSlug == null ? MY_TALENT : "/talent/" + publicSlug)));
 	}
 
-	/**
-	 * Tells a person with a talent profile that someone wrote to them. The sender's address is not in it: the link
-	 * opens their talent profile, where they answer under Enquiries, and only an acceptance shares the two addresses.
-	 * @param senderName who wrote, by the name they gave, never their address
-	 * @param senderOrganization the organization the sender belongs to; null when none
-	 * @param topic what the message is about: {@code project}, {@code role} or {@code other}
-	 * @param message what the sender wrote
-	 */
-	@Transactional
-	public void sendTalentEnquiry(String recipient, @Nullable String senderName, @Nullable String senderOrganization,
-			String topic, String message) {
-		queue(EmailKind.TALENT_ENQUIRY, recipient,
-				values("senderName", senderName, "senderOrganization", senderOrganization, "aboutProject",
-						"project".equals(topic), "aboutRole", "role".equals(topic), "aboutOther",
-						!"project".equals(topic) && !"role".equals(topic), "message", message, "enquiriesUrl",
-						url(MY_TALENT)));
-	}
-
 	/** What GenAI Fund decided about a solution. */
 	public enum SolutionDecision {
 
@@ -267,54 +252,6 @@ public class EmailService {
 		queue(approved ? EmailKind.USE_CASE_APPROVED : EmailKind.USE_CASE_SENT_BACK, recipient,
 				values("useCaseTitle", useCaseTitle, "organizationName", organizationName, "reason", reason,
 						"useCaseUrl", url((approved ? "/use-cases/" : MY_ORGANIZATION + "/use-cases/") + useCaseId)));
-	}
-
-	/**
-	 * Reminds a person that a message waits for their answer and when it closes. The link opens their talent profile,
-	 * where they answer under Enquiries.
-	 * @param senderName who wrote, by the name they gave; null when they gave none, never their address
-	 * @param daysLeft the whole days before the message closes unanswered
-	 */
-	@Transactional
-	public void sendTalentEnquiryReminder(String recipient, @Nullable String senderName, long daysLeft) {
-		queue(EmailKind.TALENT_ENQUIRY_REMINDER, recipient,
-				values("senderName", senderName, "daysLeft", Long.toString(daysLeft), "enquiriesUrl",
-						url(MY_TALENT)));
-	}
-
-	/**
-	 * Introduces the two sides of a message the person accepted: each is told who the other is and where to write.
-	 * @param otherName who the recipient is introduced to, as they are shown
-	 * @param otherEmail where the recipient writes to them
-	 * @param otherOrganization the organization the other person belongs to; null when none or not known
-	 */
-	@Transactional
-	public void sendTalentIntroduction(String recipient, String otherName, String otherEmail,
-			@Nullable String otherOrganization) {
-		queue(EmailKind.TALENT_INTRODUCTION, recipient,
-				values("otherName", otherName, "otherEmail", otherEmail, "otherOrganization", otherOrganization));
-	}
-
-	/**
-	 * Tells the sender that the person will not take their message further. A report reads the same, so the person who
-	 * reported is not exposed. It carries no address and no reason; the link opens the messages the sender sent.
-	 * @param talentName the person written to, as their profile names them
-	 */
-	@Transactional
-	public void sendTalentEnquiryDeclined(String recipient, String talentName) {
-		queue(EmailKind.TALENT_ENQUIRY_DECLINED, recipient,
-				values("talentName", talentName, "messagesUrl", url(MY_TALENT + "/sent")));
-	}
-
-	/**
-	 * Tells the sender that their message closed because the person did not answer in time. They may write again; the
-	 * link opens the messages they sent.
-	 * @param talentName the person written to, as their profile names them
-	 */
-	@Transactional
-	public void sendTalentEnquiryClosed(String recipient, String talentName) {
-		queue(EmailKind.TALENT_ENQUIRY_CLOSED, recipient,
-				values("talentName", talentName, "messagesUrl", url(MY_TALENT + "/sent")));
 	}
 
 	/**
@@ -385,6 +322,72 @@ public class EmailService {
 	public void sendApplicationOutcome(String recipient, String subject, String message, UUID applicationId) {
 		queue(EmailKind.APPLICATION_OUTCOME, recipient, values("subject", subject, "message", message.strip(),
 				"applicationUrl", applicationUrl(applicationId)));
+	}
+
+	/**
+	 * Tells the side a first message was written to that it waits. Neither the sender's address nor what they wrote
+	 * is in it, so the text stays out of the email log: the link opens Messages, where the request is read and
+	 * accepted, declined or reported.
+	 * @param senderName who wrote; null until they gave a name, never their address
+	 * @param senderOrganization the organization the sender belongs to; null when none
+	 * @param about the profile, solution or program the message is about
+	 */
+	@Transactional
+	public void sendMessageRequest(String recipient, @Nullable String senderName, @Nullable String senderOrganization,
+			String about) {
+		queue(EmailKind.MESSAGE_REQUEST, recipient, values("senderName", senderName, "senderOrganization",
+				senderOrganization, "about", about, "messagesUrl", url(MESSAGES)));
+	}
+
+	/**
+	 * Reminds the side written to that a first message waits for their answer and when it closes.
+	 * @param senderName who wrote; null until they gave a name, never their address
+	 * @param daysLeft the whole days before the request closes unanswered
+	 */
+	@Transactional
+	public void sendMessageRequestReminder(String recipient, @Nullable String senderName, long daysLeft) {
+		queue(EmailKind.MESSAGE_REQUEST_REMINDER, recipient, values("senderName", senderName, "daysLeft",
+				Long.toString(daysLeft), "messagesUrl", url(MESSAGES)));
+	}
+
+	/**
+	 * Tells the sender of a first message that it was accepted, so the conversation is open.
+	 * @param otherName the person or organization written to; null for GenAI Fund
+	 */
+	@Transactional
+	public void sendMessageRequestAccepted(String recipient, @Nullable String otherName) {
+		queue(EmailKind.MESSAGE_REQUEST_ACCEPTED, recipient,
+				values("otherName", otherName, "messagesUrl", url(MESSAGES)));
+	}
+
+	/**
+	 * Tells the sender that their first message will not be taken further. A report reads the same, so whoever reported
+	 * is not exposed. It carries no reason.
+	 * @param otherName the person or organization written to; null for GenAI Fund
+	 */
+	@Transactional
+	public void sendMessageRequestDeclined(String recipient, @Nullable String otherName) {
+		queue(EmailKind.MESSAGE_REQUEST_DECLINED, recipient,
+				values("otherName", otherName, "messagesUrl", url(MESSAGES)));
+	}
+
+	/**
+	 * Tells the sender that their first message closed because nobody answered in time. They may write again.
+	 * @param otherName the person or organization written to; null for GenAI Fund
+	 */
+	@Transactional
+	public void sendMessageRequestClosed(String recipient, @Nullable String otherName) {
+		queue(EmailKind.MESSAGE_REQUEST_CLOSED, recipient,
+				values("otherName", otherName, "messagesUrl", url(MESSAGES)));
+	}
+
+	/**
+	 * Tells a person that messages they have not read wait in a conversation. What was written is not in it.
+	 * @param senderName who wrote, as the recipient is shown them; null for GenAI Fund or a person without a name
+	 */
+	@Transactional
+	public void sendUnreadMessages(String recipient, @Nullable String senderName) {
+		queue(EmailKind.MESSAGE_UNREAD, recipient, values("senderName", senderName, "messagesUrl", url(MESSAGES)));
 	}
 
 	/** Where an applicant reads their own application on the site. */

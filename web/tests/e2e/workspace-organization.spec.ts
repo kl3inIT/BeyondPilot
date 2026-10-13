@@ -294,6 +294,7 @@ test.describe("workspace organization", () => {
           industries: ["logistics"],
           website: "https://saigonlogistics.example",
           description: "Route planning for fleets.",
+          teamBackground: null,
           foundedYear: 2019,
           logoFileId: null,
         },
@@ -469,6 +470,7 @@ test.describe("workspace organization", () => {
           industries: ["insurance", "healthcare"],
           website: "https://pocketpolicy.example",
           description: "Assistants for insurers and brokers.",
+          teamBackground: null,
           foundedYear: 2021,
           logoFileId: null,
           // The version the form loaded, so a save over someone else's change is refused.

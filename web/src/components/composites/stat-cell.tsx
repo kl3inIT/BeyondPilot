@@ -42,7 +42,7 @@ type StatCellProps = Omit<React.ComponentProps<"div">, "children"> & {
   icon?: React.ReactNode;
   /** A figure nobody needs to act on, such as an empty queue: it reads quieter. */
   quiet?: boolean;
-  /** The odd cell out fills the row at phone width. */
+  /** The odd cell out, last in a strip of five: it fills the rest of its row until the row holds all five. */
   wide?: boolean;
   /** What stands beside the figure, such as its `Sparkline`. */
   aside?: React.ReactNode;
@@ -71,7 +71,8 @@ function StatCell({
         "relative -mr-px -mb-px flex flex-col gap-1 border-r border-b p-4",
         href !== undefined &&
           "transition-colors duration-fast hover:bg-muted has-focus-visible:bg-muted",
-        wide && "col-span-2 md:col-span-1",
+        // The odd cell out fills what is left of its row until every cell has a column of its own.
+        wide && "col-span-2 xl:col-span-1",
         className,
       )}
       {...props}

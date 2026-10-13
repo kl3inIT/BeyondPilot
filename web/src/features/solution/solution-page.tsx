@@ -129,6 +129,11 @@ type SolutionPageProps = {
   solution: PublicSolution;
   /** The editor of this solution, when the visitor may change it. */
   editHref?: string;
+  /**
+   * Where Contact leads: Messages with a first message to its company, or for a visitor the sign-in
+   * screen that returns there. Absent for the company's own people and on a page shared by a link.
+   */
+  contactHref?: string;
 };
 
 /**
@@ -136,7 +141,7 @@ type SolutionPageProps = {
  * it says and its proof, beside the one way to reach its company and its facts. An absent value
  * keeps its criterion visible without inventing a placeholder.
  */
-function SolutionPage({ solution, editHref }: SolutionPageProps) {
+function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
   const t = useTranslations("Solution.detail");
   const directory = useTranslations("Solution.directory");
   const view = useTranslations("Solution.view");
@@ -627,9 +632,15 @@ function SolutionPage({ solution, editHref }: SolutionPageProps) {
             <h2 className="text-base font-medium">
               {t("contact.title", { name: solution.organizationName })}
             </h2>
+            {contactHref && <p className="text-xs text-muted-foreground">{t("contact.lead")}</p>}
           </div>
-          {(solution.website || solution.demoUrl || solution.deck) && (
+          {(contactHref || solution.website || solution.demoUrl || solution.deck) && (
             <div className="flex flex-col gap-2">
+              {contactHref && (
+                <Button size="xl" className="w-full" href={contactHref}>
+                  {t("contact.message")}
+                </Button>
+              )}
               {(
                 [
                   ["website", solution.website],

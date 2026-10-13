@@ -56,7 +56,7 @@ function daysSince(at: string) {
 
 /**
  * Admin home: what waits for a decision, which programs have applications to read, and whether the
- * system is well (docs/increments/active/bey-175-admin-home). Every block is a way to the page
+ * system is well (docs/increments/completed/bey-175-admin-home). Every block is a way to the page
  * behind it. Nothing here moves but the chart as it draws: the page is opened many times a day.
  */
 async function AdminHomePage({ queues, programs, usage, email, index }: AdminHomePageProps) {

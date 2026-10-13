@@ -14,5 +14,6 @@ public record ProposingOrganizationResponse(@Schema(requiredMode = Schema.Requir
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "company", "builder_team",
 				"independent_builder", "other" }, description = "What kind of organization it is; a team writes what it has done.") String type,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Whether the caller is an owner of it, who may correct what they gave when they made it.") boolean owner) {
+				description = "Whether the caller is an owner of it, who may correct what they gave when they made it.") boolean owner,
+		@Schema(types = { "string", "null" }) @Nullable String teamBackground) {
 }

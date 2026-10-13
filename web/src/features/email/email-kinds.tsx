@@ -14,12 +14,13 @@ import {
   MailIcon,
   MegaphoneIcon,
   MergeIcon,
+  MessageSquareCheckIcon,
+  MessageSquareDotIcon,
   MessageSquareIcon,
+  MessageSquareXIcon,
   TimerIcon,
   TimerOffIcon,
   UserPlusIcon,
-  UsersIcon,
-  UserXIcon,
 } from "lucide-react";
 
 import type { EmailKind } from "./email-search";
@@ -51,11 +52,12 @@ const kindIcons: Record<EmailKind, React.ComponentType<React.SVGProps<SVGSVGElem
   talent_changes_requested: CircleXIcon,
   talent_removed: BadgeXIcon,
   talent_restored: BadgeCheckIcon,
-  talent_enquiry: MessageSquareIcon,
-  talent_enquiry_reminder: TimerIcon,
-  talent_introduction: UsersIcon,
-  talent_enquiry_declined: UserXIcon,
-  talent_enquiry_closed: TimerOffIcon,
+  message_request: MessageSquareIcon,
+  message_request_reminder: TimerIcon,
+  message_request_accepted: MessageSquareCheckIcon,
+  message_request_declined: MessageSquareXIcon,
+  message_request_closed: TimerOffIcon,
+  message_unread: MessageSquareDotIcon,
 };
 
 function isEmailKind(kind: string): kind is EmailKind {
@@ -67,10 +69,10 @@ const describedKinds = [
   "organization_merged",
   "application_outcome",
   "solution_rejected",
-  "talent_enquiry",
-  "talent_introduction",
-  "talent_enquiry_declined",
-  "talent_enquiry_closed",
+  "message_request",
+  "message_request_declined",
+  "message_request_closed",
+  "message_unread",
 ] as const satisfies readonly EmailKind[];
 
 type DescribedKind = (typeof describedKinds)[number];

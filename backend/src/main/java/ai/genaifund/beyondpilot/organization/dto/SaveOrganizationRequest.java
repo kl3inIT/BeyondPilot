@@ -14,6 +14,7 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(name = "SaveOrganization", description = "The profile of an organization as its Profile screen holds it.")
 @RequiredOfCompany
+@RequiredOfTeam
 public record SaveOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
@@ -28,7 +29,6 @@ public record SaveOrganizationRequest(
 				regexp = OrganizationCodes.TEAM_SIZE) String teamSize,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The industries it works in or serves, as the codes the solutions use.") @NotNull @Size(
-						min = 1,
 						max = 5) List<@NotNull @Pattern(regexp = OrganizationCodes.INDUSTRY) String> industries,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "What it does and for whom, in at most 280 characters.") @NotBlank @Size(
@@ -38,5 +38,6 @@ public record SaveOrganizationRequest(
 		@Schema(types = { "string", "null" },
 				description = "A logo the caller uploaded for an organization; null for none.") @Nullable UUID logoFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The version the screen read.") @NotNull Long version) {
+				description = "The version the screen read.") @NotNull Long version,
+		@Schema(types = { "string", "null" }, description = "What the team has built before, separate from its short description.") @Size(max = 2000) @Nullable String teamBackground) {
 }
