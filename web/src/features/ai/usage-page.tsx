@@ -13,6 +13,7 @@ import { ChartFrame } from "@/components/composites/chart-frame";
 import { CountingNumber } from "@/components/composites/counting-number";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { PageTabs } from "@/components/composites/page-tabs";
 import { StatCell, StatStrip } from "@/components/composites/stat-cell";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -54,25 +55,11 @@ async function UsageHeader({
 
   return (
     <AdminPageHeader destination="aiUsage" title={t("title")} actions={<UsagePeriodSwitch />}>
-      <nav aria-label={t("tabs.label")} className="border-b">
-        <ul className="flex gap-4 md:gap-6">
-          {tabs.map((tab) => (
-            <li key={tab.key}>
-              <Link
-                href={tab.href}
-                aria-current={tab.key === current ? "page" : undefined}
-                className={
-                  tab.key === current
-                    ? "inline-flex min-h-11 items-center border-b-2 border-foreground text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
-                    : "inline-flex min-h-11 items-center border-b-2 border-transparent text-sm whitespace-nowrap text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
-                }
-              >
-                {t(`tabs.${tab.key}`)}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <PageTabs
+        label={t("tabs.label")}
+        current={current}
+        tabs={tabs.map((tab) => ({ ...tab, label: t(`tabs.${tab.key}`) }))}
+      />
     </AdminPageHeader>
   );
 }
