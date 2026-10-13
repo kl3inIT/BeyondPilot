@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import type { UseCaseProposalForm } from "@/lib/api/generated";
 
-import { accessOfForm, accessOfRefusal, closedAt, editStateOf } from "./proposal-access";
+import {
+  accessOfForm,
+  accessOfRefusal,
+  closedAt,
+  editStateOf,
+  mayChange,
+  outcomeOf,
+} from "./proposal-access";
 
 const useCase = { id: "u", title: "T" };
 const organization = {
@@ -43,6 +50,15 @@ describe("accessOfForm", () => {
     expect(accessOfForm(form({ organization, proposal: sent }))).toEqual({
       kind: "sent",
       proposal: sent,
+    });
+  });
+
+  it("says when a proposal that was taken back was, and lets it be sent again", () => {
+    const taken = { ...draft, withdrawnAt: "2026-10-12T03:00:00Z" };
+    expect(accessOfForm(form({ organization, proposal: taken }))).toEqual({
+      kind: "open",
+      draft: true,
+      withdrawnAt: "2026-10-12T03:00:00Z",
     });
   });
 });
@@ -98,5 +114,25 @@ describe("editStateOf", () => {
       kind: "closed",
       reason: "windowPassed",
     });
+  });
+});
+
+describe("outcomeOf", () => {
+  it("is what the organization told the sender about a sent proposal", () => {
+    expect(outcomeOf({ status: "sent", outcome: "shortlisted" })).toBe("shortlisted");
+    expect(outcomeOf({ status: "sent", outcome: "declined" })).toBe("declined");
+  });
+
+  it("is nothing until it was told, and for a draft", () => {
+    expect(outcomeOf({ status: "sent" })).toBeNull();
+    expect(outcomeOf({ status: "draft", outcome: "declined" })).toBeNull();
+  });
+});
+
+describe("mayChange", () => {
+  it("keeps a proposal open to change unless it was not selected", () => {
+    expect(mayChange(null)).toBe(true);
+    expect(mayChange("shortlisted")).toBe(true);
+    expect(mayChange("declined")).toBe(false);
   });
 });

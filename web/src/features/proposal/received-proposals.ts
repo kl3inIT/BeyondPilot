@@ -27,3 +27,36 @@ export function proposalFileAddress(id: string): string {
 export function proposalLine(solutionNames: string[], contactName: string | null | undefined) {
   return [solutionNames.join(", "), contactName].filter(Boolean).join(" · ");
 }
+
+/** What the organization that posted the use case decided about a proposal. */
+export type ProposalDecision = "shortlisted" | "declined";
+
+/** The tabs of the received list: everything, or the proposals with one decision. */
+export const proposalTabs = ["all", "shortlisted", "declined"] as const;
+export type ProposalTab = (typeof proposalTabs)[number];
+
+type Decided = { decision?: ProposalDecision | null; outcomePending?: boolean };
+
+/** The proposals a tab shows, in the order they arrived. */
+export function inTab<T extends Decided>(items: T[], tab: ProposalTab): T[] {
+  return tab === "all" ? items : items.filter((item) => item.decision === tab);
+}
+
+/** How many e-mails the next send queues, and of which kind: only the decisions the sender was not told yet. */
+export function pendingOutcomes(items: Decided[]): {
+  shortlisted: number;
+  declined: number;
+  total: number;
+} {
+  const waiting = items.filter((item) => item.outcomePending && item.decision);
+  const shortlisted = waiting.filter((item) => item.decision === "shortlisted").length;
+  return { shortlisted, declined: waiting.length - shortlisted, total: waiting.length };
+}
+
+/** The tone of a proposal's state in the list: undecided reads as new, a shortlist as good, a decline as quiet. */
+export function decisionTone(decision: ProposalDecision | null | undefined) {
+  if (decision === "shortlisted") {
+    return "success" as const;
+  }
+  return decision === "declined" ? ("neutral" as const) : ("info" as const);
+}

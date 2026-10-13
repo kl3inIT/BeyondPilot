@@ -8,12 +8,16 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.proposal.UseCaseProposals;
 import ai.genaifund.beyondpilot.proposal.dto.ApplicantOrganizationRequest;
+import ai.genaifund.beyondpilot.proposal.dto.DecideUseCaseProposalRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalResponse;
+import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalSummaryResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.SaveUseCaseProposalRequest;
+import ai.genaifund.beyondpilot.proposal.dto.SendUseCaseProposalOutcomesRequest;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalCountsRequest;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalCountsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalFormResponse;
+import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalOutcomesResponse;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -104,6 +108,54 @@ class UseCaseProposalsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	UseCaseProposalFormResponse send(@CurrentActor Actor actor, @PathVariable UUID id) {
 		return proposals.send(actor, id);
+	}
+
+	@PostMapping(path = "/use-case-proposals/{id}/withdraw", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "withdrawUseCaseProposal", summary = "Take a sent proposal back",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "The form with the proposal as a draft again, saying when it was taken back.")
+	@ApiResponse(responseCode = "404", description = "The caller's organization has no such proposal.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "The proposal is not sent, or the use case no longer takes proposals.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseProposalFormResponse withdraw(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return proposals.withdraw(actor, id);
+	}
+
+	@PostMapping(path = "/use-case-proposals/{id}/decision", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "decideUseCaseProposal", summary = "Shortlist or decline a proposal a use case received",
+			description = "Records the decision and tells nobody; the outcomes are sent together. It may change at any time, but not back to undecided.",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The proposal's line with the decision as recorded.")
+	@ApiResponse(responseCode = "400", description = "The decision is neither shortlisted nor declined.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404",
+			description = "The proposal was not sent, or the caller is neither of the organization that posted its use case nor an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ReceivedUseCaseProposalSummaryResponse decide(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody DecideUseCaseProposalRequest request) {
+		return proposals.decide(actor, id, request.decision());
+	}
+
+	@PostMapping(path = "/use-cases/{useCaseId}/outcomes", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "sendUseCaseProposalOutcomes", summary = "E-mail the outcomes of a use case's proposals",
+			description = "E-mails the sender of each proposal whose decision was not yet told, or changed since, in one batch.",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "How many senders were e-mailed, and of them how many shortlisted and declined.")
+	@ApiResponse(responseCode = "400", description = "The message is longer than 2000 characters.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404",
+			description = "There is no such use case, or the caller is neither of the organization that posted it nor an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "No proposal has a decision to send.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseProposalOutcomesResponse sendOutcomes(@CurrentActor Actor actor, @PathVariable UUID useCaseId,
+			@Valid @RequestBody SendUseCaseProposalOutcomesRequest request) {
+		return proposals.sendOutcomes(actor, useCaseId, request.message());
 	}
 
 	@GetMapping(path = "/use-cases/{useCaseId}/proposals", produces = MediaType.APPLICATION_JSON_VALUE)

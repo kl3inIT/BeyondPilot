@@ -27,6 +27,10 @@ public class UseCaseProposal {
 
 	public static final String SENT = "sent";
 
+	public static final String SHORTLISTED = "shortlisted";
+
+	public static final String DECLINED = "declined";
+
 	@Id
 	private UUID id;
 
@@ -57,6 +61,20 @@ public class UseCaseProposal {
 	private @Nullable Instant sentAt;
 
 	private @Nullable Instant editedAt;
+
+	private @Nullable Instant withdrawnAt;
+
+	/** What the organization that posted the use case decided: shortlisted or declined; null while undecided. */
+	private @Nullable String decision;
+
+	private @Nullable Instant decidedAt;
+
+	private @Nullable UUID decidedByAccountId;
+
+	/** The decision last told to the sender; null until the outcomes were sent. */
+	private @Nullable String outcome;
+
+	private @Nullable Instant outcomeSentAt;
 
 	@Version
 	private long version;
@@ -103,11 +121,49 @@ public class UseCaseProposal {
 		this.editedAt = at;
 	}
 
-	/** Makes the proposal sent by this account. */
+	/** Makes the proposal sent by this account, whether it was never sent or was taken back. */
 	public void send(UUID sender, Instant at) {
 		this.status = SENT;
 		this.sentByAccountId = sender;
 		this.sentAt = at;
+		this.withdrawnAt = null;
+	}
+
+	/**
+	 * Takes a sent proposal back: it is a draft again, with what the form held, and says when it was taken back. What
+	 * belonged to its sending, who sent it and when and the copy of the sender's profile, goes.
+	 */
+	public void withdraw(Instant at) {
+		this.status = DRAFT;
+		this.sentByAccountId = null;
+		this.sentAt = null;
+		this.editedAt = null;
+		this.talent = null;
+		this.withdrawnAt = at;
+		this.updatedAt = at;
+		this.decision = null;
+		this.decidedAt = null;
+		this.decidedByAccountId = null;
+		this.outcome = null;
+		this.outcomeSentAt = null;
+	}
+
+	/** Records the decision of a member of the organization that posted the use case, or of an operator. */
+	public void decide(String decision, UUID by, Instant at) {
+		this.decision = decision;
+		this.decidedByAccountId = by;
+		this.decidedAt = at;
+	}
+
+	/** Notes that the sender was told the decision as it is now. */
+	public void communicate(Instant at) {
+		this.outcome = decision;
+		this.outcomeSentAt = at;
+	}
+
+	/** Whether the decision is set and is not the one the sender was last told. */
+	public boolean outcomePending() {
+		return decision != null && !decision.equals(outcome);
 	}
 
 	public boolean isSent() {
@@ -160,6 +216,30 @@ public class UseCaseProposal {
 
 	public @Nullable Instant getEditedAt() {
 		return editedAt;
+	}
+
+	public @Nullable Instant getWithdrawnAt() {
+		return withdrawnAt;
+	}
+
+	public @Nullable String getDecision() {
+		return decision;
+	}
+
+	public @Nullable Instant getDecidedAt() {
+		return decidedAt;
+	}
+
+	public @Nullable UUID getDecidedByAccountId() {
+		return decidedByAccountId;
+	}
+
+	public @Nullable String getOutcome() {
+		return outcome;
+	}
+
+	public @Nullable Instant getOutcomeSentAt() {
+		return outcomeSentAt;
 	}
 
 	public long getVersion() {

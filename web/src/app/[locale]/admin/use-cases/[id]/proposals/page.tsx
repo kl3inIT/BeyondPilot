@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { loadReceivedSearch } from "@/features/proposal/received-search";
 import { AdminProposalsPage } from "@/features/proposal/admin-proposals-page";
 import { readReceivedProposals } from "@/features/proposal/received-queries";
 import { readAdminUseCase } from "@/features/usecase/admin-use-case-queries";
@@ -21,6 +22,7 @@ export async function generateMetadata({
 
 export default async function AdminUseCaseProposalsRoute({
   params,
+  searchParams,
 }: PageProps<"/[locale]/admin/use-cases/[id]/proposals">) {
   const { locale, id } = await params;
   setRequestLocale(locale);
@@ -40,7 +42,10 @@ export default async function AdminUseCaseProposalsRoute({
   if (!useCase.publishedAt) {
     redirect(getPathname({ href: `${siteRoutes.adminUseCases}/${id}`, locale }));
   }
-  const proposals = await readReceivedProposals(id).catch(gone);
+  const [proposals, search] = await Promise.all([
+    readReceivedProposals(id).catch(gone),
+    loadReceivedSearch(searchParams),
+  ]);
   if (!proposals) {
     notFound();
   }
@@ -49,6 +54,7 @@ export default async function AdminUseCaseProposalsRoute({
     <AdminProposalsPage
       useCase={{ ...useCase, organizationName: useCase.organization.name }}
       proposals={proposals}
+      tab={search.tab}
     />
   );
 }

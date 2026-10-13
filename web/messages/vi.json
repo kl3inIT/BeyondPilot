@@ -491,6 +491,7 @@
     "PROPOSAL_NO_ORGANIZATION": "Hãy tham gia hoặc lập một tổ chức để gửi proposal.",
     "PROPOSAL_NOT_FOUND": "Không có proposal này.",
     "PROPOSAL_ALREADY_SENT": "Proposal này đã gửi nên không sửa được nữa.",
+    "PROPOSAL_NOT_SENT": "Chỉ rút được proposal đã gửi. Hãy tải lại trang để xem proposal của bạn đang ở đâu.",
     "PROPOSAL_APPROACH_REQUIRED": "Hãy nói giải pháp giải quyết use case này như thế nào.",
     "PROPOSAL_CONTACT_REQUIRED": "Hãy thêm tên, quốc gia và số điện thoại của bạn trước.",
     "PROPOSAL_PDF_REQUIRED": "Hãy thêm proposal dưới dạng PDF.",
@@ -562,7 +563,8 @@
     "USECASE_CANNOT_MOVE_TO_DRAFT": "Chỉ use case đang duyệt hoặc đã đăng mới chuyển về bản nháp được.",
     "USECASE_NOT_AWAITING_REVIEW": "Use case này không còn ở trạng thái đang duyệt. Trạng thái đã được đọc lại.",
     "USECASE_ATTACHMENT_NOT_USABLE": "Hãy tải tệp lên lại: không thể đính kèm tệp này.",
-    "USECASE_TIMELINE_OUT_OF_ORDER": "Thời gian dài nhất ngắn hơn thời gian ngắn nhất."
+    "USECASE_TIMELINE_OUT_OF_ORDER": "Thời gian dài nhất ngắn hơn thời gian ngắn nhất.",
+    "PROPOSAL_NOTHING_TO_SEND": "Không có quyết định nào để gửi. Hãy tải lại trang để xem tình trạng các đề xuất."
   },
   "SignIn": {
     "metaTitle": "Đăng nhập · BeyondPilot",
@@ -1228,6 +1230,10 @@
           "file_open": "Mở một tệp của đơn nộp",
           "export": "Tải danh sách đơn nộp"
         },
+        "use_case_proposal": {
+          "decide": "Quyết định về một đề xuất gửi tới use case",
+          "outcomes_send": "Gửi kết quả các đề xuất gửi tới use case"
+        },
         "use_case": {
           "create": "Tạo một use case",
           "submit": "Gửi một use case đi duyệt",
@@ -1364,6 +1370,10 @@
           "release": "Công bố kết quả của <resource></resource>",
           "file_open": "Mở một tệp của một đơn nộp vào <resource></resource>",
           "export": "Tải danh sách đơn nộp vào <resource></resource>"
+        },
+        "use_case_proposal": {
+          "decide": "Quyết định về một đề xuất gửi tới <resource></resource>",
+          "outcomes_send": "Gửi kết quả các đề xuất gửi tới <resource></resource>"
         },
         "use_case": {
           "create": "Đã tạo use case <resource></resource>",
@@ -3100,6 +3110,14 @@
         },
         "proposal_sent": {
           "name": "Proposal đã gửi"
+        },
+        "proposal_shortlisted": {
+          "name": "Đề xuất được chọn",
+          "description": "Báo cho bên gửi rằng đề xuất được chọn vào danh sách rút gọn, kèm lời nhắn của tổ chức đăng use case."
+        },
+        "proposal_declined": {
+          "name": "Đề xuất không được chọn",
+          "description": "Báo cho bên gửi rằng đề xuất không được chọn, kèm lời nhắn của tổ chức đăng use case."
         },
         "talent_approved": {
           "name": "Hồ sơ nhân lực được duyệt"
@@ -7657,7 +7675,9 @@
       "count": "{count, plural, other {# đề xuất}}",
       "viewProposals": "Xem đề xuất",
       "status": {
-        "new": "Mới"
+        "undecided": "Chưa quyết định",
+        "shortlisted": "Đã chọn vào danh sách rút gọn",
+        "declined": "Đã từ chối"
       },
       "tabs": {
         "label": "Lọc đề xuất",
@@ -7676,7 +7696,12 @@
         "columns": {
           "proposal": "Đề xuất",
           "status": "Trạng thái",
-          "sent": "Ngày gửi"
+          "sent": "Ngày gửi",
+          "actions": "Thao tác"
+        },
+        "emptyTab": {
+          "title": "Chưa có đề xuất nào ở đây",
+          "description": "Đề xuất sẽ xuất hiện ở thẻ này sau khi bạn đánh dấu chúng."
         }
       },
       "detail": {
@@ -7710,9 +7735,35 @@
         "crumbs": "Vị trí",
         "useCases": "Bài toán",
         "pending": "Chờ duyệt",
-        "sentBy": "Người gửi"
+        "sentBy": "Người gửi",
+        "assessment": {
+          "title": "Đánh giá của bạn",
+          "decision": "Quyết định",
+          "decided": "Quyết định bởi",
+          "decidedBy": "{name} vào {date}"
+        }
       },
-      "edited": "Đã chỉnh sửa {date}"
+      "edited": "Đã chỉnh sửa {date}",
+      "actions": {
+        "open": "Thao tác cho {name}",
+        "view": "Xem đề xuất",
+        "shortlist": "Chọn vào danh sách rút gọn",
+        "decline": "Từ chối"
+      },
+      "decided": {
+        "shortlisted": "Đã đánh dấu {name} vào danh sách rút gọn. Nhà cung cấp chỉ được báo khi bạn gửi kết quả.",
+        "declined": "Đã đánh dấu từ chối {name}. Nhà cung cấp chỉ được báo khi bạn gửi kết quả."
+      },
+      "send": {
+        "action": "Gửi kết quả ({count})",
+        "title": "Gửi kết quả cho các nhà cung cấp?",
+        "description": "{shortlisted} đề xuất được chọn và {declined} đề xuất bị từ chối sẽ mỗi nơi nhận một email.",
+        "note": "Không ai ngoài nhóm của bạn thấy quyết định cho đến khi bạn gửi. Bạn vẫn có thể đổi quyết định sau đó: lần gửi tiếp theo chỉ gửi email cho các đề xuất đã thay đổi.",
+        "message": "Lời nhắn trong mỗi email (không bắt buộc)",
+        "confirm": "{count, plural, other {Gửi # kết quả}}",
+        "cancel": "Hủy",
+        "done": "{count, plural, other {Đã gửi # kết quả.}}"
+      }
     },
     "actions": {
       "proposals": "Đề xuất",
@@ -7727,6 +7778,19 @@
         "disabled": "Đã đóng chỉnh sửa: bài toán này không cho chỉnh sửa sau khi gửi.",
         "useCaseClosed": "Đã đóng chỉnh sửa vì bài toán đã đóng.",
         "windowPassed": "Đã đóng chỉnh sửa: đã hết thời gian chỉnh sửa."
+      },
+      "withdrawn": "Bạn đã rút proposal vào {date}.",
+      "sendAgain": "Gửi lại",
+      "status": "Trạng thái",
+      "outcome": {
+        "shortlisted": {
+          "state": "Được chọn vào danh sách rút gọn",
+          "note": "Tổ chức đăng use case này đã chọn đề xuất của bạn vào danh sách rút gọn vào {date}."
+        },
+        "declined": {
+          "state": "Không được chọn",
+          "note": "Kết quả đã được gửi tới email của bạn vào {date}."
+        }
       }
     },
     "wizard": {
@@ -7862,7 +7926,8 @@
           "created": "Đã tạo tổ chức.",
           "full": "Tạo bằng biểu mẫu đầy đủ"
         }
-      }
+      },
+      "withdrawnNote": "Bạn đã rút proposal này vào {date}. Hãy chỉnh sửa nếu muốn rồi gửi lại."
     },
     "view": {
       "metaTitle": "Đề xuất của bạn · BeyondPilot",
@@ -7870,7 +7935,45 @@
       "edit": "Sửa đề xuất",
       "sent": "Gửi {date}",
       "edited": "Đã chỉnh sửa {date}",
-      "until": "sửa đến {when}"
+      "until": "sửa đến {when}",
+      "withdrawn": "Đã rút {date}",
+      "sendAgain": "Gửi lại",
+      "withdraw": {
+        "action": "Rút lại",
+        "title": "Rút proposal này?",
+        "description": "Tổ chức đăng use case sẽ không còn thấy proposal này. Không có gì bị xóa.",
+        "noteUntil": "Bạn có thể gửi lại đến khi use case đóng vào {date}.",
+        "noteOpen": "Bạn có thể gửi lại khi use case còn mở.",
+        "confirm": "Rút proposal",
+        "cancel": "Giữ proposal",
+        "done": "Đã rút proposal của bạn.",
+        "rows": {
+          "useCase": "Use case",
+          "sent": "Đã gửi"
+        }
+      },
+      "notice": {
+        "withdrawn": {
+          "title": "Bạn đã rút proposal này",
+          "until": "Tổ chức đăng use case không còn thấy proposal này. Không có gì bị xóa: bạn có thể gửi lại đến khi use case đóng vào {date}.",
+          "open": "Tổ chức đăng use case không còn thấy proposal này. Không có gì bị xóa: bạn có thể gửi lại khi use case còn mở.",
+          "closed": "Tổ chức đăng use case không còn thấy proposal này. Use case đã đóng nên không gửi lại được."
+        },
+        "closed": {
+          "title": "Use case này đã đóng",
+          "text": "Không thể sửa hoặc rút proposal nữa. Tổ chức đăng use case vẫn đọc được proposal của bạn."
+        },
+        "outcome": {
+          "shortlisted": {
+            "title": "Đề xuất của bạn được chọn vào danh sách rút gọn",
+            "text": "Tổ chức đăng use case này đã chọn đề xuất vào {date}. Bạn vẫn có thể rút lại đề xuất."
+          },
+          "declined": {
+            "title": "Đề xuất của bạn không được chọn",
+            "text": "Kết quả đã được gửi tới email của bạn vào {date}. Đề xuất giờ chỉ để xem."
+          }
+        }
+      }
     },
     "solutionList": {
       "newTab": "(mở trong thẻ mới)"

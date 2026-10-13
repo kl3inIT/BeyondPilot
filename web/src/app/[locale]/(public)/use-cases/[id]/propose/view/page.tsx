@@ -31,16 +31,18 @@ export default async function ProposalViewRoute({
     notFound();
   }
   const { form } = result;
-  if (form.proposal?.status !== "sent") {
+  // A proposal that was taken back is read too: it says so, and may be sent again.
+  const { proposal } = form;
+  if (!proposal || (proposal.status !== "sent" && !proposal.withdrawnAt)) {
     redirect(getPathname({ href: proposeRoute(id), locale: await getLocale() }));
   }
-  const edit = editStateOf(form.proposal, {
+  const edit = editStateOf(proposal, {
     closesAt: form.useCase.closesAt,
     // The days only explain why editing is over, so the use case is read only then.
-    proposalEditDays: form.proposal.editableUntil
+    proposalEditDays: proposal.editableUntil
       ? undefined
       : (await readUseCase(id))?.proposalEditDays,
   });
 
-  return <ProposalViewPage form={form} proposal={form.proposal} edit={edit} />;
+  return <ProposalViewPage form={form} proposal={proposal} edit={edit} />;
 }

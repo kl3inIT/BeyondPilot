@@ -70,6 +70,8 @@ export const auditActions = [
   "proposal.release",
   "proposal.file_open",
   "proposal.export",
+  "use_case_proposal.decide",
+  "use_case_proposal.outcomes_send",
   "email.settings_update",
   "email.appearance_update",
   "email.template_update",
@@ -114,7 +116,7 @@ export const auditActions = [
  */
 const actionAreas = [
   ["programs", ["program", "proposal"]],
-  ["useCases", ["use_case"]],
+  ["useCases", ["use_case", "use_case_proposal"]],
   ["solutions", ["solution"]],
   ["talent", ["talent"]],
   ["organizations", ["organization"]],

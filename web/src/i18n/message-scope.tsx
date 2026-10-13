@@ -41,6 +41,9 @@ const areaPaths = {
     "Solution",
     "Talent",
     "UseCases",
+    // Taking back a proposal, on the page that reads it; the rest of the proposal belongs to the apply area.
+    "UseCaseProposal.view.withdraw",
+    "UseCaseProposal.errors",
   ],
   auth: ["SignIn"],
   apply: [
@@ -74,6 +77,9 @@ const areaPaths = {
     "Review",
     "Solution",
     "Talent",
+    // Deciding on the proposals of a use case, which the operators read as well.
+    "UseCaseProposal.received",
+    "UseCaseProposal.errors",
   ],
   reviews: ["Review"],
 } as const satisfies Record<string, readonly MessagePath[]>;

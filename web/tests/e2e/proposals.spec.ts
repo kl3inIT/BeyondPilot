@@ -28,10 +28,15 @@ type Saved = {
  * the state the stub backend answers the page with (stub-wizards.mjs); sending moves it to `sent`,
  * so the page that follows reads a sent proposal. Returns what it saw.
  */
-async function fakeBackend(page: Page, baseURL: string, scene?: "draft" | "sent") {
+async function fakeBackend(
+  page: Page,
+  baseURL: string,
+  scene?: "draft" | "sent" | "shortlisted" | "declined" | "withdrawn" | "closed",
+) {
   const saves: Saved[] = [];
   const contacts: unknown[] = [];
   const sends: string[] = [];
+  const withdraws: string[] = [];
   const stand = (next: string) =>
     page.context().addCookies([{ name: "STUB_SCENE", value: next, url: baseURL }]);
   if (scene) {
@@ -80,6 +85,12 @@ async function fakeBackend(page: Page, baseURL: string, scene?: "draft" | "sent"
     await stand("sent");
     await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
   });
+  await page.route(`**/api/proposal/use-case-proposals/${proposalId}/withdraw`, async (route) => {
+    expect(route.request().headers()["x-beyondpilot-csrf"]).toBe("1");
+    withdraws.push(route.request().method());
+    await stand("withdrawn");
+    await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+  });
   await page.route("**/api/identity/me/contact", async (route) => {
     contacts.push(route.request().postDataJSON());
     await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
@@ -91,7 +102,7 @@ async function fakeBackend(page: Page, baseURL: string, scene?: "draft" | "sent"
   });
   const uploads = await answerUploads(page, [proposalDeck.fileId]);
 
-  return { saves, contacts, sends, uploads };
+  return { saves, contacts, sends, withdraws, uploads };
 }
 
 const pdf = {
@@ -520,5 +531,208 @@ test.describe("a proposal to a use case", () => {
         version: 7,
       },
     ]);
+  });
+
+  test("a sent proposal is taken back after asking, and may be sent again", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const { withdraws } = await fakeBackend(page, baseURL!, "sent");
+    await page.goto(`${proposePath}/view`);
+    await expect(heading(page)).toHaveText("Pocket Policy");
+    await expect(page.getByRole("link", { name: "Edit proposal" })).toBeVisible();
+
+    // Asking comes first: keeping the proposal closes the dialog and sends nothing.
+    await page.getByRole("button", { name: "Withdraw", exact: true }).click();
+    const dialog = page.getByRole("alertdialog", { name: "Withdraw this proposal?" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("Claims triage with document intelligence")).toBeVisible();
+    await expect(dialog.getByText("until the use case closes on")).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Keep proposal" })).toBeFocused();
+    await settled(page);
+    await dialog.getByRole("button", { name: "Keep proposal" }).click();
+    await expect(dialog).toBeHidden();
+    expect(withdraws).toEqual([]);
+
+    // Withdrawing leaves the proposal read, says so, and offers sending it again.
+    await page.getByRole("button", { name: "Withdraw", exact: true }).click();
+    await dialog.getByRole("button", { name: "Withdraw proposal" }).click();
+    await expect.poll(() => withdraws).toEqual(["POST"]);
+    await expect(page.getByText("You withdrew this proposal")).toBeVisible();
+    await expect(page.getByText("Withdrawn 12 Oct 2026")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Withdraw", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Send again" })).toHaveAttribute(
+      "href",
+      proposePath,
+    );
+    await settled(page);
+  });
+
+  test("a proposal to a use case that closed cannot be taken back", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await fakeBackend(page, baseURL!, "closed");
+    await page.goto(`${proposePath}/view`);
+    await expect(page.getByText("This use case is closed")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Withdraw", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Edit proposal" })).toHaveCount(0);
+    await settled(page);
+  });
+});
+
+const receivedPath = `/workspace/organization/use-cases/${proposalUseCaseId}/proposals`;
+
+/**
+ * Answers what the browser writes while a use case's proposals are decided, as the backend would;
+ * a decision moves the stub to `decided` and sending to `told`, so the page that follows reads them.
+ */
+async function fakeDecisions(page: Page, baseURL: string, scene: "received" | "decided" | "told") {
+  const decisions: { id: string; body: unknown }[] = [];
+  const sends: unknown[] = [];
+  const stand = (next: string) =>
+    page.context().addCookies([{ name: "STUB_SCENE", value: next, url: baseURL }]);
+  await stand(scene);
+  await page.route("**/api/proposal/use-case-proposals/*/decision", async (route) => {
+    const request = route.request();
+    expect(request.headers()["x-beyondpilot-csrf"]).toBe("1");
+    decisions.push({ id: request.url().split("/").at(-2)!, body: request.postDataJSON() });
+    await stand("decided");
+    await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+  });
+  await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/outcomes`, async (route) => {
+    const request = route.request();
+    expect(request.headers()["x-beyondpilot-csrf"]).toBe("1");
+    sends.push(request.postDataJSON());
+    await stand("told");
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ sent: 2, shortlisted: 1, declined: 1 }),
+    });
+  });
+  return { decisions, sends };
+}
+
+const tab = (page: Page, name: string, count: number) =>
+  page
+    .getByRole("navigation", { name: "Filter proposals" })
+    .getByRole("link", { name: new RegExp(`^${name} ?${count}$`) });
+
+test.describe("the proposals a use case received", () => {
+  test("a reviewer marks proposals from the list, reads them by tab, and sends the outcomes", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const { decisions, sends } = await fakeDecisions(page, baseURL!, "received");
+    await page.goto(receivedPath);
+    await expect(heading(page)).toHaveText("Claims triage with document intelligence");
+    await expect(tab(page, "All", 3)).toHaveAttribute("aria-current", "page");
+    await expect(page.getByText("Not decided")).toHaveCount(3);
+    await expect(page.getByRole("button", { name: /^Send outcomes/ })).toBeDisabled();
+    await settled(page);
+
+    // Marking only saves: no popup, nobody is told.
+    await page.getByRole("button", { name: "Actions for Orbit Claims" }).click();
+    await page.getByRole("menuitem", { name: "Shortlist" }).click();
+    await expect.poll(() => decisions.length).toBe(1);
+    expect(decisions[0]).toEqual({
+      id: "7a1d2c3b-0000-4000-8000-000000000063",
+      body: { decision: "shortlisted" },
+    });
+    await expect(page.getByRole("alertdialog")).toHaveCount(0);
+
+    // The stub now holds two decisions that were not sent: the counts follow the response.
+    await expect(tab(page, "Shortlisted", 1)).toBeVisible();
+    await expect(tab(page, "Declined", 1)).toBeVisible();
+    await expect(page.getByText("2 decisions are not sent yet.")).toBeVisible();
+    await expect(page.getByText("Not sent yet", { exact: true })).toHaveCount(2);
+    await tab(page, "Declined", 1).click();
+    await expect(page).toHaveURL(/\?tab=declined$/);
+    await expect(page.getByRole("link", { name: "Lumen AI" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Northwind Analytics" })).toHaveCount(0);
+    await tab(page, "All", 3).click();
+    await expect(page.getByRole("link", { name: "Northwind Analytics" })).toBeVisible();
+
+    // Sending asks first, says what goes out, and takes one note for every email.
+    await page.getByRole("button", { name: "Send outcomes (2)" }).click();
+    const dialog = page.getByRole("alertdialog", { name: "Send outcomes to providers?" });
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByText("1 shortlisted and 1 declined will each get one email."),
+    ).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Cancel" })).toBeFocused();
+    await dialog.getByLabel("Message in every email (optional)").fill("Thank you for applying.");
+    await settled(page);
+    await dialog.getByRole("button", { name: "Send 2 outcomes" }).click();
+    await expect.poll(() => sends).toEqual([{ message: "Thank you for applying." }]);
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText("2 outcomes were sent.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send outcomes (0)" })).toBeDisabled();
+    await expect(page.getByText("Not sent yet", { exact: true })).toHaveCount(0);
+    await settled(page);
+  });
+
+  test("a reviewer decides from the proposal itself, and may change it", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const { decisions } = await fakeDecisions(page, baseURL!, "received");
+    await page.goto(`${receivedPath}/7a1d2c3b-0000-4000-8000-000000000061`);
+    await expect(heading(page)).toHaveText("Northwind Analytics");
+    await expect(page.getByText("Your assessment")).toBeVisible();
+    await expect(page.getByText("Not decided")).toBeVisible();
+    await settled(page);
+
+    await page.getByRole("button", { name: "Shortlist", exact: true }).click();
+    await expect
+      .poll(() => decisions.map((entry) => entry.body))
+      .toEqual([{ decision: "shortlisted" }]);
+    await expect(page.getByText("Not sent yet", { exact: true })).toBeVisible();
+    await expect(page.getByText("Hoa Lê on")).toBeVisible();
+    // What is decided is not offered again; the other choice stays.
+    await expect(page.getByRole("button", { name: "Shortlist", exact: true })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Decline", exact: true })).toBeEnabled();
+    await settled(page);
+  });
+});
+
+test.describe("what the sender of a proposal is told", () => {
+  test("a shortlisted proposal says so and keeps Withdraw", async ({ page, context, baseURL }) => {
+    await signInAs(context, "owner", baseURL!);
+    await fakeBackend(page, baseURL!, "shortlisted");
+    await page.goto(`${proposePath}/view`);
+    await expect(page.getByText("Your proposal was shortlisted")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Withdraw", exact: true })).toBeVisible();
+    await settled(page);
+
+    await page.goto(`/use-cases/${proposalUseCaseId}`);
+    await expect(page.getByText("shortlisted your proposal on 13 Oct 2026")).toBeVisible();
+    await expect(page.getByText("Shortlisted", { exact: true })).toBeVisible();
+    await settled(page);
+  });
+
+  test("a proposal that was not selected is only read", async ({ page, context, baseURL }) => {
+    await signInAs(context, "owner", baseURL!);
+    await fakeBackend(page, baseURL!, "declined");
+    await page.goto(`${proposePath}/view`);
+    await expect(page.getByText("Your proposal was not selected")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Withdraw", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Edit proposal" })).toHaveCount(0);
+    await settled(page);
+
+    await page.goto(`/use-cases/${proposalUseCaseId}`);
+    await expect(page.getByText("Not selected", { exact: true })).toBeVisible();
+    await expect(page.getByText("The outcome was sent to your email on 13 Oct 2026")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Edit proposal" })).toHaveCount(0);
+    await settled(page);
   });
 });
