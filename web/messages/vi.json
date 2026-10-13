@@ -7676,18 +7676,9 @@
       "you": {
         "who": "Ai gửi proposal này?",
         "choice": {
-          "individual": {
-            "title": "Một mình tôi",
-            "what": "Tôi làm việc một mình"
-          },
-          "team": {
-            "title": "Một nhóm",
-            "what": "Vài người cùng xây dựng"
-          },
-          "company": {
-            "title": "Công ty",
-            "what": "Tổ chức có trang riêng"
-          }
+          "individual": "Một mình tôi",
+          "team": "Một nhóm",
+          "company": "Công ty"
         },
         "teamName": "Tên nhóm",
         "teamSize": "Quy mô nhóm",
