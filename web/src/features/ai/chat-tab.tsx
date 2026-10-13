@@ -1,6 +1,7 @@
 import { PlugZapIcon } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
+import { SettingsBlock } from "@/components/composites/settings-block";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Empty,
@@ -15,7 +16,6 @@ import { ChatLogo } from "./chat-logo";
 import { chatPresets, presetGroups } from "./chat-presets";
 import { ConnectPreset } from "./connect-preset";
 import { ConnectionCard } from "./connection-card";
-import { SettingsBlock } from "./settings-block";
 import { TaskModel } from "./task-model";
 
 /**

@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { HelpPopover } from "@/components/composites/help-popover";
+import { SettingsBlock } from "@/components/composites/settings-block";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Status } from "@/components/composites/status";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +16,6 @@ import {
 } from "@/components/ui/empty";
 import { getFormatter } from "@/i18n/format-server";
 import type { AiProviders } from "@/lib/api/generated";
-import { SettingsBlock } from "@/features/ai/settings-block";
 import { siteRoutes } from "@/lib/site";
 
 import { ChangeModel } from "./change-model";
