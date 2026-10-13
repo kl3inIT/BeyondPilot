@@ -5980,6 +5980,10 @@ export type StartConversationRequest = {
      * The text; something other than spaces, in any script.
      */
     body: string;
+    /**
+     * An identifier the sender chooses for the first message. Retrying with it writes nothing more.
+     */
+    id: string;
     kind: 'talent' | 'solution' | 'program';
     /**
      * The address of the talent profile, solution or program on the site.

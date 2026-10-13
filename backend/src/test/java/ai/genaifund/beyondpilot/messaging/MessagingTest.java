@@ -90,8 +90,17 @@ class MessagingTest {
 		assertThat(JsonPath.<Boolean>read(prospect, "$.request")).isTrue();
 		assertThat(JsonPath.<String>read(prospect, "$.subject.headline")).isEqualTo("Builds claims AI");
 
-		String started = body(start(sender, "talent", slug, "  Would you advise our team?  ").expectStatus().isOk());
+		UUID firstId = UUID.randomUUID();
+		String started = body(startWithId(sender, firstId, "talent", slug, "  Would you advise our team?  ")
+			.expectStatus().isOk());
 		String id = JsonPath.read(started, "$.conversation.id");
+		String retried = body(startWithId(sender, firstId, "talent", slug, "  Would you advise our team?  ")
+			.expectStatus().isOk());
+		assertThat(JsonPath.<String>read(retried, "$.conversation.id")).isEqualTo(id);
+		assertThat(JsonPath.<List<String>>read(retried, "$.messages[*].body"))
+			.containsExactly("Would you advise our team?");
+		assertProblem(startWithId(sender, firstId, "talent", slug, "Different text."), 409,
+			"MESSAGING_MESSAGE_CONFLICT");
 		assertThat(JsonPath.<String>read(started, "$.conversation.status")).isEqualTo("pending");
 		assertThat(JsonPath.<String>read(started, "$.conversation.side")).isEqualTo("starter");
 		assertThat(JsonPath.<String>read(started, "$.conversation.counterpartName")).isEqualTo("First Talent");
@@ -128,6 +137,9 @@ class MessagingTest {
 		assertThat(JsonPath.<String>read(accepted, "$.conversation.status")).isEqualTo("accepted");
 		assertThat(JsonPath.<Boolean>read(accepted, "$.conversation.canWrite")).isTrue();
 		assertThat(mail.latestSubjectTo("minh@first-sender.test")).isEqualTo("Your message was accepted");
+		assertThat(JsonPath.<List<String>>read(body(startWithId(sender, firstId, "talent", slug,
+				"Would you advise our team?").expectStatus().isOk()), "$.messages[*].body"))
+			.containsExactly("Would you advise our team?");
 		assertProblem(post(talent, CONVERSATIONS + "/" + id + "/accept", null), 409, "MESSAGING_NOT_WAITING");
 		assertThat(events(id)).containsExactly("messaging.request_accept");
 
@@ -138,6 +150,10 @@ class MessagingTest {
 		long seq = JsonPath.<Number>read(reply, "$.seq").longValue();
 		String sendersList = body(get(sender, CONVERSATIONS).expectStatus().isOk());
 		assertThat(JsonPath.<Number>read(sendersList, "$.unread").intValue()).isEqualTo(1);
+		assertProblem(post(sender, CONVERSATIONS + "/" + id + "/read", Map.of("seq", seq + 1000)), 400,
+			"MESSAGING_READ_BEYOND_LAST_MESSAGE");
+		assertThat(JsonPath.<Number>read(body(get(sender, CONVERSATIONS).expectStatus().isOk()), "$.unread")
+			.intValue()).isEqualTo(1);
 		assertThat(JsonPath.<String>read(sendersList, "$.chats[0].lastMessage.preview")).isEqualTo("Yes, gladly.");
 		assertThat(JsonPath.<Boolean>read(sendersList, "$.chats[0].lastMessage.mine")).isFalse();
 		// A reader is never recorded past the last message, whatever they say.
@@ -310,8 +326,13 @@ class MessagingTest {
 		String program = publishedProgram("Chat Program", "chat-program");
 		String founder = signIn("founder@program-chat.test");
 
-		String started = body(start(founder, "program", program, "Can one team apply twice?").expectStatus().isOk());
+		UUID firstId = UUID.randomUUID();
+		String started = body(startWithId(founder, firstId, "program", program,
+				"Can one team apply twice?").expectStatus().isOk());
 		String id = JsonPath.read(started, "$.conversation.id");
+		assertThat(JsonPath.<List<String>>read(body(startWithId(founder, firstId, "program", program,
+				"Can one team apply twice?").expectStatus().isOk()), "$.messages[*].body"))
+			.containsExactly("Can one team apply twice?");
 		assertThat(JsonPath.<String>read(started, "$.conversation.status")).isEqualTo("accepted");
 		assertThat(JsonPath.<Object>read(started, "$.conversation.counterpartName")).isNull();
 		assertThat(JsonPath.<List<Object>>read(started, "$.participants")).isEmpty();
@@ -442,7 +463,12 @@ class MessagingTest {
 	}
 
 	private RestTestClient.ResponseSpec start(String session, String kind, String slug, String body) {
-		return post(session, CONVERSATIONS, Map.of("kind", kind, "slug", slug, "body", body));
+		return startWithId(session, UUID.randomUUID(), kind, slug, body);
+	}
+
+	private RestTestClient.ResponseSpec startWithId(String session, UUID id, String kind, String slug, String body) {
+		return post(session, CONVERSATIONS,
+				Map.of("id", id.toString(), "kind", kind, "slug", slug, "body", body));
 	}
 
 	private RestTestClient.ResponseSpec send(String session, String conversation, String body) {

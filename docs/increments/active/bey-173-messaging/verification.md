@@ -56,3 +56,9 @@ Seen and left: in the operators' list the sender's name and address are cut shor
 **Not walked in a browser:** a message that fails to send and is tried again, a request that closes after fourteen days, and anything on staging.
 
 A person who has just left Messages is still counted as listening until their stream is found closed, which can take until the next comment line, 20 seconds: a message written in that time brings them no email.
+
+## Follow-up corrections on 13 October 2026
+
+The review of the finished screen found that a client could mark messages beyond the conversation's latest `seq`, retrying a first message after a lost response could duplicate it or be refused, and Back/Forward could leave the visible conversation different from `?c=`. The first message now carries a stable identifier; the backend returns the existing conversation for a retry and rejects a read position beyond its latest message. The screen follows `?c=` and ignores an obsolete conversation response. The textarea always shows its remaining characters, and the read marker no longer labels a sent time as the time it was seen.
+
+`./gradlew :backend:check` passed with `JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Ho_Chi_Minh`. `pnpm --dir web check` passed with 657 unit tests, 5501 message keys and 230 covered failure codes. The focused Playwright tests for Back/Forward and Contact passed on desktop and mobile (four runs). In this Windows worktree, the test build used `next build --webpack` because Turbopack could not resolve the worktree's linked `node_modules`; the committed Playwright command remains `next build`.

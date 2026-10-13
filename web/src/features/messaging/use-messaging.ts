@@ -282,9 +282,9 @@ export function useMessaging(
       }
     },
     /** Writes a first message, and shows the conversation it opened. */
-    async start(target: MessagingTarget, body: string) {
+    async start(target: MessagingTarget, body: string, id: string) {
       const { data } = await startConversation({
-        body: { kind: target.kind, slug: target.slug, body },
+        body: { id, kind: target.kind, slug: target.slug, body },
       });
       asked.current += 1;
       shown.current = data.conversation.id;

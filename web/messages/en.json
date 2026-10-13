@@ -381,6 +381,7 @@
     "MESSAGING_NOT_WAITING": "This request was answered already.",
     "MESSAGING_OWNERS_ONLY": "Only an owner of the organization answers a first message.",
     "MESSAGING_MESSAGE_CONFLICT": "This message could not be sent. Write it again.",
+    "MESSAGING_READ_BEYOND_LAST_MESSAGE": "That message is not in this conversation. Reload it and try again.",
     "MCP_TOOL_NOT_FOUND": "This tool no longer exists. Reload the page.",
     "NOTIFICATION_EMAIL_NOT_SENT": "The email could not be sent. Try again in a moment.",
     "NOTIFICATION_SETTINGS_INCOMPLETE": "The provider needs more: fill in the fields marked as required.",

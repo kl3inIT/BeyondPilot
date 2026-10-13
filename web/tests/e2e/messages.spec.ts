@@ -299,7 +299,12 @@ test.describe("messages", () => {
     expect(written.filter((one) => one.call.endsWith("/conversations"))).toEqual([
       {
         call: "POST /api/messaging/conversations",
-        body: { kind: "talent", slug: "arif-hidayat", body: "Would you lead our OCR pilot?" },
+        body: {
+          id: expect.any(String),
+          kind: "talent",
+          slug: "arif-hidayat",
+          body: "Would you lead our OCR pilot?",
+        },
       },
     ]);
   });

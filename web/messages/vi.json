@@ -381,6 +381,7 @@
     "MESSAGING_NOT_WAITING": "Yêu cầu này đã được trả lời.",
     "MESSAGING_OWNERS_ONLY": "Chỉ chủ sở hữu của tổ chức mới trả lời một tin đầu tiên.",
     "MESSAGING_MESSAGE_CONFLICT": "Chưa gửi được tin này. Hãy viết lại.",
+    "MESSAGING_READ_BEYOND_LAST_MESSAGE": "Tin này không có trong cuộc trò chuyện. Hãy tải lại và thử lần nữa.",
     "MCP_TOOL_NOT_FOUND": "Công cụ này không còn nữa. Hãy tải lại trang.",
     "NOTIFICATION_EMAIL_NOT_SENT": "Chưa gửi được email. Hãy thử lại sau giây lát.",
     "NOTIFICATION_SETTINGS_INCOMPLETE": "Nhà cung cấp cần thêm thông tin: điền các ô bắt buộc.",

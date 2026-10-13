@@ -219,13 +219,17 @@ public class MessagingService {
 		String body = request.body().strip();
 		// One writer at a time for an account, so the limits count what its other requests are writing.
 		conversations.lockWriter(caller.accountId());
+		Message previous = conversations.message(request.id()).orElse(null);
+		if (previous != null) {
+			return repeatedStart(caller, target, previous, body);
+		}
 		Conversation open = conversations.active(caller.accountId(), target.kind(), target.subjectId()).orElse(null);
 		if (open != null) {
 			if (!MessagingRepository.ACCEPTED.equals(open.status())) {
 				throw new MessagingException(MessagingErrorCode.ALREADY_WAITING,
 						"A second first message in the waiting conversation " + open.id());
 			}
-			write(caller, person, open, UUID.randomUUID(), body);
+			write(caller, person, open, request.id(), body);
 			return detail(caller, open);
 		}
 		Instant now = Instant.now();
@@ -241,11 +245,19 @@ public class MessagingService {
 		if (!conversations.create(id, target.kind(), target.subjectId(), target.subjectName(), caller.accountId(),
 				starterOrganizationId, target.recipientAccountId(), target.recipientOrganizationId(),
 				waits ? MessagingRepository.PENDING : MessagingRepository.ACCEPTED)) {
+			Message repeated = conversations.message(request.id()).orElse(null);
+			if (repeated != null) {
+				return repeatedStart(caller, target, repeated, body);
+			}
 			throw new MessagingException(MessagingErrorCode.ALREADY_WAITING,
 					"A second conversation about " + target.kind() + " " + target.subjectId());
 		}
 		Conversation conversation = conversations.find(id).orElseThrow();
-		Message first = conversations.write(UUID.randomUUID(), id, caller.accountId(), body).message();
+		Written written = conversations.write(request.id(), id, caller.accountId(), body);
+		Message first = written.message();
+		if (!written.created()) {
+			throw messageConflict(request.id());
+		}
 		conversations.markRead(id, caller.accountId(), first.seq());
 		if (waits) {
 			String organizationName = starterOrganizationId == null ? null
@@ -314,18 +326,21 @@ public class MessagingService {
 	/**
 	 * Records how far the caller has read a conversation, and tells the other side. Nothing is recorded or told for
 	 * a conversation that is not open: the sender of a first message is not told that it was read until it is
-	 * accepted. A reader is never recorded past the last message of the conversation.
-	 * @throws MessagingException when the caller has no such conversation
+	 * accepted.
+	 * @throws MessagingException when the caller has no such conversation, or names a message past its last
 	 */
 	@Transactional
 	public void read(Actor actor, UUID id, MarkReadRequest request) {
 		Caller caller = caller(actor);
 		Conversation conversation = visible(caller, id);
-		long last = conversations.lastSeq(id);
-		if (!MessagingRepository.ACCEPTED.equals(conversation.status()) || last == 0) {
+		if (!MessagingRepository.ACCEPTED.equals(conversation.status())) {
 			return;
 		}
-		long seq = conversations.markRead(id, caller.accountId(), Math.min(request.seq(), last));
+		if (request.seq() > conversations.lastSeq(id)) {
+			throw new MessagingException(MessagingErrorCode.READ_BEYOND_LAST_MESSAGE,
+					"Read position " + request.seq() + " is beyond the last message in conversation " + id);
+		}
+		long seq = conversations.markRead(id, caller.accountId(), request.seq());
 		boolean fromStarter = side(caller, conversation) == Side.STARTER;
 		changes.tell(audience(conversation), listener -> new MessagingEvent(Kind.READ, id, null, seq, fromStarter,
 				listener.accountId().equals(caller.accountId()), null));
@@ -426,6 +441,14 @@ public class MessagingService {
 	private Message write(Caller caller, Person person, Conversation conversation, UUID messageId, String body) {
 		// One writer at a time for an account, so the limit counts what its other requests are writing.
 		conversations.lockWriter(caller.accountId());
+		Message previous = conversations.message(messageId).orElse(null);
+		if (previous != null) {
+			if (!previous.conversationId().equals(conversation.id())
+					|| !previous.senderAccountId().equals(caller.accountId()) || !previous.body().equals(body)) {
+				throw messageConflict(messageId);
+			}
+			return previous;
+		}
 		if (conversations.writtenSince(caller.accountId(), Instant.now().minus(1, ChronoUnit.MINUTES)) >= MESSAGES_A_MINUTE) {
 			throw new MessagingException(MessagingErrorCode.TOO_MANY_MESSAGES,
 					"More than " + MESSAGES_A_MINUTE + " messages in a minute by account " + caller.accountId(),
@@ -434,9 +457,8 @@ public class MessagingService {
 		Written written = conversations.write(messageId, conversation.id(), caller.accountId(), body);
 		Message message = written.message();
 		if (!message.conversationId().equals(conversation.id())
-				|| !message.senderAccountId().equals(caller.accountId())) {
-			throw new MessagingException(MessagingErrorCode.MESSAGE_CONFLICT,
-					"The identifier " + messageId + " belongs to another message");
+				|| !message.senderAccountId().equals(caller.accountId()) || !message.body().equals(body)) {
+			throw messageConflict(messageId);
 		}
 		if (!written.created()) {
 			return message;
@@ -451,6 +473,25 @@ public class MessagingService {
 						null, null, null, null));
 		tellAbsent(conversation, caller, fromStarter, senderName);
 		return message;
+	}
+
+	private ConversationDetailResponse repeatedStart(Caller caller, Target target, Message message, String body) {
+		Conversation conversation = visible(caller, message.conversationId());
+		UUID subjectId = switch (target.kind()) {
+			case MessagingRepository.TALENT -> conversation.talentProfileId();
+			case MessagingRepository.SOLUTION -> conversation.solutionId();
+			default -> conversation.programId();
+		};
+		if (!message.senderAccountId().equals(caller.accountId()) || !message.body().equals(body)
+				|| !conversation.kind().equals(target.kind()) || !target.subjectId().equals(subjectId)) {
+			throw messageConflict(message.id());
+		}
+		return detail(caller, conversation);
+	}
+
+	private static MessagingException messageConflict(UUID id) {
+		return new MessagingException(MessagingErrorCode.MESSAGE_CONFLICT,
+				"The identifier " + id + " belongs to another message");
 	}
 
 	/**

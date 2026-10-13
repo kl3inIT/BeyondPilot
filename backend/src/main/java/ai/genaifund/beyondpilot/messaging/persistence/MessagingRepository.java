@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -139,12 +138,12 @@ public class MessagingRepository {
 	public boolean create(UUID id, String kind, UUID subjectId, String subjectName, UUID starterAccountId,
 			@Nullable UUID starterOrganizationId, @Nullable UUID recipientAccountId,
 			@Nullable UUID recipientOrganizationId, String status) {
-		try {
-			jdbc.sql("insert into messaging_conversation (id, kind, " + subjectColumn(kind).substring(2) + """
+		return jdbc.sql("insert into messaging_conversation (id, kind, " + subjectColumn(kind).substring(2) + """
 					, subject_name, starter_account_id, starter_organization_id, recipient_account_id,
 					recipient_organization_id, status, answered_at)
 					values (:id, :kind, :subject, :subjectName, :starter, :starterOrganization, :recipient,
 					        :recipientOrganization, :status, case when :status = 'accepted' then now() end)
+					on conflict do nothing
 					""")
 				.param("id", id)
 				.param("kind", kind)
@@ -155,12 +154,7 @@ public class MessagingRepository {
 				.param("recipient", recipientAccountId, Types.OTHER)
 				.param("recipientOrganization", recipientOrganizationId, Types.OTHER)
 				.param("status", status)
-				.update();
-			return true;
-		}
-		catch (DuplicateKeyException exception) {
-			return false;
-		}
+				.update() == 1;
 	}
 
 	/** How many conversations a person started since the moment given. */
@@ -252,6 +246,22 @@ public class MessagingRepository {
 		return new Written(message, inserted == 1);
 	}
 
+	/** A message under the sender's identifier, when it has already been kept. */
+	public Optional<Message> message(UUID id) {
+		return jdbc.sql("select id, conversation_id, seq, sender_account_id, body, created_at from messaging_message where id = ?")
+			.param(id)
+			.query(MessagingRepository::message)
+			.optional();
+	}
+
+	/** The last message currently in a conversation. */
+	public long lastSeq(UUID conversationId) {
+		return jdbc.sql("select coalesce(max(seq), 0) from messaging_message where conversation_id = ?")
+			.param(conversationId)
+			.query(Long.class)
+			.single();
+	}
+
 	/**
 	 * A page of a conversation's messages, the oldest first.
 	 * @param before only those before this message, the latest of them; null for the latest of all
@@ -283,14 +293,6 @@ public class MessagingRepository {
 				select id, conversation_id, seq, sender_account_id, body, created_at from messaging_message
 				where conversation_id = ? order by seq limit 1
 				""").param(conversationId).query(MessagingRepository::message).optional();
-	}
-
-	/** The seq of the last message of a conversation; 0 when it has none. */
-	public long lastSeq(UUID conversationId) {
-		return jdbc.sql("select coalesce(max(seq), 0) from messaging_message where conversation_id = ?")
-			.param(conversationId)
-			.query(Long.class)
-			.single();
 	}
 
 	/**

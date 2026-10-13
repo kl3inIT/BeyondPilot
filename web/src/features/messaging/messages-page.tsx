@@ -195,9 +195,9 @@ function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
               read={writing}
               onBack={back}
               onOpen={(id) => void open(id)}
-              onSend={async (body) => {
-                const id = await messaging.start(target, body);
-                void setSearch({ c: id, to: null, at: null });
+              onSend={async (body, messageId) => {
+                const id = await messaging.start(target, body, messageId);
+                void setSearch({ c: id, to: null, at: null }, { history: "replace" });
               }}
             />
           ) : (
@@ -282,10 +282,12 @@ function FirstMessage({
   read: ProspectRead;
   onBack: () => void;
   onOpen: (id: string) => void;
-  onSend: (body: string) => Promise<void>;
+  onSend: (body: string, id: string) => Promise<void>;
 }) {
   const t = useTranslations("Messaging");
   const words = useTranslations();
+  /** The identifier each text was first sent under, so sending it again after a failure writes it once. */
+  const ids = useRef(new Map<string, string>());
   const notify = useNotify();
   const prospect: ConversationProspect | undefined = read.prospect;
   // The words of the code the backend refused with, when the catalog the reader was sent has them.
@@ -348,15 +350,20 @@ function FirstMessage({
           <div className="border-t px-4 py-3 md:px-6">
             <Composer
               label={t("first.label", { name })}
-              onSend={(body) =>
-                onSend(body).then(
-                  () => true,
+              onSend={(body) => {
+                const id = ids.current.get(body) ?? crypto.randomUUID();
+                ids.current.set(body, id);
+                return onSend(body, id).then(
+                  () => {
+                    ids.current.delete(body);
+                    return true;
+                  },
                   (error: unknown) => {
                     notify.failure(error);
                     return false;
                   },
-                )
-              }
+                );
+              }}
             />
           </div>
         </>
