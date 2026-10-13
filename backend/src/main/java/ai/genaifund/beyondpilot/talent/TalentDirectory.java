@@ -81,6 +81,14 @@ public class TalentDirectory {
 			.map(this::indexed);
 	}
 
+	/** The person behind an approved, listed profile by its address; empty for any other. */
+	@Transactional(readOnly = true)
+	public Optional<TalentRecipient> recipient(String slug) {
+		return profiles.findBySlug(slug)
+			.filter(profile -> profile.isApproved() && profile.isListed())
+			.map(profile -> new TalentRecipient(profile.getId(), profile.getName(), profile.getAccountId()));
+	}
+
 	/** Every approved, listed profile as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedTalent> indexedAll() {

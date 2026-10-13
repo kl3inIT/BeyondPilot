@@ -156,7 +156,32 @@ public enum EmailKind {
 
 	TALENT_ENQUIRY_CLOSED("talent_enquiry_closed", EmailGroup.TALENT, true, null,
 			Variable.required("talentName", "Mei Tan"),
-			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/talent/sent"));
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/talent/sent")),
+
+	MESSAGE_REQUEST("message_request", EmailGroup.MESSAGES, true, "message",
+			Variable.optional("senderName", "Minh Trần"), Variable.optional("senderOrganization", "Pocket Policy"),
+			Variable.required("about", "ClaimLens"),
+			Variable.quote("message", "We are building claims triage and would like to see a demo."),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
+
+	MESSAGE_REQUEST_REMINDER("message_request_reminder", EmailGroup.MESSAGES, true, null,
+			Variable.optional("senderName", "Minh Trần"), Variable.required("daysLeft", "7"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
+
+	MESSAGE_REQUEST_ACCEPTED("message_request_accepted", EmailGroup.MESSAGES, true, null,
+			Variable.optional("otherName", "Plain Cover"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
+
+	MESSAGE_REQUEST_DECLINED("message_request_declined", EmailGroup.MESSAGES, true, null,
+			Variable.optional("otherName", "Plain Cover"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
+
+	MESSAGE_REQUEST_CLOSED("message_request_closed", EmailGroup.MESSAGES, true, null,
+			Variable.optional("otherName", "Plain Cover"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
+
+	MESSAGE_UNREAD("message_unread", EmailGroup.MESSAGES, true, null, Variable.optional("senderName", "Mei Tan"),
+			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages"));
 
 	private final String value;
 

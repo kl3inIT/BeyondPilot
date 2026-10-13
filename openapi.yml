@@ -57,8 +57,13 @@ tags:
   name: Search
 - description: The requests for an introduction operators read.
   name: Introduction administration
+- description: "Conversations with the person behind a talent profile, the organization\
+    \ that offers a solution, and GenAI Fund about a program."
+  name: Messaging
 - description: The organization the caller belongs to.
   name: My organization
+- description: The first messages reported as unwanted.
+  name: Messaging administration
 - description: Who is signed in.
   name: Identity
 - description: The use cases the members of an organization write.
@@ -927,6 +932,9 @@ paths:
           - use_case.set_programs
           - introduction.reply
           - introduction.decline
+          - messaging.request_accept
+          - messaging.request_decline
+          - messaging.request_report
           - talent.approve
           - talent.reject
           - talent.enquiry_accept
@@ -2494,6 +2502,626 @@ paths:
       summary: Turn the user MCP server on or off
       tags:
       - MCP
+  /api/messaging/admin/reported:
+    get:
+      operationId: listReportedConversations
+      parameters:
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportedRequestList"
+          description: One page of the reported first messages.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The first messages reported as unwanted, the most recently reported\
+        \ first"
+      tags:
+      - Messaging administration
+  /api/messaging/conversations:
+    get:
+      operationId: listConversations
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationList"
+          description: The open conversations and the first messages that wait.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: "The caller's conversations, the one written in last first"
+      tags:
+      - Messaging
+    post:
+      description: "To a person or an organization the message waits as a request\
+        \ until the other side accepts, declines or reports it. To GenAI Fund the\
+        \ conversation is open at once. A caller who already talks with the other\
+        \ side writes in that conversation instead."
+      operationId: startConversation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartConversationRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationDetail"
+          description: The conversation with the message in it.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The request is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no approved organization and writes to
+            a solution provider.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "No profile, solution or program is at the address."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The address is the caller's own, or their earlier first message\
+            \ still waits for an answer."
+        "429":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller started as many conversations as a day allows.
+      security:
+      - session: []
+      summary: Write a first message
+      tags:
+      - Messaging
+  /api/messaging/conversations/{id}:
+    get:
+      operationId: getConversation
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationDetail"
+          description: The conversation.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller has no such conversation.
+      security:
+      - session: []
+      summary: "One conversation with its latest messages, what it is about and who\
+        \ is on the other side"
+      tags:
+      - Messaging
+  /api/messaging/conversations/{id}/accept:
+    post:
+      operationId: acceptConversation
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationDetail"
+          description: "The conversation is open, and the sender is told."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Only an owner of the organization answers.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No such request waits for the caller's side.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: It was answered already.
+      security:
+      - session: []
+      summary: "Accept a first message, which opens the conversation"
+      tags:
+      - Messaging
+  /api/messaging/conversations/{id}/decline:
+    post:
+      operationId: declineConversation
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: "It is declined, and the sender is told without a reason."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Only an owner of the organization answers.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No such request waits for the caller's side.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: It was answered already.
+      security:
+      - session: []
+      summary: Decline a first message
+      tags:
+      - Messaging
+  /api/messaging/conversations/{id}/messages:
+    get:
+      operationId: listMessages
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - description: "Only the messages before the one with this seq, the latest of\
+          \ them."
+        in: query
+        name: before
+        required: false
+        schema:
+          type:
+          - integer
+          - "null"
+          format: int64
+          minimum: 1
+      - description: "Only the messages after the one with this seq, the earliest\
+          \ of them; it wins over before."
+        in: query
+        name: after
+        required: false
+        schema:
+          type:
+          - integer
+          - "null"
+          format: int64
+          minimum: 0
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagePage"
+          description: "At most 50 messages, the oldest first."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller has no such conversation.
+      security:
+      - session: []
+      summary: "Some messages of a conversation: those before one, to read further\
+        \ back, or those after one, to catch up"
+      tags:
+      - Messaging
+    post:
+      description: "The sender chooses the message's identifier, so a send that got\
+        \ no answer is safe to repeat: the message is written once."
+      operationId: sendMessage
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMessageRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+          description: The message as it was kept.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The request is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller has no such conversation.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The conversation is not open, or the identifier belongs to\
+            \ another message."
+        "429":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller writes too fast.
+      security:
+      - session: []
+      summary: Write a message in an open conversation
+      tags:
+      - Messaging
+  /api/messaging/conversations/{id}/read:
+    post:
+      operationId: markConversationRead
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkReadRequest"
+        required: true
+      responses:
+        "204":
+          description: "It is recorded, and the other side is told."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The request is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller has no such conversation.
+      security:
+      - session: []
+      summary: Say how far the caller has read a conversation
+      tags:
+      - Messaging
+  /api/messaging/conversations/{id}/report:
+    post:
+      description: The sender is told what a decline tells. Operators read what was
+        reported.
+      operationId: reportConversation
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: It is reported.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Only an owner of the organization answers.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No such request waits for the caller's side.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: It was answered already.
+      security:
+      - session: []
+      summary: Report a first message as unwanted
+      tags:
+      - Messaging
+  /api/messaging/conversations/{id}/typing:
+    post:
+      description: Nothing is kept. A screen says it again every few seconds while
+        its person writes.
+      operationId: sayTyping
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The others with a screen open are told.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller has no such conversation.
+      security:
+      - session: []
+      summary: Tell the others of an open conversation that the caller is writing
+      tags:
+      - Messaging
+  /api/messaging/events:
+    get:
+      description: "Server-sent events. The name of an event says what happened: `message`\
+        \ (a message was written; the body carries it), `read` (someone read up to\
+        \ a message), `typing` (someone on the other side is writing) and `conversation`\
+        \ (a conversation started, was answered or closed: read it and the list again).\
+        \ Nothing is replayed, so read `listConversations`, and `listMessages` after\
+        \ the last message held, whenever the connection opens. The server ends the\
+        \ stream after ten minutes; open it again. A comment line is sent when the\
+        \ stream opens and every 20 seconds."
+      operationId: streamMessagingEvents
+      responses:
+        "200":
+          content:
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/MessagingEvent"
+          description: The stream; the schema is the body of each event.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: "Hear what happens in the caller's conversations, for as long as the\
+        \ connection stays open"
+      tags:
+      - Messaging
+  /api/messaging/prospect:
+    get:
+      operationId: getConversationProspect
+      parameters:
+      - in: query
+        name: kind
+        required: true
+        schema:
+          type: string
+          enum:
+          - talent
+          - solution
+          - program
+          pattern: talent|solution|program
+      - description: "The address of the talent profile, solution or program on the\
+          \ site."
+        in: query
+        name: slug
+        required: true
+        schema:
+          type: string
+          maxLength: 200
+          minLength: 0
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationProspect"
+          description: "What it is about, who reads it, and the conversation the caller\
+            \ already has there."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A parameter is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller belongs to no approved organization and means to
+            write to a solution provider.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "No profile, solution or program is at the address."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The address is the caller's own.
+      security:
+      - session: []
+      summary: "Who the caller would write to at a public address, before anything\
+        \ is written"
+      tags:
+      - Messaging
+  /api/messaging/unread:
+    get:
+      operationId: getUnreadMessages
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Unread"
+          description: What waits for the caller in Messages.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: "How many messages the caller has not read, and how many first messages\
+        \ wait for their answer"
+      tags:
+      - Messaging
   /api/notification/admin/email/messages:
     get:
       operationId: listEmailMessages
@@ -13668,6 +14296,9 @@ components:
           - use_case.set_programs
           - introduction.reply
           - introduction.decline
+          - messaging.request_accept
+          - messaging.request_decline
+          - messaging.request_report
           - talent.approve
           - talent.reject
           - talent.enquiry_accept
@@ -14230,6 +14861,282 @@ components:
           maxLength: 40
           minLength: 0
           pattern: "^\\+?[0-9 ().-]*$"
+    Conversation:
+      type: object
+      description: A conversation as the caller's list shows it.
+      properties:
+        canAnswer:
+          type: boolean
+          description: "Whether the caller may accept, decline or report it now."
+        canWrite:
+          type: boolean
+          description: Whether the caller may write in it now.
+        closesAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When a request closes if nobody answers; null once it is answered.
+        counterpartName:
+          type:
+          - string
+          - "null"
+          description: "The other side as it is shown: a person or an organization.\
+            \ Null for GenAI Fund, and for a person who gave no name."
+        counterpartOrganization:
+          type:
+          - string
+          - "null"
+          description: "The organization of the person who wrote first, for the side\
+            \ written to; null when they had none."
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          description: "Who the conversation is with: the person behind a talent profile,\
+            \ the organization that offers a solution, or GenAI Fund about a program."
+          enum:
+          - talent
+          - solution
+          - program
+        lastMessage:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/LastMessage"
+        lastMessageAt:
+          type: string
+          format: date-time
+          description: "When the last message was written, which orders the list."
+        side:
+          type: string
+          description: Whether the caller wrote first or is the side written to.
+          enum:
+          - starter
+          - recipient
+        status:
+          type: string
+          description: Where it stands. A request the other side reported reads as
+            declined.
+          enum:
+          - pending
+          - accepted
+          - declined
+          - closed
+        subjectName:
+          type: string
+          description: "What it is about: the name of the profile, solution or program\
+            \ when it started."
+        unread:
+          type: integer
+          format: int32
+          description: How many messages of the other side the caller has not read;
+            0 for a request.
+      required:
+      - canAnswer
+      - canWrite
+      - createdAt
+      - id
+      - kind
+      - lastMessageAt
+      - side
+      - status
+      - subjectName
+      - unread
+    ConversationDetail:
+      type: object
+      description: "One conversation: its latest messages, what it is about and who\
+        \ is on the other side."
+      properties:
+        conversation:
+          $ref: "#/components/schemas/Conversation"
+        hasEarlier:
+          type: boolean
+          description: Whether messages earlier than these exist.
+        messages:
+          type: array
+          description: "The latest messages, the oldest first, at most 50."
+          items:
+            $ref: "#/components/schemas/Message"
+        participants:
+          type: array
+          description: "Who reads and answers on the other side. Empty for GenAI Fund,\
+            \ whose programs team reads."
+          items:
+            $ref: "#/components/schemas/ConversationParticipant"
+        readByOtherSide:
+          type: integer
+          format: int64
+          description: "How far the other side has read: the seq of the last message\
+            \ they read, 0 when none."
+        subject:
+          $ref: "#/components/schemas/ConversationSubject"
+      required:
+      - conversation
+      - hasEarlier
+      - messages
+      - participants
+      - readByOtherSide
+      - subject
+    ConversationList:
+      type: object
+      description: "The caller's conversations, the one written in last first, in\
+        \ the two lists the screen shows."
+      properties:
+        chats:
+          type: array
+          description: "The conversations that are open, and every one the caller\
+            \ started."
+          items:
+            $ref: "#/components/schemas/Conversation"
+        requests:
+          type: array
+          description: The first messages that wait for the caller's side to answer.
+          items:
+            $ref: "#/components/schemas/Conversation"
+        unread:
+          type: integer
+          format: int32
+          description: How many messages the caller has not read across the open conversations.
+      required:
+      - chats
+      - requests
+      - unread
+    ConversationParticipant:
+      type: object
+      description: A person on the other side of a conversation.
+      properties:
+        name:
+          type:
+          - string
+          - "null"
+          description: The person as they are shown; null until they gave a name.
+        organizationName:
+          type:
+          - string
+          - "null"
+          description: The organization they act for; null when none.
+        role:
+          type: string
+          description: "A person on their own, or an owner or a member of the organization\
+            \ written to."
+          enum:
+          - person
+          - owner
+          - member
+      required:
+      - role
+    ConversationProspect:
+      type: object
+      description: "What the caller would write to before the first message is sent:\
+        \ who reads it and what it is about."
+      properties:
+        conversationId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The conversation the caller already has with this subject while
+            it waits or is open; null when none.
+        counterpartName:
+          type:
+          - string
+          - "null"
+          description: The other side as it is shown; null for GenAI Fund.
+        participants:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConversationParticipant"
+        request:
+          type: boolean
+          description: Whether the first message waits as a request until the other
+            side accepts it.
+        subject:
+          $ref: "#/components/schemas/ConversationSubject"
+      required:
+      - participants
+      - request
+      - subject
+    ConversationSubject:
+      type: object
+      description: "What a conversation is about, as its public page says it now:\
+        \ a talent profile, a solution or a program."
+      properties:
+        city:
+          type:
+          - string
+          - "null"
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        customerDeployments:
+          type: integer
+          format: int32
+          description: How many of a solution's customer deployments GenAI Fund approved;
+            0 for the other kinds.
+        headline:
+          type:
+          - string
+          - "null"
+          description: A talent profile's headline; null for the other kinds.
+        industries:
+          type: array
+          description: The industries of a solution or a person; empty for a program.
+          items:
+            type: string
+        kind:
+          type: string
+          enum:
+          - talent
+          - solution
+          - program
+        maturity:
+          type:
+          - string
+          - "null"
+          description: How far a solution has come; null for the other kinds.
+        name:
+          type: string
+        organizationName:
+          type:
+          - string
+          - "null"
+          description: The organization that offers a solution; null for the other
+            kinds.
+        roles:
+          type: array
+          description: A person's roles; empty for the other kinds.
+          items:
+            type: string
+        skills:
+          type: array
+          description: A person's skills; empty for the other kinds.
+          items:
+            type: string
+        slug:
+          type:
+          - string
+          - "null"
+          description: Its address on the site; null once it has no public page.
+        summary:
+          type:
+          - string
+          - "null"
+          description: A solution's summary or a person's bio; null when there is
+            none.
+      required:
+      - customerDeployments
+      - industries
+      - kind
+      - name
+      - roles
+      - skills
     CreateOrganization:
       type: object
       description: "A new organization. Its creator owns it, and it waits for GenAI\
@@ -15712,6 +16619,33 @@ components:
           - requested
       required:
       - outcome
+    LastMessage:
+      type: object
+      description: "The last message of a conversation, as its row in the list shows\
+        \ it."
+      properties:
+        mine:
+          type: boolean
+          description: Whether the caller wrote it.
+        preview:
+          type: string
+          description: "The start of the message, at most 140 characters."
+        senderName:
+          type:
+          - string
+          - "null"
+          description: "Who wrote it, as they are shown; null until they gave a name."
+      required:
+      - mine
+      - preview
+    MarkReadRequest:
+      type: object
+      properties:
+        seq:
+          type: integer
+          format: int64
+          description: The seq of the last message the caller has read.
+          minimum: 1
     Matching:
       type: object
       description: "The solutions matched to a use case: what it asks for, its last\
@@ -16553,6 +17487,91 @@ components:
       - intoSlug
       - mergedAt
       - mergedBy
+    Message:
+      type: object
+      description: "One message of a conversation, as the caller reads it."
+      properties:
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        fromStarter:
+          type: boolean
+          description: Whether the person who started the conversation wrote it; otherwise
+            the side they wrote to did.
+        id:
+          type: string
+          format: uuid
+        mine:
+          type: boolean
+          description: Whether the caller wrote it.
+        senderName:
+          type:
+          - string
+          - "null"
+          description: "Who wrote it, as they are shown; null until they gave a name."
+        seq:
+          type: integer
+          format: int64
+          description: Its place among all messages; a later message has a greater
+            one.
+      required:
+      - body
+      - createdAt
+      - fromStarter
+      - id
+      - mine
+      - seq
+    MessagePage:
+      type: object
+      description: "Some messages of a conversation, the oldest first."
+      properties:
+        hasMore:
+          type: boolean
+          description: Whether more messages exist in the direction asked for.
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        readByOtherSide:
+          type: integer
+          format: int64
+          description: "How far the other side has read: the seq of the last message\
+            \ they read, 0 when none."
+      required:
+      - hasMore
+      - messages
+      - readByOtherSide
+    MessagingEvent:
+      type: object
+      description: The body of one event of the caller's stream. The name of the event
+        says what happened.
+      properties:
+        conversationId:
+          type: string
+          format: uuid
+        fromStarter:
+          type: boolean
+          description: "On a `read` event, whether the person who started the conversation\
+            \ is the reader; on a `typing` event, whether they are the one writing."
+        message:
+          $ref: "#/components/schemas/Message"
+          description: "The message that was written, on a `message` event."
+        mine:
+          type: boolean
+          description: "On a `read` event, whether the caller is the reader, on another\
+            \ screen."
+        name:
+          type: string
+          description: "Who is writing, on a `typing` event; absent until they gave\
+            \ a name."
+        seq:
+          type: integer
+          format: int64
+          description: "How far the reader has read, on a `read` event."
+      required:
+      - conversationId
     MyApplication:
       type: object
       description: "One of the person's applications, as My applications lists it."
@@ -19492,6 +20511,76 @@ components:
             $ref: "#/components/schemas/ReportedChatModel"
       required:
       - models
+    ReportedRequest:
+      type: object
+      description: A first message the side written to reported as unwanted.
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - talent
+          - solution
+          - program
+        message:
+          type: string
+        reportedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When it was reported.
+        senderEmail:
+          type: string
+          description: The sender's address; empty when the account no longer signs
+            in.
+        senderName:
+          type:
+          - string
+          - "null"
+          description: The sender's name; null when they gave none.
+        senderOrganization:
+          type:
+          - string
+          - "null"
+          description: The organization the sender belonged to; null when none.
+        subjectName:
+          type: string
+          description: The profile or solution it was sent about.
+      required:
+      - createdAt
+      - id
+      - kind
+      - message
+      - senderEmail
+      - subjectName
+    ReportedRequestList:
+      type: object
+      description: "One page of the reported first messages, the newest first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportedRequest"
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+      required:
+      - items
+      - page
+      - pageSize
+      - total
     RequestIntroduction:
       type: object
       description: A request for an introduction to the organization behind a solution.
@@ -21911,6 +23000,22 @@ components:
           minLength: 0
       required:
       - reason
+    SendMessageRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        id:
+          type: string
+          format: uuid
+          description: "An identifier the sender chooses for the message. Sending\
+            \ it again writes nothing more, so a send that got no answer is safe to\
+            \ repeat."
+      required:
+      - body
+      - id
     SendTalentEnquiry:
       type: object
       description: A message to the person behind a talent profile.
@@ -22700,6 +23805,31 @@ components:
       - status
       - updatedAt
       - viewKey
+    StartConversationRequest:
+      type: object
+      properties:
+        body:
+          type: string
+          maxLength: 2000
+          minLength: 0
+        kind:
+          type: string
+          enum:
+          - talent
+          - solution
+          - program
+          minLength: 1
+          pattern: talent|solution|program
+        slug:
+          type: string
+          description: "The address of the talent profile, solution or program on\
+            \ the site."
+          maxLength: 200
+          minLength: 0
+      required:
+      - body
+      - kind
+      - slug
     StartMatchingRun:
       type: object
       description: A run of matching a person starts.
@@ -23287,6 +24417,21 @@ components:
       - baseUrl
       - model
       - vendor
+    Unread:
+      type: object
+      description: What waits for the caller in Messages.
+      properties:
+        requests:
+          type: integer
+          format: int32
+          description: How many first messages wait for the caller's side to answer.
+        unread:
+          type: integer
+          format: int32
+          description: How many messages the caller has not read across the open conversations.
+      required:
+      - requests
+      - unread
     UploadTicket:
       type: object
       description: "Permission to send the bytes of one file. Send them as the request\

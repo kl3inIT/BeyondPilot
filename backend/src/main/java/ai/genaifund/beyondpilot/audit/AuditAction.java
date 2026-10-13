@@ -165,6 +165,14 @@ public enum AuditAction {
 
 	INTRODUCTION_DECLINE("introduction.decline"),
 
+	/** The side written to accepted a first message, which opened the conversation. */
+	MESSAGING_REQUEST_ACCEPT("messaging.request_accept"),
+
+	MESSAGING_REQUEST_DECLINE("messaging.request_decline"),
+
+	/** The side written to reported a first message as unwanted; the sender was told it was declined. */
+	MESSAGING_REQUEST_REPORT("messaging.request_report"),
+
 	TALENT_APPROVE("talent.approve"),
 
 	/** Recorded before asking for changes and removing were two decisions. {@code reason} is the code given. */

@@ -48,6 +48,9 @@ public class EmailService {
 	/** The signed-in person's talent profile on the site, with the messages people sent them. */
 	private static final String MY_TALENT = "/workspace/talent";
 
+	/** The signed-in person's conversations on the site. */
+	private static final String MESSAGES = "/workspace/messages";
+
 	/** What the log keeps of a sign-in code in place of the code. */
 	private static final String MASKED_CODE = "••••••";
 
@@ -426,6 +429,72 @@ public class EmailService {
 	public void sendApplicationOutcome(String recipient, String subject, String message, UUID applicationId) {
 		queue(EmailKind.APPLICATION_OUTCOME, recipient, values("subject", subject, "message", message.strip(),
 				"applicationUrl", applicationUrl(applicationId)));
+	}
+
+	/**
+	 * Tells the side a first message was written to that it waits. The sender's address is not in it: the link opens
+	 * Messages, where the request is accepted, declined or reported.
+	 * @param senderName who wrote; null until they gave a name, never their address
+	 * @param senderOrganization the organization the sender belongs to; null when none
+	 * @param about the profile, solution or program the message is about
+	 * @param message what the sender wrote
+	 */
+	@Transactional
+	public void sendMessageRequest(String recipient, @Nullable String senderName, @Nullable String senderOrganization,
+			String about, String message) {
+		queue(EmailKind.MESSAGE_REQUEST, recipient, values("senderName", senderName, "senderOrganization",
+				senderOrganization, "about", about, "message", message, "messagesUrl", url(MESSAGES)));
+	}
+
+	/**
+	 * Reminds the side written to that a first message waits for their answer and when it closes.
+	 * @param senderName who wrote; null until they gave a name, never their address
+	 * @param daysLeft the whole days before the request closes unanswered
+	 */
+	@Transactional
+	public void sendMessageRequestReminder(String recipient, @Nullable String senderName, long daysLeft) {
+		queue(EmailKind.MESSAGE_REQUEST_REMINDER, recipient, values("senderName", senderName, "daysLeft",
+				Long.toString(daysLeft), "messagesUrl", url(MESSAGES)));
+	}
+
+	/**
+	 * Tells the sender of a first message that it was accepted, so the conversation is open.
+	 * @param otherName the person or organization written to; null for GenAI Fund
+	 */
+	@Transactional
+	public void sendMessageRequestAccepted(String recipient, @Nullable String otherName) {
+		queue(EmailKind.MESSAGE_REQUEST_ACCEPTED, recipient,
+				values("otherName", otherName, "messagesUrl", url(MESSAGES)));
+	}
+
+	/**
+	 * Tells the sender that their first message will not be taken further. A report reads the same, so whoever reported
+	 * is not exposed. It carries no reason.
+	 * @param otherName the person or organization written to; null for GenAI Fund
+	 */
+	@Transactional
+	public void sendMessageRequestDeclined(String recipient, @Nullable String otherName) {
+		queue(EmailKind.MESSAGE_REQUEST_DECLINED, recipient,
+				values("otherName", otherName, "messagesUrl", url(MESSAGES)));
+	}
+
+	/**
+	 * Tells the sender that their first message closed because nobody answered in time. They may write again.
+	 * @param otherName the person or organization written to; null for GenAI Fund
+	 */
+	@Transactional
+	public void sendMessageRequestClosed(String recipient, @Nullable String otherName) {
+		queue(EmailKind.MESSAGE_REQUEST_CLOSED, recipient,
+				values("otherName", otherName, "messagesUrl", url(MESSAGES)));
+	}
+
+	/**
+	 * Tells a person that messages they have not read wait in a conversation. What was written is not in it.
+	 * @param senderName who wrote, as the recipient is shown them; null for GenAI Fund or a person without a name
+	 */
+	@Transactional
+	public void sendUnreadMessages(String recipient, @Nullable String senderName) {
+		queue(EmailKind.MESSAGE_UNREAD, recipient, values("senderName", senderName, "messagesUrl", url(MESSAGES)));
 	}
 
 	/** Where an applicant reads their own application on the site. */
