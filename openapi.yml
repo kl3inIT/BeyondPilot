@@ -22960,6 +22960,11 @@ components:
           type: string
           maxLength: 2000
           minLength: 0
+        id:
+          type: string
+          format: uuid
+          description: An identifier the sender chooses for the first message. Retrying
+            with it writes nothing more.
         kind:
           type: string
           enum:
@@ -22976,6 +22981,7 @@ components:
           minLength: 0
       required:
       - body
+      - id
       - kind
       - slug
     StartMatchingRun:

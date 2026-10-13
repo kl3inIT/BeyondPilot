@@ -108,6 +108,27 @@ test.describe("messages", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("Back and Forward keep the selected conversation in step with the address", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await answerMessaging(page);
+    await page.goto(messages);
+    await rows(page, "Chats").filter({ hasText: "Arif Hidayat" }).click();
+    await expect(title(page, "Arif Hidayat")).toBeVisible();
+
+    await page.goBack();
+    await expect(page).toHaveURL(messages);
+    await expect(title(page, "Arif Hidayat")).toBeHidden();
+    await expect(page.getByRole("heading", { level: 1, name: "Messages" })).toBeVisible();
+
+    await page.goForward();
+    await expect(page).toHaveURL(new RegExp(`[?&]c=${arifChat}`));
+    await expect(title(page, "Arif Hidayat")).toBeVisible();
+  });
+
   test("a message is shown at once and written under an identifier the screen chose", async ({
     page,
     context,
@@ -242,7 +263,12 @@ test.describe("messages", () => {
     expect(written.filter((one) => one.call.endsWith("/conversations"))).toEqual([
       {
         call: "POST /api/messaging/conversations",
-        body: { kind: "talent", slug: "arif-hidayat", body: "Would you lead our OCR pilot?" },
+        body: {
+          id: expect.any(String),
+          kind: "talent",
+          slug: "arif-hidayat",
+          body: "Would you lead our OCR pilot?",
+        },
       },
     ]);
   });

@@ -180,6 +180,7 @@ const lists = {
     requests: [details[haRequest].conversation],
     unread: 2,
   },
+  unnamed: { chats: [], requests: [], unread: 0 },
 };
 
 const nobody = { chats: [], requests: [], unread: 0 };
@@ -243,7 +244,7 @@ function bodyOf(request) {
 }
 
 /** The conversation a first message to `prospect` starts, as the person who wrote it reads it. */
-function startedWith(prospect, body, name) {
+function startedWith(prospect, id, body, name) {
   const program = prospect.subject.kind === "program";
   return {
     conversation: conversation(started, {
@@ -258,7 +259,7 @@ function startedWith(prospect, body, name) {
       lastMessage: { preview: body, mine: true, senderName: name },
     }),
     messages: [
-      message("a0000000-0000-4000-8000-000000000091", 91, body, {
+      message(id, 91, body, {
         createdAt: ago(0),
         mine: true,
         senderName: name,
@@ -341,7 +342,10 @@ export function serveMessaging(request, response, url, session, account) {
       if (!prospect) {
         return json(...refused(404, "MESSAGING_SUBJECT_NOT_FOUND"));
       }
-      json(200, startedWith(prospect, body.body, account.displayName));
+      const created = startedWith(prospect, body.id, body.body, account.displayName);
+      details[started] = created;
+      mine.chats = [created.conversation, ...mine.chats.filter((chat) => chat.id !== started)];
+      json(200, created);
     });
     return true;
   }

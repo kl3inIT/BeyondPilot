@@ -5974,6 +5974,10 @@ export type SolutionSummary = {
 
 export type StartConversationRequest = {
     body: string;
+    /**
+     * An identifier the sender chooses for the first message. Retrying with it writes nothing more.
+     */
+    id: string;
     kind: 'talent' | 'solution' | 'program';
     /**
      * The address of the talent profile, solution or program on the site.

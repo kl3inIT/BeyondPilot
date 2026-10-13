@@ -11,12 +11,7 @@ import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { useAppForm } from "@/components/form/app-form";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupTextarea,
-} from "@/components/ui/input-group";
+import { InputGroup, InputGroupAddon, InputGroupTextarea } from "@/components/ui/input-group";
 import { Marker, MarkerContent } from "@/components/ui/marker";
 import {
   Message,
@@ -40,9 +35,6 @@ import { fromOtherSide, type Thread, type ThreadMessage } from "./messaging-stat
 
 /** The longest message the backend takes. */
 const MAX_MESSAGE = 2000;
-
-/** From how many characters on the composer says how many are left. */
-const NEAR_LIMIT = 1800;
 
 type ConversationThreadProps = {
   thread: Thread;
@@ -257,7 +249,7 @@ function ThreadRow({
               {message.delivery === "sending"
                 ? t("thread.sending")
                 : seen
-                  ? t("thread.seenAt", { time: words.time(message.createdAt) })
+                  ? t("thread.seen")
                   : words.time(message.createdAt)}
             </span>
           )}
@@ -366,21 +358,19 @@ function Composer({
               <InputGroupAddon align="inline-end">
                 {/* Never disabled: the group fades whole around a disabled control, and the words
                     in the field would then be too faint to read. Sending nothing does nothing. */}
-                <InputGroupButton
+                <IconButton
                   type="submit"
-                  variant="default"
-                  size="icon-sm"
+                  prominence="primary"
+                  size="sm"
                   aria-label={t("composer.send")}
                 >
                   <SendIcon aria-hidden="true" />
-                </InputGroupButton>
+                </IconButton>
               </InputGroupAddon>
             </InputGroup>
-            {field.state.value.length >= NEAR_LIMIT && (
-              <p className="text-xs text-muted-foreground tabular-nums">
-                {t("composer.left", { count: MAX_MESSAGE - field.state.value.length })}
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground tabular-nums">
+              {t("composer.left", { count: MAX_MESSAGE - field.state.value.length })}
+            </p>
           </div>
         )}
       </form.Field>

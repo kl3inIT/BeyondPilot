@@ -37,7 +37,10 @@ public enum MessagingErrorCode implements ErrorCode {
 			"Only an owner of the organization answers a first message."),
 
 	MESSAGE_CONFLICT("MESSAGING_MESSAGE_CONFLICT", ErrorCategory.CONFLICT,
-			"This message could not be sent. Write it again.");
+			"This message could not be sent. Write it again."),
+
+	READ_BEYOND_LAST_MESSAGE("MESSAGING_READ_BEYOND_LAST_MESSAGE", ErrorCategory.VALIDATION,
+			"The message to mark as read is not in this conversation.");
 
 	private final String code;
 	private final ErrorCategory category;

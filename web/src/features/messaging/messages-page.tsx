@@ -3,7 +3,7 @@
 import { ArrowLeftIcon, MessagesSquareIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useQueryStates } from "nuqs";
-import { useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
@@ -69,18 +69,39 @@ function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
   );
   const { state } = messaging;
   const thread = state.thread;
+  const threadId = thread?.conversation.id ?? null;
   // A first message is being written while the address names who it goes to and no conversation.
   const writing = target !== null && search.to !== null && search.c === null ? prospect : null;
   const active = thread !== null || writing !== null;
 
-  async function open(id: string) {
-    if (await messaging.open(id)) {
-      void setSearch({ c: id, to: null, at: null });
+  const clearFailedSelection = useEffectEvent((id: string) => {
+    if (search.c === id) {
+      void setSearch({ c: null }, { history: "replace" });
     }
+  });
+
+  const syncSelection = useEffectEvent((id: string | null) => {
+    if (id === null) {
+      messaging.close();
+      return;
+    }
+    void messaging.open(id).then((found) => {
+      if (!found) {
+        clearFailedSelection(id);
+      }
+    });
+  });
+  useEffect(() => {
+    if (search.c !== threadId) {
+      syncSelection(search.c);
+    }
+  }, [search.c, threadId]);
+
+  function open(id: string) {
+    void setSearch({ c: id, to: null, at: null });
   }
 
   function back() {
-    messaging.close();
     void setSearch({ c: null, to: null, at: null });
   }
 
@@ -111,7 +132,7 @@ function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
             tab={search.tab}
             onTab={(tab: MessagingTab) => void setSearch({ tab })}
             openId={thread?.conversation.id ?? null}
-            onOpen={(id) => void open(id)}
+            onOpen={open}
           />
         </div>
         <div className={cn("min-h-0 min-w-0 flex-1 flex-col lg:flex", active ? "flex" : "hidden")}>
@@ -140,10 +161,10 @@ function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
             <FirstMessage
               read={writing}
               onBack={back}
-              onOpen={(id) => void open(id)}
-              onSend={async (body) => {
-                const id = await messaging.start(target, body);
-                void setSearch({ c: id, to: null, at: null });
+              onOpen={open}
+              onSend={async (body, messageId) => {
+                const conversationId = await messaging.start(target, body, messageId);
+                void setSearch({ c: conversationId, to: null, at: null }, { history: "replace" });
               }}
             />
           ) : (
@@ -227,11 +248,12 @@ function FirstMessage({
   read: ProspectRead;
   onBack: () => void;
   onOpen: (id: string) => void;
-  onSend: (body: string) => Promise<void>;
+  onSend: (body: string, id: string) => Promise<void>;
 }) {
   const t = useTranslations("Messaging");
   const words = useTranslations();
   const notify = useNotify();
+  const ids = useRef(new Map<string, string>());
   const prospect: ConversationProspect | undefined = read.prospect;
   // The words of the code the backend refused with, when the catalog the reader was sent has them.
   const refusal = `Errors.${read.refusal ?? "unknown"}` as MessageKey;
@@ -307,15 +329,23 @@ function FirstMessage({
           <div className="border-t px-4 py-3 md:px-6">
             <Composer
               label={t("first.label", { name })}
-              onSend={(body) =>
-                onSend(body).then(
-                  () => true,
+              onSend={(body) => {
+                let id = ids.current.get(body);
+                if (!id) {
+                  id = crypto.randomUUID();
+                  ids.current.set(body, id);
+                }
+                return onSend(body, id).then(
+                  () => {
+                    ids.current.delete(body);
+                    return true;
+                  },
                   (error: unknown) => {
                     notify.failure(error);
                     return false;
                   },
-                )
-              }
+                );
+              }}
             />
           </div>
         </>

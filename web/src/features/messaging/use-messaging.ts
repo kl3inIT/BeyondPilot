@@ -53,6 +53,7 @@ export function useMessaging(
   const told = useRef(new Map<string, number>());
   const typingTold = useRef(0);
   const typingTimer = useRef<number | undefined>(undefined);
+  const selected = useRef(detail?.conversation.id ?? null);
   const thread = state.thread;
   const openId = thread?.conversation.id;
 
@@ -63,10 +64,13 @@ export function useMessaging(
       dispatch({ type: "listed", list: data });
       if (openId) {
         const { data: again } = await getConversation({ path: { id: openId } });
-        dispatch({ type: "opened", detail: again });
+        if (selected.current === openId) {
+          dispatch({ type: "opened", detail: again });
+        }
       }
     } catch (error) {
-      if (error instanceof ApiError && error.status === 404) {
+      if (error instanceof ApiError && error.status === 404 && selected.current === openId) {
+        selected.current = null;
         dispatch({ type: "closed" });
         onGone();
       }
@@ -166,16 +170,23 @@ export function useMessaging(
     connected,
     /** Shows a conversation of the list. */
     async open(id: string) {
+      selected.current = id;
       try {
         const { data } = await getConversation({ path: { id } });
+        if (selected.current !== id) {
+          return false;
+        }
         dispatch({ type: "opened", detail: data });
         return true;
       } catch (error) {
-        onFailure(error);
+        if (selected.current === id) {
+          onFailure(error);
+        }
         return false;
       }
     },
     close() {
+      selected.current = null;
       dispatch({ type: "closed" });
     },
     /** Writes a message: it is shown at once and kept by the backend under the identifier given here. */
@@ -238,11 +249,10 @@ export function useMessaging(
       }
     },
     /** Writes a first message, and shows the conversation it opened. */
-    async start(target: MessagingTarget, body: string) {
+    async start(target: MessagingTarget, body: string, id: string) {
       const { data } = await startConversation({
-        body: { kind: target.kind, slug: target.slug, body },
+        body: { id, kind: target.kind, slug: target.slug, body },
       });
-      dispatch({ type: "opened", detail: data });
       const { data: lists } = await listConversations();
       dispatch({ type: "listed", list: lists });
       return data.conversation.id;
@@ -265,6 +275,7 @@ export function useMessaging(
       await (how === "decline" ? declineConversation : reportConversation)({
         path: { id: openId },
       });
+      selected.current = null;
       dispatch({ type: "closed" });
       const { data: lists } = await listConversations();
       dispatch({ type: "listed", list: lists });
