@@ -43,22 +43,13 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
   if (view === "review") {
     return (
       <div className="flex flex-col gap-5 rounded-3xl border bg-background p-6 md:p-10">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex flex-col gap-3">
-            <h2 className="text-3xl font-semibold tracking-tight">{t("review.title")}</h2>
-            {(useCase.status === "in_review" || useCase.status === "approved") && (
-              <p className="text-base text-muted-foreground">
-                {t("review.lead", { organization })}
-              </p>
-            )}
-          </div>
-          {status}
-        </div>
+        <h2 className="text-3xl font-semibold tracking-tight">{t("review.title")}</h2>
         <UseCaseSummary
           values={values}
           onEdit={go}
           viewLabel={t("viewDetails")}
           hideEmpty={useCase.status === "approved"}
+          flat
         />
         <p className="text-sm text-muted-foreground">
           {t("proposalEditDays", { days: useCase.proposalEditDays })}
