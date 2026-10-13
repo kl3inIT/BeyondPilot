@@ -208,7 +208,7 @@ function MatchingReviewCard({
           </h2>
           {meta && <p className="text-sm text-muted-foreground">{meta}</p>}
         </div>
-        <p className="rounded-full bg-muted px-3 py-1 text-sm">
+        <p className="rounded-full bg-muted px-3 py-1 text-sm max-sm:basis-full max-sm:text-center">
           {t("review.group", {
             group: t(`groups.${candidate.bucket === "none" ? "direct" : candidate.bucket}.title`),
             met: candidate.requiredMet,
@@ -239,7 +239,7 @@ function MatchingReviewCard({
       )}
 
       <div className="grid min-h-0 flex-1 lg:grid-cols-5">
-        <div className="flex h-120 min-h-0 flex-col border-b bg-muted/40 lg:col-span-3 lg:h-auto lg:border-r lg:border-b-0">
+        <div className="flex min-h-0 flex-col border-b bg-muted/40 lg:col-span-3 lg:border-r lg:border-b-0">
           {deck ? (
             <DeckReader
               // Another page asked for by a requirement is a new reading, at that page.
