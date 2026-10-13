@@ -418,7 +418,7 @@ One action has one word, on a button, a menu item, a link that acts and the `ari
 Motion shows a change: where something came from, where it went, what an action did. What each rule rests on is in the [research note](research/2026-10-13-motion-and-charts.md).
 
 - An animation that explains nothing is removed. Decorative motion belongs to the marketing pages; in `admin/` and `workspace/` motion serves feedback, state and continuity only.
-- Durations are a named scale, never a number written on a page: `duration-fast` (100ms) for hover, press and focus, `duration-base` (200ms) for what appears, leaves or changes state, `duration-slow` (300ms) for a change of size or position, `duration-chart` (400ms) for a chart that draws. Which step a change takes is a judgement by how far it travels and how large it is. The landing keeps its own longer, authored sequences.
+- Durations are a named scale, never a number written on a page: `duration-fast` (100ms) for hover, press and focus, `duration-base` (200ms) for what appears, leaves or changes state, `duration-slow` (300ms) for a change of size or position. A chart draws in 400ms (`chartDrawMs` in `src/lib/motion.ts`). Which step a change takes is a judgement by how far it travels and how large it is. The landing keeps its own longer, authored sequences.
 - An entrance decelerates (`ease-entrance`); an exit is shorter than its entrance. A spring is allowed when it does not overshoot; nothing bounces.
 - Animate `transform` and `opacity`. Outside `components/ui`, `transition-all` is not written: the properties are named. A block whose height changes goes through the shared component for it, not a height transition of its own.
 - An entrance starts from at least 95% of its size and travels a short way, from the side of its trigger.
@@ -433,8 +433,8 @@ Motion shows a change: where something came from, where it went, what an action 
 - A chart is drawn when the shape of the numbers changes what the reader does. A handful of numbers is text.
 - Every chart is Recharts through the registry `chart` (`ChartContainer`), with colours from the semantic tokens. One measure per axis; never two scales on one chart.
 - A chart sits in the `ChartFrame` composite: its title, one line that says what to read from it, the way to the page behind it, then the chart. The same figures are on the page as text, and the chart has a description for a screen reader.
-- A number with its trend is the `StatCell` composite: the label, the number, one line under it, and a `Sparkline` at its side from 768px. A sparkline has no axis and no tooltip, shows one series over a stated period, and is used only where the page holds no full chart of that series.
-- A line or an area uses the `monotone` curve, which never draws a value the data does not have. A chart draws in `duration-chart`; Recharts drops the animation for a person who asked for less motion.
+- A number with its trend is the `StatCell` composite: the label, the number, one line under it, and room at its side for a small chart from 768px. A small chart there has no axis and no tooltip, shows one series over a stated period, and is used only where the page holds no full chart of that series.
+- A line or an area uses the `monotone` curve, which never draws a value the data does not have. A chart draws in `chartDrawMs`; Recharts drops the animation for a person who asked for less motion.
 - Identity is never colour alone: two series or more have a legend, and a status colour keeps its meaning (`destructive` is a failure, in a chart as elsewhere).
 
 ### Components
