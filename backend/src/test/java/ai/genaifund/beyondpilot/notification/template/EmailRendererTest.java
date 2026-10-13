@@ -148,7 +148,6 @@ class EmailRendererTest {
 		values.put("senderName", "<b>Mallory</b> **Claims**");
 		values.put("senderOrganization", "[click me](https://evil.example)");
 		values.put("about", "**Claims**");
-		values.put("message", "line one\nline two <script>");
 
 		RenderedEmail email = renderer.render(EmailKind.MESSAGE_REQUEST, defaults.template(EmailKind.MESSAGE_REQUEST),
 				values, APPEARANCE);
@@ -156,10 +155,16 @@ class EmailRendererTest {
 		assertThat(email.html()).contains("&lt;b&gt;Mallory&lt;/b&gt;")
 			.contains("[click me](https://evil.example)")
 			.doesNotContain("href=\"https://evil.example\"")
-			.contains("**Claims**")
-			.contains("line one<br>line two &lt;script&gt;")
-			.doesNotContain("<script>");
-		assertThat(email.text()).contains("Their message:").contains("line one\nline two <script>");
+			.contains("**Claims**");
+
+		// A text a person wrote is quoted with its lines kept and its markup shown as text.
+		Map<String, Object> sentBack = new HashMap<>();
+		sentBack.put("organizationName", "Plain Cover");
+		sentBack.put("reason", "line one\nline two <script>");
+		RenderedEmail quoted = renderer.render(EmailKind.ORGANIZATION_SENT_BACK,
+				defaults.template(EmailKind.ORGANIZATION_SENT_BACK), sentBack, APPEARANCE);
+		assertThat(quoted.html()).contains("line one<br>line two &lt;script&gt;").doesNotContain("<script>");
+		assertThat(quoted.text()).contains("line one\nline two <script>");
 	}
 
 	@Test
@@ -167,7 +172,6 @@ class EmailRendererTest {
 		Map<String, Object> values = new HashMap<>();
 		values.put("senderOrganization", "Pocket Policy");
 		values.put("about", "ClaimLens");
-		values.put("message", "Hello");
 
 		RenderedEmail email = renderer.render(EmailKind.MESSAGE_REQUEST, defaults.template(EmailKind.MESSAGE_REQUEST),
 				values, APPEARANCE);

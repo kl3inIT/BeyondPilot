@@ -111,6 +111,8 @@ class MessagingTest {
 		String text = mail.latestTextTo("mei@first-talent.test");
 		assertThat(mail.latestSubjectTo("mei@first-talent.test")).isEqualTo("A first message for you on BeyondPilot");
 		assertThat(text).contains("First Talent").doesNotContain("minh@first-sender.test");
+		// What was written is read in Messages only: it is in no email, and so not in the operators' email log.
+		assertThat(text).doesNotContain("Would you advise our team?");
 		assertThat(text).containsPattern("https?://[^/ ]+/workspace/messages(?![\\w/-])");
 
 		// It waits under the person's requests and under the sender's chats, and nobody writes in it yet.

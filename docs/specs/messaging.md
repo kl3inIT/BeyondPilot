@@ -22,7 +22,7 @@ The conversations people have on BeyondPilot: with the person behind a talent pr
 - **To a solution:** a member of an approved organization, never of the one that offers it. The solution must be approved; one its owners keep out of the directory is still written to by its address.
 - **To a program:** any signed-in person who is not an operator. The program must be published.
 - **The lists.** Each of the caller's two lists holds the 200 conversations written in last; there is no further page.
-- **A first message** is 1 to 2000 characters after trimming and carries an identifier chosen by the sender. Retrying with the same identifier and text returns the conversation without writing or emailing again. To a profile or a solution the conversation starts `pending` and the people who answer are emailed (`message_request`) with the sender's name and organization, what it is about and the text, never an address. To a program it starts `accepted` and nobody is emailed.
+- **A first message** is 1 to 2000 characters after trimming and carries an identifier chosen by the sender. Retrying with the same identifier and text returns the conversation without writing or emailing again. To a profile or a solution the conversation starts `pending` and the people who answer are emailed (`message_request`) with the sender's name and organization and what it is about, never an address and never the text, which is read in Messages only. To a program it starts `accepted` and nobody is emailed.
 - **Limits.** Ten conversations a starter in 24 hours, then `429` with `Retry-After`. While a request waits, a second first message to the same subject is refused.
 
 ## A request
@@ -65,7 +65,7 @@ When a message is written, each account of the other side that has no stream ope
 
 ## What operators read
 
-`GET /api/messaging/admin/reported`: the conversations with status `reported`, the most recently reported first, each with its first message, its subject, and the sender's name, address and organization. Paged from 1. Operators read no other conversation here; the email of a first message quotes its text and is in the operators' email log like every email.
+`GET /api/messaging/admin/reported`: the conversations with status `reported`, the most recently reported first, each with its first message, its subject, and the sender's name, address and organization. Paged from 1. Operators read no other conversation: no email carries the text of a message, so the email log holds none.
 
 ## Web
 

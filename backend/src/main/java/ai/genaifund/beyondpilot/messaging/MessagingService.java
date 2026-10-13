@@ -264,7 +264,7 @@ public class MessagingService {
 					: Objects.requireNonNull(membership).organizationName();
 			for (Person recipient : answering(conversation)) {
 				email.sendMessageRequest(recipient.email(), person.displayName(), organizationName,
-						target.subjectName(), body);
+						target.subjectName());
 			}
 		}
 		changes.tell(audience(conversation), listener -> event(Kind.CONVERSATION, id));
