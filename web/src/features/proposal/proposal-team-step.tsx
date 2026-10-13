@@ -191,7 +191,6 @@ function AddMemberDialog({ open, onOpenChange, candidates, onAdd }: AddMemberDia
       onOpenChange={onOpenChange}
       form={form}
       title={t("title")}
-      description={t("lead")}
       submitLabel={t("submit")}
       cancelLabel={t("cancel")}
       submitDisabled={candidates.length === 0}

@@ -7807,7 +7807,6 @@
         },
         "dialog": {
           "title": "Add a team member",
-          "lead": "Choose a person of your organization and type their role in this proposal.",
           "person": "Person",
           "role": "Role",
           "roleRequired": "Enter the role.",
@@ -7816,7 +7815,6 @@
         }
       },
       "pdf": {
-        "hint": "One PDF, up to 25 MB.",
         "needed": "Upload the proposal as a PDF."
       },
       "review": {
