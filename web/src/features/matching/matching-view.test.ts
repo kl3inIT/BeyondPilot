@@ -110,6 +110,7 @@ const candidate = (
   findings,
   judged: true,
   listed: true,
+  hasDeck: true,
   origin: "recommended",
   requiredMet: findings.some((one) => one.requirement === 1 && one.status === "met") ? 1 : 0,
   requiredTotal: 1,

@@ -243,7 +243,7 @@ function MatchingReviewCard({
           {deck ? (
             <DeckReader
               // Another page asked for by a requirement is a new reading, at that page.
-              key={`${deck.page}:${deck.quote}`}
+              key={`${deck.page}:${deck.quote ?? ""}`}
               inline
               solutionName={candidate.solutionName}
               solutionSlug={candidate.solutionSlug}

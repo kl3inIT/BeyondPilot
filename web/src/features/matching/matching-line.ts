@@ -55,12 +55,16 @@ export function toFront(line: readonly string[], id: string): string[] {
 
 /**
  * The page of the deck a card opens at: that of the first requirement, in the use case's order, whose
- * words the AI found on a page of the deck anyone may read; nothing when no requirement points to one.
+ * words the AI found on a page of the deck, with those words; the first page when no requirement points
+ * to one. Nothing when nobody may read the deck at its public address, or there is none.
  */
 export function deckPageOf(
-  candidate: Pick<MatchingCandidate, "findings" | "listed">,
+  candidate: Pick<MatchingCandidate, "findings" | "listed" | "hasDeck">,
   needs: Pick<Need, "position">[],
-): { page: number; quote: string } | undefined {
+): { page: number; quote?: string } | undefined {
+  if (!candidate.listed || !candidate.hasDeck) {
+    return undefined;
+  }
   for (const need of needs) {
     const finding = findingOf(candidate, need.position);
     const opening = finding && openingOf(finding, candidate.listed);
@@ -68,5 +72,5 @@ export function deckPageOf(
       return { page: opening.page, quote: finding.quote };
     }
   }
-  return undefined;
+  return { page: 1 };
 }

@@ -18,6 +18,7 @@ const candidate = (
   findings: [],
   judged: true,
   listed: true,
+  hasDeck: true,
   origin: "recommended",
   requiredMet: 0,
   requiredTotal: 1,
@@ -117,15 +118,25 @@ describe("the deck page a card opens at", () => {
     expect(deckPageOf(both, needs)).toEqual({ page: 3, quote: "words for 1" });
   });
 
-  it("is nothing for an unlisted solution, whose deck nobody may read at its address, or words found elsewhere", () => {
+  it("is the first page, with nothing to highlight, when no requirement's words are in the deck", () => {
+    const website = candidate("Website", "direct", { findings: [finding(1, "website 2")] });
+    expect(deckPageOf(website, needs)).toEqual({ page: 1 });
+    const elsewhere = candidate("Elsewhere", "direct", {
+      findings: [finding(1, "deck p.3", { quoteState: "other_source" })],
+    });
+    expect(deckPageOf(elsewhere, needs)).toEqual({ page: 1 });
+  });
+
+  it("is nothing for a solution with no deck, or one whose deck nobody may read at its address", () => {
     const hidden = candidate("Hidden", "direct", {
       listed: false,
       findings: [finding(1, "deck p.3")],
     });
     expect(deckPageOf(hidden, needs)).toBeUndefined();
-    const elsewhere = candidate("Elsewhere", "direct", {
-      findings: [finding(1, "deck p.3", { quoteState: "other_source" })],
+    const none = candidate("None", "direct", {
+      hasDeck: false,
+      findings: [finding(1, "website 2")],
     });
-    expect(deckPageOf(elsewhere, needs)).toBeUndefined();
+    expect(deckPageOf(none, needs)).toBeUndefined();
   });
 });
