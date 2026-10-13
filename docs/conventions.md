@@ -413,6 +413,30 @@ One action has one word, on a button, a menu item, a link that acts and the `ari
 - A component's appearance comes from its variants and sizes. `shadcn/no-restyle` allows only layout classes (margin, width, position) in `className` on a registry component; a new look is a new variant in the component, added only when the design calls for one.
 - `src/components/ui` is exempt from these design-system rules because primitives style their own internals; the rest of ESLint (React Hooks, accessibility, Next.js) still checks it.
 
+### Motion
+
+Motion shows a change: where something came from, where it went, what an action did. What each rule rests on is in the [research note](research/2026-10-13-motion-and-charts.md).
+
+- An animation that explains nothing is removed. Decorative motion belongs to the marketing pages; in `admin/` and `workspace/` motion serves feedback, state and continuity only.
+- Durations are a named scale, never a number written on a page: `duration-fast` (100ms) for hover, press and focus, `duration-base` (200ms) for what appears, leaves or changes state, `duration-slow` (300ms) for a change of size or position. A chart draws in 400ms (`chartDrawMs` in `src/lib/motion.ts`). Which step a change takes is a judgement by how far it travels and how large it is. The landing keeps its own longer, authored sequences.
+- An entrance decelerates (`ease-entrance`); an exit is shorter than its entrance. A spring is allowed when it does not overshoot; nothing bounces.
+- Animate `transform` and `opacity`. Outside `components/ui`, `transition-all` is not written: the properties are named. A block whose height changes goes through the shared component for it, not a height transition of its own.
+- An entrance starts from at least 95% of its size and travels a short way, from the side of its trigger.
+- The interface answers at once. An animation never delays the next action, and it gives way when the person acts again.
+- An action repeated many times a day has no animation: a keyboard shortcut, the next page of a table, the next record of a queue.
+- A skeleton or spinner waits about 200ms before it shows, then stays long enough not to flash.
+- With `prefers-reduced-motion: reduce`, movement and scaling are dropped and the change is shown by opacity or at once. No screen depends on an animation to be understood.
+- CSS first. A motion library arrives with its first consumer, for what CSS cannot do (an item leaving a list, a number that counts), and is loaded only by the pages that use it.
+
+### Charts
+
+- A chart is drawn when the shape of the numbers changes what the reader does. A handful of numbers is text.
+- Every chart is Recharts through the registry `chart` (`ChartContainer`), with colours from the semantic tokens. One measure per axis; never two scales on one chart.
+- A chart sits in the `ChartFrame` composite: its title, one line that says what to read from it, the way to the page behind it, then the chart. The same figures are on the page as text, and the chart has a description for a screen reader.
+- A number with its trend is the `StatCell` composite: the label, the number, one line under it, and room at its side for a small chart from 768px. A small chart there has no axis and no tooltip, shows one series over a stated period, and is used only where the page holds no full chart of that series.
+- A line or an area uses the `monotone` curve, which never draws a value the data does not have. A chart draws in `chartDrawMs`; Recharts drops the animation for a person who asked for less motion.
+- Identity is never colour alone: two series or more have a legend, and a status colour keeps its meaning (`destructive` is a failure, in a chart as elsewhere).
+
 ### Components
 
 - Choose the layer before writing: an existing `ui` primitive (install a missing one with `shadcn add`, never hand-roll it), then a composite or section, then a feature component, then a page component. Before writing markup for a pattern, look for its primitive: a table is `table`, paging is `pagination`, an empty state is `empty`, a confirmation is `alert-dialog`, a row menu is `dropdown-menu`, a trail is `breadcrumb`. Where the shadcn documentation gives a change for Next.js, that change is made in the primitive: `pagination` renders the locale-aware `Link`.

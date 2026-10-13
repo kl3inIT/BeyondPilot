@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -178,4 +179,36 @@ public class TalentQueryRepository {
 		String literal = text.toLowerCase(Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
 		return "%" + literal + "%";
 	}
+
+	/**
+	 * How many profiles waited for review at the end of each of the 14 days up to {@code today} in Vietnam, oldest
+	 * first: sent by then and not decided by then. A row keeps only its last sending and its last decision, so a day
+	 * behind today is an approximation, good for a direction.
+	 */
+	public List<Long> profilesWaitingByDay(LocalDate today) {
+		return jdbc.sql("""
+				select (select count(*) from talent_profile p
+				        where coalesce(p.submitted_at, p.created_at) < day.ends
+				          and (p.status = 'in_review' or p.decided_at >= day.ends))
+				from (select (d + interval '1 day') at time zone 'Asia/Ho_Chi_Minh' as ends
+				      from generate_series(cast(:today as timestamp) - interval '13 days', cast(:today as timestamp),
+				                           interval '1 day') as d) as day
+				order by day.ends
+				""")
+			.param("today", today.toString())
+			.query(Long.class)
+			.list();
+	}
+
+	/** When the profile that has waited longest was sent; null when none waits. */
+	public @Nullable Instant profilesOldestWaiting() {
+		return jdbc.sql("""
+				select min(coalesce(submitted_at, created_at)) from talent_profile where status = 'in_review'
+				""")
+			.query(Timestamp.class)
+			.optional()
+			.map(Timestamp::toInstant)
+			.orElse(null);
+	}
+
 }

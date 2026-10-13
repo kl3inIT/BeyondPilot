@@ -1950,8 +1950,35 @@
       "solutions": "Giải pháp chờ duyệt",
       "talent": "Hồ sơ nhân lực chờ duyệt",
       "deployments": "Triển khai khách hàng chờ duyệt",
-      "review": "Mở hàng chờ, chờ lâu nhất ở trên",
-      "none": "Không có gì đang chờ"
+      "none": "Không có gì đang chờ",
+      "queues": "Đang chờ duyệt",
+      "useCases": "Use case chờ duyệt",
+      "applications": {
+        "title": "Đơn đăng ký",
+        "empty": "Chưa chương trình nào có đơn để đọc.",
+        "assessed": "Bạn đã chấm {assessed} trên {count}",
+        "progress": "Số đơn của {name} bạn đã chấm"
+      },
+      "system": {
+        "title": "Hệ thống",
+        "ai": {
+          "title": "Lượt gọi AI, 7 ngày qua",
+          "lead": "{calls, plural, other {# lượt gọi}} · {rate} lỗi",
+          "none": "Không có lượt gọi nào trong 7 ngày qua.",
+          "more": "Sử dụng AI"
+        },
+        "email": {
+          "label": "Email, 7 ngày qua",
+          "note": "{delivered} đã nhận · {bounced} bị trả lại",
+          "none": "Chưa gửi email nào"
+        },
+        "search": {
+          "label": "Chỉ mục tìm kiếm",
+          "upToDate": "Hồ sơ khách tìm được · đã cập nhật",
+          "behind": "Hồ sơ khách tìm được · {waiting} đang chờ, {heldBack} bị giữ lại"
+        }
+      },
+      "oldest": "{days, plural, =0 {Hồ sơ lâu nhất gửi hôm nay} other {Hồ sơ lâu nhất đã chờ # ngày}}"
     },
     "useCases": {
       "metaTitle": "Use case · BeyondPilot",
