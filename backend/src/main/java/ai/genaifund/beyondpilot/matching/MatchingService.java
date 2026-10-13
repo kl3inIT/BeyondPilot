@@ -211,15 +211,25 @@ public class MatchingService {
 	}
 
 	/**
-	 * Takes a candidate off the list, with the reason; it leaves the shortlist too.
-	 * @throws MatchingException when the candidate is unknown to the caller
+	 * Takes a candidate off the list, with the reason if the caller gives one; it leaves the shortlist too. On a
+	 * candidate already removed, a reason or a note that differs from the ones it holds is recorded as a new removal,
+	 * so that a reason can be given after the card has left; anything else changes nothing.
+	 * @throws MatchingException when the candidate is unknown to the caller, or GenAI Fund removed it and the caller
+	 * is a member giving it a reason: the removal would become the member's
 	 */
 	@Transactional
 	public MatchingResponse remove(Actor actor, UUID candidateId, RemoveCandidateRequest request) {
 		Candidate candidate = candidate(candidateId);
 		Access access = access(actor, candidate);
 		String note = request.note() == null || request.note().isBlank() ? null : request.note().strip();
-		if (!MatchingRepository.REMOVED.equals(candidate.decision())) {
+		boolean removed = MatchingRepository.REMOVED.equals(candidate.decision());
+		boolean said = request.reason() != null || note != null;
+		if (removed && said && candidate.decidedByOperator() && !access.operator()) {
+			throw new MatchingException(MatchingErrorCode.REMOVED_BY_OPERATOR,
+					"Candidate " + candidateId + " was removed by an operator");
+		}
+		boolean changed = !Objects.equals(request.reason(), candidate.reason()) || !Objects.equals(note, candidate.note());
+		if (!removed || (said && changed)) {
 			decide(actor, access, candidate, MatchingRepository.REMOVED, request.reason(), note,
 					AuditAction.MATCHING_CANDIDATE_REMOVE);
 		}

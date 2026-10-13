@@ -4109,14 +4109,17 @@ export type ReleaseItem = {
 };
 
 /**
- * Why a candidate is taken off the list.
+ * Takes a candidate off the list. The reason is optional: it can be given with the removal or afterwards.
  */
 export type RemoveMatchingCandidate = {
     /**
      * A few words more, if the person wants.
      */
     note?: string;
-    reason: 'does_not_solve' | 'wrong_industry_or_size' | 'closed_or_wrong_website' | 'duplicate' | 'other';
+    /**
+     * Why, if the person says.
+     */
+    reason?: 'does_not_solve' | 'wrong_industry_or_size' | 'closed_or_wrong_website' | 'duplicate' | 'other';
 };
 
 export type ReportedChatModel = {
@@ -7481,13 +7484,17 @@ export type RemoveMatchingCandidateData = {
 
 export type RemoveMatchingCandidateErrors = {
     /**
-     * The reason is not valid, or is other and nothing says what.
+     * The reason is not one of the five.
      */
     400: Problem;
     /**
      * Nobody is signed in.
      */
     401: Problem;
+    /**
+     * GenAI Fund removed the candidate and the caller, a member, gives it a reason.
+     */
+    403: Problem;
     /**
      * The candidate is unknown to the caller.
      */

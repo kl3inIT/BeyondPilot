@@ -143,10 +143,13 @@ class MatchingController {
 
 	@PostMapping(path = "/candidates/{candidateId}/remove", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "removeMatchingCandidate", summary = "Take a candidate off the list, with the reason",
+	@Operation(operationId = "removeMatchingCandidate", summary = "Take a candidate off the list, with the reason if one is given",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The candidate is removed, and off the shortlist.")
-	@ApiResponse(responseCode = "400", description = "The reason is not valid, or is other and nothing says what.",
+	@ApiResponse(responseCode = "400", description = "The reason is not one of the five.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "403",
+			description = "GenAI Fund removed the candidate and the caller, a member, gives it a reason.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "The candidate is unknown to the caller.", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	MatchingResponse remove(@CurrentActor Actor actor, @PathVariable UUID candidateId,

@@ -609,7 +609,7 @@ export const giveMatchingFeedback = <ThrowOnError extends boolean = true>(option
 });
 
 /**
- * Take a candidate off the list, with the reason
+ * Take a candidate off the list, with the reason if one is given
  */
 export const removeMatchingCandidate = <ThrowOnError extends boolean = true>(options: Options<RemoveMatchingCandidateData, ThrowOnError>): RequestResult<RemoveMatchingCandidateResponses, RemoveMatchingCandidateErrors, ThrowOnError> => (options.client ?? client).post<RemoveMatchingCandidateResponses, RemoveMatchingCandidateErrors, ThrowOnError>({
     security: [{
