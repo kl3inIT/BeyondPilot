@@ -34,8 +34,8 @@ function StatStrip({ className, columns, ...props }: StatStripProps) {
 type StatCellProps = Omit<React.ComponentProps<"div">, "children"> & {
   /** What the figure is. With `href` it is the link's name, and the whole cell is its target. */
   label: string;
-  /** The figure, already formatted. */
-  value: string;
+  /** The figure, already formatted, or a `CountingNumber` where it changes in place. */
+  value: React.ReactNode;
   /** The page behind the figure. */
   href?: string;
   /** What stands before the label, such as a warning mark. */

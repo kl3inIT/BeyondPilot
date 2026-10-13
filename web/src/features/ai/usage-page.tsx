@@ -10,6 +10,7 @@ import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { ChartFrame } from "@/components/composites/chart-frame";
+import { CountingNumber } from "@/components/composites/counting-number";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { StatCell, StatStrip } from "@/components/composites/stat-cell";
@@ -217,13 +218,21 @@ async function UsageOverviewPage({
       ) : (
         <>
           <StatStrip columns={totals.unpricedCalls > 0 ? 5 : 4}>
-            <StatCell label={t("totals.calls")} value={count(totals.calls)}>
+            <StatCell label={t("totals.calls")} value={<CountingNumber value={totals.calls} />}>
               {t("totals.callsOf", {
                 succeeded: count(totals.succeeded),
                 failed: count(totals.failed),
               })}
             </StatCell>
-            <StatCell label={t("totals.failureRate")} value={percent(totals.failed, totals.calls)}>
+            <StatCell
+              label={t("totals.failureRate")}
+              value={
+                <CountingNumber
+                  value={totals.calls === 0 ? 0 : totals.failed / totals.calls}
+                  format={{ style: "percent", maximumFractionDigits: 1 }}
+                />
+              }
+            >
               {t("totals.failureRateOf", {
                 failed: count(totals.failed),
                 calls: count(totals.calls),
@@ -231,7 +240,12 @@ async function UsageOverviewPage({
             </StatCell>
             <StatCell
               label={t("totals.tokens")}
-              value={tokens(totals.inputTokens + totals.outputTokens)}
+              value={
+                <CountingNumber
+                  value={totals.inputTokens + totals.outputTokens}
+                  format={{ notation: "compact", maximumFractionDigits: 2 }}
+                />
+              }
             >
               {t("totals.tokensOf", {
                 input: tokens(totals.inputTokens),
@@ -240,14 +254,28 @@ async function UsageOverviewPage({
             </StatCell>
             <StatCell
               label={t("totals.cost")}
-              value={totals.estimatedCost == null ? "—" : cost(totals.estimatedCost)}
+              value={
+                totals.estimatedCost == null ? (
+                  "—"
+                ) : (
+                  <CountingNumber
+                    value={totals.estimatedCost}
+                    format={{
+                      style: "currency",
+                      currency: "USD",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: totals.estimatedCost < 1 ? 4 : 2,
+                    }}
+                  />
+                )
+              }
             >
               {t("totals.costOf", { count: totals.pricedCalls })}
             </StatCell>
             {totals.unpricedCalls > 0 && (
               <StatCell
                 label={t("totals.unpriced")}
-                value={count(totals.unpricedCalls)}
+                value={<CountingNumber value={totals.unpricedCalls} />}
                 icon={<TriangleAlertIcon aria-hidden="true" className="size-4 text-warning" />}
                 wide
               >
