@@ -6,6 +6,7 @@ import { Categories } from "@/components/sections/categories/categories";
 import { FeaturedChallenge } from "@/components/sections/challenge/featured-challenge";
 import { Ecosystem } from "@/components/sections/ecosystem/ecosystem";
 import { Faq } from "@/components/sections/faq/faq";
+import { FeaturedProgram } from "@/components/sections/featured-program/featured-program";
 import { FinalCta } from "@/components/sections/final-cta/final-cta";
 import { Hero } from "@/components/sections/hero/hero";
 import { PartnerNetwork } from "@/components/sections/logos/partner-network";
@@ -64,6 +65,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <PartnerNetwork />
       <Faq />
       <FinalCta />
+      <FeaturedProgram />
     </>
   );
 }

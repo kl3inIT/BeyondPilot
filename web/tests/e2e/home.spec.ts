@@ -34,6 +34,43 @@ test.describe("home page", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("the featured program is announced once, then waits in the corner", async ({ page }) => {
+    await page.clock.setFixedTime(new Date("2026-10-20T09:00:00+07:00"));
+    await page.goto("/");
+    const card = page.getByRole("button", { name: /Nestlé AI Reinvention/ });
+    await expect(card).toBeVisible();
+    // A first visit: nothing kept in this browser yet.
+    await page.evaluate(() => window.localStorage.clear());
+    await page.reload();
+
+    const announcement = page.getByRole("dialog", { name: "Nestlé Vietnam AI Reinvention" });
+    await expect(announcement).toBeVisible();
+    await expect(announcement.getByText("22 Nov, 23:59 ICT")).toBeVisible();
+    await expect(
+      announcement.getByRole("link", { name: "Explore the program & apply" }),
+    ).toHaveAttribute("href", "/programs/nestle-vietnam-ai-reinvention");
+    await expectNoSeriousA11yViolations(page);
+
+    await announcement.getByRole("button", { name: "Maybe later" }).click();
+    await expect(announcement).toBeHidden();
+    await card.click();
+    await expect(announcement).toBeVisible();
+    await page.keyboard.press("Escape");
+
+    // A later visit meets only the card.
+    await page.reload();
+    await expect(card).toBeVisible();
+    await expect(announcement).toBeHidden();
+  });
+
+  test("the featured program goes once its applications have closed", async ({ page }) => {
+    await page.clock.setFixedTime(new Date("2026-11-23T09:00:00+07:00"));
+    await page.goto("/");
+
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Nestlé AI Reinvention/ })).toHaveCount(0);
+  });
+
   test("the challenge bar goes once submissions have closed", async ({ page }) => {
     await page.clock.setFixedTime(new Date("2026-10-16T09:00:00+07:00"));
     await page.goto("/");

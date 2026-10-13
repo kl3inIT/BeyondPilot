@@ -633,7 +633,13 @@ class ProgramAdministrationTest {
 		assertProblem(save(operator, uri, program(version, "Asks", "asks")), 409, "PROGRAM_OPENING_FIXED");
 		Map<String, Object> extended = program(version, "Asks", "asks");
 		extended.put("applications", applications("2026-01-01T00:00:00Z", "2099-03-01T00:00:00Z", "2099-03-10"));
-		save(operator, uri, extended).expectStatus().isOk();
+		version = JsonPath.read(body(save(operator, uri, extended).expectStatus().isOk()), "$.version");
+
+		// The form names the opening to the minute: the same minute is the same opening, kept as it was.
+		Map<String, Object> sameMinute = program(version, "Asks", "asks");
+		sameMinute.put("applications", applications("2026-01-01T00:00:42Z", "2099-03-01T00:00:00Z", "2099-03-10"));
+		assertThat(JsonPath.<String>read(body(save(operator, uri, sameMinute).expectStatus().isOk()),
+				"$.applications.opensAt")).isEqualTo("2026-01-01T00:00:00Z");
 	}
 
 	private static Map<String, Object> question(String kind, String label, List<String> options) {
