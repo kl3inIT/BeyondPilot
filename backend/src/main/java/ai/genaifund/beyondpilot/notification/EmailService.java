@@ -42,10 +42,10 @@ public class EmailService {
 	/** Deadlines are set in Vietnam time, whoever reads them. */
 	private static final ZoneId VIETNAM = ZoneId.of("Asia/Ho_Chi_Minh");
 
-	/** The signed-in person's organization on the site; its solutions, use cases and introductions open under it. */
+	/** The signed-in person's organization on the site; its solutions and use cases open under it. */
 	private static final String MY_ORGANIZATION = "/workspace/organization";
 
-	/** The signed-in person's talent profile on the site, with the messages people sent them. */
+	/** The signed-in person's talent profile on the site. */
 	private static final String MY_TALENT = "/workspace/talent";
 
 	/** The signed-in person's conversations on the site. */
@@ -207,24 +207,6 @@ public class EmailService {
 				url(publicSlug == null ? MY_TALENT : "/talent/" + publicSlug)));
 	}
 
-	/**
-	 * Tells a person with a talent profile that someone wrote to them. The sender's address is not in it: the link
-	 * opens their talent profile, where they answer under Enquiries, and only an acceptance shares the two addresses.
-	 * @param senderName who wrote, by the name they gave, never their address
-	 * @param senderOrganization the organization the sender belongs to; null when none
-	 * @param topic what the message is about: {@code project}, {@code role} or {@code other}
-	 * @param message what the sender wrote
-	 */
-	@Transactional
-	public void sendTalentEnquiry(String recipient, @Nullable String senderName, @Nullable String senderOrganization,
-			String topic, String message) {
-		queue(EmailKind.TALENT_ENQUIRY, recipient,
-				values("senderName", senderName, "senderOrganization", senderOrganization, "aboutProject",
-						"project".equals(topic), "aboutRole", "role".equals(topic), "aboutOther",
-						!"project".equals(topic) && !"role".equals(topic), "message", message, "enquiriesUrl",
-						url(MY_TALENT)));
-	}
-
 	/** What GenAI Fund decided about a solution. */
 	public enum SolutionDecision {
 
@@ -270,94 +252,6 @@ public class EmailService {
 		queue(approved ? EmailKind.USE_CASE_APPROVED : EmailKind.USE_CASE_SENT_BACK, recipient,
 				values("useCaseTitle", useCaseTitle, "organizationName", organizationName, "reason", reason,
 						"useCaseUrl", url((approved ? "/use-cases/" : MY_ORGANIZATION + "/use-cases/") + useCaseId)));
-	}
-
-	/**
-	 * Reminds a person that a message waits for their answer and when it closes. The link opens their talent profile,
-	 * where they answer under Enquiries.
-	 * @param senderName who wrote, by the name they gave; null when they gave none, never their address
-	 * @param daysLeft the whole days before the message closes unanswered
-	 */
-	@Transactional
-	public void sendTalentEnquiryReminder(String recipient, @Nullable String senderName, long daysLeft) {
-		queue(EmailKind.TALENT_ENQUIRY_REMINDER, recipient,
-				values("senderName", senderName, "daysLeft", Long.toString(daysLeft), "enquiriesUrl",
-						url(MY_TALENT)));
-	}
-
-	/**
-	 * Introduces the two sides of a message the person accepted: each is told who the other is and where to write.
-	 * @param otherName who the recipient is introduced to, as they are shown
-	 * @param otherEmail where the recipient writes to them
-	 * @param otherOrganization the organization the other person belongs to; null when none or not known
-	 */
-	@Transactional
-	public void sendTalentIntroduction(String recipient, String otherName, String otherEmail,
-			@Nullable String otherOrganization) {
-		queue(EmailKind.TALENT_INTRODUCTION, recipient,
-				values("otherName", otherName, "otherEmail", otherEmail, "otherOrganization", otherOrganization));
-	}
-
-	/**
-	 * Tells the sender that the person will not take their message further. A report reads the same, so the person who
-	 * reported is not exposed. It carries no address and no reason; the link opens the messages the sender sent.
-	 * @param talentName the person written to, as their profile names them
-	 */
-	@Transactional
-	public void sendTalentEnquiryDeclined(String recipient, String talentName) {
-		queue(EmailKind.TALENT_ENQUIRY_DECLINED, recipient,
-				values("talentName", talentName, "messagesUrl", url(MY_TALENT + "/sent")));
-	}
-
-	/**
-	 * Tells the sender that their message closed because the person did not answer in time. They may write again; the
-	 * link opens the messages they sent.
-	 * @param talentName the person written to, as their profile names them
-	 */
-	@Transactional
-	public void sendTalentEnquiryClosed(String recipient, String talentName) {
-		queue(EmailKind.TALENT_ENQUIRY_CLOSED, recipient,
-				values("talentName", talentName, "messagesUrl", url(MY_TALENT + "/sent")));
-	}
-
-	/**
-	 * Tells an owner of a provider that someone asked for an introduction. The sender's address is not in it: the link
-	 * opens the organization's introductions, where the owner answers, and only then do both sides learn each other's
-	 * address.
-	 * @param senderName who asks; null until they gave a name
-	 * @param senderOrganization the organization they ask as
-	 * @param solutionName what they asked about
-	 * @param message what the sender needs
-	 */
-	@Transactional
-	public void sendIntroductionRequest(String recipient, @Nullable String senderName, String senderOrganization,
-			String solutionName, String message) {
-		queue(EmailKind.INTRODUCTION_REQUEST, recipient, values("senderName", senderName, "senderOrganization",
-				senderOrganization, "solutionName", solutionName, "message", message, "introductionsUrl",
-				url(MY_ORGANIZATION + "/introductions")));
-	}
-
-	/**
-	 * Introduces two people once the provider answered: each is told who the other is and where to write.
-	 * @param otherName who the recipient is introduced to; null until they gave a name
-	 * @param otherEmail where the recipient writes to them
-	 * @param otherOrganization the organization the other person acts for
-	 * @param solutionName the solution the introduction is about
-	 */
-	@Transactional
-	public void sendIntroduction(String recipient, @Nullable String otherName, String otherEmail,
-			String otherOrganization, String solutionName) {
-		queue(EmailKind.INTRODUCTION_MADE, recipient, values("otherName", otherName, "otherEmail", otherEmail,
-				"otherOrganization", otherOrganization, "solutionName", solutionName));
-	}
-
-	/**
-	 * Tells the sender that the provider will not take their request further. It carries no address and no reason.
-	 */
-	@Transactional
-	public void sendIntroductionDeclined(String recipient, String providerName, String solutionName) {
-		queue(EmailKind.INTRODUCTION_DECLINED, recipient,
-				values("providerName", providerName, "solutionName", solutionName));
 	}
 
 	/**

@@ -277,6 +277,26 @@ class MessagingTest {
 	}
 
 	@Test
+	void aSolutionLeftUnlistedIsStillWrittenToByItsAddress() {
+		String provider = organizationOwner("owner@unlisted-provider.test", "Unlisted Provider");
+		String slug = listedSolution(provider, "Unlisted Triage");
+		String buyer = organizationOwner("buyer@unlisted-buyer.test", "Unlisted Buyer");
+		UUID id = UUID.fromString(JsonPath
+			.<List<String>>read(body(get(provider, SOLUTION + "/mine").expectStatus().isOk()),
+					"$.items[?(@.name=='Unlisted Triage')].id")
+			.get(0));
+		String solution = body(get(provider, SOLUTION + "/mine/" + id).expectStatus().isOk());
+		Map<String, Object> hidden = described("Unlisted Triage", JsonPath.<Number>read(solution, "$.version").longValue());
+		hidden.put("listed", false);
+		// A save keeps the images a reviewed solution has.
+		hidden.put("logoFileId", JsonPath.<String>read(solution, "$.logo.fileId"));
+		hidden.put("coverFileId", JsonPath.<String>read(solution, "$.cover.fileId"));
+		put(provider, SOLUTION + "/mine/" + id, hidden).expectStatus().isOk();
+
+		start(buyer, "solution", slug, "Hello.").expectStatus().isOk();
+	}
+
+	@Test
 	void aConversationWithGenAiFundAboutAProgramIsOpenAtOnceForItsOperators() {
 		String program = publishedProgram("Chat Program", "chat-program");
 		String founder = signIn("founder@program-chat.test");

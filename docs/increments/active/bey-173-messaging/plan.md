@@ -1,0 +1,14 @@
+# Plan: Messages
+
+The design is [design.md](design.md). Each step leaves the gates green.
+
+| #   | Step                                                                                                                                                                                                          | State |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| 1   | The `messaging` module: `V87`, conversations, requests and their answers, messages under a chosen identifier, read state, the clock, the stream of events, the six emails, the audit actions; `MessagingTest` | Done  |
+| 2   | Web: `/workspace/messages` with the lists, the open conversation, the details column, the first message; the account menu; both catalogs; the unit tests of the screen's state                                | Done  |
+| 3   | Backend cutover: the enquiry flow out of `talent`, the `introduction` module removed, their emails removed, `V88` moves their rows into conversations                                                         |       |
+| 4   | Web cutover: Contact on a talent profile, a solution and a program leads to Messages; the enquiry and introduction screens and their words removed; `/admin/messages/reported`; the email kinds               |       |
+| 5   | `openapi.yml`, the generated client, `docs/specs/messaging.md`, `docs/tests/messaging.md`, `ARCHITECTURE.md`, ADR 0008, the roadmap                                                                           |       |
+| 6   | The gates: `./gradlew :backend:check`, `pnpm --dir web check`, `pnpm --dir web test:e2e`; the flow walked in a browser with two accounts                                                                      |       |
+
+Steps 1 and 2 cannot ship without 3 and 4: until then the application would hold two ways to write to the same person.

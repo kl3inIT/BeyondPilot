@@ -141,10 +141,11 @@ class EmailRendererTest {
 		}
 		assertThat(linked).containsExactlyInAnyOrder("organization_invitation", "organization_approved",
 				"organization_sent_back", "organization_request_approved", "organization_restored",
-				"application_received", "reviewer_invitation", "application_outcome", "introduction_request",
-				"solution_approved", "solution_sent_back", "solution_restored", "use_case_approved",
-				"use_case_sent_back", "talent_approved", "talent_changes_requested", "talent_restored",
-				"talent_enquiry", "talent_enquiry_reminder", "talent_enquiry_declined", "talent_enquiry_closed");
+				"application_received", "reviewer_invitation", "application_outcome", "solution_approved",
+				"solution_sent_back", "solution_restored", "use_case_approved", "use_case_sent_back",
+				"talent_approved", "talent_changes_requested", "talent_restored", "message_request",
+				"message_request_reminder", "message_request_accepted", "message_request_declined",
+				"message_request_closed", "message_unread");
 	}
 
 	@Test
@@ -152,11 +153,11 @@ class EmailRendererTest {
 		Map<String, Object> values = new HashMap<>();
 		values.put("senderName", "<b>Mallory</b>");
 		values.put("senderOrganization", "[click me](https://evil.example)");
-		values.put("solutionName", "**Claims**");
+		values.put("about", "**Claims**");
 		values.put("message", "line one\nline two <script>");
 
-		RenderedEmail email = renderer.render(EmailKind.INTRODUCTION_REQUEST,
-				defaults.template(EmailKind.INTRODUCTION_REQUEST), values, APPEARANCE);
+		RenderedEmail email = renderer.render(EmailKind.MESSAGE_REQUEST, defaults.template(EmailKind.MESSAGE_REQUEST),
+				values, APPEARANCE);
 
 		assertThat(email.html()).contains("&lt;b&gt;Mallory&lt;/b&gt;")
 			.contains("[click me](https://evil.example)")
@@ -171,13 +172,13 @@ class EmailRendererTest {
 	void anOptionalValueThatIsAbsentTakesItsOtherWording() {
 		Map<String, Object> values = new HashMap<>();
 		values.put("senderOrganization", "Pocket Policy");
-		values.put("solutionName", "ClaimLens");
+		values.put("about", "ClaimLens");
 		values.put("message", "Hello");
 
-		RenderedEmail email = renderer.render(EmailKind.INTRODUCTION_REQUEST,
-				defaults.template(EmailKind.INTRODUCTION_REQUEST), values, APPEARANCE);
+		RenderedEmail email = renderer.render(EmailKind.MESSAGE_REQUEST, defaults.template(EmailKind.MESSAGE_REQUEST),
+				values, APPEARANCE);
 
-		assertThat(email.text()).contains("Someone at Pocket Policy asked GenAI Fund");
+		assertThat(email.text()).contains("Someone (Pocket Policy) wrote to you on BeyondPilot about ClaimLens");
 	}
 
 	@Test

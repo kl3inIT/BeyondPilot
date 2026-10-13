@@ -145,7 +145,7 @@ class BrevoEmailAdapterTest {
 
 	private static EmailRequest request(String replyTo) {
 		return new EmailRequest(UUID.randomUUID(), "BeyondPilot", "no-reply@beyondpilot.ai", replyTo,
-				"person@email.test", "Hello", "<p>Hello</p>", "Hello", "talent_enquiry");
+				"person@email.test", "Hello", "<p>Hello</p>", "Hello", "message_request");
 	}
 
 	private record Answer(int status, String body) {

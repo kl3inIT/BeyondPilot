@@ -28,7 +28,7 @@ application module, `backend/src/main/java/ai/genaifund/beyondpilot/notification
   - `email_suppression`: addresses never sent to.
 - **Dependencies.** `@ApplicationModule(type = CLOSED, allowedDependencies = { "audit", "identity" })`.
   - **`identity` does not depend on this module.** It publishes `SignInCodeRequested`, and `SignInCodeMail` sends it.
-  - **Modules that call `EmailService`:** `organization`, `introduction`, `proposal`, `solution`, `talent` and
+  - **Modules that call `EmailService`:** `organization`, `messaging`, `proposal`, `solution`, `talent` and
     `usecase`.
 
 ## Kinds of email
@@ -47,10 +47,10 @@ meaning.
 | `sign_in`       | `sign_in_code`                                                                                                                                                                                                                                    | `sendSignInCode`, package-private, called by `SignInCodeMail`                                                                                                                   |
 | `organizations` | `organization_invitation`, `organization_approved`, `organization_refused`, `organization_sent_back`, `organization_request_approved`, `organization_request_declined`, `organization_taken_down`, `organization_restored`, `organization_merged` | `sendOrganizationInvitation`, `sendOrganizationDecision`, `sendOrganizationSentBack`, `sendOrganizationRequestDecision`, `sendOrganizationSuspension`, `sendOrganizationMerged` |
 | `applications`  | `application_received`, `reviewer_invitation`, `application_outcome`                                                                                                                                                                              | `sendApplicationReceived`, `sendReviewerInvitation`, `sendApplicationOutcome`                                                                                                   |
-| `introductions` | `introduction_request`, `introduction_made`, `introduction_declined`                                                                                                                                                                              | `sendIntroductionRequest`, `sendIntroduction`, `sendIntroductionDeclined`                                                                                                       |
 | `solutions`     | `solution_approved`, `solution_sent_back`, `solution_rejected`, `solution_taken_down`, `solution_restored`                                                                                                                                        | `sendSolutionDecision`                                                                                                                                                          |
 | `use_cases`     | `use_case_approved`, `use_case_sent_back`, `proposal_sent`                                                                                                                                                                                        | `sendUseCaseDecision`, `sendProposalSent`                                                                                                                                       |
-| `talent`        | `talent_approved`, `talent_changes_requested`, `talent_removed`, `talent_restored`, `talent_enquiry`, `talent_enquiry_reminder`, `talent_introduction`, `talent_enquiry_declined`, `talent_enquiry_closed`                                        | `sendTalentDecision`, `sendTalentEnquiry`, `sendTalentEnquiryReminder`, `sendTalentIntroduction`, `sendTalentEnquiryDeclined`, `sendTalentEnquiryClosed`                        |
+| `talent`        | `talent_approved`, `talent_changes_requested`, `talent_removed`, `talent_restored`                                                                                                                                                                | `sendTalentDecision`                                                                                                                                                            |
+| `messages`      | `message_request`, `message_request_reminder`, `message_request_accepted`, `message_request_declined`, `message_request_closed`, `message_unread`                                                                                                 | `sendMessageRequest`, `sendMessageRequestReminder`, `sendMessageRequestAccepted`, `sendMessageRequestDeclined`, `sendMessageRequestClosed`, `sendUnreadMessages`                |
 
 **`application_outcome` cannot be edited.** An operator writes its subject and message for each release of outcomes.
 The message is plain text, and its line breaks are kept. The button "View your application" follows the message.
@@ -63,30 +63,28 @@ The message is plain text, and its line breaks are kept. The button "View your a
   nothing. A page that needs an account sends a signed-out visitor to sign in and returns them to it (`returnTo`,
   `requireAccount` in `web/src/lib/auth/session.ts`).
 
-  | Kind                                               | Variable           | Button                 | Opens                                                                                                          |
-  | -------------------------------------------------- | ------------------ | ---------------------- | -------------------------------------------------------------------------------------------------------------- |
-  | `proposal_sent`                                    | `proposalUrl`      | View proposal          | `/use-cases/<use case id>/propose/view`                                                                        |
-  | `application_received`, `application_outcome`      | `applicationUrl`   | View your application  | `/applications/<application id>`                                                                               |
-  | `reviewer_invitation`                              | `reviewsUrl`       | Open Reviews           | `/reviews/<program id>`, the program's applications as the judge scores them                                   |
-  | `organization_invitation`                          | `organizationUrl`  | Open the invitation    | `/workspace/organization`, which shows the invitation to a person who belongs to no organization               |
-  | `organization_sent_back`                           | `organizationUrl`  | Edit your organization | `/workspace/organization`                                                                                      |
-  | `organization_request_approved`                    | `organizationUrl`  | Open your organization | `/workspace/organization`                                                                                      |
-  | `organization_approved`, `organization_restored`   | `organizationUrl`  | View your organization | `/organizations/<slug>`, its public page                                                                       |
-  | `solution_sent_back`                               | `solutionUrl`      | Edit your solution     | `/workspace/organization/solutions/<solution id>`                                                              |
-  | `solution_approved`, `solution_restored`           | `solutionUrl`      | View your solution     | `/solutions/<slug>`, its public page; the page in My organization while its organization is not approved       |
-  | `use_case_sent_back`                               | `useCaseUrl`       | Edit your use case     | `/workspace/organization/use-cases/<use case id>`                                                              |
-  | `use_case_approved`                                | `useCaseUrl`       | View your use case     | `/use-cases/<use case id>`, the published brief                                                                |
-  | `talent_changes_requested`                         | `profileUrl`       | Edit your profile      | `/workspace/talent`                                                                                            |
-  | `talent_approved`, `talent_restored`               | `profileUrl`       | View your profile      | `/talent/<slug>`, its public page; `/workspace/talent` while the person keeps the profile out of the directory |
-  | `talent_enquiry`, `talent_enquiry_reminder`        | `enquiriesUrl`     | Answer the message     | `/workspace/talent`, whose Enquiries tab holds the message                                                     |
-  | `talent_enquiry_declined`, `talent_enquiry_closed` | `messagesUrl`      | View your messages     | `/workspace/talent/sent`                                                                                       |
-  | `introduction_request`                             | `introductionsUrl` | Answer the request     | `/workspace/organization/introductions`                                                                        |
+  | Kind                                                 | Variable          | Button                 | Opens                                                                                                          |
+  | ---------------------------------------------------- | ----------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------- |
+  | `proposal_sent`                                      | `proposalUrl`     | View proposal          | `/use-cases/<use case id>/propose/view`                                                                        |
+  | `application_received`, `application_outcome`        | `applicationUrl`  | View your application  | `/applications/<application id>`                                                                               |
+  | `reviewer_invitation`                                | `reviewsUrl`      | Open Reviews           | `/reviews/<program id>`, the program's applications as the judge scores them                                   |
+  | `organization_invitation`                            | `organizationUrl` | Open the invitation    | `/workspace/organization`, which shows the invitation to a person who belongs to no organization               |
+  | `organization_sent_back`                             | `organizationUrl` | Edit your organization | `/workspace/organization`                                                                                      |
+  | `organization_request_approved`                      | `organizationUrl` | Open your organization | `/workspace/organization`                                                                                      |
+  | `organization_approved`, `organization_restored`     | `organizationUrl` | View your organization | `/organizations/<slug>`, its public page                                                                       |
+  | `solution_sent_back`                                 | `solutionUrl`     | Edit your solution     | `/workspace/organization/solutions/<solution id>`                                                              |
+  | `solution_approved`, `solution_restored`             | `solutionUrl`     | View your solution     | `/solutions/<slug>`, its public page; the page in My organization while its organization is not approved       |
+  | `use_case_sent_back`                                 | `useCaseUrl`      | Edit your use case     | `/workspace/organization/use-cases/<use case id>`                                                              |
+  | `use_case_approved`                                  | `useCaseUrl`      | View your use case     | `/use-cases/<use case id>`, the published brief                                                                |
+  | `talent_changes_requested`                           | `profileUrl`      | Edit your profile      | `/workspace/talent`                                                                                            |
+  | `talent_approved`, `talent_restored`                 | `profileUrl`      | View your profile      | `/talent/<slug>`, its public page; `/workspace/talent` while the person keeps the profile out of the directory |
+  | `message_request`, `message_request_reminder`        | `messagesUrl`     | Read and answer        | `/workspace/messages`, where the request is answered                                                           |
+  | `message_request_accepted`                           | `messagesUrl`     | Open the conversation  | `/workspace/messages`                                                                                          |
+  | `message_request_declined`, `message_request_closed` | `messagesUrl`     | View your messages     | `/workspace/messages`                                                                                          |
+  | `message_unread`                                     | `messagesUrl`     | Read it                | `/workspace/messages`                                                                                          |
 
 - **Kinds without a link.**
   - `sign_in_code`: the code is what the person needs, and a link would teach them to follow sign-in links.
-  - `introduction_made`, `introduction_declined`, `talent_introduction`: the email is the whole message (the other
-    side's address, or the refusal), and the sender of an introduction request has no page that lists what they
-    asked.
   - `organization_refused`, `organization_request_declined`, `organization_taken_down`, `organization_merged`,
     `solution_rejected`, `solution_taken_down`, `talent_removed`: they tell the person to sign in and read why.
 - **Every link variable but `proposalUrl` is optional.** A wording an operator saved before the kind offered the
@@ -95,8 +93,11 @@ The message is plain text, and its line breaks are kept. The button "View your a
 - **No link lets anyone in.** An invitation (organization or reviewer) is used by signing in with the address it
   was sent to. Its link names a page and carries no token: anyone else who follows it sees the not-found page, or
   their own organization.
-- **Sender addresses.** An enquiry or introduction request never carries the sender's address. Only the introduction
-  emails, sent after the person accepts, carry the other side's address.
+- **Addresses.** No email about a conversation carries an address of either side. The email of a first message
+  names its sender and their organization, and the two write to each other in Messages.
+- **Kinds no longer sent.** A kind that is removed leaves `EmailKind`, its default wording and any wording an
+  operator saved for it. The log keeps every email of it under the value it was stored with: it is listed, filtered
+  by that value, read and sent again like any other, because the log reads `kind` as text.
 - **Dates.** Dates are written in Vietnam time (`Asia/Ho_Chi_Minh`):
   - `editableUntil` is written as `d MMM yyyy, HH:mm` followed by ` ICT`;
   - a reviewer invitation's `expiresOn` is written as `d MMM yyyy`.

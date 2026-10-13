@@ -3,8 +3,6 @@ package ai.genaifund.beyondpilot.talent;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -29,8 +27,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 
 /**
  * Talent profiles over real HTTP against PostgreSQL: the one profile a person keeps, what a submission needs, what
- * operators decide, what the public directory shows and how a message reaches a person. Only the SMTP server is
- * replaced. Each test uses its own word in the names it searches for, because the tests share one database.
+ * operators decide and what the public directory shows. Only the SMTP server is replaced. Each test uses its own word in the names it searches for, because the tests share one database.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = "beyondpilot.identity.operator-emails=operator@genaifund.test")
@@ -51,9 +48,6 @@ class TalentTest {
 
 	@Autowired
 	private JdbcClient jdbc;
-
-	@Autowired
-	private TalentEnquiryClock clock;
 
 	private RestTestClient client;
 
@@ -236,11 +230,21 @@ class TalentTest {
 	}
 
 	@Test
-	void aPersonDeletesTheirProfileWithItsMessages() {
+	void aPersonDeletesTheirProfileWithTheConversationsStartedThroughIt() {
 		String person = signIn("possum@profile.test");
 		UUID id = approved(person, "Possum Person");
-		post(signIn("asker@possum.test"), DIRECTORY + "/possum-person/enquiries",
-				Map.of("senderName", "Lan Tran", "topic", "project", "message", "Hello")).expectStatus().isNoContent();
+		signIn("asker@possum.test");
+		UUID conversation = UUID.randomUUID();
+		jdbc.sql("""
+				insert into messaging_conversation (id, kind, talent_profile_id, subject_name, starter_account_id,
+				                                    recipient_account_id, status)
+				select ?, 'talent', p.id, p.name, a.id, p.account_id, 'pending'
+				from talent_profile p, identity_account a where p.id = ? and a.email = 'asker@possum.test'
+				""").params(conversation, id).update();
+		jdbc.sql("""
+				insert into messaging_message (id, conversation_id, sender_account_id, body)
+				select ?, c.id, c.starter_account_id, 'Hello' from messaging_conversation c where c.id = ?
+				""").params(UUID.randomUUID(), conversation).update();
 
 		client.delete()
 			.uri(MINE)
@@ -252,29 +256,11 @@ class TalentTest {
 
 		assertThat(JsonPath.<Object>read(mine(person), "$.profile")).isNull();
 		assertProblem(client.get().uri(DIRECTORY + "/possum-person").exchange(), 404, "TALENT_PROFILE_NOT_FOUND");
-		assertThat(jdbc.sql("select count(*) from talent_enquiry where profile_id = ?").param(id).query(Long.class).single())
-			.isZero();
+		assertThat(jdbc.sql("select count(*) from messaging_message where conversation_id = ?")
+			.param(conversation)
+			.query(Long.class)
+			.single()).isZero();
 		assertThat(events(id)).containsExactly("talent.approve", "talent.delete");
-	}
-
-	@Test
-	void operatorsReadTheReportedMessagesAndNobodyElse() {
-		approved(signIn("wallaby@profile.test"), "Wallaby Person");
-		String sender = signIn("spammer@wallaby.test");
-		post(sender, DIRECTORY + "/wallaby-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "other", "message", "Cheap followers"))
-			.expectStatus()
-			.isNoContent();
-		String person = signIn("wallaby@profile.test");
-		String id = JsonPath.read(mine(person), "$.enquiries[0].id");
-		post(person, MINE + "/enquiries/" + id + "/report", null).expectStatus().isNoContent();
-
-		String reported = body(get(operator, "/api/talent/admin/reported-enquiries").expectStatus().isOk());
-
-		assertThat(JsonPath.<List<String>>read(reported, "$.items[?(@.message == 'Cheap followers')].senderEmail"))
-			.containsExactly("spammer@wallaby.test");
-		assertThat(JsonPath.<List<String>>read(reported, "$.items[?(@.message == 'Cheap followers')].profileName"))
-			.containsExactly("Wallaby Person");
-		assertProblem(get(person, "/api/talent/admin/reported-enquiries"), 403, "IDENTITY_OPERATOR_REQUIRED");
 	}
 
 	@Test
@@ -474,211 +460,6 @@ class TalentTest {
 	}
 
 	@Test
-	void aMessageWaitsForThePersonAndSharesNoAddressUntilAccepted() {
-		String person = signIn("numbat@profile.test");
-		approved(person, "Numbat Person");
-		String path = DIRECTORY + "/numbat-person/enquiries";
-		Map<String, Object> message = Map.of("senderName", "Lan Tran", "topic", "project", "message", "  We need a claims model by March.  ");
-
-		client.post()
-			.uri(path)
-			.header(TestSignIn.CSRF_HEADER, "1")
-			.contentType(MediaType.APPLICATION_JSON)
-			.body(message)
-			.exchange()
-			.expectStatus()
-			.isUnauthorized();
-		assertProblem(post(person, path, message), 409, "TALENT_OWN_PROFILE");
-		String buyer = organizationOwner("buyer@numbat.test", "Numbat Insurance");
-		assertProblem(post(buyer, path, Map.of("senderName", "Lan Tran", "topic", "project", "message", " ")), 400, "REQUEST_INVALID");
-		assertProblem(post(buyer, path, Map.of("senderName", "Lan Tran", "topic", "gossip", "message", "Hello")), 400,
-				"REQUEST_INVALID");
-		// A message is always signed with a name.
-		assertProblem(post(buyer, path, Map.of("senderName", " ", "topic", "project", "message", "Hello")), 400,
-				"REQUEST_INVALID");
-		assertProblem(post(buyer, DIRECTORY + "/nobody-here/enquiries", message), 404, "TALENT_PROFILE_NOT_FOUND");
-		assertThat(JsonPath.<Object>read(body(get(buyer, DIRECTORY + "/numbat-person").expectStatus().isOk()),
-				"$.waitingEnquirySentAt")).isNull();
-
-		post(buyer, path, message).expectStatus().isNoContent();
-
-		// The person is told who wrote and from where, without the sender's address.
-		assertThat(mail.latestSubjectTo("numbat@profile.test"))
-			.isEqualTo("A message through your BeyondPilot talent profile");
-		assertThat(mail.latestTextTo("numbat@profile.test")).contains("Numbat Insurance")
-			.contains("about a project")
-			.containsPattern("https?://[^/ ]+/workspace/talent(?![\\w/-])")
-			.doesNotContain("buyer@numbat.test");
-		assertProblem(post(buyer, path, message), 409, "TALENT_ENQUIRY_PENDING");
-		assertThat(JsonPath.<String>read(body(get(buyer, DIRECTORY + "/numbat-person").expectStatus().isOk()),
-				"$.waitingEnquirySentAt")).isNotNull();
-		String read = mine(person);
-		assertThat(JsonPath.<List<String>>read(read, "$.enquiries[*].message"))
-			.containsExactly("We need a claims model by March.");
-		assertThat(JsonPath.<String>read(read, "$.enquiries[0].status")).isEqualTo("pending");
-		assertThat(JsonPath.<String>read(read, "$.enquiries[0].senderOrganization")).isEqualTo("Numbat Insurance");
-		assertThat(JsonPath.<Object>read(read, "$.enquiries[0].senderEmail")).isNull();
-		// The person reads the name the sender gave, never the sender's address.
-		assertThat(JsonPath.<String>read(read, "$.enquiries[0].senderName")).isEqualTo("Lan Tran");
-		assertThat(read).doesNotContain("buyer@numbat.test");
-		assertThat(JsonPath.<String>read(read, "$.enquiries[0].closesAt")).isNotNull();
-		String id = JsonPath.read(read, "$.enquiries[0].id");
-		// Another person cannot answer it.
-		approved(signIn("other@numbat.test"), "Numbat Other");
-		assertProblem(post(signIn("other@numbat.test"), MINE + "/enquiries/" + id + "/accept", null), 404,
-				"TALENT_ENQUIRY_NOT_FOUND");
-
-		post(person, MINE + "/enquiries/" + id + "/accept", null).expectStatus().isNoContent();
-
-		assertThat(mail.latestTextTo("buyer@numbat.test")).contains("numbat@profile.test");
-		assertThat(mail.latestTextTo("numbat@profile.test")).contains("buyer@numbat.test").contains("Numbat Insurance");
-		String accepted = mine(person);
-		assertThat(JsonPath.<String>read(accepted, "$.enquiries[0].status")).isEqualTo("accepted");
-		assertThat(JsonPath.<String>read(accepted, "$.enquiries[0].senderEmail")).isEqualTo("buyer@numbat.test");
-		assertThat(JsonPath.<Object>read(accepted, "$.enquiries[0].closesAt")).isNull();
-		assertProblem(post(person, MINE + "/enquiries/" + id + "/decline", null), 409, "TALENT_ENQUIRY_NOT_PENDING");
-		assertThat(events("talent_enquiry", UUID.fromString(id))).containsExactly("talent.enquiry_accept");
-		// An answer lets the sender write again.
-		post(buyer, path, Map.of("senderName", "Lan Tran", "topic", "role", "message", "And a role?")).expectStatus().isNoContent();
-		// The sender reads nothing of it on their own page.
-		assertThat(JsonPath.<List<Object>>read(mine(buyer), "$.enquiries")).isEmpty();
-	}
-
-	@Test
-	void aDeclineAndAReportReadTheSameToTheSenderAndShareNoAddress() {
-		String person = signIn("quokka@profile.test");
-		approved(person, "Quokka Person");
-		String path = DIRECTORY + "/quokka-person/enquiries";
-		String first = signIn("first@quokka.test");
-		String second = signIn("second@quokka.test");
-		post(first, path, Map.of("senderName", "Lan Tran", "topic", "other", "message", "Can we talk?")).expectStatus().isNoContent();
-		post(second, path, Map.of("senderName", "Lan Tran", "topic", "other", "message", "Buy followers now")).expectStatus().isNoContent();
-		String read = mine(person);
-		String fromSecond = JsonPath.<List<String>>read(read, "$.enquiries[?(@.message == 'Buy followers now')].id")
-			.get(0);
-		String fromFirst = JsonPath.<List<String>>read(read, "$.enquiries[?(@.message == 'Can we talk?')].id").get(0);
-
-		post(person, MINE + "/enquiries/" + fromFirst + "/decline", null).expectStatus().isNoContent();
-		post(person, MINE + "/enquiries/" + fromSecond + "/report", null).expectStatus().isNoContent();
-
-		String declined = mail.latestTextTo("first@quokka.test");
-		// The sender is led to the messages they sent.
-		assertThat(mail.latestTextTo("first@quokka.test"))
-			.containsPattern("https?://[^/ ]+/workspace/talent/sent(?![\\w/-])");
-		String reported = mail.latestTextTo("second@quokka.test");
-		assertThat(declined).isEqualTo(reported).contains("Quokka Person").doesNotContain("quokka@profile.test");
-		assertThat(mail.latestSubjectTo("second@quokka.test")).isEqualTo("Your message to Quokka Person");
-		String after = mine(person);
-		assertThat(JsonPath.<List<String>>read(after, "$.enquiries[*].status")).containsExactlyInAnyOrder("declined",
-				"reported");
-		assertThat(JsonPath.<List<Object>>read(after, "$.enquiries[*].senderEmail")).containsOnlyNulls();
-		assertThat(events("talent_enquiry", UUID.fromString(fromSecond))).containsExactly("talent.enquiry_report");
-	}
-
-	@Test
-	void aSenderReadsWhatTheySentWithAnAddressOnlyOnceAcceptedAndAReportAsADecline() {
-		String kowari = signIn("kowari@profile.test");
-		approved(kowari, apart("Kowari Person", null));
-		String potoroo = signIn("potoroo@profile.test");
-		approved(potoroo, apart("Potoroo Person", null));
-		String sender = signIn("sender@kowari.test");
-		String sent = MINE + "/sent";
-		client.get().uri(sent).exchange().expectStatus().isUnauthorized();
-		assertThat(JsonPath.<List<Object>>read(body(get(sender, sent).expectStatus().isOk()), "$.items")).isEmpty();
-		post(sender, DIRECTORY + "/kowari-person/enquiries",
-				Map.of("senderName", "Lan Tran", "topic", "project", "message", "A claims model?"))
-			.expectStatus()
-			.isNoContent();
-		post(sender, DIRECTORY + "/potoroo-person/enquiries",
-				Map.of("senderName", "Lan Tran", "topic", "other", "message", "Buy followers now"))
-			.expectStatus()
-			.isNoContent();
-
-		String waiting = body(get(sender, sent).expectStatus().isOk());
-
-		assertThat(JsonPath.<List<String>>read(waiting, "$.items[*].status")).containsExactly("pending", "pending");
-		assertThat(JsonPath.<List<Object>>read(waiting, "$.items[*].recipientEmail")).containsOnlyNulls();
-		assertThat(JsonPath.<List<Object>>read(waiting, "$.items[*].closesAt")).doesNotContainNull();
-		assertThat(waiting).doesNotContain("@profile.test");
-		post(kowari, MINE + "/enquiries/" + JsonPath.<String>read(mine(kowari), "$.enquiries[0].id") + "/accept", null)
-			.expectStatus()
-			.isNoContent();
-		post(potoroo, MINE + "/enquiries/" + JsonPath.<String>read(mine(potoroo), "$.enquiries[0].id") + "/report", null)
-			.expectStatus()
-			.isNoContent();
-
-		String answered = body(get(sender, sent).expectStatus().isOk());
-
-		String accepted = "$.items[?(@.recipientName == 'Kowari Person')]";
-		assertThat(JsonPath.<List<String>>read(answered, accepted + ".status")).containsExactly("accepted");
-		assertThat(JsonPath.<List<String>>read(answered, accepted + ".recipientEmail"))
-			.containsExactly("kowari@profile.test");
-		assertThat(JsonPath.<List<String>>read(answered, accepted + ".recipientSlug")).containsExactly("kowari-person");
-		assertThat(JsonPath.<List<String>>read(answered, accepted + ".senderName")).containsExactly("Lan Tran");
-		assertThat(JsonPath.<List<String>>read(answered, accepted + ".message")).containsExactly("A claims model?");
-		// A report reads as a decline here too, and shares no address.
-		String reported = "$.items[?(@.recipientName == 'Potoroo Person')]";
-		assertThat(JsonPath.<List<String>>read(answered, reported + ".status")).containsExactly("declined");
-		assertThat(JsonPath.<List<Object>>read(answered, reported + ".recipientEmail")).containsOnlyNulls();
-		assertThat(answered).doesNotContain("reported").doesNotContain("potoroo@profile.test");
-		// What one person sent is theirs alone.
-		assertThat(JsonPath.<List<Object>>read(body(get(kowari, sent).expectStatus().isOk()), "$.items")).isEmpty();
-	}
-
-	@Test
-	void aSenderStartsTenConversationsADay() {
-		UUID profile = approved(signIn("dingo@profile.test"), "Dingo Person");
-		String sender = signIn("busy@dingo.test");
-		UUID account = jdbc.sql("select id from identity_account where email = 'busy@dingo.test'")
-			.query(UUID.class)
-			.single();
-		for (int sent = 0; sent < TalentService.ENQUIRIES_A_DAY; sent++) {
-			jdbc.sql("""
-					insert into talent_enquiry (id, profile_id, sender_account_id, topic, message, status)
-					values (?, ?, ?, 'other', 'Earlier today', 'declined')
-					""").params(UUID.randomUUID(), profile, account).update();
-		}
-		approved(signIn("emu@profile.test"), "Emu Person");
-
-		assertProblem(post(sender, DIRECTORY + "/emu-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "role", "message", "Hi")), 429,
-				"TALENT_ENQUIRY_LIMIT");
-	}
-
-	@Test
-	void aMessageNobodyAnswersIsRemindedOnceAndClosesAfterFourteenDays() {
-		String person = signIn("koala@profile.test");
-		approved(person, "Koala Person");
-		String sender = signIn("patient@koala.test");
-		post(sender, DIRECTORY + "/koala-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "project", "message", "Still there?"))
-			.expectStatus()
-			.isNoContent();
-		// The message's own email leaves first; sent together, the two may arrive in either order.
-		assertThat(mail.latestSubjectTo("koala@profile.test")).isNotEqualTo("A message waits for your answer on BeyondPilot");
-		Instant now = Instant.now();
-
-		assertThat(clock.remind(now.plus(Duration.ofDays(8)))).isPositive();
-		String reminder = mail.latestTextTo("koala@profile.test");
-		assertThat(reminder).containsPattern("https?://[^/ ]+/workspace/talent(?![\\w/-])");
-		assertThat(mail.latestSubjectTo("koala@profile.test"))
-			.isEqualTo("A message waits for your answer on BeyondPilot");
-		clock.remind(now.plus(Duration.ofDays(9)));
-		// One reminder, not one a run.
-		assertThat(mail.latestTextTo("koala@profile.test")).isEqualTo(reminder);
-
-		assertThat(clock.close(now.plus(Duration.ofDays(15)))).isPositive();
-
-		assertThat(JsonPath.<String>read(mine(person), "$.enquiries[0].status")).isEqualTo("closed");
-		assertThat(mail.latestSubjectTo("patient@koala.test")).isEqualTo("Your message to Koala Person closed");
-		assertThat(mail.latestTextTo("patient@koala.test"))
-			.containsPattern("https?://[^/ ]+/workspace/talent/sent(?![\\w/-])");
-		assertThat(mail.latestTextTo("patient@koala.test")).doesNotContain("koala@profile.test");
-		// The sender may write again.
-		post(sender, DIRECTORY + "/koala-person/enquiries", Map.of("senderName", "Lan Tran", "topic", "project", "message", "Once more"))
-			.expectStatus()
-			.isNoContent();
-	}
-
-	@Test
 	void aProfileStatesItsFactsAndTheDirectoryNarrowsByCountryAndEngagement() {
 		Map<String, Object> facts = described("Echidna Engineer", null);
 		facts.put("country", "SG");
@@ -840,28 +621,10 @@ class TalentTest {
 	}
 
 	private List<String> events(UUID profile) {
-		return events("talent", profile);
-	}
-
-	private List<String> events(String type, UUID resource) {
 		return jdbc.sql("""
-				select action from audit_event where resource_type = ? and resource_id = ?
+				select action from audit_event where resource_type = 'talent' and resource_id = ?
 				order by occurred_at, id
-				""").params(type, resource.toString()).query(String.class).list();
-	}
-
-	/** The session of the owner of an approved organization. */
-	private String organizationOwner(String email, String name) {
-		String session = signIn(email);
-		UUID organization = UUID.fromString(JsonPath.read(body(post(session, "/api/organization/organizations",
-				Map.of("name", name, "type", "company", "country", "VN", "teamSize", "2_9", "industries",
-						List.of("insurance"), "website", "https://example.test", "description",
-						"Assistants for insurers.", "foundedYear", 2021, "jobTitle", "Founder"))
-			.expectStatus()
-			.isCreated()), "$.id"));
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of()).expectStatus()
-			.isNoContent();
-		return session;
+				""").param(profile.toString()).query(String.class).list();
 	}
 
 	private static void assertProblem(RestTestClient.ResponseSpec response, int status, String code) {

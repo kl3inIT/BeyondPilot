@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentListRequest;
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentListResponse;
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentResponse;
@@ -14,7 +13,6 @@ import ai.genaifund.beyondpilot.talent.persistence.TalentDetailRepository;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfile;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfileRepository;
 import ai.genaifund.beyondpilot.talent.persistence.TalentQueryRepository;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,21 +107,18 @@ public class TalentDirectory {
 	}
 
 	/**
-	 * One profile of the directory by its address, with when the caller's message to the person was sent while it waits
-	 * for an answer.
-	 * @param actor who reads; null for a visitor
+	 * One profile of the directory by its address.
 	 * @throws TalentException when no approved, listed profile has the address; a draft or an unlisted one answers the
 	 * same, so the address does not reveal that one exists
 	 */
 	@Transactional(readOnly = true)
-	public PublicTalentResponse get(String slug, @Nullable Actor actor) {
+	public PublicTalentResponse get(String slug) {
 		TalentProfile profile = profiles.findBySlug(slug)
 			.filter(found -> found.isApproved() && found.isListed())
 			.orElseThrow(() -> new TalentException(TalentErrorCode.PROFILE_NOT_FOUND, "No listed talent at " + slug));
 		return new PublicTalentResponse(profile.getSlug(), profile.getName(), profile.getHeadline(), profile.getBio(),
 				profile.getRoles(), profile.getSkills(), profile.getCountry(), profile.getEngagement(), profile.getWebsite(),
 				profile.getPhotoFileId(), profile.getCity(), profile.getLanguages(), profile.getIndustries(), profile.getWorksAt(),
-				TalentViews.projects(details.projects(profile.getId())),
-				actor == null ? null : details.waitingSince(profile.getId(), actor.accountId()).orElse(null));
+				TalentViews.projects(details.projects(profile.getId())));
 	}
 }
