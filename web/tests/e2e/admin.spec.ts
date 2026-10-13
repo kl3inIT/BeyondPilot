@@ -61,7 +61,7 @@ test.describe("admin", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("admin home counts what waits for a decision, each count a way into its queue", async ({
+  test("admin home counts what waits, the applications to read and the state of the system", async ({
     page,
     context,
     baseURL,
@@ -71,19 +71,43 @@ test.describe("admin", () => {
 
     // An organization waits when it is new, and when someone claims one nobody owns.
     await expect(page.getByText("7 records wait for a decision.")).toBeVisible();
+    const main = page.getByRole("main");
+    const cells = main.locator('[data-slot="stat-cell"]');
     for (const [queue, count, href] of [
-      ["Organizations to review", 2, "/admin/organizations?status=in_review"],
+      // No use case waits; its cell stays, as the way to the list.
+      ["Use cases to review", 0, "/admin/use-cases?status=in_review"],
       ["Solutions to review", 2, "/admin/solutions?status=in_review"],
       ["Talent profiles to review", 2, "/admin/talent?status=in_review"],
+      ["Organizations to review", 2, "/admin/organizations?status=in_review"],
       // A deployment is reviewed on its solution, so the whole list opens, those holding one first.
       ["Customer deployments to review", 1, "/admin/solutions"],
     ] as const) {
-      const link = page.getByRole("main").getByRole("link", { name: queue });
-      await expect(link).toHaveAttribute("href", href);
-      await expect(link).toContainText(String(count));
+      await expect(main.getByRole("link", { name: queue })).toHaveAttribute("href", href);
+      await expect(cells.filter({ hasText: queue }).getByRole("definition")).toContainText(
+        count === 0 ? "0Nothing waiting" : `${count}The oldest has waited 3 days`,
+      );
     }
 
-    await page.getByRole("main").getByRole("link", { name: "Solutions to review" }).click();
+    // A program with applications: how far this operator is, and the way to go on.
+    const program = main.getByRole("link", { name: /AI for Insurance Challenge × Tasco/ });
+    await expect(program).toContainText("You assessed 1 of 3");
+    await expect(program).toHaveAttribute("href", /\/reviews\//);
+
+    // The system: each figure leads to the page that holds it.
+    await expect(main.getByRole("link", { name: "AI usage" })).toHaveAttribute(
+      "href",
+      "/admin/ai/usage?period=7d",
+    );
+    await expect(cells.filter({ hasText: "Email, last 7 days" })).toContainText(
+      "1 delivered · 1 bounced",
+    );
+    await expect(main.getByRole("link", { name: "Search index" })).toHaveAttribute(
+      "href",
+      "/admin/ai/search-index",
+    );
+    await expectNoSeriousA11yViolations(page);
+
+    await main.getByRole("link", { name: "Solutions to review" }).click();
     await expect(page).toHaveURL("/admin/solutions?status=in_review");
     await expect(page.getByText("2 solutions")).toBeVisible();
   });
@@ -350,15 +374,17 @@ test.describe("admin", () => {
     ]);
     await expectNoSeriousA11yViolations(page);
 
-    await menu.getByRole("menuitem", { name: /^Appearance/ }).click();
-    await page.getByRole("menuitemradio", { name: "Dark" }).click();
+    // The submenus are driven from the keyboard: a mouse on its way to an item crosses the other
+    // submenu's trigger and the sidebar's links, which open or catch it while the page settles.
+    await menu.getByRole("menuitem", { name: /^Appearance/ }).press("Enter");
+    await page.getByRole("menuitemradio", { name: "Dark" }).press("Enter");
     await expect(page.locator("html")).toHaveClass(/dark/);
     await page.keyboard.press("Escape");
     await page.keyboard.press("Escape");
 
     menu = await openMenu();
-    await menu.getByRole("menuitem", { name: /^Language/ }).click();
-    await page.getByRole("menuitemradio", { name: "Tiếng Việt" }).click();
+    await menu.getByRole("menuitem", { name: /^Language/ }).press("Enter");
+    await page.getByRole("menuitemradio", { name: "Tiếng Việt" }).press("Enter");
     await expect(page).toHaveURL("/vi/admin");
     await expect(page.locator("html")).toHaveAttribute("lang", "vi");
 

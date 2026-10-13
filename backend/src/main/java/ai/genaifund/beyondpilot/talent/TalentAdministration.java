@@ -1,6 +1,8 @@
 package ai.genaifund.beyondpilot.talent;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,6 +22,7 @@ import ai.genaifund.beyondpilot.talent.dto.AdminTalentListRequest;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentListResponse;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentDecisionRequest;
+import ai.genaifund.beyondpilot.talent.dto.TalentReviewQueueResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentSummaryResponse;
 import ai.genaifund.beyondpilot.talent.persistence.TalentDetailRepository;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfile;
@@ -39,6 +42,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class TalentAdministration {
+
+	/** The days of a review queue are Vietnam's, as the screens show them. */
+	private static final ZoneId QUEUE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
 	static final int PAGE_SIZE = 25;
 
@@ -284,6 +290,20 @@ public class TalentAdministration {
 					.stream()
 					.map(row -> new TalentAwaitingReview.Item(row.id(), row.name(), row.headline(), row.submittedAt()))
 					.toList());
+	}
+
+	/**
+	 * How many talent profiles wait for review now, since when the oldest has waited, and how many
+	 * waited at the end of each of the last 14 days, for the admin home.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public TalentReviewQueueResponse queue(Actor actor) {
+		identity.requireOperator(actor);
+		LocalDate today = LocalDate.now(QUEUE_ZONE);
+		List<Long> days = profileList.profilesWaitingByDay(today);
+		return new TalentReviewQueueResponse(days.getLast(), profileList.profilesOldestWaiting(),
+				today.minusDays(days.size() - 1L), days);
 	}
 
 }

@@ -1,6 +1,8 @@
 package ai.genaifund.beyondpilot.solution;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,7 @@ import ai.genaifund.beyondpilot.solution.dto.SendBackSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionBackingRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionOffersRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
+import ai.genaifund.beyondpilot.solution.dto.SolutionReviewQueueResponse;
 import ai.genaifund.beyondpilot.solution.dto.TakeDownSolutionRequest;
 import ai.genaifund.beyondpilot.solution.persistence.CustomerDeployment;
 import ai.genaifund.beyondpilot.solution.persistence.CustomerDeploymentRepository;
@@ -51,6 +54,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class SolutionAdministration {
+
+	/** The days of a review queue are Vietnam's, as the screens show them. */
+	private static final ZoneId QUEUE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
 	static final int PAGE_SIZE = 25;
 
@@ -548,6 +554,34 @@ public class SolutionAdministration {
 							names.containsKey(row.organizationId()) ? names.get(row.organizationId()).name() : null,
 							row.summary(), row.submittedAt()))
 					.toList());
+	}
+
+	/**
+	 * How many solutions wait for review now, since when the oldest has waited, and how many
+	 * waited at the end of each of the last 14 days, for the admin home.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public SolutionReviewQueueResponse queue(Actor actor) {
+		identity.requireOperator(actor);
+		LocalDate today = LocalDate.now(QUEUE_ZONE);
+		List<Long> days = solutionList.solutionsWaitingByDay(today);
+		return new SolutionReviewQueueResponse(days.getLast(), solutionList.solutionsOldestWaiting(),
+				today.minusDays(days.size() - 1L), days);
+	}
+
+	/**
+	 * How many customer deployments wait for review now, since when the oldest has waited, and how many
+	 * waited at the end of each of the last 14 days, for the admin home.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public SolutionReviewQueueResponse deploymentQueue(Actor actor) {
+		identity.requireOperator(actor);
+		LocalDate today = LocalDate.now(QUEUE_ZONE);
+		List<Long> days = solutionList.deploymentsWaitingByDay(today);
+		return new SolutionReviewQueueResponse(days.getLast(), solutionList.deploymentsOldestWaiting(),
+				today.minusDays(days.size() - 1L), days);
 	}
 
 }
