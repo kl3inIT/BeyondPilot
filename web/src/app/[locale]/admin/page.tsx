@@ -46,7 +46,8 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
         q: "",
         before: null,
         after: null,
-        size: null,
+        // Only the counts of the period are shown; one row is the least the log answers.
+        size: 1,
       }),
       readSearchIndex(),
     ]);
