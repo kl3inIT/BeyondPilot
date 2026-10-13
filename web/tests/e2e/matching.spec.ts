@@ -123,6 +123,12 @@ const lastGroupHeader = (page: Page) =>
 test.describe("solutions matched to a use case", () => {
   test.use({ locale: "en-US" });
 
+  // These read the list. A person who never chose a way meets the one-by-one review while a solution
+  // waits for a decision, so each starts as one who chose the list before.
+  test.beforeEach(async ({ context }) => {
+    await context.addInitScript(() => window.localStorage.setItem("matching-view", "list"));
+  });
+
   test("a member reads the groups and one solution in full", async ({
     page,
     context,

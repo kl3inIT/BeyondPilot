@@ -39,11 +39,20 @@ import { MatchingAdd } from "./matching-add";
 import { useMatchingChanges } from "./matching-changes";
 import { matchingWords } from "./matching-errors";
 import { ARROWED, FIELDS, OVERLAYS } from "./matching-keys";
+import { reviewable } from "./matching-line";
 import { MatchingPanel } from "./matching-panel";
 import { MatchingRemove, type Removal } from "./matching-remove";
 import { MatchingRemoved } from "./matching-removed";
 import { MatchingRow } from "./matching-row";
 import { MatchingRun } from "./matching-run";
+import {
+  openingView,
+  readViewChoice,
+  saveViewChoice,
+  subscribeViewChoice,
+  viewNames,
+  type ViewName,
+} from "./matching-view-choice";
 import {
   changesBetween,
   constraintsOf,
@@ -73,10 +82,6 @@ function subscribeToWidth(onChange: () => void) {
 const MatchingReview = dynamic(() =>
   import("./matching-review").then((module) => module.MatchingReview),
 );
-
-/** The two ways to read the matched solutions. */
-const viewNames = ["one", "list"] as const;
-type ViewName = (typeof viewNames)[number];
 
 const tabNames = ["matches", "shortlist", "removed"] as const;
 type TabName = (typeof tabNames)[number];
@@ -191,7 +196,10 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
   );
   const [held, setHeld] = useState({ over: read, state: read });
   const [tab, setTab] = useState<TabName>("matches");
-  const [view, setView] = useState<ViewName>("list");
+  // What this person chose before is kept by the browser, so it is not known where the page is first
+  // drawn, on the server, nor until the browser has read it.
+  const choice = useSyncExternalStore(subscribeViewChoice, readViewChoice, () => undefined);
+  const [openedAs, setOpenedAs] = useState<ViewName | null>(null);
   const [need, setNeed] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(selected ?? null);
   const [sheetOpen, setSheetOpen] = useState(selected !== undefined);
@@ -407,6 +415,17 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
   // it, S saves or unsaves it, N asks why it is not a fit. A key held with a modifier, typed in a
   // field, or pressed while a dialog, a menu or the deck lies over the page is left alone, and so is
   // an arrow where arrows already move something, as between tabs.
+  // The way the page opened holds for the visit: deciding on the last card does not turn it into the list.
+  const waits = matching.candidates.some(reviewable);
+  if (openedAs === null && choice !== undefined) {
+    setOpenedAs(openingView(choice, waits));
+  }
+  // Until the choice is known, a page with nothing to decide is the list; one with something waits.
+  const view = openedAs ?? (waits ? null : "list");
+  const setView = (next: ViewName) => {
+    setOpenedAs(next);
+    saveViewChoice(next);
+  };
   const panelOpen = view === "list" && chosen !== undefined && (wide || sheetOpen);
   const onKey = useEffectEvent((event: KeyboardEvent) => {
     if (
@@ -611,14 +630,19 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
         </p>
       )}
 
-      {anything && (
+      {anything && view !== null && (
         <ToggleGroup
           aria-label={t("review.view.label")}
           variant="outline"
           size="sm"
           className="self-start"
           value={[view]}
-          onValueChange={(next) => setView(viewNames.find((name) => name === next[0]) ?? view)}
+          onValueChange={(next) => {
+            const picked = viewNames.find((name) => name === next[0]);
+            if (picked) {
+              setView(picked);
+            }
+          }}
         >
           {viewNames.map((name) => (
             <ToggleGroupItem key={name} value={name} className="pointer-coarse:min-h-11">

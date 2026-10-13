@@ -200,11 +200,17 @@ function MatchingReview({
       <LazyMotion features={domMax} strict>
         <div className="relative clip-stage">
           <AnimatePresence mode="popLayout" initial={false} custom={leaving}>
-            {current ? (
+            {/*
+              The card in front and the one behind it. The one behind is already drawn, with its deck
+              open, so that it is there at once when the one in front leaves: the same card comes
+              forward, and nothing is loaded at that moment.
+            */}
+            {line.slice(0, 2).map((one, place) => (
               <MatchingReviewCard
-                key={current.id}
-                candidate={current}
+                key={one.id}
+                candidate={one}
                 needs={needs}
+                behind={place === 1}
                 leaving={leaving}
                 back={back}
                 quick={quick}
@@ -217,7 +223,8 @@ function MatchingReview({
                   return true;
                 }}
               />
-            ) : (
+            ))}
+            {!current && (
               <div
                 key="end"
                 className="flex flex-col items-start gap-3 rounded-2xl border bg-card p-6"
@@ -239,12 +246,13 @@ function MatchingReview({
         </div>
       </LazyMotion>
 
-      <div className="flex flex-col items-center gap-3">
+      {/* On a phone the decisions stay at the bottom of the screen, however long the evidence is. */}
+      <div className="flex flex-col items-center gap-3 max-sm:sticky max-sm:bottom-0 max-sm:z-20 max-sm:border-t max-sm:bg-background max-sm:py-3">
         {current && (
           <div
             role="group"
             aria-label={t("actions.label", { name: current.solutionName })}
-            className="flex flex-wrap items-center justify-center gap-2"
+            className="flex items-center justify-center gap-2 max-sm:w-full"
           >
             <Button
               prominence="secondary"
@@ -267,6 +275,7 @@ function MatchingReview({
             </Button>
             <Button
               aria-keyshortcuts="ArrowRight"
+              className="max-sm:flex-1"
               onClick={() => void decide("shortlisted", "press")}
             >
               <CheckIcon aria-hidden="true" />
@@ -327,7 +336,7 @@ function MatchingReview({
         </div>
 
         <p className="text-center text-xs text-muted-foreground max-sm:hidden">{t("hint")}</p>
-        <p className="text-center text-xs text-muted-foreground">{t("shared")}</p>
+        <p className="text-center text-xs text-muted-foreground max-sm:hidden">{t("shared")}</p>
       </div>
     </div>
   );

@@ -18,6 +18,7 @@ import { SolutionLogo } from "@/features/solution/solution-logo";
 import type { MatchingCandidate } from "@/lib/api/generated";
 import { baseSeconds, entranceEase } from "@/lib/motion";
 import { siteRoutes } from "@/lib/site";
+import { cn } from "@/lib/utils";
 
 import { DeckReader } from "./matching-deck";
 import { FindingItem } from "./matching-panel";
@@ -56,6 +57,11 @@ type MatchingReviewCardProps = {
   /** Whether a key brought this card up: it is then there at once. */
   quick: boolean;
   /**
+   * Whether this is the card behind the one in front: drawn under it, a little smaller, with its deck
+   * already open, and out of reach of the pointer, the keys and a screen reader until it comes forward.
+   */
+  behind: boolean;
+  /**
    * Called when the head is let go far enough, or fast enough, to one side; answers whether the
    * decision is taken, since nothing is while another one is on its way.
    */
@@ -83,6 +89,7 @@ function MatchingReviewCard({
   leaving,
   back,
   quick,
+  behind,
   onDecide,
   ref,
 }: MatchingReviewCardProps) {
@@ -114,8 +121,11 @@ function MatchingReviewCard({
         ? { opacity: 0, x: side(back) * NEAR }
         : { opacity: 0, y: 16, scale: 0.98 },
     shown: { opacity: 1, x: 0, y: 0, scale: 1 },
+    // Under the card in front: its lower edge shows, which says another card waits.
+    under: still ? { opacity: 1 } : { opacity: 1, x: 0, y: 20, scale: 0.97 },
     exit: (how: Leaving) => {
-      if (how?.by === "key") {
+      // The card behind is taken away unseen, as when Undo puts another card in front of it.
+      if (behind || how?.by === "key") {
         return { opacity: 0, transition: { duration: 0 } };
       }
       // An exit is shorter than its entrance.
@@ -128,7 +138,8 @@ function MatchingReviewCard({
           opacity: 0,
           x: side(how.kind) * Math.max(AWAY, window.innerWidth),
           transition: {
-            x: { type: "spring" as const, ...SETTLE, stiffness: 200, velocity: flick.current },
+            // It comes to rest soon after it is out of sight, and is then taken from the page.
+            x: { type: "spring" as const, ...SETTLE, restDelta: 1, velocity: flick.current },
             opacity: { duration: baseSeconds },
           },
         };
@@ -155,9 +166,14 @@ function MatchingReviewCard({
     <m.article
       ref={ref}
       aria-labelledby={`review-${candidate.id}`}
-      className="relative flex rotate-(--tilt) flex-col overflow-hidden rounded-2xl border bg-card shadow-sm lg:h-200"
+      aria-hidden={behind || undefined}
+      inert={behind}
+      className={cn(
+        "flex rotate-(--tilt) flex-col overflow-hidden rounded-2xl border bg-card shadow-sm lg:h-200",
+        behind ? "absolute inset-0" : "relative z-10",
+      )}
       style={moved}
-      drag="x"
+      drag={behind ? false : "x"}
       dragControls={controls}
       dragListener={false}
       dragConstraints={{ left: 0, right: 0 }}
@@ -167,10 +183,11 @@ function MatchingReviewCard({
       onDragEnd={letGo}
       variants={variants}
       custom={leaving}
-      initial={quick ? false : "enter"}
-      animate="shown"
+      // The card behind is simply there; the one in front comes in, unless a key brought it.
+      initial={behind || quick ? false : "enter"}
+      animate={behind ? "under" : "shown"}
       exit="exit"
-      transition={{ duration: baseSeconds, ease: entranceEase }}
+      transition={{ duration: quick ? 0 : baseSeconds, ease: entranceEase }}
     >
       <header
         data-slot="matching-card-head"
