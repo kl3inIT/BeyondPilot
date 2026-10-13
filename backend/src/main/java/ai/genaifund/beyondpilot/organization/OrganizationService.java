@@ -163,9 +163,10 @@ public class OrganizationService {
 	 */
 	@Transactional
 	public OrganizationResponse create(Actor actor, CreateOrganizationRequest request) {
-		return createOwned(actor, new Profile(request.name(), request.type(), request.website(), request.country(),
-				request.teamSize(), request.industries(), request.description(), request.foundedYear(),
-				request.logoFileId()), request.jobTitle());
+		return createOwned(actor, new Profile.Builder(request.name(), request.type(), request.country(),
+                request.teamSize(), request.industries()).website(request.website()).description(request.description())
+                .foundedYear(request.foundedYear()).logoFileId(request.logoFileId())
+                .teamBackground(request.teamBackground()).build(), request.jobTitle());
 	}
 
 	/**
@@ -177,8 +178,8 @@ public class OrganizationService {
 	 */
 	@Transactional
 	public OrganizationResponse createFromBasics(Actor actor, SaveOrganizationBasicsRequest request) {
-		return createOwned(actor, new Profile(request.name().strip(), request.type(), null, request.country(),
-				request.teamSize(), request.industries(), null, null, null), null);
+		return createOwned(actor, new Profile.Builder(request.name().strip(), request.type(), request.country(),
+                request.teamSize(), request.industries()).teamBackground(request.teamBackground()).build(), null);
 	}
 
 	/**
@@ -194,16 +195,43 @@ public class OrganizationService {
 			throw new IllegalArgumentException("An applicant makes a builder's or a team's organization, not "
 					+ applicant.type());
 		}
-		return createOwned(actor, new Profile(applicant.name(), applicant.type(), applicant.website(),
-				applicant.country(), applicant.teamSize(), List.of(), null, null, null), null)
+		return createOwned(actor, new Profile.Builder(applicant.name(), applicant.type(), applicant.country(),
+                applicant.teamSize(), List.of()).website(applicant.website()).build(), null)
 			.id();
 	}
 
 	/** What an organization's creator tells about it; a team or a builder applying may leave the rest for later. */
 	private record Profile(String name, String type, @Nullable String website, String country, String teamSize,
 			List<String> industries, @Nullable String description, @Nullable Integer foundedYear,
-			@Nullable UUID logoFileId) {
-	}
+			@Nullable UUID logoFileId, @Nullable String teamBackground) {
+        static final class Builder {
+            private final String name;
+            private final String type;
+            private final String country;
+            private final String teamSize;
+            private final List<String> industries;
+            private @Nullable String website;
+            private @Nullable String description;
+            private @Nullable Integer foundedYear;
+            private @Nullable UUID logoFileId;
+            private @Nullable String teamBackground;
+            Builder(String name, String type, String country, String teamSize, List<String> industries) {
+                this.name = name;
+                this.type = type;
+                this.country = country;
+                this.teamSize = teamSize;
+                this.industries = industries;
+            }
+            Builder website(@Nullable String value) { website = value; return this; }
+            Builder description(@Nullable String value) { description = value; return this; }
+            Builder foundedYear(@Nullable Integer value) { foundedYear = value; return this; }
+            Builder logoFileId(@Nullable UUID value) { logoFileId = value; return this; }
+            Builder teamBackground(@Nullable String value) { teamBackground = value; return this; }
+            Profile build() {
+                return new Profile(name, type, website, country, teamSize, industries, description, foundedYear, logoFileId, teamBackground);
+            }
+        }
+    }
 
 	private OrganizationResponse createOwned(Actor actor, Profile profile, @Nullable String creatorJobTitle) {
 		Person person = identity.person(actor);
@@ -221,6 +249,7 @@ public class OrganizationService {
 		organization.describe(profile.name().strip(), profile.type(), OrganizationViews.text(profile.website()),
 				profile.country(), profile.teamSize(), OrganizationViews.codes(profile.industries()),
 				OrganizationViews.text(profile.description()), profile.foundedYear(), profile.logoFileId());
+		organization.describeTeam(OrganizationViews.text(profile.teamBackground()));
 		organizations.saveAndFlush(organization);
 		if (!memberships.add(organization.getId(), person.accountId(), MembershipRepository.OWNER)) {
 			throw alreadyMember(person);
@@ -332,8 +361,12 @@ public class OrganizationService {
 	 * @throws OrganizationException when the caller is not an owner, or the organization changed since it was read
 	 */
 	@Transactional
-	public OrganizationResponse save(Actor actor, SaveOrganizationRequest request) {
-		Member owner = owner(actor);
+    public OrganizationResponse save(Actor actor, SaveOrganizationRequest request) {
+        Member owner = owner(actor);
+        if ("company".equals(request.type()) && request.industries().isEmpty()) {
+            throw new OrganizationException(OrganizationErrorCode.INDUSTRIES_REQUIRED,
+                    "Company profile saved without an industry");
+        }
 		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
 		if (organization.getVersion() != request.version()) {
 			throw new OrganizationException(OrganizationErrorCode.CHANGED_MEANWHILE,
@@ -349,6 +382,7 @@ public class OrganizationService {
 				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
 				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()),
 				request.foundedYear(), logo);
+		organization.describeTeam(OrganizationViews.text(request.teamBackground()));
 		if (organization.isSentBack()) {
 			organization.resubmit();
 		}
@@ -372,8 +406,13 @@ public class OrganizationService {
 					"Company saved by account " + actor.accountId() + " without an industry");
 		}
 		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
+		if (request.version() == null || organization.getVersion() != request.version()) {
+			throw new OrganizationException(OrganizationErrorCode.CHANGED_MEANWHILE,
+					"Stale basics save of organization " + organization.getId());
+		}
 		organization.describeBasics(request.name().strip(), request.type(), request.teamSize(),
 				OrganizationViews.codes(request.industries()), request.country());
+		organization.describeTeam(OrganizationViews.text(request.teamBackground()));
 		if (organization.isSentBack()) {
 			organization.resubmit();
 		}

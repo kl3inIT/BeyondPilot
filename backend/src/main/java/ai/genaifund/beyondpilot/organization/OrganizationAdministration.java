@@ -146,6 +146,7 @@ public class OrganizationAdministration {
 		organization.describe(request.name().strip(), request.type(), OrganizationViews.text(request.website()),
 				request.country(), request.teamSize(), industries, OrganizationViews.text(request.description()),
 				request.foundedYear(), logo);
+		organization.describeTeam(OrganizationViews.text(request.teamBackground()));
 		organization.verifyDomain(domain);
 		organization.approve(Instant.now());
 		organizations.saveAndFlush(organization);
@@ -222,7 +223,11 @@ public class OrganizationAdministration {
 	public AdminOrganizationResponse save(Actor actor, UUID id, AdminSaveOrganizationRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		Organization organization = changeable(id);
-		SaveOrganizationRequest profile = request.profile();
+        SaveOrganizationRequest profile = request.profile();
+        if ("company".equals(profile.type()) && profile.industries().isEmpty()) {
+            throw new OrganizationException(OrganizationErrorCode.INDUSTRIES_REQUIRED,
+                    "Company profile saved without an industry");
+        }
 		if (organization.getVersion() != profile.version()) {
 			throw new OrganizationException(OrganizationErrorCode.CHANGED_MEANWHILE,
 					"Operator save of organization " + id + " at version " + profile.version() + ", which is at "
@@ -233,9 +238,10 @@ public class OrganizationAdministration {
 		if (logo != null && !logo.equals(formerLogo)) {
 			logos.requireUsable(actor, logo);
 		}
-		organization.describe(profile.name().strip(), profile.type(), OrganizationViews.text(profile.website()),
+        organization.describe(profile.name().strip(), profile.type(), OrganizationViews.text(profile.website()),
 				profile.country(), profile.teamSize(), OrganizationViews.codes(profile.industries()),
 				OrganizationViews.text(profile.description()), profile.foundedYear(), logo);
+		organization.describeTeam(OrganizationViews.text(profile.teamBackground()));
 		String domain = request.emailDomain();
 		if (!Objects.equals(domain, organization.getEmailDomain())) {
 			if (domain != null && organizations.findByEmailDomain(domain).isPresent()) {

@@ -19,18 +19,6 @@ export type Step = (typeof steps)[number];
 export const maxApproach = 2000;
 export const maxBackground = 2000;
 
-/** Who sends the proposal: one person, a team, or a company. */
-export type Who = "individual" | "team" | "company";
-
-/** The choice an organization of this kind stands for. */
-export function whoOf(type: ProposingOrganization["type"]): Who {
-  return type === "independent_builder"
-    ? "individual"
-    : type === "builder_team"
-      ? "team"
-      : "company";
-}
-
 /** What the member has written, as the wizard holds it and saves it. */
 export type ProposalValues = {
   solutionIds: string[];

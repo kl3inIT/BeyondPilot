@@ -119,6 +119,89 @@ async function openStep(page: Page, isMobile: boolean, name: string) {
 test.describe("a proposal to a use case", () => {
   test.use({ locale: "en-US", timezoneId: "Asia/Ho_Chi_Minh" });
 
+  test("editing an organization refreshes its card and reopening reads the latest version", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await fakeBackend(page, baseURL!, "draft");
+    const [, mine] = answerWorkspace(new URL("http://stub/api/organization/mine"), "owner")!;
+    let current = { ...mine.organization };
+    const versions: number[] = [];
+    await page.route("**/api/organization/mine", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ...mine, organization: current }),
+      }),
+    );
+    await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/proposal`, (route) => {
+      if (route.request().method() !== "GET") return route.fallback();
+      const form = proposalForm("owner", "draft");
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ...form,
+          organization: { ...form.organization, name: current.name },
+        }),
+      });
+    });
+    await page.route("**/api/organization/mine/basics", async (route) => {
+      const body = route.request().postDataJSON();
+      expect(body.version).toBe(current.version);
+      versions.push(body.version);
+      current = { ...current, ...body, version: current.version + 1 };
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(current),
+      });
+    });
+    await page.goto(proposePath);
+    for (const name of ["Pocket Policy Updated", "Pocket Policy Latest"]) {
+      await page.getByRole("button", { name: "Edit", exact: true }).click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog.getByLabel("Organization name")).toHaveValue(current.name);
+      await dialog.getByLabel("Organization name").fill(name);
+      await dialog.getByRole("button", { name: "Save", exact: true }).click();
+      await expect(dialog).toBeHidden();
+      await expect(page.getByText(name, { exact: true })).toBeVisible();
+    }
+    expect(versions).toEqual([3, 4]);
+    await settled(page);
+  });
+
+  test("a pending join request can be withdrawn and returns to the finder", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "asked", baseURL!);
+    const [, mine] = answerWorkspace(new URL("http://stub/api/organization/mine"), "asked")!;
+    let withdrawn = false;
+    await page.route("**/api/organization/mine", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ...mine, request: withdrawn ? null : mine.request }),
+      }),
+    );
+    await page.route("**/api/organization/join-request/withdraw", async (route) => {
+      expect(route.request().headers()["x-beyondpilot-csrf"]).toBe("1");
+      withdrawn = true;
+      await route.fulfill({ status: 204 });
+    });
+    await page.goto(proposePath);
+    await expect(page.getByRole("button", { name: "Continue" })).toBeDisabled();
+    await expect(page.getByLabel("Name", { exact: true })).toHaveCount(0);
+    await page.getByRole("button", { name: "Withdraw the request" }).click();
+    await expect(page.getByRole("button", { name: "Create a new organization" })).toBeVisible();
+    await expect(page.getByRole("radiogroup")).toHaveCount(0);
+    await settled(page);
+  });
+
   test("signing in comes first and returns to the form", async ({ page }) => {
     const visitor = await page.request.get(proposePath, { maxRedirects: 0 });
     expect(visitor.status()).toBe(307);
@@ -141,7 +224,7 @@ test.describe("a proposal to a use case", () => {
     // lacks is said under the field, and the first field in error takes the focus.
     await expect(heading(page)).toHaveText("You and your team");
     await expect(page.getByText("Pocket Policy", { exact: true }).first()).toBeVisible();
-    await expect(page.getByRole("radio", { name: /Company/ })).toBeChecked();
+    await expect(page.getByRole("radiogroup")).toHaveCount(0);
     await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Minh Trần");
     await page.getByRole("button", { name: "Continue" }).click();
     const country = page.getByLabel("Country");

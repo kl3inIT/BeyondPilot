@@ -11405,6 +11405,13 @@ components:
           description: The address invited to own it.
           maxLength: 254
           minLength: 0
+        teamBackground:
+          type:
+          - string
+          - "null"
+          description: "What the team has built before, separate from its short description."
+          maxLength: 2000
+          minLength: 0
         teamSize:
           type:
           - string
@@ -13951,6 +13958,13 @@ components:
         name:
           type: string
           maxLength: 120
+          minLength: 0
+        teamBackground:
+          type:
+          - string
+          - "null"
+          description: "What the team has built before, separate from its short description."
+          maxLength: 2000
           minLength: 0
         teamSize:
           type: string
@@ -16799,6 +16813,10 @@ components:
           - not_a_real_organization
           - breaks_the_rules
           - other
+        teamBackground:
+          type:
+          - string
+          - "null"
         teamSize:
           type:
           - string
@@ -17824,6 +17842,10 @@ components:
           type: boolean
           description: "Whether the caller is an owner of it, who may correct what\
             \ they gave when they made it."
+        teamBackground:
+          type:
+          - string
+          - "null"
         type:
           type: string
           description: What kind of organization it is; a team writes what it has
@@ -20399,7 +20421,7 @@ components:
             type: string
             pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|climate_sustainability|marketing_advertising|legal|hr_workforce|other
           maxItems: 5
-          minItems: 1
+          minItems: 0
         logoFileId:
           type:
           - string
@@ -20409,6 +20431,13 @@ components:
         name:
           type: string
           maxLength: 120
+          minLength: 0
+        teamBackground:
+          type:
+          - string
+          - "null"
+          description: "What the team has built before, separate from its short description."
+          maxLength: 2000
           minLength: 0
         teamSize:
           type: string
@@ -20464,6 +20493,13 @@ components:
           type: string
           maxLength: 120
           minLength: 0
+        teamBackground:
+          type:
+          - string
+          - "null"
+          description: "What the team has built before, separate from its short description."
+          maxLength: 2000
+          minLength: 0
         teamSize:
           type: string
           pattern: just_me|2_9|10_49|50_99|100_499|500_999|1000_4999|5000_plus
@@ -20475,6 +20511,12 @@ components:
           - independent_builder
           - other
           pattern: company|builder_team|independent_builder|other
+        version:
+          type:
+          - integer
+          - "null"
+          format: int64
+          description: Required when editing; omitted when creating.
       required:
       - country
       - industries

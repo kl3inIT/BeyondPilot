@@ -42,3 +42,6 @@ export function domainOf(text: string): string {
 export function isDomain(text: string): boolean {
   return text.length <= 253 && DOMAIN.test(text);
 }
+
+/** The longer account of a team's experience, not its short public description. */
+export const MAX_TEAM_BACKGROUND = 2000;

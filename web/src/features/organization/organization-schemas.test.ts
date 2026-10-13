@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { Organization } from "@/lib/api/generated";
 
 import {
+  basicsSchema,
   missingProfileFacts,
   profileBodyOf,
   profileSchema,
@@ -11,6 +12,34 @@ import {
 } from "./organization-schemas";
 
 const schema = profileSchema((key) => key);
+
+describe("organization basics", () => {
+  const basics = basicsSchema((key) => key);
+  const team = {
+    name: "Doc Team",
+    type: "builder_team",
+    teamSize: "2_9",
+    industries: [],
+    country: "VN",
+    teamBackground: "Built document assistants.",
+  };
+  it("requires team experience but not company-only industries", () => {
+    expect(basics.safeParse(team).success).toBe(true);
+    const empty = basics.safeParse({ ...team, teamBackground: " " });
+    expect(empty.error?.issues.map((issue) => issue.path)).toEqual([["teamBackground"]]);
+    expect(
+      basics.safeParse({ ...team, type: "independent_builder", teamBackground: "" }).success,
+    ).toBe(true);
+    expect(
+      basics.safeParse({ ...team, type: "company", industries: ["insurance"], teamBackground: "" })
+        .success,
+    ).toBe(true);
+  });
+  it("enforces the 2,000-character experience limit", () => {
+    expect(basics.safeParse({ ...team, teamBackground: "x".repeat(2000) }).success).toBe(true);
+    expect(basics.safeParse({ ...team, teamBackground: "x".repeat(2001) }).success).toBe(false);
+  });
+});
 
 const filled: ProfileValues = {
   name: "Sài Gòn Logistics",
@@ -22,6 +51,7 @@ const filled: ProfileValues = {
   foundedYear: "2019",
   description: "Route planning for fleets.",
   logoFileId: "",
+  teamBackground: "Built two products.",
 };
 
 /** The fields a profile is refused at, each with what it says. */
@@ -117,6 +147,7 @@ describe("profileValuesOf and profileBodyOf", () => {
       description: "Assistants for insurers across Southeast Asia.",
       foundedYear: 2021,
       logoFileId: null,
+      teamBackground: null,
     });
   });
 
@@ -136,6 +167,7 @@ describe("profileValuesOf and profileBodyOf", () => {
       country: "",
       foundedYear: "",
       description: "",
+      teamBackground: "",
       logoFileId: "",
     });
   });
@@ -189,7 +221,13 @@ describe("missingProfileFacts", () => {
 
   it("does not ask a team or a builder for what only a company must give", () => {
     const without = { ...company, website: null, industries: [], foundedYear: null };
-    expect(missingProfileFacts({ ...without, type: "builder_team" })).toEqual([]);
+    expect(
+      missingProfileFacts({
+        ...without,
+        type: "builder_team",
+        teamBackground: "Built two products.",
+      }),
+    ).toEqual([]);
     expect(missingProfileFacts({ ...without, type: "independent_builder" })).toEqual([]);
   });
 
@@ -200,6 +238,6 @@ describe("missingProfileFacts", () => {
         type: "builder_team",
         industries: [],
       } as unknown as Organization),
-    ).toEqual(["teamSize", "country", "description"]);
+    ).toEqual(["teamSize", "country", "description", "teamBackground"]);
   });
 });

@@ -60,6 +60,8 @@ public class Organization {
 
 	private @Nullable String description;
 
+	private @Nullable String teamBackground;
+
 	private @Nullable Integer foundedYear;
 
 	private @Nullable UUID logoFileId;
@@ -147,9 +149,17 @@ public class Organization {
 		this.logoFileId = logoFileId;
 	}
 
-	/**
-	 * The domain an operator verified as the organization's; null when none is. Without one no address joins at once.
-	 */
+	/** Experience belongs to a team only, not its short description. */
+    public void describeTeam(@Nullable String background) {
+        this.teamBackground = "builder_team".equals(type) && background != null && !background.isBlank()
+                ? background.strip() : null;
+	}
+
+	public @Nullable String getTeamBackground() {
+		return teamBackground;
+	}
+
+	/** The domain an operator verified; null means no address joins at once. */
 	public void verifyDomain(@Nullable String emailDomain) {
 		this.emailDomain = emailDomain;
 		if (emailDomain == null) {

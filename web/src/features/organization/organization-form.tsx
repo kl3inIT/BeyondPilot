@@ -30,7 +30,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { industries, organizationTypes, teamSizes } from "./organization-codes";
 import { ExistingOrganizations, useExistingOrganizations } from "./organization-existing";
-import { MAX_DESCRIPTION, MAX_INDUSTRIES } from "./organization-format";
+import { MAX_DESCRIPTION, MAX_INDUSTRIES, MAX_TEAM_BACKGROUND } from "./organization-format";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
 import { OrganizationProfileSection } from "./organization-profile-section";
 import {
@@ -338,6 +338,20 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
           </form.Field>
         </div>
       </OrganizationProfileSection>
+
+      {type === "builder_team" && (
+        <form.AppField name="teamBackground">
+          {(field) => (
+            <field.TextareaField
+              label={t("teamBackground")}
+              description={t("teamBackgroundHint")}
+              maxLength={MAX_TEAM_BACKGROUND}
+              rows={4}
+              requiredMark
+            />
+          )}
+        </form.AppField>
+      )}
 
       {admin && (
         <OrganizationProfileSection
