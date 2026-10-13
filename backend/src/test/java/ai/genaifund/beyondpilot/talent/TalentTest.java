@@ -737,7 +737,10 @@ class TalentTest {
 		assertProblem(get(signIn("queue-member@profile.test"), ADMIN + "/queue"), 403, "IDENTITY_OPERATOR_REQUIRED");
 		List<Long> before = queueDays(body(get(operator, ADMIN + "/queue").expectStatus().isOk()));
 		UUID waiting = submitted(signIn("queue-waiting@profile.test"), "Queue Waiting");
-		UUID decided = approved(signIn("queue-decided@profile.test"), "Queue Decided");
+		// Unlisted, so the directory searches of the other tests, which share the database, never find it.
+		Map<String, Object> unlisted = described("Queue Decided", null);
+		unlisted.put("listed", false);
+		UUID decided = approved(signIn("queue-decided@profile.test"), unlisted);
 		// One has waited since three days ago; the other waited from six days ago until it was decided two days ago.
 		jdbc.sql("update talent_profile set submitted_at = now() - interval '3 days' where id = ?")
 			.param(waiting)
