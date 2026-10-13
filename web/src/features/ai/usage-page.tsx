@@ -9,8 +9,10 @@ import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
+import { ChartFrame } from "@/components/composites/chart-frame";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { StatCell, StatStrip } from "@/components/composites/stat-cell";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
@@ -18,7 +20,6 @@ import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { AiUsageOverview } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
-import { cn } from "@/lib/utils";
 
 import { UsageChart } from "./usage-chart";
 import {
@@ -72,37 +73,6 @@ async function UsageHeader({
         </ul>
       </nav>
     </AdminPageHeader>
-  );
-}
-
-/** One figure of the totals strip, with what it is above it and what it is made of below. */
-function Total({
-  label,
-  value,
-  children,
-  warning = false,
-  wide = false,
-}: {
-  label: string;
-  value: string;
-  children: React.ReactNode;
-  warning?: boolean;
-  /** The odd tile out fills the row at phone width. */
-  wide?: boolean;
-}) {
-  return (
-    <div
-      className={cn("flex flex-col gap-1 bg-background p-4", wide && "col-span-2 lg:col-span-1")}
-    >
-      <dt className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        {warning && <TriangleAlertIcon aria-hidden="true" className="size-4 text-warning" />}
-        {label}
-      </dt>
-      <dd className="flex flex-col gap-1">
-        <span className="text-2xl font-semibold tracking-tight tabular-nums">{value}</span>
-        <span className="text-xs text-muted-foreground">{children}</span>
-      </dd>
-    </div>
   );
 }
 
@@ -246,25 +216,20 @@ async function UsageOverviewPage({
         </div>
       ) : (
         <>
-          <dl
-            className={cn(
-              "grid grid-cols-2 gap-px overflow-hidden rounded-lg border bg-border",
-              totals.unpricedCalls > 0 ? "lg:grid-cols-5" : "lg:grid-cols-4",
-            )}
-          >
-            <Total label={t("totals.calls")} value={count(totals.calls)}>
+          <StatStrip columns={totals.unpricedCalls > 0 ? 5 : 4}>
+            <StatCell label={t("totals.calls")} value={count(totals.calls)}>
               {t("totals.callsOf", {
                 succeeded: count(totals.succeeded),
                 failed: count(totals.failed),
               })}
-            </Total>
-            <Total label={t("totals.failureRate")} value={percent(totals.failed, totals.calls)}>
+            </StatCell>
+            <StatCell label={t("totals.failureRate")} value={percent(totals.failed, totals.calls)}>
               {t("totals.failureRateOf", {
                 failed: count(totals.failed),
                 calls: count(totals.calls),
               })}
-            </Total>
-            <Total
+            </StatCell>
+            <StatCell
               label={t("totals.tokens")}
               value={tokens(totals.inputTokens + totals.outputTokens)}
             >
@@ -272,36 +237,37 @@ async function UsageOverviewPage({
                 input: tokens(totals.inputTokens),
                 output: tokens(totals.outputTokens),
               })}
-            </Total>
-            <Total
+            </StatCell>
+            <StatCell
               label={t("totals.cost")}
               value={totals.estimatedCost == null ? "—" : cost(totals.estimatedCost)}
             >
               {t("totals.costOf", { count: totals.pricedCalls })}
-            </Total>
+            </StatCell>
             {totals.unpricedCalls > 0 && (
-              <Total label={t("totals.unpriced")} value={count(totals.unpricedCalls)} warning wide>
+              <StatCell
+                label={t("totals.unpriced")}
+                value={count(totals.unpricedCalls)}
+                icon={<TriangleAlertIcon aria-hidden="true" className="size-4 text-warning" />}
+                wide
+              >
                 <TextButton size="sm" href={siteRoutes.adminAiProviders}>
                   {t("totals.prices")}
                 </TextButton>
-              </Total>
+              </StatCell>
             )}
-          </dl>
+          </StatStrip>
 
-          <figure className="flex flex-col gap-4 rounded-lg border p-4">
-            <figcaption className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium">
-                {t(byHour ? "chart.byHour" : "chart.byDay")}
-              </span>
-              {busiest && (
-                <span className="text-xs text-muted-foreground">
-                  {t(byHour ? "chart.mostAtHour" : "chart.mostOnDay", {
-                    when: bucketLabel(busiest.start),
-                    count: busiest.succeeded + busiest.failed,
-                  })}
-                </span>
-              )}
-            </figcaption>
+          <ChartFrame
+            title={t(byHour ? "chart.byHour" : "chart.byDay")}
+            lead={
+              busiest &&
+              t(byHour ? "chart.mostAtHour" : "chart.mostOnDay", {
+                when: bucketLabel(busiest.start),
+                count: busiest.succeeded + busiest.failed,
+              })
+            }
+          >
             <UsageChart
               data={chart}
               name={t("chart.name", {
@@ -314,7 +280,7 @@ async function UsageOverviewPage({
                 calls: t("totals.calls"),
               }}
             />
-          </figure>
+          </ChartFrame>
 
           <section aria-labelledby="usage-breakdown" className="flex flex-col gap-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">

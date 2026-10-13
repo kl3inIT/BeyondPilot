@@ -364,12 +364,14 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		String path = path(useCase);
 
 		String lead = TestSignIn.session(client, mail, "lead@team-send.test");
-		post(lead, ORGANIZATION + "/organizations/basics", Map.of("name", "Doc Team", "type", "builder_team", "teamSize",
-				"2_9", "industries", List.of(), "country", "VN"))
+        post(lead, ORGANIZATION + "/organizations/basics", Map.of("name", "Doc Team", "type", "builder_team", "teamSize",
+                "2_9", "industries", List.of(), "country", "VN", "teamBackground", "Built document assistants."))
 			.expectStatus()
 			.isCreated();
-		assertThat(JsonPath.<String>read(body(get(lead, path).expectStatus().isOk()), "$.organization.type"))
-			.isEqualTo("builder_team");
+        assertThat(JsonPath.<String>read(body(get(lead, path).expectStatus().isOk()), "$.organization.type"))
+            .isEqualTo("builder_team");
+        assertThat(JsonPath.<String>read(body(get(lead, path).expectStatus().isOk()), "$.organization.teamBackground"))
+            .isEqualTo("Built document assistants.");
 		UUID solution = completeSolution(lead, "lead@team-send.test", "Doc Reader");
 		String saved = body(put(lead, path, draft(solution, "Our approach.", file("lead@team-send.test"), null, null))
 			.expectStatus()

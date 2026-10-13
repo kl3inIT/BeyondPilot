@@ -16,7 +16,7 @@ On this Windows machine the backend gate needs `JAVA_TOOL_OPTIONS=-Duser.timezon
 
 ## The migration
 
-`V90` was applied by hand, with `psql` in one transaction, to a throwaway `pgvector/pgvector:0.8.7-pg18-trixie` that held V1 to V89 and ten enquiries of every status. Flyway itself applies it only to the empty databases of the gate.
+`V91` was applied by hand, with `psql` in one transaction, to a throwaway `pgvector/pgvector:0.8.7-pg18-trixie` that held the migrations before it and ten enquiries of every status. It was then V90 after V89; `main` has since taken V89, and the two are V90 and V91 with their SQL unchanged. Flyway itself applies it only to the empty databases of the gate.
 
 - Two accepted enquiries and a later waiting one of the same sender and profile became one open conversation of three messages in the order written, started when the first was written, answered when the later acceptance was given; the message written after it is unread for the profile's person.
 - A declined, a reported and a closed enquiry each stayed a conversation of its own, with its times; a waiting one kept its time and its reminder.
@@ -46,7 +46,7 @@ Walked the same way on 13 October 2026 on a local stack at the merged commit, wh
 - **Talent, again:** the eleven steps above, with the two emails.
 - **A lost connection:** with the event stream refused for one window, the conversation said the connection was lost and a message written meanwhile did not show; once the stream was allowed again the message showed without a reload and the notice went. (Playwright's offline mode does not cut a stream that is already open, so the first attempt showed nothing.)
 - **Decline and report:** with the window open, the Requests tab counted two; a declined and a reported request each left the list of the person who answered, both senders' open windows said it would not be taken further, and the sender got the email "Your message on BeyondPilot" (the script looked for another subject).
-- **Operators:** `/admin/messages/reported` listed the reported first message with its sender, beside one that `V90` had moved from a reported enquiry; a person who is not an operator did not read it.
+- **Operators:** `/admin/messages/reported` listed the reported first message with its sender, beside one that `V91` had moved from a reported enquiry; a person who is not an operator did not read it.
 - **A solution:** Contact on the solution page opened the first message; an owner of the provider was emailed; a member who is not an owner read the request and was told only owners answer; an owner accepted; the member's open window heard it and wrote; the buyer read the message under the member's name; both colleagues read the buyer's answer live.
 - **A program:** "Ask GenAI Fund" on a published program opened a conversation with no request; an operator found it among the chats and answered; the answer arrived in the asker's open window.
 - **The list and the menu:** the conversation written in last showed what was written, and the account menu showed Messages with a count of 1.

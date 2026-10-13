@@ -33,7 +33,7 @@ with legacy as (
              join talent_profile p on p.id = e.profile_id
     where e.message ~ '\S'
 ),
--- A database that ran V89 before this migration may already hold a conversation that waits or is open for the same
+-- A database that ran V90 before this migration may already hold a conversation that waits or is open for the same
 -- person and profile. The enquiry then cannot wait or be open beside it, and becomes a closed conversation of its
 -- own.
 placed as (

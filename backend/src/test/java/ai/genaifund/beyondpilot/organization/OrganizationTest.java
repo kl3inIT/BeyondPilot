@@ -5,12 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.Year;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
@@ -170,7 +172,8 @@ class OrganizationTest {
 		assertThat(JsonPath.<Object>read(created, "$.foundedYear")).isNull();
 
 		Map<String, Object> team = new HashMap<>(profile("Dat Team"));
-		team.put("type", "builder_team");
+        team.put("type", "builder_team");
+        team.put("teamBackground", "Built claims assistants.");
 		team.remove("website");
 		team.remove("foundedYear");
 		int version = JsonPath.<Integer>read(mine(builder), "$.organization.version");
@@ -325,8 +328,10 @@ class OrganizationTest {
 		String founder = signIn("founder@basics.test");
 		create(founder, "Basics Co");
 		String basics = API + "/mine/basics";
-		Map<String, Object> request = new HashMap<>(Map.of("name", " Basics Team ", "type", "builder_team", "teamSize",
-				"10_49", "industries", List.of("insurance"), "country", "SG"));
+        Map<String, Object> request = new HashMap<>(Map.of("name", " Basics Team ", "type", "builder_team", "teamSize",
+                "10_49", "industries", List.of("insurance"), "country", "SG"));
+        request.put("teamBackground", " Built claims assistants. ");
+        request.put("version", JsonPath.<Integer>read(mine(founder), "$.organization.version"));
 
 		put(founder, basics, request).expectStatus().isOk();
 		String saved = mine(founder);
@@ -334,7 +339,10 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(saved, "$.organization.type")).isEqualTo("builder_team");
 		assertThat(JsonPath.<String>read(saved, "$.organization.teamSize")).isEqualTo("10_49");
 		assertThat(JsonPath.<List<String>>read(saved, "$.organization.industries")).containsExactly("insurance");
-		assertThat(JsonPath.<String>read(saved, "$.organization.country")).isEqualTo("SG");
+        assertThat(JsonPath.<String>read(saved, "$.organization.country")).isEqualTo("SG");
+        assertThat(JsonPath.<String>read(saved, "$.organization.teamBackground")).isEqualTo("Built claims assistants.");
+        assertProblem(put(founder, basics, request), 409, "ORGANIZATION_CHANGED_MEANWHILE");
+        request.put("version", JsonPath.<Integer>read(saved, "$.organization.version"));
 		// What the request does not carry stays, and the organization still waits for review.
 		assertThat(JsonPath.<String>read(saved, "$.organization.description")).isEqualTo("Assistants for insurers.");
 		assertThat(JsonPath.<String>read(saved, "$.organization.status")).isEqualTo("in_review");
@@ -345,7 +353,8 @@ class OrganizationTest {
 		assertProblem(put(founder, basics, request), 400, "ORGANIZATION_INDUSTRIES_REQUIRED");
 		request.put("type", "independent_builder");
 		request.put("teamSize", "just_me");
-		put(founder, basics, request).expectStatus().isOk();
+        put(founder, basics, request).expectStatus().isOk();
+        assertThat(JsonPath.<Object>read(mine(founder), "$.organization.teamBackground")).isNull();
 		request.put("country", "Vietnam");
 		assertProblem(put(founder, basics, request), 400, "REQUEST_INVALID");
 		request.put("country", "VN");
@@ -357,15 +366,21 @@ class OrganizationTest {
 	void aPersonWithoutAnOrganizationMakesOneFromItsNameKindSizeIndustriesAndCountry() {
 		String founder = signIn("founder@fromfew.test");
 		String path = API + "/organizations/basics";
-		Map<String, Object> request = new HashMap<>(Map.of("name", " Few Team ", "type", "builder_team", "teamSize",
-				"2_9", "industries", List.of(), "country", "VN"));
+        Map<String, Object> request = new HashMap<>(Map.of("name", " Few Team ", "type", "builder_team", "teamSize",
+                "2_9", "industries", List.of(), "country", "VN"));
+        String missing = body(post(founder, path, request).expectStatus().isBadRequest());
+        assertThat(JsonPath.<List<String>>read(missing, "$.errors[*].pointer")).contains("#/teamBackground");
+        request.put("teamBackground", "x".repeat(2001));
+        assertProblem(post(founder, path, request), 400, "REQUEST_INVALID");
+        request.put("teamBackground", "Built two production assistants.");
 
 		// A company names an industry; a team may leave them out.
 		request.put("type", "company");
 		assertProblem(post(founder, path, request), 400, "ORGANIZATION_INDUSTRIES_REQUIRED");
 		request.put("type", "builder_team");
 		String created = body(post(founder, path, request).expectStatus().isCreated());
-		assertThat(JsonPath.<String>read(created, "$.name")).isEqualTo("Few Team");
+        assertThat(JsonPath.<String>read(created, "$.name")).isEqualTo("Few Team");
+        assertThat(JsonPath.<String>read(created, "$.teamBackground")).isEqualTo("Built two production assistants.");
 		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
 		assertThat(JsonPath.<String>read(mine(founder), "$.role")).isEqualTo("owner");
 		// One organization for one person.
@@ -1267,6 +1282,44 @@ class OrganizationTest {
 		client.get().uri(API + "/admin/organizations").exchange().expectStatus().isUnauthorized();
 		assertProblem(get(signIn("nobody@gmail.com"), API + "/mine/members"), 403,
 				"ORGANIZATION_MEMBERSHIP_REQUIRED");
+	}
+
+	@Test
+	void theQueueCountsWhatWaitedAtTheEndOfEachOfTheLast14Days() {
+		assertProblem(get(signIn("queue-member@organization.test"), API + "/admin/organizations/queue"), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+		List<Long> before = queueDays(body(get(operator, API + "/admin/organizations/queue").expectStatus().isOk()));
+		UUID waiting = create(signIn("queue-waiting@organization.test"), "Queue Waiting Org");
+		UUID decided = approved(signIn("queue-decided@organization.test"), "Queue Decided Org");
+		// One has waited since three days ago; the other waited from six days ago until it was decided two days ago.
+		jdbc.sql("update organization set created_at = now() - interval '3 days' where id = ?")
+			.param(waiting)
+			.update();
+		jdbc.sql("update organization set created_at = now() - interval '6 days', "
+				+ "decided_at = now() - interval '2 days' where id = ?")
+			.param(decided)
+			.update();
+
+		String queue = body(get(operator, API + "/admin/organizations/queue").expectStatus().isOk());
+
+		// Days run from 13 days ago to today: the first counts on the last four, the second on the four before its
+		// decision, so both on the day three days ago.
+		assertThat(difference(queueDays(queue), before)).containsExactly(0L, 0L, 0L, 0L, 0L, 0L, 0L, 1L, 1L, 1L, 2L, 1L,
+				1L, 1L);
+		assertThat(JsonPath.<Number>read(queue, "$.waiting").longValue()).isEqualTo(queueDays(queue).getLast());
+		assertThat(JsonPath.<String>read(queue, "$.from"))
+			.isEqualTo(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).minusDays(13).toString());
+		assertThat(JsonPath.<String>read(queue, "$.oldestSince")).isNotNull();
+	}
+
+	/** How many waited at the end of each of the 14 days, oldest first, as a queue answers it. */
+	private static List<Long> queueDays(String queue) {
+		return JsonPath.<List<Number>>read(queue, "$.days").stream().map(Number::longValue).toList();
+	}
+
+	/** What changed on each day between two readings of a queue; other tests share the database. */
+	private static List<Long> difference(List<Long> after, List<Long> before) {
+		return IntStream.range(0, after.size()).mapToObj(day -> after.get(day) - before.get(day)).toList();
 	}
 
 	private static Map<String, Object> profile(String name) {

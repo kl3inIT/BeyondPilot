@@ -7,9 +7,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.jspecify.annotations.Nullable;
 
 @Schema(name = "SaveOrganizationBasics",
 		description = "The facts a person gives when they make an organization, which a save changes alone. The rest of the profile is left as it is.")
+@RequiredOfTeam
 public record SaveOrganizationBasicsRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
@@ -21,5 +23,7 @@ public record SaveOrganizationBasicsRequest(
 				description = "The industries it works in or serves; a company names at least one.") @NotNull @Size(
 						max = 5) List<@NotNull @Pattern(regexp = OrganizationCodes.INDUSTRY) String> industries,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "ISO 3166-1 alpha-2.") @NotNull @Pattern(
-				regexp = OrganizationCodes.COUNTRY) String country) {
+				regexp = OrganizationCodes.COUNTRY) String country,
+		@Schema(types = { "string", "null" }, description = "What the team has built before, separate from its short description.") @Size(max = 2000) @Nullable String teamBackground,
+		@Schema(types = { "integer", "null" }, description = "Required when editing; omitted when creating.") @Nullable Long version) {
 }

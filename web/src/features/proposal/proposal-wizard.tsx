@@ -1,5 +1,6 @@
 "use client";
 
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { CloudAlertIcon, CloudCheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -17,7 +18,6 @@ import { failedWith } from "@/lib/api/failure";
 import { useRouter } from "@/i18n/navigation";
 import { WizardShell } from "@/features/usecase/wizard-shell";
 import {
-  createOrganizationFromBasics,
   getMyOrganization,
   saveUseCaseProposal,
   getUseCaseProposalForm,
@@ -41,7 +41,6 @@ import {
   phoneValid,
   steps,
   valuesOf,
-  whoOf,
   youComplete,
   type Details,
   type ProposalValues,
@@ -61,9 +60,6 @@ const AUTOSAVE_MS = 800;
  * the tick that goes with sending.
  */
 type ProposalFormValues = ProposalValues & {
-  who: string;
-  teamName: string;
-  teamSize: string;
   details: Details;
   confirmed: boolean;
 };
@@ -95,7 +91,7 @@ type ProposalWizardProps = {
  * proposal must be complete, so nothing is saved as it changes: the last step saves all the changes at
  * once.
  */
-function ProposalWizard({
+function ProposalWizardContent({
   useCaseId,
   form: opened,
   organization: organized,
@@ -116,9 +112,7 @@ function ProposalWizard({
   // account keeps comes first; the talent profile fills what it lacks, and everything stays editable.
   const [initial] = useState<ProposalFormValues>(() => ({
     ...valuesOf(opened.proposal),
-    who: organized ? whoOf(organized.type) : requested ? "company" : "",
-    teamName: "",
-    teamSize: "2_9",
+    teamBackground: opened.proposal?.teamBackground ?? organized?.teamBackground ?? "",
     details: {
       name: account.displayName ?? profile?.name ?? "",
       country: account.country ?? profile?.country ?? "",
@@ -129,8 +123,20 @@ function ProposalWizard({
   const [catalog, setCatalog] = useState(solutions);
   const [step, setStep] = useState<Step>("you");
   // The organization the proposal is sent for: the caller's, or the one they make or join here.
-  const [organization, setOrganization] = useState(organized);
-  const [request, setRequest] = useState(requested);
+  const organizationContext = useQuery({
+    queryKey: ["proposal", useCaseId, "organization"],
+    queryFn: async ({ signal }) => {
+      const [{ data: mine }, { data: reread }] = await Promise.all([
+        getMyOrganization({ signal }),
+        getUseCaseProposalForm({ path: { useCaseId }, signal }),
+      ]);
+      return { organization: reread.organization ?? null, request: mine.request ?? null };
+    },
+    initialData: { organization: organized, request: requested },
+    staleTime: 0,
+    retry: false,
+  });
+  const { organization, request } = organizationContext.data;
   const [savedAt, setSavedAt] = useState<Date>(() =>
     opened.proposal ? new Date(opened.proposal.updatedAt) : new Date(),
   );
@@ -162,7 +168,6 @@ function ProposalWizard({
             required: t("details.required"),
             phoneInvalid: t("details.phoneInvalid"),
             deck: t("solutions.needed.deck"),
-            who: t("you.needed.who"),
             company: t("you.needed.company"),
             background: t("you.needed.background"),
           })[key],
@@ -178,7 +183,9 @@ function ProposalWizard({
     validators: {
       onDynamic: ({ value }) => {
         const fields = stepProblems(schemas, step, value);
-        return fields ? { fields } : undefined;
+        if (!fields) return undefined;
+        const { organization: missingOrganization, ...fieldProblems } = fields;
+        return { fields: fieldProblems, form: missingOrganization?.message };
       },
     },
     listeners: {
@@ -291,53 +298,18 @@ function ProposalWizard({
 
   /** Reads what joining, asking or creating an organization made of the person. */
   async function readOrganization() {
-    try {
-      const [{ data: mine }, { data: reread }] = await Promise.all([
-        getMyOrganization(),
-        getUseCaseProposalForm({ path: { useCaseId } }),
-      ]);
-      setRequest(mine.request ?? null);
-      setOrganization(reread.organization ?? null);
-      if (reread.organization) {
-        form.setFieldValue("who", whoOf(reread.organization.type));
-      } else if (mine.request) {
-        form.setFieldValue("who", "company");
-      }
-    } catch (error) {
-      notify.failure(error, proposalWords);
+    const previous = organization?.teamBackground ?? "";
+    const { data } = await organizationContext.refetch({ throwOnError: true });
+    // Only a still-unmodified default follows the organization; never overwrite a person's draft.
+    if (
+      !editing &&
+      data?.organization &&
+      (data.organization.teamBackground ?? "") !== form.state.values.teamBackground &&
+      (form.state.values.teamBackground === previous || form.state.values.teamBackground === "")
+    ) {
+      form.setFieldValue("teamBackground", data.organization.teamBackground ?? "");
     }
-  }
-
-  /**
-   * Makes the organization of a person on their own or of their team, from what the first step holds;
-   * false when it could not be made. A company is joined or made in the step itself.
-   */
-  async function organize(): Promise<boolean> {
-    if (organization) {
-      return true;
-    }
-    const { who, teamName, teamSize } = form.state.values;
-    if (who !== "individual" && who !== "team") {
-      return false;
-    }
-    try {
-      await createOrganizationFromBasics({
-        body: {
-          name: who === "team" ? teamName.trim() : details.name.trim(),
-          type: who === "team" ? "builder_team" : "independent_builder",
-          teamSize: who === "team" ? teamSize : "just_me",
-          industries: [],
-          country: details.country,
-        },
-      });
-    } catch (error) {
-      notify.failure(error, proposalWords);
-      return false;
-    }
-    await readOrganization();
-    // What was written before the organization existed is saved with the draft now.
-    dirty.current = true;
-    return true;
+    router.refresh();
   }
 
   /**
@@ -385,7 +357,7 @@ function ProposalWizard({
   /** Saves what the step on the screen holds, then shows the step asked for. */
   async function open(target: Step) {
     if (step === "you" && target !== "you") {
-      if (!(await saveDetails()) || !(await organize())) {
+      if (!organization || !(await saveDetails())) {
         return;
       }
     }
@@ -618,6 +590,9 @@ function ProposalWizard({
           </>
         )}
 
+        <form.AppForm>
+          <form.FormError />
+        </form.AppForm>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
           <Button
             prominence="tertiary"
@@ -652,13 +627,25 @@ function ProposalWizard({
                   {editing ? t("edit.save") : t("send")}
                 </form.SubmitButton>
               ) : (
-                <form.SubmitButton size="lg">{t("continue")}</form.SubmitButton>
+                <form.SubmitButton size="lg" disabled={step === "you" && !organization}>
+                  {t("continue")}
+                </form.SubmitButton>
               )}
             </form.AppForm>
           </div>
         </div>
       </form>
     </WizardShell>
+  );
+}
+
+/** Query state belongs to this authenticated wizard, not a process-wide or cross-account cache. */
+function ProposalWizard(props: ProposalWizardProps) {
+  const [queryClient] = useState(() => new QueryClient());
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ProposalWizardContent {...props} />
+    </QueryClientProvider>
   );
 }
 

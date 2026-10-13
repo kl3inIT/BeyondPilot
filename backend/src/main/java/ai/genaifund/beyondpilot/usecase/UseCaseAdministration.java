@@ -1,6 +1,8 @@
 package ai.genaifund.beyondpilot.usecase;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +38,7 @@ import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseProgramResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseRequirementEntry;
+import ai.genaifund.beyondpilot.usecase.dto.UseCaseReviewQueueResponse;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseQueryRepository;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRepository;
@@ -53,6 +56,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class UseCaseAdministration {
+
+	/** The days of a review queue are Vietnam's, as the screens show them. */
+	private static final ZoneId QUEUE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
 	private static final Logger LOG = LoggerFactory.getLogger(UseCaseAdministration.class);
 
@@ -461,6 +467,20 @@ public class UseCaseAdministration {
 					names.containsKey(row.organizationId()) ? names.get(row.organizationId()).name() : null,
 					row.updatedAt()))
 			.toList());
+	}
+
+	/**
+	 * How many use cases wait for review now, since when the oldest has waited, and how many
+	 * waited at the end of each of the last 14 days, for the admin home.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public UseCaseReviewQueueResponse queue(Actor actor) {
+		identity.requireOperator(actor);
+		LocalDate today = LocalDate.now(QUEUE_ZONE);
+		List<Long> days = useCaseList.useCasesWaitingByDay(today, Instant.now());
+		return new UseCaseReviewQueueResponse(days.getLast(), useCaseList.useCasesOldestWaiting(),
+				today.minusDays(days.size() - 1L), days);
 	}
 
 }

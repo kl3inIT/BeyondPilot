@@ -1,23 +1,20 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
+import { revalidateLogic, useStore } from "@tanstack/react-form";
 import { ArrowUpRightIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
-import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { FormDialog } from "@/components/composites/form-dialog";
-import { RequiredMark } from "@/components/composites/required-mark";
-import { useAppForm } from "@/components/form/app-form";
+import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { FieldGroup } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  industries,
-  organizationTypes,
-  teamSizes,
-} from "@/features/organization/organization-codes";
+import { organizationTypes, teamSizes } from "@/features/organization/organization-codes";
+import { OrganizationIndustriesField } from "@/features/organization/organization-industries-field";
 import { useNotify } from "@/hooks/use-notify";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import {
@@ -26,6 +23,9 @@ import {
   saveMyOrganizationBasics,
   type Organization,
 } from "@/lib/api/generated";
+import { rejectedFields } from "@/lib/api/rejected-fields";
+import { MAX_TEAM_BACKGROUND } from "@/features/organization/organization-format";
+import { basicsSchema } from "@/features/organization/organization-schemas";
 import { siteRoutes } from "@/lib/site";
 
 /** What a new organization starts from, and what happens once it is made. */
@@ -40,6 +40,7 @@ type ProposalOrganizationDialogProps = {
   onOpenChange: (open: boolean) => void;
   /** Makes an organization in place of correcting the person's own. */
   create?: NewOrganization;
+  onSaved?: () => Promise<void>;
 };
 
 /**
@@ -51,39 +52,33 @@ function ProposalOrganizationDialog({
   open,
   onOpenChange,
   create,
+  onSaved,
 }: ProposalOrganizationDialogProps) {
   const t = useTranslations("UseCaseProposal.wizard.organization.dialog");
   const notify = useNotify();
-  const [organization, setOrganization] = useState<Organization | null>(null);
+  const query = useQuery({
+    queryKey: ["organization", "mine", "proposal-dialog"],
+    queryFn: async ({ signal }) => (await getMyOrganization({ signal })).data.organization ?? null,
+    enabled: open && !create,
+    staleTime: 0,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
+  const organization = query.data;
 
   useEffect(() => {
-    if (!open || create) {
-      return;
+    if (open && !create && query.error) {
+      notify.failure(query.error);
+      onOpenChange(false);
     }
-    let current = true;
-    getMyOrganization().then(
-      ({ data }) => {
-        if (current && data.organization) {
-          setOrganization(data.organization);
-        }
-      },
-      (error) => {
-        if (current) {
-          notify.failure(error);
-          onOpenChange(false);
-        }
-      },
-    );
-    return () => {
-      current = false;
-    };
-  }, [open, create, notify, onOpenChange]);
+  }, [open, create, query.error, notify, onOpenChange]);
 
   if (create) {
     return <BasicsForm key={create.name} create={create} open={open} onOpenChange={onOpenChange} />;
   }
 
-  if (!organization) {
+  if (!organization || query.isFetching) {
     // The facts are read first, so the form opens with them.
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -105,55 +100,71 @@ function ProposalOrganizationDialog({
       organization={organization}
       open={open}
       onOpenChange={onOpenChange}
+      onSaved={onSaved}
     />
   );
 }
 
 type BasicsFormProps = ProposalOrganizationDialogProps & { organization?: Organization };
 
-function BasicsForm({ organization, create, open, onOpenChange }: BasicsFormProps) {
+function BasicsForm({ organization, create, open, onOpenChange, onSaved }: BasicsFormProps) {
   const t = useTranslations("UseCaseProposal.wizard.organization.dialog");
   const f = useTranslations("Organization.form");
   const notify = useNotify();
   const router = useRouter();
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
-  const industryName = useVocabulary("industry");
   const countryName = useCountryName();
 
   const form = useAppForm({
     defaultValues: {
       name: organization?.name ?? create?.name ?? "",
-      type: (organization?.type ?? "company") as string,
+      type: organization?.type ?? "company",
       teamSize: (organization?.teamSize ?? "2_9") as string,
       industries: (organization?.industries ?? []) as string[],
       country: organization?.country ?? create?.country ?? "",
+      teamBackground: organization?.teamBackground ?? "",
     },
-    onSubmit: async ({ value }) => {
+    validationLogic: revalidateLogic(),
+    validators: { onDynamic: basicsSchema(f) },
+    onSubmit: async ({ value, formApi }) => {
       const body = {
         name: value.name.trim(),
         type: value.type as Organization["type"],
         teamSize: value.teamSize as NonNullable<Organization["teamSize"]>,
         industries: value.industries as Organization["industries"],
         country: value.country,
+        teamBackground: value.type === "builder_team" ? value.teamBackground.trim() || null : null,
+        version: organization?.version ?? null,
       };
       try {
         if (create) {
           await createOrganizationFromBasics({ body });
           notify.success("UseCaseProposal.wizard.organization.dialog.created");
-          onOpenChange(false);
           await create.onCreated();
+          onOpenChange(false);
+          router.refresh();
           return;
         }
         await saveMyOrganizationBasics({ body });
         notify.success("UseCaseProposal.wizard.organization.dialog.saved");
+        await onSaved?.();
         onOpenChange(false);
         router.refresh();
       } catch (error) {
+        const fields = Object.fromEntries(
+          [...rejectedFields(error)].map((field) => [
+            field,
+            { message: field === "teamBackground" ? f("teamBackgroundRequired") : t("required") },
+          ]),
+        );
+        setServerErrors(formApi, { fields });
         notify.failure(error);
       }
     },
   });
+
+  const type = useStore(form.store, (state) => state.values.type);
 
   return (
     <FormDialog
@@ -166,12 +177,7 @@ function BasicsForm({ organization, create, open, onOpenChange }: BasicsFormProp
       cancelLabel={t("cancel")}
     >
       <FieldGroup>
-        <form.AppField
-          name="name"
-          validators={{
-            onSubmit: ({ value }) => (value.trim() === "" ? t("required") : undefined),
-          }}
-        >
+        <form.AppField name="name">
           {(field) => <field.TextField label={f("name")} maxLength={120} requiredMark />}
         </form.AppField>
         <div className="grid gap-x-3 gap-y-4 sm:grid-cols-2">
@@ -207,46 +213,10 @@ function BasicsForm({ organization, create, open, onOpenChange }: BasicsFormProp
             )}
           </form.AppField>
         </div>
-        <form.AppField
-          name="industries"
-          validators={{
-            onChangeListenTo: ["type"],
-            onChange: ({ value, fieldApi }) =>
-              fieldApi.form.getFieldValue("type") === "company" && value.length === 0
-                ? f("industriesRequired")
-                : undefined,
-          }}
-        >
-          {(field) => {
-            const company = form.getFieldValue("type") === "company";
-            const error = field.state.meta.errors.find((entry) => typeof entry === "string");
-            return (
-              <Field data-invalid={error ? true : undefined}>
-                <FieldLabel htmlFor="proposal-organization-industries">
-                  {f("industries")} {company && <RequiredMark />}
-                </FieldLabel>
-                <ChoiceCombobox
-                  id="proposal-organization-industries"
-                  label={f("industries")}
-                  placeholder={f("industriesPlaceholder")}
-                  emptyLabel={f("industriesEmpty")}
-                  removeLabel={(industry) => f("industriesRemove", { industry })}
-                  aria-invalid={error ? true : undefined}
-                  aria-required={company || undefined}
-                  options={industries.map((value) => ({ value, label: industryName(value) }))}
-                  value={field.state.value}
-                  onValueChange={field.handleChange}
-                  max={5}
-                />
-                {error && <FieldError>{error}</FieldError>}
-              </Field>
-            );
-          }}
+        <form.AppField name="industries">
+          {() => <OrganizationIndustriesField required={type === "company"} />}
         </form.AppField>
-        <form.AppField
-          name="country"
-          validators={{ onSubmit: ({ value }) => (value === "" ? t("required") : undefined) }}
-        >
+        <form.AppField name="country">
           {(field) => (
             <field.SelectField
               label={f("country")}
@@ -255,6 +225,19 @@ function BasicsForm({ organization, create, open, onOpenChange }: BasicsFormProp
             />
           )}
         </form.AppField>
+        {type === "builder_team" && (
+          <form.AppField name="teamBackground">
+            {(field) => (
+              <field.TextareaField
+                label={f("teamBackground")}
+                description={f("teamBackgroundHint")}
+                rows={4}
+                maxLength={MAX_TEAM_BACKGROUND}
+                requiredMark
+              />
+            )}
+          </form.AppField>
+        )}
         <TextButton
           className="self-start"
           href={

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -193,4 +194,39 @@ public class UseCaseQueryRepository {
 		String literal = text.toLowerCase(Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
 		return "%" + literal + "%";
 	}
+
+	/**
+	 * How many use cases waited for review at the end of each of the 14 days up to {@code today} in Vietnam, oldest
+	 * first: sent by then and not decided by then. A row keeps only its last sending and its last decision, so a day
+	 * behind today is an approximation, good for a direction.
+	 */
+	public List<Long> useCasesWaitingByDay(LocalDate today, Instant now) {
+		return jdbc.sql("""
+				select (select count(*) from use_case u
+				        where coalesce(u.submitted_at, u.created_at) < day.ends
+				          and (u.closes_at is null or u.closes_at > least(day.ends, :now))
+				          and (u.status = 'in_review' or u.reviewed_at >= day.ends))
+				from (select (d + interval '1 day') at time zone 'Asia/Ho_Chi_Minh' as ends
+				      from generate_series(cast(:today as timestamp) - interval '13 days', cast(:today as timestamp),
+				                           interval '1 day') as d) as day
+				order by day.ends
+				""")
+			.param("today", today.toString())
+			.param("now", Timestamp.from(now))
+			.query(Long.class)
+			.list();
+	}
+
+	/** When the use case that has waited longest was sent; null when none waits. */
+	public @Nullable Instant useCasesOldestWaiting() {
+		return jdbc.sql("""
+				select min(coalesce(submitted_at, created_at)) from use_case
+				where status = 'in_review' and (closes_at is null or closes_at > now())
+				""")
+			.query(Timestamp.class)
+			.optional()
+			.map(Timestamp::toInstant)
+			.orElse(null);
+	}
+
 }

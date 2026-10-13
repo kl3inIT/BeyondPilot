@@ -45,5 +45,6 @@ public record OrganizationResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 					description = "When it was taken down; null while it is not.") @Nullable Instant suspendedAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Sent back with a save, which is refused when the organization changed since.") long version,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt,
+		@Schema(types = { "string", "null" }) @Nullable String teamBackground) {
 }

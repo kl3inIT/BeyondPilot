@@ -15,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 @Schema(name = "CreateOrganization",
 		description = "A new organization. Its creator owns it, and it waits for GenAI Fund's review.")
 @RequiredOfCompany
+@RequiredOfTeam
 public record CreateOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
@@ -38,5 +39,6 @@ public record CreateOrganizationRequest(
 		@Schema(types = { "string", "null" },
 				description = "A logo the caller uploaded for an organization; null for none.") @Nullable UUID logoFileId,
 		@Schema(types = { "string", "null" },
-				description = "What the creator does in the organization.") @Size(max = 120) @Nullable String jobTitle) {
+				description = "What the creator does in the organization.") @Size(max = 120) @Nullable String jobTitle,
+		@Schema(types = { "string", "null" }, description = "What the team has built before, separate from its short description.") @Size(max = 2000) @Nullable String teamBackground) {
 }

@@ -49,7 +49,7 @@ final class OrganizationViews {
 				organization.isAutoJoin(), organization.getStatus(), organization.getDecisionReason(),
 				organization.getDecisionMessage(), organization.getSuspensionReason(),
 				organization.getSuspensionMessage(), organization.getSuspendedAt(), organization.getVersion(),
-				organization.getCreatedAt());
+				organization.getCreatedAt(), organization.getTeamBackground());
 	}
 
 	static List<MemberResponse> members(List<Member> members, Map<UUID, Person> people, @Nullable UUID caller) {

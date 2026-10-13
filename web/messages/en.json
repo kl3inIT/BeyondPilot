@@ -1957,8 +1957,35 @@
       "solutions": "Solutions to review",
       "talent": "Talent profiles to review",
       "deployments": "Customer deployments to review",
-      "review": "Open the queue, longest wait first",
-      "none": "Nothing waiting"
+      "none": "Nothing waiting",
+      "queues": "Waiting for a review",
+      "useCases": "Use cases to review",
+      "applications": {
+        "title": "Applications",
+        "empty": "No program has an application to read.",
+        "assessed": "You assessed {assessed} of {count}",
+        "progress": "Applications of {name} you assessed"
+      },
+      "system": {
+        "title": "System",
+        "ai": {
+          "title": "AI calls, last 7 days",
+          "lead": "{calls, plural, one {# call} other {# calls}} · {rate} failed",
+          "none": "No calls in the last 7 days.",
+          "more": "AI usage"
+        },
+        "email": {
+          "label": "Email, last 7 days",
+          "note": "{delivered} delivered · {bounced} bounced",
+          "none": "Nothing sent"
+        },
+        "search": {
+          "label": "Search index",
+          "upToDate": "Records visitors can find · up to date",
+          "behind": "Records visitors can find · {waiting} waiting, {heldBack} held back"
+        }
+      },
+      "oldest": "{days, plural, =0 {The oldest was sent today} one {The oldest has waited # day} other {The oldest has waited # days}}"
     },
     "useCases": {
       "metaTitle": "Use cases · BeyondPilot",
@@ -3932,6 +3959,9 @@
       "websiteRequired": "Enter the organization's website.",
       "description": "Short description",
       "descriptionHint": "What the organization does and for whom.",
+      "teamBackground": "Team background",
+      "teamBackgroundHint": "What the team has built before, its expertise and relevant experience.",
+      "teamBackgroundRequired": "Describe the team’s experience in up to 2,000 characters.",
       "save": "Save changes",
       "unchanged": "Nothing has changed yet.",
       "create": "Send for review",

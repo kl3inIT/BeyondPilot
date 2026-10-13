@@ -39,5 +39,6 @@ public record AdminCreateOrganizationRequest(
 				description = "The domain of the company's work addresses, which the operator vouches for.") @Size(
 						max = 253) @Pattern(regexp = OrganizationCodes.DOMAIN) @Nullable String emailDomain,
 		@Schema(types = { "string", "null" },
-				description = "The address invited to own it.") @Email @Size(max = 254) @Nullable String ownerEmail) {
+				description = "The address invited to own it.") @Email @Size(max = 254) @Nullable String ownerEmail,
+		@Schema(types = { "string", "null" }, description = "What the team has built before, separate from its short description.") @Size(max = 2000) @Nullable String teamBackground) {
 }

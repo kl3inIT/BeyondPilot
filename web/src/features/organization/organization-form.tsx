@@ -7,14 +7,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { Button } from "@/components/actions/button";
-import { ChoiceCombobox } from "@/components/composites/choice-combobox";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard, onGuardEntry } from "@/components/composites/leave-guard";
-import { RequiredMark } from "@/components/composites/required-mark";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { focusFirstInvalidSoon } from "@/components/form/focus-first-invalid";
-import { useFieldValidity } from "@/components/form/form-context";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useNotify } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
@@ -28,9 +25,10 @@ import {
 import { rejectedFields } from "@/lib/api/rejected-fields";
 import { siteRoutes } from "@/lib/site";
 
-import { industries, organizationTypes, teamSizes } from "./organization-codes";
+import { organizationTypes, teamSizes } from "./organization-codes";
 import { ExistingOrganizations, useExistingOrganizations } from "./organization-existing";
-import { MAX_DESCRIPTION, MAX_INDUSTRIES } from "./organization-format";
+import { MAX_DESCRIPTION, MAX_TEAM_BACKGROUND } from "./organization-format";
+import { OrganizationIndustriesField } from "./organization-industries-field";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
 import { OrganizationProfileSection } from "./organization-profile-section";
 import {
@@ -41,49 +39,6 @@ import {
   profileValuesOf,
 } from "./organization-schemas";
 import { useVerifiedDomain, VerifiedDomainField } from "./verified-domain";
-
-/**
- * The industries of the profile, found by typing: the form's field, with how many are chosen under
- * it. Only a company has to name one, so the star follows the type and the others read Optional.
- */
-function IndustriesField({ required }: { required: boolean }) {
-  const t = useTranslations("Organization.form");
-  const marks = useTranslations("Form");
-  const industryName = useVocabulary("industry");
-  const { field, invalid, errors, ids } = useFieldValidity<string[]>();
-  const { control: controlId, hint: hintId, error: errorId } = ids;
-
-  return (
-    <Field data-invalid={invalid || undefined}>
-      <FieldLabel htmlFor={controlId}>
-        {t("industries")}
-        {required ? (
-          <RequiredMark />
-        ) : (
-          <span className="font-normal text-muted-foreground">{marks("optional")}</span>
-        )}
-      </FieldLabel>
-      <ChoiceCombobox
-        id={controlId}
-        aria-required={required || undefined}
-        label={t("industries")}
-        placeholder={t("industriesPlaceholder")}
-        emptyLabel={t("industriesEmpty")}
-        removeLabel={(industry) => t("industriesRemove", { industry })}
-        aria-describedby={invalid ? `${hintId} ${errorId}` : hintId}
-        aria-invalid={invalid || undefined}
-        options={industries.map((value) => ({ value, label: industryName(value) }))}
-        value={field.state.value}
-        onValueChange={field.handleChange}
-        max={MAX_INDUSTRIES}
-      />
-      <FieldDescription id={hintId}>
-        {t("industriesHint", { count: MAX_INDUSTRIES, chosen: field.state.value.length })}
-      </FieldDescription>
-      {invalid && <FieldError id={errorId} errors={errors} />}
-    </Field>
-  );
-}
 
 type OrganizationFormProps = {
   /** The organization to change; without one the form creates it. */
@@ -286,7 +241,7 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
 
       <OrganizationProfileSection icon={FileTextIcon} title={t("about")}>
         <form.AppField name="industries">
-          {() => <IndustriesField required={company} />}
+          {() => <OrganizationIndustriesField required={company} />}
         </form.AppField>
         <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
           <form.AppField name="country">
@@ -338,6 +293,20 @@ function OrganizationForm({ organization, initialName, admin, onCancel }: Organi
           </form.Field>
         </div>
       </OrganizationProfileSection>
+
+      {type === "builder_team" && (
+        <form.AppField name="teamBackground">
+          {(field) => (
+            <field.TextareaField
+              label={t("teamBackground")}
+              description={t("teamBackgroundHint")}
+              maxLength={MAX_TEAM_BACKGROUND}
+              rows={4}
+              requiredMark
+            />
+          )}
+        </form.AppField>
+      )}
 
       {admin && (
         <OrganizationProfileSection

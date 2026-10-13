@@ -4,12 +4,15 @@ import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
@@ -163,7 +166,9 @@ class SolutionTest {
 
 		// A solution reviewed before a logo and a cover were asked for stays as it is: a save does not ask for them,
 		// and still takes nothing else away.
-		jdbc.sql("update solution set logo_file_id = null, cover_file_id = null where id = ?").param(id).update();
+		jdbc.sql("update solution set logo_file_id = null, cover_file_id = null where id = ?")
+			.param(id)
+			.update();
 		Map<String, Object> earlier = described("Draft Desk", versionOf(submitted));
 		earlier.put("listed", false);
 		String kept = body(put(founder, MINE + "/" + id, earlier).expectStatus().isOk());
@@ -408,7 +413,9 @@ class SolutionTest {
 		String founder = approvedOwner("founder@earlier.test", "Earlier Co");
 		UUID id = submitted(founder, "Earlier Desk");
 		// What a solution submitted before the column existed looks like.
-		jdbc.sql("update solution set submitted_by_account_id = null where id = ?").param(id).update();
+		jdbc.sql("update solution set submitted_by_account_id = null where id = ?")
+			.param(id)
+			.update();
 
 		String listed = body(get(operator, ADMIN + "?q=earlier desk").expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(listed, "$.items[*].name")).containsExactly("Earlier Desk");
@@ -609,7 +616,9 @@ class SolutionTest {
 		approved(founder, "Wombat Own Logo");
 		UUID bare = approved(founder, "Wombat Bare Logo");
 		// A solution imported from the old platform carries its logo on its organization only.
-		jdbc.sql("update solution set logo_file_id = null where id = ?").param(bare).update();
+		jdbc.sql("update solution set logo_file_id = null where id = ?")
+			.param(bare)
+			.update();
 		UUID organizationLogo = uploaded(founder, "organization_logo", "C:\\brand\\logo-co.png", png(400));
 		jdbc.sql("update organization set logo_file_id = ? where id = (select organization_id from solution where id = ?)")
 			.param(organizationLogo)
@@ -1666,6 +1675,47 @@ class SolutionTest {
 				order by occurred_at, id
 				""").param(offer.toString()).query(String.class).list())
 			.containsExactly("solution.offer_create", "solution.offer_close", "solution.offer_reopen");
+	}
+
+	@Test
+	void theQueueCountsWhatWaitedAtTheEndOfEachOfTheLast14Days() {
+		assertProblem(get(signIn("queue-member@solution.test"), ADMIN + "/queue"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		List<Long> before = queueDays(body(get(operator, ADMIN + "/queue").expectStatus().isOk()));
+		UUID waiting = submitted(approvedOwner("queue-waiting@solution.test", "Queue Waiting Org"), "Queue Waiting");
+		UUID decided = approved(approvedOwner("queue-decided@solution.test", "Queue Decided Org"), "Queue Decided");
+		// One has waited since three days ago; the other waited from six days ago until it was decided two days ago.
+		jdbc.sql("update solution set submitted_at = now() - interval '3 days' where id = ?")
+			.param(waiting)
+			.update();
+		jdbc.sql("update solution set submitted_at = now() - interval '6 days', "
+				+ "decided_at = now() - interval '2 days' where id = ?")
+			.param(decided)
+			.update();
+
+		String queue = body(get(operator, ADMIN + "/queue").expectStatus().isOk());
+
+		// Days run from 13 days ago to today: the first counts on the last four, the second on the four before its
+		// decision, so both on the day three days ago.
+		assertThat(difference(queueDays(queue), before)).containsExactly(0L, 0L, 0L, 0L, 0L, 0L, 0L, 1L, 1L, 1L, 2L, 1L,
+				1L, 1L);
+		assertThat(JsonPath.<Number>read(queue, "$.waiting").longValue()).isEqualTo(queueDays(queue).getLast());
+		assertThat(JsonPath.<String>read(queue, "$.from"))
+			.isEqualTo(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).minusDays(13).toString());
+		assertThat(JsonPath.<String>read(queue, "$.oldestSince")).isNotNull();
+		// Customer deployments have their own queue, whose today is the count the list gives.
+		String deployments = body(get(operator, "/api/solution/admin/deployments/queue").expectStatus().isOk());
+		assertThat(queueDays(deployments)).hasSize(14);
+		assertThat(queueDays(deployments).getLast()).isEqualTo(deploymentsWaiting());
+	}
+
+	/** How many waited at the end of each of the 14 days, oldest first, as a queue answers it. */
+	private static List<Long> queueDays(String queue) {
+		return JsonPath.<List<Number>>read(queue, "$.days").stream().map(Number::longValue).toList();
+	}
+
+	/** What changed on each day between two readings of a queue; other tests share the database. */
+	private static List<Long> difference(List<Long> after, List<Long> before) {
+		return IntStream.range(0, after.size()).mapToObj(day -> after.get(day) - before.get(day)).toList();
 	}
 
 	/** An offer of the list GenAI Fund keeps, added by the operator. */

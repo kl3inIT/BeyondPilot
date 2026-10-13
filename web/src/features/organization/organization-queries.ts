@@ -10,6 +10,8 @@ import {
   type AdminOrganizationList,
   type MyOrganization,
   type OrganizationMembers,
+  getOrganizationReviewQueue,
+  type OrganizationReviewQueue,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 
@@ -74,4 +76,10 @@ export async function readAdminOrganization(id: string): Promise<AdminOrganizati
     }
     throw error;
   }
+}
+
+/** How many organizations, new or claimed, wait for review now, and each of the last 14 days. Server only. */
+export async function readOrganizationQueue(): Promise<OrganizationReviewQueue> {
+  const { data } = await getOrganizationReviewQueue(await sessionRequest());
+  return data;
 }

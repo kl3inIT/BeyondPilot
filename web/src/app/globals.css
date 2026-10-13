@@ -147,6 +147,10 @@
   /* The header's destinations sit between medium and semibold; Inter is a variable font. */
   --font-weight-nav: 550;
   --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+  /* The named durations every transition picks from (docs/conventions.md › Motion). */
+  --transition-duration-fast: 100ms;
+  --transition-duration-base: 200ms;
+  --transition-duration-slow: 300ms;
   /* The desktop frame of the landing is 1440px wide. */
   --breakpoint-desktop: 90rem;
   /* The hero's live chip needs this much column to show its deadline (390 phones and up). */

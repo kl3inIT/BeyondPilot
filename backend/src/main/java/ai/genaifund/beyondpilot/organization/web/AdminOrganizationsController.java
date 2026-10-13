@@ -14,6 +14,7 @@ import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.ChangeMemberRoleRequest;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.MergeOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.OrganizationReviewQueueResponse;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.SendBackOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.TakeDownOrganizationRequest;
@@ -86,6 +87,15 @@ class AdminOrganizationsController {
 	AdminOrganizationResponse create(@CurrentActor Actor actor,
 			@Valid @RequestBody AdminCreateOrganizationRequest request) {
 		return organizations.create(actor, request);
+	}
+
+	@GetMapping(path = "/organizations/queue", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getOrganizationReviewQueue",
+			summary = "How many organizations wait for review, and how many waited each of the last 14 days",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The queue now and its last 14 days.")
+	OrganizationReviewQueueResponse queue(@CurrentActor Actor actor) {
+		return organizations.queue(actor);
 	}
 
 	@GetMapping(path = "/organizations/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

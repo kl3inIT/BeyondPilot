@@ -4057,6 +4057,34 @@ paths:
       summary: Create an organization for a company that is not here yet
       tags:
       - Organization administration
+  /api/organization/admin/organizations/queue:
+    get:
+      operationId: getOrganizationReviewQueue
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationReviewQueue"
+          description: The queue now and its last 14 days.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "How many organizations wait for review, and how many waited each of\
+        \ the last 14 days"
+      tags:
+      - Organization administration
   /api/organization/admin/organizations/{id}:
     get:
       operationId: getAdminOrganization
@@ -7787,6 +7815,28 @@ paths:
       summary: Turn semantic search on or off
       tags:
       - AI and search administration
+  /api/solution/admin/deployments/queue:
+    get:
+      operationId: getDeploymentReviewQueue
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SolutionReviewQueue"
+          description: The queue now and its last 14 days.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+      security:
+      - session: []
+      summary: "How many customer deployments wait for review, and how many waited\
+        \ each of the last 14 days"
+      tags:
+      - Customer deployments
   /api/solution/admin/deployments/{id}/approve:
     post:
       operationId: approveCustomerDeployment
@@ -8350,6 +8400,34 @@ paths:
       - session: []
       summary: "The approved organizations a solution can be started for, by name;\
         \ at most 50"
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/queue:
+    get:
+      operationId: getSolutionReviewQueue
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SolutionReviewQueue"
+          description: The queue now and its last 14 days.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "How many solutions wait for review, and how many waited each of the\
+        \ last 14 days"
       tags:
       - Solution administration
   /api/solution/admin/solutions/{id}:
@@ -10237,6 +10315,34 @@ paths:
       summary: "The submitted talent profiles, those waiting for review first"
       tags:
       - Talent administration
+  /api/talent/admin/profiles/queue:
+    get:
+      operationId: getTalentReviewQueue
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TalentReviewQueue"
+          description: The queue now and its last 14 days.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "How many talent profiles wait for review, and how many waited each\
+        \ of the last 14 days"
+      tags:
+      - Talent administration
   /api/talent/admin/profiles/{id}:
     get:
       operationId: getAdminTalent
@@ -10981,6 +11087,34 @@ paths:
       security:
       - session: []
       summary: "Create a use case for an organization, as a draft or published"
+      tags:
+      - Use case administration
+  /api/usecase/admin/use-cases/queue:
+    get:
+      operationId: getUseCaseReviewQueue
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseReviewQueue"
+          description: The queue now and its last 14 days.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "How many use cases wait for review, and how many waited each of the\
+        \ last 14 days"
       tags:
       - Use case administration
   /api/usecase/admin/use-cases/{id}:
@@ -11793,6 +11927,13 @@ components:
           format: email
           description: The address invited to own it.
           maxLength: 254
+          minLength: 0
+        teamBackground:
+          type:
+          - string
+          - "null"
+          description: "What the team has built before, separate from its short description."
+          maxLength: 2000
           minLength: 0
         teamSize:
           type:
@@ -14550,6 +14691,13 @@ components:
         name:
           type: string
           maxLength: 120
+          minLength: 0
+        teamBackground:
+          type:
+          - string
+          - "null"
+          description: "What the team has built before, separate from its short description."
+          maxLength: 2000
           minLength: 0
         teamSize:
           type: string
@@ -17503,6 +17651,10 @@ components:
           - not_a_real_organization
           - breaks_the_rules
           - other
+        teamBackground:
+          type:
+          - string
+          - "null"
         teamSize:
           type:
           - string
@@ -17760,6 +17912,37 @@ components:
       - pageSize
       - requests
       - total
+    OrganizationReviewQueue:
+      type: object
+      description: "How many organizations (new, or claimed by someone who asks to\
+        \ own one) wait for review now, since when, and how many waited at the end\
+        \ of each of the last 14 days."
+      properties:
+        days:
+          type: array
+          description: "How many waited at the end of each day from `from` to today,\
+            \ oldest first; today's is `waiting`. A day behind today is an approximation:\
+            \ a record keeps only its last sending and its last decision."
+          items:
+            type: integer
+            format: int64
+        from:
+          type: string
+          format: date
+          description: "The first of the days, in Asia/Ho_Chi_Minh."
+        oldestSince:
+          type: string
+          format: date-time
+          description: When the one that has waited longest was sent; null when none
+            waits.
+        waiting:
+          type: integer
+          format: int64
+          description: How many wait now.
+      required:
+      - days
+      - from
+      - waiting
     OrganizationSearch:
       type: object
       description: "The approved organizations a search finds, by name; ten at most."
@@ -18528,6 +18711,10 @@ components:
           type: boolean
           description: "Whether the caller is an owner of it, who may correct what\
             \ they gave when they made it."
+        teamBackground:
+          type:
+          - string
+          - "null"
         type:
           type: string
           description: What kind of organization it is; a team writes what it has
@@ -21166,7 +21353,7 @@ components:
             type: string
             pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|climate_sustainability|marketing_advertising|legal|hr_workforce|other
           maxItems: 5
-          minItems: 1
+          minItems: 0
         logoFileId:
           type:
           - string
@@ -21176,6 +21363,13 @@ components:
         name:
           type: string
           maxLength: 120
+          minLength: 0
+        teamBackground:
+          type:
+          - string
+          - "null"
+          description: "What the team has built before, separate from its short description."
+          maxLength: 2000
           minLength: 0
         teamSize:
           type: string
@@ -21231,6 +21425,13 @@ components:
           type: string
           maxLength: 120
           minLength: 0
+        teamBackground:
+          type:
+          - string
+          - "null"
+          description: "What the team has built before, separate from its short description."
+          maxLength: 2000
+          minLength: 0
         teamSize:
           type: string
           pattern: just_me|2_9|10_49|50_99|100_499|500_999|1000_4999|5000_plus
@@ -21242,6 +21443,12 @@ components:
           - independent_builder
           - other
           pattern: company|builder_team|independent_builder|other
+        version:
+          type:
+          - integer
+          - "null"
+          format: int64
+          description: Required when editing; omitted when creating.
       required:
       - country
       - industries
@@ -22840,6 +23047,36 @@ components:
       - complete
       - id
       - name
+    SolutionReviewQueue:
+      type: object
+      description: "How many solutions or customer deployments wait for review now,\
+        \ since when, and how many waited at the end of each of the last 14 days."
+      properties:
+        days:
+          type: array
+          description: "How many waited at the end of each day from `from` to today,\
+            \ oldest first; today's is `waiting`. A day behind today is an approximation:\
+            \ a record keeps only its last sending and its last decision."
+          items:
+            type: integer
+            format: int64
+        from:
+          type: string
+          format: date
+          description: "The first of the days, in Asia/Ho_Chi_Minh."
+        oldestSince:
+          type: string
+          format: date-time
+          description: When the one that has waited longest was sent; null when none
+            waits.
+        waiting:
+          type: integer
+          format: int64
+          description: How many wait now.
+      required:
+      - days
+      - from
+      - waiting
     SolutionSummary:
       type: object
       description: One solution in a list of its organization or of the operators.
@@ -23380,6 +23617,36 @@ components:
           minimum: 1990
       required:
       - title
+    TalentReviewQueue:
+      type: object
+      description: "How many talent profiles wait for review now, since when, and\
+        \ how many waited at the end of each of the last 14 days."
+      properties:
+        days:
+          type: array
+          description: "How many waited at the end of each day from `from` to today,\
+            \ oldest first; today's is `waiting`. A day behind today is an approximation:\
+            \ a record keeps only its last sending and its last decision."
+          items:
+            type: integer
+            format: int64
+        from:
+          type: string
+          format: date
+          description: "The first of the days, in Asia/Ho_Chi_Minh."
+        oldestSince:
+          type: string
+          format: date-time
+          description: When the one that has waited longest was sent; null when none
+            waits.
+        waiting:
+          type: integer
+          format: int64
+          description: How many wait now.
+      required:
+      - days
+      - from
+      - waiting
     TalentSummary:
       type: object
       description: One talent profile in the operators' list.
@@ -23745,6 +24012,36 @@ components:
       required:
       - necessity
       - statement
+    UseCaseReviewQueue:
+      type: object
+      description: "How many use cases wait for review now, since when, and how many\
+        \ waited at the end of each of the last 14 days."
+      properties:
+        days:
+          type: array
+          description: "How many waited at the end of each day from `from` to today,\
+            \ oldest first; today's is `waiting`. A day behind today is an approximation:\
+            \ a record keeps only its last sending and its last decision."
+          items:
+            type: integer
+            format: int64
+        from:
+          type: string
+          format: date
+          description: "The first of the days, in Asia/Ho_Chi_Minh."
+        oldestSince:
+          type: string
+          format: date-time
+          description: When the one that has waited longest was sent; null when none
+            waits.
+        waiting:
+          type: integer
+          format: int64
+          description: How many wait now.
+      required:
+      - days
+      - from
+      - waiting
   securitySchemes:
     session:
       description: "The session cookie set by signing in. Requests that change state\

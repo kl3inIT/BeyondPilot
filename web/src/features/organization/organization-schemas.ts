@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { Organization, SaveOrganization } from "@/lib/api/generated";
 
 import { organizationTypes } from "./organization-codes";
-import { yearOf } from "./organization-format";
+import { MAX_TEAM_BACKGROUND, yearOf } from "./organization-format";
 
 /** What each field of the profile says when it is refused, here or by the backend. */
 export const profileRefusals = {
@@ -14,6 +14,7 @@ export const profileRefusals = {
   country: "countryRequired",
   foundedYear: "foundedYearInvalid",
   description: "descriptionRequired",
+  teamBackground: "teamBackgroundRequired",
 } as const;
 
 /** The words a schema's messages are written in; the form passes its translator. */
@@ -31,6 +32,7 @@ export type ProfileValues = {
   country: string;
   foundedYear: string;
   description: string;
+  teamBackground: string;
   logoFileId: string;
 };
 
@@ -45,6 +47,7 @@ export function profileValuesOf(organization?: Organization): ProfileValues {
     country: organization?.country ?? "",
     foundedYear: String(organization?.foundedYear ?? ""),
     description: organization?.description ?? "",
+    teamBackground: organization?.teamBackground ?? "",
     logoFileId: organization?.logoFileId ?? "",
   };
 }
@@ -76,9 +79,17 @@ export function profileSchema(say: Say) {
         .string()
         .refine((text) => !filled(text) || yearOf(text) !== null, say("foundedYearInvalid")),
       description: z.string().refine(filled, say("descriptionRequired")),
+      teamBackground: z.string().max(MAX_TEAM_BACKGROUND, say("teamBackgroundRequired")),
       logoFileId: z.string(),
     })
     .superRefine((values, context) => {
+      if (values.type === "builder_team" && !filled(values.teamBackground)) {
+        context.addIssue({
+          code: "custom",
+          path: ["teamBackground"],
+          message: say("teamBackgroundRequired"),
+        });
+      }
       if (!givesCompanyFacts(values.type)) {
         return;
       }
@@ -97,6 +108,35 @@ export function profileSchema(say: Say) {
 
 /** A fact of the profile the form may ask for, by its field. */
 export type ProfileFact = keyof typeof profileRefusals;
+
+/** The smaller profile written in the proposal dialog, with the same team rule as the full form. */
+export function basicsSchema(say: Say) {
+  return z
+    .object({
+      name: z.string().trim().min(1, say("nameRequired")).max(120, say("nameRequired")),
+      type: z.enum(organizationTypes),
+      teamSize: z.string().min(1, say("teamSizeRequired")),
+      industries: z.array(z.string()).max(5, say("industriesRequired")),
+      country: z.string().min(1, say("countryRequired")),
+      teamBackground: z.string().max(MAX_TEAM_BACKGROUND, say("teamBackgroundRequired")),
+    })
+    .superRefine((values, context) => {
+      if (values.type === "company" && values.industries.length === 0) {
+        context.addIssue({
+          code: "custom",
+          path: ["industries"],
+          message: say("industriesRequired"),
+        });
+      }
+      if (values.type === "builder_team" && !values.teamBackground.trim()) {
+        context.addIssue({
+          code: "custom",
+          path: ["teamBackground"],
+          message: say("teamBackgroundRequired"),
+        });
+      }
+    });
+}
 
 /**
  * The facts a saved organization still lacks, in the order of the form: what `profileSchema` would
@@ -122,6 +162,7 @@ export function profileBodyOf(values: ProfileValues): Omit<SaveOrganization, "ve
     industries: values.industries,
     website: values.website.trim() || null,
     description: values.description.trim(),
+    teamBackground: values.type === "builder_team" ? values.teamBackground.trim() || null : null,
     foundedYear: values.foundedYear.trim() ? Number(values.foundedYear) : null,
     logoFileId: values.logoFileId || null,
   };

@@ -13,6 +13,7 @@ import ai.genaifund.beyondpilot.usecase.dto.SendBackUseCaseRequest;
 import ai.genaifund.beyondpilot.usecase.dto.SetUseCaseProgramsRequest;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListResponse;
+import ai.genaifund.beyondpilot.usecase.dto.UseCaseReviewQueueResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -75,6 +76,15 @@ class AdminUseCasesController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	AdminUseCaseResponse create(@CurrentActor Actor actor, @Valid @RequestBody CreateUseCaseRequest request) {
 		return useCases.create(actor, request);
+	}
+
+	@GetMapping(path = "/use-cases/queue", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getUseCaseReviewQueue",
+			summary = "How many use cases wait for review, and how many waited each of the last 14 days",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The queue now and its last 14 days.")
+	UseCaseReviewQueueResponse queue(@CurrentActor Actor actor) {
+		return useCases.queue(actor);
 	}
 
 	@GetMapping(path = "/use-cases/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

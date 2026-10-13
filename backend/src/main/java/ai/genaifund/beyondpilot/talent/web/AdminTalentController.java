@@ -9,6 +9,7 @@ import ai.genaifund.beyondpilot.talent.dto.AdminTalentListRequest;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentListResponse;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentDecisionRequest;
+import ai.genaifund.beyondpilot.talent.dto.TalentReviewQueueResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -57,6 +58,15 @@ class AdminTalentController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	AdminTalentListResponse list(@CurrentActor Actor actor, @Valid @ParameterObject AdminTalentListRequest request) {
 		return talent.list(actor, request);
+	}
+
+	@GetMapping(path = "/queue", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getTalentReviewQueue",
+			summary = "How many talent profiles wait for review, and how many waited each of the last 14 days",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The queue now and its last 14 days.")
+	TalentReviewQueueResponse queue(@CurrentActor Actor actor) {
+		return talent.queue(actor);
 	}
 
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
