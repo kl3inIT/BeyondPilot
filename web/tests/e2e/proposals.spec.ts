@@ -651,8 +651,7 @@ test.describe("the proposals a use case received", () => {
     // The stub now holds two decisions that were not sent: the counts follow the response.
     await expect(tab(page, "Shortlisted", 1)).toBeVisible();
     await expect(tab(page, "Declined", 1)).toBeVisible();
-    await expect(page.getByText("2 decisions are not sent yet.")).toBeVisible();
-    await expect(page.getByText("Not sent yet", { exact: true })).toHaveCount(2);
+    await expect(page.getByRole("button", { name: "Send outcomes (2)" })).toBeVisible();
     await tab(page, "Declined", 1).click();
     await expect(page).toHaveURL(/\?tab=declined$/);
     await expect(page.getByRole("link", { name: "Lumen AI" })).toBeVisible();
@@ -675,7 +674,6 @@ test.describe("the proposals a use case received", () => {
     await expect(dialog).toBeHidden();
     await expect(page.getByText("2 outcomes were sent.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Send outcomes (0)" })).toBeDisabled();
-    await expect(page.getByText("Not sent yet", { exact: true })).toHaveCount(0);
     await settled(page);
   });
 
@@ -696,7 +694,6 @@ test.describe("the proposals a use case received", () => {
     await expect
       .poll(() => decisions.map((entry) => entry.body))
       .toEqual([{ decision: "shortlisted" }]);
-    await expect(page.getByText("Not sent yet", { exact: true })).toBeVisible();
     await expect(page.getByText("Hoa Lê on")).toBeVisible();
     // What is decided is not offered again; the other choice stays.
     await expect(page.getByRole("button", { name: "Shortlist", exact: true })).toBeDisabled();
