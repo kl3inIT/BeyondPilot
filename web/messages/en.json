@@ -1951,7 +1951,34 @@
       "talent": "Talent profiles to review",
       "deployments": "Customer deployments to review",
       "review": "Open the queue, longest wait first",
-      "none": "Nothing waiting"
+      "none": "Nothing waiting",
+      "queues": "Waiting for a review",
+      "useCases": "Use cases to review",
+      "applications": {
+        "title": "Applications",
+        "empty": "No program has an application to read.",
+        "assessed": "You assessed {assessed} of {count}",
+        "progress": "Applications of {name} you assessed"
+      },
+      "system": {
+        "title": "System",
+        "ai": {
+          "title": "AI calls, last 7 days",
+          "lead": "{calls, plural, one {# call} other {# calls}} · {rate} failed",
+          "none": "No calls in the last 7 days.",
+          "more": "AI usage"
+        },
+        "email": {
+          "label": "Email, last 7 days",
+          "note": "{delivered} delivered · {bounced} bounced",
+          "none": "Nothing sent"
+        },
+        "search": {
+          "label": "Search index",
+          "upToDate": "Records visitors can find · up to date",
+          "behind": "Records visitors can find · {waiting} waiting, {heldBack} held back"
+        }
+      }
     },
     "useCases": {
       "metaTitle": "Use cases · BeyondPilot",
