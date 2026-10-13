@@ -126,60 +126,6 @@ export type AdminCreateSolution = {
 };
 
 /**
- * A request for an introduction as an operator reads it: the message in full, and no address.
- */
-export type AdminIntroduction = {
-    /**
-     * When it was answered; absent while it waits.
-     */
-    answeredAt?: string;
-    createdAt: string;
-    id: string;
-    message: string;
-    /**
-     * Whether it has waited for an answer longer than three days.
-     */
-    overdue: boolean;
-    /**
-     * The organization that offers the solution and answers.
-     */
-    providerOrganization: string;
-    /**
-     * The sender's name; absent while they have not given one.
-     */
-    senderName?: string;
-    /**
-     * The organization the sender asked as.
-     */
-    senderOrganization: string;
-    /**
-     * The solution asked about, by the name it had then.
-     */
-    solutionName: string;
-    status: 'pending' | 'replied' | 'declined';
-};
-
-/**
- * One page of requests for an introduction: those that wait first, the longest wait on top.
- */
-export type AdminIntroductionList = {
-    items: Array<AdminIntroduction>;
-    /**
-     * How many requests, whatever the filter, have waited longer than three days.
-     */
-    overdue: number;
-    /**
-     * The page returned, counted from 1.
-     */
-    page: number;
-    pageSize: number;
-    /**
-     * How many requests match, over all pages.
-     */
-    total: number;
-};
-
-/**
  * An offer as an operator reads it: GenAI Fund's, or an organization's own.
  */
 export type AdminOffer = {
@@ -528,43 +474,6 @@ export type AdminTalent = {
      */
     featuredAt?: string | null;
     profile: TalentProfile;
-};
-
-/**
- * A message the person behind a talent profile reported as unwanted.
- */
-export type AdminTalentEnquiry = {
-    createdAt: string;
-    id: string;
-    message: string;
-    /**
-     * The profile it was sent through.
-     */
-    profileId: string;
-    profileName: string;
-    /**
-     * When it was reported.
-     */
-    reportedAt?: string | null;
-    /**
-     * The sender's address; empty when the account no longer signs in.
-     */
-    senderEmail: string;
-    /**
-     * The sender's name; null when they gave none.
-     */
-    senderName?: string | null;
-    topic: 'project' | 'role' | 'other';
-};
-
-/**
- * One page of the reported messages, the newest first.
- */
-export type AdminTalentEnquiryList = {
-    items: Array<AdminTalentEnquiry>;
-    page: number;
-    pageSize: number;
-    total: number;
 };
 
 /**
@@ -2120,7 +2029,7 @@ export type EmailTemplate = {
     defaultBody: string;
     defaultSubject: string;
     edited: boolean;
-    group: 'sign_in' | 'organizations' | 'applications' | 'introductions' | 'use_cases' | 'talent';
+    group: 'sign_in' | 'organizations' | 'applications' | 'use_cases' | 'talent';
     kind: string;
     subject: string;
     updatedAt?: string | null;
@@ -2144,7 +2053,7 @@ export type EmailTemplateListItem = {
      * Whether an operator's wording replaces the default.
      */
     edited: boolean;
-    group: 'sign_in' | 'organizations' | 'applications' | 'introductions' | 'use_cases' | 'talent';
+    group: 'sign_in' | 'organizations' | 'applications' | 'use_cases' | 'talent';
     kind: string;
     /**
      * The subject in use, with its variables as written.
@@ -2246,36 +2155,6 @@ export type GiveMatchingFeedback = {
      * The places of the requirements the AI judged wrongly, if the caller names any.
      */
     requirements?: Array<number>;
-};
-
-/**
- * A request for an introduction to the caller's organization.
- */
-export type Introduction = {
-    /**
-     * When it was answered; absent while it waits.
-     */
-    answeredAt?: string;
-    createdAt: string;
-    id: string;
-    message: string;
-    /**
-     * The sender's address, shown only once the request was replied to.
-     */
-    senderEmail?: string;
-    /**
-     * The sender's name; absent while the sender has not given one.
-     */
-    senderName?: string;
-    /**
-     * The organization the sender asked as.
-     */
-    senderOrganization: string;
-    /**
-     * The solution the sender asked about, by the name it had then.
-     */
-    solutionName: string;
-    status: 'pending' | 'replied' | 'declined';
 };
 
 /**
@@ -3059,13 +2938,9 @@ export type MySolutions = {
 };
 
 /**
- * The caller's talent profile and the messages sent through it.
+ * The caller's talent profile.
  */
 export type MyTalent = {
-    /**
-     * Those that wait for an answer first, then the newest.
-     */
-    enquiries: Array<TalentEnquiry>;
     /**
      * Null until the caller saves a profile.
      */
@@ -4134,10 +4009,6 @@ export type PublicTalent = {
     roles: Array<string>;
     skills: Array<string>;
     slug: string;
-    /**
-     * When the caller's message to this person was sent, while it waits for an answer; null for a visitor and when none waits.
-     */
-    waitingEnquirySentAt?: string | null;
     website?: string | null;
     /**
      * Where the person works, as they state it.
@@ -4316,20 +4187,6 @@ export type PublicUseCaseSummary = {
      */
     timelineMinWeeks?: number | null;
     title: string;
-};
-
-/**
- * The requests for an introduction to the caller's organization.
- */
-export type ReceivedIntroductions = {
-    /**
-     * Whether the caller answers them: an owner does, a member only reads.
-     */
-    editable: boolean;
-    /**
-     * Newest first.
-     */
-    items: Array<Introduction>;
 };
 
 /**
@@ -4563,20 +4420,6 @@ export type ReportedRequestList = {
     page: number;
     pageSize: number;
     total: number;
-};
-
-/**
- * A request for an introduction to the organization behind a solution.
- */
-export type RequestIntroduction = {
-    /**
-     * What the sender needs, as the provider reads it.
-     */
-    message: string;
-    /**
-     * The address of the solution in the public directory.
-     */
-    solutionSlug: string;
 };
 
 /**
@@ -5775,21 +5618,6 @@ export type SendMessageRequest = {
 };
 
 /**
- * A message to the person behind a talent profile.
- */
-export type SendTalentEnquiry = {
-    message: string;
-    /**
-     * The name the person written to reads; never an address.
-     */
-    senderName: string;
-    /**
-     * What the message is about.
-     */
-    topic: 'project' | 'role' | 'other';
-};
-
-/**
  * The sender's talent profile as it was when the proposal was sent.
  */
 export type SenderProfile = {
@@ -5847,56 +5675,6 @@ export type SentBy = {
      * With its country code.
      */
     phone?: string | null;
-};
-
-/**
- * A message the caller sent through a talent profile, with what became of it.
- */
-export type SentTalentEnquiry = {
-    /**
-     * When the person answered it or it closed; null while it waits.
-     */
-    answeredAt?: string | null;
-    /**
-     * When a waiting message closes unanswered; null once it is answered.
-     */
-    closesAt?: string | null;
-    createdAt: string;
-    id: string;
-    message: string;
-    /**
-     * The profile it was sent through; the caller's messages to one person share it.
-     */
-    profileId: string;
-    /**
-     * Where the caller writes to the person; only once the person accepted.
-     */
-    recipientEmail?: string | null;
-    recipientHeadline?: string | null;
-    recipientName: string;
-    /**
-     * The address of the profile's public page; null while the profile is not in the directory.
-     */
-    recipientSlug?: string | null;
-    /**
-     * The name the caller signed it with; null on a message sent before a name was asked for.
-     */
-    senderName?: string | null;
-    /**
-     * A message the person reported reads as declined.
-     */
-    status: 'pending' | 'accepted' | 'declined' | 'closed';
-    topic: 'project' | 'role' | 'other';
-};
-
-/**
- * The messages the caller sent through talent profiles.
- */
-export type SentTalentEnquiryList = {
-    /**
-     * Those that wait for an answer first, then the newest.
-     */
-    items: Array<SentTalentEnquiry>;
 };
 
 /**
@@ -6292,37 +6070,6 @@ export type TalentDecision = {
      */
     message?: string | null;
     reason: 'incomplete' | 'unverifiable' | 'inappropriate' | 'other';
-};
-
-/**
- * A message someone sent through the caller's talent profile.
- */
-export type TalentEnquiry = {
-    /**
-     * When the caller answered it or it closed; null while it waits.
-     */
-    answeredAt?: string | null;
-    /**
-     * When a waiting message closes unanswered; null once it is answered.
-     */
-    closesAt?: string | null;
-    createdAt: string;
-    id: string;
-    message: string;
-    /**
-     * Where the caller writes to the sender; only once the caller accepted.
-     */
-    senderEmail?: string | null;
-    /**
-     * Who wrote it, by the name they gave; null when they gave none and the caller has not accepted.
-     */
-    senderName?: string | null;
-    /**
-     * The organization the sender belonged to when they wrote; null when none.
-     */
-    senderOrganization?: string | null;
-    status: 'pending' | 'accepted' | 'declined' | 'reported' | 'closed';
-    topic: 'project' | 'role' | 'other';
 };
 
 /**
@@ -7812,208 +7559,6 @@ export type UpdateMyContactResponses = {
 };
 
 export type UpdateMyContactResponse = UpdateMyContactResponses[keyof UpdateMyContactResponses];
-
-export type ListAdminIntroductionsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Requests about a solution whose name contains this, ignoring case.
-         */
-        q?: string | null;
-        /**
-         * Only requests in this state.
-         */
-        status?: 'pending' | 'replied' | 'declined';
-        /**
-         * The page, counted from 1.
-         */
-        page?: number;
-        /**
-         * How many items a page holds; the list's own page size when absent.
-         */
-        size?: number;
-    };
-    url: '/api/introduction/admin/introductions';
-};
-
-export type ListAdminIntroductionsErrors = {
-    /**
-     * A parameter is not valid.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-};
-
-export type ListAdminIntroductionsError = ListAdminIntroductionsErrors[keyof ListAdminIntroductionsErrors];
-
-export type ListAdminIntroductionsResponses = {
-    /**
-     * One page of the requests the parameters select.
-     */
-    200: AdminIntroductionList;
-};
-
-export type ListAdminIntroductionsResponse = ListAdminIntroductionsResponses[keyof ListAdminIntroductionsResponses];
-
-export type RequestIntroductionData = {
-    body: RequestIntroduction;
-    path?: never;
-    query?: never;
-    url: '/api/introduction/introductions';
-};
-
-export type RequestIntroductionErrors = {
-    /**
-     * The solution or the message is not valid.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller belongs to no approved organization.
-     */
-    403: Problem;
-    /**
-     * No approved solution has the address.
-     */
-    404: Problem;
-    /**
-     * The solution is the caller's own, or an earlier request about it still waits.
-     */
-    409: Problem;
-    /**
-     * Nobody at the provider can be asked right now.
-     */
-    503: Problem;
-};
-
-export type RequestIntroductionError = RequestIntroductionErrors[keyof RequestIntroductionErrors];
-
-export type RequestIntroductionResponses = {
-    /**
-     * The request was recorded and the provider's owners were told.
-     */
-    204: void;
-};
-
-export type RequestIntroductionResponse = RequestIntroductionResponses[keyof RequestIntroductionResponses];
-
-export type GetReceivedIntroductionsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/introduction/mine/received';
-};
-
-export type GetReceivedIntroductionsErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller belongs to no organization.
-     */
-    403: Problem;
-};
-
-export type GetReceivedIntroductionsError = GetReceivedIntroductionsErrors[keyof GetReceivedIntroductionsErrors];
-
-export type GetReceivedIntroductionsResponses = {
-    /**
-     * The requests, newest first.
-     */
-    200: ReceivedIntroductions;
-};
-
-export type GetReceivedIntroductionsResponse = GetReceivedIntroductionsResponses[keyof GetReceivedIntroductionsResponses];
-
-export type DeclineIntroductionData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/introduction/mine/received/{id}/decline';
-};
-
-export type DeclineIntroductionErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an owner of the organization asked.
-     */
-    403: Problem;
-    /**
-     * The organization asked has no such request.
-     */
-    404: Problem;
-    /**
-     * The request was answered already.
-     */
-    409: Problem;
-};
-
-export type DeclineIntroductionError = DeclineIntroductionErrors[keyof DeclineIntroductionErrors];
-
-export type DeclineIntroductionResponses = {
-    /**
-     * The request was declined and the sender was told.
-     */
-    204: void;
-};
-
-export type DeclineIntroductionResponse = DeclineIntroductionResponses[keyof DeclineIntroductionResponses];
-
-export type ReplyToIntroductionData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/introduction/mine/received/{id}/reply';
-};
-
-export type ReplyToIntroductionErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an owner of the organization asked.
-     */
-    403: Problem;
-    /**
-     * The organization asked has no such request.
-     */
-    404: Problem;
-    /**
-     * The request was answered already.
-     */
-    409: Problem;
-};
-
-export type ReplyToIntroductionError = ReplyToIntroductionErrors[keyof ReplyToIntroductionErrors];
-
-export type ReplyToIntroductionResponses = {
-    /**
-     * The request was replied to and both sides were told.
-     */
-    204: void;
-};
-
-export type ReplyToIntroductionResponse = ReplyToIntroductionResponses[keyof ReplyToIntroductionResponses];
 
 export type ListMatchingFeedbackData = {
     body?: never;
@@ -15284,48 +14829,6 @@ export type UnfeatureTalentResponses = {
 
 export type UnfeatureTalentResponse = UnfeatureTalentResponses[keyof UnfeatureTalentResponses];
 
-export type ListReportedTalentEnquiriesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * The page, counted from 1.
-         */
-        page?: number;
-        /**
-         * How many items a page holds; the list's own page size when absent.
-         */
-        size?: number;
-    };
-    url: '/api/talent/admin/reported-enquiries';
-};
-
-export type ListReportedTalentEnquiriesErrors = {
-    /**
-     * A parameter is not valid.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-};
-
-export type ListReportedTalentEnquiriesError = ListReportedTalentEnquiriesErrors[keyof ListReportedTalentEnquiriesErrors];
-
-export type ListReportedTalentEnquiriesResponses = {
-    /**
-     * One page of the reported messages.
-     */
-    200: AdminTalentEnquiryList;
-};
-
-export type ListReportedTalentEnquiriesResponse = ListReportedTalentEnquiriesResponses[keyof ListReportedTalentEnquiriesResponses];
-
 export type DeleteMyTalentProfileData = {
     body?: never;
     path?: never;
@@ -15373,7 +14876,7 @@ export type GetMyTalentProfileError = GetMyTalentProfileErrors[keyof GetMyTalent
 
 export type GetMyTalentProfileResponses = {
     /**
-     * The profile, or none yet, and the messages.
+     * The profile, or none yet.
      */
     200: MyTalent;
 };
@@ -15412,136 +14915,6 @@ export type SaveMyTalentProfileResponses = {
 };
 
 export type SaveMyTalentProfileResponse = SaveMyTalentProfileResponses[keyof SaveMyTalentProfileResponses];
-
-export type AcceptTalentEnquiryData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/talent/mine/enquiries/{id}/accept';
-};
-
-export type AcceptTalentEnquiryErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller has no profile, or no message to it has this identifier.
-     */
-    404: Problem;
-    /**
-     * The message was answered already, or it closed.
-     */
-    409: Problem;
-};
-
-export type AcceptTalentEnquiryError = AcceptTalentEnquiryErrors[keyof AcceptTalentEnquiryErrors];
-
-export type AcceptTalentEnquiryResponses = {
-    /**
-     * Accepted; both sides were emailed.
-     */
-    204: void;
-};
-
-export type AcceptTalentEnquiryResponse = AcceptTalentEnquiryResponses[keyof AcceptTalentEnquiryResponses];
-
-export type DeclineTalentEnquiryData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/talent/mine/enquiries/{id}/decline';
-};
-
-export type DeclineTalentEnquiryErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller has no profile, or no message to it has this identifier.
-     */
-    404: Problem;
-    /**
-     * The message was answered already, or it closed.
-     */
-    409: Problem;
-};
-
-export type DeclineTalentEnquiryError = DeclineTalentEnquiryErrors[keyof DeclineTalentEnquiryErrors];
-
-export type DeclineTalentEnquiryResponses = {
-    /**
-     * Declined; the sender was told.
-     */
-    204: void;
-};
-
-export type DeclineTalentEnquiryResponse = DeclineTalentEnquiryResponses[keyof DeclineTalentEnquiryResponses];
-
-export type ReportTalentEnquiryData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/talent/mine/enquiries/{id}/report';
-};
-
-export type ReportTalentEnquiryErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller has no profile, or no message to it has this identifier.
-     */
-    404: Problem;
-    /**
-     * The message was answered already, or it closed.
-     */
-    409: Problem;
-};
-
-export type ReportTalentEnquiryError = ReportTalentEnquiryErrors[keyof ReportTalentEnquiryErrors];
-
-export type ReportTalentEnquiryResponses = {
-    /**
-     * Reported; the sender was told it was declined.
-     */
-    204: void;
-};
-
-export type ReportTalentEnquiryResponse = ReportTalentEnquiryResponses[keyof ReportTalentEnquiryResponses];
-
-export type ListSentTalentEnquiriesData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/talent/mine/sent';
-};
-
-export type ListSentTalentEnquiriesErrors = {
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-};
-
-export type ListSentTalentEnquiriesError = ListSentTalentEnquiriesErrors[keyof ListSentTalentEnquiriesErrors];
-
-export type ListSentTalentEnquiriesResponses = {
-    /**
-     * The messages; none when the caller sent none.
-     */
-    200: SentTalentEnquiryList;
-};
-
-export type ListSentTalentEnquiriesResponse = ListSentTalentEnquiriesResponses[keyof ListSentTalentEnquiriesResponses];
 
 export type SubmitMyTalentProfileData = {
     body?: never;
@@ -15664,49 +15037,6 @@ export type GetTalentResponses = {
 };
 
 export type GetTalentResponse = GetTalentResponses[keyof GetTalentResponses];
-
-export type SendTalentEnquiryData = {
-    body: SendTalentEnquiry;
-    path: {
-        slug: string;
-    };
-    query?: never;
-    url: '/api/talent/profiles/{slug}/enquiries';
-};
-
-export type SendTalentEnquiryErrors = {
-    /**
-     * The message is not valid.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * No approved, listed profile has this address.
-     */
-    404: Problem;
-    /**
-     * The profile is the caller's own, or the caller's earlier message to it still waits.
-     */
-    409: Problem;
-    /**
-     * The caller started ten conversations within the last day.
-     */
-    429: Problem;
-};
-
-export type SendTalentEnquiryError = SendTalentEnquiryErrors[keyof SendTalentEnquiryErrors];
-
-export type SendTalentEnquiryResponses = {
-    /**
-     * The message waits for the person's answer; they were told by email, without the caller's address.
-     */
-    204: void;
-};
-
-export type SendTalentEnquiryResponse = SendTalentEnquiryResponses[keyof SendTalentEnquiryResponses];
 
 export type ListUseCaseOrganizationsData = {
     body?: never;

@@ -10,17 +10,17 @@ import {
   FileCheckIcon,
   FilePenIcon,
   GavelIcon,
-  HandshakeIcon,
   KeyRoundIcon,
   MailIcon,
   MegaphoneIcon,
   MergeIcon,
+  MessageSquareCheckIcon,
+  MessageSquareDotIcon,
   MessageSquareIcon,
+  MessageSquareXIcon,
   TimerIcon,
   TimerOffIcon,
   UserPlusIcon,
-  UsersIcon,
-  UserXIcon,
 } from "lucide-react";
 
 import type { EmailKind } from "./email-search";
@@ -40,9 +40,6 @@ const kindIcons: Record<EmailKind, React.ComponentType<React.SVGProps<SVGSVGElem
   application_received: FileCheckIcon,
   reviewer_invitation: GavelIcon,
   application_outcome: ClipboardCheckIcon,
-  introduction_request: HandshakeIcon,
-  introduction_made: UsersIcon,
-  introduction_declined: UserXIcon,
   solution_approved: BadgeCheckIcon,
   solution_sent_back: FilePenIcon,
   solution_rejected: BadgeXIcon,
@@ -55,11 +52,12 @@ const kindIcons: Record<EmailKind, React.ComponentType<React.SVGProps<SVGSVGElem
   talent_changes_requested: CircleXIcon,
   talent_removed: BadgeXIcon,
   talent_restored: BadgeCheckIcon,
-  talent_enquiry: MessageSquareIcon,
-  talent_enquiry_reminder: TimerIcon,
-  talent_introduction: UsersIcon,
-  talent_enquiry_declined: UserXIcon,
-  talent_enquiry_closed: TimerOffIcon,
+  message_request: MessageSquareIcon,
+  message_request_reminder: TimerIcon,
+  message_request_accepted: MessageSquareCheckIcon,
+  message_request_declined: MessageSquareXIcon,
+  message_request_closed: TimerOffIcon,
+  message_unread: MessageSquareDotIcon,
 };
 
 function isEmailKind(kind: string): kind is EmailKind {
@@ -70,13 +68,11 @@ function isEmailKind(kind: string): kind is EmailKind {
 const describedKinds = [
   "organization_merged",
   "application_outcome",
-  "introduction_request",
-  "introduction_declined",
   "solution_rejected",
-  "talent_enquiry",
-  "talent_introduction",
-  "talent_enquiry_declined",
-  "talent_enquiry_closed",
+  "message_request",
+  "message_request_declined",
+  "message_request_closed",
+  "message_unread",
 ] as const satisfies readonly EmailKind[];
 
 type DescribedKind = (typeof describedKinds)[number];

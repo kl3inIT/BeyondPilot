@@ -11,6 +11,7 @@ import { answerEmail } from "./stub-email.mjs";
 import { answerJudging } from "./stub-judging.mjs";
 import { answerMatching, serveMatchingDeck, serveMatchingLive } from "./stub-matching.mjs";
 import { answerMcp } from "./stub-mcp.mjs";
+import { serveMessaging } from "./stub-messaging.mjs";
 import { answerReview } from "./stub-reviews.mjs";
 import { answerSearch, answerSearchAdmin } from "./stub-search.mjs";
 import { answerWizards } from "./stub-wizards.mjs";
@@ -403,6 +404,10 @@ createServer((request, response) => {
   const account = session ? accounts[session] : undefined;
   // The one answer that is not a record: a stream that stays open, and what a test does to it.
   if (serveMatchingLive(request, response, url, account)) {
+    return;
+  }
+  // Messages: what the account menu of every page counts, the conversations, and their stream.
+  if (serveMessaging(request, response, url, session, account)) {
     return;
   }
   // And one that is a file: the deck of a matched solution, which the deck viewer reads in the browser.

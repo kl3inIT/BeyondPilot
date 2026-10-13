@@ -2,6 +2,7 @@ import { CheckIcon, EyeOffIcon } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
+import { TextButton } from "@/components/actions/text-button";
 import { Link } from "@/i18n/navigation";
 import type { Program } from "@/lib/api/generated";
 import { adminProgramRoute, programApplyRoute } from "@/lib/site";
@@ -117,18 +118,32 @@ export function Timeline({ steps, now }: { steps: Step[]; now: number }) {
   );
 }
 
+/** The quiet way to write to GenAI Fund about a program: it leads to Messages. */
+export async function AskGenAiFund({ href }: { href: string }) {
+  const t = await getTranslations("Program.page");
+  return (
+    <TextButton href={href} className="self-start">
+      {t("ask")}
+    </TextButton>
+  );
+}
+
 /**
- * The card beside a program's page while it takes applications: the deadline, Apply, and the next
- * steps. The day count is the browser's; the server states only the deadline.
+ * The card beside a program's page while it takes applications: the deadline, Apply, the next
+ * steps, and the way to ask GenAI Fund about the program. The day count is the browser's; the
+ * server states only the deadline.
  */
 export async function ApplyCard({
   program,
   steps,
   now,
+  askHref,
 }: {
   program: Program;
   steps: Step[];
   now: number;
+  /** Where "Ask GenAI Fund" leads; absent on a draft and for an operator, who is the one asked. */
+  askHref?: string;
 }) {
   const [t, locale] = await Promise.all([getTranslations("Program.page"), getLocale()]);
   const format = programFormatter(locale);
@@ -173,6 +188,7 @@ export async function ApplyCard({
           ))}
         </dl>
       )}
+      {askHref && <AskGenAiFund href={askHref} />}
     </aside>
   );
 }

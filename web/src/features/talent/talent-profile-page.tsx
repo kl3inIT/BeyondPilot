@@ -21,12 +21,12 @@ import { TalentPhoto } from "./talent-photo";
 
 type TalentProfilePageProps = {
   profile: PublicTalent;
-  /** Where a visitor signs in to write to the person; absent for someone signed in, who writes here. */
-  signInHref?: string;
+  /** Where Contact leads: Messages, or for a visitor the sign-in screen that returns there. */
+  contactHref: string;
+  /** True when nobody is signed in: Contact then says that signing in comes first. */
+  visitor: boolean;
   /** True when the profile is the caller's own: they edit it instead of writing to it. */
   own: boolean;
-  /** The signed-in caller's name, to sign a message with; empty when the account has none. */
-  senderName?: string;
 };
 
 /** The host of an address, which is what a reader recognises of it: "linkedin.com". */
@@ -40,7 +40,7 @@ function hostOf(address: string) {
  * industries, and beside it the one way to write to them with the work they take on. On a phone
  * that card comes first, under the head.
  */
-function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfilePageProps) {
+function TalentProfilePage({ profile, contactHref, visitor, own }: TalentProfilePageProps) {
   const t = useTranslations("Talent.profile");
   const d = useTranslations("Talent.directory");
   const role = useVocabulary("talentRole");
@@ -115,12 +115,10 @@ function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfi
       <div className="flex flex-col gap-8 md:flex-row-reverse md:items-start xl:gap-12">
         <div className="md:w-75 md:shrink-0 xl:w-95">
           <TalentContact
-            slug={profile.slug}
             name={profile.name}
-            waitingSince={profile.waitingEnquirySentAt}
-            signInHref={signInHref}
+            href={contactHref}
+            visitor={visitor}
             own={own}
-            senderName={senderName}
             intro={
               profile.engagement.length > 0 && (
                 <p className="text-sm text-muted-foreground">
@@ -158,7 +156,7 @@ function TalentProfilePage({ profile, signInHref, own, senderName }: TalentProfi
                 </ContactFact>
               )}
             </dl>
-            <p className="text-xs text-muted-foreground">{t("note", { name: profile.name })}</p>
+            <p className="text-xs text-muted-foreground">{t("note")}</p>
           </TalentContact>
         </div>
 

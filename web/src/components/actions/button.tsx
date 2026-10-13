@@ -27,7 +27,7 @@ const buttonSizes = cva("", {
 type ButtonLook = {
   tone?: ActionTone;
   prominence?: ActionProminence;
-  /** `xl` is for the one action a page leads to, such as asking for an introduction; `2xl` is the landing's leading action. */
+  /** `xl` is for the one action a page leads to, such as contacting a provider; `2xl` is the landing's leading action. */
   size?: ActionSize | "xl" | "2xl";
 };
 

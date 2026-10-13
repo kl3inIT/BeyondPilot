@@ -26,6 +26,15 @@ describe("auditResourceRoute", () => {
     ).toBe("/admin/email/templates/sign_in_code");
   });
 
+  it("leaves the wording of an email that is no longer sent as text", () => {
+    expect(
+      auditResourceRoute({
+        action: "email.template_update",
+        resource: { type: "email_template", id: "talent_enquiry" },
+      }),
+    ).toBeNull();
+  });
+
   it.each([
     ["email_settings", "/admin/email/settings"],
     ["search_settings", "/admin/ai/search-index"],
@@ -40,6 +49,7 @@ describe("auditResourceRoute", () => {
     "account",
     "introduction",
     "talent_enquiry",
+    "conversation",
     "customer_deployment",
     "email_address",
     "ai_provider",

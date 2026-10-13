@@ -58,10 +58,20 @@ export async function readProspect(target: MessagingTarget): Promise<ProspectRea
   }
 }
 
-/** What waits for the caller in Messages, for the account menu. Server only. */
+/**
+ * What waits for the caller in Messages, for the account menu; a failure counts as nothing, since
+ * the header is on every page. Server only.
+ */
 export async function readUnread(): Promise<Unread> {
-  const { data } = await getUnreadMessages(await sessionRequest());
-  return data;
+  try {
+    const { data } = await getUnreadMessages({
+      ...(await sessionRequest()),
+      signal: AbortSignal.timeout(3000),
+    });
+    return data;
+  } catch {
+    return { requests: 0, unread: 0 };
+  }
 }
 
 /** One page of the first messages people reported, for the operator behind this request. Server only. */

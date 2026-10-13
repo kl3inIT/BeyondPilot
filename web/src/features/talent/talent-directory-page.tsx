@@ -123,7 +123,7 @@ function TalentDirectoryPage({ talent, search, hasProfile, others }: TalentDirec
   );
 }
 
-/** What happens from a profile to an enquiry, while the directory has nobody to show yet. */
+/** What happens from a profile to a conversation, while the directory has nobody to show yet. */
 function HowItWorks() {
   const t = useTranslations("Talent.directory.steps");
   const steps = ["create", "review", "reach"] as const;

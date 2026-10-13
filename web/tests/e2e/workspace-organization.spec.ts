@@ -427,7 +427,6 @@ test.describe("workspace organization", () => {
       "Profile",
       "Members2",
       "Solutions4",
-      "Introductions",
       "Use cases0",
     ]);
     await expect(tabs.getByRole("link", { name: "Profile" })).toHaveAttribute(

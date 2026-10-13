@@ -406,68 +406,7 @@ function page(url, records, statusOf, textOf, summaryOf, countryOf) {
   };
 }
 
-/** The requests for an introduction, as the operators' list reads them: no address anywhere. */
-const introductions = [
-  {
-    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c31",
-    solutionName: "Policy Chat",
-    providerOrganization: "Pocket Policy",
-    senderOrganization: "Lumen Health",
-    senderName: "Hà Lê",
-    message: "We want a renewals assistant for our clinics. Can you run it in Vietnamese?",
-    status: "pending",
-    overdue: true,
-    createdAt: ago(100),
-    answeredAt: null,
-  },
-  {
-    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c32",
-    solutionName: "Claims Vision",
-    providerOrganization: "Pocket Policy",
-    senderOrganization: "Mekong Life",
-    senderName: null,
-    message: "Can it read our scanned claim forms?",
-    status: "pending",
-    overdue: false,
-    createdAt: ago(5),
-    answeredAt: null,
-  },
-  {
-    id: "e19ebcda-8b86-4cd9-9cd3-8f1b4b4d5c33",
-    solutionName: "Agent Coach",
-    providerOrganization: "Pocket Policy",
-    senderOrganization: "Bảo An",
-    senderName: "Quang Vũ",
-    message: "Do you coach agents in Vietnamese?",
-    status: "replied",
-    overdue: false,
-    createdAt: day,
-    answeredAt: day,
-  },
-];
-
-/** The messages people reported through their talent profiles. */
-const reportedEnquiries = [
-  {
-    id: "7c1d7f0e-2b9a-4f3e-9d52-6a1f0b3c2e91",
-    profileName: "Siti Rahma",
-    senderName: null,
-    senderEmail: "growth@spam.example",
-    topic: "other",
-    message: "Buy ten thousand followers for your profile.",
-    createdAt: "2026-10-03T03:00:00Z",
-    reportedAt: "2026-10-04T03:00:00Z",
-  },
-];
-
 const lists = {
-  "/api/introduction/admin/introductions": {
-    records: introductions,
-    idOf: (record) => record.id,
-    statusOf: (record) => record.status,
-    textOf: (record) => record.solutionName,
-    summaryOf: (record) => record,
-  },
   "/api/organization/admin/organizations": {
     records: organizations,
     idOf: (record) => record.organization.id,
@@ -527,13 +466,6 @@ const lists = {
         (item) => item.status === "in_review",
       ).length,
     }),
-  },
-  "/api/talent/admin/reported-enquiries": {
-    records: reportedEnquiries,
-    idOf: (record) => record.id,
-    statusOf: () => "reported",
-    textOf: (record) => record.message,
-    summaryOf: (record) => record,
   },
   "/api/talent/admin/profiles": {
     records: talent,
@@ -650,25 +582,23 @@ export function answerReview(url, account) {
     const found = page(url, records, statusOf, textOf, summaryOf, countryOf);
     return [
       200,
-      path === "/api/introduction/admin/introductions"
-        ? { ...found, overdue: records.filter((record) => record.overdue).length }
-        : path === "/api/solution/admin/solutions"
-          ? {
-              ...found,
-              organizations: [
-                ...new Map(
-                  records.map((record) => [
-                    record.organizationId,
-                    { id: record.organizationId, name: record.organizationName },
-                  ]),
-                ).values(),
-              ].sort((left, right) => left.name.localeCompare(right.name)),
-              awaitingReview: records.filter((record) => record.status === "in_review").length,
-              deploymentsAwaitingReview: records
-                .flatMap((record) => record.customerDeployments)
-                .filter((item) => item.status === "in_review").length,
-            }
-          : found,
+      path === "/api/solution/admin/solutions"
+        ? {
+            ...found,
+            organizations: [
+              ...new Map(
+                records.map((record) => [
+                  record.organizationId,
+                  { id: record.organizationId, name: record.organizationName },
+                ]),
+              ).values(),
+            ].sort((left, right) => left.name.localeCompare(right.name)),
+            awaitingReview: records.filter((record) => record.status === "in_review").length,
+            deploymentsAwaitingReview: records
+              .flatMap((record) => record.customerDeployments)
+              .filter((item) => item.status === "in_review").length,
+          }
+        : found,
     ];
   }
   const record = records.find(

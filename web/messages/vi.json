@@ -249,9 +249,9 @@
         "option2Title": "Shieldbase",
         "option2Why": "Hệ điều hành AI cho doanh nghiệp, có sẵn bảo mật và quản trị dữ liệu.",
         "next": "Bước tiếp theo",
-        "introduce": "Yêu cầu giới thiệu",
+        "message": "Nhắn cho nhà cung cấp",
         "shortlist": "Lưu giải pháp phù hợp",
-        "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là yêu cầu giới thiệu hoặc lưu các giải pháp được ghép với một bài toán."
+        "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là nhắn cho nhà cung cấp hoặc lưu các giải pháp được ghép với một bài toán."
       }
     },
     "challenge": {
@@ -353,15 +353,6 @@
     "IDENTITY_APP_REQUEST_NOT_FOUND": "Yêu cầu kết nối này đã kết thúc. Quay lại app AI của bạn và kết nối lần nữa.",
     "IDENTITY_OWN_ACCOUNT": "Bạn không thể tự khóa tài khoản hay tự thu quyền của mình.",
     "IDENTITY_OPERATOR_CONFIGURED": "Operator này được khai trong cấu hình máy chủ nên không thu quyền ở đây được.",
-    "INTRODUCTION_SOLUTION_NOT_FOUND": "Giải pháp này không còn được niêm yết.",
-    "INTRODUCTION_NEEDS_ORGANIZATION": "Hãy tạo hoặc tham gia một tổ chức trước khi nhờ giới thiệu.",
-    "INTRODUCTION_ORGANIZATION_NOT_APPROVED": "Tổ chức của bạn chưa được duyệt nên chưa thể nhờ giới thiệu.",
-    "INTRODUCTION_OWN_SOLUTION": "Giải pháp này thuộc tổ chức của chính bạn.",
-    "INTRODUCTION_ALREADY_PENDING": "Bạn đã nhờ giới thiệu tới giải pháp này. Hãy chờ câu trả lời.",
-    "INTRODUCTION_UNREACHABLE": "Hiện chưa liên lạc được ai ở tổ chức này. Hãy thử lại sau.",
-    "INTRODUCTION_REQUEST_NOT_FOUND": "Yêu cầu này không còn tồn tại.",
-    "INTRODUCTION_OWNERS_ONLY": "Chỉ chủ sở hữu của tổ chức mới trả lời được yêu cầu giới thiệu.",
-    "INTRODUCTION_NOT_PENDING": "Yêu cầu này đã được trả lời.",
     "MATCHING_USE_CASE_NOT_FOUND": "Use case này không còn tồn tại.",
     "MATCHING_CANDIDATE_NOT_FOUND": "Giải pháp này không còn trong danh sách. Hãy tải lại trang.",
     "MATCHING_SOLUTION_NOT_FOUND": "Giải pháp này không còn được duyệt nên không thể thêm.",
@@ -540,11 +531,6 @@
     "TALENT_NOT_TAKEN_DOWN": "Hồ sơ này không bị gỡ xuống.",
     "TALENT_PHOTO_NOT_USABLE": "Không dùng được ảnh này cho hồ sơ của bạn. Hãy tải lên lại.",
     "TALENT_CHANGED_MEANWHILE": "Hồ sơ vừa được sửa ở tab khác. Hãy tải lại trang rồi thử lại.",
-    "TALENT_OWN_PROFILE": "Đây là hồ sơ của chính bạn.",
-    "TALENT_ENQUIRY_PENDING": "Lời nhắn của bạn tới người này đang chờ họ trả lời.",
-    "TALENT_ENQUIRY_LIMIT": "Hôm nay bạn đã bắt đầu mười cuộc trao đổi. Hãy viết lại vào ngày mai.",
-    "TALENT_ENQUIRY_NOT_FOUND": "Lời nhắn này không còn tồn tại.",
-    "TALENT_ENQUIRY_NOT_PENDING": "Lời nhắn này đã được trả lời hoặc đã đóng.",
     "USECASE_NOT_FOUND": "Use case này không còn tồn tại.",
     "USECASE_ORGANIZATION_NOT_ELIGIBLE": "Tổ chức này không phải doanh nghiệp đã được duyệt.",
     "USECASE_CLOSES_IN_THE_PAST": "Chọn ngày đóng sau hôm nay.",
@@ -737,7 +723,7 @@
       "solutions": "Giải pháp AI",
       "offers": "Ưu đãi",
       "talent": "Nhân lực AI",
-      "introductions": "Giới thiệu",
+      "reportedMessages": "Tin bị báo cáo",
       "review": "Xét duyệt",
       "system": "Hệ thống",
       "useCases": "Use case",
@@ -1971,21 +1957,7 @@
         "title": "Không có gì đang chờ duyệt",
         "home": "Về trang chủ Admin"
       },
-      "waitingSince": "Gửi {time}",
-      "reported": {
-        "link": "Lời nhắn bị báo cáo",
-        "metaTitle": "Lời nhắn bị báo cáo · BeyondPilot",
-        "title": "Lời nhắn bị báo cáo",
-        "back": "Tất cả nhân lực",
-        "from": "Từ {sender}",
-        "to": "Gửi {name}",
-        "sent": "Gửi {date}",
-        "reportedAt": "Báo cáo {date}",
-        "empty": {
-          "title": "Chưa có lời nhắn nào bị báo cáo"
-        },
-        "count": "{count} lời nhắn"
-      }
+      "waitingSince": "Gửi {time}"
     },
     "home": {
       "lead": "{count, plural, =0 {Không có gì đang chờ quyết định.} other {# hồ sơ đang chờ quyết định.}}",
@@ -1995,37 +1967,6 @@
       "deployments": "Triển khai khách hàng chờ duyệt",
       "review": "Mở hàng chờ, chờ lâu nhất ở trên",
       "none": "Không có gì đang chờ"
-    },
-    "introductions": {
-      "metaTitle": "Giới thiệu · BeyondPilot",
-      "title": "Giới thiệu",
-      "overdueNotice": "{count} yêu cầu đã chờ câu trả lời quá 3 ngày.",
-      "overdue": "Chờ quá 3 ngày",
-      "search": "Tìm theo giải pháp",
-      "clear": "Xóa bộ lọc",
-      "filter": {
-        "label": "Lọc theo trạng thái",
-        "all": "Tất cả"
-      },
-      "status": {
-        "pending": "Đang chờ",
-        "replied": "Đã trả lời",
-        "declined": "Đã từ chối"
-      },
-      "route": "{sender} → {provider}",
-      "about": "Về {solution}",
-      "sender": "{name} · {organization}",
-      "senderUnnamed": "Một người ở {organization}",
-      "waitingSince": "Chờ từ {time}",
-      "answered": "Đã trả lời {date}",
-      "count": "{count} yêu cầu",
-      "empty": {
-        "title": "Chưa có yêu cầu"
-      },
-      "noMatch": {
-        "title": "Không có yêu cầu nào khớp",
-        "clear": "Xóa bộ lọc"
-      }
     },
     "useCases": {
       "metaTitle": "Use case · BeyondPilot",
@@ -3053,10 +2994,10 @@
         "sign_in": "Đăng nhập",
         "organizations": "Tổ chức",
         "applications": "Chương trình và đơn",
-        "introductions": "Giới thiệu",
         "solutions": "Giải pháp",
         "use_cases": "Use case",
-        "talent": "Nhân lực"
+        "talent": "Nhân lực",
+        "messages": "Tin nhắn"
       },
       "kinds": {
         "sign_in_code": {
@@ -3100,17 +3041,6 @@
           "name": "Kết quả đơn",
           "description": "Kết quả của đơn, do operator viết cho mỗi lần công bố."
         },
-        "introduction_request": {
-          "name": "Yêu cầu giới thiệu",
-          "description": "Báo bên cung cấp giải pháp rằng có người muốn gặp."
-        },
-        "introduction_made": {
-          "name": "Đã giới thiệu"
-        },
-        "introduction_declined": {
-          "name": "Từ chối giới thiệu",
-          "description": "Báo người yêu cầu rằng bên cung cấp đã từ chối."
-        },
         "solution_approved": {
           "name": "Giải pháp được duyệt"
         },
@@ -3148,24 +3078,27 @@
         "talent_restored": {
           "name": "Hồ sơ nhân lực được khôi phục"
         },
-        "talent_enquiry": {
-          "name": "Lời nhắn tới nhân lực",
-          "description": "Báo một người rằng có ai đó viết cho họ qua hồ sơ."
+        "message_request": {
+          "name": "Tin đầu tiên",
+          "description": "Báo cho bên nhận rằng có người viết cho họ, không kèm địa chỉ của người gửi."
         },
-        "talent_enquiry_reminder": {
-          "name": "Nhắc lời nhắn"
+        "message_request_reminder": {
+          "name": "Nhắc tin đầu tiên"
         },
-        "talent_introduction": {
-          "name": "Giới thiệu nhân lực",
-          "description": "Chia sẻ địa chỉ hai bên khi lời nhắn được chấp nhận."
+        "message_request_accepted": {
+          "name": "Tin đầu tiên được chấp nhận"
         },
-        "talent_enquiry_declined": {
-          "name": "Lời nhắn bị từ chối",
-          "description": "Báo người gửi rằng người nhận không tiếp tục."
+        "message_request_declined": {
+          "name": "Tin đầu tiên bị từ chối",
+          "description": "Báo cho người gửi rằng tin sẽ không được tiếp tục, dù bị từ chối hay bị báo cáo."
         },
-        "talent_enquiry_closed": {
-          "name": "Lời nhắn đã đóng",
-          "description": "Báo người gửi rằng lời nhắn đã đóng vì không có trả lời."
+        "message_request_closed": {
+          "name": "Tin đầu tiên đã đóng",
+          "description": "Báo cho người gửi rằng tin đã đóng sau 14 ngày không có trả lời."
+        },
+        "message_unread": {
+          "name": "Tin chưa đọc",
+          "description": "Báo cho người đang vắng mặt rằng có tin đang chờ, một lần cho tới khi họ đọc."
         }
       },
       "status": {
@@ -3264,9 +3197,6 @@
           "claim": "Hiện khi yêu cầu là yêu cầu nhận tổ chức",
           "resubmitted": "Hiện khi đơn đã được sửa và nộp lại",
           "primary": "Hiện khi người nhận là đầu mối chính của đề xuất",
-          "aboutProject": "Hiện khi lời nhắn nói về một dự án",
-          "aboutRole": "Hiện khi lời nhắn nói về một vị trí",
-          "aboutOther": "Hiện khi lời nhắn nói về việc khác",
           "other": "Chỉ hiện trong một số trường hợp của email này"
         },
         "previewTitle": "Xem trước {name}",
@@ -3907,11 +3837,6 @@
       "in_production": "Đang vận hành",
       "internal_tool": "Công cụ nội bộ"
     },
-    "enquiryTopic": {
-      "project": "Về một dự án",
-      "role": "Về một vị trí công việc",
-      "other": "Về việc khác"
-    },
     "technology": {
       "recommendation": "Hệ thống gợi ý / Cá nhân hóa",
       "predictive_analytics": "Phân tích dự đoán / Dự báo",
@@ -3934,7 +3859,6 @@
       "profile": "Hồ sơ",
       "members": "Thành viên",
       "solutions": "Giải pháp",
-      "introductions": "Giới thiệu",
       "useCases": "Use case"
     },
     "status": {
@@ -4732,6 +4656,8 @@
       "unlisted": "Giải pháp này không có trong danh mục.",
       "contact": {
         "title": "Làm việc với {name}",
+        "lead": "Tin đầu tiên của bạn nằm chờ cho tới khi họ chấp nhận, và email của bạn không bao giờ được hiển thị.",
+        "message": "Liên hệ",
         "website": "Mở website",
         "demo": "Xem demo",
         "deck": "Tải tài liệu giới thiệu",
@@ -5117,55 +5043,11 @@
       "limitReached": "Đã đạt giới hạn {max} triển khai khách hàng."
     }
   },
-  "Introduction": {
-    "errors": {
-      "REQUEST_INVALID": "Hãy kiểm tra lời nhắn và thử lại."
-    },
-    "received": {
-      "metaTitle": "Giới thiệu · BeyondPilot",
-      "title": "Giới thiệu",
-      "waiting": "{count} đang chờ",
-      "sender": "{name} · {organization}",
-      "senderUnnamed": "Một người ở {organization}",
-      "about": "Về {solution}",
-      "sent": "Gửi {date}",
-      "answered": "Đã trả lời {date}",
-      "introduced": "Đã giới thiệu. Hãy viết cho họ qua {email}.",
-      "ownersAnswer": "Chỉ chủ sở hữu của tổ chức mới trả lời được yêu cầu.",
-      "status": {
-        "pending": "Đang chờ",
-        "replied": "Đã trả lời",
-        "declined": "Đã từ chối"
-      },
-      "empty": {
-        "title": "Chưa có yêu cầu giới thiệu",
-        "description": "Yêu cầu sẽ hiện ở đây khi có người muốn được giới thiệu với một giải pháp của bạn."
-      },
-      "actions": {
-        "reply": "Trả lời",
-        "decline": "Từ chối",
-        "confirmDecline": {
-          "title": "Từ chối yêu cầu về {name}?",
-          "lead": "Người gửi sẽ được báo rằng bạn không tiếp tục, và không có địa chỉ nào được chia sẻ.",
-          "confirm": "Từ chối",
-          "cancel": "Giữ lại"
-        },
-        "replyHint": "Khi bạn trả lời, cả hai bên sẽ nhận email có địa chỉ của nhau."
-      },
-      "done": {
-        "reply": "Đã giới thiệu. Cả hai bên đã nhận email có địa chỉ của nhau.",
-        "decline": "Đã từ chối yêu cầu."
-      }
-    }
-  },
   "Talent": {
     "done": {
       "saved": "Đã lưu hồ sơ.",
       "submitted": "Đã gửi GenAI Fund duyệt.",
       "approved": "Đã duyệt {name}.",
-      "accepted": "Đã chấp nhận. Hai bên đã có email của nhau.",
-      "declined": "Đã từ chối. Người gửi đã được báo.",
-      "reported": "Đã báo cho GenAI Fund. Người gửi được báo là lời nhắn bị từ chối.",
       "sentBack": "Đã yêu cầu {name} sửa hồ sơ.",
       "takenDown": "Đã gỡ {name} xuống.",
       "restored": "Đã khôi phục {name}.",
@@ -5184,7 +5066,7 @@
       "allSkills": "Xem cả {count} kỹ năng",
       "strip": {
         "title": "Bạn triển khai AI cho doanh nghiệp?",
-        "body": "Lời nhắn đến với bạn mà không để lộ địa chỉ email của bạn."
+        "body": "Tin nhắn đến với bạn mà không để lộ địa chỉ email của bạn."
       },
       "empty": {
         "title": "Hồ sơ nhân lực sẽ mở khi ra mắt"
@@ -5209,7 +5091,7 @@
         },
         "reach": {
           "title": "3. Doanh nghiệp liên hệ bạn tại đây",
-          "body": "Yêu cầu liên hệ đi qua BeyondPilot. Email của bạn chỉ được chia sẻ khi bạn chấp nhận."
+          "body": "Họ viết cho bạn trong Tin nhắn. Tin đầu tiên nằm chờ cho tới khi bạn chấp nhận, và email của bạn không bao giờ được hiển thị."
         }
       },
       "others": "Các nhân lực AI khác bạn có thể xem"
@@ -5267,7 +5149,7 @@
         "languages": "Ngôn ngữ"
       },
       "notListed": "Chưa ghi",
-      "note": "Hai bên chỉ thấy email của nhau nếu {name} chấp nhận.",
+      "note": "Tin đầu tiên nằm chờ cho tới khi họ chấp nhận, và email của bạn không bao giờ được hiển thị.",
       "photoAlt": "Ảnh của {name}",
       "stats": {
         "projects": "dự án trên hồ sơ",
@@ -5282,35 +5164,12 @@
         "industries": "Ngành"
       }
     },
-    "enquiry": {
+    "contact": {
       "title": "Làm việc với {name}",
       "open": "Liên hệ {name}",
       "openShort": "Liên hệ",
-      "dialogTitle": "Liên hệ {name}",
-      "dialogLead": "{name} thấy lời nhắn, tên của bạn và tổ chức của bạn.",
-      "topic": "Bạn muốn trao đổi về",
-      "topics": {
-        "project": "Một dự án",
-        "role": "Một vị trí công việc",
-        "other": "Việc khác"
-      },
-      "message": "Lời nhắn",
-      "hint": "Họ có 14 ngày để trả lời.",
-      "required": "Hãy viết lời nhắn trước.",
-      "send": "Gửi lời nhắn",
-      "cancel": "Hủy",
-      "sentTitle": "Lời nhắn đang được gửi tới {name}",
-      "sentLead": "Bạn sẽ nhận email khi họ trả lời. Lời nhắn được lưu trong mục Lời nhắn đã gửi.",
-      "done": "Xong",
-      "waitingTitle": "Lời nhắn của bạn đang chờ {name}",
-      "waitingLead": "Đã gửi {date}. Bạn có thể viết lại khi họ trả lời hoặc lời nhắn đóng.",
       "signInLead": "Đăng nhập để viết cho {name}.",
-      "ownEdit": "Sửa hồ sơ của bạn",
-      "senderName": "Tên của bạn",
-      "senderNameHint": "Email của bạn vẫn được ẩn.",
-      "senderNameRequired": "Hãy cho biết ai đang viết.",
-      "messageHint": "Bạn đang xây dựng hoặc tuyển gì, và cần gì ở họ.",
-      "seeSent": "Xem lời nhắn đã gửi"
+      "ownEdit": "Sửa hồ sơ của bạn"
     },
     "mine": {
       "metaTitle": "Hồ sơ nhân lực · BeyondPilot",
@@ -5328,42 +5187,6 @@
         "open": "Mở hồ sơ công khai",
         "unlistedLead": "Sửa hồ sơ và chọn “Hiển thị trong danh mục” để hiển thị lại; không cần duyệt lại.",
         "foot": "Thay đổi bạn lưu hiển thị trên trang ngay, không cần duyệt lại."
-      },
-      "inbox": {
-        "title": "Đã nhận",
-        "waiting": "{count} mới",
-        "lead": "Chấp nhận để chia sẻ email của bạn với người gửi.",
-        "someone": "Một người",
-        "from": "{name} · {organization}",
-        "status": {
-          "pending": "Chờ bạn trả lời",
-          "accepted": "Đã chấp nhận",
-          "declined": "Đã từ chối",
-          "reported": "Đã báo cáo",
-          "closed": "Đã đóng, chưa trả lời"
-        },
-        "sent": "Gửi {date}",
-        "closes": "Đóng {date}",
-        "answered": "Trả lời {date}",
-        "write": "Viết cho {email}",
-        "accept": "Chấp nhận",
-        "decline": "Từ chối",
-        "report": "Báo cáo",
-        "confirmDecline": {
-          "title": "Từ chối lời nhắn này?",
-          "lead": "Người gửi được báo là bạn không tiếp tục. Không địa chỉ nào được chia sẻ.",
-          "confirm": "Từ chối",
-          "cancel": "Giữ lại"
-        },
-        "confirmReport": {
-          "title": "Báo cáo lời nhắn này?",
-          "lead": "GenAI Fund sẽ xem lời nhắn. Người gửi chỉ được báo là bị từ chối, không biết bạn đã báo cáo.",
-          "confirm": "Báo cáo",
-          "cancel": "Giữ lại"
-        },
-        "none": "Chưa có lời nhắn nào.",
-        "choose": "Chọn một yêu cầu để đọc.",
-        "list": "Yêu cầu đã nhận"
       },
       "sentBack": {
         "title": "Cần sửa: {reason}",
@@ -5388,11 +5211,6 @@
         "action": "Xem trước",
         "note": "Thay đổi chưa lưu không hiển thị."
       },
-      "tabs": {
-        "label": "Hồ sơ talent của bạn",
-        "profile": "Hồ sơ",
-        "enquiries": "Lời nhắn"
-      },
       "nav": {
         "label": "Các phần của hồ sơ"
       },
@@ -5402,10 +5220,9 @@
         "title": "Cách hồ sơ hiển thị trong AI talent",
         "note": "Theo bản đã lưu gần nhất. Địa chỉ email của bạn không bao giờ được hiển thị."
       },
-      "enquiriesCard": {
-        "title": "Yêu cầu liên hệ",
-        "waiting": "{count, plural, =0 {Không có yêu cầu nào đang chờ bạn.} other {# yêu cầu đang chờ bạn trả lời.}}",
-        "lead": "Thông tin liên hệ chỉ được chia sẻ khi bạn chấp nhận; yêu cầu không được trả lời sẽ đóng sau 14 ngày."
+      "messages": {
+        "lead": "Tin mọi người viết cho bạn qua hồ sơ sẽ đến mục Tin nhắn.",
+        "open": "Mở Tin nhắn"
       }
     },
     "form": {
@@ -5479,7 +5296,7 @@
       "industries": "Ngành bạn đã làm",
       "rateHint": "Chỉ bạn và GenAI Fund thấy mức giá.",
       "title": "Hồ sơ",
-      "lead": "Email của bạn không bao giờ hiển thị; lời nhắn đến bạn qua BeyondPilot.",
+      "lead": "Email của bạn không bao giờ hiển thị; tin nhắn đến bạn qua BeyondPilot.",
       "optional": "Không bắt buộc",
       "skillsPlaceholder": "Thêm kỹ năng",
       "remove": "Gỡ {label}",
@@ -5506,58 +5323,6 @@
       "skillsSuggested": "Gợi ý:",
       "headlineHint": "Ví dụ: Kỹ sư ML xây dựng AI xử lý tài liệu cho ngân hàng.",
       "urlHint": "Địa chỉ đầy đủ, bắt đầu bằng https://."
-    },
-    "sent": {
-      "metaTitle": "Lời nhắn đã gửi",
-      "title": "Lời nhắn đã gửi",
-      "lead": "Những gì bạn đã viết cho mọi người trong mục nhân lực AI, và câu trả lời của họ. Email chỉ được chia sẻ khi họ chấp nhận.",
-      "listTitle": "Đã gửi",
-      "waiting": "{count} đang chờ",
-      "list": "Những người bạn đã viết cho",
-      "status": {
-        "pending": "Đang chờ",
-        "accepted": "Đã chấp nhận",
-        "declined": "Đã từ chối",
-        "closed": "Đã đóng, chưa trả lời"
-      },
-      "heading": {
-        "pending": "Lời nhắn của bạn đang chờ {name}",
-        "accepted": "{name} đã chấp nhận lời nhắn của bạn",
-        "declined": "{name} đã từ chối lời nhắn của bạn",
-        "closed": "Lời nhắn gửi {name} đã đóng, chưa được trả lời"
-      },
-      "yourMessage": "Lời nhắn của bạn",
-      "sentOn": "Gửi {date}",
-      "signedAs": "Ký tên {name}",
-      "answeredOn": "Trả lời {date}",
-      "closedOn": "Đóng {date}",
-      "address": {
-        "pending": "Email của họ chỉ được chia sẻ nếu họ chấp nhận",
-        "accepted": "Email của họ không còn khả dụng",
-        "declined": "Không email nào được chia sẻ",
-        "closed": "Không email nào được chia sẻ"
-      },
-      "note": {
-        "pending": "{name} có đến {date} để trả lời. Bạn sẽ nhận email khi họ trả lời. Nếu không có câu trả lời, lời nhắn đóng vào ngày đó và bạn có thể viết lại.",
-        "accepted": "{name} cũng đã nhận email của bạn. Từ đây hai bên trao đổi qua email; BeyondPilot không chuyển tiếp cuộc trò chuyện.",
-        "declined": "{name} không tiếp tục với lời nhắn này. Bạn có thể viết lại cho họ, hoặc tìm người khác trong mục nhân lực AI.",
-        "closed": "{name} đã không trả lời trong 14 ngày. Bạn có thể viết lại cho họ, hoặc tìm người khác trong mục nhân lực AI."
-      },
-      "earlier": "Lời nhắn trước đây gửi {name}",
-      "viewProfile": "Xem hồ sơ",
-      "write": "Viết email",
-      "writeTo": "Viết cho {email}",
-      "browse": "Xem nhân lực AI",
-      "none": {
-        "title": "Bạn chưa viết cho ai",
-        "lead": "Khi bạn liên hệ một người trong mục nhân lực AI, lời nhắn của bạn và câu trả lời của họ sẽ hiện ở đây."
-      },
-      "how": {
-        "title": "Một lời nhắn đi như thế nào",
-        "write": "Bạn viết cho một người từ hồ sơ của họ, dưới tên của bạn.",
-        "answer": "Họ có 14 ngày để chấp nhận hoặc từ chối, và bạn nhận câu trả lời qua email.",
-        "share": "Nếu họ chấp nhận, mỗi bên nhận được email của bên kia."
-      }
     }
   },
   "Form": {
@@ -5610,6 +5375,7 @@
         "done": "Đã kết thúc"
       },
       "applyNow": "Nộp đơn ngay",
+      "ask": "Hỏi GenAI Fund",
       "closesIn": "Hạn nộp đơn",
       "about": "Giới thiệu",
       "timeline": "Dòng thời gian",
@@ -7393,7 +7159,7 @@
       },
       "talent": {
         "title": "Tôi là nhân tài AI hoặc một nhóm nhỏ",
-        "description": "Tạo hồ sơ và nhận yêu cầu từ doanh nghiệp.",
+        "description": "Tạo hồ sơ và nhận tin nhắn từ doanh nghiệp.",
         "action": "Tạo hồ sơ"
       }
     }

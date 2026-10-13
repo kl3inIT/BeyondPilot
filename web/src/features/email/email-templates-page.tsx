@@ -15,10 +15,10 @@ const groups = [
   "sign_in",
   "organizations",
   "applications",
-  "introductions",
   "solutions",
   "use_cases",
   "talent",
+  "messages",
 ] as const;
 
 /**

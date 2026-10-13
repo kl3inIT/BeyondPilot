@@ -22,7 +22,7 @@ import { OrganizationMark } from "./organization-mark";
 import { missingProfileFacts } from "./organization-schemas";
 import { OrganizationTabs } from "./organization-tabs";
 
-type OrganizationTab = "profile" | "members" | "solutions" | "introductions" | "useCases";
+type OrganizationTab = "profile" | "members" | "solutions" | "useCases";
 
 type OrganizationFrameProps = {
   /** The caller's membership; the frame is drawn only for a person who belongs to an organization. */
@@ -67,11 +67,6 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             href: siteRoutes.workspaceSolutions,
             label: t("tabs.solutions"),
             count: counts.solutions,
-          },
-          {
-            key: "introductions" as const,
-            href: siteRoutes.workspaceIntroductions,
-            label: t("tabs.introductions"),
           },
         ]),
     ...(counts.useCases === null

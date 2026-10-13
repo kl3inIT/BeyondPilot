@@ -3,7 +3,6 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFormatter } from "@/i18n/format";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { MyTalent, TalentProfile } from "@/lib/api/generated";
@@ -15,7 +14,6 @@ import { DeleteTalentProfile } from "./delete-talent-profile";
 import { TalentCard } from "./talent-card";
 import { talentSections } from "./talent-codes";
 import { TalentForm } from "./talent-form";
-import { TalentInbox } from "./talent-inbox";
 import { TalentPreview } from "./talent-preview";
 import { TalentView } from "./talent-view";
 
@@ -32,15 +30,14 @@ type MyTalentPageProps = {
  * listed in the directory" draw it, across the width of the page. A profile still being written,
  * sent back or taken down opens in the editor: the list of its sections, the form, and beside it
  * where the profile stands and how it shows in the directory. A profile in review or approved reads
- * as people see it, with where it stands, its enquiries and the way to edit it beside it. The
- * enquiries people sent have their own tab.
+ * as people see it, with where it stands, where what people write to it arrives and the way to
+ * edit it beside it.
  */
 function MyTalentPage({ mine, accountName, editing }: MyTalentPageProps) {
   const t = useTranslations("Talent.mine");
   const word = useVocabulary("talentStatus");
   const format = useFormatter();
   const profile = mine.profile ?? null;
-  const waiting = mine.enquiries.filter((enquiry) => enquiry.status === "pending").length;
   const settled =
     profile !== null &&
     (reviewState(profile) === "in_review" || reviewState(profile) === "approved");
@@ -74,88 +71,58 @@ function MyTalentPage({ mine, accountName, editing }: MyTalentPageProps) {
           </p>
         </div>
 
-        <Tabs defaultValue="profile">
-          <TabsList variant="underline" aria-label={t("tabs.label")}>
-            <TabsTrigger value="profile">{t("tabs.profile")}</TabsTrigger>
-            <TabsTrigger value="enquiries">
-              {t("tabs.enquiries")}
-              <span className="text-xs font-medium in-data-active:text-primary">
-                {mine.enquiries.length}
-              </span>
-            </TabsTrigger>
-          </TabsList>
-          {/* Kept mounted, so unsaved changes survive a look at the enquiries. */}
-          <TabsContent value="profile" keepMounted>
-            <div className="mt-6">
-              {profile && reading ? (
-                <div className="flex flex-col gap-6 lg:flex-row lg:items-start xl:gap-8">
-                  <div className="min-w-0 flex-1">
-                    <TalentView profile={profile} />
-                  </div>
-                  <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24 lg:w-80 lg:shrink-0">
-                    <Decision profile={profile} />
-                    {profile.status === "approved" && <EnquiriesCard waiting={waiting} />}
-                    <div className="flex flex-wrap items-center gap-3">
-                      <Button prominence="secondary" href={`${siteRoutes.talentProfile}?edit=1`}>
-                        {t("edit")}
-                      </Button>
-                      <DeleteTalentProfile />
-                    </div>
-                  </aside>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:gap-8">
-                  <SectionNav />
-                  <div className="flex min-w-0 flex-1 flex-col gap-6">
-                    {/* The key gives a saved profile a fresh form, so it holds the new version. */}
-                    <TalentForm
-                      key={profile ? `${profile.version}-${profile.status}` : "new"}
-                      profile={profile}
-                      suggestedName={accountName}
-                      aside={
-                        profile && (
-                          <>
-                            {reviewState(profile) !== "draft" && (
-                              // On a narrow screen the decision comes before the form.
-                              <div className="max-lg:-order-1">
-                                <Decision profile={profile} />
-                              </div>
-                            )}
-                            <PreviewCard profile={profile} />
-                          </>
-                        )
-                      }
-                    />
-                    {profile && (
-                      <div className="border-t pt-6">
-                        <DeleteTalentProfile />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
+        {profile && reading ? (
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start xl:gap-8">
+            <div className="min-w-0 flex-1">
+              <TalentView profile={profile} />
             </div>
-          </TabsContent>
-          <TabsContent value="enquiries">
-            <div className="mt-6 flex flex-col gap-3">
-              <h2 className="text-lg font-semibold">
-                {t("inbox.title")}
-                {waiting > 0 && (
-                  <span className="ml-2 text-sm font-medium text-primary">
-                    {t("inbox.waiting", { count: waiting })}
-                  </span>
-                )}
-              </h2>
-              {mine.enquiries.length > 0 ? (
-                <TalentInbox enquiries={mine.enquiries} />
-              ) : (
-                <p className="rounded-2xl border border-dashed bg-card p-6 text-sm text-muted-foreground">
-                  {t("inbox.none")}
+            <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-24 lg:w-80 lg:shrink-0">
+              <Decision profile={profile} />
+              {profile.status === "approved" && (
+                <p className="text-sm text-muted-foreground">
+                  {t("messages.lead")}{" "}
+                  <TextButton href={siteRoutes.messages}>{t("messages.open")}</TextButton>
                 </p>
               )}
+              <div className="flex flex-wrap items-center gap-3">
+                <Button prominence="secondary" href={`${siteRoutes.talentProfile}?edit=1`}>
+                  {t("edit")}
+                </Button>
+                <DeleteTalentProfile />
+              </div>
+            </aside>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:gap-8">
+            <SectionNav />
+            <div className="flex min-w-0 flex-1 flex-col gap-6">
+              {/* The key gives a saved profile a fresh form, so it holds the new version. */}
+              <TalentForm
+                key={profile ? `${profile.version}-${profile.status}` : "new"}
+                profile={profile}
+                suggestedName={accountName}
+                aside={
+                  profile && (
+                    <>
+                      {reviewState(profile) !== "draft" && (
+                        // On a narrow screen the decision comes before the form.
+                        <div className="max-lg:-order-1">
+                          <Decision profile={profile} />
+                        </div>
+                      )}
+                      <PreviewCard profile={profile} />
+                    </>
+                  )
+                }
+              />
+              {profile && (
+                <div className="border-t pt-6">
+                  <DeleteTalentProfile />
+                </div>
+              )}
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -227,24 +194,6 @@ function PreviewCard({ profile }: { profile: TalentProfile }) {
         }}
       />
       <p className="text-xs text-muted-foreground">{t("note")}</p>
-    </section>
-  );
-}
-
-/** How many enquiries wait for an answer, and what an answer shares. */
-function EnquiriesCard({ waiting }: { waiting: number }) {
-  const t = useTranslations("Talent.mine.enquiriesCard");
-
-  return (
-    <section
-      aria-labelledby="talent-enquiries-card"
-      className="flex flex-col gap-2 rounded-2xl border bg-card p-5"
-    >
-      <h2 id="talent-enquiries-card" className="text-base font-semibold">
-        {t("title")}
-      </h2>
-      <p className="text-sm font-medium">{t("waiting", { count: waiting })}</p>
-      <p className="text-sm text-muted-foreground">{t("lead")}</p>
     </section>
   );
 }

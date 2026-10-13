@@ -55,7 +55,6 @@ const areaPaths = {
   ],
   workspace: [
     "EntryList",
-    "Introduction",
     "Matching",
     "Messaging",
     "Organization",

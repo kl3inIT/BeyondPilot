@@ -364,12 +364,13 @@ function Composer({
                 }}
               />
               <InputGroupAddon align="inline-end">
+                {/* Never disabled: the group fades whole around a disabled control, and the words
+                    in the field would then be too faint to read. Sending nothing does nothing. */}
                 <InputGroupButton
                   type="submit"
                   variant="default"
                   size="icon-sm"
                   aria-label={t("composer.send")}
-                  disabled={field.state.value.trim() === ""}
                 >
                   <SendIcon aria-hidden="true" />
                 </InputGroupButton>

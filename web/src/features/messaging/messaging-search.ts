@@ -1,5 +1,7 @@
-import { createLoader, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
+import { getPathname } from "@/i18n/navigation";
+import { pageSize } from "@/lib/page-size";
 import { siteRoutes } from "@/lib/site";
 
 /** Who a conversation is with. */
@@ -32,3 +34,21 @@ export type MessagingTarget = { kind: ConversationKind; slug: string };
 export function messagesToRoute(kind: ConversationKind, slug: string) {
   return `${siteRoutes.messages}?to=${kind}&at=${encodeURIComponent(slug)}`;
 }
+
+/**
+ * Where Contact leads for the person who reads the page: Messages for someone signed in; for a
+ * visitor the sign-in screen, which returns them to the same first message.
+ */
+export function contactRoute(target: MessagingTarget, signedIn: boolean, locale: string) {
+  const messages = messagesToRoute(target.kind, target.slug);
+  if (signedIn) {
+    return messages;
+  }
+  const returnTo = getPathname({ href: messages, locale });
+  return `${siteRoutes.signIn}?${new URLSearchParams({ returnTo })}`;
+}
+
+/** Which page of the reported first messages operators read, as the URL holds it: `?page=&size=`. */
+export const reportedRequestsSearch = { page: parseAsInteger.withDefault(1), size: pageSize };
+
+export const loadReportedRequestsSearch = createLoader(reportedRequestsSearch);

@@ -130,15 +130,17 @@ async function ApplyRail({
   program,
   steps,
   now,
+  askHref,
 }: {
   program: Program;
   steps: Awaited<ReturnType<typeof timelineOf>>;
   now: number;
+  askHref?: string;
 }) {
   const t = await getTranslations("Tasco");
   return (
     <>
-      <ApplyCard program={program} steps={steps} now={now} />
+      <ApplyCard program={program} steps={steps} now={now} askHref={askHref} />
       <p className="text-xs text-muted-foreground">{t("rail.note")}</p>
     </>
   );
@@ -148,7 +150,7 @@ async function ApplyRail({
  * The page written for the AI for Insurance Challenge × Tasco. Its long content is fixed for the
  * campaign and lives in both catalogs; its dates, events and application window are the program's.
  */
-async function TascoPage({ program }: { program: Program }) {
+async function TascoPage({ program, askHref }: { program: Program; askHref?: string }) {
   const [t, page, locale, useCases] = await Promise.all([
     getTranslations("Tasco"),
     getTranslations("Program.page"),
@@ -238,7 +240,7 @@ async function TascoPage({ program }: { program: Program }) {
 
         {/* On a phone the card to apply comes first; from lg it stands beside the content. */}
         <div className="flex flex-col gap-4 lg:hidden">
-          <ApplyRail program={program} steps={steps} now={now} />
+          <ApplyRail program={program} steps={steps} now={now} askHref={askHref} />
         </div>
 
         <div className="flex flex-col gap-12 lg:flex-row lg:items-start">
@@ -438,7 +440,7 @@ async function TascoPage({ program }: { program: Program }) {
 
           <div className="flex flex-col gap-4 lg:sticky lg:top-6 lg:w-80 lg:shrink-0">
             <div className="hidden flex-col gap-4 lg:flex">
-              <ApplyRail program={program} steps={steps} now={now} />
+              <ApplyRail program={program} steps={steps} now={now} askHref={askHref} />
             </div>
             <aside
               aria-label={t("rail.partners")}

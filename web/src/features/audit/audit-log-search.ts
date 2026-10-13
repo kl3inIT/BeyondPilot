@@ -112,15 +112,16 @@ export const auditActions = [
 /**
  * The areas of the admin sidebar the actions belong to, in its order, each with the first words of
  * its actions' names. An operator and an account are both accounts; what is done to a program's
- * applications and judges is done on the program's pages.
+ * applications and judges is done on the program's pages; the introductions of the log's earlier
+ * events were asked about solutions.
  */
 const actionAreas = [
   ["programs", ["program", "proposal"]],
   ["useCases", ["use_case"]],
-  ["solutions", ["solution"]],
+  ["solutions", ["solution", "introduction"]],
   ["talent", ["talent"]],
   ["organizations", ["organization"]],
-  ["introductions", ["introduction"]],
+  ["reportedMessages", ["messaging"]],
   ["aiProviders", ["ai"]],
   ["searchIndex", ["search"]],
   ["aiMatching", ["matching"]],
