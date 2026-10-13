@@ -329,6 +329,10 @@ public class MessagingService {
 	public void read(Actor actor, UUID id, MarkReadRequest request) {
 		Caller caller = caller(actor);
 		Conversation conversation = visible(caller, id);
+		// Opening a request must not tell its sender that the recipient read it before answering.
+		if (!MessagingRepository.ACCEPTED.equals(conversation.status())) {
+			return;
+		}
 		if (request.seq() > conversations.lastSeq(id)) {
 			throw new MessagingException(MessagingErrorCode.READ_BEYOND_LAST_MESSAGE,
 					"Read position " + request.seq() + " is beyond the last message in conversation " + id);

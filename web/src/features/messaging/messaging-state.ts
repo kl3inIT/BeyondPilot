@@ -177,11 +177,20 @@ function reduce(state: MessagingState, action: MessagingAction): MessagingState 
       if (held?.conversation.id !== next.conversation.id) {
         return { ...state, thread: next };
       }
-      // The conversation was read again: what the reader wrote and the backend has not kept yet stays.
-      const unsent = held.messages.filter((message) => message.delivery !== "kept");
+      // A message heard after the server took this snapshot must stay visible when the read returns.
+      const oldestFetched = next.messages.find((message) => message.seq !== null)?.seq;
+      const loadedEarlier = held.messages.some(
+        (message) => message.seq !== null && oldestFetched != null && message.seq < oldestFetched,
+      );
       return {
         ...state,
-        thread: { ...next, messages: merged(next.messages, unsent), typing: held.typing },
+        thread: {
+          ...next,
+          messages: merged(held.messages, next.messages),
+          hasEarlier: loadedEarlier ? held.hasEarlier : next.hasEarlier,
+          readByOtherSide: Math.max(held.readByOtherSide, next.readByOtherSide),
+          typing: held.typing,
+        },
       };
     }
     case "closed":

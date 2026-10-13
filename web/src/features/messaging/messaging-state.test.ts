@@ -137,6 +137,33 @@ describe("a message that is heard", () => {
   });
 });
 
+describe("a conversation read again", () => {
+  it("keeps messages heard after the server took its snapshot and the earlier page already loaded", () => {
+    const current = chat("a");
+    const state = initialState(
+      { chats: [current], requests: [], unread: 0 },
+      {
+        ...detail(current, [message("m1", 1), message("m2", 2)]),
+        hasEarlier: false,
+        readByOtherSide: 2,
+      },
+    );
+    const heard = reduce(state, {
+      type: "heard",
+      kind: "message",
+      watching: true,
+      event: { conversationId: "a", message: message("m3", 3) },
+    });
+    const fetched = { ...detail(current, [message("m2", 2)]), hasEarlier: true };
+
+    const after = reduce(heard, { type: "opened", detail: fetched });
+
+    expect(after.thread?.messages.map((held) => held.id)).toEqual(["m1", "m2", "m3"]);
+    expect(after.thread?.hasEarlier).toBe(false);
+    expect(after.thread?.readByOtherSide).toBe(2);
+  });
+});
+
 describe("a message the reader sends", () => {
   it("is shown at once, last, and takes its place when the backend has kept it", () => {
     const state = stateWith(chat("a"));

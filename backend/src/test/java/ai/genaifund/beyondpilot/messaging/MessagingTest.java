@@ -106,6 +106,7 @@ class MessagingTest {
 		assertThat(JsonPath.<String>read(started, "$.conversation.counterpartName")).isEqualTo("First Talent");
 		assertThat(JsonPath.<Boolean>read(started, "$.conversation.canWrite")).isFalse();
 		assertThat(JsonPath.<List<String>>read(started, "$.messages[*].body")).containsExactly("Would you advise our team?");
+		long firstSeq = JsonPath.<Number>read(started, "$.messages[0].seq").longValue();
 		// The person is told by email, without the sender's address, and led to Messages.
 		String text = mail.latestTextTo("mei@first-talent.test");
 		assertThat(mail.latestSubjectTo("mei@first-talent.test")).isEqualTo("A first message for you on BeyondPilot");
@@ -121,6 +122,10 @@ class MessagingTest {
 			.intValue()).isEqualTo(1);
 		assertThat(JsonPath.<List<String>>read(body(get(sender, CONVERSATIONS).expectStatus().isOk()), "$.chats[*].id"))
 			.containsExactly(id);
+		post(talent, CONVERSATIONS + "/" + id + "/read", Map.of("seq", firstSeq))
+			.expectStatus().isNoContent();
+		assertThat(JsonPath.<Number>read(body(get(sender, CONVERSATIONS + "/" + id)
+			.expectStatus().isOk()), "$.readByOtherSide").longValue()).isZero();
 		assertProblem(send(sender, id, "One more thing."), 409, "MESSAGING_NOT_OPEN");
 		assertProblem(start(sender, "talent", slug, "Hello again."), 409, "MESSAGING_ALREADY_WAITING");
 		assertThat(JsonPath.<String>read(
