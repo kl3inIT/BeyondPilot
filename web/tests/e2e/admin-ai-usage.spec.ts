@@ -33,7 +33,10 @@ test.describe("admin AI usage", () => {
     );
     await expect(alert).toContainText("The request was too large for the provider.");
 
-    // Each total is a figure that counts when the period changes; it is read by its whole value.
+    // Each total is a figure that counts when the period changes. Its characters are drawn one a
+    // cell, so the figure is read with any space between them.
+    const spelled = (figure: string) =>
+      new RegExp([...figure].map((character) => character.replace(/[.$]/, "\\$&")).join("\\s*"));
     const totals = page.getByRole("definition");
     for (const [made, figure] of [
       ["1,473 succeeded · 103 failed", "1,576"],
@@ -42,9 +45,7 @@ test.describe("admin AI usage", () => {
       ["From the 319 calls with a known price", "$0.14"],
       ["Model prices", "1,154"],
     ] as const) {
-      await expect(
-        totals.filter({ hasText: made }).getByRole("img", { name: figure, exact: true }),
-      ).toBeVisible();
+      await expect(totals.filter({ hasText: made })).toContainText(spelled(figure));
     }
 
     await expect(page.getByText("Calls by hour")).toBeVisible();
