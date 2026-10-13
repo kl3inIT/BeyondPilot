@@ -200,7 +200,7 @@ function WhoCards({ value, locked }: { value: string; locked: boolean }) {
       <FieldLegend variant="label">{t("who")}</FieldLegend>
       <RadioGroup
         id={ids.control}
-        className="grid gap-3 sm:grid-cols-3"
+        className="sm:grid-cols-3"
         value={value}
         disabled={locked}
         onValueChange={(next) => field.handleChange(String(next))}
