@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -213,4 +214,43 @@ public class OrganizationQueryRepository {
 		String literal = text.toLowerCase(Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
 		return "%" + literal + "%";
 	}
+
+	/**
+	 * How many organizations waited for review at the end of each of the 14 days up to {@code today} in Vietnam, oldest
+	 * first: sent by then and not decided by then. A row keeps only its last sending and its last decision, so a day
+	 * behind today is an approximation, good for a direction.
+	 */
+	public List<Long> organizationsWaitingByDay(LocalDate today) {
+		return jdbc.sql("""
+				select (select count(distinct w.organization_id)
+				        from (select o.id as organization_id from organization o
+				              where o.created_at < day.ends and (o.status = 'in_review' or o.decided_at >= day.ends)
+				              union all
+				              select r.organization_id from organization_join_request r
+				              where r.claim and r.created_at < day.ends
+				                and (r.status = 'pending' or r.decided_at >= day.ends)) as w)
+				from (select (d + interval '1 day') at time zone 'Asia/Ho_Chi_Minh' as ends
+				      from generate_series(cast(:today as timestamp) - interval '13 days', cast(:today as timestamp),
+				                           interval '1 day') as d) as day
+				order by day.ends
+				""")
+			.param("today", today.toString())
+			.query(Long.class)
+			.list();
+	}
+
+	/** When the organization that has waited longest was sent; null when none waits. */
+	public @Nullable Instant organizationsOldestWaiting() {
+		return jdbc.sql("""
+				select min(since)
+				from (select created_at as since from organization where status = 'in_review'
+				      union all
+				      select created_at from organization_join_request where claim and status = 'pending') as w
+				""")
+			.query(Timestamp.class)
+			.optional()
+			.map(Timestamp::toInstant)
+			.orElse(null);
+	}
+
 }

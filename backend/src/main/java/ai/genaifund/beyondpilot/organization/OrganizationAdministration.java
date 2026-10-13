@@ -1,6 +1,8 @@
 package ai.genaifund.beyondpilot.organization;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,7 @@ import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.MergedOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.MergeOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.OrganizationReviewQueueResponse;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.SendBackOrganizationRequest;
@@ -50,6 +53,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class OrganizationAdministration {
+
+	/** The days of a review queue are Vietnam's, as the screens show them. */
+	private static final ZoneId QUEUE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
 	static final int PAGE_SIZE = 25;
 
@@ -667,6 +673,20 @@ public class OrganizationAdministration {
 					.map(row -> new OrganizationsAwaitingReview.Item(row.id(), row.name(), row.type(), row.country(),
 							row.createdAt()))
 					.toList());
+	}
+
+	/**
+	 * How many organizations wait for review now, since when the oldest has waited, and how many
+	 * waited at the end of each of the last 14 days, for the admin home.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public OrganizationReviewQueueResponse queue(Actor actor) {
+		identity.requireOperator(actor);
+		LocalDate today = LocalDate.now(QUEUE_ZONE);
+		List<Long> days = organizationList.organizationsWaitingByDay(today);
+		return new OrganizationReviewQueueResponse(days.getLast(), organizationList.organizationsOldestWaiting(),
+				today.minusDays(days.size() - 1L), days);
 	}
 
 }

@@ -7,6 +7,8 @@ import {
   type AdminUseCase,
   type AdminUseCaseList,
   type UseCaseOrganization,
+  getUseCaseReviewQueue,
+  type UseCaseReviewQueue,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 
@@ -50,4 +52,10 @@ export async function readAdminUseCase(id: string): Promise<AdminUseCase | null>
     }
     throw error;
   }
+}
+
+/** How many use cases wait for review now, and each of the last 14 days. Server only. */
+export async function readUseCaseQueue(): Promise<UseCaseReviewQueue> {
+  const { data } = await getUseCaseReviewQueue(await sessionRequest());
+  return data;
 }

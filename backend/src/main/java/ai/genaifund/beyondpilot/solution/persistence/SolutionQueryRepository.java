@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -233,4 +234,71 @@ public class SolutionQueryRepository {
 		String literal = text.toLowerCase(Locale.ROOT).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
 		return "%" + literal + "%";
 	}
+
+	/**
+	 * How many solutions waited for review at the end of each of the 14 days up to {@code today} in Vietnam, oldest
+	 * first: sent by then and not decided by then. A row keeps only its last sending and its last decision, so a day
+	 * behind today is an approximation, good for a direction.
+	 */
+	public List<Long> solutionsWaitingByDay(LocalDate today) {
+		return jdbc.sql("""
+				select (select count(*) from solution s
+				        where coalesce(s.submitted_at, s.created_at) < day.ends
+				          and (s.status = 'in_review' or s.decided_at >= day.ends))
+				from (select (d + interval '1 day') at time zone 'Asia/Ho_Chi_Minh' as ends
+				      from generate_series(cast(:today as timestamp) - interval '13 days', cast(:today as timestamp),
+				                           interval '1 day') as d) as day
+				order by day.ends
+				""")
+			.param("today", today.toString())
+			.query(Long.class)
+			.list();
+	}
+
+	/** When the solution that has waited longest was sent; null when none waits. */
+	public @Nullable Instant solutionsOldestWaiting() {
+		return jdbc.sql("""
+				select min(coalesce(submitted_at, created_at)) from solution where status = 'in_review'
+				""")
+			.query(Timestamp.class)
+			.optional()
+			.map(Timestamp::toInstant)
+			.orElse(null);
+	}
+
+	/**
+	 * How many customer deployments waited for review at the end of each of the 14 days up to {@code today} in Vietnam, oldest
+	 * first: sent by then and not decided by then. A row keeps only its last sending and its last decision, so a day
+	 * behind today is an approximation, good for a direction.
+	 */
+	public List<Long> deploymentsWaitingByDay(LocalDate today) {
+		return jdbc.sql("""
+				select (select count(*) from solution_customer_deployment d
+				        join solution on solution.id = d.solution_id
+				        where solution.status <> 'draft' and d.created_at < day.ends
+				          and ((d.status = 'in_review' and d.withdrawn_at is null)
+				               or d.decided_at >= day.ends or d.withdrawn_at >= day.ends))
+				from (select (d + interval '1 day') at time zone 'Asia/Ho_Chi_Minh' as ends
+				      from generate_series(cast(:today as timestamp) - interval '13 days', cast(:today as timestamp),
+				                           interval '1 day') as d) as day
+				order by day.ends
+				""")
+			.param("today", today.toString())
+			.query(Long.class)
+			.list();
+	}
+
+	/** When the deployment that has waited longest was sent; null when none waits. */
+	public @Nullable Instant deploymentsOldestWaiting() {
+		return jdbc.sql("""
+				select min(d.created_at) from solution_customer_deployment d
+				join solution on solution.id = d.solution_id
+				where d.status = 'in_review' and d.withdrawn_at is null and solution.status <> 'draft'
+				""")
+			.query(Timestamp.class)
+			.optional()
+			.map(Timestamp::toInstant)
+			.orElse(null);
+	}
+
 }

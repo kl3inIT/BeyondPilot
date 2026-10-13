@@ -4,12 +4,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
@@ -301,7 +304,9 @@ class UseCaseAdministrationTest {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		UUID organization = organization("Program Bank " + tag);
 		UUID published = program("Published " + tag, "published-" + tag);
-		jdbc.sql("update program set status = 'published' where id = ?").param(published).update();
+		jdbc.sql("update program set status = 'published' where id = ?")
+			.param(published)
+			.update();
 		UUID draft = program("Draft " + tag, "draft-" + tag);
 		Map<String, Object> featured = useCase(organization, "Featured " + tag, true);
 		featured.put("programIds", List.of(published, draft));
@@ -625,6 +630,49 @@ class UseCaseAdministrationTest {
 		doubled.put("attachmentFileIds", List.of(twice, twice));
 		assertProblem(post(operator, USE_CASES, doubled), 400, "USECASE_ATTACHMENT_NOT_USABLE");
 		assertThat(titles()).doesNotContain("Same file again", "Refused file", "Listed twice");
+	}
+
+	@Test
+	void theQueueCountsWhatWaitedAtTheEndOfEachOfTheLast14Days() {
+		assertProblem(get(TestSignIn.session(client, mail, "queue-member@usecase.test"), USE_CASES + "/queue"), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+		List<Long> before = queueDays(body(get(operator, USE_CASES + "/queue").expectStatus().isOk()));
+		UUID organization = organization("Queue Org " + UUID.randomUUID());
+		UUID waiting = UUID.fromString(created(useCase(organization, "Queue Waiting", false)));
+		UUID decided = UUID.fromString(created(useCase(organization, "Queue Decided", false)));
+		// One has waited since three days ago; the other waited from six days ago until it was decided two days ago.
+		jdbc.sql("update use_case set status = 'in_review', "
+				+ "submitted_at = now() - interval '3 days', "
+				+ "submitted_by_account_id = created_by_account_id where id = ?")
+			.param(waiting)
+			.update();
+		jdbc.sql("update use_case set status = 'needs_changes', "
+				+ "submitted_at = now() - interval '6 days', "
+				+ "submitted_by_account_id = created_by_account_id, "
+				+ "reviewed_at = now() - interval '2 days' where id = ?")
+			.param(decided)
+			.update();
+
+		String queue = body(get(operator, USE_CASES + "/queue").expectStatus().isOk());
+
+		// Days run from 13 days ago to today: the first counts on the last four, the second on the four before its
+		// decision, so both on the day three days ago.
+		assertThat(difference(queueDays(queue), before)).containsExactly(0L, 0L, 0L, 0L, 0L, 0L, 0L, 1L, 1L, 1L, 2L, 1L,
+				1L, 1L);
+		assertThat(JsonPath.<Number>read(queue, "$.waiting").longValue()).isEqualTo(queueDays(queue).getLast());
+		assertThat(JsonPath.<String>read(queue, "$.from"))
+			.isEqualTo(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).minusDays(13).toString());
+		assertThat(JsonPath.<String>read(queue, "$.oldestSince")).isNotNull();
+	}
+
+	/** How many waited at the end of each of the 14 days, oldest first, as a queue answers it. */
+	private static List<Long> queueDays(String queue) {
+		return JsonPath.<List<Number>>read(queue, "$.days").stream().map(Number::longValue).toList();
+	}
+
+	/** What changed on each day between two readings of a queue; other tests share the database. */
+	private static List<Long> difference(List<Long> after, List<Long> before) {
+		return IntStream.range(0, after.size()).mapToObj(day -> after.get(day) - before.get(day)).toList();
 	}
 
 	/** The record of a file as storage keeps it; a use case reads the record, never the bytes. */

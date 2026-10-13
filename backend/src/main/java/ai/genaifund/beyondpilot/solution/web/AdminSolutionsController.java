@@ -16,6 +16,7 @@ import ai.genaifund.beyondpilot.solution.dto.SendBackSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionBackingRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionOffersRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
+import ai.genaifund.beyondpilot.solution.dto.SolutionReviewQueueResponse;
 import ai.genaifund.beyondpilot.solution.dto.TakeDownSolutionRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -70,6 +71,15 @@ class AdminSolutionsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	AdminSolutionListResponse list(@CurrentActor Actor actor, @Valid @ParameterObject AdminSolutionListRequest request) {
 		return solutions.list(actor, request);
+	}
+
+	@GetMapping(path = "/queue", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getSolutionReviewQueue",
+			summary = "How many solutions wait for review, and how many waited each of the last 14 days",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The queue now and its last 14 days.")
+	SolutionReviewQueueResponse queue(@CurrentActor Actor actor) {
+		return solutions.queue(actor);
 	}
 
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
