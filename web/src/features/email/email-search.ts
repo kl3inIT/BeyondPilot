@@ -38,6 +38,8 @@ export const emailKinds = [
   "use_case_approved",
   "use_case_sent_back",
   "proposal_sent",
+  "proposal_shortlisted",
+  "proposal_declined",
   "talent_approved",
   "talent_changes_requested",
   "talent_removed",

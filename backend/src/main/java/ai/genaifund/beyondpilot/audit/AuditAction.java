@@ -231,6 +231,12 @@ public enum AuditAction {
 	 */
 	PROPOSAL_EXPORT("proposal.export", "count"),
 
+	/** A member of the organization that posted a use case, or an operator, decided on a proposal it received. {@code decision} is {@code shortlisted} or {@code declined}. */
+	USE_CASE_PROPOSAL_DECIDE("use_case_proposal.decide", "decision"),
+
+	/** The outcomes of a use case's proposals were e-mailed to their senders; the counts are how many of each. */
+	USE_CASE_PROPOSAL_OUTCOMES_SEND("use_case_proposal.outcomes_send", "sent", "shortlisted", "declined"),
+
 	/** An operator changed who delivers email or as whom. {@code provider} is the provider chosen. */
 	EMAIL_SETTINGS_UPDATE("email.settings_update", "provider"),
 

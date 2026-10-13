@@ -947,6 +947,8 @@ paths:
           - proposal.release
           - proposal.file_open
           - proposal.export
+          - use_case_proposal.decide
+          - use_case_proposal.outcomes_send
           - email.settings_update
           - email.appearance_update
           - email.template_update
@@ -7107,6 +7109,49 @@ paths:
       summary: One proposal a use case received
       tags:
       - Use case proposals
+  /api/proposal/use-case-proposals/{id}/decision:
+    post:
+      description: "Records the decision and tells nobody; the outcomes are sent together.\
+        \ It may change at any time, but not back to undecided."
+      operationId: decideUseCaseProposal
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecideUseCaseProposal"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReceivedUseCaseProposalSummary"
+          description: The proposal's line with the decision as recorded.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The decision is neither shortlisted nor declined.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The proposal was not sent, or the caller is neither of the\
+            \ organization that posted its use case nor an operator."
+      security:
+      - session: []
+      summary: Shortlist or decline a proposal a use case received
+      tags:
+      - Use case proposals
   /api/proposal/use-case-proposals/{id}/file:
     get:
       operationId: getUseCaseProposalFile
@@ -7183,6 +7228,92 @@ paths:
       security:
       - session: []
       summary: Send a proposal to its use case
+      tags:
+      - Use case proposals
+  /api/proposal/use-case-proposals/{id}/withdraw:
+    post:
+      operationId: withdrawUseCaseProposal
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseProposalForm"
+          description: "The form with the proposal as a draft again, saying when it\
+            \ was taken back."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization has no such proposal.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The proposal is not sent, or the use case no longer takes\
+            \ proposals."
+      security:
+      - session: []
+      summary: Take a sent proposal back
+      tags:
+      - Use case proposals
+  /api/proposal/use-cases/{useCaseId}/outcomes:
+    post:
+      description: "E-mails the sender of each proposal whose decision was not yet\
+        \ told, or changed since, in one batch."
+      operationId: sendUseCaseProposalOutcomes
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendUseCaseProposalOutcomes"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseProposalOutcomes"
+          description: "How many senders were e-mailed, and of them how many shortlisted\
+            \ and declined."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The message is longer than 2000 characters.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "There is no such use case, or the caller is neither of the\
+            \ organization that posted it nor an operator."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No proposal has a decision to send.
+      security:
+      - session: []
+      summary: E-mail the outcomes of a use case's proposals
       tags:
       - Use case proposals
   /api/proposal/use-cases/{useCaseId}/proposal:
@@ -13881,6 +14012,8 @@ components:
           - proposal.release
           - proposal.file_open
           - proposal.export
+          - use_case_proposal.decide
+          - use_case_proposal.outcomes_send
           - email.settings_update
           - email.appearance_update
           - email.template_update
@@ -15110,6 +15243,19 @@ components:
           minLength: 0
       required:
       - applicationIds
+      - decision
+    DecideUseCaseProposal:
+      type: object
+      description: What the organization that posted a use case decides on a proposal
+        it received. Nobody is told until the outcomes are sent.
+      properties:
+        decision:
+          type: string
+          enum:
+          - shortlisted
+          - declined
+          pattern: shortlisted|declined
+      required:
       - decision
     DeclinedOrganizationRequest:
       type: object
@@ -19683,6 +19829,24 @@ components:
           type:
           - string
           - "null"
+        decidedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        decidedBy:
+          type:
+          - string
+          - "null"
+          description: Who made the latest decision.
+        decision:
+          type:
+          - string
+          - "null"
+          description: What the posting organization decided; null while undecided.
+          enum:
+          - shortlisted
+          - declined
         deck:
           type:
           - object
@@ -19710,6 +19874,16 @@ components:
           description: "Read at /api/storage/files/{id}."
         organizationName:
           type: string
+        outcomePending:
+          type: boolean
+          description: Whether the decision is set and the sender was not yet told
+            it.
+        outcomeSentAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the sender was last e-mailed the outcome; null if never.
         sender:
           type:
           - object
@@ -19736,6 +19910,7 @@ components:
       - id
       - organizationApproved
       - organizationName
+      - outcomePending
       - sentAt
       - sentBy
       - solutions
@@ -19749,6 +19924,24 @@ components:
           - string
           - "null"
           description: Who sent it.
+        decidedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        decidedBy:
+          type:
+          - string
+          - "null"
+          description: Who made the latest decision.
+        decision:
+          type:
+          - string
+          - "null"
+          description: What the posting organization decided; null while undecided.
+          enum:
+          - shortlisted
+          - declined
         editedAt:
           type:
           - string
@@ -19770,6 +19963,16 @@ components:
           description: "Read at /api/storage/files/{id}."
         organizationName:
           type: string
+        outcomePending:
+          type: boolean
+          description: Whether the decision is set and the sender was not yet told
+            it.
+        outcomeSentAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the sender was last e-mailed the outcome; null if never.
         sentAt:
           type: string
           format: date-time
@@ -19782,20 +19985,36 @@ components:
       - id
       - organizationApproved
       - organizationName
+      - outcomePending
       - sentAt
       - solutionNames
     ReceivedUseCaseProposals:
       type: object
       description: "The proposals a use case received, the latest first."
       properties:
+        declined:
+          type: integer
+          format: int32
+          description: How many proposals are declined.
         items:
           type: array
           items:
             $ref: "#/components/schemas/ReceivedUseCaseProposalSummary"
+        pending:
+          type: integer
+          format: int32
+          description: How many proposals have an outcome to send.
+        shortlisted:
+          type: integer
+          format: int32
+          description: How many proposals are shortlisted.
         useCase:
           $ref: "#/components/schemas/ProposalUseCase"
       required:
+      - declined
       - items
+      - pending
+      - shortlisted
       - useCase
     RefuseOrganization:
       type: object
@@ -22569,6 +22788,18 @@ components:
       required:
       - body
       - id
+    SendUseCaseProposalOutcomes:
+      type: object
+      description: Sends the outcomes of a use case's proposals that were decided
+        and not yet told.
+      properties:
+        message:
+          type:
+          - string
+          - "null"
+          description: A note quoted in every e-mail sent; optional.
+          maxLength: 2000
+          minLength: 0
     SenderProfile:
       type: object
       description: The sender's talent profile as it was when the proposal was sent.
@@ -23987,6 +24218,21 @@ components:
         id:
           type: string
           format: uuid
+        outcome:
+          type:
+          - string
+          - "null"
+          description: The decision the posting organization last told the sender;
+            null until the outcomes were sent.
+          enum:
+          - shortlisted
+          - declined
+        outcomeSentAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the sender was told `outcome`.
         sender:
           type:
           - object
@@ -24013,6 +24259,8 @@ components:
             $ref: "#/components/schemas/ProposalSolution"
         status:
           type: string
+          description: "A proposal that was taken back is a draft again, and says\
+            \ when in `withdrawnAt`."
           enum:
           - draft
           - sent
@@ -24028,6 +24276,13 @@ components:
           format: int64
           description: "Sent back with the next save, so a save made on a stale copy\
             \ is refused."
+        withdrawnAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "When the proposal was taken back; null if it never was, and\
+            \ once it is sent again."
       required:
       - id
       - solutions
@@ -24079,6 +24334,26 @@ components:
           $ref: "#/components/schemas/ProposalUseCase"
       required:
       - useCase
+    UseCaseProposalOutcomes:
+      type: object
+      description: How many senders were e-mailed their outcome.
+      properties:
+        declined:
+          type: integer
+          format: int32
+          description: "Of them, told they were declined."
+        sent:
+          type: integer
+          format: int32
+          description: "E-mails queued: one for each proposal."
+        shortlisted:
+          type: integer
+          format: int32
+          description: "Of them, told they were shortlisted."
+      required:
+      - declined
+      - sent
+      - shortlisted
     UseCaseRequirement:
       type: object
       description: One thing the solution must do.

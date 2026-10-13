@@ -493,6 +493,7 @@
     "PROPOSAL_NO_ORGANIZATION": "Join or set up an organization to send a proposal.",
     "PROPOSAL_NOT_FOUND": "There is no such proposal.",
     "PROPOSAL_ALREADY_SENT": "This proposal was sent, so it can no longer change.",
+    "PROPOSAL_NOT_SENT": "Only a sent proposal can be withdrawn. Reload the page to see where yours stands.",
     "PROPOSAL_APPROACH_REQUIRED": "Say how the solution solves this use case.",
     "PROPOSAL_CONTACT_REQUIRED": "Add your name, country and phone number first.",
     "PROPOSAL_PDF_REQUIRED": "Add the proposal as a PDF.",
@@ -564,7 +565,8 @@
     "USECASE_CANNOT_MOVE_TO_DRAFT": "Only a use case in review or published can move back to Draft.",
     "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
     "USECASE_ATTACHMENT_NOT_USABLE": "Upload the file again: it cannot be attached.",
-    "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest."
+    "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest.",
+    "PROPOSAL_NOTHING_TO_SEND": "There is no decision to send. Reload the page to see where the proposals stand."
   },
   "SignIn": {
     "metaTitle": "Sign in · BeyondPilot",
@@ -1230,6 +1232,10 @@
           "file_open": "Opened a file of an application",
           "export": "Downloaded the applications"
         },
+        "use_case_proposal": {
+          "decide": "Decided on a proposal to a use case",
+          "outcomes_send": "Sent the outcomes of the proposals to a use case"
+        },
         "use_case": {
           "create": "Created a use case",
           "submit": "Sent a use case for review",
@@ -1367,6 +1373,10 @@
           "release": "Released the outcomes of <resource></resource>",
           "file_open": "Opened a file of an application to <resource></resource>",
           "export": "Downloaded the applications to <resource></resource>"
+        },
+        "use_case_proposal": {
+          "decide": "Decided on a proposal to <resource></resource>",
+          "outcomes_send": "Sent the outcomes of the proposals to <resource></resource>"
         },
         "use_case": {
           "create": "Created the use case <resource></resource>",
@@ -3104,6 +3114,14 @@
         },
         "proposal_sent": {
           "name": "Proposal sent"
+        },
+        "proposal_shortlisted": {
+          "name": "Proposal shortlisted",
+          "description": "Tells the sender its proposal was shortlisted, with the note of the organization that posted the use case."
+        },
+        "proposal_declined": {
+          "name": "Proposal not selected",
+          "description": "Tells the sender its proposal was not selected, with the note of the organization that posted the use case."
         },
         "talent_approved": {
           "name": "Talent profile approved"
@@ -7699,7 +7717,9 @@
       "count": "{count, plural, one {# proposal} other {# proposals}}",
       "viewProposals": "View proposals",
       "status": {
-        "new": "New"
+        "undecided": "Not decided",
+        "shortlisted": "Shortlisted",
+        "declined": "Declined"
       },
       "tabs": {
         "label": "Filter proposals",
@@ -7718,7 +7738,12 @@
         "columns": {
           "proposal": "Proposal",
           "status": "Status",
-          "sent": "Sent"
+          "sent": "Sent",
+          "actions": "Actions"
+        },
+        "emptyTab": {
+          "title": "No proposals here",
+          "description": "Proposals appear under this tab once you mark them."
         }
       },
       "detail": {
@@ -7752,9 +7777,35 @@
         "crumbs": "Where you are",
         "useCases": "Use cases",
         "pending": "Pending review",
-        "sentBy": "Sent by"
+        "sentBy": "Sent by",
+        "assessment": {
+          "title": "Your assessment",
+          "decision": "Decision",
+          "decided": "Decided",
+          "decidedBy": "{name} on {date}"
+        }
       },
-      "edited": "Edited {date}"
+      "edited": "Edited {date}",
+      "actions": {
+        "open": "Actions for {name}",
+        "view": "View proposal",
+        "shortlist": "Shortlist",
+        "decline": "Decline"
+      },
+      "decided": {
+        "shortlisted": "{name} was marked as shortlisted. The provider is told when you send outcomes.",
+        "declined": "{name} was marked as declined. The provider is told when you send outcomes."
+      },
+      "send": {
+        "action": "Send outcomes ({count})",
+        "title": "Send outcomes to providers?",
+        "description": "{shortlisted, plural, one {# shortlisted} other {# shortlisted}} and {declined, plural, one {# declined} other {# declined}} will each get one email.",
+        "note": "Nobody outside your team sees a decision until you send it. You can still change a decision afterwards: the next send only emails the proposals that changed.",
+        "message": "Message in every email (optional)",
+        "confirm": "{count, plural, one {Send # outcome} other {Send # outcomes}}",
+        "cancel": "Cancel",
+        "done": "{count, plural, one {# outcome was sent.} other {# outcomes were sent.}}"
+      }
     },
     "actions": {
       "proposals": "Proposals",
@@ -7769,6 +7820,19 @@
         "disabled": "Editing is closed: this use case does not allow editing after sending.",
         "useCaseClosed": "Editing is closed because the use case has closed.",
         "windowPassed": "Editing is closed: the time to edit has ended."
+      },
+      "withdrawn": "You withdrew your proposal on {date}.",
+      "sendAgain": "Send again",
+      "status": "Status",
+      "outcome": {
+        "shortlisted": {
+          "state": "Shortlisted",
+          "note": "The organization that posted this use case shortlisted your proposal on {date}."
+        },
+        "declined": {
+          "state": "Not selected",
+          "note": "The outcome was sent to your email on {date}."
+        }
       }
     },
     "wizard": {
@@ -7904,7 +7968,8 @@
           "created": "Organization created.",
           "full": "Create with the full form"
         }
-      }
+      },
+      "withdrawnNote": "You withdrew this proposal on {date}. Change it if you like, then send it again."
     },
     "view": {
       "metaTitle": "Your proposal · BeyondPilot",
@@ -7912,7 +7977,45 @@
       "edit": "Edit proposal",
       "sent": "Sent {date}",
       "edited": "Edited {date}",
-      "until": "edit until {when}"
+      "until": "edit until {when}",
+      "withdrawn": "Withdrawn {date}",
+      "sendAgain": "Send again",
+      "withdraw": {
+        "action": "Withdraw",
+        "title": "Withdraw this proposal?",
+        "description": "The organization that posted the use case will no longer see it. Nothing is deleted.",
+        "noteUntil": "You can send it again until the use case closes on {date}.",
+        "noteOpen": "You can send it again while the use case is open.",
+        "confirm": "Withdraw proposal",
+        "cancel": "Keep proposal",
+        "done": "Your proposal was withdrawn.",
+        "rows": {
+          "useCase": "Use case",
+          "sent": "Sent"
+        }
+      },
+      "notice": {
+        "withdrawn": {
+          "title": "You withdrew this proposal",
+          "until": "The organization that posted the use case can no longer see it. Nothing was deleted: you can send it again until the use case closes on {date}.",
+          "open": "The organization that posted the use case can no longer see it. Nothing was deleted: you can send it again while the use case is open.",
+          "closed": "The organization that posted the use case can no longer see it. The use case has closed, so it cannot be sent again."
+        },
+        "closed": {
+          "title": "This use case is closed",
+          "text": "Proposals can no longer be edited or withdrawn. The organization that posted the use case keeps reading yours."
+        },
+        "outcome": {
+          "shortlisted": {
+            "title": "Your proposal was shortlisted",
+            "text": "The organization that posted this use case shortlisted it on {date}. You can still withdraw it."
+          },
+          "declined": {
+            "title": "Your proposal was not selected",
+            "text": "The outcome was sent to your email on {date}. The proposal is now only read."
+          }
+        }
+      }
     },
     "solutionList": {
       "newTab": "(opens in a new tab)"

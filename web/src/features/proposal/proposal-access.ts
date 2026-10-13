@@ -3,12 +3,12 @@ import type { UseCaseProposal, UseCaseProposalForm } from "@/lib/api/generated";
 /**
  * What a signed-in visitor may do about a use case on its public page: nothing (it takes no more proposals), read the proposals it received (it is their own
  * organization's), send one, or continue the draft they have. Waiting for GenAI Fund's review of the organization, or having
- * none yet, holds nothing up.
+ * none yet, holds nothing up. A proposal that was taken back is a draft that says when it was.
  */
 export type SenderAccess =
   | { kind: "hidden" }
   | { kind: "own" }
-  | { kind: "open"; draft: boolean }
+  | { kind: "open"; draft: boolean; withdrawnAt?: string }
   | { kind: "sent"; proposal: UseCaseProposal };
 
 /** What the form of a use case says the caller may do. */
@@ -16,7 +16,8 @@ export function accessOfForm(form: UseCaseProposalForm): SenderAccess {
   if (form.proposal?.status === "sent") {
     return { kind: "sent", proposal: form.proposal };
   }
-  return { kind: "open", draft: form.proposal != null };
+  const withdrawnAt = form.proposal?.withdrawnAt ?? undefined;
+  return { kind: "open", draft: form.proposal != null, ...(withdrawnAt && { withdrawnAt }) };
 }
 
 /**
@@ -71,4 +72,20 @@ export function editStateOf(
     return { kind: "closed", reason: "useCaseClosed" };
   }
   return { kind: "closed", reason: "windowPassed" };
+}
+
+/** What the posting organization told the sender about a sent proposal. */
+export type Outcome = "shortlisted" | "declined";
+
+/**
+ * The outcome the sender knows: only a sent proposal has one, and only once the organization sent
+ * it. A decision that was not sent yet is not here, so the sender cannot tell it from none.
+ */
+export function outcomeOf(proposal: Pick<UseCaseProposal, "status" | "outcome">): Outcome | null {
+  return proposal.status === "sent" ? (proposal.outcome ?? null) : null;
+}
+
+/** Whether the sender may still edit or take back what it sent: a proposal that was not selected is only read. */
+export function mayChange(outcome: Outcome | null): boolean {
+  return outcome !== "declined";
 }

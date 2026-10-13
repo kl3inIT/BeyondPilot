@@ -283,6 +283,37 @@ Applicants' acts, joining as a judge and assessments are not audited; they are l
 `proposal.withdrawal.accepted`, `proposal.reviewer.joined` and `proposal.assessment.saved`, beside
 `proposal.decision.recorded` and `proposal.outcomes.released`.
 
+## Use-case proposals: decisions and outcomes
+
+An organization's proposal to a use case ([BEY-133](../increments/active/bey-133-use-case-proposals/design.md)) is read
+by the organization that posted the use case, which decides on it and then tells the senders. This is not the review of
+program applications above. The code is `UseCaseProposals` (`posted` is its authorization: a member of the posting
+organization, or an operator; anyone else finds no such use case or proposal).
+
+- **State.** `use_case_proposal` (V93) holds `decision` (`shortlisted`, `declined`, or null while undecided), `decided_at`,
+  `decided_by_account_id`, and `outcome` with `outcome_sent_at`, the decision last told to the sender. Checks: the three
+  decision columns are all set or all null, so are the two outcome columns, and a decision exists only while the status is
+  `sent`. `use_case_proposal_decision` appends one row (decision, who, when) for every change; it is never updated, and it
+  stays when a proposal is withdrawn.
+- **Deciding.** `POST /api/proposal/use-case-proposals/{id}/decision` (`decideUseCaseProposal`, body `{decision}`) needs a
+  sent proposal (otherwise `PROPOSAL_NOT_FOUND`). The decision may change between `shortlisted` and `declined` at any time,
+  after the outcomes were sent and after the use case closed, but never back to undecided. The same decision again changes
+  and records nothing. Deciding sends no email. It records the audit event `use_case_proposal.decide` (`decision`) on a
+  resource of type `use_case_proposal`. The answer is the proposal's line, `ReceivedUseCaseProposalSummary`.
+- **What the posting side reads.** The list and the single read carry `decision`, `decidedAt`, `decidedBy` (display name),
+  `outcomePending` (a decision is set and is not the one last told) and `outcomeSentAt`. The list also carries the counts
+  `shortlisted`, `declined` and `pending` (proposals with an outcome to send).
+- **Sending the outcomes.** `POST /api/proposal/use-cases/{useCaseId}/outcomes` (`sendUseCaseProposalOutcomes`, body
+  `{message}`, at most 2000 characters, optional) is one batch in one transaction: it locks the use case's sent proposals,
+  queues one email to the sender of each proposal with `outcomePending` (`proposal_shortlisted` or `proposal_declined`,
+  quoting the message) and sets `outcome` and `outcome_sent_at`. Undecided proposals and those already told the same
+  decision are left out. It answers `{sent, shortlisted, declined}`, and `PROPOSAL_NOTHING_TO_SEND` when nothing is
+  pending, so a second call finds nothing. It records `use_case_proposal.outcomes_send` (`sent`, `shortlisted`, `declined`)
+  on a resource of type `use_case`.
+- **What the sender reads.** The form's proposal carries `outcome` and `outcomeSentAt`: the decision last told, null
+  before. A decision not yet sent is never shown. A shortlisted proposal can still be withdrawn; withdrawing clears the
+  decision and the outcome and leaves the history rows.
+
 ## Events
 
 | Event               | Published                   | Carries                                                                               | Handled by       |
@@ -320,6 +351,8 @@ Every endpoint needs a session.
 | `POST /api/proposal/review/programs/{programId}/decisions`                     | Decide one application or several                                 |
 | `GET`, `POST /api/proposal/review/programs/{programId}/release`                | Preview the release; release                                      |
 | `PUT /api/proposal/review/programs/{programId}/release/draft`                  | Keep the release emails as they are written                       |
+| `POST /api/proposal/use-case-proposals/{id}/decision`                         | Shortlist or decline a received use-case proposal                 |
+| `POST /api/proposal/use-cases/{useCaseId}/outcomes`                           | E-mail the outcomes not yet told, in one batch                    |
 
 ## Error codes
 
@@ -330,4 +363,4 @@ Every endpoint needs a session.
 | 400    | `PROPOSAL_ORGANIZATION_REQUIRED`, `PROPOSAL_CONTACT_INCOMPLETE`, `PROPOSAL_TEAM_BACKGROUND_REQUIRED`, `PROPOSAL_SOLUTION_NOT_FOUND`, `PROPOSAL_SOLUTION_REQUIRED`, `PROPOSAL_SOLUTION_INCOMPLETE`, `PROPOSAL_DECK_REQUIRED`, `PROPOSAL_ANSWER_INVALID`, `PROPOSAL_ANSWER_REQUIRED`, `PROPOSAL_CRITERIA_INVALID`, `PROPOSAL_ASSESSMENT_INVALID`                                        |
 | 403    | `PROPOSAL_OWN_APPLICATION`, `PROPOSAL_REVIEW_NOT_ALLOWED`                                                                                                                                                                                                                                                                                                                             |
 | 404    | `PROPOSAL_APPLICATION_NOT_FOUND`, `PROPOSAL_REVIEW_PROGRAM_NOT_FOUND`, `PROPOSAL_REVIEWER_NOT_FOUND`                                                                                                                                                                                                                                                                                  |
-| 409    | `PROPOSAL_NOT_OPEN`, `PROPOSAL_CLOSED`, `PROPOSAL_LOCKED`, `PROPOSAL_WITHDRAWN_FOR_GOOD`, `PROPOSAL_CHANGED_MEANWHILE`, `PROPOSAL_ALREADY_IN_ORGANIZATION`, `PROPOSAL_ORGANIZATION_APPLIED`, `PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CRITERIA_FIXED`, `PROPOSAL_NO_CRITERIA`, `PROPOSAL_REVIEWER_INVITED`, `PROPOSAL_REVIEWER_JOINED`, `PROPOSAL_RELEASED`, `PROPOSAL_OUTCOMES_NOT_READY` |
+| 409    | `PROPOSAL_NOT_OPEN`, `PROPOSAL_CLOSED`, `PROPOSAL_LOCKED`, `PROPOSAL_WITHDRAWN_FOR_GOOD`, `PROPOSAL_CHANGED_MEANWHILE`, `PROPOSAL_ALREADY_IN_ORGANIZATION`, `PROPOSAL_ORGANIZATION_APPLIED`, `PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CRITERIA_FIXED`, `PROPOSAL_NO_CRITERIA`, `PROPOSAL_REVIEWER_INVITED`, `PROPOSAL_REVIEWER_JOINED`, `PROPOSAL_RELEASED`, `PROPOSAL_OUTCOMES_NOT_READY`, `PROPOSAL_NOTHING_TO_SEND` |

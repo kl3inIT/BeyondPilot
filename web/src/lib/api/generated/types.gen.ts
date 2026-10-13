@@ -1040,7 +1040,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.settings_change';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -1696,6 +1696,13 @@ export type Decide = {
      * Private; the applicant never sees it.
      */
     reason?: string | null;
+};
+
+/**
+ * What the organization that posted a use case decides on a proposal it received. Nobody is told until the outcomes are sent.
+ */
+export type DecideUseCaseProposal = {
+    decision: 'shortlisted' | 'declined';
 };
 
 /**
@@ -4234,6 +4241,15 @@ export type PublicUseCaseSummary = {
  */
 export type ReceivedUseCaseProposal = {
     approach?: string | null;
+    decidedAt?: string | null;
+    /**
+     * Who made the latest decision.
+     */
+    decidedBy?: string | null;
+    /**
+     * What the posting organization decided; null while undecided.
+     */
+    decision?: 'shortlisted' | 'declined';
     deck?: AttachedFile | null;
     /**
      * When the sending organization last edited the proposal after sending it; null while it is as sent.
@@ -4249,6 +4265,14 @@ export type ReceivedUseCaseProposal = {
      */
     organizationLogoFileId?: string | null;
     organizationName: string;
+    /**
+     * Whether the decision is set and the sender was not yet told it.
+     */
+    outcomePending: boolean;
+    /**
+     * When the sender was last e-mailed the outcome; null if never.
+     */
+    outcomeSentAt?: string | null;
     /**
      * The sender's talent profile, when it went with the proposal.
      */
@@ -4271,6 +4295,15 @@ export type ReceivedUseCaseProposalSummary = {
      * Who sent it.
      */
     contactName?: string | null;
+    decidedAt?: string | null;
+    /**
+     * Who made the latest decision.
+     */
+    decidedBy?: string | null;
+    /**
+     * What the posting organization decided; null while undecided.
+     */
+    decision?: 'shortlisted' | 'declined';
     /**
      * When the sending organization last edited the proposal after sending it; null while it is as sent.
      */
@@ -4285,6 +4318,14 @@ export type ReceivedUseCaseProposalSummary = {
      */
     organizationLogoFileId?: string | null;
     organizationName: string;
+    /**
+     * Whether the decision is set and the sender was not yet told it.
+     */
+    outcomePending: boolean;
+    /**
+     * When the sender was last e-mailed the outcome; null if never.
+     */
+    outcomeSentAt?: string | null;
     sentAt: string;
     /**
      * The names of the solutions offered.
@@ -4296,7 +4337,19 @@ export type ReceivedUseCaseProposalSummary = {
  * The proposals a use case received, the latest first.
  */
 export type ReceivedUseCaseProposals = {
+    /**
+     * How many proposals are declined.
+     */
+    declined: number;
     items: Array<ReceivedUseCaseProposalSummary>;
+    /**
+     * How many proposals have an outcome to send.
+     */
+    pending: number;
+    /**
+     * How many proposals are shortlisted.
+     */
+    shortlisted: number;
     useCase: ProposalUseCase;
 };
 
@@ -5679,6 +5732,16 @@ export type SendMessageRequest = {
 };
 
 /**
+ * Sends the outcomes of a use case's proposals that were decided and not yet told.
+ */
+export type SendUseCaseProposalOutcomes = {
+    /**
+     * A note quoted in every e-mail sent; optional.
+     */
+    message?: string | null;
+};
+
+/**
  * The sender's talent profile as it was when the proposal was sent.
  */
 export type SenderProfile = {
@@ -6438,6 +6501,14 @@ export type UseCaseProposal = {
     editedAt?: string | null;
     id: string;
     /**
+     * The decision the posting organization last told the sender; null until the outcomes were sent.
+     */
+    outcome?: 'shortlisted' | 'declined';
+    /**
+     * When the sender was told `outcome`.
+     */
+    outcomeSentAt?: string | null;
+    /**
      * The sender's talent profile as it was when the proposal was sent; null for a draft and for a proposal sent without it, as every new one is.
      */
     sender?: SenderProfile | null;
@@ -6450,6 +6521,9 @@ export type UseCaseProposal = {
      * The solutions offered, in the order shown.
      */
     solutions: Array<ProposalSolution>;
+    /**
+     * A proposal that was taken back is a draft again, and says when in `withdrawnAt`.
+     */
     status: 'draft' | 'sent';
     teamBackground?: string | null;
     updatedAt: string;
@@ -6457,6 +6531,10 @@ export type UseCaseProposal = {
      * Sent back with the next save, so a save made on a stale copy is refused.
      */
     version: number;
+    /**
+     * When the proposal was taken back; null if it never was, and once it is sent again.
+     */
+    withdrawnAt?: string | null;
 };
 
 /**
@@ -6487,6 +6565,24 @@ export type UseCaseProposalForm = {
      */
     proposal?: UseCaseProposal | null;
     useCase: ProposalUseCase;
+};
+
+/**
+ * How many senders were e-mailed their outcome.
+ */
+export type UseCaseProposalOutcomes = {
+    /**
+     * Of them, told they were declined.
+     */
+    declined: number;
+    /**
+     * E-mails queued: one for each proposal.
+     */
+    sent: number;
+    /**
+     * Of them, told they were shortlisted.
+     */
+    shortlisted: number;
 };
 
 /**
@@ -7135,7 +7231,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -12181,6 +12277,37 @@ export type GetReceivedUseCaseProposalResponses = {
 
 export type GetReceivedUseCaseProposalResponse = GetReceivedUseCaseProposalResponses[keyof GetReceivedUseCaseProposalResponses];
 
+export type DecideUseCaseProposalData = {
+    body: DecideUseCaseProposal;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-case-proposals/{id}/decision';
+};
+
+export type DecideUseCaseProposalErrors = {
+    /**
+     * The decision is neither shortlisted nor declined.
+     */
+    400: Problem;
+    /**
+     * The proposal was not sent, or the caller is neither of the organization that posted its use case nor an operator.
+     */
+    404: Problem;
+};
+
+export type DecideUseCaseProposalError = DecideUseCaseProposalErrors[keyof DecideUseCaseProposalErrors];
+
+export type DecideUseCaseProposalResponses = {
+    /**
+     * The proposal's line with the decision as recorded.
+     */
+    200: ReceivedUseCaseProposalSummary;
+};
+
+export type DecideUseCaseProposalResponse = DecideUseCaseProposalResponses[keyof DecideUseCaseProposalResponses];
+
 export type GetUseCaseProposalFileData = {
     body?: never;
     path: {
@@ -12246,6 +12373,72 @@ export type SendUseCaseProposalResponses = {
 };
 
 export type SendUseCaseProposalResponse = SendUseCaseProposalResponses[keyof SendUseCaseProposalResponses];
+
+export type WithdrawUseCaseProposalData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-case-proposals/{id}/withdraw';
+};
+
+export type WithdrawUseCaseProposalErrors = {
+    /**
+     * The caller's organization has no such proposal.
+     */
+    404: Problem;
+    /**
+     * The proposal is not sent, or the use case no longer takes proposals.
+     */
+    409: Problem;
+};
+
+export type WithdrawUseCaseProposalError = WithdrawUseCaseProposalErrors[keyof WithdrawUseCaseProposalErrors];
+
+export type WithdrawUseCaseProposalResponses = {
+    /**
+     * The form with the proposal as a draft again, saying when it was taken back.
+     */
+    200: UseCaseProposalForm;
+};
+
+export type WithdrawUseCaseProposalResponse = WithdrawUseCaseProposalResponses[keyof WithdrawUseCaseProposalResponses];
+
+export type SendUseCaseProposalOutcomesData = {
+    body: SendUseCaseProposalOutcomes;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-cases/{useCaseId}/outcomes';
+};
+
+export type SendUseCaseProposalOutcomesErrors = {
+    /**
+     * The message is longer than 2000 characters.
+     */
+    400: Problem;
+    /**
+     * There is no such use case, or the caller is neither of the organization that posted it nor an operator.
+     */
+    404: Problem;
+    /**
+     * No proposal has a decision to send.
+     */
+    409: Problem;
+};
+
+export type SendUseCaseProposalOutcomesError = SendUseCaseProposalOutcomesErrors[keyof SendUseCaseProposalOutcomesErrors];
+
+export type SendUseCaseProposalOutcomesResponses = {
+    /**
+     * How many senders were e-mailed, and of them how many shortlisted and declined.
+     */
+    200: UseCaseProposalOutcomes;
+};
+
+export type SendUseCaseProposalOutcomesResponse = SendUseCaseProposalOutcomesResponses[keyof SendUseCaseProposalOutcomesResponses];
 
 export type GetUseCaseProposalFormData = {
     body?: never;

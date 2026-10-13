@@ -296,6 +296,24 @@ public class EmailService {
 	}
 
 	/**
+	 * Tells the sender of a proposal what the organization that posted the use case decided about it. The note of that
+	 * organization, when it wrote one, is quoted as written. The link opens the proposal after signing in.
+	 * @param shortlisted whether the proposal was shortlisted; otherwise it was declined
+	 * @param recipientName who is written to; null when unknown
+	 * @param organizationName the organization that sent the proposal
+	 * @param message the note quoted in the email; null when there is none
+	 * @param useCaseId the use case, whose proposal view the link opens
+	 */
+	@Transactional
+	public void sendProposalOutcome(String recipient, boolean shortlisted, @Nullable String recipientName,
+			String useCaseTitle, @Nullable String organizationName, @Nullable String message, UUID useCaseId) {
+		queue(shortlisted ? EmailKind.PROPOSAL_SHORTLISTED : EmailKind.PROPOSAL_DECLINED, recipient,
+				values("recipientName", recipientName, "useCaseTitle", useCaseTitle, "organizationName",
+						organizationName, "message", message, "proposalUrl",
+						url("/use-cases/" + useCaseId + "/propose/view")));
+	}
+
+	/**
 	 * Tells an address that it was asked to judge a program's applications. The link opens the program's applications
 	 * under Reviews; like an organization invitation it carries nothing that lets anyone in, and only the person who
 	 * signs in with this address reads them.

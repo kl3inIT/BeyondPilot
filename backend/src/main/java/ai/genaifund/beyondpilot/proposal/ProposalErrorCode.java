@@ -56,6 +56,9 @@ public enum ProposalErrorCode implements ErrorCode {
 	ANSWER_REQUIRED("PROPOSAL_ANSWER_REQUIRED", ErrorCategory.VALIDATION,
 			"Answer every question the program asks."),
 
+	NOT_SENT("PROPOSAL_NOT_SENT", ErrorCategory.CONFLICT,
+			"Only a sent proposal can be withdrawn."),
+
 	NOT_SUBMITTED("PROPOSAL_NOT_SUBMITTED", ErrorCategory.CONFLICT,
 			"Only a submitted application can be withdrawn."),
 
@@ -123,7 +126,10 @@ public enum ProposalErrorCode implements ErrorCode {
 			"Add the proposal as a PDF."),
 
 	EDIT_WINDOW_CLOSED("PROPOSAL_EDIT_WINDOW_CLOSED", ErrorCategory.CONFLICT,
-			"This proposal was sent, and the time to edit it has ended.");
+			"This proposal was sent, and the time to edit it has ended."),
+
+	NOTHING_TO_SEND("PROPOSAL_NOTHING_TO_SEND", ErrorCategory.CONFLICT,
+			"No proposal has a new decision to send.");
 
 	private final String code;
 	private final ErrorCategory category;

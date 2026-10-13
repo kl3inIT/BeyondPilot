@@ -1,7 +1,7 @@
 import { ArrowLeftIcon, DownloadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Button } from "@/components/actions/button";
+import { Status } from "@/components/composites/status";
 import { Badge } from "@/components/ui/badge";
 import { TextButton } from "@/components/actions/text-button";
 import { useFileSize } from "@/features/solution/solution-deck";
@@ -11,25 +11,26 @@ import { adminUseCaseProposalsRoute, siteRoutes, workspaceUseCaseProposalsRoute 
 import { cn } from "@/lib/utils";
 
 import { Card, Rows } from "./proposal-card";
+import { DecideButtons } from "./proposal-decision";
 import { ProposalSentBy } from "./proposal-sender-card";
 import { ProposalSolutionList } from "./proposal-solution-list";
-import { proposalFileAddress } from "./received-proposals";
+import { decisionTone, proposalFileAddress } from "./received-proposals";
 
 type ReceivedProposalPageProps = {
   proposal: ReceivedUseCaseProposal;
-  /** Whose page it is: the organization's own, or the operators', inside Admin, which decides nothing. */
+  /** Whose page it is: the organization's own, or the operators', who decide for it as well. */
   area?: "workspace" | "admin";
 };
 
 /**
- * One proposal a use case received, read-only: who sent it, the solutions offered and the approach,
- * the sender's name, address, country and number, the team and the PDF. Shortlist and
- * Decline are drawn and disabled for the organization until a later change adds the decision; GenAI
- * Fund reads the proposal without them.
+ * One proposal a use case received: who sent it, the solutions offered and the approach, the
+ * sender's name, address, country and number, the team and the PDF; and what the team decided about
+ * it, with the buttons that decide.
  */
 function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposalPageProps) {
   const admin = area === "admin";
   const t = useTranslations("UseCaseProposal.received.detail");
+  const r = useTranslations("UseCaseProposal.received");
   const format = useFormatter();
   const size = useFileSize();
   const { deck, solutions, useCase } = proposal;
@@ -47,7 +48,7 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
         <header className="flex flex-col gap-2">
           <nav
             aria-label={t("crumbs")}
-            className="flex flex-wrap items-center gap-x-2 text-sm font-medium"
+            className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm font-medium"
           >
             <TextButton href={admin ? siteRoutes.adminUseCases : siteRoutes.workspaceUseCases}>
               <ArrowLeftIcon aria-hidden="true" />
@@ -78,18 +79,42 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
                 {t("sent", { date: sent })}
                 {edited && " · " + t("edited", { date: edited })}
               </span>
-              {/* The decision comes with a later change: drawn, not offered. */}
-              {!admin && (
-                <>
-                  <Button prominence="secondary" disabled>
-                    {t("decline")}
-                  </Button>
-                  <Button disabled>{t("shortlist")}</Button>
-                </>
-              )}
+              <DecideButtons
+                proposalId={proposal.id}
+                name={proposal.organizationName}
+                decision={proposal.decision}
+              />
             </div>
           </div>
         </header>
+
+        <Card id="proposal-assessment" title={t("assessment.title")}>
+          <Rows
+            rows={[
+              {
+                label: t("assessment.decision"),
+                value: (
+                  <Status tone={decisionTone(proposal.decision)}>
+                    {r(`status.${proposal.decision ?? "undecided"}`)}
+                  </Status>
+                ),
+              },
+              ...(proposal.decision && proposal.decidedAt
+                ? [
+                    {
+                      label: t("assessment.decided"),
+                      value: proposal.decidedBy
+                        ? t("assessment.decidedBy", {
+                            name: proposal.decidedBy,
+                            date: day(proposal.decidedAt),
+                          })
+                        : day(proposal.decidedAt),
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        </Card>
 
         <Card id="proposal-solutions" title={t("solutions.title")}>
           <ProposalSolutionList solutions={solutions} />

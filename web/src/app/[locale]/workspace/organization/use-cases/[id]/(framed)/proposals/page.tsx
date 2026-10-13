@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ReceivedProposalsPage } from "@/features/proposal/received-proposals-page";
+import { loadReceivedSearch } from "@/features/proposal/received-search";
 import { readReceivedProposals } from "@/features/proposal/received-queries";
 import { requireAccount } from "@/lib/auth/session";
 import { workspaceUseCaseProposalsRoute } from "@/lib/site";
@@ -18,14 +19,18 @@ export async function generateMetadata({
 
 export default async function OrganizationUseCaseProposalsRoute({
   params,
+  searchParams,
 }: PageProps<"/[locale]/workspace/organization/use-cases/[id]/proposals">) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   await requireAccount(workspaceUseCaseProposalsRoute(id));
-  const proposals = await readReceivedProposals(id);
+  const [proposals, search] = await Promise.all([
+    readReceivedProposals(id),
+    loadReceivedSearch(searchParams),
+  ]);
   if (!proposals) {
     notFound();
   }
 
-  return <ReceivedProposalsPage proposals={proposals} />;
+  return <ReceivedProposalsPage proposals={proposals} tab={search.tab} />;
 }
