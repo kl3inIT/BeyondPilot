@@ -179,6 +179,12 @@ export const liveCampaignSlug = "insurance-ai-tasco";
 /** Submissions to the live campaign close at 23:59 Vietnam time (ICT) on 15 October 2026. */
 export const liveCampaignDeadline = "2026-10-15T23:59:00+07:00";
 
+/** The program the home page announces, where its page is. */
+export const featuredProgramSlug = "nestle-vietnam-ai-reinvention";
+
+/** Applications to the featured program close at 23:59 Vietnam time (ICT) on 22 November 2026. */
+export const featuredProgramDeadline = "2026-11-22T23:59:00+07:00";
+
 /** Where BeyondPilot itself is reached; the fund's own address stays with its links below. */
 export const contactEmail = "team@beyondpilot.ai";
 
