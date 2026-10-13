@@ -55,5 +55,6 @@ Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 - **Errors and states**: `error.tsx` and `not-found.tsx` per area, a `loading.tsx` only on a segment with no account check, redirect or not-found at or below it; failure words by code from `Errors`, problem pointers mapped to fields ([errors, loading and empty states](../docs/conventions.md#errors-loading-and-empty-states)).
 - **Forms**: `useAppForm` and the shared controls for every form that sends data, one field or many; hint and error tied to the field, a counter where a limit is set, focus on the first field in error ([forms](../docs/conventions.md#forms)).
 - **Styling**: semantic tokens only, no raw colours, inline styles or arbitrary values ([design tokens and styling](../docs/conventions.md#design-tokens-and-styling)).
+- **Motion and charts**: durations from the named scale, `transform` and `opacity`, reduced motion honoured; charts through the registry `chart`, in `ChartFrame` or `StatCell` ([motion](../docs/conventions.md#motion), [charts](../docs/conventions.md#charts)).
 - **Components**: layer choice, naming, props, the `tone`/`prominence`/`size` action wrappers, states and accessibility ([components](../docs/conventions.md#components)).
 - **Libraries**: add a library with its first consumer ([stack](../docs/conventions.md#stack)).
