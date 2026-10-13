@@ -296,6 +296,17 @@ public class MessagingRepository {
 	}
 
 	/**
+	 * Makes the requests of one account that write wait for each other until the transaction ends, so a limit
+	 * counted before writing holds for requests sent at once.
+	 */
+	public void lockWriter(UUID accountId) {
+		jdbc.sql("select 1 from pg_advisory_xact_lock(hashtext(:key))")
+			.param("key", "messaging:" + accountId)
+			.query(Integer.class)
+			.single();
+	}
+
+	/**
 	 * Records how far a reader has read, never backwards, and that they may be emailed again about what comes next.
 	 * @return how far they have read after the call
 	 */

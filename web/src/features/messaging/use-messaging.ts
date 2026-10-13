@@ -53,24 +53,38 @@ export function useMessaging(
   const told = useRef(new Map<string, number>());
   const typingTold = useRef(0);
   const typingTimer = useRef<number | undefined>(undefined);
-  const selected = useRef(detail?.conversation.id ?? null);
+  /** The conversation that is open when an answer arrives, which may be after the reader moved on. */
+  const shown = useRef<string | null>(detail?.conversation.id ?? null);
+  /** Counts what the reader asked to see, so that of two answers the one asked for last is shown. */
+  const asked = useRef(0);
   const thread = state.thread;
   const openId = thread?.conversation.id;
+  const accepted = thread?.conversation.status === "accepted";
+
+  useEffect(() => {
+    shown.current = openId ?? null;
+  }, [openId]);
 
   /** Reads the lists again, and the open conversation with them. */
   async function readAgain() {
+    const id = openId;
     try {
       const { data } = await listConversations();
-      dispatch({ type: "listed", list: data });
-      if (openId) {
-        const { data: again } = await getConversation({ path: { id: openId } });
-        if (selected.current === openId) {
-          dispatch({ type: "opened", detail: again });
-        }
-      }
+      dispatch({ type: "listed", list: data, watching: watchingNow() });
+    } catch {
+      // Read again when the stream next opens.
+    }
+    if (!id) {
+      return;
+    }
+    try {
+      const { data } = await getConversation({ path: { id } });
+      // The reducer leaves it out when the reader has opened another conversation meanwhile.
+      dispatch({ type: "refreshed", detail: data });
     } catch (error) {
-      if (error instanceof ApiError && error.status === 404 && selected.current === openId) {
-        selected.current = null;
+      if (error instanceof ApiError && error.status === 404 && shown.current === id) {
+        asked.current += 1;
+        shown.current = null;
         dispatch({ type: "closed" });
         onGone();
       }
@@ -78,20 +92,28 @@ export function useMessaging(
     }
   }
 
-  /** Reads what was written in the open conversation while the stream was away. */
+  /** Reads what was written in the open conversation while the stream was away, to its end. */
   async function catchUp() {
-    const last = thread?.messages.findLast((message) => message.seq !== null)?.seq;
-    if (!openId || last == null) {
+    let after = thread?.messages.findLast((message) => message.seq !== null)?.seq;
+    if (!openId || after == null) {
       return;
     }
     try {
-      const { data } = await listMessages({ path: { id: openId }, query: { after: last } });
-      dispatch({
-        type: "caughtUp",
-        conversationId: openId,
-        messages: data.messages,
-        readByOtherSide: data.readByOtherSide,
-      });
+      for (;;) {
+        const { data } = await listMessages({ path: { id: openId }, query: { after } });
+        dispatch({
+          type: "caughtUp",
+          conversationId: openId,
+          messages: data.messages,
+          readByOtherSide: data.readByOtherSide,
+        });
+        const last = Math.max(...data.messages.map((message) => message.seq));
+        // An answer that does not move forward ends the reading, whatever it says of more.
+        if (!data.hasMore || last <= after) {
+          return;
+        }
+        after = last;
+      }
     } catch {
       // The next time the stream opens tries again.
     }
@@ -123,12 +145,16 @@ export function useMessaging(
     }
   }, [stale]);
 
-  /** Tells the backend how far the reader has read the open conversation, once for each message. */
+  /**
+   * Tells the backend how far the reader has read the open conversation, once for each message.
+   * Only a conversation that was accepted is read this way: whoever wrote a first message does not
+   * learn that it was read before it is answered.
+   */
   const lastFromOtherSide = thread?.messages.findLast(
     (message) => message.seq !== null && fromOtherSide(thread.conversation, message),
   )?.seq;
   const markRead = useEffectEvent(() => {
-    if (!openId || lastFromOtherSide == null || !watchingNow()) {
+    if (!openId || !accepted || lastFromOtherSide == null || !watchingNow()) {
       return;
     }
     if ((told.current.get(openId) ?? 0) >= lastFromOtherSide) {
@@ -145,7 +171,7 @@ export function useMessaging(
   });
   useEffect(() => {
     markRead();
-  }, [openId, lastFromOtherSide]);
+  }, [openId, accepted, lastFromOtherSide]);
   useEffect(() => {
     const onVisible = () => markRead();
     document.addEventListener("visibilitychange", onVisible);
@@ -166,27 +192,34 @@ export function useMessaging(
 
   return {
     state,
-    /** False while the stream is away: what arrives meanwhile shows when it is back. */
+    /** False once the stream was lost or refused: what arrives meanwhile shows when it is back. */
     connected,
-    /** Shows a conversation of the list. */
-    async open(id: string) {
-      selected.current = id;
+    /**
+     * Shows a conversation. Of two that were asked for one after the other, the one asked for last
+     * is shown whichever answers first; the other is `superseded`.
+     */
+    async open(id: string): Promise<"opened" | "failed" | "superseded"> {
+      asked.current += 1;
+      const turn = asked.current;
       try {
         const { data } = await getConversation({ path: { id } });
-        if (selected.current !== id) {
-          return false;
+        if (turn !== asked.current) {
+          return "superseded";
         }
+        shown.current = id;
         dispatch({ type: "opened", detail: data });
-        return true;
+        return "opened";
       } catch (error) {
-        if (selected.current === id) {
-          onFailure(error);
+        if (turn !== asked.current) {
+          return "superseded";
         }
-        return false;
+        onFailure(error);
+        return "failed";
       }
     },
     close() {
-      selected.current = null;
+      asked.current += 1;
+      shown.current = null;
       dispatch({ type: "closed" });
     },
     /** Writes a message: it is shown at once and kept by the backend under the identifier given here. */
@@ -253,8 +286,11 @@ export function useMessaging(
       const { data } = await startConversation({
         body: { id, kind: target.kind, slug: target.slug, body },
       });
+      asked.current += 1;
+      shown.current = data.conversation.id;
+      dispatch({ type: "opened", detail: data });
       const { data: lists } = await listConversations();
-      dispatch({ type: "listed", list: lists });
+      dispatch({ type: "listed", list: lists, watching: watchingNow() });
       return data.conversation.id;
     },
     /** Accepts the first message that is open, which opens the conversation. */
@@ -263,22 +299,35 @@ export function useMessaging(
         return;
       }
       const { data } = await acceptConversation({ path: { id: openId } });
-      dispatch({ type: "opened", detail: data });
+      dispatch({ type: "refreshed", detail: data });
       const { data: lists } = await listConversations();
-      dispatch({ type: "listed", list: lists });
+      dispatch({ type: "listed", list: lists, watching: watchingNow() });
     },
-    /** Declines or reports the first message that is open; it is then gone for the reader. */
+    /**
+     * Declines or reports the first message that is open; it is then gone for the reader. The
+     * conversation closes together with the list that no longer holds it, so the screen never
+     * shows the list with a row that is about to leave. True when it closed what is shown; false
+     * when the reader had gone to another conversation meanwhile, which stays.
+     */
     async refuse(how: "decline" | "report") {
       if (!openId) {
-        return;
+        return false;
       }
+      const refused = openId;
       await (how === "decline" ? declineConversation : reportConversation)({
-        path: { id: openId },
+        path: { id: refused },
       });
-      selected.current = null;
-      dispatch({ type: "closed" });
-      const { data: lists } = await listConversations();
-      dispatch({ type: "listed", list: lists });
+      try {
+        const { data: lists } = await listConversations();
+        dispatch({ type: "listed", list: lists, watching: watchingNow() });
+      } finally {
+        if (shown.current === refused) {
+          asked.current += 1;
+          shown.current = null;
+          dispatch({ type: "closed" });
+        }
+      }
+      return shown.current === null;
     },
   };
 }

@@ -217,6 +217,8 @@ public class MessagingService {
 		Person person = identity.person(actor);
 		Target target = target(caller, request.kind(), request.slug());
 		String body = request.body().strip();
+		// One writer at a time for an account, so the limits count what its other requests are writing.
+		conversations.lockWriter(caller.accountId());
 		Message previous = conversations.message(request.id()).orElse(null);
 		if (previous != null) {
 			return repeatedStart(caller, target, previous, body);
@@ -262,7 +264,7 @@ public class MessagingService {
 					: Objects.requireNonNull(membership).organizationName();
 			for (Person recipient : answering(conversation)) {
 				email.sendMessageRequest(recipient.email(), person.displayName(), organizationName,
-						target.subjectName(), body);
+						target.subjectName());
 			}
 		}
 		changes.tell(audience(conversation), listener -> event(Kind.CONVERSATION, id));
@@ -322,14 +324,15 @@ public class MessagingService {
 	}
 
 	/**
-	 * Records how far the caller has read a conversation, and tells the other side.
-	 * @throws MessagingException when the caller has no such conversation
+	 * Records how far the caller has read a conversation, and tells the other side. Nothing is recorded or told for
+	 * a conversation that is not open: the sender of a first message is not told that it was read until it is
+	 * accepted.
+	 * @throws MessagingException when the caller has no such conversation, or names a message past its last
 	 */
 	@Transactional
 	public void read(Actor actor, UUID id, MarkReadRequest request) {
 		Caller caller = caller(actor);
 		Conversation conversation = visible(caller, id);
-		// Opening a request must not tell its sender that the recipient read it before answering.
 		if (!MessagingRepository.ACCEPTED.equals(conversation.status())) {
 			return;
 		}
@@ -436,6 +439,8 @@ public class MessagingService {
 
 	/** Keeps a message, tells the screens that are open, and emails the people of the other side who have none. */
 	private Message write(Caller caller, Person person, Conversation conversation, UUID messageId, String body) {
+		// One writer at a time for an account, so the limit counts what its other requests are writing.
+		conversations.lockWriter(caller.accountId());
 		Message previous = conversations.message(messageId).orElse(null);
 		if (previous != null) {
 			if (!previous.conversationId().equals(conversation.id())

@@ -287,3 +287,159 @@ describe("what the other side does", () => {
     expect(arrived.thread?.typing).toBeNull();
   });
 });
+
+describe("the open conversation read again", () => {
+  const mine = { mine: true, fromStarter: true };
+
+  it("keeps the earlier messages the reader asked for, and what is known of those before them", () => {
+    const open = chat("a");
+    const latest = [message("m5", 5), message("m6", 6)];
+    const state = reduce(
+      initialState({ chats: [open], requests: [], unread: 0 }, detail(open, latest)),
+      {
+        type: "earlier",
+        conversationId: "a",
+        messages: [message("m3", 3), message("m4", 4)],
+        hasMore: true,
+      },
+    );
+
+    // The read holds the latest messages only, and says that some come before them.
+    const next = reduce(state, {
+      type: "refreshed",
+      detail: { ...detail(open, [...latest, message("m7", 7)]), hasEarlier: false },
+    });
+
+    expect(next.thread?.messages.map((held) => held.id)).toEqual(["m3", "m4", "m5", "m6", "m7"]);
+    expect(next.thread?.hasEarlier).toBe(true);
+  });
+
+  it("takes what the read says of earlier messages when the screen holds none before it", () => {
+    const open = chat("a");
+    const state = initialState(
+      { chats: [open], requests: [], unread: 0 },
+      detail(open, [message("m5", 5)]),
+    );
+
+    const next = reduce(state, {
+      type: "refreshed",
+      detail: { ...detail(open, [message("m4", 4), message("m5", 5)]), hasEarlier: true },
+    });
+
+    expect(next.thread?.hasEarlier).toBe(true);
+  });
+
+  it("keeps a message that was heard after the read was taken", () => {
+    const state = reduce(stateWith(chat("a")), {
+      type: "heard",
+      kind: "message",
+      watching: true,
+      event: { conversationId: "a", message: message("m2", 2) },
+    });
+
+    const next = reduce(state, {
+      type: "refreshed",
+      detail: detail(chat("a"), [message("m1", 1, mine)]),
+    });
+
+    expect(next.thread?.messages.map((held) => held.id)).toEqual(["m1", "m2"]);
+  });
+
+  it("keeps a message the backend has not kept yet, last", () => {
+    const state = reduce(stateWith(chat("a")), {
+      type: "sending",
+      conversationId: "a",
+      id: "unsent",
+      body: "On my way.",
+      at: "2026-10-13T03:00:00Z",
+    });
+
+    const next = reduce(state, {
+      type: "refreshed",
+      detail: detail(chat("a"), [message("m1", 1, mine), message("m2", 2)]),
+    });
+
+    expect(next.thread?.messages.map((held) => held.id)).toEqual(["m1", "m2", "unsent"]);
+    expect(next.thread?.messages.at(-1)?.delivery).toBe("sending");
+  });
+
+  it("takes the conversation as it is now, and never moves back how far the other side has read", () => {
+    const waiting = chat("a", { status: "pending", canWrite: false });
+    const state = reduce(stateWith(waiting), {
+      type: "heard",
+      kind: "read",
+      watching: true,
+      event: { conversationId: "a", seq: 5, fromStarter: false, mine: false },
+    });
+
+    const next = reduce(state, {
+      type: "refreshed",
+      detail: { ...detail(chat("a"), [message("m1", 1, mine)]), readByOtherSide: 1 },
+    });
+
+    expect(next.thread?.conversation).toMatchObject({ status: "accepted", canWrite: true });
+    expect(next.thread?.readByOtherSide).toBe(5);
+  });
+
+  it("changes nothing when the reader has opened another conversation meanwhile", () => {
+    const state = stateWith(chat("a"), chat("b"));
+    const late = detail(chat("b"), [message("m9", 9)]);
+
+    expect(reduce(state, { type: "refreshed", detail: late })).toBe(state);
+    // Nothing is open: an answer does not open what the reader closed.
+    const closed = reduce(state, { type: "closed" });
+    expect(reduce(closed, { type: "refreshed", detail: late })).toBe(closed);
+  });
+
+  it("is replaced by another conversation the reader opens", () => {
+    const state = stateWith(chat("a"), chat("b"));
+
+    const next = reduce(state, { type: "opened", detail: detail(chat("b"), [message("m9", 9)]) });
+
+    expect(next.thread?.conversation.id).toBe("b");
+    expect(next.thread?.messages.map((held) => held.id)).toEqual(["m9"]);
+  });
+});
+
+describe("the lists read again", () => {
+  const counted = { chats: [chat("a", { unread: 2 }), chat("b", { unread: 1 })], requests: [] };
+
+  it("count nothing in the conversation the reader is looking at", () => {
+    const state = stateWith(chat("a"), chat("b"));
+
+    const next = reduce(state, {
+      type: "listed",
+      list: { ...counted, unread: 3 },
+      watching: true,
+    });
+
+    expect(next.chats.map((row) => row.unread)).toEqual([0, 1]);
+    expect(next.thread?.conversation.unread).toBe(0);
+    expect(unreadOf(next)).toBe(1);
+  });
+
+  it("count what arrived while the reader was away from the screen", () => {
+    const state = stateWith(chat("a"), chat("b"));
+
+    const next = reduce(state, {
+      type: "listed",
+      list: { ...counted, unread: 3 },
+      watching: false,
+    });
+
+    expect(next.chats.map((row) => row.unread)).toEqual([2, 1]);
+  });
+
+  it("leave a first message that waits as the backend counts it", () => {
+    const waiting = chat("a", { status: "pending", side: "recipient", canWrite: false });
+    const state = stateWith(waiting);
+
+    const next = reduce(state, {
+      type: "listed",
+      list: { chats: [{ ...waiting, unread: 1 }], requests: [], unread: 1 },
+      watching: true,
+    });
+
+    expect(next.chats[0].unread).toBe(1);
+  });
+});

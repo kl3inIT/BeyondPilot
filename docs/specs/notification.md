@@ -94,7 +94,8 @@ The message is plain text, and its line breaks are kept. The button "View your a
   was sent to. Its link names a page and carries no token: anyone else who follows it sees the not-found page, or
   their own organization.
 - **Addresses.** No email about a conversation carries an address of either side. The email of a first message
-  names its sender and their organization, and the two write to each other in Messages.
+  names its sender and their organization and never quotes what they wrote, so the email log holds no message; the two
+  write to each other in Messages.
 - **Kinds no longer sent.** A kind that is removed leaves `EmailKind`, its default wording and any wording an
   operator saved for it. The log keeps every email of it under the value it was stored with: it is listed, filtered
   by that value, read and sent again like any other, because the log reads `kind` as text.

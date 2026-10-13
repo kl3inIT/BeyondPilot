@@ -95,6 +95,10 @@ class MessagingClock {
 		int reminded = 0;
 		for (Conversation due : due(now.minus(REMINDER_AFTER), true)) {
 			if (handle(due, request -> {
+				// Read again under the lock: another run may have reminded since the list was read.
+				if (request.remindedAt() != null) {
+					return;
+				}
 				conversations.markReminded(request.id());
 				Person starter = identity.people(List.of(request.starterAccountId())).get(request.starterAccountId());
 				long daysLeft = Math.max(1,

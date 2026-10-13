@@ -122,10 +122,9 @@ public enum EmailKind {
 	TALENT_RESTORED("talent_restored", EmailGroup.TALENT, true, null, Variable.required("profileName", "Mei Tan"),
 			Variable.optional("profileUrl", "https://beyondpilot.example/talent/mei-tan")),
 
-	MESSAGE_REQUEST("message_request", EmailGroup.MESSAGES, true, "message",
+	MESSAGE_REQUEST("message_request", EmailGroup.MESSAGES, true, null,
 			Variable.optional("senderName", "Minh Trần"), Variable.optional("senderOrganization", "Pocket Policy"),
 			Variable.required("about", "ClaimLens"),
-			Variable.quote("message", "We are building claims triage and would like to see a demo."),
 			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages")),
 
 	MESSAGE_REQUEST_REMINDER("message_request_reminder", EmailGroup.MESSAGES, true, null,

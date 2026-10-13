@@ -45,10 +45,15 @@ type MessagingState = {
 };
 
 type MessagingAction =
-  /** The lists were read. */
-  | { type: "listed"; list: ConversationList }
-  /** A conversation was read to be shown. */
+  /**
+   * The lists were read. `watching` is whether the reader looks at the open conversation now, so
+   * that a list read a moment before they read it does not count it again.
+   */
+  | { type: "listed"; list: ConversationList; watching: boolean }
+  /** A conversation was read to be shown: it takes the place of another one that was open. */
   | { type: "opened"; detail: ConversationDetail }
+  /** The open conversation was read again: what the screen holds of it stays. */
+  | { type: "refreshed"; detail: ConversationDetail }
   /** Nothing is open any more. */
   | { type: "closed" }
   /** Messages before the first one held were read. */
@@ -157,41 +162,67 @@ function written(
   return [moved, ...chats.filter((chat) => chat.id !== conversationId)];
 }
 
+/**
+ * The open conversation with a later read of it written in. The read holds the latest messages
+ * only, so the earlier ones the reader asked for stay, as does a message heard after the read was
+ * taken; what the reader wrote and the backend has not kept yet stays last. The conversation's own
+ * fields are those of the read, and how far the other side has read never moves back.
+ */
+function refreshed(held: Thread, detail: ConversationDetail): Thread {
+  const firstHeld = held.messages.find((message) => message.seq !== null)?.seq;
+  const firstRead = detail.messages.reduce<number | null>(
+    (first, message) => (first === null || message.seq < first ? message.seq : first),
+    null,
+  );
+  // Whether anything comes before what the screen holds is known by whoever read furthest back.
+  const heldReachesBack = firstHeld != null && (firstRead === null || firstHeld < firstRead);
+  return {
+    ...held,
+    conversation: detail.conversation,
+    subject: detail.subject,
+    participants: detail.participants,
+    messages: merged(held.messages, detail.messages.map(kept)),
+    hasEarlier: heldReachesBack ? held.hasEarlier : detail.hasEarlier,
+    readByOtherSide: Math.max(held.readByOtherSide, detail.readByOtherSide),
+  };
+}
+
 function reduce(state: MessagingState, action: MessagingAction): MessagingState {
   switch (action.type) {
     case "listed": {
-      // What the reader watches is read: a list read a moment before may still count it.
-      const open = state.thread?.conversation.id;
       const thread = state.thread;
-      const row = [...action.list.chats, ...action.list.requests].find((chat) => chat.id === open);
+      const open = thread?.conversation.id;
+      // What the reader watches is read: a list read a moment before may still count it.
+      const chats = action.list.chats.map((chat) =>
+        action.watching && chat.id === open && chat.status === "accepted" && chat.unread > 0
+          ? { ...chat, unread: 0 }
+          : chat,
+      );
+      const row = [...chats, ...action.list.requests].find((chat) => chat.id === open);
       return {
         ...state,
-        chats: action.list.chats,
+        chats,
         requests: action.list.requests,
         thread: thread && row ? { ...thread, conversation: row } : thread,
       };
     }
     case "opened": {
-      const next = threadOf(action.detail);
       const held = state.thread;
-      if (held?.conversation.id !== next.conversation.id) {
-        return { ...state, thread: next };
-      }
-      // A message heard after the server took this snapshot must stay visible when the read returns.
-      const oldestFetched = next.messages.find((message) => message.seq !== null)?.seq;
-      const loadedEarlier = held.messages.some(
-        (message) => message.seq !== null && oldestFetched != null && message.seq < oldestFetched,
-      );
       return {
         ...state,
-        thread: {
-          ...next,
-          messages: merged(held.messages, next.messages),
-          hasEarlier: loadedEarlier ? held.hasEarlier : next.hasEarlier,
-          readByOtherSide: Math.max(held.readByOtherSide, next.readByOtherSide),
-          typing: held.typing,
-        },
+        thread:
+          held?.conversation.id === action.detail.conversation.id
+            ? refreshed(held, action.detail)
+            : threadOf(action.detail),
       };
+    }
+    case "refreshed": {
+      const held = state.thread;
+      // An answer that arrives after the reader moved on changes nothing.
+      if (held?.conversation.id !== action.detail.conversation.id) {
+        return state;
+      }
+      return { ...state, thread: refreshed(held, action.detail) };
     }
     case "closed":
       return { ...state, thread: null };

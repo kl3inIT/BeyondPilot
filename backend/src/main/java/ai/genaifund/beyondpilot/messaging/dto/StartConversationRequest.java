@@ -15,5 +15,6 @@ public record StartConversationRequest(
 				regexp = "talent|solution|program") String kind,
 		@Schema(description = "The address of the talent profile, solution or program on the site.") @NotBlank @Size(
 				max = 200) String slug,
-		@NotBlank @Size(max = 2000) String body) {
+		@Schema(description = "The text; something other than spaces, in any script.") @NotBlank @Pattern(
+				regexp = "(?Us).*\\S.*") @Size(max = 2000) String body) {
 }

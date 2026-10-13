@@ -21,7 +21,8 @@ The conversations people have on BeyondPilot: with the person behind a talent pr
 - **To a talent profile:** any signed-in person, never the person behind it. The profile must be approved and listed.
 - **To a solution:** a member of an approved organization, never of the one that offers it. The solution must be approved; one its owners keep out of the directory is still written to by its address.
 - **To a program:** any signed-in person who is not an operator. The program must be published.
-- **A first message** is 1 to 2000 characters after trimming and carries an identifier chosen by the sender. Retrying with the same identifier and text returns the conversation without writing or emailing again. To a profile or a solution the conversation starts `pending` and the people who answer are emailed (`message_request`) with the sender's name and organization, what it is about and the text, never an address. To a program it starts `accepted` and nobody is emailed.
+- **The lists.** Each of the caller's two lists holds the 200 conversations written in last; there is no further page.
+- **A first message** is 1 to 2000 characters after trimming and carries an identifier chosen by the sender. Retrying with the same identifier and text returns the conversation without writing or emailing again. To a profile or a solution the conversation starts `pending` and the people who answer are emailed (`message_request`) with the sender's name and organization and what it is about, never an address and never the text, which is read in Messages only. To a program it starts `accepted` and nobody is emailed.
 - **Limits.** Ten conversations a starter in 24 hours, then `429` with `Retry-After`. While a request waits, a second first message to the same subject is refused.
 
 ## A request
@@ -37,8 +38,8 @@ The conversations people have on BeyondPilot: with the person behind a talent pr
 - **Only an `accepted` conversation is written in**, by anyone on either side.
 - **The sender chooses the message's identifier.** The same identifier sent again writes nothing and answers the message as kept; an identifier that belongs to another conversation or another sender is refused.
 - **Order.** `seq` is one sequence over all messages; a later message has a greater one. A page is 50 messages: the latest, those before a `seq`, or those after one.
-- **Limits.** A message is 1 to 2000 characters. A person writes 30 messages a minute, then `429`.
-- **Read.** Each account has its own mark in each conversation, the `seq` of the last message it read; it never moves back or beyond the conversation's latest message. Writing a message marks the conversation read for its writer. Unread, for an account, is what the other side wrote after its mark: what a colleague of its own side wrote is not unread.
+- **Limits.** A message is 1 to 2000 characters and holds something other than spaces, in any script. A person writes 30 messages a minute, then `429`. An account's writes wait for each other, so the limits hold for requests sent at once.
+- **Read.** Each account has its own mark in each conversation, the `seq` of the last message it read; it never moves back, and a mark past the conversation's last message is refused. Only an `accepted` conversation is marked: reading a request records nothing and tells nobody, so its sender does not learn that it was read. Writing a message marks the conversation read for its writer. Unread, for an account, is what the other side wrote after its mark: what a colleague of its own side wrote is not unread.
 - **How far the other side read** is the furthest mark on that side: the starter's, or the furthest among the people written to.
 
 ## What a screen hears
@@ -64,7 +65,7 @@ When a message is written, each account of the other side that has no stream ope
 
 ## What operators read
 
-`GET /api/messaging/admin/reported`: the conversations with status `reported`, the most recently reported first, each with its first message, its subject, and the sender's name, address and organization. Paged from 1.
+`GET /api/messaging/admin/reported`: the conversations with status `reported`, the most recently reported first, each with its first message, its subject, and the sender's name, address and organization. Paged from 1. Operators read no other conversation: no email carries the text of a message, so the email log holds none.
 
 ## Web
 

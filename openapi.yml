@@ -22265,8 +22265,10 @@ components:
       properties:
         body:
           type: string
+          description: "The text; something other than spaces, in any script."
           maxLength: 2000
           minLength: 0
+          pattern: (?Us).*\S.*
         id:
           type: string
           format: uuid
@@ -22958,8 +22960,10 @@ components:
       properties:
         body:
           type: string
+          description: "The text; something other than spaces, in any script."
           maxLength: 2000
           minLength: 0
+          pattern: (?Us).*\S.*
         id:
           type: string
           format: uuid

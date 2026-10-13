@@ -111,6 +111,8 @@ class MessagingTest {
 		String text = mail.latestTextTo("mei@first-talent.test");
 		assertThat(mail.latestSubjectTo("mei@first-talent.test")).isEqualTo("A first message for you on BeyondPilot");
 		assertThat(text).contains("First Talent").doesNotContain("minh@first-sender.test");
+		// What was written is read in Messages only: it is in no email, and so not in the operators' email log.
+		assertThat(text).doesNotContain("Would you advise our team?");
 		assertThat(text).containsPattern("https?://[^/ ]+/workspace/messages(?![\\w/-])");
 
 		// It waits under the person's requests and under the sender's chats, and nobody writes in it yet.
@@ -128,6 +130,12 @@ class MessagingTest {
 			.expectStatus().isOk()), "$.readByOtherSide").longValue()).isZero();
 		assertProblem(send(sender, id, "One more thing."), 409, "MESSAGING_NOT_OPEN");
 		assertProblem(start(sender, "talent", slug, "Hello again."), 409, "MESSAGING_ALREADY_WAITING");
+		// The person reads the request; the sender is not told so until it is accepted.
+		long first = JsonPath.<Number>read(started, "$.messages[0].seq").longValue();
+		post(talent, CONVERSATIONS + "/" + id + "/read", Map.of("seq", first)).expectStatus().isNoContent();
+		assertThat(JsonPath.<Number>read(body(get(sender, CONVERSATIONS + "/" + id).expectStatus().isOk()),
+				"$.readByOtherSide")
+			.longValue()).isZero();
 		assertThat(JsonPath.<String>read(
 				body(get(sender, MESSAGING + "/prospect?kind=talent&slug=" + slug).expectStatus().isOk()),
 				"$.conversationId")).isEqualTo(id);
@@ -158,6 +166,8 @@ class MessagingTest {
 		post(sender, CONVERSATIONS + "/" + id + "/read", Map.of("seq", seq)).expectStatus().isNoContent();
 		assertThat(JsonPath.<Number>read(body(get(sender, CONVERSATIONS).expectStatus().isOk()), "$.unread").intValue())
 			.isZero();
+		// Spaces of another script are no message.
+		send(sender, id, "　 ").expectStatus().isBadRequest();
 		// The person who wrote sees how far the other side has read.
 		assertThat(JsonPath.<Number>read(body(get(talent, CONVERSATIONS + "/" + id).expectStatus().isOk()),
 				"$.readByOtherSide")

@@ -1,6 +1,8 @@
 import { useTranslations } from "next-intl";
+import { useId } from "react";
 
 import { Button } from "@/components/actions/button";
+import { Person } from "@/components/composites/person";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -29,6 +31,8 @@ type ConversationDetailsProps = {
  */
 function ConversationDetails({ subject, participants, side }: ConversationDetailsProps) {
   const t = useTranslations("Messaging.details");
+  // The details are drawn twice on a narrow screen, beside the conversation and in the sheet.
+  const peopleId = useId();
   const country = useCountryName();
   const industry = useVocabulary("industry");
   const maturity = useVocabulary("maturity");
@@ -100,8 +104,8 @@ function ConversationDetails({ subject, participants, side }: ConversationDetail
         </>
       )}
       <Separator />
-      <section aria-labelledby="conversation-people" className="flex flex-col gap-3">
-        <h3 id="conversation-people" className="font-medium">
+      <section aria-labelledby={peopleId} className="flex flex-col gap-3">
+        <h3 id={peopleId} className="font-medium">
           {t(side === "starter" ? "people.readers" : "people.writer")}
         </h3>
         {participants.length > 0 && (
@@ -109,23 +113,17 @@ function ConversationDetails({ subject, participants, side }: ConversationDetail
             {participants.map((person, index) => {
               const name = person.name ?? t("someone");
               return (
-                <li key={`${name}-${index}`} className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarFallback>{initials(name, name)}</AvatarFallback>
-                  </Avatar>
-                  <div className="grid min-w-0">
-                    <span className="truncate font-medium">{name}</span>
-                    {(person.organizationName || person.role !== "person") && (
-                      <span className="truncate text-muted-foreground">
-                        {[
-                          person.organizationName,
-                          person.role === "person" ? null : t(`role.${person.role}`),
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </span>
-                    )}
-                  </div>
+                <li key={`${name}-${index}`}>
+                  {/* The second line is where they belong, since an address is never shown here. */}
+                  <Person
+                    name={name}
+                    email={[
+                      person.organizationName,
+                      person.role === "person" ? null : t(`role.${person.role}`),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  />
                 </li>
               );
             })}

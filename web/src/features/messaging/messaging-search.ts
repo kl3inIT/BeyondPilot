@@ -1,4 +1,10 @@
-import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import {
+  createLoader,
+  createSerializer,
+  parseAsInteger,
+  parseAsString,
+  parseAsStringLiteral,
+} from "nuqs/server";
 
 import { getPathname } from "@/i18n/navigation";
 import { pageSize } from "@/lib/page-size";
@@ -26,6 +32,13 @@ export const messagingSearch = {
 };
 
 export const loadMessagingSearch = createLoader(messagingSearch);
+
+const messagesAddress = createSerializer(messagingSearch);
+
+/** The address of one conversation, in the list it was chosen from. */
+export function conversationRoute(id: string, tab: MessagingTab) {
+  return messagesAddress(siteRoutes.messages, { c: id, tab });
+}
 
 /** The profile, solution or program a first message goes to, by its public address. */
 export type MessagingTarget = { kind: ConversationKind; slug: string };

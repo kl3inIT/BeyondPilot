@@ -39,7 +39,21 @@ The backend (`bootRun`, on a database of its own) and the web development server
 
 **Found by this walk:** the web development server compressed the event stream and so held every event back until the stream ended. The stream now answers `Cache-Control: no-store, no-transform`. Matching's stream has the same header as before and so the same delay behind the development server; behind nginx neither is compressed.
 
-**Not walked in a browser:** a conversation with a solution's organization and with GenAI Fund about a program, decline and report, the operators' reported list, a lost connection, and a message that fails to send. The backend test and the end-to-end tests against stub backends cover them. Nothing was tried on staging.
+## The other flows, after the merge of `main`
+
+Walked the same way on 13 October 2026 on a local stack at the merged commit, whose database had been migrated by Flyway from enquiries of earlier development, with accounts made for the walk. 40 of 42 checks passed; the two that did not were faults of the script, each then checked another way.
+
+- **Talent, again:** the eleven steps above, with the two emails.
+- **A lost connection:** with the event stream refused for one window, the conversation said the connection was lost and a message written meanwhile did not show; once the stream was allowed again the message showed without a reload and the notice went. (Playwright's offline mode does not cut a stream that is already open, so the first attempt showed nothing.)
+- **Decline and report:** with the window open, the Requests tab counted two; a declined and a reported request each left the list of the person who answered, both senders' open windows said it would not be taken further, and the sender got the email "Your message on BeyondPilot" (the script looked for another subject).
+- **Operators:** `/admin/messages/reported` listed the reported first message with its sender, beside one that `V90` had moved from a reported enquiry; a person who is not an operator did not read it.
+- **A solution:** Contact on the solution page opened the first message; an owner of the provider was emailed; a member who is not an owner read the request and was told only owners answer; an owner accepted; the member's open window heard it and wrote; the buyer read the message under the member's name; both colleagues read the buyer's answer live.
+- **A program:** "Ask GenAI Fund" on a published program opened a conversation with no request; an operator found it among the chats and answered; the answer arrived in the asker's open window.
+- **The list and the menu:** the conversation written in last showed what was written, and the account menu showed Messages with a count of 1.
+
+Seen and left: in the operators' list the sender's name and address are cut short at 1440 wide while the message column has room.
+
+**Not walked in a browser:** a message that fails to send and is tried again, a request that closes after fourteen days, and anything on staging.
 
 A person who has just left Messages is still counted as listening until their stream is found closed, which can take until the next comment line, 20 seconds: a message written in that time brings them no email.
 

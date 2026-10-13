@@ -325,18 +325,18 @@ public class EmailService {
 	}
 
 	/**
-	 * Tells the side a first message was written to that it waits. The sender's address is not in it: the link opens
-	 * Messages, where the request is accepted, declined or reported.
+	 * Tells the side a first message was written to that it waits. Neither the sender's address nor what they wrote
+	 * is in it, so the text stays out of the email log: the link opens Messages, where the request is read and
+	 * accepted, declined or reported.
 	 * @param senderName who wrote; null until they gave a name, never their address
 	 * @param senderOrganization the organization the sender belongs to; null when none
 	 * @param about the profile, solution or program the message is about
-	 * @param message what the sender wrote
 	 */
 	@Transactional
 	public void sendMessageRequest(String recipient, @Nullable String senderName, @Nullable String senderOrganization,
-			String about, String message) {
+			String about) {
 		queue(EmailKind.MESSAGE_REQUEST, recipient, values("senderName", senderName, "senderOrganization",
-				senderOrganization, "about", about, "message", message, "messagesUrl", url(MESSAGES)));
+				senderOrganization, "about", about, "messagesUrl", url(MESSAGES)));
 	}
 
 	/**

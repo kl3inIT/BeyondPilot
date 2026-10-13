@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftIcon, InfoIcon, SendIcon } from "lucide-react";
+import { InfoIcon, SendIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -11,7 +11,12 @@ import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { useAppForm } from "@/components/form/app-form";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
-import { InputGroup, InputGroupAddon, InputGroupTextarea } from "@/components/ui/input-group";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from "@/components/ui/input-group";
 import { Marker, MarkerContent } from "@/components/ui/marker";
 import {
   Message,
@@ -32,14 +37,21 @@ import { initials } from "@/lib/initials";
 
 import { useConversationWords } from "./conversation-words";
 import { fromOtherSide, type Thread, type ThreadMessage } from "./messaging-state";
+import { ThreadHeader } from "./thread-header";
 
 /** The longest message the backend takes. */
 const MAX_MESSAGE = 2000;
 
+/** From how many characters on the composer says how many are left. */
+const NEAR_LIMIT = 1800;
+
 type ConversationThreadProps = {
   thread: Thread;
-  /** False while the stream of events is away. */
+  /** False once the stream of events was lost, until it is back. */
   connected: boolean;
+  /** The heading and the composer, for the screen to move the focus to when the conversation opens. */
+  headingRef: React.Ref<HTMLHeadingElement>;
+  composerRef: React.Ref<HTMLTextAreaElement>;
   onBack: () => void;
   onDetails: () => void;
   onSend: (body: string) => void;
@@ -54,11 +66,16 @@ type ConversationThreadProps = {
  * One conversation: who it is with, its messages from the oldest to the newest, and under them
  * what the reader may do now. In an open conversation that is the composer; a first message that
  * waits for the reader has its answers; one that waits for the other side, or was declined or
- * closed, says so.
+ * closed, says so there, once.
+ *
+ * The screen keys it by the conversation, so where the reader had scrolled to and an answer they
+ * were asked to confirm belong to one conversation and never show in the next.
  */
 function ConversationThread({
   thread,
   connected,
+  headingRef,
+  composerRef,
   onBack,
   onDetails,
   onSend,
@@ -89,27 +106,12 @@ function ConversationThread({
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <header className="flex items-center gap-3 border-b px-4 py-3 md:px-6">
-        <IconButton
-          prominence="tertiary"
-          size="sm"
-          className="lg:hidden"
-          aria-label={t("thread.back")}
-          onClick={onBack}
-        >
-          <ArrowLeftIcon aria-hidden="true" />
-        </IconButton>
-        <Avatar>
-          <AvatarFallback>{initials(name, name)}</AvatarFallback>
-        </Avatar>
-        <div className="grid min-w-0 flex-1 text-sm">
-          <h2 className="truncate font-medium">{name}</h2>
-          <p className="truncate text-muted-foreground">
-            {[t(`kind.${conversation.kind}`), conversation.subjectName]
-              .filter((part) => part !== name)
-              .join(" · ")}
-          </p>
-        </div>
+      <ThreadHeader
+        name={name}
+        about={{ kind: conversation.kind, name: conversation.subjectName }}
+        onBack={onBack}
+        headingRef={headingRef}
+      >
         <IconButton
           prominence="tertiary"
           size="sm"
@@ -119,7 +121,7 @@ function ConversationThread({
         >
           <InfoIcon aria-hidden="true" />
         </IconButton>
-      </header>
+      </ThreadHeader>
       <div className="flex min-h-0 flex-1 flex-col px-4 py-2 md:px-6">
         <MessageScrollerProvider autoScroll>
           <MessageScroller>
@@ -181,8 +183,8 @@ function ConversationThread({
       <div className="border-t px-4 py-3 md:px-6">
         {conversation.canWrite ? (
           <Composer
-            key={conversation.id}
             label={t("composer.label", { name })}
+            inputRef={composerRef}
             onSend={onSend}
             onTyping={onTyping}
           />
@@ -191,7 +193,14 @@ function ConversationThread({
         ) : (
           conversation.status !== "accepted" && (
             <p className="text-sm text-muted-foreground">
-              {t(`composer.locked.${conversation.status}`, { name })}
+              {[
+                t(`composer.locked.${conversation.status}`, { name }),
+                conversation.status === "pending" && conversation.closesAt
+                  ? t("composer.closes", { date: words.date(conversation.closesAt) })
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" ")}
             </p>
           )
         )}
@@ -249,7 +258,8 @@ function ThreadRow({
               {message.delivery === "sending"
                 ? t("thread.sending")
                 : seen
-                  ? t("thread.seen")
+                  ? // The backend keeps how far the other side has read, not when they read it.
+                    t("thread.seen")
                   : words.time(message.createdAt)}
             </span>
           )}
@@ -259,25 +269,19 @@ function ThreadRow({
   );
 }
 
-/** What the end of the conversation says: who is writing, that it waits, or that the stream is away. */
+/**
+ * What the end of the conversation says: that the other side does not know the reader has read a
+ * first message, who is writing, or that the stream was lost. Why nothing can be written is said
+ * once, where the composer would be.
+ */
 function ThreadState({ thread, connected }: { thread: Thread; connected: boolean }) {
   const t = useTranslations("Messaging");
   const words = useConversationWords();
   const { conversation } = thread;
   const name = words.nameOf(conversation);
   const notes: string[] = [];
-  if (
-    conversation.status === "pending" &&
-    conversation.side === "starter" &&
-    conversation.closesAt
-  ) {
-    notes.push(t("thread.waiting", { name, date: words.date(conversation.closesAt) }));
-  }
   if (conversation.status === "pending" && conversation.side === "recipient") {
     notes.push(t("thread.request", { name }));
-  }
-  if (conversation.status === "declined" || conversation.status === "closed") {
-    notes.push(t(`thread.${conversation.status}`, { name }));
   }
   if (thread.typing !== null) {
     notes.push(
@@ -305,10 +309,13 @@ function ThreadState({ thread, connected }: { thread: Thread; connected: boolean
  */
 function Composer({
   label,
+  inputRef,
   onSend,
   onTyping,
 }: {
   label: string;
+  /** The field, for the screen to move the focus to. */
+  inputRef?: React.Ref<HTMLTextAreaElement>;
   onSend: (body: string) => void | Promise<boolean>;
   onTyping?: () => void;
 }) {
@@ -337,6 +344,7 @@ function Composer({
           <div className="flex flex-col gap-1">
             <InputGroup>
               <InputGroupTextarea
+                ref={inputRef}
                 rows={1}
                 className="max-h-40 min-h-9"
                 aria-label={label}
@@ -358,19 +366,21 @@ function Composer({
               <InputGroupAddon align="inline-end">
                 {/* Never disabled: the group fades whole around a disabled control, and the words
                     in the field would then be too faint to read. Sending nothing does nothing. */}
-                <IconButton
+                <InputGroupButton
                   type="submit"
-                  prominence="primary"
-                  size="sm"
+                  variant="default"
+                  size="icon-sm"
                   aria-label={t("composer.send")}
                 >
                   <SendIcon aria-hidden="true" />
-                </IconButton>
+                </InputGroupButton>
               </InputGroupAddon>
             </InputGroup>
-            <p className="text-xs text-muted-foreground tabular-nums">
-              {t("composer.left", { count: MAX_MESSAGE - field.state.value.length })}
-            </p>
+            {field.state.value.length >= NEAR_LIMIT && (
+              <p className="text-xs text-muted-foreground tabular-nums">
+                {t("composer.left", { count: MAX_MESSAGE - field.state.value.length })}
+              </p>
+            )}
           </div>
         )}
       </form.Field>
