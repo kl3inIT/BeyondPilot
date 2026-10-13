@@ -28,7 +28,7 @@ application module, `backend/src/main/java/ai/genaifund/beyondpilot/notification
   - `email_suppression`: addresses never sent to.
 - **Dependencies.** `@ApplicationModule(type = CLOSED, allowedDependencies = { "audit", "identity" })`.
   - **`identity` does not depend on this module.** It publishes `SignInCodeRequested`, and `SignInCodeMail` sends it.
-  - **Modules that call `EmailService`:** `organization`, `introduction`, `proposal`, `solution`, `talent` and
+  - **Modules that call `EmailService`:** `organization`, `proposal`, `solution`, `talent` and
     `usecase`.
 
 ## Kinds of email
@@ -47,7 +47,6 @@ meaning.
 | `sign_in`       | `sign_in_code`                                                                                                                                                                                                                                    | `sendSignInCode`, package-private, called by `SignInCodeMail`                                                                                                                   |
 | `organizations` | `organization_invitation`, `organization_approved`, `organization_refused`, `organization_sent_back`, `organization_request_approved`, `organization_request_declined`, `organization_taken_down`, `organization_restored`, `organization_merged` | `sendOrganizationInvitation`, `sendOrganizationDecision`, `sendOrganizationSentBack`, `sendOrganizationRequestDecision`, `sendOrganizationSuspension`, `sendOrganizationMerged` |
 | `applications`  | `application_received`, `reviewer_invitation`, `application_outcome`                                                                                                                                                                              | `sendApplicationReceived`, `sendReviewerInvitation`, `sendApplicationOutcome`                                                                                                   |
-| `introductions` | `introduction_request`, `introduction_made`, `introduction_declined`                                                                                                                                                                              | `sendIntroductionRequest`, `sendIntroduction`, `sendIntroductionDeclined`                                                                                                       |
 | `solutions`     | `solution_approved`, `solution_sent_back`, `solution_rejected`, `solution_taken_down`, `solution_restored`                                                                                                                                        | `sendSolutionDecision`                                                                                                                                                          |
 | `use_cases`     | `use_case_approved`, `use_case_sent_back`, `proposal_sent`                                                                                                                                                                                        | `sendUseCaseDecision`, `sendProposalSent`                                                                                                                                       |
 | `talent`        | `talent_approved`, `talent_changes_requested`, `talent_removed`, `talent_restored`, `talent_enquiry`, `talent_enquiry_reminder`, `talent_introduction`, `talent_enquiry_declined`, `talent_enquiry_closed`                                        | `sendTalentDecision`, `sendTalentEnquiry`, `sendTalentEnquiryReminder`, `sendTalentIntroduction`, `sendTalentEnquiryDeclined`, `sendTalentEnquiryClosed`                        |
@@ -80,13 +79,10 @@ The message is plain text, and its line breaks are kept. The button "View your a
   | `talent_approved`, `talent_restored`               | `profileUrl`       | View your profile      | `/talent/<slug>`, its public page; `/workspace/talent` while the person keeps the profile out of the directory |
   | `talent_enquiry`, `talent_enquiry_reminder`        | `enquiriesUrl`     | Answer the message     | `/workspace/talent`, whose Enquiries tab holds the message                                                     |
   | `talent_enquiry_declined`, `talent_enquiry_closed` | `messagesUrl`      | View your messages     | `/workspace/talent/sent`                                                                                       |
-  | `introduction_request`                             | `introductionsUrl` | Answer the request     | `/workspace/organization/introductions`                                                                        |
 
 - **Kinds without a link.**
   - `sign_in_code`: the code is what the person needs, and a link would teach them to follow sign-in links.
-  - `introduction_made`, `introduction_declined`, `talent_introduction`: the email is the whole message (the other
-    side's address, or the refusal), and the sender of an introduction request has no page that lists what they
-    asked.
+  - `talent_introduction`: the email is the whole message, the other side's address.
   - `organization_refused`, `organization_request_declined`, `organization_taken_down`, `organization_merged`,
     `solution_rejected`, `solution_taken_down`, `talent_removed`: they tell the person to sign in and read why.
 - **Every link variable but `proposalUrl` is optional.** A wording an operator saved before the kind offered the
@@ -95,8 +91,8 @@ The message is plain text, and its line breaks are kept. The button "View your a
 - **No link lets anyone in.** An invitation (organization or reviewer) is used by signing in with the address it
   was sent to. Its link names a page and carries no token: anyone else who follows it sees the not-found page, or
   their own organization.
-- **Sender addresses.** An enquiry or introduction request never carries the sender's address. Only the introduction
-  emails, sent after the person accepts, carry the other side's address.
+- **Sender addresses.** An enquiry never carries the sender's address. Only the introduction email, sent after the
+  person accepts, carries the other side's address.
 - **Dates.** Dates are written in Vietnam time (`Asia/Ho_Chi_Minh`):
   - `editableUntil` is written as `d MMM yyyy, HH:mm` followed by ` ICT`;
   - a reviewer invitation's `expiresOn` is written as `d MMM yyyy`.

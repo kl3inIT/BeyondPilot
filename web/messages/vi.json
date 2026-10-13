@@ -248,9 +248,9 @@
         "option2Title": "Shieldbase",
         "option2Why": "Hệ điều hành AI cho doanh nghiệp, có sẵn bảo mật và quản trị dữ liệu.",
         "next": "Bước tiếp theo",
-        "introduce": "Yêu cầu giới thiệu",
+        "proposals": "Nhận đề xuất",
         "shortlist": "Lưu giải pháp phù hợp",
-        "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là yêu cầu giới thiệu hoặc lưu các giải pháp được ghép với một bài toán."
+        "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là nhận đề xuất hoặc lưu các giải pháp được ghép với một bài toán."
       }
     },
     "challenge": {
@@ -352,15 +352,6 @@
     "IDENTITY_APP_REQUEST_NOT_FOUND": "Yêu cầu kết nối này đã kết thúc. Quay lại app AI của bạn và kết nối lần nữa.",
     "IDENTITY_OWN_ACCOUNT": "Bạn không thể tự khóa tài khoản hay tự thu quyền của mình.",
     "IDENTITY_OPERATOR_CONFIGURED": "Operator này được khai trong cấu hình máy chủ nên không thu quyền ở đây được.",
-    "INTRODUCTION_SOLUTION_NOT_FOUND": "Giải pháp này không còn được niêm yết.",
-    "INTRODUCTION_NEEDS_ORGANIZATION": "Hãy tạo hoặc tham gia một tổ chức trước khi nhờ giới thiệu.",
-    "INTRODUCTION_ORGANIZATION_NOT_APPROVED": "Tổ chức của bạn chưa được duyệt nên chưa thể nhờ giới thiệu.",
-    "INTRODUCTION_OWN_SOLUTION": "Giải pháp này thuộc tổ chức của chính bạn.",
-    "INTRODUCTION_ALREADY_PENDING": "Bạn đã nhờ giới thiệu tới giải pháp này. Hãy chờ câu trả lời.",
-    "INTRODUCTION_UNREACHABLE": "Hiện chưa liên lạc được ai ở tổ chức này. Hãy thử lại sau.",
-    "INTRODUCTION_REQUEST_NOT_FOUND": "Yêu cầu này không còn tồn tại.",
-    "INTRODUCTION_OWNERS_ONLY": "Chỉ chủ sở hữu của tổ chức mới trả lời được yêu cầu giới thiệu.",
-    "INTRODUCTION_NOT_PENDING": "Yêu cầu này đã được trả lời.",
     "MATCHING_USE_CASE_NOT_FOUND": "Use case này không còn tồn tại.",
     "MATCHING_CANDIDATE_NOT_FOUND": "Giải pháp này không còn trong danh sách. Hãy tải lại trang.",
     "MATCHING_SOLUTION_NOT_FOUND": "Giải pháp này không còn được duyệt nên không thể thêm.",
@@ -724,7 +715,6 @@
       "solutions": "Giải pháp AI",
       "offers": "Ưu đãi",
       "talent": "Nhân lực AI",
-      "introductions": "Giới thiệu",
       "review": "Xét duyệt",
       "system": "Hệ thống",
       "useCases": "Use case",
@@ -1186,10 +1176,6 @@
           "offer_reopen": "Mở lại ưu đãi với giải pháp mới",
           "offer_delete": "Xóa ưu đãi"
         },
-        "introduction": {
-          "reply": "Trả lời yêu cầu giới thiệu",
-          "decline": "Từ chối yêu cầu giới thiệu"
-        },
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực",
           "reject": "Trả lại hồ sơ nhân lực",
@@ -1321,10 +1307,6 @@
           "offer_close": "Đóng ưu đãi <resource></resource> với giải pháp mới",
           "offer_reopen": "Mở lại ưu đãi <resource></resource> với giải pháp mới",
           "offer_delete": "Xóa ưu đãi <resource></resource>"
-        },
-        "introduction": {
-          "reply": "Trả lời yêu cầu giới thiệu về <resource></resource>",
-          "decline": "Từ chối yêu cầu giới thiệu về <resource></resource>"
         },
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực của <resource></resource>",
@@ -1972,37 +1954,6 @@
       "deployments": "Triển khai khách hàng chờ duyệt",
       "review": "Mở hàng chờ, chờ lâu nhất ở trên",
       "none": "Không có gì đang chờ"
-    },
-    "introductions": {
-      "metaTitle": "Giới thiệu · BeyondPilot",
-      "title": "Giới thiệu",
-      "overdueNotice": "{count} yêu cầu đã chờ câu trả lời quá 3 ngày.",
-      "overdue": "Chờ quá 3 ngày",
-      "search": "Tìm theo giải pháp",
-      "clear": "Xóa bộ lọc",
-      "filter": {
-        "label": "Lọc theo trạng thái",
-        "all": "Tất cả"
-      },
-      "status": {
-        "pending": "Đang chờ",
-        "replied": "Đã trả lời",
-        "declined": "Đã từ chối"
-      },
-      "route": "{sender} → {provider}",
-      "about": "Về {solution}",
-      "sender": "{name} · {organization}",
-      "senderUnnamed": "Một người ở {organization}",
-      "waitingSince": "Chờ từ {time}",
-      "answered": "Đã trả lời {date}",
-      "count": "{count} yêu cầu",
-      "empty": {
-        "title": "Chưa có yêu cầu"
-      },
-      "noMatch": {
-        "title": "Không có yêu cầu nào khớp",
-        "clear": "Xóa bộ lọc"
-      }
     },
     "useCases": {
       "metaTitle": "Use case · BeyondPilot",
@@ -3030,7 +2981,6 @@
         "sign_in": "Đăng nhập",
         "organizations": "Tổ chức",
         "applications": "Chương trình và đơn",
-        "introductions": "Giới thiệu",
         "solutions": "Giải pháp",
         "use_cases": "Use case",
         "talent": "Nhân lực"
@@ -3076,17 +3026,6 @@
         "application_outcome": {
           "name": "Kết quả đơn",
           "description": "Kết quả của đơn, do operator viết cho mỗi lần công bố."
-        },
-        "introduction_request": {
-          "name": "Yêu cầu giới thiệu",
-          "description": "Báo bên cung cấp giải pháp rằng có người muốn gặp."
-        },
-        "introduction_made": {
-          "name": "Đã giới thiệu"
-        },
-        "introduction_declined": {
-          "name": "Từ chối giới thiệu",
-          "description": "Báo người yêu cầu rằng bên cung cấp đã từ chối."
         },
         "solution_approved": {
           "name": "Giải pháp được duyệt"
@@ -3911,7 +3850,6 @@
       "profile": "Hồ sơ",
       "members": "Thành viên",
       "solutions": "Giải pháp",
-      "introductions": "Giới thiệu",
       "useCases": "Use case"
     },
     "status": {
@@ -5092,47 +5030,6 @@
         "save": "Gửi duyệt"
       },
       "limitReached": "Đã đạt giới hạn {max} triển khai khách hàng."
-    }
-  },
-  "Introduction": {
-    "errors": {
-      "REQUEST_INVALID": "Hãy kiểm tra lời nhắn và thử lại."
-    },
-    "received": {
-      "metaTitle": "Giới thiệu · BeyondPilot",
-      "title": "Giới thiệu",
-      "waiting": "{count} đang chờ",
-      "sender": "{name} · {organization}",
-      "senderUnnamed": "Một người ở {organization}",
-      "about": "Về {solution}",
-      "sent": "Gửi {date}",
-      "answered": "Đã trả lời {date}",
-      "introduced": "Đã giới thiệu. Hãy viết cho họ qua {email}.",
-      "ownersAnswer": "Chỉ chủ sở hữu của tổ chức mới trả lời được yêu cầu.",
-      "status": {
-        "pending": "Đang chờ",
-        "replied": "Đã trả lời",
-        "declined": "Đã từ chối"
-      },
-      "empty": {
-        "title": "Chưa có yêu cầu giới thiệu",
-        "description": "Yêu cầu sẽ hiện ở đây khi có người muốn được giới thiệu với một giải pháp của bạn."
-      },
-      "actions": {
-        "reply": "Trả lời",
-        "decline": "Từ chối",
-        "confirmDecline": {
-          "title": "Từ chối yêu cầu về {name}?",
-          "lead": "Người gửi sẽ được báo rằng bạn không tiếp tục, và không có địa chỉ nào được chia sẻ.",
-          "confirm": "Từ chối",
-          "cancel": "Giữ lại"
-        },
-        "replyHint": "Khi bạn trả lời, cả hai bên sẽ nhận email có địa chỉ của nhau."
-      },
-      "done": {
-        "reply": "Đã giới thiệu. Cả hai bên đã nhận email có địa chỉ của nhau.",
-        "decline": "Đã từ chối yêu cầu."
-      }
     }
   },
   "Talent": {
@@ -7113,7 +7010,7 @@
           "items": [
             "Thông tin tài khoản: họ tên và email, cùng số điện thoại, quốc gia, chức danh, hồ sơ LinkedIn và ảnh khi bạn thêm vào.",
             "Đăng nhập bằng Google: họ tên, email và ảnh đại diện từ tài khoản Google. Chúng tôi không đọc Gmail, danh bạ hay tệp của bạn.",
-            "Nội dung bạn đăng hoặc gửi: hồ sơ tổ chức, giải pháp AI, use case, proposal, hồ sơ nhân tài, lời hỏi thăm, yêu cầu giới thiệu và các tệp đính kèm như deck.",
+            "Nội dung bạn đăng hoặc gửi: hồ sơ tổ chức, giải pháp AI, use case, proposal, hồ sơ nhân tài, lời hỏi thăm và các tệp đính kèm như deck.",
             "Hoạt động cần cho vận hành an toàn: thời điểm đăng nhập, sự kiện bảo mật và nhật ký thao tác quản trị.",
             "Dữ liệu kỹ thuật: địa chỉ IP và loại trình duyệt trong log máy chủ, lưu để bảo mật và xử lý sự cố."
           ]
@@ -7137,7 +7034,7 @@
         {
           "heading": "Những gì được công khai",
           "body": [
-            "Hồ sơ, giải pháp và use case chỉ công khai sau khi được duyệt và hiển thị. Tổ chức có thể ẩn tên trên use case, và chủ giải pháp có thể ngừng hiển thị bất cứ lúc nào. Proposal, lời hỏi thăm, yêu cầu giới thiệu, thông tin liên hệ và tệp không đánh dấu công khai chỉ bạn, người nhận và operator của GenAI Fund xem được."
+            "Hồ sơ, giải pháp và use case chỉ công khai sau khi được duyệt và hiển thị. Tổ chức có thể ẩn tên trên use case, và chủ giải pháp có thể ngừng hiển thị bất cứ lúc nào. Proposal, lời hỏi thăm, thông tin liên hệ và tệp không đánh dấu công khai chỉ bạn, người nhận và operator của GenAI Fund xem được."
           ]
         },
         {
@@ -7207,7 +7104,7 @@
         {
           "heading": "Dịch vụ",
           "body": [
-            "BeyondPilot giúp doanh nghiệp và nhà cung cấp AI tìm thấy nhau. Nền tảng liệt kê giải pháp AI, nhân tài, use case, sự kiện và chương trình; cho phép bạn đăng nội dung của mình, ứng tuyển chương trình, cuộc thi và yêu cầu giới thiệu. Một số tính năng được ghi là bản xem trước và có thể thay đổi."
+            "BeyondPilot giúp doanh nghiệp và nhà cung cấp AI tìm thấy nhau. Nền tảng liệt kê giải pháp AI, nhân tài, use case, sự kiện và chương trình; cho phép bạn đăng nội dung của mình và ứng tuyển chương trình, cuộc thi. Một số tính năng được ghi là bản xem trước và có thể thay đổi."
           ]
         },
         {
@@ -7231,7 +7128,7 @@
           ]
         },
         {
-          "heading": "Ứng tuyển, proposal và giới thiệu",
+          "heading": "Ứng tuyển và proposal",
           "body": [
             "Khi bạn ứng tuyển chương trình hoặc gửi proposal, ban tổ chức và người chấm có thể đọc nội dung đó. Kết quả chương trình do ban tổ chức quyết định. Điều khoản thương mại, NDA và mọi dự án thí điểm do các bên tự thỏa thuận; BeyondPilot không phải một bên trong các thỏa thuận đó."
           ]

@@ -9,8 +9,6 @@ public enum EmailGroup {
 
 	APPLICATIONS("applications"),
 
-	INTRODUCTIONS("introductions"),
-
 	SOLUTIONS("solutions"),
 
 	USE_CASES("use_cases"),
