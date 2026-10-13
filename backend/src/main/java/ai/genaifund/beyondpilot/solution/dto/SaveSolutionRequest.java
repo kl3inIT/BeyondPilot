@@ -14,17 +14,17 @@ import org.jspecify.annotations.Nullable;
 public record SaveSolutionRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,
 		@Schema(types = { "string", "null" },
-				description = "Two or three sentences shown in lists.") @Size(max = 600) @Nullable String summary,
-		@Schema(types = { "string", "null" }) @Size(max = 4000) @Nullable String problemsSolved,
+				description = "Two or three sentences shown in lists.") @Size(max = 10000) @Nullable String summary,
+		@Schema(types = { "string", "null" }) @Size(max = 10000) @Nullable String problemsSolved,
 		@Schema(types = { "string", "null" }) @Size(max = 4000) @Nullable String valueProposition,
 		@Schema(types = { "string", "null" },
 				allowableValues = { "idea", "prototype", "pilot", "production", "scaled" }) @Pattern(
 						regexp = SolutionCodes.MATURITY) @Nullable String maturity,
 		@Schema(types = { "string", "null" },
-				description = "Customers, pilots, users or revenue so far.") @Size(max = 600) @Nullable String traction,
+				description = "Customers, pilots, users or revenue so far.") @Size(max = 10000) @Nullable String traction,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The models, tools and frameworks it is built with, as its owners name them.") @NotNull @Size(
-						max = 10) List<@NotBlank @Size(max = 40) String> builtWith,
+						max = 50) List<@NotBlank @Size(max = 200) String> builtWith,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Size(
 				max = 5) List<@NotNull @Pattern(regexp = SolutionCodes.INDUSTRY) String> industries,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Size(

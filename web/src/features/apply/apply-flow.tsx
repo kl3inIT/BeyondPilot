@@ -809,7 +809,7 @@ function StepYou({
           {(field) => (
             <field.TextareaField
               label={t("teamBackground")}
-              maxLength={2000}
+              maxLength={10000}
               description={t("teamBackgroundHint")}
             />
           )}
@@ -874,7 +874,7 @@ function StepSolution({
         {(field) => (
           <field.TextareaField
             label={t("summary")}
-            maxLength={300}
+            maxLength={10000}
             description={t("summaryHint")}
           />
         )}
@@ -883,7 +883,7 @@ function StepSolution({
         {(field) => (
           <field.TextareaField
             label={t("problemsSolved")}
-            maxLength={4000}
+            maxLength={10000}
             description={t("problemsSolvedHint")}
           />
         )}
@@ -902,7 +902,7 @@ function StepSolution({
           <field.TextareaField
             label={t("traction")}
             optional
-            maxLength={600}
+            maxLength={10000}
             description={t("tractionHint")}
           />
         )}
@@ -920,8 +920,8 @@ function StepSolution({
               value={field.state.value}
               onChange={field.handleChange}
               describedBy="builtWith-hint"
-              max={10}
-              maxLength={60}
+              max={50}
+              maxLength={200}
             />
             <FieldDescription id="builtWith-hint">{t("builtWithHint")}</FieldDescription>
           </Field>

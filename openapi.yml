@@ -20067,9 +20067,9 @@ components:
           description: "The models, tools and frameworks the solution is built with."
           items:
             type: string
-            maxLength: 60
+            maxLength: 200
             minLength: 0
-          maxItems: 10
+          maxItems: 50
           minItems: 0
         contact:
           $ref: "#/components/schemas/ContactDetails"
@@ -20092,14 +20092,14 @@ components:
           - "null"
           description: The experience that matters for the problem; asked of a team
             or a company.
-          maxLength: 2000
+          maxLength: 10000
           minLength: 0
         traction:
           type:
           - string
           - "null"
           description: "Customers, pilots, users or revenue so far."
-          maxLength: 600
+          maxLength: 10000
           minLength: 0
         version:
           type:
@@ -21069,9 +21069,9 @@ components:
             \ owners name them."
           items:
             type: string
-            maxLength: 40
+            maxLength: 200
             minLength: 0
-          maxItems: 10
+          maxItems: 50
           minItems: 0
         channels:
           type:
@@ -21177,21 +21177,21 @@ components:
           type:
           - string
           - "null"
-          maxLength: 4000
+          maxLength: 10000
           minLength: 0
         summary:
           type:
           - string
           - "null"
           description: Two or three sentences shown in lists.
-          maxLength: 600
+          maxLength: 10000
           minLength: 0
         traction:
           type:
           - string
           - "null"
           description: "Customers, pilots, users or revenue so far."
-          maxLength: 600
+          maxLength: 10000
           minLength: 0
         valueProposition:
           type:
