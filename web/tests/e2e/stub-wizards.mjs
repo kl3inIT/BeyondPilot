@@ -24,17 +24,6 @@ export const minh = {
   name: "Minh Trần",
   email: "minh.tran@pocketpolicy.example",
 };
-export const siti = {
-  accountId: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a12",
-  name: "Siti Rahma",
-  email: "siti@pocketpolicy.example",
-};
-/** Someone a stored draft names who has left the organization since. */
-const left = {
-  accountId: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a99",
-  name: "Bảo Ngô",
-  email: "bao.ngo@pocketpolicy.example",
-};
 
 export const proposalDeck = {
   fileId: "d0c1a2b3-4c5d-4e6f-8a9b-0c1d2e3f4a51",
@@ -52,19 +41,13 @@ const unsent = {
   sentBy: null,
 };
 
-/**
- * A draft as an earlier version of the form left it: one of its two people has left the
- * organization, and nobody is the primary contact.
- */
+/** A draft with its solution and approach written, and neither the PDF nor the details. */
 const storedProposal = {
   ...unsent,
   approach: "Policy Chat answers a policyholder's question from the policy itself.",
   deck: null,
+  teamBackground: null,
   solutions: [policyChat],
-  team: [
-    { ...left, role: "Advisor", primary: false },
-    { ...siti, role: "Engineer", primary: false },
-  ],
   updatedAt: "2026-10-09T03:00:00Z",
   version: 4,
 };
@@ -76,7 +59,7 @@ const sentProposal = {
   approach: "Policy Chat answers a policyholder's question from the policy itself.",
   deck: proposalDeck,
   solutions: [policyChat],
-  team: [{ ...siti, role: "Engineer", primary: true }],
+  teamBackground: null,
   sentAt: "2026-10-10T03:00:00Z",
   sentBy: { name: minh.name, email: minh.email, country: "SG", phone: "+65 6123 4567" },
   editableUntil: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
@@ -99,14 +82,10 @@ export function proposalForm(session, scene) {
           name: "Pocket Policy",
           logoFileId: null,
           approved: true,
+          owner: session === "owner",
+          type: "company",
         }
       : null,
-    members: belongs
-      ? [
-          { ...minh, self: session === "owner" },
-          { ...siti, self: session === "member" },
-        ]
-      : [],
     proposal: scene === "draft" ? storedProposal : scene === "sent" ? sentProposal : null,
   };
 }

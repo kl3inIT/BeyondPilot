@@ -2,7 +2,7 @@
 
 A signed-in person writes to the organization behind a solution, to the person behind a talent profile or to GenAI Fund about a program, and the two sides then talk on BeyondPilot, each message arriving while the screen is open. Tracked in Linear as BEY-173.
 
-It replaces two flows that each ended in an exchange of email addresses: the enquiries through a talent profile ([BEY-36](../bey-36-talent-enquiries-and-review/design.md), with "Messages you sent" and the Enquiries tab) and the introduction requests on a solution ([BEY-34](../bey-34-solution-introductions/design.md), the whole `introduction` module). What was studied is in the [research note](../../../research/2026-10-13-messaging-references.md). The screens are the note "I · PROPOSAL 13/10" and the frames under it in the section `AI talent — directory, profile, enquiries and review` of `BeyondPilot — Product UI`. The decisions were taken on 13 October 2026 by the member who directs BEY-173, on the screens and on a clickable prototype.
+It replaces the enquiries through a talent profile ([BEY-36](../bey-36-talent-enquiries-and-review/design.md), with "Messages you sent" and the Enquiries tab), which ended in an exchange of email addresses. The requests for an introduction to a solution's provider ([BEY-34](../bey-34-solution-introductions/design.md)) had worked the same way; BEY-172 removed them on 13 October 2026, while this increment was being built, because none had ever been sent. What was studied is in the [research note](../../../research/2026-10-13-messaging-references.md). The screens are the note "I · PROPOSAL 13/10" and the frames under it in the section `AI talent — directory, profile, enquiries and review` of `BeyondPilot — Product UI`. The decisions were taken on 13 October 2026 by the member who directs BEY-173, on the screens and on a clickable prototype.
 
 ## What a person can do
 
@@ -63,14 +63,14 @@ The same story holds for a talent profile, with one person in place of the organ
 | What do others need from it?   | Nothing                                                                                                                                                                                                                                                                      |
 | Why not part of `talent`?      | The same conversation, request and read rules hold for solutions and programs. Keeping them in `talent` would have made `solution` and `program` depend on `talent`, or repeated them twice                                                                                  |
 
-The edges are `messaging → audit, identity, notification, organization, program, solution, talent`; none points back. `talent` gains `TalentDirectory.recipient(slug)`. `talent` no longer depends on `organization`, which only its enquiries needed, and the `introduction` module is removed, so the graph has one module more and one less. The accepted decision is [ADR 0008](../../../decisions/0008-a-messaging-module-carries-conversations.md).
+The edges are `messaging → audit, identity, notification, organization, program, solution, talent`; none points back. `talent` gains `TalentDirectory.recipient(slug)` and no longer depends on `organization`, which only its enquiries needed. The accepted decision is [ADR 0008](../../../decisions/0008-a-messaging-module-carries-conversations.md).
 
 ## Decisions
 
 1. **One conversation for each person and subject.** The old platform showed several threads with one organization; a second thread with the same people about the same solution splits what they said. A person who writes again to someone they talk with writes in the open conversation.
 2. **A first message is a request, except to GenAI Fund.** As Messenger, Instagram and X do for someone new, and as BEY-34 and BEY-36 already required an answer before anything was shared. GenAI Fund runs the programs and answers as part of its work.
 3. **The rules against unwanted mail stay.** One waiting request for a sender and a subject, ten new conversations a sender a day, a reminder on day 7, closed on day 14 (BEY-36, decisions 3 and 6). A person in an open conversation writes at most 30 messages a minute.
-4. **A solution provider reads which organization asks.** The sender must belong to an approved organization, as for an introduction (BEY-34, decision 2). A talent profile and a program are written to by anyone signed in.
+4. **A solution provider reads which organization asks.** The sender must belong to an approved organization, as a request for an introduction required (BEY-34, decision 2). A talent profile and a program are written to by anyone signed in.
 5. **A conversation with a provider belongs to the organization.** Every member reads and writes it, and each message names its writer; owners answer the request (BEY-34, decision 3). A person who leaves the organization stops reading it.
 6. **No email address is shown, ever.** Chat replaces the exchange of addresses. People who want to talk elsewhere write their address themselves.
 7. **A report reads as a decline to the sender** (BEY-36, decision 4), and an answer is final (decision 5).
@@ -82,7 +82,7 @@ The edges are `messaging → audit, identity, notification, organization, progra
 13. **The details column acts on nothing.** It says what the conversation is about, with the way to its page, and who reads it. A next-step button (add the solution to a use case, or share contact details) was tried in a clickable prototype on 13 October 2026 and left out.
 14. **Operators read reported requests only.** A conversation is its two sides' alone.
 15. **A profile its person deletes takes its conversations with it**, as it took its enquiries (BEY-36).
-16. **A solution page has Contact again.** [BEY-148](../bey-148-solution-offers/design.md) removed "Request an introduction" from the public solution page on 12 October 2026, because the brief gives that page no action. Writing to a solution's provider is what this increment was asked for, and without an action on that page nobody could start such a conversation, so the page gets one Contact that leads to Messages. Confirmed on 13 October 2026 by the member who directs BEY-173.
+16. **A solution page has Contact.** [BEY-148](../bey-148-solution-offers/design.md) removed "Request an introduction" from the public solution page on 12 October 2026, because the brief gives that page no action, and BEY-172 then removed the requests themselves. Writing to a solution's provider is what this increment was asked for, and without an action on that page nobody could start such a conversation, so the page gets one Contact that leads to Messages, as a talent profile has. Confirmed on 13 October 2026 by the member who directs BEY-173; it reverses a decision another member took a day earlier, and the pull request says so.
 
 ## HTTP
 
@@ -100,7 +100,7 @@ The edges are `messaging → audit, identity, notification, organization, progra
 | `GET /api/messaging/events`                                              | Server-sent events: `message`, `read`, `typing`, `conversation`                    |
 | `GET /api/messaging/admin/reported`                                      | The reported first messages, for operators                                         |
 
-Removed: every path under `/api/introduction`, and under `/api/talent` the enquiry, sent and reported-enquiry paths. The exact contract is `openapi.yml`.
+Removed: under `/api/talent`, the enquiry, sent and reported-enquiry paths. The exact contract is `openapi.yml`.
 
 ## Web
 
@@ -109,24 +109,24 @@ Removed: every path under `/api/introduction`, and under `/api/talent` the enqui
 | `/workspace/messages`      | Messages: the lists, the open conversation, and what it is about; on a phone the list and the conversation take turns. `?c=` the conversation, `?to=&at=` a first message |
 | The account menu           | Messages, with what waits; it replaces "Messages you sent"                                                                                                                |
 | `/talent/[slug]`           | Contact leads to Messages                                                                                                                                                 |
-| `/solutions/[slug]`        | Contact leads to Messages, in place of "Request an introduction"                                                                                                          |
+| `/solutions/[slug]`        | Contact leads to Messages                                                                                                                                                 |
 | `/programs/[slug]`         | "Ask GenAI Fund" leads to Messages                                                                                                                                        |
 | `/admin/messages/reported` | The reported first messages                                                                                                                                               |
 
-Removed: `/workspace/talent/sent`, the Enquiries tab of `/workspace/talent`, `/workspace/organization/introductions`, `/admin/introductions`, `/admin/talent/reported`.
+Removed: `/workspace/talent/sent`, the Enquiries tab of `/workspace/talent`, `/admin/talent/reported`.
 
 The screen is composed from the registry's chat parts (`MessageScroller`, `Message`, `Bubble`, `Marker`), `Item`, `Tabs`, `InputGroup`, `Sheet` and `Empty`; nothing is drawn by hand.
 
 ## Data
 
-- `V87__messaging_create_conversations.sql`: `messaging_conversation` (the subject, the two sides, the status, when the last message was written), `messaging_message` (a `seq` that orders every message) and `messaging_read` (how far each account read, and whether it was emailed).
-- `V88__messaging_move_enquiries_and_introductions.sql`: every `talent_enquiry` and `introduction_request` with a text becomes a conversation with that text as its first message and its status kept (`replied` reads `accepted`). Where one sender had several that waited or were accepted with the same profile or solution, they become one conversation holding every text in the order written; it is open when any of them was accepted, since the two sides had agreed to talk, and what was written after that acceptance is unread. The two tables are then dropped, with the operators' wording of the emails that are gone. Checked by hand on a throwaway PostgreSQL with rows of every status ([verification](verification.md)).
+- `V89__messaging_create_conversations.sql`: `messaging_conversation` (the subject, the two sides, the status, when the last message was written), `messaging_message` (a `seq` that orders every message) and `messaging_read` (how far each account read, and whether it was emailed).
+- `V90__messaging_move_enquiries.sql`: every `talent_enquiry` with a text becomes a conversation with that text as its first message and its status kept. Where one sender had several that waited or were accepted with the same profile, they become one conversation holding every text in the order written; it is open when any of them was accepted, since the two sides had agreed to talk, and what was written after that acceptance is unread. The table is then dropped, with the operators' wording of the emails that are gone. Checked by hand on a throwaway PostgreSQL with enquiries of every status ([verification](verification.md)).
 - **Lost in the move**, accepted on 13 October 2026 by the member who directs BEY-173 ([persistence](../../../guidelines/persistence.md#schema-evolution)): an enquiry's topic and the name its sender signed it with, which a conversation has no use for; the answer of a row folded into another, beyond the acceptance that opened the conversation; what a text held beyond 2000 characters.
-- **Old requests and the clock.** An introduction request never closed; a request in a conversation closes after fourteen days. An introduction request that still waits starts those days when the migration runs, so its provider has them, and one reminder on the seventh, to answer it in Messages; its message keeps the time it was written. An enquiry already closed after fourteen days and keeps its time.
+- **Old requests and the clock.** An enquiry closed after fourteen days as a request does, so a moved one keeps its time and its reminder. There are no introduction requests to move: BEY-172 dropped their table, which was empty in every environment.
 
 ## Emails
 
-Six kinds, in the group Messages: `message_request`, `message_request_reminder`, `message_request_accepted`, `message_request_declined`, `message_request_closed`, `message_unread`. The eight kinds of the enquiry and introduction flows are removed; emails already sent stay in the log under their old kind.
+Six kinds, in the group Messages: `message_request`, `message_request_reminder`, `message_request_accepted`, `message_request_declined`, `message_request_closed`, `message_unread`. The five kinds of the enquiry flow are removed; emails already sent stay in the log under their old kind.
 
 ## Known limits
 

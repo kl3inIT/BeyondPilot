@@ -160,15 +160,6 @@ public enum AuditAction {
 	/** An operator set the programs a use case belongs to. */
 	USE_CASE_SET_PROGRAMS("use_case.set_programs", "organization"),
 
-	/**
-	 * Recorded before conversations replaced requests for an introduction. An owner answered one, and both sides were
-	 * told each other's address.
-	 */
-	INTRODUCTION_REPLY("introduction.reply"),
-
-	/** Recorded before conversations replaced requests for an introduction. An owner declined one. */
-	INTRODUCTION_DECLINE("introduction.decline"),
-
 	/** The side written to accepted a first message, which opened the conversation. */
 	MESSAGING_REQUEST_ACCEPT("messaging.request_accept"),
 

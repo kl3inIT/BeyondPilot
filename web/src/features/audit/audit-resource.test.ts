@@ -47,7 +47,6 @@ describe("auditResourceRoute", () => {
 
   it.each([
     "account",
-    "introduction",
     "talent_enquiry",
     "conversation",
     "customer_deployment",

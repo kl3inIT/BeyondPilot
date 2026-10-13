@@ -13,7 +13,7 @@ public record UseCaseProposalResponse(@Schema(requiredMode = Schema.RequiredMode
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The solutions offered, in the order shown.") List<ProposalSolutionResponse> solutions,
 		@Schema(types = { "string", "null" }) @Nullable String approach,
 		@Schema(types = { "object", "null" }) @Nullable AttachedFileResponse deck,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<ProposalTeamMemberResponse> team,
+		@Schema(types = { "string", "null" }) @Nullable String teamBackground,
 		@Schema(types = { "object", "null" },
 				description = "The sender's talent profile as it was when the proposal was sent; null for a draft and for a proposal sent without it, as every new one is.") @Nullable SenderProfileResponse sender,
 		@Schema(types = { "object", "null" }, description = "Who sent it; null for a draft.") @Nullable SentByResponse sentBy,

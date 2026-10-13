@@ -3,10 +3,7 @@ package ai.genaifund.beyondpilot.proposal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -14,21 +11,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.notification.EmailService;
-import ai.genaifund.beyondpilot.organization.ApplicantOrganization;
-import ai.genaifund.beyondpilot.organization.OrganizationService;
 import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.proposal.dto.AttachedFileResponse;
-import ai.genaifund.beyondpilot.proposal.dto.ApplicantOrganizationRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ProposalSolutionResponse;
-import ai.genaifund.beyondpilot.proposal.dto.ProposalTeamMemberResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ProposalUseCaseResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ProposingOrganizationResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalResponse;
@@ -37,15 +29,11 @@ import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.SaveUseCaseProposalRequest;
 import ai.genaifund.beyondpilot.proposal.dto.SenderProfileResponse;
 import ai.genaifund.beyondpilot.proposal.dto.SentByResponse;
-import ai.genaifund.beyondpilot.proposal.dto.TeamCandidateResponse;
-import ai.genaifund.beyondpilot.proposal.dto.TeamMemberRequest;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalCountResponse;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalCountsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalFormResponse;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalResponse;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposal;
-import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalMember;
-import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalMemberRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalSolution;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalSolutionRepository;
@@ -78,8 +66,6 @@ public class UseCaseProposals {
 
 	private final UseCaseProposalRepository proposals;
 
-	private final UseCaseProposalMemberRepository teams;
-
 	private final UseCaseProposalSolutionRepository offers;
 
 	private final UseCaseDirectory useCases;
@@ -96,14 +82,10 @@ public class UseCaseProposals {
 
 	private final EmailService email;
 
-	private final OrganizationService organizationService;
-
-	UseCaseProposals(UseCaseProposalRepository proposals, UseCaseProposalMemberRepository teams,
-			UseCaseProposalSolutionRepository offers, UseCaseDirectory useCases, OrganizationDirectory organizations, SolutionDirectory solutions,
-			IdentityService identity, StorageService storage, JsonMapper json,
-			EmailService email, OrganizationService organizationService) {
+	UseCaseProposals(UseCaseProposalRepository proposals, UseCaseProposalSolutionRepository offers,
+			UseCaseDirectory useCases, OrganizationDirectory organizations, SolutionDirectory solutions,
+			IdentityService identity, StorageService storage, JsonMapper json, EmailService email) {
 		this.proposals = proposals;
-		this.teams = teams;
 		this.offers = offers;
 		this.useCases = useCases;
 		this.organizations = organizations;
@@ -112,11 +94,10 @@ public class UseCaseProposals {
 		this.storage = storage;
 		this.json = json;
 		this.email = email;
-		this.organizationService = organizationService;
 	}
 
 	/**
-	 * The form for the caller: the use case, their organization with its members, and their
+	 * The form for the caller: the use case, their organization, and their
 	 * organization's proposal when one was saved.
 	 * @throws ProposalException when the use case is unknown, or no longer takes proposals and the caller's organization
 	 * sent none, or the caller's organization posted it
@@ -142,30 +123,7 @@ public class UseCaseProposals {
 	}
 
 	/**
-	 * Makes the organization the caller sends the proposal for when they belong to none: themselves, or their team. It
-	 * waits for GenAI Fund's review, which does not hold up the proposal.
-	 * @throws ProposalException when the use case no longer takes proposals or the caller already belongs to an
-	 * organization
-	 */
-	@Transactional
-	public UseCaseProposalFormResponse organize(Actor actor, UUID useCaseId, ApplicantOrganizationRequest request) {
-		identity.requireActive(actor);
-		UseCaseTarget target = open(useCaseId);
-		if (organizations.membershipOf(actor).isPresent()) {
-			throw new ProposalException(ProposalErrorCode.ALREADY_IN_ORGANIZATION,
-					"Account " + actor.accountId() + " already belongs to an organization");
-		}
-		boolean individual = "individual".equals(request.kind());
-		organizationService.createForApplicant(actor,
-				new ApplicantOrganization(request.name().strip(), individual ? "independent_builder" : "builder_team",
-						request.country(), individual ? "just_me" : Objects.requireNonNullElse(request.teamSize(), "2_9"),
-						text(request.website())));
-		return form(actor, target, organizations.membershipOf(actor).orElseThrow());
-	}
-
-	/**
-	 * Keeps what the form holds, making the proposal on the first save. A draft may be partial; it may offer solutions of the organization, whatever their review says, each once; the team may name only
-	 * members of the organization, each once, with at most one primary contact.
+	 * Keeps what the form holds, making the proposal on the first save. A draft may be partial; it may offer solutions of the organization, whatever their review says, each once.
 	 * @throws ProposalException when the use case no longer takes proposals, the caller has no approved organization
 	 * or it posted the use case, the proposal was sent or changed since the form read it, or something does not fit
 	 */
@@ -197,15 +155,8 @@ public class UseCaseProposals {
 					throw new ProposalException(ProposalErrorCode.EDIT_WINDOW_CLOSED,
 							"Save of sent proposal " + proposal.getId() + ", whose time to edit has ended");
 				}
-				UUID primaryNamed = request.team()
-					.stream()
-					.filter(TeamMemberRequest::primary)
-					.map(TeamMemberRequest::accountId)
-					.findFirst()
-					.orElse(null);
 				requireComplete(proposal.getId(), !request.solutionIds().isEmpty(), request.approach(),
-						request.deckFileId(), request.team().stream().map(TeamMemberRequest::accountId).toList(),
-						request.team().stream().map(TeamMemberRequest::role).toList(), primaryNamed);
+						request.deckFileId(), isTeam(membership), request.teamBackground());
 			}
 		}
 
@@ -215,32 +166,26 @@ public class UseCaseProposals {
 			// A new PDF is one the caller uploaded for an application; the one the proposal names stays.
 			storage.stored(deck, FilePurpose.APPLICATION_FILE, actor);
 		}
-		List<UseCaseProposalMember> team = team(proposal.getId(), organizationId, request.team());
-		UUID primary = request.team().stream().filter(TeamMemberRequest::primary).map(TeamMemberRequest::accountId)
-			.findFirst().orElse(null);
 
 		if (!created) {
-			teams.deleteAllOf(proposal.getId());
 			offers.deleteAllOf(proposal.getId());
 			// The delete runs as its own statement; the proposal is read again, still locked, and written.
 			proposal = proposals.findForUpdate(proposal.getId()).orElseThrow();
 		}
 		if (edit) {
-			proposal.edit(text(request.approach()), deck, primary, Instant.now());
+			proposal.edit(text(request.approach()), text(request.teamBackground()), deck, Instant.now());
 		}
 		else {
-			proposal.write(text(request.approach()), deck, primary, Instant.now());
+			proposal.write(text(request.approach()), text(request.teamBackground()), deck, Instant.now());
 		}
 		proposals.saveAndFlush(proposal);
-		teams.saveAll(team);
 		offers.saveAll(offered);
-		teams.flush();
 		offers.flush();
 		return form(actor, target, membership, proposal);
 	}
 
 	/**
-	 * Sends the proposal as it was saved: it is checked again, and the sender's talent profile is kept with it.
+	 * Sends the proposal as it was saved: it is checked again, and the sender's name, country and number must be given.
 	 * @throws ProposalException when the caller has no such proposal, it was sent, the use case no longer takes
 	 * proposals, or it lacks what a proposal needs; the code says what
 	 */
@@ -257,14 +202,8 @@ public class UseCaseProposals {
 			throw refused(ProposalErrorCode.ALREADY_SENT, id);
 		}
 
-		List<UseCaseProposalMember> team = teams.findByProposalIdOrderByPosition(id);
 		requireComplete(id, !offers.findByProposalIdOrderByPosition(id).isEmpty(), proposal.getApproach(),
-				proposal.getDeckFileId(), team.stream().map(UseCaseProposalMember::getAccountId).toList(),
-				team.stream().map(UseCaseProposalMember::getRole).toList(), proposal.getPrimaryContactAccountId());
-		Set<UUID> members = Set.copyOf(organizations.memberAccountIds(membership.organizationId()));
-		if (!team.stream().allMatch(member -> members.contains(member.getAccountId()))) {
-			throw refused(ProposalErrorCode.TEAM_INVALID, id);
-		}
+				proposal.getDeckFileId(), isTeam(membership), proposal.getTeamBackground());
 		// The submitting identity: the account's name, address, country and number.
 		Person sender = identity.person(actor);
 		if (blank(sender.displayName()) || blank(sender.country()) || blank(sender.phone())) {
@@ -280,38 +219,15 @@ public class UseCaseProposals {
 			.addKeyValue("use_case_id", proposal.getUseCaseId())
 			.addKeyValue("organization_id", proposal.getOrganizationId())
 			.log("Proposal sent to a use case");
-		tellTeam(actor, proposal, target, membership, team);
+		tellSender(actor, proposal, target, membership);
 		return form(actor, target, membership, proposal);
 	}
 
-	/**
-	 * Queues one email for the sender and one for each other member of the team, each with the role named for them.
-	 * They leave once the sending commits.
-	 */
-	private void tellTeam(Actor actor, UseCaseProposal proposal, UseCaseTarget target, Membership membership,
-			List<UseCaseProposalMember> team) {
-		Map<UUID, Person> people = identity
-			.people(Stream.concat(Stream.of(actor.accountId()), team.stream().map(UseCaseProposalMember::getAccountId))
-				.distinct()
-				.toList());
-		Person sender = people.get(actor.accountId());
-		Instant until = editableUntil(proposal, target);
-		UUID primary = proposal.getPrimaryContactAccountId();
-		Map<UUID, UseCaseProposalMember> named = new LinkedHashMap<>();
-		team.forEach(member -> named.put(member.getAccountId(), member));
-		// The sender is told even when they are not on the team, as the one who sent it.
-		Set<UUID> recipients = new LinkedHashSet<>(List.of(actor.accountId()));
-		recipients.addAll(named.keySet());
-		for (UUID accountId : recipients) {
-			Person person = people.get(accountId);
-			UseCaseProposalMember member = named.get(accountId);
-			if (person == null) {
-				continue;
-			}
-			email.sendProposalSent(person.email(), target.title(), membership.organizationName(),
-					member == null ? null : member.getRole(), accountId.equals(primary),
-					accountId.equals(actor.accountId()) || sender == null ? null : label(sender), target.id(), until);
-		}
+	/** Queues the email that tells the sender their proposal is sent. It leaves once the sending commits. */
+	private void tellSender(Actor actor, UseCaseProposal proposal, UseCaseTarget target, Membership membership) {
+		Person sender = identity.person(actor);
+		email.sendProposalSent(sender.email(), target.title(), membership.organizationName(), target.id(),
+				editableUntil(proposal, target));
 	}
 
 	/**
@@ -327,27 +243,17 @@ public class UseCaseProposals {
 		Map<UUID, OrganizationName> names = organizations
 			.names(sent.stream().map(UseCaseProposal::getOrganizationId).distinct().toList());
 		Map<UUID, List<UseCaseProposalSolution>> offeredBy = offersOf(sent);
-		Map<UUID, List<UseCaseProposalMember>> teamsOf = teamsOf(sent);
-		Map<UUID, Person> people = identity.people(teamsOf.values()
-			.stream()
-			.flatMap(List::stream)
-			.map(UseCaseProposalMember::getAccountId)
-			.distinct()
-			.toList());
 		List<ReceivedUseCaseProposalSummaryResponse> items = sent.stream().map(proposal -> {
 			OrganizationName organization = names.get(proposal.getOrganizationId());
 			List<String> solutionNames = solutionsOf(offeredBy.getOrDefault(proposal.getId(), List.of())).stream()
 				.map(ProposalSolutionResponse::name)
 				.toList();
-			// The primary contact; a proposal that named no team is answered by whoever sent it.
-			Person contact = proposal.getPrimaryContactAccountId() == null ? null
-					: people.get(proposal.getPrimaryContactAccountId());
-			SentByResponse sentBy = contact == null ? sentBy(proposal) : null;
+			SentByResponse sentBy = sentBy(proposal);
 			return new ReceivedUseCaseProposalSummaryResponse(proposal.getId(),
 					organization == null ? "" : organization.name(),
 					organization == null ? null : organization.logoFileId(), solutionNames,
 					organizations.isApproved(proposal.getOrganizationId()),
-					contact != null ? label(contact) : sentBy == null ? null : label(sentBy.name(), sentBy.email()),
+					sentBy == null ? null : label(sentBy.name(), sentBy.email()),
 					Objects.requireNonNull(proposal.getSentAt()), proposal.getEditedAt());
 		}).toList();
 		return new ReceivedUseCaseProposalsResponse(useCase(target), items);
@@ -369,7 +275,7 @@ public class UseCaseProposals {
 				organization == null ? "" : organization.name(), organization == null ? null : organization.logoFileId(),
 				solutions(proposal),
 				proposal.getApproach(), organizations.isApproved(proposal.getOrganizationId()), sender,
-				Objects.requireNonNull(sentBy(proposal)), team(proposal), deck(proposal),
+				Objects.requireNonNull(sentBy(proposal)), proposal.getTeamBackground(), deck(proposal),
 				Objects.requireNonNull(proposal.getSentAt()), proposal.getEditedAt());
 	}
 
@@ -435,7 +341,7 @@ public class UseCaseProposals {
 
 	/** What a proposal needs to be sent, and to stay complete when it is edited; the code says what is missing. */
 	private static void requireComplete(UUID id, boolean hasSolution, @Nullable String approach, @Nullable UUID deck,
-			List<UUID> team, List<String> roles, @Nullable UUID primary) {
+			boolean team, @Nullable String teamBackground) {
 		if (!hasSolution) {
 			throw refused(ProposalErrorCode.SOLUTION_REQUIRED, id);
 		}
@@ -445,11 +351,15 @@ public class UseCaseProposals {
 		if (deck == null) {
 			throw refused(ProposalErrorCode.PDF_REQUIRED, id);
 		}
-		// The team is optional; one that is named has a role for each person and a primary contact.
-		if (!team.isEmpty() && (primary == null || roles.stream().anyMatch(UseCaseProposals::blank)
-				|| !team.contains(primary))) {
-			throw refused(ProposalErrorCode.TEAM_INCOMPLETE, id);
+		// A team says what it has done, as an application to a program asks of one.
+		if (team && blank(teamBackground)) {
+			throw refused(ProposalErrorCode.TEAM_BACKGROUND_REQUIRED, id);
 		}
+	}
+
+	/** Whether the proposal comes from a team, which writes what it has done. */
+	private static boolean isTeam(Membership membership) {
+		return "builder_team".equals(membership.type());
 	}
 
 	/**
@@ -501,28 +411,21 @@ public class UseCaseProposals {
 	private UseCaseProposalFormResponse form(Actor actor, UseCaseTarget target, @Nullable Membership membership,
 			@Nullable UseCaseProposal proposal) {
 		if (membership == null) {
-			return new UseCaseProposalFormResponse(useCase(target), null, List.of(), null);
+			return new UseCaseProposalFormResponse(useCase(target), null, null);
 		}
 		UUID organizationId = membership.organizationId();
 		OrganizationName name = organizations.names(List.of(organizationId)).get(organizationId);
-		List<UUID> memberIds = organizations.memberAccountIds(organizationId);
-		Map<UUID, Person> people = identity.people(memberIds);
-		List<TeamCandidateResponse> members = memberIds.stream()
-			.map(people::get)
-			.filter(Objects::nonNull)
-			.map(person -> new TeamCandidateResponse(person.accountId(), person.displayName(), person.email(),
-					person.accountId().equals(actor.accountId())))
-			.sorted(Comparator.comparing(candidate -> label(candidate.name(), candidate.email()).toLowerCase()))
-			.toList();
 		return new UseCaseProposalFormResponse(useCase(target),
 				new ProposingOrganizationResponse(organizationId, membership.organizationName(),
-						name == null ? null : name.logoFileId(), membership.approved(), membership.owner()),
-				members, proposal == null ? null : response(proposal, target));
+						name == null ? null : name.logoFileId(), membership.approved(), membership.type(),
+						membership.owner()),
+				proposal == null ? null : response(proposal, target));
 	}
 
 	private UseCaseProposalResponse response(UseCaseProposal proposal, UseCaseTarget target) {
 		return new UseCaseProposalResponse(proposal.getId(), proposal.getStatus(), solutions(proposal),
-				proposal.getApproach(), deck(proposal), team(proposal), senderOf(proposal), sentBy(proposal), proposal.getSentAt(),
+				proposal.getApproach(), deck(proposal), proposal.getTeamBackground(), senderOf(proposal), sentBy(proposal),
+				proposal.getSentAt(),
 				editableUntil(proposal, target), proposal.getEditedAt(), proposal.getVersion(),
 				proposal.getUpdatedAt());
 	}
@@ -542,51 +445,6 @@ public class UseCaseProposals {
 		UUID sentBy = proposal.getSentByAccountId();
 		Person person = sentBy == null ? null : identity.people(List.of(sentBy)).get(sentBy);
 		return person == null ? kept : kept.withEmail(person.email());
-	}
-
-	private List<ProposalTeamMemberResponse> team(UseCaseProposal proposal) {
-		List<UseCaseProposalMember> members = teams.findByProposalIdOrderByPosition(proposal.getId());
-		Map<UUID, Person> people = identity.people(members.stream().map(UseCaseProposalMember::getAccountId).toList());
-		UUID primary = proposal.getPrimaryContactAccountId();
-		List<ProposalTeamMemberResponse> team = new ArrayList<>();
-		for (UseCaseProposalMember member : members) {
-			Person person = people.get(member.getAccountId());
-			if (person != null) {
-				team.add(new ProposalTeamMemberResponse(member.getAccountId(), person.displayName(), person.email(),
-						member.getRole(), member.getAccountId().equals(primary)));
-			}
-		}
-		return team;
-	}
-
-	/** The team a save names, checked: members of the organization, each once, at most one primary contact. */
-	private List<UseCaseProposalMember> team(UUID proposalId, UUID organizationId, List<TeamMemberRequest> named) {
-		Set<UUID> members = Set.copyOf(organizations.memberAccountIds(organizationId));
-		Set<UUID> seen = new HashSet<>();
-		List<UseCaseProposalMember> team = new ArrayList<>();
-		int primaries = 0;
-		for (TeamMemberRequest member : named) {
-			if (!members.contains(member.accountId()) || !seen.add(member.accountId())) {
-				throw new ProposalException(ProposalErrorCode.TEAM_INVALID,
-						"Team of proposal " + proposalId + " names " + member.accountId() + ", not once of its organization");
-			}
-			primaries += member.primary() ? 1 : 0;
-			team.add(new UseCaseProposalMember(proposalId, member.accountId(), team.size(), member.role().strip()));
-		}
-		if (primaries > 1) {
-			throw new ProposalException(ProposalErrorCode.TEAM_INVALID, "Team of proposal " + proposalId + " has "
-					+ primaries + " primary contacts");
-		}
-		return team;
-	}
-
-	private Map<UUID, List<UseCaseProposalMember>> teamsOf(List<UseCaseProposal> sent) {
-		if (sent.isEmpty()) {
-			return Map.of();
-		}
-		return teams.findByProposalIdInOrderByPosition(sent.stream().map(UseCaseProposal::getId).toList())
-			.stream()
-			.collect(Collectors.groupingBy(UseCaseProposalMember::getProposalId));
 	}
 
 	/** The solutions a save names, checked: each once, each of the caller's organization, whatever its review says. */

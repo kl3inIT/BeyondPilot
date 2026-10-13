@@ -284,16 +284,15 @@ public class EmailService {
 	 * @param editableUntil until when the proposal can still change; null when it cannot
 	 */
 	@Transactional
-	public void sendProposalSent(String recipient, String useCaseTitle, String organizationName,
-			@Nullable String role, boolean primary, @Nullable String senderName, UUID useCaseId, @Nullable Instant editableUntil) {
+	public void sendProposalSent(String recipient, String useCaseTitle, String organizationName, UUID useCaseId,
+			@Nullable Instant editableUntil) {
 		String until = editableUntil == null ? null
 				: DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH)
 					.withZone(VIETNAM)
 					.format(editableUntil) + " ICT";
 		queue(EmailKind.PROPOSAL_SENT, recipient,
-				values("useCaseTitle", useCaseTitle, "organizationName", organizationName, "role", role, "primary",
-						primary, "senderName", senderName, "editableUntil", until, "proposalUrl",
-						url("/use-cases/" + useCaseId + "/propose/view")));
+				values("useCaseTitle", useCaseTitle, "organizationName", organizationName, "editableUntil", until,
+						"proposalUrl", url("/use-cases/" + useCaseId + "/propose/view")));
 	}
 
 	/**

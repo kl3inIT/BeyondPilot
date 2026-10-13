@@ -3,9 +3,8 @@
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
-import { Person } from "@/components/composites/person";
 import { TextButton } from "@/components/actions/text-button";
-import type { ProposingOrganization, SolutionSummary, TeamCandidate } from "@/lib/api/generated";
+import type { ProposingOrganization, SolutionSummary } from "@/lib/api/generated";
 
 import type { Details, ProposalValues, Step } from "./proposal-draft";
 import { SentByRows } from "./proposal-sender-card";
@@ -18,7 +17,6 @@ type ProposalReviewStepProps = {
   /** The submitting identity: what the account says, as it stands. */
   details: Details;
   email: string;
-  members: TeamCandidate[];
   /** Opens a step to change what it holds. */
   onEdit: (step: Step) => void;
 };
@@ -54,18 +52,29 @@ function ProposalReviewStep({
   catalog,
   details,
   email,
-  members,
   onEdit,
 }: ProposalReviewStepProps) {
   const t = useTranslations("UseCaseProposal.wizard");
   const empty = <p className="text-sm text-muted-foreground">{t("review.nothing")}</p>;
-  const none = <p className="text-sm text-muted-foreground">{t("review.none")}</p>;
   const solutions = values.solutionIds.flatMap(
     (id) => catalog.find((solution) => solution.id === id) ?? [],
   );
 
   return (
     <div className="flex flex-col gap-5">
+      <Section step="you" title={t("steps.you")} onEdit={onEdit}>
+        <p className="text-sm font-medium">{organization.name}</p>
+        {organization.type === "builder_team" &&
+          (values.teamBackground.trim() ? (
+            <p className="text-sm whitespace-pre-line text-muted-foreground">
+              {values.teamBackground}
+            </p>
+          ) : (
+            empty
+          ))}
+        <SentByRows sentBy={{ ...details, email }} />
+      </Section>
+
       <Section step="solutions" title={t("steps.solutions")} onEdit={onEdit}>
         {solutions.length > 0 ? (
           <ul className="flex flex-col gap-2">
@@ -86,34 +95,6 @@ function ProposalReviewStep({
         ) : (
           empty
         )}
-      </Section>
-
-      <Section step="details" title={t("steps.details")} onEdit={onEdit}>
-        <SentByRows sentBy={{ ...details, email }} />
-      </Section>
-
-      <Section step="team" title={t("steps.team")} onEdit={onEdit}>
-        {values.team.length > 0 ? (
-          <ul className="flex flex-col gap-3">
-            {values.team.map((row) => {
-              const person = members.find((member) => member.accountId === row.accountId);
-              return (
-                <li key={row.accountId} className="flex items-center justify-between gap-3">
-                  <Person name={person?.name ?? null} email={person?.email ?? ""} />
-                  <span className="shrink-0 text-sm text-muted-foreground">
-                    {row.role}
-                    {row.primary && ` · ${t("review.primary")}`}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          none
-        )}
-      </Section>
-
-      <Section step="pdf" title={t("steps.pdf")} onEdit={onEdit}>
         {values.deck ? <p className="text-sm">{values.deck.fileName}</p> : empty}
       </Section>
     </div>

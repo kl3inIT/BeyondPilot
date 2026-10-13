@@ -1,5 +1,7 @@
 # Introduction requests on a solution: plan
 
+> **Removed on 13 October 2026 ([BEY-172](https://linear.app/beyondpilot/issue/BEY-172)).** The request for an introduction no longer exists: the brief gives a solution's page no such action, the action had left the page under BEY-148, and no request was ever sent in any environment. The module, its emails, its pages and its table are gone. This document stays as the record of what was built and why.
+
 Design: [design.md](design.md). Tracked in Linear as BEY-34.
 
 | #   | Step                                                                                                                                                                     | State |

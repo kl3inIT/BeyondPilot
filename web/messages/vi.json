@@ -249,9 +249,9 @@
         "option2Title": "Shieldbase",
         "option2Why": "Hệ điều hành AI cho doanh nghiệp, có sẵn bảo mật và quản trị dữ liệu.",
         "next": "Bước tiếp theo",
-        "message": "Nhắn cho nhà cung cấp",
+        "proposals": "Nhận đề xuất",
         "shortlist": "Lưu giải pháp phù hợp",
-        "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là nhắn cho nhà cung cấp hoặc lưu các giải pháp được ghép với một bài toán."
+        "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là nhận đề xuất hoặc lưu các giải pháp được ghép với một bài toán."
       }
     },
     "challenge": {
@@ -475,8 +475,6 @@
     "PROPOSAL_ALREADY_SENT": "Proposal này đã gửi nên không sửa được nữa.",
     "PROPOSAL_APPROACH_REQUIRED": "Hãy nói giải pháp giải quyết use case này như thế nào.",
     "PROPOSAL_CONTACT_REQUIRED": "Hãy thêm tên, quốc gia và số điện thoại của bạn trước.",
-    "PROPOSAL_TEAM_INVALID": "Nhóm chỉ gồm thành viên của tổ chức bạn, mỗi người một lần, và tối đa một người liên hệ chính.",
-    "PROPOSAL_TEAM_INCOMPLETE": "Hãy thêm ít nhất một người, ghi vai trò cho từng người và chọn người liên hệ chính.",
     "PROPOSAL_PDF_REQUIRED": "Hãy thêm proposal dưới dạng PDF.",
     "PROPOSAL_EDIT_WINDOW_CLOSED": "Đã hết thời gian chỉnh sửa đề xuất này nên các thay đổi của bạn chưa được lưu.",
     "SEARCH_PROVIDER_NOT_FOUND": "Nhà cung cấp này không còn nữa. Hãy tải lại trang.",
@@ -1185,10 +1183,6 @@
           "offer_reopen": "Mở lại ưu đãi với giải pháp mới",
           "offer_delete": "Xóa ưu đãi"
         },
-        "introduction": {
-          "reply": "Trả lời yêu cầu giới thiệu",
-          "decline": "Từ chối yêu cầu giới thiệu"
-        },
         "messaging": {
           "request_accept": "Chấp nhận một tin đầu tiên",
           "request_decline": "Từ chối một tin đầu tiên",
@@ -1325,10 +1319,6 @@
           "offer_close": "Đóng ưu đãi <resource></resource> với giải pháp mới",
           "offer_reopen": "Mở lại ưu đãi <resource></resource> với giải pháp mới",
           "offer_delete": "Xóa ưu đãi <resource></resource>"
-        },
-        "introduction": {
-          "reply": "Trả lời yêu cầu giới thiệu về <resource></resource>",
-          "decline": "Từ chối yêu cầu giới thiệu về <resource></resource>"
         },
         "messaging": {
           "request_accept": "Đã chấp nhận một tin đầu tiên về <resource></resource>",
@@ -6902,7 +6892,7 @@
           "items": [
             "Thông tin tài khoản: họ tên và email, cùng số điện thoại, quốc gia, chức danh, hồ sơ LinkedIn và ảnh khi bạn thêm vào.",
             "Đăng nhập bằng Google: họ tên, email và ảnh đại diện từ tài khoản Google. Chúng tôi không đọc Gmail, danh bạ hay tệp của bạn.",
-            "Nội dung bạn đăng hoặc gửi: hồ sơ tổ chức, giải pháp AI, use case, proposal, hồ sơ nhân tài, lời hỏi thăm, yêu cầu giới thiệu và các tệp đính kèm như deck.",
+            "Nội dung bạn đăng hoặc gửi: hồ sơ tổ chức, giải pháp AI, use case, proposal, hồ sơ nhân tài, lời hỏi thăm và các tệp đính kèm như deck.",
             "Hoạt động cần cho vận hành an toàn: thời điểm đăng nhập, sự kiện bảo mật và nhật ký thao tác quản trị.",
             "Dữ liệu kỹ thuật: địa chỉ IP và loại trình duyệt trong log máy chủ, lưu để bảo mật và xử lý sự cố."
           ]
@@ -6926,7 +6916,7 @@
         {
           "heading": "Những gì được công khai",
           "body": [
-            "Hồ sơ, giải pháp và use case chỉ công khai sau khi được duyệt và hiển thị. Tổ chức có thể ẩn tên trên use case, và chủ giải pháp có thể ngừng hiển thị bất cứ lúc nào. Proposal, lời hỏi thăm, yêu cầu giới thiệu, thông tin liên hệ và tệp không đánh dấu công khai chỉ bạn, người nhận và operator của GenAI Fund xem được."
+            "Hồ sơ, giải pháp và use case chỉ công khai sau khi được duyệt và hiển thị. Tổ chức có thể ẩn tên trên use case, và chủ giải pháp có thể ngừng hiển thị bất cứ lúc nào. Proposal, lời hỏi thăm, thông tin liên hệ và tệp không đánh dấu công khai chỉ bạn, người nhận và operator của GenAI Fund xem được."
           ]
         },
         {
@@ -6996,7 +6986,7 @@
         {
           "heading": "Dịch vụ",
           "body": [
-            "BeyondPilot giúp doanh nghiệp và nhà cung cấp AI tìm thấy nhau. Nền tảng liệt kê giải pháp AI, nhân tài, use case, sự kiện và chương trình; cho phép bạn đăng nội dung của mình, ứng tuyển chương trình, cuộc thi và yêu cầu giới thiệu. Một số tính năng được ghi là bản xem trước và có thể thay đổi."
+            "BeyondPilot giúp doanh nghiệp và nhà cung cấp AI tìm thấy nhau. Nền tảng liệt kê giải pháp AI, nhân tài, use case, sự kiện và chương trình; cho phép bạn đăng nội dung của mình và ứng tuyển chương trình, cuộc thi. Một số tính năng được ghi là bản xem trước và có thể thay đổi."
           ]
         },
         {
@@ -7020,7 +7010,7 @@
           ]
         },
         {
-          "heading": "Ứng tuyển, proposal và giới thiệu",
+          "heading": "Ứng tuyển và proposal",
           "body": [
             "Khi bạn ứng tuyển chương trình hoặc gửi proposal, ban tổ chức và người chấm có thể đọc nội dung đó. Kết quả chương trình do ban tổ chức quyết định. Điều khoản thương mại, NDA và mọi dự án thí điểm do các bên tự thỏa thuận; BeyondPilot không phải một bên trong các thỏa thuận đó."
           ]
@@ -7700,11 +7690,8 @@
       "saveAndReturn": "Lưu và thoát",
       "send": "Gửi proposal",
       "steps": {
-        "organization": "Tổ chức",
-        "solutions": "Giải pháp AI",
-        "details": "Thông tin của bạn",
-        "team": "Đội ngũ",
-        "pdf": "PDF proposal",
+        "you": "Bạn và nhóm của bạn",
+        "solutions": "Giải pháp của bạn",
         "review": "Xem lại"
       },
       "solutions": {
@@ -7715,7 +7702,8 @@
         "approach": "Các giải pháp giải quyết use case này như thế nào",
         "needed": {
           "solution": "Hãy thêm ít nhất một giải pháp.",
-          "approach": "Hãy giải thích cách các giải pháp giải quyết use case này."
+          "approach": "Hãy giải thích cách các giải pháp giải quyết use case này.",
+          "deck": "Hãy tải proposal lên dưới dạng PDF."
         },
         "editorTitle": "Giải pháp mới",
         "editorLead": "Viết giải pháp qua bốn bước. Đóng trình soạn để quay lại proposal của bạn.",
@@ -7728,6 +7716,35 @@
           "note": "Bạn có thể thêm bất kỳ giải pháp nào. Không thấy giải pháp cần tìm?",
           "cancel": "Hủy",
           "add": "{count, plural, other {Thêm # giải pháp}}"
+        },
+        "deck": "PDF proposal"
+      },
+      "you": {
+        "who": "Ai gửi proposal này?",
+        "choice": {
+          "individual": {
+            "title": "Một mình tôi",
+            "what": "Tôi làm việc một mình"
+          },
+          "team": {
+            "title": "Một nhóm",
+            "what": "Vài người cùng xây dựng"
+          },
+          "company": {
+            "title": "Công ty",
+            "what": "Tổ chức có trang riêng"
+          }
+        },
+        "teamName": "Tên nhóm",
+        "teamSize": "Quy mô nhóm",
+        "teamBackground": "Giới thiệu nhóm",
+        "aboutYou": "Về bạn",
+        "asked": "Bạn đã xin tham gia {name}. Chúng tôi sẽ gửi email khi một chủ sở hữu duyệt, rồi bạn hoàn tất proposal này.",
+        "claiming": "Bạn đã xin nhận {name}. Chúng tôi sẽ gửi email khi GenAI Fund duyệt.",
+        "needed": {
+          "who": "Hãy chọn ai gửi proposal.",
+          "company": "Hãy tham gia hoặc tạo tổ chức của bạn để tiếp tục.",
+          "background": "Hãy cho biết nhóm bạn đã xây dựng những gì."
         }
       },
       "details": {
@@ -7739,43 +7756,11 @@
         "phoneInvalid": "Dùng chữ số và mã quốc gia, ví dụ +84 912 345 678.",
         "required": "Bắt buộc"
       },
-      "team": {
-        "count": "{count, plural, other {# thành viên}}",
-        "add": "Thêm thành viên",
-        "empty": "Chưa có thành viên nào",
-        "columns": {
-          "member": "Thành viên",
-          "role": "Vai trò",
-          "primary": "Đầu mối liên hệ",
-          "actions": "Thao tác"
-        },
-        "roleOf": "Vai trò của {name}",
-        "primaryOf": "{name} là đầu mối liên hệ",
-        "remove": "Gỡ {name}",
-        "rolePlaceholder": "Trưởng dự án",
-        "needed": {
-          "role": "Hãy nhập vai trò cho mọi thành viên.",
-          "primary": "Hãy chọn một đầu mối liên hệ."
-        },
-        "dialog": {
-          "title": "Thêm thành viên vào đội ngũ",
-          "person": "Người",
-          "role": "Vai trò",
-          "roleRequired": "Hãy nhập vai trò.",
-          "cancel": "Hủy",
-          "submit": "Thêm thành viên"
-        }
-      },
-      "pdf": {
-        "needed": "Hãy tải proposal lên dưới dạng PDF."
-      },
       "review": {
         "edit": "Sửa",
         "nothing": "Chưa có gì.",
-        "primary": "Đầu mối liên hệ",
         "missing": "Hoàn tất các bước này trước khi gửi",
-        "confirm": "Tôi xác nhận những gì tôi gửi là chính xác và tôi được phép đưa chúng vào proposal thay mặt tổ chức của mình.",
-        "none": "Không có"
+        "confirm": "Tôi xác nhận những gì tôi gửi là chính xác và tôi được phép đưa chúng vào proposal thay mặt tổ chức của mình."
       },
       "blocked": {
         "backToUseCase": "Quay lại use case",
@@ -7810,17 +7795,6 @@
         "saved": "Đã lưu các thay đổi của đề xuất."
       },
       "organization": {
-        "kind": "Ai gửi proposal",
-        "individual": "Một mình tôi",
-        "team": "Một nhóm",
-        "teamName": "Tên nhóm",
-        "country": "Quốc gia",
-        "countryPlaceholder": "Chọn quốc gia",
-        "teamSize": "Quy mô nhóm",
-        "website": "Website (không bắt buộc)",
-        "required": "Bắt buộc.",
-        "existing": "Công ty tôi đã có trên BeyondPilot",
-        "continue": "Tiếp tục",
         "pending": "Đang chờ duyệt",
         "edit": "Sửa",
         "dialog": {
@@ -7829,7 +7803,11 @@
           "cancel": "Hủy",
           "save": "Lưu",
           "saved": "Đã lưu tổ chức.",
-          "required": "Bắt buộc."
+          "required": "Bắt buộc.",
+          "createTitle": "Tổ chức mới",
+          "create": "Tạo",
+          "created": "Đã tạo tổ chức.",
+          "full": "Tạo bằng biểu mẫu đầy đủ"
         }
       }
     },

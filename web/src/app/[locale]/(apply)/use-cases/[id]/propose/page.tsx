@@ -5,6 +5,7 @@ import { getLocale, getTranslations, setRequestLocale } from "next-intl/server";
 import { ProposalBlocked } from "@/features/proposal/proposal-blocked";
 import { readProposalForm } from "@/features/proposal/proposal-queries";
 import { ProposalWizard } from "@/features/proposal/proposal-wizard";
+import { readMyOrganization } from "@/features/organization/organization-queries";
 import { readMySolutions } from "@/features/solution/solution-queries";
 import { readMyTalent } from "@/features/talent/talent-queries";
 import { getPathname } from "@/i18n/navigation";
@@ -41,13 +42,19 @@ export default async function ProposeRoute({
     redirect(getPathname({ href: proposalViewRoute(id), locale: await getLocale() }));
   }
 
-  const [solutions, talent] = await Promise.all([readMySolutions(), readMyTalent()]);
+  const [solutions, talent, mine] = await Promise.all([
+    readMySolutions(),
+    readMyTalent(),
+    readMyOrganization(),
+  ]);
 
   return (
     <ProposalWizard
       useCaseId={id}
       form={form}
       organization={form.organization ?? null}
+      suggestion={mine.suggestion ?? null}
+      request={mine.request ?? null}
       solutions={solutions.items}
       profile={talent.profile ?? null}
       account={account}

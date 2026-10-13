@@ -8,7 +8,7 @@ import { useFormatter } from "@/i18n/format";
 import type { UseCaseProposal, UseCaseProposalForm } from "@/lib/api/generated";
 import { proposeToUseCaseRoute as proposeRoute, siteRoutes, useCaseRoute } from "@/lib/site";
 
-import { Card, ProposalTeamList, Rows } from "./proposal-card";
+import { Card, Rows } from "./proposal-card";
 import { ProposalSentBy } from "./proposal-sender-card";
 import { ProposalSolutionList } from "./proposal-solution-list";
 import type { EditState } from "./proposal-access";
@@ -26,7 +26,6 @@ type ProposalViewPageProps = {
  */
 function ProposalViewPage({ form, proposal, edit }: ProposalViewPageProps) {
   const t = useTranslations("UseCaseProposal.view");
-  const steps = useTranslations("UseCaseProposal.wizard.steps");
   const detail = useTranslations("UseCaseProposal.received.detail");
   const closed = useTranslations("UseCaseProposal.actions.editClosed");
   const size = useFileSize();
@@ -71,7 +70,7 @@ function ProposalViewPage({ form, proposal, edit }: ProposalViewPageProps) {
           )}
         </header>
 
-        <Card id="proposal-solutions" title={steps("solutions")}>
+        <Card id="proposal-solutions" title={detail("solutions.title")}>
           <ProposalSolutionList solutions={proposal.solutions} />
           <Rows
             rows={[
@@ -85,13 +84,15 @@ function ProposalViewPage({ form, proposal, edit }: ProposalViewPageProps) {
           />
         </Card>
 
-        {proposal.sentBy && <ProposalSentBy sentBy={proposal.sentBy} title={steps("details")} />}
+        {proposal.sentBy && <ProposalSentBy sentBy={proposal.sentBy} title={detail("sentBy")} />}
 
-        <Card id="proposal-team" title={steps("team")}>
-          <ProposalTeamList team={proposal.team} />
-        </Card>
+        {proposal.teamBackground && (
+          <Card id="proposal-team" title={detail("team.title")}>
+            <p className="text-sm whitespace-pre-line">{proposal.teamBackground}</p>
+          </Card>
+        )}
 
-        <Card id="proposal-file" title={steps("pdf")}>
+        <Card id="proposal-file" title={detail("file.title")}>
           {deck ? (
             <div className="grid min-w-0 text-sm">
               <span className="truncate font-medium">{deck.fileName}</span>

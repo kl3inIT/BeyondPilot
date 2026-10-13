@@ -4,7 +4,7 @@ Linear: BEY-133. Design in Figma, page Screens: "Use case — apply with a propo
 
 ## What a person can do
 
-- **Send a proposal.** A signed-in member of an organization (or a person in none) opens a published use case and chooses **Send a proposal**. Six steps follow, each with **Save and return later**: Organization, AI solutions, Your details, Team, Proposal PDF, Review.
+- **Send a proposal.** A signed-in member of an organization (or a person in none) opens a published use case and chooses **Send a proposal**. Three steps follow, each with **Save and return later**: You and your team, Your solution, Review.
 - **Look at it and change it after sending.** The members of the organization keep reading what they sent. They may also edit it for the number of days GenAI Fund sets for that use case (7 unless GenAI Fund says otherwise, 0 to 90), counted from the sending, and only while the use case is open. A sent proposal that was edited says so to the organization that posted the use case.
 - **Read proposals.** Every member of the organization that posted the use case reads the proposals it received, in a list and one by one. Reading is all they do for now.
 - **See how many.** Anyone, signed in or not, sees how many proposals a use case has received.
@@ -14,25 +14,21 @@ Out of scope, kept as screens or left out: editing a sent proposal's sender snap
 ## Domain story
 
 1. A provider's member reads a published, open use case and chooses **Send a proposal**. The browser opens the form; the server makes one working copy for the provider's organization and that use case the first time something is saved.
-2. **Organization.** The form shows the member's organization. GenAI Fund's review of the organization decides whether it is listed, not whether it sends (the brief: approval of a public listing is distinct from eligibility), so an organization still in review sends all the same, and its proposal is marked pending where it is read. A person in no organization makes one here, as themselves or as a team (country, and for a team its name, size and website); it waits for review and sends. Its owner corrects what they gave in a dialog on the step (name, type, size, industries, country; `PUT /api/organization/mine/basics`), which leaves the rest of the profile as it is and points to My organization for the rest.
-3. **AI solutions.** The member chooses one or more solutions of the organization, whatever their review says (draft, in review, sent back, approved, rejected, taken down; listed or not), and writes how they solve this use case. A missing solution is created on the spot with the existing Solution flow: its name is asked in the usual dialog, which creates a draft, and the Solution editor opens in a near-full-screen dialog over the proposal. Public listing of that solution stays with the existing review by GenAI Fund; the proposal never asks for it.
-4. **Your details.** The submitting identity the brief asks for: name, address (read only, it is the sign-in), country and a phone number with its country code, kept on the account. The form opens filled with what the account keeps and, for a name or country it lacks, with the member's talent profile; every field but the address can be changed, and the profile itself never goes with the proposal.
-5. **Team.** The member adds people of the organization, each with a role typed by hand, and marks one of them as the primary contact.
-6. **Proposal PDF.** The member uploads one PDF.
-7. **Review and send.** The server checks everything again, including that the sender's account has a name, a country and a number. The proposal is now **sent** and counts.
-8. A member of the posting organization opens the proposals of the use case and each proposal.
+2. **You and your team.** Three cards side by side, all always in view: **Just me**, **A team**, **Company**. A member of an organization sees theirs chosen and locked, with its card (pending review, and for an owner a dialog to correct name, type, size, industries and country; `PUT /api/organization/mine/basics`). GenAI Fund's review of the organization decides whether it is listed, not whether it sends (the brief: approval of a public listing is distinct from eligibility), so an organization still in review, or one the person has just made, sends all the same, and its proposal is marked pending where it is read. A person in none chooses: **Just me** asks only for the details below; **A team** asks for the team name, size and background (what the team has built before, required); **Company** shows the organization finder (join, ask to join or claim a page) and, under "or", **Create a new organization**, a dialog (name, type, size, industries, country, and a link to the full create page in a new tab) that calls `POST /api/organization/organizations/basics`. Asking to join or claiming needs an owner's or GenAI Fund's approval before the person can send; the step then shows the request and the person returns once it is approved. An organization made for one person or a team is created when the step is left, from the first step's values (country from the details; a person alone is named by their name); it waits for review and sends. **About you** is always asked: name, address (read only, it is the sign-in), country and a phone number with its country code, kept on the account (`PUT /api/identity/me/contact`). It opens filled with what the account keeps and, for a name or country it lacks, with the member's talent profile; the profile itself never goes with the proposal.
+3. **Your solution.** The member chooses one or more solutions of the organization, whatever their review says (draft, in review, sent back, approved, rejected, taken down; listed or not), writes how they solve this use case, and uploads one PDF. A missing solution is created on the spot with the existing Solution flow: its name is asked in the usual dialog, which creates a draft, and the Solution editor opens in a near-full-screen dialog over the proposal. Public listing of that solution stays with the existing review by GenAI Fund; the proposal never asks for it.
+4. **Review and send.** The server checks everything again, including that the sender's account has a name, a country and a number. The proposal is now **sent** and counts.
+5. A member of the posting organization opens the proposals of the use case and each proposal.
 
-Failures. The use case closes while the form is open: sending is refused with the code for a closed use case. Two members of the provider organization edit the same working copy: the second save is refused until it reads the first. The sender's account has no name, country or number: sending is refused with `PROPOSAL_CONTACT_REQUIRED`. A person leaves the organization after being named on the team: sending is refused until the team is corrected.
+Failures. The use case closes while the form is open: sending is refused with the code for a closed use case. Two members of the provider organization edit the same working copy: the second save is refused until it reads the first. The sender's account has no name, country or number: sending is refused with `PROPOSAL_CONTACT_REQUIRED`. A team sends without saying what it has done: sending is refused with `PROPOSAL_TEAM_BACKGROUND_REQUIRED`.
 
 ## Glossary
 
 | Term | Meaning | Not |
 | --- | --- | --- |
-| Proposal | What a provider organization sends to one use case. In code `UseCaseProposal`; tables `use_case_proposal` and `use_case_proposal_member`. | The existing table `proposal` and `ProposalService`: those are a person's **application** to a program ([BEY-37](../../completed/bey-37-proposal/design.md)). The module is named `proposal` for historical reasons. |
+| Proposal | What a provider organization sends to one use case. In code `UseCaseProposal`; table `use_case_proposal`. | The existing table `proposal` and `ProposalService`: those are a person's **application** to a program ([BEY-37](../../completed/bey-37-proposal/design.md)). The module is named `proposal` for historical reasons. |
 | Provider organization | The organization whose member sends the proposal, approved or still in review. | The organization that posted the use case. |
 | Posting organization | The organization that posted the use case. Its members read the proposals. | |
-| Team member | A member of the provider organization named on one proposal, with a role typed for that proposal. | The organization's own member role (`owner`, `member`) and a member's job title; neither is copied. |
-| Primary contact | The one team member the posting organization is told to speak to. | |
+| Team background | What a team has built before, written once on a proposal sent for an organization of type `builder_team`. | A list of people with roles: a proposal names no team members. |
 | Edit window | The time after sending during which the provider organization may still save its proposal: the days `use_case.proposal_edit_days` (set by GenAI Fund for each use case) after `sent_at`, while the use case is open. | A deadline for sending, which is the use case's close date. |
 
 A proposal is **draft** or **sent**. A sent proposal never returns to draft in this increment; it stays sent while its organization edits it.
@@ -57,7 +53,7 @@ The two new edges point from `proposal` to modules that do not depend on `propos
 
 ## Commands, read models and invariants
 
-Commands: save the working copy; send it. Read models: the form (use case, organization, members, working copy; the organization's solutions come from the existing Solutions read of `solution`); the proposals of a use case; one proposal; the counts of a list of use cases.
+Commands: save the working copy; send it. Read models: the form (use case, organization, working copy; the organization's solutions come from the existing Solutions read of `solution`); the proposals of a use case; one proposal; the counts of a list of use cases.
 
 Invariants, checked on the server:
 
@@ -65,7 +61,7 @@ Invariants, checked on the server:
 - Saving needs a member of an organization, approved or still in review (a person in none makes one first, through the organization command), a use case that is published and open, and a working copy that is still a draft. The version the form read must still be current.
 - Sending needs everything below, checked again at that moment:
   - at least one solution of the organization, any review state, each once, and a non-blank approach;
-  - a team is optional; one that is named has members of the organization only, every role non-blank and exactly one primary contact;
+  - for an organization of type `builder_team`, a non-blank team background;
   - one stored PDF uploaded by the caller with the purpose `application_file`;
   - the talent profile is never a prerequisite and goes with no new proposal; the proposal carries who sent it (`sentBy`: name, address, country and phone of the account, read through `identity`).
 - A saved draft may be partial; only sending demands the above.
@@ -106,6 +102,9 @@ create table use_case_proposal_member (
 );
 create unique index use_case_proposal_primary_key on use_case_proposal_member (proposal_id) where is_primary;
 
+-- The table above is no longer read or written: a proposal names no team members. Its rows stay, since dropping them loses data; V88 adds the team background to use_case_proposal:
+--   alter table use_case_proposal add column team_background text;
+
 -- The solutions the proposal offers; deleting a draft solution takes it off the proposals that offered it.
 create table use_case_proposal_solution (
     proposal_id uuid    not null references use_case_proposal (id) on delete cascade,
@@ -125,11 +124,11 @@ All paths are under `/api/proposal`; the operation ids are stable names for the 
 
 | Operation | Method and path | Who | Answers |
 | --- | --- | --- | --- |
-| `getUseCaseProposalForm` | `GET /use-cases/{useCaseId}/proposal` | signed in | The use case, the caller's organization and whether it is approved, its members, and the working copy (with the solutions it offers) or null |
+| `getUseCaseProposalForm` | `GET /use-cases/{useCaseId}/proposal` | signed in | The use case, the caller's organization (with its type) and whether it is approved, and the working copy (with the solutions it offers) or null |
 | `saveUseCaseProposal` | `PUT /use-cases/{useCaseId}/proposal` | member of an organization | The form with the draft as saved, or with the sent proposal as edited within its edit window |
 | `sendUseCaseProposal` | `POST /use-case-proposals/{id}/send` | the same | The form with the proposal sent |
 | `listUseCaseProposals` | `GET /use-cases/{useCaseId}/proposals` | member of the posting organization | The sent proposals, newest first |
-| `getReceivedUseCaseProposal` | `GET /use-case-proposals/{id}` | member of the posting organization | One sent proposal with its snapshot and team |
+| `getReceivedUseCaseProposal` | `GET /use-case-proposals/{id}` | member of the posting organization | One sent proposal with its snapshot and team background |
 | `getUseCaseProposalFile` | `GET /use-case-proposals/{id}/file` | member of the posting organization | The PDF, saved under its name |
 | `countUseCaseProposals` | `GET /use-cases/proposal-counts?useCaseIds=…` | anyone | The number of sent proposals of each use case, at most 50 ids |
 
@@ -141,15 +140,15 @@ The working copy is shared by the members of the provider organization; the `ver
 
 ## Errors
 
-New codes of `ProposalErrorCode`, all starting `PROPOSAL_`: `USE_CASE_NOT_OPEN` (not found, not published or past its close), `OWN_USE_CASE`, `ORGANIZATION_REQUIRED` (reused), `ALREADY_SENT`, `CONTACT_REQUIRED`, `TEAM_INVALID`, `TEAM_INCOMPLETE`, `PDF_REQUIRED`, `SOLUTION_REQUIRED` (reused), `APPROACH_REQUIRED`, `CHANGED_MEANWHILE` (reused), `SOLUTION_NOT_FOUND` (a solution that is not the organization's, or named twice), `EDIT_WINDOW_CLOSED` (a save of a sent proposal after its edit window, or with no edit days, or after the use case closed; `ALREADY_SENT` stays for sending a sent proposal), `PROPOSAL_NOT_FOUND` (read of a proposal that does not exist or is not the caller's to read). `USE_CASE_NOT_OPEN` is `USE_CASE_NOT_FOUND` and `USE_CASE_CLOSED`, and `ORGANIZATION_REQUIRED` is `NO_ORGANIZATION`, in the code.
+New codes of `ProposalErrorCode`, all starting `PROPOSAL_`: `USE_CASE_NOT_OPEN` (not found, not published or past its close), `OWN_USE_CASE`, `ORGANIZATION_REQUIRED` (reused), `ALREADY_SENT`, `CONTACT_REQUIRED`, `TEAM_BACKGROUND_REQUIRED` (reused), `PDF_REQUIRED`, `SOLUTION_REQUIRED` (reused), `APPROACH_REQUIRED`, `CHANGED_MEANWHILE` (reused), `SOLUTION_NOT_FOUND` (a solution that is not the organization's, or named twice), `EDIT_WINDOW_CLOSED` (a save of a sent proposal after its edit window, or with no edit days, or after the use case closed; `ALREADY_SENT` stays for sending a sent proposal), `PROPOSAL_NOT_FOUND` (read of a proposal that does not exist or is not the caller's to read). `USE_CASE_NOT_OPEN` is `USE_CASE_NOT_FOUND` and `USE_CASE_CLOSED`, and `ORGANIZATION_REQUIRED` is `NO_ORGANIZATION`, in the code.
 
 ## Web
 
 Pages (App Router, thin) and the feature folder `web/src/features/proposal`:
 
-- `/use-cases/[id]/propose`: the wizard. Server state is the working copy; the details step is a small form kept on the account (`PUT /api/identity/me/contact`, which also names an unnamed account); **Save and return later** saves and goes back to the use case.
+- `/use-cases/[id]/propose`: the wizard. Server state is the working copy; the first step keeps the details on the account (`PUT /api/identity/me/contact`, which also names an unnamed account); **Save and return later** saves and goes back to the use case.
 - The use case page: **Send a proposal** links to the wizard (no Save for later); the "Proposals" tile shows the count.
-- The sender's view page and the poster's detail page share the Sent by card, the solution cards and the team table (name over a muted email).
+- The sender's view page and the poster's detail page share the Sent by card, the solution cards and, for a team, its background.
 - `/workspace/organization/use-cases/[id]/proposals` and `.../[proposalId]`: the list with the tabs All, Shortlisted and Declined (the last two empty and inert for now), and one proposal read-only; the Shortlist and Decline buttons are drawn and disabled.
 - My organization › Use cases: a Proposals column and **View proposals** in the row menu.
 

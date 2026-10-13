@@ -119,12 +119,6 @@ public enum ProposalErrorCode implements ErrorCode {
 	CONTACT_REQUIRED("PROPOSAL_CONTACT_REQUIRED", ErrorCategory.VALIDATION,
 			"Add your name, country and phone number first."),
 
-	TEAM_INVALID("PROPOSAL_TEAM_INVALID", ErrorCategory.VALIDATION,
-			"The team can name only members of your organization, each once, and at most one primary contact."),
-
-	TEAM_INCOMPLETE("PROPOSAL_TEAM_INCOMPLETE", ErrorCategory.VALIDATION,
-			"Give each person on the team a role and choose the primary contact."),
-
 	PDF_REQUIRED("PROPOSAL_PDF_REQUIRED", ErrorCategory.VALIDATION,
 			"Add the proposal as a PDF."),
 

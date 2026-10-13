@@ -926,8 +926,6 @@ paths:
           - use_case.feature
           - use_case.unfeature
           - use_case.set_programs
-          - introduction.reply
-          - introduction.decline
           - messaging.request_accept
           - messaging.request_decline
           - messaging.request_report
@@ -5366,6 +5364,47 @@ paths:
       summary: Create an organization the caller owns
       tags:
       - Organizations
+  /api/organization/organizations/basics:
+    post:
+      operationId: createOrganizationFromBasics
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveOrganizationBasics"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+          description: "The organization, waiting for GenAI Fund's review."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A member is not valid, or a company names no industry."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller already belongs to an organization, or waits on\
+            \ a request to join one."
+      security:
+      - session: []
+      summary: "Create an organization the caller owns from its name, kind, size,\
+        \ industries and country"
+      tags:
+      - Organizations
   /api/organization/organizations/{id}/join:
     post:
       operationId: joinOrganization
@@ -7059,48 +7098,6 @@ paths:
       summary: Send a proposal to its use case
       tags:
       - Use case proposals
-  /api/proposal/use-cases/{useCaseId}/organization:
-    post:
-      operationId: organizeUseCaseProposal
-      parameters:
-      - in: path
-        name: useCaseId
-        required: true
-        schema:
-          type: string
-          format: uuid
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApplicantOrganization"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UseCaseProposalForm"
-          description: "The form, now with the new organization."
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: There is no such use case.
-        "409":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: "The use case no longer takes proposals, or the caller already\
-            \ belongs to an organization."
-      security:
-      - session: []
-      summary: Make the organization a person sends a proposal for when they belong
-        to none
-      tags:
-      - Use case proposals
   /api/proposal/use-cases/{useCaseId}/proposal:
     get:
       operationId: getUseCaseProposalForm
@@ -7117,8 +7114,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UseCaseProposalForm"
-          description: "The use case, the caller's organization with its solutions\
-            \ and members, and the proposal if one was saved."
+          description: "The use case, the caller's organization, and the proposal\
+            \ if one was saved."
         "403":
           content:
             application/problem+json:
@@ -7169,8 +7166,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The team names someone who is not a member, a member twice\
-            \ or two primary contacts, or the solution is not the organization's."
+          description: "A solution is not the organization's, or is named twice."
         "403":
           content:
             application/problem+json:
@@ -13664,8 +13660,6 @@ components:
           - use_case.feature
           - use_case.unfeature
           - use_case.set_programs
-          - introduction.reply
-          - introduction.decline
           - messaging.request_accept
           - messaging.request_decline
           - messaging.request_report
@@ -18493,28 +18487,6 @@ components:
       - id
       - name
       - viewKey
-    ProposalTeamMember:
-      type: object
-      description: "One person a proposal names, with the role typed for it."
-      properties:
-        accountId:
-          type: string
-          format: uuid
-        email:
-          type: string
-        name:
-          type:
-          - string
-          - "null"
-        primary:
-          type: boolean
-        role:
-          type: string
-      required:
-      - accountId
-      - email
-      - primary
-      - role
     ProposalUseCase:
       type: object
       description: The use case a proposal is for.
@@ -18556,11 +18528,21 @@ components:
           type: boolean
           description: "Whether the caller is an owner of it, who may correct what\
             \ they gave when they made it."
+        type:
+          type: string
+          description: What kind of organization it is; a team writes what it has
+            done.
+          enum:
+          - company
+          - builder_team
+          - independent_builder
+          - other
       required:
       - approved
       - id
       - name
       - owner
+      - type
     PublicCustomerDeployment:
       type: object
       description: An approved customer deployment as anyone reads it.
@@ -19472,10 +19454,11 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ProposalSolution"
-        team:
-          type: array
-          items:
-            $ref: "#/components/schemas/ProposalTeamMember"
+        teamBackground:
+          type:
+          - string
+          - "null"
+          description: What the sending team has done.
         useCase:
           $ref: "#/components/schemas/ProposalUseCase"
       required:
@@ -19485,7 +19468,6 @@ components:
       - sentAt
       - sentBy
       - solutions
-      - team
       - useCase
     ReceivedUseCaseProposalSummary:
       type: object
@@ -19495,7 +19477,7 @@ components:
           type:
           - string
           - "null"
-          description: "The primary contact, or the sender when no team was named."
+          description: Who sent it.
         editedAt:
           type:
           - string
@@ -21229,8 +21211,8 @@ components:
       - version
     SaveOrganizationBasics:
       type: object
-      description: The facts a person gives when they make an organization. The rest
-        of the profile is left as it is.
+      description: "The facts a person gives when they make an organization, which\
+        \ a save changes alone. The rest of the profile is left as it is."
       properties:
         country:
           type: string
@@ -21743,14 +21725,14 @@ components:
             format: uuid
           maxItems: 10
           minItems: 0
-        team:
-          type: array
-          description: "The people named, in the order shown; at most one is primary.\
-            \ The team may be empty."
-          items:
-            $ref: "#/components/schemas/TeamMemberRequest"
-          maxItems: 20
-          minItems: 0
+        teamBackground:
+          type:
+          - string
+          - "null"
+          description: "What the team that sends it has done; a team writes it, one\
+            \ person does not."
+          maxLength: 2000
+          minLength: 0
         version:
           type:
           - integer
@@ -21760,7 +21742,6 @@ components:
             exist yet.
       required:
       - solutionIds
-      - team
     SearchCounts:
       type: object
       description: "How many items of each kind match, whatever kind is shown."
@@ -23445,48 +23426,6 @@ components:
       - slug
       - status
       - updatedAt
-    TeamCandidate:
-      type: object
-      description: A member of the caller's organization the proposal may name.
-      properties:
-        accountId:
-          type: string
-          format: uuid
-        email:
-          type: string
-        name:
-          type:
-          - string
-          - "null"
-        self:
-          type: boolean
-          description: Whether this is the caller.
-      required:
-      - accountId
-      - email
-      - self
-    TeamMemberRequest:
-      type: object
-      description: "One person of the organization the proposal names, with the role\
-        \ typed for it."
-      properties:
-        accountId:
-          type: string
-          format: uuid
-        primary:
-          type: boolean
-          description: Whether the posting organization is told to speak to this person;
-            at most one.
-        role:
-          type: string
-          description: "What the person does on this proposal; a draft may leave it\
-            \ empty, a proposal cannot be sent with it empty."
-          maxLength: 80
-          minLength: 0
-      required:
-      - accountId
-      - primary
-      - role
     TestAiProvider:
       type: object
       description: "A connection to try, saved or not. Without an apiKey the saved\
@@ -23716,10 +23655,10 @@ components:
           enum:
           - draft
           - sent
-        team:
-          type: array
-          items:
-            $ref: "#/components/schemas/ProposalTeamMember"
+        teamBackground:
+          type:
+          - string
+          - "null"
         updatedAt:
           type: string
           format: date-time
@@ -23732,7 +23671,6 @@ components:
       - id
       - solutions
       - status
-      - team
       - updatedAt
       - version
     UseCaseProposalCount:
@@ -23761,13 +23699,9 @@ components:
       - items
     UseCaseProposalForm:
       type: object
-      description: "What the proposal form needs: the use case, the caller's organization\
-        \ with its members, and the proposal if one was saved."
+      description: "What the proposal form needs: the use case, the caller's organization,\
+        \ and the proposal if one was saved."
       properties:
-        members:
-          type: array
-          items:
-            $ref: "#/components/schemas/TeamCandidate"
         organization:
           type:
           - object
@@ -23783,7 +23717,6 @@ components:
         useCase:
           $ref: "#/components/schemas/ProposalUseCase"
       required:
-      - members
       - useCase
     UseCaseRequirement:
       type: object

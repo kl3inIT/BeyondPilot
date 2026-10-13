@@ -3,20 +3,24 @@ import { describe, expect, it } from "vitest";
 import { proposalStepSchemas, stepProblems } from "./proposal-schemas";
 
 /** The rules with each key as its own words, so a test reads which rule spoke. */
-const schemas = proposalStepSchemas((key) => key);
+const schemasFor = (organization: { team: boolean } | null) =>
+  proposalStepSchemas((key) => key, { organization });
+const schemas = schemasFor(null);
 
 const held = {
+  who: "individual",
+  teamName: "",
+  teamBackground: "",
   solutionIds: ["s1"],
   approach: "It reads claims.",
   deck: { fileId: "f1", fileName: "deck.pdf", sizeBytes: 10 },
-  team: [{ accountId: "a1", role: "Lead", primary: true }],
   details: { name: "Lan Tran", country: "VN", phone: "+84 912 345 678" },
   confirmed: false,
 };
 
 describe("stepProblems", () => {
   it("refuses nothing in a step that holds what it needs", () => {
-    for (const step of ["organization", "solutions", "details", "team", "pdf", "review"]) {
+    for (const step of ["you", "solutions", "review"]) {
       expect(stepProblems(schemas, step, held)).toBeUndefined();
     }
   });
@@ -24,20 +28,23 @@ describe("stepProblems", () => {
   it("checks only the step asked about", () => {
     const empty = { ...held, solutionIds: [], approach: " ", deck: null };
 
-    expect(stepProblems(schemas, "team", empty)).toBeUndefined();
-    expect(stepProblems(schemas, "organization", empty)).toBeUndefined();
+    expect(stepProblems(schemas, "you", empty)).toBeUndefined();
     expect(stepProblems(schemas, "review", empty)).toBeUndefined();
   });
 
-  it("asks for a solution and for the approach, each on its own field", () => {
-    expect(stepProblems(schemas, "solutions", { ...held, solutionIds: [], approach: " " })).toEqual(
-      { solutionIds: { message: "solution" }, approach: { message: "approach" } },
-    );
+  it("asks for a solution, the approach and the PDF, each on its own field", () => {
+    expect(
+      stepProblems(schemas, "solutions", { ...held, solutionIds: [], approach: " ", deck: null }),
+    ).toEqual({
+      solutionIds: { message: "solution" },
+      approach: { message: "approach" },
+      deck: { message: "deck" },
+    });
   });
 
   it("names the details by their place in the form", () => {
     expect(
-      stepProblems(schemas, "details", { ...held, details: { name: " ", country: "", phone: "" } }),
+      stepProblems(schemas, "you", { ...held, details: { name: " ", country: "", phone: "" } }),
     ).toEqual({
       "details.name": { message: "required" },
       "details.country": { message: "required" },
@@ -48,40 +55,40 @@ describe("stepProblems", () => {
   it("tells a number that is missing from one that cannot be a number", () => {
     const withPhone = (phone: string) => ({ ...held, details: { ...held.details, phone } });
 
-    expect(stepProblems(schemas, "details", withPhone("call me"))).toEqual({
+    expect(stepProblems(schemas, "you", withPhone("call me"))).toEqual({
       "details.phone": { message: "phoneInvalid" },
     });
-    expect(stepProblems(schemas, "details", withPhone(" 0912 345 678 "))).toBeUndefined();
+    expect(stepProblems(schemas, "you", withPhone(" 0912 345 678 "))).toBeUndefined();
   });
 
-  it("holds a missing role against the team, whatever row lacks it", () => {
-    const team = [
-      { accountId: "a1", role: "Lead", primary: true },
-      { accountId: "a2", role: " ", primary: false },
-    ];
-
-    expect(stepProblems(schemas, "team", { ...held, team })).toEqual({ team: { message: "role" } });
+  it("asks a person in no organization to choose who sends, and a company to be joined or made first", () => {
+    expect(stepProblems(schemas, "you", { ...held, who: "" })).toEqual({
+      who: { message: "who" },
+    });
+    expect(stepProblems(schemas, "you", { ...held, who: "company" })).toEqual({
+      who: { message: "company" },
+    });
   });
 
-  it("asks for exactly one primary contact once the roles are filled", () => {
-    const none = [{ accountId: "a1", role: "Lead", primary: false }];
-    const two = [
-      { accountId: "a1", role: "Lead", primary: true },
-      { accountId: "a2", role: "Dev", primary: true },
-    ];
-
-    expect(stepProblems(schemas, "team", { ...held, team: none })).toEqual({
-      team: { message: "primary" },
+  it("asks a new team for its name and for what it has done", () => {
+    expect(stepProblems(schemas, "you", { ...held, who: "team" })).toEqual({
+      teamName: { message: "required" },
+      teamBackground: { message: "background" },
     });
-    expect(stepProblems(schemas, "team", { ...held, team: two })).toEqual({
-      team: { message: "primary" },
-    });
-    expect(stepProblems(schemas, "team", { ...held, team: [] })).toBeUndefined();
+    expect(
+      stepProblems(schemas, "you", {
+        ...held,
+        who: "team",
+        teamName: "Doc Team",
+        teamBackground: "Built two.",
+      }),
+    ).toBeUndefined();
   });
 
-  it("asks for the PDF", () => {
-    expect(stepProblems(schemas, "pdf", { ...held, deck: null })).toEqual({
-      deck: { message: "deck" },
+  it("asks the team an organization already is for what it has done, and nobody else", () => {
+    expect(stepProblems(schemasFor({ team: true }), "you", held)).toEqual({
+      teamBackground: { message: "background" },
     });
+    expect(stepProblems(schemasFor({ team: false }), "you", held)).toBeUndefined();
   });
 });

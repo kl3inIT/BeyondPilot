@@ -17,7 +17,7 @@ public record ReceivedUseCaseProposalResponse(@Schema(requiredMode = Schema.Requ
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Whether GenAI Fund approved the sending organization; a proposal from one that is not is marked as pending.") boolean organizationApproved,
 		@Schema(types = { "object", "null" }, description = "The sender's talent profile, when it went with the proposal.") @Nullable SenderProfileResponse sender,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) SentByResponse sentBy,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<ProposalTeamMemberResponse> team,
+		@Schema(types = { "string", "null" }, description = "What the sending team has done.") @Nullable String teamBackground,
 		@Schema(types = { "object", "null" }) @Nullable AttachedFileResponse deck,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant sentAt,
 		@Schema(types = { "string", "null" }, format = "date-time",

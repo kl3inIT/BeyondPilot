@@ -1,5 +1,7 @@
 # Introduction requests on a solution
 
+> **Removed on 13 October 2026 ([BEY-172](https://linear.app/beyondpilot/issue/BEY-172)).** The request for an introduction no longer exists: the brief gives a solution's page no such action, the action had left the page under BEY-148, and no request was ever sent in any environment. The module, its emails, its pages and its table are gone. This document stays as the record of what was built and why.
+
 A person who finds a solution in the directory asks GenAI Fund to introduce them to the provider behind it. Neither side sees the other's email address until the provider answers. Tracked in Linear as BEY-34.
 
 The decision behind it is [BEY-27, decision 9](../bey-27-main-flows-design/design.md): "Introductions go through GenAI Fund." This increment decides how, and builds it. The screens are the rows 4 and 5 of the section "AI solutions — list and detail" in `BeyondPilot — Product UI`.

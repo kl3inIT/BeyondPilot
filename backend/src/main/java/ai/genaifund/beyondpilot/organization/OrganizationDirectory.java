@@ -42,14 +42,24 @@ public class OrganizationDirectory {
 	public Optional<Membership> membershipOf(Actor actor) {
 		return memberships.memberOf(actor.accountId())
 			.flatMap(member -> organizations.findById(member.organizationId())
-				.map(organization -> new Membership(organization.getId(), organization.getName(), member.isOwner(),
-						organization.isApproved())));
+				.map(organization -> new Membership(organization.getId(), organization.getName(), organization.getType(),
+						member.isOwner(), organization.isApproved())));
 	}
 
 	/** The accounts of everyone who belongs to the organization, owners and members alike. */
 	@Transactional(readOnly = true)
 	public List<UUID> memberAccountIds(UUID organizationId) {
 		return memberships.members(organizationId).stream().map(member -> member.accountId()).toList();
+	}
+
+	/** The accounts that own an organization, read now; empty when it has no owner. */
+	@Transactional(readOnly = true)
+	public List<UUID> ownersOf(UUID organizationId) {
+		return memberships.members(organizationId)
+			.stream()
+			.filter(MembershipRepository.Member::isOwner)
+			.map(MembershipRepository.Member::accountId)
+			.toList();
 	}
 
 	/** Who this organization is, read now; empty when it does not exist. */
@@ -66,16 +76,6 @@ public class OrganizationDirectory {
 	@Transactional(readOnly = true)
 	public boolean isApproved(UUID organizationId) {
 		return organizations.findById(organizationId).filter(Organization::isApproved).isPresent();
-	}
-
-	/** The accounts that own an organization, read now; empty when it has no owner. */
-	@Transactional(readOnly = true)
-	public List<UUID> ownersOf(UUID organizationId) {
-		return memberships.members(organizationId)
-			.stream()
-			.filter(MembershipRepository.Member::isOwner)
-			.map(MembershipRepository.Member::accountId)
-			.toList();
 	}
 
 	/** The approved organization at this address, as another module shows it; empty when there is none. */

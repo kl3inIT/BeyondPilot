@@ -536,7 +536,7 @@ public class MessagingService {
 		boolean own = switch (kind) {
 			case MessagingRepository.TALENT -> caller.accountId().equals(target.recipientAccountId());
 			case MessagingRepository.SOLUTION -> {
-				// The provider reads which organization asks, as it did for an introduction (BEY-34, decision 2).
+				// The provider reads which organization asks.
 				Membership membership = caller.membership();
 				if (membership == null) {
 					throw new MessagingException(MessagingErrorCode.NEEDS_ORGANIZATION,

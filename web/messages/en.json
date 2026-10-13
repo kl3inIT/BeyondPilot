@@ -249,9 +249,9 @@
         "option2Title": "Shieldbase",
         "option2Why": "An AI operating system for the enterprise, with data privacy and governance built in.",
         "next": "Next step",
-        "message": "Message a provider",
+        "proposals": "Receive proposals",
         "shortlist": "Shortlist matched solutions",
-        "alt": "an example of the three steps. Start by searching the directory or publishing a use case; the solutions listed on BeyondPilot include Revve AI and Shieldbase; the next step is to message a provider or shortlist the solutions matched to a use case."
+        "alt": "an example of the three steps. Start by searching the directory or publishing a use case; the solutions listed on BeyondPilot include Revve AI and Shieldbase; the next step is to receive proposals or shortlist the solutions matched to a use case."
       }
     },
     "challenge": {
@@ -475,8 +475,6 @@
     "PROPOSAL_ALREADY_SENT": "This proposal was sent, so it can no longer change.",
     "PROPOSAL_APPROACH_REQUIRED": "Say how the solution solves this use case.",
     "PROPOSAL_CONTACT_REQUIRED": "Add your name, country and phone number first.",
-    "PROPOSAL_TEAM_INVALID": "The team can name only members of your organization, each once, and at most one primary contact.",
-    "PROPOSAL_TEAM_INCOMPLETE": "Name at least one person, give each a role and choose the primary contact.",
     "PROPOSAL_PDF_REQUIRED": "Add the proposal as a PDF.",
     "PROPOSAL_EDIT_WINDOW_CLOSED": "The time to edit this proposal has ended, so your changes were not saved.",
     "SEARCH_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
@@ -1185,10 +1183,6 @@
           "offer_reopen": "Opened an offer to new solutions again",
           "offer_delete": "Deleted an offer"
         },
-        "introduction": {
-          "reply": "Replied to a request for an introduction",
-          "decline": "Declined a request for an introduction"
-        },
         "messaging": {
           "request_accept": "Accepted a first message",
           "request_decline": "Declined a first message",
@@ -1325,10 +1319,6 @@
           "offer_close": "Closed the offer <resource></resource> to new solutions",
           "offer_reopen": "Opened the offer <resource></resource> to new solutions again",
           "offer_delete": "Deleted the offer <resource></resource>"
-        },
-        "introduction": {
-          "reply": "Replied to the request for an introduction about <resource></resource>",
-          "decline": "Declined the request for an introduction about <resource></resource>"
         },
         "messaging": {
           "request_accept": "Accepted a first message about <resource></resource>",
@@ -6902,7 +6892,7 @@
           "items": [
             "Account details: your name and email address, and, when you add them, your phone number, country, job title, LinkedIn profile and photo.",
             "Sign-in with Google: your name, email address and profile picture from your Google account. We do not read your Gmail, contacts or files.",
-            "What you publish or submit: organization profiles, AI solutions, use cases, proposals, talent profiles, enquiries and introduction requests, and the files you upload with them, such as decks and attachments.",
+            "What you publish or submit: organization profiles, AI solutions, use cases, proposals, talent profiles and enquiries, and the files you upload with them, such as decks and attachments.",
             "Activity needed to run the service safely: sign-in times, security events and a record of administrative actions.",
             "Technical data: your IP address and browser type in server logs, kept for security and troubleshooting."
           ]
@@ -6926,7 +6916,7 @@
         {
           "heading": "What is public",
           "body": [
-            "Profiles, solutions and use cases are public only once they are approved and listed. An organization can keep a use case anonymous, and an owner can unlist a solution at any time. Proposals, enquiries, introductions, contact details and uploaded files that are not marked public are visible only to you, the people you send them to, and GenAI Fund operators."
+            "Profiles, solutions and use cases are public only once they are approved and listed. An organization can keep a use case anonymous, and an owner can unlist a solution at any time. Proposals, enquiries, contact details and uploaded files that are not marked public are visible only to you, the people you send them to, and GenAI Fund operators."
           ]
         },
         {
@@ -6996,7 +6986,7 @@
         {
           "heading": "The service",
           "body": [
-            "BeyondPilot helps enterprises and AI providers find each other. It lists AI solutions, talent, use cases, events and programs, and lets you publish your own, apply to programs and challenges, and request introductions. Some features are labelled as previews and may change."
+            "BeyondPilot helps enterprises and AI providers find each other. It lists AI solutions, talent, use cases, events and programs, and lets you publish your own and apply to programs and challenges. Some features are labelled as previews and may change."
           ]
         },
         {
@@ -7020,7 +7010,7 @@
           ]
         },
         {
-          "heading": "Applications, proposals and introductions",
+          "heading": "Applications and proposals",
           "body": [
             "When you apply to a program or send a proposal, its organizers and reviewers can read it. Program outcomes are decided by their organizers. Commercial terms, NDAs and any pilot are agreed directly between the parties; BeyondPilot is not a party to them."
           ]
@@ -7700,11 +7690,8 @@
       "saveAndReturn": "Save and exit",
       "send": "Send proposal",
       "steps": {
-        "organization": "Organization",
-        "solutions": "AI solutions",
-        "details": "Your details",
-        "team": "Team",
-        "pdf": "Proposal PDF",
+        "you": "You and your team",
+        "solutions": "Your solution",
         "review": "Review"
       },
       "solutions": {
@@ -7715,7 +7702,8 @@
         "approach": "How the solutions solve this use case",
         "needed": {
           "solution": "Add at least one solution.",
-          "approach": "Explain how the solutions solve this use case."
+          "approach": "Explain how the solutions solve this use case.",
+          "deck": "Upload the proposal as a PDF."
         },
         "editorTitle": "New solution",
         "editorLead": "Write the solution in four steps. Close the editor to return to your proposal.",
@@ -7728,6 +7716,35 @@
           "note": "Any solution can be added. Not in the list?",
           "cancel": "Cancel",
           "add": "{count, plural, one {Add # solution} other {Add # solutions}}"
+        },
+        "deck": "Proposal PDF"
+      },
+      "you": {
+        "who": "Who is sending this proposal?",
+        "choice": {
+          "individual": {
+            "title": "Just me",
+            "what": "I work on my own"
+          },
+          "team": {
+            "title": "A team",
+            "what": "A few of us build together"
+          },
+          "company": {
+            "title": "Company",
+            "what": "An organization with its own page"
+          }
+        },
+        "teamName": "Team name",
+        "teamSize": "Team size",
+        "teamBackground": "Team background",
+        "aboutYou": "About you",
+        "asked": "You asked to join {name}. We will email you when an owner approves, then you can finish this proposal.",
+        "claiming": "You asked to claim {name}. We will email you when GenAI Fund approves.",
+        "needed": {
+          "who": "Choose who is sending the proposal.",
+          "company": "Join or create your organization to continue.",
+          "background": "Tell us what your team has built before."
         }
       },
       "details": {
@@ -7739,43 +7756,11 @@
         "phoneInvalid": "Use digits with the country code, such as +84 912 345 678.",
         "required": "Required"
       },
-      "team": {
-        "count": "{count, plural, one {# member} other {# members}}",
-        "add": "Add member",
-        "empty": "No team yet",
-        "columns": {
-          "member": "Member",
-          "role": "Role",
-          "primary": "Primary contact",
-          "actions": "Actions"
-        },
-        "roleOf": "Role of {name}",
-        "primaryOf": "{name} is the primary contact",
-        "remove": "Remove {name}",
-        "rolePlaceholder": "Project lead",
-        "needed": {
-          "role": "Give every member a role.",
-          "primary": "Choose one primary contact."
-        },
-        "dialog": {
-          "title": "Add a team member",
-          "person": "Person",
-          "role": "Role",
-          "roleRequired": "Enter the role.",
-          "cancel": "Cancel",
-          "submit": "Add member"
-        }
-      },
-      "pdf": {
-        "needed": "Upload the proposal as a PDF."
-      },
       "review": {
         "edit": "Edit",
         "nothing": "Nothing yet.",
-        "primary": "Primary contact",
         "missing": "Finish these steps before you send",
-        "confirm": "I confirm that what I am sending is accurate and that I may offer it for my organization.",
-        "none": "None"
+        "confirm": "I confirm that what I am sending is accurate and that I may offer it for my organization."
       },
       "blocked": {
         "backToUseCase": "Back to the use case",
@@ -7810,17 +7795,6 @@
         "saved": "Your changes to the proposal were saved."
       },
       "organization": {
-        "kind": "Who sends the proposal",
-        "individual": "Just me",
-        "team": "A team",
-        "teamName": "Team name",
-        "country": "Country",
-        "countryPlaceholder": "Choose a country",
-        "teamSize": "Team size",
-        "website": "Website (optional)",
-        "required": "Required.",
-        "existing": "My company is already on BeyondPilot",
-        "continue": "Continue",
         "pending": "Pending review",
         "edit": "Edit",
         "dialog": {
@@ -7829,7 +7803,11 @@
           "cancel": "Cancel",
           "save": "Save",
           "saved": "Organization saved.",
-          "required": "Required."
+          "required": "Required.",
+          "createTitle": "New organization",
+          "create": "Create",
+          "created": "Organization created.",
+          "full": "Create with the full form"
         }
       }
     },

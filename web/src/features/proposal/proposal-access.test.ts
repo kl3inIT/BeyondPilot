@@ -5,18 +5,23 @@ import type { UseCaseProposalForm } from "@/lib/api/generated";
 import { accessOfForm, accessOfRefusal, closedAt, editStateOf } from "./proposal-access";
 
 const useCase = { id: "u", title: "T" };
-const organization = { id: "o", name: "Org", approved: true, owner: true };
+const organization = {
+  id: "o",
+  name: "Org",
+  approved: true,
+  owner: true,
+  type: "company" as const,
+};
 const draft = {
   id: "p",
   status: "draft" as const,
   solutions: [],
-  team: [],
   updatedAt: "2026-10-01T00:00:00Z",
   version: 1,
 };
 
 function form(parts: Partial<UseCaseProposalForm>): UseCaseProposalForm {
-  return { members: [], useCase, ...parts };
+  return { useCase, ...parts };
 }
 
 describe("accessOfForm", () => {
