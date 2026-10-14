@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -97,7 +98,7 @@ class LumaReadsTest {
 
 	@Test
 	void onlyTheConfiguredHostsAreCalled() {
-		LumaHttp http = new LumaHttp(Set.of("luma.com", "images.lumacdn.com"), java.time.Duration.ofSeconds(1));
+		LumaHttp http = new LumaHttp(Set.of("luma.com", "images.lumacdn.com"), Duration.ofSeconds(1));
 
 		assertThat(http.allowed(URI.create("https://luma.com/gaf-tinyfish-vn"))).isTrue();
 		assertThat(http.allowed(URI.create("https://images.lumacdn.com/uploads/a.png"))).isTrue();

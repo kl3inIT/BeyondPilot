@@ -24,9 +24,8 @@ it asks applicants, and whether the public site shows it. It was delivered by
 
 `V4__program_create_programs.sql` creates three tables and `V12__program_create_questions.sql` the fourth;
 `V86__program_add_window_titles.sql` adds the titles of the window's dates, `V94__program_add_featured_at.sql`
-when an operator featured the program and `V99__program_add_luma_event.sql` the Luma event a program was read from. The
-module
-owns all four ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
+when an operator featured the program and `V99__program_add_luma_event.sql` the Luma event a program was read from.
+The module owns all four ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
 
 - **`program`.** One row per program: `slug`, `name`, `type`, `partner_name`, `summary`, `about`, `starts_on`,
   `ends_on`, `status`, `published_at`, `page_kind`, `external_url`, `cover_file_id`, the application window

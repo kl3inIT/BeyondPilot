@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -163,7 +164,7 @@ class LumaCalendarTest {
 			.isZero();
 		assertThat(jdbc.sql("select starts_at from program_event where program_id = ?")
 			.param(program.get("id"))
-			.query(java.sql.Timestamp.class)
+			.query(Timestamp.class)
 			.single()
 			.toInstant()).isEqualTo(Instant.parse("2026-10-27T12:00:00Z"));
 	}
