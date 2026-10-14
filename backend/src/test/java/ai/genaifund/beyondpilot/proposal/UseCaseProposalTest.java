@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 
@@ -423,6 +425,54 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		// A decision may change even after the use case closed.
 		jdbc.sql("update use_case set closes_at = now() - interval '1 minute' where id = ?").params(useCase).update();
 		post(poster.founder, decide, Map.of("decision", "declined")).expectStatus().isOk();
+	}
+
+	@Test
+	void anOperatorDownloadsWhatAUseCaseReceivedAndTheDownloadIsRecorded() {
+		Provider provider = provider("exports.test");
+		Provider elsewhere = provider("exports-elsewhere.test");
+		Poster poster = poster("posts-exports.test");
+		UUID useCase = publishedUseCase(poster.organization, "Exported proposals");
+		String id = sentProposal(provider, useCase);
+		sentProposal(elsewhere, publishedUseCase(poster.organization, "Other proposals"));
+		post(poster.founder, API + "/use-case-proposals/" + id + "/decision", Map.of("decision", "shortlisted"))
+			.expectStatus()
+			.isOk();
+		String export = path(useCase) + "s/export";
+
+		// The posting organization reads what it received but does not download it.
+		assertProblem(post(poster.founder, export, null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts(useCase)).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(post(operator, export, null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"use-case-proposals-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(1)).startsWith("Proposal", "Organization", "Organization approved", "Contact", "Solutions");
+		assertThat(sheet.get(2)).startsWith(id, "Team exports.test", "Yes")
+			.contains("Claim Copilot", "Shortlisted")
+			.doesNotContain("Team exports-elsewhere.test");
+
+		String csv = body(post(operator, export + "?format=csv", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("\uFEFFProposal,Organization,Organization approved,Contact,Solutions,Sent at,");
+		assertThat(csv.lines().toList()).hasSize(2).last().asString().startsWith(id + ",Team exports.test,Yes,");
+		assertThat(exportCounts(useCase)).containsExactly("1", "1");
+	}
+
+	private List<String> exportCounts(UUID useCase) {
+		return jdbc.sql("""
+				select details ->> 'count' from audit_event where action = 'use_case_proposal.export' and resource_id = ?
+				order by occurred_at
+				""").params(useCase.toString()).query(String.class).list();
 	}
 
 	@Test

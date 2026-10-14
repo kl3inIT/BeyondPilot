@@ -23,6 +23,12 @@ public enum AuditAction {
 
 	OPERATOR_WITHDRAW("operator.withdraw"),
 
+	/**
+	 * An operator downloaded the audit log as a spreadsheet, with the operators' email. {@code count} is how many
+	 * events the download holds.
+	 */
+	AUDIT_EXPORT("audit.export", "count"),
+
 	PROGRAM_CREATE("program.create"),
 
 	PROGRAM_UPDATE("program.update"),
@@ -75,6 +81,11 @@ public enum AuditAction {
 	 * An operator merged a duplicate organization into another. {@code into} is the identifier of the one kept.
 	 */
 	ORGANIZATION_MERGE("organization.merge", "into"),
+
+	/**
+	 * An operator downloaded the organizations as a spreadsheet. {@code count} is how many the download holds.
+	 */
+	ORGANIZATION_EXPORT("organization.export", "count"),
 
 	SOLUTION_APPROVE("solution.approve"),
 
@@ -142,6 +153,9 @@ public enum AuditAction {
 	 * quote and the source it was found in. Recorded by the one-off enrichment of the old platform's records.
 	 */
 	SOLUTION_ENRICH("solution.enrich", "fields", "evidence"),
+
+	/** An operator downloaded the solutions as a spreadsheet. {@code count} is how many the download holds. */
+	SOLUTION_EXPORT("solution.export", "count"),
 
 	/**
 	 * An operator created a use case for an organization. {@code organization} is that organization's identifier,
@@ -212,6 +226,12 @@ public enum AuditAction {
 	/** The person deleted their own profile. */
 	TALENT_DELETE("talent.delete"),
 
+	/**
+	 * An operator downloaded the talent profiles as a spreadsheet, with their people's email. {@code count} is how
+	 * many the download holds.
+	 */
+	TALENT_EXPORT("talent.export", "count"),
+
 	/** An operator replaced the criteria a program's applications are judged on. {@code count} is how many. */
 	PROPOSAL_CRITERIA_UPDATE("proposal.criteria_update", "count"),
 
@@ -249,6 +269,12 @@ public enum AuditAction {
 
 	/** The outcomes of a use case's proposals were e-mailed to their senders; the counts are how many of each. */
 	USE_CASE_PROPOSAL_OUTCOMES_SEND("use_case_proposal.outcomes_send", "sent", "shortlisted", "declined"),
+
+	/**
+	 * An operator downloaded the proposals a use case received. {@code count} is how many proposals the download
+	 * holds.
+	 */
+	USE_CASE_PROPOSAL_EXPORT("use_case_proposal.export", "count"),
 
 	/** An operator changed who delivers email or as whom. {@code provider} is the provider chosen. */
 	EMAIL_SETTINGS_UPDATE("email.settings_update", "provider"),
@@ -302,6 +328,9 @@ public enum AuditAction {
 	 * document pages in a model's place, {@code ocr} is its name and the other two are absent.
 	 */
 	AI_TASK_MODEL_CHANGE("ai.task_model_change", "model", "reasoning", "ocr"),
+
+	/** An operator downloaded the log of AI calls as a spreadsheet. {@code count} is how many calls it holds. */
+	AI_USAGE_EXPORT("ai.usage_export", "count"),
 
 	/** An operator chose the provider and model search embeds with. {@code model} is the model. */
 	SEARCH_MODEL_CHANGE("search.model_change", "model"),

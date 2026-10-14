@@ -10,7 +10,6 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.proposal.OutcomeService;
 import ai.genaifund.beyondpilot.proposal.ReviewService;
-import ai.genaifund.beyondpilot.proposal.dto.ApplicationsCsv;
 import ai.genaifund.beyondpilot.proposal.dto.DecideRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ExportApplicationsRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ProgramDraftsResponse;
@@ -20,14 +19,17 @@ import ai.genaifund.beyondpilot.proposal.dto.ReleaseResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.SaveAssessmentRequest;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
@@ -43,6 +45,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Scoring a program's applications, GenAI Fund's decisions and the release of the outcomes. */
@@ -76,25 +79,24 @@ class ReviewController {
 	}
 
 	@PostMapping(path = "/programs/{programId}/applications/export", consumes = MediaType.APPLICATION_JSON_VALUE,
-			produces = "text/csv")
+			produces = { SpreadsheetFormat.XLSX_TYPE, SpreadsheetFormat.CSV_TYPE })
 	@Operation(operationId = "exportReviewApplications",
 			summary = "Download a program's submitted applications as a spreadsheet",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200",
 			description = "One row for each application, with its applicant's contact details, decision and scores. The download is recorded.",
-			content = @Content(mediaType = "text/csv", schema = @Schema(type = "string")))
+			content = { @Content(mediaType = SpreadsheetFormat.XLSX_TYPE, schema = @Schema(type = "string", format = "binary")),
+					@Content(mediaType = SpreadsheetFormat.CSV_TYPE, schema = @Schema(type = "string", format = "binary")) })
+	@ApiResponse(responseCode = "400", description = "The download would hold too many rows.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "There is no such program taking applications.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ResponseEntity<byte[]> export(@CurrentActor Actor actor, @PathVariable UUID programId,
+			@Parameter(description = SpreadsheetFormat.DESCRIPTION,
+					schema = @Schema(allowableValues = { "xlsx", "csv" }, defaultValue = "xlsx")) @RequestParam(
+							defaultValue = "xlsx") @Pattern(regexp = SpreadsheetFormat.PATTERN) String format,
 			@Valid @RequestBody ExportApplicationsRequest request) {
-		ApplicationsCsv csv = review.export(actor, programId, request);
-		// The byte order mark tells Excel the file is UTF-8, so names keep their accents.
-		return ResponseEntity.ok()
-			.contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
-			.cacheControl(CacheControl.noStore())
-			.header(HttpHeaders.CONTENT_DISPOSITION,
-					ContentDisposition.attachment().filename(csv.fileName(), StandardCharsets.UTF_8).build().toString())
-			.body(("\uFEFF" + csv.content()).getBytes(StandardCharsets.UTF_8));
+		return review.export(actor, programId, request, SpreadsheetFormat.of(format)).response();
 	}
 
 	@GetMapping(path = "/programs/{programId}/drafts", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -111,25 +113,26 @@ class ReviewController {
 		return review.drafts(actor, programId);
 	}
 
-	@PostMapping(path = "/programs/{programId}/drafts/export", produces = "text/csv")
+	@PostMapping(path = "/programs/{programId}/drafts/export",
+			produces = { SpreadsheetFormat.XLSX_TYPE, SpreadsheetFormat.CSV_TYPE })
 	@Operation(operationId = "exportProgramDrafts",
 			summary = "Download a program's applications not submitted yet as a spreadsheet",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200",
 			description = "One row for each draft, with its applicant's contact details and how far they got. The download is recorded.",
-			content = @Content(mediaType = "text/csv", schema = @Schema(type = "string")))
+			content = { @Content(mediaType = SpreadsheetFormat.XLSX_TYPE, schema = @Schema(type = "string", format = "binary")),
+					@Content(mediaType = SpreadsheetFormat.CSV_TYPE, schema = @Schema(type = "string", format = "binary")) })
+	@ApiResponse(responseCode = "400", description = "The download would hold too many rows.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "There is no such program taking applications.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	ResponseEntity<byte[]> exportDrafts(@CurrentActor Actor actor, @PathVariable UUID programId) {
-		ApplicationsCsv csv = review.exportDrafts(actor, programId);
-		return ResponseEntity.ok()
-			.contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
-			.cacheControl(CacheControl.noStore())
-			.header(HttpHeaders.CONTENT_DISPOSITION,
-					ContentDisposition.attachment().filename(csv.fileName(), StandardCharsets.UTF_8).build().toString())
-			.body(("﻿" + csv.content()).getBytes(StandardCharsets.UTF_8));
+	ResponseEntity<byte[]> exportDrafts(@CurrentActor Actor actor, @PathVariable UUID programId,
+			@Parameter(description = SpreadsheetFormat.DESCRIPTION,
+					schema = @Schema(allowableValues = { "xlsx", "csv" }, defaultValue = "xlsx")) @RequestParam(
+							defaultValue = "xlsx") @Pattern(regexp = SpreadsheetFormat.PATTERN) String format) {
+		return review.exportDrafts(actor, programId, SpreadsheetFormat.of(format)).response();
 	}
 
 	@GetMapping(path = "/applications/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
