@@ -82,3 +82,7 @@ Figwright 0.6.0 connected to the open `BeyondPilot — Product UI` Figma file. `
 - Focused ESLint and Prettier checks for the updated browser spec passed. `git diff --check` passed.
 
 After synchronizing the PR branch with main, `pnpm --dir web check` passed again: 82 test files / 717 tests, 5719 matching catalog keys, 247 covered failure codes, and all other gate steps. Conflict resolution preserves main’s removal of reported-message administration and keeps the header shortcut, its count and the updated browser tests. The 24-test browser result above was obtained before this synchronization.
+
+## Header icon consistency — 15 October 2026
+
+Replaced the 24px `MessageCircleMoreIcon` with the messaging screen’s existing Lucide `MessagesSquareIcon` at 20px. `pnpm --dir web check` passed: 82 test files / 717 tests, matching catalogs (5719 keys), 247 covered failure codes, and the remaining gate steps. The current main was already contained in anhnd; no merge conflict was present.
