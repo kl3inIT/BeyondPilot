@@ -59,7 +59,7 @@ export async function readProspect(target: MessagingTarget): Promise<ProspectRea
 }
 
 /**
- * What waits for the caller in Messages, for the account menu; a failure counts as nothing, since
+ * What waits for the caller in Messages, for the header message icon; a failure counts as nothing, since
  * the header is on every page. Server only.
  */
 export async function readUnread(): Promise<Unread> {

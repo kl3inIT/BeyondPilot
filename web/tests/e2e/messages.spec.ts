@@ -148,14 +148,10 @@ test.describe("messages", () => {
     if (isMobile) {
       await expect(page.getByRole("heading", { level: 1 })).toBeHidden();
     } else {
-      // Messages in the account menu is the list with nothing open, from a conversation too.
+      // The header shortcut opens the list with nothing selected.
       await page
         .getByRole("banner")
-        .getByRole("button", { name: /Account menu/ })
-        .click();
-      await page
-        .getByRole("menu")
-        .getByRole("menuitem", { name: /Messages/ })
+        .getByRole("link", { name: /^Messages/ })
         .click();
       await expect(page).not.toHaveURL(/[?&]c=/);
       await expect(nothingOpen).toBeVisible();
@@ -323,31 +319,28 @@ test.describe("messages", () => {
     await expect(page.getByRole("textbox", { name: /Write/ })).toHaveCount(0);
   });
 
-  test("the account menu shows Messages with what waits", async ({ page, context, baseURL }) => {
+  test("the header shows Messages with what waits outside the account menu", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
     await signInAs(context, "owner", baseURL!);
     await page.goto("/");
 
-    // The button says that something waits, which its mark only shows.
-    await page
-      .getByRole("banner")
-      .getByRole("button", { name: "Account menu for Minh Trần, 3 wait for you" })
-      .click();
-    const item = page.getByRole("menu").getByRole("menuitem", { name: /Messages/ });
     // Two unread messages and one first message to answer.
-    await expect(item).toContainText("3 wait for you");
-    await expect(item).toHaveAttribute("href", messages);
+    const header = page.getByRole("banner");
+    const shortcut = header.getByRole("link", { name: "Messages, 3 wait for you" });
+    await expect(shortcut).toHaveText("3");
+    await expect(shortcut).toHaveAttribute("href", messages);
+    await header.getByRole("button", { name: "Account menu for Minh Trần" }).click();
+    await expect(page.getByRole("menu").getByRole("menuitem", { name: /Messages/ })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
+    await page.keyboard.press("Escape");
 
     // Someone for whom nothing waits reads no count.
     await signInAs(context, "unnamed", baseURL!);
     await page.goto("/");
-    await page
-      .getByRole("banner")
-      .getByRole("button", { name: /Account menu/ })
-      .click();
-    await expect(page.getByRole("menu").getByRole("menuitem", { name: "Messages" })).toHaveText(
-      "Messages",
-    );
+    await expect(header.getByRole("link", { name: "Messages", exact: true })).toBeEmpty();
   });
 });
 

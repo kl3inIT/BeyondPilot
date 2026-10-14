@@ -22,7 +22,6 @@
     },
     "account": {
       "open": "Account menu for {name}",
-      "openWaiting": "Account menu for {name}, {count, plural, one {# waits for you} other {# wait for you}}",
       "operator": "Operator",
       "signOut": "Sign out",
       "signOutFailed": "We could not sign you out. Try again.",

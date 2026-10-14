@@ -9,6 +9,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary-hover",
+        // Compact count on the header message icon, with a background ring for separation.
+        notification:
+          "h-4 min-w-4 bg-primary px-1 text-xs text-primary-foreground ring-2 ring-background",
         secondary: "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
         destructive:
           "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",

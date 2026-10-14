@@ -72,3 +72,11 @@ After these changes, `./gradlew :backend:check --no-daemon` passed with `JAVA_TO
 Figwright 0.6.0 connected to the open `BeyondPilot — Product UI` Figma file. `Screens` has no dedicated Reported messages frame, so the Admin Audit log desktop frame (`178:27970`) supplied the table spacing and information hierarchy. The report list now presents the sender, the subject and full message, then the report date. This also resolves the clipped sender observed above: the sender column has enough room for a name, and email addresses wrap. The mobile table keeps the sender and message first when it scrolls sideways. The lead now says plainly what the operator is reviewing.
 
 `pnpm --dir web check` passed with 668 unit tests, 5520 message keys and 230 covered failure codes. The focused Admin reported messages Playwright suite passed on desktop and mobile (four runs, including axe). The rendered page was inspected at 1440 × 900 and 390 × 844.
+
+## Header message shortcut — 15 October 2026
+
+- Moved Messages between the language selector and avatar, using the supplied speech-bubble reference and the existing unread API. The compact notification badge counts unread messages plus pending requests and disappears at zero.
+- `pnpm --dir web check` passed: generated-client drift, ESLint, Prettier, route types and TypeScript, 77 test files / 672 tests, matching catalogs and error codes, and knip.
+- `header-messages.test.tsx` verifies the destination, zero, received and read counts, preserving counts on failure, focus refresh, and skipping hidden tabs.
+- `pnpm --dir web test:e2e messages.spec.ts --project=desktop --project=mobile` passed: 24 browser tests, including the messaging and admin reported messages suites and accessibility checks on desktop and mobile. Updated the existing tests to find the header shortcut and assert that Messages is absent from the account menu.
+- Focused ESLint and Prettier checks for the updated browser spec passed. `git diff --check` passed.

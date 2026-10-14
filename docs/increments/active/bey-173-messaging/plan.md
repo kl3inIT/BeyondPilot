@@ -12,3 +12,7 @@ The design is [design.md](design.md). Each step leaves the gates green.
 | 6   | The gates: `./gradlew :backend:check`, `pnpm --dir web check`, `pnpm --dir web test:e2e`; the flow walked in a browser with two accounts                                                                      | Done, see [verification](verification.md) |
 
 Steps 1 and 2 cannot ship without 3 and 4: until then the application would hold two ways to write to the same person.
+
+## Header message access
+
+Move Messages from the account menu to a speech-bubble icon between the language selector and avatar. Reuse the existing unread API, refresh the count while the page is visible and on focus, retain the last count on failures, and verify zero, received and read states.

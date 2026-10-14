@@ -11,7 +11,7 @@ It replaces the enquiries through a talent profile ([BEY-36](../bey-36-talent-en
 - **Answer a request.** The side written to finds it under Requests and accepts, declines or reports it. The sender is not told that it was read. An acceptance opens the conversation; a decline and a report both tell the sender only that it will not be taken further.
 - **Talk.** In an open conversation both sides write. A message appears at once on the screens that are open, with who wrote it; the list moves that conversation to the top and counts what the reader has not read; the other side sees "is writing" and how far their messages were read.
 - **Be told when away.** A person with no screen open gets one email that a message waits, and no other until they have read the conversation.
-- **Find it again.** Messages is in the account menu, with how many messages and requests wait.
+- **Find it again.** Messages opens from a speech-bubble icon between the language selector and account avatar, with a badge counting unread messages and waiting requests.
 - **Let a request close.** A request nobody answers closes after 14 days, which the sender is told; the side written to is reminded once on the seventh day.
 - **Read reports, as an operator.** Under Admin, the first messages that were reported, with who sent them. An operator reads no other conversation.
 
@@ -45,7 +45,7 @@ The same story holds for a talent profile, with one person in place of the organ
 
 - **Commands:** start a conversation (write a first message), send a message, mark read, say typing, accept, decline, report. The clock: remind, close.
 - **Facts told to open screens** (not module events): message written, read up to, typing, conversation changed. They never leave the instance and are not stored.
-- **Read models:** the caller's two lists with the last message and the unread count; one conversation with a page of messages, its subject as its public page says it now, and who is on the other side; the totals for the account menu; the operators' reported list.
+- **Read models:** the caller's two lists with the last message and the unread count; one conversation with a page of messages, its subject as its public page says it now, and who is on the other side; the totals for the header message icon; the operators' reported list.
 - **Synchronous invariants:** at most one conversation that waits or is open for a starter and a subject (a partial unique index); a message is written once for an identifier (primary key); an answer is given once (row lock); only an accepted conversation is written in.
 - **Asynchronous reactions:** emails, queued in the transaction of the change and sent after commit by `notification`.
 
@@ -89,7 +89,7 @@ The edges are `messaging → audit, identity, notification, organization, progra
 | Path                                                                     | Use                                                                                |
 | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
 | `GET /api/messaging/conversations`                                       | The caller's chats and requests, the one written in last first                     |
-| `GET /api/messaging/unread`                                              | The totals for the account menu                                                    |
+| `GET /api/messaging/unread`                                              | The totals for the header message icon                                             |
 | `GET /api/messaging/prospect?kind=&slug=`                                | Who a first message would go to, and the conversation the caller already has there |
 | `POST /api/messaging/conversations`                                      | Write a first message                                                              |
 | `GET /api/messaging/conversations/{id}`                                  | One conversation with its latest 50 messages, its subject and the other side       |
@@ -107,7 +107,7 @@ Removed: under `/api/talent`, the enquiry, sent and reported-enquiry paths. The 
 | Where                      | What                                                                                                                                                                      |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/workspace/messages`      | Messages: the lists, the open conversation, and what it is about; on a phone the list and the conversation take turns. `?c=` the conversation, `?to=&at=` a first message |
-| The account menu           | Messages, with what waits; it replaces "Messages you sent"                                                                                                                |
+| The header message icon    | Messages, with what waits; it replaces "Messages you sent"                                                                                                                |
 | `/talent/[slug]`           | Contact leads to Messages                                                                                                                                                 |
 | `/solutions/[slug]`        | Contact leads to Messages                                                                                                                                                 |
 | `/programs/[slug]`         | "Ask GenAI Fund" leads to Messages                                                                                                                                        |
@@ -132,8 +132,14 @@ Six kinds, in the group Messages: `message_request`, `message_request_reminder`,
 
 - The events stay inside one instance, as matching's do: with two instances a person would hear only what was written through their own. The clock could also remind twice.
 - A screen that is open while its person joins or leaves an organization hears the change within ten minutes, when its stream is opened again.
-- The count in the account menu is read when a page is rendered; it does not move while a person stays on one page outside Messages.
+- The header count starts from the server render and refreshes every ten seconds while visible and on window focus, including outside Messages. It retains the last known count if a refresh fails.
 - GenAI Fund's operators are not emailed about messages, and a person cannot be written to by GenAI Fund first.
 - No attachments, no editing or deleting of a message, no blocking of a sender beyond declining and reporting.
-- Each of a person's two lists shows the 200 conversations written in last, with no further page; the counts in the account menu count them all. GenAI Fund's operators share every program conversation and would reach that first.
+- Each of a person's two lists shows the 200 conversations written in last, with no further page; the count on the header message icon counts them all. GenAI Fund's operators share every program conversation and would reach that first.
 - The limits of ten conversations a day and thirty messages a minute are counted under a lock for the account, so requests sent at once do not pass them; two messages written at the same instant in one conversation may still be kept out of the order of their `seq` for a moment.
+
+## Header message shortcut
+
+The signed-in site header places a `MessageCircleMoreIcon` shortcut between the language menu and account avatar, matching the supplied speech-bubble reference. The existing unread endpoint remains the source of truth: unread messages and pending requests are added together. A ten-second refresh runs only while the page is visible; focus and visibility changes refresh immediately. Requests are bounded by a three-second timeout, never overlap, and are aborted on unmount. A failed read retains the last known total. This avoids opening another conversation stream across every public page.
+
+Messages and the notification mark move out of the avatar menu. A `notification` variant in the existing badge primitive owns the compact count and separating background ring, rather than restyling the primitive at its call site. Zero renders no badge. The shortcut remains a locale-aware link with an accessible name containing the count.

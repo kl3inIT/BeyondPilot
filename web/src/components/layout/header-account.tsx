@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { AccountMenu } from "@/components/layout/account-menu";
+import { HeaderMessages } from "@/components/layout/header-messages";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { readUnread } from "@/features/messaging/messaging-queries";
 import { judgesAnyProgram } from "@/features/review/review-queries";
@@ -24,12 +25,12 @@ async function HeaderAccount() {
     ]);
     return (
       <>
+        <HeaderMessages waiting={waiting.unread + waiting.requests} />
         <AccountMenu
           name={account.displayName ?? null}
           email={account.email}
           operator={account.role === "operator"}
           reviewer={reviewer}
-          waiting={waiting.unread + waiting.requests}
         />
         <MobileMenu signedIn />
       </>

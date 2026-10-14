@@ -22,7 +22,6 @@
     },
     "account": {
       "open": "Menu tài khoản của {name}",
-      "openWaiting": "Menu tài khoản của {name}, {count, plural, other {# đang chờ bạn}}",
       "operator": "Operator",
       "signOut": "Đăng xuất",
       "signOutFailed": "Chưa đăng xuất được. Bạn thử lại.",
