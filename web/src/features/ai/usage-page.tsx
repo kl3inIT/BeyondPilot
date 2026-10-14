@@ -43,9 +43,12 @@ async function taskNames() {
 async function UsageHeader({
   current,
   period,
+  download,
 }: {
   current: "overview" | "calls";
   period: UsagePeriod;
+  /** The tab's own download, before the period. */
+  download?: React.ReactNode;
 }) {
   const t = await getTranslations("Admin.aiUsage");
   const tabs = [
@@ -54,7 +57,16 @@ async function UsageHeader({
   ] as const;
 
   return (
-    <AdminPageHeader destination="aiUsage" title={t("title")} actions={<UsagePeriodSwitch />}>
+    <AdminPageHeader
+      destination="aiUsage"
+      title={t("title")}
+      actions={
+        <>
+          {download}
+          <UsagePeriodSwitch />
+        </>
+      }
+    >
       <PageTabs
         label={t("tabs.label")}
         current={current}

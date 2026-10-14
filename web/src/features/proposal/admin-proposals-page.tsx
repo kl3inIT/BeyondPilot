@@ -7,6 +7,7 @@ import type { MyUseCase, ReceivedUseCaseProposals } from "@/lib/api/generated";
 
 import type { ProposalTab } from "./received-proposals";
 import { ReceivedProposalsList } from "./received-proposals-list";
+import { ExportProposals } from "./export-proposals";
 
 type AdminProposalsPageProps = {
   useCase: {
@@ -37,6 +38,9 @@ function AdminProposalsPage({ useCase, proposals, tab }: AdminProposalsPageProps
             </ReviewStatus>
           }
           lead={useCase.organizationName}
+          actions={
+            <ExportProposals useCaseId={useCase.id} disabled={proposals.items.length === 0} />
+          }
         >
           <UseCaseTabs
             area="admin"

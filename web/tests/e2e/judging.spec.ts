@@ -19,6 +19,17 @@ async function recordWrites(page: Page) {
     }
     expect(request.headers()["x-beyondpilot-csrf"]).toBe("1");
     calls.push({ method: request.method(), url: request.url(), body: request.postDataJSON() });
+    if (request.url().includes("/export")) {
+      // A download is named by the backend, after the program and the day.
+      return route.fulfill({
+        status: 200,
+        contentType: "text/csv;charset=UTF-8",
+        headers: {
+          "Content-Disposition": `attachment; filename="insurance-ai-tasco-applications-2026-10-14.csv"`,
+        },
+        body: "Application",
+      });
+    }
     await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
   });
   return calls;
@@ -69,10 +80,13 @@ test.describe("judging applications", () => {
     // The download holds the applications the list shows now, and says of all of them how many are scored.
     await expect(page.getByText("2 of 3 have a score")).toBeVisible();
     const download = page.waitForEvent("download");
-    await page.getByRole("button", { name: "Download (CSV)" }).click();
-    expect((await download).suggestedFilename()).toBe("insurance-ai-tasco-applications.csv");
+    await page.getByRole("button", { name: "Export" }).click();
+    await page.getByRole("menuitem", { name: "CSV" }).click();
+    expect((await download).suggestedFilename()).toBe(
+      "insurance-ai-tasco-applications-2026-10-14.csv",
+    );
     expect(calls).toHaveLength(1);
-    expect(calls[0].url).toContain(`/programs/${judgedProgramId}/applications/export`);
+    expect(calls[0].url).toContain(`/programs/${judgedProgramId}/applications/export?format=csv`);
     expect((calls[0].body as { applicationIds: string[] }).applicationIds).toHaveLength(1);
     calls.length = 0;
 

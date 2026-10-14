@@ -2,7 +2,6 @@ package ai.genaifund.beyondpilot.proposal;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -25,7 +24,6 @@ import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.organization.OrganizationProfile;
 import ai.genaifund.beyondpilot.program.ApplicationForm;
 import ai.genaifund.beyondpilot.proposal.ReviewAccess.Reviewing;
-import ai.genaifund.beyondpilot.proposal.dto.ApplicationsCsv;
 import ai.genaifund.beyondpilot.proposal.dto.AttachedFileResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ContactDetails;
 import ai.genaifund.beyondpilot.proposal.dto.CriterionResponse;
@@ -46,6 +44,9 @@ import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecision;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecisionRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersion;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersionRepository;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.solution.OfferedSolution;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.storage.FileDownload;
@@ -161,13 +162,15 @@ public class ReviewService {
 	}
 
 	/**
-	 * A program's submitted applications as a spreadsheet reads them, the earliest submitted first, for GenAI Fund to
-	 * work with outside BeyondPilot. The download is recorded, since it takes applicants' contact details out.
+	 * A program's submitted applications as a spreadsheet, the earliest submitted first, for GenAI Fund to work with
+	 * outside BeyondPilot. The download is recorded, since it takes applicants' contact details out.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws ProposalException when the program takes no applications
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
 	 */
 	@Transactional
-	public ApplicationsCsv export(Actor actor, UUID programId, ExportApplicationsRequest request) {
+	public SpreadsheetFile export(Actor actor, UUID programId, ExportApplicationsRequest request,
+			SpreadsheetFormat format) {
 		Operator operator = access.operator(actor);
 		ApplicationForm form = setup.form(programId);
 		ReviewHeadResponse head = head(form, access.of(actor, programId));
@@ -184,33 +187,52 @@ public class ReviewService {
 		}
 		Map<VersionKey, Snapshot> snapshots = snapshots(submitted);
 		ReviewHeadResponse.ChoiceQuestion choice = head.choice();
-		CsvRows rows = new CsvRows();
-		rows.add(Arrays.asList("Application", "Organization", "Organization type", "Solution", "First name",
-				"Last name", "Email", "Phone", "Country", "LinkedIn", choice == null ? "Choice" : choice.label(),
-				"Submitted at (UTC)", "Version", "Review status", "Outcome released", "Scores", "Average score"));
-		int count = 0;
+		List<ApplicationLine> lines = new ArrayList<>();
 		for (Proposal proposal : submitted) {
 			Snapshot snapshot = snapshots.get(new VersionKey(proposal.getId(), proposal.getSubmissions()));
 			if (snapshot == null) {
 				continue;
 			}
 			List<ProposalAssessment> all = byProposal.getOrDefault(proposal.getId(), List.of());
-			ContactDetails contact = snapshot.applicant().contact();
-			rows.add(Arrays.asList(proposal.getId(), snapshot.organization().name(), snapshot.organization().type(),
-					snapshot.solution().name(), contact.firstName(), contact.lastName(), snapshot.applicant().email(),
-					contact.phone(), contact.country(), contact.linkedin(),
-					choice == null ? null : choiceOf(snapshot, choice.id()), proposal.getSubmittedAt(),
-					proposal.getSubmissions(), proposal.getReviewStatus(), head.releasedAt() == null ? "no" : "yes",
+			lines.add(new ApplicationLine(proposal.getId(), snapshot.organization().name(),
+					snapshot.organization().type(), snapshot.solution().name(), snapshot.applicant().contact(),
+					snapshot.applicant().email(), choice == null ? null : choiceOf(snapshot, choice.id()),
+					Objects.requireNonNull(proposal.getSubmittedAt()), proposal.getSubmissions(),
+					proposal.getReviewStatus(), head.releasedAt() != null,
 					all.stream().filter(assessment -> !assessment.isConflict()).count(), average(all)));
-			count++;
 		}
-		setup.record(AuditAction.PROPOSAL_EXPORT, operator, form, Map.of("count", String.valueOf(count)));
+		Spreadsheet<ApplicationLine> sheet = Spreadsheet.<ApplicationLine>of("Applications")
+			.text("Application", ApplicationLine::id)
+			.group("Applicant")
+			.text("Organization", ApplicationLine::organization)
+			.label("Organization type", ApplicationLine::organizationType)
+			.text("Solution", ApplicationLine::solution)
+			.group("Contact")
+			.text("First name", line -> line.contact().firstName())
+			.text("Last name", line -> line.contact().lastName())
+			.email("Email", ApplicationLine::email)
+			.text("Phone", line -> line.contact().phone())
+			.text("Country", line -> line.contact().country())
+			.link("LinkedIn", line -> line.contact().linkedin())
+			.ungrouped()
+			.text(choice == null ? "Choice" : choice.label(), ApplicationLine::choice)
+			.group("Review")
+			.time("Submitted at", ApplicationLine::submittedAt)
+			.count("Version", ApplicationLine::version)
+			.label("Review status", ApplicationLine::reviewStatus)
+			.yesNo("Outcome released", ApplicationLine::released)
+			.count("Scores", ApplicationLine::scores)
+			.decimal("Average score", ApplicationLine::average);
+		SpreadsheetFile file = sheet.write(format, form.slug() + "-applications", lines,
+				about(operator, only == null ? Map.of() : Map.of("Applications", "the ones the list showed")));
+		setup.record(AuditAction.PROPOSAL_EXPORT, operator, form, Map.of("count", String.valueOf(file.rows())));
 		LOG.atInfo()
 			.addKeyValue("event", "proposal.applications.exported")
 			.addKeyValue("program_id", programId)
-			.addKeyValue("count", count)
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
 			.log("Applications exported");
-		return new ApplicationsCsv(form.slug() + "-applications.csv", rows.toString());
+		return file;
 	}
 
 	/**
@@ -260,30 +282,50 @@ public class ReviewService {
 	 * applicants outside BeyondPilot. The download is recorded, since it takes their contact details out.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws ProposalException when the program takes no applications
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
 	 */
 	@Transactional
-	public ApplicationsCsv exportDrafts(Actor actor, UUID programId) {
+	public SpreadsheetFile exportDrafts(Actor actor, UUID programId, SpreadsheetFormat format) {
 		Operator operator = access.operator(actor);
 		ApplicationForm form = setup.form(programId);
 		ProgramDraftsResponse drafts = drafts(actor, programId);
-		CsvRows rows = new CsvRows();
-		rows.add(Arrays.asList("Draft", "First name", "Last name", "Email", "Phone", "Country", "Organization",
-				"Organization type", "Contact complete", "Solution chosen", "Deck attached",
-				"Required questions answered", "Started at (UTC)", "Last saved at (UTC)"));
-		for (ProgramDraftsResponse.Item item : drafts.items()) {
-			rows.add(Arrays.asList(item.id(), item.firstName(), item.lastName(), item.email(), item.phone(),
-					item.country(), item.organizationName(), item.organizationType(), item.contactComplete() ? "yes" : "no",
-					item.solutionChosen() ? "yes" : "no", item.deckAttached() ? "yes" : "no",
-					item.requiredAnswered() + " of " + drafts.requiredQuestions(), item.startedAt(), item.lastSavedAt()));
-		}
-		setup.record(AuditAction.PROPOSAL_DRAFTS_EXPORT, operator, form,
-				Map.of("count", String.valueOf(drafts.items().size())));
+		Spreadsheet<ProgramDraftsResponse.Item> sheet = Spreadsheet.<ProgramDraftsResponse.Item>of("Drafts")
+			.text("Draft", ProgramDraftsResponse.Item::id)
+			.group("Contact")
+			.text("First name", ProgramDraftsResponse.Item::firstName)
+			.text("Last name", ProgramDraftsResponse.Item::lastName)
+			.email("Email", ProgramDraftsResponse.Item::email)
+			.text("Phone", ProgramDraftsResponse.Item::phone)
+			.text("Country", ProgramDraftsResponse.Item::country)
+			.group("Organization")
+			.text("Organization", ProgramDraftsResponse.Item::organizationName)
+			.label("Organization type", ProgramDraftsResponse.Item::organizationType)
+			.group("Progress")
+			.yesNo("Contact complete", ProgramDraftsResponse.Item::contactComplete)
+			.yesNo("Solution chosen", ProgramDraftsResponse.Item::solutionChosen)
+			.yesNo("Deck attached", ProgramDraftsResponse.Item::deckAttached)
+			.text("Required questions answered", item -> item.requiredAnswered() + " of " + drafts.requiredQuestions())
+			.time("Started at", ProgramDraftsResponse.Item::startedAt)
+			.time("Last saved at", ProgramDraftsResponse.Item::lastSavedAt);
+		SpreadsheetFile file = sheet.write(format, form.slug() + "-drafts", drafts.items(), about(operator, Map.of()));
+		setup.record(AuditAction.PROPOSAL_DRAFTS_EXPORT, operator, form, Map.of("count", String.valueOf(file.rows())));
 		LOG.atInfo()
 			.addKeyValue("event", "proposal.drafts.exported")
 			.addKeyValue("program_id", programId)
-			.addKeyValue("count", drafts.items().size())
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
 			.log("Drafts exported");
-		return new ApplicationsCsv(form.slug() + "-drafts.csv", rows.toString());
+		return file;
+	}
+
+	private static Spreadsheet.About about(Operator operator, Map<String, String> narrowed) {
+		return new Spreadsheet.About(operator.label(), Instant.now(), narrowed);
+	}
+
+	/** One submitted application as the download lists it. */
+	private record ApplicationLine(UUID id, String organization, String organizationType, String solution,
+			ContactDetails contact, String email, @Nullable String choice, Instant submittedAt, int version,
+			String reviewStatus, boolean released, long scores, @Nullable Double average) {
 	}
 
 	/**

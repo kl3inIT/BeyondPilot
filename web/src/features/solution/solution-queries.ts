@@ -190,17 +190,24 @@ export async function readMySolution(id: string): Promise<Solution | null> {
   }
 }
 
+/** What narrows the operators' list, as the list and its download both send it. */
+export function adminSolutionFilters(search: AdminSolutionsSearch) {
+  return {
+    q: text(search.q),
+    organizationId: search.organizationId ?? undefined,
+    status: search.status ?? undefined,
+    industry: search.industry ?? undefined,
+    featured: search.featured === null ? undefined : search.featured === "true",
+    sort: knownSort(search.sort, adminSolutionSortKeys),
+  };
+}
+
 /** One page of submitted solutions for the operator behind this request. Server only. */
 export async function readAdminSolutions(search: AdminSolutionsSearch): Promise<AdminSolutionList> {
   const { data } = await listAdminSolutions({
     ...(await sessionRequest()),
     query: {
-      q: text(search.q),
-      organizationId: search.organizationId ?? undefined,
-      status: search.status ?? undefined,
-      industry: search.industry ?? undefined,
-      featured: search.featured === null ? undefined : search.featured === "true",
-      sort: knownSort(search.sort, adminSolutionSortKeys),
+      ...adminSolutionFilters(search),
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },

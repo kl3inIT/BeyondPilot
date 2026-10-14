@@ -70,6 +70,8 @@ const areaPaths = {
   admin: [
     "Admin",
     "EntryList",
+    // The Export menu of the lists operators download.
+    "ExportMenu",
     "Matching",
     "Messaging.assignments",
     "Mcp",
@@ -82,7 +84,7 @@ const areaPaths = {
     "UseCaseProposal.received",
     "UseCaseProposal.errors",
   ],
-  reviews: ["Review"],
+  reviews: ["ExportMenu", "Review"],
 } as const satisfies Record<string, readonly MessagePath[]>;
 
 type Area = keyof typeof areaPaths;

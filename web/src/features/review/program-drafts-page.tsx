@@ -59,13 +59,7 @@ function ProgramDraftsPage({
         title={head.name}
         back={{ href: adminProgramApplicationsRoute(head.programId), label: t("back") }}
         lead={t("lead", { count: drafts.items.length })}
-        actions={
-          <ExportDrafts
-            programId={head.programId}
-            slug={head.slug}
-            disabled={drafts.items.length === 0}
-          />
-        }
+        actions={<ExportDrafts programId={head.programId} disabled={drafts.items.length === 0} />}
       >
         {tabs}
       </AdminPageHeader>

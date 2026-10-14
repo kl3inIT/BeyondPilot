@@ -17,6 +17,7 @@ import ai.genaifund.beyondpilot.audit.AuditRecord;
 import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
+import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.Membership;
@@ -43,6 +44,9 @@ import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalDecisionRepo
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalSolution;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalSolutionRepository;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
@@ -299,6 +303,48 @@ public class UseCaseProposals {
 				(int) sent.stream().filter(proposal -> UseCaseProposal.SHORTLISTED.equals(proposal.getDecision())).count(),
 				(int) sent.stream().filter(proposal -> UseCaseProposal.DECLINED.equals(proposal.getDecision())).count(),
 				(int) sent.stream().filter(UseCaseProposal::outcomePending).count());
+	}
+
+	/**
+	 * The proposals a use case received as a spreadsheet, the latest first, for GenAI Fund to work with outside
+	 * BeyondPilot. Only operators download, and the download is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the use case is unknown
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, UUID useCaseId, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		ReceivedUseCaseProposalsResponse received = received(actor, useCaseId);
+		Spreadsheet<ReceivedUseCaseProposalSummaryResponse> sheet = Spreadsheet
+			.<ReceivedUseCaseProposalSummaryResponse>of("Proposals")
+			.text("Proposal", ReceivedUseCaseProposalSummaryResponse::id)
+			.group("Sender")
+			.text("Organization", ReceivedUseCaseProposalSummaryResponse::organizationName)
+			.yesNo("Organization approved", ReceivedUseCaseProposalSummaryResponse::organizationApproved)
+			.text("Contact", ReceivedUseCaseProposalSummaryResponse::contactName)
+			.text("Solutions", proposal -> String.join(", ", proposal.solutionNames()))
+			.time("Sent at", ReceivedUseCaseProposalSummaryResponse::sentAt)
+			.time("Edited at", ReceivedUseCaseProposalSummaryResponse::editedAt)
+			.group("Decision")
+			.label("Decision", ReceivedUseCaseProposalSummaryResponse::decision)
+			.time("Decided at", ReceivedUseCaseProposalSummaryResponse::decidedAt)
+			.text("Decided by", ReceivedUseCaseProposalSummaryResponse::decidedBy)
+			.yesNo("Outcome to send", ReceivedUseCaseProposalSummaryResponse::outcomePending)
+			.time("Outcome sent at", ReceivedUseCaseProposalSummaryResponse::outcomeSentAt);
+		SpreadsheetFile file = sheet.write(format, "use-case-proposals", received.items(),
+				new Spreadsheet.About(operator.label(), Instant.now(), Map.of("Use case", received.useCase().title())));
+		audit.record(new AuditRecord(AuditAction.USE_CASE_PROPOSAL_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("use_case", useCaseId.toString(), received.useCase().title()),
+				Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "proposal.use_case.proposals_exported")
+			.addKeyValue("use_case_id", useCaseId)
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Use case proposals exported");
+		return file;
 	}
 
 	private ReceivedUseCaseProposalSummaryResponse summary(UseCaseProposal proposal, Map<UUID, OrganizationName> names,

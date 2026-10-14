@@ -18,6 +18,8 @@ import { siteRoutes } from "@/lib/site";
 
 import { adminTalentSearch, adminTalentSortKeys, type AdminTalentSearch } from "./talent-search";
 import { TalentToolbar } from "./talent-toolbar";
+import { ExportTalent } from "./export-talent";
+import { adminTalentFilters } from "./talent-queries";
 
 const address = createSerializer(adminTalentSearch);
 
@@ -84,7 +86,13 @@ function AdminTalentListPage({ talent, search }: AdminTalentListPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <AdminPageHeader destination="talent" title={t("title")} />
+      <AdminPageHeader
+        destination="talent"
+        title={t("title")}
+        actions={
+          <ExportTalent filters={adminTalentFilters(search)} disabled={talent.total === 0} />
+        }
+      />
       <TalentToolbar />
 
       {/* The Headline column gives way first where the table is made to fit. */}

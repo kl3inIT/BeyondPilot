@@ -16,6 +16,9 @@ import java.util.UUID;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
@@ -282,6 +285,44 @@ class AiUsageReportsTest {
 	}
 
 	@Test
+	void anOperatorDownloadsTheCallsAsTheLogNarrowsThemAndTheDownloadIsRecorded() {
+		Instant now = Instant.now();
+		// More calls than a page holds, so the download reads the log a page at a time.
+		calls(now.minusSeconds(100), "matching", "gpt", Spreadsheet.PAGE_SIZE + 1, 0);
+		model(now.minusSeconds(2), "document_reading", "luna", "failed", 413, null, null, null, null, null, null);
+		String member = TestSignIn.session(client, mail, "member@usage.test");
+
+		assertProblem(post(member, "/calls/export?period=7d"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(post(operator, "/calls/export?period=7d&outcome=failed").expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"ai-calls-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(1)).containsExactly("Time", "Task", "Provider", "Model", "Outcome", "Failure",
+				"Error status", "Input", "Output", "Cache read", "Duration (ms)", "Estimated cost", "Kind", "Identifier");
+		assertThat(sheet.get(2).getFirst()).matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}");
+		assertThat(sheet.get(2).subList(1, sheet.get(2).size())).containsExactly("Document reading", "9Router", "luna",
+				"Failed", "Too large", "413", "", "", "", "1200", "", "Solution deck", "s-1");
+
+		String csv = body(post(operator, "/calls/export?period=7d&task=matching&format=csv").expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("\uFEFFTime,Task,Provider,Model,Outcome,Failure,Error status,Input,Output,");
+		List<String> lines = csv.lines().toList();
+		assertThat(lines).hasSize(Spreadsheet.PAGE_SIZE + 2);
+		assertThat(lines.get(1)).contains(",Matching,9Router,gpt,Ok,,,10,2,,1200,,Solution deck,s-1");
+		assertThat(exportCounts()).containsExactly("1", String.valueOf(Spreadsheet.PAGE_SIZE + 1));
+	}
+
+	@Test
 	void aFailedCallReadsAsWhatItsStatusOrItsExceptionSays() {
 		assertThat(AiUsageReports.kind(401, null)).isEqualTo("key_refused");
 		assertThat(AiUsageReports.kind(403, null)).isEqualTo("key_refused");
@@ -372,6 +413,20 @@ class AiUsageReportsTest {
 
 	private RestTestClient.ResponseSpec get(String session, String path) {
 		return client.get().uri(API + path).cookie(TestSignIn.SESSION_COOKIE, session).exchange();
+	}
+
+	private RestTestClient.ResponseSpec post(String session, String path) {
+		return client.post()
+			.uri(API + path)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.exchange();
+	}
+
+	private List<String> exportCounts() {
+		return jdbc.sql("select details ->> 'count' from audit_event where action = 'ai.usage_export' order by occurred_at")
+			.query(String.class)
+			.list();
 	}
 
 	private static String body(RestTestClient.ResponseSpec response) {
