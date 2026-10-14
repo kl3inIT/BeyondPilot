@@ -7,6 +7,7 @@ import {
   ExternalLinkIcon,
   FileQuestionIcon,
   Loader2Icon,
+  MailPlusIcon,
   Trash2Icon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -26,6 +27,7 @@ import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { MatchingCandidate } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { InvitedMark } from "./matching-invite";
 import { SourceChip, StatusCounts } from "./matching-marks";
 import { rowQuoteOf, statusCounts, unreadOf, type Need } from "./matching-view";
 
@@ -45,6 +47,8 @@ type MatchingRowProps = {
   onShortlist: () => void;
   /** Opens the reason picker in the place of the row. */
   onRemove: () => void;
+  /** Opens the invitation of the provider to propose; absent when the caller may not invite now. */
+  onInvite?: () => void;
 };
 
 /** Where a solution is from and how far along it is, as one quiet line. */
@@ -77,6 +81,7 @@ function MatchingRow({
   onSelect,
   onShortlist,
   onRemove,
+  onInvite,
 }: MatchingRowProps) {
   const t = useTranslations("Matching.row");
   const meta = useCandidateMeta()(candidate);
@@ -148,6 +153,17 @@ function MatchingRow({
                     <DropdownMenuSeparator />
                   </>
                 )}
+                {onInvite && !candidate.invitedAt && (
+                  <>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem className="pointer-coarse:min-h-11" onClick={onInvite}>
+                        <MailPlusIcon aria-hidden="true" />
+                        {t("invite")}
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuGroup>
                   <DropdownMenuItem
                     variant="destructive"
@@ -175,9 +191,10 @@ function MatchingRow({
             {t(`reading.${reading}`)}
           </p>
         )}
-        {(counts || unread) && (
+        {(counts || unread || candidate.invitedAt) && (
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
             {counts && <StatusCounts counts={counts} />}
+            <InvitedMark candidate={candidate} />
             {unread && (
               <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                 <FileQuestionIcon aria-hidden="true" className="size-4 shrink-0" />

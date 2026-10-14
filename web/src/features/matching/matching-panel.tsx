@@ -9,6 +9,7 @@ import {
   ExternalLinkIcon,
   FileQuestionIcon,
   FileTextIcon,
+  MailPlusIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -29,6 +30,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { MatchingDeck } from "./matching-deck";
 import { MatchingFeedback } from "./matching-feedback";
+import { InvitedMark } from "./matching-invite";
 import { StatusChip, useSourceLine } from "./matching-marks";
 import { useCandidateMeta } from "./matching-row";
 import { findingOf, openingOf, unreadOf, type Need } from "./matching-view";
@@ -190,6 +192,8 @@ type MatchingPanelProps = {
   onNext?: () => void;
   onShortlist: () => void;
   onRemove: () => void;
+  /** Opens the invitation of the provider to propose; absent when the caller may not invite now. */
+  onInvite?: () => void;
 };
 
 /**
@@ -211,6 +215,7 @@ function MatchingPanel({
   onNext,
   onShortlist,
   onRemove,
+  onInvite,
 }: MatchingPanelProps) {
   const t = useTranslations("Matching");
   const meta = useCandidateMeta()(candidate);
@@ -386,6 +391,16 @@ function MatchingPanel({
         <Button prominence="secondary" aria-keyshortcuts="N" disabled={pending} onClick={onRemove}>
           {t("row.remove")}
         </Button>
+        {candidate.invitedAt ? (
+          <InvitedMark candidate={candidate} />
+        ) : (
+          onInvite && (
+            <Button prominence="secondary" disabled={pending} onClick={onInvite}>
+              <MailPlusIcon aria-hidden="true" />
+              {t("invite.action")}
+            </Button>
+          )
+        )}
       </div>
     </div>
   );

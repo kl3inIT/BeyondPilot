@@ -122,6 +122,14 @@ public enum EmailKind {
 			Variable.optional("proposalUrl", "https://beyondpilot.example/use-cases/1/propose/view"),
 			Variable.quote("message", null)),
 
+	MATCHING_INVITATION("matching_invitation", EmailGroup.USE_CASES, true, "note",
+			Variable.required("inviterName", "Tasco Insurance"), Variable.required("providerName", "Papaya"),
+			Variable.required("solutionName", "Papaya Claims"),
+			Variable.required("useCaseTitle", "Claims triage for motor insurance"),
+			Variable.optional("closesAt", "15 Oct 2026, 23:59 ICT"),
+			Variable.optional("useCaseUrl", "https://beyondpilot.example/use-cases/1"),
+			Variable.quote("note", "We would like to hear how you handle renewals.")),
+
 	TALENT_APPROVED("talent_approved", EmailGroup.TALENT, true, "note",
 			Variable.required("profileName", "Mei Tan"), Variable.quote("note", null),
 			Variable.optional("profileUrl", "https://beyondpilot.example/talent/mei-tan")),
