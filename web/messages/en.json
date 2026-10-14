@@ -7606,14 +7606,13 @@
     "reported": {
       "metaTitle": "Reported messages",
       "title": "Reported messages",
-      "lead": "First messages the side written to reported as unwanted. Their senders were told only that the message was declined.",
+      "lead": "First messages that recipients reported as unwanted. Senders were told only that their request was declined.",
       "empty": {
         "title": "Nothing was reported",
         "lead": "A first message someone reports as unwanted is listed here."
       },
       "columns": {
         "sender": "Sender",
-        "about": "About",
         "message": "Message",
         "reported": "Reported"
       },

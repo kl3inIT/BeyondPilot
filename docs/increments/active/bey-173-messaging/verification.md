@@ -66,3 +66,9 @@ The review of the finished screen found that a client could mark messages beyond
 A later static review found two more cases: a pending request's reader could reveal they had opened it, and a slow refresh could erase a message received on the event stream after the server took its snapshot. Both now have regression tests at the HTTP and state boundaries respectively.
 
 After these changes, `./gradlew :backend:check --no-daemon` passed with `JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Ho_Chi_Minh`, and `pnpm --dir web check` passed with 658 unit tests, 5501 message keys and 230 covered failure codes. SonarQube Scanner and a SonarQube server were not available locally; the review used the repository gates and manual static inspection.
+
+## Admin reported messages review on 14 October 2026
+
+Figwright 0.6.0 connected to the open `BeyondPilot — Product UI` Figma file. `Screens` has no dedicated Reported messages frame, so the Admin Audit log desktop frame (`178:27970`) supplied the table spacing and information hierarchy. The report list now presents the sender, the subject and full message, then the report date. This also resolves the clipped sender observed above: the sender column has enough room for a name, and email addresses wrap. The mobile table keeps the sender and message first when it scrolls sideways. The lead now says plainly what the operator is reviewing.
+
+`pnpm --dir web check` passed with 668 unit tests, 5520 message keys and 230 covered failure codes. The focused Admin reported messages Playwright suite passed on desktop and mobile (four runs, including axe). The rendered page was inspected at 1440 × 900 and 390 × 844.

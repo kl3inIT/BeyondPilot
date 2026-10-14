@@ -7,6 +7,7 @@ import { DataTableRows } from "@/components/composites/data-table-view";
 import { ListFooter } from "@/components/composites/list-footer";
 import { Person } from "@/components/composites/person";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { Badge } from "@/components/ui/badge";
 import { useFormatter } from "@/i18n/format";
 import type { ReportedRequestList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -42,40 +43,48 @@ function AdminReportedRequestsPage({
 
       <DataTableRows
         columns={[
-          { id: "sender", header: t("reported.columns.sender"), layout: { top: true } },
-          { id: "about", header: t("reported.columns.about"), layout: { top: true } },
+          {
+            id: "sender",
+            header: t("reported.columns.sender"),
+            layout: { top: true, width: "lg" },
+          },
           { id: "message", header: t("reported.columns.message"), layout: { fill: true } },
           {
             id: "reported",
             header: t("reported.columns.reported"),
-            layout: { top: true, nowrap: true },
+            layout: { top: true, nowrap: true, width: "sm" },
           },
         ]}
         rows={requests.items.map((request) => ({
           id: request.id,
           cells: {
+            reported: (
+              <span className="text-sm text-muted-foreground">
+                {format.dateTime(new Date(request.reportedAt ?? request.createdAt), "date")}
+              </span>
+            ),
             sender: (
-              <div className="flex flex-col gap-1">
+              <div className="flex min-w-56 flex-col gap-1.5">
                 <Person
                   name={request.senderName ?? null}
                   email={request.senderEmail || t("reported.noAccount")}
+                  wrapEmail
                 />
-                <span className="text-sm text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {request.senderOrganization ?? t("reported.noOrganization")}
                 </span>
               </div>
             ),
-            about: (
-              <div className="flex flex-col text-sm">
-                <span className="font-medium">{request.subjectName}</span>
-                <span className="text-muted-foreground">{t(`kind.${request.kind}`)}</span>
+            message: (
+              <div className="flex max-w-2xl flex-col gap-2.5 py-0.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium">{request.subjectName}</span>
+                  <Badge variant="secondary">{t(`kind.${request.kind}`)}</Badge>
+                </div>
+                <p className="border-l-2 border-border pl-3 text-sm break-words whitespace-pre-line">
+                  {request.message}
+                </p>
               </div>
-            ),
-            message: <p className="text-sm break-words whitespace-pre-line">{request.message}</p>,
-            reported: (
-              <span className="text-muted-foreground">
-                {format.dateTime(new Date(request.reportedAt ?? request.createdAt), "date")}
-              </span>
             ),
           },
         }))}

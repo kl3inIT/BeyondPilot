@@ -7606,14 +7606,13 @@
     "reported": {
       "metaTitle": "Tin bị báo cáo",
       "title": "Tin bị báo cáo",
-      "lead": "Các tin đầu tiên bị bên nhận báo là không mong muốn. Người gửi chỉ được báo rằng tin đã bị từ chối.",
+      "lead": "Những tin đầu tiên được bên nhận báo là không mong muốn. Người gửi chỉ được thông báo rằng yêu cầu đã bị từ chối.",
       "empty": {
         "title": "Chưa có tin nào bị báo cáo",
         "lead": "Tin đầu tiên bị ai đó báo là không mong muốn sẽ hiện ở đây."
       },
       "columns": {
         "sender": "Người gửi",
-        "about": "Về",
         "message": "Nội dung",
         "reported": "Ngày báo cáo"
       },
