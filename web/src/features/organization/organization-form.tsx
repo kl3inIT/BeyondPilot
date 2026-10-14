@@ -27,7 +27,7 @@ import {
 import { rejectedFields } from "@/lib/api/rejected-fields";
 import { siteRoutes } from "@/lib/site";
 
-import { teamSizes, typesFor } from "./organization-codes";
+import { organizationTypes, teamSizeAfterTypeChange, teamSizesFor } from "./organization-codes";
 import { ExistingOrganizations, useExistingOrganizations } from "./organization-existing";
 import { MAX_DESCRIPTION } from "./organization-format";
 import { OrganizationIndustriesField } from "./organization-industries-field";
@@ -288,12 +288,23 @@ function OrganizationForm({
           <div className="grid gap-x-3 gap-y-6 sm:grid-cols-2">
             {/* A new organization says its type with the choice above. */}
             {organization && (
-              <form.AppField name="type">
+              <form.AppField
+                name="type"
+                listeners={{
+                  onChange: ({ value, fieldApi }) => {
+                    // Just me is one person; a team or a company says how many it is.
+                    fieldApi.form.setFieldValue(
+                      "teamSize",
+                      teamSizeAfterTypeChange(value, fieldApi.form.getFieldValue("teamSize")),
+                    );
+                  },
+                }}
+              >
                 {(field) => (
                   <field.SelectField
                     label={t("type")}
                     requiredMark
-                    options={typesFor(organization).map((value) => ({
+                    options={organizationTypes.map((value) => ({
                       value,
                       label: typeName(value),
                     }))}
@@ -307,7 +318,10 @@ function OrganizationForm({
                   label={t("teamSize")}
                   requiredMark
                   placeholder={t("teamSizePlaceholder")}
-                  options={teamSizes.map((value) => ({ value, label: sizeName(value) }))}
+                  options={teamSizesFor(type).map((value) => ({
+                    value,
+                    label: sizeName(value),
+                  }))}
                 />
               )}
             </form.AppField>

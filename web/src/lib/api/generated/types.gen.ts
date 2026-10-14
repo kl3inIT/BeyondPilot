@@ -4002,9 +4002,9 @@ export type PublicSolution = {
     organizationFoundedYear?: number | null;
     organizationName: string;
     /**
-     * The address of the organization's public page; null for someone on their own, who has none.
+     * The address of the organization's public page.
      */
-    organizationSlug?: string | null;
+    organizationSlug: string;
     /**
      * The organization's team-size vocabulary code, when one is known.
      */
@@ -4089,9 +4089,9 @@ export type PublicSolutionSummary = {
     offers: Array<PublicOffer>;
     organizationName: string;
     /**
-     * The address of the organization's public page; null for someone on their own, who has none.
+     * The address of the organization's public page.
      */
-    organizationSlug?: string | null;
+    organizationSlug: string;
     slug: string;
     summary?: string | null;
 };

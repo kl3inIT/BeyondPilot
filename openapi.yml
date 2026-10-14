@@ -19701,11 +19701,8 @@ components:
         organizationName:
           type: string
         organizationSlug:
-          type:
-          - string
-          - "null"
-          description: "The address of the organization's public page; null for someone\
-            \ on their own, who has none."
+          type: string
+          description: The address of the organization's public page.
         organizationTeamSize:
           type:
           - string
@@ -19766,6 +19763,7 @@ components:
       - name
       - offers
       - organizationName
+      - organizationSlug
       - productNames
       - segmentFocus
       - slug
@@ -19870,11 +19868,8 @@ components:
         organizationName:
           type: string
         organizationSlug:
-          type:
-          - string
-          - "null"
-          description: "The address of the organization's public page; null for someone\
-            \ on their own, who has none."
+          type: string
+          description: The address of the organization's public page.
         slug:
           type: string
         summary:
@@ -19889,6 +19884,7 @@ components:
       - name
       - offers
       - organizationName
+      - organizationSlug
       - slug
     PublicTalent:
       type: object

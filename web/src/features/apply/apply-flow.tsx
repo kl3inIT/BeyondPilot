@@ -762,12 +762,12 @@ function StepYou({
   return (
     <>
       {organization && isIndividual(organization) ? (
-        // Someone applying as themselves is shown as themselves: nothing about them is reviewed.
+        // Someone applying as themselves is shown by the name their organization has, which needs no review.
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-medium">{t("applyingAs")}</h2>
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4">
             <div className="flex flex-col gap-1">
-              <span className="font-medium">{name || organization.name}</span>
+              <span className="font-medium">{organization.name}</span>
               <span className="text-sm text-muted-foreground">
                 {[
                   typeName(organization.type),

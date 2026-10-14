@@ -27,7 +27,6 @@
       "signOut": "Đăng xuất",
       "signOutFailed": "Chưa đăng xuất được. Bạn thử lại.",
       "organization": "Tổ chức của tôi",
-      "solutions": "Giải pháp của tôi",
       "talentProfile": "Hồ sơ nhân lực",
       "messages": "Tin nhắn",
       "messagesWaiting": "{count, plural, other {# đang chờ bạn}}",
@@ -315,7 +314,9 @@
     "backToSolutions": "Về danh sách giải pháp"
   },
   "Errors": {
-    "ORGANIZATION_INDIVIDUAL": "Người nộp với tư cách cá nhân không có thành viên, tên miền hay hồ sơ tổ chức. Hãy nộp với tư cách đội hoặc công ty.",
+    "ORGANIZATION_INDIVIDUAL": "Chỉ mình tôi là một người: không có thành viên khác, lời mời hay tên miền email. Hãy chuyển thành đội hoặc công ty trước.",
+    "ORGANIZATION_NOT_ALONE": "Tổ chức này còn thành viên khác, lời mời hoặc yêu cầu tham gia nên chưa thể chuyển thành Chỉ mình tôi. Hãy gỡ chúng trước.",
+    "ORGANIZATION_TEAM_SIZE_REQUIRED": "Chọn số người của đội hoặc công ty.",
     "PROPOSAL_INDIVIDUAL_LOCKED": "Bạn đã gửi một thứ dưới tên mình, nên bạn tiếp tục nộp với tư cách cá nhân.",
     "unknown": "Chưa thực hiện được. Hãy thử lại.",
     "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
@@ -3705,7 +3706,7 @@
     "organizationType": {
       "company": "Công ty",
       "builder_team": "Nhóm phát triển",
-      "independent_builder": "Cá nhân",
+      "independent_builder": "Chỉ mình tôi",
       "other": "Khác"
     },
     "teamSize": {
@@ -4714,7 +4715,6 @@
       },
       "company": {
         "title": "Công ty đứng sau giải pháp này",
-        "individualTitle": "Người đứng sau giải pháp này",
         "metaDescription": "{name} trên BeyondPilot: thông tin công ty và các giải pháp AI được đăng trong danh bạ của GenAI Fund.",
         "view": "Xem công ty",
         "viewSolutions": "Xem các giải pháp",

@@ -259,6 +259,18 @@ describe("profileValuesOf and profileBodyOf", () => {
     ).toMatchObject({ website: null, foundedYear: null });
   });
 
+  it("sends just me as the size of a person on their own, whatever the form held", () => {
+    expect(
+      profileBodyOf({ ...filled, type: "independent_builder", teamSize: "10_49" }),
+    ).toMatchObject({
+      type: "independent_builder",
+      teamSize: "just_me",
+    });
+    expect(profileBodyOf({ ...filled, type: "builder_team", teamSize: "2_9" })).toMatchObject({
+      teamSize: "2_9",
+    });
+  });
+
   it("trims the name, the website and the description", () => {
     expect(
       profileBodyOf({

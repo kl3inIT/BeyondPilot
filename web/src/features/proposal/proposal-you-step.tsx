@@ -9,7 +9,6 @@ import { ReviewStatus } from "@/components/composites/review-status";
 import { useNotify } from "@/hooks/use-notify";
 import { withdrawJoinRequest } from "@/lib/api/generated";
 import { useRouter } from "next/navigation";
-import { TextButton } from "@/components/actions/text-button";
 import { withFieldGroup } from "@/components/form/app-form";
 import { useFieldValidity } from "@/components/form/form-context";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,6 +26,7 @@ import { initials } from "@/lib/initials";
 import { publicFileUrl } from "@/lib/storage/upload";
 
 import { maxBackground } from "./proposal-draft";
+import { ProposalOrganizationActions } from "./proposal-organization-actions";
 import { ProposalOrganizationDialog } from "./proposal-organization-dialog";
 import { phoneSchema } from "./proposal-schemas";
 
@@ -161,29 +161,21 @@ function OrganizationSummary({
   onSaved: () => Promise<void>;
 }) {
   const t = useTranslations("UseCaseProposal.wizard.organization");
-  const [editing, setEditing] = useState(false);
-
   return (
-    <div className="flex items-center gap-4 rounded-lg border p-4">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-lg border p-4">
       <Avatar size="lg">
         {organization.logoFileId && (
           <AvatarImage src={publicFileUrl(organization.logoFileId)} alt="" />
         )}
         <AvatarFallback>{initials(organization.name, "")}</AvatarFallback>
       </Avatar>
-      <span className="min-w-0 flex-1 truncate text-base font-medium">{organization.name}</span>
+      <span className="min-w-32 flex-1 truncate text-base font-medium">{organization.name}</span>
       {!organization.approved && (
         <ReviewStatus state="in_review" appearance="pill">
           {t("pending")}
         </ReviewStatus>
       )}
-      {/* A person on their own is named by their application; there is nothing else to correct. */}
-      {organization.owner && organization.type !== "independent_builder" && (
-        <>
-          <TextButton onClick={() => setEditing(true)}>{t("edit")}</TextButton>
-          <ProposalOrganizationDialog open={editing} onOpenChange={setEditing} onSaved={onSaved} />
-        </>
-      )}
+      <ProposalOrganizationActions organization={organization} onSaved={onSaved} />
     </div>
   );
 }

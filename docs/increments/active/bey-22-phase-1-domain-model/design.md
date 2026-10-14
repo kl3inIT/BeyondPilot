@@ -145,11 +145,11 @@ AI-filled values stay `ai_extracted` until the owner confirms them.
 
 ### identity
 
-| Table                                     | Key columns                                                                                                                                                                                                         |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Table                                     | Key columns                                                                                                                                                                                                                      |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `identity_account`                        | `email` (unique on `lower(email)`), `display_name`, `status` (`active`, `disabled`), `platform_role` (`user`, `operator`), `last_login_at`. Implemented: see the [identity increment](../../completed/bey-30-identity/design.md) |
-| `identity_external_identity`              | `account_id`, `provider` (`google`), `subject` unique per provider                                                                                                                                                  |
-| Spring Security and Spring Session tables | One-time tokens for email links, JDBC sessions                                                                                                                                                                      |
+| `identity_external_identity`              | `account_id`, `provider` (`google`), `subject` unique per provider                                                                                                                                                               |
+| Spring Security and Spring Session tables | One-time tokens for email links, JDBC sessions                                                                                                                                                                                   |
 
 ### organization
 

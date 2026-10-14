@@ -16,6 +16,7 @@ export async function signInAs(
     | "asked"
     | "declined"
     | "waiting"
+    | "alone"
     | "moved",
   baseURL: string,
 ) {

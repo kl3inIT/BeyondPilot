@@ -92,8 +92,8 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   absent). A team waits for GenAI Fund's review like any new organization; an `independent_builder` is approved at once
   ([BEY-189](../increments/completed/bey-189-solo-applicant/design.md)). Either is attached to the caller's application if
   one exists. A caller already in an organization is refused with `PROPOSAL_ALREADY_IN_ORGANIZATION`.
-- **Applying as oneself.** Each save renames the caller's `independent_builder` after the contact's first and last
-  name. While nothing of it was sent (no submitted application, no use-case proposal out of draft, no solution out of
+- **Applying as oneself.** The `independent_builder` keeps the name it was given, which its owner may change like any
+  organization's ([this increment](../increments/active/just-me-is-an-organization/design.md)). While nothing of it was sent (no submitted application, no use-case proposal out of draft, no solution out of
   draft), the application form's `organization.changeable` is true: `kind = team` turns it into that team, which waits
   for review, and `POST …/application/organization/leave` takes the person out of it, leaving the application with no
   organization so that they join or add a company. Once something was sent, both answer

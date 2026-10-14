@@ -27,7 +27,6 @@
       "signOut": "Sign out",
       "signOutFailed": "We could not sign you out. Try again.",
       "organization": "My organization",
-      "solutions": "My solutions",
       "talentProfile": "Talent profile",
       "messages": "Messages",
       "messagesWaiting": "{count, plural, one {# waits for you} other {# wait for you}}",
@@ -315,7 +314,9 @@
     "backToSolutions": "Back to solutions"
   },
   "Errors": {
-    "ORGANIZATION_INDIVIDUAL": "Someone applying on their own has no members, domain or profile of an organization. Apply as a team or a company instead.",
+    "ORGANIZATION_INDIVIDUAL": "Just me is one person: it has no other members, invitations or email domain. Make it a team or a company first.",
+    "ORGANIZATION_NOT_ALONE": "This organization has other members, invitations or requests to join, so it cannot become Just me. Remove them first.",
+    "ORGANIZATION_TEAM_SIZE_REQUIRED": "Choose how many people the team or company has.",
     "PROPOSAL_INDIVIDUAL_LOCKED": "You already sent something under your name, so you keep applying as yourself.",
     "unknown": "That did not work. Try again.",
     "REQUEST_INVALID": "Check the marked fields and try again.",
@@ -3705,7 +3706,7 @@
     "organizationType": {
       "company": "Company",
       "builder_team": "Builder team",
-      "independent_builder": "Individual",
+      "independent_builder": "Just me",
       "other": "Other"
     },
     "teamSize": {
@@ -4714,7 +4715,6 @@
       },
       "company": {
         "title": "The company behind this solution",
-        "individualTitle": "The person behind this solution",
         "metaDescription": "{name} on BeyondPilot: the company and the AI solutions it lists in GenAI Fund’s directory.",
         "view": "View company",
         "viewSolutions": "View solutions",

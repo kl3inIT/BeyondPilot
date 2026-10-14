@@ -8,12 +8,12 @@ The brief asks for it twice: a use case's owner should "receive relevant solutio
 
 Every step of that journey exists except the invitation:
 
-| Step                                                                                        | Where it is                                                                                                                          |
-| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Step                                                                                        | Where it is                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Recommendations                                                                             | Matching ([BEY-39](../../completed/bey-39-matching/design.md)), read one at a time ([BEY-176](../../completed/bey-176-matching-review/design.md)) or as a list |
-| A provider sends a proposal to a use case                                                   | `proposal` ([BEY-133](../bey-133-use-case-proposals/design.md)): any organization, approved or still in review                       |
-| The use case's organization reads, shortlists and declines proposals, and tells the senders | `proposal`, BEY-133's decisions and outcomes, merged on 14 October                                                                   |
-| **Invite a recommended provider to propose**                                                | Missing                                                                                                                              |
+| A provider sends a proposal to a use case                                                   | `proposal` ([BEY-133](../bey-133-use-case-proposals/design.md)): any organization, approved or still in review                                                 |
+| The use case's organization reads, shortlists and declines proposals, and tells the senders | `proposal`, BEY-133's decisions and outcomes, merged on 14 October                                                                                             |
+| **Invite a recommended provider to propose**                                                | Missing                                                                                                                                                        |
 
 So the invitation is an email that leads a provider to a step that already works. It adds no new way to propose.
 

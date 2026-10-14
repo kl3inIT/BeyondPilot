@@ -93,7 +93,8 @@ const declinedProposal = {
 
 /** The form of the use case as one account reads it, holding the proposal of the scene. */
 export function proposalForm(session, scene) {
-  const belongs = session === "owner" || session === "member";
+  const belongs = session === "owner" || session === "member" || session === "alone";
+  const alone = session === "alone";
   return {
     useCase: {
       id: proposalUseCaseId,
@@ -103,11 +104,11 @@ export function proposalForm(session, scene) {
     organization: belongs
       ? {
           id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
-          name: "Pocket Policy",
+          name: alone ? "An Tr?n" : "Pocket Policy",
           logoFileId: null,
           approved: true,
-          owner: session === "owner",
-          type: "company",
+          owner: session === "owner" || alone,
+          type: alone ? "independent_builder" : "company",
         }
       : null,
     proposal:
