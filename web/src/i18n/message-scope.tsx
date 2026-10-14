@@ -71,6 +71,7 @@ const areaPaths = {
     "Admin",
     "EntryList",
     "Matching",
+    "Messaging.assignments",
     "Mcp",
     "Organization",
     "Program",
