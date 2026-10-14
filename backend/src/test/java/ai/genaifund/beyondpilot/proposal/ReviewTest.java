@@ -159,16 +159,11 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<List<String>>read(again, "$.submitted.answers[?(@.kind == 'multi_choice')].value"))
 			.containsExactly("[\"Claims\",\"Pricing\"]");
 		assertProblem(get(judge, one + "/files/" + UUID.randomUUID()), 404, "PROPOSAL_APPLICATION_NOT_FOUND");
-		assertThat(auditOf(form.programId())).doesNotContain("proposal.file_open");
 
-		// Opening a file of an application is recorded, with who opened which file.
+		// Opening a file of an application, inside the judge's own permission, is not audited.
 		String deck = JsonPath.read(again, "$.submitted.deck.fileId");
 		get(judge, one + "/files/" + deck);
-		assertThat(jdbc.sql("""
-				select actor_email || ' ' || (details ->> 'application') || ' ' || (details ->> 'file')
-				from audit_event where action = 'proposal.file_open' and resource_id = ?
-				""").params(form.programId().toString()).query(String.class).list())
-			.containsExactly("scorer@review.test " + first.id() + " " + deck);
+		assertThat(auditOf(form.programId())).doesNotContain("proposal.file_open");
 	}
 
 	@Test
@@ -293,7 +288,7 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Boolean>read(list, "$.items[1].contactComplete")).isFalse();
 		assertThat(JsonPath.<Boolean>read(list, "$.items[1].solutionChosen")).isFalse();
 		assertThat(JsonPath.<Integer>read(list, "$.requiredQuestions")).isPositive();
-		// The list does not read out what a draft says; an operator opens one to read it, and the reading is recorded.
+		// The list does not read out what a draft says; an operator opens one to read it, and no reading is audited.
 		assertThat(list).doesNotContain("hotline");
 		String draftId = JsonPath.read(list, "$.items[0].id");
 		get(judge, REVIEW.replace("/programs/", "/drafts/") + draftId).expectStatus().isForbidden();
@@ -301,7 +296,7 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<String>read(one, "$.draft.email")).isEqualTo("later@drafted.test");
 		assertThat(JsonPath.<List<String>>read(one, "$.draft.answers[*].value"))
 			.containsExactly("Claims reach a decision without a hotline call.");
-		assertThat(auditOf(form.programId())).contains("proposal.draft_open");
+		assertThat(auditOf(form.programId())).doesNotContain("proposal.draft_open");
 
 		String csv = new String(post(operator, drafts + "/export?format=csv", null).expectStatus()
 			.isOk()
