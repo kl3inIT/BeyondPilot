@@ -88,7 +88,6 @@
   "Campaign": {
     "name": "AI for Insurance Challenge × Tasco",
     "partners": "GenAI Fund × Tasco",
-    "kind": "Enterprise challenge · Insurance · Vietnam",
     "question": "How might we make insurance in Vietnam something people are glad to hold?",
     "live": "Live",
     "apply": "Apply",
@@ -96,7 +95,6 @@
     "readBrief": "Read the brief",
     "submissionsClose": "Submissions close 15 Oct, 23:59 ICT",
     "closes": "Closes 15 Oct, 23:59 ICT",
-    "countdown": "{days, plural, =0 {Last day} one {# day left} other {# days left}} · closes 15 Oct, 23:59 ICT",
     "closed": "Submissions closed on 15 Oct, 23:59 ICT",
     "facts": {
       "label": "Key dates",
@@ -105,9 +103,7 @@
       "demoDay": "Demo day",
       "demoDayWhen": "22 Oct, 2–4 pm",
       "investment": "Considered for investment",
-      "investmentValue": "Up to US$100,000",
-      "notified": "Applicants notified",
-      "notifiedWhen": "16 Oct"
+      "investmentValue": "Up to US$100,000"
     }
   },
   "Home": {
@@ -270,11 +266,6 @@
         "shortlist": "Shortlist matched solutions",
         "alt": "an example of the three steps. Start by searching the directory or publishing a use case; the solutions listed on BeyondPilot include Revve AI and Shieldbase; the next step is to receive proposals or shortlist the solutions matched to a use case."
       }
-    },
-    "challenge": {
-      "eyebrow": "Featured opportunity",
-      "description": "Tasco and GenAI Fund are looking for AI solutions to real operating problems in Vietnamese insurance. Apply directly through the challenge page.",
-      "partners": "With Microsoft for Startups and Notion"
     },
     "faq": {
       "eyebrow": "FAQ",
