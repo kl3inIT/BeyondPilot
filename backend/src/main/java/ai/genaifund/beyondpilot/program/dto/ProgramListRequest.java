@@ -14,5 +14,6 @@ public record ProgramListRequest(
 		@Parameter(description = "Only programs of this type.", schema = @Schema(
 				allowableValues = { "enterprise_challenge", "open_innovation_call", "accelerator", "hackathon",
 						"buildathon", "grant", "venture_building", "pitch_competition", "event_series",
-						"event" })) @Pattern(regexp = CreateProgramRequest.TYPE) @Nullable String type) {
+						"event" })) @Pattern(regexp = CreateProgramRequest.TYPE) @Nullable String type,
+		@Parameter(description = "Only the programs an operator featured, the most recently featured first; the home page announces the first that still takes applications.") @Nullable Boolean featured) {
 }

@@ -44,12 +44,15 @@ public class ProgramService {
 		this.identity = identity;
 	}
 
-	/** The published programs the request selects, the latest to start first. */
+	/**
+	 * The published programs the request selects, the latest to start first; the featured ones alone, the most
+	 * recently featured first.
+	 */
 	@Transactional(readOnly = true)
 	public ProgramListResponse list(ProgramListRequest request) {
 		Instant now = Instant.now();
 		String phase = request.phase();
-		return new ProgramListResponse(programList.published(request.type(), now)
+		return new ProgramListResponse(programList.published(request.type(), request.featured(), now)
 			.stream()
 			.filter(program -> phase == null || phase.equals(program.phase()))
 			.toList());

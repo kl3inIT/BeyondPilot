@@ -18,6 +18,8 @@ public record AdminProgramSummaryResponse(@Schema(requiredMode = Schema.Required
 		@Schema(types = { "string", "null" }) @Nullable String partnerName,
 		@Schema(types = { "string", "null" }, format = "uuid",
 				description = "The cover, read at the public address of stored files.") @Nullable UUID coverFileId,
+		@Schema(types = { "string", "null" }, format = "date-time",
+				description = "When an operator featured the program; null while it is not featured.") @Nullable Instant featuredAt,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "draft", "published" }) String status,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "upcoming", "open", "running", "done" },
