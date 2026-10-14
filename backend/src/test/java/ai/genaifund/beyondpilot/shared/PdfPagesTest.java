@@ -32,7 +32,12 @@ class PdfPagesTest {
 		byte[] pdf = TestPdf.of("One", "Two", "Three");
 
 		assertThat(PdfPages.text(() -> new ByteArrayInputStream(pdf), 2)).containsExactly("One", "Two");
-		assertThat(PdfPages.count(() -> new ByteArrayInputStream(pdf))).isEqualTo(3);
+		PdfPages.Pages pages = PdfPages.pages(() -> new ByteArrayInputStream(pdf), 2, 1, 1_400_000);
+		assertThat(pages.count()).isEqualTo(3);
+		assertThat(pages.pages()).extracting(PdfPages.Page::number, PdfPages.Page::text)
+			.containsExactly(org.assertj.core.groups.Tuple.tuple(2, "Two"));
+		assertThat(pages.pages().getFirst().jpeg()).startsWith((byte) 0xFF, (byte) 0xD8);
+		assertThat(PdfPages.pages(() -> new ByteArrayInputStream(pdf), 4, 8, 1_400_000).pages()).isEmpty();
 	}
 
 	@Test

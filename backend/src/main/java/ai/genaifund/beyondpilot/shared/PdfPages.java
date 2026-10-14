@@ -47,25 +47,41 @@ public final class PdfPages {
 
 	/** The text of each page, in order, up to a number of pages; an empty string for a page without text. */
 	public static List<String> text(InputStreamSource pdf, int maxPages) throws IOException {
-		try (InputStream content = pdf.getInputStream(); PDDocument document = Loader.loadPDF(content.readAllBytes())) {
-			PDFTextStripper stripper = new PDFTextStripper();
-			stripper.setSortByPosition(true);
-			int count = Math.min(document.getNumberOfPages(), maxPages);
-			List<String> pages = new ArrayList<>(count);
-			for (int page = 1; page <= count; page++) {
-				stripper.setStartPage(page);
-				stripper.setEndPage(page);
-				pages.add(clean(stripper.getText(document)));
-			}
-			return pages;
+		try (PDDocument document = load(pdf)) {
+			return text(document, 1, Math.min(document.getNumberOfPages(), maxPages));
 		}
 	}
 
-	/** How many pages the PDF has. */
-	public static int count(InputStreamSource pdf) throws IOException {
-		try (InputStream content = pdf.getInputStream(); PDDocument document = Loader.loadPDF(content.readAllBytes())) {
-			return document.getNumberOfPages();
+	/**
+	 * Up to a number of pages from a first one, each with its text and its picture as {@link #jpegs} draws it, and how
+	 * many pages the file has, reading the file once. A first page past the end gives no page.
+	 */
+	public static Pages pages(InputStreamSource pdf, int first, int maxPages, int maxBytes) throws IOException {
+		try (PDDocument document = load(pdf)) {
+			int count = document.getNumberOfPages();
+			int from = Math.max(first, 1);
+			int last = Math.min(count, from + maxPages - 1);
+			List<String> text = text(document, from, last);
+			PDFRenderer renderer = new PDFRenderer(document);
+			List<Page> pages = new ArrayList<>();
+			for (int page = from; page <= last; page++) {
+				pages.add(new Page(page, text.get(page - from), fitted(drawn(document, renderer, page), maxBytes)));
+			}
+			return new Pages(count, List.copyOf(pages));
 		}
+	}
+
+	/** Pages of a PDF and how many it has. */
+	public record Pages(int count, List<Page> pages) {
+	}
+
+	/**
+	 * One page.
+	 * @param number from 1
+	 * @param text empty for a page without text
+	 * @param jpeg empty when the picture stays over the limit at the lowest quality
+	 */
+	public record Page(int number, String text, byte[] jpeg) {
 	}
 
 	/**
@@ -86,33 +102,53 @@ public final class PdfPages {
 	 * empty array, so the caller knows it was drawn and cannot be sent.
 	 */
 	public static Map<Integer, byte[]> jpegs(InputStreamSource pdf, List<Integer> pages, int maxBytes) throws IOException {
-		return drawn(pdf, pages, image -> {
-			for (float quality : JPEG_QUALITIES) {
-				byte[] jpeg = jpeg(image, quality);
-				if (jpeg.length <= maxBytes) {
-					return jpeg;
-				}
-			}
-			return new byte[0];
-		});
-	}
-
-	private static Map<Integer, byte[]> drawn(InputStreamSource pdf, List<Integer> pages, Encoding encoding)
-			throws IOException {
-		try (InputStream content = pdf.getInputStream(); PDDocument document = Loader.loadPDF(content.readAllBytes())) {
+		try (PDDocument document = load(pdf)) {
 			PDFRenderer renderer = new PDFRenderer(document);
 			Map<Integer, byte[]> pictures = new LinkedHashMap<>();
 			for (int page : pages) {
-				if (page < 1 || page > document.getNumberOfPages()) {
-					continue;
+				if (page >= 1 && page <= document.getNumberOfPages()) {
+					pictures.put(page, fitted(drawn(document, renderer, page), maxBytes));
 				}
-				PDRectangle size = document.getPage(page - 1).getCropBox();
-				// A scale of 1 is 72 DPI: the page's own points.
-				float scale = Math.min(PICTURE_DPI / 72, MAX_PICTURE_SIDE / Math.max(size.getWidth(), size.getHeight()));
-				pictures.put(page, encoding.of(renderer.renderImage(page - 1, scale, ImageType.RGB)));
 			}
 			return pictures;
 		}
+	}
+
+	private static PDDocument load(InputStreamSource pdf) throws IOException {
+		try (InputStream content = pdf.getInputStream()) {
+			return Loader.loadPDF(content.readAllBytes());
+		}
+	}
+
+	/** The text of pages {@code from} to {@code last}, from 1, in order. */
+	private static List<String> text(PDDocument document, int from, int last) throws IOException {
+		PDFTextStripper stripper = new PDFTextStripper();
+		stripper.setSortByPosition(true);
+		List<String> pages = new ArrayList<>();
+		for (int page = from; page <= last; page++) {
+			stripper.setStartPage(page);
+			stripper.setEndPage(page);
+			pages.add(clean(stripper.getText(document)));
+		}
+		return pages;
+	}
+
+	private static BufferedImage drawn(PDDocument document, PDFRenderer renderer, int page) throws IOException {
+		PDRectangle size = document.getPage(page - 1).getCropBox();
+		// A scale of 1 is 72 DPI: the page's own points.
+		float scale = Math.min(PICTURE_DPI / 72, MAX_PICTURE_SIDE / Math.max(size.getWidth(), size.getHeight()));
+		return renderer.renderImage(page - 1, scale, ImageType.RGB);
+	}
+
+	/** The picture as JPEG at the best quality that fits the limit, or empty when none does. */
+	private static byte[] fitted(BufferedImage image, int maxBytes) throws IOException {
+		for (float quality : JPEG_QUALITIES) {
+			byte[] jpeg = jpeg(image, quality);
+			if (jpeg.length <= maxBytes) {
+				return jpeg;
+			}
+		}
+		return new byte[0];
 	}
 
 	private static byte[] jpeg(BufferedImage image, float quality) throws IOException {
@@ -129,13 +165,6 @@ public final class PdfPages {
 			writer.dispose();
 		}
 		return jpeg.toByteArray();
-	}
-
-	@FunctionalInterface
-	private interface Encoding {
-
-		byte[] of(BufferedImage image) throws IOException;
-
 	}
 
 }

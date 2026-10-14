@@ -561,12 +561,15 @@ class ReviewTest extends ApplicationsHttpTest {
 				select count(*) from audit_event where action = 'proposal.file_open' and details ->> 'file' = ?
 				""").params(deck).query(Long.class).single()).isEqualTo(1);
 
-		// A file the application does not hold, and a page past its end, are refused.
+		// A file the application does not hold, a page past its end and a page that is not a number are refused.
 		assertThat(app.callTool(McpSchema.CallToolRequest.builder("read_application_file")
 			.arguments(Map.of("application", first.id().toString(), "file", UUID.randomUUID().toString()))
 			.build()).isError()).isTrue();
 		assertThat(app.callTool(McpSchema.CallToolRequest.builder("read_application_file")
 			.arguments(Map.of("application", first.id().toString(), "file", deck, "page", 3))
+			.build()).isError()).isTrue();
+		assertThat(app.callTool(McpSchema.CallToolRequest.builder("read_application_file")
+			.arguments(Map.of("application", first.id().toString(), "file", deck, "page", "2"))
 			.build()).isError()).isTrue();
 		app.closeGracefully();
 	}

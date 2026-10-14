@@ -1,8 +1,6 @@
 package ai.genaifund.beyondpilot.mcp.server;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
@@ -36,7 +34,6 @@ import io.modelcontextprotocol.spec.McpSchema.ImageContent;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
 import io.modelcontextprotocol.spec.McpSchema.ToolAnnotations;
 import org.jspecify.annotations.Nullable;
-import org.springframework.core.io.InputStreamSource;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -262,6 +259,9 @@ class OperatorTools {
 				return error("Name the application and the file, with the ids get_application returned.");
 			}
 			Object asked = request.arguments() == null ? null : request.arguments().get("page");
+			if (asked != null && !(asked instanceof Number number && number.doubleValue() == number.intValue())) {
+				return error("Give the page as a whole number, from 1.");
+			}
 			int first = asked instanceof Number number ? number.intValue() : 1;
 			if (first < 1) {
 				return error("Pages are counted from 1.");
@@ -274,34 +274,22 @@ class OperatorTools {
 				return error(refused.safeMessage());
 			}
 			try {
-				byte[] bytes;
-				try (InputStream content = file.content().getInputStream()) {
-					bytes = content.readAllBytes();
+				PdfPages.Pages read = PdfPages.pages(file.content(), first, PAGES_PER_CALL, PICTURE_BYTES);
+				if (read.pages().isEmpty()) {
+					return error("The file has " + read.count() + " pages.");
 				}
-				InputStreamSource pdf = () -> new ByteArrayInputStream(bytes);
-				int count = PdfPages.count(pdf);
-				if (first > count) {
-					return error("The file has " + count + " pages.");
-				}
-				int last = Math.min(count, first + PAGES_PER_CALL - 1);
-				List<String> text = PdfPages.text(pdf, last);
-				List<Integer> pages = new ArrayList<>();
-				for (int page = first; page <= last; page++) {
-					pages.add(page);
-				}
-				Map<Integer, byte[]> pictures = PdfPages.jpegs(pdf, pages, PICTURE_BYTES);
+				int last = read.pages().getLast().number();
 				CallToolResult.Builder result = CallToolResult.builder()
-					.addTextContent(json.writeValueAsString(fields("file", file.name(), "pages", count, "shown",
-							first + "-" + last, "nextPage", last < count ? last + 1 : null)))
+					.addTextContent(json.writeValueAsString(fields("file", file.name(), "pages", read.count(), "shown",
+							first + "-" + last, "nextPage", last < read.count() ? last + 1 : null)))
 					.isError(false);
-				for (int page : pages) {
-					String words = text.get(page - 1);
-					result.addTextContent("Page " + page
-							+ (words.isEmpty() ? ": no text in the file; read its picture." : ":\n" + words));
-					byte[] picture = pictures.getOrDefault(page, new byte[0]);
-					if (picture.length > 0) {
-						result.addContent(
-								ImageContent.builder(Base64.getEncoder().encodeToString(picture), "image/jpeg").build());
+				for (PdfPages.Page page : read.pages()) {
+					result.addTextContent("Page " + page.number() + (page.text().isEmpty()
+							? ": no text in the file; read its picture." : ":\n" + page.text()));
+					if (page.jpeg().length > 0) {
+						result.addContent(ImageContent
+							.builder(Base64.getEncoder().encodeToString(page.jpeg()), "image/jpeg")
+							.build());
 					}
 				}
 				return result.build();
