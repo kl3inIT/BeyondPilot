@@ -53,6 +53,48 @@ function selectable(data = solutions) {
 }
 
 describe("DataTableView", () => {
+  describe("row links", () => {
+    function linked(onOpen: (href: string) => void) {
+      return (
+        <DataTableRows
+          rowLinks
+          columns={[
+            { id: "name", header: "Solution" },
+            { id: "score", header: "Score" },
+          ]}
+          rows={solutions.map((solution) => ({
+            id: solution.id,
+            cells: {
+              name: (
+                <a
+                  href={`/solutions/${solution.id}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    onOpen(`/solutions/${solution.id}`);
+                  }}
+                >
+                  {solution.name}
+                </a>
+              ),
+              score: solution.score,
+            },
+          }))}
+        />
+      );
+    }
+
+    it("follows the link of the row pressed, wherever on the row", async () => {
+      const opened: string[] = [];
+      const { user } = render(linked((href) => opened.push(href)));
+
+      await user.click(screen.getByRole("cell", { name: "64" }));
+      await user.click(screen.getByRole("cell", { name: "71" }));
+      await user.click(screen.getByRole("link", { name: "Field Notes" }));
+
+      expect(opened).toEqual(["/solutions/s2", "/solutions/s1", "/solutions/s3"]);
+    });
+  });
+
   describe("sorting", () => {
     it("writes the column to ?sort= and returns to the first page", async () => {
       const { user, onUrlUpdate } = render(sorted(), { searchParams: "?page=3" });

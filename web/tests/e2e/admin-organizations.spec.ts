@@ -576,7 +576,7 @@ test.describe("admin organizations", () => {
     ).toBeVisible();
     await expect(
       page.getByText(
-        "beyondpilot.genaifund.ai/organizations/pocket-policy-ltd now leads to the page of Pocket Policy.",
+        "beyondpilot.ai/organizations/pocket-policy-ltd now leads to the page of Pocket Policy.",
       ),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "Open Pocket Policy" })).toHaveAttribute(

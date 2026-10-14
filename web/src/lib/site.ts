@@ -56,7 +56,7 @@ export const siteRoutes = {
 } as const;
 
 /** The host the public site is served from, as an operator sees a program's address written out. */
-export const publicSiteHost = "beyondpilot.genaifund.ai";
+export const publicSiteHost = "beyondpilot.ai";
 
 /** A program's public page. */
 export function programRoute(slug: string) {
