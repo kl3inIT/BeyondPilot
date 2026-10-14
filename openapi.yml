@@ -16671,6 +16671,10 @@ components:
         invitedByOperator:
           type: boolean
           description: Whether GenAI Fund invited it.
+        invitedProviderId:
+          type: string
+          format: uuid
+          description: The provider organization invited; absent when it was not.
         judged:
           type: boolean
           description: Whether a run judged it; one added by hand waits for the next
@@ -20191,6 +20195,10 @@ components:
         organizationApproved:
           type: boolean
           description: Whether GenAI Fund approved the sending organization.
+        organizationId:
+          type: string
+          format: uuid
+          description: The sending organization.
         organizationLogoFileId:
           type:
           - string
@@ -20220,6 +20228,7 @@ components:
       required:
       - id
       - organizationApproved
+      - organizationId
       - organizationName
       - outcomePending
       - sentAt

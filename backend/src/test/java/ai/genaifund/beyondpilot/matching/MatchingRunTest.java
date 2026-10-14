@@ -497,6 +497,7 @@ class MatchingRunTest {
 		assertThat(JsonPath.<String>read(invited, "$.candidates[0].invitedAt")).isNotBlank();
 		assertThat(JsonPath.<String>read(invited, "$.candidates[0].invitedBy")).isEqualTo("buyer-" + word + "@matching.test");
 		assertThat(JsonPath.<Boolean>read(invited, "$.candidates[0].invitedByOperator")).isFalse();
+		assertThat(JsonPath.<String>read(invited, "$.candidates[0].invitedProviderId")).isEqualTo(vendor.toString());
 		assertThat(JsonPath.<Integer>read(invited, "$.invitationsLeftToday")).isEqualTo(9);
 		String invitation = "Lotus Bank " + word + " invites Claims Lab " + word + " to propose";
 		assertThat(mail.subjectsTo("owner-" + word + "@matching.test")).contains(invitation);

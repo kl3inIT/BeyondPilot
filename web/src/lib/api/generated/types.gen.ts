@@ -2385,6 +2385,10 @@ export type MatchingCandidate = {
      */
     invitedByOperator?: boolean;
     /**
+     * The provider organization invited; absent when it was not.
+     */
+    invitedProviderId?: string;
+    /**
      * Whether a run judged it; one added by hand waits for the next run.
      */
     judged: boolean;
@@ -4351,6 +4355,10 @@ export type ReceivedUseCaseProposalSummary = {
      * Whether GenAI Fund approved the sending organization.
      */
     organizationApproved: boolean;
+    /**
+     * The sending organization.
+     */
+    organizationId: string;
     /**
      * Read at /api/storage/files/{id}.
      */

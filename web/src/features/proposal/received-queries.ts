@@ -33,6 +33,20 @@ export async function readReceivedProposals(
   }
 }
 
+/**
+ * Where each proposal a use case received opens, by the organization that sent it, for the solutions
+ * matched to it; empty when the caller may not read them or they cannot be read now. Server only.
+ */
+export async function readReceivedBySender(
+  useCaseId: string,
+  route: (useCaseId: string, proposalId: string) => string,
+): Promise<Record<string, string>> {
+  const received = await readReceivedProposals(useCaseId).catch(() => null);
+  return Object.fromEntries(
+    (received?.items ?? []).map((item) => [item.organizationId, route(useCaseId, item.id)]),
+  );
+}
+
 /** One proposal a use case of the caller's organization received, or `null`. Server only. */
 export async function readReceivedProposal(id: string): Promise<ReceivedUseCaseProposal | null> {
   try {

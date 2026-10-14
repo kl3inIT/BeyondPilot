@@ -225,6 +225,13 @@ describe("tabs and groups", () => {
     // It is kept, and it is not what the run recommends.
     expect(recommendedOf([direct, none, shortlisted, gone])).toEqual([direct]);
   });
+
+  it("keeps a candidate whose provider was invited although the last run put it in no group", () => {
+    const invited = { ...none, solutionName: "Invited", invitedAt: "2026-10-14T03:00:00Z" };
+    const tabs = tabsOf([direct, none, invited]);
+    expect(grouped(tabs.matches).kept).toEqual([invited]);
+    expect(recommendedOf([direct, none, invited])).toEqual([direct]);
+  });
 });
 
 describe("coverage", () => {

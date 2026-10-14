@@ -186,7 +186,14 @@ function GroupCard({ title, about, count, fold, children }: GroupCardProps) {
  * solution the AI has read moves from "Being read" into its group, and a line says so. `selected` is
  * the solution the address asks for, which opens with the page.
  */
-function MatchingBoard({ matching: read, selected }: { matching: Matching; selected?: string }) {
+type MatchingBoardProps = {
+  matching: Matching;
+  selected?: string;
+  /** Where each proposal the use case received opens, by the organization that sent it. */
+  received?: Record<string, string>;
+};
+
+function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoardProps) {
   const t = useTranslations("Matching");
   const reasonName = useTranslations("Matching.remove.reasons");
   const notify = useNotify();
@@ -386,6 +393,8 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
   // providers as a day allows is offered none until tomorrow.
   const inviting = matching.candidates.find((candidate) => candidate.id === invitingId) ?? null;
   const mayInvite = matching.invitationsLeftToday !== 0;
+  const proposalOf = (candidate: MatchingCandidate) =>
+    candidate.invitedProviderId ? received[candidate.invitedProviderId] : undefined;
   const askInvite = (candidate: MatchingCandidate) =>
     mayInvite && !candidate.invitedAt ? () => setInvitingId(candidate.id) : undefined;
   const invite = (candidate: MatchingCandidate, note: string | undefined) =>
@@ -525,6 +534,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
                   onShortlist={() => void shortlist(candidate)}
                   onRemove={() => askWhy(candidate)}
                   onInvite={askInvite(candidate)}
+                  proposalHref={proposalOf(candidate)}
                 />
               </PresenceItem>
             ),
@@ -599,6 +609,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
       onShortlist={() => void shortlist(chosen)}
       onRemove={() => askWhy(chosen)}
       onInvite={askInvite(chosen)}
+      proposalHref={proposalOf(chosen)}
     />
   );
 
@@ -683,6 +694,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
           reading={reads}
           {...review}
           onInvite={mayInvite ? (candidate) => setInvitingId(candidate.id) : undefined}
+          proposalOf={proposalOf}
           onList={() => setView("list")}
         />
       )}

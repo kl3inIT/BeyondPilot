@@ -73,6 +73,11 @@ The provider learns from the email which organization invites it and for which u
 - The dialog: who is emailed, the message, the note, Send.
 - **Invited** and **Proposal received** on the card and the row.
 
+## Followed up on 14 October
+
+- **An invited provider is never hidden.** A candidate the last run put in no group stays on the list when its provider was invited, as one a person saved or removed does (`isShown`): a later run must not hide whom someone emailed. Found on staging, where the invited solution fitted no group.
+- **Proposal received.** Each received proposal carries the sending organization's identifier (`ReceivedUseCaseProposalSummary.organizationId`, added to Nhật's `proposal` module with Đạt's approval), and each candidate the invited provider's (`invitedProviderId`). The matching pages read the use case's received proposals, and an invited provider that sent one reads Proposal received, a link to the proposal.
+
 ## Left out
 
 - A banner on the use case page for an invited provider; the email leads there.
@@ -81,7 +86,6 @@ The provider learns from the email which organization invites it and for which u
 
 ## Open
 
-- **Proposal received** on a card needs the received proposals to name the sending organization by identifier, or their solutions: `ReceivedUseCaseProposalSummary` carries the organization's name only. A field for Nhật's `proposal` module to add; until then a card reads Invited.
 - **No count of invitations left** is shown: a limit against unwanted mail is not shown until it is reached, as in LinkedIn's invitations and in Messages (Đạt, 14 October). The action is not offered once the day's limit is reached.
 
 - The limit of 10 a day: a number to confirm with GenAI Fund once it is in use.
