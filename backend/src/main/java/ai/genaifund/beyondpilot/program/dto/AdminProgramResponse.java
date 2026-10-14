@@ -36,6 +36,8 @@ public record AdminProgramResponse(@Schema(requiredMode = Schema.RequiredMode.RE
 		@Schema(types = { "string", "null" }, format = "uri") @Nullable String externalUrl,
 		@Schema(types = { "string", "null" }, format = "uuid",
 				description = "The cover, read at the public address of stored files.") @Nullable UUID coverFileId,
+		@Schema(types = { "string", "null" }, format = "date-time",
+				description = "When an operator featured the program; null while it is not featured.") @Nullable Instant featuredAt,
 		@Schema(description = "Null for a program that takes no applications here.") @Nullable ProgramApplications applications,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "How many questions the application form asks after what every application holds; they are fixed once applications open.") int questionCount,

@@ -32,9 +32,8 @@ test.describe("home page", () => {
   });
 
   test("the featured program is announced once, then waits in the corner", async ({ page }) => {
-    await page.clock.setFixedTime(new Date("2026-10-20T09:00:00+07:00"));
     await page.goto("/");
-    const card = page.getByRole("button", { name: /Nestlé AI Reinvention/ });
+    const card = page.getByRole("button", { name: /Nestlé Vietnam AI Reinvention/ });
     await expect(card).toBeVisible();
     // A first visit: nothing kept in this browser yet.
     await page.evaluate(() => window.localStorage.clear());
@@ -42,7 +41,12 @@ test.describe("home page", () => {
 
     const announcement = page.getByRole("dialog", { name: "Nestlé Vietnam AI Reinvention" });
     await expect(announcement).toBeVisible();
-    await expect(announcement.getByText("22 Nov, 23:59 ICT")).toBeVisible();
+    // Its words and dates are the program's, as an operator entered them.
+    await expect(
+      announcement.getByText("Don't miss your chance to collaborate with Nestlé Vietnam."),
+    ).toBeVisible();
+    await expect(announcement.getByText("Deadline")).toBeVisible();
+    await expect(announcement.getByText("Matching Day")).toBeVisible();
     await expect(
       announcement.getByRole("link", { name: "Explore the program & apply" }),
     ).toHaveAttribute("href", "/programs/nestle-vietnam-ai-reinvention");
@@ -61,11 +65,14 @@ test.describe("home page", () => {
   });
 
   test("the featured program goes once its applications have closed", async ({ page }) => {
-    await page.clock.setFixedTime(new Date("2026-11-23T09:00:00+07:00"));
+    // The stub's program closes 33 days after it starts.
+    await page.clock.setFixedTime(new Date(Date.now() + 40 * 24 * 60 * 60 * 1000));
     await page.goto("/");
 
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Nestlé AI Reinvention/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Nestlé Vietnam AI Reinvention/ })).toHaveCount(
+      0,
+    );
   });
 
   test("the challenge bar goes once submissions have closed", async ({ page }) => {

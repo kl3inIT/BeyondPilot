@@ -64,6 +64,14 @@ public class Program {
 
 	private @Nullable UUID coverFileId;
 
+	/**
+	 * When an operator featured the program; null while it is not featured. Only {@code ProgramRepository.feature} and
+	 * {@code unfeature} write it, so a save of the entity never changes it and featuring leaves the version a save
+	 * sends alone.
+	 */
+	@Column(insertable = false, updatable = false)
+	private @Nullable Instant featuredAt;
+
 	private @Nullable Instant applicationsOpenAt;
 
 	private @Nullable Instant applicationsCloseAt;
@@ -283,6 +291,10 @@ public class Program {
 
 	public @Nullable UUID getCoverFileId() {
 		return coverFileId;
+	}
+
+	public @Nullable Instant getFeaturedAt() {
+		return featuredAt;
 	}
 
 	public @Nullable Instant getApplicationsOpenAt() {
