@@ -6915,7 +6915,7 @@
         "metaTitle": "Draft",
         "back": "Drafts",
         "lead": "Not submitted to {program} · started {started} · last saved {saved}",
-        "note": "Not submitted yet, so it may still change. Judges never see drafts, and each opening is recorded in the audit log."
+        "note": "Not submitted yet, so it may still change. Judges never see drafts."
       }
     }
   },
