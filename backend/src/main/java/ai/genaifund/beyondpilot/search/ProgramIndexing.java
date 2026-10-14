@@ -25,17 +25,22 @@ class ProgramIndexing {
 
 	private final SearchDocumentRepository index;
 
-	ProgramIndexing(ProgramService programs, SearchDocumentRepository index) {
+	private final IndexLock lock;
+
+	ProgramIndexing(ProgramService programs, SearchDocumentRepository index, IndexLock lock) {
+		this.lock = lock;
 		this.programs = programs;
 		this.index = index;
 	}
 
 	@ApplicationModuleListener
 	void on(ProgramChanged changed) {
-		UUID id = changed.programId();
-		programs.indexed(id)
-			.ifPresentOrElse(program -> index.save(document(program)),
-					() -> index.remove(SearchDocumentRepository.PROGRAM, id));
+		lock.run(() -> {
+			UUID id = changed.programId();
+			programs.indexed(id)
+				.ifPresentOrElse(program -> index.save(document(program)),
+						() -> index.remove(SearchDocumentRepository.PROGRAM, id));
+		});
 	}
 
 	/** Saves every published program and takes out every other. */
