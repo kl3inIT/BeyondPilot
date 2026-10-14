@@ -786,6 +786,50 @@ test.describe("solutions matched to a use case", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("a member invites a provider to propose, after being told who is emailed", async ({
+    page,
+    context,
+    baseURL,
+    request,
+  }, testInfo) => {
+    await signInAs(context, "owner", baseURL!);
+    const state = await matchingAs(request, "owner");
+    const sent: unknown[] = [];
+    await page.route("**/api/matching/candidates/*/invite", async (route) => {
+      expect(route.request().headers()["x-beyondpilot-csrf"]).toBe("1");
+      sent.push(route.request().postDataJSON());
+      await route.fulfill({
+        json: withCandidate(state, "Sentosa Finance", {
+          invitedAt: "2026-10-14T03:00:00Z",
+          invitedBy: "Minh Trần",
+          invitedByOperator: false,
+        }),
+      });
+    });
+    await page.goto(memberPath);
+
+    // From the row's menu: the dialog says who is emailed and that it cannot be taken back.
+    await page.getByRole("button", { name: "More for Sentosa Finance" }).click();
+    await page.getByRole("menuitem", { name: "Invite to propose…" }).click();
+    const dialog = page.getByRole("alertdialog", { name: "Invite Sentosa Finance to propose?" });
+    await expect(dialog.getByText(/The owners of Sentosa Finance get an email/)).toBeVisible();
+    await expect(dialog.getByText(/It cannot be taken back\./)).toBeVisible();
+    await dialog.getByRole("textbox", { name: "Note to the provider (optional)" }).fill(" We would like a proposal. ");
+    await expectNoSeriousA11yViolations(page);
+    await picture(page, testInfo, "invite", false);
+    await dialog.getByRole("button", { name: "Send invitation" }).click();
+
+    await expect(page.getByText("Sentosa Finance is invited to propose.")).toBeVisible();
+    expect(sent).toEqual([{ note: "We would like a proposal." }]);
+    await expect(dialog).toHaveCount(0);
+    // The row says so, with who invited in its title, and offers it no more.
+    const invited = row(page, "Sentosa Finance").locator('[data-slot="matching-invited"]');
+    await expect(invited).toHaveText("Invited 14 Oct");
+    await expect(invited).toHaveAttribute("title", "Invited by Minh Trần on 14 Oct");
+    await page.getByRole("button", { name: "More for Sentosa Finance" }).click();
+    await expect(page.getByRole("menuitem", { name: "Invite to propose…" })).toHaveCount(0);
+  });
+
   test("a member saves a solution", async ({ page, context, baseURL, request }) => {
     await signInAs(context, "owner", baseURL!);
     const state = await matchingAs(request, "owner");
@@ -1295,6 +1339,25 @@ test.describe("matched solutions, one at a time", () => {
       "aria-pressed",
       "true",
     );
+  });
+
+  test("the head of a card offers the invitation, and pressing it moves nothing", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await page.goto(memberPath);
+    await expect(front(page, "Staple AI")).toBeVisible();
+    await page
+      .locator('[data-slot="matching-card-head"]')
+      .first()
+      .getByRole("button", { name: "Invite to propose" })
+      .click();
+    await expect(page.getByRole("alertdialog", { name: "Invite Staple AI to propose?" })).toBeVisible();
+    await page.getByRole("button", { name: "Cancel" }).click();
+    await expect(front(page, "Staple AI")).toBeVisible();
+    await expect(page.getByText("3 left of 5")).toBeVisible();
   });
 
   test("the head of a card drags it to a decision, and the rest of the card does not", async ({
