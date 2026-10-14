@@ -49,6 +49,9 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 	@Query("update Proposal p set p.reviewStatus = :reviewStatus where p.id = :id")
 	void decide(UUID id, String reviewStatus);
 
+	/** Whether the organization ever submitted an application, to any program. */
+	boolean existsByOrganizationIdAndSubmittedAtIsNotNull(UUID organizationId);
+
 	/** Whether someone else of the organization has a submitted application to the program. */
 	boolean existsByProgramIdAndOrganizationIdAndStatusAndAccountIdNot(UUID programId, UUID organizationId,
 			String status, UUID accountId);

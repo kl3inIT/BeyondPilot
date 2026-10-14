@@ -133,6 +133,9 @@ public class OrganizationAdministration {
 	public AdminOrganizationResponse create(Actor actor, AdminCreateOrganizationRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		String domain = request.emailDomain();
+		if (domain != null && Organization.INDIVIDUAL.equals(request.type())) {
+			throw individualDomain();
+		}
 		if (domain != null && organizations.findByEmailDomain(domain).isPresent()) {
 			throw new OrganizationException(OrganizationErrorCode.DOMAIN_TAKEN,
 					"Second organization for one email domain");
@@ -250,6 +253,9 @@ public class OrganizationAdministration {
 		organization.describeTeam(OrganizationViews.text(profile.teamBackground()));
 		String domain = request.emailDomain();
 		if (!Objects.equals(domain, organization.getEmailDomain())) {
+			if (domain != null && organization.isIndividual()) {
+				throw individualDomain();
+			}
 			if (domain != null && organizations.findByEmailDomain(domain).isPresent()) {
 				throw new OrganizationException(OrganizationErrorCode.DOMAIN_TAKEN,
 						"Domain of organization " + id + " set to one another organization has");
@@ -514,11 +520,18 @@ public class OrganizationAdministration {
 		if (domain == null || domain.equals(organization.getEmailDomain())) {
 			return;
 		}
+		if (organization.isIndividual()) {
+			throw individualDomain();
+		}
 		if (organizations.findByEmailDomain(domain).isPresent()) {
 			throw new OrganizationException(OrganizationErrorCode.DOMAIN_TAKEN,
 					"Domain of organization " + organization.getId() + " set to one another organization has");
 		}
 		organization.verifyDomain(domain);
+	}
+
+	private static OrganizationException individualDomain() {
+		return new OrganizationException(OrganizationErrorCode.INDIVIDUAL, "Email domain given to an individual");
 	}
 
 	private Member member(Organization organization, UUID accountId) {
@@ -612,11 +625,15 @@ public class OrganizationAdministration {
 
 	/**
 	 * A domain the operator only has to confirm: the one the organization has, else its creator's work domain while
-	 * it waits for review, else its website's. None when another organization holds it.
+	 * it waits for review, else its website's. None for an individual, or when another organization holds it.
 	 */
 	private @Nullable String suggestedDomain(Organization organization, @Nullable Person creator) {
 		if (organization.getEmailDomain() != null) {
 			return organization.getEmailDomain();
+		}
+		if (organization.isIndividual()) {
+			// A person on their own stands for nobody else at their address.
+			return null;
 		}
 		String fromCreator = organization.isInReview() && creator != null
 				? OrganizationViews.workDomain(creator.email()) : null;

@@ -85,6 +85,18 @@ class ApplicationsController {
 		return proposals.organize(actor, slug, request);
 	}
 
+	@PostMapping(path = "/programs/{slug}/application/organization/leave", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "leaveApplyingAlone",
+			summary = "Stop applying as oneself, to apply for a company instead",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The form, with no organization.")
+	@ApiResponse(responseCode = "409",
+			description = "The program takes no applications now, the caller does not apply as themselves, or something was already sent under their name.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ApplicationViewResponse leaveIndividual(@CurrentActor Actor actor, @PathVariable String slug) {
+		return proposals.leaveIndividual(actor, slug);
+	}
+
 	@GetMapping(path = "/applications", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listMyApplications", summary = "The caller's applications",
 			security = @SecurityRequirement(name = "session"))

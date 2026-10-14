@@ -153,7 +153,12 @@ abstract class ApplicationsHttpTest {
 	}
 
 	void submitted(String session, String email, Form form, UUID solution) {
-		Map<String, Object> request = withDeck(application(contact(), solution, answers(form, email), null), email);
+		submitted(session, email, form, solution, contact());
+	}
+
+	/** Submits as the person the contact names; someone applying on their own takes that name. */
+	void submitted(String session, String email, Form form, UUID solution, Map<String, String> contact) {
+		Map<String, Object> request = withDeck(application(contact, solution, answers(form, email), null), email);
 		request.put("teamBackground", "Claims tooling at an insurer.");
 		String draft = body(put(session, form.path(), request).expectStatus().isOk());
 		post(session, API + "/applications/" + JsonPath.read(draft, "$.application.id") + "/submit", null)
@@ -193,6 +198,14 @@ abstract class ApplicationsHttpTest {
 	static Map<String, String> contact() {
 		return Map.of("firstName", "Dat", "lastName", "Phan", "phone", "+84 912 345 678", "country", "VN", "linkedin",
 				"https://www.linkedin.com/in/datphan");
+	}
+
+	/** The contact of a person by their first and last name. */
+	static Map<String, String> contact(String name) {
+		Map<String, String> contact = new HashMap<>(contact());
+		contact.put("firstName", name.substring(0, name.indexOf(' ')));
+		contact.put("lastName", name.substring(name.indexOf(' ') + 1));
+		return contact;
 	}
 
 	static Map<String, Object> question(String kind, String label, List<String> options) {

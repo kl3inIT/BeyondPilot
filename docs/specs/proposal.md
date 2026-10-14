@@ -89,8 +89,15 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 - **Alone or as a team.** `POST …/application/organization` makes an organization for a person in none, through
   `OrganizationService.createForApplicant`: `kind = individual` makes an `independent_builder` with team size
   `just_me`; `kind = team` makes a `builder_team` with the given team size (`2_9`, `10_49`, `50_99`; `2_9` when
-  absent). It waits for GenAI Fund's review like any new organization and is attached to the caller's application if
+  absent). A team waits for GenAI Fund's review like any new organization; an `independent_builder` is approved at once
+  ([BEY-189](../increments/active/bey-189-solo-applicant/design.md)). Either is attached to the caller's application if
   one exists. A caller already in an organization is refused with `PROPOSAL_ALREADY_IN_ORGANIZATION`.
+- **Applying as oneself.** Each save renames the caller's `independent_builder` after the contact's first and last
+  name. While nothing of it was sent (no submitted application, no use-case proposal out of draft, no solution out of
+  draft), the application form's `organization.changeable` is true: `kind = team` turns it into that team, which waits
+  for review, and `POST …/application/organization/leave` takes the person out of it, leaving the application with no
+  organization so that they join or add a company. Once something was sent, both answer
+  `PROPOSAL_INDIVIDUAL_LOCKED`.
 - **As a company.** The person joins or creates the company through the `organization` module; the proposal module
   only reads the membership.
 
@@ -351,16 +358,16 @@ Every endpoint needs a session.
 | `POST /api/proposal/review/programs/{programId}/decisions`                     | Decide one application or several                                 |
 | `GET`, `POST /api/proposal/review/programs/{programId}/release`                | Preview the release; release                                      |
 | `PUT /api/proposal/review/programs/{programId}/release/draft`                  | Keep the release emails as they are written                       |
-| `POST /api/proposal/use-case-proposals/{id}/decision`                         | Shortlist or decline a received use-case proposal                 |
-| `POST /api/proposal/use-cases/{useCaseId}/outcomes`                           | E-mail the outcomes not yet told, in one batch                    |
+| `POST /api/proposal/use-case-proposals/{id}/decision`                          | Shortlist or decline a received use-case proposal                 |
+| `POST /api/proposal/use-cases/{useCaseId}/outcomes`                            | E-mail the outcomes not yet told, in one batch                    |
 
 ## Error codes
 
 `ProposalErrorCode`; the category sets the status (validation 400, not permitted 403, not found 404, conflict 409).
 
-| Status | Codes                                                                                                                                                                                                                                                                                                                                                                                 |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 400    | `PROPOSAL_ORGANIZATION_REQUIRED`, `PROPOSAL_CONTACT_INCOMPLETE`, `PROPOSAL_TEAM_BACKGROUND_REQUIRED`, `PROPOSAL_SOLUTION_NOT_FOUND`, `PROPOSAL_SOLUTION_REQUIRED`, `PROPOSAL_SOLUTION_INCOMPLETE`, `PROPOSAL_DECK_REQUIRED`, `PROPOSAL_ANSWER_INVALID`, `PROPOSAL_ANSWER_REQUIRED`, `PROPOSAL_CRITERIA_INVALID`, `PROPOSAL_ASSESSMENT_INVALID`                                        |
-| 403    | `PROPOSAL_OWN_APPLICATION`, `PROPOSAL_REVIEW_NOT_ALLOWED`                                                                                                                                                                                                                                                                                                                             |
-| 404    | `PROPOSAL_APPLICATION_NOT_FOUND`, `PROPOSAL_REVIEW_PROGRAM_NOT_FOUND`, `PROPOSAL_REVIEWER_NOT_FOUND`                                                                                                                                                                                                                                                                                  |
+| Status | Codes                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `PROPOSAL_ORGANIZATION_REQUIRED`, `PROPOSAL_CONTACT_INCOMPLETE`, `PROPOSAL_TEAM_BACKGROUND_REQUIRED`, `PROPOSAL_SOLUTION_NOT_FOUND`, `PROPOSAL_SOLUTION_REQUIRED`, `PROPOSAL_SOLUTION_INCOMPLETE`, `PROPOSAL_DECK_REQUIRED`, `PROPOSAL_ANSWER_INVALID`, `PROPOSAL_ANSWER_REQUIRED`, `PROPOSAL_CRITERIA_INVALID`, `PROPOSAL_ASSESSMENT_INVALID`                                                                    |
+| 403    | `PROPOSAL_OWN_APPLICATION`, `PROPOSAL_REVIEW_NOT_ALLOWED`                                                                                                                                                                                                                                                                                                                                                         |
+| 404    | `PROPOSAL_APPLICATION_NOT_FOUND`, `PROPOSAL_REVIEW_PROGRAM_NOT_FOUND`, `PROPOSAL_REVIEWER_NOT_FOUND`                                                                                                                                                                                                                                                                                                              |
 | 409    | `PROPOSAL_NOT_OPEN`, `PROPOSAL_CLOSED`, `PROPOSAL_LOCKED`, `PROPOSAL_WITHDRAWN_FOR_GOOD`, `PROPOSAL_CHANGED_MEANWHILE`, `PROPOSAL_ALREADY_IN_ORGANIZATION`, `PROPOSAL_ORGANIZATION_APPLIED`, `PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CRITERIA_FIXED`, `PROPOSAL_NO_CRITERIA`, `PROPOSAL_REVIEWER_INVITED`, `PROPOSAL_REVIEWER_JOINED`, `PROPOSAL_RELEASED`, `PROPOSAL_OUTCOMES_NOT_READY`, `PROPOSAL_NOTHING_TO_SEND` |

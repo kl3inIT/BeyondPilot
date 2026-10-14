@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.organization.Membership;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -34,6 +36,9 @@ public class Organization {
 
 	/** Merged into another organization by an operator: a record of where it went, which nobody changes. */
 	public static final String MERGED = "merged";
+
+	/** The type of a builder on their own: the organization stands for its one person, so nobody reviews it. */
+	public static final String INDIVIDUAL = Membership.INDIVIDUAL;
 
 	@Id
 	private UUID id;
@@ -223,6 +228,28 @@ public class Organization {
 		mergedByAccountId = operatorAccountId;
 		mergedAt = at;
 		verifyDomain(null);
+	}
+
+	/** Renames an individual after its person. */
+	public void rename(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * Turns an individual into a team of the same person, which waits for GenAI Fund's review like any team.
+	 */
+	public void becomeTeam(String name, String teamSize, @Nullable String website) {
+		this.name = name;
+		this.type = "builder_team";
+		this.teamSize = teamSize;
+		this.website = website;
+		this.status = IN_REVIEW;
+		this.decidedAt = null;
+	}
+
+	/** A builder on their own: it is shown as its person, and it has no members, domain or page of its own. */
+	public boolean isIndividual() {
+		return INDIVIDUAL.equals(type);
 	}
 
 	public boolean isMerged() {

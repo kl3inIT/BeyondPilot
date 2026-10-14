@@ -28,6 +28,7 @@ import { membersInOrder } from "./member-order";
 import { NoticeCard } from "./notice-card";
 import { OrganizationMark } from "./organization-mark";
 import { defaultMemberSort, organizationMemberSortKeys } from "./organization-members-search";
+import { isIndividual } from "./organization-codes";
 import { OrganizationProfileEditor } from "./organization-profile-editor";
 import { OrganizationProfileView } from "./organization-profile-view";
 import { OrganizationReviewButton } from "./organization-review";
@@ -97,7 +98,8 @@ function AdminOrganizationPage({ detail, tab, page, size, sort }: AdminOrganizat
         lead={kind.join(" · ")}
         actions={
           <>
-            {state === "approved" && (
+            {/* A person on their own has no page of their own. */}
+            {state === "approved" && !isIndividual(organization) && (
               <Button
                 prominence="secondary"
                 href={`${siteRoutes.organizations}/${organization.slug}`}

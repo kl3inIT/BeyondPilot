@@ -13,7 +13,7 @@ import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FieldGroup } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
-import { organizationTypes, teamSizes } from "@/features/organization/organization-codes";
+import { teamSizes, typesFor } from "@/features/organization/organization-codes";
 import { OrganizationIndustriesField } from "@/features/organization/organization-industries-field";
 import { useNotify } from "@/hooks/use-notify";
 import { countryCodes, useCountryName, useVocabulary } from "@/i18n/vocabulary";
@@ -199,7 +199,7 @@ function BasicsForm({ organization, create, open, onOpenChange, onSaved }: Basic
               <field.SelectField
                 label={f("type")}
                 requiredMark
-                options={organizationTypes.map((value) => ({ value, label: typeName(value) }))}
+                options={typesFor(organization).map((value) => ({ value, label: typeName(value) }))}
               />
             )}
           </form.AppField>

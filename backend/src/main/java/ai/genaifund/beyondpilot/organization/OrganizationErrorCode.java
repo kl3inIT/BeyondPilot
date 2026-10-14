@@ -72,7 +72,10 @@ public enum OrganizationErrorCode implements ErrorCode {
 			"The organization has sent the most invitations it can in a day. Invite more people tomorrow."),
 
 	INVITATION_OPEN_LIMIT("ORGANIZATION_INVITATION_OPEN_LIMIT", ErrorCategory.LIMIT_EXCEEDED,
-			"The organization has the most invitations it can keep open. Revoke some, or wait for people to answer.");
+			"The organization has the most invitations it can keep open. Revoke some, or wait for people to answer."),
+
+	INDIVIDUAL("ORGANIZATION_INDIVIDUAL", ErrorCategory.CONFLICT,
+			"A person applying on their own has no members, domain or other type; apply as a team or a company instead.");
 
 	private final String code;
 	private final ErrorCategory category;

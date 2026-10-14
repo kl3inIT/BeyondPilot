@@ -218,11 +218,12 @@ public class UseCaseService {
 		return response(actor, membership, useCase);
 	}
 
-	/** The caller's organization, which must be approved. */
+	/** The caller's organization, which must be approved, and not a person on their own, who has no use cases. */
 	private Membership writer(Actor actor) {
 		identity.requireActive(actor);
 		return organizations.membershipOf(actor)
 			.filter(Membership::approved)
+			.filter(membership -> !membership.individual())
 			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.ENTERPRISE_REQUIRED,
 					"Account " + actor.accountId() + " is not a member of an approved organization"));
 	}

@@ -16,6 +16,9 @@ public interface UseCaseProposalRepository extends JpaRepository<UseCaseProposal
 
 	Optional<UseCaseProposal> findByUseCaseIdAndOrganizationId(UUID useCaseId, UUID organizationId);
 
+	/** Whether the organization has a proposal in another status than this one, a draft for instance. */
+	boolean existsByOrganizationIdAndStatusNot(UUID organizationId, String status);
+
 	/** The proposal, locked until the transaction ends, so two members saving it act one after the other. */
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select p from UseCaseProposal p where p.useCaseId = :useCaseId and p.organizationId = :organizationId")
