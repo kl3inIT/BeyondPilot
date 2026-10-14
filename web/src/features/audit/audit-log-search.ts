@@ -126,7 +126,7 @@ const actionAreas = [
   ["solutions", ["solution"]],
   ["talent", ["talent"]],
   ["organizations", ["organization"]],
-  ["reportedMessages", ["messaging"]],
+  ["programMessages", ["messaging"]],
   ["aiProviders", ["ai"]],
   ["searchIndex", ["search"]],
   ["aiMatching", ["matching"]],

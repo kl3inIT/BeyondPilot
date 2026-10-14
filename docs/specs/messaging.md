@@ -7,7 +7,7 @@ The conversations people have on BeyondPilot: with the person behind a talent pr
 - **`messaging` is a closed module** that depends on `audit`, `identity`, `notification`, `organization`, `program`, `solution` and `talent`. Nothing depends on it. `MessagingService` is what people use; `MessagingAdministration` is what operators read.
 - **It owns** `messaging_conversation`, `messaging_message` and `messaging_read` (V90), and `messaging_participant` (V94). V91 moved the talent enquiries into them and dropped their table. V94 also records which organization side wrote each message.
 - **It reads** the person behind a listed profile and the profile as its page says it (`TalentDirectory.recipient`, `indexed`), the approved solution at an address and its page (`SolutionDirectory.approvedAt`, `indexed`), the published program at an address (`ProgramService.named`, `names`), a person's organization, an organization's owners, members and name (`OrganizationDirectory`), people and who is an operator (`IdentityService`).
-- **HTTP** is `messaging.web`: `MessagingController` at `/api/messaging` and `AdminMessagingController` at `/api/messaging/admin/reported`. Every path needs a session.
+- **HTTP** is `messaging.web`: `MessagingController` at `/api/messaging` and `AdminMessagingController` at `/api/messaging/admin`. Every path needs a session.
 
 ## A conversation
 
@@ -69,7 +69,7 @@ An owner of either organization in an open or waiting solution conversation sees
 
 ## What operators read
 
-`GET /api/messaging/admin/reported`: the conversations with status `reported`, the most recently reported first, each with its first message, its subject, and the sender's name, address and organization. Paged from 1. Operators can also read program conversations assigned to them. Other customer conversations remain restricted to their participants. No email carries the text of a message, so the email log holds none.
+Operators can read program conversations assigned to them. Reported requests retain their status and audit event but have no administration page or content-reading API. Other customer conversations remain restricted to their participants. No email carries the text of a message, so the email log holds none.
 
 ## Web
 
@@ -77,4 +77,4 @@ An owner of either organization in an open or waiting solution conversation sees
 
 ## Program conversation assignment
 
-Program messages are open immediately for their sender. An operator can read or answer only after a system administrator assigns that conversation to them in Admin → Program chat assignments. Administrators see metadata (program, creation time and assignee) without sender details or message content. Assigning another operator revokes the previous operator’s access, including live events. Assignment is audited. Existing conversations become unassigned when this capability is deployed. The queue lists up to 100 conversations with unassigned conversations first.
+Program messages are open immediately for their sender. An operator can read or answer only after a system administrator assigns that conversation to them in Admin → Chat assignments. Administrators see metadata (program, creation time and assignee) without sender details or message content. Assigning another operator revokes the previous operator’s access, including live events. Assignment is audited. Existing conversations become unassigned when this capability is deployed. The queue lists up to 100 conversations with unassigned conversations first.

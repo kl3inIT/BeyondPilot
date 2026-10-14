@@ -48,6 +48,8 @@ tags:
   name: My solutions
 - description: The accounts operators manage.
   name: Accounts
+- description: Program chat assignment without message content.
+  name: Messaging administration
 - description: The public directory of approved AI solutions.
   name: Solutions
 - description: "Search over the programs, solutions, talent and use cases the public\
@@ -58,8 +60,6 @@ tags:
   name: Messaging
 - description: The organization the caller belongs to.
   name: My organization
-- description: The first messages reported as unwanted.
-  name: Messaging administration
 - description: Who is signed in.
   name: Identity
 - description: The use cases the members of an organization write.
@@ -2456,59 +2456,6 @@ paths:
       summary: Assign a program conversation to one active operator
       tags:
       - Messaging administration
-  /api/messaging/admin/reported:
-    get:
-      operationId: listReportedConversations
-      parameters:
-      - description: "The page, counted from 1."
-        in: query
-        name: page
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 1
-          minimum: 1
-      - description: How many items a page holds; the list's own page size when absent.
-        in: query
-        name: size
-        required: false
-        schema:
-          type: integer
-          format: int32
-          maximum: 100
-          minimum: 1
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ReportedRequestList"
-          description: One page of the reported first messages.
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: A parameter is not valid.
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: Nobody is signed in.
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: The caller is not an operator.
-      security:
-      - session: []
-      summary: "The first messages reported as unwanted, the most recently reported\
-        \ first"
-      tags:
-      - Messaging administration
   /api/messaging/conversations:
     get:
       operationId: listConversations
@@ -2973,8 +2920,8 @@ paths:
       - Messaging
   /api/messaging/conversations/{id}/report:
     post:
-      description: The sender is told what a decline tells. Operators read what was
-        reported.
+      description: The sender is told what a decline tells. The report is retained
+        as a status and audit event.
       operationId: reportConversation
       parameters:
       - in: path
@@ -20925,76 +20872,6 @@ components:
             $ref: "#/components/schemas/ReportedChatModel"
       required:
       - models
-    ReportedRequest:
-      type: object
-      description: A first message the side written to reported as unwanted.
-      properties:
-        createdAt:
-          type: string
-          format: date-time
-        id:
-          type: string
-          format: uuid
-        kind:
-          type: string
-          enum:
-          - talent
-          - solution
-          - program
-        message:
-          type: string
-        reportedAt:
-          type:
-          - string
-          - "null"
-          format: date-time
-          description: When it was reported.
-        senderEmail:
-          type: string
-          description: The sender's address; empty when the account no longer signs
-            in.
-        senderName:
-          type:
-          - string
-          - "null"
-          description: The sender's name; null when they gave none.
-        senderOrganization:
-          type:
-          - string
-          - "null"
-          description: The organization the sender belonged to; null when none.
-        subjectName:
-          type: string
-          description: The profile or solution it was sent about.
-      required:
-      - createdAt
-      - id
-      - kind
-      - message
-      - senderEmail
-      - subjectName
-    ReportedRequestList:
-      type: object
-      description: "One page of the reported first messages, the newest first."
-      properties:
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/ReportedRequest"
-        page:
-          type: integer
-          format: int32
-        pageSize:
-          type: integer
-          format: int32
-        total:
-          type: integer
-          format: int64
-      required:
-      - items
-      - page
-      - pageSize
-      - total
     ReserveUpload:
       type: object
       description: The file a person is about to upload.

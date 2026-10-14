@@ -236,14 +236,9 @@ class MessagingTest {
 				"$.conversation.status")).isEqualTo("declined");
 		assertThat(events(reported)).containsExactly("messaging.request_report");
 
-		// Operators read what was reported, with who sent it, and nothing else.
-		String list = body(get(operator, MESSAGING + "/admin/reported").expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(list, "$.items[?(@.id=='" + reported + "')].message"))
-			.containsExactly("Buy my course.");
-		assertThat(JsonPath.<List<String>>read(list, "$.items[?(@.id=='" + reported + "')].senderEmail"))
-			.containsExactly("minh@decline-sender.test");
-		assertThat(JsonPath.<List<String>>read(list, "$.items[*].id")).doesNotContain(declined);
-		assertProblem(get(sender, MESSAGING + "/admin/reported"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		// Reporting does not grant operators access to private message content.
+		get(operator, MESSAGING + "/admin/reported").expectStatus().isNotFound();
+		assertProblem(get(operator, CONVERSATIONS + "/" + reported), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
 	}
 
 	@Test
