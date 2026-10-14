@@ -4744,10 +4744,8 @@
         "programme": "Programme selection",
         "selected": "Selected for {program}.",
         "byGenAiFund": "Confirmed by GenAI Fund · {date}",
-        "stated": "Stated by the company",
-        "byCompany": "Stated by {name}",
         "milestones": "Key milestones",
-        "cases": "{count, plural, one {One customer deployment reviewed by GenAI Fund, shown below.} other {# customer deployments reviewed by GenAI Fund, shown below.}}"
+        "cases": "{count, plural, one {One customer deployment, shown below.} other {# customer deployments, shown below.}}"
       },
       "company": {
         "title": "The company behind this solution",
@@ -5110,7 +5108,7 @@
       "open": "{holds, select, all {Open to read the problem, what was deployed and the result.} delivered {Open to read the problem and what was deployed.} result {Open to read the problem and the result.} other {Open to read the problem.}}",
       "eyebrow": "Customer deployment",
       "line": "{solution} · {customer}",
-      "lead": "{stage}. Stated by {organization} and reviewed by GenAI Fund on {day}. The customer has not confirmed it here.",
+      "lead": "{stage}.",
       "problem": "The business problem",
       "delivered": "What was deployed",
       "scope": "Scope and result",
@@ -5123,8 +5121,7 @@
       "about": "About this project",
       "deliveredBy": "Delivered by",
       "customer": "Customer",
-      "solutionUsed": "Solution used",
-      "source": "Stated by {organization} and reviewed by GenAI Fund on {day}. The customer has not confirmed it here."
+      "solutionUsed": "Solution used"
     },
     "deployments": {
       "title": "Customer deployments",
@@ -7776,7 +7773,7 @@
       "place": "Where",
       "skills": "Skills",
       "proof": "Proof",
-      "deployments": "{count, plural, one {# customer deployment, reviewed by GenAI Fund} other {# customer deployments, reviewed by GenAI Fund}}",
+      "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}",
       "someone": "Someone",
       "people": {
         "readers": "Who reads what you write",

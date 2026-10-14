@@ -13,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useFormatter } from "@/i18n/format";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicCustomerDeployment } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -31,16 +30,13 @@ function sameText(one: string, other: string) {
 }
 
 /**
- * One customer deployment of a solution: what was deployed, for whom, and who says so, in a card,
- * and the whole account in a dialog. The source stands on the card, since the record is the
- * organization's own statement that GenAI Fund reviewed, never the customer's. What the
- * organization did not publish reads as not published, in one line when it published no scope at
+ * One customer deployment of a solution: what was deployed and for whom, in a card, and the whole
+ * account in a dialog. What the organization did not publish reads as not published, in one line when it published no scope at
  * all, and what was deployed is left out when it only repeats the problem.
  */
 function CustomerDeploymentCard({ deployment, organization }: CustomerDeploymentCardProps) {
   const t = useTranslations("Solution.deployment");
   const stage = useVocabulary("deploymentStage");
-  const format = useFormatter();
   const [open, setOpen] = useState(false);
   const scope = [
     { name: t("channels"), value: deployment.channels },
@@ -49,10 +45,6 @@ function CustomerDeploymentCard({ deployment, organization }: CustomerDeployment
     { name: t("result"), value: deployment.result },
   ];
   const line = t("line", { solution: deployment.solutionName, customer: deployment.customer });
-  const source = {
-    organization: organization.name,
-    day: format.dateTime(new Date(deployment.approvedAt), "date"),
-  };
   const delivered = !sameText(deployment.delivered, deployment.problem);
   const scoped = scope.some((fact) => fact.value);
   // The foot promises only the parts the dialog holds.
@@ -80,7 +72,6 @@ function CustomerDeploymentCard({ deployment, organization }: CustomerDeployment
       <div className="pt-1">
         <Badge variant="outline">{stage(deployment.stage)}</Badge>
       </div>
-      <p className="text-sm text-muted-foreground">{t("source", source)}</p>
       <p className="text-xs text-muted-foreground">{t("open", { holds })}</p>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -88,9 +79,7 @@ function CustomerDeploymentCard({ deployment, organization }: CustomerDeployment
           <DialogHeader>
             <p className="text-xs text-muted-foreground">{t("eyebrow")}</p>
             <DialogTitle>{deployment.title}</DialogTitle>
-            <DialogDescription>
-              {t("lead", { stage: stage(deployment.stage), ...source })}
-            </DialogDescription>
+            <DialogDescription>{t("lead", { stage: stage(deployment.stage) })}</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-6 md:flex-row md:items-start">
             <div className="flex min-w-0 flex-1 flex-col gap-5">
