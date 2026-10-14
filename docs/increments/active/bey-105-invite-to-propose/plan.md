@@ -2,14 +2,14 @@
 
 Design: [design.md](design.md). Tracked in Linear as BEY-105. Steps 2 to 5 share one branch and one pull request.
 
-| #   | Step                                                                                                                                                                | State |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| 1   | This design and plan; Đạt's approval of the decisions, the new dependency of `matching` on `notification` among them                                                | Open  |
-| 2   | Backend: the migration, `invite`, the recipients from `organization`, the email kind and its template, the audit action, `openapi.yml`, the generated client; tests | Open  |
-| 3   | Web: Invite to propose on the card, the panel and the row; the dialog; Invited and Proposal received; both catalogs                                                 | Open  |
-| 4   | End-to-end tests; `docs/tests/matching.md`                                                                                                                          | Open  |
-| 5   | Staging: invite with the email going to the staging mailbox; check the email and the states                                                                         | Open  |
-| 6   | Production: the first invitation is sent by a person of GenAI Fund's choosing                                                                                       | Open  |
+| #   | Step                                                                                                                                                                | State                             |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| 1   | This design and plan; Đạt's approval of the decisions, the new dependency of `matching` on `notification` among them                                                | Done, 14 October 2026 ("code đi") |
+| 2   | Backend: the migration, `invite`, the recipients from `organization`, the email kind and its template, the audit action, `openapi.yml`, the generated client; tests | Open                              |
+| 3   | Web: Invite to propose on the card, the panel and the row; the dialog; Invited and Proposal received; both catalogs                                                 | Open                              |
+| 4   | End-to-end tests; `docs/tests/matching.md`                                                                                                                          | Open                              |
+| 5   | Staging: invite with the email going to the staging mailbox; check the email and the states                                                                         | Open                              |
+| 6   | Production: the first invitation is sent by a person of GenAI Fund's choosing                                                                                       | Open                              |
 
 ## Verification
 

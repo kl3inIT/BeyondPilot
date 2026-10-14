@@ -381,6 +381,10 @@
     "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund đã loại giải pháp này nên chỉ GenAI Fund khôi phục được.",
     "MATCHING_CANDIDATE_NOT_REMOVED": "Giải pháp này không còn bị loại nên không cần lý do.",
     "MATCHING_REMOVED_BY_SOMEONE_ELSE": "Người khác đã loại giải pháp này; chỉ họ nêu được lý do.",
+    "MATCHING_USE_CASE_CLOSED": "Use case này không còn nhận đề xuất nên không mời ai được.",
+    "MATCHING_ALREADY_INVITED": "Nhà cung cấp này đã được mời gửi đề xuất cho use case này.",
+    "MATCHING_NOBODY_TO_INVITE": "Chưa ai đại diện nhà cung cấp này trên BeyondPilot nên không có ai để gửi email.",
+    "MATCHING_INVITATION_LIMIT": "Bạn đã mời đủ số nhà cung cấp cho phép trong một ngày với use case này. Hãy thử lại vào ngày mai.",
     "MATCHING_ALREADY_CANDIDATE": "Giải pháp này đã có trong danh sách của use case.",
     "MATCHING_OWN_SOLUTION": "Giải pháp này thuộc chính tổ chức sở hữu use case.",
     "MATCHING_SETTINGS_CHANGED": "Có người khác vừa đổi các thiết lập này. Hãy tải lại rồi thử lần nữa.",
@@ -1290,6 +1294,7 @@
           "candidate_remove": "Loại một ứng viên",
           "candidate_reason": "Nêu lý do đã loại một ứng viên",
           "candidate_restore": "Khôi phục một ứng viên",
+          "candidate_invite": "Mời một nhà cung cấp gửi đề xuất",
           "settings_change": "Đổi giới hạn của matching"
         }
       },
@@ -1432,6 +1437,7 @@
           "candidate_remove": "Loại một ứng viên của use case <resource></resource>",
           "candidate_reason": "Nêu lý do đã loại một ứng viên của use case <resource></resource>",
           "candidate_restore": "Khôi phục một ứng viên của use case <resource></resource>",
+          "candidate_invite": "Mời một nhà cung cấp gửi đề xuất cho use case <resource></resource>",
           "settings_change": "Đổi giới hạn của matching"
         }
       },
@@ -3122,6 +3128,10 @@
         "proposal_declined": {
           "name": "Đề xuất không được chọn",
           "description": "Báo cho bên gửi rằng đề xuất không được chọn, kèm lời nhắn của tổ chức đăng use case."
+        },
+        "matching_invitation": {
+          "name": "Lời mời gửi đề xuất",
+          "description": "Mời nhà cung cấp của một giải pháp được ghép gửi đề xuất cho use case, kèm ghi chú của người mời."
         },
         "talent_approved": {
           "name": "Hồ sơ nhân lực được duyệt"

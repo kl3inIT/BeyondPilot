@@ -52,6 +52,19 @@ public class OrganizationDirectory {
 		return memberships.members(organizationId).stream().map(member -> member.accountId()).toList();
 	}
 
+	/**
+	 * The addresses invited to own an organization whose invitations are still open, read now: who answers for an
+	 * organization that nobody has taken on yet, as GenAI Fund invited the owners of the imported ones.
+	 */
+	@Transactional(readOnly = true)
+	public List<String> invitedOwners(UUID organizationId) {
+		return memberships.openInvitationsOf(organizationId)
+			.stream()
+			.filter(invitation -> MembershipRepository.OWNER.equals(invitation.role()))
+			.map(MembershipRepository.Invitation::email)
+			.toList();
+	}
+
 	/** The accounts that own an organization, read now; empty when it has no owner. */
 	@Transactional(readOnly = true)
 	public List<UUID> ownersOf(UUID organizationId) {

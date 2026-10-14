@@ -10,6 +10,7 @@ import ai.genaifund.beyondpilot.matching.MatchingService;
 import ai.genaifund.beyondpilot.matching.dto.AddCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.GiveFeedbackRequest;
 import ai.genaifund.beyondpilot.matching.dto.GiveRemovalReasonRequest;
+import ai.genaifund.beyondpilot.matching.dto.InviteCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange;
 import ai.genaifund.beyondpilot.matching.dto.MatchingResponse;
 import ai.genaifund.beyondpilot.matching.dto.RemoveCandidateRequest;
@@ -153,6 +154,27 @@ class MatchingController {
 	MatchingResponse remove(@CurrentActor Actor actor, @PathVariable UUID candidateId,
 			@Valid @RequestBody RemoveCandidateRequest request) {
 		return matching.remove(actor, candidateId, request);
+	}
+
+	@PostMapping(path = "/candidates/{candidateId}/invite", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "inviteMatchingCandidate",
+			summary = "Invite the provider of a candidate to propose for the use case",
+			description = "Its owners are emailed, or the addresses invited to own it when nobody has taken it on yet. "
+					+ "One invitation for each use case and provider; it cannot be taken back.",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The provider is invited.")
+	@ApiResponse(responseCode = "400", description = "The note is longer than 500 characters.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "The candidate is unknown to the caller.", content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "The candidate was removed, the use case takes no proposals, the provider was invited already, or nobody answers for it.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "429", description = "A member invited as many providers as a day allows.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	MatchingResponse invite(@CurrentActor Actor actor, @PathVariable UUID candidateId,
+			@Valid @RequestBody InviteCandidateRequest request) {
+		return matching.invite(actor, candidateId, request);
 	}
 
 	@PostMapping(path = "/candidates/{candidateId}/removal-reason", consumes = MediaType.APPLICATION_JSON_VALUE,
