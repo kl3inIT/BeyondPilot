@@ -8,6 +8,7 @@ import {
   type Organization,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
+import { isIndividual } from "@/features/organization/organization-codes";
 
 /** The use cases of the caller's organization. Server only. */
 export async function readMyUseCases(): Promise<MyUseCases> {
@@ -28,9 +29,14 @@ export async function readMyUseCase(id: string): Promise<MyUseCase | null> {
   }
 }
 
-/** Whether an organization has use cases at all: an approved one that is not taken down does. */
+/**
+ * Whether an organization has use cases at all: an approved one that is not taken down does, unless
+ * it is a person on their own.
+ */
 export function hasUseCases(organization: Organization): boolean {
-  return organization.status === "approved" && !organization.suspendedAt;
+  return (
+    organization.status === "approved" && !organization.suspendedAt && !isIndividual(organization)
+  );
 }
 
 /** How many use cases the organization has for its tab, or `null` when it has no such tab. Server only. */

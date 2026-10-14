@@ -21,7 +21,8 @@ import { siteRoutes } from "@/lib/site";
 type CustomerDeploymentCardProps = {
   deployment: PublicCustomerDeployment;
   /** Who delivered it: the organization of the solution. */
-  organization: { name: string; slug: string };
+  /** Who delivered it; `slug` is null for a person on their own, who has no page. */
+  organization: { name: string; slug: string | null | undefined };
 };
 
 /** Whether two texts say the same once case and spacing are set aside. */
@@ -141,10 +142,17 @@ function CustomerDeploymentCard({ deployment, organization }: CustomerDeployment
                 <div className="flex flex-col items-start gap-0.5">
                   <dt className="text-xs text-muted-foreground">{t("deliveredBy")}</dt>
                   <dd>
-                    <TextButton size="sm" href={`${siteRoutes.organizations}/${organization.slug}`}>
-                      {organization.name}
-                      <ArrowRightIcon aria-hidden="true" />
-                    </TextButton>
+                    {organization.slug ? (
+                      <TextButton
+                        size="sm"
+                        href={`${siteRoutes.organizations}/${organization.slug}`}
+                      >
+                        {organization.name}
+                        <ArrowRightIcon aria-hidden="true" />
+                      </TextButton>
+                    ) : (
+                      <span className="text-sm">{organization.name}</span>
+                    )}
                   </dd>
                 </div>
                 <div className="flex flex-col gap-0.5">

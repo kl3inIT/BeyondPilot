@@ -27,7 +27,7 @@ import {
 import { rejectedFields } from "@/lib/api/rejected-fields";
 import { siteRoutes } from "@/lib/site";
 
-import { organizationTypes, teamSizes } from "./organization-codes";
+import { teamSizes, typesFor } from "./organization-codes";
 import { ExistingOrganizations, useExistingOrganizations } from "./organization-existing";
 import { MAX_DESCRIPTION, MAX_TEAM_BACKGROUND } from "./organization-format";
 import { OrganizationIndustriesField } from "./organization-industries-field";
@@ -293,7 +293,10 @@ function OrganizationForm({
                   <field.SelectField
                     label={t("type")}
                     requiredMark
-                    options={organizationTypes.map((value) => ({ value, label: typeName(value) }))}
+                    options={typesFor(organization).map((value) => ({
+                      value,
+                      label: typeName(value),
+                    }))}
                   />
                 )}
               </form.AppField>

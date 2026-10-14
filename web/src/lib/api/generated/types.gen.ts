@@ -988,6 +988,10 @@ export type ApplyingOrganization = {
      * Whether GenAI Fund has reviewed and approved it; it applies either way.
      */
     approved: boolean;
+    /**
+     * Whether the person applies as themselves and may still apply as a team or a company instead: nothing was sent under their name yet.
+     */
+    changeable: boolean;
     country?: string | null;
     id: string;
     name: string;
@@ -3936,9 +3940,9 @@ export type PublicSolution = {
     organizationFoundedYear?: number | null;
     organizationName: string;
     /**
-     * The address of the organization's public page.
+     * The address of the organization's public page; null for someone on their own, who has none.
      */
-    organizationSlug: string;
+    organizationSlug?: string | null;
     /**
      * The organization's team-size vocabulary code, when one is known.
      */
@@ -4023,9 +4027,9 @@ export type PublicSolutionSummary = {
     offers: Array<PublicOffer>;
     organizationName: string;
     /**
-     * The address of the organization's public page.
+     * The address of the organization's public page; null for someone on their own, who has none.
      */
-    organizationSlug: string;
+    organizationSlug?: string | null;
     slug: string;
     summary?: string | null;
 };
@@ -11614,6 +11618,37 @@ export type OrganizeApplicantResponses = {
 };
 
 export type OrganizeApplicantResponse = OrganizeApplicantResponses[keyof OrganizeApplicantResponses];
+
+export type LeaveApplyingAloneData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/proposal/programs/{slug}/application/organization/leave';
+};
+
+export type LeaveApplyingAloneErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The program takes no applications now, the caller does not apply as themselves, or something was already sent under their name.
+     */
+    409: Problem;
+};
+
+export type LeaveApplyingAloneError = LeaveApplyingAloneErrors[keyof LeaveApplyingAloneErrors];
+
+export type LeaveApplyingAloneResponses = {
+    /**
+     * The form, with no organization.
+     */
+    200: ApplicationView;
+};
+
+export type LeaveApplyingAloneResponse = LeaveApplyingAloneResponses[keyof LeaveApplyingAloneResponses];
 
 export type GetReviewApplicationData = {
     body?: never;

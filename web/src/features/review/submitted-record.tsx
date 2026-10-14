@@ -126,7 +126,8 @@ async function SubmittedRecord({
         [t("email"), email],
         [t("phone"), phone],
         [t("country"), word("country", submitted.country ?? contact.country)],
-        ...(submitted.teamSize
+        // Someone applying as themselves is one person: no size is said of them.
+        ...(submitted.teamSize && submitted.organizationType !== "independent_builder"
           ? [[t("teamSize"), word("teamSize", submitted.teamSize)] as Row]
           : []),
         ...(contact.linkedin
