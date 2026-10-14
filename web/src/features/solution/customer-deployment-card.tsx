@@ -84,7 +84,7 @@ function CustomerDeploymentCard({ deployment, organization }: CustomerDeployment
       <p className="text-xs text-muted-foreground">{t("open", { holds })}</p>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-3xl">
+        <DialogContent className="max-h-dvh overflow-y-auto wrap-break-word sm:max-w-3xl">
           <DialogHeader>
             <p className="text-xs text-muted-foreground">{t("eyebrow")}</p>
             <DialogTitle>{deployment.title}</DialogTitle>
