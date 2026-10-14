@@ -13,6 +13,7 @@ import type { AdminProgramSummary } from "@/lib/api/generated";
 import { adminProgramRoute, siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
+import { LumaReadButton } from "./luma-read-button";
 import { NewProgramDialog } from "./new-program-dialog";
 import { programFormatter } from "./program-format";
 import { programState } from "./program-labels";
@@ -123,7 +124,12 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
       <AdminPageHeader
         destination="programs"
         title={t("title")}
-        actions={<NewProgramDialog locale={locale} />}
+        actions={
+          <>
+            <LumaReadButton />
+            <NewProgramDialog locale={locale} />
+          </>
+        }
       />
       <ProgramsToolbar counts={list.counts} total={list.total} />
 

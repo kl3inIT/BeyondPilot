@@ -555,7 +555,9 @@
     "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest.",
     "PROPOSAL_NOTHING_TO_SEND": "There is no decision to send. Reload the page to see where the proposals stand.",
     "MESSAGING_OPERATOR_NOT_FOUND": "This person is not an active operator.",
-    "SPREADSHEET_TOO_LARGE": "This list holds more rows than a download takes. Narrow it with the filters and download again."
+    "SPREADSHEET_TOO_LARGE": "This list holds more rows than a download takes. Narrow it with the filters and download again.",
+    "PROGRAM_LUMA_NOT_CONFIGURED": "This environment reads no Luma calendar.",
+    "PROGRAM_LUMA_UNREACHABLE": "Luma could not be read just now. Nothing changed; try again in a few minutes."
   },
   "SignIn": {
     "metaTitle": "Sign in · BeyondPilot",
@@ -1064,7 +1066,12 @@
         }
       },
       "featured": "Featured",
-      "fromLuma": "From Luma"
+      "fromLuma": "From Luma",
+      "luma": {
+        "read": "Pull from Luma",
+        "hint": "Read the GenAI Fund calendar on Luma now; it is also read every hour.",
+        "done": "Luma read: {created, plural, =0 {no new event} one {# new event} other {# new events}}, {updated} updated, {unpublished} unpublished{failed, plural, =0 {} other {; # could not be read and will be tried again}}."
+      }
     },
     "accounts": {
       "metaTitle": "Accounts · BeyondPilot",
@@ -1174,7 +1181,8 @@
           "publish": "Published a program",
           "unpublish": "Unpublished a program",
           "feature": "Featured a program",
-          "unfeature": "Stopped featuring a program"
+          "unfeature": "Stopped featuring a program",
+          "luma_read": "Read the calendar on Luma"
         },
         "organization": {
           "create": "Added an organization",
@@ -1330,7 +1338,8 @@
           "publish": "Published the program <resource></resource>",
           "unpublish": "Unpublished the program <resource></resource>",
           "feature": "Featured the program <resource></resource> on the home page",
-          "unfeature": "Stopped featuring the program <resource></resource>"
+          "unfeature": "Stopped featuring the program <resource></resource>",
+          "luma_read": "Read <resource></resource> now"
         },
         "organization": {
           "create": "Added the organization <resource></resource>",

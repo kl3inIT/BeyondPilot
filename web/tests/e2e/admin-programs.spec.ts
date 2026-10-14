@@ -105,6 +105,18 @@ test.describe("admin programs", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("Pull from Luma reads the calendar now and says what changed", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/programs");
+
+    await page.getByRole("button", { name: "Pull from Luma" }).click();
+    await expect(page.getByText("Luma read: 1 new event, 0 updated, 0 unpublished.")).toBeVisible();
+  });
+
   test("New program suggests the address from the name and opens the draft", async ({
     page,
     context,

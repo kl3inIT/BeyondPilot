@@ -651,6 +651,10 @@ createServer((request, response) => {
     if (account?.role !== "operator") {
       return json(response, account ? 403 : 401, {});
     }
+    // A read of the Luma calendar now: one new event, nothing else changed.
+    if (url.pathname === "/api/program/admin/programs/luma/read" && request.method === "POST") {
+      return json(response, 200, { created: 1, updated: 0, unpublished: 0, failed: 0 });
+    }
     const id = url.pathname.split("/")[5];
     if (id && url.pathname.endsWith("/questions")) {
       const program = programs[id];
