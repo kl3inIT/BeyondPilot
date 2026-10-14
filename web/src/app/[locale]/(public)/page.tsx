@@ -3,7 +3,6 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { JsonLd } from "@/components/layout/json-ld";
 import { AgentJourney } from "@/components/sections/agent-journey/agent-journey";
 import { Categories } from "@/components/sections/categories/categories";
-import { FeaturedChallenge } from "@/components/sections/challenge/featured-challenge";
 import { Ecosystem } from "@/components/sections/ecosystem/ecosystem";
 import { Faq } from "@/components/sections/faq/faq";
 import { FeaturedProgram } from "@/components/sections/featured-program/featured-program";
@@ -58,7 +57,6 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <Ecosystem />
       <Categories />
       <AgentJourney />
-      <FeaturedChallenge />
       <Section>
         <GenaiFundBacking />
       </Section>
