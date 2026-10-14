@@ -6,12 +6,12 @@ Design: [design.md](design.md). Tracked in Linear as BEY-96. One branch and one 
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
 | 1   | This design and plan; Đạt's decisions (operators only, XLSX and CSV, English headers, every list in the table)                                   | Done, 14 October 2026 |
 | 2   | `shared`: `Spreadsheet` with its workbook and CSV, Fesod in the catalog, `SpreadsheetTest`                                                       | Done, 14 October 2026 |
-| 3   | `proposal`: applications and drafts through `Spreadsheet` with a format, `CsvRows` removed; the proposals of a use case                          | Open                  |
-| 4   | `organization`, `solution`, `talent`, `ai`: an export beside each list, its audit action and tests                                               | Open                  |
-| 5   | `identity`: the audit log's export                                                                                                               | Open                  |
-| 6   | `openapi.yml`, the generated client; web: `ExportMenu`, the eight pages, the audit log's actions, both catalogs, the stub backend and Playwright | Open                  |
-| 7   | Documents: `ARCHITECTURE.md`, specs and test matrices, the roadmap                                                                               | Open                  |
-| 8   | Staging: download each list in both formats, open the workbooks in Excel, check the audit log                                                    | Open                  |
+| 3   | `proposal`: applications and drafts through `Spreadsheet` with a format, `CsvRows` removed; the proposals of a use case                          | Done, 14 October 2026 |
+| 4   | `organization`, `solution`, `talent`, `ai`: an export beside each list, its audit action and tests                                               | Done, 14 October 2026 |
+| 5   | `identity`: the audit log's export                                                                                                               | Done, 14 October 2026 |
+| 6   | `openapi.yml`, the generated client; web: `ExportMenu`, the eight pages, the audit log's actions, both catalogs, the stub backend and Playwright | Done, 14 October 2026 |
+| 7   | Documents: `ARCHITECTURE.md`, specs and test matrices, the roadmap                                                                               | Done, 14 October 2026 |
+| 8   | Staging: download each list in both formats, open the workbooks in Excel, check the audit log                                                    | Done, 14 October 2026 |
 
 ## Verification
 

@@ -1,6 +1,6 @@
 # BEY-96 — Operators download a list as a spreadsheet
 
-Status: decisions taken by Đạt on 14 October 2026 ([plan](plan.md)); being built.
+Status: decisions taken by Đạt on 14 October 2026 ([plan](plan.md)); built, merged (PR #332) and checked on staging the same day.
 
 ## Why
 
