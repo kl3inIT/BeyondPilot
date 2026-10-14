@@ -30,10 +30,13 @@ class IndexRepair {
 
 	private final UseCaseIndexing useCases;
 
+	private final IndexLock lock;
+
 	private volatile @Nullable Run lastRun;
 
 	IndexRepair(ProgramIndexing programs, SolutionIndexing solutions, TalentIndexing talent,
-			UseCaseIndexing useCases) {
+			UseCaseIndexing useCases, IndexLock lock) {
+		this.lock = lock;
 		this.programs = programs;
 		this.solutions = solutions;
 		this.talent = talent;
@@ -64,14 +67,14 @@ class IndexRepair {
 
 	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Ho_Chi_Minh")
 	@Transactional
-	synchronized void repair() {
-		rebuild();
+	void repair() {
+		lock.call(this::rebuild);
 	}
 
-	/** Rebuilds the index now, as an operator asked; one rebuild runs at a time. */
+	/** Rebuilds the index now, as an operator asked; one rebuild runs at a time, and no listener writes meanwhile. */
 	@Transactional
-	synchronized Run rebuildNow() {
-		return rebuild();
+	Run rebuildNow() {
+		return lock.call(this::rebuild);
 	}
 
 	private Run rebuild() {
