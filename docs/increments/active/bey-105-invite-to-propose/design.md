@@ -76,6 +76,7 @@ The provider learns from the email which organization invites it and for which u
 ## Followed up on 14 October
 
 - **An invited provider is never hidden.** A candidate the last run put in no group stays on the list when its provider was invited, as one a person saved or removed does (`isShown`): a later run must not hide whom someone emailed. Found on staging, where the invited solution fitted no group.
+- **A merged provider's invitations follow it** to the organization kept, inside the merge (as `proposal` moves its proposals); where both were invited for one use case, the kept one's stands. Raised by CodeRabbit on PR #320.
 - **Proposal received.** Each received proposal carries the sending organization's identifier (`ReceivedUseCaseProposalSummary.organizationId`, added to Nhật's `proposal` module with Đạt's approval), and each candidate the invited provider's (`invitedProviderId`). The matching pages read the use case's received proposals, and an invited provider that sent one reads Proposal received, a link to the proposal.
 
 ## Left out

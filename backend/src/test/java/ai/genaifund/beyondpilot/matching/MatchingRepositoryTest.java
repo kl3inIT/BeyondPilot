@@ -311,6 +311,31 @@ class MatchingRepositoryTest {
 		assertThat(jdbc.sql("select count(*) from matching_feedback").query(Long.class).single()).isZero();
 	}
 
+	@Test
+	void theInvitationsOfAMergedProviderGoToTheOneKeptAndOneProviderKeepsOneInvitationAUseCase() {
+		UUID first = UUID.randomUUID();
+		UUID second = UUID.randomUUID();
+		UUID merged = UUID.randomUUID();
+		UUID kept = UUID.randomUUID();
+		UUID account = UUID.randomUUID();
+		assertThat(matching.invite(first, merged, UUID.randomUUID(), null, account, false)).isTrue();
+		assertThat(matching.invite(second, merged, UUID.randomUUID(), "from the merged one", account, false)).isTrue();
+		assertThat(matching.invite(second, kept, UUID.randomUUID(), "from the kept one", account, false)).isTrue();
+
+		matching.moveInvitations(merged, kept);
+
+		assertThat(matching.invitations(first)).extracting(MatchingRepository.Invitation::organizationId)
+			.containsExactly(kept);
+		assertThat(matching.invitations(second)).extracting(MatchingRepository.Invitation::organizationId)
+			.containsExactly(kept);
+		assertThat(jdbc.sql("select note from matching_invitation where use_case_id = ?")
+			.param(second)
+			.query(String.class)
+			.single()).isEqualTo("from the kept one");
+		// The kept one is invited once for each use case, as it would have been.
+		assertThat(matching.invite(first, kept, UUID.randomUUID(), null, account, false)).isFalse();
+	}
+
 	private List<String> states() {
 		return jdbc.sql("select state from matching_run").query(String.class).list();
 	}
