@@ -4006,7 +4006,8 @@
       "websiteInvalid": "Enter a full address that starts with https://",
       "websiteRequired": "Enter the organization's website.",
       "description": "Short description",
-      "descriptionHint": "What the organization does and for whom.",
+      "descriptionHint": "What you do, who you help and your relevant expertise or experience.",
+      "typeRequired": "Choose Just me, A team or A company.",
       "teamBackground": "Team background",
       "teamBackgroundHint": "What the team has built before, its expertise and relevant experience.",
       "teamBackgroundRequired": "Describe the team’s experience in up to 2,000 characters.",
@@ -8016,7 +8017,7 @@
           "saved": "Organization saved.",
           "required": "Required.",
           "createTitle": "New organization",
-          "create": "Create",
+          "create": "Create organization",
           "created": "Organization created.",
           "full": "Create with the full form"
         }

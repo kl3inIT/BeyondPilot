@@ -4006,7 +4006,8 @@
       "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
       "websiteRequired": "Hãy nhập website của tổ chức.",
       "description": "Mô tả ngắn",
-      "descriptionHint": "Tổ chức làm gì và cho ai.",
+      "descriptionHint": "Bạn làm gì, giúp ai và chuyên môn hoặc kinh nghiệm liên quan.",
+      "typeRequired": "Chọn Cá nhân, Nhóm hoặc Công ty.",
       "teamBackground": "Kinh nghiệm của team",
       "teamBackgroundHint": "Những gì team đã xây dựng, chuyên môn và kinh nghiệm liên quan.",
       "teamBackgroundRequired": "Mô tả kinh nghiệm của team trong tối đa 2.000 ký tự.",
@@ -8016,7 +8017,7 @@
           "saved": "Đã lưu tổ chức.",
           "required": "Bắt buộc.",
           "createTitle": "Tổ chức mới",
-          "create": "Tạo",
+          "create": "Tạo tổ chức",
           "created": "Đã tạo tổ chức.",
           "full": "Tạo bằng biểu mẫu đầy đủ"
         }

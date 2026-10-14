@@ -29,7 +29,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { teamSizes, typesFor } from "./organization-codes";
 import { ExistingOrganizations, useExistingOrganizations } from "./organization-existing";
-import { MAX_DESCRIPTION, MAX_TEAM_BACKGROUND } from "./organization-format";
+import { MAX_DESCRIPTION } from "./organization-format";
 import { OrganizationIndustriesField } from "./organization-industries-field";
 import { OrganizationLogoUpload } from "./organization-logo-upload";
 import { OrganizationProfileSection } from "./organization-profile-section";
@@ -361,20 +361,6 @@ function OrganizationForm({
             </form.Field>
           </div>
         </OrganizationProfileSection>
-      )}
-
-      {type === "builder_team" && (
-        <form.AppField name="teamBackground">
-          {(field) => (
-            <field.TextareaField
-              label={t("teamBackground")}
-              description={t("teamBackgroundHint")}
-              maxLength={MAX_TEAM_BACKGROUND}
-              rows={4}
-              requiredMark
-            />
-          )}
-        </form.AppField>
       )}
 
       {admin && (

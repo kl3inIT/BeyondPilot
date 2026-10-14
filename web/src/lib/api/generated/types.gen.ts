@@ -5265,7 +5265,7 @@ export type SaveOrganization = {
 };
 
 /**
- * The facts a person gives when they make an organization, which a save changes alone. The rest of the profile is left as it is.
+ * The required facts of the selected organization type. A save leaves optional profile facts unchanged.
  */
 export type SaveOrganizationBasics = {
     /**
@@ -5273,20 +5273,28 @@ export type SaveOrganizationBasics = {
      */
     country: string;
     /**
+     * Required for a team or company, including relevant expertise and experience; omitted for a builder on their own.
+     */
+    description?: string | null;
+    /**
+     * Required for a company; omitted for other types.
+     */
+    foundedYear?: number | null;
+    /**
      * The industries it works in or serves; a company names at least one.
      */
     industries: Array<string>;
     name: string;
-    /**
-     * What the team has built before, separate from its short description.
-     */
-    teamBackground?: string | null;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     /**
      * Required when editing; omitted when creating.
      */
     version?: number | null;
+    /**
+     * Required for a company; omitted for other types.
+     */
+    website?: string | null;
 };
 
 /**

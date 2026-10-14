@@ -169,7 +169,7 @@ function receivedSummary(scene, id, sentAt) {
     organizationName: receivedNames[id],
     organizationLogoFileId: null,
     solutionNames: ["Policy Chat"],
-    organizationApproved: true,
+    organizationApproved: id !== receivedIds.orbit,
     contactName: minh.name,
     sentAt,
     editedAt: null,

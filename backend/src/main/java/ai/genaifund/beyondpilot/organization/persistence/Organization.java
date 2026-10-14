@@ -129,16 +129,6 @@ public class Organization {
 		this.createdByAccountId = createdByAccountId;
 	}
 
-	/** Changes the facts a person gives when they make an organization; the rest of the profile stays. */
-	public void describeBasics(String name, String type, String teamSize, List<String> industries, String country) {
-		this.name = name;
-		this.type = type;
-		this.teamSize = teamSize;
-		this.companySizeLabel = null;
-		this.industries = industries.toArray(String[]::new);
-		this.country = country;
-	}
-
 	public void describe(String name, String type, @Nullable String website,
 			@Nullable String country, @Nullable String teamSize, List<String> industries,
 			@Nullable String description, @Nullable Integer foundedYear, @Nullable UUID logoFileId) {
@@ -154,10 +144,9 @@ public class Organization {
 		this.logoFileId = logoFileId;
 	}
 
-	/** Experience belongs to a team only, not its short description. */
-    public void describeTeam(@Nullable String background) {
-        this.teamBackground = "builder_team".equals(type) && background != null && !background.isBlank()
-                ? background.strip() : null;
+	/** Retains legacy experience when explicitly supplied, including across a type change. */
+	public void describeTeam(@Nullable String background) {
+		this.teamBackground = background != null && !background.isBlank() ? background.strip() : null;
 	}
 
 	public @Nullable String getTeamBackground() {

@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { serveStoredImages } from "./stored-files";
+import { longTextUseCase } from "./stub-directories.mjs";
 
 test.describe("use cases", () => {
   test.use({ locale: "en-US" });
@@ -53,6 +54,37 @@ test.describe("use cases", () => {
       "href",
       /\/use-cases\/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0001\/propose$/,
     );
+    await expectNoSeriousA11yViolations(page);
+  });
+
+  test("long numbers, words and URLs stay inside the public brief's content column", async ({
+    page,
+  }) => {
+    await page.goto(`/use-cases/${longTextUseCase.id}`);
+
+    for (const [id, value] of [
+      ["problem", longTextUseCase.problemStatement],
+      ["outcomes", longTextUseCase.expectedOutcomes],
+      ["currentProcess", longTextUseCase.currentProcess],
+      ["currentSolutions", longTextUseCase.currentSolutions],
+      ["targetUsers", longTextUseCase.targetUsers],
+      ["dataReadiness", longTextUseCase.dataReadiness],
+      ["integration", longTextUseCase.integrationRequirements],
+    ]) {
+      const section = page.locator(`section[aria-labelledby="use-case-${id}"]`);
+      const content = section.locator("div").first();
+      await expect(content).toHaveText(value);
+      expect(await content.textContent()).toBe(value);
+      expect(await content.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(
+        0,
+      );
+    }
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBe(0);
+    await expect(page.getByRole("link", { name: "Send a proposal" })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
   });
 

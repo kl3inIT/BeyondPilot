@@ -334,6 +334,19 @@ const useCaseDetails = useCases.map((item) => ({
   integrationRequirements: "The solution must work with the organization's existing systems.",
 }));
 
+/** A detail-only fixture: long unbroken values must wrap, without changing the public list. */
+export const longTextUseCase = {
+  ...useCaseDetails[0],
+  id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0099",
+  problemStatement: "1".repeat(1000),
+  expectedOutcomes: "a".repeat(1000),
+  currentProcess: `https://example.com/${"path".repeat(250)}`,
+  currentSolutions: `First line\n${"1".repeat(1000)}\nLast line`,
+  targetUsers: "1".repeat(1000),
+  dataReadiness: "a".repeat(1000),
+  integrationRequirements: `https://example.com/${"path".repeat(250)}`,
+};
+
 /** The public list of use cases: the search looks in the title, the goal and the organization's name. */
 function pageOfUseCases(url) {
   const { searchParams: query } = url;
@@ -389,7 +402,10 @@ export function answerDirectory(url) {
   }
   const useCaseId = /^\/api\/usecase\/use-cases\/([^/]+)$/.exec(pathname)?.[1];
   if (useCaseId) {
-    const found = useCaseDetails.find((item) => item.id === useCaseId);
+    const found =
+      useCaseId === longTextUseCase.id
+        ? longTextUseCase
+        : useCaseDetails.find((item) => item.id === useCaseId);
     return found ? [200, found] : missing;
   }
   const [, area, list, slug] = /^\/api\/(\w+)\/(\w+)(?:\/([^/]+))?$/.exec(pathname) ?? [];
