@@ -49,6 +49,8 @@ type MatchingRowProps = {
   onRemove: () => void;
   /** Opens the invitation of the provider to propose; absent when the caller may not invite now. */
   onInvite?: () => void;
+  /** Where the provider's proposal opens, once the invited provider sent one. */
+  proposalHref?: string;
 };
 
 /** Where a solution is from and how far along it is, as one quiet line. */
@@ -82,6 +84,7 @@ function MatchingRow({
   onShortlist,
   onRemove,
   onInvite,
+  proposalHref,
 }: MatchingRowProps) {
   const t = useTranslations("Matching.row");
   const meta = useCandidateMeta()(candidate);
@@ -194,7 +197,7 @@ function MatchingRow({
         {(counts || unread || candidate.invitedAt) && (
           <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
             {counts && <StatusCounts counts={counts} />}
-            <InvitedMark candidate={candidate} />
+            <InvitedMark candidate={candidate} proposalHref={proposalHref} />
             {unread && (
               <span className="inline-flex items-center gap-1.5 text-muted-foreground">
                 <FileQuestionIcon aria-hidden="true" className="size-4 shrink-0" />

@@ -310,7 +310,7 @@ public class UseCaseProposals {
 		SentByResponse sentBy = sentBy(proposal);
 		UUID decider = proposal.getDecidedByAccountId();
 		Person decidedBy = decider == null ? null : deciders.get(decider);
-		return new ReceivedUseCaseProposalSummaryResponse(proposal.getId(),
+		return new ReceivedUseCaseProposalSummaryResponse(proposal.getId(), proposal.getOrganizationId(),
 				organization == null ? "" : organization.name(),
 				organization == null ? null : organization.logoFileId(), solutionNames,
 				organizations.isApproved(proposal.getOrganizationId()),

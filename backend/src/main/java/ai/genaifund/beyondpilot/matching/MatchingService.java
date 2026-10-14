@@ -523,6 +523,7 @@ public class MatchingService {
 					removed ? candidate.decidedByOperator() : null, removed ? candidate.decidedAt() : null,
 					invitation == null ? null : invitation.createdAt(), inviter == null ? null : inviter.label(),
 					invitation == null ? null : invitation.byOperator(),
+					invitation == null ? null : invitation.organizationId(),
 					candidate.judged(), candidate.summary(),
 					Sources.unread(candidate.unread(), material != null && material.deck(),
 							material != null && material.website()),

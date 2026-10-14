@@ -194,6 +194,8 @@ type MatchingPanelProps = {
   onRemove: () => void;
   /** Opens the invitation of the provider to propose; absent when the caller may not invite now. */
   onInvite?: () => void;
+  /** Where the provider's proposal opens, once the invited provider sent one. */
+  proposalHref?: string;
 };
 
 /**
@@ -216,6 +218,7 @@ function MatchingPanel({
   onShortlist,
   onRemove,
   onInvite,
+  proposalHref,
 }: MatchingPanelProps) {
   const t = useTranslations("Matching");
   const meta = useCandidateMeta()(candidate);
@@ -392,7 +395,7 @@ function MatchingPanel({
           {t("row.remove")}
         </Button>
         {candidate.invitedAt ? (
-          <InvitedMark candidate={candidate} />
+          <InvitedMark candidate={candidate} proposalHref={proposalHref} />
         ) : (
           onInvite && (
             <Button prominence="secondary" disabled={pending} onClick={onInvite}>

@@ -9,6 +9,7 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(name = "ReceivedUseCaseProposalSummary", description = "One line of the proposals a use case received.")
 public record ReceivedUseCaseProposalSummaryResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The sending organization.") UUID organizationId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String organizationName,
 		@Schema(types = { "string", "null" }, format = "uuid", description = "Read at /api/storage/files/{id}.") @Nullable UUID organizationLogoFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The names of the solutions offered.") List<String> solutionNames,

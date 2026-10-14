@@ -7580,7 +7580,8 @@
       "done": "{name} is invited to propose.",
       "invited": "Invited {date}",
       "invitedBy": "Invited by {name} on {date}",
-      "genaiFund": "GenAI Fund"
+      "genaiFund": "GenAI Fund",
+      "received": "Proposal received"
     }
   },
   "Messaging": {

@@ -1,8 +1,9 @@
 "use client";
 
-import { MailCheckIcon } from "lucide-react";
+import { FileCheckIcon, MailCheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { TextButton } from "@/components/actions/text-button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { useAppForm } from "@/components/form/app-form";
 import { useFormatter } from "@/i18n/format";
@@ -62,17 +63,29 @@ function MatchingInvite({ candidate, pending, onOpenChange, onInvite }: Matching
 
 /**
  * That the provider was invited, as a short line: when, and, in its title, by whom. A member reads that
- * GenAI Fund invited it, never which operator.
+ * GenAI Fund invited it, never which operator. Once the provider sent a proposal for the use case, the
+ * line says so instead, and opens it.
  */
 function InvitedMark({
   candidate,
+  proposalHref,
 }: {
   candidate: Pick<MatchingCandidate, "invitedAt" | "invitedBy" | "invitedByOperator">;
+  /** Where the provider's proposal opens, once it sent one. */
+  proposalHref?: string;
 }) {
   const t = useTranslations("Matching.invite");
   const format = useFormatter();
   if (!candidate.invitedAt) {
     return null;
+  }
+  if (proposalHref) {
+    return (
+      <TextButton size="sm" href={proposalHref} data-slot="matching-received">
+        <FileCheckIcon aria-hidden="true" />
+        {t("received")}
+      </TextButton>
+    );
   }
   const date = format.dateTime(new Date(candidate.invitedAt), { day: "numeric", month: "short" });
   const by = candidate.invitedBy ?? (candidate.invitedByOperator ? t("genaiFund") : undefined);

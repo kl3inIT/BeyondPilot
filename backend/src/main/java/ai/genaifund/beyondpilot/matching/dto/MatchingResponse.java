@@ -91,6 +91,7 @@ public record MatchingResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIR
 			@Schema(description = "When its provider was invited to propose for the use case; absent when it was not.") @Nullable Instant invitedAt,
 			@Schema(description = "Who invited it, by the name they are shown by; absent for a member when GenAI Fund invited it.") @Nullable String invitedBy,
 			@Schema(description = "Whether GenAI Fund invited it.") @Nullable Boolean invitedByOperator,
+			@Schema(description = "The provider organization invited; absent when it was not.") @Nullable UUID invitedProviderId,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 					description = "Whether a run judged it; one added by hand waits for the next run.") boolean judged,
 			@Schema(description = "The model's one sentence: the strongest reason, or what is missing.") @Nullable String summary,

@@ -117,6 +117,8 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			String list = body(get(reader, path + "s").expectStatus().isOk());
 			assertThat(JsonPath.<List<String>>read(list, "$.items[*].organizationName"))
 				.containsExactly("Team sends.test");
+			assertThat(JsonPath.<List<String>>read(list, "$.items[*].organizationId"))
+				.containsExactly(provider.organization().toString());
 			assertThat(JsonPath.<List<String>>read(list, "$.items[*].solutionNames[*]")).containsExactly("Claim Copilot");
 			assertThat(JsonPath.<List<String>>read(list, "$.items[*].contactName"))
 				.hasSize(1);

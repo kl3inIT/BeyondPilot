@@ -25,6 +25,8 @@ type MatchingPageProps = {
   proposals?: number;
   /** The solution to open with the page, by the identifier matching gives it. */
   selected?: string;
+  /** Where each proposal the use case received opens, by the organization that sent it. */
+  received?: Record<string, string>;
 };
 
 /**
@@ -32,7 +34,14 @@ type MatchingPageProps = {
  * decide on them. The organization's members and GenAI Fund read the same page; the answer of the
  * backend says what each may do.
  */
-function MatchingPage({ area, useCase, matching, proposals, selected }: MatchingPageProps) {
+function MatchingPage({
+  area,
+  useCase,
+  matching,
+  proposals,
+  selected,
+  received,
+}: MatchingPageProps) {
   const t = useTranslations("Matching");
   const statusLabel = useTranslations("Admin.useCases.status");
   const admin = area === "admin";
@@ -75,7 +84,7 @@ function MatchingPage({ area, useCase, matching, proposals, selected }: Matching
           </>
         )}
 
-        <MatchingBoard matching={matching} selected={selected} />
+        <MatchingBoard matching={matching} selected={selected} received={received} />
       </div>
     </div>
   );

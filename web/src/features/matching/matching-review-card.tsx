@@ -73,6 +73,8 @@ type MatchingReviewCardProps = {
    * provider invited already reads as such instead.
    */
   onInvite?: () => void;
+  /** Where the provider's proposal opens, once the invited provider sent one. */
+  proposalHref?: string;
   /** The card's element, which the line measures to lift a leaving card out of the flow. */
   ref?: Ref<HTMLElement>;
 };
@@ -99,6 +101,7 @@ function MatchingReviewCard({
   behind,
   onDecide,
   onInvite,
+  proposalHref,
   ref,
 }: MatchingReviewCardProps) {
   const t = useTranslations("Matching");
@@ -224,7 +227,7 @@ function MatchingReviewCard({
           })}
         </p>
         {candidate.invitedAt ? (
-          <InvitedMark candidate={candidate} />
+          <InvitedMark candidate={candidate} proposalHref={proposalHref} />
         ) : (
           onInvite && (
             // A press here invites; it does not start a drag of the card.
