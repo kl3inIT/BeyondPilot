@@ -60,11 +60,11 @@ The provider learns from the email which organization invites it and for which u
 
 ### Backend
 
-- `V94__matching_create_invitations.sql`: `matching_invitation (id, use_case_id, organization_id, candidate_id, note, account_id, by_operator, created_at)`, unique on `(use_case_id, organization_id)`.
+- `V95__matching_create_invitations.sql`: `matching_invitation (id, use_case_id, organization_id, candidate_id, note, account_id, by_operator, created_at)`, unique on `(use_case_id, organization_id)`.
 - `MatchingService.invite(actor, candidateId, note)`: checks, records, emails, audits (`matching.candidate_invite`).
-- `organization`: a published read of the addresses of the open invitations to own an organization, for an organization with no owner.
-- `notification`: `EmailKind.MATCHING_INVITATION`, its template in both languages, `EmailService.sendMatchingInvitation`.
-- `MatchingResponse.Candidate` gains `invitedAt`, `invitedBy` and `canInvite` (false with no one to email); the response gains how many invitations the caller has left today.
+- `organization`: `OrganizationDirectory.invitedOwners`, the addresses of the open invitations to own an organization, for one with no owner.
+- `notification`: `EmailKind.MATCHING_INVITATION`, its English template (emails are in English, as every other), `EmailService.sendMatchingInvitation`.
+- `MatchingResponse.Candidate` gains `invitedAt`, `invitedBy` and `invitedByOperator`; the response gains how many invitations the caller has left today. Whether a provider has anyone to email is not read for each candidate: it would need the organization of every solution from `solution`, a change to Việt's module for one flag. A provider with nobody to email is refused when invited, with the reason (`MATCHING_NOBODY_TO_INVITE`).
 - `POST /api/matching/candidates/{id}/invite`; `openapi.yml` and the generated client.
 
 ### Web
@@ -80,6 +80,9 @@ The provider learns from the email which organization invites it and for which u
 - Invitations through MCP.
 
 ## Open
+
+- **Proposal received** on a card needs the received proposals to name the sending organization by identifier, or their solutions: `ReceivedUseCaseProposalSummary` carries the organization's name only. A field for Nhật's `proposal` module to add; until then a card reads Invited.
+- **No count of invitations left** is shown: a limit against unwanted mail is not shown until it is reached, as in LinkedIn's invitations and in Messages (Đạt, 14 October). The action is not offered once the day's limit is reached.
 
 - The limit of 10 a day: a number to confirm with GenAI Fund once it is in use.
 - Whether the email names the person who invites, or only their organization. Proposed: the organization only, as BEY-173 shows the organization to a provider.

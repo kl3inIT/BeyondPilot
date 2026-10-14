@@ -7,7 +7,8 @@
  * what BeyondPilot holds.
  */
 @ApplicationModule(displayName = "Matching", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "ai", "audit", "identity", "organization", "search", "solution", "usecase" })
+		allowedDependencies = { "ai", "audit", "identity", "notification", "organization", "search", "solution",
+				"usecase" })
 @NullMarked
 package ai.genaifund.beyondpilot.matching;
 

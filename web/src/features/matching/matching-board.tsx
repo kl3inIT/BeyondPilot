@@ -25,6 +25,7 @@ import {
   addMatchingCandidate,
   giveMatchingFeedback,
   giveMatchingRemovalReason,
+  inviteMatchingCandidate,
   removeMatchingCandidate,
   restoreMatchingCandidate,
   shortlistMatchingCandidate,
@@ -38,6 +39,7 @@ import {
 import { MatchingAdd } from "./matching-add";
 import { useMatchingChanges } from "./matching-changes";
 import { matchingWords } from "./matching-errors";
+import { MatchingInvite } from "./matching-invite";
 import { ARROWED, FIELDS, OVERLAYS } from "./matching-keys";
 import { reviewable } from "./matching-line";
 import { MatchingPanel } from "./matching-panel";
@@ -209,6 +211,8 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
     return candidate ? { [sectionOf(candidate)]: true } : {};
   });
   const [removingId, setRemovingId] = useState<string | null>(null);
+  /** The candidate whose provider the person is about to invite to propose. */
+  const [invitingId, setInvitingId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   /** Whether the folding group is open, once a person opened or closed it. */
   const [opened, setOpened] = useState<Partial<Record<Section, boolean>>>(asked);
@@ -378,6 +382,24 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
       },
     );
 
+  // An invitation is emailed and cannot be taken back, so it is asked first; a member who invited as many
+  // providers as a day allows is offered none until tomorrow.
+  const inviting = matching.candidates.find((candidate) => candidate.id === invitingId) ?? null;
+  const mayInvite = matching.invitationsLeftToday !== 0;
+  const askInvite = (candidate: MatchingCandidate) =>
+    mayInvite && !candidate.invitedAt ? () => setInvitingId(candidate.id) : undefined;
+  const invite = (candidate: MatchingCandidate, note: string | undefined) =>
+    send(
+      candidate.id,
+      () => inviteMatchingCandidate({ path: { candidateId: candidate.id }, body: { note } }),
+      () => {
+        setInvitingId(null);
+        notify.success("Matching.invite.done", {
+          name: candidate.organizationName ?? candidate.solutionName,
+        });
+      },
+    );
+
   // The one-by-one review says under its card what was just decided, with Undo, so no toast does.
   const review = {
     onShortlist: (candidate: MatchingCandidate) =>
@@ -502,6 +524,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
                   onSelect={() => select(candidate)}
                   onShortlist={() => void shortlist(candidate)}
                   onRemove={() => askWhy(candidate)}
+                  onInvite={askInvite(candidate)}
                 />
               </PresenceItem>
             ),
@@ -575,6 +598,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
       onNext={place < flat.length - 1 ? () => setSelectedId(flat[place + 1].id) : undefined}
       onShortlist={() => void shortlist(chosen)}
       onRemove={() => askWhy(chosen)}
+      onInvite={askInvite(chosen)}
     />
   );
 
@@ -658,6 +682,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
           needs={needs}
           reading={reads}
           {...review}
+          onInvite={mayInvite ? (candidate) => setInvitingId(candidate.id) : undefined}
           onList={() => setView("list")}
         />
       )}
@@ -777,6 +802,13 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
           </Tabs>
         </>
       )}
+
+      <MatchingInvite
+        candidate={inviting}
+        pending={inviting !== null && pending === inviting.id}
+        onOpenChange={(open) => !open && setInvitingId(null)}
+        onInvite={(note) => (inviting ? invite(inviting, note) : Promise.resolve(false))}
+      />
 
       {!wide && (
         <Sheet open={sheetOpen && chosen !== undefined} onOpenChange={setSheetOpen}>

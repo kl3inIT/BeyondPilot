@@ -40,6 +40,7 @@ export const emailKinds = [
   "proposal_sent",
   "proposal_shortlisted",
   "proposal_declined",
+  "matching_invitation",
   "talent_approved",
   "talent_changes_requested",
   "talent_removed",
