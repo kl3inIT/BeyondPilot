@@ -20,10 +20,14 @@ import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.organization.OrganizationProfile;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.solution.dto.AdminCreateSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionListResponse;
 import ai.genaifund.beyondpilot.solution.dto.AdminSolutionOrganizationOptionResponse;
+import ai.genaifund.beyondpilot.solution.dto.AdminSolutionSummaryResponse;
 import ai.genaifund.beyondpilot.solution.dto.RejectCustomerDeploymentRequest;
 import ai.genaifund.beyondpilot.solution.dto.RejectSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SaveSolutionRequest;
@@ -40,6 +44,8 @@ import ai.genaifund.beyondpilot.solution.persistence.SolutionQueryRepository;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
 import ai.genaifund.beyondpilot.storage.StorageService;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +60,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class SolutionAdministration {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SolutionAdministration.class);
 
 	/** The days of a review queue are Vietnam's, as the screens show them. */
 	private static final ZoneId QUEUE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -143,6 +151,54 @@ public class SolutionAdministration {
 			solutionList.adminCount(text, named, request.organizationId(), request.status(), request.industry(),
 					request.featured()),
 			solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview());
+	}
+
+	/**
+	 * Solutions as a spreadsheet: every page of the list as the request narrows it, in its order, for GenAI Fund to work
+	 * with outside BeyondPilot. The download is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, AdminSolutionListRequest request, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		List<AdminSolutionSummaryResponse> rows = Spreadsheet
+			.everyPage(page -> list(actor, new AdminSolutionListRequest(request.q(), request.organizationId(), request.status(),
+					request.industry(), request.featured(), request.sort(), page, Spreadsheet.PAGE_SIZE)).items());
+		Spreadsheet<AdminSolutionSummaryResponse> sheet = Spreadsheet.<AdminSolutionSummaryResponse>of("Solutions")
+			.text("Solution", AdminSolutionSummaryResponse::name)
+			.text("Organization", AdminSolutionSummaryResponse::organizationName)
+			.paragraph("Summary", AdminSolutionSummaryResponse::summary)
+			.text("Industries", solution -> String.join(", ", solution.industries()))
+			.label("Maturity", AdminSolutionSummaryResponse::maturity)
+			.group("Review")
+			.label("Status", AdminSolutionSummaryResponse::status)
+			.yesNo("Listed", AdminSolutionSummaryResponse::listed)
+			.time("Featured since", AdminSolutionSummaryResponse::featuredAt)
+			.time("Submitted at", AdminSolutionSummaryResponse::submittedAt)
+			.text("Submitted by", AdminSolutionSummaryResponse::submittedBy)
+			.count("Customer cases to review", AdminSolutionSummaryResponse::deploymentsAwaitingReview)
+			.time("Taken down at", AdminSolutionSummaryResponse::suspendedAt)
+			.ungrouped()
+			.time("Updated at", AdminSolutionSummaryResponse::updatedAt)
+			.text("Address", AdminSolutionSummaryResponse::slug);
+		SpreadsheetFile file = sheet.write(format, "solutions", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("Search", request.q())
+					.narrowedBy("Organization", request.organizationId())
+					.narrowedBy("Status", request.status())
+					.narrowedBy("Industry", request.industry())
+					.narrowedBy("Featured", request.featured())
+					.narrowedBy("Order", request.sort()));
+		audit.record(new AuditRecord(AuditAction.SOLUTION_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("solution_list", "solutions", "Solutions"), Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "solution.list.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Solutions exported");
+		return file;
 	}
 
 	/**

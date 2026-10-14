@@ -569,6 +569,7 @@ function ProposalWizardContent({
               details={details}
               email={account.email}
               onEdit={(target) => void go(target)}
+              onOrganized={readOrganization}
             />
             {missing.length > 0 && (
               <Alert>

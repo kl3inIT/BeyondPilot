@@ -41,7 +41,12 @@ import ai.genaifund.beyondpilot.organization.persistence.Organization;
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationQueryRepository;
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationQueryRepository.AdminRow;
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationRepository;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +58,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class OrganizationAdministration {
+
+	private static final Logger LOG = LoggerFactory.getLogger(OrganizationAdministration.class);
 
 	/** The days of a review queue are Vietnam's, as the screens show them. */
 	private static final ZoneId QUEUE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -111,6 +118,51 @@ public class OrganizationAdministration {
 		return new AdminOrganizationListResponse(rows.stream().map(row -> summary(row, askers)).toList(), page,
 				size, organizationList.adminCount(text, request.status(), request.country()),
 				organizationList.adminCountries());
+	}
+
+	/**
+	 * Organizations as a spreadsheet: every page of the list as the request narrows it, in its order, for GenAI Fund to work
+	 * with outside BeyondPilot. The download is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, AdminOrganizationListRequest request, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		List<AdminOrganizationSummaryResponse> rows = Spreadsheet
+			.everyPage(page -> list(actor, new AdminOrganizationListRequest(request.q(), request.status(), request.country(), request.sort(), page,
+					Spreadsheet.PAGE_SIZE)).items());
+		Spreadsheet<AdminOrganizationSummaryResponse> sheet = Spreadsheet.<AdminOrganizationSummaryResponse>of("Organizations")
+			.text("Organization", AdminOrganizationSummaryResponse::name)
+			.label("Type", AdminOrganizationSummaryResponse::type)
+			.text("Country", AdminOrganizationSummaryResponse::country)
+			.label("Status", AdminOrganizationSummaryResponse::status)
+			.count("Members", AdminOrganizationSummaryResponse::members)
+			.yesNo("Has an owner", AdminOrganizationSummaryResponse::owned)
+			.group("Waiting on GenAI Fund")
+			.label("Request", AdminOrganizationSummaryResponse::request)
+			.text("Asked by", AdminOrganizationSummaryResponse::askedBy)
+			.time("Asked at", AdminOrganizationSummaryResponse::requestedAt)
+			.ungrouped()
+			.time("Created at", AdminOrganizationSummaryResponse::createdAt)
+			.time("Taken down at", AdminOrganizationSummaryResponse::suspendedAt)
+			.text("Merged into", AdminOrganizationSummaryResponse::mergedInto)
+			.text("Address", AdminOrganizationSummaryResponse::slug);
+		SpreadsheetFile file = sheet.write(format, "organizations", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("Search", request.q())
+					.narrowedBy("Status", request.status())
+					.narrowedBy("Country", request.country())
+					.narrowedBy("Order", request.sort()));
+		audit.record(new AuditRecord(AuditAction.ORGANIZATION_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("organization_list", "organizations", "Organizations"), Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "organization.list.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Organizations exported");
+		return file;
 	}
 
 	/**

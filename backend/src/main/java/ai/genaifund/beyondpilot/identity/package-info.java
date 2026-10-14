@@ -4,7 +4,7 @@
  * ai.genaifund.beyondpilot.identity.CurrentActor}.
  */
 @ApplicationModule(displayName = "Identity", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "audit" })
+		allowedDependencies = { "audit", "shared" })
 @NullMarked
 package ai.genaifund.beyondpilot.identity;
 

@@ -135,6 +135,7 @@ Admin › AI › Usage (`/admin/ai/usage`, and `/admin/ai/usage/calls` for its l
 
 - **Overview.** An alert for the task that is failing, with the way to its failed calls; the totals (calls, failure rate, tokens, estimated cost, and prices unavailable when there are any); one chart of calls by hour or by day, succeeded and failed stacked, drawn with Recharts through the shadcn `chart` primitive; and a table of where the calls went, by model, task or provider, whose rows open their calls in the log.
 - **Calls.** The log, newest first, with filters by task, provider, model and outcome. A failed call shows what kind of failure it was and the status, in place of its tokens. No prompt and no answer is shown, since none is kept.
+- **Export.** The Calls tab's Export downloads the log as the filters narrow it, every page of it, as an Excel workbook or CSV (`POST /api/ai/admin/usage/calls/export`, `AiUsageReports.export`, BEY-96). Operators only; recorded as `ai.usage_export` with the count.
 
 ## Errors
 

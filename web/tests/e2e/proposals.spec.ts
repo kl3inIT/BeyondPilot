@@ -359,14 +359,45 @@ test.describe("a proposal to a use case", () => {
       await page.getByRole("button", { name: "Edit", exact: true }).click();
       const dialog = page.getByRole("dialog");
       await expect(dialog.getByLabel("Organization name")).toHaveValue(current.name);
-      await expect(dialog.getByRole("radio", { name: "Just me", exact: true })).toHaveCount(0);
-      await expect(dialog.getByRole("radio")).toHaveCount(2);
+      // Any organization may be a team, a company or just its owner, so the three choices stay.
+      await expect(dialog.getByRole("radio", { name: "Just me", exact: true })).toHaveCount(1);
+      await expect(dialog.getByRole("radio")).toHaveCount(3);
       await dialog.getByLabel("Organization name").fill(name);
       await dialog.getByRole("button", { name: "Save", exact: true }).click();
       await expect(dialog).toBeHidden();
       await expect(page.getByText(name, { exact: true })).toBeVisible();
     }
     expect(versions).toEqual([3, 4]);
+    await settled(page);
+  });
+
+  test("the owner of a Just me organization edits it and reaches My organization like any other", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "alone", baseURL!);
+    await fakeBackend(page, baseURL!, "draft");
+    await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/proposal`, (route) =>
+      route.request().method() === "GET"
+        ? route.fulfill({ json: proposalForm("alone", "draft") })
+        : route.fallback(),
+    );
+    await page.goto(proposePath);
+    await expect(heading(page)).toHaveText("You and your team");
+    await expect(page.getByText("An Tr?n", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "My organization", exact: true })).toHaveAttribute(
+      "href",
+      "/workspace/organization",
+    );
+    await page.getByLabel("Country").selectOption({ label: "Vietnam" });
+    await page.getByLabel("Phone").fill("+84 912 345 678");
+    await openStep(page, isMobile, "Review");
+    await expect(heading(page)).toHaveText("Review");
+    await expect(page.getByRole("button", { name: "Edit", exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "My organization", exact: true })).toBeVisible();
     await settled(page);
   });
 
@@ -428,6 +459,11 @@ test.describe("a proposal to a use case", () => {
     // lacks is said under the field, and the first field in error takes the focus.
     await expect(heading(page)).toHaveText("You and your team");
     await expect(page.getByText("Pocket Policy", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "My organization", exact: true })).toHaveAttribute(
+      "href",
+      "/workspace/organization",
+    );
     await expect(page.getByRole("radiogroup")).toHaveCount(0);
     await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Minh Trần");
     await page.getByRole("button", { name: "Continue" }).click();
@@ -504,6 +540,11 @@ test.describe("a proposal to a use case", () => {
 
     // Step 3: everything once more, then a confirmation before it goes.
     await expect(heading(page)).toHaveText("Review");
+    await expect(page.getByRole("button", { name: "Edit", exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "My organization", exact: true })).toHaveAttribute(
+      "href",
+      "/workspace/organization",
+    );
     await expect(page.getByText("Finish these steps before you send")).toHaveCount(0);
     await expect(
       page.getByText("Policy Chat reads each claim and names the team it belongs to."),

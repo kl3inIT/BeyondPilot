@@ -16,6 +16,8 @@ import { auditLogSearch, type AuditLogSearch } from "./audit-log-search";
 import { auditResourceRoute } from "./audit-resource";
 import { AuditLogToolbar } from "./audit-log-toolbar";
 import { PageSizeSelect } from "@/components/composites/page-size-select";
+import { ExportAuditLog } from "./export-audit-log";
+import { auditLogFilters } from "./audit-log-queries";
 
 /** How many entries a page of the log holds until the reader chooses. */
 const LOG_PAGE_SIZE = 50;
@@ -133,7 +135,13 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <AdminPageHeader destination="auditLog" title={t("title")} />
+      <AdminPageHeader
+        destination="auditLog"
+        title={t("title")}
+        actions={
+          <ExportAuditLog filters={auditLogFilters(search)} disabled={events.items.length === 0} />
+        }
+      />
       <AuditLogToolbar />
 
       {/* The time is exact to the second, with its year, on every width. */}

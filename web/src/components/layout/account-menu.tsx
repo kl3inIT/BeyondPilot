@@ -39,8 +39,6 @@ type AccountMenuProps = {
   reviewer?: boolean;
   /** How many messages they have not read and first messages wait for them, together. */
   waiting?: number;
-  /** Whether they apply on their own, so they have solutions rather than an organization. */
-  individual?: boolean;
 };
 
 /**
@@ -53,7 +51,7 @@ function AccountMenuPanel({
   email,
   operator,
   children,
-}: Omit<AccountMenuProps, "reviewer" | "waiting" | "individual"> & { children: React.ReactNode }) {
+}: Omit<AccountMenuProps, "reviewer" | "waiting"> & { children: React.ReactNode }) {
   const t = useTranslations("Site.account");
   const router = useRouter();
   const [state, setState] = useState<"idle" | "pending" | "failed">("idle");
@@ -100,12 +98,10 @@ function SiteAccountItems({
   operator,
   reviewer = false,
   waiting = 0,
-  individual = false,
 }: {
   operator: boolean;
   reviewer?: boolean;
   waiting?: number;
-  individual?: boolean;
 }) {
   const t = useTranslations("Site.account");
 
@@ -115,17 +111,10 @@ function SiteAccountItems({
         <FileTextIcon aria-hidden="true" />
         {t("applications")}
       </DropdownMenuItem>
-      {individual ? (
-        <DropdownMenuItem render={<Link href={siteRoutes.workspaceSolutions} />}>
-          <BuildingIcon aria-hidden="true" />
-          {t("solutions")}
-        </DropdownMenuItem>
-      ) : (
-        <DropdownMenuItem render={<Link href={siteRoutes.workspaceOrganization} />}>
-          <BuildingIcon aria-hidden="true" />
-          {t("organization")}
-        </DropdownMenuItem>
-      )}
+      <DropdownMenuItem render={<Link href={siteRoutes.workspaceOrganization} />}>
+        <BuildingIcon aria-hidden="true" />
+        {t("organization")}
+      </DropdownMenuItem>
       <DropdownMenuItem render={<Link href={siteRoutes.talentProfile} />}>
         <UserRoundIcon aria-hidden="true" />
         {t("talentProfile")}
@@ -165,14 +154,7 @@ function SiteAccountItems({
 }
 
 /** The signed-in person's place in the header: an avatar that opens their account menu. */
-function AccountMenu({
-  name,
-  email,
-  operator,
-  reviewer,
-  waiting = 0,
-  individual,
-}: AccountMenuProps) {
+function AccountMenu({ name, email, operator, reviewer, waiting = 0 }: AccountMenuProps) {
   const t = useTranslations("Site.account");
 
   return (
@@ -199,12 +181,7 @@ function AccountMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-66">
         <AccountMenuPanel name={name} email={email} operator={operator}>
-          <SiteAccountItems
-            operator={operator}
-            reviewer={reviewer}
-            waiting={waiting}
-            individual={individual}
-          />
+          <SiteAccountItems operator={operator} reviewer={reviewer} waiting={waiting} />
         </AccountMenuPanel>
       </DropdownMenuContent>
     </DropdownMenu>

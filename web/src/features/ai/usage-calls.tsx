@@ -15,6 +15,8 @@ import { taskNames, UsageHeader } from "./usage-page";
 import { usageCallsAddress, type UsageCallsSearch } from "./usage-search";
 import { UsageCallsToolbar } from "./usage-switches";
 import { ListFooter } from "@/components/composites/list-footer";
+import { ExportUsageCalls } from "./export-usage-calls";
+import { usageCallFilters } from "./usage-queries";
 
 /**
  * Admin › AI › Usage › Calls: every call to a model or an OCR service in the period, newest first:
@@ -132,7 +134,13 @@ async function UsageCallsPage({
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <UsageHeader current="calls" period={search.period} />
+      <UsageHeader
+        current="calls"
+        period={search.period}
+        download={
+          <ExportUsageCalls filters={usageCallFilters(search)} disabled={calls.total === 0} />
+        }
+      />
       <UsageCallsToolbar
         tasks={calls.tasks.map((task) => ({ value: task, label: taskName(task) }))}
         providers={calls.providers}

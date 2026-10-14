@@ -1,4 +1,4 @@
-package ai.genaifund.beyondpilot.search;
+package ai.genaifund.beyondpilot.search.persistence;
 
 import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.PROGRAM;
 import static ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.SOLUTION;
@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
+import ai.genaifund.beyondpilot.search.IndexRepairs;
 import ai.genaifund.beyondpilot.search.dto.SearchRequest;
-import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Document;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Hit;
 import org.jspecify.annotations.Nullable;
@@ -23,9 +23,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 /**
  * The index against PostgreSQL: what a visitor types finds the item with or without Vietnamese marks, while the last
@@ -36,18 +36,18 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @Import(TestcontainersConfiguration.class)
 class SearchDocumentRepositoryTest {
 
-	// These tests write index rows directly; a startup rebuild would remove those synthetic rows.
-	@MockitoBean
-	private IndexRepair repair;
-
 	@Autowired
 	private SearchDocumentRepository index;
 
 	@Autowired
 	private JdbcClient jdbc;
 
+	@Autowired
+	private ApplicationContext context;
+
 	@BeforeEach
 	void emptyIndex() {
+		IndexRepairs.awaitStartupRepair(context);
 		jdbc.sql("delete from search_document").update();
 	}
 

@@ -16,24 +16,24 @@ Nobody knows whether matching judges well. Measured on 9 October: the same answe
 
 ## Glossary
 
-| Term | Meaning |
-| --- | --- |
-| Feedback | One person's answer about one judgment of one candidate: agrees or not, the group they expected, the requirements they dispute, a note |
-| Expected group | `direct`, `industry`, `technology` or `none`, the same names the code gives a judgment |
-| Judgment | What a run kept for a candidate; it is told apart by its fingerprint (prompt version, requirements, sources) |
+| Term           | Meaning                                                                                                                                |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Feedback       | One person's answer about one judgment of one candidate: agrees or not, the group they expected, the requirements they dispute, a note |
+| Expected group | `direct`, `industry`, `technology` or `none`, the same names the code gives a judgment                                                 |
+| Judgment       | What a run kept for a candidate; it is told apart by its fingerprint (prompt version, requirements, sources)                           |
 
 ## Decisions
 
-| Decision | Why |
-| --- | --- |
-| Feedback changes nothing in the list: neither the group nor the order | A group is decided by code from findings that can be tested; one person's view moving a row would make the list differ by who looked. Saving and removing stay the way a person acts on a solution |
-| One question per solution, in the panel, and the details only after "No" | The page is already called wordy. A control per requirement would add up to nine more controls to a panel |
-| An answer belongs to a judgment, by its fingerprint | A solution judged again from other material is a different judgment; an old "wrong" must not stand against it |
-| A person has one current answer per judgment; answering again adds a row and the last one counts | Decisions on candidates work the same way: only added, never edited |
-| A member reads their own answer; operators read all | It is a measure for GenAI Fund. A colleague's view shown on the row would read as a second verdict beside the AI's |
-| "Not a fit" stays a decision of its own and is not counted as feedback | Removing has reasons that say nothing about the AI ("listed twice", "company closed") |
-| Kept in `matching`, in a table of its own, not audited | It decides nothing and changes no state another module reads. The table is the record |
-| The summary is in a tab of its own on Admin › AI › Matching | A form that is saved and a list that is read are two tasks |
+| Decision                                                                                         | Why                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Feedback changes nothing in the list: neither the group nor the order                            | A group is decided by code from findings that can be tested; one person's view moving a row would make the list differ by who looked. Saving and removing stay the way a person acts on a solution |
+| One question per solution, in the panel, and the details only after "No"                         | The page is already called wordy. A control per requirement would add up to nine more controls to a panel                                                                                          |
+| An answer belongs to a judgment, by its fingerprint                                              | A solution judged again from other material is a different judgment; an old "wrong" must not stand against it                                                                                      |
+| A person has one current answer per judgment; answering again adds a row and the last one counts | Decisions on candidates work the same way: only added, never edited                                                                                                                                |
+| A member reads their own answer; operators read all                                              | It is a measure for GenAI Fund. A colleague's view shown on the row would read as a second verdict beside the AI's                                                                                 |
+| "Not a fit" stays a decision of its own and is not counted as feedback                           | Removing has reasons that say nothing about the AI ("listed twice", "company closed")                                                                                                              |
+| Kept in `matching`, in a table of its own, not audited                                           | It decides nothing and changes no state another module reads. The table is the record                                                                                                              |
+| The summary is in a tab of its own on Admin › AI › Matching                                      | A form that is saved and a list that is read are two tasks                                                                                                                                         |
 
 ## Data
 
@@ -43,11 +43,11 @@ Invariants, owned by `MatchingService`: only a judged candidate takes feedback; 
 
 ## HTTP, under `/api/matching`
 
-| Request | Who | What |
-| --- | --- | --- |
-| `POST /candidates/{id}/feedback` `{agrees, expectedBucket?, requirements?, note?}` | Member of the use case's organization, operator | Keeps the answer; answers the whole state, as the other decisions do |
-| `GET /use-cases/{id}` | as today | `Candidate` gains `feedback`: the caller's current answer about the current judgment, absent when none. For an operator, also `feedbackCount` and `disagreeCount` of everyone's current answers |
-| `GET /admin/feedback?page=` | Operator | Totals over the last 30 days (answers, agreements) and a page of disagreements: use case, solution, the AI's group, the expected group, the requirements disputed, the note, who and when |
+| Request                                                                            | Who                                             | What                                                                                                                                                                                            |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /candidates/{id}/feedback` `{agrees, expectedBucket?, requirements?, note?}` | Member of the use case's organization, operator | Keeps the answer; answers the whole state, as the other decisions do                                                                                                                            |
+| `GET /use-cases/{id}`                                                              | as today                                        | `Candidate` gains `feedback`: the caller's current answer about the current judgment, absent when none. For an operator, also `feedbackCount` and `disagreeCount` of everyone's current answers |
+| `GET /admin/feedback?page=`                                                        | Operator                                        | Totals over the last 30 days (answers, agreements) and a page of disagreements: use case, solution, the AI's group, the expected group, the requirements disputed, the note, who and when       |
 
 A candidate that is not the caller's reads as `MATCHING_CANDIDATE_NOT_FOUND`, as for the other decisions. A change is told on the stream as `decision`.
 
@@ -65,13 +65,13 @@ A candidate that is not the caller's reads as `MATCHING_CANDIDATE_NOT_FOUND`, as
 
 ## Plan
 
-| # | Step |
-| --- | --- |
-| 1 | This design in the repository; `docs/specs/matching.md` and `docs/tests/matching.md` updated with the change |
-| 2 | Migration, repository, `MatchingService.feedback`, the two reads; tests at the repository and over HTTP (member, stranger, operator, not judged, same group refused, a new judgment asks again) |
-| 3 | `openapi.yml` and the generated web client |
-| 4 | The panel's question, with the stub and browser tests (answer Yes, answer No with a group, change, axe on desktop and phone) |
-| 5 | The Feedback tab of Admin › AI › Matching, with its browser test |
+| #   | Step                                                                                                                                                                                            |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | This design in the repository; `docs/specs/matching.md` and `docs/tests/matching.md` updated with the change                                                                                    |
+| 2   | Migration, repository, `MatchingService.feedback`, the two reads; tests at the repository and over HTTP (member, stranger, operator, not judged, same group refused, a new judgment asks again) |
+| 3   | `openapi.yml` and the generated web client                                                                                                                                                      |
+| 4   | The panel's question, with the stub and browser tests (answer Yes, answer No with a group, change, axe on desktop and phone)                                                                    |
+| 5   | The Feedback tab of Admin › AI › Matching, with its browser test                                                                                                                                |
 
 ## Verification
 

@@ -158,19 +158,14 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
     .split(/\r?\n/)
     .map((line) => line.replace(/^[-•*]\s*/, "").trim())
     .filter(Boolean);
-  // A person on their own is one person: no size is said of them.
-  const companySize = !solution.organizationSlug
-    ? undefined
-    : (solution.organizationCompanySizeLabel ??
-      (solution.organizationTeamSize ? teamSize(solution.organizationTeamSize) : undefined));
+  const companySize =
+    solution.organizationCompanySizeLabel ??
+    (solution.organizationTeamSize ? teamSize(solution.organizationTeamSize) : undefined);
   const countryName = useCountryName();
   const size = useFileSize();
   const format = useFormatter();
 
-  // A person on their own has no page of their own to lead to.
-  const company = solution.organizationSlug
-    ? `${siteRoutes.organizations}/${solution.organizationSlug}`
-    : null;
+  const company = `${siteRoutes.organizations}/${solution.organizationSlug}`;
   const country = solution.country ? countryName(solution.country) : undefined;
   // What the owners wrote as a list, one problem to a line, reads as a list.
   const problems = (solution.problemsSolved ?? "")
@@ -268,20 +263,14 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
           <h1 className="text-3xl font-semibold tracking-title text-balance md:text-4xl xl:text-5xl xl:leading-none">
             {solution.name}
           </h1>
-          {company ? (
-            <TextButton
-              size="sm"
-              href={company}
-              className="max-w-full self-start wrap-anywhere whitespace-normal"
-            >
-              {directory("by", { name: solution.organizationName })}
-              <ArrowRightIcon aria-hidden="true" />
-            </TextButton>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {directory("by", { name: solution.organizationName })}
-            </p>
-          )}
+          <TextButton
+            size="sm"
+            href={company}
+            className="max-w-full self-start wrap-anywhere whitespace-normal"
+          >
+            {directory("by", { name: solution.organizationName })}
+            <ArrowRightIcon aria-hidden="true" />
+          </TextButton>
           {solution.summary && (
             <TextClamp more={t("showMore")} less={t("showLess")}>
               <p className="text-base text-muted-foreground md:text-lg">{solution.summary}</p>
@@ -612,7 +601,7 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
             )}
 
             <SolutionSection
-              title={t(company ? "company.title" : "company.individualTitle")}
+              title={t("company.title")}
               icon={<Building2Icon aria-hidden="true" />}
               description={backing && <p className="text-sm text-muted-foreground">{backing}</p>}
             >
@@ -632,12 +621,10 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
                       .join(" · ")}
                   </p>
                 )}
-                {company && (
-                  <TextButton href={company}>
-                    {t("company.view")}
-                    <ArrowRightIcon aria-hidden="true" />
-                  </TextButton>
-                )}
+                <TextButton href={company}>
+                  {t("company.view")}
+                  <ArrowRightIcon aria-hidden="true" />
+                </TextButton>
               </Evidence>
             </SolutionSection>
           </div>

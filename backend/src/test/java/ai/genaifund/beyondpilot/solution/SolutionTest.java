@@ -17,6 +17,8 @@ import java.util.stream.IntStream;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -712,6 +714,44 @@ class SolutionTest {
 		assertThat(JsonPath.<String>read(
 				body(client.get().uri(DIRECTORY + "/quokka-claims").exchange().expectStatus().isOk()), "$.summary"))
 			.isEqualTo("Reads claim files and flags gaps.");
+	}
+
+	@Test
+	void anOperatorDownloadsTheSolutionsAsTheListNarrowsThemAndTheDownloadIsRecorded() {
+		String founder = approvedOwner("founder@exported-solutions.test", "Wombat Co");
+		approved(founder, "Wombat Ledger");
+		submitted(founder, "Wombat Queue");
+		String export = ADMIN + "/export?q=wombat&status=in_review";
+
+		assertProblem(post(founder, export, null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(post(operator, export, null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"solutions-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(0)).startsWith("Solution", "Organization", "Summary", "Industries", "Maturity", "Review");
+		assertThat(sheet.get(1)).startsWith("Solution", "Organization", "Summary", "Industries", "Maturity", "Status",
+				"Listed");
+		assertThat(sheet.get(2)).startsWith("Wombat Queue", "Wombat Co", "Reads claim files.", "insurance", "Pilot",
+				"In review", "Yes");
+
+		String csv = body(post(operator, export + "&format=csv", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("\uFEFFSolution,Organization,Summary,Industries,Maturity,Status,Listed,");
+		assertThat(csv.lines().toList()).hasSize(2)
+			.last()
+			.asString()
+			.startsWith("Wombat Queue,Wombat Co,Reads claim files.,insurance,Pilot,In review,Yes,");
+		assertThat(exportCounts()).containsExactly("1", "1");
 	}
 
 	@Test
@@ -1862,6 +1902,12 @@ class SolutionTest {
 				select action from audit_event where resource_type = 'solution' and resource_id = ?
 				order by occurred_at, id
 				""").param(solution.toString()).query(String.class).list();
+	}
+
+	private List<String> exportCounts() {
+		return jdbc.sql("select details ->> 'count' from audit_event where action = 'solution.export' order by occurred_at")
+			.query(String.class)
+			.list();
 	}
 
 	private static void assertProblem(RestTestClient.ResponseSpec response, int status, String code) {

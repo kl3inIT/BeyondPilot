@@ -121,10 +121,11 @@ class ProposalTest extends ApplicationsHttpTest {
 	}
 
 	@Test
-	void someoneOnTheirOwnIsNamedByTheirApplicationAndMayApplyOtherwiseUntilTheySendSomething() {
+	void someoneOnTheirOwnKeepsTheNameTheyGaveAndMayApplyOtherwiseUntilTheySendSomething() {
 		Form form = program("alone-challenge", true, Instant.now().plus(Duration.ofDays(10)));
 
-		// The name follows the application, and a team can still be chosen instead.
+		// The organization keeps the name given to it, whatever the application's contact says, and a team can still be
+		// chosen instead.
 		String lan = TestSignIn.session(client, mail, "lan@alone.test");
 		String alone = body(post(lan, form.path() + "/organization",
 				Map.of("kind", "individual", "name", "Lan Nguyen", "country", "VN"))
@@ -135,7 +136,7 @@ class ProposalTest extends ApplicationsHttpTest {
 				application(Map.of("firstName", " Lan", "lastName", "Tran "), null, Map.of(), null))
 			.expectStatus()
 			.isOk());
-		assertThat(JsonPath.<String>read(renamed, "$.organization.name")).isEqualTo("Lan Tran");
+		assertThat(JsonPath.<String>read(renamed, "$.organization.name")).isEqualTo("Lan Nguyen");
 		String team = body(post(lan, form.path() + "/organization",
 				Map.of("kind", "team", "name", "Lan and Friends", "country", "VN", "teamSize", "2_9"))
 			.expectStatus()

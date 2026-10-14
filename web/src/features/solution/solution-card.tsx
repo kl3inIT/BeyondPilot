@@ -71,20 +71,13 @@ function SolutionCard({
             <span className="relative z-10">{solution.name}</span>
           </Link>
         </h2>
-        {/* A person on their own has no page: their name is not a link. */}
-        {solution.organizationSlug ? (
-          <TextButton
-            size="sm"
-            href={`${siteRoutes.organizations}/${solution.organizationSlug}`}
-            className="relative max-w-full"
-          >
-            <span className="truncate">{t("by", { name: solution.organizationName })}</span>
-          </TextButton>
-        ) : (
-          <span className="truncate text-sm text-muted-foreground">
-            {t("by", { name: solution.organizationName })}
-          </span>
-        )}
+        <TextButton
+          size="sm"
+          href={`${siteRoutes.organizations}/${solution.organizationSlug}`}
+          className="relative max-w-full"
+        >
+          <span className="truncate">{t("by", { name: solution.organizationName })}</span>
+        </TextButton>
       </div>
       {solution.summary && (
         <p className="line-clamp-2 text-sm text-muted-foreground">{solution.summary}</p>

@@ -798,6 +798,123 @@ paths:
       summary: The calls made to models and OCR services
       tags:
       - AI administration
+  /api/ai/admin/usage/calls/export:
+    post:
+      operationId: exportAiUsageCalls
+      parameters:
+      - description: "Today, or the last 7 or 30 days with today, in Asia/Ho_Chi_Minh."
+        in: query
+        name: period
+        required: false
+        schema:
+          type: string
+          default: today
+          enum:
+          - today
+          - 7d
+          - 30d
+          pattern: today|7d|30d
+      - description: "Only calls made for this task, as the call named it."
+        in: query
+        name: task
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only calls to the provider with this name.
+        in: query
+        name: provider
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 200
+          minLength: 0
+      - description: Only calls to the model with this name.
+        in: query
+        name: model
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 200
+          minLength: 0
+      - description: Only calls that ended this way.
+        in: query
+        name: outcome
+        required: false
+        schema:
+          type: string
+          enum:
+          - ok
+          - failed
+          pattern: ok|failed
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every call the parameters select, the newest first, one row\
+            \ each. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the log of calls as a spreadsheet
+      tags:
+      - AI administration
   /api/ai/admin/usage/overview:
     get:
       operationId: getAiUsageOverview
@@ -879,6 +996,7 @@ paths:
           - account.enable
           - operator.grant
           - operator.withdraw
+          - audit.export
           - program.create
           - program.update
           - program.publish
@@ -899,6 +1017,7 @@ paths:
           - organization.member_role
           - organization.member_remove
           - organization.merge
+          - organization.export
           - solution.approve
           - solution.create
           - solution.publish
@@ -920,6 +1039,7 @@ paths:
           - solution.deployment_withdraw
           - solution.deployment_restore
           - solution.enrich
+          - solution.export
           - use_case.create
           - use_case.submit
           - use_case.draft
@@ -943,6 +1063,7 @@ paths:
           - talent.feature
           - talent.unfeature
           - talent.delete
+          - talent.export
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
@@ -954,6 +1075,7 @@ paths:
           - proposal.draft_open
           - use_case_proposal.decide
           - use_case_proposal.outcomes_send
+          - use_case_proposal.export
           - email.settings_update
           - email.appearance_update
           - email.template_update
@@ -969,6 +1091,7 @@ paths:
           - ai.model_update
           - ai.model_remove
           - ai.task_model_change
+          - ai.usage_export
           - search.model_change
           - search.semantic_enable
           - search.semantic_disable
@@ -1453,6 +1576,204 @@ paths:
       summary: End a person's connection with an AI app
       tags:
       - Identity
+  /api/identity/admin/audit-events/export:
+    post:
+      operationId: exportAuditEvents
+      parameters:
+      - description: Only events at or after this instant.
+        in: query
+        name: from
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: date-time
+      - description: Only events of this action.
+        in: query
+        name: action
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - account.disable
+          - account.enable
+          - operator.grant
+          - operator.withdraw
+          - audit.export
+          - program.create
+          - program.update
+          - program.publish
+          - program.unpublish
+          - program.feature
+          - program.unfeature
+          - organization.create
+          - organization.approve
+          - organization.suspend
+          - organization.restore
+          - organization.update
+          - organization.invite
+          - organization.invitation_revoke
+          - organization.refuse
+          - organization.send_back
+          - organization.claim_approve
+          - organization.claim_decline
+          - organization.member_role
+          - organization.member_remove
+          - organization.merge
+          - organization.export
+          - solution.approve
+          - solution.create
+          - solution.publish
+          - solution.send_back
+          - solution.reject
+          - solution.take_down
+          - solution.restore
+          - solution.back
+          - solution.feature
+          - solution.unfeature
+          - solution.offers_choose
+          - solution.offer_create
+          - solution.offer_update
+          - solution.offer_close
+          - solution.offer_reopen
+          - solution.offer_delete
+          - solution.deployment_approve
+          - solution.deployment_reject
+          - solution.deployment_withdraw
+          - solution.deployment_restore
+          - solution.enrich
+          - solution.export
+          - use_case.create
+          - use_case.submit
+          - use_case.draft
+          - use_case.approve
+          - use_case.send_back
+          - use_case.feature
+          - use_case.unfeature
+          - use_case.set_programs
+          - messaging.request_accept
+          - messaging.program_assign
+          - messaging.request_decline
+          - messaging.request_report
+          - talent.approve
+          - talent.reject
+          - talent.enquiry_accept
+          - talent.enquiry_decline
+          - talent.enquiry_report
+          - talent.request_changes
+          - talent.remove
+          - talent.restore
+          - talent.feature
+          - talent.unfeature
+          - talent.delete
+          - talent.export
+          - proposal.criteria_update
+          - proposal.reviewer_invite
+          - proposal.reviewer_remove
+          - proposal.decide
+          - proposal.release
+          - proposal.file_open
+          - proposal.export
+          - proposal.drafts_export
+          - proposal.draft_open
+          - use_case_proposal.decide
+          - use_case_proposal.outcomes_send
+          - use_case_proposal.export
+          - email.settings_update
+          - email.appearance_update
+          - email.template_update
+          - email.template_reset
+          - email.suppression_add
+          - email.suppression_remove
+          - email.resend
+          - email.test_send
+          - ai.provider_create
+          - ai.provider_update
+          - ai.provider_delete
+          - ai.model_add
+          - ai.model_update
+          - ai.model_remove
+          - ai.task_model_change
+          - ai.usage_export
+          - search.model_change
+          - search.semantic_enable
+          - search.semantic_disable
+          - search.index_rebuild
+          - search.embedding_retry
+          - mcp.app_revoke
+          - mcp.host_add
+          - mcp.host_remove
+          - mcp.other_hosts_allow
+          - mcp.other_hosts_refuse
+          - mcp.user_server_enable
+          - mcp.user_server_disable
+          - mcp.tool_enable
+          - mcp.tool_disable
+          - matching.run_start
+          - matching.candidate_add
+          - matching.candidate_shortlist
+          - matching.candidate_remove
+          - matching.candidate_reason
+          - matching.candidate_restore
+          - matching.candidate_invite
+          - matching.settings_change
+      - description: "Events whose actor's name or address, or whose resource's name,\
+          \ contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every event the parameters select, newest first, one row each.\
+            \ The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the audit log as a spreadsheet
+      tags:
+      - Audit
   /api/identity/apps:
     get:
       operationId: listConnectedApps
@@ -4296,6 +4617,130 @@ paths:
       summary: Create an organization for a company that is not here yet
       tags:
       - Organization administration
+  /api/organization/admin/organizations/export:
+    post:
+      operationId: exportAdminOrganizations
+      parameters:
+      - description: "Organizations whose name or domain contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "Only organizations of this review status; `in_review` also selects\
+          \ an approved one with an open claim, `approved` leaves out those taken\
+          \ down, and `suspended` selects those taken down. Merged organizations are\
+          \ listed only under `merged`."
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - in_review
+          - needs_changes
+          - approved
+          - rejected
+          - suspended
+          - merged
+          pattern: in_review|needs_changes|approved|rejected|suspended|merged
+      - description: "Only organizations in this country, ISO 3166-1 alpha-2."
+        in: query
+        name: country
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "[A-Z]{2}"
+      - description: "The order: `name` by the name, `received` by when its open claim\
+          \ arrived, or when the organization was created when none is open, `members`\
+          \ by how many people belong to it; `-` before a key turns it round. Without\
+          \ it, those a decision waits on first, then the most recently received."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+          enum:
+          - name
+          - -name
+          - received
+          - -received
+          - members
+          - -members
+          pattern: -?(name|received|members)
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every organization the parameters select, in the list's order,\
+            \ one row each. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the organizations as a spreadsheet
+      tags:
+      - Organization administration
   /api/organization/admin/organizations/queue:
     get:
       operationId: getOrganizationReviewQueue
@@ -6883,6 +7328,18 @@ paths:
         schema:
           type: string
           format: uuid
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
       requestBody:
         content:
           application/json:
@@ -6892,11 +7349,22 @@ paths:
       responses:
         "200":
           content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
             text/csv:
               schema:
                 type: string
+                format: binary
           description: "One row for each application, with its applicant's contact\
             \ details, decision and scores. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The download would hold too many rows.
         "401":
           content:
             application/problem+json:
@@ -7130,14 +7598,37 @@ paths:
         schema:
           type: string
           format: uuid
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
       responses:
         "200":
           content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
             text/csv:
               schema:
                 type: string
+                format: binary
           description: "One row for each draft, with its applicant's contact details\
             \ and how far they got. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The download would hold too many rows.
         "401":
           content:
             application/problem+json:
@@ -7907,6 +8398,64 @@ paths:
       security:
       - session: []
       summary: The proposals a use case received
+      tags:
+      - Use case proposals
+  /api/proposal/use-cases/{useCaseId}/proposals/export:
+    post:
+      operationId: exportUseCaseProposals
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "One row for each sent proposal, the latest first, with its\
+            \ decision. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The download would hold too many rows.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+      security:
+      - session: []
+      summary: Download the proposals a use case received as a spreadsheet
       tags:
       - Use case proposals
   /api/search:
@@ -9025,6 +9574,144 @@ paths:
       security:
       - session: []
       summary: Start a solution as a draft of an approved organization
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/export:
+    post:
+      operationId: exportAdminSolutions
+      parameters:
+      - description: "Solutions whose name, or whose organization's name, contains\
+          \ this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only solutions offered by this organization.
+        in: query
+        name: organizationId
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: uuid
+      - description: "Only solutions of this review status, or `suspended` for those\
+          \ taken down; `approved` leaves out those taken down. Drafts are never listed."
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - in_review
+          - needs_changes
+          - approved
+          - rejected
+          - suspended
+          pattern: in_review|needs_changes|approved|rejected|suspended
+      - description: Only solutions for this industry.
+        in: query
+        name: industry
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|climate_sustainability|marketing_advertising|legal|hr_workforce|other
+      - description: "Only solutions featured when true, only those not featured when\
+          \ false."
+        in: query
+        name: featured
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
+      - description: "The order: `name` by the name, `submitted` by when it was last\
+          \ sent for review; `-` before a key turns it round, and one never sent comes\
+          \ last either way. Without it, those with something waiting for review first,\
+          \ the longest wait on top."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+          enum:
+          - name
+          - -name
+          - submitted
+          - -submitted
+          pattern: -?(name|submitted)
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every solution the parameters select, in the list's order,\
+            \ one row each. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the solutions as a spreadsheet
       tags:
       - Solution administration
   /api/solution/admin/solutions/organizations:
@@ -10974,6 +11661,125 @@ paths:
       security:
       - session: []
       summary: "The submitted talent profiles, those waiting for review first"
+      tags:
+      - Talent administration
+  /api/talent/admin/profiles/export:
+    post:
+      operationId: exportAdminTalent
+      parameters:
+      - description: "Profiles whose name contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "Only profiles of this review status; `approved` leaves out those\
+          \ taken down, and `suspended` selects those taken down. Drafts are never\
+          \ listed."
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - in_review
+          - needs_changes
+          - approved
+          - suspended
+          pattern: in_review|needs_changes|approved|suspended
+      - description: "Only profiles featured when true, only those not featured when\
+          \ false."
+        in: query
+        name: featured
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
+      - description: "The order: `name` by the name, `submitted` by when it was last\
+          \ sent for review; `-` before a key turns it round, and one never sent comes\
+          \ last either way. Without it, those waiting for review first, the longest\
+          \ wait on top."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+          enum:
+          - name
+          - -name
+          - submitted
+          - -submitted
+          pattern: -?(name|submitted)
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every profile the parameters select, in the list's order,\
+            \ one row each, with its person's email. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the talent profiles as a spreadsheet
       tags:
       - Talent administration
   /api/talent/admin/profiles/queue:
@@ -14449,6 +15255,7 @@ components:
           - account.enable
           - operator.grant
           - operator.withdraw
+          - audit.export
           - program.create
           - program.update
           - program.publish
@@ -14469,6 +15276,7 @@ components:
           - organization.member_role
           - organization.member_remove
           - organization.merge
+          - organization.export
           - solution.approve
           - solution.create
           - solution.publish
@@ -14490,6 +15298,7 @@ components:
           - solution.deployment_withdraw
           - solution.deployment_restore
           - solution.enrich
+          - solution.export
           - use_case.create
           - use_case.submit
           - use_case.draft
@@ -14513,6 +15322,7 @@ components:
           - talent.feature
           - talent.unfeature
           - talent.delete
+          - talent.export
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
@@ -14524,6 +15334,7 @@ components:
           - proposal.draft_open
           - use_case_proposal.decide
           - use_case_proposal.outcomes_send
+          - use_case_proposal.export
           - email.settings_update
           - email.appearance_update
           - email.template_update
@@ -14539,6 +15350,7 @@ components:
           - ai.model_update
           - ai.model_remove
           - ai.task_model_change
+          - ai.usage_export
           - search.model_change
           - search.semantic_enable
           - search.semantic_disable
@@ -19929,11 +20741,8 @@ components:
         organizationName:
           type: string
         organizationSlug:
-          type:
-          - string
-          - "null"
-          description: "The address of the organization's public page; null for someone\
-            \ on their own, who has none."
+          type: string
+          description: The address of the organization's public page.
         organizationTeamSize:
           type:
           - string
@@ -19994,6 +20803,7 @@ components:
       - name
       - offers
       - organizationName
+      - organizationSlug
       - productNames
       - segmentFocus
       - slug
@@ -20098,11 +20908,8 @@ components:
         organizationName:
           type: string
         organizationSlug:
-          type:
-          - string
-          - "null"
-          description: "The address of the organization's public page; null for someone\
-            \ on their own, who has none."
+          type: string
+          description: The address of the organization's public page.
         slug:
           type: string
         summary:
@@ -20117,6 +20924,7 @@ components:
       - name
       - offers
       - organizationName
+      - organizationSlug
       - slug
     PublicTalent:
       type: object

@@ -7,7 +7,7 @@
  * assessments, GenAI Fund's decisions and the release of the outcomes (BEY-38).
  */
 @ApplicationModule(displayName = "Proposal", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "identity", "program", "organization", "solution", "storage", "notification", "audit",
+		allowedDependencies = { "identity", "program", "organization", "solution", "storage", "notification", "audit", "shared",
 			"usecase" })
 @NullMarked
 package ai.genaifund.beyondpilot.proposal;

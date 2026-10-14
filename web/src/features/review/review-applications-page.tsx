@@ -125,7 +125,6 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
             <>
               <ExportApplications
                 programId={head.programId}
-                slug={head.slug}
                 applicationIds={narrowed ? shown.map((item) => item.id) : null}
                 disabled={shown.length === 0}
               />

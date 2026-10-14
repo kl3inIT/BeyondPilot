@@ -12,6 +12,8 @@ import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.TestAppConnection;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
@@ -221,28 +223,43 @@ class ReviewTest extends ApplicationsHttpTest {
 		post(judge, export, Map.of()).expectStatus().isForbidden();
 		assertThat(auditOf(form.programId())).doesNotContain("proposal.export");
 
-		String all = new String(post(operator, export, Map.of()).expectStatus()
+		String all = new String(post(operator, export + "?format=csv", Map.of()).expectStatus()
 			.isOk()
 			.expectHeader()
-			.valueMatches("Content-Disposition", "attachment; filename=\"exported-challenge-applications.csv\".*")
+			.contentType("text/csv;charset=UTF-8")
+			.expectHeader()
+			.valueMatches("Content-Disposition",
+					"attachment; filename=\"exported-challenge-applications-\\d{4}-\\d{2}-\\d{2}\\.csv\".*")
 			.expectBody()
 			.returnResult()
 			.getResponseBody(), StandardCharsets.UTF_8);
-		assertThat(all).startsWith("\uFEFFApplication,Organization,Organization type,Solution,First name,Last name,Email,");
+		assertThat(all).startsWith("﻿Application,Organization,Organization type,Solution,First name,Last name,Email,");
 		List<String> rows = all.lines().toList();
 		assertThat(rows).hasSize(3);
+		assertThat(rows.get(0)).contains(",Submitted at,Version,Review status,Outcome released,Scores,Average score");
 		assertThat(rows.get(1)).startsWith(first.id() + ",First Exporter,")
 			.contains(",First,Exporter,first@exported.test,+84 912 345 678,VN,")
-			.contains(",shortlisted,no,0,");
-		assertThat(rows.get(2)).startsWith(second.id() + ",Second Exporter,").contains(",under_review,no,0,");
+			.contains(",Shortlisted,No,0,");
+		assertThat(rows.get(2)).startsWith(second.id() + ",Second Exporter,").contains(",Under review,No,0,");
 
-		// The list as it was narrowed is what the download holds.
-		String one = new String(post(operator, export, Map.of("applicationIds", List.of(second.id()))).expectStatus()
+		// The list as it was narrowed is what the download holds, by default a workbook to read.
+		byte[] one = post(operator, export, Map.of("applicationIds", List.of(second.id()))).expectStatus()
 			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition",
+					"attachment; filename=\"exported-challenge-applications-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
 			.expectBody()
 			.returnResult()
-			.getResponseBody(), StandardCharsets.UTF_8);
-		assertThat(one.lines().toList()).hasSize(2).last().asString().startsWith(second.id() + ",");
+			.getResponseBody();
+		List<List<String>> sheet = Workbooks.rows(one);
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(0)).startsWith("Application", "Applicant", "Applicant", "Applicant", "Contact");
+		assertThat(sheet.get(1)).startsWith("Application", "Organization", "Organization type", "Solution", "First name")
+			.contains("Submitted at", "Review status", "Outcome released");
+		assertThat(sheet.get(2)).startsWith(second.id().toString(), "Second Exporter")
+			.contains("Second", "Exporter", "second@exported.test", "+84 912 345 678", "Under review", "No");
 		assertThat(jdbc.sql("""
 				select details ->> 'count' from audit_event where action = 'proposal.export' and resource_id = ?
 				order by occurred_at
@@ -286,15 +303,19 @@ class ReviewTest extends ApplicationsHttpTest {
 			.containsExactly("Claims reach a decision without a hotline call.");
 		assertThat(auditOf(form.programId())).contains("proposal.draft_open");
 
-		String csv = new String(post(operator, drafts + "/export", null).expectStatus()
+		String csv = new String(post(operator, drafts + "/export?format=csv", null).expectStatus()
 			.isOk()
 			.expectHeader()
-			.valueMatches("Content-Disposition", "attachment; filename=\"followed-challenge-drafts.csv\".*")
+			.valueMatches("Content-Disposition",
+					"attachment; filename=\"followed-challenge-drafts-\\d{4}-\\d{2}-\\d{2}\\.csv\".*")
 			.expectBody()
 			.returnResult()
 			.getResponseBody(), StandardCharsets.UTF_8);
 		assertThat(csv).startsWith("﻿Draft,First name,Last name,Email,Phone,");
-		assertThat(csv.lines().toList()).hasSize(3);
+		List<String> lines = csv.lines().toList();
+		assertThat(lines).hasSize(3);
+		assertThat(lines.get(1)).contains(",Later,Builder,later@drafted.test,+84 912 345 678,").contains(",Yes,");
+		assertThat(csv).doesNotContain("hotline");
 		assertThat(jdbc.sql("""
 				select details ->> 'count' from audit_event where action = 'proposal.drafts_export' and resource_id = ?
 				""").params(form.programId().toString()).query(String.class).list()).containsExactly("2");

@@ -17,16 +17,23 @@ export async function readUsageOverview(search: UsageOverviewSearch): Promise<Ai
   return data;
 }
 
+/** What narrows the log of calls, as the log and its download both send it. */
+export function usageCallFilters(search: UsageCallsSearch) {
+  return {
+    period: search.period,
+    task: search.task ?? undefined,
+    provider: search.provider ?? undefined,
+    model: search.model ?? undefined,
+    outcome: search.outcome ?? undefined,
+  };
+}
+
 /** One page of the calls made to models and OCR services, newest first. Server only. */
 export async function readUsageCalls(search: UsageCallsSearch): Promise<AiUsageCallList> {
   const { data } = await listAiUsageCalls({
     ...(await sessionRequest()),
     query: {
-      period: search.period,
-      task: search.task ?? undefined,
-      provider: search.provider ?? undefined,
-      model: search.model ?? undefined,
-      outcome: search.outcome ?? undefined,
+      ...usageCallFilters(search),
       page: search.page > 1 ? search.page : undefined,
       size: search.size ?? undefined,
     },

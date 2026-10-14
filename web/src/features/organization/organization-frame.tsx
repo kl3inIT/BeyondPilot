@@ -17,7 +17,6 @@ import { siteRoutes } from "@/lib/site";
 
 import { NoticeCard } from "./notice-card";
 import { OrganizationAction } from "./organization-action";
-import { isIndividual } from "./organization-codes";
 import { websiteHost } from "./organization-format";
 import { OrganizationMark } from "./organization-mark";
 import { missingProfileFacts } from "./organization-schemas";
@@ -51,26 +50,15 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
   const format = useFormatter();
   const { organization, mergedFrom } = mine;
   const owner = mine.role === "owner";
-  // A person on their own is shown their solutions only: nothing about them is reviewed, and they
-  // have no profile or members of an organization.
-  const individual = isIndividual(organization);
 
   const tabs: { key: OrganizationTab; href: string; label: string; count?: number }[] = [
-    ...(individual
-      ? []
-      : [
-          {
-            key: "profile" as const,
-            href: siteRoutes.workspaceOrganization,
-            label: t("tabs.profile"),
-          },
-          {
-            key: "members" as const,
-            href: siteRoutes.workspaceMembers,
-            label: t("tabs.members"),
-            count: counts.members,
-          },
-        ]),
+    { key: "profile", href: siteRoutes.workspaceOrganization, label: t("tabs.profile") },
+    {
+      key: "members",
+      href: siteRoutes.workspaceMembers,
+      label: t("tabs.members"),
+      count: counts.members,
+    },
     ...(counts.solutions === null
       ? []
       : [
@@ -95,7 +83,7 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
   const host = websiteHost(organization.website);
   const country = organization.country && countryName(organization.country);
   // The way to the profile is offered from the other tabs, to the people who can change it.
-  const toProfile = owner && current !== "profile" && !individual;
+  const toProfile = owner && current !== "profile";
   // What the form would still ask of this organization: the reviewer reads the profile without it.
   const missing = missingProfileFacts(organization);
 
@@ -134,7 +122,7 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
           </ul>
         </div>
 
-        {organization.status === "in_review" && !individual && (
+        {organization.status === "in_review" && (
           <NoticeCard
             titleAs="h2"
             title={t("inReview.title")}
@@ -263,9 +251,7 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
           />
         )}
 
-        {tabs.length > 1 && (
-          <OrganizationTabs label={t("tabs.label")} tabs={tabs} current={current} />
-        )}
+        <OrganizationTabs label={t("tabs.label")} tabs={tabs} current={current} />
         {children}
       </div>
     </div>

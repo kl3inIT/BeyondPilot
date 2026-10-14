@@ -17,6 +17,8 @@ import java.util.stream.IntStream;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -132,7 +134,7 @@ class OrganizationTest {
 	}
 
 	@Test
-	void aBuilderOnTheirOwnIsThePersonWithNoMembersDomainOrPageOfTheirOwn() {
+	void aBuilderOnTheirOwnIsAnOrdinaryOrganizationOfOnePersonWithoutMembersOrDomain() {
 		String builder = signIn("solo@company.test");
 		Map<String, Object> request = new HashMap<>(creation("Solo Builder"));
 		request.put("type", "independent_builder");
@@ -156,7 +158,7 @@ class OrganizationTest {
 		assertProblem(put(operator, API + "/admin/organizations/" + id, withDomain), 409,
 				"ORGANIZATION_INDIVIDUAL");
 
-		// Nobody finds it, joins it or is invited into it, and it has no page.
+		// It is one person: nobody asks to join it and it invites nobody; it has a public page like any organization.
 		assertThat(JsonPath.<List<String>>read(
 				body(get(signIn("someone@else.test"), API + "/organizations?q=solo").expectStatus().isOk()),
 				"$.items[*].id"))
@@ -165,14 +167,82 @@ class OrganizationTest {
 				"ORGANIZATION_NOT_FOUND");
 		assertProblem(post(builder, API + "/mine/invitations", Map.of("email", "friend@else.test", "role", "member")),
 				409, "ORGANIZATION_INDIVIDUAL");
-		assertProblem(get(signIn("visitor@else.test"), API + "/organizations/" + slug), 404, "ORGANIZATION_NOT_FOUND");
+		assertThat(JsonPath.<String>read(
+				body(get(signIn("visitor@else.test"), API + "/organizations/" + slug).expectStatus().isOk()), "$.name"))
+			.isEqualTo("Solo Builder");
 
-		// It stays a builder on their own: a team is chosen from an application, before anything is sent.
+		// Its owner edits it, and choosing a team needs a size other than just me.
+		Map<String, Object> edited = new HashMap<>(request);
+		edited.put("name", "Solo Studio");
+		edited.put("description", "Claims help from one person.");
+		put(builder, API + "/mine", save(edited, JsonPath.<Integer>read(mine(builder), "$.organization.version")))
+			.expectStatus()
+			.isOk();
+		assertThat(JsonPath.<String>read(mine(builder), "$.organization.name")).isEqualTo("Solo Studio");
 		Map<String, Object> team = new HashMap<>(profile("Solo Team"));
 		team.put("type", "builder_team");
+		team.put("teamSize", "just_me");
 		team.put("teamBackground", "Built claims assistants.");
-		int version = JsonPath.<Integer>read(mine(builder), "$.organization.version");
-		assertProblem(put(builder, API + "/mine", save(team, version)), 409, "ORGANIZATION_INDIVIDUAL");
+		assertProblem(put(builder, API + "/mine", save(team, versionOf(mine(builder)))), 400,
+				"ORGANIZATION_TEAM_SIZE_REQUIRED");
+
+		// As a team it waits for GenAI Fund's review like any team, and an owner invites once it is approved.
+		team.put("teamSize", "2_9");
+		put(builder, API + "/mine", save(team, versionOf(mine(builder)))).expectStatus().isOk();
+		String asTeam = mine(builder);
+		assertThat(JsonPath.<String>read(asTeam, "$.organization.type")).isEqualTo("builder_team");
+		assertThat(JsonPath.<String>read(asTeam, "$.organization.status")).isEqualTo("in_review");
+		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of("emailDomain", "solo-team.test"))
+			.expectStatus()
+			.isNoContent();
+		post(builder, API + "/mine/invitations", Map.of("email", "friend@else.test", "role", "member")).expectStatus()
+			.isNoContent();
+
+		// With an invitation open it cannot be a person on their own again, whichever form saves it.
+		Map<String, Object> alone = new HashMap<>(request);
+		alone.put("name", "Solo Again");
+		assertProblem(put(builder, API + "/mine", save(alone, versionOf(mine(builder)))), 409,
+				"ORGANIZATION_NOT_ALONE");
+		Map<String, Object> basics = new HashMap<>(alone);
+		basics.put("version", versionOf(mine(builder)));
+		assertProblem(put(builder, API + "/mine/basics", basics), 409, "ORGANIZATION_NOT_ALONE");
+	}
+
+	@Test
+	void aTeamBecomesAPersonOnTheirOwnOnlyWithoutOtherMembersAndAnApprovedOneStaysApproved() {
+		String founder = signIn("founder@alone.test");
+		UUID id = create(founder, "Alone Co");
+		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of("emailDomain", "alone.test"))
+			.expectStatus()
+			.isNoContent();
+		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
+		assertThat(outcome(post(signIn("colleague@alone.test"), API + "/organizations/" + id + "/join", Map.of())))
+			.isEqualTo("joined");
+
+		Map<String, Object> alone = new HashMap<>(profile("Alone Co"));
+		alone.put("type", "independent_builder");
+		alone.put("teamSize", "just_me");
+		assertProblem(put(founder, API + "/mine", save(alone, versionOf(mine(founder)))), 409,
+				"ORGANIZATION_NOT_ALONE");
+		Map<String, Object> basics = new HashMap<>(alone);
+		basics.put("version", versionOf(mine(founder)));
+		assertProblem(put(founder, API + "/mine/basics", basics), 409, "ORGANIZATION_NOT_ALONE");
+
+		// Alone again, it may become a person on their own: just me is the size, and the domain goes.
+		String loner = signIn("loner@alone.test");
+		UUID lonerId = create(loner, "Loner Co");
+		post(operator, API + "/admin/organizations/" + lonerId + "/approve", Map.of("emailDomain", "loner.test"))
+			.expectStatus()
+			.isNoContent();
+		Map<String, Object> single = new HashMap<>(profile("Loner Co"));
+		single.put("type", "independent_builder");
+		single.put("teamSize", "2_9");
+		put(loner, API + "/mine", save(single, versionOf(mine(loner)))).expectStatus().isOk();
+		String saved = mine(loner);
+		assertThat(JsonPath.<String>read(saved, "$.organization.type")).isEqualTo("independent_builder");
+		assertThat(JsonPath.<String>read(saved, "$.organization.teamSize")).isEqualTo("just_me");
+		assertThat(JsonPath.<String>read(saved, "$.organization.status")).isEqualTo("approved");
+		assertThat(JsonPath.<Object>read(saved, "$.organization.emailDomain")).isNull();
 	}
 
 	@Test
@@ -1073,6 +1143,44 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOperatorDownloadsTheOrganizationsAsTheListNarrowsThemAndTheDownloadIsRecorded() {
+		for (String[] one : new String[][] { { "Exported Beta", "VN" }, { "Exported Alpha", "VN" },
+				{ "Exported Gamma", "SG" } }) {
+			post(operator, API + "/admin/organizations", Map.of("name", one[0], "type", "builder_team", "country", one[1]))
+				.expectStatus()
+				.isCreated();
+		}
+		String export = API + "/admin/organizations/export?q=exported&country=VN&sort=name";
+
+		assertProblem(post(signIn("member@exported-organizations.test"), export, null), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(post(operator, export, null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"organizations-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(4);
+		assertThat(sheet.get(1)).startsWith("Organization", "Type", "Country", "Status", "Members", "Has an owner",
+				"Request");
+		assertThat(sheet.get(2)).startsWith("Exported Alpha", "Builder team", "VN", "Approved", "0", "No");
+		assertThat(sheet.get(3)).startsWith("Exported Beta");
+
+		String csv = body(post(operator, export + "&format=csv", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("﻿Organization,Type,Country,Status,Members,Has an owner,Request,");
+		assertThat(csv.lines().toList()).hasSize(3).element(1).asString().startsWith("Exported Alpha,Builder team,VN,");
+		assertThat(exportCounts()).containsExactly("2", "2");
+	}
+
+	@Test
 	void anOperatorCreatesAnOrganizationAndTheInvitedPersonOwnsIt() {
 		String created = body(post(operator, API + "/admin/organizations",
 				Map.of("name", "Handed Over", "type", "company", "emailDomain",
@@ -1550,6 +1658,12 @@ class OrganizationTest {
 				select action from audit_event where resource_type = 'organization' and resource_id = ?
 				order by occurred_at, id
 				""").param(organization.toString()).query(String.class).list();
+	}
+
+	private List<String> exportCounts() {
+		return jdbc.sql("select details ->> 'count' from audit_event where action = 'organization.export' order by occurred_at")
+			.query(String.class)
+			.list();
 	}
 
 	private static void assertProblem(RestTestClient.ResponseSpec response, int status, String code) {

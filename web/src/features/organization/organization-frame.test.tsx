@@ -34,14 +34,25 @@ function frame(organization: Organization, current: "profile" | "members", role 
   );
 }
 
-describe("OrganizationFrame, for a person applying on their own", () => {
-  it("shows their solutions alone, with no review, profile or members", () => {
+describe("OrganizationFrame, for a person on their own", () => {
+  it("is an ordinary organization: its type is named and it has the profile and members tabs", () => {
     render(frame({ ...complete, type: "independent_builder", status: "approved" }, "members"));
 
+    expect(screen.getByText("Just me")).toBeVisible();
+    expect(screen.getByRole("link", { name: /Profile/ })).toBeVisible();
+    expect(screen.getByRole("link", { name: /Members/ })).toBeVisible();
     expect(screen.queryByRole("link", { name: "Complete profile" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Edit profile" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Members/ })).not.toBeInTheDocument();
-    expect(screen.getByText("Individual")).toBeVisible();
+  });
+
+  it("waits for review like any organization once it became a team or a company", () => {
+    render(
+      frame(
+        { ...complete, type: "independent_builder", status: "in_review", description: "" },
+        "members",
+      ),
+    );
+
+    expect(screen.getByRole("link", { name: "Complete profile" })).toBeVisible();
   });
 });
 

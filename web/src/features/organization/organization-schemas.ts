@@ -236,7 +236,10 @@ export function profileBodyOf(values: ProfileValues): Omit<SaveOrganization, "ve
     name: values.name.trim(),
     type: values.type,
     country: values.country,
-    teamSize: values.teamSize as SaveOrganization["teamSize"],
+    // One person is just me, whatever the form still held.
+    teamSize: (values.type === "independent_builder"
+      ? "just_me"
+      : values.teamSize) as SaveOrganization["teamSize"],
     industries: values.industries,
     website: values.website.trim() || null,
     description: values.description.trim(),

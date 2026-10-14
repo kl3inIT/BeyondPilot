@@ -219,14 +219,6 @@ public class ProposalService {
 			// A deck is one the applicant uploaded for an application; one an earlier application named is theirs too.
 			storage.stored(deck, FilePurpose.APPLICATION_FILE, actor);
 		}
-		if (membership != null && membership.individual()) {
-			// Someone applying as themselves is shown by the name their application gives.
-			String name = (Objects.requireNonNullElse(request.contact().firstName(), "").strip() + " "
-					+ Objects.requireNonNullElse(request.contact().lastName(), "").strip()).strip();
-			if (!name.isEmpty()) {
-				organizationService.renameIndividual(actor, name);
-			}
-		}
 		proposal.write(json.writeValueAsString(request.contact()), text(request.teamBackground()),
 				membership == null ? null : membership.organizationId(), solutionId, deck,
 				request.builtWith().stream().map(String::strip).distinct().toList(), text(request.traction()),

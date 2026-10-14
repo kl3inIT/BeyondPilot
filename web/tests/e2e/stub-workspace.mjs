@@ -35,6 +35,20 @@ const newCo = {
   emailDomain: "newco.example",
 };
 
+/** An organization of one person: Just me, approved when it was made. */
+const justMe = {
+  ...pocketPolicy,
+  id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c05",
+  name: "An Tr?n",
+  slug: "an-tran",
+  type: "independent_builder",
+  teamSize: "just_me",
+  industries: [],
+  website: null,
+  emailDomain: null,
+  foundedYear: null,
+};
+
 const ofPocketPolicy = { organizationId: pocketPolicy.id, organizationName: pocketPolicy.name };
 
 /** What a request to get into the organization says about it. */
@@ -115,6 +129,7 @@ const standing = {
   asked: { request },
   declined: { declined },
   waiting: { role: "owner", organization: newCo },
+  alone: { role: "owner", organization: justMe },
   moved: {
     role: "member",
     mergedFrom: {

@@ -27,7 +27,6 @@
       "signOut": "Sign out",
       "signOutFailed": "We could not sign you out. Try again.",
       "organization": "My organization",
-      "solutions": "My solutions",
       "talentProfile": "Talent profile",
       "messages": "Messages",
       "messagesWaiting": "{count, plural, one {# waits for you} other {# wait for you}}",
@@ -315,7 +314,9 @@
     "backToSolutions": "Back to solutions"
   },
   "Errors": {
-    "ORGANIZATION_INDIVIDUAL": "Someone applying on their own has no members, domain or profile of an organization. Apply as a team or a company instead.",
+    "ORGANIZATION_INDIVIDUAL": "Just me is one person: it has no other members, invitations or email domain. Make it a team or a company first.",
+    "ORGANIZATION_NOT_ALONE": "This organization has other members, invitations or requests to join, so it cannot become Just me. Remove them first.",
+    "ORGANIZATION_TEAM_SIZE_REQUIRED": "Choose how many people the team or company has.",
     "PROPOSAL_INDIVIDUAL_LOCKED": "You already sent something under your name, so you keep applying as yourself.",
     "unknown": "That did not work. Try again.",
     "REQUEST_INVALID": "Check the marked fields and try again.",
@@ -553,7 +554,8 @@
     "USECASE_ATTACHMENT_NOT_USABLE": "Upload the file again: it cannot be attached.",
     "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest.",
     "PROPOSAL_NOTHING_TO_SEND": "There is no decision to send. Reload the page to see where the proposals stand.",
-    "MESSAGING_OPERATOR_NOT_FOUND": "This person is not an active operator."
+    "MESSAGING_OPERATOR_NOT_FOUND": "This person is not an active operator.",
+    "SPREADSHEET_TOO_LARGE": "This list holds more rows than a download takes. Narrow it with the filters and download again."
   },
   "SignIn": {
     "metaTitle": "Sign in · BeyondPilot",
@@ -1187,7 +1189,8 @@
           "restore": "Restored an organization",
           "update": "Saved an organization's profile",
           "invite": "Invited someone to an organization",
-          "invitation_revoke": "Withdrew an invitation"
+          "invitation_revoke": "Withdrew an invitation",
+          "export": "Downloaded the organizations"
         },
         "solution": {
           "approve": "Approved a solution",
@@ -1210,7 +1213,8 @@
           "offer_update": "Changed an offer",
           "offer_close": "Closed an offer to new solutions",
           "offer_reopen": "Opened an offer to new solutions again",
-          "offer_delete": "Deleted an offer"
+          "offer_delete": "Deleted an offer",
+          "export": "Downloaded the solutions"
         },
         "messaging": {
           "request_accept": "Accepted a first message",
@@ -1229,7 +1233,8 @@
           "restore": "Restored a talent profile",
           "feature": "Featured a talent profile",
           "unfeature": "Stopped featuring a talent profile",
-          "delete": "Deleted a talent profile"
+          "delete": "Deleted a talent profile",
+          "export": "Downloaded the talent profiles"
         },
         "proposal": {
           "criteria_update": "Set the judging criteria",
@@ -1244,7 +1249,8 @@
         },
         "use_case_proposal": {
           "decide": "Decided on a proposal to a use case",
-          "outcomes_send": "Sent the outcomes of the proposals to a use case"
+          "outcomes_send": "Sent the outcomes of the proposals to a use case",
+          "export": "Downloaded the proposals to a use case"
         },
         "use_case": {
           "create": "Created a use case",
@@ -1273,7 +1279,8 @@
           "model_add": "Enabled an AI model",
           "model_update": "Changed an AI model",
           "model_remove": "Removed an AI model",
-          "task_model_change": "Chose a task's AI model"
+          "task_model_change": "Chose a task's AI model",
+          "usage_export": "Downloaded the AI calls"
         },
         "search": {
           "model_change": "Changed the embedding model",
@@ -1302,6 +1309,9 @@
           "candidate_restore": "Restored a candidate",
           "candidate_invite": "Invited a provider to propose",
           "settings_change": "Changed the limits of matching"
+        },
+        "audit": {
+          "export": "Downloaded the audit log"
         }
       },
       "activity": {
@@ -1335,7 +1345,8 @@
           "restore": "Restored the organization <resource></resource>",
           "update": "Saved the profile of <resource></resource>",
           "invite": "Invited someone to <resource></resource>",
-          "invitation_revoke": "Withdrew an invitation to <resource></resource>"
+          "invitation_revoke": "Withdrew an invitation to <resource></resource>",
+          "export": "Downloaded the organizations"
         },
         "solution": {
           "approve": "Approved the solution <resource></resource>",
@@ -1358,7 +1369,8 @@
           "offer_update": "Changed the offer <resource></resource>",
           "offer_close": "Closed the offer <resource></resource> to new solutions",
           "offer_reopen": "Opened the offer <resource></resource> to new solutions again",
-          "offer_delete": "Deleted the offer <resource></resource>"
+          "offer_delete": "Deleted the offer <resource></resource>",
+          "export": "Downloaded the solutions"
         },
         "messaging": {
           "request_accept": "Accepted a first message about <resource></resource>",
@@ -1377,7 +1389,8 @@
           "restore": "Restored the talent profile of <resource></resource>",
           "feature": "Featured the talent profile of <resource></resource>",
           "unfeature": "Stopped featuring the talent profile of <resource></resource>",
-          "delete": "Deleted the talent profile of <resource></resource>"
+          "delete": "Deleted the talent profile of <resource></resource>",
+          "export": "Downloaded the talent profiles"
         },
         "proposal": {
           "criteria_update": "Set the judging criteria of <resource></resource>",
@@ -1392,7 +1405,8 @@
         },
         "use_case_proposal": {
           "decide": "Decided on a proposal to <resource></resource>",
-          "outcomes_send": "Sent the outcomes of the proposals to <resource></resource>"
+          "outcomes_send": "Sent the outcomes of the proposals to <resource></resource>",
+          "export": "Downloaded the proposals to <resource></resource>"
         },
         "use_case": {
           "create": "Created the use case <resource></resource>",
@@ -1421,7 +1435,8 @@
           "model_add": "Enabled the AI model <resource></resource>",
           "model_update": "Changed the AI model <resource></resource>",
           "model_remove": "Removed the AI model <resource></resource>",
-          "task_model_change": "Chose the AI model of the task <resource></resource>"
+          "task_model_change": "Chose the AI model of the task <resource></resource>",
+          "usage_export": "Downloaded the AI calls"
         },
         "search": {
           "model_change": "Changed the embedding model in <resource></resource>",
@@ -1450,6 +1465,9 @@
           "candidate_restore": "Restored a candidate of the use case <resource></resource>",
           "candidate_invite": "Invited a provider to propose for the use case <resource></resource>",
           "settings_change": "Changed the limits of matching"
+        },
+        "audit": {
+          "export": "Downloaded the audit log"
         }
       },
       "columns": {
@@ -3715,7 +3733,7 @@
     "organizationType": {
       "company": "Company",
       "builder_team": "Builder team",
-      "independent_builder": "Individual",
+      "independent_builder": "Just me",
       "other": "Other"
     },
     "teamSize": {
@@ -4724,7 +4742,6 @@
       },
       "company": {
         "title": "The company behind this solution",
-        "individualTitle": "The person behind this solution",
         "metaDescription": "{name} on BeyondPilot: the company and the AI solutions it lists in GenAI Fund’s directory.",
         "view": "View company",
         "viewSolutions": "View solutions",
@@ -6601,8 +6618,6 @@
       },
       "footer": "{shown, plural, one {# application} other {# applications}} · {drafts, plural, one {# draft was} other {# drafts were}} not submitted · {withdrawn} withdrawn",
       "footerScored": "{scored, plural, one {# of {total} has a score} other {# of {total} have a score}}",
-      "download": "Download (CSV)",
-      "downloadFailed": "We could not download the applications. Try again.",
       "own": "Yours"
     },
     "application": {
@@ -6878,7 +6893,6 @@
       "missing": "Missing: {steps}",
       "noName": "No name yet",
       "none": "Not given",
-      "download": "Download (CSV)",
       "empty": {
         "title": "No drafts",
         "description": "Everyone who started an application has submitted it."
@@ -8101,5 +8115,11 @@
     "solutionList": {
       "newTab": "(opens in a new tab)"
     }
+  },
+  "ExportMenu": {
+    "label": "Export",
+    "xlsx": "Excel (.xlsx)",
+    "csv": "CSV",
+    "failed": "We could not download the list. Try again."
   }
 }

@@ -14,6 +14,6 @@ Verified exported renders: desktop `758:59575` (1440), tablet `758:60042` (1024)
 
 ## CI regressions after merging main
 
-Run `38531867666` failed in `SearchDocumentRepositoryTest.theLastWordIsFoundWhileItIsTyped`: its stdout records the background startup repair rebuilding the index during the test, removing its synthetic document. The SQL repository test now mocks only `IndexRepair`, while keeping PostgreSQL and the repository real.
+Run `38531867666` failed in `SearchDocumentRepositoryTest.theLastWordIsFoundWhileItIsTyped`: its stdout records the background startup repair rebuilding the index during the test, removing its synthetic document. An initial fix isolated that test with a mock. The subsequent main merge already includes the shared `IndexRepairs.awaitStartupRepair` test helper from BEY-195; this branch now reuses that fix and keeps the repair, repository and PostgreSQL real.
 
 The same run's matching feedback browser trace shows the editing form replaced by the saved answer during a full-page screenshot, before Send was clicked. The feedback artifact now captures the question itself, preserving the viewport and the edited form. Feedback payload and result assertions are unchanged.

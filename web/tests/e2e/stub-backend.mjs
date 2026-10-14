@@ -95,6 +95,13 @@ const accounts = {
     displayName: "Lan Phạm",
     role: "user",
   },
+  // The only person of an organization of type Just me, approved when it was made (stub-workspace.mjs).
+  alone: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a18",
+    email: "an.tran@example.com",
+    displayName: "An Tr?n",
+    role: "user",
+  },
   // A member moved into the organization when GenAI Fund merged a duplicate into it (stub-workspace.mjs).
   moved: {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a17",
