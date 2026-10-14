@@ -81,6 +81,9 @@ The provider learns from the email which organization invites it and for which u
 
 ## Open
 
+- **Proposal received** on a card needs the received proposals to name the sending organization by identifier, or their solutions: `ReceivedUseCaseProposalSummary` carries the organization's name only. A field for Nhật's `proposal` module to add; until then a card reads Invited.
+- **No count of invitations left** is shown: a limit against unwanted mail is not shown until it is reached, as in LinkedIn's invitations and in Messages (Đạt, 14 October). The action is not offered once the day's limit is reached.
+
 - The limit of 10 a day: a number to confirm with GenAI Fund once it is in use.
 - Whether the email names the person who invites, or only their organization. Proposed: the organization only, as BEY-173 shows the organization to a provider.
 

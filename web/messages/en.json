@@ -7399,7 +7399,8 @@
         "customerCase": "Customer case {number}",
         "deck": "Deck, p. {page}",
         "website": "Website"
-      }
+      },
+      "invite": "Invite to propose…"
     },
     "panel": {
       "label": "The solution you picked",
@@ -7542,6 +7543,18 @@
         "list": "See the list"
       },
       "none": "Every solution here has a decision. Change one from the list."
+    },
+    "invite": {
+      "action": "Invite to propose",
+      "title": "Invite {name} to propose?",
+      "description": "The owners of {name} get an email inviting them to send a proposal for this use case, with a link to it. It cannot be taken back.",
+      "note": "Note to the provider (optional)",
+      "confirm": "Send invitation",
+      "cancel": "Cancel",
+      "done": "{name} is invited to propose.",
+      "invited": "Invited {date}",
+      "invitedBy": "Invited by {name} on {date}",
+      "genaiFund": "GenAI Fund"
     }
   },
   "Messaging": {

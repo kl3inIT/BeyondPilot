@@ -7399,7 +7399,8 @@
         "customerCase": "Dự án khách hàng {number}",
         "deck": "Deck, tr. {page}",
         "website": "Website"
-      }
+      },
+      "invite": "Mời gửi đề xuất…"
     },
     "panel": {
       "label": "Giải pháp đang xem",
@@ -7542,6 +7543,18 @@
         "list": "Xem danh sách"
       },
       "none": "Mọi giải pháp ở đây đã có quyết định. Thay đổi trong danh sách."
+    },
+    "invite": {
+      "action": "Mời gửi đề xuất",
+      "title": "Mời {name} gửi đề xuất?",
+      "description": "Chủ sở hữu của {name} nhận một email mời gửi đề xuất cho use case này, kèm đường dẫn tới nó. Không thu hồi được.",
+      "note": "Ghi chú cho nhà cung cấp (không bắt buộc)",
+      "confirm": "Gửi lời mời",
+      "cancel": "Hủy",
+      "done": "Đã mời {name} gửi đề xuất.",
+      "invited": "Đã mời {date}",
+      "invitedBy": "{name} đã mời ngày {date}",
+      "genaiFund": "GenAI Fund"
     }
   },
   "Messaging": {

@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLinkIcon, FileQuestionIcon, GripVerticalIcon } from "lucide-react";
+import { ExternalLinkIcon, FileQuestionIcon, GripVerticalIcon, MailPlusIcon } from "lucide-react";
 import {
   animate,
   useDragControls,
@@ -13,6 +13,7 @@ import * as m from "motion/react-m";
 import { useTranslations } from "next-intl";
 import { useRef, useState, type CSSProperties, type Ref } from "react";
 
+import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { SolutionLogo } from "@/features/solution/solution-logo";
 import type { MatchingCandidate } from "@/lib/api/generated";
@@ -21,6 +22,7 @@ import { siteRoutes } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 import { DeckReader } from "./matching-deck";
+import { InvitedMark } from "./matching-invite";
 import { FindingItem } from "./matching-panel";
 import { useCandidateMeta } from "./matching-row";
 import { deckPageOf, type Step } from "./matching-line";
@@ -66,6 +68,11 @@ type MatchingReviewCardProps = {
    * decision is taken, since nothing is while another one is on its way.
    */
   onDecide: (kind: Dragged) => boolean;
+  /**
+   * Opens the invitation of the provider to propose; absent when the caller may not invite now. A
+   * provider invited already reads as such instead.
+   */
+  onInvite?: () => void;
   /** The card's element, which the line measures to lift a leaving card out of the flow. */
   ref?: Ref<HTMLElement>;
 };
@@ -91,6 +98,7 @@ function MatchingReviewCard({
   quick,
   behind,
   onDecide,
+  onInvite,
   ref,
 }: MatchingReviewCardProps) {
   const t = useTranslations("Matching");
@@ -215,6 +223,23 @@ function MatchingReviewCard({
             total: candidate.requiredTotal,
           })}
         </p>
+        {candidate.invitedAt ? (
+          <InvitedMark candidate={candidate} />
+        ) : (
+          onInvite && (
+            // A press here invites; it does not start a drag of the card.
+            <Button
+              size="sm"
+              prominence="secondary"
+              className="max-sm:w-full"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={onInvite}
+            >
+              <MailPlusIcon aria-hidden="true" />
+              {t("invite.action")}
+            </Button>
+          )
+        )}
       </header>
 
       <p
