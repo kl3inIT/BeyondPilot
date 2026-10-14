@@ -23,6 +23,7 @@ import {
 } from "./program-format";
 import { ProgramsPublicFilters } from "./programs-public-filters";
 import {
+  listedAsEvent,
   openCardEvents,
   serializeProgramsPublicSearch,
   type ProgramsPublicSearch,
@@ -146,18 +147,33 @@ async function ProgramsPage({
           </section>
         )}
 
-        {!results && comingUp > 0 && (
-          <section className="flex flex-col gap-3" aria-label={t("upcoming")}>
-            <SectionHead title={t("upcoming")} count={t("itemCount", { count: comingUp })} />
+        {!results && groups.events.length > 0 && (
+          <section className="flex flex-col gap-3" aria-label={t("upcomingEvents")}>
+            <SectionHead
+              title={t("upcomingEvents")}
+              count={t("itemCount", { count: groups.events.length })}
+            />
             <ul className="flex flex-col gap-3">
               {groups.events.map(({ program, event }) => (
                 <EventRow
                   key={`${program.slug}-${event.startsAt}-${event.title}`}
-                  kicker={program.name}
+                  kicker={program.name === event.title ? types(program.type) : program.name}
                   event={event}
+                  cover={listedAsEvent(program) ? program.coverFileId : null}
                   format={format}
                 />
               ))}
+            </ul>
+          </section>
+        )}
+
+        {!results && groups.upcoming.length > 0 && (
+          <section className="flex flex-col gap-3" aria-label={t("upcoming")}>
+            <SectionHead
+              title={t("upcoming")}
+              count={t("programCount", { count: groups.upcoming.length })}
+            />
+            <ul className="flex flex-col gap-3">
               {groups.upcoming.map((program) => (
                 <UpcomingProgram
                   key={program.slug}
@@ -305,14 +321,19 @@ async function OpenProgram({
   );
 }
 
-/** A session still to come: its day, what it is, and where to register. */
+/**
+ * An event still to come: its day, what it is, and where to register. An event that is a program
+ * of its own shows its cover, as the sites that list Luma events do.
+ */
 async function EventRow({
   kicker,
   event,
+  cover,
   format,
 }: {
   kicker: string;
   event: ProgramEvent;
+  cover?: string | null;
   format: Format;
 }) {
   const t = await getTranslations("Programs");
@@ -320,6 +341,11 @@ async function EventRow({
   return (
     <li className="flex flex-col gap-3 rounded-xl border bg-card py-3.5 pr-4.5 pl-3.5 shadow-card md:flex-row md:items-center md:justify-between">
       <div className="flex items-center gap-3.5">
+        {cover && (
+          <div className="relative size-16 shrink-0 overflow-hidden rounded-lg border bg-muted sm:size-20">
+            <Image src={publicFileUrl(cover)} alt="" fill sizes="5rem" className="object-cover" />
+          </div>
+        )}
         <time
           dateTime={event.startsAt}
           className="flex h-14 w-13 shrink-0 flex-col items-center justify-center rounded-lg border bg-muted"

@@ -5511,6 +5511,7 @@
     },
     "open": "Open now",
     "upcoming": "Coming up",
+    "upcomingEvents": "Upcoming events",
     "done": "Done",
     "programCount": "{count, plural, one {# program} other {# programs}}",
     "itemCount": "{count, plural, one {# event} other {# events}}",

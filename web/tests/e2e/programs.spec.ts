@@ -42,6 +42,26 @@ test.describe("programs", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
+  test("an event and nothing else is listed by date under Upcoming events, with its cover and Register", async ({
+    page,
+  }) => {
+    await page.goto("/programs");
+
+    const events = page.getByRole("region", { name: "Upcoming events" });
+    const dinner = events.getByRole("listitem").filter({ hasText: "TinyFish, Big Minds" });
+    await expect(dinner).toContainText("Event");
+    await expect(dinner).toContainText("Ho Chi Minh City, Vietnam");
+    await expect(dinner.locator("img")).toHaveCount(1);
+    await expect(dinner.getByRole("link", { name: "Register" })).toHaveAttribute(
+      "href",
+      "https://luma.com/gaf-tinyfish-vn",
+    );
+    // It is neither a program to apply to nor one coming up.
+    await expect(page.getByRole("region", { name: "Open now" })).not.toContainText("TinyFish");
+    await expect(page.getByRole("region", { name: "Coming up" })).not.toContainText("TinyFish");
+    await expectNoSeriousA11yViolations(page);
+  });
+
   test("the tabs and the type are the address", async ({ page }) => {
     await page.goto("/programs");
 
