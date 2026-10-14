@@ -218,6 +218,8 @@ class McpServerConfiguration {
 				List.of(log.logged(name, tools.search(server)), log.logged(name, tools.fetch(server))));
 		if (operatorTools != null) {
 			all.add(log.logged(name, operatorTools.listApplications()));
+			all.add(log.logged(name, operatorTools.getApplication()));
+			all.add(log.logged(name, operatorTools.readApplicationFile()));
 			all.add(log.logged(name, operatorTools.listPendingReviews()));
 		}
 		return List.copyOf(all);

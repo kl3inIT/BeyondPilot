@@ -5,7 +5,7 @@
  * web controllers: it owns only the servers, their tools and the log of calls. Who may call is identity's.
  */
 @ApplicationModule(displayName = "MCP", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "audit", "identity", "organization", "program", "proposal", "search", "solution",
+		allowedDependencies = { "audit", "identity", "organization", "program", "proposal", "search", "shared", "solution",
 				"talent", "usecase" })
 @NullMarked
 package ai.genaifund.beyondpilot.mcp;

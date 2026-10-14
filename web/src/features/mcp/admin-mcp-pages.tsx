@@ -15,6 +15,14 @@ import {
 } from "./admin-mcp-actions";
 import { AddressField, AppSteps } from "./connect-panel";
 
+/** The operators' server's own tools, each described in the messages. */
+const OPERATOR_TOOLS = [
+  "list_applications",
+  "get_application",
+  "read_application_file",
+  "list_pending_reviews",
+];
+
 type McpTab = "setup" | "tools" | "apps" | "activity";
 
 /**
@@ -165,11 +173,9 @@ async function McpToolsPage({ settings, counts }: { settings: McpSettings; count
                         ? t(`${server}.search`)
                         : tool.name === "fetch"
                           ? t(`${server}.fetch`)
-                          : tool.name === "list_applications"
-                            ? t("operator.list_applications")
-                            : tool.name === "list_pending_reviews"
-                              ? t("operator.list_pending_reviews")
-                              : tool.description}
+                          : OPERATOR_TOOLS.includes(tool.name)
+                            ? t(`operator.${tool.name}`)
+                            : tool.description}
                     </p>
                   </div>
                   <ToolSwitch

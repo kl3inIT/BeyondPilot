@@ -2975,6 +2975,8 @@
           "search": "Tìm giải pháp đã hoặc chưa niêm yết, chương trình, talent, use case và công ty.",
           "fetch": "Đọc đầy đủ một mục theo id mà search trả về.",
           "list_applications": "Liệt kê hồ sơ ứng tuyển của một chương trình, kèm quyết định của GenAI Fund và điểm trung bình của người chấm.",
+          "get_application": "Đọc đầy đủ một hồ sơ: những gì người ứng tuyển gửi, mọi điểm chấm và các file đính kèm.",
+          "read_application_file": "Hiện các trang của một file PDF trong hồ sơ, như deck, dưới dạng ảnh kèm chữ của trang.",
           "list_pending_reviews": "Liệt kê những gì đang chờ duyệt: tổ chức, giải pháp, talent, use case và customer deployment."
         },
         "user": {

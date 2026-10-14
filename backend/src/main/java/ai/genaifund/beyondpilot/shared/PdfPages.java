@@ -1,4 +1,4 @@
-package ai.genaifund.beyondpilot.ai;
+package ai.genaifund.beyondpilot.shared;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -23,8 +23,11 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.core.io.InputStreamSource;
 
-/** What PDFBox gives of a PDF: the text each page holds, and the picture of a page. No model is involved. */
-final class PdfPages {
+/**
+ * What PDFBox gives of a PDF: the text each page holds, and the picture of a page. No model is involved. AI reads
+ * decks and attachments with it; the operators' MCP server shows an application's files with it.
+ */
+public final class PdfPages {
 
 	/** Enough to read a slide's text, and about 1,200 tokens for a model that reads images. */
 	private static final float PICTURE_DPI = 110;
@@ -43,7 +46,7 @@ final class PdfPages {
 	}
 
 	/** The text of each page, in order, up to a number of pages; an empty string for a page without text. */
-	static List<String> text(InputStreamSource pdf, int maxPages) throws IOException {
+	public static List<String> text(InputStreamSource pdf, int maxPages) throws IOException {
 		try (InputStream content = pdf.getInputStream(); PDDocument document = Loader.loadPDF(content.readAllBytes())) {
 			PDFTextStripper stripper = new PDFTextStripper();
 			stripper.setSortByPosition(true);
@@ -55,6 +58,13 @@ final class PdfPages {
 				pages.add(clean(stripper.getText(document)));
 			}
 			return pages;
+		}
+	}
+
+	/** How many pages the PDF has. */
+	public static int count(InputStreamSource pdf) throws IOException {
+		try (InputStream content = pdf.getInputStream(); PDDocument document = Loader.loadPDF(content.readAllBytes())) {
+			return document.getNumberOfPages();
 		}
 	}
 
@@ -75,7 +85,7 @@ final class PdfPages {
 	 * from 1, a page the file does not have left out. A page that stays over the limit at the lowest quality is an
 	 * empty array, so the caller knows it was drawn and cannot be sent.
 	 */
-	static Map<Integer, byte[]> jpegs(InputStreamSource pdf, List<Integer> pages, int maxBytes) throws IOException {
+	public static Map<Integer, byte[]> jpegs(InputStreamSource pdf, List<Integer> pages, int maxBytes) throws IOException {
 		return drawn(pdf, pages, image -> {
 			for (float quality : JPEG_QUALITIES) {
 				byte[] jpeg = jpeg(image, quality);
