@@ -221,7 +221,7 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-5 px-5 pt-4 pb-24 md:gap-7 md:px-8 md:pt-6 xl:px-16 desktop:px-20">
+    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-5 px-5 pt-4 pb-24 wrap-break-word md:gap-7 md:px-8 md:pt-6 xl:px-16 desktop:px-20">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -263,7 +263,11 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
           <h1 className="text-3xl font-semibold tracking-title text-balance md:text-4xl xl:text-5xl xl:leading-none">
             {solution.name}
           </h1>
-          <TextButton size="sm" href={company} className="self-start">
+          <TextButton
+            size="sm"
+            href={company}
+            className="max-w-full self-start wrap-break-word whitespace-normal"
+          >
             {directory("by", { name: solution.organizationName })}
             <ArrowRightIcon aria-hidden="true" />
           </TextButton>
