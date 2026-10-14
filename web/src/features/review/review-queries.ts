@@ -5,11 +5,13 @@ import {
   getRelease,
   getReviewApplication,
   getReviewCriteria,
+  getReviewDraft,
   listProgramDrafts,
   listReviewApplications,
   listReviewers,
   listReviewPrograms,
   type ProgramDrafts,
+  type ReviewDraft,
   type Release,
   type ReviewApplication,
   type ReviewApplications,
@@ -64,6 +66,14 @@ export async function readProgramDrafts(programId: string): Promise<ProgramDraft
     ...(await sessionRequest()),
     path: { programId },
   }).catch(notFoundWhenRefused);
+  return data;
+}
+
+/** One application not submitted yet, as an operator reads it; the reading is recorded. Server only. */
+export async function readReviewDraft(id: string): Promise<ReviewDraft> {
+  const { data } = await getReviewDraft({ ...(await sessionRequest()), path: { id } }).catch(
+    notFoundWhenRefused,
+  );
   return data;
 }
 

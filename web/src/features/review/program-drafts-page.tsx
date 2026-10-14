@@ -7,9 +7,16 @@ import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { useFormatter } from "@/i18n/format";
 import { useCountryName } from "@/i18n/vocabulary";
 import type { ProgramDrafts, ReviewApplications } from "@/lib/api/generated";
-import { adminProgramApplicationsRoute } from "@/lib/site";
+import { Link } from "@/i18n/navigation";
+import {
+  adminProgramApplicationsRoute,
+  adminProgramDraftRoute,
+  adminProgramDraftsRoute,
+} from "@/lib/site";
 
 import { ExportDrafts } from "./export-drafts";
+import { listApplications } from "./review-search";
+import { ReviewTabs } from "./review-toolbar";
 
 /**
  * Admin › Programs › a program › Applications › Drafts: the applications not submitted yet, the most
@@ -18,15 +25,22 @@ import { ExportDrafts } from "./export-drafts";
  * so its answers, deck and solution are not shown. Judges never reach this page.
  */
 function ProgramDraftsPage({
-  head,
+  applications,
   drafts,
   tabs,
 }: {
-  head: ReviewApplications["head"];
+  applications: ReviewApplications;
   drafts: ProgramDrafts;
   tabs: React.ReactNode;
 }) {
   const t = useTranslations("Review.drafts");
+  const { head } = applications;
+  // The list's tabs count as the list would open, with no search or filter.
+  const { counts } = listApplications(
+    applications.items,
+    { tab: "all", q: "", choice: null, kind: null, sort: "", page: 1 },
+    head.operator,
+  );
   const format = useFormatter();
   const country = useCountryName();
   const time = (at: string) =>
@@ -49,8 +63,16 @@ function ProgramDraftsPage({
       >
         {tabs}
       </AdminPageHeader>
+      <ReviewTabs
+        operator={head.operator}
+        counts={counts}
+        drafts={{ count: drafts.items.length, href: adminProgramDraftsRoute(head.programId) }}
+        current="drafts"
+        base={adminProgramApplicationsRoute(head.programId)}
+      />
       {drafts.items.length > 0 ? (
         <DataTableRows
+          rowLinks
           caption={t("caption")}
           columns={[
             { id: "applicant", header: t("columns.applicant") },
@@ -83,7 +105,13 @@ function ProgramDraftsPage({
               cells: {
                 applicant: (
                   <div className="flex min-w-0 flex-col gap-0.5">
-                    <span className="font-medium">{name || t("noName")}</span>
+                    {/* The name is the row's link; a press anywhere on the row follows it. */}
+                    <Link
+                      href={adminProgramDraftRoute(head.programId, draft.id)}
+                      className="rounded-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+                    >
+                      {name || t("noName")}
+                    </Link>
                     <a
                       href={`mailto:${draft.email}`}
                       className="truncate text-xs text-muted-foreground underline-offset-4 hover:underline"
@@ -141,7 +169,6 @@ function ProgramDraftsPage({
           description={t("empty.description")}
         />
       )}
-      <p className="text-xs text-muted-foreground">{t("private")}</p>
     </div>
   );
 }

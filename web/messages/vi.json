@@ -1244,7 +1244,8 @@
           "release": "Công bố kết quả",
           "file_open": "Mở một tệp của đơn nộp",
           "export": "Tải danh sách đơn nộp",
-          "drafts_export": "Tải danh sách đơn nháp"
+          "drafts_export": "Tải danh sách đơn nháp",
+          "draft_open": "Mở một đơn nháp"
         },
         "use_case_proposal": {
           "decide": "Quyết định về một đề xuất gửi tới use case",
@@ -1399,7 +1400,8 @@
           "release": "Công bố kết quả của <resource></resource>",
           "file_open": "Mở một tệp của một đơn nộp vào <resource></resource>",
           "export": "Tải danh sách đơn nộp vào <resource></resource>",
-          "drafts_export": "Tải danh sách đơn nháp của <resource></resource>"
+          "drafts_export": "Tải danh sách đơn nháp của <resource></resource>",
+          "draft_open": "Mở một đơn nháp của <resource></resource>"
         },
         "use_case_proposal": {
           "decide": "Quyết định về một đề xuất gửi tới <resource></resource>",
@@ -6538,7 +6540,8 @@
         "shortlisted": "Vào vòng trong",
         "not_selected": "Không được chọn",
         "to_score": "Chưa chấm",
-        "scored": "Đã xong"
+        "scored": "Đã xong",
+        "drafts": "Nháp"
       },
       "search": "Tìm người nộp",
       "clear": "Xóa bộ lọc",
@@ -6615,8 +6618,7 @@
       },
       "footer": "{shown} đơn · {drafts} bản nháp chưa nộp · {withdrawn} đơn đã rút",
       "footerScored": "{scored}/{total} đơn đã có điểm",
-      "own": "Của bạn",
-      "drafts": "{count} đơn nháp"
+      "own": "Của bạn"
     },
     "application": {
       "metaTitle": "Đơn nộp",
@@ -6891,10 +6893,15 @@
       "missing": "Còn thiếu: {steps}",
       "noName": "Chưa có tên",
       "none": "Chưa điền",
-      "private": "Nội dung đơn nháp được giữ kín cho tới khi người nộp gửi đi. Giám khảo không bao giờ thấy đơn nháp.",
       "empty": {
         "title": "Không có đơn nháp",
         "description": "Mọi người đã bắt đầu điền đơn đều đã nộp."
+      },
+      "detail": {
+        "metaTitle": "Đơn nháp",
+        "back": "Đơn nháp",
+        "lead": "Chưa nộp vào {program} · bắt đầu {started} · lưu lần cuối {saved}",
+        "note": "Đơn chưa nộp nên vẫn có thể thay đổi. Giám khảo không bao giờ thấy đơn nháp, và mỗi lần mở được ghi vào nhật ký kiểm toán."
       }
     }
   },

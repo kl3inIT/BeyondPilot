@@ -123,12 +123,6 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
         actions={
           head.operator && (
             <>
-              {/* An operator follows up the drafts not submitted yet; a judge never sees them. */}
-              {data.drafts > 0 && (
-                <Button prominence="secondary" href={adminProgramDraftsRoute(head.programId)}>
-                  {t("drafts", { count: data.drafts })}
-                </Button>
-              )}
               <ExportApplications
                 programId={head.programId}
                 applicationIds={narrowed ? shown.map((item) => item.id) : null}
@@ -158,6 +152,13 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
       <ReviewToolbar
         operator={head.operator}
         counts={counts}
+        base={base}
+        // An operator follows up the drafts not submitted yet; a judge never sees them.
+        drafts={
+          head.operator
+            ? { count: data.drafts, href: adminProgramDraftsRoute(head.programId) }
+            : undefined
+        }
         choice={head.choice ? { label: head.choice.label, options: head.choice.options } : null}
       />
       {rows.length > 0 ? (

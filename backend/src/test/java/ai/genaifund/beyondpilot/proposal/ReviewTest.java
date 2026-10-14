@@ -293,8 +293,15 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Boolean>read(list, "$.items[1].contactComplete")).isFalse();
 		assertThat(JsonPath.<Boolean>read(list, "$.items[1].solutionChosen")).isFalse();
 		assertThat(JsonPath.<Integer>read(list, "$.requiredQuestions")).isPositive();
-		// What a draft says is not read out.
+		// The list does not read out what a draft says; an operator opens one to read it, and the reading is recorded.
 		assertThat(list).doesNotContain("hotline");
+		String draftId = JsonPath.read(list, "$.items[0].id");
+		get(judge, REVIEW.replace("/programs/", "/drafts/") + draftId).expectStatus().isForbidden();
+		String one = body(get(operator, REVIEW.replace("/programs/", "/drafts/") + draftId).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(one, "$.draft.email")).isEqualTo("later@drafted.test");
+		assertThat(JsonPath.<List<String>>read(one, "$.draft.answers[*].value"))
+			.containsExactly("Claims reach a decision without a hotline call.");
+		assertThat(auditOf(form.programId())).contains("proposal.draft_open");
 
 		String csv = new String(post(operator, drafts + "/export?format=csv", null).expectStatus()
 			.isOk()
