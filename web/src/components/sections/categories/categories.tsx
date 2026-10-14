@@ -5,7 +5,22 @@ import Image from "next/image";
 
 import { TextButton } from "@/components/actions/text-button";
 import { Section } from "@/components/ui/section";
+import { useFormatter } from "@/i18n/format";
+import { Link } from "@/i18n/navigation";
 import { siteRoutes } from "@/lib/site";
+
+/**
+ * An event still to come of a published program, as the events card lists it.
+ * `href` is where to register, or else the program's page here or elsewhere.
+ */
+export type UpcomingEventView = {
+  title: string;
+  startsAt: string;
+  place: string | null;
+  online: boolean;
+  programName: string;
+  href: string;
+};
 
 /**
  * `shows` is what the card lists under its description: listings, event dates or skills. A listing
@@ -49,10 +64,12 @@ const skills = [1, 2, 3, 4, 5, 6, 7, 8] as const;
 
 /**
  * Five ways into the product's directories and the program list, three cards over two (Figma
- * "Landing v2 / Explore"). Each card names what is listed there, with the logo of who is behind it.
+ * "Landing v2 / Explore"). Each card names what is listed there, with the logo of who is behind it;
+ * the events card lists the next events of the published programs (BEY-190).
  */
-function Categories() {
+function Categories({ events }: { events: UpcomingEventView[] }) {
   const t = useTranslations("Home.categories");
+  const format = useFormatter();
 
   return (
     <Section>
@@ -101,30 +118,48 @@ function Categories() {
                     ))}
                   </ul>
                 )}
-                {shows === "dates" && (
-                  <ul className="mt-5 divide-y border-t">
-                    {rows.map((row) => (
-                      <li key={row} className="flex items-center gap-3 py-3">
-                        <span className="flex h-11 w-10 shrink-0 flex-col items-center justify-center rounded-lg border bg-card">
-                          <span className="text-xs leading-none font-semibold text-primary uppercase">
-                            {t(`${id}.item${row}Month`)}
-                          </span>
-                          <span className="text-copy leading-none font-medium">
-                            {t(`${id}.item${row}Day`)}
-                          </span>
-                        </span>
-                        <span className="flex min-w-0 flex-col gap-0.5">
-                          <span className="truncate text-sm font-medium">
-                            {t(`${id}.item${row}Title`)}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {t(`${id}.item${row}Meta`)}
-                          </span>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                {shows === "dates" &&
+                  (events.length === 0 ? (
+                    <p className="mt-5 border-t pt-3 text-sm text-muted-foreground">
+                      {t(`${id}.empty`)}
+                    </p>
+                  ) : (
+                    <ul className="mt-5 divide-y border-t">
+                      {events.map((event) => {
+                        const starts = new Date(event.startsAt);
+                        return (
+                          <li key={`${event.href} ${event.startsAt}`}>
+                            <Link href={event.href} className="group flex items-center gap-3 py-3">
+                              <time
+                                dateTime={event.startsAt}
+                                className="flex h-11 w-10 shrink-0 flex-col items-center justify-center rounded-lg border bg-card"
+                              >
+                                <span className="text-xs leading-none font-semibold text-primary uppercase">
+                                  {format.dateTime(starts, { month: "short" })}
+                                </span>
+                                <span className="text-copy leading-none font-medium">
+                                  {format.dateTime(starts, { day: "numeric" })}
+                                </span>
+                              </time>
+                              <span className="flex min-w-0 flex-col gap-0.5">
+                                <span className="truncate text-sm font-medium group-hover:underline">
+                                  {event.title}
+                                </span>
+                                <span className="truncate text-xs text-muted-foreground">
+                                  {[
+                                    event.programName === event.title ? null : event.programName,
+                                    event.online ? t(`${id}.online`) : event.place,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                </span>
+                              </span>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ))}
                 {shows === "skills" && (
                   <ul aria-label={t(`${id}.skillsLabel`)} className="mt-5 flex flex-wrap gap-2">
                     {skills.map((skill) => (

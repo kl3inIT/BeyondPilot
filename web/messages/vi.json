@@ -212,14 +212,8 @@
         "title": "Sự kiện AI",
         "description": "Kết nối với hệ sinh thái qua meetup, workshop và demo day.",
         "action": "Xem sự kiện",
-        "item1Month": "Th10",
-        "item1Day": "22",
-        "item1Title": "Demo day · AI for Insurance Challenge",
-        "item1Meta": "Mười đội trình bày trực tiếp",
-        "item2Month": "Th10",
-        "item2Day": "26",
-        "item2Title": "TinyFish, Big Minds",
-        "item2Meta": "Bữa tối riêng · TP. Hồ Chí Minh"
+        "online": "Trực tuyến",
+        "empty": "Sự kiện mới sẽ được thông báo tại đây ngay khi có lịch."
       },
       "programs": {
         "title": "Chương trình AI",
