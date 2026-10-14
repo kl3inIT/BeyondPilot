@@ -37,6 +37,10 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
     metadataBase: new URL(siteOrigin),
     title: t("title"),
     description: t("description"),
+    // The full logo, as on the home page; the small icon is for the browser tab only (DESIGN.md › Logo).
+    openGraph: {
+      images: [{ url: "/brand/beyondpilot-og.png", width: 1200, height: 630, alt: "BeyondPilot" }],
+    },
   };
 }
 
