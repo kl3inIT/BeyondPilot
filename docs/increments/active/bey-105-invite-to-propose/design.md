@@ -60,7 +60,7 @@ The provider learns from the email which organization invites it and for which u
 
 ### Backend
 
-- `V94__matching_create_invitations.sql`: `matching_invitation (id, use_case_id, organization_id, candidate_id, note, account_id, by_operator, created_at)`, unique on `(use_case_id, organization_id)`.
+- `V95__matching_create_invitations.sql`: `matching_invitation (id, use_case_id, organization_id, candidate_id, note, account_id, by_operator, created_at)`, unique on `(use_case_id, organization_id)`.
 - `MatchingService.invite(actor, candidateId, note)`: checks, records, emails, audits (`matching.candidate_invite`).
 - `organization`: `OrganizationDirectory.invitedOwners`, the addresses of the open invitations to own an organization, for one with no owner.
 - `notification`: `EmailKind.MATCHING_INVITATION`, its English template (emails are in English, as every other), `EmailService.sendMatchingInvitation`.
