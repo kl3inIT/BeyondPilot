@@ -122,12 +122,57 @@ class OrganizationTest {
 		String created = body(post(signIn("dat@builder.test"), API + "/organizations", builder).expectStatus()
 			.isCreated());
 		assertThat(JsonPath.<String>read(created, "$.type")).isEqualTo("independent_builder");
-		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
+		// Nothing about a builder on their own waits for GenAI Fund.
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
 
 		Map<String, Object> company = new HashMap<>(creation("No Industry Co"));
 		company.put("industries", List.of());
 		assertProblem(post(signIn("founder@no-industry.test"), API + "/organizations", company), 400,
 				"ORGANIZATION_INDUSTRIES_REQUIRED");
+	}
+
+	@Test
+	void aBuilderOnTheirOwnIsThePersonWithNoMembersDomainOrPageOfTheirOwn() {
+		String builder = signIn("solo@company.test");
+		Map<String, Object> request = new HashMap<>(creation("Solo Builder"));
+		request.put("type", "independent_builder");
+		request.put("teamSize", "just_me");
+		request.put("industries", List.of());
+		String created = body(post(builder, API + "/organizations", request).expectStatus().isCreated());
+		String id = JsonPath.read(created, "$.id");
+		String slug = JsonPath.read(created, "$.slug");
+
+		// Approved at once, it waits in no queue and is offered no domain, not even the person's employer's.
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<List<String>>read(
+				body(get(operator, API + "/admin/organizations?status=in_review").expectStatus().isOk()),
+				"$.items[*].id"))
+			.doesNotContain(id);
+		String record = body(get(operator, API + "/admin/organizations/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(record, "$.suggestedDomain")).isNull();
+		Map<String, Object> withDomain = new HashMap<>();
+		withDomain.put("profile", save(request, JsonPath.<Integer>read(record, "$.version")));
+		withDomain.put("emailDomain", "company.test");
+		assertProblem(put(operator, API + "/admin/organizations/" + id, withDomain), 409,
+				"ORGANIZATION_INDIVIDUAL");
+
+		// Nobody finds it, joins it or is invited into it, and it has no page.
+		assertThat(JsonPath.<List<String>>read(
+				body(get(signIn("someone@else.test"), API + "/organizations?q=solo").expectStatus().isOk()),
+				"$.items[*].id"))
+			.doesNotContain(id);
+		assertProblem(post(signIn("joiner@else.test"), API + "/organizations/" + id + "/join", Map.of()), 404,
+				"ORGANIZATION_NOT_FOUND");
+		assertProblem(post(builder, API + "/mine/invitations", Map.of("email", "friend@else.test", "role", "member")),
+				409, "ORGANIZATION_INDIVIDUAL");
+		assertProblem(get(signIn("visitor@else.test"), API + "/organizations/" + slug), 404, "ORGANIZATION_NOT_FOUND");
+
+		// It stays a builder on their own: a team is chosen from an application, before anything is sent.
+		Map<String, Object> team = new HashMap<>(profile("Solo Team"));
+		team.put("type", "builder_team");
+		team.put("teamBackground", "Built claims assistants.");
+		int version = JsonPath.<Integer>read(mine(builder), "$.organization.version");
+		assertProblem(put(builder, API + "/mine", save(team, version)), 409, "ORGANIZATION_INDIVIDUAL");
 	}
 
 	@Test
@@ -160,16 +205,24 @@ class OrganizationTest {
 
 	@Test
 	void onlyACompanyMustGiveItsWebsiteAndTheYearItWasFounded() {
-		// A builder on their own creates a practice without either, and saves it as a team without either.
-		String builder = signIn("dat@no-website.test");
+		// A builder on their own and a team are both made without either, and a team saves without either.
 		Map<String, Object> practice = new HashMap<>(creation("Dat Studio"));
 		practice.put("type", "independent_builder");
 		practice.put("teamSize", "just_me");
 		practice.remove("website");
 		practice.remove("foundedYear");
-		String created = body(post(builder, API + "/organizations", practice).expectStatus().isCreated());
+		String created = body(post(signIn("dat@no-website.test"), API + "/organizations", practice).expectStatus()
+			.isCreated());
 		assertThat(JsonPath.<Object>read(created, "$.website")).isNull();
 		assertThat(JsonPath.<Object>read(created, "$.foundedYear")).isNull();
+
+		String builder = signIn("team@no-website.test");
+		Map<String, Object> founded = new HashMap<>(creation("Dat Team"));
+		founded.put("type", "builder_team");
+		founded.put("teamBackground", "Built claims assistants.");
+		founded.remove("website");
+		founded.remove("foundedYear");
+		post(builder, API + "/organizations", founded).expectStatus().isCreated();
 
 		Map<String, Object> team = new HashMap<>(profile("Dat Team"));
         team.put("type", "builder_team");

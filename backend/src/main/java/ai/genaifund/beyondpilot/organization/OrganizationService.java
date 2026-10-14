@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.organization;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -166,7 +167,7 @@ public class OrganizationService {
 		return createOwned(actor, new Profile.Builder(request.name(), request.type(), request.country(),
                 request.teamSize(), request.industries()).website(request.website()).description(request.description())
                 .foundedYear(request.foundedYear()).logoFileId(request.logoFileId())
-                .teamBackground(request.teamBackground()).build(), request.jobTitle());
+                .teamBackground(request.teamBackground()).build(), request.jobTitle(), true);
 	}
 
 	/**
@@ -179,13 +180,13 @@ public class OrganizationService {
 	@Transactional
 	public OrganizationResponse createFromBasics(Actor actor, SaveOrganizationBasicsRequest request) {
 		return createOwned(actor, new Profile.Builder(request.name().strip(), request.type(), request.country(),
-                request.teamSize(), request.industries()).teamBackground(request.teamBackground()).build(), null);
+                request.teamSize(), request.industries()).teamBackground(request.teamBackground()).build(), null, true);
 	}
 
 	/**
 	 * Makes the organization a person applies through when they belong to none (BEY-37): a builder on their own or a
-	 * team, which provides AI solutions. Like any organization a person creates, it waits for GenAI Fund's review,
-	 * which decides whether it is listed, not whether it applies; the rest of the profile is theirs to write later.
+	 * team, which provides AI solutions. A team waits for GenAI Fund's review, which decides whether it is listed, not
+	 * whether it applies; a builder on their own is approved at once and named as given, after the person.
 	 * @return the new organization's identifier
 	 * @throws OrganizationException when the caller already belongs to an organization or waits on a request
 	 */
@@ -196,7 +197,7 @@ public class OrganizationService {
 					+ applicant.type());
 		}
 		return createOwned(actor, new Profile.Builder(applicant.name(), applicant.type(), applicant.country(),
-                applicant.teamSize(), List.of()).website(applicant.website()).build(), null)
+                applicant.teamSize(), List.of()).website(applicant.website()).build(), null, false)
 			.id();
 	}
 
@@ -233,9 +234,20 @@ public class OrganizationService {
         }
     }
 
-	private OrganizationResponse createOwned(Actor actor, Profile profile, @Nullable String creatorJobTitle) {
+	/**
+	 * @param nameAfterAccount whether an individual takes the account's name rather than the one given: true unless
+	 * the name given is the person's own, as an application's contact gives it
+	 */
+	private OrganizationResponse createOwned(Actor actor, Profile profile, @Nullable String creatorJobTitle,
+			boolean nameAfterAccount) {
 		Person person = identity.person(actor);
 		requireFree(person);
+		// A builder on their own is the person: named after them, and approved at once, as nothing about them waits for
+		// GenAI Fund. What they list is reviewed as everyone's is.
+		boolean individual = Organization.INDIVIDUAL.equals(profile.type());
+		String displayName = person.displayName();
+		String name = individual && nameAfterAccount && displayName != null ? displayName.strip()
+				: profile.name().strip();
 		if ("company".equals(profile.type()) && profile.industries().isEmpty()) {
 			// A team or a builder on their own may not have settled on an industry; a company has.
 			throw new OrganizationException(OrganizationErrorCode.INDUSTRIES_REQUIRED,
@@ -244,12 +256,15 @@ public class OrganizationService {
 		if (profile.logoFileId() != null) {
 			logos.requireUsable(actor, profile.logoFileId());
 		}
-		Organization organization = new Organization(UUID.randomUUID(), freeSlug(profile.name()),
-				profile.name().strip(), profile.type(), Organization.IN_REVIEW, person.accountId());
-		organization.describe(profile.name().strip(), profile.type(), OrganizationViews.text(profile.website()),
+		Organization organization = new Organization(UUID.randomUUID(), freeSlug(name), name, profile.type(),
+				Organization.IN_REVIEW, person.accountId());
+		organization.describe(name, profile.type(), OrganizationViews.text(profile.website()),
 				profile.country(), profile.teamSize(), OrganizationViews.codes(profile.industries()),
 				OrganizationViews.text(profile.description()), profile.foundedYear(), profile.logoFileId());
 		organization.describeTeam(OrganizationViews.text(profile.teamBackground()));
+		if (individual) {
+			organization.approve(Instant.now());
+		}
 		organizations.saveAndFlush(organization);
 		if (!memberships.add(organization.getId(), person.accountId(), MembershipRepository.OWNER)) {
 			throw alreadyMember(person);
@@ -259,10 +274,10 @@ public class OrganizationService {
 			memberships.changeJobTitle(person.accountId(), jobTitle);
 		}
 		LOG.atInfo()
-			.addKeyValue("event", "organization.creation.submitted")
+			.addKeyValue("event", individual ? "organization.individual.created" : "organization.creation.submitted")
 			.addKeyValue("organization_id", organization.getId())
 			.addKeyValue("account_id", person.accountId())
-			.log("Organization created, waiting for review");
+			.log(individual ? "Individual created" : "Organization created, waiting for review");
 		return OrganizationViews.organization(organization);
 	}
 
@@ -279,6 +294,7 @@ public class OrganizationService {
 		requireFree(person);
 		Organization organization = organizations.findForUpdate(organizationId)
 			.filter(Organization::isApproved)
+			.filter(found -> !found.isIndividual())
 			.orElseThrow(() -> notFound(organizationId));
 		boolean owned = memberships.owners(organizationId) > 0;
 		String domain = OrganizationViews.workDomain(person.email());
@@ -368,6 +384,7 @@ public class OrganizationService {
                     "Company profile saved without an industry");
         }
 		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
+		requireSameKind(organization, request.type());
 		if (organization.getVersion() != request.version()) {
 			throw new OrganizationException(OrganizationErrorCode.CHANGED_MEANWHILE,
 					"Save of organization " + organization.getId() + " at version " + request.version()
@@ -406,6 +423,7 @@ public class OrganizationService {
 					"Company saved by account " + actor.accountId() + " without an industry");
 		}
 		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
+		requireSameKind(organization, request.type());
 		if (request.version() == null || organization.getVersion() != request.version()) {
 			throw new OrganizationException(OrganizationErrorCode.CHANGED_MEANWHILE,
 					"Stale basics save of organization " + organization.getId());
@@ -465,6 +483,9 @@ public class OrganizationService {
 		Person inviter = identity.person(actor);
 		Member owner = owner(actor);
 		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
+		if (organization.isIndividual()) {
+			throw individual(organization, "invitation");
+		}
 		if (!organization.isApproved()) {
 			throw new OrganizationException(OrganizationErrorCode.NOT_APPROVED,
 					"Invitation by organization " + organization.getId() + ", which is " + organization.getStatus());
@@ -603,11 +624,86 @@ public class OrganizationService {
 	public void letDomainJoin(Actor actor, boolean autoJoin) {
 		Member owner = owner(actor);
 		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
+		if (autoJoin && organization.isIndividual()) {
+			throw individual(organization, "joining by domain");
+		}
 		if (autoJoin && !(organization.isApproved() && organization.getEmailDomain() != null)) {
 			throw new OrganizationException(OrganizationErrorCode.DOMAIN_NOT_VERIFIED,
 					"Joining at once turned on for organization " + organization.getId() + " without a verified domain");
 		}
 		organization.letDomainJoin(autoJoin);
+	}
+
+	/**
+	 * Names the caller's individual after them again, as their application gives their name; another kind of
+	 * organization keeps its name.
+	 */
+	@Transactional
+	public void renameIndividual(Actor actor, String name) {
+		String wanted = name.strip();
+		memberships.memberOf(actor.accountId())
+			.flatMap(member -> organizations.findForUpdate(member.organizationId()))
+			.filter(Organization::isIndividual)
+			.filter(organization -> !organization.getName().equals(wanted))
+			.ifPresent(organization -> {
+				organization.rename(wanted);
+				organizations.flush();
+				events.publishEvent(new OrganizationChanged(organization.getId()));
+			});
+	}
+
+	/**
+	 * Turns the caller's individual into their team, which waits for GenAI Fund's review like any team a person
+	 * makes. Whether it may still change is for the caller to decide, from what was sent under it.
+	 * @return the team's identifier
+	 * @throws OrganizationException when the caller does not own an individual
+	 */
+	@Transactional
+	public UUID becomeTeam(Actor actor, ApplicantOrganization team) {
+		Organization organization = ownIndividual(actor);
+		organization.becomeTeam(team.name().strip(), team.teamSize(), OrganizationViews.text(team.website()));
+		organizations.flush();
+		events.publishEvent(new OrganizationChanged(organization.getId()));
+		LOG.atInfo()
+			.addKeyValue("event", "organization.individual.became_team")
+			.addKeyValue("organization_id", organization.getId())
+			.log("Individual became a team, waiting for review");
+		return organization.getId();
+	}
+
+	/**
+	 * Takes the caller out of their individual so that they can join or add a company. The record stays, with nobody
+	 * in it, for what was written under its name; it is shown nowhere.
+	 * @throws OrganizationException when the caller does not own an individual
+	 */
+	@Transactional
+	public void leaveIndividual(Actor actor) {
+		Organization organization = ownIndividual(actor);
+		memberships.remove(organization.getId(), actor.accountId());
+		LOG.atInfo()
+			.addKeyValue("event", "organization.individual.left")
+			.addKeyValue("organization_id", organization.getId())
+			.log("Person left their individual");
+	}
+
+	private Organization ownIndividual(Actor actor) {
+		Member owner = owner(actor);
+		return organizations.findForUpdate(owner.organizationId())
+			.filter(Organization::isIndividual)
+			.orElseThrow(() -> new OrganizationException(OrganizationErrorCode.MEMBERSHIP_REQUIRED,
+					"Account " + actor.accountId() + " owns no individual"));
+	}
+
+	/** An individual stays one and nothing else becomes one: the person changes that from their application. */
+	private static void requireSameKind(Organization organization, String type) {
+		if (organization.isIndividual() != Organization.INDIVIDUAL.equals(type)) {
+			throw individual(organization, "type change to " + type);
+		}
+	}
+
+	private static OrganizationException individual(Organization organization, String what) {
+		return new OrganizationException(OrganizationErrorCode.INDIVIDUAL,
+				"Refused " + what + " for individual " + organization.getId());
 	}
 
 	private InvitationAllowanceResponse allowance(Organization organization) {
