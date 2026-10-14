@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.identity.Actor;
@@ -440,6 +441,45 @@ public class ReviewService {
 	}
 
 	/**
+	 * One submitted application as its applicant sent it last, with every assessment, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when there is no such submitted application
+	 */
+	@Transactional
+	public SubmittedApplication applicationOf(Actor actor, UUID id) {
+		identity.requireOperator(actor);
+		ReviewApplicationResponse view = application(actor, id);
+		ReviewHeadResponse head = view.head();
+		ReviewApplicationResponse.Submitted sent = view.submitted();
+		ContactDetails contact = sent.contact();
+		List<SubmittedApplication.Assessment> assessments = new ArrayList<>();
+		if (view.mine() != null) {
+			assessments.add(assessment(Objects.requireNonNull(view.mine())));
+		}
+		view.others().forEach(other -> assessments.add(assessment(other)));
+		return new SubmittedApplication(view.id(),
+				new SubmittedApplication.Program(head.programId(), head.slug(), head.name()), view.version(),
+				view.submittedAt(), view.reviewStatus(), view.average(),
+				new SubmittedApplication.Applicant(sent.email(), contact.firstName(), contact.lastName(),
+						contact.phone(), contact.country(), contact.linkedin()),
+				new SubmittedApplication.Organization(sent.organizationName(), sent.organizationType(), sent.country(),
+						sent.teamSize(), sent.website(), sent.teamBackground()),
+				new SubmittedApplication.Solution(sent.solutionName(), sent.summary(), sent.problemsSolved(),
+						sent.maturity(), sent.demoUrl(), sent.builtWith(), sent.traction(), file(sent.deck())),
+				sent.answers()
+					.stream()
+					.map(answer -> new SubmittedApplication.Answer(answer.label(), answer.kind(), answer.value(),
+							file(answer.file())))
+					.toList(),
+				head.criteria()
+					.stream()
+					.map(criterion -> new SubmittedApplication.Criterion(criterion.id(), criterion.name(),
+							criterion.description()))
+					.toList(),
+				List.copyOf(assessments));
+	}
+
+	/**
 	 * Keeps the caller's assessment of an application on the version it was submitted as last. It changes until the
 	 * outcomes are released.
 	 * @throws ProposalException when there is no such submitted application, the caller does not review its program,
@@ -496,18 +536,23 @@ public class ReviewService {
 	public FileDownload file(Actor actor, UUID id, UUID fileId) {
 		Proposal proposal = submitted(id);
 		access.of(actor, proposal.getProgramId());
-		Snapshot snapshot = snapshot(proposal);
-		boolean held = (snapshot.materials().deck() != null
-				&& Objects.requireNonNull(snapshot.materials().deck()).fileId().equals(fileId))
-				|| snapshot.answers()
-					.stream()
-					.anyMatch(answer -> answer.file() != null
-							&& Objects.requireNonNull(answer.file()).fileId().equals(fileId));
-		if (!held) {
-			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
-					"File " + fileId + " is not of application " + id);
-		}
+		held(proposal, fileId);
 		return storage.download(fileId);
+	}
+
+	/**
+	 * A file of an application's last submission, opened for an operator's app to read, as {@link #file} opens it for
+	 * the page.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when there is no such submitted application, or the file is not one it holds
+	 */
+	@Transactional
+	public ApplicationFile fileOf(Actor actor, UUID id, UUID fileId) {
+		identity.requireOperator(actor);
+		Proposal proposal = submitted(id);
+		access.of(actor, proposal.getProgramId());
+		AttachedFileResponse file = held(proposal, fileId);
+		return new ApplicationFile(fileId, file.fileName(), storage.content(fileId));
 	}
 
 	ReviewHeadResponse head(ApplicationForm form, Reviewing reviewing) {
@@ -568,6 +613,30 @@ public class ReviewService {
 		ProposalVersion version = versions.findById(new ProposalVersion.Key(proposal.getId(), proposal.getSubmissions()))
 			.orElseThrow(() -> new IllegalStateException("Application " + proposal.getId() + " has no last version"));
 		return json.readValue(version.getSnapshot(), Snapshot.class);
+	}
+
+	/**
+	 * The file of a submission with this identifier: its deck or a file it answered with.
+	 * @throws ProposalException when the submission holds no such file
+	 */
+	private AttachedFileResponse held(Proposal proposal, UUID fileId) {
+		Snapshot snapshot = snapshot(proposal);
+		return Stream
+			.concat(Stream.ofNullable(snapshot.materials().deck()),
+					snapshot.answers().stream().map(Snapshot.Answer::file).filter(Objects::nonNull))
+			.filter(file -> file.fileId().equals(fileId))
+			.findFirst()
+			.orElseThrow(() -> new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
+					"File " + fileId + " is not of application " + proposal.getId()));
+	}
+
+	private static SubmittedApplication.@Nullable File file(@Nullable AttachedFileResponse file) {
+		return file == null ? null : new SubmittedApplication.File(file.fileId(), file.fileName(), file.sizeBytes());
+	}
+
+	private static SubmittedApplication.Assessment assessment(ReviewApplicationResponse.Assessment assessment) {
+		return new SubmittedApplication.Assessment(assessment.reviewer(), assessment.role(), assessment.scores(),
+				assessment.average(), assessment.note(), assessment.conflict(), assessment.version());
 	}
 
 	private ReviewApplicationResponse view(ApplicationForm form, Reviewing reviewing, Proposal proposal) {

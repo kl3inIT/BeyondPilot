@@ -1,4 +1,4 @@
-package ai.genaifund.beyondpilot.ai;
+package ai.genaifund.beyondpilot.shared;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,7 +17,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.junit.jupiter.api.Test;
 
 /** A PDF read page by page, with no model: the text the file holds, and the place of a page that holds none. */
-class DocumentPagesTest {
+class PdfPagesTest {
 
 	@Test
 	void eachPageGivesItsOwnTextAndAPageWithoutTextKeepsItsPlace() throws IOException {
@@ -32,6 +32,12 @@ class DocumentPagesTest {
 		byte[] pdf = TestPdf.of("One", "Two", "Three");
 
 		assertThat(PdfPages.text(() -> new ByteArrayInputStream(pdf), 2)).containsExactly("One", "Two");
+		PdfPages.Pages pages = PdfPages.pages(() -> new ByteArrayInputStream(pdf), 2, 1, 1_400_000);
+		assertThat(pages.count()).isEqualTo(3);
+		assertThat(pages.pages()).extracting(PdfPages.Page::number, PdfPages.Page::text)
+			.containsExactly(org.assertj.core.groups.Tuple.tuple(2, "Two"));
+		assertThat(pages.pages().getFirst().jpeg()).startsWith((byte) 0xFF, (byte) 0xD8);
+		assertThat(PdfPages.pages(() -> new ByteArrayInputStream(pdf), 4, 8, 1_400_000).pages()).isEmpty();
 	}
 
 	@Test

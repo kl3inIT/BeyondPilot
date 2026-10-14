@@ -1,6 +1,7 @@
 /**
  * Technical utilities that several modules need and that know nothing about any module: a list written as a
- * spreadsheet for operators to download (BEY-96). No Spring bean, no persistence and no dependency on a module.
+ * spreadsheet for operators to download (BEY-96), and a PDF read page by page as text and pictures. No Spring bean,
+ * no persistence and no dependency on a module.
  */
 @ApplicationModule(displayName = "Shared", type = ApplicationModule.Type.CLOSED, allowedDependencies = {})
 @NullMarked
