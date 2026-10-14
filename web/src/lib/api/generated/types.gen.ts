@@ -4634,46 +4634,6 @@ export type ReportedChatModels = {
 };
 
 /**
- * A first message the side written to reported as unwanted.
- */
-export type ReportedRequest = {
-    createdAt: string;
-    id: string;
-    kind: 'talent' | 'solution' | 'program';
-    message: string;
-    /**
-     * When it was reported.
-     */
-    reportedAt?: string | null;
-    /**
-     * The sender's address; empty when the account no longer signs in.
-     */
-    senderEmail: string;
-    /**
-     * The sender's name; null when they gave none.
-     */
-    senderName?: string | null;
-    /**
-     * The organization the sender belonged to; null when none.
-     */
-    senderOrganization?: string | null;
-    /**
-     * The profile or solution it was sent about.
-     */
-    subjectName: string;
-};
-
-/**
- * One page of the reported first messages, the newest first.
- */
-export type ReportedRequestList = {
-    items: Array<ReportedRequest>;
-    page: number;
-    pageSize: number;
-    total: number;
-};
-
-/**
  * The file a person is about to upload.
  */
 export type ReserveUpload = {
@@ -8720,48 +8680,6 @@ export type AssignProgramConversationResponses = {
 };
 
 export type AssignProgramConversationResponse = AssignProgramConversationResponses[keyof AssignProgramConversationResponses];
-
-export type ListReportedConversationsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * The page, counted from 1.
-         */
-        page?: number;
-        /**
-         * How many items a page holds; the list's own page size when absent.
-         */
-        size?: number;
-    };
-    url: '/api/messaging/admin/reported';
-};
-
-export type ListReportedConversationsErrors = {
-    /**
-     * A parameter is not valid.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-};
-
-export type ListReportedConversationsError = ListReportedConversationsErrors[keyof ListReportedConversationsErrors];
-
-export type ListReportedConversationsResponses = {
-    /**
-     * One page of the reported first messages.
-     */
-    200: ReportedRequestList;
-};
-
-export type ListReportedConversationsResponse = ListReportedConversationsResponses[keyof ListReportedConversationsResponses];
 
 export type ListConversationsData = {
     body?: never;

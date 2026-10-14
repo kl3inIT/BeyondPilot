@@ -734,7 +734,6 @@
       "solutions": "AI solutions",
       "offers": "Offers",
       "talent": "AI talent",
-      "reportedMessages": "Reported messages",
       "review": "Review",
       "system": "System",
       "useCases": "Use cases",
@@ -746,7 +745,7 @@
       "aiUsage": "Usage",
       "mcp": "MCP",
       "email": "Email",
-      "programMessages": "Program chat assignments"
+      "programMessages": "Chat assignments"
     },
     "toggleSidebar": "Toggle sidebar",
     "notFound": {
@@ -7797,27 +7796,9 @@
         "recipient": "Your email address is never shown to them."
       }
     },
-    "reported": {
-      "metaTitle": "Reported messages",
-      "title": "Reported messages",
-      "lead": "First messages the side written to reported as unwanted. Their senders were told only that the message was declined.",
-      "empty": {
-        "title": "Nothing was reported",
-        "lead": "A first message someone reports as unwanted is listed here."
-      },
-      "columns": {
-        "sender": "Sender",
-        "about": "About",
-        "message": "Message",
-        "reported": "Reported"
-      },
-      "noOrganization": "No organization",
-      "noAccount": "Account no longer signs in",
-      "count": "{count, plural, one {# reported message} other {# reported messages}}"
-    },
     "assignments": {
       "unavailable": "Assigned operator is unavailable",
-      "title": "Program chat assignments",
+      "title": "Chat assignments",
       "lead": "Only the assigned operator can read and answer a conversation. Choose an operator; reassignment revokes the previous operator’s access.",
       "program": "Program",
       "created": "Started",

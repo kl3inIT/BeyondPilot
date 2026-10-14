@@ -1,13 +1,6 @@
-import {
-  createLoader,
-  createSerializer,
-  parseAsInteger,
-  parseAsString,
-  parseAsStringLiteral,
-} from "nuqs/server";
+import { createLoader, createSerializer, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
 import { getPathname } from "@/i18n/navigation";
-import { pageSize } from "@/lib/page-size";
 import { siteRoutes } from "@/lib/site";
 
 /** Who a conversation is with. */
@@ -60,8 +53,3 @@ export function contactRoute(target: MessagingTarget, signedIn: boolean, locale:
   const returnTo = getPathname({ href: messages, locale });
   return `${siteRoutes.signIn}?${new URLSearchParams({ returnTo })}`;
 }
-
-/** Which page of the reported first messages operators read, as the URL holds it: `?page=&size=`. */
-export const reportedRequestsSearch = { page: parseAsInteger.withDefault(1), size: pageSize };
-
-export const loadReportedRequestsSearch = createLoader(reportedRequestsSearch);

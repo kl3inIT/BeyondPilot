@@ -76,11 +76,6 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           icon: <adminIcons.organizations aria-hidden="true" />,
         },
         {
-          href: siteRoutes.adminMessagesReported,
-          label: t("nav.reportedMessages"),
-          icon: <adminIcons.reportedMessages aria-hidden="true" />,
-        },
-        {
           href: siteRoutes.adminProgramMessages,
           label: t("nav.programMessages"),
           icon: <adminIcons.programMessages aria-hidden="true" />,

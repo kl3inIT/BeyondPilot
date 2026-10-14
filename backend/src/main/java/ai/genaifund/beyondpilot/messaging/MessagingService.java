@@ -438,7 +438,7 @@ public class MessagingService {
 
 	/**
 	 * Reports a first message as unwanted. The sender is told what a decline tells, so the person who reported is not
-	 * exposed; operators read what was reported.
+	 * exposed; the report is retained as a status and audit event.
 	 * @throws MessagingException as {@link #accept(Actor, UUID)}
 	 */
 	@Transactional

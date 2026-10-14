@@ -117,10 +117,6 @@ public class MessagingRepository {
 	public record ProgramAssignment(UUID id, String subjectName, Instant createdAt, @Nullable UUID assigneeId) {
 	}
 
-	/** A request the other side reported, with the message that was reported. */
-	public record Reported(Conversation conversation, String message) {
-	}
-
 	public Optional<Conversation> find(UUID id) {
 		return jdbc.sql("select " + COLUMNS + " from messaging_conversation c where c.id = ?")
 			.param(id)
@@ -480,25 +476,6 @@ public class MessagingRepository {
 		jdbc.sql("update messaging_conversation set starter_organization_id = ? where starter_organization_id = ?")
 			.params(into, from)
 			.update();
-	}
-
-	/** One page of the reported requests, the most recently reported first. */
-	public List<Reported> reportedPage(int limit, long offset) {
-		return jdbc.sql("select " + COLUMNS + """
-				, first.body as first_body
-				from messaging_conversation c
-				join lateral (select m.body from messaging_message m where m.conversation_id = c.id
-				              order by m.seq limit 1) first on true
-				where c.status = 'reported'
-				order by c.answered_at desc, c.id limit ? offset ?
-				""")
-			.params(limit, offset)
-			.query((row, index) -> new Reported(conversation(row, index), row.getString("first_body")))
-			.list();
-	}
-
-	public long reportedCount() {
-		return jdbc.sql("select count(*) from messaging_conversation where status = 'reported'").query(Long.class).single();
 	}
 
 	private JdbcClient.StatementSpec reader(String sql, UUID accountId, @Nullable UUID organizationId, boolean owner,

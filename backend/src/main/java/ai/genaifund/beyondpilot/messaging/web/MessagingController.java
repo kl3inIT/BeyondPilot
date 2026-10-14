@@ -256,7 +256,7 @@ class MessagingController {
 
 	@PostMapping(path = "/conversations/{id}/report")
 	@Operation(operationId = "reportConversation", summary = "Report a first message as unwanted",
-			description = "The sender is told what a decline tells. Operators read what was reported.",
+			description = "The sender is told what a decline tells. The report is retained as a status and audit event.",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "204", description = "It is reported.", content = @Content)
 	@ApiResponse(responseCode = "403", description = "Only an owner of the organization answers.",

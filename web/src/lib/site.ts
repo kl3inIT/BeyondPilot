@@ -29,7 +29,6 @@ export const siteRoutes = {
   adminTalent: "/admin/talent",
   adminUseCases: "/admin/use-cases",
   adminUseCasesNew: "/admin/use-cases/new",
-  adminMessagesReported: "/admin/messages/reported",
   adminProgramMessages: "/admin/messages/programs",
   adminAiProviders: "/admin/ai/providers",
   adminSearchIndex: "/admin/ai/search-index",

@@ -734,7 +734,6 @@
       "solutions": "Giải pháp AI",
       "offers": "Ưu đãi",
       "talent": "Nhân lực AI",
-      "reportedMessages": "Tin bị báo cáo",
       "review": "Xét duyệt",
       "system": "Hệ thống",
       "useCases": "Use case",
@@ -746,7 +745,7 @@
       "aiUsage": "Sử dụng",
       "mcp": "MCP",
       "email": "Email",
-      "programMessages": "Phân công chat chương trình"
+      "programMessages": "Phân công chat"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
     "notFound": {
@@ -7797,27 +7796,9 @@
         "recipient": "Họ không bao giờ thấy email của bạn."
       }
     },
-    "reported": {
-      "metaTitle": "Tin bị báo cáo",
-      "title": "Tin bị báo cáo",
-      "lead": "Các tin đầu tiên bị bên nhận báo là không mong muốn. Người gửi chỉ được báo rằng tin đã bị từ chối.",
-      "empty": {
-        "title": "Chưa có tin nào bị báo cáo",
-        "lead": "Tin đầu tiên bị ai đó báo là không mong muốn sẽ hiện ở đây."
-      },
-      "columns": {
-        "sender": "Người gửi",
-        "about": "Về",
-        "message": "Nội dung",
-        "reported": "Ngày báo cáo"
-      },
-      "noOrganization": "Không có tổ chức",
-      "noAccount": "Tài khoản không còn đăng nhập",
-      "count": "{count, plural, other {# tin bị báo cáo}}"
-    },
     "assignments": {
       "unavailable": "Người phụ trách không còn hoạt động",
-      "title": "Phân công chat chương trình",
+      "title": "Phân công chat",
       "lead": "Chỉ người được phân công mới đọc và trả lời cuộc chat. Chọn người phụ trách; việc đổi phân công sẽ thu hồi quyền của người trước đó.",
       "program": "Chương trình",
       "created": "Bắt đầu",
