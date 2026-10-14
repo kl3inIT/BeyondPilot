@@ -1,39 +1,74 @@
 package ai.genaifund.beyondpilot.search;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import org.springframework.stereotype.Component;
 
 /**
- * One writer of the index at a time, between a rebuild and the listeners that keep the index current. A rebuild reads
- * what is published first and writes it after; a listener that took an item out in between would see it written back
- * as it was, so an item taken down would stay in search until the next rebuild. With the lock a listener waits for the
- * rebuild, then reads the item as it is now. A write that lands before the rebuild's transaction commits waits on its
- * row, so it applies after it.
+ * Keeps a rebuild from writing back what a listener changed while it ran. A rebuild reads what is published first and
+ * writes it after, so an item taken down in between would be written back as it was and stay in search until the next
+ * rebuild. A listener never waits for a rebuild, so a take-down leaves search at once; while a rebuild runs, its work is
+ * also kept, and the rebuild does it again before it returns, inside its own transaction: the listener reads the item as
+ * it is now, so what the rebuild commits is current.
  */
 @Component
 class IndexLock {
 
-	private final ReentrantLock lock = new ReentrantLock();
+	/** One rebuild at a time. */
+	private final ReentrantLock rebuilds = new ReentrantLock();
 
+	/** Guards {@link #rebuilding} and {@link #again}. */
+	private final Object state = new Object();
+
+	private boolean rebuilding;
+
+	private final List<Runnable> again = new ArrayList<>();
+
+	/** A listener's change, done now, and done again at the end of a rebuild that is running. */
 	void run(Runnable work) {
-		lock.lock();
-		try {
-			work.run();
+		synchronized (state) {
+			if (rebuilding) {
+				again.add(work);
+			}
 		}
-		finally {
-			lock.unlock();
-		}
+		work.run();
 	}
 
-	<T> T call(Supplier<T> work) {
-		lock.lock();
+	/** A rebuild, after which every change listeners made meanwhile is done again on what is now published. */
+	<T> T call(Supplier<T> rebuild) {
+		rebuilds.lock();
 		try {
-			return work.get();
+			synchronized (state) {
+				rebuilding = true;
+			}
+			try {
+				T result = rebuild.get();
+				while (true) {
+					List<Runnable> pending;
+					synchronized (state) {
+						if (again.isEmpty()) {
+							rebuilding = false;
+							break;
+						}
+						pending = List.copyOf(again);
+						again.clear();
+					}
+					pending.forEach(Runnable::run);
+				}
+				return result;
+			}
+			finally {
+				synchronized (state) {
+					rebuilding = false;
+					again.clear();
+				}
+			}
 		}
 		finally {
-			lock.unlock();
+			rebuilds.unlock();
 		}
 	}
 
