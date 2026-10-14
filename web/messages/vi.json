@@ -88,7 +88,6 @@
   "Campaign": {
     "name": "AI for Insurance Challenge × Tasco",
     "partners": "GenAI Fund × Tasco",
-    "kind": "Thử thách doanh nghiệp · Bảo hiểm · Việt Nam",
     "question": "Làm sao để bảo hiểm ở Việt Nam trở thành thứ người dân thấy đáng có?",
     "live": "Đang mở",
     "apply": "Ứng tuyển",
@@ -96,7 +95,6 @@
     "readBrief": "Đọc đề bài",
     "submissionsClose": "Hạn nộp 23:59 ICT, 15/10",
     "closes": "Hạn nộp 23:59 ICT, 15/10",
-    "countdown": "{days, plural, =0 {Ngày cuối} other {Còn # ngày}} · hạn nộp 23:59 ICT, 15/10",
     "closed": "Đã đóng nhận hồ sơ lúc 23:59 ICT, 15/10",
     "facts": {
       "label": "Mốc thời gian",
@@ -105,9 +103,7 @@
       "demoDay": "Demo day",
       "demoDayWhen": "14:00–16:00, 22/10",
       "investment": "Có thể được xem xét đầu tư",
-      "investmentValue": "Tối đa 100.000 USD",
-      "notified": "Thông báo kết quả",
-      "notifiedWhen": "16/10"
+      "investmentValue": "Tối đa 100.000 USD"
     }
   },
   "Home": {
@@ -270,11 +266,6 @@
         "shortlist": "Lưu giải pháp phù hợp",
         "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là nhận đề xuất hoặc lưu các giải pháp được ghép với một bài toán."
       }
-    },
-    "challenge": {
-      "eyebrow": "Cơ hội nổi bật",
-      "description": "Tasco và GenAI Fund đang tìm các giải pháp AI cho những bài toán vận hành thực tế của ngành bảo hiểm Việt Nam. Ứng tuyển trực tiếp qua trang thử thách.",
-      "partners": "Cùng Microsoft for Startups và Notion"
     },
     "faq": {
       "eyebrow": "Hỏi đáp",
