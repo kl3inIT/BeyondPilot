@@ -30,27 +30,51 @@ class IndexRepair {
 
 	private final UseCaseIndexing useCases;
 
+	private final IndexLock lock;
+
 	private volatile @Nullable Run lastRun;
 
 	IndexRepair(ProgramIndexing programs, SolutionIndexing solutions, TalentIndexing talent,
-			UseCaseIndexing useCases) {
+			UseCaseIndexing useCases, IndexLock lock) {
+		this.lock = lock;
 		this.programs = programs;
 		this.solutions = solutions;
 		this.talent = talent;
 		this.useCases = useCases;
 	}
 
+	/**
+	 * Repairs the index in the background once the application is ready. The listener runs before the application
+	 * reports itself ready to take traffic, and a rebuild of the whole index on production took about 70 seconds, during
+	 * which every deployment answered 502; meanwhile search answers from the index as it was.
+	 */
 	@EventListener(ApplicationReadyEvent.class)
-	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Ho_Chi_Minh")
-	@Transactional
-	synchronized void repair() {
-		rebuild();
+	void repairInBackground(ApplicationReadyEvent ready) {
+		// Through the bean, so that the rebuild runs in its transaction.
+		IndexRepair self = ready.getApplicationContext().getBean(IndexRepair.class);
+		Thread.ofVirtual().name("search-index-repair").start(() -> {
+			try {
+				self.repair();
+			}
+			catch (RuntimeException failure) {
+				LOG.atError()
+					.addKeyValue("event", "search.index.repair_failed")
+					.addKeyValue("error_type", failure.getClass().getSimpleName())
+					.log("The search index could not be repaired at start; the nightly repair tries again");
+			}
+		});
 	}
 
-	/** Rebuilds the index now, as an operator asked; one rebuild runs at a time. */
+	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Ho_Chi_Minh")
 	@Transactional
-	synchronized Run rebuildNow() {
-		return rebuild();
+	void repair() {
+		lock.call(this::rebuild);
+	}
+
+	/** Rebuilds the index now, as an operator asked; one rebuild runs at a time, and no listener writes meanwhile. */
+	@Transactional
+	Run rebuildNow() {
+		return lock.call(this::rebuild);
 	}
 
 	private Run rebuild() {

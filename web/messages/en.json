@@ -1239,7 +1239,8 @@
           "release": "Released the outcomes",
           "file_open": "Opened a file of an application",
           "export": "Downloaded the applications",
-          "drafts_export": "Downloaded the drafts"
+          "drafts_export": "Downloaded the drafts",
+          "draft_open": "Opened a draft"
         },
         "use_case_proposal": {
           "decide": "Decided on a proposal to a use case",
@@ -1386,7 +1387,8 @@
           "release": "Released the outcomes of <resource></resource>",
           "file_open": "Opened a file of an application to <resource></resource>",
           "export": "Downloaded the applications to <resource></resource>",
-          "drafts_export": "Downloaded the drafts of <resource></resource>"
+          "drafts_export": "Downloaded the drafts of <resource></resource>",
+          "draft_open": "Opened a draft of <resource></resource>"
         },
         "use_case_proposal": {
           "decide": "Decided on a proposal to <resource></resource>",
@@ -5510,6 +5512,7 @@
     },
     "open": "Open now",
     "upcoming": "Coming up",
+    "upcomingEvents": "Upcoming events",
     "done": "Done",
     "programCount": "{count, plural, one {# program} other {# programs}}",
     "itemCount": "{count, plural, one {# event} other {# events}}",
@@ -6520,7 +6523,8 @@
         "shortlisted": "Shortlisted",
         "not_selected": "Not selected",
         "to_score": "To score",
-        "scored": "Done"
+        "scored": "Done",
+        "drafts": "Drafts"
       },
       "search": "Search applicants",
       "clear": "Clear filters",
@@ -6599,8 +6603,7 @@
       "footerScored": "{scored, plural, one {# of {total} has a score} other {# of {total} have a score}}",
       "download": "Download (CSV)",
       "downloadFailed": "We could not download the applications. Try again.",
-      "own": "Yours",
-      "drafts": "{count, plural, one {# draft} other {# drafts}}"
+      "own": "Yours"
     },
     "application": {
       "metaTitle": "Application",
@@ -6876,10 +6879,15 @@
       "noName": "No name yet",
       "none": "Not given",
       "download": "Download (CSV)",
-      "private": "What a draft says stays private until its applicant submits it. Judges never see drafts.",
       "empty": {
         "title": "No drafts",
         "description": "Everyone who started an application has submitted it."
+      },
+      "detail": {
+        "metaTitle": "Draft",
+        "back": "Drafts",
+        "lead": "Not submitted to {program} · started {started} · last saved {saved}",
+        "note": "Not submitted yet, so it may still change. Judges never see drafts, and each opening is recorded in the audit log."
       }
     }
   },

@@ -9,9 +9,12 @@ import { linkedinAddress, mailAddress, phoneAddress, webAddress } from "./applic
 
 type Row = [string, React.ReactNode];
 
-/** The address a judge opens a file of the submission at; the backend checks they review it. */
-function fileHref(applicationId: string, file: AttachedFile) {
-  return `/api/proposal/review/applications/${applicationId}/files/${file.fileId}`;
+/**
+ * The address a file of the record opens at: a judge's of a submission, an operator's of a draft.
+ * The backend checks who may open it and records the opening.
+ */
+function fileHref(applicationId: string, file: AttachedFile, draft: boolean) {
+  return `/api/proposal/review/${draft ? "drafts" : "applications"}/${applicationId}/files/${file.fileId}`;
 }
 
 /** A link of the record, 24px to aim at: the padding adds 4px to its line and the margin takes it back. */
@@ -40,9 +43,12 @@ function size(bytes: number) {
 async function SubmittedRecord({
   applicationId,
   submitted,
+  draft = false,
 }: {
   applicationId: string;
   submitted: SubmittedApplication;
+  /** A draft not submitted yet, read by an operator: its files open at the draft's address. */
+  draft?: boolean;
 }) {
   const [t, vocabulary, locale] = await Promise.all([
     getTranslations("Review.record"),
@@ -244,7 +250,7 @@ async function SubmittedRecord({
                 </span>
                 {!item.text && (
                   <a
-                    href={item.link ?? fileHref(applicationId, item.file as AttachedFile)}
+                    href={item.link ?? fileHref(applicationId, item.file as AttachedFile, draft)}
                     target={item.link ? "_blank" : undefined}
                     rel={item.link ? "noreferrer" : undefined}
                     className={cn("hit-area shrink-0", link)}

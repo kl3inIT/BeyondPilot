@@ -29,7 +29,7 @@ export default async function ProgramDraftsRoute({
 
   return (
     <ProgramDraftsPage
-      head={applications.head}
+      applications={applications}
       drafts={drafts}
       tabs={<ProgramTabs id={id} current="applications" applications />}
     />

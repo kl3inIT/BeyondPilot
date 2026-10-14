@@ -951,6 +951,7 @@ paths:
           - proposal.file_open
           - proposal.export
           - proposal.drafts_export
+          - proposal.draft_open
           - use_case_proposal.decide
           - use_case_proposal.outcomes_send
           - email.settings_update
@@ -6715,6 +6716,97 @@ paths:
       security:
       - session: []
       summary: A file of an application's last submission
+      tags:
+      - Review
+  /api/proposal/review/drafts/{id}:
+    get:
+      operationId: getReviewDraft
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewDraft"
+          description: What the draft holds now. The reading is recorded.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such draft.
+      security:
+      - session: []
+      summary: "An application not submitted yet, as it stands now"
+      tags:
+      - Review
+  /api/proposal/review/drafts/{id}/files/{fileId}:
+    get:
+      operationId: getReviewDraftFile
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: fileId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+          description: "The bytes of the file, saved under its name."
+        "302":
+          description: "The address the object store serves the file at, for a while."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The draft holds no such file.
+      security:
+      - session: []
+      summary: A file of an application not submitted yet
       tags:
       - Review
   /api/proposal/review/programs:
@@ -14429,6 +14521,7 @@ components:
           - proposal.file_open
           - proposal.export
           - proposal.drafts_export
+          - proposal.draft_open
           - use_case_proposal.decide
           - use_case_proposal.outcomes_send
           - email.settings_update
@@ -21166,6 +21259,32 @@ components:
       required:
       - id
       - name
+    ReviewDraft:
+      type: object
+      description: "An application not submitted yet, as it stands now, for an operator;\
+        \ judges never read it."
+      properties:
+        draft:
+          $ref: "#/components/schemas/SubmittedApplication"
+          description: "What the draft holds now, in the shape of a submission; a\
+            \ part not written yet is empty."
+        head:
+          $ref: "#/components/schemas/ReviewHead"
+        id:
+          type: string
+          format: uuid
+        lastSavedAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+      required:
+      - draft
+      - head
+      - id
+      - lastSavedAt
+      - startedAt
     ReviewEvent:
       type: object
       properties:

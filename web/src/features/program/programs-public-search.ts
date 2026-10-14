@@ -48,9 +48,19 @@ export type ProgramGroups = {
 };
 
 /**
+ * Whether a program is an event and nothing else, such as one read from Luma (BEY-190): it takes no
+ * applications here, so it is listed by its events still to come, where people register, rather
+ * than as a program.
+ */
+export function listedAsEvent(program: ProgramSummary) {
+  return program.type === "event" && !program.applications && program.upcomingEvents.length > 0;
+}
+
+/**
  * The programs the search selects, grouped as the page shows them, and how many programs are in
  * each phase of the selected type, for the tabs. A program still running after its applications
- * closed is shown under Open now.
+ * closed is shown under Open now. Upcoming events are listed by date apart from the programs, as
+ * the sites that list Luma events do: an event is registered for, a program is applied to.
  */
 export function groupPrograms(
   programs: ProgramSummary[],
@@ -58,24 +68,38 @@ export function groupPrograms(
 ): ProgramGroups {
   const ofType = programs.filter((program) => !search.type || program.type === search.type);
   const shown = (phase: (typeof publicPhases)[number]) => !search.phase || search.phase === phase;
-  const open = ofType.filter((program) => program.phase === "open" || program.phase === "running");
-  const upcoming = ofType.filter((program) => program.phase === "upcoming");
-  const done = ofType.filter((program) => program.phase === "done");
+  const open = ofType.filter(
+    (program) =>
+      (program.phase === "open" || program.phase === "running") && !listedAsEvent(program),
+  );
+  const upcoming = ofType.filter(
+    (program) => program.phase === "upcoming" && !listedAsEvent(program),
+  );
+  const asEvents = ofType.filter(listedAsEvent);
+  const done = ofType.filter((program) => program.phase === "done" && !listedAsEvent(program));
   return {
     open: shown("open") ? open : [],
     upcoming: shown("upcoming") ? upcoming : [],
-    // Coming up also lists the events still to come of programs that are open or running, except
-    // those their card under Open now already shows.
+    // The events still to come: those of a program that is an event, and those of programs that
+    // are open or running, except those their card under Open now already shows.
     events: shown("upcoming")
-      ? open
-          .flatMap((program) =>
+      ? [
+          ...asEvents.flatMap((program) =>
+            program.upcomingEvents.map((event) => ({ program, event })),
+          ),
+          ...open.flatMap((program) =>
             program.upcomingEvents
               .slice(shown("open") ? openCardEvents : 0)
               .map((event) => ({ program, event })),
-          )
-          .sort((a, b) => a.event.startsAt.localeCompare(b.event.startsAt))
+          ),
+        ].sort((a, b) => a.event.startsAt.localeCompare(b.event.startsAt))
       : [],
     done: shown("done") ? done : [],
-    counts: { open: open.length, upcoming: upcoming.length, done: done.length, all: ofType.length },
+    counts: {
+      open: open.length,
+      upcoming: upcoming.length + asEvents.length,
+      done: done.length,
+      all: ofType.length,
+    },
   };
 }
