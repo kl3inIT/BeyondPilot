@@ -31,6 +31,11 @@ public interface ProgramRepository extends JpaRepository<Program, UUID> {
 
 	boolean existsByCoverFileId(UUID coverFileId);
 
+	Optional<Program> findByLumaEventId(String lumaEventId);
+
+	/** The programs read from Luma, in any status. */
+	List<Program> findByLumaEventIdNotNull();
+
 	/**
 	 * Features a program that is not featured, in one statement, so two operators who feature it together feature it
 	 * once and the first time stays. It leaves the version alone: an operator's save in another tab is not refused

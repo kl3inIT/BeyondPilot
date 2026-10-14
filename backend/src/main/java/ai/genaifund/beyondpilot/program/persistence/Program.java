@@ -72,6 +72,13 @@ public class Program {
 	@Column(insertable = false, updatable = false)
 	private @Nullable Instant featuredAt;
 
+	/** The Luma event the program was read from (BEY-190); null for a program an operator created. */
+	@Column(updatable = false)
+	private @Nullable String lumaEventId;
+
+	/** The image on Luma the cover was copied from; null when the cover is not Luma's. */
+	private @Nullable String lumaCoverUrl;
+
 	private @Nullable Instant applicationsOpenAt;
 
 	private @Nullable Instant applicationsCloseAt;
@@ -152,6 +159,17 @@ public class Program {
 
 	public void coverWith(@Nullable UUID coverFileId) {
 		this.coverFileId = coverFileId;
+	}
+
+	/** A program read from Luma: the event it is, which never changes. */
+	public void readFromLuma(String eventId) {
+		this.lumaEventId = eventId;
+	}
+
+	/** The cover, copied from this image on Luma. */
+	public void coverFromLuma(UUID coverFileId, String imageUrl) {
+		this.coverFileId = coverFileId;
+		this.lumaCoverUrl = imageUrl;
 	}
 
 	public void takeApplications(Instant opensAt, Instant closesAt, @Nullable Integer shortlistSize,
@@ -295,6 +313,14 @@ public class Program {
 
 	public @Nullable Instant getFeaturedAt() {
 		return featuredAt;
+	}
+
+	public @Nullable String getLumaEventId() {
+		return lumaEventId;
+	}
+
+	public @Nullable String getLumaCoverUrl() {
+		return lumaCoverUrl;
 	}
 
 	public @Nullable Instant getApplicationsOpenAt() {
