@@ -43,8 +43,9 @@ public class StorageFile {
 	@Column(nullable = false)
 	private FileStatus status;
 
-	@Column(nullable = false, updatable = false)
-	private UUID uploadedByAccountId;
+	/** Null for a file the server stored itself. */
+	@Column(updatable = false)
+	private @Nullable UUID uploadedByAccountId;
 
 	private @Nullable String uploadTokenHash;
 
@@ -59,7 +60,7 @@ public class StorageFile {
 
 	/** A reserved upload. */
 	public StorageFile(UUID id, ObjectStorageProvider provider, String objectKey, FilePurpose purpose, String fileName,
-			String mediaType, long sizeBytes, UUID uploadedByAccountId, @Nullable String uploadTokenHash,
+			String mediaType, long sizeBytes, @Nullable UUID uploadedByAccountId, @Nullable String uploadTokenHash,
 			Instant uploadExpiresAt) {
 		this.id = id;
 		this.provider = provider;
@@ -107,7 +108,7 @@ public class StorageFile {
 		return sizeBytes;
 	}
 
-	public UUID getUploadedByAccountId() {
+	public @Nullable UUID getUploadedByAccountId() {
 		return uploadedByAccountId;
 	}
 

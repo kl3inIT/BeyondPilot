@@ -107,6 +107,26 @@ test.describe("home page", () => {
     await expect(page).toHaveURL("/solutions");
   });
 
+  test("the events card lists the next two events of the programs, each leading to its registration", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const card = page
+      .getByRole("article")
+      .filter({ has: page.getByRole("heading", { name: "AI Events" }) });
+    const events = card.getByRole("listitem");
+    await expect(events).toHaveCount(2);
+    await expect(events.nth(0)).toContainText(
+      "Stop Guessing What Insurers Need: Tasco Challenge Briefing",
+    );
+    await expect(events.nth(0)).toContainText("AI for Insurance Challenge × Tasco · Online");
+    await expect(events.nth(1)).toContainText("Nestlé Vietnam AI Reinvention info session");
+    await expect(
+      card.getByRole("link", { name: /Stop Guessing What Insurers Need/ }),
+    ).toHaveAttribute("href", "https://luma.com/tasco-briefing");
+  });
+
   test("the search leads to its results", async ({ page }) => {
     await page.goto("/");
 
