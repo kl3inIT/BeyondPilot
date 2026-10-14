@@ -44,11 +44,13 @@ export function ProgramAssignmentAction({
       <DropdownMenuTrigger render={<Button prominence="secondary" size="sm" pending={pending} />}>
         {t("assign")}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-72">
         <DropdownMenuGroup>
           {operators.map((operator) => (
             <DropdownMenuItem key={operator.id} onClick={() => void assign(operator.id)}>
-              {operator.displayName ?? operator.email}
+              {operator.displayName
+                ? `${operator.displayName} · ${operator.email}`
+                : operator.email}
             </DropdownMenuItem>
           ))}
         </DropdownMenuGroup>

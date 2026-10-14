@@ -29,7 +29,10 @@ test.describe("admin AI", () => {
     await page.goto("/admin/ai/providers");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("AI providers");
-    await expect(page.getByRole("link", { name: "Chat" })).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("link", { name: "Chat", exact: true })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
     await expect(page.getByRole("link", { name: "Embedding" })).not.toHaveAttribute("aria-current");
 
     // The task shows its model and the level it reasons at.
@@ -130,7 +133,9 @@ test.describe("admin AI", () => {
     await page.goto("/admin/ai/providers?tab=ocr");
 
     await expect(page.getByRole("link", { name: "OCR" })).toHaveAttribute("aria-current", "page");
-    await expect(page.getByRole("link", { name: "Chat" })).not.toHaveAttribute("aria-current");
+    await expect(page.getByRole("link", { name: "Chat", exact: true })).not.toHaveAttribute(
+      "aria-current",
+    );
 
     // The reader is the OCR service that was chosen; a model can take its place.
     const reader = page.getByRole("region", { name: "Reader" });
