@@ -4927,6 +4927,11 @@
         "uploaded": "{size} · Tải lên {when}",
         "waiting": "{size} · Chưa lưu",
         "download": "Tải {name} về",
+        "previewNamed": "Xem trước {name}",
+        "previewTitle": "Xem trước {name}",
+        "previewDescription": "Bản xem trước PDF",
+        "previewLoading": "Đang tải bản xem trước PDF…",
+        "previewFailed": "Không xem trước được PDF. Bạn có thể tải tệp về thay thế.",
         "replace": "Thay tệp",
         "remove": "Gỡ tệp",
         "errors": {

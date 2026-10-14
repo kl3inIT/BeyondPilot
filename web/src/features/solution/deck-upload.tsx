@@ -2,7 +2,7 @@
 
 import { FileTextIcon, FileUpIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
@@ -12,6 +12,7 @@ import { useFormatter } from "@/i18n/format";
 import { uploadFile, uploadWords } from "@/lib/storage/upload";
 
 import { useFileSize } from "./solution-deck";
+import { SolutionDeckPreview } from "./solution-deck-preview";
 import type { HeldDeck } from "./solution-editor-state";
 
 /** What the backend accepts as a solution's deck (storage › FilePurpose.SOLUTION_DECK). */
@@ -39,6 +40,15 @@ function DeckUpload({ id, deck, href, onChange }: DeckUploadProps) {
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  const heldPreview = useRef(deck?.previewUrl);
+
+  useEffect(() => {
+    const previous = heldPreview.current;
+    if (previous && previous !== deck?.previewUrl) {
+      URL.revokeObjectURL(previous);
+    }
+    heldPreview.current = deck?.previewUrl;
+  }, [deck?.previewUrl]);
 
   async function upload(file: File) {
     setProblem(null);
@@ -57,6 +67,7 @@ function DeckUpload({ id, deck, href, onChange }: DeckUploadProps) {
         fileId: stored.id,
         fileName: stored.fileName,
         sizeBytes: stored.sizeBytes,
+        previewUrl: URL.createObjectURL(file),
         attachedAt: null,
       });
     } catch (error) {
@@ -138,6 +149,7 @@ function DeckUpload({ id, deck, href, onChange }: DeckUploadProps) {
             </span>
           </div>
           <div className="flex gap-2">
+            <SolutionDeckPreview fileName={deck.fileName} fileUrl={href ?? deck.previewUrl} />
             <Button id={id} prominence="secondary" size="sm" onClick={choose}>
               {t("replace")}
             </Button>

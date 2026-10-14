@@ -711,6 +711,7 @@ function SolutionEditor({
                     form={form}
                     errorOf={errorOf}
                     solutionId={solution.id}
+                    solutionName={draft.name}
                     deckHref={deckHref}
                     onImageAdded={addImage}
                     unsent={solution.status === "draft"}
@@ -732,6 +733,7 @@ function SolutionEditor({
                     submittable={autosaves}
                     organizationName={server.organizationName}
                     slug={server.slug}
+                    deckHref={deckHref}
                     confirmed={confirmed}
                     onConfirmedChange={setConfirmed}
                     onOpen={open}

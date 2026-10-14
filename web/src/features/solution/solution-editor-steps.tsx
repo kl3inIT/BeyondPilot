@@ -370,6 +370,7 @@ function FitStep({ form, errorOf }: StepProps) {
 
 type EvidenceStepProps = StepProps & {
   solutionId: string;
+  solutionName: string;
   /** Where the deck is read, once the solution names the file the editor holds. */
   deckHref: string | undefined;
   /** True while the solution was never sent for review. */
@@ -388,6 +389,7 @@ function EvidenceStep({
   form,
   errorOf,
   solutionId,
+  solutionName,
   deckHref,
   unsent,
   customerDeployments,
@@ -435,6 +437,7 @@ function EvidenceStep({
         >
           <ImageUpload
             id={fieldId(place)}
+            solutionName={solutionName}
             place={place}
             image={bound.state.value}
             invalid={errorOf(place) !== undefined}
@@ -462,6 +465,7 @@ function EvidenceStep({
           >
             <GalleryUpload
               id={fieldId("images")}
+              solutionName={solutionName}
               images={field.state.value}
               onAdd={onImageAdded}
               onChange={field.handleChange}

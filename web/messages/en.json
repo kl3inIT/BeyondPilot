@@ -4927,6 +4927,11 @@
         "uploaded": "{size} · Uploaded {when}",
         "waiting": "{size} · Not saved yet",
         "download": "Download {name}",
+        "previewNamed": "Preview {name}",
+        "previewTitle": "Preview {name}",
+        "previewDescription": "PDF preview",
+        "previewLoading": "Loading PDF preview…",
+        "previewFailed": "The PDF could not be previewed. You can download it instead.",
         "replace": "Replace",
         "remove": "Remove",
         "errors": {
