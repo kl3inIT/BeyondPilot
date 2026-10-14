@@ -13,6 +13,7 @@ import ai.genaifund.beyondpilot.proposal.ReviewService;
 import ai.genaifund.beyondpilot.proposal.dto.ApplicationsCsv;
 import ai.genaifund.beyondpilot.proposal.dto.DecideRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ExportApplicationsRequest;
+import ai.genaifund.beyondpilot.proposal.dto.ProgramDraftsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseDraftRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseEmails;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseResponse;
@@ -94,6 +95,41 @@ class ReviewController {
 			.header(HttpHeaders.CONTENT_DISPOSITION,
 					ContentDisposition.attachment().filename(csv.fileName(), StandardCharsets.UTF_8).build().toString())
 			.body(("\uFEFF" + csv.content()).getBytes(StandardCharsets.UTF_8));
+	}
+
+	@GetMapping(path = "/programs/{programId}/drafts", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "listProgramDrafts",
+			summary = "A program's applications not submitted yet, for operators to follow up",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "Each draft's applicant, how to reach them and how far they got, the most recently saved first. What a draft says is not read out.")
+	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such program taking applications.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ProgramDraftsResponse drafts(@CurrentActor Actor actor, @PathVariable UUID programId) {
+		return review.drafts(actor, programId);
+	}
+
+	@PostMapping(path = "/programs/{programId}/drafts/export", produces = "text/csv")
+	@Operation(operationId = "exportProgramDrafts",
+			summary = "Download a program's applications not submitted yet as a spreadsheet",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "One row for each draft, with its applicant's contact details and how far they got. The download is recorded.",
+			content = @Content(mediaType = "text/csv", schema = @Schema(type = "string")))
+	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such program taking applications.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<byte[]> exportDrafts(@CurrentActor Actor actor, @PathVariable UUID programId) {
+		ApplicationsCsv csv = review.exportDrafts(actor, programId);
+		return ResponseEntity.ok()
+			.contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
+			.cacheControl(CacheControl.noStore())
+			.header(HttpHeaders.CONTENT_DISPOSITION,
+					ContentDisposition.attachment().filename(csv.fileName(), StandardCharsets.UTF_8).build().toString())
+			.body(("﻿" + csv.content()).getBytes(StandardCharsets.UTF_8));
 	}
 
 	@GetMapping(path = "/applications/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

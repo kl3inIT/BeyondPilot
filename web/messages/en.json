@@ -1239,7 +1239,8 @@
           "decide": "Decided on an application",
           "release": "Released the outcomes",
           "file_open": "Opened a file of an application",
-          "export": "Downloaded the applications"
+          "export": "Downloaded the applications",
+          "drafts_export": "Downloaded the drafts"
         },
         "use_case_proposal": {
           "decide": "Decided on a proposal to a use case",
@@ -1385,7 +1386,8 @@
           "decide": "Decided on an application to <resource></resource>",
           "release": "Released the outcomes of <resource></resource>",
           "file_open": "Opened a file of an application to <resource></resource>",
-          "export": "Downloaded the applications to <resource></resource>"
+          "export": "Downloaded the applications to <resource></resource>",
+          "drafts_export": "Downloaded the drafts of <resource></resource>"
         },
         "use_case_proposal": {
           "decide": "Decided on a proposal to <resource></resource>",
@@ -6598,7 +6600,8 @@
       "footerScored": "{scored, plural, one {# of {total} has a score} other {# of {total} have a score}}",
       "download": "Download (CSV)",
       "downloadFailed": "We could not download the applications. Try again.",
-      "own": "Yours"
+      "own": "Yours",
+      "drafts": "{count, plural, one {# draft} other {# drafts}}"
     },
     "application": {
       "metaTitle": "Application",
@@ -6850,6 +6853,35 @@
       "done": "All scored",
       "progress": "You scored {done} of {total}",
       "closes": "Applications close {closes}"
+    },
+    "drafts": {
+      "metaTitle": "Drafts not submitted",
+      "back": "Applications",
+      "lead": "{count, plural, =0 {No draft is waiting.} one {# draft not submitted yet, the most recently saved first.} other {# drafts not submitted yet, the most recently saved first.}}",
+      "caption": "Drafts not submitted",
+      "columns": {
+        "applicant": "Applicant",
+        "phone": "Phone",
+        "organization": "Organization",
+        "progress": "Progress",
+        "saved": "Last saved"
+      },
+      "steps": {
+        "contact": "contact details",
+        "solution": "solution",
+        "deck": "deck",
+        "questions": "program questions"
+      },
+      "progress": "{done} of {total} steps",
+      "missing": "Missing: {steps}",
+      "noName": "No name yet",
+      "none": "Not given",
+      "download": "Download (CSV)",
+      "private": "What a draft says stays private until its applicant submits it. Judges never see drafts.",
+      "empty": {
+        "title": "No drafts",
+        "description": "Everyone who started an application has submitted it."
+      }
     }
   },
   "Search": {

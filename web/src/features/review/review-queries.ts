@@ -5,9 +5,11 @@ import {
   getRelease,
   getReviewApplication,
   getReviewCriteria,
+  listProgramDrafts,
   listReviewApplications,
   listReviewers,
   listReviewPrograms,
+  type ProgramDrafts,
   type Release,
   type ReviewApplication,
   type ReviewApplications,
@@ -50,6 +52,15 @@ export async function judgesAnyProgram(): Promise<boolean> {
 /** A program's submitted applications as the caller reviews them. Server only. */
 export async function readReviewApplications(programId: string): Promise<ReviewApplications> {
   const { data } = await listReviewApplications({
+    ...(await sessionRequest()),
+    path: { programId },
+  }).catch(notFoundWhenRefused);
+  return data;
+}
+
+/** A program's drafts not submitted yet, for an operator. Server only. */
+export async function readProgramDrafts(programId: string): Promise<ProgramDrafts> {
+  const { data } = await listProgramDrafts({
     ...(await sessionRequest()),
     path: { programId },
   }).catch(notFoundWhenRefused);

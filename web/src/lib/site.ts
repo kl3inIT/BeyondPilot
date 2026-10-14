@@ -145,6 +145,11 @@ export function adminProgramApplicationsRoute(id: string) {
 }
 
 /** Where GenAI Fund releases a program's outcomes. */
+/** A program's applications not submitted yet, for operators to follow up. */
+export function adminProgramDraftsRoute(id: string) {
+  return `${adminProgramApplicationsRoute(id)}/drafts`;
+}
+
 export function adminProgramReleaseRoute(id: string) {
   return `${siteRoutes.adminPrograms}/${id}/release`;
 }

@@ -1060,7 +1060,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.feature' | 'program.unfeature' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.settings_change';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.feature' | 'program.unfeature' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -3661,6 +3661,58 @@ export type ProgramConversationAssignment = {
     createdAt: string;
     id: string;
     programName: string;
+};
+
+/**
+ * Who started an application, how to reach them and how far they got.
+ */
+export type ProgramDraft = {
+    /**
+     * First and last name, phone and country are filled.
+     */
+    contactComplete: boolean;
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    /**
+     * A deck is attached.
+     */
+    deckAttached: boolean;
+    /**
+     * The address the applicant signs in with.
+     */
+    email: string;
+    firstName?: string | null;
+    id: string;
+    lastName?: string | null;
+    lastSavedAt: string;
+    /**
+     * The organization the applicant applies for, once they have one.
+     */
+    organizationName?: string | null;
+    organizationType?: 'company' | 'builder_team' | 'independent_builder' | 'other';
+    phone?: string | null;
+    /**
+     * How many of the program's required questions are answered.
+     */
+    requiredAnswered: number;
+    /**
+     * A solution is chosen.
+     */
+    solutionChosen: boolean;
+    startedAt: string;
+};
+
+/**
+ * A program's applications not submitted yet, for operators to follow up; what each says stays the applicant's.
+ */
+export type ProgramDrafts = {
+    items: Array<ProgramDraft>;
+    /**
+     * How many required questions the program asks.
+     */
+    requiredQuestions: number;
 };
 
 /**
@@ -7317,7 +7369,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.feature' | 'program.unfeature' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.feature' | 'program.unfeature' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -12315,6 +12367,76 @@ export type DecideApplicationsResponses = {
 };
 
 export type DecideApplicationsResponse = DecideApplicationsResponses[keyof DecideApplicationsResponses];
+
+export type ListProgramDraftsData = {
+    body?: never;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/drafts';
+};
+
+export type ListProgramDraftsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+};
+
+export type ListProgramDraftsError = ListProgramDraftsErrors[keyof ListProgramDraftsErrors];
+
+export type ListProgramDraftsResponses = {
+    /**
+     * Each draft's applicant, how to reach them and how far they got, the most recently saved first. What a draft says is not read out.
+     */
+    200: ProgramDrafts;
+};
+
+export type ListProgramDraftsResponse = ListProgramDraftsResponses[keyof ListProgramDraftsResponses];
+
+export type ExportProgramDraftsData = {
+    body?: never;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/drafts/export';
+};
+
+export type ExportProgramDraftsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+};
+
+export type ExportProgramDraftsError = ExportProgramDraftsErrors[keyof ExportProgramDraftsErrors];
+
+export type ExportProgramDraftsResponses = {
+    /**
+     * One row for each draft, with its applicant's contact details and how far they got. The download is recorded.
+     */
+    200: string;
+};
+
+export type ExportProgramDraftsResponse = ExportProgramDraftsResponses[keyof ExportProgramDraftsResponses];
 
 export type GetReleaseData = {
     body?: never;
