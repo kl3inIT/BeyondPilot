@@ -213,7 +213,7 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   first `single_choice` question; a `multi_choice` answer is read on the application, not in the list.
 - **What every reviewer reads.** The submission as its snapshot holds it, with the link to the product's demo
   (`submitted.demoUrl`) when the solution had one at submission; the application page shows it under the solution and
-  opens it in a new tab. The list and the CSV download do not carry it.
+  opens it in a new tab. The list and the download do not carry it.
 - **What a judge reads.** Their own assessment and its mean; never anyone else's score, an average across judges, the
   decision or the decision history.
 - **What an operator reads.** Every assessment with its author, role (`reviewer` for a joined judge, `operator`
@@ -270,26 +270,28 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 Operator acts, and a file opened by an operator or a judge, are recorded through `AuditTrail` with that person as
 actor and the program as resource (type `program`); see [ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md).
 
-| Action                     | When                                       | Details                       |
-| -------------------------- | ------------------------------------------ | ----------------------------- |
-| `proposal.criteria_update` | Criteria replaced                          | `count`                       |
-| `proposal.reviewer_invite` | A judge invited, or the invitation re-sent | `email`                       |
-| `proposal.reviewer_remove` | A judge removed                            | `email`                       |
-| `proposal.decide`          | One per application whose decision changed | `decision`                    |
-| `proposal.release`         | Outcomes released                          | `shortlisted`, `not_selected` |
-| `proposal.file_open`       | A reviewer opened a file of an application | `application`, `file`         |
-| `proposal.export`          | An operator downloaded the applications    | `count`                       |
-| `proposal.drafts_export`   | An operator downloaded the drafts          | `count`                       |
+| Action                     | When                                          | Details                       |
+| -------------------------- | --------------------------------------------- | ----------------------------- |
+| `proposal.criteria_update` | Criteria replaced                             | `count`                       |
+| `proposal.reviewer_invite` | A judge invited, or the invitation re-sent    | `email`                       |
+| `proposal.reviewer_remove` | A judge removed                               | `email`                       |
+| `proposal.decide`          | One per application whose decision changed    | `decision`                    |
+| `proposal.release`         | Outcomes released                             | `shortlisted`, `not_selected` |
+| `proposal.file_open`       | A reviewer opened a file of an application    | `application`, `file`         |
+| `proposal.export`          | An operator downloaded the applications       | `count`                       |
+| `proposal.drafts_export`   | An operator downloaded the drafts             | `count`                       |
+| `use_case_proposal.export` | An operator downloaded a use case's proposals | `count`                       |
 
 ### Download
 
-An operator downloads a program's submitted applications as CSV (`ReviewService.export`): one row for each, the
-earliest submitted first, with the organization, the solution, the applicant's name, email, phone, country and
-LinkedIn, the answer to the first one-choice question, the submission time and version, GenAI Fund's decision,
-whether the outcomes are released, and how many judges scored it with their mean. The request may name the
-applications to include, which is how the web sends the list as it is narrowed. The file is UTF-8 with a byte order
-mark, and a cell a spreadsheet would run as a formula is written as text (`CsvRows`). A judge is refused. Each
-download is recorded as `proposal.export`, since it takes contact details out.
+An operator downloads a program's submitted applications as a spreadsheet (`ReviewService.export`, BEY-96), an Excel
+workbook or CSV as `?format=xlsx|csv` asks, written by `shared.Spreadsheet`: one row for each, the earliest submitted
+first, with the organization, the solution, the applicant's name, email, phone, country and LinkedIn, the answer to
+the first one-choice question, the submission time and version, GenAI Fund's decision, whether the outcomes are
+released, and how many judges scored it with their mean. The request may name the applications to include, which is
+how the web sends the list as it is narrowed. The file is named `<slug>-applications-<day>`. A judge is refused. Each
+download is recorded as `proposal.export`, since it takes contact details out. The drafts (`proposal.drafts_export`)
+and the proposals a use case received (`use_case_proposal.export`, operators only) are downloaded the same way.
 
 Applicants' acts, joining as a judge and assessments are not audited; they are logged as `proposal.submission.accepted`,
 `proposal.withdrawal.accepted`, `proposal.reviewer.joined` and `proposal.assessment.saved`, beside
@@ -341,30 +343,32 @@ The handlers are `@EventListener`s that queue email in the publisher's transacti
 
 Every endpoint needs a session.
 
-| Method and path                                                                | Contract                                                          |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| `GET /api/proposal/programs/{slug}/application`                                | The form, the caller's application and organization               |
-| `PUT /api/proposal/programs/{slug}/application`                                | Save the working copy (`SaveApplication`)                         |
-| `POST /api/proposal/programs/{slug}/application/organization`                  | Make the organization of an individual or a team                  |
-| `GET /api/proposal/applications`                                               | My applications                                                   |
-| `GET /api/proposal/applications/{id}`                                          | One of the caller's applications with its form                    |
-| `POST /api/proposal/applications/{id}/submit`                                  | Submit, or submit again                                           |
-| `POST /api/proposal/applications/{id}/withdraw`                                | Withdraw                                                          |
-| `GET /api/proposal/review/programs`                                            | The programs the caller reviews, with counts and whether released |
-| `GET`, `PUT /api/proposal/review/programs/{programId}/criteria`                | Read the criteria; an operator replaces them                      |
-| `GET`, `POST /api/proposal/review/programs/{programId}/reviewers`              | An operator lists judges or invites one                           |
-| `POST /api/proposal/review/programs/{programId}/reviewers/{reviewerId}/resend` | Re-send an unused invitation                                      |
-| `DELETE /api/proposal/review/programs/{programId}/reviewers/{reviewerId}`      | Remove a judge                                                    |
-| `GET /api/proposal/review/programs/{programId}/applications`                   | The submitted applications as the caller reviews them             |
-| `POST /api/proposal/review/programs/{programId}/applications/export`           | The submitted applications as CSV, for operators; recorded        |
-| `GET /api/proposal/review/applications/{id}`                                   | One application as submitted last, with assessments and history   |
-| `PUT /api/proposal/review/applications/{id}/assessment`                        | Save the caller's assessment                                      |
-| `GET /api/proposal/review/applications/{id}/files/{fileId}`                    | A file of the last submission                                     |
-| `POST /api/proposal/review/programs/{programId}/decisions`                     | Decide one application or several                                 |
-| `GET`, `POST /api/proposal/review/programs/{programId}/release`                | Preview the release; release                                      |
-| `PUT /api/proposal/review/programs/{programId}/release/draft`                  | Keep the release emails as they are written                       |
-| `POST /api/proposal/use-case-proposals/{id}/decision`                          | Shortlist or decline a received use-case proposal                 |
-| `POST /api/proposal/use-cases/{useCaseId}/outcomes`                            | E-mail the outcomes not yet told, in one batch                    |
+| Method and path                                                                | Contract                                                           |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `GET /api/proposal/programs/{slug}/application`                                | The form, the caller's application and organization                |
+| `PUT /api/proposal/programs/{slug}/application`                                | Save the working copy (`SaveApplication`)                          |
+| `POST /api/proposal/programs/{slug}/application/organization`                  | Make the organization of an individual or a team                   |
+| `GET /api/proposal/applications`                                               | My applications                                                    |
+| `GET /api/proposal/applications/{id}`                                          | One of the caller's applications with its form                     |
+| `POST /api/proposal/applications/{id}/submit`                                  | Submit, or submit again                                            |
+| `POST /api/proposal/applications/{id}/withdraw`                                | Withdraw                                                           |
+| `GET /api/proposal/review/programs`                                            | The programs the caller reviews, with counts and whether released  |
+| `GET`, `PUT /api/proposal/review/programs/{programId}/criteria`                | Read the criteria; an operator replaces them                       |
+| `GET`, `POST /api/proposal/review/programs/{programId}/reviewers`              | An operator lists judges or invites one                            |
+| `POST /api/proposal/review/programs/{programId}/reviewers/{reviewerId}/resend` | Re-send an unused invitation                                       |
+| `DELETE /api/proposal/review/programs/{programId}/reviewers/{reviewerId}`      | Remove a judge                                                     |
+| `GET /api/proposal/review/programs/{programId}/applications`                   | The submitted applications as the caller reviews them              |
+| `POST /api/proposal/review/programs/{programId}/applications/export`           | The submitted applications as XLSX or CSV, for operators; recorded |
+| `POST /api/proposal/review/programs/{programId}/drafts/export`                 | The drafts as XLSX or CSV, for operators; recorded                 |
+| `POST /api/proposal/use-cases/{useCaseId}/proposals/export`                    | A use case's proposals as XLSX or CSV, for operators; recorded     |
+| `GET /api/proposal/review/applications/{id}`                                   | One application as submitted last, with assessments and history    |
+| `PUT /api/proposal/review/applications/{id}/assessment`                        | Save the caller's assessment                                       |
+| `GET /api/proposal/review/applications/{id}/files/{fileId}`                    | A file of the last submission                                      |
+| `POST /api/proposal/review/programs/{programId}/decisions`                     | Decide one application or several                                  |
+| `GET`, `POST /api/proposal/review/programs/{programId}/release`                | Preview the release; release                                       |
+| `PUT /api/proposal/review/programs/{programId}/release/draft`                  | Keep the release emails as they are written                        |
+| `POST /api/proposal/use-case-proposals/{id}/decision`                          | Shortlist or decline a received use-case proposal                  |
+| `POST /api/proposal/use-cases/{useCaseId}/outcomes`                            | E-mail the outcomes not yet told, in one batch                     |
 
 ## Error codes
 
