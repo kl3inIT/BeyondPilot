@@ -6913,7 +6913,7 @@
         "metaTitle": "Đơn nháp",
         "back": "Đơn nháp",
         "lead": "Chưa nộp vào {program} · bắt đầu {started} · lưu lần cuối {saved}",
-        "note": "Đơn chưa nộp nên vẫn có thể thay đổi. Giám khảo không bao giờ thấy đơn nháp, và mỗi lần mở được ghi vào nhật ký kiểm toán."
+        "note": "Đơn chưa nộp nên vẫn có thể thay đổi. Giám khảo không bao giờ thấy đơn nháp."
       }
     }
   },

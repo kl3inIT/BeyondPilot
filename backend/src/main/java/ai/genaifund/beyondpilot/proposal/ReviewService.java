@@ -330,13 +330,13 @@ public class ReviewService {
 
 	/**
 	 * An application not submitted yet as it stands now, for an operator to see who may yet apply; judges never read
-	 * a draft. Each reading is recorded, since its applicant has not sent it.
+	 * a draft.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws ProposalException when there is no such draft
 	 */
 	@Transactional
 	public ReviewDraftResponse draft(Actor actor, UUID id) {
-		Operator operator = access.operator(actor);
+		access.operator(actor);
 		Proposal draft = draftOf(id);
 		ApplicationForm form = setup.form(draft.getProgramId());
 		ContactDetails contact = json.readValue(draft.getContact(), ContactDetails.class);
@@ -367,14 +367,12 @@ public class ReviewService {
 				solution == null ? null : solution.problemsSolved(), solution == null ? null : solution.maturity(),
 				solution == null ? null : solution.demoUrl(), deckId == null ? null : attached(deckId),
 				draft.getBuiltWith(), draft.getTraction(), answered);
-		setup.record(AuditAction.PROPOSAL_DRAFT_OPEN, operator, form, Map.of("application", id.toString()));
 		return new ReviewDraftResponse(head(form, access.of(actor, form.programId())), id, draft.getCreatedAt(),
 				draft.getUpdatedAt(), shown);
 	}
 
 	/**
-	 * A file of a draft, for an operator reading it: its deck or a file it answers a question with. The opening is
-	 * recorded, as a reviewer's opening of a submitted file is.
+	 * A file of a draft, for an operator reading it: its deck or a file it answers a question with.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws ProposalException when there is no such draft, or the file is not one of it
 	 */
@@ -388,7 +386,6 @@ public class ReviewService {
 			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
 					"File " + fileId + " is not of draft " + id);
 		}
-		setup.opened(access.of(actor, draft.getProgramId()).person(), setup.form(draft.getProgramId()), id, fileId);
 		return storage.download(fileId);
 	}
 
@@ -498,7 +495,7 @@ public class ReviewService {
 	@Transactional
 	public FileDownload file(Actor actor, UUID id, UUID fileId) {
 		Proposal proposal = submitted(id);
-		Reviewing reviewing = access.of(actor, proposal.getProgramId());
+		access.of(actor, proposal.getProgramId());
 		Snapshot snapshot = snapshot(proposal);
 		boolean held = (snapshot.materials().deck() != null
 				&& Objects.requireNonNull(snapshot.materials().deck()).fileId().equals(fileId))
@@ -510,7 +507,6 @@ public class ReviewService {
 			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
 					"File " + fileId + " is not of application " + id);
 		}
-		setup.opened(reviewing.person(), setup.form(proposal.getProgramId()), id, fileId);
 		return storage.download(fileId);
 	}
 

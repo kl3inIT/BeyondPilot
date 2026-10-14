@@ -253,8 +253,9 @@ public enum AuditAction {
 	PROPOSAL_RELEASE("proposal.release", "shortlisted", "not_selected"),
 
 	/**
-	 * An operator or a judge opened a file of a submitted application. {@code application} and {@code file} are their
-	 * identifiers.
+	 * An operator or a judge opened a file of an application. {@code application} and {@code file} are their
+	 * identifiers. Recorded until 14 October 2026 only: reads inside the reader's own permission are not audited. Kept
+	 * so the events written before still read.
 	 */
 	PROPOSAL_FILE_OPEN("proposal.file_open", "application", "file"),
 
@@ -271,8 +272,8 @@ public enum AuditAction {
 	PROPOSAL_DRAFTS_EXPORT("proposal.drafts_export", "count"),
 
 	/**
-	 * An operator read an application not submitted yet, which its applicant has not sent. {@code application} is its
-	 * identifier.
+	 * An operator read an application not submitted yet. {@code application} is its identifier. Recorded on 14 October
+	 * 2026 only: reads inside the reader's own permission are not audited. Kept so the events written then still read.
 	 */
 	PROPOSAL_DRAFT_OPEN("proposal.draft_open", "application"),
 
