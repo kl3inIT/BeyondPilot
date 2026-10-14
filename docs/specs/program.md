@@ -23,8 +23,9 @@ it asks applicants, and whether the public site shows it. It was delivered by
 ## Data
 
 `V4__program_create_programs.sql` creates three tables and `V12__program_create_questions.sql` the fourth;
-`V86__program_add_window_titles.sql` adds the titles of the window's dates and `V94__program_add_featured_at.sql`
-when an operator featured the program. The module
+`V86__program_add_window_titles.sql` adds the titles of the window's dates, `V94__program_add_featured_at.sql`
+when an operator featured the program and `V99__program_add_luma_event.sql` the Luma event a program was read from. The
+module
 owns all four ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
 
 - **`program`.** One row per program: `slug`, `name`, `type`, `partner_name`, `summary`, `about`, `starts_on`,
@@ -32,7 +33,8 @@ owns all four ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consist
   (`applications_open_at`, `applications_close_at`, `shortlist_size`, `outcomes_due_on`, `allow_updates_until_close`),
   the titles an operator gave the dates the window puts on the timeline (`applications_open_title`,
   `applications_close_title`, `outcomes_due_title`, each null for the default words, at most 160 characters),
-  `featured_at` (null while the program is not featured), `version`, `created_at`, `updated_at`.
+  `featured_at` (null while the program is not featured), `luma_event_id` (unique; null for a program an operator
+  created) and `luma_cover_url` (the image on Luma the cover was copied from), `version`, `created_at`, `updated_at`.
 - **`program_milestone`** (key dates) and **`program_event`** (events). Lists keyed by `(program_id, position)`, kept
   in the order the operator gave and replaced as a whole, so a row has no identifier of its own.
 - **`program_question`.** Also keyed by `(program_id, position)`, but each question has an `id`, unique across all
@@ -204,7 +206,8 @@ Each change is recorded through `AuditTrail` in the transaction of the change, w
 | Feature                         | `program.feature`   |
 | Stop featuring                  | `program.unfeature` |
 
-A repeated publish, unpublish, feature or stop records nothing.
+A repeated publish, unpublish, feature or stop records nothing. The Luma job records its create, update, publish and
+unpublish with the same actions and no actor.
 
 ## Featuring
 
@@ -216,10 +219,34 @@ lists the featured published programs, the most recently featured first; without
 order and no public record says what is featured. The home page announces the first of them whose applications have not
 closed, with its next key date. Featuring publishes no `ProgramChanged`: the indexed program did not change.
 
+## Events from Luma
+
+`LumaCalendar` brings the events of the GenAI Fund calendar on Luma onto the site (BEY-190). It runs every hour
+(`beyondpilot.program.luma.interval`) where `beyondpilot.program.luma.feed` is set, which only
+`application-production.yaml` does, with the calendar's public iCal feed; tests and local runs never call Luma.
+
+- **Read.** `program.luma.LumaFeed` reads the feed: each event's `evt-…` identifier, its times in UTC and its page's
+  address. For each event not over, `LumaEventPage` reads the schema.org `Event` JSON-LD of its page: name,
+  description, start and end with their offset, attendance mode, city, country (an ISO code written in English words)
+  and first image. Calls go through `LumaHttp` to the configured hosts only (`beyondpilot.program.luma.hosts`), follow
+  no redirect, end after `beyondpilot.program.luma.timeout` and read at most 2 MB of text or 5 MB of an image.
+- **Write.** Each event in a transaction of its own. A new one is a program of type `event`: its address is the page's
+  path (`gaf-tinyfish-vn`), with `-2`, `-3`… when taken; its summary the description's first line cut at a word to 300
+  characters, its about the description, its days the event's local days, its page `external` at the Luma address,
+  one program event registering there, and its cover the image copied into storage (`StorageService.keep`). It is
+  published when it has what publishing asks for, and waits as a draft otherwise. A held one is found by
+  `luma_event_id` and given what Luma says now, overwriting an operator's edit; a read that changes nothing writes
+  nothing, and the image is copied again only when its address changes, the replaced cover going after the commit.
+  The job never changes a held program's status, except to unpublish a published one whose event is still to come
+  and is no longer in the feed.
+- **Failures.** A feed that cannot be read, or is not a calendar, changes nothing (`program.luma.feed_failed`). An
+  event whose page, image or write fails is skipped and tried at the next read (`program.luma.event_failed`); the
+  others go on. A read that changed something logs `program.luma.read` with its counts.
+
 ## Events
 
 - **`ProgramChanged(programId)`** is published inside the transaction by a save, a publication and an unpublication
-  (not by a creation or a save of the questions). It names the program only; a listener reads the program as it is
+  (not by a creation or a save of the questions), and by every change the Luma job makes. It names the program only; a listener reads the program as it is
   then through `ProgramService.indexed`, which is empty for a draft. `search` handles it to add or remove the program
   in its index.
 
