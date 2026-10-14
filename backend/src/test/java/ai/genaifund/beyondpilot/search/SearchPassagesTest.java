@@ -31,6 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -71,6 +72,9 @@ class SearchPassagesTest {
 	private JdbcClient jdbc;
 
 	@Autowired
+	private ApplicationContext context;
+
+	@Autowired
 	private AiProviders providers;
 
 	@Autowired
@@ -85,6 +89,7 @@ class SearchPassagesTest {
 	/** Nothing indexed, and OpenAI's large model set the way an operator sets it, with semantic search on. */
 	@BeforeEach
 	void emptyIndex() {
+		IndexRepairs.awaitStartupRepair(context);
 		jdbc.sql("delete from search_passage").update();
 		jdbc.sql("delete from search_document").update();
 		jdbc.sql("update search_settings set provider_id = null, model = null, semantic_enabled = true").update();
