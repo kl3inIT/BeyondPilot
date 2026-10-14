@@ -32,7 +32,7 @@ Tracked in Linear as BEY-34. The screens are the frames "Solution editor — 1 B
 | `GET /api/solution/mine/{id}`, `GET /api/solution/admin/solutions/{id}` | Answer the new fields and `deck` (file, name, size, when it was attached)                                                                                                                                               |
 | `GET /api/solution/solutions/{slug}`                                    | Answers the new fields and `deck` (name and size)                                                                                                                                                                       |
 | `GET /api/solution/solutions/{slug}/deck`                               | New: the PDF, or a redirect to where the object store serves it                                                                                                                                                         |
-| `POST /api/storage/uploads`                                             | Accepts the purpose `solution_deck`: a PDF of up to `beyondpilot.storage.solution-deck-max-size` (100 MB)                                                                                                                |
+| `POST /api/storage/uploads`                                             | Accepts the purpose `solution_deck`: a PDF of up to `beyondpilot.storage.solution-deck-max-size` (100 MB)                                                                                                               |
 
 ## Data
 

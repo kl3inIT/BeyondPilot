@@ -219,9 +219,24 @@ public class Organization {
 		verifyDomain(null);
 	}
 
-	/** Renames an individual after its person. */
-	public void rename(String name) {
-		this.name = name;
+	/**
+	 * Settles the review after the profile changed from one type to another. A person on their own is approved
+	 * without review, so one that waited is approved; an approved individual that becomes a team, a company or
+	 * another organization waits for GenAI Fund's review like any it makes. A refused or taken-down organization
+	 * keeps that decision whichever way its type goes, and a person on their own has no domain.
+	 */
+	public void settleTypeChange(String formerType, Instant at) {
+		boolean wasIndividual = INDIVIDUAL.equals(formerType);
+		if (isIndividual() && !wasIndividual) {
+			if (isInReview() || isSentBack()) {
+				approve(at);
+			}
+			verifyDomain(null);
+		}
+		else if (!isIndividual() && wasIndividual && isApproved()) {
+			status = IN_REVIEW;
+			decidedAt = null;
+		}
 	}
 
 	/**

@@ -516,6 +516,31 @@ test.describe("workspace organization", () => {
     await expect(page.getByText("text of the backend that must not be shown")).toHaveCount(0);
   });
 
+  test("a person on their own has an organization like any other: the menu, the tabs and the profile", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "alone", baseURL!);
+    await page.goto("/workspace/organization");
+
+    await expect(page).toHaveURL(/\/workspace\/organization$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("An Tr?n");
+    await expect(
+      page.getByRole("list", { name: "What this organization is" }).getByRole("listitem"),
+    ).toContainText(["Just me"]);
+    const tabs = page.getByRole("navigation", { name: "Sections of your organization" });
+    await expect(tabs.getByRole("link").first()).toHaveText("Profile");
+    await expect(tabs.getByRole("link", { name: /^Members/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Edit profile" })).toBeVisible();
+    await page.getByRole("button", { name: /^Account menu/ }).click();
+    await expect(page.getByRole("menuitem", { name: "My organization" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await page.goto("/workspace/organization/members");
+    await expect(page).toHaveURL(/\/workspace\/organization\/members$/);
+    await expectNoSeriousA11yViolations(page);
+  });
+
   test("a member reads the profile and cannot change it", async ({ page, context, baseURL }) => {
     await signInAs(context, "member", baseURL!);
     await page.goto("/workspace/organization");

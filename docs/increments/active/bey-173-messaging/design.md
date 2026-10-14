@@ -33,8 +33,8 @@ The same story holds for a talent profile, with one person in place of the organ
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Conversation    | The messages between one person and one other side about one subject                                                                                                           |
 | Subject         | What the conversation is about, and what decides the other side: a talent profile, a solution or a program. One conversation that waits or is open for each person and subject |
-| Starter         | The account that wrote first for personal conversations; for a solution, their organization acts as the starter side and an owner writes first |
-| Recipient side  | The person behind the profile; owners and invited members of the organization that offers the solution; GenAI Fund's operators for a program |
+| Starter         | The account that wrote first for personal conversations; for a solution, their organization acts as the starter side and an owner writes first                                 |
+| Recipient side  | The person behind the profile; owners and invited members of the organization that offers the solution; GenAI Fund's operators for a program                                   |
 | Request         | A conversation whose first message waits for the recipient side: `pending`. It becomes `accepted`, `declined`, `reported` or `closed`                                          |
 | Answer          | Accept, decline or report. The person behind a profile answers for themselves; for an organization its owners do, as they decide for it. Final                                 |
 | Read            | How far one account has read one conversation: the `seq` of the last message. Unread is what the other side wrote after it                                                     |

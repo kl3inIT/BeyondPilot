@@ -6,11 +6,11 @@ Read and measured on 9 October 2026 for [BEY-39](../increments/completed/bey-39-
 
 One use case, "AI-based CRM next-best-action" (banking), 40 candidates a run.
 
-| Version | Required capabilities the model listed | Direct | Industry | Technology | None | What was wrong |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Five: recommending retention, cross-sell, up-sell, top-up and repeated offers, one each | 0 | 1 | 12 | 27 | A rule added after the probe, "split a sentence that joins several", split one function into its variants |
-| 2 | Two; the second listed all five kinds of offer | 0 | 2 | 12 | 26 | The judge asked each vendor's material to name all five: 0 of 40 met it, 34 partly, among them products whose own words are "next-best offers" and "cross-sell and up-sell actions" |
-| 3 | Two, without the kinds, the industry or the purpose | 21 | 2 | 13 | 4 | The capability was so wide that tools for scoring sales leads met it. Its wording was the example sentence of the prompt, which had been taken from this very use case |
+| Version | Required capabilities the model listed                                                  | Direct | Industry | Technology | None | What was wrong                                                                                                                                                                      |
+| ------- | --------------------------------------------------------------------------------------- | ------ | -------- | ---------- | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1       | Five: recommending retention, cross-sell, up-sell, top-up and repeated offers, one each | 0      | 1        | 12         | 27   | A rule added after the probe, "split a sentence that joins several", split one function into its variants                                                                           |
+| 2       | Two; the second listed all five kinds of offer                                          | 0      | 2        | 12         | 26   | The judge asked each vendor's material to name all five: 0 of 40 met it, 34 partly, among them products whose own words are "next-best offers" and "cross-sell and up-sell actions" |
+| 3       | Two, without the kinds, the industry or the purpose                                     | 21     | 2        | 13         | 4    | The capability was so wide that tools for scoring sales leads met it. Its wording was the example sentence of the prompt, which had been taken from this very use case              |
 
 Every quote was found in the vendor's material in all three runs. The fault was never invention; it was what the model was asked to look for.
 
@@ -32,15 +32,15 @@ What they share: evidence or reasoning before the verdict; each level one senten
 
 ## Biases of a model that judges, and what one call can do about them
 
-| Bias | What one call can do | Source |
-| --- | --- | --- |
-| Leniency when in doubt | A quote is mandatory and code checks it; absence is a level of its own | Thakur et al., arXiv 2406.12624 |
-| Position and order | Say that order means nothing; measure by reversing | Zheng et al., arXiv 2306.05685; Ye et al., arXiv 2410.02736 |
-| Anchoring and halo between findings | Say that each finding stands alone; overall judgments last | Stureborg et al., arXiv 2405.01724 |
-| Length and polish | Judge a quote, not a document; say so | Zheng et al.; Ye et al. |
-| Name and authority | Tell the judge to ignore size, fame, awards and customer logos | Ye et al.; Koo et al., arXiv 2309.17012 |
-| Instability between samples | One sample; a reason improves agreement with people | Stureborg et al.; Chiang and Lee, arXiv 2310.05657 |
-| Text in the judged material that gives orders | The material is marked as data | Ye et al. |
+| Bias                                          | What one call can do                                                   | Source                                                      |
+| --------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Leniency when in doubt                        | A quote is mandatory and code checks it; absence is a level of its own | Thakur et al., arXiv 2406.12624                             |
+| Position and order                            | Say that order means nothing; measure by reversing                     | Zheng et al., arXiv 2306.05685; Ye et al., arXiv 2410.02736 |
+| Anchoring and halo between findings           | Say that each finding stands alone; overall judgments last             | Stureborg et al., arXiv 2405.01724                          |
+| Length and polish                             | Judge a quote, not a document; say so                                  | Zheng et al.; Ye et al.                                     |
+| Name and authority                            | Tell the judge to ignore size, fame, awards and customer logos         | Ye et al.; Koo et al., arXiv 2309.17012                     |
+| Instability between samples                   | One sample; a reason improves agreement with people                    | Stureborg et al.; Chiang and Lee, arXiv 2310.05657          |
+| Text in the judged material that gives orders | The material is marked as data                                         | Ye et al.                                                   |
 
 No source was found that measures a judge being too literal about an enumerated requirement; the rules for that come from our own runs.
 
@@ -56,12 +56,12 @@ Throwaway scripts (`probe4.py`, `probe5.py`, git-ignored), the same provider and
 
 **The wording**, 40 candidates each:
 
-| Use case | Wording | Required capabilities | Direct | Industry | Technology | None |
-| --- | --- | --- | --- | --- | --- | --- |
-| CRM next-best-action | A capability keeps its object and its purpose | 2 | 11 | 3 | 17 | 9 |
-| CRM next-best-action | The same, and only the heart of the problem is required (version 4) | 1 | 10 | 2 | 17 | 11 |
-| Visual inspection of automotive parts | A capability keeps its object and its purpose | 4, one of them a PLC integration, one root-cause analysis | 0 | 2 | 30 | 8 |
-| Visual inspection of automotive parts | The same, and supporting functions are optional | 1 | 10 | 0 | 20 | 10 |
+| Use case                              | Wording                                                             | Required capabilities                                     | Direct | Industry | Technology | None |
+| ------------------------------------- | ------------------------------------------------------------------- | --------------------------------------------------------- | ------ | -------- | ---------- | ---- |
+| CRM next-best-action                  | A capability keeps its object and its purpose                       | 2                                                         | 11     | 3        | 17         | 9    |
+| CRM next-best-action                  | The same, and only the heart of the problem is required (version 4) | 1                                                         | 10     | 2        | 17         | 11   |
+| Visual inspection of automotive parts | A capability keeps its object and its purpose                       | 4, one of them a PLC integration, one root-cause analysis | 0      | 2        | 30         | 8    |
+| Visual inspection of automotive parts | The same, and supporting functions are optional                     | 1                                                         | 10     | 0        | 20         | 10   |
 
 - The Direct candidates of the CRM use case are products for offers and retention to existing customers (VARTA, OnebyZero, Decyd, Reveza, Tribee, Meiro, Pango). Tools for scoring leads and coaching sales calls are in Technology or in no group, with the reason "a neighbouring job".
 - The Direct candidates of the inspection use case are all visual inspection products for manufacturers (Zetamotion, Seewise, VIACT, Alphatok, Datature, Hutzper and others).

@@ -7,6 +7,7 @@ import { TextButton } from "@/components/actions/text-button";
 import type { ProposingOrganization, SolutionSummary } from "@/lib/api/generated";
 
 import type { Details, ProposalValues, Step } from "./proposal-draft";
+import { ProposalOrganizationActions } from "./proposal-organization-actions";
 import { SentByRows } from "./proposal-sender-card";
 import { catalogHref, catalogRowProps, ProposalSolutionRow } from "./proposal-solution-list";
 
@@ -19,6 +20,8 @@ type ProposalReviewStepProps = {
   email: string;
   /** Opens a step to change what it holds. */
   onEdit: (step: Step) => void;
+  /** The organization was corrected from here: the proposal reads it again. */
+  onOrganized: () => Promise<void>;
 };
 
 type SectionProps = {
@@ -53,6 +56,7 @@ function ProposalReviewStep({
   details,
   email,
   onEdit,
+  onOrganized,
 }: ProposalReviewStepProps) {
   const t = useTranslations("UseCaseProposal.wizard");
   const empty = <p className="text-sm text-muted-foreground">{t("review.nothing")}</p>;
@@ -63,7 +67,10 @@ function ProposalReviewStep({
   return (
     <div className="flex flex-col gap-5">
       <Section step="you" title={t("steps.you")} onEdit={onEdit}>
-        <p className="text-sm font-medium">{organization.name}</p>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <p className="text-sm font-medium">{organization.name}</p>
+          <ProposalOrganizationActions organization={organization} onSaved={onOrganized} />
+        </div>
         {organization.type === "builder_team" &&
           (values.teamBackground.trim() ? (
             <p className="text-sm whitespace-pre-line text-muted-foreground">

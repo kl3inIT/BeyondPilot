@@ -4,10 +4,10 @@ Accepted on 14 October 2026, replacing the earlier separate organization team-ba
 
 The proposal wizard's creation popup exposes only the required facts for the selected type:
 
-| Type | Required fields |
-| --- | --- |
-| Just me | Name, country |
-| A team | Organization name, team size, country, short description |
+| Type      | Required fields                                                                             |
+| --------- | ------------------------------------------------------------------------------------------- |
+| Just me   | Name, country                                                                               |
+| A team    | Organization name, team size, country, short description                                    |
 | A company | Organization name, website, team size, industries, country, year founded, short description |
 
 Use the existing TanStack Form fields and FormDialog, and the wizard-scoped TanStack Query reads. Switching types preserves values locally but validates and submits only active fields. A save retains optional profile data that the popup cannot edit. Teams and companies wait for review; individuals are approved at creation under BEY-189. Editing exposes only the types `typesFor` permits, does not turn an organization into an individual, and is not offered to an individual. It keeps the optimistic version check, refreshes wizard data and refreshes the route.

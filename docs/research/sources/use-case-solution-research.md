@@ -47,11 +47,11 @@ Before delivery, check whether discovery disproportionately favoured mature prov
 
 Use exactly these values in `Bucket Type`:
 
-| Bucket | Assignment rule |
-| --- | --- |
-| Direct Relevance | Documented product or delivery scope covers the required use-case outcomes and directly addresses the problem. Normal configuration does not disqualify it; substantial custom development or an unverified essential capability does. |
-| Industry Relevance | A credible reference shows a similar process in the user's industry or directly relevant industry supply chain, but the full use-case fit is unestablished. |
-| Technology Capability | Relevant enabling capabilities or implementation expertise are documented, but neither the full use-case fit nor a relevant industry deployment is established. |
+| Bucket                | Assignment rule                                                                                                                                                                                                                        |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Direct Relevance      | Documented product or delivery scope covers the required use-case outcomes and directly addresses the problem. Normal configuration does not disqualify it; substantial custom development or an unverified essential capability does. |
+| Industry Relevance    | A credible reference shows a similar process in the user's industry or directly relevant industry supply chain, but the full use-case fit is unestablished.                                                                            |
+| Technology Capability | Relevant enabling capabilities or implementation expertise are documented, but neither the full use-case fit nor a relevant industry deployment is established.                                                                        |
 
 Choose the strongest supported bucket in that order. Explain other relevant strengths in the evidence cell. Complete documented product functionality can qualify as Direct Relevance without a customer deployment. Clearly state whether the evidence is product documentation, a named deployment, or an anonymised case; do not present documented functionality as deployment-proven. No bucket guarantees performance on the user's data.
 

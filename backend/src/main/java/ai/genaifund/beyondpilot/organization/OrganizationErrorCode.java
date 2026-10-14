@@ -75,7 +75,13 @@ public enum OrganizationErrorCode implements ErrorCode {
 			"The organization has the most invitations it can keep open. Revoke some, or wait for people to answer."),
 
 	INDIVIDUAL("ORGANIZATION_INDIVIDUAL", ErrorCategory.CONFLICT,
-			"A person applying on their own has no members, domain or other type; apply as a team or a company instead.");
+			"A person on their own has no other members, invitations or email domain; make it a team or a company first."),
+
+	NOT_ALONE("ORGANIZATION_NOT_ALONE", ErrorCategory.CONFLICT,
+			"An organization with other members, invitations or requests to join cannot become a person on their own."),
+
+	TEAM_SIZE_REQUIRED("ORGANIZATION_TEAM_SIZE_REQUIRED", ErrorCategory.VALIDATION,
+			"A team, a company or another organization says how many people it has; choose a size other than just me.");
 
 	private final String code;
 	private final ErrorCategory category;

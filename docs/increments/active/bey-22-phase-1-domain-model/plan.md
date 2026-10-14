@@ -19,18 +19,18 @@ Each slice below is one vertical change: migration, module, API, `openapi.yml`, 
 
 ## Slices
 
-| #   | Slice                             | Delivers                                                                                                                                              | Target        |
-| --- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| 0   | Deployable stack                  | Container images, Compose with PostgreSQL and MinIO, deploy to the development environment from `main` (BEY-16, part of BEY-18)                       | Sun 4 Oct     |
-| 1   | `identity`                        | Sign in with Google and with an email link, return to the page of origin, JDBC sessions, CSRF header, 401 and 403 as problems, `/api/identity/me`     | Mon 5 Oct     |
-| 2   | `program` read                    | Programs and events seeded from the blog and Luma dataset; program directory and program page, with the Insurance Challenge as the reference campaign | Tue 6 Oct     |
+| #   | Slice                              | Delivers                                                                                                                                              | Target        |
+| --- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| 0   | Deployable stack                   | Container images, Compose with PostgreSQL and MinIO, deploy to the development environment from `main` (BEY-16, part of BEY-18)                       | Sun 4 Oct     |
+| 1   | `identity`                         | Sign in with Google and with an email link, return to the page of origin, JDBC sessions, CSRF header, 401 and 403 as problems, `/api/identity/me`     | Mon 5 Oct     |
+| 2   | `program` read                     | Programs and events seeded from the blog and Luma dataset; program directory and program page, with the Insurance Challenge as the reference campaign | Tue 6 Oct     |
 | 3   | `organization` and `solution` read | v1 startups imported as organizations and solutions; solution directory with facets and solution page                                                 | Wed 7 Oct     |
-| 4   | `usecase` read                    | v1 use cases imported; use case directory and page; programs feature their use cases                                                                  | Wed 7 Oct     |
-| 5   | `talent` read                     | Talent directory and profile, if Kai's data arrives; otherwise the empty state                                                                        | Thu 8 Oct     |
-| 6   | Apply                             | `document` upload, claim or create an organization, proposal draft, submit, confirmation, my proposals                                                | Thu 8 Oct     |
-| —   | **Live**                          | Slices 0 to 6 on the development environment, shared with Kai                                                                                         | **Fri 9 Oct** |
-| 7   | `matching`                        | Candidate board per use case from proposals and database matches, operator actions, hybrid search; web research after BEY-21                          | Wed 14 Oct    |
-| 8   | Outcomes and migration report     | Outcome release and notification, migration reconciliation report                                                                                     | Thu 15 Oct    |
+| 4   | `usecase` read                     | v1 use cases imported; use case directory and page; programs feature their use cases                                                                  | Wed 7 Oct     |
+| 5   | `talent` read                      | Talent directory and profile, if Kai's data arrives; otherwise the empty state                                                                        | Thu 8 Oct     |
+| 6   | Apply                              | `document` upload, claim or create an organization, proposal draft, submit, confirmation, my proposals                                                | Thu 8 Oct     |
+| —   | **Live**                           | Slices 0 to 6 on the development environment, shared with Kai                                                                                         | **Fri 9 Oct** |
+| 7   | `matching`                         | Candidate board per use case from proposals and database matches, operator actions, hybrid search; web research after BEY-21                          | Wed 14 Oct    |
+| 8   | Outcomes and migration report      | Outcome release and notification, migration reconciliation report                                                                                     | Thu 15 Oct    |
 
 ## Parallel work
 

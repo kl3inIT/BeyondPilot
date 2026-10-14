@@ -167,7 +167,7 @@ public class OrganizationService {
 		return createOwned(actor, new Profile.Builder(request.name(), request.type(), request.country(),
                 request.teamSize(), request.industries()).website(request.website()).description(request.description())
                 .foundedYear(request.foundedYear()).logoFileId(request.logoFileId())
-                .teamBackground(request.teamBackground()).build(), request.jobTitle(), true);
+                .teamBackground(request.teamBackground()).build(), request.jobTitle());
 	}
 
 	/**
@@ -184,7 +184,7 @@ public class OrganizationService {
 				alone ? "just_me" : request.teamSize(), company ? request.industries() : List.of())
 				.website(company ? request.website() : null)
 				.foundedYear(company ? request.foundedYear() : null)
-				.description(alone ? null : request.description()).build(), null, true);
+				.description(alone ? null : request.description()).build(), null);
 	}
 
 	/**
@@ -201,7 +201,7 @@ public class OrganizationService {
 					+ applicant.type());
 		}
 		return createOwned(actor, new Profile.Builder(applicant.name(), applicant.type(), applicant.country(),
-                applicant.teamSize(), List.of()).website(applicant.website()).build(), null, false)
+                applicant.teamSize(), List.of()).website(applicant.website()).build(), null)
 			.id();
 	}
 
@@ -238,20 +238,13 @@ public class OrganizationService {
         }
     }
 
-	/**
-	 * @param nameAfterAccount whether an individual takes the account's name rather than the one given: true unless
-	 * the name given is the person's own, as an application's contact gives it
-	 */
-	private OrganizationResponse createOwned(Actor actor, Profile profile, @Nullable String creatorJobTitle,
-			boolean nameAfterAccount) {
+	private OrganizationResponse createOwned(Actor actor, Profile profile, @Nullable String creatorJobTitle) {
 		Person person = identity.person(actor);
 		requireFree(person);
-		// A builder on their own is the person: named after them, and approved at once, as nothing about them waits for
-		// GenAI Fund. What they list is reviewed as everyone's is.
+		// A builder on their own is approved at once, as nothing about one person waits for GenAI Fund. What they list
+		// is reviewed as everyone's is.
 		boolean individual = Organization.INDIVIDUAL.equals(profile.type());
-		String displayName = person.displayName();
-		String name = individual && nameAfterAccount && displayName != null ? displayName.strip()
-				: profile.name().strip();
+		String name = profile.name().strip();
 		if ("company".equals(profile.type()) && profile.industries().isEmpty()) {
 			// A team or a builder on their own may not have settled on an industry; a company has.
 			throw new OrganizationException(OrganizationErrorCode.INDUSTRIES_REQUIRED,
@@ -388,7 +381,7 @@ public class OrganizationService {
                     "Company profile saved without an industry");
         }
 		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
-		requireSameKind(organization, request.type());
+		requireTypeChange(organization, request.type(), request.teamSize());
 		if (organization.getVersion() != request.version()) {
 			throw new OrganizationException(OrganizationErrorCode.CHANGED_MEANWHILE,
 					"Save of organization " + organization.getId() + " at version " + request.version()
@@ -399,11 +392,14 @@ public class OrganizationService {
 		if (logo != null && !logo.equals(formerLogo)) {
 			logos.requireUsable(actor, logo);
 		}
+		String formerType = organization.getType();
+		boolean aloneNow = Organization.INDIVIDUAL.equals(request.type());
 		organization.describe(request.name().strip(), request.type(),
-				OrganizationViews.text(request.website()), request.country(), request.teamSize(),
+				OrganizationViews.text(request.website()), request.country(), aloneNow ? "just_me" : request.teamSize(),
 				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()),
 				request.foundedYear(), logo);
 		organization.describeTeam(OrganizationViews.text(request.teamBackground()));
+		organization.settleTypeChange(formerType, Instant.now());
 		if (organization.isSentBack()) {
 			organization.resubmit();
 		}
@@ -427,19 +423,21 @@ public class OrganizationService {
 					"Company saved by account " + actor.accountId() + " without an industry");
 		}
 		Organization organization = organizations.findForUpdate(owner.organizationId()).orElseThrow();
-		requireSameKind(organization, request.type());
+		requireTypeChange(organization, request.type(), request.teamSize());
 		if (request.version() == null || organization.getVersion() != request.version()) {
 			throw new OrganizationException(OrganizationErrorCode.CHANGED_MEANWHILE,
 					"Stale basics save of organization " + organization.getId());
 		}
 		boolean company = "company".equals(request.type());
 		boolean alone = "independent_builder".equals(request.type());
+		String formerType = organization.getType();
 		organization.describe(request.name().strip(), request.type(),
 				company ? OrganizationViews.text(request.website()) : organization.getWebsite(),
 				request.country(), alone ? "just_me" : request.teamSize(),
 				company ? OrganizationViews.codes(request.industries()) : organization.getIndustries(),
 				alone ? organization.getDescription() : OrganizationViews.text(request.description()),
 				company ? request.foundedYear() : organization.getFoundedYear(), organization.getLogoFileId());
+		organization.settleTypeChange(formerType, Instant.now());
 		if (organization.isSentBack()) {
 			organization.resubmit();
 		}
@@ -644,24 +642,6 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Names the caller's individual after them again, as their application gives their name; another kind of
-	 * organization keeps its name.
-	 */
-	@Transactional
-	public void renameIndividual(Actor actor, String name) {
-		String wanted = name.strip();
-		memberships.memberOf(actor.accountId())
-			.flatMap(member -> organizations.findForUpdate(member.organizationId()))
-			.filter(Organization::isIndividual)
-			.filter(organization -> !organization.getName().equals(wanted))
-			.ifPresent(organization -> {
-				organization.rename(wanted);
-				organizations.flush();
-				events.publishEvent(new OrganizationChanged(organization.getId()));
-			});
-	}
-
-	/**
 	 * Turns the caller's individual into their team, which waits for GenAI Fund's review like any team a person
 	 * makes. Whether it may still change is for the caller to decide, from what was sent under it.
 	 * @return the team's identifier
@@ -704,12 +684,23 @@ public class OrganizationService {
 	}
 
 	/**
-	 * An individual has no profile to save: it is approved without review, so the name it shows is the one the person
-	 * gives on their application, and its type changes only from there. Nothing else becomes one either.
+	 * An organization changes between a person on their own, a team, a company and another kind. One person has no
+	 * other member, invitation or request to join; one that becomes a team or a company says how big it is.
+	 * @throws OrganizationException when it is to become a person on their own and has others, or it leaves being one
+	 * without a team size
 	 */
-	private static void requireSameKind(Organization organization, String type) {
-		if (organization.isIndividual() || Organization.INDIVIDUAL.equals(type)) {
-			throw individual(organization, "profile save as " + type);
+	private void requireTypeChange(Organization organization, String type, @Nullable String teamSize) {
+		boolean toIndividual = Organization.INDIVIDUAL.equals(type);
+		if (toIndividual && !organization.isIndividual()
+				&& (memberships.countMembers(organization.getId()) > 1
+						|| !memberships.openInvitationsOf(organization.getId()).isEmpty()
+						|| !memberships.openRequestsTo(organization.getId()).isEmpty())) {
+			throw new OrganizationException(OrganizationErrorCode.NOT_ALONE,
+					"Organization " + organization.getId() + " has others and cannot become an individual");
+		}
+		if (!toIndividual && organization.isIndividual() && (teamSize == null || "just_me".equals(teamSize))) {
+			throw new OrganizationException(OrganizationErrorCode.TEAM_SIZE_REQUIRED,
+					"Individual " + organization.getId() + " became " + type + " with team size " + teamSize);
 		}
 	}
 

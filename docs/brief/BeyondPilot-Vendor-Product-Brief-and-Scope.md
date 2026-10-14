@@ -1,4 +1,5 @@
 # BeyondPilot
+
 ## Product Brief and Development Scope for Vendors
 
 **Prepared by:** GenAI Fund  
@@ -43,15 +44,15 @@ An attractive directory alone is insufficient. The complete participation and re
 
 ## 3. Users and their needs
 
-| User | What they need to do |
-| --- | --- |
-| Public visitor | Understand BeyondPilot, discover campaigns and listings, and decide whether to participate. |
-| Enterprise / innovation seeker | Describe a business need, publish a use case, discover relevant solutions, review proposals and select providers for follow-up. |
-| AI provider | Present capabilities or solutions, discover opportunities, submit a proposal and follow its outcome. Includes startups and established technology providers. |
-| Individual builder / small team | Participate without having to present themselves as an established company. Includes solo builders, freelancers and hackathon or student teams. |
-| AI talent | Publish skills and experience, showcase relevant work and receive enquiries. |
-| GenAI Fund operator / platform administrator | Manage campaigns, support onboarding, moderate public content, oversee applications, coordinate shortlisting and communicate outcomes. |
-| Invited reviewer or judge | Review assigned applications if this role is included in the agreed release. Specific access and scoring requirements need confirmation. |
+| User                                         | What they need to do                                                                                                                                         |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Public visitor                               | Understand BeyondPilot, discover campaigns and listings, and decide whether to participate.                                                                  |
+| Enterprise / innovation seeker               | Describe a business need, publish a use case, discover relevant solutions, review proposals and select providers for follow-up.                              |
+| AI provider                                  | Present capabilities or solutions, discover opportunities, submit a proposal and follow its outcome. Includes startups and established technology providers. |
+| Individual builder / small team              | Participate without having to present themselves as an established company. Includes solo builders, freelancers and hackathon or student teams.              |
+| AI talent                                    | Publish skills and experience, showcase relevant work and receive enquiries.                                                                                 |
+| GenAI Fund operator / platform administrator | Manage campaigns, support onboarding, moderate public content, oversee applications, coordinate shortlisting and communicate outcomes.                       |
+| Invited reviewer or judge                    | Review assigned applications if this role is included in the agreed release. Specific access and scoring requirements need confirmation.                     |
 
 **Important identity distinction:** a user account, an organization and a public talent profile are different records. A person may participate in more than one capacity. The preferred starting direction is a lightweight organization/team setup that also accommodates a solo builder. Vendors should confirm this model during discovery; a separate personal-versus-organization publishing system is not mandatory for quotation.
 
@@ -164,19 +165,19 @@ BeyondPilot
     └── Operational exports and reporting
 ```
 
-| Screen / workspace | Main content and actions |
-| --- | --- |
-| Homepage | Explain the platform, surface active campaigns and provide entry points to the three directories. |
-| Campaign directory | Browse programmes and distinguish active, upcoming and completed opportunities where applicable. |
-| Campaign detail | Challenge overview, enterprise context, promoted use cases, partners/logos, dates, eligibility, people, submission instructions and Apply CTA. |
-| Use Case directory | Search/filter opportunity cards and open the full brief. |
-| Use-case detail | Problem, expected outcomes, requirements, enterprise context, dates, team and application CTA. |
-| Solution directory/detail | Discover capabilities, product maturity, evidence and relevant provider information. |
-| Talent directory/detail | Discover skills, experience, availability and relevant work; send an enquiry. |
-| Proposal form | Confirm the opportunity and submitting identity, upload the proposal, provide agreed links and submit. |
-| Applicant workspace | Find submissions, confirm receipt and perform permitted updates or withdrawals. |
-| Reviewer workspace | View all received proposals, open materials, record assessments and build a shortlist. |
-| Admin workspace | Operate the platform with the minimum tools needed for publishing, access, campaign delivery and support. |
+| Screen / workspace        | Main content and actions                                                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Homepage                  | Explain the platform, surface active campaigns and provide entry points to the three directories.                                              |
+| Campaign directory        | Browse programmes and distinguish active, upcoming and completed opportunities where applicable.                                               |
+| Campaign detail           | Challenge overview, enterprise context, promoted use cases, partners/logos, dates, eligibility, people, submission instructions and Apply CTA. |
+| Use Case directory        | Search/filter opportunity cards and open the full brief.                                                                                       |
+| Use-case detail           | Problem, expected outcomes, requirements, enterprise context, dates, team and application CTA.                                                 |
+| Solution directory/detail | Discover capabilities, product maturity, evidence and relevant provider information.                                                           |
+| Talent directory/detail   | Discover skills, experience, availability and relevant work; send an enquiry.                                                                  |
+| Proposal form             | Confirm the opportunity and submitting identity, upload the proposal, provide agreed links and submit.                                         |
+| Applicant workspace       | Find submissions, confirm receipt and perform permitted updates or withdrawals.                                                                |
+| Reviewer workspace        | View all received proposals, open materials, record assessments and build a shortlist.                                                         |
+| Admin workspace           | Operate the platform with the minimum tools needed for publishing, access, campaign delivery and support.                                      |
 
 ## 7. Functional requirements
 
@@ -271,12 +272,12 @@ The exact labels, review-note fields, scoring criteria, reviewer roles and outco
 
 ### 7.8 AI discovery and matching
 
-| Capability | Purpose | Scope direction |
-| --- | --- | --- |
-| Directory search | Find relevant solutions and use cases. | Phase 1 core capability; propose a proportionate implementation. |
-| Early recommendations | Help enterprises discover providers after describing a need. | Requested product behavior; quote the initial implementation explicitly. |
-| Formal evaluation | Assist comparison of applicable solutions and received proposals against a use case. | Phase 1 implementation depth to agree; assess existing engine reuse. |
-| MCP discovery | Let users search BeyondPilot from their own ChatGPT. | Phase 2. |
+| Capability            | Purpose                                                                              | Scope direction                                                          |
+| --------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| Directory search      | Find relevant solutions and use cases.                                               | Phase 1 core capability; propose a proportionate implementation.         |
+| Early recommendations | Help enterprises discover providers after describing a need.                         | Requested product behavior; quote the initial implementation explicitly. |
+| Formal evaluation     | Assist comparison of applicable solutions and received proposals against a use case. | Phase 1 implementation depth to agree; assess existing engine reuse.     |
+| MCP discovery         | Let users search BeyondPilot from their own ChatGPT.                                 | Phase 2.                                                                 |
 
 Formal evaluation may use document extraction and shared evaluation criteria. Vendors should explain how the system handles failed extraction, changing documents, multiple solutions per provider and reasons for recommendations.
 
@@ -401,50 +402,50 @@ No fixed cloud architecture is prescribed. Recommend a proportionate setup and e
 
 These checks illustrate the expected experience. Final criteria should be attached to the agreed release scope.
 
-| Test | Expected result |
-| --- | --- |
-| New visitor applies from a campaign | Registration returns them to the correct application with campaign/use-case context intact. |
-| A solo builder participates | The agreed onboarding model lets them apply without presenting a false established-company identity. |
-| Enterprise saves an incomplete use case | The draft can be reopened later with saved progress preserved. |
-| Provider saves an incomplete solution | The draft persists and is not publicly listed or reviewed prematurely. |
+| Test                                       | Expected result                                                                                            |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| New visitor applies from a campaign        | Registration returns them to the correct application with campaign/use-case context intact.                |
+| A solo builder participates                | The agreed onboarding model lets them apply without presenting a false established-company identity.       |
+| Enterprise saves an incomplete use case    | The draft can be reopened later with saved progress preserved.                                             |
+| Provider saves an incomplete solution      | The draft persists and is not publicly listed or reviewed prematurely.                                     |
 | Owner chooses approved-unlisted visibility | The solution is absent from public discovery but remains usable through the agreed sharing/matching rules. |
-| Proposal arrives before closing | Authorized reviewers can read it immediately, including if extraction is pending or failed. |
-| Applicant updates materials | The accepted version and relevant review history are clear. |
-| Deadline is reached | New submissions are blocked according to the configured timezone and approved policy. |
-| Reviewer makes a preliminary assessment | It follows the agreed private-versus-applicant-visible rule. |
-| Outcomes are released | Selected and unsuccessful applicants receive the intended communication. |
-| Existing data is migrated | Agreed records and files reconcile with the source; exceptions are documented. |
-| AI assists discovery or evaluation | Results can be tested against representative real needs and do not prevent manual review. |
+| Proposal arrives before closing            | Authorized reviewers can read it immediately, including if extraction is pending or failed.                |
+| Applicant updates materials                | The accepted version and relevant review history are clear.                                                |
+| Deadline is reached                        | New submissions are blocked according to the configured timezone and approved policy.                      |
+| Reviewer makes a preliminary assessment    | It follows the agreed private-versus-applicant-visible rule.                                               |
+| Outcomes are released                      | Selected and unsuccessful applicants receive the intended communication.                                   |
+| Existing data is migrated                  | Agreed records and files reconcile with the source; exceptions are documented.                             |
+| AI assists discovery or evaluation         | Results can be tested against representative real needs and do not prevent manual review.                  |
 
 ## 14. Launch context and dates to reconcile
 
 The current planning context is the AI for Insurance Challenge. These dates explain urgency; they are not a claim that a new vendor can meet them without discovery.
 
-| Milestone | Existing planning target |
-| --- | --- |
-| Campaign application flow | As soon as practicable. |
+| Milestone                                | Existing planning target                                              |
+| ---------------------------------------- | --------------------------------------------------------------------- |
+| Campaign application flow                | As soon as practicable.                                               |
 | Solution, Talent and Use Case visibility | Earlier target: first week of October 2026; confirm what is feasible. |
-| Rolling proposal review | Target recorded in the delivery brief: before 10 October 2026. |
-| Submission close | 15 October 2026, 23:59 ICT / UTC+7. |
-| Applicant outcomes | 16 October 2026. |
-| Demo day | 22 October 2026, for ten shortlisted teams. |
+| Rolling proposal review                  | Target recorded in the delivery brief: before 10 October 2026.        |
+| Submission close                         | 15 October 2026, 23:59 ICT / UTC+7.                                   |
+| Applicant outcomes                       | 16 October 2026.                                                      |
+| Demo day                                 | 22 October 2026, for ten shortlisted teams.                           |
 
 Please state which milestones you can support, what must be available earlier than the overall release, and whether an interim integration is required. MCP is not part of these Phase 1 dates.
 
 ## 15. Decisions to resolve during discovery
 
-| Topic | Decision needed |
-| --- | --- |
+| Topic                   | Decision needed                                                                                                                          |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | Identity and membership | Lightweight organization for every provider versus a separate independent-provider identity; invitations, join requests and permissions. |
-| Authentication | Email sign-in method, Google integration and approval gates. |
-| Visibility | Public summaries/details, approved-member access, shared links and file downloads. |
-| Proposal eligibility | Whether a solution must exist or be approved before applying, including early-stage campaign entrants. |
-| Proposal contents | Related solution, team/contact data, PDF, video/demo links, drafts and version limits. |
-| Campaign structure | One/multiple use cases, open-scope challenge submissions and campaign/use-case associations. |
-| Review | Authorized reviewers, notes/scoring, internal states and outcome-release process. |
-| AI | Existing engine reuse, recommendation timing, evaluation depth, retries/reruns and relevance acceptance. |
-| Existing functions | What to retain, modify or retire rather than silently lose during migration. |
-| Delivery | Exact Phase 1 boundary, dated releases, testing, migration, warranty and maintenance. |
+| Authentication          | Email sign-in method, Google integration and approval gates.                                                                             |
+| Visibility              | Public summaries/details, approved-member access, shared links and file downloads.                                                       |
+| Proposal eligibility    | Whether a solution must exist or be approved before applying, including early-stage campaign entrants.                                   |
+| Proposal contents       | Related solution, team/contact data, PDF, video/demo links, drafts and version limits.                                                   |
+| Campaign structure      | One/multiple use cases, open-scope challenge submissions and campaign/use-case associations.                                             |
+| Review                  | Authorized reviewers, notes/scoring, internal states and outcome-release process.                                                        |
+| AI                      | Existing engine reuse, recommendation timing, evaluation depth, retries/reruns and relevance acceptance.                                 |
+| Existing functions      | What to retain, modify or retire rather than silently lose during migration.                                                             |
+| Delivery                | Exact Phase 1 boundary, dated releases, testing, migration, warranty and maintenance.                                                    |
 
 ## 16. What we would like vendors to propose
 

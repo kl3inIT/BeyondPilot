@@ -14,7 +14,7 @@ import { AllRequired, ChoiceCardsField } from "@/components/form/form-fields";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FieldGroup } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
-import { teamSizes, typesFor } from "@/features/organization/organization-codes";
+import { teamSizeAfterTypeChange, teamSizesFor } from "@/features/organization/organization-codes";
 import { MAX_DESCRIPTION } from "@/features/organization/organization-format";
 import { OrganizationIndustriesField } from "@/features/organization/organization-industries-field";
 import {
@@ -182,17 +182,26 @@ function BasicsForm({ organization, create, open, onOpenChange, onSaved }: Basic
     >
       <AllRequired>
         <FieldGroup>
-          <form.AppField name="type">
+          <form.AppField
+            name="type"
+            listeners={{
+              onChange: ({ value, fieldApi }) => {
+                // Just me is one person; a team or a company says how many it is.
+                fieldApi.form.setFieldValue(
+                  "teamSize",
+                  teamSizeAfterTypeChange(value, fieldApi.form.getFieldValue("teamSize")),
+                );
+              },
+            }}
+          >
             {() => (
               <ChoiceCardsField
                 label={f("creator.label")}
-                className={organization ? "grid-cols-2" : "grid-cols-3"}
-                options={creators
-                  .filter((value) => typesFor(organization).includes(value))
-                  .map((value) => ({
-                    value,
-                    label: f(`creator.${value}`),
-                  }))}
+                className="grid-cols-3"
+                options={creators.map((value) => ({
+                  value,
+                  label: f(`creator.${value}`),
+                }))}
               />
             )}
           </form.AppField>
@@ -230,7 +239,10 @@ function BasicsForm({ organization, create, open, onOpenChange, onSaved }: Basic
                     label={f("teamSize")}
                     placeholder={f("teamSizePlaceholder")}
                     requiredMark
-                    options={teamSizes.map((value) => ({ value, label: sizeName(value) }))}
+                    options={teamSizesFor(type).map((value) => ({
+                      value,
+                      label: sizeName(value),
+                    }))}
                   />
                 )}
               </form.AppField>
