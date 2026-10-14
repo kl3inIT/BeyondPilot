@@ -69,8 +69,6 @@ async function ProgramsPage({
     getLocale(),
   ]);
   const format = programFormatter(locale);
-  const programs = groups.current.filter((listing) => listing.kind === "program").length;
-  const events = groups.current.length - programs;
   const current =
     search.phase === "open"
       ? t("open")
@@ -136,15 +134,7 @@ async function ProgramsPage({
 
         {!results && groups.current.length > 0 && (
           <section className="flex flex-col gap-4" aria-label={current}>
-            <SectionHead
-              title={current}
-              count={[
-                programs > 0 && t("programCount", { count: programs }),
-                events > 0 && t("itemCount", { count: events }),
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            />
+            <SectionHead title={current} />
             {groups.current.map((listing, index) =>
               listing.kind === "program" ? (
                 <ProgramCard

@@ -5541,7 +5541,6 @@
     "current": "Đang mở và sắp diễn ra",
     "done": "Đã kết thúc",
     "programCount": "{count, plural, other {# chương trình}}",
-    "itemCount": "{count, plural, other {# sự kiện}}",
     "kind": {
       "program": "Chương trình",
       "event": "Sự kiện"
