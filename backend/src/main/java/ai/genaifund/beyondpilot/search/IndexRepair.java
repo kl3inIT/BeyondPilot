@@ -40,7 +40,28 @@ class IndexRepair {
 		this.useCases = useCases;
 	}
 
+	/**
+	 * Repairs the index in the background once the application is ready. The listener runs before the application
+	 * reports itself ready to take traffic, and a rebuild of the whole index on production took about 70 seconds, during
+	 * which every deployment answered 502; meanwhile search answers from the index as it was.
+	 */
 	@EventListener(ApplicationReadyEvent.class)
+	void repairInBackground(ApplicationReadyEvent ready) {
+		// Through the bean, so that the rebuild runs in its transaction.
+		IndexRepair self = ready.getApplicationContext().getBean(IndexRepair.class);
+		Thread.ofVirtual().name("search-index-repair").start(() -> {
+			try {
+				self.repair();
+			}
+			catch (RuntimeException failure) {
+				LOG.atError()
+					.addKeyValue("event", "search.index.repair_failed")
+					.addKeyValue("error_type", failure.getClass().getSimpleName())
+					.log("The search index could not be repaired at start; the nightly repair tries again");
+			}
+		});
+	}
+
 	@Scheduled(cron = "0 30 3 * * *", zone = "Asia/Ho_Chi_Minh")
 	@Transactional
 	synchronized void repair() {
