@@ -150,6 +150,11 @@ export function adminProgramDraftsRoute(id: string) {
   return `${adminProgramApplicationsRoute(id)}/drafts`;
 }
 
+/** One application not submitted yet, as an operator reads it. */
+export function adminProgramDraftRoute(id: string, draftId: string) {
+  return `${adminProgramDraftsRoute(id)}/${draftId}`;
+}
+
 export function adminProgramReleaseRoute(id: string) {
   return `${siteRoutes.adminPrograms}/${id}/release`;
 }
