@@ -43,7 +43,7 @@ public class ProgramQueryRepository {
 	 */
 	public List<AdminProgramSummaryResponse> all(Instant now) {
 		return jdbc.sql("""
-				select id, slug, name, type, partner_name, cover_file_id, status, starts_on, ends_on, applications_open_at,
+				select id, slug, name, type, partner_name, cover_file_id, featured_at, status, starts_on, ends_on, applications_open_at,
 				       applications_close_at, shortlist_size, outcomes_due_on, allow_updates_until_close,
 				       applications_open_title, applications_close_title, outcomes_due_title, updated_at
 				from program
@@ -55,17 +55,19 @@ public class ProgramQueryRepository {
 			LocalDate endsOn = day(row.getDate("ends_on"));
 			return new AdminProgramSummaryResponse(row.getObject("id", UUID.class), row.getString("slug"),
 					row.getString("name"), row.getString("type"), row.getString("partner_name"),
-					row.getObject("cover_file_id", UUID.class), row.getString("status"), ProgramPhase.of(startsOn, endsOn, opensAt, closesAt, now).code(),
+					row.getObject("cover_file_id", UUID.class), instant(row.getTimestamp("featured_at")),
+					row.getString("status"), ProgramPhase.of(startsOn, endsOn, opensAt, closesAt, now).code(),
 					applications(row, opensAt, closesAt), startsOn, endsOn, row.getTimestamp("updated_at").toInstant());
 		}).list().stream().sorted(Comparator.comparingInt(program -> BY_URGENCY.indexOf(program.phase()))).toList();
 	}
 
 	/**
 	 * The published programs, the latest to start first, each with the phase it is in at {@code now} and its events
-	 * still to come.
+	 * still to come. Asked for the featured ones only, the most recently featured comes first.
 	 * @param type only programs of this type, or every type when null
+	 * @param featured only the featured programs when true, only the others when false, both when null
 	 */
-	public List<ProgramSummaryResponse> published(@Nullable String type, Instant now) {
+	public List<ProgramSummaryResponse> published(@Nullable String type, @Nullable Boolean featured, Instant now) {
 		Map<UUID, List<ProgramEventEntry>> events = upcomingEvents(now);
 		return jdbc.sql("""
 				select id, slug, name, type, partner_name, summary, cover_file_id, starts_on, ends_on, page_kind,
@@ -73,8 +75,10 @@ public class ProgramQueryRepository {
 				       allow_updates_until_close, applications_open_title, applications_close_title, outcomes_due_title
 				from program
 				where status = 'published' and (cast(:type as text) is null or type = :type)
-				order by starts_on desc nulls last, created_at desc, id
-				""").param("type", type, Types.VARCHAR).query((row, index) -> {
+				  and (cast(:featured as boolean) is null or (featured_at is not null) = :featured)
+				order by case when cast(:featured as boolean) then featured_at end desc nulls last,
+				         starts_on desc nulls last, created_at desc, id
+				""").param("type", type, Types.VARCHAR).param("featured", featured, Types.BOOLEAN).query((row, index) -> {
 			Instant opensAt = instant(row.getTimestamp("applications_open_at"));
 			Instant closesAt = instant(row.getTimestamp("applications_close_at"));
 			LocalDate startsOn = day(row.getDate("starts_on"));

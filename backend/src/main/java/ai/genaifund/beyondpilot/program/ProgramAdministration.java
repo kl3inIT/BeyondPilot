@@ -329,6 +329,37 @@ public class ProgramAdministration {
 	}
 
 	/**
+	 * Features a program: the home page announces the most recently featured program that is published and still
+	 * takes applications. Any program can be featured, whatever its status, and it stays featured until an operator
+	 * stops it; one that is not public or no longer takes applications is simply not announced. Featuring one that is
+	 * featured already changes nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProgramException when the program does not exist
+	 */
+	@Transactional
+	public void feature(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Program program = programs.findById(id).orElseThrow(() -> notFound(id));
+		if (programs.feature(id, Instant.now()) == 1) {
+			record(AuditAction.PROGRAM_FEATURE, operator, program);
+		}
+	}
+
+	/**
+	 * Stops featuring a program. On one that is not featured it changes nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProgramException when the program does not exist
+	 */
+	@Transactional
+	public void unfeature(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Program program = programs.findById(id).orElseThrow(() -> notFound(id));
+		if (programs.unfeature(id) == 1) {
+			record(AuditAction.PROGRAM_UNFEATURE, operator, program);
+		}
+	}
+
+	/**
 	 * The questions a program asks its applicants, and whether they can still change.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws ProgramException when the program does not exist
@@ -403,7 +434,7 @@ public class ProgramAdministration {
 		return new AdminProgramResponse(program.getId(), program.getSlug(), program.hasBeenPublished(),
 				PublishIssue.of(program).stream().map(PublishIssue::code).toList(), program.getName(), program.getType().code(), program.getPartnerName(), program.getSummary(),
 				program.getAbout(), program.getStartsOn(), program.getEndsOn(), program.getStatus().code(),
-				program.getPageKind().code(), program.getExternalUrl(), program.getCoverFileId(),
+				program.getPageKind().code(), program.getExternalUrl(), program.getCoverFileId(), program.getFeaturedAt(),
 				opensAt == null || closesAt == null ? null
 						: new ProgramApplications(opensAt, closesAt, program.getShortlistSize(),
 								program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose(),

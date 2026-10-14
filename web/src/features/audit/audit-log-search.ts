@@ -14,6 +14,8 @@ export const auditActions = [
   "program.update",
   "program.publish",
   "program.unpublish",
+  "program.feature",
+  "program.unfeature",
   "organization.create",
   "organization.approve",
   "organization.refuse",

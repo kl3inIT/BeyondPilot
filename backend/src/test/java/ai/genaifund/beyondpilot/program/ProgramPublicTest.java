@@ -105,6 +105,28 @@ class ProgramPublicTest {
 	}
 
 	@Test
+	void theFeaturedProgramsArePublishedOnesTheMostRecentlyFeaturedFirst() {
+		Instant now = Instant.now();
+		LocalDate today = LocalDate.now(ProgramPhase.ZONE);
+		UUID earlier = program("earlier", "published", "event", today.minusDays(5), today.plusDays(30),
+				now.minus(Duration.ofDays(1)), now.plus(Duration.ofDays(5)));
+		UUID later = program("later", "published", "event", today.minusDays(1), today.plusDays(30),
+				now.minus(Duration.ofDays(1)), now.plus(Duration.ofDays(5)));
+		UUID draft = program("featured-draft", "draft", "event", today, today.plusDays(30), null, null);
+		program("plain", "published", "event", today.plusDays(1), today.plusDays(30), null, null);
+		feature(earlier, now.minus(Duration.ofHours(2)));
+		feature(later, now.minus(Duration.ofHours(1)));
+		feature(draft, now);
+		List<String> before = tagged(list(""));
+
+		assertThat(tagged(list("?featured=true"))).containsExactly(slug("later"), slug("earlier"));
+		assertThat(tagged(list("?featured=false"))).containsExactly(slug("plain"));
+		// Without the parameter the list keeps its order: a reader is not told what is featured.
+		assertThat(before).containsExactly(slug("plain"), slug("later"), slug("earlier"));
+		assertThat(JsonPath.<List<Object>>read(list("?featured=true"), "$.items[*].featuredAt")).isEmpty();
+	}
+
+	@Test
 	void aParameterOutOfBoundsIsAValidationProblem() {
 		String body = new String(client.get()
 			.uri(URI.create("http://localhost:" + port + PROGRAMS + "?phase=soon&type=summit"))
@@ -217,6 +239,15 @@ class ProgramPublicTest {
 				insert into program_event (program_id, position, title, starts_at, online)
 				values (?, ?, ?, ?, true)
 				""").params(program, position, title, Timestamp.from(startsAt)).update();
+	}
+
+	private void feature(UUID program, Instant at) {
+		jdbc.sql("update program set featured_at = ? where id = ?").params(Timestamp.from(at), program).update();
+	}
+
+	/** The addresses of this test's programs on the list, in its order. */
+	private List<String> tagged(String body) {
+		return JsonPath.<List<String>>read(body, "$.items[*].slug").stream().filter(slug -> slug.endsWith(tag)).toList();
 	}
 
 	private String list(String query) {

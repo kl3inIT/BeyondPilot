@@ -109,19 +109,12 @@
   "Home": {
     "featured": {
       "eyebrow": "Chương trình nổi bật",
-      "name": "Nestlé Vietnam AI Reinvention",
-      "lead": "Đừng bỏ lỡ cơ hội hợp tác với Nestlé.",
-      "text": "Bạn có giải pháp AI đang chạy được? Hãy mang phần mềm, phần cứng hoặc tự động hóa AI của bạn đến với các bài toán kinh doanh thực tế.",
-      "early": "Briefing sớm",
-      "earlyValue": "Nộp trước 5/11",
+      "lead": "Đừng bỏ lỡ cơ hội hợp tác với {partner}.",
       "deadline": "Hạn chót",
-      "deadlineValue": "23:59 ICT, 22/11",
       "explore": "Xem chương trình và nộp đơn",
       "later": "Để sau",
       "close": "Đóng",
-      "widget": "Nestlé AI Reinvention",
-      "view": "Xem chương trình",
-      "imageAlt": "Logo Nestlé trên mặt kính tòa văn phòng"
+      "view": "Xem chương trình"
     },
     "hero": {
       "titleStart": "Bước tiếp theo của bạn với",
@@ -972,6 +965,16 @@
           "lead": "Các thay đổi sẽ mất.",
           "leave": "Rời trang",
           "stay": "Ở lại"
+        },
+        "feature": {
+          "feature": "Đặt nổi bật trên trang chủ",
+          "unfeature": "Bỏ nổi bật",
+          "since": "Nổi bật từ {day}",
+          "hint": "Trang chủ giới thiệu chương trình được chọn nổi bật gần nhất, đã công bố và vẫn đang nhận hồ sơ.",
+          "done": {
+            "featured": "Đã đặt {name} nổi bật trên trang chủ.",
+            "unfeatured": "Đã bỏ nổi bật {name}."
+          }
         }
       },
       "noDays": "Chưa đặt ngày",
@@ -1050,7 +1053,8 @@
           "leave": "Rời trang",
           "stay": "Ở lại"
         }
-      }
+      },
+      "featured": "Nổi bật"
     },
     "accounts": {
       "metaTitle": "Tài khoản · BeyondPilot",
@@ -1158,7 +1162,9 @@
           "create": "Tạo chương trình",
           "update": "Lưu chương trình",
           "publish": "Công bố chương trình",
-          "unpublish": "Gỡ chương trình"
+          "unpublish": "Gỡ chương trình",
+          "feature": "Đặt một chương trình nổi bật",
+          "unfeature": "Bỏ nổi bật một chương trình"
         },
         "organization": {
           "create": "Thêm tổ chức",
@@ -1301,7 +1307,9 @@
           "create": "Đã tạo chương trình <resource></resource>",
           "update": "Đã lưu chương trình <resource></resource>",
           "publish": "Đã công bố chương trình <resource></resource>",
-          "unpublish": "Đã gỡ chương trình <resource></resource>"
+          "unpublish": "Đã gỡ chương trình <resource></resource>",
+          "feature": "Đã đặt chương trình <resource></resource> nổi bật trên trang chủ",
+          "unfeature": "Đã bỏ nổi bật chương trình <resource></resource>"
         },
         "organization": {
           "create": "Thêm tổ chức <resource></resource>",
