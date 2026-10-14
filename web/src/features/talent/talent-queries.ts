@@ -105,15 +105,22 @@ export async function readMyTalent(): Promise<MyTalent> {
   return data;
 }
 
+/** What narrows the operators' list, as the list and its download both send it. */
+export function adminTalentFilters(search: AdminTalentSearch) {
+  return {
+    q: text(search.q),
+    status: search.status ?? undefined,
+    featured: search.featured === null ? undefined : search.featured === "true",
+    sort: knownSort(search.sort, adminTalentSortKeys),
+  };
+}
+
 /** One page of submitted profiles for the operator behind this request. Server only. */
 export async function readAdminTalentList(search: AdminTalentSearch): Promise<AdminTalentList> {
   const { data } = await listAdminTalent({
     ...(await sessionRequest()),
     query: {
-      q: text(search.q),
-      status: search.status ?? undefined,
-      featured: search.featured === null ? undefined : search.featured === "true",
-      sort: knownSort(search.sort, adminTalentSortKeys),
+      ...adminTalentFilters(search),
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },

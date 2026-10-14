@@ -553,7 +553,8 @@
     "USECASE_ATTACHMENT_NOT_USABLE": "Hãy tải tệp lên lại: không thể đính kèm tệp này.",
     "USECASE_TIMELINE_OUT_OF_ORDER": "Thời gian dài nhất ngắn hơn thời gian ngắn nhất.",
     "PROPOSAL_NOTHING_TO_SEND": "Không có quyết định nào để gửi. Hãy tải lại trang để xem tình trạng các đề xuất.",
-    "MESSAGING_OPERATOR_NOT_FOUND": "Người này không phải quản trị viên đang hoạt động."
+    "MESSAGING_OPERATOR_NOT_FOUND": "Người này không phải quản trị viên đang hoạt động.",
+    "SPREADSHEET_TOO_LARGE": "Danh sách này có nhiều dòng hơn mức một lần tải cho phép. Hãy thu hẹp bằng bộ lọc rồi tải lại."
   },
   "SignIn": {
     "metaTitle": "Đăng nhập · BeyondPilot",
@@ -1188,7 +1189,8 @@
           "restore": "Khôi phục một tổ chức",
           "update": "Lưu hồ sơ tổ chức",
           "invite": "Mời người vào một tổ chức",
-          "invitation_revoke": "Thu hồi một lời mời"
+          "invitation_revoke": "Thu hồi một lời mời",
+          "export": "Tải danh sách tổ chức"
         },
         "solution": {
           "approve": "Duyệt giải pháp",
@@ -1211,7 +1213,8 @@
           "offer_update": "Sửa ưu đãi",
           "offer_close": "Đóng ưu đãi với giải pháp mới",
           "offer_reopen": "Mở lại ưu đãi với giải pháp mới",
-          "offer_delete": "Xóa ưu đãi"
+          "offer_delete": "Xóa ưu đãi",
+          "export": "Tải danh sách giải pháp AI"
         },
         "messaging": {
           "request_accept": "Chấp nhận một tin đầu tiên",
@@ -1230,7 +1233,8 @@
           "restore": "Khôi phục một hồ sơ nhân lực",
           "feature": "Đặt một hồ sơ nhân lực nổi bật",
           "unfeature": "Bỏ nổi bật một hồ sơ nhân lực",
-          "delete": "Đã xóa một hồ sơ nhân lực"
+          "delete": "Đã xóa một hồ sơ nhân lực",
+          "export": "Tải danh sách nhân lực AI"
         },
         "proposal": {
           "criteria_update": "Đặt tiêu chí chấm",
@@ -1244,7 +1248,8 @@
         },
         "use_case_proposal": {
           "decide": "Quyết định về một đề xuất gửi tới use case",
-          "outcomes_send": "Gửi kết quả các đề xuất gửi tới use case"
+          "outcomes_send": "Gửi kết quả các đề xuất gửi tới use case",
+          "export": "Tải danh sách đề xuất gửi tới một use case"
         },
         "use_case": {
           "create": "Tạo một use case",
@@ -1273,7 +1278,8 @@
           "model_add": "Bật một model AI",
           "model_update": "Sửa một model AI",
           "model_remove": "Gỡ một model AI",
-          "task_model_change": "Chọn model AI cho một tác vụ"
+          "task_model_change": "Chọn model AI cho một tác vụ",
+          "usage_export": "Tải nhật ký lượt gọi AI"
         },
         "search": {
           "model_change": "Đổi model embedding",
@@ -1302,6 +1308,9 @@
           "candidate_restore": "Khôi phục một ứng viên",
           "candidate_invite": "Mời một nhà cung cấp gửi đề xuất",
           "settings_change": "Đổi giới hạn của matching"
+        },
+        "audit": {
+          "export": "Tải nhật ký thao tác"
         }
       },
       "activity": {
@@ -1335,7 +1344,8 @@
           "restore": "Khôi phục tổ chức <resource></resource>",
           "update": "Lưu hồ sơ của <resource></resource>",
           "invite": "Mời người vào <resource></resource>",
-          "invitation_revoke": "Thu hồi một lời mời vào <resource></resource>"
+          "invitation_revoke": "Thu hồi một lời mời vào <resource></resource>",
+          "export": "Tải danh sách tổ chức"
         },
         "solution": {
           "approve": "Duyệt giải pháp <resource></resource>",
@@ -1358,7 +1368,8 @@
           "offer_update": "Sửa ưu đãi <resource></resource>",
           "offer_close": "Đóng ưu đãi <resource></resource> với giải pháp mới",
           "offer_reopen": "Mở lại ưu đãi <resource></resource> với giải pháp mới",
-          "offer_delete": "Xóa ưu đãi <resource></resource>"
+          "offer_delete": "Xóa ưu đãi <resource></resource>",
+          "export": "Tải danh sách giải pháp AI"
         },
         "messaging": {
           "request_accept": "Đã chấp nhận một tin đầu tiên về <resource></resource>",
@@ -1377,7 +1388,8 @@
           "restore": "Khôi phục hồ sơ nhân lực của <resource></resource>",
           "feature": "Đặt hồ sơ nhân lực của <resource></resource> nổi bật",
           "unfeature": "Bỏ nổi bật hồ sơ nhân lực của <resource></resource>",
-          "delete": "Đã xóa hồ sơ nhân lực của <resource></resource>"
+          "delete": "Đã xóa hồ sơ nhân lực của <resource></resource>",
+          "export": "Tải danh sách nhân lực AI"
         },
         "proposal": {
           "criteria_update": "Đặt tiêu chí chấm của <resource></resource>",
@@ -1391,7 +1403,8 @@
         },
         "use_case_proposal": {
           "decide": "Quyết định về một đề xuất gửi tới <resource></resource>",
-          "outcomes_send": "Gửi kết quả các đề xuất gửi tới <resource></resource>"
+          "outcomes_send": "Gửi kết quả các đề xuất gửi tới <resource></resource>",
+          "export": "Tải danh sách đề xuất gửi tới <resource></resource>"
         },
         "use_case": {
           "create": "Đã tạo use case <resource></resource>",
@@ -1420,7 +1433,8 @@
           "model_add": "Bật model AI <resource></resource>",
           "model_update": "Sửa model AI <resource></resource>",
           "model_remove": "Gỡ model AI <resource></resource>",
-          "task_model_change": "Chọn model AI cho tác vụ <resource></resource>"
+          "task_model_change": "Chọn model AI cho tác vụ <resource></resource>",
+          "usage_export": "Tải nhật ký lượt gọi AI"
         },
         "search": {
           "model_change": "Đổi model embedding trong <resource></resource>",
@@ -1449,6 +1463,9 @@
           "candidate_restore": "Khôi phục một ứng viên của use case <resource></resource>",
           "candidate_invite": "Mời một nhà cung cấp gửi đề xuất cho use case <resource></resource>",
           "settings_change": "Đổi giới hạn của matching"
+        },
+        "audit": {
+          "export": "Tải nhật ký thao tác"
         }
       },
       "columns": {
@@ -6598,8 +6615,6 @@
       },
       "footer": "{shown} đơn · {drafts} bản nháp chưa nộp · {withdrawn} đơn đã rút",
       "footerScored": "{scored}/{total} đơn đã có điểm",
-      "download": "Tải về (CSV)",
-      "downloadFailed": "Chưa tải được danh sách đơn. Hãy thử lại.",
       "own": "Của bạn",
       "drafts": "{count} đơn nháp"
     },
@@ -6876,7 +6891,6 @@
       "missing": "Còn thiếu: {steps}",
       "noName": "Chưa có tên",
       "none": "Chưa điền",
-      "download": "Tải về (CSV)",
       "private": "Nội dung đơn nháp được giữ kín cho tới khi người nộp gửi đi. Giám khảo không bao giờ thấy đơn nháp.",
       "empty": {
         "title": "Không có đơn nháp",
@@ -8112,5 +8126,11 @@
     "solutionList": {
       "newTab": "(mở trong thẻ mới)"
     }
+  },
+  "ExportMenu": {
+    "label": "Xuất",
+    "xlsx": "Excel (.xlsx)",
+    "csv": "CSV",
+    "failed": "Chưa tải được danh sách. Hãy thử lại."
   }
 }
