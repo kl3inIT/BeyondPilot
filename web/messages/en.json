@@ -1890,7 +1890,6 @@
           "created": "Created",
           "updated": "Last changed"
         },
-        "closedNote": "Closed to new solutions. The solutions below keep it and still show it.",
         "solutions": {
           "title": "Solutions that come with it",
           "empty": "No solution comes with this offer.",
