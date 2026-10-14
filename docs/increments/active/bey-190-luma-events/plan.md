@@ -12,6 +12,7 @@ Design: [design.md](design.md). Tracked in Linear as BEY-190, under BEY-183. Ste
 | 6   | Staging: within the hour TinyFish, Big Minds is on Programs and events and on the home page with its cover; unpublish it in Admin and see it stay unpublished                                      | Shown on 14 October; the unpublish not tried there |
 | 7   | Production: an operator enters the Tasco demo day of 22 October as an event of `insurance-ai-tasco` before the release; after it, both events show on the home page                                | Open                                               |
 | 8   | Admin: the From Luma badge in the list and on the program's screen, the notice on its Settings; `lumaEventId` on the admin records, `openapi.yml` and the client; the stub and the Playwright spec | Done, 14 October 2026                              |
+| 9   | Admin › Programs › Pull from Luma: `POST …/luma/read`, the audit action `program.luma_read`, the toast; tests                                                                                      | Done, 14 October 2026                              |
 
 ## Verification
 
