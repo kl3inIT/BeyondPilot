@@ -11,15 +11,23 @@ import { Hero } from "@/components/sections/hero/hero";
 import { PartnerNetwork } from "@/components/sections/logos/partner-network";
 import { GenaiFundBacking } from "@/components/sections/team/genai-fund-backing";
 import { Section } from "@/components/ui/section";
+import { readFeaturedProgram } from "@/features/program/program-public-queries";
 import { routing } from "@/i18n/routing";
 import { genaiFundLinks, siteOrigin } from "@/lib/site";
+
+/**
+ * The page is built ahead of time, when the backend cannot be reached, and rendered again at most a
+ * minute after a visit, so the featured program an operator chooses reaches it within a minute.
+ */
+export const revalidate = 60;
 
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [site, metadata] = await Promise.all([
+  const [site, metadata, featured] = await Promise.all([
     getTranslations("Site"),
     getTranslations("Metadata"),
+    readFeaturedProgram(),
   ]);
 
   return (
@@ -63,7 +71,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <PartnerNetwork />
       <Faq />
       <FinalCta />
-      <FeaturedProgram />
+      {featured && <FeaturedProgram program={featured} />}
     </>
   );
 }

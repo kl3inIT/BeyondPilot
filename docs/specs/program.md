@@ -23,7 +23,8 @@ it asks applicants, and whether the public site shows it. It was delivered by
 ## Data
 
 `V4__program_create_programs.sql` creates three tables and `V12__program_create_questions.sql` the fourth;
-`V86__program_add_window_titles.sql` adds the titles of the window's dates. The module
+`V86__program_add_window_titles.sql` adds the titles of the window's dates and `V94__program_add_featured_at.sql`
+when an operator featured the program. The module
 owns all four ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
 
 - **`program`.** One row per program: `slug`, `name`, `type`, `partner_name`, `summary`, `about`, `starts_on`,
@@ -31,7 +32,7 @@ owns all four ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consist
   (`applications_open_at`, `applications_close_at`, `shortlist_size`, `outcomes_due_on`, `allow_updates_until_close`),
   the titles an operator gave the dates the window puts on the timeline (`applications_open_title`,
   `applications_close_title`, `outcomes_due_title`, each null for the default words, at most 160 characters),
-  `version`, `created_at`, `updated_at`.
+  `featured_at` (null while the program is not featured), `version`, `created_at`, `updated_at`.
 - **`program_milestone`** (key dates) and **`program_event`** (events). Lists keyed by `(program_id, position)`, kept
   in the order the operator gave and replaced as a whole, so a row has no identifier of its own.
 - **`program_question`.** Also keyed by `(program_id, position)`, but each question has an `id`, unique across all
@@ -200,8 +201,20 @@ Each change is recorded through `AuditTrail` in the transaction of the change, w
 | Save, and save of the questions | `program.update`    |
 | Publish                         | `program.publish`   |
 | Unpublish                       | `program.unpublish` |
+| Feature                         | `program.feature`   |
+| Stop featuring                  | `program.unfeature` |
 
-A repeated publish or unpublish records nothing.
+A repeated publish, unpublish, feature or stop records nothing.
+
+## Featuring
+
+An operator features a program for the home page's announcement (BEY-188, built as BEY-130 features directory
+records). `featured_at` is written only by `ProgramRepository.feature` and `unfeature`, one statement each that leaves
+`version` and `updated_at` alone, so featuring never refuses an operator's save; the entity maps it read-only. Any
+program can be featured, in any status, and stays featured until an operator stops it. `GET /api/program/programs?featured=true`
+lists the featured published programs, the most recently featured first; without the parameter the list keeps its
+order and no public record says what is featured. The home page announces the first of them whose applications have not
+closed, with its next key date. Featuring publishes no `ProgramChanged`: the indexed program did not change.
 
 ## Events
 
@@ -214,18 +227,20 @@ A repeated publish or unpublish records nothing.
 
 Admin paths need a session, an operator and, for a change, the CSRF header.
 
-| Method and path                                   | Contract                                                           |
-| ------------------------------------------------- | ------------------------------------------------------------------ |
-| `GET /api/program/programs`                       | `ProgramList` of published programs; optional `phase` and `type`   |
-| `GET /api/program/programs/{slug}`                | `Program`; a draft only for an operator; `404` otherwise           |
-| `GET /api/program/admin/programs`                 | `AdminProgramList`: every program with status, phase and window    |
-| `POST /api/program/admin/programs`                | `201` with the draft as `AdminProgram`; `409` `PROGRAM_SLUG_TAKEN` |
-| `GET /api/program/admin/programs/{id}`            | `AdminProgram`, with `publishIssues`, `slugFixed` and `version`    |
-| `PUT /api/program/admin/programs/{id}`            | `AdminProgram` as saved, with its new version                      |
-| `GET /api/program/admin/programs/{id}/questions`  | `ProgramQuestions`: the questions, `fixed`, `opensAt`, `version`   |
-| `PUT /api/program/admin/programs/{id}/questions`  | `ProgramQuestions` as saved, with the program's new version        |
-| `POST /api/program/admin/programs/{id}/publish`   | `204`; `400` `PROGRAM_NOT_READY_TO_PUBLISH`                        |
-| `POST /api/program/admin/programs/{id}/unpublish` | `204`                                                              |
+| Method and path                                   | Contract                                                                     |
+| ------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `GET /api/program/programs`                       | `ProgramList` of published programs; optional `phase`, `type` and `featured` |
+| `GET /api/program/programs/{slug}`                | `Program`; a draft only for an operator; `404` otherwise                     |
+| `GET /api/program/admin/programs`                 | `AdminProgramList`: every program with status, phase and window              |
+| `POST /api/program/admin/programs`                | `201` with the draft as `AdminProgram`; `409` `PROGRAM_SLUG_TAKEN`           |
+| `GET /api/program/admin/programs/{id}`            | `AdminProgram`, with `publishIssues`, `slugFixed` and `version`              |
+| `PUT /api/program/admin/programs/{id}`            | `AdminProgram` as saved, with its new version                                |
+| `GET /api/program/admin/programs/{id}/questions`  | `ProgramQuestions`: the questions, `fixed`, `opensAt`, `version`             |
+| `PUT /api/program/admin/programs/{id}/questions`  | `ProgramQuestions` as saved, with the program's new version                  |
+| `POST /api/program/admin/programs/{id}/publish`   | `204`; `400` `PROGRAM_NOT_READY_TO_PUBLISH`                                  |
+| `POST /api/program/admin/programs/{id}/unpublish` | `204`                                                                        |
+| `POST /api/program/admin/programs/{id}/feature`   | `204`                                                                        |
+| `POST /api/program/admin/programs/{id}/unfeature` | `204`                                                                        |
 
 The contract is `openapi.yml`.
 

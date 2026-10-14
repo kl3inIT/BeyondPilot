@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { LeaveGuard } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm, type ServerErrors } from "@/components/form/app-form";
 import { fieldIdOf, fieldIds } from "@/components/form/field-ids";
@@ -276,6 +277,11 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
             <Badge variant={program.status === "published" ? "success" : state.variant}>
               {program.status === "published" ? t("published") : states("draft")}
             </Badge>
+            {program.featuredAt && (
+              <FeaturedBadge title={t("feature.hint")}>
+                {t("feature.since", { day: format.dateTime(new Date(program.featuredAt), "date") })}
+              </FeaturedBadge>
+            )}
             {/* Published says only that the page is public: the phase and what comes next say where it stands. */}
             {!draft && (
               <span className="text-sm text-muted-foreground">

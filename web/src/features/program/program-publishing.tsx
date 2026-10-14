@@ -7,6 +7,8 @@ import {
   EyeOffIcon,
   GlobeIcon,
   LinkIcon,
+  StarIcon,
+  StarOffIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -23,7 +25,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNotify } from "@/hooks/use-notify";
-import { publishProgram, unpublishProgram, type AdminProgram } from "@/lib/api/generated";
+import {
+  featureProgram,
+  publishProgram,
+  unfeatureProgram,
+  unpublishProgram,
+  type AdminProgram,
+} from "@/lib/api/generated";
 import { publicSiteHost, siteRoutes } from "@/lib/site";
 
 import type { SettingsValues } from "./program-schemas";
@@ -195,13 +203,39 @@ function PublishButton({ program, dirty, blocked, save, className }: PublishButt
   );
 }
 
-/** The program's other actions, in a menu: its link, and taking it off the public site. */
+/**
+ * The program's other actions, in a menu: its link, featuring it on the home page, and taking it off
+ * the public site. Featuring changes nothing else about the program and emails nobody, so it runs at
+ * once and its toast offers Undo (docs/conventions.md › Actions).
+ */
 function ProgramMenu({ program }: { program: AdminProgram }) {
   const t = useTranslations("Admin.programs.settings");
   const notify = useNotify();
   const router = useRouter();
   const [asking, setAsking] = useState(false);
   const [pending, setPending] = useState(false);
+  const [featuring, setFeaturing] = useState(false);
+  const featured = Boolean(program.featuredAt);
+
+  /** Features the program or stops featuring it; what Undo sends offers no Undo of its own. */
+  async function feature(next: boolean, undoable: boolean) {
+    setFeaturing(true);
+    try {
+      await (next ? featureProgram : unfeatureProgram)({ path: { id: program.id } });
+      notify.success(
+        next
+          ? "Admin.programs.settings.feature.done.featured"
+          : "Admin.programs.settings.feature.done.unfeatured",
+        { name: program.name },
+        undoable ? { undo: () => void feature(!next, false) } : undefined,
+      );
+      router.refresh();
+    } catch (error) {
+      notify.failure(error);
+    } finally {
+      setFeaturing(false);
+    }
+  }
 
   async function unpublish() {
     setPending(true);
@@ -244,6 +278,10 @@ function ProgramMenu({ program }: { program: AdminProgram }) {
             >
               <LinkIcon aria-hidden="true" />
               {t("copyLink")}
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={featuring} onClick={() => void feature(!featured, true)}>
+              {featured ? <StarOffIcon aria-hidden="true" /> : <StarIcon aria-hidden="true" />}
+              {t(featured ? "feature.unfeature" : "feature.feature")}
             </DropdownMenuItem>
           </DropdownMenuGroup>
           {program.status === "published" && (
