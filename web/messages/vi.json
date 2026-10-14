@@ -5538,10 +5538,13 @@
     },
     "open": "Đang mở",
     "upcoming": "Sắp diễn ra",
-    "upcomingEvents": "Sự kiện sắp diễn ra",
+    "current": "Đang mở và sắp diễn ra",
     "done": "Đã kết thúc",
     "programCount": "{count, plural, other {# chương trình}}",
-    "itemCount": "{count, plural, other {# sự kiện}}",
+    "kind": {
+      "program": "Chương trình",
+      "event": "Sự kiện"
+    },
     "undated": "Trước đó",
     "live": "Đang mở",
     "running": "Đang diễn ra",
