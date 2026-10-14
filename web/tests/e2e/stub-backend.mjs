@@ -289,9 +289,11 @@ const publicPrograms = {
     ],
   },
   // A second program with a page written for it; its window is open and it has key dates and an event.
+  // An operator featured it, so the home page announces it.
   "nestle-vietnam-ai-reinvention": {
     id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c09",
     slug: "nestle-vietnam-ai-reinvention",
+    featuredAt: inDays(-2),
     name: "Nestlé Vietnam AI Reinvention",
     type: "enterprise_challenge",
     partnerName: "Nestlé Vietnam",
@@ -572,8 +574,12 @@ createServer((request, response) => {
     return json(response, ...searched);
   }
   if (url.pathname === "/api/program/programs") {
+    const featured = url.searchParams.get("featured") === "true";
     const items = Object.values(publicPrograms)
       .filter((program) => program.status === "published")
+      // Asked for the featured ones, the most recently featured first, as the backend answers.
+      .filter((program) => !featured || program.featuredAt)
+      .sort((a, b) => (featured ? (b.featuredAt ?? "").localeCompare(a.featuredAt ?? "") : 0))
       .map((program) => ({
         slug: program.slug,
         name: program.name,
@@ -652,6 +658,7 @@ createServer((request, response) => {
         name: program.name,
         type: program.type,
         partnerName: program.partnerName,
+        featuredAt: program.featuredAt ?? null,
         status: program.status,
         phase: program.status === "draft" ? "upcoming" : "open",
         applications: program.applications,
