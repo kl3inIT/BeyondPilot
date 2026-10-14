@@ -8,6 +8,7 @@ import ai.genaifund.beyondpilot.program.ProgramAdministration;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramListResponse;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramResponse;
 import ai.genaifund.beyondpilot.program.dto.CreateProgramRequest;
+import ai.genaifund.beyondpilot.program.dto.LumaReadResponse;
 import ai.genaifund.beyondpilot.program.dto.ProgramQuestionsResponse;
 import ai.genaifund.beyondpilot.program.dto.SaveProgramQuestionsRequest;
 import ai.genaifund.beyondpilot.program.dto.SaveProgramRequest;
@@ -151,6 +152,18 @@ class AdminProgramsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void unpublish(@CurrentActor Actor actor, @PathVariable UUID id) {
 		programs.unpublish(actor, id);
+	}
+
+	@PostMapping(path = "/luma/read", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "readLumaCalendar", summary = "Read the GenAI Fund calendar on Luma now",
+			description = "Does now what the hourly read does: each event still to come becomes or updates a program, and one that left the calendar is unpublished. A read already running finishes first.",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "What the read changed.")
+	@ApiResponse(responseCode = "503",
+			description = "This environment reads no Luma calendar, or Luma could not be read; nothing changed.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	LumaReadResponse readLuma(@CurrentActor Actor actor) {
+		return programs.readLuma(actor);
 	}
 
 	@PostMapping("/{id}/feature")

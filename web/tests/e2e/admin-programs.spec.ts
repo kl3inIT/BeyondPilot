@@ -95,7 +95,9 @@ test.describe("admin programs", () => {
     await page.goto("/admin/programs");
 
     // The draft is read from Luma; the Tasco challenge was created by an operator.
-    await expect(page.getByText("From Luma").and(page.locator(":visible"))).toHaveCount(1);
+    await expect(
+      page.getByText("From Luma", { exact: true }).and(page.locator(":visible")),
+    ).toHaveCount(1);
 
     await page.goto(`/admin/programs/${draft}/settings`);
     await expect(page.getByText("From Luma", { exact: true })).toBeVisible();
@@ -103,6 +105,26 @@ test.describe("admin programs", () => {
       page.getByRole("alert").filter({ hasText: "Updated from Luma every hour" }),
     ).toContainText("Change them on Luma.");
     await expectNoSeriousA11yViolations(page);
+  });
+
+  test("Pull from Luma reads the calendar now and says what changed", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/programs");
+
+    const read = await answer(page, "/api/program/admin/programs/luma/read", 200, {
+      created: 1,
+      updated: 0,
+      unpublished: 0,
+      failed: 0,
+    });
+
+    await page.getByRole("button", { name: "Pull from Luma" }).click();
+    await expect(page.getByText("Luma read: 1 new event, 0 updated, 0 unpublished.")).toBeVisible();
+    expect(read).toHaveLength(1);
   });
 
   test("New program suggests the address from the name and opens the draft", async ({

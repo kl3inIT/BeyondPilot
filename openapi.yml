@@ -1001,6 +1001,7 @@ paths:
           - program.update
           - program.publish
           - program.unpublish
+          - program.luma_read
           - program.feature
           - program.unfeature
           - organization.create
@@ -1607,6 +1608,7 @@ paths:
           - program.update
           - program.publish
           - program.unpublish
+          - program.luma_read
           - program.feature
           - program.unfeature
           - organization.create
@@ -6269,6 +6271,43 @@ paths:
       security:
       - session: []
       summary: Create a program as a draft
+      tags:
+      - Program administration
+  /api/program/admin/programs/luma/read:
+    post:
+      description: "Does now what the hourly read does: each event still to come becomes\
+        \ or updates a program, and one that left the calendar is unpublished. A read\
+        \ already running finishes first."
+      operationId: readLumaCalendar
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LumaRead"
+          description: What the read changed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "This environment reads no Luma calendar, or Luma could not\
+            \ be read; nothing changed."
+      security:
+      - session: []
+      summary: Read the GenAI Fund calendar on Luma now
       tags:
       - Program administration
   /api/program/admin/programs/{id}:
@@ -15260,6 +15299,7 @@ components:
           - program.update
           - program.publish
           - program.unpublish
+          - program.luma_read
           - program.feature
           - program.unfeature
           - organization.create
@@ -17691,6 +17731,32 @@ components:
       required:
       - mine
       - preview
+    LumaRead:
+      type: object
+      description: What a read of the GenAI Fund calendar on Luma changed. An event
+        that could not be read is tried again at the next read.
+      properties:
+        created:
+          type: integer
+          format: int32
+          description: Events still to come that became programs.
+        failed:
+          type: integer
+          format: int32
+          description: Events that could not be read this time.
+        unpublished:
+          type: integer
+          format: int32
+          description: Programs unpublished because their event left the calendar.
+        updated:
+          type: integer
+          format: int32
+          description: Programs that took what Luma says now.
+      required:
+      - created
+      - failed
+      - unpublished
+      - updated
     MarkReadRequest:
       type: object
       properties:
