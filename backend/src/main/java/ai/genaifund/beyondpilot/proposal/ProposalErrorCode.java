@@ -26,6 +26,9 @@ public enum ProposalErrorCode implements ErrorCode {
 	ALREADY_IN_ORGANIZATION("PROPOSAL_ALREADY_IN_ORGANIZATION", ErrorCategory.CONFLICT,
 			"You already apply for an organization."),
 
+	INDIVIDUAL_LOCKED("PROPOSAL_INDIVIDUAL_LOCKED", ErrorCategory.CONFLICT,
+			"You applied as yourself already, so you keep applying as yourself."),
+
 	ORGANIZATION_REQUIRED("PROPOSAL_ORGANIZATION_REQUIRED", ErrorCategory.VALIDATION,
 			"Say who applies: yourself, your team or your company."),
 

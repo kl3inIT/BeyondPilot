@@ -237,7 +237,7 @@ public class OutcomeService {
 	/** The emails an operator starts from, in the words of the program. */
 	private static ReleaseEmails starting(ApplicationForm form) {
 		return new ReleaseEmails("You're shortlisted for " + form.name(),
-				"Hi {organization},\n\n{solution} is one of the teams shortlisted for " + form.name()
+				"Hi {organization},\n\n{solution} is one of the solutions shortlisted for" + form.name()
 						+ ". We will be in touch about what comes next.\n\nYour application stays on BeyondPilot under My applications.\n\nGenAI Fund",
 				"Your application to " + form.name(),
 				"Hi {organization},\n\nThank you for applying with {solution}. It was not selected this time.\n\nYour application stays on BeyondPilot under My applications, and we hope to see you in the next program.\n\nGenAI Fund");

@@ -64,26 +64,29 @@ public class OrganizationQueryRepository {
 	}
 
 	/** What another module shows of an organization, its logo included. */
-	public record Name(UUID id, String slug, String name, @Nullable String country, @Nullable UUID logoFileId) {
+	public record Name(UUID id, String slug, String name, @Nullable String country, @Nullable UUID logoFileId,
+			String type) {
 	}
 
-	/** The approved organizations whose name contains the text, by name; at most {@code limit}. */
+	/** The approved organizations whose name contains the text, by name, individuals left out; at most {@code limit}. */
 	public List<Match> search(String text, int limit) {
 		return jdbc.sql(MATCHES + """
-				where o.status = 'approved' and o.suspended_at is null and lower(o.name) like :pattern escape '\\'
+				where o.status = 'approved' and o.suspended_at is null and o.type <> 'independent_builder'
+				  and lower(o.name) like :pattern escape '\\'
 				order by lower(o.name), o.id
 				limit :limit
 				""").param("pattern", containing(text)).param("limit", limit).query(OrganizationQueryRepository::match).list();
 	}
 
 	/**
-	 * The approved organizations, the ones that can have use cases, by name; at most {@code limit}.
+	 * The approved organizations, the ones that can have use cases, by name, individuals left out; at most
+	 * {@code limit}.
 	 * @param text only those whose name contains it, ignoring case; every one when null
 	 */
 	public List<Name> approvedOrganizations(@Nullable String text, int limit) {
 		return jdbc.sql("""
-				select id, slug, name, country, logo_file_id from organization
-				where status = 'approved' and suspended_at is null
+				select id, slug, name, country, logo_file_id, type from organization
+				where status = 'approved' and suspended_at is null and type <> 'independent_builder'
 				  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\')
 				order by lower(name), id
 				limit :limit
@@ -91,7 +94,8 @@ public class OrganizationQueryRepository {
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
 			.param("limit", limit)
 			.query((row, index) -> new Name(row.getObject("id", UUID.class), row.getString("slug"),
-					row.getString("name"), row.getString("country"), row.getObject("logo_file_id", UUID.class)))
+					row.getString("name"), row.getString("country"), row.getObject("logo_file_id", UUID.class),
+					row.getString("type")))
 			.list();
 	}
 
@@ -116,10 +120,11 @@ public class OrganizationQueryRepository {
 		if (ids.isEmpty()) {
 			return List.of();
 		}
-		return jdbc.sql("select id, slug, name, country, logo_file_id from organization where id in (:ids)" + condition)
+		return jdbc.sql("select id, slug, name, country, logo_file_id, type from organization where id in (:ids)" + condition)
 			.param("ids", ids)
 			.query((row, index) -> new Name(row.getObject("id", UUID.class), row.getString("slug"),
-					row.getString("name"), row.getString("country"), row.getObject("logo_file_id", UUID.class)))
+					row.getString("name"), row.getString("country"), row.getObject("logo_file_id", UUID.class),
+					row.getString("type")))
 			.list();
 	}
 

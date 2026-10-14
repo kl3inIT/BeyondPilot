@@ -7,6 +7,27 @@ export const organizationTypes = [
   "other",
 ] as const;
 
+/**
+ * Whether the organization is a person applying on their own: it stands for them, so it has no
+ * profile, members, review or page of its own.
+ */
+export function isIndividual(organization: { type: string }): boolean {
+  return organization.type === "independent_builder";
+}
+
+/**
+ * The types an organization may take: any for a new one; an individual stays one, and nothing else
+ * becomes one, as the person changes that from their application.
+ */
+export function typesFor(organization: { type: string } | null | undefined): readonly string[] {
+  if (!organization) {
+    return organizationTypes;
+  }
+  return isIndividual(organization)
+    ? ["independent_builder"]
+    : organizationTypes.filter((type) => type !== "independent_builder");
+}
+
 export const teamSizes = [
   "just_me",
   "2_9",

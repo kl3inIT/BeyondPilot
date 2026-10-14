@@ -27,6 +27,7 @@
       "signOut": "Sign out",
       "signOutFailed": "We could not sign you out. Try again.",
       "organization": "My organization",
+      "solutions": "My solutions",
       "talentProfile": "Talent profile",
       "messages": "Messages",
       "messagesWaiting": "{count, plural, one {# waits for you} other {# wait for you}}",
@@ -320,6 +321,8 @@
     "backToSolutions": "Back to solutions"
   },
   "Errors": {
+    "ORGANIZATION_INDIVIDUAL": "Someone applying on their own has no members, domain or profile of an organization. Apply as a team or a company instead.",
+    "PROPOSAL_INDIVIDUAL_LOCKED": "You already sent something under your name, so you keep applying as yourself.",
     "unknown": "That did not work. Try again.",
     "REQUEST_INVALID": "Check the marked fields and try again.",
     "AI_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
@@ -3703,7 +3706,7 @@
     "organizationType": {
       "company": "Company",
       "builder_team": "Builder team",
-      "independent_builder": "Independent builder",
+      "independent_builder": "Individual",
       "other": "Other"
     },
     "teamSize": {
@@ -4711,6 +4714,7 @@
       },
       "company": {
         "title": "The company behind this solution",
+        "individualTitle": "The person behind this solution",
         "metaDescription": "{name} on BeyondPilot: the company and the AI solutions it lists in GenAI Fund’s directory.",
         "view": "View company",
         "viewSolutions": "View solutions",
@@ -6266,7 +6270,11 @@
       "notListedYet": "Not in the directory yet",
       "applyingForHint": "GenAI Fund checks a new organization before listing it; your application is not held up.",
       "applyingAs": "Applying as",
-      "applyingAsHint": "This is kept with your account when you continue, and it cannot be changed here afterwards.",
+      "applyingAsHint": "This is kept with your account when you continue. As an individual, you can change it until you send something under your name.",
+      "change": "Change",
+      "changeHint": "You can apply as a team or a company instead until you send something under your name.",
+      "companyInstead": "To apply for a company, first stop applying as yourself, then find or add the company. A solution you began here stays with you and does not move to the company.",
+      "companyInsteadAction": "Apply for a company",
       "whoRequired": "Choose who is applying.",
       "who": {
         "individual": {

@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { redirect } from "next/navigation";
+
+import { isIndividual } from "@/features/organization/organization-codes";
 import { OrganizationEntry } from "@/features/organization/organization-entry";
 import { OrganizationEntryFrame } from "@/features/organization/organization-entry-frame";
 import { OrganizationProfilePage } from "@/features/organization/organization-profile-page";
 import { readMembers, readMyOrganization } from "@/features/organization/organization-queries";
 import { readMySolutions } from "@/features/solution/solution-queries";
 import { readUseCaseCount } from "@/features/usecase/my-use-case-queries";
+import { getPathname } from "@/i18n/navigation";
 import { requireAccount } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
 
@@ -36,6 +40,11 @@ export default async function MyOrganizationRoute({
         <OrganizationEntry mine={mine} finding={(await searchParams).find !== undefined} />
       </OrganizationEntryFrame>
     );
+  }
+
+  // A person on their own has no profile or members of an organization: their page is their solutions.
+  if (isIndividual(organization)) {
+    redirect(getPathname({ href: siteRoutes.workspaceSolutions, locale }));
   }
 
   const [members, solutions, useCases] = await Promise.all([

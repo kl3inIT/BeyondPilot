@@ -4,6 +4,8 @@ import { Button } from "@/components/actions/button";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { readUnread } from "@/features/messaging/messaging-queries";
+import { isIndividual } from "@/features/organization/organization-codes";
+import { readMyOrganization } from "@/features/organization/organization-queries";
 import { judgesAnyProgram } from "@/features/review/review-queries";
 import { getCurrentAccount } from "@/lib/auth/session";
 import { siteRoutes } from "@/lib/site";
@@ -18,9 +20,10 @@ async function HeaderAccount() {
 
   if (account) {
     // An operator reviews from the admin area; anyone else finds the programs they judge here.
-    const [reviewer, waiting] = await Promise.all([
+    const [reviewer, waiting, mine] = await Promise.all([
       account.role !== "operator" && judgesAnyProgram(),
       readUnread(),
+      readMyOrganization(),
     ]);
     return (
       <>
@@ -30,6 +33,7 @@ async function HeaderAccount() {
           operator={account.role === "operator"}
           reviewer={reviewer}
           waiting={waiting.unread + waiting.requests}
+          individual={mine.organization ? isIndividual(mine.organization) : false}
         />
         <MobileMenu signedIn />
       </>

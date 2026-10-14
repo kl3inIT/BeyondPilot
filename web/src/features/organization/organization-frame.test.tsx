@@ -34,6 +34,17 @@ function frame(organization: Organization, current: "profile" | "members", role 
   );
 }
 
+describe("OrganizationFrame, for a person applying on their own", () => {
+  it("shows their solutions alone, with no review, profile or members", () => {
+    render(frame({ ...complete, type: "independent_builder", status: "approved" }, "members"));
+
+    expect(screen.queryByRole("link", { name: "Complete profile" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Edit profile" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Members/ })).not.toBeInTheDocument();
+    expect(screen.getByText("Individual")).toBeVisible();
+  });
+});
+
 describe("OrganizationFrame, while the organization is in review", () => {
   it("counts and names what the profile lacks, and leads its owner to complete it", () => {
     render(frame({ ...complete, website: null, foundedYear: null, description: "" }, "members"));
@@ -48,10 +59,16 @@ describe("OrganizationFrame, while the organization is in review", () => {
     expect(screen.queryByRole("link", { name: "Edit profile" })).not.toBeInTheDocument();
   });
 
-  it("does not ask a builder for what only a company must give", () => {
+  it("does not ask a team for what only a company must give", () => {
     render(
       frame(
-        { ...complete, type: "independent_builder", website: null, foundedYear: null },
+        {
+          ...complete,
+          type: "builder_team",
+          website: null,
+          foundedYear: null,
+          teamBackground: "Built claims assistants.",
+        },
         "members",
       ),
     );
