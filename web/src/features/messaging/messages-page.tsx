@@ -143,6 +143,14 @@ function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
     }
   }
 
+  async function changeMember(accountId: string, include: boolean) {
+    try {
+      await messaging.changeMember(accountId, include);
+    } catch (error) {
+      notify.failure(error);
+    }
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col p-0 md:p-4 lg:p-6">
       <div className="flex min-h-0 flex-1 overflow-hidden border-y bg-card md:rounded-xl md:border md:shadow-sm">
@@ -231,6 +239,8 @@ function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
               subject={thread.subject}
               participants={thread.participants}
               side={thread.conversation.side}
+              manageableMembers={thread.manageableMembers}
+              onChangeMember={changeMember}
             />
           </aside>
         )}
@@ -259,6 +269,8 @@ function MessagesPage({ list, detail, target, prospect }: MessagesPageProps) {
                 subject={thread.subject}
                 participants={thread.participants}
                 side={thread.conversation.side}
+                manageableMembers={thread.manageableMembers}
+                onChangeMember={changeMember}
               />
             </div>
           </SheetContent>

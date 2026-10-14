@@ -5,11 +5,13 @@ import { useEffect, useEffectEvent, useReducer, useRef } from "react";
 import { ApiError } from "@/lib/api/client";
 import {
   acceptConversation,
+  addConversationMember,
   declineConversation,
   getConversation,
   listConversations,
   listMessages,
   markConversationRead,
+  removeConversationMember,
   reportConversation,
   sayTyping,
   sendMessage,
@@ -302,6 +304,13 @@ export function useMessaging(
       dispatch({ type: "refreshed", detail: data });
       const { data: lists } = await listConversations();
       dispatch({ type: "listed", list: lists, watching: watchingNow() });
+    },
+    async changeMember(accountId: string, include: boolean) {
+      if (!openId) return;
+      const { data } = await (include ? addConversationMember : removeConversationMember)({
+        path: { id: openId, accountId },
+      });
+      dispatch({ type: "refreshed", detail: data });
     },
     /**
      * Declines or reports the first message that is open; it is then gone for the reader. The

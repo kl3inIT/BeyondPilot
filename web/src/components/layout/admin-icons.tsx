@@ -33,6 +33,7 @@ const adminIcons = {
   talent: UsersIcon,
   organizations: BuildingIcon,
   reportedMessages: MessageSquareWarningIcon,
+  programMessages: MailIcon,
   aiProviders: PlugZapIcon,
   searchIndex: ScanSearchIcon,
   aiMatching: SlidersHorizontalIcon,

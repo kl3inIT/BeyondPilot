@@ -80,6 +80,11 @@ export default async function AdminLayout({ children }: LayoutProps<"/[locale]/a
           label: t("nav.reportedMessages"),
           icon: <adminIcons.reportedMessages aria-hidden="true" />,
         },
+        {
+          href: siteRoutes.adminProgramMessages,
+          label: t("nav.programMessages"),
+          icon: <adminIcons.programMessages aria-hidden="true" />,
+        },
       ],
     },
     {

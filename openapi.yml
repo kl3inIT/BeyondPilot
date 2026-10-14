@@ -927,6 +927,7 @@ paths:
           - use_case.unfeature
           - use_case.set_programs
           - messaging.request_accept
+          - messaging.program_assign
           - messaging.request_decline
           - messaging.request_report
           - talent.approve
@@ -2317,6 +2318,78 @@ paths:
       summary: Turn the user MCP server on or off
       tags:
       - MCP
+  /api/messaging/admin/program-assignments:
+    get:
+      operationId: listProgramConversationAssignments
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProgramConversationAssignment"
+          description: "Up to 100 program conversations, unassigned first."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Program conversation assignments without message content or sender
+        details
+      tags:
+      - Messaging administration
+  /api/messaging/admin/program-assignments/{id}/{accountId}:
+    put:
+      operationId: assignProgramConversation
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Only the assigned operator may read and answer the conversation.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The program conversation or active operator is absent.
+      security:
+      - session: []
+      summary: Assign a program conversation to one active operator
+      tags:
+      - Messaging administration
   /api/messaging/admin/reported:
     get:
       operationId: listReportedConversations
@@ -2574,6 +2647,97 @@ paths:
       security:
       - session: []
       summary: Decline a first message
+      tags:
+      - Messaging
+  /api/messaging/conversations/{id}/members/{accountId}:
+    delete:
+      operationId: removeConversationMember
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationDetail"
+          description: The conversation with the updated member list.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of either organization side.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The conversation is absent.
+      security:
+      - session: []
+      summary: An organization owner removes a member they added to this conversation
+      tags:
+      - Messaging
+    post:
+      operationId: addConversationMember
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationDetail"
+          description: The conversation with the updated member list.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of either organization side.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The conversation or organization member is absent.
+      security:
+      - session: []
+      summary: An organization owner adds one of their members to this conversation
       tags:
       - Messaging
   /api/messaging/conversations/{id}/messages:
@@ -13992,6 +14156,7 @@ components:
           - use_case.unfeature
           - use_case.set_programs
           - messaging.request_accept
+          - messaging.program_assign
           - messaging.request_decline
           - messaging.request_report
           - talent.approve
@@ -14655,6 +14820,12 @@ components:
         hasEarlier:
           type: boolean
           description: Whether messages earlier than these exist.
+        manageableMembers:
+          type: array
+          description: Members of the caller's organization an owner may add or remove.
+            Empty for other callers.
+          items:
+            $ref: "#/components/schemas/ConversationMember"
         messages:
           type: array
           description: "The latest messages, the oldest first, at most 50."
@@ -14676,6 +14847,7 @@ components:
       required:
       - conversation
       - hasEarlier
+      - manageableMembers
       - messages
       - participants
       - readByOtherSide
@@ -14704,6 +14876,26 @@ components:
       - chats
       - requests
       - unread
+    ConversationMember:
+      type: object
+      description: A member of the caller's organization whom its owner may add to
+        this conversation.
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        included:
+          type: boolean
+        name:
+          type:
+          - string
+          - "null"
+      required:
+      - accountId
+      - email
+      - included
     ConversationParticipant:
       type: object
       description: A person on the other side of a conversation.
@@ -18576,6 +18768,28 @@ components:
       - allowUpdatesUntilClose
       - closesAt
       - opensAt
+    ProgramConversationAssignment:
+      type: object
+      description: Program conversation assignment metadata; message content and sender
+        are omitted.
+      properties:
+        assigneeId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        programName:
+          type: string
+      required:
+      - createdAt
+      - id
+      - programName
     ProgramEvent:
       type: object
       description: A session of a program that people register for somewhere else.

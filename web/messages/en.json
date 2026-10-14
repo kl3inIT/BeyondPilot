@@ -388,7 +388,8 @@
     "MESSAGING_TOO_MANY_MESSAGES": "You are writing too fast. Wait a moment and send again.",
     "MESSAGING_NOT_OPEN": "This conversation is not open, so nothing can be written in it.",
     "MESSAGING_NOT_WAITING": "This request was answered already.",
-    "MESSAGING_OWNERS_ONLY": "Only an owner of the organization answers a first message.",
+    "MESSAGING_OWNERS_ONLY": "Only an owner of the organization may do this.",
+    "MESSAGING_MEMBER_NOT_FOUND": "This person is not a member of your organization.",
     "MESSAGING_MESSAGE_CONFLICT": "This message could not be sent. Write it again.",
     "MESSAGING_READ_BEYOND_LAST_MESSAGE": "That message is not in this conversation. Reload it and try again.",
     "MCP_TOOL_NOT_FOUND": "This tool no longer exists. Reload the page.",
@@ -557,7 +558,8 @@
     "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
     "USECASE_ATTACHMENT_NOT_USABLE": "Upload the file again: it cannot be attached.",
     "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest.",
-    "PROPOSAL_NOTHING_TO_SEND": "There is no decision to send. Reload the page to see where the proposals stand."
+    "PROPOSAL_NOTHING_TO_SEND": "There is no decision to send. Reload the page to see where the proposals stand.",
+    "MESSAGING_OPERATOR_NOT_FOUND": "This person is not an active operator."
   },
   "SignIn": {
     "metaTitle": "Sign in · BeyondPilot",
@@ -745,7 +747,8 @@
       "aiMatching": "Matching",
       "aiUsage": "Usage",
       "mcp": "MCP",
-      "email": "Email"
+      "email": "Email",
+      "programMessages": "Program chat assignments"
     },
     "toggleSidebar": "Toggle sidebar",
     "notFound": {
@@ -1199,7 +1202,8 @@
         "messaging": {
           "request_accept": "Accepted a first message",
           "request_decline": "Declined a first message",
-          "request_report": "Reported a first message"
+          "request_report": "Reported a first message",
+          "program_assign": "Assigned a program conversation"
         },
         "talent": {
           "approve": "Approved a talent profile",
@@ -1341,7 +1345,8 @@
         "messaging": {
           "request_accept": "Accepted a first message about <resource></resource>",
           "request_decline": "Declined a first message about <resource></resource>",
-          "request_report": "Reported a first message about <resource></resource>"
+          "request_report": "Reported a first message about <resource></resource>",
+          "program_assign": "Assigned an operator to a conversation about <resource></resource>"
         },
         "talent": {
           "approve": "Approved the talent profile of <resource></resource>",
@@ -7632,9 +7637,9 @@
       "label": "Write your first message to {name}",
       "beforeTitle": "Before you write",
       "before": "Say who you are and what you need. {name} reads your name and your organization, never your email address.",
-      "beforeOpen": "Ask what you need to know about the program. The programs team of GenAI Fund answers here.",
+      "beforeOpen": "Ask what you need to know about the program. Only the operator assigned by GenAI Fund can read and answer.",
       "request": "You have not talked with {name} before. Your first message waits under their Requests until they accept.",
-      "open": "GenAI Fund reads your message at once; no request is needed.",
+      "open": "You can send messages immediately. An operator can read them once assigned.",
       "existsTitle": "You already have a conversation with {name}",
       "existsLead": "It waits for an answer or is open. Write there.",
       "openExisting": "Open the conversation",
@@ -7669,10 +7674,16 @@
         "owner": "Owner",
         "member": "Member"
       },
+      "members": {
+        "title": "Your organization's access",
+        "lead": "Only owners and the members you add here can read this conversation.",
+        "add": "Add",
+        "remove": "Remove"
+      },
       "note": {
         "talent": "Only this person reads what you write here. Your email address is never shown to them.",
-        "solution": "Everyone at this organization can read and answer. Your email address is never shown to them.",
-        "program": "The programs team of GenAI Fund reads this conversation.",
+        "solution": "Only this organization's owners and members they add can read and answer. Your email address is never shown to them.",
+        "program": "Only the operator assigned by GenAI Fund reads this conversation.",
         "recipient": "Your email address is never shown to them."
       }
     },
@@ -7693,6 +7704,17 @@
       "noOrganization": "No organization",
       "noAccount": "Account no longer signs in",
       "count": "{count, plural, one {# reported message} other {# reported messages}}"
+    },
+    "assignments": {
+      "unavailable": "Assigned operator is unavailable",
+      "title": "Program chat assignments",
+      "lead": "Only the assigned operator can read and answer a conversation. Choose an operator; reassignment revokes the previous operator’s access.",
+      "program": "Program",
+      "created": "Started",
+      "assignee": "Assigned operator",
+      "assign": "Assign",
+      "unassigned": "Unassigned",
+      "empty": "No program conversations yet"
     }
   },
   "UseCaseProposal": {

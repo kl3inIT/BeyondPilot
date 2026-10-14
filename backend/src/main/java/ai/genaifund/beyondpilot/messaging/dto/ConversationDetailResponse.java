@@ -16,5 +16,7 @@ public record ConversationDetailResponse(
 				description = "How far the other side has read: the seq of the last message they read, 0 when none.") long readByOtherSide,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) SubjectResponse subject,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Who reads and answers on the other side. Empty for GenAI Fund, whose programs team reads.") List<ParticipantResponse> participants) {
+				description = "Who reads and answers on the other side. Empty for GenAI Fund, whose programs team reads.") List<ParticipantResponse> participants,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Members of the caller's organization an owner may add or remove. Empty for other callers.") List<ConversationMemberResponse> manageableMembers) {
 }
