@@ -10,6 +10,8 @@ import {
 import { sessionRequest } from "@/lib/auth/session";
 import { maxSearchPage } from "@/lib/page-size";
 import type { FeaturedProgramView } from "@/components/sections/featured-program/featured-program";
+import type { UpcomingEventView } from "@/components/sections/categories/categories";
+import { programRoute } from "@/lib/site";
 
 import type { ProgramsPublicSearch } from "./programs-public-search";
 
@@ -81,6 +83,39 @@ export async function readFeaturedProgram(): Promise<FeaturedProgramView | null>
     };
   } catch {
     return null;
+  }
+}
+
+/**
+ * The next events of the published programs, soonest first, for the home page's events card. Read
+ * anonymously and kept for a minute, as the list is; none when the API cannot be reached, so the
+ * home page renders with the card's line for no events.
+ */
+export async function readUpcomingEvents(count: number): Promise<UpcomingEventView[]> {
+  try {
+    const now = Date.now();
+    const { data } = await listPrograms({ next: { revalidate: 60 } });
+    return data.items
+      .flatMap((program) =>
+        program.upcomingEvents
+          .filter((event) => Date.parse(event.endsAt ?? event.startsAt) > now)
+          .map((event) => ({
+            title: event.title,
+            startsAt: event.startsAt,
+            place: [event.city, event.country].filter(Boolean).join(", ") || null,
+            online: event.online,
+            programName: program.name,
+            href:
+              event.registrationUrl ??
+              (program.pageKind === "external" && program.externalUrl
+                ? program.externalUrl
+                : programRoute(program.slug)),
+          })),
+      )
+      .sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt))
+      .slice(0, count);
+  } catch {
+    return [];
   }
 }
 

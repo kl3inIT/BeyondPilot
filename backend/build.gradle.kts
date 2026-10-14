@@ -48,6 +48,9 @@ dependencies {
 	implementation(libs.spring.ai.starter.model.anthropic)
 	// The text of a deck page by page, and the picture of a page that has none, for a model to read (BEY-39).
 	implementation(libs.pdfbox)
+	// The events of the GenAI Fund calendar on Luma: its iCal feed, and the JSON-LD of each event's page (BEY-190).
+	implementation(libs.ical4j)
+	implementation(libs.jsoup)
 	implementation(libs.springdoc.webmvc.api)
 	// The SDK speaks HTTP through the JDK. Its default clients bring Apache HttpClient 5 and Netty onto the classpath,
 	// where Spring would pick HttpClient 5 for every RestClient and wait out a Retry-After before retrying a 429.

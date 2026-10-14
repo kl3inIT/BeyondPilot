@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Luma//GenAI Fund - Official//EN
+X-WR-CALNAME:GenAI Fund - Official
+X-WR-CALDESC:Luma Calendar
+REFRESH-INTERVAL;VALUE=DURATION:PT12H
+X-PUBLISHED-TTL:PT12H
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+DTSTART:20260620T063000Z
+DTEND:20260620T113000Z
+DTSTAMP:20261014T041242Z
+ORGANIZER;CN="Build Stuffs":MAILTO:calendar-invite@lu.ma
+UID:evt-Lql1ttj9FE6YZxw@events.lu.ma
+SUMMARY:Cowork & Showcase for Tech/Growth Builders - BS33
+DESCRIPTION:Get up-to-date information at: https://luma.com/oawz935f\n\nAd
+ dress:\nThe Joi Factory (Vegetarian Café Restaurant)\nThành phố Hồ C
+ hí Minh, Vietnam\n\nHosted by Build Stuffs & Ky-Nam
+LOCATION:The Joi Factory (Vegetarian Café Restaurant), Hẻm 212/2B1 Nguy
+ ễn Trãi, Cầu Ông Lãnh, Hồ Chí Minh 700000, Vietnam
+GEO:10.7653559;106.6866134
+SEQUENCE:214114362
+STATUS:TENTATIVE
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20261026T110000Z
+DTEND:20261026T130000Z
+DTSTAMP:20261014T041242Z
+ORGANIZER;CN="Kai Yong":MAILTO:calendar-invite@lu.ma
+UID:evt-hoC70wwoFbylEa1@events.lu.ma
+SUMMARY:TinyFish, Big Minds
+DESCRIPTION:Get up-to-date information at: https://luma.com/gaf-tinyfish-v
+ n\n\nAddress:\nCheck event page for more details.\n\nHosted by Kai Yong
+LOCATION:https://luma.com/event/evt-hoC70wwoFbylEa1
+SEQUENCE:214114362
+STATUS:TENTATIVE
+END:VEVENT
+END:VCALENDAR
