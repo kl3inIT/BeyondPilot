@@ -80,6 +80,8 @@ The folder rules are in [conventions › Frontend › Structure](docs/convention
 
 The home page links its campaign call to action to the campaign's own program page and application form on BeyondPilot.
 
+The use-case proposal wizard's organization popup uses the same creation rules as the organization form, but collects only required fields: name and country for Just me; name, team size, country and short description for A team; and those team fields plus website, industries and year founded for A company. It calls the existing organization basics create/save API. Editing is owner-only and versioned, preserves hidden optional profile facts, and refetches the wizard's TanStack Query context. Organization forms no longer collect a separate team background; legacy stored data and proposal-specific contextual experience remain intact.
+
 ## Identity and authorization
 
 Sign-in is Spring Security inside the backend; there is no separate identity server ([identity increment](docs/increments/completed/bey-30-identity/design.md)).

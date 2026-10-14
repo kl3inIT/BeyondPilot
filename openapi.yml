@@ -5216,8 +5216,8 @@ paths:
             \ of it."
       security:
       - session: []
-      summary: "Save the name, type, size, industries and country of the caller's\
-        \ organization, leaving the rest of its profile"
+      summary: "Save the required facts of the selected organization type, leaving\
+        \ optional profile facts unchanged"
       tags:
       - My organization
   /api/organization/mine/invitations:
@@ -5719,8 +5719,7 @@ paths:
             \ a request to join one."
       security:
       - session: []
-      summary: "Create an organization the caller owns from its name, kind, size,\
-        \ industries and country"
+      summary: Create an organization from the required facts of its selected type
       tags:
       - Organizations
   /api/organization/organizations/{id}/join:
@@ -22158,13 +22157,29 @@ components:
       - version
     SaveOrganizationBasics:
       type: object
-      description: "The facts a person gives when they make an organization, which\
-        \ a save changes alone. The rest of the profile is left as it is."
+      description: The required facts of the selected organization type. A save leaves
+        optional profile facts unchanged.
       properties:
         country:
           type: string
           description: ISO 3166-1 alpha-2.
           pattern: "[A-Z]{2}"
+        description:
+          type:
+          - string
+          - "null"
+          description: "Required for a team or company, including relevant expertise\
+            \ and experience; omitted for a builder on their own."
+          maxLength: 280
+          minLength: 0
+        foundedYear:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: Required for a company; omitted for other types.
+          maximum: 2100
+          minimum: 1800
         industries:
           type: array
           description: The industries it works in or serves; a company names at least
@@ -22177,13 +22192,6 @@ components:
         name:
           type: string
           maxLength: 120
-          minLength: 0
-        teamBackground:
-          type:
-          - string
-          - "null"
-          description: "What the team has built before, separate from its short description."
-          maxLength: 2000
           minLength: 0
         teamSize:
           type: string
@@ -22202,6 +22210,14 @@ components:
           - "null"
           format: int64
           description: Required when editing; omitted when creating.
+        website:
+          type:
+          - string
+          - "null"
+          description: Required for a company; omitted for other types.
+          maxLength: 300
+          minLength: 0
+          pattern: "https?://[^\\s]+"
       required:
       - country
       - industries

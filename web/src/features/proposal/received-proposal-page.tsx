@@ -72,7 +72,9 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
               <h1 className="min-w-0 text-2xl font-semibold tracking-tight break-words">
                 {proposal.organizationName}
               </h1>
-              {!proposal.organizationApproved && <Badge variant="secondary">{t("pending")}</Badge>}
+              {admin && !proposal.organizationApproved && (
+                <Badge variant="secondary">{t("pending")}</Badge>
+              )}
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-sm text-muted-foreground">

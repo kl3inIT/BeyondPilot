@@ -3,7 +3,12 @@ import { z } from "zod";
 import type { Organization, SaveOrganization, SaveOrganizationBasics } from "@/lib/api/generated";
 
 import { organizationTypes } from "./organization-codes";
-import { MAX_TEAM_BACKGROUND, yearOf } from "./organization-format";
+import {
+  MAX_DESCRIPTION,
+  MAX_INDUSTRIES,
+  MAX_TEAM_BACKGROUND,
+  yearOf,
+} from "./organization-format";
 
 /** What each field of the profile says when it is refused, here or by the backend. */
 export const profileRefusals = {
@@ -14,12 +19,11 @@ export const profileRefusals = {
   country: "countryRequired",
   foundedYear: "foundedYearInvalid",
   description: "descriptionRequired",
-  teamBackground: "teamBackgroundRequired",
 } as const;
 
 /** The words a schema's messages are written in; the form passes its translator. */
 type Say = (
-  key: (typeof profileRefusals)[keyof typeof profileRefusals] | "websiteRequired",
+  key: (typeof profileRefusals)[keyof typeof profileRefusals] | "websiteRequired" | "typeRequired",
 ) => string;
 
 /** An organization's profile as its form holds it: every field as text, so none is uncontrolled. */
@@ -65,17 +69,21 @@ const filled = (text: string) => text.trim() !== "";
 /** Each fact of the profile on its own, before what one fact asks of another. */
 function profileFacts(say: Say) {
   return z.object({
-    name: z.string().refine(filled, say("nameRequired")),
-    website: z.string(),
+    name: z.string().refine(filled, say("nameRequired")).max(120, say("nameRequired")),
+    website: z.string().max(300, say("websiteInvalid")),
     type: z.enum(organizationTypes),
     teamSize: z.string().min(1, say("teamSizeRequired")),
-    industries: z.array(z.string()),
+    industries: z.array(z.string()).max(MAX_INDUSTRIES, say("industriesRequired")),
     country: z.string().min(1, say("countryRequired")),
     foundedYear: z
       .string()
       .refine((text) => !filled(text) || yearOf(text) !== null, say("foundedYearInvalid")),
-    description: z.string().refine(filled, say("descriptionRequired")),
-    teamBackground: z.string().max(MAX_TEAM_BACKGROUND, say("teamBackgroundRequired")),
+    description: z
+      .string()
+      .refine(filled, say("descriptionRequired"))
+      .max(MAX_DESCRIPTION, say("descriptionRequired")),
+    // Historical API data is preserved by the full profile form, not collected as a separate field.
+    teamBackground: z.string().max(MAX_TEAM_BACKGROUND),
     logoFileId: z.string(),
   });
 }
@@ -87,13 +95,6 @@ function profileFacts(say: Say) {
  */
 export function profileSchema(say: Say) {
   return profileFacts(say).superRefine((values, context) => {
-    if (values.type === "builder_team" && !filled(values.teamBackground)) {
-      context.addIssue({
-        code: "custom",
-        path: ["teamBackground"],
-        message: say("teamBackgroundRequired"),
-      });
-    }
     if (!givesCompanyFacts(values.type)) {
       return;
     }
@@ -144,33 +145,75 @@ export function aloneBodyOf(values: ProfileValues): SaveOrganizationBasics {
 /** A fact of the profile the form may ask for, by its field. */
 export type ProfileFact = keyof typeof profileRefusals;
 
-/** The smaller profile written in the proposal dialog, with the same team rule as the full form. */
+/** The required-only popup keeps inactive values locally so changing type does not lose input. */
+export type BasicsValues = Pick<
+  ProfileValues,
+  | "name"
+  | "type"
+  | "teamSize"
+  | "industries"
+  | "country"
+  | "website"
+  | "foundedYear"
+  | "description"
+>;
+
+export function basicsValuesOf(organization?: Organization): BasicsValues {
+  const { name, type, teamSize, industries, country, website, foundedYear, description } =
+    profileValuesOf(organization);
+  return { name, type, teamSize, industries, country, website, foundedYear, description };
+}
+
+/** Apply the full form's creation rules to active facts only; never block on an invisible field. */
 export function basicsSchema(say: Say) {
+  const creation = creationSchema(say);
   return z
     .object({
-      name: z.string().trim().min(1, say("nameRequired")).max(120, say("nameRequired")),
+      name: z.string(),
       type: z.enum(organizationTypes),
-      teamSize: z.string().min(1, say("teamSizeRequired")),
-      industries: z.array(z.string()).max(5, say("industriesRequired")),
-      country: z.string().min(1, say("countryRequired")),
-      teamBackground: z.string().max(MAX_TEAM_BACKGROUND, say("teamBackgroundRequired")),
+      teamSize: z.string(),
+      industries: z.array(z.string()),
+      country: z.string(),
+      website: z.string(),
+      foundedYear: z.string(),
+      description: z.string(),
     })
     .superRefine((values, context) => {
-      if (values.type === "company" && values.industries.length === 0) {
-        context.addIssue({
-          code: "custom",
-          path: ["industries"],
-          message: say("industriesRequired"),
-        });
+      if (values.type === "other") {
+        context.addIssue({ code: "custom", path: ["type"], message: say("typeRequired") });
       }
-      if (values.type === "builder_team" && !values.teamBackground.trim()) {
-        context.addIssue({
-          code: "custom",
-          path: ["teamBackground"],
-          message: say("teamBackgroundRequired"),
-        });
+      const company = givesCompanyFacts(values.type);
+      const checked = creation.safeParse({
+        ...profileValuesOf(),
+        ...values,
+        website: company ? values.website : "",
+        industries: company ? values.industries : [],
+        foundedYear: company ? values.foundedYear : "",
+      });
+      for (const issue of checked.error?.issues ?? []) {
+        context.addIssue({ code: "custom", path: issue.path, message: issue.message });
       }
     });
+}
+
+/** Only the selected type's editable facts leave the popup; defaults represent hidden facts. */
+export function basicsBodyOf(values: BasicsValues, version?: number): SaveOrganizationBasics {
+  if (values.type === "other") {
+    throw new Error("Choose one of the three creation types before submitting.");
+  }
+  const company = givesCompanyFacts(values.type);
+  const alone = createsAlone(values.type);
+  return {
+    name: values.name.trim(),
+    type: values.type,
+    teamSize: (alone ? "just_me" : values.teamSize) as SaveOrganizationBasics["teamSize"],
+    industries: company ? values.industries : [],
+    country: values.country,
+    website: company ? values.website.trim() : null,
+    foundedYear: company ? yearOf(values.foundedYear) : null,
+    description: alone ? null : values.description.trim(),
+    version: version ?? null,
+  };
 }
 
 /**
@@ -197,7 +240,7 @@ export function profileBodyOf(values: ProfileValues): Omit<SaveOrganization, "ve
     industries: values.industries,
     website: values.website.trim() || null,
     description: values.description.trim(),
-    teamBackground: values.type === "builder_team" ? values.teamBackground.trim() || null : null,
+    teamBackground: values.teamBackground.trim() || null,
     foundedYear: values.foundedYear.trim() ? Number(values.foundedYear) : null,
     logoFileId: values.logoFileId || null,
   };

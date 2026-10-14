@@ -68,7 +68,8 @@ describe("OrganizationForm, creating", () => {
     await user.click(choice("A team"));
 
     expect(screen.getByLabelText(/^Organization name/)).toHaveValue("Pocket Policy");
-    expect(screen.getByLabelText(/^Team background/)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Team background/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/^Short description/)).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: /^Team size/ })).toBeInTheDocument();
   });
 

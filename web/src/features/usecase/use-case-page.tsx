@@ -36,7 +36,7 @@ function DetailSection({ id, title, children }: DetailSectionProps) {
       <h2 id={id} className="text-xl font-semibold tracking-title">
         {title}
       </h2>
-      <div className="text-sm leading-6 whitespace-pre-line text-muted-foreground md:text-base">
+      <div className="text-sm leading-6 wrap-anywhere whitespace-pre-line text-muted-foreground md:text-base">
         {children}
       </div>
     </section>

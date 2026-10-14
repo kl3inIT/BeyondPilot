@@ -171,16 +171,20 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Creates an organization the caller owns from the few facts a person gives in passing: the name, the kind, the
-	 * size, the industries and the country. The rest of the profile is theirs to write later. It waits for GenAI Fund's
-	 * review like any organization a person creates, which decides whether it is listed, not whether it sends a proposal.
+	 * Creates an organization the caller owns from its type's required facts. Teams and companies wait for review;
+	 * individuals are approved at once. Review decides listing, not whether an organization sends a proposal.
 	 * @throws OrganizationException when the caller already belongs to an organization or waits on a request, or a
 	 * company names no industry
 	 */
 	@Transactional
 	public OrganizationResponse createFromBasics(Actor actor, SaveOrganizationBasicsRequest request) {
+		boolean company = "company".equals(request.type());
+		boolean alone = "independent_builder".equals(request.type());
 		return createOwned(actor, new Profile.Builder(request.name().strip(), request.type(), request.country(),
-                request.teamSize(), request.industries()).teamBackground(request.teamBackground()).build(), null, true);
+				alone ? "just_me" : request.teamSize(), company ? request.industries() : List.of())
+				.website(company ? request.website() : null)
+				.foundedYear(company ? request.foundedYear() : null)
+				.description(alone ? null : request.description()).build(), null, true);
 	}
 
 	/**
@@ -410,8 +414,8 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Saves the name, type, size, industries and country alone, for an owner who made the organization in a few lines
-	 * and has not written the rest of the profile yet. An organization sent back that its owner saves waits for review
+	 * Saves the selected type's required facts, preserving optional facts the popup cannot edit.
+	 * An organization sent back that its owner saves waits for review
 	 * again.
 	 * @throws OrganizationException when the caller is not an owner, or a company names no industry
 	 */
@@ -428,9 +432,14 @@ public class OrganizationService {
 			throw new OrganizationException(OrganizationErrorCode.CHANGED_MEANWHILE,
 					"Stale basics save of organization " + organization.getId());
 		}
-		organization.describeBasics(request.name().strip(), request.type(), request.teamSize(),
-				OrganizationViews.codes(request.industries()), request.country());
-		organization.describeTeam(OrganizationViews.text(request.teamBackground()));
+		boolean company = "company".equals(request.type());
+		boolean alone = "independent_builder".equals(request.type());
+		organization.describe(request.name().strip(), request.type(),
+				company ? OrganizationViews.text(request.website()) : organization.getWebsite(),
+				request.country(), alone ? "just_me" : request.teamSize(),
+				company ? OrganizationViews.codes(request.industries()) : organization.getIndustries(),
+				alone ? organization.getDescription() : OrganizationViews.text(request.description()),
+				company ? request.foundedYear() : organization.getFoundedYear(), organization.getLogoFileId());
 		if (organization.isSentBack()) {
 			organization.resubmit();
 		}

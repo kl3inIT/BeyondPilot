@@ -15,7 +15,6 @@ import org.jspecify.annotations.Nullable;
 @Schema(name = "CreateOrganization",
 		description = "A new organization. Its creator owns it, and it waits for GenAI Fund's review.")
 @RequiredOfCompany
-@RequiredOfTeam
 public record CreateOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
