@@ -53,7 +53,12 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
   const words = (labels: string[]) => (labels.length > 0 ? labels.join(", ") : null);
   const link = (href: string | null | undefined) =>
     href ? (
-      <TextButton href={href} target="_blank" rel="noreferrer" className="break-all">
+      <TextButton
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="max-w-full break-all whitespace-normal"
+      >
         {href.replace(/^https?:\/\//, "")}
         <ExternalLinkIcon aria-hidden="true" />
       </TextButton>
