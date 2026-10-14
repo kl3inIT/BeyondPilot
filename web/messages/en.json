@@ -109,19 +109,12 @@
   "Home": {
     "featured": {
       "eyebrow": "Featured program",
-      "name": "Nestlé Vietnam AI Reinvention",
-      "lead": "Don't miss your chance to collaborate with Nestlé.",
-      "text": "Have a working AI solution? Bring your software, hardware or AI automation to real business challenges.",
-      "early": "Early briefings",
-      "earlyValue": "Apply before 5 Nov",
+      "lead": "Don't miss your chance to collaborate with {partner}.",
       "deadline": "Deadline",
-      "deadlineValue": "22 Nov, 23:59 ICT",
       "explore": "Explore the program & apply",
       "later": "Maybe later",
       "close": "Close",
-      "widget": "Nestlé AI Reinvention",
-      "view": "View the program",
-      "imageAlt": "Nestlé's logo on the glass front of its office"
+      "view": "View the program"
     },
     "hero": {
       "titleStart": "Your next step in",
@@ -372,6 +365,10 @@
     "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund removed this solution, so only GenAI Fund can restore it.",
     "MATCHING_CANDIDATE_NOT_REMOVED": "This solution is no longer removed, so it takes no reason.",
     "MATCHING_REMOVED_BY_SOMEONE_ELSE": "Someone else removed this solution; only they can say why.",
+    "MATCHING_USE_CASE_CLOSED": "This use case no longer takes proposals, so nobody can be invited to propose.",
+    "MATCHING_ALREADY_INVITED": "This provider was already invited to propose for this use case.",
+    "MATCHING_NOBODY_TO_INVITE": "Nobody answers for this provider on BeyondPilot yet, so there is nobody to email.",
+    "MATCHING_INVITATION_LIMIT": "You have invited as many providers as a day allows for this use case. Try again tomorrow.",
     "MATCHING_ALREADY_CANDIDATE": "This solution is already on the list for this use case.",
     "MATCHING_OWN_SOLUTION": "This solution belongs to the organization that owns the use case.",
     "MATCHING_SETTINGS_CHANGED": "Someone else changed these settings. Reload and try again.",
@@ -969,6 +966,16 @@
           "lead": "Your changes will be lost.",
           "leave": "Leave",
           "stay": "Stay"
+        },
+        "feature": {
+          "feature": "Feature on home page",
+          "unfeature": "Stop featuring",
+          "since": "Featured {day}",
+          "hint": "The home page announces the most recently featured program that is published and still takes applications.",
+          "done": {
+            "featured": "{name} is featured on the home page.",
+            "unfeatured": "{name} is no longer featured."
+          }
         }
       },
       "noDays": "Days not set",
@@ -1047,7 +1054,8 @@
           "leave": "Leave",
           "stay": "Stay"
         }
-      }
+      },
+      "featured": "Featured"
     },
     "accounts": {
       "metaTitle": "Accounts · BeyondPilot",
@@ -1155,7 +1163,9 @@
           "create": "Created a program",
           "update": "Saved a program",
           "publish": "Published a program",
-          "unpublish": "Unpublished a program"
+          "unpublish": "Unpublished a program",
+          "feature": "Featured a program",
+          "unfeature": "Stopped featuring a program"
         },
         "organization": {
           "create": "Added an organization",
@@ -1281,6 +1291,7 @@
           "candidate_remove": "Removed a candidate",
           "candidate_reason": "Said why a candidate was removed",
           "candidate_restore": "Restored a candidate",
+          "candidate_invite": "Invited a provider to propose",
           "settings_change": "Changed the limits of matching"
         }
       },
@@ -1297,7 +1308,9 @@
           "create": "Created the program <resource></resource>",
           "update": "Saved the program <resource></resource>",
           "publish": "Published the program <resource></resource>",
-          "unpublish": "Unpublished the program <resource></resource>"
+          "unpublish": "Unpublished the program <resource></resource>",
+          "feature": "Featured the program <resource></resource> on the home page",
+          "unfeature": "Stopped featuring the program <resource></resource>"
         },
         "organization": {
           "create": "Added the organization <resource></resource>",
@@ -1423,6 +1436,7 @@
           "candidate_remove": "Removed a candidate of the use case <resource></resource>",
           "candidate_reason": "Said why a candidate of the use case <resource></resource> was removed",
           "candidate_restore": "Restored a candidate of the use case <resource></resource>",
+          "candidate_invite": "Invited a provider to propose for the use case <resource></resource>",
           "settings_change": "Changed the limits of matching"
         }
       },
@@ -3113,6 +3127,10 @@
         "proposal_declined": {
           "name": "Proposal not selected",
           "description": "Tells the sender its proposal was not selected, with the note of the organization that posted the use case."
+        },
+        "matching_invitation": {
+          "name": "Invitation to propose",
+          "description": "Invites the provider of a matched solution to send a proposal for a use case, with the note of the person who invites."
         },
         "talent_approved": {
           "name": "Talent profile approved"
@@ -7395,7 +7413,8 @@
         "customerCase": "Customer case {number}",
         "deck": "Deck, p. {page}",
         "website": "Website"
-      }
+      },
+      "invite": "Invite to propose…"
     },
     "panel": {
       "label": "The solution you picked",
@@ -7538,6 +7557,18 @@
         "list": "See the list"
       },
       "none": "Every solution here has a decision. Change one from the list."
+    },
+    "invite": {
+      "action": "Invite to propose",
+      "title": "Invite {name} to propose?",
+      "description": "The owners of {name} get an email inviting them to send a proposal for this use case, with a link to it. It cannot be taken back.",
+      "note": "Note to the provider (optional)",
+      "confirm": "Send invitation",
+      "cancel": "Cancel",
+      "done": "{name} is invited to propose.",
+      "invited": "Invited {date}",
+      "invitedBy": "Invited by {name} on {date}",
+      "genaiFund": "GenAI Fund"
     }
   },
   "Messaging": {

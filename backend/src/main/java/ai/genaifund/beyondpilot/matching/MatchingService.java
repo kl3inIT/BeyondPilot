@@ -1,7 +1,9 @@
 package ai.genaifund.beyondpilot.matching;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -20,6 +22,7 @@ import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.matching.dto.AddCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.GiveFeedbackRequest;
 import ai.genaifund.beyondpilot.matching.dto.GiveRemovalReasonRequest;
+import ai.genaifund.beyondpilot.matching.dto.InviteCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange.Kind;
 import ai.genaifund.beyondpilot.matching.dto.MatchingResponse;
@@ -29,11 +32,14 @@ import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository.Answer;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Candidate;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Invitation;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Requirement;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.RunState;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Step;
+import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
+import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.search.SolutionEvidence;
 import ai.genaifund.beyondpilot.search.SolutionEvidence.Shown;
 import ai.genaifund.beyondpilot.solution.IndexedSolution;
@@ -41,6 +47,7 @@ import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.solution.SolutionMaterial;
 import ai.genaifund.beyondpilot.usecase.UseCaseBrief;
 import ai.genaifund.beyondpilot.usecase.UseCaseDirectory;
+import ai.genaifund.beyondpilot.usecase.UseCaseTarget;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,7 +58,8 @@ import reactor.core.publisher.Flux;
  * read the candidates with the reasons, start a run, and shortlist, remove and restore candidates; an operator also
  * adds a solution by hand. Anyone else is told there is no such use case. What a person decides is recorded with who
  * and when, and no run changes it. They also say whether the AI put a candidate in the right group, which is kept and
- * moves nothing in the list. A page that stays open hears that something changed and reads again.
+ * moves nothing in the list. They invite the provider of a candidate to propose for the use case, by email. A page
+ * that stays open hears that something changed and reads again.
  */
 @Service
 public class MatchingService {
@@ -71,6 +79,9 @@ public class MatchingService {
 	private static final String SEARCHING = "search";
 
 	private static final String READING_SOLUTIONS = "reading";
+
+	/** How many providers one member may invite in a day for one use case; operators are not limited. */
+	static final int INVITATIONS_PER_DAY = 10;
 
 	private final MatchingRepository matching;
 
@@ -92,9 +103,11 @@ public class MatchingService {
 
 	private final MatchingChanges changes;
 
+	private final EmailService email;
+
 	MatchingService(MatchingRepository matching, MatchingFeedbackRepository feedback, UseCaseDirectory useCases,
 			SolutionDirectory solutions, SolutionEvidence evidence, OrganizationDirectory organizations,
-			IdentityService identity, AiModels models, AuditTrail audit, MatchingChanges changes) {
+			IdentityService identity, AiModels models, AuditTrail audit, MatchingChanges changes, EmailService email) {
 		this.matching = matching;
 		this.feedback = feedback;
 		this.useCases = useCases;
@@ -105,6 +118,7 @@ public class MatchingService {
 		this.models = models;
 		this.audit = audit;
 		this.changes = changes;
+		this.email = email;
 	}
 
 	/** The caller's right to a use case: its brief, and whether they act as an operator. */
@@ -261,6 +275,68 @@ public class MatchingService {
 		return view(actor, access);
 	}
 
+	/**
+	 * Invites the provider of a candidate to propose for the use case: its owners are emailed, or, when nobody has
+	 * taken the organization on yet, the addresses GenAI Fund invited to own it. One invitation for each use case and
+	 * provider organization; it cannot be taken back.
+	 * @throws MatchingException when the candidate is unknown to the caller, was removed or is not judged yet, when the
+	 * use case no longer takes proposals, when the provider was invited already, when nobody answers for it, or when
+	 * a member has invited as many providers as a day allows for this use case
+	 */
+	@Transactional
+	public MatchingResponse invite(Actor actor, UUID candidateId, InviteCandidateRequest request) {
+		Candidate candidate = candidate(candidateId);
+		Access access = access(actor, candidate);
+		if (MatchingRepository.REMOVED.equals(candidate.decision())) {
+			throw new MatchingException(MatchingErrorCode.CANDIDATE_REMOVED, "Candidate " + candidateId + " is removed");
+		}
+		UseCaseTarget useCase = useCases.target(candidate.useCaseId())
+			.filter(UseCaseTarget::open)
+			.orElseThrow(() -> new MatchingException(MatchingErrorCode.USE_CASE_CLOSED,
+					"Use case " + candidate.useCaseId() + " takes no proposals"));
+		IndexedSolution solution = solutions.indexed(candidate.solutionId())
+			.orElseThrow(() -> new MatchingException(MatchingErrorCode.SOLUTION_NOT_FOUND,
+					"Solution " + candidate.solutionId() + " is no longer approved"));
+		if (!access.operator() && matching.invitedToday(useCase.id(), actor.accountId()) >= INVITATIONS_PER_DAY) {
+			throw new MatchingException(MatchingErrorCode.INVITATION_LIMIT,
+					"Account " + actor.accountId() + " invited as many providers as a day allows");
+		}
+		List<String> recipients = recipientsOf(solution.organizationId());
+		if (recipients.isEmpty()) {
+			throw new MatchingException(MatchingErrorCode.NOBODY_TO_INVITE,
+					"Nobody answers for organization " + solution.organizationId());
+		}
+		String note = noteOf(request.note());
+		if (!matching.invite(useCase.id(), solution.organizationId(), candidate.id(), note, actor.accountId(),
+				access.operator())) {
+			throw new MatchingException(MatchingErrorCode.ALREADY_INVITED,
+					"Organization " + solution.organizationId() + " was invited already");
+		}
+		String inviter = organizations.names(List.of(useCase.organizationId()))
+			.values()
+			.stream()
+			.map(OrganizationName::name)
+			.findFirst()
+			.orElse(useCase.title());
+		recipients.forEach(recipient -> email.sendMatchingInvitation(recipient, inviter, solution.organizationName(),
+				solution.name(), useCase.title(), useCase.closesAt(), note, useCase.id()));
+		changes.tell(useCase.id(), Kind.DECISION);
+		record(AuditAction.MATCHING_CANDIDATE_INVITE, actor, access.brief(),
+				Map.of("solution", solution.name(), "provider", solution.organizationName()));
+		return view(actor, access);
+	}
+
+	/**
+	 * Who is emailed for a provider organization: its owners; with none, the addresses invited to own it that are
+	 * still open. Each address once.
+	 */
+	private List<String> recipientsOf(UUID organizationId) {
+		List<UUID> owners = organizations.ownersOf(organizationId);
+		List<String> addresses = owners.isEmpty() ? organizations.invitedOwners(organizationId)
+				: identity.people(Set.copyOf(owners)).values().stream().map(Person::email).toList();
+		return addresses.stream().map(address -> address.strip().toLowerCase(Locale.ROOT)).distinct().toList();
+	}
+
 	private static @Nullable String noteOf(@Nullable String note) {
 		return note == null || note.isBlank() ? null : note.strip();
 	}
@@ -397,11 +473,17 @@ public class MatchingService {
 		Map<UUID, SolutionMaterial> materials = solutions.materials(solutionIds);
 		Map<UUID, Map<Integer, String>> webPages = evidence.webPages(solutionIds);
 		// Who removed what is shown to both sides, by the name each person has now.
-		Map<UUID, Person> people = identity.people(kept.stream()
+		// Who invited which provider, by the candidate it was invited from.
+		Map<UUID, Invitation> invited = matching.invitations(useCaseId)
+			.stream()
+			.collect(Collectors.toMap(Invitation::candidateId, invitation -> invitation, (first, second) -> first));
+		Set<UUID> deciders = kept.stream()
 			.filter(candidate -> MatchingRepository.REMOVED.equals(candidate.decision()))
 			.map(Candidate::decidedBy)
 			.filter(Objects::nonNull)
-			.collect(Collectors.toSet()));
+			.collect(Collectors.toCollection(HashSet::new));
+		invited.values().forEach(invitation -> deciders.add(invitation.accountId()));
+		Map<UUID, Person> people = identity.people(deciders);
 		// What people said about the judgment each candidate has now. A member reads their own answer; an operator
 		// also reads how many answered and how many of them disagree.
 		Map<UUID, List<Answer>> said = feedback.current(useCaseId)
@@ -420,6 +502,10 @@ public class MatchingService {
 			// A member is not told which operator removed a candidate, only that GenAI Fund did.
 			Person remover = removed && candidate.decidedBy() != null && (operator || !candidate.decidedByOperator())
 					? people.get(candidate.decidedBy()) : null;
+			// A member is not told which operator invited a provider either.
+			Invitation invitation = invited.get(candidate.id());
+			Person inviter = invitation != null && (operator || !invitation.byOperator())
+					? people.get(invitation.accountId()) : null;
 			SolutionMaterial material = materials.get(candidate.solutionId());
 			Map<Integer, String> pages = webPages.getOrDefault(candidate.solutionId(), Map.of());
 			List<Answer> answers = said.getOrDefault(candidate.id(), List.of());
@@ -435,6 +521,8 @@ public class MatchingService {
 					candidate.bucket(), candidate.requiredMet(), candidate.requiredTotal(), candidate.decision(),
 					candidate.reason(), candidate.note(), remover == null ? null : remover.label(),
 					removed ? candidate.decidedByOperator() : null, removed ? candidate.decidedAt() : null,
+					invitation == null ? null : invitation.createdAt(), inviter == null ? null : inviter.label(),
+					invitation == null ? null : invitation.byOperator(),
 					candidate.judged(), candidate.summary(),
 					Sources.unread(candidate.unread(), material != null && material.deck(),
 							material != null && material.website()),
@@ -466,7 +554,9 @@ public class MatchingService {
 					requirement.necessity(), requirement.label(), requirement.statement(), requirement.quote()))
 			.toList();
 		return new MatchingResponse(useCaseId, operator, models.available(AiTask.MATCHING),
-				operator ? null : runsLeft(useCaseId), run, requirements, candidates, steps);
+				operator ? null : runsLeft(useCaseId),
+				operator ? null : Math.max(0, INVITATIONS_PER_DAY - matching.invitedToday(useCaseId, actor.accountId())),
+				run, requirements, candidates, steps);
 	}
 
 	/**

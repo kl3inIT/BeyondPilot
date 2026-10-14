@@ -489,6 +489,29 @@ class MatchingRunTest {
 				"$.candidates[0].removedBy")).isEqualTo("operator@matching.test");
 		assertThat(decision(call("POST", operator, decide + "/restore", null))).isEqualTo("none");
 
+		// A member invites the provider to propose: its owner is emailed once, and a second invitation is refused.
+		assertProblem(call("POST", buyer, decide + "/invite", Map.of("note", "x".repeat(501))), 400, "REQUEST_INVALID");
+		String invited = body(call("POST", buyer, decide + "/invite", Map.of("note", " We would like a proposal. "))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(invited, "$.candidates[0].invitedAt")).isNotBlank();
+		assertThat(JsonPath.<String>read(invited, "$.candidates[0].invitedBy")).isEqualTo("buyer-" + word + "@matching.test");
+		assertThat(JsonPath.<Boolean>read(invited, "$.candidates[0].invitedByOperator")).isFalse();
+		assertThat(JsonPath.<Integer>read(invited, "$.invitationsLeftToday")).isEqualTo(9);
+		String invitation = "Lotus Bank " + word + " invites Claims Lab " + word + " to propose";
+		assertThat(mail.subjectsTo("owner-" + word + "@matching.test")).contains(invitation);
+		assertThat(mail.textTo("owner-" + word + "@matching.test", invitation)).contains("Claims Desk " + word)
+			.contains("/use-cases/" + useCase);
+		assertProblem(call("POST", buyer, decide + "/invite", Map.of()), 409, "MATCHING_ALREADY_INVITED");
+		assertProblem(call("POST", operator, decide + "/invite", Map.of()), 409, "MATCHING_ALREADY_INVITED");
+		assertThat(jdbc.sql("select note from matching_invitation where use_case_id = ?")
+			.param(useCase)
+			.query(String.class)
+			.single()).isEqualTo("We would like a proposal.");
+		// An operator reads who invited; the limit is the members' alone.
+		assertThat(JsonPath.<Object>read(body(call("GET", operator, path, null).expectStatus().isOk()),
+				"$.invitationsLeftToday")).isNull();
+
 		// An operator adds a solution by hand; a member may not, and a solution is a candidate once.
 		UUID second = submittedSolution(owner, "Forms Reader " + word);
 		post(operator, "/api/solution/admin/solutions/" + second + "/approve", null);
@@ -551,7 +574,8 @@ class MatchingRunTest {
 		assertThat(jdbc.sql("select action from audit_event where action like 'matching.%' order by occurred_at")
 			.query(String.class)
 			.list()).contains("matching.candidate_shortlist", "matching.candidate_remove", "matching.candidate_reason",
-					"matching.candidate_restore", "matching.candidate_add", "matching.run_start");
+					"matching.candidate_restore", "matching.candidate_invite", "matching.candidate_add",
+					"matching.run_start");
 
 		// The limits are the operators' to set, one at a time.
 		String limits = "/api/matching/admin/settings";

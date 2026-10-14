@@ -39,6 +39,8 @@ type MatchingReviewProps = {
   onRemove: (candidate: MatchingCandidate) => Promise<boolean>;
   onReason: (candidate: MatchingCandidate, reason: Removal["reason"]) => Promise<boolean>;
   onRestore: (candidate: MatchingCandidate) => Promise<boolean>;
+  /** Opens the invitation of a candidate's provider; absent when the caller may not invite now. */
+  onInvite?: (candidate: MatchingCandidate) => void;
   /** Shows the list instead. */
   onList: () => void;
 };
@@ -58,6 +60,7 @@ function MatchingReview({
   onRemove,
   onReason,
   onRestore,
+  onInvite,
   onList,
 }: MatchingReviewProps) {
   const t = useTranslations("Matching.review");
@@ -214,6 +217,7 @@ function MatchingReview({
                 leaving={leaving}
                 back={back}
                 quick={quick}
+                onInvite={onInvite && (() => onInvite(one))}
                 onDecide={(kind) => {
                   // Nothing is decided while another decision is on its way: the card springs back.
                   if (busy !== null) {

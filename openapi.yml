@@ -883,6 +883,8 @@ paths:
           - program.update
           - program.publish
           - program.unpublish
+          - program.feature
+          - program.unfeature
           - organization.create
           - organization.approve
           - organization.suspend
@@ -984,6 +986,7 @@ paths:
           - matching.candidate_remove
           - matching.candidate_reason
           - matching.candidate_restore
+          - matching.candidate_invite
           - matching.settings_change
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
@@ -1766,6 +1769,68 @@ paths:
       - session: []
       summary: "Say whether the AI put a candidate in the right group, and where it\
         \ belongs when it did not"
+      tags:
+      - Matching
+  /api/matching/candidates/{candidateId}/invite:
+    post:
+      description: "Its owners are emailed, or the addresses invited to own it when\
+        \ nobody has taken it on yet. One invitation for each use case and provider;\
+        \ it cannot be taken back."
+      operationId: inviteMatchingCandidate
+      parameters:
+      - in: path
+        name: candidateId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteMatchingCandidate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matching"
+          description: The provider is invited.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The note is longer than 500 characters.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The candidate is unknown to the caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The candidate was removed, the use case takes no proposals,\
+            \ the provider was invited already, or nobody answers for it."
+        "429":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member invited as many providers as a day allows.
+      security:
+      - session: []
+      summary: Invite the provider of a candidate to propose for the use case
       tags:
       - Matching
   /api/matching/candidates/{candidateId}/removal-reason:
@@ -5748,6 +5813,45 @@ paths:
       summary: "Save a program with its application window, key dates and events"
       tags:
       - Program administration
+  /api/program/admin/programs/{id}/feature:
+    post:
+      description: The home page announces the most recently featured program that
+        is published and still takes applications. Featuring a featured program changes
+        nothing.
+      operationId: featureProgram
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The program is featured.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program.
+      security:
+      - session: []
+      summary: Feature a program on the home page
+      tags:
+      - Program administration
   /api/program/admin/programs/{id}/publish:
     post:
       operationId: publishProgram
@@ -5890,6 +5994,42 @@ paths:
       summary: Replace the questions a program asks its applicants
       tags:
       - Program administration
+  /api/program/admin/programs/{id}/unfeature:
+    post:
+      operationId: unfeatureProgram
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The program is no longer featured.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program.
+      security:
+      - session: []
+      summary: Stop featuring a program
+      tags:
+      - Program administration
   /api/program/admin/programs/{id}/unpublish:
     post:
       operationId: unpublishProgram
@@ -5960,6 +6100,15 @@ paths:
           - event_series
           - event
           pattern: enterprise_challenge|open_innovation_call|accelerator|hackathon|buildathon|grant|venture_building|pitch_competition|event_series|event
+      - description: "Only the programs an operator featured, the most recently featured\
+          \ first; the home page announces the first that still takes applications."
+        in: query
+        name: featured
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
       responses:
         "200":
           content:
@@ -12474,6 +12623,13 @@ components:
           - string
           - "null"
           format: uri
+        featuredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator featured the program; null while it is not
+            featured.
         id:
           type: string
           format: uuid
@@ -12599,6 +12755,13 @@ components:
           - string
           - "null"
           format: date
+        featuredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator featured the program; null while it is not
+            featured.
         id:
           type: string
           format: uuid
@@ -13948,6 +14111,8 @@ components:
           - program.update
           - program.publish
           - program.unpublish
+          - program.feature
+          - program.unfeature
           - organization.create
           - organization.approve
           - organization.suspend
@@ -14049,6 +14214,7 @@ components:
           - matching.candidate_remove
           - matching.candidate_reason
           - matching.candidate_restore
+          - matching.candidate_invite
           - matching.settings_change
         actor:
           type:
@@ -16250,6 +16416,15 @@ components:
       - leftToday
       - open
       - openLimit
+    InviteMatchingCandidate:
+      type: object
+      description: Invites the provider of a candidate to propose for the use case.
+      properties:
+        note:
+          type: string
+          description: "A few words to the provider, quoted in the email."
+          maxLength: 500
+          minLength: 0
     InviteMember:
       type: object
       description: An address asked to join the caller's organization.
@@ -16350,6 +16525,11 @@ components:
           description: "The candidates, in the order the last run found them."
           items:
             $ref: "#/components/schemas/MatchingCandidate"
+        invitationsLeftToday:
+          type: integer
+          format: int32
+          description: "How many more providers the caller may invite today; absent\
+            \ for operators, who have no limit."
         modelChosen:
           type: boolean
           description: Whether an AI model is set for matching; without one no run
@@ -16439,6 +16619,18 @@ components:
           $ref: "#/components/schemas/MatchingFinding"
           description: Whether the vendor delivered a similar workflow in the use
             case's industry.
+        invitedAt:
+          type: string
+          format: date-time
+          description: When its provider was invited to propose for the use case;
+            absent when it was not.
+        invitedBy:
+          type: string
+          description: "Who invited it, by the name they are shown by; absent for\
+            \ a member when GenAI Fund invited it."
+        invitedByOperator:
+          type: boolean
+          description: Whether GenAI Fund invited it.
         judged:
           type: boolean
           description: Whether a run judged it; one added by hand waits for the next

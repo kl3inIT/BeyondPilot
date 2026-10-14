@@ -414,6 +414,28 @@ public class EmailService {
 	}
 
 	/** The address of a page of the site, which is where every link of an email leads. */
+	/**
+	 * Invites a solution provider to propose for a use case that matching recommended it for. The note of the person
+	 * who invites, when they wrote one, is quoted as written. The link opens the use case, where the provider sends a
+	 * proposal.
+	 * @param inviterName the organization that posted the use case
+	 * @param providerName the organization invited
+	 * @param solutionName the solution matching recommended
+	 * @param closesAt when the use case stops taking proposals; null when it has no date
+	 * @param note the words of the person who invites; null when there are none
+	 */
+	@Transactional
+	public void sendMatchingInvitation(String recipient, String inviterName, String providerName, String solutionName,
+			String useCaseTitle, @Nullable Instant closesAt, @Nullable String note, UUID useCaseId) {
+		String closes = closesAt == null ? null
+				: DateTimeFormatter.ofPattern("d MMM yyyy, HH:mm", Locale.ENGLISH).withZone(VIETNAM).format(closesAt)
+						+ " ICT";
+		queue(EmailKind.MATCHING_INVITATION, recipient,
+				values("inviterName", inviterName, "providerName", providerName, "solutionName", solutionName,
+						"useCaseTitle", useCaseTitle, "closesAt", closes, "note", note, "useCaseUrl",
+						url("/use-cases/" + useCaseId)));
+	}
+
 	private String url(String path) {
 		return settings.appearance().siteUrl() + path;
 	}
