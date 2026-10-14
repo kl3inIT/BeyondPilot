@@ -160,6 +160,7 @@ async function ProgramsPage({
                   kicker={program.name === event.title ? types(program.type) : program.name}
                   event={event}
                   cover={listedAsEvent(program) ? program.coverFileId : null}
+                  href={hrefOf(program)}
                   format={format}
                 />
               ))}
@@ -329,11 +330,14 @@ async function EventRow({
   kicker,
   event,
   cover,
+  href,
   format,
 }: {
   kicker: string;
   event: ProgramEvent;
   cover?: string | null;
+  /** The page of the program the event belongs to, which its title opens. */
+  href?: string;
   format: Format;
 }) {
   const t = await getTranslations("Programs");
@@ -359,7 +363,18 @@ async function EventRow({
         </time>
         <div className="flex min-w-0 flex-col gap-0.5">
           <p className="text-xs text-muted-foreground">{kicker}</p>
-          <p className="text-sm font-semibold">{event.title}</p>
+          <p className="text-sm font-semibold">
+            {href ? (
+              <Link
+                href={href}
+                className="rounded-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                {event.title}
+              </Link>
+            ) : (
+              event.title
+            )}
+          </p>
           <p className="text-xs text-muted-foreground">
             {[whenText(format, event), placeOf(event, t("online"))].filter(Boolean).join(" · ")}
           </p>

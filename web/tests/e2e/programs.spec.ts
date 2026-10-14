@@ -52,6 +52,11 @@ test.describe("programs", () => {
     await expect(dinner).toContainText("Event");
     await expect(dinner).toContainText("Ho Chi Minh City, Vietnam");
     await expect(dinner.locator("img")).toHaveCount(1);
+    // Its title opens the program's page, here its page on Luma, so a row without Register still leads somewhere.
+    await expect(dinner.getByRole("link", { name: "TinyFish, Big Minds" })).toHaveAttribute(
+      "href",
+      "https://luma.com/gaf-tinyfish-vn",
+    );
     await expect(dinner.getByRole("link", { name: "Register" })).toHaveAttribute(
       "href",
       "https://luma.com/gaf-tinyfish-vn",
