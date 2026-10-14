@@ -25,17 +25,22 @@ class TalentIndexing {
 
 	private final SearchDocumentRepository index;
 
-	TalentIndexing(TalentDirectory talent, SearchDocumentRepository index) {
+	private final IndexLock lock;
+
+	TalentIndexing(TalentDirectory talent, SearchDocumentRepository index, IndexLock lock) {
+		this.lock = lock;
 		this.talent = talent;
 		this.index = index;
 	}
 
 	@ApplicationModuleListener
 	void on(TalentProfileChanged changed) {
-		UUID id = changed.profileId();
-		talent.indexed(id)
-			.ifPresentOrElse(profile -> index.save(document(profile)),
-					() -> index.remove(SearchDocumentRepository.TALENT, id));
+		lock.run(() -> {
+			UUID id = changed.profileId();
+			talent.indexed(id)
+				.ifPresentOrElse(profile -> index.save(document(profile)),
+						() -> index.remove(SearchDocumentRepository.TALENT, id));
+		});
 	}
 
 	/** Saves every approved, listed profile and takes out every other. */

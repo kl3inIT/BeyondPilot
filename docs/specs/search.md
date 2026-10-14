@@ -89,8 +89,12 @@ A facet without a value, or an empty list, is left out of `facets`.
 ## Repair and rebuild
 
 `IndexRepair` rebuilds every kind in one transaction: it saves every item its owner publishes now and deletes every
-other row of that kind. It runs when the application is ready (which also fills an empty index), every night at
-03:30 `Asia/Ho_Chi_Minh`, and when an operator asks. One rebuild runs at a time. It logs `search.index.repaired` with
+other row of that kind. It runs in the background once the application is ready (which also fills an empty index),
+so that a deployment does not wait for it before taking traffic; every night at 03:30 `Asia/Ho_Chi_Minh`; and when an
+operator asks. A failure at start is logged as `search.index.repair_failed`. A listener never waits for a rebuild; while one runs,
+its change is also kept and done again at the end of the rebuild, in the rebuild's transaction (`IndexLock`), so the
+rebuild never commits an item as it was before a take-down. A write to a row the rebuild has written still waits for
+the rebuild's commit, so a take-down during a rebuild leaves search when the rebuild ends (about a minute). One rebuild runs at a time. It logs `search.index.repaired` with
 the counts, and keeps the last run (when, items saved, rows removed) in memory until the application stops.
 
 ## Public search
