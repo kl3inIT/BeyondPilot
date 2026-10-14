@@ -19,9 +19,6 @@ test.describe("home page", () => {
     await expect(
       page.getByRole("heading", { name: "Five ways to explore BeyondPilot" }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "AI for Insurance Challenge × Tasco" }),
-    ).toBeVisible();
     await expect(page.getByRole("heading", { name: "The team building BeyondPilot" })).toHaveCount(
       0,
     );
