@@ -86,6 +86,25 @@ test.describe("admin programs", () => {
     await expect(page).toHaveURL(`/admin/programs/${tasco}/settings`);
   });
 
+  test("a program read from Luma is marked, and its settings say that Luma overwrites them", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/programs");
+
+    // The draft is read from Luma; the Tasco challenge was created by an operator.
+    await expect(page.getByText("From Luma").and(page.locator(":visible"))).toHaveCount(1);
+
+    await page.goto(`/admin/programs/${draft}/settings`);
+    await expect(page.getByText("From Luma", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("alert").filter({ hasText: "Updated from Luma every hour" }),
+    ).toContainText("Change them on Luma.");
+    await expectNoSeriousA11yViolations(page);
+  });
+
   test("New program suggests the address from the name and opens the draft", async ({
     page,
     context,

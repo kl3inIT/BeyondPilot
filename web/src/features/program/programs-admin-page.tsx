@@ -1,4 +1,4 @@
-import { ChevronRightIcon, LayoutListIcon, SearchXIcon } from "lucide-react";
+import { ChevronRightIcon, LayoutListIcon, RefreshCwIcon, SearchXIcon } from "lucide-react";
 import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -88,6 +88,12 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
         <span className="flex flex-col items-start gap-1">
           <Badge variant={state.variant}>{t(`state.${state.key}`)}</Badge>
           {program.featuredAt && <FeaturedBadge>{t("featured")}</FeaturedBadge>}
+          {program.lumaEventId && (
+            <Badge variant="outline">
+              <RefreshCwIcon aria-hidden="true" />
+              {t("fromLuma")}
+            </Badge>
+          )}
         </span>
       ),
       runs: runs(program),

@@ -175,7 +175,10 @@ const events = [
   requestId: null,
 }));
 
-/** The programs an operator edits: a draft that lacks what publishing needs, and a published one. */
+/**
+ * The programs an operator edits: a draft that lacks what publishing needs, read from Luma, and a
+ * published one.
+ */
 const programs = {
   "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c01": {
     id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c01",
@@ -193,6 +196,7 @@ const programs = {
     pageKind: "standard",
     externalUrl: null,
     coverFileId: null,
+    lumaEventId: "evt-genai-monthly-meetup",
     keyDates: [],
     events: [],
     version: 0,
@@ -659,6 +663,7 @@ createServer((request, response) => {
         type: program.type,
         partnerName: program.partnerName,
         featuredAt: program.featuredAt ?? null,
+        lumaEventId: program.lumaEventId ?? null,
         status: program.status,
         phase: program.status === "draft" ? "upcoming" : "open",
         applications: program.applications,
