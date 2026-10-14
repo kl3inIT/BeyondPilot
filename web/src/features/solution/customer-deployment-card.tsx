@@ -85,7 +85,7 @@ function CustomerDeploymentCard({ deployment, organization }: CustomerDeployment
       <p className="text-xs text-muted-foreground">{t("open", { holds })}</p>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-dvh overflow-y-auto wrap-break-word sm:max-w-3xl">
+        <DialogContent className="max-h-dvh overflow-y-auto wrap-anywhere sm:max-w-3xl">
           <DialogHeader>
             <p className="text-xs text-muted-foreground">{t("eyebrow")}</p>
             <DialogTitle>{deployment.title}</DialogTitle>
@@ -146,6 +146,7 @@ function CustomerDeploymentCard({ deployment, organization }: CustomerDeployment
                       <TextButton
                         size="sm"
                         href={`${siteRoutes.organizations}/${organization.slug}`}
+                        className="max-w-full min-w-0 flex-wrap wrap-anywhere whitespace-normal"
                       >
                         {organization.name}
                         <ArrowRightIcon aria-hidden="true" />
