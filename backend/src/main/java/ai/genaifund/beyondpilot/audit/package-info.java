@@ -4,7 +4,7 @@
  * of the change. Events are written once and never changed. The module knows no other module: a caller supplies the
  * names its events carry.
  */
-@ApplicationModule(displayName = "Audit", type = ApplicationModule.Type.CLOSED, allowedDependencies = {})
+@ApplicationModule(displayName = "Audit", type = ApplicationModule.Type.CLOSED, allowedDependencies = { "shared" })
 @NullMarked
 package ai.genaifund.beyondpilot.audit;
 

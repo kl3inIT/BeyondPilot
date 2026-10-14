@@ -15,9 +15,19 @@ import ai.genaifund.beyondpilot.ai.persistence.AiUsageRepository;
 import ai.genaifund.beyondpilot.ai.persistence.AiUsageRepository.By;
 import ai.genaifund.beyondpilot.ai.persistence.AiUsageRepository.Filter;
 import ai.genaifund.beyondpilot.ai.persistence.AiUsageRepository.Totals;
+import ai.genaifund.beyondpilot.audit.AuditAction;
+import ai.genaifund.beyondpilot.audit.AuditRecord;
+import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
+import ai.genaifund.beyondpilot.identity.Operator;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import java.util.Map;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class AiUsageReports {
+
+	private static final Logger LOG = LoggerFactory.getLogger(AiUsageReports.class);
 
 	/** The zone the screens show, so that "today" is the operator's day. */
 	private static final ZoneId ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -47,9 +59,12 @@ public class AiUsageReports {
 
 	private final IdentityService identity;
 
-	AiUsageReports(AiUsageRepository usage, IdentityService identity) {
+	private final AuditTrail audit;
+
+	AiUsageReports(AiUsageRepository usage, IdentityService identity, AuditTrail audit) {
 		this.usage = usage;
 		this.identity = identity;
+		this.audit = audit;
 	}
 
 	/**
@@ -113,6 +128,55 @@ public class AiUsageReports {
 			.toList();
 		return new AiUsageCallListResponse(items, page, size, usage.count(filter),
 				usage.named(from, now, By.TASK), usage.named(from, now, By.PROVIDER), usage.named(from, now, By.MODEL));
+	}
+
+	/**
+	 * AI calls as a spreadsheet: every page of the list as the request narrows it, in its order, for GenAI Fund to work
+	 * with outside BeyondPilot. The download is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, AiUsageCallListRequest request, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		List<AiUsageCallListResponse.Item> rows = Spreadsheet
+			.everyPage(page -> calls(actor, new AiUsageCallListRequest(request.period(), request.task(), request.provider(),
+					request.model(), request.outcome(), page, Spreadsheet.PAGE_SIZE)).items());
+		Spreadsheet<AiUsageCallListResponse.Item> sheet = Spreadsheet.<AiUsageCallListResponse.Item>of("AI calls")
+			.time("Time", AiUsageCallListResponse.Item::occurredAt)
+			.label("Task", AiUsageCallListResponse.Item::task)
+			.text("Provider", AiUsageCallListResponse.Item::providerName)
+			.text("Model", AiUsageCallListResponse.Item::modelName)
+			.group("Outcome")
+			.label("Outcome", AiUsageCallListResponse.Item::outcome)
+			.label("Failure", AiUsageCallListResponse.Item::failure)
+			.count("Error status", AiUsageCallListResponse.Item::errorStatus)
+			.group("Tokens")
+			.count("Input", AiUsageCallListResponse.Item::inputTokens)
+			.count("Output", AiUsageCallListResponse.Item::outputTokens)
+			.count("Cache read", AiUsageCallListResponse.Item::cacheReadTokens)
+			.ungrouped()
+			.count("Duration (ms)", AiUsageCallListResponse.Item::durationMs)
+			.dollars("Estimated cost", AiUsageCallListResponse.Item::estimatedCost)
+			.group("Made for")
+			.label("Kind", AiUsageCallListResponse.Item::subjectType)
+			.text("Identifier", AiUsageCallListResponse.Item::subjectId);
+		SpreadsheetFile file = sheet.write(format, "ai-calls", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("Period", request.period() == null ? "today" : request.period())
+					.narrowedBy("Task", request.task())
+					.narrowedBy("Provider", request.provider())
+					.narrowedBy("Model", request.model())
+					.narrowedBy("Outcome", request.outcome()));
+		audit.record(new AuditRecord(AuditAction.AI_USAGE_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("ai_usage", "calls", "AI calls"), Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "ai.usage.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("AI calls exported");
+		return file;
 	}
 
 	/** When a period starts: at midnight in Vietnam, today or 6 or 29 days before it. */

@@ -9,6 +9,12 @@ import ai.genaifund.beyondpilot.audit.dto.AuditEventListRequest;
 import ai.genaifund.beyondpilot.audit.dto.AuditEventListResponse;
 import ai.genaifund.beyondpilot.audit.dto.AuditEventResponse;
 import ai.genaifund.beyondpilot.audit.persistence.AuditEventQueryRepository;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +53,51 @@ public class AuditLog {
 		List<AuditEventResponse> page = found.subList(0, Math.min(found.size(), size));
 		return new AuditEventListResponse(page, place == null || page.isEmpty() ? null : cursor(page.getFirst()),
 				found.size() > size ? cursor(page.getLast()) : null);
+	}
+
+	/**
+	 * Every event the filters select, newest first, as a spreadsheet. Like {@link #list}, it takes no caller: the
+	 * module that calls it answers for who reads, and records the download.
+	 * @param downloadedBy the operator who downloads it, named on the file's About sheet
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional(readOnly = true)
+	public SpreadsheetFile spreadsheet(@Nullable Instant from, @Nullable AuditAction action, @Nullable String q,
+			SpreadsheetFormat format, String downloadedBy) {
+		List<AuditEventResponse> rows = new ArrayList<>();
+		String before = null;
+		do {
+			AuditEventListResponse page = list(new AuditEventListRequest(from, action, q, before, null,
+					Spreadsheet.PAGE_SIZE));
+			rows.addAll(page.items());
+			Spreadsheet.bounded(rows.size());
+			before = page.older();
+		}
+		while (before != null);
+		Spreadsheet<AuditEventResponse> sheet = Spreadsheet.<AuditEventResponse>of("Audit log")
+			.time("Time", AuditEventResponse::occurredAt)
+			.text("Action", event -> event.action().value())
+			.group("Who")
+			.text("Name", event -> event.actor() == null ? "The server's configuration" : event.actor().label())
+			.email("Email", event -> event.actor() == null ? null : event.actor().email())
+			.group("What")
+			.label("Kind", event -> event.resource().type())
+			.text("Name", event -> event.resource().label())
+			.text("Identifier", event -> event.resource().id())
+			.ungrouped()
+			.paragraph("Details",
+					event -> event.details()
+						.entrySet()
+						.stream()
+						.sorted(Map.Entry.comparingByKey())
+						.map(detail -> detail.getKey() + ": " + detail.getValue())
+						.collect(Collectors.joining("\n")))
+			.text("Request", AuditEventResponse::requestId);
+		return sheet.write(format, "audit-log", rows,
+				Spreadsheet.About.of(downloadedBy, Instant.now())
+					.narrowedBy("From", from)
+					.narrowedBy("Action", action == null ? null : action.value())
+					.narrowedBy("Search", q));
 	}
 
 	private AuditEventListResponse towardsThePresent(AuditEventListRequest request, @Nullable String text, Place place,

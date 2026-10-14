@@ -15,6 +15,9 @@ import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.notification.EmailService;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentListRequest;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentListResponse;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentResponse;
@@ -26,6 +29,8 @@ import ai.genaifund.beyondpilot.talent.persistence.TalentProfile;
 import ai.genaifund.beyondpilot.talent.persistence.TalentProfileRepository;
 import ai.genaifund.beyondpilot.talent.persistence.TalentQueryRepository;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +43,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class TalentAdministration {
+
+	private static final Logger LOG = LoggerFactory.getLogger(TalentAdministration.class);
 
 	/** The days of a review queue are Vietnam's, as the screens show them. */
 	private static final ZoneId QUEUE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -92,6 +99,48 @@ public class TalentAdministration {
 					email(people, row.accountId()), row.headline(), row.status(), row.suspendedAt(), row.listed(),
 					row.featuredAt(), row.submittedAt(), row.updatedAt()))
 			.toList(), page, size, profileList.adminCount(text, request.status(), request.featured()));
+	}
+
+	/**
+	 * Talent as a spreadsheet: every page of the list as the request narrows it, in its order, for GenAI Fund to work
+	 * with outside BeyondPilot. The download is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, AdminTalentListRequest request, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		List<TalentSummaryResponse> rows = Spreadsheet
+			.everyPage(page -> list(actor, new AdminTalentListRequest(request.q(), request.status(), request.featured(), request.sort(),
+					page, Spreadsheet.PAGE_SIZE)).items());
+		Spreadsheet<TalentSummaryResponse> sheet = Spreadsheet.<TalentSummaryResponse>of("Talent")
+			.text("Name", TalentSummaryResponse::name)
+			.email("Email", TalentSummaryResponse::email)
+			.paragraph("Headline", TalentSummaryResponse::headline)
+			.group("Review")
+			.label("Status", TalentSummaryResponse::status)
+			.yesNo("Listed", TalentSummaryResponse::listed)
+			.time("Featured since", TalentSummaryResponse::featuredAt)
+			.time("Submitted at", TalentSummaryResponse::submittedAt)
+			.time("Taken down at", TalentSummaryResponse::suspendedAt)
+			.ungrouped()
+			.time("Updated at", TalentSummaryResponse::updatedAt)
+			.text("Address", TalentSummaryResponse::slug);
+		SpreadsheetFile file = sheet.write(format, "talent", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("Search", request.q())
+					.narrowedBy("Status", request.status())
+					.narrowedBy("Featured", request.featured())
+					.narrowedBy("Order", request.sort()));
+		audit.record(new AuditRecord(AuditAction.TALENT_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("talent_list", "talent", "Talent"), Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "talent.list.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Talent exported");
+		return file;
 	}
 
 	/**

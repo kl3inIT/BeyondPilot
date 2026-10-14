@@ -5,7 +5,7 @@
  * their photo in {@code storage}.
  */
 @ApplicationModule(displayName = "Talent", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "audit", "identity", "notification", "storage" })
+		allowedDependencies = { "audit", "identity", "notification", "storage", "shared" })
 @NullMarked
 package ai.genaifund.beyondpilot.talent;
 

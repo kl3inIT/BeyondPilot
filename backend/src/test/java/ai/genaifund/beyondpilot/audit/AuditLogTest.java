@@ -12,6 +12,8 @@ import java.util.UUID;
 
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,8 @@ class AuditLogTest {
 	private static final String CSRF_HEADER = "X-BeyondPilot-CSRF";
 
 	private static final String EVENTS = "/api/audit/events";
+
+	private static final String EXPORT = "/api/identity/admin/audit-events/export";
 
 	@LocalServerPort
 	private int port;
@@ -185,6 +189,54 @@ class AuditLogTest {
 	}
 
 	@Test
+	void anOperatorDownloadsTheLogAsItIsNarrowedAndTheDownloadIsRecorded() {
+		String marker = marker();
+		record(AuditAction.OPERATOR_GRANT, new AuditRecord.Actor(UUID.randomUUID(), "Hà Lê", "ha.le@audit.test"),
+				marker, Map.of("source", "operator"));
+		record(AuditAction.ACCOUNT_ENABLE, null, marker, Map.of());
+
+		download(signIn("plain@audit.test"), "?q=" + marker).expectStatus()
+			.isForbidden()
+			.expectBody()
+			.jsonPath("$.code")
+			.isEqualTo("IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(download(operator, "?q=" + marker + "&action=operator.grant")
+			.expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"audit-log-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(0)).containsExactly("Time", "Action", "Who", "Who", "What", "What", "What", "Details",
+				"Request");
+		assertThat(sheet.get(1)).containsExactly("Time", "Action", "Name", "Email", "Kind", "Name", "Identifier",
+				"Details", "Request");
+		assertThat(sheet.get(2).subList(1, 6)).containsExactly("operator.grant", "Hà Lê", "ha.le@audit.test",
+				"Account", marker);
+		assertThat(sheet.get(2).get(7)).isEqualTo("source: operator");
+
+		String csv = new String(download(operator, "?q=" + marker + "&format=csv").expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8")
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), UTF_8);
+		assertThat(csv).startsWith("\uFEFFTime,Action,Name,Email,Kind,Name,Identifier,Details,Request\r\n");
+		List<String> lines = csv.lines().toList();
+		assertThat(lines).hasSize(3);
+		assertThat(lines.get(1)).contains(",account.enable,The server's configuration,,Account," + marker + ",");
+		assertThat(lines.get(2)).contains(",operator.grant,Hà Lê,ha.le@audit.test,Account," + marker + ",");
+		assertThat(exportCounts()).containsExactly("1", "2");
+	}
+
+	@Test
 	void aParameterThatIsNotValidIsAValidationProblem() {
 		for (String query : List.of("?before=yesterday", "?after=1_2", "?action=account.rename", "?from=today",
 				"?q=" + "x".repeat(101))) {
@@ -209,6 +261,20 @@ class AuditLogTest {
 			.uri(URI.create("http://localhost:" + port + EVENTS + query))
 			.cookie(SESSION_COOKIE, operator)
 			.exchange();
+	}
+
+	private RestTestClient.ResponseSpec download(String session, String query) {
+		return client.post()
+			.uri(URI.create("http://localhost:" + port + EXPORT + query))
+			.header(CSRF_HEADER, "1")
+			.cookie(SESSION_COOKIE, session)
+			.exchange();
+	}
+
+	private List<String> exportCounts() {
+		return jdbc.sql("select details ->> 'count' from audit_event where action = 'audit.export' order by occurred_at")
+			.query(String.class)
+			.list();
 	}
 
 	private static String body(RestTestClient.ResponseSpec response) {

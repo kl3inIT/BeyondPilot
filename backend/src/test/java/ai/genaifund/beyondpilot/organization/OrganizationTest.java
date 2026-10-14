@@ -17,6 +17,8 @@ import java.util.stream.IntStream;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -1073,6 +1075,44 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOperatorDownloadsTheOrganizationsAsTheListNarrowsThemAndTheDownloadIsRecorded() {
+		for (String[] one : new String[][] { { "Exported Beta", "VN" }, { "Exported Alpha", "VN" },
+				{ "Exported Gamma", "SG" } }) {
+			post(operator, API + "/admin/organizations", Map.of("name", one[0], "type", "builder_team", "country", one[1]))
+				.expectStatus()
+				.isCreated();
+		}
+		String export = API + "/admin/organizations/export?q=exported&country=VN&sort=name";
+
+		assertProblem(post(signIn("member@exported-organizations.test"), export, null), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(post(operator, export, null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"organizations-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(4);
+		assertThat(sheet.get(1)).startsWith("Organization", "Type", "Country", "Status", "Members", "Has an owner",
+				"Request");
+		assertThat(sheet.get(2)).startsWith("Exported Alpha", "Builder team", "VN", "Approved", "0", "No");
+		assertThat(sheet.get(3)).startsWith("Exported Beta");
+
+		String csv = body(post(operator, export + "&format=csv", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("﻿Organization,Type,Country,Status,Members,Has an owner,Request,");
+		assertThat(csv.lines().toList()).hasSize(3).element(1).asString().startsWith("Exported Alpha,Builder team,VN,");
+		assertThat(exportCounts()).containsExactly("2", "2");
+	}
+
+	@Test
 	void anOperatorCreatesAnOrganizationAndTheInvitedPersonOwnsIt() {
 		String created = body(post(operator, API + "/admin/organizations",
 				Map.of("name", "Handed Over", "type", "company", "emailDomain",
@@ -1550,6 +1590,12 @@ class OrganizationTest {
 				select action from audit_event where resource_type = 'organization' and resource_id = ?
 				order by occurred_at, id
 				""").param(organization.toString()).query(String.class).list();
+	}
+
+	private List<String> exportCounts() {
+		return jdbc.sql("select details ->> 'count' from audit_event where action = 'organization.export' order by occurred_at")
+			.query(String.class)
+			.list();
 	}
 
 	private static void assertProblem(RestTestClient.ResponseSpec response, int status, String code) {

@@ -17,6 +17,8 @@ import java.util.stream.IntStream;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -309,6 +311,42 @@ class TalentTest {
 		assertThat(JsonPath.<String>read(forOperators, "$.items[0].name")).isEqualTo("Wombat Waiting");
 		assertThat(JsonPath.<String>read(forOperators, "$.items[0].email")).isEqualTo("wombat.waiting@profile.test");
 		assertProblem(get(signIn("visitor@profile.test"), ADMIN), 403, "IDENTITY_OPERATOR_REQUIRED");
+	}
+
+	@Test
+	void anOperatorDownloadsTheProfilesAsTheListNarrowsThemAndTheDownloadIsRecorded() {
+		approved(signIn("potoroo.approved@exported.test"), apart("Potoroo Approved", null));
+		String waiting = signIn("potoroo.waiting@exported.test");
+		submitted(waiting, apart("Potoroo Waiting", null));
+		String export = ADMIN + "/export?q=potoroo&status=approved";
+
+		assertProblem(post(waiting, export, null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(post(operator, export, null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"talent-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(1)).startsWith("Name", "Email", "Headline", "Status", "Listed");
+		assertThat(sheet.get(2)).startsWith("Potoroo Approved", "potoroo.approved@exported.test", "Builds claims AI",
+				"Approved", "Yes");
+
+		String csv = body(post(operator, export + "&format=csv", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("\uFEFFName,Email,Headline,Status,Listed,");
+		assertThat(csv.lines().toList()).hasSize(2)
+			.last()
+			.asString()
+			.startsWith("Potoroo Approved,potoroo.approved@exported.test,Builds claims AI,Approved,Yes,");
+		assertThat(exportCounts()).containsExactly("1", "1");
 	}
 
 	@Test
@@ -670,6 +708,12 @@ class TalentTest {
 				select action from audit_event where resource_type = 'talent' and resource_id = ?
 				order by occurred_at, id
 				""").param(profile.toString()).query(String.class).list();
+	}
+
+	private List<String> exportCounts() {
+		return jdbc.sql("select details ->> 'count' from audit_event where action = 'talent.export' order by occurred_at")
+			.query(String.class)
+			.list();
 	}
 
 	private static void assertProblem(RestTestClient.ResponseSpec response, int status, String code) {

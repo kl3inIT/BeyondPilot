@@ -7,17 +7,23 @@ import ai.genaifund.beyondpilot.ai.dto.AiUsageOverviewRequest;
 import ai.genaifund.beyondpilot.ai.dto.AiUsageOverviewResponse;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Admin › AI › Usage: what the calls to models and OCR services came to, and the log of them. */
@@ -57,6 +63,24 @@ class AiUsageController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	AiUsageCallListResponse calls(@CurrentActor Actor actor, @Valid @ParameterObject AiUsageCallListRequest request) {
 		return reports.calls(actor, request);
+	}
+
+	@PostMapping(path = "/calls/export", produces = { SpreadsheetFormat.XLSX_TYPE, SpreadsheetFormat.CSV_TYPE })
+	@Operation(operationId = "exportAiUsageCalls", summary = "Download the log of calls as a spreadsheet",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "Every call the parameters select, the newest first, one row each. The download is recorded.",
+			content = { @Content(mediaType = SpreadsheetFormat.XLSX_TYPE, schema = @Schema(type = "string", format = "binary")),
+					@Content(mediaType = SpreadsheetFormat.CSV_TYPE, schema = @Schema(type = "string", format = "binary")) })
+	@ApiResponse(responseCode = "400", description = "A parameter is not valid, or the download would hold too many rows.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<byte[]> exportCalls(@CurrentActor Actor actor, @Valid @ParameterObject AiUsageCallListRequest request,
+			@Parameter(description = SpreadsheetFormat.DESCRIPTION,
+					schema = @Schema(allowableValues = { "xlsx", "csv" }, defaultValue = "xlsx")) @RequestParam(
+							defaultValue = "xlsx") @Pattern(regexp = SpreadsheetFormat.PATTERN) String format) {
+		return reports.export(actor, request, SpreadsheetFormat.of(format)).response();
 	}
 
 }
