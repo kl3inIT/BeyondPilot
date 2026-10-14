@@ -12835,6 +12835,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ProgramKeyDate"
+        lumaEventId:
+          type:
+          - string
+          - "null"
+          description: "The Luma event the program is read from every hour, `evt-…\
+            `; null for a program an operator created. What Luma supplies overwrites\
+            \ an operator's edit at the next read."
         name:
           type: string
         pageKind:
@@ -12963,6 +12970,13 @@ components:
         id:
           type: string
           format: uuid
+        lumaEventId:
+          type:
+          - string
+          - "null"
+          description: "The Luma event the program is read from every hour, `evt-…\
+            `; null for a program an operator created. What Luma supplies overwrites\
+            \ an operator's edit at the next read."
         name:
           type: string
         partnerName:

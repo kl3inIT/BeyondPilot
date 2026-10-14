@@ -434,7 +434,7 @@ public class ProgramAdministration {
 		return new AdminProgramResponse(program.getId(), program.getSlug(), program.hasBeenPublished(),
 				PublishIssue.of(program).stream().map(PublishIssue::code).toList(), program.getName(), program.getType().code(), program.getPartnerName(), program.getSummary(),
 				program.getAbout(), program.getStartsOn(), program.getEndsOn(), program.getStatus().code(),
-				program.getPageKind().code(), program.getExternalUrl(), program.getCoverFileId(), program.getFeaturedAt(),
+				program.getPageKind().code(), program.getExternalUrl(), program.getCoverFileId(), program.getFeaturedAt(), program.getLumaEventId(),
 				opensAt == null || closesAt == null ? null
 						: new ProgramApplications(opensAt, closesAt, program.getShortlistSize(),
 								program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose(),
