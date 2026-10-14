@@ -177,7 +177,8 @@ function OrganizationSummary({
           {t("pending")}
         </ReviewStatus>
       )}
-      {organization.owner && (
+      {/* A person on their own is named by their application; there is nothing else to correct. */}
+      {organization.owner && organization.type !== "independent_builder" && (
         <>
           <TextButton onClick={() => setEditing(true)}>{t("edit")}</TextButton>
           <ProposalOrganizationDialog open={editing} onOpenChange={setEditing} onSaved={onSaved} />

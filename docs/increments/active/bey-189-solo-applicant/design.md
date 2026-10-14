@@ -39,7 +39,7 @@ The stored record stays an organization of type `independent_builder`, so applic
 Backend, `organization`:
 
 - `createOwned` makes an `independent_builder` approved, without industries; the Create organization page names it after the account.
-- `invite`, `join`, `letDomainJoin`, the operator's approval and save with a domain refuse an `independent_builder` with `ORGANIZATION_INDIVIDUAL` (409). `save` and `saveBasics` refuse a change to or from the type with the same code; the switch is Apply's.
+- `invite`, `join`, `letDomainJoin`, the operator's approval and save with a domain refuse an `independent_builder` with `ORGANIZATION_INDIVIDUAL` (409). `save` and `saveBasics` refuse an individual, and a change to its type, with the same code: approved without review, it may only carry the name the person gives on their application, and the switch is Apply's. A switch is refused too for an individual GenAI Fund refused or took down, so that neither a team nor a fresh start undoes that decision.
 - `search`, `approvedAt`, `approvedOrganization`, `approvedOrganizations` and `publicPage` leave it out; `suggestedDomain` gives none.
 - `OrganizationService.renameIndividual` and `becomeTeam` and `leaveIndividual`, called by `proposal`.
 - `V95__organization_individuals_approved.sql`: approves the ones in review or sent back, clears their domain and auto-join, revokes their open invitations and declines the open requests to join them.

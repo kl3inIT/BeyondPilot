@@ -171,6 +171,17 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertProblem(post(hoa, form.path() + "/organization",
 				Map.of("kind", "team", "name", "Hoa Team", "country", "VN", "teamSize", "2_9")), 409,
 				"PROPOSAL_INDIVIDUAL_LOCKED");
+
+		// One GenAI Fund refused keeps that decision: neither a team nor a fresh start undoes it.
+		String khanh = TestSignIn.session(client, mail, "khanh@alone.test");
+		post(khanh, form.path() + "/organization", Map.of("kind", "individual", "name", "Khanh Vo", "country", "VN"))
+			.expectStatus()
+			.isOk();
+		jdbc.sql("update organization set status = 'rejected' where name = 'Khanh Vo'").update();
+		assertProblem(post(khanh, form.path() + "/organization/leave", null), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
+		assertProblem(post(khanh, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Khanh Team", "country", "VN", "teamSize", "2_9")), 409,
+				"PROPOSAL_INDIVIDUAL_LOCKED");
 	}
 
 	@Test

@@ -296,11 +296,12 @@ public class ProposalService {
 	}
 
 	/**
-	 * Someone applying as themselves keeps doing so once something went out under their name: an application, a
-	 * proposal for a use case or a solution sent for review.
+	 * Someone applying as themselves keeps doing so once something went out under their name (an application, a
+	 * proposal for a use case or a solution sent for review), or once GenAI Fund refused or took them down.
 	 */
 	private void requireSwitchable(Membership membership) {
-		if (sentAnything(membership.organizationId())) {
+		// One that GenAI Fund refused or took down keeps that decision: neither a team nor a fresh start undoes it.
+		if (!membership.approved() || sentAnything(membership.organizationId())) {
 			throw new ProposalException(ProposalErrorCode.INDIVIDUAL_LOCKED,
 					"Individual " + membership.organizationId() + " already sent something");
 		}
@@ -505,7 +506,8 @@ public class ProposalService {
 				organization == null ? null
 						: new ApplyingOrganizationResponse(organization.id(), organization.name(), organization.type(),
 								organization.country(), organization.teamSize(), organization.approved(),
-								Membership.INDIVIDUAL.equals(organization.type()) && !sentAnything(organization.id())),
+								Membership.INDIVIDUAL.equals(organization.type()) && organization.approved()
+										&& !sentAnything(organization.id())),
 				offered);
 	}
 

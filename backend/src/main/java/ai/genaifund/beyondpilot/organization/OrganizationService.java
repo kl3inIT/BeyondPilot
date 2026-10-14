@@ -694,10 +694,13 @@ public class OrganizationService {
 					"Account " + actor.accountId() + " owns no individual"));
 	}
 
-	/** An individual stays one and nothing else becomes one: the person changes that from their application. */
+	/**
+	 * An individual has no profile to save: it is approved without review, so the name it shows is the one the person
+	 * gives on their application, and its type changes only from there. Nothing else becomes one either.
+	 */
 	private static void requireSameKind(Organization organization, String type) {
-		if (organization.isIndividual() != Organization.INDIVIDUAL.equals(type)) {
-			throw individual(organization, "type change to " + type);
+		if (organization.isIndividual() || Organization.INDIVIDUAL.equals(type)) {
+			throw individual(organization, "profile save as " + type);
 		}
 	}
 
