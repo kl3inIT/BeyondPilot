@@ -15,7 +15,9 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
+import ai.genaifund.beyondpilot.identity.TestSignIn;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterAll;
@@ -23,17 +25,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 /**
  * The events of a Luma calendar coming onto the site, against PostgreSQL and a stub of Luma that serves the calendar,
  * the event pages and their images. The read is started by hand at a fixed moment: 14 October 2026, 12:00 in Vietnam.
  */
-@SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+		properties = "beyondpilot.identity.operator-emails=operator@luma.test")
+@Import({ TestcontainersConfiguration.class, LumaCalendarTest.Mail.class })
 class LumaCalendarTest {
 
 	private static final Instant NOW = Instant.parse("2026-10-14T05:00:00Z");
@@ -53,6 +60,12 @@ class LumaCalendarTest {
 
 	@Autowired
 	private JdbcClient jdbc;
+
+	@Autowired
+	private TestMailbox mail;
+
+	@LocalServerPort
+	private int port;
 
 	private record Answer(int status, String mediaType, byte[] body) {
 	}
@@ -83,7 +96,7 @@ class LumaCalendarTest {
 		page("gaf-tinyfish-vn", "TinyFish, Big Minds", "2026-10-26T18:00:00.000+07:00", "/dinner.png");
 		image("/dinner.png");
 
-		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(1, 0, 0, 0));
+		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(1, 0, 0, 0, true));
 
 		Map<String, Object> program = program("evt-dinner");
 		assertThat(program).containsEntry("slug", "gaf-tinyfish-vn")
@@ -132,7 +145,7 @@ class LumaCalendarTest {
 		Map<String, Object> first = program("evt-dinner");
 		ASKED.clear();
 
-		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 0, 0, 0));
+		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 0, 0, 0, true));
 
 		Map<String, Object> second = program("evt-dinner");
 		assertThat(second.get("version")).isEqualTo(first.get("version"));
@@ -152,7 +165,7 @@ class LumaCalendarTest {
 
 		page("gaf-tinyfish-vn", "TinyFish, Bigger Minds", "2026-10-27T19:00:00.000+07:00", "/dinner-2.png");
 		image("/dinner-2.png");
-		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 1, 0, 0));
+		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 1, 0, 0, true));
 
 		Map<String, Object> program = program("evt-dinner");
 		assertThat(program).containsEntry("name", "TinyFish, Bigger Minds")
@@ -178,7 +191,7 @@ class LumaCalendarTest {
 		jdbc.sql("update program set status = 'draft' where luma_event_id = 'evt-dinner'").update();
 
 		page("gaf-tinyfish-vn", "TinyFish, Big Minds", "2026-10-26T19:00:00.000+07:00", "/dinner.png");
-		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 1, 0, 0));
+		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 1, 0, 0, true));
 
 		assertThat(program("evt-dinner")).containsEntry("status", "draft");
 	}
@@ -194,7 +207,7 @@ class LumaCalendarTest {
 		calendar.read(NOW);
 
 		calendarOf(event("evt-talk", "20261102T020000Z", "office-hours"));
-		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 0, 1, 0));
+		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 0, 1, 0, true));
 
 		assertThat(program("evt-dinner")).containsEntry("status", "draft");
 		assertThat(program("evt-talk")).containsEntry("status", "published");
@@ -208,9 +221,9 @@ class LumaCalendarTest {
 		calendar.read(NOW);
 
 		ANSWERS.put("/ics", new Answer(429, "application/json", "{\"message\":\"rate limit\"}".getBytes(UTF_8)));
-		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 0, 0, 0));
+		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 0, 0, 0, false));
 		ANSWERS.put("/ics", new Answer(200, "text/html", "<html>Not a calendar</html>".getBytes(UTF_8)));
-		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 0, 0, 0));
+		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(0, 0, 0, 0, false));
 
 		assertThat(program("evt-dinner")).containsEntry("status", "published");
 	}
@@ -230,7 +243,7 @@ class LumaCalendarTest {
 				"http://localhost:" + LUMA.getAddress().getPort() + "/x.png")));
 		ANSWERS.put("/luma-test-taken", html(pageHtml("Bare", "2026-10-28T18:00:00.000+07:00", null)));
 
-		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(1, 0, 0, 2));
+		assertThat(calendar.read(NOW)).isEqualTo(new LumaCalendar.Read(1, 0, 0, 2, true));
 
 		assertThat(program("evt-bare")).containsEntry("slug", "luma-test-taken-2")
 			.containsEntry("status", "draft")
@@ -241,8 +254,55 @@ class LumaCalendarTest {
 		assertThat(ASKED).doesNotContain("/x.png");
 	}
 
+	@Test
+	void anOperatorReadsTheCalendarNowAndTheReadIsRecorded() {
+		// Read at the real moment, so the event is set far ahead.
+		calendarOf(event("evt-dinner", "20991026T110000Z", "gaf-tinyfish-vn"));
+		page("gaf-tinyfish-vn", "TinyFish, Big Minds", "2099-10-26T18:00:00.000+07:00", "/dinner.png");
+		image("/dinner.png");
+		RestTestClient client = RestTestClient.bindToServer(new JdkClientHttpRequestFactory())
+			.baseUrl("http://localhost:" + port)
+			.build();
+		String operator = TestSignIn.session(client, mail, "operator@luma.test");
+		String user = TestSignIn.session(client, mail, "plain@luma.test");
+
+		readNow(client, user).expectStatus().isForbidden();
+		readNow(client, operator).expectStatus()
+			.isOk()
+			.expectBody()
+			.json("{\"created\":1,\"updated\":0,\"unpublished\":0,\"failed\":0}");
+
+		assertThat(program("evt-dinner")).containsEntry("status", "published");
+		assertThat(jdbc.sql("""
+				select actor_email, details from audit_event where action = 'program.luma_read'
+				order by occurred_at desc limit 1""").query().singleRow())
+			.containsEntry("actor_email", "operator@luma.test");
+
+		ANSWERS.put("/ics", new Answer(503, "text/plain", "Busy".getBytes(UTF_8)));
+		readNow(client, operator).expectStatus()
+			.isEqualTo(503)
+			.expectBody()
+			.jsonPath("$.code")
+			.isEqualTo("PROGRAM_LUMA_UNREACHABLE");
+	}
+
+	private static RestTestClient.ResponseSpec readNow(RestTestClient client, String session) {
+		return client.post()
+			.uri("/api/program/admin/programs/luma/read")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.exchange();
+	}
+
 	private Map<String, Object> program(String eventId) {
 		return jdbc.sql("select * from program where luma_event_id = ?").param(eventId).query().singleRow();
+	}
+
+	/** The test mailbox, through a class of this test's own, as {@code ProgramAdministrationTest} imports it. */
+	@TestConfiguration(proxyBeanMethods = false)
+	@Import(TestMailbox.Configuration.class)
+	static class Mail {
+
 	}
 
 	private static String event(String id, String startsAt, String path) {

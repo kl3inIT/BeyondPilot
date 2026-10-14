@@ -51,7 +51,13 @@ public enum ProgramErrorCode implements ErrorCode {
 			"This program cannot be published yet. Fill in what the Settings screen lists, then publish it."),
 
 	COVER_NOT_USABLE("PROGRAM_COVER_NOT_USABLE", ErrorCategory.VALIDATION,
-			"This file cannot be the cover. Upload the image again.");
+			"This file cannot be the cover. Upload the image again."),
+
+	LUMA_NOT_CONFIGURED("PROGRAM_LUMA_NOT_CONFIGURED", ErrorCategory.SERVICE_UNAVAILABLE,
+			"This environment reads no Luma calendar."),
+
+	LUMA_UNREACHABLE("PROGRAM_LUMA_UNREACHABLE", ErrorCategory.SERVICE_UNAVAILABLE,
+			"Luma could not be read just now. Nothing changed; try again in a few minutes.");
 
 	private final String code;
 	private final ErrorCategory category;

@@ -37,6 +37,12 @@ public enum AuditAction {
 
 	PROGRAM_UNPUBLISH("program.unpublish"),
 
+	/**
+	 * An operator read the GenAI Fund calendar on Luma now instead of waiting for the hourly read. {@code created},
+	 * {@code updated} and {@code unpublished} are how many programs the read changed.
+	 */
+	PROGRAM_LUMA_READ("program.luma_read", "created", "updated", "unpublished"),
+
 	/** An operator featured a program, which the home page announces while it takes applications. */
 	PROGRAM_FEATURE("program.feature"),
 

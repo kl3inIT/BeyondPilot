@@ -104,8 +104,11 @@ class LumaCalendar {
 		read(Instant.now());
 	}
 
-	/** What one read changed. */
-	record Read(int created, int updated, int unpublished, int failed) {
+	/**
+	 * What one read changed.
+	 * @param calendarRead false when the feed could not be read, so nothing was changed
+	 */
+	record Read(int created, int updated, int unpublished, int failed, boolean calendarRead) {
 	}
 
 	private enum Change {
@@ -115,9 +118,10 @@ class LumaCalendar {
 	/**
 	 * Reads the calendar and brings each event still to come onto the site, each in a transaction of its own, so one
 	 * that fails leaves the others done and is tried again at the next read. A feed that cannot be read changes
-	 * nothing.
+	 * nothing. One read runs at a time: an operator's read waits for the hourly one, so the two never write the same
+	 * event together.
 	 */
-	Read read(Instant now) {
+	synchronized Read read(Instant now) {
 		List<LumaFeed.Event> feed;
 		try {
 			feed = LumaFeed.read(text(properties.feed(), "text/calendar"));
@@ -127,7 +131,7 @@ class LumaCalendar {
 				.addKeyValue("event", "program.luma.feed_failed")
 				.addKeyValue("error_type", failed.getClass().getName())
 				.log("The Luma calendar could not be read");
-			return new Read(0, 0, 0, 0);
+			return new Read(0, 0, 0, 0, false);
 		}
 		int created = 0;
 		int updated = 0;
@@ -154,7 +158,7 @@ class LumaCalendar {
 			}
 		}
 		int unpublished = unpublishRemoved(feed.stream().map(LumaFeed.Event::id).collect(Collectors.toSet()), now);
-		Read read = new Read(created, updated, unpublished, failed);
+		Read read = new Read(created, updated, unpublished, failed, true);
 		if (created + updated + unpublished + failed > 0) {
 			LOG.atInfo()
 				.addKeyValue("event", "program.luma.read")

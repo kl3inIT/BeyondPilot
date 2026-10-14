@@ -555,7 +555,9 @@
     "USECASE_TIMELINE_OUT_OF_ORDER": "Thời gian dài nhất ngắn hơn thời gian ngắn nhất.",
     "PROPOSAL_NOTHING_TO_SEND": "Không có quyết định nào để gửi. Hãy tải lại trang để xem tình trạng các đề xuất.",
     "MESSAGING_OPERATOR_NOT_FOUND": "Người này không phải quản trị viên đang hoạt động.",
-    "SPREADSHEET_TOO_LARGE": "Danh sách này có nhiều dòng hơn mức một lần tải cho phép. Hãy thu hẹp bằng bộ lọc rồi tải lại."
+    "SPREADSHEET_TOO_LARGE": "Danh sách này có nhiều dòng hơn mức một lần tải cho phép. Hãy thu hẹp bằng bộ lọc rồi tải lại.",
+    "PROGRAM_LUMA_NOT_CONFIGURED": "Môi trường này không đọc lịch Luma nào.",
+    "PROGRAM_LUMA_UNREACHABLE": "Hiện không đọc được Luma. Không có gì thay đổi; hãy thử lại sau vài phút."
   },
   "SignIn": {
     "metaTitle": "Đăng nhập · BeyondPilot",
@@ -1064,7 +1066,12 @@
         }
       },
       "featured": "Nổi bật",
-      "fromLuma": "Từ Luma"
+      "fromLuma": "Từ Luma",
+      "luma": {
+        "read": "Lấy từ Luma",
+        "hint": "Đọc lịch GenAI Fund trên Luma ngay; lịch này cũng được đọc mỗi giờ.",
+        "done": "Đã đọc Luma: {created, plural, =0 {không có sự kiện mới} other {# sự kiện mới}}, {updated} cập nhật, {unpublished} gỡ đăng{failed, plural, =0 {} other {; # không đọc được và sẽ thử lại}}."
+      }
     },
     "accounts": {
       "metaTitle": "Tài khoản · BeyondPilot",
@@ -1174,7 +1181,8 @@
           "publish": "Công bố chương trình",
           "unpublish": "Gỡ chương trình",
           "feature": "Đặt một chương trình nổi bật",
-          "unfeature": "Bỏ nổi bật một chương trình"
+          "unfeature": "Bỏ nổi bật một chương trình",
+          "luma_read": "Đọc lịch trên Luma"
         },
         "organization": {
           "create": "Thêm tổ chức",
@@ -1330,7 +1338,8 @@
           "publish": "Đã công bố chương trình <resource></resource>",
           "unpublish": "Đã gỡ chương trình <resource></resource>",
           "feature": "Đã đặt chương trình <resource></resource> nổi bật trên trang chủ",
-          "unfeature": "Đã bỏ nổi bật chương trình <resource></resource>"
+          "unfeature": "Đã bỏ nổi bật chương trình <resource></resource>",
+          "luma_read": "Đọc <resource></resource> ngay"
         },
         "organization": {
           "create": "Thêm tổ chức <resource></resource>",

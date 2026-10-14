@@ -264,6 +264,14 @@ class ProgramAdministrationTest {
 			.containsExactly("program.create", "program.feature", "program.update", "program.unfeature");
 	}
 
+	@Test
+	void readingLumaWhereNoCalendarIsConfiguredIsRefusedAndChangesNothing() {
+		String user = TestSignIn.session(client, mail, "plain@program.test");
+
+		assertProblem(command(user, PROGRAMS + "/luma", "read"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(command(operator, PROGRAMS + "/luma", "read"), 503, "PROGRAM_LUMA_NOT_CONFIGURED");
+	}
+
 	private RestTestClient.ResponseSpec command(String session, String uri, String command) {
 		RestTestClient.RequestBodySpec request = client.post().uri(uri + "/" + command).header(TestSignIn.CSRF_HEADER, "1");
 		if (session != null) {

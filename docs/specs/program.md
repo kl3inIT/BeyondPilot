@@ -196,14 +196,15 @@ start day comes before those, newest created first.
 Each change is recorded through `AuditTrail` in the transaction of the change, with the operator and the program
 (`resource type program`, its id and name) and no details ([ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md)).
 
-| Command                         | Action              |
-| ------------------------------- | ------------------- |
-| Create                          | `program.create`    |
-| Save, and save of the questions | `program.update`    |
-| Publish                         | `program.publish`   |
-| Unpublish                       | `program.unpublish` |
-| Feature                         | `program.feature`   |
-| Stop featuring                  | `program.unfeature` |
+| Command                         | Action                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
+| Create                          | `program.create`                                                                           |
+| Save, and save of the questions | `program.update`                                                                           |
+| Publish                         | `program.publish`                                                                          |
+| Unpublish                       | `program.unpublish`                                                                        |
+| Feature                         | `program.feature`                                                                          |
+| Stop featuring                  | `program.unfeature`                                                                        |
+| Read the Luma calendar now      | `program.luma_read`, with `created`, `updated` and `unpublished`; resource `luma_calendar` |
 
 A repeated publish, unpublish, feature or stop records nothing. The Luma job records its create, update, publish and
 unpublish with the same actions and no actor.
@@ -241,6 +242,9 @@ closed, with its next key date. Featuring publishes no `ProgramChanged`: the ind
 - **In Admin.** `AdminProgram` and `AdminProgramSummary` carry `lumaEventId`. The list and the program's screen mark
   such a program **From Luma**, and its Settings say that Luma overwrites its fields at the next read, with a link to
   its Luma page.
+- **Now.** Admin › Programs › **Pull from Luma** runs the same read at once (`ProgramAdministration.readLuma`), for an
+  operator who just published an event; a read already running finishes first, since `read` is synchronized. The
+  toast says what changed.
 - **Failures.** A feed that cannot be read, or is not a calendar, changes nothing (`program.luma.feed_failed`). An
   event whose page, image or write fails is skipped and tried at the next read (`program.luma.event_failed`); the
   others go on. A read that changed something logs `program.luma.read` with its counts.
@@ -256,20 +260,21 @@ closed, with its next key date. Featuring publishes no `ProgramChanged`: the ind
 
 Admin paths need a session, an operator and, for a change, the CSRF header.
 
-| Method and path                                   | Contract                                                                     |
-| ------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `GET /api/program/programs`                       | `ProgramList` of published programs; optional `phase`, `type` and `featured` |
-| `GET /api/program/programs/{slug}`                | `Program`; a draft only for an operator; `404` otherwise                     |
-| `GET /api/program/admin/programs`                 | `AdminProgramList`: every program with status, phase and window              |
-| `POST /api/program/admin/programs`                | `201` with the draft as `AdminProgram`; `409` `PROGRAM_SLUG_TAKEN`           |
-| `GET /api/program/admin/programs/{id}`            | `AdminProgram`, with `publishIssues`, `slugFixed` and `version`              |
-| `PUT /api/program/admin/programs/{id}`            | `AdminProgram` as saved, with its new version                                |
-| `GET /api/program/admin/programs/{id}/questions`  | `ProgramQuestions`: the questions, `fixed`, `opensAt`, `version`             |
-| `PUT /api/program/admin/programs/{id}/questions`  | `ProgramQuestions` as saved, with the program's new version                  |
-| `POST /api/program/admin/programs/{id}/publish`   | `204`; `400` `PROGRAM_NOT_READY_TO_PUBLISH`                                  |
-| `POST /api/program/admin/programs/{id}/unpublish` | `204`                                                                        |
-| `POST /api/program/admin/programs/{id}/feature`   | `204`                                                                        |
-| `POST /api/program/admin/programs/{id}/unfeature` | `204`                                                                        |
+| Method and path                                   | Contract                                                                                                                                                       |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/program/programs`                       | `ProgramList` of published programs; optional `phase`, `type` and `featured`                                                                                   |
+| `GET /api/program/programs/{slug}`                | `Program`; a draft only for an operator; `404` otherwise                                                                                                       |
+| `GET /api/program/admin/programs`                 | `AdminProgramList`: every program with status, phase and window                                                                                                |
+| `POST /api/program/admin/programs`                | `201` with the draft as `AdminProgram`; `409` `PROGRAM_SLUG_TAKEN`                                                                                             |
+| `GET /api/program/admin/programs/{id}`            | `AdminProgram`, with `publishIssues`, `slugFixed` and `version`                                                                                                |
+| `PUT /api/program/admin/programs/{id}`            | `AdminProgram` as saved, with its new version                                                                                                                  |
+| `GET /api/program/admin/programs/{id}/questions`  | `ProgramQuestions`: the questions, `fixed`, `opensAt`, `version`                                                                                               |
+| `PUT /api/program/admin/programs/{id}/questions`  | `ProgramQuestions` as saved, with the program's new version                                                                                                    |
+| `POST /api/program/admin/programs/{id}/publish`   | `204`; `400` `PROGRAM_NOT_READY_TO_PUBLISH`                                                                                                                    |
+| `POST /api/program/admin/programs/{id}/unpublish` | `204`                                                                                                                                                          |
+| `POST /api/program/admin/programs/{id}/feature`   | `204`                                                                                                                                                          |
+| `POST /api/program/admin/programs/{id}/unfeature` | `204`                                                                                                                                                          |
+| `POST /api/program/admin/programs/luma/read`      | `LumaRead`: what the read changed; `503` `PROGRAM_LUMA_NOT_CONFIGURED` where no calendar is configured, `PROGRAM_LUMA_UNREACHABLE` when Luma could not be read |
 
 The contract is `openapi.yml`.
 
