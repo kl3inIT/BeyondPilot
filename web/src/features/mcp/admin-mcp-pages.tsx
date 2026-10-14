@@ -21,7 +21,11 @@ const OPERATOR_TOOLS = [
   "get_application",
   "read_application_file",
   "list_pending_reviews",
-];
+] as const;
+
+function isOperatorTool(name: string): name is (typeof OPERATOR_TOOLS)[number] {
+  return (OPERATOR_TOOLS as readonly string[]).includes(name);
+}
 
 type McpTab = "setup" | "tools" | "apps" | "activity";
 
@@ -173,7 +177,7 @@ async function McpToolsPage({ settings, counts }: { settings: McpSettings; count
                         ? t(`${server}.search`)
                         : tool.name === "fetch"
                           ? t(`${server}.fetch`)
-                          : OPERATOR_TOOLS.includes(tool.name)
+                          : isOperatorTool(tool.name)
                             ? t(`operator.${tool.name}`)
                             : tool.description}
                     </p>
