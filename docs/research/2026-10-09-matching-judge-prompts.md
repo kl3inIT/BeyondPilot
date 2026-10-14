@@ -1,6 +1,6 @@
 # Matching: how the prompts were worded, and what was measured
 
-Read and measured on 9 October 2026 for [BEY-39](../increments/active/bey-39-matching/design.md), after the first real runs on staging gave no Direct candidate, and then twenty-one. It records why prompt version 4 says what it says. The model was `cx/gpt-6.1-sol` through 9Router at medium reasoning for every call, one call a candidate.
+Read and measured on 9 October 2026 for [BEY-39](../increments/completed/bey-39-matching/design.md), after the first real runs on staging gave no Direct candidate, and then twenty-one. It records why prompt version 4 says what it says. The model was `cx/gpt-6.1-sol` through 9Router at medium reasoning for every call, one call a candidate.
 
 ## What went wrong on staging
 

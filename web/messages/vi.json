@@ -7581,7 +7581,8 @@
       "done": "Đã mời {name} gửi đề xuất.",
       "invited": "Đã mời {date}",
       "invitedBy": "{name} đã mời ngày {date}",
-      "genaiFund": "GenAI Fund"
+      "genaiFund": "GenAI Fund",
+      "received": "Đã nhận đề xuất"
     }
   },
   "Messaging": {

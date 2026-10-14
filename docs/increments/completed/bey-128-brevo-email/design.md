@@ -1,10 +1,12 @@
 # BEY-128 — Brevo as an email provider
 
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
 Status: implemented and tested against a server that answers as Brevo documents ([plan](plan.md)). Nothing here has run against a real Brevo account yet; what that leaves open is listed under [Not verified](#not-verified). The contract that results is in the [email specification](../../../specs/notification.md) and its checks in the [test matrix](../../../tests/notification.md).
 
 ## Why
 
-Operators choose who delivers BeyondPilot's email in Admin › Email ([BEY-68](../../completed/bey-68-email-delivery/design.md), [ADR 0005](../../../decisions/0005-operators-run-email-delivery.md)). BEY-128 asks for Brevo as a fourth choice beside Amazon SES, Resend and SMTP.
+Operators choose who delivers BeyondPilot's email in Admin › Email ([BEY-68](../bey-68-email-delivery/design.md), [ADR 0005](../../../decisions/0005-operators-run-email-delivery.md)). BEY-128 asks for Brevo as a fourth choice beside Amazon SES, Resend and SMTP.
 
 ## Outcome
 

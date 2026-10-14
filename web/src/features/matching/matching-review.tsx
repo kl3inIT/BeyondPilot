@@ -41,6 +41,8 @@ type MatchingReviewProps = {
   onRestore: (candidate: MatchingCandidate) => Promise<boolean>;
   /** Opens the invitation of a candidate's provider; absent when the caller may not invite now. */
   onInvite?: (candidate: MatchingCandidate) => void;
+  /** Where an invited provider's proposal opens, once it sent one. */
+  proposalOf?: (candidate: MatchingCandidate) => string | undefined;
   /** Shows the list instead. */
   onList: () => void;
 };
@@ -61,6 +63,7 @@ function MatchingReview({
   onReason,
   onRestore,
   onInvite,
+  proposalOf,
   onList,
 }: MatchingReviewProps) {
   const t = useTranslations("Matching.review");
@@ -218,6 +221,7 @@ function MatchingReview({
                 back={back}
                 quick={quick}
                 onInvite={onInvite && (() => onInvite(one))}
+                proposalHref={proposalOf?.(one)}
                 onDecide={(kind) => {
                   // Nothing is decided while another decision is on its way: the card springs back.
                   if (busy !== null) {

@@ -2,7 +2,7 @@
 
 The `storage` module keeps every uploaded file: a row that records what the file is and who uploaded it, and the
 bytes, which sit in an object store (a local directory or an S3 bucket). It was designed and delivered by
-[BEY-32](../increments/active/bey-32-storage/design.md). The code is the `storage` application module,
+[BEY-32](../increments/completed/bey-32-storage/design.md). The code is the `storage` application module,
 `backend/src/main/java/ai/genaifund/beyondpilot/storage`. Nobody uses storage on its own: a file is always uploaded
 for a record of another module, and that module decides who may attach the file and who may read a private one.
 

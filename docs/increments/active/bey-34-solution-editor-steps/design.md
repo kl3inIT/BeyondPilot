@@ -42,7 +42,7 @@ Tracked in Linear as BEY-34. The screens are the frames "Solution editor — 1 B
 ## Web
 
 - `features/solution/solution-editor.tsx` holds the state, the saves and the frame; `solution-editor-steps.tsx` and `solution-review-step.tsx` hold the steps; `solution-editor-state.ts` holds what is decided without a screen and is unit-tested.
-- `StepItem` is a composite: the frames name it, and the application flow of [BEY-27](../bey-27-main-flows-design/design.md) will use it. (Correction, BEY-153: in code it is the `StepsNav` composite, `web/src/components/composites/steps-nav.tsx`; no `StepItem` exists.)
+- `StepItem` is a composite: the frames name it, and the application flow of [BEY-27](../../completed/bey-27-main-flows-design/design.md) will use it. (Correction, BEY-153: in code it is the `StepsNav` composite, `web/src/components/composites/steps-nav.tsx`; no `StepItem` exists.)
 - The list of an organization's solutions keeps the site's frame, in the route group `solutions/(list)`; the editor's route has none.
 - `ComboboxChip` takes `removeLabel`: its remove button holds only an icon and had no accessible name.
 

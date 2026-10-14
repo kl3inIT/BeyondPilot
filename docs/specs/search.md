@@ -243,7 +243,7 @@ Expected failures are `SearchException` with a `SearchErrorCode`, turned into pr
 
 ## Passages
 
-What a solution's own material says, for matching ([design](../increments/active/bey-39-matching/design.md)). The public search never reads it.
+What a solution's own material says, for matching ([design](../increments/completed/bey-39-matching/design.md)). The public search never reads it.
 
 - **`search_passage` (V58)** holds one passage a row: the solution, the source (`deck`, `website` or `customer_case`), the page and the place on the page, the address of a web page, the text, how it was read (`text`, `model` or `unread`), what the source was made from, and the same full-text vector and embedding columns as `search_document`.
 - **A passage** is one slide of a deck, one customer case, or a part of a web page: `Passages` cuts a page at line ends into passages of at most 2,000 characters and reads a page to 20,000. Text is never reworded.

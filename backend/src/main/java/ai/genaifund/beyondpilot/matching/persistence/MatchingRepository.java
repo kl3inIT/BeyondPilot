@@ -609,6 +609,23 @@ public class MatchingRepository {
 			.list();
 	}
 
+	/**
+	 * Gives the invitations of a merged provider organization to the one kept; where both were invited for one use
+	 * case, the merged one's is dropped.
+	 */
+	public void moveInvitations(UUID organizationId, UUID intoId) {
+		jdbc.sql("""
+				delete from matching_invitation merged
+				where merged.organization_id = :organizationId
+				  and exists (select 1 from matching_invitation kept
+				              where kept.organization_id = :intoId and kept.use_case_id = merged.use_case_id)
+				""").param("organizationId", organizationId).param("intoId", intoId).update();
+		jdbc.sql("update matching_invitation set organization_id = :intoId where organization_id = :organizationId")
+			.param("organizationId", organizationId)
+			.param("intoId", intoId)
+			.update();
+	}
+
 	/** How many invitations one account sent for a use case in the last 24 hours. */
 	public int invitedToday(UUID useCaseId, UUID accountId) {
 		return jdbc.sql("""

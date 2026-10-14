@@ -1,6 +1,6 @@
 # Flows and references
 
-Written on 2 October 2026 as input for the Figma milestone of 6 October and the live site of 9 October. For each Phase 1 flow: the references studied on Mobbin, and what the team proposed from them. The direction is restrained: real content, no decorative icons, no purple. What was drawn in the end is in the [main-flows increment](../increments/active/bey-27-main-flows-design/design.md).
+Written on 2 October 2026 as input for the Figma milestone of 6 October and the live site of 9 October. For each Phase 1 flow: the references studied on Mobbin, and what the team proposed from them. The direction is restrained: real content, no decorative icons, no purple. What was drawn in the end is in the [main-flows increment](../increments/completed/bey-27-main-flows-design/design.md).
 
 ## A. Directory: solutions, use cases, talent, programs
 

@@ -4,7 +4,7 @@
 
 A person who finds a solution in the directory asks GenAI Fund to introduce them to the provider behind it. Neither side sees the other's email address until the provider answers. Tracked in Linear as BEY-34.
 
-The decision behind it is [BEY-27, decision 9](../bey-27-main-flows-design/design.md): "Introductions go through GenAI Fund." This increment decides how, and builds it. The screens are the rows 4 and 5 of the section "AI solutions — list and detail" in `BeyondPilot — Product UI`.
+The decision behind it is [BEY-27, decision 9](../../completed/bey-27-main-flows-design/design.md): "Introductions go through GenAI Fund." This increment decides how, and builds it. The screens are the rows 4 and 5 of the section "AI solutions — list and detail" in `BeyondPilot — Product UI`.
 
 ## What a person can do
 

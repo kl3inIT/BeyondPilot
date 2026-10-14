@@ -1,5 +1,7 @@
 # One review lifecycle for organizations, solutions, use cases and talent
 
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
 Status: in progress, 6 October 2026. Tracked in [BEY-76](https://linear.app/beyondpilot/issue/BEY-76). The research behind it: [the review lifecycle](../../../research/2026-10-06-review-lifecycle.md).
 
 GenAI Fund reviews four kinds of record before the public sees them. Each module named and shaped that review its own way: four names for "waiting for review", three ways to send something back, two ways to take it down. One provider now meets all four, and the import of the old platform's 2,400 startups (BEY-74) and 233 use cases (BEY-75) writes into them, so the review is made one before that data arrives.
