@@ -5009,6 +5009,7 @@
       "images": {
         "uploading": "Uploading…",
         "details": "{size} · {dimensions}",
+        "previewNamed": "Preview {name}",
         "replace": "Replace",
         "remove": "Remove",
         "replaceNamed": "Replace {name}",

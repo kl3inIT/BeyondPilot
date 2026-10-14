@@ -5009,6 +5009,7 @@
       "images": {
         "uploading": "Đang tải lên…",
         "details": "{size} · {dimensions}",
+        "previewNamed": "Xem trước {name}",
         "replace": "Thay ảnh",
         "remove": "Gỡ ảnh",
         "replaceNamed": "Thay {name}",
