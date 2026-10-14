@@ -69,4 +69,4 @@ On Mobbin: [Whop](https://mobbin.com/screens/df1d154d-df4a-48af-913b-2b2fc3ff632
 5. **Editing an approved item never sends the whole item back to the queue.** Either the change is live and reviewed afterwards (Discourse, pretalx, HubSpot's listing edits), or the live copy stays while a revision waits (Wagtail, Apple, Google Play, Chrome).
 6. **The most common names:** `draft`; `in_review` or pending review for waiting; `needs_changes` or changes requested for sent back; `approved` for the decision; `rejected` for the final no; published, live or listed for visibility; suspended, hidden or taken down for the platform's takedown.
 
-The lifecycle BeyondPilot takes from this is in [BEY-76's design](../increments/active/bey-76-review-lifecycle/design.md).
+The lifecycle BeyondPilot takes from this is in [BEY-76's design](../increments/completed/bey-76-review-lifecycle/design.md).

@@ -1,5 +1,7 @@
 # BEY-27 — Main flows as UI design
 
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
 The Phase 1 milestone of 6 October 2026: the main flows drawn in Figma, at 1440, 1024 and 390, so GenAI Fund can review them before the screens are built. This increment changes no behavior; it fixes what the screens are, which decisions they encode and which components they need. The research behind the choices is in [research.md](research.md).
 
 ## Outcome

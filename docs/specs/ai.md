@@ -1,6 +1,6 @@
 # AI
 
-The AI providers BeyondPilot calls, the chat models operators enabled, the model each task uses, and the record of what every call took. It was delivered by [BEY-92](../increments/active/bey-92-ai-models/design.md) and decided in [ADR 0006](../decisions/0006-an-ai-module-keeps-providers-and-models.md); it follows MemoryOS's model catalog, kept smaller. The code is the `ai` application module, `backend/src/main/java/ai/genaifund/beyondpilot/ai`. The checks that hold this contract are in the [AI matrix](../tests/ai.md).
+The AI providers BeyondPilot calls, the chat models operators enabled, the model each task uses, and the record of what every call took. It was delivered by [BEY-92](../increments/completed/bey-92-ai-models/design.md) and decided in [ADR 0006](../decisions/0006-an-ai-module-keeps-providers-and-models.md); it follows MemoryOS's model catalog, kept smaller. The code is the `ai` application module, `backend/src/main/java/ai/genaifund/beyondpilot/ai`. The checks that hold this contract are in the [AI matrix](../tests/ai.md).
 
 ## Module
 

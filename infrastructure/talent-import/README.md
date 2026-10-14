@@ -1,6 +1,6 @@
 # Import of the Agentic AI Build Week registrations
 
-A one-off load of the builders who registered for Agentic AI Build Week into talent profiles, as decided in the [import design](../../docs/increments/active/bey-90-aabw-talent-import/design.md). `report.py` only reads and maps the file and reports what an import would do. `build.py` writes one SQL file that loads the profiles into a database, for whichever environment runs it.
+A one-off load of the builders who registered for Agentic AI Build Week into talent profiles, as decided in the [import design](../../docs/increments/completed/bey-90-aabw-talent-import/design.md). `report.py` only reads and maps the file and reports what an import would do. `build.py` writes one SQL file that loads the profiles into a database, for whichever environment runs it.
 
 | File | Holds |
 | --- | --- |

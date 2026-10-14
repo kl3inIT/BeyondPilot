@@ -1,6 +1,8 @@
 # Storage: uploading and serving files
 
-Status: backend implemented on 4 October 2026; the web upload helper follows with the first screen that uploads ([plan](plan.md)). It is the third slice of the [Phase 1 domain model](../bey-22-phase-1-domain-model/design.md) and narrows that model's `storage` module to what the first two consumers need: images of a program, and the files of an application.
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
+Status: backend implemented on 4 October 2026; the web upload helper follows with the first screen that uploads ([plan](plan.md)). It is the third slice of the [Phase 1 domain model](../../active/bey-22-phase-1-domain-model/design.md) and narrows that model's `storage` module to what the first two consumers need: images of a program, and the files of an application.
 
 ## What a person can do
 

@@ -1,6 +1,6 @@
 # Matching
 
-For one published use case, the solutions on BeyondPilot that fit it, each with the reasons a person can check, and what people then decide on them. Designed in [BEY-39](../increments/active/bey-39-matching/design.md) and decided in [ADR 0007](../decisions/0007-a-matching-module-that-reads-through-search.md). This page says what exists.
+For one published use case, the solutions on BeyondPilot that fit it, each with the reasons a person can check, and what people then decide on them. Designed in [BEY-39](../increments/completed/bey-39-matching/design.md) and decided in [ADR 0007](../decisions/0007-a-matching-module-that-reads-through-search.md). This page says what exists.
 
 ## Module
 
@@ -26,7 +26,7 @@ A run is a row of `matching_run` that a worker takes, one run at a time, every `
 
 ## Changes told to an open page
 
-Designed in [a run seen while it works](../increments/active/bey-39-matching/live.md).
+Designed in [a run seen while it works](../increments/completed/bey-39-matching/live.md).
 
 - **The stream.** `GET /api/matching/use-cases/{id}/events` is a stream of server-sent events from Spring MVC, for whoever may read the use case's matching; the right is checked once, when the stream opens. It answers with `Cache-Control: no-store` and `X-Accel-Buffering: no`, sends a comment line when it opens and every 20 seconds, and has no end of its own.
 - **An event says that something changed, not what the state is.** Its name is the kind of change and its body is `{}`; the page reads `GET /api/matching/use-cases/{id}` again. Nothing is replayed: every change is in the database when it is told, so a page that lost its stream reads the state once when the stream is back.
@@ -64,7 +64,7 @@ For the members of the use case's approved organization and for operators; anyon
 
 ## What people say about a group
 
-Designed in [people say whether the AI put a solution in the right group](../increments/active/bey-39-matching/feedback.md) (BEY-106). It measures how well matching judges; it changes neither a group nor the order of the list, and it is not in the audit log: `matching_feedback` is the record.
+Designed in [people say whether the AI put a solution in the right group](../increments/completed/bey-39-matching/feedback.md) (BEY-106). It measures how well matching judges; it changes neither a group nor the order of the list, and it is not in the audit log: `matching_feedback` is the record.
 
 - **An answer.** A member of the use case's approved organization, or an operator, says of a candidate a run judged that its group is the right one, or which group it belongs in (`direct`, `industry`, `technology` or `none`, never the AI's own), with the requirements the AI judged wrongly and a note of 500 characters at most, both if they want. Agreeing names no group. A requirement that is named is one of the use case's, and is kept once, in the order of the use case. A candidate no run judged takes no answer (409 `MATCHING_FEEDBACK_NOT_JUDGED`); a wrong or missing group is 400 `MATCHING_FEEDBACK_GROUP_INVALID`, an unknown requirement 400 `MATCHING_FEEDBACK_REQUIREMENT_UNKNOWN`. The database refuses the same.
 - **It belongs to a judgment.** A row keeps the candidate's fingerprint and the group the AI had given. Answers are only added: a person's last answer about a judgment is theirs. A candidate judged again from other material, or put in another group, is another judgment: the question is open again, and the earlier answers stay as history.

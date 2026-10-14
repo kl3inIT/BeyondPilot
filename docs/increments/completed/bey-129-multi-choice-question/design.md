@@ -1,10 +1,12 @@
 # BEY-129 — a program question answered by several choices
 
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
 Status: implemented and tested ([plan](plan.md)); not yet on staging. The contract that results is in the [program](../../../specs/program.md#application-window-and-questions) and [proposal](../../../specs/proposal.md#the-working-copy) specifications and its checks in their test matrices ([program](../../../tests/program.md), [proposal](../../../tests/proposal.md)).
 
 ## Why
 
-The AI for Insurance Challenge × Tasco is moving from GenAI Fund's earlier page to BeyondPilot. Its form asks for "challenge areas": several among eight options. A program's questions ([BEY-29](../../completed/bey-29-program/), [BEY-37](../../completed/bey-37-proposal/)) were `short_text`, `long_text`, `single_choice`, `file`, `link` and `confirm`, and none takes several choices. The applications already submitted on the earlier page carry that answer and are to be imported later, so the answer has to be storable and readable here.
+The AI for Insurance Challenge × Tasco is moving from GenAI Fund's earlier page to BeyondPilot. Its form asks for "challenge areas": several among eight options. A program's questions ([BEY-29](../bey-29-program/), [BEY-37](../bey-37-proposal/)) were `short_text`, `long_text`, `single_choice`, `file`, `link` and `confirm`, and none takes several choices. The applications already submitted on the earlier page carry that answer and are to be imported later, so the answer has to be storable and readable here.
 
 ## Outcome
 

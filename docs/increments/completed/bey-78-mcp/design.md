@@ -1,5 +1,7 @@
 # MCP servers behind OAuth
 
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
 Status: accepted on 7 October 2026 ([plan](plan.md)). Tracked in Linear as BEY-78. The screens were approved in Figma the same day (section "Admin — AI: MCP and consent (draft for review)"). The research behind it: [MCP servers behind OAuth](../../../research/2026-10-07-mcp-oauth.md).
 
 ## What it does

@@ -1,5 +1,7 @@
 # BEY-130 — Featured directory items
 
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
 Status: implemented and tested ([plan](plan.md)). The checks are in the test matrices of [solution](../../../tests/solution.md), [talent](../../../tests/talent.md) and [usecase](../../../tests/usecase.md); the six audit actions are in the [audit specification](../../../specs/audit.md). None of the three modules has a specification under `docs/specs/` yet, so the contract is stated here.
 
 ## Why

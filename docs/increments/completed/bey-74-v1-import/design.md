@@ -1,6 +1,8 @@
 # Import from the old platform
 
-Status: in progress, 7 October 2026. Tracked in [BEY-74](https://linear.app/beyondpilot/issue/BEY-74) (startups) and [BEY-75](https://linear.app/beyondpilot/issue/BEY-75) (use cases). It carries out the [migration from v1](../bey-22-phase-1-domain-model/design.md#migration-from-v1) of BEY-22 against the real export, and uses the [review lifecycle](../bey-76-review-lifecycle/design.md).
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
+Status: in progress, 7 October 2026. Tracked in [BEY-74](https://linear.app/beyondpilot/issue/BEY-74) (startups) and [BEY-75](https://linear.app/beyondpilot/issue/BEY-75) (use cases). It carries out the [migration from v1](../../active/bey-22-phase-1-domain-model/design.md#migration-from-v1) of BEY-22 against the real export, and uses the [review lifecycle](../bey-76-review-lifecycle/design.md).
 
 ## Source
 

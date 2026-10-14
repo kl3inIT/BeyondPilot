@@ -1,6 +1,8 @@
 # Import of the Agentic AI Build Week registrations as talent profiles
 
-Status: in progress, 8 October 2026. Tracked in [BEY-90](https://linear.app/beyondpilot/issue/BEY-90); the plan was reviewed by the owner of the talent module in [BEY-86](https://linear.app/beyondpilot/issue/BEY-86). It gives the talent directory of [BEY-36](../bey-36-talent-enquiries-and-review/design.md) its first people.
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
+Status: in progress, 8 October 2026. Tracked in [BEY-90](https://linear.app/beyondpilot/issue/BEY-90); the plan was reviewed by the owner of the talent module in [BEY-86](https://linear.app/beyondpilot/issue/BEY-86). It gives the talent directory of [BEY-36](../../active/bey-36-talent-enquiries-and-review/design.md) its first people.
 
 ## Source
 
