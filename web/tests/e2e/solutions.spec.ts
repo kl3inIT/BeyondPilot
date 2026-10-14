@@ -195,7 +195,7 @@ test.describe("solutions directory", () => {
     await expect(page.getByText("AWS and Google Cloud")).toBeVisible();
     await expect(page.getByText("B2B2C", { exact: true })).toBeVisible();
     await expect(payingCustomers).toContainText("Mekong Life, Lotus Bank");
-    await expect(payingCustomers.getByText("Stated by Pocket Policy")).toBeVisible();
+    await expect(payingCustomers).not.toContainText("Stated by");
     await expect(page.getByRole("heading", { name: "Use cases" })).toBeVisible();
     await expect(page.getByText("Use-case examples")).toBeVisible();
     await expect(page.getByText("Claims intake: voice and chat for policyholders.")).toBeVisible();
@@ -308,24 +308,18 @@ test.describe("solutions directory", () => {
   }) => {
     await page.goto("/solutions/policy-chat");
 
-    // The card itself says who states it and who reviewed it, and promises what the dialog holds.
+    // The card names no source and promises what the dialog holds.
     const card = page
       .getByRole("article")
       .filter({ has: page.getByRole("button", { name: "Renewals at Mekong Life" }) });
     await expect(card).toContainText("In production");
-    await expect(card).toContainText(
-      "Stated by Pocket Policy and reviewed by GenAI Fund on 1 Oct 2026. The customer has not confirmed it here.",
-    );
+    await expect(card).not.toContainText("reviewed by GenAI Fund");
     await expect(card).toContainText("Open to read the problem, what was deployed and the result.");
 
     await page.getByRole("button", { name: "Renewals at Mekong Life" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading", { name: "Renewals at Mekong Life" })).toBeVisible();
-    await expect(
-      dialog.getByText(
-        "In production. Stated by Pocket Policy and reviewed by GenAI Fund on 1 Oct 2026. The customer has not confirmed it here.",
-      ),
-    ).toBeVisible();
+    await expect(dialog.getByText("In production.", { exact: true })).toBeVisible();
     await expect(dialog.getByRole("heading", { name: "What was deployed" })).toBeVisible();
     await expect(
       dialog.getByText("Renewal questions filled the call centre every quarter."),

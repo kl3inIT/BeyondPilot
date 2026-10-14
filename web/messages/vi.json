@@ -4746,10 +4746,8 @@
         "programme": "Được chọn vào chương trình",
         "selected": "Được chọn vào {program}.",
         "byGenAiFund": "GenAI Fund xác nhận · {date}",
-        "stated": "Công ty tự công bố",
-        "byCompany": "Do {name} công bố",
         "milestones": "Cột mốc chính",
-        "cases": "{count} triển khai khách hàng đã được GenAI Fund duyệt, liệt kê bên dưới."
+        "cases": "{count} triển khai khách hàng, liệt kê bên dưới."
       },
       "company": {
         "title": "Công ty đứng sau giải pháp này",
@@ -5112,7 +5110,7 @@
       "open": "{holds, select, all {Mở để đọc bài toán, những gì đã triển khai và kết quả.} delivered {Mở để đọc bài toán và những gì đã triển khai.} result {Mở để đọc bài toán và kết quả.} other {Mở để đọc bài toán.}}",
       "eyebrow": "Triển khai khách hàng",
       "line": "{solution} · {customer}",
-      "lead": "{stage}. Do {organization} tự khai và GenAI Fund duyệt ngày {day}. Khách hàng chưa xác nhận tại đây.",
+      "lead": "{stage}.",
       "problem": "Bài toán kinh doanh",
       "delivered": "Những gì đã triển khai",
       "scope": "Phạm vi và kết quả",
@@ -5125,8 +5123,7 @@
       "about": "Về dự án này",
       "deliveredBy": "Đơn vị triển khai",
       "customer": "Khách hàng",
-      "solutionUsed": "Giải pháp sử dụng",
-      "source": "Do {organization} tự khai và GenAI Fund duyệt ngày {day}. Khách hàng chưa xác nhận tại đây."
+      "solutionUsed": "Giải pháp sử dụng"
     },
     "deployments": {
       "title": "Triển khai khách hàng",
@@ -7778,7 +7775,7 @@
       "place": "Nơi làm việc",
       "skills": "Kỹ năng",
       "proof": "Bằng chứng",
-      "deployments": "{count, plural, other {# triển khai cho khách hàng, GenAI Fund đã duyệt}}",
+      "deployments": "{count, plural, other {# triển khai cho khách hàng}}",
       "someone": "Ai đó",
       "people": {
         "readers": "Ai đọc tin bạn viết",

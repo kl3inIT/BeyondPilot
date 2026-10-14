@@ -13,7 +13,6 @@ import {
   FlagIcon,
   LanguagesIcon,
   LayersIcon,
-  LinkIcon,
   MapPinIcon,
   MessageCircleIcon,
   ShieldCheckIcon,
@@ -443,9 +442,6 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
                       <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
                         <li className="whitespace-pre-line">{solution.notablePayingCustomers}</li>
                       </ul>
-                      <p className="text-xs text-muted-foreground">
-                        {t("proof.byCompany", { name: solution.organizationName })}
-                      </p>
                     </div>
                   )}
                 </div>
@@ -514,10 +510,6 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
                   <Evidence state="known">
                     <Badge variant="outline">{t("proof.milestones")}</Badge>
                     <p className="text-sm whitespace-pre-line">{solution.traction}</p>
-                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <LinkIcon className="size-3.5 shrink-0" aria-hidden="true" />
-                      {t("proof.byCompany", { name: solution.organizationName })}
-                    </p>
                   </Evidence>
                 )}
                 {cases > 0 && (
@@ -581,9 +573,6 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
                     </div>
                   )}
                 </dl>
-                <p className="text-xs text-muted-foreground">
-                  {t("proof.byCompany", { name: solution.organizationName })}
-                </p>
               </SolutionSection>
             )}
 
@@ -594,9 +583,6 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
                 contentClassName="gap-2"
               >
                 <p className="whitespace-pre-line text-muted-foreground">{solution.competitors}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t("proof.byCompany", { name: solution.organizationName })}
-                </p>
               </SolutionSection>
             )}
 
