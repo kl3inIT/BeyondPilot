@@ -108,7 +108,9 @@ export const auditActions = [
   "matching.candidate_add",
   "matching.candidate_shortlist",
   "matching.candidate_remove",
+  "matching.candidate_reason",
   "matching.candidate_restore",
+  "matching.candidate_invite",
   "matching.settings_change",
 ] as const;
 

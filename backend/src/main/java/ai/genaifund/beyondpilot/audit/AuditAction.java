@@ -353,6 +353,9 @@ public enum AuditAction {
 
 	MATCHING_CANDIDATE_RESTORE("matching.candidate_restore", "solution"),
 
+	/** Someone invited the provider of a candidate to propose. {@code provider} is the organization emailed. */
+	MATCHING_CANDIDATE_INVITE("matching.candidate_invite", "solution", "provider"),
+
 	/** An operator changed the limits of matching. */
 	MATCHING_SETTINGS_CHANGE("matching.settings_change");
 
