@@ -24,6 +24,7 @@ import ai.genaifund.beyondpilot.messaging.MessagingChanges.Listener;
 import ai.genaifund.beyondpilot.messaging.Subjects.Target;
 import ai.genaifund.beyondpilot.messaging.dto.ConversationDetailResponse;
 import ai.genaifund.beyondpilot.messaging.dto.ConversationListResponse;
+import ai.genaifund.beyondpilot.messaging.dto.ConversationMemberResponse;
 import ai.genaifund.beyondpilot.messaging.dto.ConversationResponse;
 import ai.genaifund.beyondpilot.messaging.dto.LastMessageResponse;
 import ai.genaifund.beyondpilot.messaging.dto.MarkReadRequest;
@@ -60,10 +61,11 @@ import reactor.core.publisher.Flux;
  * and read, and hear what happens while a screen is open.
  *
  * <p>
- * A conversation has two sides. The person who wrote first is one; the other is the person behind the profile, every
- * member of the organization that offers the solution, or GenAI Fund's operators. A first message to a person or an
- * organization waits as a request: the other side accepts, declines or reports it, and only an accepted conversation
- * is written in. GenAI Fund's conversations are open at once. Neither side is shown the other's email address.
+ * A conversation has two sides. A person starts a personal one; an organization owner starts one about a solution.
+ * The other side is the person behind a talent profile, the owners and invited members of a solution provider, or
+ * GenAI Fund's operators. A first message to a person or organization waits as a request: the other side accepts,
+ * declines or reports it, and only an accepted conversation is written in. GenAI Fund's conversations are open at
+ * once. Neither side is shown the other's email address.
  */
 @Service
 public class MessagingService {
@@ -137,6 +139,10 @@ public class MessagingService {
 		@Nullable UUID organizationId() {
 			return membership == null ? null : membership.organizationId();
 		}
+
+		boolean owner() {
+			return membership != null && membership.owner();
+		}
 	}
 
 	/** The names a list of conversations is shown with, read once for all of them. */
@@ -157,7 +163,8 @@ public class MessagingService {
 	@Transactional(readOnly = true)
 	public ConversationListResponse list(Actor actor) {
 		Caller caller = caller(actor);
-		List<Listed> rows = conversations.listFor(caller.accountId(), caller.organizationId(), caller.operator(), LISTED);
+		List<Listed> rows = conversations.listFor(caller.accountId(), caller.organizationId(), caller.owner(),
+				caller.operator(), LISTED);
 		Names names = names(rows);
 		List<ConversationResponse> chats = new ArrayList<>();
 		List<ConversationResponse> requests = new ArrayList<>();
@@ -180,7 +187,7 @@ public class MessagingService {
 	public UnreadResponse unread(Actor actor) {
 		Caller caller = caller(actor);
 		MessagingRepository.Totals totals = conversations.totals(caller.accountId(), caller.organizationId(),
-				caller.operator());
+				caller.owner(), caller.operator());
 		return new UnreadResponse(totals.unread(), totals.requests());
 	}
 
@@ -195,13 +202,13 @@ public class MessagingService {
 		Caller caller = caller(actor);
 		Target target = target(caller, request.kind(), request.slug());
 		return new ProspectResponse(
-				conversations.active(caller.accountId(), target.kind(), target.subjectId())
+				conversations.active(caller.accountId(), caller.organizationId(), target.kind(), target.subjectId())
 					.map(Conversation::id)
 					.orElse(null),
 				counterpartName(target.kind(), target.subjectName(), organizationName(target.recipientOrganizationId())),
 				!MessagingRepository.PROGRAM.equals(target.kind()),
 				subjects.describe(target.kind(), target.subjectId(), target.subjectName()),
-				recipients(target.kind(), target.subjectName(), target.recipientOrganizationId()));
+				recipients(target.kind(), target.subjectName(), target.recipientOrganizationId(), null));
 	}
 
 	/**
@@ -219,11 +226,15 @@ public class MessagingService {
 		String body = request.body().strip();
 		// One writer at a time for an account, so the limits count what its other requests are writing.
 		conversations.lockWriter(caller.accountId());
+		if (MessagingRepository.SOLUTION.equals(target.kind()) && caller.organizationId() != null) {
+			conversations.lockOrganizationConversation(caller.organizationId(), target.subjectId());
+		}
 		Message previous = conversations.message(request.id()).orElse(null);
 		if (previous != null) {
 			return repeatedStart(caller, target, previous, body);
 		}
-		Conversation open = conversations.active(caller.accountId(), target.kind(), target.subjectId()).orElse(null);
+		Conversation open = conversations.active(caller.accountId(), caller.organizationId(), target.kind(),
+				target.subjectId()).orElse(null);
 		if (open != null) {
 			if (!MessagingRepository.ACCEPTED.equals(open.status())) {
 				throw new MessagingException(MessagingErrorCode.ALREADY_WAITING,
@@ -253,7 +264,7 @@ public class MessagingService {
 					"A second conversation about " + target.kind() + " " + target.subjectId());
 		}
 		Conversation conversation = conversations.find(id).orElseThrow();
-		Written written = conversations.write(request.id(), id, caller.accountId(), body);
+		Written written = conversations.write(request.id(), id, caller.accountId(), body, true);
 		Message first = written.message();
 		if (!written.created()) {
 			throw messageConflict(request.id());
@@ -286,6 +297,47 @@ public class MessagingService {
 		return detail(caller, visible(caller, id));
 	}
 
+	/** An owner gives one current member of their organization access to this conversation. */
+	@Transactional
+	public ConversationDetailResponse addMember(Actor actor, UUID id, UUID accountId) {
+		Caller caller = caller(actor);
+		Conversation conversation = conversations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		UUID organizationId = manageableOrganization(caller, conversation);
+		if (accountId.equals(caller.accountId()) || !organizations.memberAccountIds(organizationId).contains(accountId)) {
+			throw new MessagingException(MessagingErrorCode.MEMBER_NOT_FOUND,
+					"Member is not in the caller's organization for conversation " + id);
+		}
+		conversations.invite(id, organizationId, accountId, caller.accountId());
+		changes.tell(audience(conversation), listener -> event(Kind.CONVERSATION, id));
+		return detail(caller, conversation);
+	}
+
+	/** An owner removes access they granted to a member; current owners always retain access. */
+	@Transactional
+	public ConversationDetailResponse removeMember(Actor actor, UUID id, UUID accountId) {
+		Caller caller = caller(actor);
+		Conversation conversation = conversations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		UUID organizationId = manageableOrganization(caller, conversation);
+		if (conversations.removeInvitation(id, organizationId, accountId)) {
+			changes.tell(new Audience(Set.of(accountId)), listener -> event(Kind.CONVERSATION, id));
+		}
+		changes.tell(audience(conversation), listener -> event(Kind.CONVERSATION, id));
+		return detail(caller, conversation);
+	}
+
+	private UUID manageableOrganization(Caller caller, Conversation conversation) {
+		UUID organizationId = caller.organizationId();
+		if (!caller.owner() || organizationId == null || !MessagingRepository.SOLUTION.equals(conversation.kind())
+				|| !(MessagingRepository.PENDING.equals(conversation.status())
+						|| MessagingRepository.ACCEPTED.equals(conversation.status()))
+				|| (!organizationId.equals(conversation.starterOrganizationId())
+						&& !organizationId.equals(conversation.recipientOrganizationId()))) {
+			throw new MessagingException(MessagingErrorCode.OWNERS_ONLY,
+					"Conversation participants can be managed only by their organization owner");
+		}
+		return organizationId;
+	}
+
 	/**
 	 * Some messages of a conversation, the oldest first: those before a message, to read further back, or those after
 	 * one, to catch up with what was written while the screen was away.
@@ -300,8 +352,8 @@ public class MessagingService {
 		boolean more = found.size() > PAGE;
 		List<Message> page = !more ? found
 				: request.after() != null ? found.subList(0, PAGE) : found.subList(1, found.size());
-		return new MessagePageResponse(responses(caller, conversation, page), more,
-				conversations.readByOtherSide(id, conversation.starterAccountId(), side == Side.STARTER));
+		return new MessagePageResponse(responses(caller, page), more,
+				readByOtherSide(conversation, side));
 	}
 
 	/**
@@ -314,13 +366,14 @@ public class MessagingService {
 	public MessageResponse send(Actor actor, UUID id, SendMessageRequest request) {
 		Caller caller = caller(actor);
 		Person person = identity.person(actor);
-		Conversation conversation = visible(caller, id);
+		conversations.lockWriter(caller.accountId());
+		Conversation conversation = visibleForUpdate(caller, id);
 		if (!MessagingRepository.ACCEPTED.equals(conversation.status())) {
 			throw new MessagingException(MessagingErrorCode.NOT_OPEN,
 					"A message in conversation " + id + ", which is " + conversation.status());
 		}
 		Message message = write(caller, person, conversation, request.id(), request.body().strip());
-		return response(caller, conversation, message, person.displayName());
+		return response(caller, message, person.displayName());
 	}
 
 	/**
@@ -332,7 +385,7 @@ public class MessagingService {
 	@Transactional
 	public void read(Actor actor, UUID id, MarkReadRequest request) {
 		Caller caller = caller(actor);
-		Conversation conversation = visible(caller, id);
+		Conversation conversation = visibleForUpdate(caller, id);
 		if (!MessagingRepository.ACCEPTED.equals(conversation.status())) {
 			return;
 		}
@@ -400,7 +453,7 @@ public class MessagingService {
 	@Transactional(readOnly = true)
 	public Flux<MessagingEvent> events(Actor actor) {
 		Caller caller = caller(actor);
-		return changes.of(new Listener(caller.accountId(), caller.organizationId(), caller.operator()));
+		return changes.of(new Listener(caller.accountId()));
 	}
 
 	private void answer(Actor actor, UUID id, String status, AuditAction action) {
@@ -454,7 +507,8 @@ public class MessagingService {
 					"More than " + MESSAGES_A_MINUTE + " messages in a minute by account " + caller.accountId(),
 					Duration.ofSeconds(30));
 		}
-		Written written = conversations.write(messageId, conversation.id(), caller.accountId(), body);
+		Written written = conversations.write(messageId, conversation.id(), caller.accountId(), body,
+				side(caller, conversation) == Side.STARTER);
 		Message message = written.message();
 		if (!message.conversationId().equals(conversation.id())
 				|| !message.senderAccountId().equals(caller.accountId()) || !message.body().equals(body)) {
@@ -464,7 +518,7 @@ public class MessagingService {
 			return message;
 		}
 		conversations.markRead(conversation.id(), caller.accountId(), message.seq());
-		boolean fromStarter = message.senderAccountId().equals(conversation.starterAccountId());
+		boolean fromStarter = message.fromStarter();
 		String senderName = person.displayName();
 		changes.tell(audience(conversation),
 				listener -> new MessagingEvent(Kind.MESSAGE, conversation.id(),
@@ -499,7 +553,7 @@ public class MessagingService {
 	 * Fund's operators are not emailed: they read Messages as part of their work.
 	 */
 	private void tellAbsent(Conversation conversation, Caller sender, boolean fromStarter, @Nullable String senderName) {
-		List<UUID> others = fromStarter ? recipientAccounts(conversation) : List.of(conversation.starterAccountId());
+		List<UUID> others = fromStarter ? recipientAccounts(conversation) : starterAccounts(conversation);
 		List<UUID> absent = others.stream()
 			.filter(account -> !account.equals(sender.accountId()) && !changes.isListening(account))
 			.filter(account -> conversations.markNotified(conversation.id(), account))
@@ -516,20 +570,43 @@ public class MessagingService {
 
 	private ConversationDetailResponse detail(Caller caller, Conversation conversation) {
 		Side side = Objects.requireNonNull(side(caller, conversation));
-		Listed listed = conversations.listed(conversation.id(), caller.accountId()).orElseThrow();
+		Listed listed = conversations.listed(conversation.id(), caller.accountId(), caller.organizationId()).orElseThrow();
 		List<Message> latest = conversations.messages(conversation.id(), null, null, PAGE + 1);
 		boolean earlier = latest.size() > PAGE;
 		List<Message> page = earlier ? latest.subList(1, latest.size()) : latest;
 		Names names = names(List.of(listed));
 		List<ParticipantResponse> participants = side == Side.STARTER
-				? recipients(conversation.kind(), conversation.subjectName(), conversation.recipientOrganizationId())
-				: List.of(new ParticipantResponse(names.person(conversation.starterAccountId()),
-						names.organization(conversation.starterOrganizationId()), "person"));
+				? recipients(conversation.kind(), conversation.subjectName(), conversation.recipientOrganizationId(), conversation.id())
+				: MessagingRepository.SOLUTION.equals(conversation.kind()) && conversation.starterOrganizationId() != null
+						? recipients(conversation.kind(), conversation.subjectName(), conversation.starterOrganizationId(),
+								conversation.id())
+						: List.of(new ParticipantResponse(names.person(conversation.starterAccountId()),
+								names.organization(conversation.starterOrganizationId()), "person"));
+		List<ConversationMemberResponse> manageableMembers = manageableMembers(caller, conversation);
 		return new ConversationDetailResponse(response(caller, side, listed, names),
-				responses(caller, conversation, page), earlier,
-				conversations.readByOtherSide(conversation.id(), conversation.starterAccountId(), side == Side.STARTER),
+				responses(caller, page), earlier,
+				readByOtherSide(conversation, side),
 				subjects.describe(conversation.kind(), conversation.subjectId(), conversation.subjectName()),
-				participants);
+				participants, manageableMembers);
+	}
+
+	private List<ConversationMemberResponse> manageableMembers(Caller caller, Conversation conversation) {
+		UUID organizationId = caller.organizationId();
+		if (!caller.owner() || organizationId == null || !MessagingRepository.SOLUTION.equals(conversation.kind())
+				|| !(MessagingRepository.PENDING.equals(conversation.status())
+						|| MessagingRepository.ACCEPTED.equals(conversation.status()))
+				|| (!organizationId.equals(conversation.starterOrganizationId())
+						&& !organizationId.equals(conversation.recipientOrganizationId()))) {
+			return List.of();
+		}
+		Set<UUID> owners = Set.copyOf(organizations.ownersOf(organizationId));
+		Set<UUID> invited = Set.copyOf(conversations.invited(conversation.id(), organizationId));
+		return identity.people(organizations.memberAccountIds(organizationId)).values().stream()
+			.filter(person -> !owners.contains(person.accountId()))
+			.map(person -> new ConversationMemberResponse(person.accountId(), person.displayName(), person.email(),
+					invited.contains(person.accountId())))
+			.sorted((a, b) -> a.email().compareToIgnoreCase(b.email()))
+			.toList();
 	}
 
 	private ConversationResponse response(Caller caller, Side side, Listed row, Names names) {
@@ -547,27 +624,28 @@ public class MessagingService {
 				side == Side.STARTER
 						? counterpartName(conversation.kind(), conversation.subjectName(),
 								names.organization(conversation.recipientOrganizationId()))
-						: names.person(conversation.starterAccountId()),
+						: MessagingRepository.SOLUTION.equals(conversation.kind())
+								? names.organization(conversation.starterOrganizationId())
+								: names.person(conversation.starterAccountId()),
 				side == Side.STARTER ? null : names.organization(conversation.starterOrganizationId()),
 				conversation.subjectName(), last, conversation.lastMessageAt(), accepted ? row.unread() : 0,
 				side == Side.RECIPIENT && pending && mayAnswer(caller, conversation), accepted,
 				pending ? conversation.createdAt().plus(REQUEST_LIFETIME) : null, conversation.createdAt());
 	}
 
-	private List<MessageResponse> responses(Caller caller, Conversation conversation, List<Message> messages) {
+	private List<MessageResponse> responses(Caller caller, List<Message> messages) {
 		Map<UUID, Person> writers = identity
 			.people(messages.stream().map(Message::senderAccountId).distinct().toList());
 		return messages.stream().map(message -> {
 			Person writer = writers.get(message.senderAccountId());
-			return response(caller, conversation, message, writer == null ? null : writer.displayName());
+			return response(caller, message, writer == null ? null : writer.displayName());
 		}).toList();
 	}
 
-	private static MessageResponse response(Caller caller, Conversation conversation, Message message,
+	private static MessageResponse response(Caller caller, Message message,
 			@Nullable String senderName) {
 		return new MessageResponse(message.id(), message.seq(), message.body(), message.createdAt(),
-				message.senderAccountId().equals(caller.accountId()),
-				message.senderAccountId().equals(conversation.starterAccountId()), senderName);
+				message.senderAccountId().equals(caller.accountId()), message.fromStarter(), senderName);
 	}
 
 	private Caller caller(Actor actor) {
@@ -597,6 +675,10 @@ public class MessagingService {
 					throw new MessagingException(MessagingErrorCode.ORGANIZATION_NOT_APPROVED,
 							"A solution provider written to by the unapproved organization " + membership.organizationId());
 				}
+				if (!membership.owner()) {
+					throw new MessagingException(MessagingErrorCode.OWNERS_ONLY,
+							"A solution conversation started by an organization member who is not an owner");
+				}
 				yield membership.organizationId().equals(target.recipientOrganizationId());
 			}
 			default -> caller.operator();
@@ -613,20 +695,32 @@ public class MessagingService {
 		return conversations.find(id).filter(found -> side(caller, found) != null).orElseThrow(() -> notFound(id));
 	}
 
+	private Conversation visibleForUpdate(Caller caller, UUID id) {
+		return conversations.findForUpdate(id).filter(found -> side(caller, found) != null)
+			.orElseThrow(() -> notFound(id));
+	}
+
 	/**
 	 * The side the caller is on; null when they are on neither, or on the side written to of a request that side
 	 * declined, reported or let close.
 	 */
-	private static @Nullable Side side(Caller caller, Conversation conversation) {
-		if (conversation.starterAccountId().equals(caller.accountId())) {
+	private @Nullable Side side(Caller caller, Conversation conversation) {
+		if (MessagingRepository.SOLUTION.equals(conversation.kind()) && conversation.starterOrganizationId() != null
+				&& conversation.starterOrganizationId().equals(caller.organizationId())
+				&& (caller.owner() || conversations.isInvited(conversation.id(), caller.organizationId(), caller.accountId()))) {
+			return Side.STARTER;
+		}
+		if (!MessagingRepository.SOLUTION.equals(conversation.kind())
+				&& conversation.starterAccountId().equals(caller.accountId())) {
 			return Side.STARTER;
 		}
 		boolean recipient = switch (conversation.kind()) {
 			case MessagingRepository.TALENT -> caller.accountId().equals(conversation.recipientAccountId());
 			case MessagingRepository.SOLUTION ->
 				conversation.recipientOrganizationId() != null
-						&& conversation.recipientOrganizationId().equals(caller.organizationId());
-			default -> caller.operator();
+						&& conversation.recipientOrganizationId().equals(caller.organizationId())
+						&& (caller.owner() || conversations.isInvited(conversation.id(), caller.organizationId(), caller.accountId()));
+			default -> caller.operator() && caller.accountId().equals(conversations.programAssignee(conversation.id()));
 		};
 		boolean alive = MessagingRepository.PENDING.equals(conversation.status())
 				|| MessagingRepository.ACCEPTED.equals(conversation.status());
@@ -640,14 +734,23 @@ public class MessagingService {
 	}
 
 	/** Everyone who hears what happens in a conversation. */
-	static Audience audience(Conversation conversation) {
+	Audience audience(Conversation conversation) {
 		Set<UUID> accounts = new HashSet<>();
-		accounts.add(conversation.starterAccountId());
-		if (conversation.recipientAccountId() != null) {
-			accounts.add(conversation.recipientAccountId());
+		accounts.addAll(starterAccounts(conversation));
+		accounts.addAll(recipientAccounts(conversation));
+		if (MessagingRepository.PROGRAM.equals(conversation.kind())) {
+			UUID assignee = conversations.programAssignee(conversation.id());
+			if (assignee != null && identity.isOperator(new Actor(assignee))) {
+				accounts.add(assignee);
+			}
 		}
-		return new Audience(accounts, conversation.recipientOrganizationId(),
-				MessagingRepository.PROGRAM.equals(conversation.kind()));
+		return new Audience(accounts);
+	}
+
+	private List<UUID> starterAccounts(Conversation conversation) {
+		UUID organizationId = conversation.starterOrganizationId();
+		return MessagingRepository.SOLUTION.equals(conversation.kind()) && organizationId != null
+				? organizationReaders(conversation.id(), organizationId) : List.of(conversation.starterAccountId());
 	}
 
 	/** The accounts of the side written to, GenAI Fund's operators left out. */
@@ -656,7 +759,26 @@ public class MessagingService {
 			return List.of(conversation.recipientAccountId());
 		}
 		return conversation.recipientOrganizationId() == null ? List.of()
-				: organizations.memberAccountIds(conversation.recipientOrganizationId());
+				: organizationReaders(conversation.id(), conversation.recipientOrganizationId());
+	}
+
+	private List<UUID> organizationReaders(UUID conversationId, UUID organizationId) {
+		Set<UUID> members = Set.copyOf(organizations.memberAccountIds(organizationId));
+		Set<UUID> readers = new HashSet<>(organizations.ownersOf(organizationId));
+		for (UUID invited : conversations.invited(conversationId, organizationId)) {
+			if (members.contains(invited)) {
+				readers.add(invited);
+			}
+		}
+		return List.copyOf(readers);
+	}
+
+	private long readByOtherSide(Conversation conversation, Side side) {
+		if (side == Side.STARTER && MessagingRepository.PROGRAM.equals(conversation.kind())) {
+			return conversations.programReadByOperators(conversation.id(), conversation.starterAccountId());
+		}
+		return conversations.readByOtherSide(conversation.id(),
+				side == Side.STARTER ? recipientAccounts(conversation) : starterAccounts(conversation));
 	}
 
 	/** The people who answer a request: the person behind the profile, or the owners of the organization. */
@@ -669,7 +791,8 @@ public class MessagingService {
 	}
 
 	/** Who reads on the side written to, as the person who writes is shown them. */
-	private List<ParticipantResponse> recipients(String kind, String subjectName, @Nullable UUID organizationId) {
+	private List<ParticipantResponse> recipients(String kind, String subjectName, @Nullable UUID organizationId,
+			@Nullable UUID conversationId) {
 		if (MessagingRepository.TALENT.equals(kind)) {
 			return List.of(new ParticipantResponse(subjectName, null, "person"));
 		}
@@ -678,7 +801,9 @@ public class MessagingService {
 		}
 		String organizationName = organizationName(organizationId);
 		Set<UUID> owners = Set.copyOf(organizations.ownersOf(organizationId));
-		return identity.people(organizations.memberAccountIds(organizationId))
+		List<UUID> readers = conversationId == null ? organizations.ownersOf(organizationId)
+				: organizationReaders(conversationId, organizationId);
+		return identity.people(readers)
 			.values()
 			.stream()
 			.map(member -> new ParticipantResponse(member.displayName(), organizationName,

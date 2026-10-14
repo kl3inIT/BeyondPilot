@@ -50,6 +50,7 @@ function detail(conversation: Conversation, messages: Message[]): ConversationDe
       customerDeployments: 0,
     },
     participants: [],
+    manageableMembers: [],
   };
 }
 

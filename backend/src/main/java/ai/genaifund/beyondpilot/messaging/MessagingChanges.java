@@ -32,26 +32,16 @@ class MessagingChanges {
 	 */
 	private static final int WAITING = 256;
 
-	/**
-	 * Who an event is for: the people named, everyone of an organization, and GenAI Fund's operators.
-	 * @param organizationId the organization written to; null when the conversation has none
-	 * @param operators whether the conversation is with GenAI Fund
-	 */
-	record Audience(Set<UUID> accounts, @Nullable UUID organizationId, boolean operators) {
+	/** Who an event is for: the accounts currently permitted to read. */
+	record Audience(Set<UUID> accounts) {
 
 		boolean includes(Listener listener) {
-			return accounts.contains(listener.accountId())
-					|| (organizationId != null && organizationId.equals(listener.organizationId()))
-					|| (operators && listener.operator());
+			return accounts.contains(listener.accountId());
 		}
 	}
 
-	/**
-	 * A screen that listens, with what its person was when the stream opened.
-	 * @param organizationId the organization the person belongs to; null when none
-	 * @param operator whether the person answers for GenAI Fund
-	 */
-	record Listener(UUID accountId, @Nullable UUID organizationId, boolean operator) {
+	/** A screen that listens. Its conversation access is resolved again when an event is written. */
+	record Listener(UUID accountId) {
 	}
 
 	/**

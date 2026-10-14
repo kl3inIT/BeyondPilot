@@ -247,8 +247,8 @@ class TalentTest {
 				from talent_profile p, identity_account a where p.id = ? and a.email = 'asker@possum.test'
 				""").params(conversation, id).update();
 		jdbc.sql("""
-				insert into messaging_message (id, conversation_id, sender_account_id, body)
-				select ?, c.id, c.starter_account_id, 'Hello' from messaging_conversation c where c.id = ?
+				insert into messaging_message (id, conversation_id, sender_account_id, body, from_starter)
+				select ?, c.id, c.starter_account_id, 'Hello', true from messaging_conversation c where c.id = ?
 				""").params(UUID.randomUUID(), conversation).update();
 
 		client.delete()

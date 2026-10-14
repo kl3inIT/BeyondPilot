@@ -168,6 +168,8 @@ public enum AuditAction {
 	/** The side written to accepted a first message, which opened the conversation. */
 	MESSAGING_REQUEST_ACCEPT("messaging.request_accept"),
 
+	MESSAGING_PROGRAM_ASSIGN("messaging.program_assign", "account"),
+
 	MESSAGING_REQUEST_DECLINE("messaging.request_decline"),
 
 	/** The side written to reported a first message as unwanted; the sender was told it was declined. */

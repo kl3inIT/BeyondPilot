@@ -52,6 +52,7 @@ export const auditActions = [
   "use_case.unfeature",
   "use_case.set_programs",
   "messaging.request_accept",
+  "messaging.program_assign",
   "messaging.request_decline",
   "messaging.request_report",
   "talent.approve",

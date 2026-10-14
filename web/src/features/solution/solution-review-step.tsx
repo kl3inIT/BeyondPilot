@@ -12,13 +12,15 @@ import { useVocabulary } from "@/i18n/vocabulary";
 import type { CustomerDeployment, PublicSolutionSummary } from "@/lib/api/generated";
 
 import { SolutionCard } from "./solution-card";
+import { SolutionDeckPreview } from "./solution-deck-preview";
 import { fieldId, reviewFields, type EditorStep, type ReviewField } from "./solution-editor-state";
+import { SolutionRecordImages } from "./solution-record-images";
 import type { SolutionForm } from "./solution-editor-form";
 
 type Row = {
   label: string;
   /** What the solution says, or nothing when it says nothing. */
-  value: string;
+  value: React.ReactNode;
   /** The field a review needs, when this row shows one. */
   needed?: ReviewField;
 };
@@ -83,6 +85,7 @@ type ReviewStepProps = {
   /** The organization the card names, and the address the solution would have. */
   organizationName: string;
   slug: string;
+  deckHref: string | undefined;
   /** Whether the person said that what they wrote is right; asked for when it is sent from here. */
   confirmed: boolean;
   onConfirmedChange: (confirmed: boolean) => void;
@@ -99,6 +102,7 @@ function ReviewStep({
   submittable,
   organizationName,
   slug,
+  deckHref,
   confirmed,
   onConfirmedChange,
   onOpen,
@@ -110,6 +114,20 @@ function ReviewStep({
   const language = useVocabulary("language");
   const deployment = useVocabulary("deployment");
   const draft = useStore(form.store, (state) => state.values.solution);
+  const imagePreview = (image: typeof draft.logo, caption: string, shape: "square" | "wide") =>
+    image ? (
+      <SolutionRecordImages
+        name={draft.name}
+        images={[
+          {
+            fileId: image.fileId,
+            caption,
+            label: t("images.previewNamed", { name: image.fileName }),
+            shape,
+          },
+        ]}
+      />
+    ) : null;
 
   const counted = (state: CustomerDeployment["status"]) =>
     (customerDeployments ?? []).filter((item) => item.status === state).length;
@@ -181,13 +199,47 @@ function ReviewStep({
     {
       step: "evidence",
       rows: [
-        { label: t("fields.logo"), value: draft.logo?.fileName ?? "", needed: "logo" },
-        { label: t("fields.cover"), value: draft.cover?.fileName ?? "", needed: "cover" },
+        {
+          label: t("fields.logo"),
+          value: imagePreview(draft.logo, t("fields.logo"), "square"),
+          needed: "logo",
+        },
+        {
+          label: t("fields.cover"),
+          value: imagePreview(draft.cover, t("fields.cover"), "wide"),
+          needed: "cover",
+        },
         {
           label: t("fields.images"),
-          value: draft.images.length > 0 ? t("review.images", { count: draft.images.length }) : "",
+          value:
+            draft.images.length > 0 ? (
+              <SolutionRecordImages
+                name={draft.name}
+                images={draft.images.map((image, index) => ({
+                  fileId: image.fileId,
+                  caption: String(index + 1),
+                  label: t("images.previewNamed", { name: image.fileName }),
+                  shape: "square",
+                }))}
+              />
+            ) : (
+              ""
+            ),
         },
-        { label: t("fields.deck"), value: draft.deck?.fileName ?? "" },
+        {
+          label: t("fields.deck"),
+          value: draft.deck ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="break-all">{draft.deck.fileName}</span>
+              <SolutionDeckPreview
+                fileName={draft.deck.fileName}
+                fileUrl={deckHref ?? draft.deck.previewUrl}
+              />
+            </div>
+          ) : (
+            ""
+          ),
+        },
         { label: t("fields.demoUrl"), value: draft.demoUrl.trim() },
         { label: t("fields.website"), value: draft.website.trim() },
         ...(customerDeployments

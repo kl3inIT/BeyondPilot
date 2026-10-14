@@ -32,6 +32,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -134,6 +135,34 @@ class MessagingController {
 			content = @Content(mediaType = PROBLEM_JSON, schema = @Schema(ref = PROBLEM)))
 	ConversationDetailResponse get(@CurrentActor Actor actor, @PathVariable UUID id) {
 		return messaging.get(actor, id);
+	}
+
+	@PostMapping(path = "/conversations/{id}/members/{accountId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "addConversationMember",
+			summary = "An organization owner adds one of their members to this conversation",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The conversation with the updated member list.")
+	@ApiResponse(responseCode = "403", description = "The caller is not an owner of either organization side.",
+			content = @Content(mediaType = PROBLEM_JSON, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "The conversation or organization member is absent.",
+			content = @Content(mediaType = PROBLEM_JSON, schema = @Schema(ref = PROBLEM)))
+	ConversationDetailResponse addMember(@CurrentActor Actor actor, @PathVariable UUID id,
+			@PathVariable UUID accountId) {
+		return messaging.addMember(actor, id, accountId);
+	}
+
+	@DeleteMapping(path = "/conversations/{id}/members/{accountId}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "removeConversationMember",
+			summary = "An organization owner removes a member they added to this conversation",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The conversation with the updated member list.")
+	@ApiResponse(responseCode = "403", description = "The caller is not an owner of either organization side.",
+			content = @Content(mediaType = PROBLEM_JSON, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "The conversation is absent.",
+			content = @Content(mediaType = PROBLEM_JSON, schema = @Schema(ref = PROBLEM)))
+	ConversationDetailResponse removeMember(@CurrentActor Actor actor, @PathVariable UUID id,
+			@PathVariable UUID accountId) {
+		return messaging.removeMember(actor, id, accountId);
 	}
 
 	@GetMapping(path = "/conversations/{id}/messages", produces = MediaType.APPLICATION_JSON_VALUE)

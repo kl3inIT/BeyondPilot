@@ -268,7 +268,7 @@ class MessagingTest {
 	}
 
 	@Test
-	void aConversationWithAProviderBelongsToItsOrganizationAndItsOwnersAnswer() {
+	void aConversationWithAProviderIsPrivateToOwnersUntilTheyAddMembers() {
 		String owner = signIn("owner@org-provider.test");
 		UUID providerId = organization(owner, "Org Provider");
 		post(operator, ORGANIZATION + "/admin/organizations/" + providerId + "/approve",
@@ -279,7 +279,16 @@ class MessagingTest {
 		String solution = listedSolution(owner, "Org Triage");
 		String member = signIn("member@org-provider.test");
 		post(member, ORGANIZATION + "/organizations/" + providerId + "/join", Map.of()).expectStatus().is2xxSuccessful();
-		String buyer = organizationOwner("buyer@org-buyer.test", "Org Buyer");
+		String buyer = signIn("buyer@org-buyer.test");
+		UUID buyerId = organization(buyer, "Org Buyer");
+		post(operator, ORGANIZATION + "/admin/organizations/" + buyerId + "/approve",
+				Map.of("emailDomain", "org-buyer.test")).expectStatus().isNoContent();
+		put(buyer, ORGANIZATION + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
+		String buyerMember = signIn("colleague@org-buyer.test");
+		post(buyerMember, ORGANIZATION + "/organizations/" + buyerId + "/join", Map.of()).expectStatus()
+			.is2xxSuccessful();
+		assertProblem(start(buyerMember, "solution", solution, "I should not start this."), 403,
+				"MESSAGING_OWNERS_ONLY");
 
 		String started = body(start(buyer, "solution", solution, "Could you show us a demo?").expectStatus().isOk());
 		String id = JsonPath.read(started, "$.conversation.id");
@@ -288,24 +297,63 @@ class MessagingTest {
 		assertThat(mail.textsTo("owner@org-provider.test"))
 			.anySatisfy(text -> assertThat(text).contains("Org Buyer").contains("Org Triage"));
 
-		// A member reads the request and may not answer it; an owner does.
+		// Membership alone grants no access on either organization side.
 		String members = body(get(member, CONVERSATIONS).expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(members, "$.requests[*].id")).containsExactly(id);
-		assertThat(JsonPath.<Boolean>read(members, "$.requests[0].canAnswer")).isFalse();
-		assertThat(JsonPath.<String>read(members, "$.requests[0].counterpartOrganization")).isEqualTo("Org Buyer");
-		assertProblem(post(member, CONVERSATIONS + "/" + id + "/accept", null), 403, "MESSAGING_OWNERS_ONLY");
+		assertThat(JsonPath.<List<String>>read(members, "$.requests[*].id")).isEmpty();
+		assertProblem(get(member, CONVERSATIONS + "/" + id), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
+		assertProblem(get(member, CONVERSATIONS + "/" + id + "/messages"), 404,
+				"MESSAGING_CONVERSATION_NOT_FOUND");
+		assertProblem(post(member, CONVERSATIONS + "/" + id + "/accept", null), 404,
+				"MESSAGING_CONVERSATION_NOT_FOUND");
+		assertProblem(get(buyerMember, CONVERSATIONS + "/" + id), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
+		assertThat(JsonPath.<List<String>>read(body(get(buyer, CONVERSATIONS).expectStatus().isOk()), "$.chats[*].id"))
+			.contains(id);
 		post(owner, CONVERSATIONS + "/" + id + "/accept", null).expectStatus().isOk();
+		List<MessagingEvent> uninvitedEvents = new CopyOnWriteArrayList<>();
+		Disposable uninvitedStream = messaging.events(actor("member@org-provider.test"))
+			.subscribe(uninvitedEvents::add);
+		try {
+			String privateMessage = body(send(buyer, id, "Only the provider's owners should hear this.")
+				.expectStatus().isOk());
+			assertThat(uninvitedEvents).isEmpty();
+			assertThat(mail.subjectsTo("member@org-provider.test"))
+				.doesNotContain("A new message waits for you on BeyondPilot");
+			post(owner, CONVERSATIONS + "/" + id + "/read",
+					Map.of("seq", JsonPath.<Number>read(privateMessage, "$.seq").longValue()))
+				.expectStatus().isNoContent();
+		}
+		finally {
+			uninvitedStream.dispose();
+		}
 
-		// Then anyone of the organization writes, and each message names its writer.
+		UUID memberId = accountId("member@org-provider.test");
+		UUID buyerMemberId = accountId("colleague@org-buyer.test");
+		assertProblem(post(member, CONVERSATIONS + "/" + id + "/members/" + buyerMemberId, null), 403,
+				"MESSAGING_OWNERS_ONLY");
+		assertProblem(post(owner, CONVERSATIONS + "/" + id + "/members/" + buyerMemberId, null), 404,
+				"MESSAGING_MEMBER_NOT_FOUND");
+		post(owner, CONVERSATIONS + "/" + id + "/members/" + memberId, null).expectStatus().isOk();
+		post(buyer, CONVERSATIONS + "/" + id + "/members/" + buyerMemberId, null).expectStatus().isOk();
+		assertThat(JsonPath.<List<String>>read(body(get(member, CONVERSATIONS).expectStatus().isOk()), "$.chats[*].id"))
+			.contains(id);
+		get(buyerMember, CONVERSATIONS + "/" + id).expectStatus().isOk();
+		// Invited members can write on their organization's side.
 		send(member, id, "Thursday at 10:00 works.").expectStatus().isOk();
-		String read = body(get(buyer, CONVERSATIONS + "/" + id).expectStatus().isOk());
-		assertThat(JsonPath.<List<Boolean>>read(read, "$.messages[*].fromStarter")).containsExactly(true, false);
-		assertThat(JsonPath.<List<String>>read(read, "$.participants[*].role")).containsExactlyInAnyOrder("owner", "member");
-		// What a colleague wrote is not unread for the organization's own people.
 		assertThat(JsonPath.<Number>read(body(get(owner, CONVERSATIONS).expectStatus().isOk()), "$.unread").intValue())
 			.isZero();
+		send(buyerMember, id, "That time works for us.").expectStatus().isOk();
+		String read = body(get(buyer, CONVERSATIONS + "/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<List<Boolean>>read(read, "$.messages[*].fromStarter"))
+			.containsExactly(true, true, false, true);
+		assertThat(JsonPath.<List<String>>read(read, "$.participants[*].role")).containsExactlyInAnyOrder("owner", "member");
+		// Only the other organization's message is unread for the provider owner.
+		assertThat(JsonPath.<Number>read(body(get(owner, CONVERSATIONS).expectStatus().isOk()), "$.unread").intValue())
+			.isEqualTo(1);
 		assertThat(JsonPath.<Number>read(body(get(buyer, CONVERSATIONS).expectStatus().isOk()), "$.unread").intValue())
 			.isEqualTo(1);
+		delete(owner, CONVERSATIONS + "/" + id + "/members/" + memberId).expectStatus().isOk();
+		assertProblem(get(member, CONVERSATIONS + "/" + id), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
+		assertProblem(send(member, id, "I lost access."), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
 	}
 
 	@Test
@@ -329,7 +377,7 @@ class MessagingTest {
 	}
 
 	@Test
-	void aConversationWithGenAiFundAboutAProgramIsOpenAtOnceForItsOperators() {
+	void aProgramConversationIsPrivateToItsAssignedOperator() {
 		String program = publishedProgram("Chat Program", "chat-program");
 		String founder = signIn("founder@program-chat.test");
 
@@ -343,6 +391,16 @@ class MessagingTest {
 		assertThat(JsonPath.<String>read(started, "$.conversation.status")).isEqualTo("accepted");
 		assertThat(JsonPath.<Object>read(started, "$.conversation.counterpartName")).isNull();
 		assertThat(JsonPath.<List<Object>>read(started, "$.participants")).isEmpty();
+		assertProblem(get(operator, CONVERSATIONS + "/" + id), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
+		assertProblem(send(operator, id, "Before assignment."), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
+		String queue = body(get(operator, MESSAGING + "/admin/program-assignments").expectStatus().isOk());
+		assertThat(queue).contains(id).doesNotContain("Can one team apply twice?", "founder@program-chat.test");
+		String otherOperator = signIn("other-operator@program-chat.test");
+		UUID otherId = accountId("other-operator@program-chat.test");
+		jdbc.sql("update identity_account set platform_role = 'operator' where id = ?").param(otherId).update();
+		String assignment = MESSAGING + "/admin/program-assignments/" + id + "/";
+		assertProblem(put(founder, assignment + otherId, null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		put(operator, assignment + accountId("operator@genaifund.test"), null).expectStatus().isNoContent();
 
 		String operators = body(get(operator, CONVERSATIONS).expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(operators, "$.chats[?(@.id=='" + id + "')].side"))
@@ -350,6 +408,30 @@ class MessagingTest {
 		send(operator, id, "Yes, once for each solution.").expectStatus().isOk();
 		assertThat(JsonPath.<List<String>>read(body(get(founder, CONVERSATIONS + "/" + id).expectStatus().isOk()),
 				"$.messages[*].body")).containsExactly("Can one team apply twice?", "Yes, once for each solution.");
+		List<MessagingEvent> unassignedEvents = new CopyOnWriteArrayList<>();
+		Disposable stream = messaging.events(actor("other-operator@program-chat.test")).subscribe(unassignedEvents::add);
+		try {
+			send(founder, id, "Private follow-up.").expectStatus().isOk();
+			assertThat(unassignedEvents).isEmpty();
+			assertProblem(get(otherOperator, CONVERSATIONS + "/" + id), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
+			put(operator, assignment + otherId, null).expectStatus().isNoContent();
+			get(otherOperator, CONVERSATIONS + "/" + id).expectStatus().isOk();
+			assertProblem(get(operator, CONVERSATIONS + "/" + id), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
+			assertProblem(send(operator, id, "After reassignment."), 404, "MESSAGING_CONVERSATION_NOT_FOUND");
+			List<MessagingEvent> revokedEvents = new CopyOnWriteArrayList<>();
+			Disposable revoked = messaging.events(actor("operator@genaifund.test")).subscribe(revokedEvents::add);
+			try {
+				send(founder, id, "Only the new assignee hears this.").expectStatus().isOk();
+				assertThat(revokedEvents).isEmpty();
+			}
+			finally {
+				revoked.dispose();
+			}
+			assertThat(events(id)).containsExactly("messaging.program_assign", "messaging.program_assign");
+		}
+		finally {
+			stream.dispose();
+		}
 		// An operator answers for GenAI Fund and does not write to it.
 		assertProblem(start(operator, "program", program, "Hello."), 409, "MESSAGING_OWN_SUBJECT");
 	}
@@ -461,6 +543,9 @@ class MessagingTest {
 		client.get().uri(CONVERSATIONS).exchange().expectStatus().isUnauthorized();
 		client.get().uri(MESSAGING + "/unread").exchange().expectStatus().isUnauthorized();
 		client.get().uri(MESSAGING + "/events").exchange().expectStatus().isUnauthorized();
+		String memberPath = CONVERSATIONS + "/" + UUID.randomUUID() + "/members/" + UUID.randomUUID();
+		client.post().uri(memberPath).header(TestSignIn.CSRF_HEADER, "1").exchange().expectStatus().isUnauthorized();
+		client.delete().uri(memberPath).header(TestSignIn.CSRF_HEADER, "1").exchange().expectStatus().isUnauthorized();
 		client.post()
 			.uri(CONVERSATIONS)
 			.header(TestSignIn.CSRF_HEADER, "1")
@@ -486,7 +571,11 @@ class MessagingTest {
 	}
 
 	private Actor actor(String email) {
-		return new Actor(jdbc.sql("select id from identity_account where email = ?").param(email).query(UUID.class).single());
+		return new Actor(accountId(email));
+	}
+
+	private UUID accountId(String email) {
+		return jdbc.sql("select id from identity_account where email = ?").param(email).query(UUID.class).single();
 	}
 
 	/** How many emails of a kind were sent to an address, once everything queued has left. */
@@ -621,13 +710,16 @@ class MessagingTest {
 	}
 
 	private RestTestClient.ResponseSpec put(String session, String path, Object body) {
-		return client.put()
+		RestTestClient.RequestBodySpec request = client.put()
 			.uri(path)
 			.header(TestSignIn.CSRF_HEADER, "1")
-			.cookie(TestSignIn.SESSION_COOKIE, session)
-			.contentType(MediaType.APPLICATION_JSON)
-			.body(body)
-			.exchange();
+			.cookie(TestSignIn.SESSION_COOKIE, session);
+		return body == null ? request.exchange() : request.contentType(MediaType.APPLICATION_JSON).body(body).exchange();
+	}
+
+	private RestTestClient.ResponseSpec delete(String session, String path) {
+		return client.delete().uri(path).header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session).exchange();
 	}
 
 	private static String body(RestTestClient.ResponseSpec response) {

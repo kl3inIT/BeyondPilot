@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { useId } from "react";
+import { useId, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { Person } from "@/components/composites/person";
@@ -7,7 +7,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
-import type { ConversationParticipant, ConversationSubject } from "@/lib/api/generated";
+import type {
+  ConversationDetail,
+  ConversationParticipant,
+  ConversationSubject,
+} from "@/lib/api/generated";
 import { initials } from "@/lib/initials";
 import { siteRoutes } from "@/lib/site";
 
@@ -22,6 +26,8 @@ type ConversationDetailsProps = {
   participants: ConversationParticipant[];
   /** Whether the reader wrote first or is the side written to. */
   side: "starter" | "recipient";
+  manageableMembers?: ConversationDetail["manageableMembers"];
+  onChangeMember?: (accountId: string, include: boolean) => Promise<void>;
 };
 
 /**
@@ -29,8 +35,15 @@ type ConversationDetailsProps = {
  * program with the way to its page, the facts a reader weighs the other side by, and who reads what
  * is written. Nothing here acts on the conversation.
  */
-function ConversationDetails({ subject, participants, side }: ConversationDetailsProps) {
+function ConversationDetails({
+  subject,
+  participants,
+  side,
+  manageableMembers = [],
+  onChangeMember,
+}: ConversationDetailsProps) {
   const t = useTranslations("Messaging.details");
+  const [pendingMember, setPendingMember] = useState<string | null>(null);
   // The details are drawn twice on a narrow screen, beside the conversation and in the sheet.
   const peopleId = useId();
   const country = useCountryName();
@@ -133,6 +146,40 @@ function ConversationDetails({ subject, participants, side }: ConversationDetail
           {side === "recipient" ? t("note.recipient") : t(`note.${subject.kind}`)}
         </p>
       </section>
+      {onChangeMember && manageableMembers.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <Separator />
+          <h3 className="font-medium">{t("members.title")}</h3>
+          <p className="text-xs text-muted-foreground">{t("members.lead")}</p>
+          <ul className="flex flex-col gap-3">
+            {manageableMembers.map((member) => (
+              <li key={member.accountId} className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate">{member.name ?? member.email}</p>
+                  {member.name && (
+                    <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                  )}
+                </div>
+                <Button
+                  prominence="secondary"
+                  size="sm"
+                  disabled={pendingMember !== null}
+                  onClick={async () => {
+                    setPendingMember(member.accountId);
+                    try {
+                      await onChangeMember(member.accountId, !member.included);
+                    } finally {
+                      setPendingMember(null);
+                    }
+                  }}
+                >
+                  {t(member.included ? "members.remove" : "members.add")}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

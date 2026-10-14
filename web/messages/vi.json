@@ -388,7 +388,8 @@
     "MESSAGING_TOO_MANY_MESSAGES": "Bạn viết quá nhanh. Hãy chờ một chút rồi gửi lại.",
     "MESSAGING_NOT_OPEN": "Hội thoại này không mở nên không viết được.",
     "MESSAGING_NOT_WAITING": "Yêu cầu này đã được trả lời.",
-    "MESSAGING_OWNERS_ONLY": "Chỉ chủ sở hữu của tổ chức mới trả lời một tin đầu tiên.",
+    "MESSAGING_OWNERS_ONLY": "Chỉ chủ sở hữu của tổ chức mới được thực hiện thao tác này.",
+    "MESSAGING_MEMBER_NOT_FOUND": "Người này không phải thành viên tổ chức của bạn.",
     "MESSAGING_MESSAGE_CONFLICT": "Chưa gửi được tin này. Hãy viết lại.",
     "MESSAGING_READ_BEYOND_LAST_MESSAGE": "Tin này không có trong cuộc trò chuyện. Hãy tải lại và thử lần nữa.",
     "MCP_TOOL_NOT_FOUND": "Công cụ này không còn nữa. Hãy tải lại trang.",
@@ -557,7 +558,8 @@
     "USECASE_NOT_AWAITING_REVIEW": "Use case này không còn ở trạng thái đang duyệt. Trạng thái đã được đọc lại.",
     "USECASE_ATTACHMENT_NOT_USABLE": "Hãy tải tệp lên lại: không thể đính kèm tệp này.",
     "USECASE_TIMELINE_OUT_OF_ORDER": "Thời gian dài nhất ngắn hơn thời gian ngắn nhất.",
-    "PROPOSAL_NOTHING_TO_SEND": "Không có quyết định nào để gửi. Hãy tải lại trang để xem tình trạng các đề xuất."
+    "PROPOSAL_NOTHING_TO_SEND": "Không có quyết định nào để gửi. Hãy tải lại trang để xem tình trạng các đề xuất.",
+    "MESSAGING_OPERATOR_NOT_FOUND": "Người này không phải quản trị viên đang hoạt động."
   },
   "SignIn": {
     "metaTitle": "Đăng nhập · BeyondPilot",
@@ -745,7 +747,8 @@
       "aiMatching": "Ghép nối",
       "aiUsage": "Sử dụng",
       "mcp": "MCP",
-      "email": "Email"
+      "email": "Email",
+      "programMessages": "Phân công chat chương trình"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
     "notFound": {
@@ -1212,7 +1215,8 @@
         "messaging": {
           "request_accept": "Chấp nhận một tin đầu tiên",
           "request_decline": "Từ chối một tin đầu tiên",
-          "request_report": "Báo cáo một tin đầu tiên"
+          "request_report": "Báo cáo một tin đầu tiên",
+          "program_assign": "Phân công người phụ trách chat"
         },
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực",
@@ -1357,7 +1361,8 @@
         "messaging": {
           "request_accept": "Đã chấp nhận một tin đầu tiên về <resource></resource>",
           "request_decline": "Đã từ chối một tin đầu tiên về <resource></resource>",
-          "request_report": "Đã báo cáo một tin đầu tiên về <resource></resource>"
+          "request_report": "Đã báo cáo một tin đầu tiên về <resource></resource>",
+          "program_assign": "Phân công người phụ trách chat về <resource></resource>"
         },
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực của <resource></resource>",
@@ -1893,7 +1898,6 @@
           "created": "Ngày tạo",
           "updated": "Sửa lần cuối"
         },
-        "closedNote": "Đã đóng với giải pháp mới. Các giải pháp bên dưới vẫn giữ và vẫn hiển thị ưu đãi này.",
         "solutions": {
           "title": "Giải pháp đi kèm",
           "empty": "Chưa giải pháp nào đi kèm ưu đãi này.",
@@ -4949,6 +4953,11 @@
         "uploaded": "{size} · Tải lên {when}",
         "waiting": "{size} · Chưa lưu",
         "download": "Tải {name} về",
+        "previewNamed": "Xem trước {name}",
+        "previewTitle": "Xem trước {name}",
+        "previewDescription": "Bản xem trước PDF",
+        "previewLoading": "Đang tải bản xem trước PDF…",
+        "previewFailed": "Không xem trước được PDF. Bạn có thể tải tệp về thay thế.",
         "replace": "Thay tệp",
         "remove": "Gỡ tệp",
         "errors": {
@@ -5031,6 +5040,7 @@
       "images": {
         "uploading": "Đang tải lên…",
         "details": "{size} · {dimensions}",
+        "previewNamed": "Xem trước {name}",
         "replace": "Thay ảnh",
         "remove": "Gỡ ảnh",
         "replaceNamed": "Thay {name}",
@@ -7672,9 +7682,9 @@
       "label": "Viết tin đầu tiên cho {name}",
       "beforeTitle": "Trước khi viết",
       "before": "Hãy nói bạn là ai và bạn cần gì. {name} đọc được tên và tổ chức của bạn, không bao giờ thấy email của bạn.",
-      "beforeOpen": "Hãy hỏi điều bạn cần biết về chương trình. Nhóm chương trình của GenAI Fund trả lời ở đây.",
+      "beforeOpen": "Hãy hỏi điều bạn cần biết về chương trình. Chỉ người phụ trách do GenAI Fund phân công mới đọc và trả lời.",
       "request": "Bạn chưa từng trò chuyện với {name}. Tin đầu tiên của bạn nằm chờ ở mục Tin chờ của họ cho tới khi họ chấp nhận.",
-      "open": "GenAI Fund đọc tin của bạn ngay; không cần chờ chấp nhận.",
+      "open": "Bạn có thể gửi tin ngay. Người phụ trách sẽ đọc sau khi được phân công.",
       "existsTitle": "Bạn đã có hội thoại với {name}",
       "existsLead": "Hội thoại đó đang chờ trả lời hoặc đang mở. Hãy viết ở đó.",
       "openExisting": "Mở hội thoại",
@@ -7709,10 +7719,16 @@
         "owner": "Chủ sở hữu",
         "member": "Thành viên"
       },
+      "members": {
+        "title": "Quyền truy cập của tổ chức bạn",
+        "lead": "Chỉ chủ tổ chức và thành viên được thêm tại đây mới đọc được hội thoại này.",
+        "add": "Thêm",
+        "remove": "Xóa"
+      },
       "note": {
         "talent": "Chỉ người này đọc tin bạn viết ở đây. Họ không bao giờ thấy email của bạn.",
-        "solution": "Mọi người trong tổ chức này đều đọc và trả lời được. Họ không bao giờ thấy email của bạn.",
-        "program": "Nhóm chương trình của GenAI Fund đọc hội thoại này.",
+        "solution": "Chỉ chủ tổ chức và thành viên được họ thêm mới đọc và trả lời được. Họ không bao giờ thấy email của bạn.",
+        "program": "Chỉ người phụ trách được GenAI Fund phân công mới đọc cuộc chat này.",
         "recipient": "Họ không bao giờ thấy email của bạn."
       }
     },
@@ -7733,6 +7749,17 @@
       "noOrganization": "Không có tổ chức",
       "noAccount": "Tài khoản không còn đăng nhập",
       "count": "{count, plural, other {# tin bị báo cáo}}"
+    },
+    "assignments": {
+      "unavailable": "Người phụ trách không còn hoạt động",
+      "title": "Phân công chat chương trình",
+      "lead": "Chỉ người được phân công mới đọc và trả lời cuộc chat. Chọn người phụ trách; việc đổi phân công sẽ thu hồi quyền của người trước đó.",
+      "program": "Chương trình",
+      "created": "Bắt đầu",
+      "assignee": "Người phụ trách",
+      "assign": "Phân công",
+      "unassigned": "Chưa phân công",
+      "empty": "Chưa có chat chương trình"
     }
   },
   "UseCaseProposal": {
