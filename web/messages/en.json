@@ -976,6 +976,12 @@
             "featured": "{name} is featured on the home page.",
             "unfeatured": "{name} is no longer featured."
           }
+        },
+        "luma": {
+          "badge": "From Luma",
+          "title": "Updated from Luma every hour",
+          "lead": "Its name, summary, description, days, page, event and cover come from its event on Luma, and the next read overwrites any change made here. Change them on Luma. Unpublishing it here keeps it off the site.",
+          "open": "Open on Luma"
         }
       },
       "noDays": "Days not set",
@@ -1055,7 +1061,8 @@
           "stay": "Stay"
         }
       },
-      "featured": "Featured"
+      "featured": "Featured",
+      "fromLuma": "From Luma"
     },
     "accounts": {
       "metaTitle": "Accounts · BeyondPilot",

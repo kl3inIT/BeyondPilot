@@ -311,6 +311,10 @@ export type AdminProgram = {
     featuredAt?: string | null;
     id: string;
     keyDates: Array<ProgramKeyDate>;
+    /**
+     * The Luma event the program is read from every hour, `evt-…`; null for a program an operator created. What Luma supplies overwrites an operator's edit at the next read.
+     */
+    lumaEventId?: string | null;
     name: string;
     /**
      * `standard` is built from these fields, `custom` is written in the web application for this address, `external` links to `externalUrl`.
@@ -378,6 +382,10 @@ export type AdminProgramSummary = {
      */
     featuredAt?: string | null;
     id: string;
+    /**
+     * The Luma event the program is read from every hour, `evt-…`; null for a program an operator created. What Luma supplies overwrites an operator's edit at the next read.
+     */
+    lumaEventId?: string | null;
     name: string;
     partnerName?: string | null;
     /**

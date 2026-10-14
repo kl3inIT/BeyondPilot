@@ -43,7 +43,7 @@ public class ProgramQueryRepository {
 	 */
 	public List<AdminProgramSummaryResponse> all(Instant now) {
 		return jdbc.sql("""
-				select id, slug, name, type, partner_name, cover_file_id, featured_at, status, starts_on, ends_on, applications_open_at,
+				select id, slug, name, type, partner_name, cover_file_id, featured_at, luma_event_id, status, starts_on, ends_on, applications_open_at,
 				       applications_close_at, shortlist_size, outcomes_due_on, allow_updates_until_close,
 				       applications_open_title, applications_close_title, outcomes_due_title, updated_at
 				from program
@@ -56,6 +56,7 @@ public class ProgramQueryRepository {
 			return new AdminProgramSummaryResponse(row.getObject("id", UUID.class), row.getString("slug"),
 					row.getString("name"), row.getString("type"), row.getString("partner_name"),
 					row.getObject("cover_file_id", UUID.class), instant(row.getTimestamp("featured_at")),
+						row.getString("luma_event_id"),
 					row.getString("status"), ProgramPhase.of(startsOn, endsOn, opensAt, closesAt, now).code(),
 					applications(row, opensAt, closesAt), startsOn, endsOn, row.getTimestamp("updated_at").toInstant());
 		}).list().stream().sorted(Comparator.comparingInt(program -> BY_URGENCY.indexOf(program.phase()))).toList();

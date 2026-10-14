@@ -20,6 +20,8 @@ public record AdminProgramSummaryResponse(@Schema(requiredMode = Schema.Required
 				description = "The cover, read at the public address of stored files.") @Nullable UUID coverFileId,
 		@Schema(types = { "string", "null" }, format = "date-time",
 				description = "When an operator featured the program; null while it is not featured.") @Nullable Instant featuredAt,
+		@Schema(types = { "string", "null" },
+				description = "The Luma event the program is read from every hour, `evt-…`; null for a program an operator created. What Luma supplies overwrites an operator's edit at the next read.") @Nullable String lumaEventId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "draft", "published" }) String status,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "upcoming", "open", "running", "done" },

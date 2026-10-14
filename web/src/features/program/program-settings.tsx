@@ -1,7 +1,7 @@
 "use client";
 
 import { revalidateLogic, useStore } from "@tanstack/react-form";
-import { LockIcon, PlusIcon } from "lucide-react";
+import { ArrowUpRightIcon, LockIcon, PlusIcon, RefreshCwIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useRef, useState } from "react";
@@ -12,6 +12,7 @@ import { LeaveGuard } from "@/components/composites/leave-guard";
 import { setServerErrors, useAppForm, type ServerErrors } from "@/components/form/app-form";
 import { fieldIdOf, fieldIds } from "@/components/form/field-ids";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
   Field,
@@ -282,6 +283,12 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
                 {t("feature.since", { day: format.dateTime(new Date(program.featuredAt), "date") })}
               </FeaturedBadge>
             )}
+            {program.lumaEventId && (
+              <Badge variant="outline">
+                <RefreshCwIcon aria-hidden="true" />
+                {t("luma.badge")}
+              </Badge>
+            )}
             {/* Published says only that the page is public: the phase and what comes next say where it stands. */}
             {!draft && (
               <span className="text-sm text-muted-foreground">
@@ -323,6 +330,23 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
       <form.AppForm>
         <form.FormError />
       </form.AppForm>
+
+      {/* A program read from Luma is overwritten at the next read: say so before anyone edits it (BEY-190). */}
+      {program.lumaEventId && (
+        <Alert>
+          <RefreshCwIcon aria-hidden="true" />
+          <AlertTitle>{t("luma.title")}</AlertTitle>
+          <AlertDescription>{t("luma.lead")}</AlertDescription>
+          {program.externalUrl && (
+            <AlertAction>
+              <Button size="sm" prominence="secondary" href={program.externalUrl}>
+                {t("luma.open")}
+                <ArrowUpRightIcon aria-hidden="true" />
+              </Button>
+            </AlertAction>
+          )}
+        </Alert>
+      )}
 
       {draft && (
         <form.Subscribe selector={(formState) => missingToPublish(formState.values).join(" ")}>

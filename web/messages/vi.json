@@ -976,6 +976,12 @@
             "featured": "Đã đặt {name} nổi bật trên trang chủ.",
             "unfeatured": "Đã bỏ nổi bật {name}."
           }
+        },
+        "luma": {
+          "badge": "Từ Luma",
+          "title": "Cập nhật từ Luma mỗi giờ",
+          "lead": "Tên, tóm tắt, mô tả, ngày, trang, sự kiện và ảnh bìa lấy từ sự kiện trên Luma, và lần đọc tiếp theo sẽ ghi đè mọi thay đổi ở đây. Hãy sửa chúng trên Luma. Gỡ đăng ở đây thì chương trình vẫn không hiện trên trang.",
+          "open": "Mở trên Luma"
         }
       },
       "noDays": "Chưa đặt ngày",
@@ -1055,7 +1061,8 @@
           "stay": "Ở lại"
         }
       },
-      "featured": "Nổi bật"
+      "featured": "Nổi bật",
+      "fromLuma": "Từ Luma"
     },
     "accounts": {
       "metaTitle": "Tài khoản · BeyondPilot",
