@@ -814,7 +814,9 @@ test.describe("solutions matched to a use case", () => {
     const dialog = page.getByRole("alertdialog", { name: "Invite Sentosa Finance to propose?" });
     await expect(dialog.getByText(/The owners of Sentosa Finance get an email/)).toBeVisible();
     await expect(dialog.getByText(/It cannot be taken back\./)).toBeVisible();
-    await dialog.getByRole("textbox", { name: "Note to the provider (optional)" }).fill(" We would like a proposal. ");
+    await dialog
+      .getByRole("textbox", { name: "Note to the provider (optional)" })
+      .fill(" We would like a proposal. ");
     await expectNoSeriousA11yViolations(page);
     await picture(page, testInfo, "invite", false);
     await dialog.getByRole("button", { name: "Send invitation" }).click();
@@ -1354,7 +1356,9 @@ test.describe("matched solutions, one at a time", () => {
       .first()
       .getByRole("button", { name: "Invite to propose" })
       .click();
-    await expect(page.getByRole("alertdialog", { name: "Invite Staple AI to propose?" })).toBeVisible();
+    await expect(
+      page.getByRole("alertdialog", { name: "Invite Staple AI to propose?" }),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Cancel" }).click();
     await expect(front(page, "Staple AI")).toBeVisible();
     await expect(page.getByText("3 left of 5")).toBeVisible();

@@ -3,7 +3,7 @@
 import { ArrowUpRightIcon, SparklesIcon, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
@@ -16,31 +16,50 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useFormatter } from "@/i18n/format";
+import { deadlineText } from "@/i18n/formats";
 import { readConsent, subscribeConsent } from "@/lib/analytics-consent";
-import { featuredProgramDeadline, featuredProgramSlug, programRoute } from "@/lib/site";
+import type { ProgramKeyDate, ProgramSummary } from "@/lib/api/generated";
+import { programRoute } from "@/lib/site";
+import { publicFileUrl } from "@/lib/storage/upload";
 
-const storageKey = `featured-program:${featuredProgramSlug}`;
+/** What the announcement shows of the program an operator featured, read on the server. */
+type FeaturedProgramView = Pick<
+  ProgramSummary,
+  "slug" | "name" | "partnerName" | "summary" | "coverFileId"
+> & {
+  /** When its applications close: the announcement goes then. */
+  closesAt: string;
+  /** Its next key date still to come, shown under the deadline. */
+  next: ProgramKeyDate | null;
+};
+
 const listeners = new Set<() => void>();
 
-/** The answer given in this document, for a browser that refuses to store anything. */
-let minimisedHere = false;
+/** The programs put away in this document, for a browser that refuses to store anything. */
+const minimisedHere = new Set<string>();
 
-/** Whether the visitor has put the announcement away, in this document or on an earlier visit. */
-function readMinimised(): boolean {
-  if (minimisedHere) {
+/** What is kept per program, so a newly featured program is announced once to everyone. */
+function storageKey(slug: string) {
+  return `featured-program:${slug}`;
+}
+
+/** Whether the visitor has put the announcement of this program away, here or on an earlier visit. */
+function readMinimised(slug: string): boolean {
+  if (minimisedHere.has(slug)) {
     return true;
   }
   try {
-    return window.localStorage.getItem(storageKey) === "minimised";
+    return window.localStorage.getItem(storageKey(slug)) === "minimised";
   } catch {
     return false;
   }
 }
 
-function minimise() {
-  minimisedHere = true;
+function minimise(slug: string) {
+  minimisedHere.add(slug);
   try {
-    window.localStorage.setItem(storageKey, "minimised");
+    window.localStorage.setItem(storageKey(slug), "minimised");
   } catch {
     // Private browsing or blocked site data: the answer holds for this document only.
   }
@@ -55,35 +74,46 @@ function subscribeMinimised(onChange: () => void) {
 }
 
 /** Tells React once, at the deadline, so a page left open drops the announcement when it passes. */
-function subscribeDeadline(onChange: () => void) {
-  const wait = Date.parse(featuredProgramDeadline) - Date.now();
-  // A timer cannot wait longer than about 24 days; a visit that long reloads before then.
-  if (wait <= 0 || wait > 2_000_000_000) {
-    return () => {};
-  }
-  const timer = setTimeout(onChange, wait + 1000);
-  return () => clearTimeout(timer);
+function subscribeDeadline(deadline: string) {
+  return (onChange: () => void) => {
+    const wait = Date.parse(deadline) - Date.now();
+    // A timer cannot wait longer than about 24 days; a visit that long reloads before then.
+    if (wait <= 0 || wait > 2_000_000_000) {
+      return () => {};
+    }
+    const timer = setTimeout(onChange, wait + 1000);
+    return () => clearTimeout(timer);
+  };
 }
 
 /**
  * The program GenAI Fund features on the home page: an announcement in the middle of the window on
  * a first visit, which "Maybe later" or closing puts away as a small card at the bottom right; the
- * card opens it again. A visitor who put it away once gets only the card on later visits.
+ * card opens it again. A visitor who put it away once gets only the card on later visits, until
+ * another program is featured.
  *
- * The page is rendered ahead of time, so the browser decides everything when it hydrates: nothing
- * shows after the program's deadline, and nothing shows while the cookie notice still waits for its
- * answer, so two things never cover the page at once.
+ * Its name, words, cover and dates are the program's, as an operator entered them in Admin. The page
+ * is rendered ahead of time, so the browser decides the rest when it hydrates: nothing shows after
+ * the program's deadline, and nothing shows while the cookie notice still waits for its answer, so
+ * two things never cover the page at once.
  */
-function FeaturedProgram() {
+function FeaturedProgram({ program }: { program: FeaturedProgramView }) {
   const t = useTranslations("Home.featured");
+  const format = useFormatter();
+  const { slug, closesAt, next } = program;
   const live = usePublicSite();
   const consent = useSyncExternalStore(subscribeConsent, readConsent, () => null);
+  const untilDeadline = useMemo(() => subscribeDeadline(closesAt), [closesAt]);
   const closed = useSyncExternalStore(
-    subscribeDeadline,
-    () => Date.now() > Date.parse(featuredProgramDeadline),
+    untilDeadline,
+    () => Date.now() > Date.parse(closesAt),
     () => true,
   );
-  const minimised = useSyncExternalStore(subscribeMinimised, readMinimised, () => true);
+  const minimised = useSyncExternalStore(
+    subscribeMinimised,
+    () => readMinimised(slug),
+    () => true,
+  );
   const [reopened, setReopened] = useState(false);
 
   // The cookie notice is asked on the public address only (see Analytics).
@@ -93,25 +123,28 @@ function FeaturedProgram() {
 
   const open = !minimised || reopened;
   const putAway = () => {
-    minimise();
+    minimise(slug);
     setReopened(false);
   };
+  const nextDay = next ? new Date(next.startsAt) : null;
 
   return (
     <>
-      <Dialog open={open} onOpenChange={(next) => (next ? setReopened(true) : putAway())}>
+      <Dialog open={open} onOpenChange={(opened) => (opened ? setReopened(true) : putAway())}>
         <DialogContent showCloseButton={false} className="sm:max-w-md">
-          {/* The photograph runs to the edges of the dialog, as its footer bar does. */}
-          <div className="-mx-4 -mt-4 overflow-hidden rounded-t-xl">
-            <Image
-              src="/programs/nestle/building.webp"
-              alt={t("imageAlt")}
-              width={880}
-              height={550}
-              sizes="(min-width: 640px) 28rem, 100vw"
-              className="h-auto w-full"
-            />
-          </div>
+          {program.coverFileId && (
+            // The cover runs to the edges of the dialog, as its footer bar does, and shows whole.
+            <div className="-mx-4 -mt-4 overflow-hidden rounded-t-xl">
+              <Image
+                src={publicFileUrl(program.coverFileId)}
+                alt=""
+                width={1600}
+                height={900}
+                sizes="(min-width: 640px) 28rem, 100vw"
+                className="h-auto w-full"
+              />
+            </div>
+          )}
           <DialogClose
             render={
               <IconButton
@@ -127,25 +160,35 @@ function FeaturedProgram() {
             <p className="text-xs font-semibold tracking-wide text-primary uppercase">
               {t("eyebrow")}
             </p>
-            <DialogTitle size="lg">{t("name")}</DialogTitle>
-            <p className="text-base font-semibold">{t("lead")}</p>
-            <DialogDescription>{t("text")}</DialogDescription>
+            <DialogTitle size="lg">{program.name}</DialogTitle>
+            {program.partnerName && (
+              <p className="text-base font-semibold">
+                {t("lead", { partner: program.partnerName })}
+              </p>
+            )}
+            {program.summary && <DialogDescription>{program.summary}</DialogDescription>}
           </div>
           <dl className="flex flex-col gap-1.5 border-y py-3 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-muted-foreground">{t("early")}</dt>
-              <dd className="font-semibold">{t("earlyValue")}</dd>
-            </div>
-            <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">{t("deadline")}</dt>
-              <dd className="font-semibold">{t("deadlineValue")}</dd>
+              <dd className="font-semibold">{deadlineText(format, new Date(closesAt))}</dd>
             </div>
+            {next && nextDay && (
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">{next.title}</dt>
+                <dd className="text-right font-semibold">
+                  {next.allDay
+                    ? format.dateTime(nextDay, "day")
+                    : `${format.dateTime(nextDay, "day")}, ${format.dateTime(nextDay, "time")} ICT`}
+                </dd>
+              </div>
+            )}
           </dl>
           <div className="flex flex-col items-center gap-3 pb-1">
             <Button
               size="xl"
-              href={programRoute(featuredProgramSlug)}
-              onClick={minimise}
+              href={programRoute(slug)}
+              onClick={() => minimise(slug)}
               className="w-full"
             >
               {t("explore")}
@@ -160,11 +203,11 @@ function FeaturedProgram() {
           type="button"
           aria-haspopup="dialog"
           onClick={() => setReopened(true)}
-          className="fixed right-4 bottom-4 z-40 flex flex-col gap-1 rounded-xl border bg-card px-4 py-3 text-left text-card-foreground shadow-raised transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none"
+          className="fixed right-4 bottom-4 z-40 flex max-w-72 flex-col gap-1 rounded-xl border bg-card px-4 py-3 text-left text-card-foreground shadow-raised transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none"
         >
           <span className="flex items-center gap-2 text-sm font-semibold">
-            <SparklesIcon className="size-4 text-primary" aria-hidden="true" />
-            {t("widget")}
+            <SparklesIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+            {program.name}
           </span>
           <span className="flex items-center gap-1 text-sm text-primary">
             {t("view")}
@@ -176,4 +219,4 @@ function FeaturedProgram() {
   );
 }
 
-export { FeaturedProgram };
+export { FeaturedProgram, type FeaturedProgramView };

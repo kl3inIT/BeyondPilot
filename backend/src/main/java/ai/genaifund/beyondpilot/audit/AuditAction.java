@@ -31,6 +31,11 @@ public enum AuditAction {
 
 	PROGRAM_UNPUBLISH("program.unpublish"),
 
+	/** An operator featured a program, which the home page announces while it takes applications. */
+	PROGRAM_FEATURE("program.feature"),
+
+	PROGRAM_UNFEATURE("program.unfeature"),
+
 	/** An operator created an organization for a company that is not here yet. */
 	ORGANIZATION_CREATE("organization.create"),
 

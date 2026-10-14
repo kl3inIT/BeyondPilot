@@ -386,6 +386,31 @@ test.describe("admin programs", () => {
     expect(unpublished).toHaveLength(1);
   });
 
+  test("a program is featured on the home page from its menu, and Undo stops it", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const featured = await answer(page, `/api/program/admin/programs/${tasco}/feature`, 204);
+    const unfeatured = await answer(page, `/api/program/admin/programs/${tasco}/unfeature`, 204);
+    await openSettings(page, tasco);
+    await expect(page.locator("[data-featured]")).toHaveCount(0);
+
+    await page.getByRole("button", { name: "More actions" }).click();
+    await page.getByRole("menuitem", { name: "Feature on home page" }).click();
+    await expect(
+      page.getByText("AI for Insurance Challenge × Tasco is featured on the home page."),
+    ).toBeVisible();
+    // Nobody was told and it can be put back, so the toast offers Undo, which stops featuring it.
+    await page.getByRole("button", { name: "Undo" }).click();
+    await expect(
+      page.getByText("AI for Insurance Challenge × Tasco is no longer featured."),
+    ).toBeVisible();
+    expect(featured).toHaveLength(1);
+    expect(unfeatured).toHaveLength(1);
+  });
+
   test("a ready draft is published after the operator confirms", async ({
     page,
     context,

@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Button } from "@/components/actions/button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
@@ -83,7 +84,12 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
       program,
       href: adminProgramRoute(program.id),
       kind: types(program.type),
-      state: <Badge variant={state.variant}>{t(`state.${state.key}`)}</Badge>,
+      state: (
+        <span className="flex flex-col items-start gap-1">
+          <Badge variant={state.variant}>{t(`state.${state.key}`)}</Badge>
+          {program.featuredAt && <FeaturedBadge>{t("featured")}</FeaturedBadge>}
+        </span>
+      ),
       runs: runs(program),
       window: window(program),
       quietWindow: state.key === "done" || !program.applications,

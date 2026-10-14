@@ -153,4 +153,27 @@ class AdminProgramsController {
 		programs.unpublish(actor, id);
 	}
 
+	@PostMapping("/{id}/feature")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "featureProgram", summary = "Feature a program on the home page",
+			description = "The home page announces the most recently featured program that is published and still takes applications. Featuring a featured program changes nothing.",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The program is featured.", content = @Content)
+	@ApiResponse(responseCode = "404", description = "There is no such program.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void feature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		programs.feature(actor, id);
+	}
+
+	@PostMapping("/{id}/unfeature")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	@Operation(operationId = "unfeatureProgram", summary = "Stop featuring a program",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "204", description = "The program is no longer featured.", content = @Content)
+	@ApiResponse(responseCode = "404", description = "There is no such program.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	void unfeature(@CurrentActor Actor actor, @PathVariable UUID id) {
+		programs.unfeature(actor, id);
+	}
+
 }
