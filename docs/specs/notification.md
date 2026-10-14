@@ -3,7 +3,7 @@
 BeyondPilot's email: what it sends, in which words, through which provider, and what became of each message. Operators
 run it from Admin › Email. It is decided in [ADR 0005](../decisions/0005-operators-run-email-delivery.md) and
 delivered by [BEY-68](../increments/completed/bey-68-email-delivery/design.md); Brevo was added by
-[BEY-128](../increments/active/bey-128-brevo-email/design.md). The code is the `notification`
+[BEY-128](../increments/completed/bey-128-brevo-email/design.md). The code is the `notification`
 application module, `backend/src/main/java/ai/genaifund/beyondpilot/notification`. Its checks are in the
 [test matrix](../tests/notification.md).
 

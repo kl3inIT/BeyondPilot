@@ -1,5 +1,7 @@
 # A person applying on their own is themselves, not an organization
 
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
 Status: in progress, 14 October 2026. Linear: [BEY-189](https://linear.app/beyondpilot/issue/BEY-189). It changes how the applicant's organization of [BEY-37](../../../specs/proposal.md) reads; the behaviour table was agreed with the product owner on 14 October.
 
 ## Why

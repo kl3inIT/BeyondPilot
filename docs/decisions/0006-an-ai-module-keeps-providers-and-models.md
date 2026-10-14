@@ -10,7 +10,7 @@
 
 Matching ([BEY-39](https://linear.app/beyondpilot/issue/BEY-39)) is that second feature: it needs a chat model to judge candidates, and chat itself follows. A module may not write another module's tables, so with the providers left in `search`, `matching` would have to depend on `search` only to reach a key.
 
-The domain story, glossary, data owners and context map are in the [BEY-92 design](../increments/active/bey-92-ai-models/design.md), as [boundary discovery](../conventions.md#boundary-discovery) asks.
+The domain story, glossary, data owners and context map are in the [BEY-92 design](../increments/completed/bey-92-ai-models/design.md), as [boundary discovery](../conventions.md#boundary-discovery) asks.
 
 ## Decision
 

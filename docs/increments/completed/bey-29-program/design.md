@@ -1,6 +1,6 @@
 # Program: programs, their dates and their pages
 
-Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It is the fourth slice of the [Phase 1 domain model](../../active/bey-22-phase-1-domain-model/design.md) and narrows that model's `program` module to what the live site of 9 October needs. The screens are those approved in Figma on 4 and 5 October ([main flows](../../active/bey-27-main-flows-design/design.md)): the programs list, the program page, and in the admin area the Programs list and a program's Settings.
+Status: accepted on 5 October 2026 and being implemented ([plan](plan.md)). It is the fourth slice of the [Phase 1 domain model](../../active/bey-22-phase-1-domain-model/design.md) and narrows that model's `program` module to what the live site of 9 October needs. The screens are those approved in Figma on 4 and 5 October ([main flows](../bey-27-main-flows-design/design.md)): the programs list, the program page, and in the admin area the Programs list and a program's Settings.
 
 ## What a person can do
 

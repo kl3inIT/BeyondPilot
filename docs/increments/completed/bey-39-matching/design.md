@@ -1,5 +1,7 @@
 # Matching: the solutions that fit a use case, with the reasons
 
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
 Status: approved by Đạt on 9 October 2026; being implemented. Tracked in Linear as BEY-39. What was read and measured before this design is in [Matching: references read and a probe on real use cases](../../../research/2026-10-09-matching-references-and-probe.md).
 
 ## What it does

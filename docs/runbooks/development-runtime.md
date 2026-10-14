@@ -81,7 +81,7 @@ Google sign-in works locally once a Google OAuth client exists whose redirect UR
 
 ## Uploaded files
 
-Locally files go to `backend/build/storage`; nothing else is needed. An upload is three requests: `POST /api/storage/uploads` reserves it and answers with a ticket, the browser sends the bytes to the ticket's address with the ticket's headers, and `POST /api/storage/uploads/{id}/confirm` makes the file usable ([storage increment](../increments/active/bey-32-storage/design.md)).
+Locally files go to `backend/build/storage`; nothing else is needed. An upload is three requests: `POST /api/storage/uploads` reserves it and answers with a ticket, the browser sends the bytes to the ticket's address with the ticket's headers, and `POST /api/storage/uploads/{id}/confirm` makes the file usable ([storage increment](../increments/completed/bey-32-storage/design.md)).
 
 To run the S3 store without AWS, start a MinIO container, create a bucket in it, and set `BEYONDPILOT_STORAGE_PROVIDER=s3`, the bucket, a region such as `us-east-1`, `BEYONDPILOT_STORAGE_S3_ENDPOINT=http://localhost:9000`, and MinIO's user and password as `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in the local `.env`. `S3StorageTest` does the same in a container on every run.
 

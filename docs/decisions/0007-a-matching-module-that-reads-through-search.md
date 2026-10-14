@@ -10,7 +10,7 @@ The brief asks BeyondPilot to recommend, for a use case, the solutions already o
 
 A probe on two real use cases on 9 October 2026 ([research](../research/2026-10-09-matching-references-and-probe.md)) showed that the best candidates are often found only by what their deck or website says, that a strong model quotes those texts word for word, and that one provider's limit is reached within a single run.
 
-The domain story, glossary, data owners and context map are in the [BEY-39 design](../increments/active/bey-39-matching/design.md), as [boundary discovery](../conventions.md#boundary-discovery) asks.
+The domain story, glossary, data owners and context map are in the [BEY-39 design](../increments/completed/bey-39-matching/design.md), as [boundary discovery](../conventions.md#boundary-discovery) asks.
 
 ## Decision
 

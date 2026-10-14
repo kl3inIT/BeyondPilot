@@ -1,5 +1,7 @@
 # BEY-176 — Matching: review the matched solutions one at a time
 
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
 Status: proposed on 13 October 2026. The layout was reviewed by Đạt on a local HTML prototype with the staging data of one use case; the prototype shows the layout only, not the components.
 
 ## What it does

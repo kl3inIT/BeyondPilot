@@ -221,7 +221,7 @@ A module tells others that something happened with a Spring application event, f
 
 ## Review lifecycle
 
-Whatever GenAI Fund reviews before the public sees it follows one lifecycle ([BEY-76](increments/active/bey-76-review-lifecycle/design.md), [research](research/2026-10-06-review-lifecycle.md)).
+Whatever GenAI Fund reviews before the public sees it follows one lifecycle ([BEY-76](increments/completed/bey-76-review-lifecycle/design.md), [research](research/2026-10-06-review-lifecycle.md)).
 
 - **Three axes, never one status.** The review is `status`; the owner's choice to show it in the directory is `listed`; GenAI Fund's takedown after approval is `suspended_at` with `suspension_reason` and `suspension_message`. Whether a record is public or eligible for matching is derived from them and never stored.
 - **One vocabulary.** `draft` (the owner writes), `in_review` (sent, waits for an operator), `needs_changes` (sent back with a reason; the owner changes it and sends it again), `approved`, `rejected` (refused for good with a reason; only an operator reopens it). A kind uses only the statuses it needs, and a refusal for missing information is a send back, not a rejection.

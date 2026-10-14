@@ -1,5 +1,7 @@
 # BEY-155 — The page of Nestlé Vietnam AI Reinvention
 
+> **Completed, 14 October 2026:** delivered and running on staging and production (release 372f259b). What it left open is on its Linear issue.
+
 Status: page implemented and tested ([plan](plan.md)); the program's data and its publication are open. The checks are in the [program test matrix](../../../tests/program.md#the-public-pages); the page kinds are in the [program specification](../../../specs/program.md#pages).
 
 ## Why
