@@ -23,15 +23,17 @@ it asks applicants, and whether the public site shows it. It was delivered by
 ## Data
 
 `V4__program_create_programs.sql` creates three tables and `V12__program_create_questions.sql` the fourth;
-`V86__program_add_window_titles.sql` adds the titles of the window's dates. The module
-owns all four ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
+`V86__program_add_window_titles.sql` adds the titles of the window's dates, `V94__program_add_featured_at.sql`
+when an operator featured the program and `V99__program_add_luma_event.sql` the Luma event a program was read from.
+The module owns all four ([data ownership](../../ARCHITECTURE.md#data-ownership-and-consistency)).
 
 - **`program`.** One row per program: `slug`, `name`, `type`, `partner_name`, `summary`, `about`, `starts_on`,
   `ends_on`, `status`, `published_at`, `page_kind`, `external_url`, `cover_file_id`, the application window
   (`applications_open_at`, `applications_close_at`, `shortlist_size`, `outcomes_due_on`, `allow_updates_until_close`),
   the titles an operator gave the dates the window puts on the timeline (`applications_open_title`,
   `applications_close_title`, `outcomes_due_title`, each null for the default words, at most 160 characters),
-  `version`, `created_at`, `updated_at`.
+  `featured_at` (null while the program is not featured), `luma_event_id` (unique; null for a program an operator
+  created) and `luma_cover_url` (the image on Luma the cover was copied from), `version`, `created_at`, `updated_at`.
 - **`program_milestone`** (key dates) and **`program_event`** (events). Lists keyed by `(program_id, position)`, kept
   in the order the operator gave and replaced as a whole, so a row has no identifier of its own.
 - **`program_question`.** Also keyed by `(program_id, position)`, but each question has an `id`, unique across all
@@ -134,7 +136,8 @@ application window, key dates and events, all or nothing.
     answers `fixed: true`.
 - **The opening is fixed once passed.** Once `opensAt` has passed, a save that moves it or takes the window away is
   refused with `PROGRAM_OPENING_FIXED`, so the program cannot look unopened again and free its questions while answers
-  to them exist. `closesAt` and the rest of the window still change.
+  to them exist. `closesAt` and the rest of the window still change. The settings form names a moment to the minute, so
+  a save that names the minute of the stored opening keeps the stored opening, seconds included.
 
 ## Phase
 
@@ -155,8 +158,12 @@ The operators' list shows each program's phase whatever its status.
   shown as a standard page (`web/src/app/[locale]/(public)/programs/[slug]/page.tsx`). `external`: the page is
   somewhere else, at `externalUrl`. The written pages are listed in `web/src/features/program/custom-pages.ts`:
   `insurance-ai-tasco` and `nestle-vietnam-ai-reinvention`. Their long content is fixed for the campaign and lives in
-  both message catalogs; the deadline, the timeline, the events and Apply are the program's.
-- **Use cases.** A standard page and the written pages list the use cases an operator attached to the program, read
+  both message catalogs; the deadline, the timeline, the events and Apply are the program's. Each written page has the
+  look its client drew for it, so it may carry its own stylesheet (a CSS module beside the page, with its own custom
+  properties prefixed by the program) instead of the site's tokens; nothing in it reaches another page. The Nestlé page
+  does: its text is Lexend and its headings Montserrat, as the client drew them, a navigation button and the way to
+  apply stay at the foot of the screen, and no breadcrumb or footer of its own is added to the site's.
+- **Use cases.** A standard page and the Tasco page list the use cases an operator attached to the program (the Nestlé page, drawn without them, does not), read
   from the public use case list by the program's address (`GET /api/usecase/use-cases?program=`), newest first, its
   first page. A program with none has no such section and no entry for it in the page's navigation; `program` gains
   no dependency on `usecase`, the web page composes the two.
@@ -189,19 +196,63 @@ start day comes before those, newest created first.
 Each change is recorded through `AuditTrail` in the transaction of the change, with the operator and the program
 (`resource type program`, its id and name) and no details ([ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md)).
 
-| Command                         | Action              |
-| ------------------------------- | ------------------- |
-| Create                          | `program.create`    |
-| Save, and save of the questions | `program.update`    |
-| Publish                         | `program.publish`   |
-| Unpublish                       | `program.unpublish` |
+| Command                         | Action                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------ |
+| Create                          | `program.create`                                                                           |
+| Save, and save of the questions | `program.update`                                                                           |
+| Publish                         | `program.publish`                                                                          |
+| Unpublish                       | `program.unpublish`                                                                        |
+| Feature                         | `program.feature`                                                                          |
+| Stop featuring                  | `program.unfeature`                                                                        |
+| Read the Luma calendar now      | `program.luma_read`, with `created`, `updated` and `unpublished`; resource `luma_calendar` |
 
-A repeated publish or unpublish records nothing.
+A repeated publish, unpublish, feature or stop records nothing. The Luma job records its create, update, publish and
+unpublish with the same actions and no actor.
+
+## Featuring
+
+An operator features a program for the home page's announcement (BEY-188, built as BEY-130 features directory
+records). `featured_at` is written only by `ProgramRepository.feature` and `unfeature`, one statement each that leaves
+`version` and `updated_at` alone, so featuring never refuses an operator's save; the entity maps it read-only. Any
+program can be featured, in any status, and stays featured until an operator stops it. `GET /api/program/programs?featured=true`
+lists the featured published programs, the most recently featured first; without the parameter the list keeps its
+order and no public record says what is featured. The home page announces the first of them whose applications have not
+closed, with its next key date. Featuring publishes no `ProgramChanged`: the indexed program did not change.
+
+## Events from Luma
+
+`LumaCalendar` brings the events of the GenAI Fund calendar on Luma onto the site (BEY-190). It runs every hour
+(`beyondpilot.program.luma.interval`) where `beyondpilot.program.luma.feed` is set, which only
+`application-production.yaml` does, with the calendar's public iCal feed; tests and local runs never call Luma.
+
+- **Read.** `program.luma.LumaFeed` reads the feed: each event's `evt-…` identifier, its times in UTC and its page's
+  address. For each event not over, `LumaEventPage` reads the schema.org `Event` JSON-LD of its page: name,
+  description, start and end with their offset, attendance mode, city, country (an ISO code written in English words)
+  and first image. Calls go through `LumaHttp` to the configured hosts only (`beyondpilot.program.luma.hosts`), follow
+  no redirect, end after `beyondpilot.program.luma.timeout` and read at most 2 MB of text or 5 MB of an image.
+- **Write.** Each event in a transaction of its own. A new one is a program of type `event`: its address is the page's
+  path (`gaf-tinyfish-vn`), with `-2`, `-3`… when taken; its summary the description's first line cut at a word to 300
+  characters, its about the description, its days the event's local days, its page `external` at the Luma address,
+  one program event registering there, and its cover the image copied into storage (`StorageService.keep`). It is
+  published when it has what publishing asks for, and waits as a draft otherwise. A held one is found by
+  `luma_event_id` and given what Luma says now, overwriting an operator's edit; a read that changes nothing writes
+  nothing, and the image is copied again only when its address changes, the replaced cover going after the commit.
+  The job never changes a held program's status, except to unpublish a published one whose event is still to come
+  and is no longer in the feed.
+- **In Admin.** `AdminProgram` and `AdminProgramSummary` carry `lumaEventId`. The list and the program's screen mark
+  such a program **From Luma**, and its Settings say that Luma overwrites its fields at the next read, with a link to
+  its Luma page.
+- **Now.** Admin › Programs › **Pull from Luma** runs the same read at once (`ProgramAdministration.readLuma`), for an
+  operator who just published an event; a read already running finishes first, since `read` is synchronized. The
+  toast says what changed.
+- **Failures.** A feed that cannot be read, or is not a calendar, changes nothing (`program.luma.feed_failed`). An
+  event whose page, image or write fails is skipped and tried at the next read (`program.luma.event_failed`); the
+  others go on. A read that changed something logs `program.luma.read` with its counts.
 
 ## Events
 
 - **`ProgramChanged(programId)`** is published inside the transaction by a save, a publication and an unpublication
-  (not by a creation or a save of the questions). It names the program only; a listener reads the program as it is
+  (not by a creation or a save of the questions), and by every change the Luma job makes. It names the program only; a listener reads the program as it is
   then through `ProgramService.indexed`, which is empty for a draft. `search` handles it to add or remove the program
   in its index.
 
@@ -209,18 +260,21 @@ A repeated publish or unpublish records nothing.
 
 Admin paths need a session, an operator and, for a change, the CSRF header.
 
-| Method and path                                   | Contract                                                           |
-| ------------------------------------------------- | ------------------------------------------------------------------ |
-| `GET /api/program/programs`                       | `ProgramList` of published programs; optional `phase` and `type`   |
-| `GET /api/program/programs/{slug}`                | `Program`; a draft only for an operator; `404` otherwise           |
-| `GET /api/program/admin/programs`                 | `AdminProgramList`: every program with status, phase and window    |
-| `POST /api/program/admin/programs`                | `201` with the draft as `AdminProgram`; `409` `PROGRAM_SLUG_TAKEN` |
-| `GET /api/program/admin/programs/{id}`            | `AdminProgram`, with `publishIssues`, `slugFixed` and `version`    |
-| `PUT /api/program/admin/programs/{id}`            | `AdminProgram` as saved, with its new version                      |
-| `GET /api/program/admin/programs/{id}/questions`  | `ProgramQuestions`: the questions, `fixed`, `opensAt`, `version`   |
-| `PUT /api/program/admin/programs/{id}/questions`  | `ProgramQuestions` as saved, with the program's new version        |
-| `POST /api/program/admin/programs/{id}/publish`   | `204`; `400` `PROGRAM_NOT_READY_TO_PUBLISH`                        |
-| `POST /api/program/admin/programs/{id}/unpublish` | `204`                                                              |
+| Method and path                                   | Contract                                                                                                                                                       |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/program/programs`                       | `ProgramList` of published programs; optional `phase`, `type` and `featured`                                                                                   |
+| `GET /api/program/programs/{slug}`                | `Program`; a draft only for an operator; `404` otherwise                                                                                                       |
+| `GET /api/program/admin/programs`                 | `AdminProgramList`: every program with status, phase and window                                                                                                |
+| `POST /api/program/admin/programs`                | `201` with the draft as `AdminProgram`; `409` `PROGRAM_SLUG_TAKEN`                                                                                             |
+| `GET /api/program/admin/programs/{id}`            | `AdminProgram`, with `publishIssues`, `slugFixed` and `version`                                                                                                |
+| `PUT /api/program/admin/programs/{id}`            | `AdminProgram` as saved, with its new version                                                                                                                  |
+| `GET /api/program/admin/programs/{id}/questions`  | `ProgramQuestions`: the questions, `fixed`, `opensAt`, `version`                                                                                               |
+| `PUT /api/program/admin/programs/{id}/questions`  | `ProgramQuestions` as saved, with the program's new version                                                                                                    |
+| `POST /api/program/admin/programs/{id}/publish`   | `204`; `400` `PROGRAM_NOT_READY_TO_PUBLISH`                                                                                                                    |
+| `POST /api/program/admin/programs/{id}/unpublish` | `204`                                                                                                                                                          |
+| `POST /api/program/admin/programs/{id}/feature`   | `204`                                                                                                                                                          |
+| `POST /api/program/admin/programs/{id}/unfeature` | `204`                                                                                                                                                          |
+| `POST /api/program/admin/programs/luma/read`      | `LumaRead`: what the read changed; `503` `PROGRAM_LUMA_NOT_CONFIGURED` where no calendar is configured, `PROGRAM_LUMA_UNREACHABLE` when Luma could not be read |
 
 The contract is `openapi.yml`.
 

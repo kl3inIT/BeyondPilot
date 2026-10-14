@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { Link } from "@/i18n/navigation";
+import { PageTabs } from "@/components/composites/page-tabs";
 import {
   adminProgramApplicationsRoute,
   adminProgramQuestionsRoute,
@@ -34,25 +34,11 @@ async function ProgramTabs({
       : []),
   ] as const;
   return (
-    <nav aria-label={t("label")} className="border-b">
-      <ul className="flex gap-6">
-        {tabs.map((tab) => (
-          <li key={tab.key}>
-            <Link
-              href={tab.href}
-              aria-current={tab.key === current ? "page" : undefined}
-              className={
-                tab.key === current
-                  ? "inline-flex min-h-11 items-center border-b-2 border-foreground text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
-                  : "inline-flex min-h-11 items-center border-b-2 border-transparent text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
-              }
-            >
-              {t(tab.key)}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <PageTabs
+      label={t("label")}
+      current={current}
+      tabs={tabs.map((tab) => ({ ...tab, label: t(tab.key) }))}
+    />
   );
 }
 

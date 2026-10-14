@@ -11,7 +11,8 @@ import { proposeToUseCaseRoute as proposeRoute, siteRoutes, useCaseRoute } from 
 import { Card, Rows } from "./proposal-card";
 import { ProposalSentBy } from "./proposal-sender-card";
 import { ProposalSolutionList } from "./proposal-solution-list";
-import type { EditState } from "./proposal-access";
+import { WithdrawProposal } from "./proposal-withdraw";
+import { mayChange, outcomeOf, type EditState } from "./proposal-access";
 
 type ProposalViewPageProps = {
   form: UseCaseProposalForm;
@@ -22,16 +23,24 @@ type ProposalViewPageProps = {
 /**
  * What the caller's organization sent to a use case, read-only: the organization, the solutions
  * and the approach, the sender's profile as it was sent, the team and the PDF, when it was sent and
- * edited, and the way into editing while the window is open.
+ * edited, the way into editing while the window is open, and the way to take it back while the use case
+ * takes proposals. A proposal that was taken back reads the same, says so, and may be sent again.
  */
 function ProposalViewPage({ form, proposal, edit }: ProposalViewPageProps) {
   const t = useTranslations("UseCaseProposal.view");
   const detail = useTranslations("UseCaseProposal.received.detail");
   const closed = useTranslations("UseCaseProposal.actions.editClosed");
+  const taken = useTranslations("UseCaseProposal.view.notice");
   const size = useFileSize();
   const format = useFormatter();
   const day = (instant: string) => format.dateTime(new Date(instant), "date");
   const { deck } = proposal;
+  const withdrawn = proposal.status === "draft" ? proposal.withdrawnAt : null;
+  // The use case still takes proposals unless its closing time has passed.
+  const useCaseClosed = edit.kind === "closed" && edit.reason === "useCaseClosed";
+  const outcome = outcomeOf(proposal);
+  const changeable = mayChange(outcome);
+  const closesOn = form.useCase.closesAt ? day(form.useCase.closesAt) : undefined;
 
   return (
     <div className="flex flex-1 justify-center bg-muted px-5 pt-8 pb-16 md:px-8 md:pt-12">
@@ -39,7 +48,7 @@ function ProposalViewPage({ form, proposal, edit }: ProposalViewPageProps) {
         <header className="flex flex-col gap-2">
           <nav
             aria-label={detail("crumbs")}
-            className="flex flex-wrap items-center gap-x-2 text-sm font-medium"
+            className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm font-medium"
           >
             <TextButton href={siteRoutes.useCases}>
               <ArrowLeftIcon aria-hidden="true" />
@@ -56,19 +65,57 @@ function ProposalViewPage({ form, proposal, edit }: ProposalViewPageProps) {
             </h1>
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-sm text-muted-foreground">
+                {withdrawn && t("withdrawn", { date: day(withdrawn) })}
                 {proposal.sentAt && t("sent", { date: day(proposal.sentAt) })}
                 {proposal.editedAt && ` · ${t("edited", { date: day(proposal.editedAt) })}`}
-                {edit.kind === "editable" && ` · ${t("until", { when: day(edit.until) })}`}
+                {edit.kind === "editable" &&
+                  changeable &&
+                  ` · ${t("until", { when: day(edit.until) })}`}
               </span>
-              {edit.kind === "editable" && (
+              {proposal.status === "sent" && !useCaseClosed && changeable && proposal.sentAt && (
+                <WithdrawProposal
+                  proposalId={proposal.id}
+                  useCaseTitle={form.useCase.title}
+                  sentOn={day(proposal.sentAt)}
+                  closesOn={closesOn}
+                />
+              )}
+              {edit.kind === "editable" && changeable && (
                 <Button href={proposeRoute(form.useCase.id)}>{t("edit")}</Button>
+              )}
+              {withdrawn && !useCaseClosed && (
+                <Button href={proposeRoute(form.useCase.id)}>{t("sendAgain")}</Button>
               )}
             </div>
           </div>
-          {edit.kind !== "editable" && (
+          {edit.kind !== "editable" && !useCaseClosed && !withdrawn && changeable && (
             <p className="text-sm text-muted-foreground">{closed(edit.reason)}</p>
           )}
         </header>
+
+        {outcome && proposal.outcomeSentAt && (
+          <Card id="proposal-outcome" title={taken(`outcome.${outcome}.title`)}>
+            <p className="text-sm text-muted-foreground">
+              {taken(`outcome.${outcome}.text`, { date: day(proposal.outcomeSentAt) })}
+            </p>
+          </Card>
+        )}
+        {withdrawn && (
+          <Card id="proposal-notice" title={taken("withdrawn.title")}>
+            <p className="text-sm text-muted-foreground">
+              {useCaseClosed
+                ? taken("withdrawn.closed")
+                : closesOn
+                  ? taken("withdrawn.until", { date: closesOn })
+                  : taken("withdrawn.open")}
+            </p>
+          </Card>
+        )}
+        {useCaseClosed && !withdrawn && (
+          <Card id="proposal-notice" title={taken("closed.title")}>
+            <p className="text-sm text-muted-foreground">{taken("closed.text")}</p>
+          </Card>
+        )}
 
         <Card id="proposal-solutions" title={detail("solutions.title")}>
           <ProposalSolutionList solutions={proposal.solutions} />

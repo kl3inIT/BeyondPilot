@@ -48,6 +48,8 @@ tags:
   name: My solutions
 - description: The accounts operators manage.
   name: Accounts
+- description: Program chat assignment without message content.
+  name: Messaging administration
 - description: The public directory of approved AI solutions.
   name: Solutions
 - description: "Search over the programs, solutions, talent and use cases the public\
@@ -58,8 +60,6 @@ tags:
   name: Messaging
 - description: The organization the caller belongs to.
   name: My organization
-- description: The first messages reported as unwanted.
-  name: Messaging administration
 - description: Who is signed in.
   name: Identity
 - description: The use cases the members of an organization write.
@@ -798,6 +798,123 @@ paths:
       summary: The calls made to models and OCR services
       tags:
       - AI administration
+  /api/ai/admin/usage/calls/export:
+    post:
+      operationId: exportAiUsageCalls
+      parameters:
+      - description: "Today, or the last 7 or 30 days with today, in Asia/Ho_Chi_Minh."
+        in: query
+        name: period
+        required: false
+        schema:
+          type: string
+          default: today
+          enum:
+          - today
+          - 7d
+          - 30d
+          pattern: today|7d|30d
+      - description: "Only calls made for this task, as the call named it."
+        in: query
+        name: task
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only calls to the provider with this name.
+        in: query
+        name: provider
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 200
+          minLength: 0
+      - description: Only calls to the model with this name.
+        in: query
+        name: model
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 200
+          minLength: 0
+      - description: Only calls that ended this way.
+        in: query
+        name: outcome
+        required: false
+        schema:
+          type: string
+          enum:
+          - ok
+          - failed
+          pattern: ok|failed
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every call the parameters select, the newest first, one row\
+            \ each. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the log of calls as a spreadsheet
+      tags:
+      - AI administration
   /api/ai/admin/usage/overview:
     get:
       operationId: getAiUsageOverview
@@ -879,10 +996,14 @@ paths:
           - account.enable
           - operator.grant
           - operator.withdraw
+          - audit.export
           - program.create
           - program.update
           - program.publish
           - program.unpublish
+          - program.luma_read
+          - program.feature
+          - program.unfeature
           - organization.create
           - organization.approve
           - organization.suspend
@@ -897,6 +1018,7 @@ paths:
           - organization.member_role
           - organization.member_remove
           - organization.merge
+          - organization.export
           - solution.approve
           - solution.create
           - solution.publish
@@ -918,6 +1040,7 @@ paths:
           - solution.deployment_withdraw
           - solution.deployment_restore
           - solution.enrich
+          - solution.export
           - use_case.create
           - use_case.submit
           - use_case.draft
@@ -927,6 +1050,7 @@ paths:
           - use_case.unfeature
           - use_case.set_programs
           - messaging.request_accept
+          - messaging.program_assign
           - messaging.request_decline
           - messaging.request_report
           - talent.approve
@@ -940,6 +1064,7 @@ paths:
           - talent.feature
           - talent.unfeature
           - talent.delete
+          - talent.export
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
@@ -947,6 +1072,11 @@ paths:
           - proposal.release
           - proposal.file_open
           - proposal.export
+          - proposal.drafts_export
+          - proposal.draft_open
+          - use_case_proposal.decide
+          - use_case_proposal.outcomes_send
+          - use_case_proposal.export
           - email.settings_update
           - email.appearance_update
           - email.template_update
@@ -962,6 +1092,7 @@ paths:
           - ai.model_update
           - ai.model_remove
           - ai.task_model_change
+          - ai.usage_export
           - search.model_change
           - search.semantic_enable
           - search.semantic_disable
@@ -980,7 +1111,9 @@ paths:
           - matching.candidate_add
           - matching.candidate_shortlist
           - matching.candidate_remove
+          - matching.candidate_reason
           - matching.candidate_restore
+          - matching.candidate_invite
           - matching.settings_change
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
@@ -1444,6 +1577,205 @@ paths:
       summary: End a person's connection with an AI app
       tags:
       - Identity
+  /api/identity/admin/audit-events/export:
+    post:
+      operationId: exportAuditEvents
+      parameters:
+      - description: Only events at or after this instant.
+        in: query
+        name: from
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: date-time
+      - description: Only events of this action.
+        in: query
+        name: action
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          enum:
+          - account.disable
+          - account.enable
+          - operator.grant
+          - operator.withdraw
+          - audit.export
+          - program.create
+          - program.update
+          - program.publish
+          - program.unpublish
+          - program.luma_read
+          - program.feature
+          - program.unfeature
+          - organization.create
+          - organization.approve
+          - organization.suspend
+          - organization.restore
+          - organization.update
+          - organization.invite
+          - organization.invitation_revoke
+          - organization.refuse
+          - organization.send_back
+          - organization.claim_approve
+          - organization.claim_decline
+          - organization.member_role
+          - organization.member_remove
+          - organization.merge
+          - organization.export
+          - solution.approve
+          - solution.create
+          - solution.publish
+          - solution.send_back
+          - solution.reject
+          - solution.take_down
+          - solution.restore
+          - solution.back
+          - solution.feature
+          - solution.unfeature
+          - solution.offers_choose
+          - solution.offer_create
+          - solution.offer_update
+          - solution.offer_close
+          - solution.offer_reopen
+          - solution.offer_delete
+          - solution.deployment_approve
+          - solution.deployment_reject
+          - solution.deployment_withdraw
+          - solution.deployment_restore
+          - solution.enrich
+          - solution.export
+          - use_case.create
+          - use_case.submit
+          - use_case.draft
+          - use_case.approve
+          - use_case.send_back
+          - use_case.feature
+          - use_case.unfeature
+          - use_case.set_programs
+          - messaging.request_accept
+          - messaging.program_assign
+          - messaging.request_decline
+          - messaging.request_report
+          - talent.approve
+          - talent.reject
+          - talent.enquiry_accept
+          - talent.enquiry_decline
+          - talent.enquiry_report
+          - talent.request_changes
+          - talent.remove
+          - talent.restore
+          - talent.feature
+          - talent.unfeature
+          - talent.delete
+          - talent.export
+          - proposal.criteria_update
+          - proposal.reviewer_invite
+          - proposal.reviewer_remove
+          - proposal.decide
+          - proposal.release
+          - proposal.file_open
+          - proposal.export
+          - proposal.drafts_export
+          - proposal.draft_open
+          - use_case_proposal.decide
+          - use_case_proposal.outcomes_send
+          - use_case_proposal.export
+          - email.settings_update
+          - email.appearance_update
+          - email.template_update
+          - email.template_reset
+          - email.suppression_add
+          - email.suppression_remove
+          - email.resend
+          - email.test_send
+          - ai.provider_create
+          - ai.provider_update
+          - ai.provider_delete
+          - ai.model_add
+          - ai.model_update
+          - ai.model_remove
+          - ai.task_model_change
+          - ai.usage_export
+          - search.model_change
+          - search.semantic_enable
+          - search.semantic_disable
+          - search.index_rebuild
+          - search.embedding_retry
+          - mcp.app_revoke
+          - mcp.host_add
+          - mcp.host_remove
+          - mcp.other_hosts_allow
+          - mcp.other_hosts_refuse
+          - mcp.user_server_enable
+          - mcp.user_server_disable
+          - mcp.tool_enable
+          - mcp.tool_disable
+          - matching.run_start
+          - matching.candidate_add
+          - matching.candidate_shortlist
+          - matching.candidate_remove
+          - matching.candidate_reason
+          - matching.candidate_restore
+          - matching.candidate_invite
+          - matching.settings_change
+      - description: "Events whose actor's name or address, or whose resource's name,\
+          \ contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every event the parameters select, newest first, one row each.\
+            \ The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the audit log as a spreadsheet
+      tags:
+      - Audit
   /api/identity/apps:
     get:
       operationId: listConnectedApps
@@ -1765,6 +2097,126 @@ paths:
         \ belongs when it did not"
       tags:
       - Matching
+  /api/matching/candidates/{candidateId}/invite:
+    post:
+      description: "Its owners are emailed, or the addresses invited to own it when\
+        \ nobody has taken it on yet. One invitation for each use case and provider;\
+        \ it cannot be taken back."
+      operationId: inviteMatchingCandidate
+      parameters:
+      - in: path
+        name: candidateId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteMatchingCandidate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matching"
+          description: The provider is invited.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The note is longer than 500 characters.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The candidate is unknown to the caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The candidate was removed, the use case takes no proposals,\
+            \ the provider was invited already, or nobody answers for it."
+        "429":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member invited as many providers as a day allows.
+      security:
+      - session: []
+      summary: Invite the provider of a candidate to propose for the use case
+      tags:
+      - Matching
+  /api/matching/candidates/{candidateId}/removal-reason:
+    post:
+      operationId: giveMatchingRemovalReason
+      parameters:
+      - in: path
+        name: candidateId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GiveMatchingRemovalReason"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Matching"
+          description: The reason is on the removal and who removed it is unchanged.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The reason is not one of the five.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Someone else removed the candidate.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The candidate is unknown to the caller.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The candidate is no longer removed.
+      security:
+      - session: []
+      summary: "Say why the caller removed a candidate, after the removal"
+      tags:
+      - Matching
   /api/matching/candidates/{candidateId}/remove:
     post:
       operationId: removeMatchingCandidate
@@ -1793,7 +2245,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The reason is not valid, or is other and nothing says what."
+          description: The reason is not one of the five.
         "401":
           content:
             application/problem+json:
@@ -1808,7 +2260,7 @@ paths:
           description: The candidate is unknown to the caller.
       security:
       - session: []
-      summary: "Take a candidate off the list, with the reason"
+      summary: "Take a candidate off the list, with the reason if one is given"
       tags:
       - Matching
   /api/matching/candidates/{candidateId}/restore:
@@ -2256,41 +2708,18 @@ paths:
       summary: Turn the user MCP server on or off
       tags:
       - MCP
-  /api/messaging/admin/reported:
+  /api/messaging/admin/program-assignments:
     get:
-      operationId: listReportedConversations
-      parameters:
-      - description: "The page, counted from 1."
-        in: query
-        name: page
-        required: false
-        schema:
-          type: integer
-          format: int32
-          default: 1
-          minimum: 1
-      - description: How many items a page holds; the list's own page size when absent.
-        in: query
-        name: size
-        required: false
-        schema:
-          type: integer
-          format: int32
-          maximum: 100
-          minimum: 1
+      operationId: listProgramConversationAssignments
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ReportedRequestList"
-          description: One page of the reported first messages.
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
-          description: A parameter is not valid.
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProgramConversationAssignment"
+          description: "Up to 100 program conversations, unassigned first."
         "401":
           content:
             application/problem+json:
@@ -2305,8 +2734,50 @@ paths:
           description: The caller is not an operator.
       security:
       - session: []
-      summary: "The first messages reported as unwanted, the most recently reported\
-        \ first"
+      summary: Program conversation assignments without message content or sender
+        details
+      tags:
+      - Messaging administration
+  /api/messaging/admin/program-assignments/{id}/{accountId}:
+    put:
+      operationId: assignProgramConversation
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: Only the assigned operator may read and answer the conversation.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The program conversation or active operator is absent.
+      security:
+      - session: []
+      summary: Assign a program conversation to one active operator
       tags:
       - Messaging administration
   /api/messaging/conversations:
@@ -2515,6 +2986,97 @@ paths:
       summary: Decline a first message
       tags:
       - Messaging
+  /api/messaging/conversations/{id}/members/{accountId}:
+    delete:
+      operationId: removeConversationMember
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationDetail"
+          description: The conversation with the updated member list.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of either organization side.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The conversation is absent.
+      security:
+      - session: []
+      summary: An organization owner removes a member they added to this conversation
+      tags:
+      - Messaging
+    post:
+      operationId: addConversationMember
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: accountId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationDetail"
+          description: The conversation with the updated member list.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an owner of either organization side.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The conversation or organization member is absent.
+      security:
+      - session: []
+      summary: An organization owner adds one of their members to this conversation
+      tags:
+      - Messaging
   /api/messaging/conversations/{id}/messages:
     get:
       operationId: listMessages
@@ -2682,8 +3244,8 @@ paths:
       - Messaging
   /api/messaging/conversations/{id}/report:
     post:
-      description: The sender is told what a decline tells. Operators read what was
-        reported.
+      description: The sender is told what a decline tells. The report is retained
+        as a status and audit event.
       operationId: reportConversation
       parameters:
       - in: path
@@ -4057,6 +4619,130 @@ paths:
       summary: Create an organization for a company that is not here yet
       tags:
       - Organization administration
+  /api/organization/admin/organizations/export:
+    post:
+      operationId: exportAdminOrganizations
+      parameters:
+      - description: "Organizations whose name or domain contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "Only organizations of this review status; `in_review` also selects\
+          \ an approved one with an open claim, `approved` leaves out those taken\
+          \ down, and `suspended` selects those taken down. Merged organizations are\
+          \ listed only under `merged`."
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - in_review
+          - needs_changes
+          - approved
+          - rejected
+          - suspended
+          - merged
+          pattern: in_review|needs_changes|approved|rejected|suspended|merged
+      - description: "Only organizations in this country, ISO 3166-1 alpha-2."
+        in: query
+        name: country
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "[A-Z]{2}"
+      - description: "The order: `name` by the name, `received` by when its open claim\
+          \ arrived, or when the organization was created when none is open, `members`\
+          \ by how many people belong to it; `-` before a key turns it round. Without\
+          \ it, those a decision waits on first, then the most recently received."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+          enum:
+          - name
+          - -name
+          - received
+          - -received
+          - members
+          - -members
+          pattern: -?(name|received|members)
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every organization the parameters select, in the list's order,\
+            \ one row each. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the organizations as a spreadsheet
+      tags:
+      - Organization administration
   /api/organization/admin/organizations/queue:
     get:
       operationId: getOrganizationReviewQueue
@@ -4926,8 +5612,8 @@ paths:
             \ of it."
       security:
       - session: []
-      summary: "Save the name, type, size, industries and country of the caller's\
-        \ organization, leaving the rest of its profile"
+      summary: "Save the required facts of the selected organization type, leaving\
+        \ optional profile facts unchanged"
       tags:
       - My organization
   /api/organization/mine/invitations:
@@ -5429,8 +6115,7 @@ paths:
             \ a request to join one."
       security:
       - session: []
-      summary: "Create an organization the caller owns from its name, kind, size,\
-        \ industries and country"
+      summary: Create an organization from the required facts of its selected type
       tags:
       - Organizations
   /api/organization/organizations/{id}/join:
@@ -5588,6 +6273,43 @@ paths:
       summary: Create a program as a draft
       tags:
       - Program administration
+  /api/program/admin/programs/luma/read:
+    post:
+      description: "Does now what the hourly read does: each event still to come becomes\
+        \ or updates a program, and one that left the calendar is unpublished. A read\
+        \ already running finishes first."
+      operationId: readLumaCalendar
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LumaRead"
+          description: What the read changed.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "503":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "This environment reads no Luma calendar, or Luma could not\
+            \ be read; nothing changed."
+      security:
+      - session: []
+      summary: Read the GenAI Fund calendar on Luma now
+      tags:
+      - Program administration
   /api/program/admin/programs/{id}:
     get:
       operationId: getAdminProgram
@@ -5685,6 +6407,45 @@ paths:
       security:
       - session: []
       summary: "Save a program with its application window, key dates and events"
+      tags:
+      - Program administration
+  /api/program/admin/programs/{id}/feature:
+    post:
+      description: The home page announces the most recently featured program that
+        is published and still takes applications. Featuring a featured program changes
+        nothing.
+      operationId: featureProgram
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The program is featured.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program.
+      security:
+      - session: []
+      summary: Feature a program on the home page
       tags:
       - Program administration
   /api/program/admin/programs/{id}/publish:
@@ -5829,6 +6590,42 @@ paths:
       summary: Replace the questions a program asks its applicants
       tags:
       - Program administration
+  /api/program/admin/programs/{id}/unfeature:
+    post:
+      operationId: unfeatureProgram
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "204":
+          description: The program is no longer featured.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program.
+      security:
+      - session: []
+      summary: Stop featuring a program
+      tags:
+      - Program administration
   /api/program/admin/programs/{id}/unpublish:
     post:
       operationId: unpublishProgram
@@ -5899,6 +6696,15 @@ paths:
           - event_series
           - event
           pattern: enterprise_challenge|open_innovation_call|accelerator|hackathon|buildathon|grant|venture_building|pitch_competition|event_series|event
+      - description: "Only the programs an operator featured, the most recently featured\
+          \ first; the home page announces the first that still takes applications."
+        in: query
+        name: featured
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
       responses:
         "200":
           content:
@@ -6211,6 +7017,40 @@ paths:
         team
       tags:
       - Applications
+  /api/proposal/programs/{slug}/application/organization/leave:
+    post:
+      operationId: leaveApplyingAlone
+      parameters:
+      - in: path
+        name: slug
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationView"
+          description: "The form, with no organization."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The program takes no applications now, the caller does not\
+            \ apply as themselves, or something was already sent under their name."
+      security:
+      - session: []
+      summary: "Stop applying as oneself, to apply for a company instead"
+      tags:
+      - Applications
   /api/proposal/review/applications/{id}:
     get:
       operationId: getReviewApplication
@@ -6362,6 +7202,97 @@ paths:
       summary: A file of an application's last submission
       tags:
       - Review
+  /api/proposal/review/drafts/{id}:
+    get:
+      operationId: getReviewDraft
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewDraft"
+          description: What the draft holds now. The reading is recorded.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such draft.
+      security:
+      - session: []
+      summary: "An application not submitted yet, as it stands now"
+      tags:
+      - Review
+  /api/proposal/review/drafts/{id}/files/{fileId}:
+    get:
+      operationId: getReviewDraftFile
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: fileId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+          description: "The bytes of the file, saved under its name."
+        "302":
+          description: "The address the object store serves the file at, for a while."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The draft holds no such file.
+      security:
+      - session: []
+      summary: A file of an application not submitted yet
+      tags:
+      - Review
   /api/proposal/review/programs:
     get:
       operationId: listReviewPrograms
@@ -6436,6 +7367,18 @@ paths:
         schema:
           type: string
           format: uuid
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
       requestBody:
         content:
           application/json:
@@ -6445,11 +7388,22 @@ paths:
       responses:
         "200":
           content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
             text/csv:
               schema:
                 type: string
+                format: binary
           description: "One row for each application, with its applicant's contact\
             \ details, decision and scores. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The download would hold too many rows.
         "401":
           content:
             application/problem+json:
@@ -6628,6 +7582,114 @@ paths:
       security:
       - session: []
       summary: "Shortlist applications, or mark them not selected"
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/drafts:
+    get:
+      operationId: listProgramDrafts
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgramDrafts"
+          description: "Each draft's applicant, how to reach them and how far they\
+            \ got, the most recently saved first. What a draft says is not read out."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: "A program's applications not submitted yet, for operators to follow\
+        \ up"
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/drafts/export:
+    post:
+      operationId: exportProgramDrafts
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "One row for each draft, with its applicant's contact details\
+            \ and how far they got. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The download would hold too many rows.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: Download a program's applications not submitted yet as a spreadsheet
       tags:
       - Review
   /api/proposal/review/programs/{programId}/release:
@@ -7048,6 +8110,49 @@ paths:
       summary: One proposal a use case received
       tags:
       - Use case proposals
+  /api/proposal/use-case-proposals/{id}/decision:
+    post:
+      description: "Records the decision and tells nobody; the outcomes are sent together.\
+        \ It may change at any time, but not back to undecided."
+      operationId: decideUseCaseProposal
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecideUseCaseProposal"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReceivedUseCaseProposalSummary"
+          description: The proposal's line with the decision as recorded.
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The decision is neither shortlisted nor declined.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The proposal was not sent, or the caller is neither of the\
+            \ organization that posted its use case nor an operator."
+      security:
+      - session: []
+      summary: Shortlist or decline a proposal a use case received
+      tags:
+      - Use case proposals
   /api/proposal/use-case-proposals/{id}/file:
     get:
       operationId: getUseCaseProposalFile
@@ -7124,6 +8229,92 @@ paths:
       security:
       - session: []
       summary: Send a proposal to its use case
+      tags:
+      - Use case proposals
+  /api/proposal/use-case-proposals/{id}/withdraw:
+    post:
+      operationId: withdrawUseCaseProposal
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseProposalForm"
+          description: "The form with the proposal as a draft again, saying when it\
+            \ was taken back."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller's organization has no such proposal.
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The proposal is not sent, or the use case no longer takes\
+            \ proposals."
+      security:
+      - session: []
+      summary: Take a sent proposal back
+      tags:
+      - Use case proposals
+  /api/proposal/use-cases/{useCaseId}/outcomes:
+    post:
+      description: "E-mails the sender of each proposal whose decision was not yet\
+        \ told, or changed since, in one batch."
+      operationId: sendUseCaseProposalOutcomes
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendUseCaseProposalOutcomes"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UseCaseProposalOutcomes"
+          description: "How many senders were e-mailed, and of them how many shortlisted\
+            \ and declined."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The message is longer than 2000 characters.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "There is no such use case, or the caller is neither of the\
+            \ organization that posted it nor an operator."
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: No proposal has a decision to send.
+      security:
+      - session: []
+      summary: E-mail the outcomes of a use case's proposals
       tags:
       - Use case proposals
   /api/proposal/use-cases/{useCaseId}/proposal:
@@ -7246,6 +8437,64 @@ paths:
       security:
       - session: []
       summary: The proposals a use case received
+      tags:
+      - Use case proposals
+  /api/proposal/use-cases/{useCaseId}/proposals/export:
+    post:
+      operationId: exportUseCaseProposals
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "One row for each sent proposal, the latest first, with its\
+            \ decision. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The download would hold too many rows.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such use case.
+      security:
+      - session: []
+      summary: Download the proposals a use case received as a spreadsheet
       tags:
       - Use case proposals
   /api/search:
@@ -8364,6 +9613,144 @@ paths:
       security:
       - session: []
       summary: Start a solution as a draft of an approved organization
+      tags:
+      - Solution administration
+  /api/solution/admin/solutions/export:
+    post:
+      operationId: exportAdminSolutions
+      parameters:
+      - description: "Solutions whose name, or whose organization's name, contains\
+          \ this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only solutions offered by this organization.
+        in: query
+        name: organizationId
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: uuid
+      - description: "Only solutions of this review status, or `suspended` for those\
+          \ taken down; `approved` leaves out those taken down. Drafts are never listed."
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - in_review
+          - needs_changes
+          - approved
+          - rejected
+          - suspended
+          pattern: in_review|needs_changes|approved|rejected|suspended
+      - description: Only solutions for this industry.
+        in: query
+        name: industry
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: banking_finance|insurance|retail_ecommerce|manufacturing|logistics|healthcare|education|real_estate|telecom|energy|agriculture|travel_hospitality|media_entertainment|public_sector|professional_services|technology|automotive_mobility|consumer_goods|climate_sustainability|marketing_advertising|legal|hr_workforce|other
+      - description: "Only solutions featured when true, only those not featured when\
+          \ false."
+        in: query
+        name: featured
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
+      - description: "The order: `name` by the name, `submitted` by when it was last\
+          \ sent for review; `-` before a key turns it round, and one never sent comes\
+          \ last either way. Without it, those with something waiting for review first,\
+          \ the longest wait on top."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+          enum:
+          - name
+          - -name
+          - submitted
+          - -submitted
+          pattern: -?(name|submitted)
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every solution the parameters select, in the list's order,\
+            \ one row each. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the solutions as a spreadsheet
       tags:
       - Solution administration
   /api/solution/admin/solutions/organizations:
@@ -10315,6 +11702,125 @@ paths:
       summary: "The submitted talent profiles, those waiting for review first"
       tags:
       - Talent administration
+  /api/talent/admin/profiles/export:
+    post:
+      operationId: exportAdminTalent
+      parameters:
+      - description: "Profiles whose name contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "Only profiles of this review status; `approved` leaves out those\
+          \ taken down, and `suspended` selects those taken down. Drafts are never\
+          \ listed."
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - in_review
+          - needs_changes
+          - approved
+          - suspended
+          pattern: in_review|needs_changes|approved|suspended
+      - description: "Only profiles featured when true, only those not featured when\
+          \ false."
+        in: query
+        name: featured
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
+      - description: "The order: `name` by the name, `submitted` by when it was last\
+          \ sent for review; `-` before a key turns it round, and one never sent comes\
+          \ last either way. Without it, those waiting for review first, the longest\
+          \ wait on top."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+          enum:
+          - name
+          - -name
+          - submitted
+          - -submitted
+          pattern: -?(name|submitted)
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every profile the parameters select, in the list's order,\
+            \ one row each, with its person's email. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the talent profiles as a spreadsheet
+      tags:
+      - Talent administration
   /api/talent/admin/profiles/queue:
     get:
       operationId: getTalentReviewQueue
@@ -12114,7 +13620,8 @@ components:
           - "null"
           description: "A domain the operator may verify with a decision: the one\
             \ it has, else the creator's work domain while it waits for review, else\
-            \ its website's. Null when another organization holds it."
+            \ its website's. Null for an individual, or when another organization\
+            \ holds it."
       required:
       - claims
       - createdBy
@@ -12284,6 +13791,13 @@ components:
           - string
           - "null"
           format: uri
+        featuredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator featured the program; null while it is not
+            featured.
         id:
           type: string
           format: uuid
@@ -12291,6 +13805,13 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ProgramKeyDate"
+        lumaEventId:
+          type:
+          - string
+          - "null"
+          description: "The Luma event the program is read from every hour, `evt-…\
+            `; null for a program an operator created. What Luma supplies overwrites\
+            \ an operator's edit at the next read."
         name:
           type: string
         pageKind:
@@ -12409,9 +13930,23 @@ components:
           - string
           - "null"
           format: date
+        featuredAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When an operator featured the program; null while it is not
+            featured.
         id:
           type: string
           format: uuid
+        lumaEventId:
+          type:
+          - string
+          - "null"
+          description: "The Luma event the program is read from every hour, `evt-…\
+            `; null for a program an operator created. What Luma supplies overwrites\
+            \ an operator's edit at the next read."
         name:
           type: string
         partnerName:
@@ -13643,6 +15178,10 @@ components:
           type: boolean
           description: Whether GenAI Fund has reviewed and approved it; it applies
             either way.
+        changeable:
+          type: boolean
+          description: "Whether the person applies as themselves and may still apply\
+            \ as a team or a company instead: nothing was sent under their name yet."
         country:
           type:
           - string
@@ -13665,6 +15204,7 @@ components:
           - other
       required:
       - approved
+      - changeable
       - id
       - name
       - type
@@ -13754,10 +15294,14 @@ components:
           - account.enable
           - operator.grant
           - operator.withdraw
+          - audit.export
           - program.create
           - program.update
           - program.publish
           - program.unpublish
+          - program.luma_read
+          - program.feature
+          - program.unfeature
           - organization.create
           - organization.approve
           - organization.suspend
@@ -13772,6 +15316,7 @@ components:
           - organization.member_role
           - organization.member_remove
           - organization.merge
+          - organization.export
           - solution.approve
           - solution.create
           - solution.publish
@@ -13793,6 +15338,7 @@ components:
           - solution.deployment_withdraw
           - solution.deployment_restore
           - solution.enrich
+          - solution.export
           - use_case.create
           - use_case.submit
           - use_case.draft
@@ -13802,6 +15348,7 @@ components:
           - use_case.unfeature
           - use_case.set_programs
           - messaging.request_accept
+          - messaging.program_assign
           - messaging.request_decline
           - messaging.request_report
           - talent.approve
@@ -13815,6 +15362,7 @@ components:
           - talent.feature
           - talent.unfeature
           - talent.delete
+          - talent.export
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
@@ -13822,6 +15370,11 @@ components:
           - proposal.release
           - proposal.file_open
           - proposal.export
+          - proposal.drafts_export
+          - proposal.draft_open
+          - use_case_proposal.decide
+          - use_case_proposal.outcomes_send
+          - use_case_proposal.export
           - email.settings_update
           - email.appearance_update
           - email.template_update
@@ -13837,6 +15390,7 @@ components:
           - ai.model_update
           - ai.model_remove
           - ai.task_model_change
+          - ai.usage_export
           - search.model_change
           - search.semantic_enable
           - search.semantic_disable
@@ -13855,7 +15409,9 @@ components:
           - matching.candidate_add
           - matching.candidate_shortlist
           - matching.candidate_remove
+          - matching.candidate_reason
           - matching.candidate_restore
+          - matching.candidate_invite
           - matching.settings_change
         actor:
           type:
@@ -14462,6 +16018,12 @@ components:
         hasEarlier:
           type: boolean
           description: Whether messages earlier than these exist.
+        manageableMembers:
+          type: array
+          description: Members of the caller's organization an owner may add or remove.
+            Empty for other callers.
+          items:
+            $ref: "#/components/schemas/ConversationMember"
         messages:
           type: array
           description: "The latest messages, the oldest first, at most 50."
@@ -14483,6 +16045,7 @@ components:
       required:
       - conversation
       - hasEarlier
+      - manageableMembers
       - messages
       - participants
       - readByOtherSide
@@ -14511,6 +16074,26 @@ components:
       - chats
       - requests
       - unread
+    ConversationMember:
+      type: object
+      description: A member of the caller's organization whom its owner may add to
+        this conversation.
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        included:
+          type: boolean
+        name:
+          type:
+          - string
+          - "null"
+      required:
+      - accountId
+      - email
+      - included
     ConversationParticipant:
       type: object
       description: A person on the other side of a conversation.
@@ -15050,6 +16633,19 @@ components:
           minLength: 0
       required:
       - applicationIds
+      - decision
+    DecideUseCaseProposal:
+      type: object
+      description: What the organization that posted a use case decides on a proposal
+        it received. Nobody is told until the outcomes are sent.
+      properties:
+        decision:
+          type: string
+          enum:
+          - shortlisted
+          - declined
+          pattern: shortlisted|declined
+      required:
       - decision
     DeclinedOrganizationRequest:
       type: object
@@ -15994,6 +17590,26 @@ components:
           minItems: 0
       required:
       - agrees
+    GiveMatchingRemovalReason:
+      type: object
+      description: "Why the caller removed a candidate, said afterwards."
+      properties:
+        note:
+          type: string
+          description: "A few words more, if the person wants."
+          maxLength: 500
+          minLength: 0
+        reason:
+          type: string
+          enum:
+          - does_not_solve
+          - wrong_industry_or_size
+          - closed_or_wrong_website
+          - duplicate
+          - other
+          pattern: does_not_solve|wrong_industry_or_size|closed_or_wrong_website|duplicate|other
+      required:
+      - reason
     InvitationAllowance:
       type: object
       description: How many more people an organization's owners may invite now.
@@ -16024,6 +17640,15 @@ components:
       - leftToday
       - open
       - openLimit
+    InviteMatchingCandidate:
+      type: object
+      description: Invites the provider of a candidate to propose for the use case.
+      properties:
+        note:
+          type: string
+          description: "A few words to the provider, quoted in the email."
+          maxLength: 500
+          minLength: 0
     InviteMember:
       type: object
       description: An address asked to join the caller's organization.
@@ -16106,6 +17731,32 @@ components:
       required:
       - mine
       - preview
+    LumaRead:
+      type: object
+      description: What a read of the GenAI Fund calendar on Luma changed. An event
+        that could not be read is tried again at the next read.
+      properties:
+        created:
+          type: integer
+          format: int32
+          description: Events still to come that became programs.
+        failed:
+          type: integer
+          format: int32
+          description: Events that could not be read this time.
+        unpublished:
+          type: integer
+          format: int32
+          description: Programs unpublished because their event left the calendar.
+        updated:
+          type: integer
+          format: int32
+          description: Programs that took what Luma says now.
+      required:
+      - created
+      - failed
+      - unpublished
+      - updated
     MarkReadRequest:
       type: object
       properties:
@@ -16124,6 +17775,11 @@ components:
           description: "The candidates, in the order the last run found them."
           items:
             $ref: "#/components/schemas/MatchingCandidate"
+        invitationsLeftToday:
+          type: integer
+          format: int32
+          description: "How many more providers the caller may invite today; absent\
+            \ for operators, who have no limit."
         modelChosen:
           type: boolean
           description: Whether an AI model is set for matching; without one no run
@@ -16203,6 +17859,9 @@ components:
           description: "One finding per requirement, in their order."
           items:
             $ref: "#/components/schemas/MatchingFinding"
+        hasDeck:
+          type: boolean
+          description: Whether it has a deck.
         id:
           type: string
           format: uuid
@@ -16210,6 +17869,22 @@ components:
           $ref: "#/components/schemas/MatchingFinding"
           description: Whether the vendor delivered a similar workflow in the use
             case's industry.
+        invitedAt:
+          type: string
+          format: date-time
+          description: When its provider was invited to propose for the use case;
+            absent when it was not.
+        invitedBy:
+          type: string
+          description: "Who invited it, by the name they are shown by; absent for\
+            \ a member when GenAI Fund invited it."
+        invitedByOperator:
+          type: boolean
+          description: Whether GenAI Fund invited it.
+        invitedProviderId:
+          type: string
+          format: uuid
+          description: The provider organization invited; absent when it was not.
         judged:
           type: boolean
           description: Whether a run judged it; one added by hand waits for the next
@@ -16290,6 +17965,7 @@ components:
       - bucket
       - decision
       - findings
+      - hasDeck
       - id
       - judged
       - listed
@@ -18346,6 +20022,115 @@ components:
       - allowUpdatesUntilClose
       - closesAt
       - opensAt
+    ProgramConversationAssignment:
+      type: object
+      description: Program conversation assignment metadata; message content and sender
+        are omitted.
+      properties:
+        assigneeId:
+          type:
+          - string
+          - "null"
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        id:
+          type: string
+          format: uuid
+        programName:
+          type: string
+      required:
+      - createdAt
+      - id
+      - programName
+    ProgramDraft:
+      type: object
+      description: "Who started an application, how to reach them and how far they\
+        \ got."
+      properties:
+        contactComplete:
+          type: boolean
+          description: "First and last name, phone and country are filled."
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        deckAttached:
+          type: boolean
+          description: A deck is attached.
+        email:
+          type: string
+          description: The address the applicant signs in with.
+        firstName:
+          type:
+          - string
+          - "null"
+        id:
+          type: string
+          format: uuid
+        lastName:
+          type:
+          - string
+          - "null"
+        lastSavedAt:
+          type: string
+          format: date-time
+        organizationName:
+          type:
+          - string
+          - "null"
+          description: "The organization the applicant applies for, once they have\
+            \ one."
+        organizationType:
+          type:
+          - string
+          - "null"
+          enum:
+          - company
+          - builder_team
+          - independent_builder
+          - other
+        phone:
+          type:
+          - string
+          - "null"
+        requiredAnswered:
+          type: integer
+          format: int32
+          description: How many of the program's required questions are answered.
+        solutionChosen:
+          type: boolean
+          description: A solution is chosen.
+        startedAt:
+          type: string
+          format: date-time
+      required:
+      - contactComplete
+      - deckAttached
+      - email
+      - id
+      - lastSavedAt
+      - requiredAnswered
+      - solutionChosen
+      - startedAt
+    ProgramDrafts:
+      type: object
+      description: "A program's applications not submitted yet, for operators to follow\
+        \ up; what each says stays the applicant's."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgramDraft"
+        requiredQuestions:
+          type: integer
+          format: int32
+          description: How many required questions the program asks.
+      required:
+      - items
+      - requiredQuestions
     ProgramEvent:
       type: object
       description: A session of a program that people register for somewhere else.
@@ -19599,6 +21384,24 @@ components:
           type:
           - string
           - "null"
+        decidedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        decidedBy:
+          type:
+          - string
+          - "null"
+          description: Who made the latest decision.
+        decision:
+          type:
+          - string
+          - "null"
+          description: What the posting organization decided; null while undecided.
+          enum:
+          - shortlisted
+          - declined
         deck:
           type:
           - object
@@ -19626,6 +21429,16 @@ components:
           description: "Read at /api/storage/files/{id}."
         organizationName:
           type: string
+        outcomePending:
+          type: boolean
+          description: Whether the decision is set and the sender was not yet told
+            it.
+        outcomeSentAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the sender was last e-mailed the outcome; null if never.
         sender:
           type:
           - object
@@ -19652,6 +21465,7 @@ components:
       - id
       - organizationApproved
       - organizationName
+      - outcomePending
       - sentAt
       - sentBy
       - solutions
@@ -19665,6 +21479,24 @@ components:
           - string
           - "null"
           description: Who sent it.
+        decidedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        decidedBy:
+          type:
+          - string
+          - "null"
+          description: Who made the latest decision.
+        decision:
+          type:
+          - string
+          - "null"
+          description: What the posting organization decided; null while undecided.
+          enum:
+          - shortlisted
+          - declined
         editedAt:
           type:
           - string
@@ -19678,6 +21510,10 @@ components:
         organizationApproved:
           type: boolean
           description: Whether GenAI Fund approved the sending organization.
+        organizationId:
+          type: string
+          format: uuid
+          description: The sending organization.
         organizationLogoFileId:
           type:
           - string
@@ -19686,6 +21522,16 @@ components:
           description: "Read at /api/storage/files/{id}."
         organizationName:
           type: string
+        outcomePending:
+          type: boolean
+          description: Whether the decision is set and the sender was not yet told
+            it.
+        outcomeSentAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the sender was last e-mailed the outcome; null if never.
         sentAt:
           type: string
           format: date-time
@@ -19697,21 +21543,38 @@ components:
       required:
       - id
       - organizationApproved
+      - organizationId
       - organizationName
+      - outcomePending
       - sentAt
       - solutionNames
     ReceivedUseCaseProposals:
       type: object
       description: "The proposals a use case received, the latest first."
       properties:
+        declined:
+          type: integer
+          format: int32
+          description: How many proposals are declined.
         items:
           type: array
           items:
             $ref: "#/components/schemas/ReceivedUseCaseProposalSummary"
+        pending:
+          type: integer
+          format: int32
+          description: How many proposals have an outcome to send.
+        shortlisted:
+          type: integer
+          format: int32
+          description: How many proposals are shortlisted.
         useCase:
           $ref: "#/components/schemas/ProposalUseCase"
       required:
+      - declined
       - items
+      - pending
+      - shortlisted
       - useCase
     RefuseOrganization:
       type: object
@@ -19896,7 +21759,8 @@ components:
       - solutionName
     RemoveMatchingCandidate:
       type: object
-      description: Why a candidate is taken off the list.
+      description: "Takes a candidate off the list. The reason is optional: it can\
+        \ be given with the removal or afterwards."
       properties:
         note:
           type: string
@@ -19905,6 +21769,7 @@ components:
           minLength: 0
         reason:
           type: string
+          description: "Why, if the person says."
           enum:
           - does_not_solve
           - wrong_industry_or_size
@@ -19912,8 +21777,6 @@ components:
           - duplicate
           - other
           pattern: does_not_solve|wrong_industry_or_size|closed_or_wrong_website|duplicate|other
-      required:
-      - reason
     ReportedChatModel:
       type: object
       properties:
@@ -19976,76 +21839,6 @@ components:
             $ref: "#/components/schemas/ReportedChatModel"
       required:
       - models
-    ReportedRequest:
-      type: object
-      description: A first message the side written to reported as unwanted.
-      properties:
-        createdAt:
-          type: string
-          format: date-time
-        id:
-          type: string
-          format: uuid
-        kind:
-          type: string
-          enum:
-          - talent
-          - solution
-          - program
-        message:
-          type: string
-        reportedAt:
-          type:
-          - string
-          - "null"
-          format: date-time
-          description: When it was reported.
-        senderEmail:
-          type: string
-          description: The sender's address; empty when the account no longer signs
-            in.
-        senderName:
-          type:
-          - string
-          - "null"
-          description: The sender's name; null when they gave none.
-        senderOrganization:
-          type:
-          - string
-          - "null"
-          description: The organization the sender belonged to; null when none.
-        subjectName:
-          type: string
-          description: The profile or solution it was sent about.
-      required:
-      - createdAt
-      - id
-      - kind
-      - message
-      - senderEmail
-      - subjectName
-    ReportedRequestList:
-      type: object
-      description: "One page of the reported first messages, the newest first."
-      properties:
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/ReportedRequest"
-        page:
-          type: integer
-          format: int32
-        pageSize:
-          type: integer
-          format: int32
-        total:
-          type: integer
-          format: int64
-      required:
-      - items
-      - page
-      - pageSize
-      - total
     ReserveUpload:
       type: object
       description: The file a person is about to upload.
@@ -20340,6 +22133,32 @@ components:
       required:
       - id
       - name
+    ReviewDraft:
+      type: object
+      description: "An application not submitted yet, as it stands now, for an operator;\
+        \ judges never read it."
+      properties:
+        draft:
+          $ref: "#/components/schemas/SubmittedApplication"
+          description: "What the draft holds now, in the shape of a submission; a\
+            \ part not written yet is empty."
+        head:
+          $ref: "#/components/schemas/ReviewHead"
+        id:
+          type: string
+          format: uuid
+        lastSavedAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+      required:
+      - draft
+      - head
+      - id
+      - lastSavedAt
+      - startedAt
     ReviewEvent:
       type: object
       properties:
@@ -21405,13 +23224,29 @@ components:
       - version
     SaveOrganizationBasics:
       type: object
-      description: "The facts a person gives when they make an organization, which\
-        \ a save changes alone. The rest of the profile is left as it is."
+      description: The required facts of the selected organization type. A save leaves
+        optional profile facts unchanged.
       properties:
         country:
           type: string
           description: ISO 3166-1 alpha-2.
           pattern: "[A-Z]{2}"
+        description:
+          type:
+          - string
+          - "null"
+          description: "Required for a team or company, including relevant expertise\
+            \ and experience; omitted for a builder on their own."
+          maxLength: 280
+          minLength: 0
+        foundedYear:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: Required for a company; omitted for other types.
+          maximum: 2100
+          minimum: 1800
         industries:
           type: array
           description: The industries it works in or serves; a company names at least
@@ -21424,13 +23259,6 @@ components:
         name:
           type: string
           maxLength: 120
-          minLength: 0
-        teamBackground:
-          type:
-          - string
-          - "null"
-          description: "What the team has built before, separate from its short description."
-          maxLength: 2000
           minLength: 0
         teamSize:
           type: string
@@ -21449,6 +23277,14 @@ components:
           - "null"
           format: int64
           description: Required when editing; omitted when creating.
+        website:
+          type:
+          - string
+          - "null"
+          description: Required for a company; omitted for other types.
+          maxLength: 300
+          minLength: 0
+          pattern: "https?://[^\\s]+"
       required:
       - country
       - industries
@@ -22485,6 +24321,18 @@ components:
       required:
       - body
       - id
+    SendUseCaseProposalOutcomes:
+      type: object
+      description: Sends the outcomes of a use case's proposals that were decided
+        and not yet told.
+      properties:
+        message:
+          type:
+          - string
+          - "null"
+          description: A note quoted in every e-mail sent; optional.
+          maxLength: 2000
+          minLength: 0
     SenderProfile:
       type: object
       description: The sender's talent profile as it was when the proposal was sent.
@@ -23903,6 +25751,21 @@ components:
         id:
           type: string
           format: uuid
+        outcome:
+          type:
+          - string
+          - "null"
+          description: The decision the posting organization last told the sender;
+            null until the outcomes were sent.
+          enum:
+          - shortlisted
+          - declined
+        outcomeSentAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: When the sender was told `outcome`.
         sender:
           type:
           - object
@@ -23929,6 +25792,8 @@ components:
             $ref: "#/components/schemas/ProposalSolution"
         status:
           type: string
+          description: "A proposal that was taken back is a draft again, and says\
+            \ when in `withdrawnAt`."
           enum:
           - draft
           - sent
@@ -23944,6 +25809,13 @@ components:
           format: int64
           description: "Sent back with the next save, so a save made on a stale copy\
             \ is refused."
+        withdrawnAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+          description: "When the proposal was taken back; null if it never was, and\
+            \ once it is sent again."
       required:
       - id
       - solutions
@@ -23995,6 +25867,26 @@ components:
           $ref: "#/components/schemas/ProposalUseCase"
       required:
       - useCase
+    UseCaseProposalOutcomes:
+      type: object
+      description: How many senders were e-mailed their outcome.
+      properties:
+        declined:
+          type: integer
+          format: int32
+          description: "Of them, told they were declined."
+        sent:
+          type: integer
+          format: int32
+          description: "E-mails queued: one for each proposal."
+        shortlisted:
+          type: integer
+          format: int32
+          description: "Of them, told they were shortlisted."
+      required:
+      - declined
+      - sent
+      - shortlisted
     UseCaseRequirement:
       type: object
       description: One thing the solution must do.

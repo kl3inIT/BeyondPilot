@@ -34,7 +34,13 @@ public enum MessagingErrorCode implements ErrorCode {
 	NOT_WAITING("MESSAGING_NOT_WAITING", ErrorCategory.CONFLICT, "This request was answered already."),
 
 	OWNERS_ONLY("MESSAGING_OWNERS_ONLY", ErrorCategory.NOT_PERMITTED,
-			"Only an owner of the organization answers a first message."),
+			"Only an owner of the organization may perform this action."),
+
+	MEMBER_NOT_FOUND("MESSAGING_MEMBER_NOT_FOUND", ErrorCategory.NOT_FOUND,
+			"This person is not a member of your organization."),
+
+	OPERATOR_NOT_FOUND("MESSAGING_OPERATOR_NOT_FOUND", ErrorCategory.NOT_FOUND,
+			"This person is not an active operator."),
 
 	MESSAGE_CONFLICT("MESSAGING_MESSAGE_CONFLICT", ErrorCategory.CONFLICT,
 			"This message could not be sent. Write it again."),

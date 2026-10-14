@@ -13,6 +13,9 @@ bucket4j = "8.21.0"
 caffeine = "3.3.0"
 mcp = "2.0.1"
 pdfbox = "3.0.8"
+ical4j = "4.4.0"
+jsoup = "1.23.2"
+fesod = "2.1.0-incubating"
 
 [libraries]
 spring-modulith-bom = { module = "org.springframework.modulith:spring-modulith-bom", version.ref = "spring-modulith" }
@@ -51,6 +54,9 @@ mcp-json-jackson3 = { module = "io.modelcontextprotocol.sdk:mcp-json-jackson3", 
 mcp-spring-webmvc = { module = "org.springframework.ai:mcp-spring-webmvc" }
 httpclient5 = { module = "org.apache.httpcomponents.client5:httpclient5" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+ical4j = { module = "org.mnode.ical4j:ical4j", version.ref = "ical4j" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+fesod-sheet = { module = "org.apache.fesod:fesod-sheet", version.ref = "fesod" }
 springdoc-webmvc-api = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdoc" }
 
 spring-boot-starter-actuator-test = { module = "org.springframework.boot:spring-boot-starter-actuator-test" }

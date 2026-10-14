@@ -87,7 +87,6 @@
   "Campaign": {
     "name": "AI for Insurance Challenge × Tasco",
     "partners": "GenAI Fund × Tasco",
-    "kind": "Enterprise challenge · Insurance · Vietnam",
     "question": "How might we make insurance in Vietnam something people are glad to hold?",
     "live": "Live",
     "apply": "Apply",
@@ -95,7 +94,6 @@
     "readBrief": "Read the brief",
     "submissionsClose": "Submissions close 15 Oct, 23:59 ICT",
     "closes": "Closes 15 Oct, 23:59 ICT",
-    "countdown": "{days, plural, =0 {Last day} one {# day left} other {# days left}} · closes 15 Oct, 23:59 ICT",
     "closed": "Submissions closed on 15 Oct, 23:59 ICT",
     "facts": {
       "label": "Key dates",
@@ -104,12 +102,19 @@
       "demoDay": "Demo day",
       "demoDayWhen": "22 Oct, 2–4 pm",
       "investment": "Considered for investment",
-      "investmentValue": "Up to US$100,000",
-      "notified": "Applicants notified",
-      "notifiedWhen": "16 Oct"
+      "investmentValue": "Up to US$100,000"
     }
   },
   "Home": {
+    "featured": {
+      "eyebrow": "Featured program",
+      "lead": "Don't miss your chance to collaborate with {partner}.",
+      "deadline": "Deadline",
+      "explore": "Explore the program & apply",
+      "later": "Maybe later",
+      "close": "Close",
+      "view": "View the program"
+    },
     "hero": {
       "titleStart": "Your next step in",
       "titleEnd": "AI starts here.",
@@ -205,14 +210,8 @@
         "title": "AI Events",
         "description": "Connect with the ecosystem through meetups, workshops, and demo days.",
         "action": "Discover events",
-        "item1Month": "Oct",
-        "item1Day": "13",
-        "item1Title": "GenAI Builders Meetup",
-        "item1Meta": "Meetup series · Oct to Dec",
-        "item2Month": "Oct",
-        "item2Day": "22",
-        "item2Title": "Demo day · AI for Insurance Challenge",
-        "item2Meta": "Ten teams present live"
+        "online": "Online",
+        "empty": "New events are announced here as soon as they are scheduled."
       },
       "programs": {
         "title": "AI Programs",
@@ -253,11 +252,6 @@
         "shortlist": "Shortlist matched solutions",
         "alt": "an example of the three steps. Start by searching the directory or publishing a use case; the solutions listed on BeyondPilot include Revve AI and Shieldbase; the next step is to receive proposals or shortlist the solutions matched to a use case."
       }
-    },
-    "challenge": {
-      "eyebrow": "Featured opportunity",
-      "description": "Tasco and GenAI Fund are looking for AI solutions to real operating problems in Vietnamese insurance. Apply directly through the challenge page.",
-      "partners": "With Microsoft for Startups and Notion"
     },
     "faq": {
       "eyebrow": "FAQ",
@@ -319,6 +313,10 @@
     "backToSolutions": "Back to solutions"
   },
   "Errors": {
+    "ORGANIZATION_INDIVIDUAL": "Just me is one person: it has no other members, invitations or email domain. Make it a team or a company first.",
+    "ORGANIZATION_NOT_ALONE": "This organization has other members, invitations or requests to join, so it cannot become Just me. Remove them first.",
+    "ORGANIZATION_TEAM_SIZE_REQUIRED": "Choose how many people the team or company has.",
+    "PROPOSAL_INDIVIDUAL_LOCKED": "You already sent something under your name, so you keep applying as yourself.",
     "unknown": "That did not work. Try again.",
     "REQUEST_INVALID": "Check the marked fields and try again.",
     "AI_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",
@@ -362,6 +360,12 @@
     "MATCHING_RUN_LIMIT": "You have used every run for this use case today. Try again tomorrow.",
     "MATCHING_CANDIDATE_REMOVED": "This solution was removed. Restore it first.",
     "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund removed this solution, so only GenAI Fund can restore it.",
+    "MATCHING_CANDIDATE_NOT_REMOVED": "This solution is no longer removed, so it takes no reason.",
+    "MATCHING_REMOVED_BY_SOMEONE_ELSE": "Someone else removed this solution; only they can say why.",
+    "MATCHING_USE_CASE_CLOSED": "This use case no longer takes proposals, so nobody can be invited to propose.",
+    "MATCHING_ALREADY_INVITED": "This provider was already invited to propose for this use case.",
+    "MATCHING_NOBODY_TO_INVITE": "Nobody answers for this provider on BeyondPilot yet, so there is nobody to email.",
+    "MATCHING_INVITATION_LIMIT": "You have invited as many providers as a day allows for this use case. Try again tomorrow.",
     "MATCHING_ALREADY_CANDIDATE": "This solution is already on the list for this use case.",
     "MATCHING_OWN_SOLUTION": "This solution belongs to the organization that owns the use case.",
     "MATCHING_SETTINGS_CHANGED": "Someone else changed these settings. Reload and try again.",
@@ -378,7 +382,8 @@
     "MESSAGING_TOO_MANY_MESSAGES": "You are writing too fast. Wait a moment and send again.",
     "MESSAGING_NOT_OPEN": "This conversation is not open, so nothing can be written in it.",
     "MESSAGING_NOT_WAITING": "This request was answered already.",
-    "MESSAGING_OWNERS_ONLY": "Only an owner of the organization answers a first message.",
+    "MESSAGING_OWNERS_ONLY": "Only an owner of the organization may do this.",
+    "MESSAGING_MEMBER_NOT_FOUND": "This person is not a member of your organization.",
     "MESSAGING_MESSAGE_CONFLICT": "This message could not be sent. Write it again.",
     "MESSAGING_READ_BEYOND_LAST_MESSAGE": "That message is not in this conversation. Reload it and try again.",
     "MCP_TOOL_NOT_FOUND": "This tool no longer exists. Reload the page.",
@@ -474,6 +479,7 @@
     "PROPOSAL_NO_ORGANIZATION": "Join or set up an organization to send a proposal.",
     "PROPOSAL_NOT_FOUND": "There is no such proposal.",
     "PROPOSAL_ALREADY_SENT": "This proposal was sent, so it can no longer change.",
+    "PROPOSAL_NOT_SENT": "Only a sent proposal can be withdrawn. Reload the page to see where yours stands.",
     "PROPOSAL_APPROACH_REQUIRED": "Say how the solution solves this use case.",
     "PROPOSAL_CONTACT_REQUIRED": "Add your name, country and phone number first.",
     "PROPOSAL_PDF_REQUIRED": "Add the proposal as a PDF.",
@@ -545,7 +551,12 @@
     "USECASE_CANNOT_MOVE_TO_DRAFT": "Only a use case in review or published can move back to Draft.",
     "USECASE_NOT_AWAITING_REVIEW": "This use case is no longer in review. Its status was read again.",
     "USECASE_ATTACHMENT_NOT_USABLE": "Upload the file again: it cannot be attached.",
-    "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest."
+    "USECASE_TIMELINE_OUT_OF_ORDER": "The longest timeline is shorter than the shortest.",
+    "PROPOSAL_NOTHING_TO_SEND": "There is no decision to send. Reload the page to see where the proposals stand.",
+    "MESSAGING_OPERATOR_NOT_FOUND": "This person is not an active operator.",
+    "SPREADSHEET_TOO_LARGE": "This list holds more rows than a download takes. Narrow it with the filters and download again.",
+    "PROGRAM_LUMA_NOT_CONFIGURED": "This environment reads no Luma calendar.",
+    "PROGRAM_LUMA_UNREACHABLE": "Luma could not be read just now. Nothing changed; try again in a few minutes."
   },
   "SignIn": {
     "metaTitle": "Sign in · BeyondPilot",
@@ -722,7 +733,6 @@
       "solutions": "AI solutions",
       "offers": "Offers",
       "talent": "AI talent",
-      "reportedMessages": "Reported messages",
       "review": "Review",
       "system": "System",
       "useCases": "Use cases",
@@ -733,7 +743,8 @@
       "aiMatching": "Matching",
       "aiUsage": "Usage",
       "mcp": "MCP",
-      "email": "Email"
+      "email": "Email",
+      "programMessages": "Chat assignments"
     },
     "toggleSidebar": "Toggle sidebar",
     "notFound": {
@@ -957,6 +968,22 @@
           "lead": "Your changes will be lost.",
           "leave": "Leave",
           "stay": "Stay"
+        },
+        "feature": {
+          "feature": "Feature on home page",
+          "unfeature": "Stop featuring",
+          "since": "Featured {day}",
+          "hint": "The home page announces the most recently featured program that is published and still takes applications.",
+          "done": {
+            "featured": "{name} is featured on the home page.",
+            "unfeatured": "{name} is no longer featured."
+          }
+        },
+        "luma": {
+          "badge": "From Luma",
+          "title": "Updated from Luma every hour",
+          "lead": "Its name, summary, description, days, page, event and cover come from its event on Luma, and the next read overwrites any change made here. Change them on Luma. Unpublishing it here keeps it off the site.",
+          "open": "Open on Luma"
         }
       },
       "noDays": "Days not set",
@@ -1035,6 +1062,13 @@
           "leave": "Leave",
           "stay": "Stay"
         }
+      },
+      "featured": "Featured",
+      "fromLuma": "From Luma",
+      "luma": {
+        "read": "Pull from Luma",
+        "hint": "Read the GenAI Fund calendar on Luma now; it is also read every hour.",
+        "done": "Luma read: {created, plural, =0 {no new event} one {# new event} other {# new events}}, {updated} updated, {unpublished} unpublished{failed, plural, =0 {} other {; # could not be read and will be tried again}}."
       }
     },
     "accounts": {
@@ -1143,7 +1177,10 @@
           "create": "Created a program",
           "update": "Saved a program",
           "publish": "Published a program",
-          "unpublish": "Unpublished a program"
+          "unpublish": "Unpublished a program",
+          "feature": "Featured a program",
+          "unfeature": "Stopped featuring a program",
+          "luma_read": "Read the calendar on Luma"
         },
         "organization": {
           "create": "Added an organization",
@@ -1159,7 +1196,8 @@
           "restore": "Restored an organization",
           "update": "Saved an organization's profile",
           "invite": "Invited someone to an organization",
-          "invitation_revoke": "Withdrew an invitation"
+          "invitation_revoke": "Withdrew an invitation",
+          "export": "Downloaded the organizations"
         },
         "solution": {
           "approve": "Approved a solution",
@@ -1182,12 +1220,14 @@
           "offer_update": "Changed an offer",
           "offer_close": "Closed an offer to new solutions",
           "offer_reopen": "Opened an offer to new solutions again",
-          "offer_delete": "Deleted an offer"
+          "offer_delete": "Deleted an offer",
+          "export": "Downloaded the solutions"
         },
         "messaging": {
           "request_accept": "Accepted a first message",
           "request_decline": "Declined a first message",
-          "request_report": "Reported a first message"
+          "request_report": "Reported a first message",
+          "program_assign": "Assigned a program conversation"
         },
         "talent": {
           "approve": "Approved a talent profile",
@@ -1200,7 +1240,8 @@
           "restore": "Restored a talent profile",
           "feature": "Featured a talent profile",
           "unfeature": "Stopped featuring a talent profile",
-          "delete": "Deleted a talent profile"
+          "delete": "Deleted a talent profile",
+          "export": "Downloaded the talent profiles"
         },
         "proposal": {
           "criteria_update": "Set the judging criteria",
@@ -1209,7 +1250,14 @@
           "decide": "Decided on an application",
           "release": "Released the outcomes",
           "file_open": "Opened a file of an application",
-          "export": "Downloaded the applications"
+          "export": "Downloaded the applications",
+          "drafts_export": "Downloaded the drafts",
+          "draft_open": "Opened a draft"
+        },
+        "use_case_proposal": {
+          "decide": "Decided on a proposal to a use case",
+          "outcomes_send": "Sent the outcomes of the proposals to a use case",
+          "export": "Downloaded the proposals to a use case"
         },
         "use_case": {
           "create": "Created a use case",
@@ -1238,7 +1286,8 @@
           "model_add": "Enabled an AI model",
           "model_update": "Changed an AI model",
           "model_remove": "Removed an AI model",
-          "task_model_change": "Chose a task's AI model"
+          "task_model_change": "Chose a task's AI model",
+          "usage_export": "Downloaded the AI calls"
         },
         "search": {
           "model_change": "Changed the embedding model",
@@ -1263,8 +1312,13 @@
           "candidate_add": "Added a candidate by hand",
           "candidate_shortlist": "Saved a candidate",
           "candidate_remove": "Removed a candidate",
+          "candidate_reason": "Said why a candidate was removed",
           "candidate_restore": "Restored a candidate",
+          "candidate_invite": "Invited a provider to propose",
           "settings_change": "Changed the limits of matching"
+        },
+        "audit": {
+          "export": "Downloaded the audit log"
         }
       },
       "activity": {
@@ -1280,7 +1334,10 @@
           "create": "Created the program <resource></resource>",
           "update": "Saved the program <resource></resource>",
           "publish": "Published the program <resource></resource>",
-          "unpublish": "Unpublished the program <resource></resource>"
+          "unpublish": "Unpublished the program <resource></resource>",
+          "feature": "Featured the program <resource></resource> on the home page",
+          "unfeature": "Stopped featuring the program <resource></resource>",
+          "luma_read": "Read <resource></resource> now"
         },
         "organization": {
           "create": "Added the organization <resource></resource>",
@@ -1296,7 +1353,8 @@
           "restore": "Restored the organization <resource></resource>",
           "update": "Saved the profile of <resource></resource>",
           "invite": "Invited someone to <resource></resource>",
-          "invitation_revoke": "Withdrew an invitation to <resource></resource>"
+          "invitation_revoke": "Withdrew an invitation to <resource></resource>",
+          "export": "Downloaded the organizations"
         },
         "solution": {
           "approve": "Approved the solution <resource></resource>",
@@ -1319,12 +1377,14 @@
           "offer_update": "Changed the offer <resource></resource>",
           "offer_close": "Closed the offer <resource></resource> to new solutions",
           "offer_reopen": "Opened the offer <resource></resource> to new solutions again",
-          "offer_delete": "Deleted the offer <resource></resource>"
+          "offer_delete": "Deleted the offer <resource></resource>",
+          "export": "Downloaded the solutions"
         },
         "messaging": {
           "request_accept": "Accepted a first message about <resource></resource>",
           "request_decline": "Declined a first message about <resource></resource>",
-          "request_report": "Reported a first message about <resource></resource>"
+          "request_report": "Reported a first message about <resource></resource>",
+          "program_assign": "Assigned an operator to a conversation about <resource></resource>"
         },
         "talent": {
           "approve": "Approved the talent profile of <resource></resource>",
@@ -1337,7 +1397,8 @@
           "restore": "Restored the talent profile of <resource></resource>",
           "feature": "Featured the talent profile of <resource></resource>",
           "unfeature": "Stopped featuring the talent profile of <resource></resource>",
-          "delete": "Deleted the talent profile of <resource></resource>"
+          "delete": "Deleted the talent profile of <resource></resource>",
+          "export": "Downloaded the talent profiles"
         },
         "proposal": {
           "criteria_update": "Set the judging criteria of <resource></resource>",
@@ -1346,7 +1407,14 @@
           "decide": "Decided on an application to <resource></resource>",
           "release": "Released the outcomes of <resource></resource>",
           "file_open": "Opened a file of an application to <resource></resource>",
-          "export": "Downloaded the applications to <resource></resource>"
+          "export": "Downloaded the applications to <resource></resource>",
+          "drafts_export": "Downloaded the drafts of <resource></resource>",
+          "draft_open": "Opened a draft of <resource></resource>"
+        },
+        "use_case_proposal": {
+          "decide": "Decided on a proposal to <resource></resource>",
+          "outcomes_send": "Sent the outcomes of the proposals to <resource></resource>",
+          "export": "Downloaded the proposals to <resource></resource>"
         },
         "use_case": {
           "create": "Created the use case <resource></resource>",
@@ -1375,7 +1443,8 @@
           "model_add": "Enabled the AI model <resource></resource>",
           "model_update": "Changed the AI model <resource></resource>",
           "model_remove": "Removed the AI model <resource></resource>",
-          "task_model_change": "Chose the AI model of the task <resource></resource>"
+          "task_model_change": "Chose the AI model of the task <resource></resource>",
+          "usage_export": "Downloaded the AI calls"
         },
         "search": {
           "model_change": "Changed the embedding model in <resource></resource>",
@@ -1400,8 +1469,13 @@
           "candidate_add": "Added a candidate by hand to the use case <resource></resource>",
           "candidate_shortlist": "Saved a candidate of the use case <resource></resource>",
           "candidate_remove": "Removed a candidate of the use case <resource></resource>",
+          "candidate_reason": "Said why a candidate of the use case <resource></resource> was removed",
           "candidate_restore": "Restored a candidate of the use case <resource></resource>",
+          "candidate_invite": "Invited a provider to propose for the use case <resource></resource>",
           "settings_change": "Changed the limits of matching"
+        },
+        "audit": {
+          "export": "Downloaded the audit log"
         }
       },
       "columns": {
@@ -1854,7 +1928,6 @@
           "created": "Created",
           "updated": "Last changed"
         },
-        "closedNote": "Closed to new solutions. The solutions below keep it and still show it.",
         "solutions": {
           "title": "Solutions that come with it",
           "empty": "No solution comes with this offer.",
@@ -2901,6 +2974,8 @@
           "search": "Finds solutions listed or not, programs, talent, use cases and companies.",
           "fetch": "Reads one of them in full by the id search returned.",
           "list_applications": "Lists a program's applications with GenAI Fund's decision and the judges' mean score.",
+          "get_application": "Reads one application in full: what the applicant sent, every score and the files it holds.",
+          "read_application_file": "Shows the pages of an application's PDF, such as its deck, as pictures with their text.",
           "list_pending_reviews": "Lists what waits for review: organizations, solutions, talent, use cases and customer deployments."
         },
         "user": {
@@ -3083,6 +3158,18 @@
         },
         "proposal_sent": {
           "name": "Proposal sent"
+        },
+        "proposal_shortlisted": {
+          "name": "Proposal shortlisted",
+          "description": "Tells the sender its proposal was shortlisted, with the note of the organization that posted the use case."
+        },
+        "proposal_declined": {
+          "name": "Proposal not selected",
+          "description": "Tells the sender its proposal was not selected, with the note of the organization that posted the use case."
+        },
+        "matching_invitation": {
+          "name": "Invitation to propose",
+          "description": "Invites the provider of a matched solution to send a proposal for a use case, with the note of the person who invites."
         },
         "talent_approved": {
           "name": "Talent profile approved"
@@ -3656,7 +3743,7 @@
     "organizationType": {
       "company": "Company",
       "builder_team": "Builder team",
-      "independent_builder": "Independent builder",
+      "independent_builder": "Just me",
       "other": "Other"
     },
     "teamSize": {
@@ -3939,7 +4026,7 @@
     "form": {
       "metaTitle": "Create an organization · BeyondPilot",
       "createTitle": "Create your organization",
-      "createLead": "Independent builders can create a practice or team.",
+      "createLead": "Everyone takes part through an organization. On your own, yours is just you.",
       "profileTitle": "Organization profile",
       "edit": "Edit profile",
       "complete": "Complete profile",
@@ -3957,7 +4044,8 @@
       "websiteInvalid": "Enter a full address that starts with https://",
       "websiteRequired": "Enter the organization's website.",
       "description": "Short description",
-      "descriptionHint": "What the organization does and for whom.",
+      "descriptionHint": "What you do, who you help and your relevant expertise or experience.",
+      "typeRequired": "Choose Just me, A team or A company.",
       "teamBackground": "Team background",
       "teamBackgroundHint": "What the team has built before, its expertise and relevant experience.",
       "teamBackgroundRequired": "Describe the team’s experience in up to 2,000 characters.",
@@ -4017,6 +4105,13 @@
       "existing": {
         "title": "Your organization may already be on BeyondPilot",
         "lead": "{count, plural, =1 {If this is yours, join it instead of creating it again. If yours is a different organization, continue below.} other {If one of these is yours, join it instead of creating it again. If yours is a different organization, continue below.}}"
+      },
+      "ownName": "Your name",
+      "creator": {
+        "label": "Who is this for?",
+        "independent_builder": "Just me",
+        "builder_team": "A team",
+        "company": "A company"
       }
     },
     "find": {
@@ -4650,10 +4745,8 @@
         "programme": "Programme selection",
         "selected": "Selected for {program}.",
         "byGenAiFund": "Confirmed by GenAI Fund · {date}",
-        "stated": "Stated by the company",
-        "byCompany": "Stated by {name}",
         "milestones": "Key milestones",
-        "cases": "{count, plural, one {One customer deployment reviewed by GenAI Fund, shown below.} other {# customer deployments reviewed by GenAI Fund, shown below.}}"
+        "cases": "{count, plural, one {One customer deployment, shown below.} other {# customer deployments, shown below.}}"
       },
       "company": {
         "title": "The company behind this solution",
@@ -4890,6 +4983,11 @@
         "uploaded": "{size} · Uploaded {when}",
         "waiting": "{size} · Not saved yet",
         "download": "Download {name}",
+        "previewNamed": "Preview {name}",
+        "previewTitle": "Preview {name}",
+        "previewDescription": "PDF preview",
+        "previewLoading": "Loading PDF preview…",
+        "previewFailed": "The PDF could not be previewed. You can download it instead.",
         "replace": "Replace",
         "remove": "Remove",
         "errors": {
@@ -4972,6 +5070,7 @@
       "images": {
         "uploading": "Uploading…",
         "details": "{size} · {dimensions}",
+        "previewNamed": "Preview {name}",
         "replace": "Replace",
         "remove": "Remove",
         "replaceNamed": "Replace {name}",
@@ -5010,7 +5109,7 @@
       "open": "{holds, select, all {Open to read the problem, what was deployed and the result.} delivered {Open to read the problem and what was deployed.} result {Open to read the problem and the result.} other {Open to read the problem.}}",
       "eyebrow": "Customer deployment",
       "line": "{solution} · {customer}",
-      "lead": "{stage}. Stated by {organization} and reviewed by GenAI Fund on {day}. The customer has not confirmed it here.",
+      "lead": "{stage}.",
       "problem": "The business problem",
       "delivered": "What was deployed",
       "scope": "Scope and result",
@@ -5023,8 +5122,7 @@
       "about": "About this project",
       "deliveredBy": "Delivered by",
       "customer": "Customer",
-      "solutionUsed": "Solution used",
-      "source": "Stated by {organization} and reviewed by GenAI Fund on {day}. The customer has not confirmed it here."
+      "solutionUsed": "Solution used"
     },
     "deployments": {
       "title": "Customer deployments",
@@ -5438,9 +5536,13 @@
     },
     "open": "Open now",
     "upcoming": "Coming up",
+    "current": "Open and coming up",
     "done": "Done",
     "programCount": "{count, plural, one {# program} other {# programs}}",
-    "itemCount": "{count, plural, one {# event} other {# events}}",
+    "kind": {
+      "program": "Program",
+      "event": "Event"
+    },
     "undated": "Earlier",
     "live": "Open now",
     "running": "Running",
@@ -5911,17 +6013,21 @@
           "label": "Who can apply",
           "value": "Solo builders to established providers"
         }
+      },
+      "name": {
+        "first": "Nestlé Vietnam",
+        "second": "AI Reinvention"
       }
     },
     "nav": {
       "label": "On this page",
       "offers": "Benefits",
       "areas": "Challenges",
-      "use-cases": "Use cases",
       "how": "How it works",
       "eligibility": "Eligibility",
       "dates": "Dates",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "top": "Back to top"
     },
     "offers": {
       "title": "What this program offers",
@@ -6011,10 +6117,6 @@
     "early": {
       "ask": "Recognise one of these?",
       "text": "Apply before 5 November to be considered for the early briefing process. Pre-screened applicants receive detailed briefings from 6 November."
-    },
-    "useCases": {
-      "title": "Use cases in this program",
-      "lead": "The business problems Nestlé Vietnam has published for this program. Open one to read its goal, requirements, budget and timeline."
     },
     "how": {
       "title": "How it works",
@@ -6107,7 +6209,8 @@
           "owner": "A named owner per match"
         }
       },
-      "pocs": "PoCs subject to selection and approvals."
+      "pocs": "PoCs subject to selection and approvals.",
+      "start": "Start early."
     },
     "faq": {
       "title": "The questions you're actually asking.",
@@ -6149,18 +6252,16 @@
     "closing": {
       "title": "Will your solution be in the room on 15 December?",
       "text": "The shortlist is taking shape—submit today for your chance to be selected.",
-      "closes": "Applications close {closes}."
+      "closes": "Applications close {closes}.",
+      "info": "View info session timing",
+      "share": "Know a team that fits? Send them this page"
     },
-    "about": {
-      "label": "About the programme",
-      "tagline": "AI-First. Human-Led. Re-Inventing Nestlé.",
-      "text": "The AI Solution Search is part of the Nestlé Vietnam AI Reinvention programme and AI Hackathon 2026, run by GenAI Fund with Nestlé Vietnam. Participation and any subsequent collaboration depend on selection, business fit and applicable Nestlé requirements. Applicants keep ownership of their IP."
-    },
-    "rail": {
-      "partners": "Partners",
-      "runBy": "Run by",
-      "with": "With",
-      "questions": "Questions about this program?"
+    "pill": {
+      "label": "Applications",
+      "closes": "Closes {date}",
+      "time": "About 10 minutes",
+      "opens": "Applications open {date}",
+      "closed": "Applications closed"
     }
   },
   "EntryList": {
@@ -6207,7 +6308,11 @@
       "notListedYet": "Not in the directory yet",
       "applyingForHint": "GenAI Fund checks a new organization before listing it; your application is not held up.",
       "applyingAs": "Applying as",
-      "applyingAsHint": "This is kept with your account when you continue, and it cannot be changed here afterwards.",
+      "applyingAsHint": "This is kept with your account when you continue. As an individual, you can change it until you send something under your name.",
+      "change": "Change",
+      "changeHint": "You can apply as a team or a company instead until you send something under your name.",
+      "companyInstead": "To apply for a company, first stop applying as yourself, then find or add the company. A solution you began here stays with you and does not move to the company.",
+      "companyInsteadAction": "Apply for a company",
       "whoRequired": "Choose who is applying.",
       "who": {
         "individual": {
@@ -6445,7 +6550,8 @@
         "shortlisted": "Shortlisted",
         "not_selected": "Not selected",
         "to_score": "To score",
-        "scored": "Done"
+        "scored": "Done",
+        "drafts": "Drafts"
       },
       "search": "Search applicants",
       "clear": "Clear filters",
@@ -6522,8 +6628,6 @@
       },
       "footer": "{shown, plural, one {# application} other {# applications}} · {drafts, plural, one {# draft was} other {# drafts were}} not submitted · {withdrawn} withdrawn",
       "footerScored": "{scored, plural, one {# of {total} has a score} other {# of {total} have a score}}",
-      "download": "Download (CSV)",
-      "downloadFailed": "We could not download the applications. Try again.",
       "own": "Yours"
     },
     "application": {
@@ -6776,6 +6880,39 @@
       "done": "All scored",
       "progress": "You scored {done} of {total}",
       "closes": "Applications close {closes}"
+    },
+    "drafts": {
+      "metaTitle": "Drafts not submitted",
+      "back": "Applications",
+      "lead": "{count, plural, =0 {No draft is waiting.} one {# draft not submitted yet, the most recently saved first.} other {# drafts not submitted yet, the most recently saved first.}}",
+      "caption": "Drafts not submitted",
+      "columns": {
+        "applicant": "Applicant",
+        "phone": "Phone",
+        "organization": "Organization",
+        "progress": "Progress",
+        "saved": "Last saved"
+      },
+      "steps": {
+        "contact": "contact details",
+        "solution": "solution",
+        "deck": "deck",
+        "questions": "program questions"
+      },
+      "progress": "{done} of {total} steps",
+      "missing": "Missing: {steps}",
+      "noName": "No name yet",
+      "none": "Not given",
+      "empty": {
+        "title": "No drafts",
+        "description": "Everyone who started an application has submitted it."
+      },
+      "detail": {
+        "metaTitle": "Draft",
+        "back": "Drafts",
+        "lead": "Not submitted to {program} · started {started} · last saved {saved}",
+        "note": "Not submitted yet, so it may still change. Judges never see drafts."
+      }
     }
   },
   "Search": {
@@ -7353,7 +7490,8 @@
         "customerCase": "Customer case {number}",
         "deck": "Deck, p. {page}",
         "website": "Website"
-      }
+      },
+      "invite": "Invite to propose…"
     },
     "panel": {
       "label": "The solution you picked",
@@ -7458,6 +7596,57 @@
       "agreed": "You agreed.",
       "said": "You said: {group}.",
       "counts": "{n, plural, one {# answer} other {# answers}}, {d, plural, one {# disagrees} other {# disagree}}"
+    },
+    "review": {
+      "view": {
+        "label": "How to read the solutions",
+        "one": "One by one",
+        "list": "List"
+      },
+      "left": "{left} left of {total}",
+      "group": "{group} · meets {met} of {total} required",
+      "actions": {
+        "label": "Decide on {name}",
+        "save": "Save",
+        "remove": "Not a fit",
+        "later": "Later",
+        "undo": "Undo"
+      },
+      "last": {
+        "saved": "{name} is saved.",
+        "removed": "{name} is not a fit. Why?",
+        "later": "{name} moved to the end of the line."
+      },
+      "reasons": "Why {name} is not a fit",
+      "hint": "Keys: → save, ← not a fit, ↓ later, Z undo.",
+      "shared": "Your team and GenAI Fund see the same list. The provider is not told.",
+      "meanwhile": {
+        "shortlisted": "Someone saved this solution meanwhile.",
+        "removed": "Someone removed this solution meanwhile."
+      },
+      "noDeck": "No page of a deck to show for this solution.",
+      "summary": "AI summary",
+      "needs": "What your use case asks for",
+      "end": {
+        "title": "You have looked at every solution.",
+        "reading": "You have looked at every solution read so far. AI is still reading: new ones appear here.",
+        "saved": "{count, plural, =0 {None saved.} one {# saved.} other {# saved.}}",
+        "list": "See the list"
+      },
+      "none": "Every solution here has a decision. Change one from the list."
+    },
+    "invite": {
+      "action": "Invite to propose",
+      "title": "Invite {name} to propose?",
+      "description": "The owners of {name} get an email inviting them to send a proposal for this use case, with a link to it. It cannot be taken back.",
+      "note": "Note to the provider (optional)",
+      "confirm": "Send invitation",
+      "cancel": "Cancel",
+      "done": "{name} is invited to propose.",
+      "invited": "Invited {date}",
+      "invitedBy": "Invited by {name} on {date}",
+      "genaiFund": "GenAI Fund",
+      "received": "Proposal received"
     }
   },
   "Messaging": {
@@ -7558,9 +7747,9 @@
       "label": "Write your first message to {name}",
       "beforeTitle": "Before you write",
       "before": "Say who you are and what you need. {name} reads your name and your organization, never your email address.",
-      "beforeOpen": "Ask what you need to know about the program. The programs team of GenAI Fund answers here.",
+      "beforeOpen": "Ask what you need to know about the program. Only the operator assigned by GenAI Fund can read and answer.",
       "request": "You have not talked with {name} before. Your first message waits under their Requests until they accept.",
-      "open": "GenAI Fund reads your message at once; no request is needed.",
+      "open": "You can send messages immediately. An operator can read them once assigned.",
       "existsTitle": "You already have a conversation with {name}",
       "existsLead": "It waits for an answer or is open. Write there.",
       "openExisting": "Open the conversation",
@@ -7585,7 +7774,7 @@
       "place": "Where",
       "skills": "Skills",
       "proof": "Proof",
-      "deployments": "{count, plural, one {# customer deployment, reviewed by GenAI Fund} other {# customer deployments, reviewed by GenAI Fund}}",
+      "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}",
       "someone": "Someone",
       "people": {
         "readers": "Who reads what you write",
@@ -7595,29 +7784,29 @@
         "owner": "Owner",
         "member": "Member"
       },
+      "members": {
+        "title": "Your organization's access",
+        "lead": "Only owners and the members you add here can read this conversation.",
+        "add": "Add",
+        "remove": "Remove"
+      },
       "note": {
         "talent": "Only this person reads what you write here. Your email address is never shown to them.",
-        "solution": "Everyone at this organization can read and answer. Your email address is never shown to them.",
-        "program": "The programs team of GenAI Fund reads this conversation.",
+        "solution": "Only this organization's owners and members they add can read and answer. Your email address is never shown to them.",
+        "program": "Only the operator assigned by GenAI Fund reads this conversation.",
         "recipient": "Your email address is never shown to them."
       }
     },
-    "reported": {
-      "metaTitle": "Reported messages",
-      "title": "Reported messages",
-      "lead": "First messages that recipients reported as unwanted. Senders were told only that their request was declined.",
-      "empty": {
-        "title": "Nothing was reported",
-        "lead": "A first message someone reports as unwanted is listed here."
-      },
-      "columns": {
-        "sender": "Sender",
-        "message": "Message",
-        "reported": "Reported"
-      },
-      "noOrganization": "No organization",
-      "noAccount": "Account no longer signs in",
-      "count": "{count, plural, one {# reported message} other {# reported messages}}"
+    "assignments": {
+      "unavailable": "Assigned operator is unavailable",
+      "title": "Chat assignments",
+      "lead": "Only the assigned operator can read and answer a conversation. Choose an operator; reassignment revokes the previous operator’s access.",
+      "program": "Program",
+      "created": "Started",
+      "assignee": "Assigned operator",
+      "assign": "Assign",
+      "unassigned": "Unassigned",
+      "empty": "No program conversations yet"
     }
   },
   "UseCaseProposal": {
@@ -7633,7 +7822,9 @@
       "count": "{count, plural, one {# proposal} other {# proposals}}",
       "viewProposals": "View proposals",
       "status": {
-        "new": "New"
+        "undecided": "Not decided",
+        "shortlisted": "Shortlisted",
+        "declined": "Declined"
       },
       "tabs": {
         "label": "Filter proposals",
@@ -7652,7 +7843,12 @@
         "columns": {
           "proposal": "Proposal",
           "status": "Status",
-          "sent": "Sent"
+          "sent": "Sent",
+          "actions": "Actions"
+        },
+        "emptyTab": {
+          "title": "No proposals here",
+          "description": "Proposals appear under this tab once you mark them."
         }
       },
       "detail": {
@@ -7686,9 +7882,35 @@
         "crumbs": "Where you are",
         "useCases": "Use cases",
         "pending": "Pending review",
-        "sentBy": "Sent by"
+        "sentBy": "Sent by",
+        "assessment": {
+          "title": "Your assessment",
+          "decision": "Decision",
+          "decided": "Decided",
+          "decidedBy": "{name} on {date}"
+        }
       },
-      "edited": "Edited {date}"
+      "edited": "Edited {date}",
+      "actions": {
+        "open": "Actions for {name}",
+        "view": "View proposal",
+        "shortlist": "Shortlist",
+        "decline": "Decline"
+      },
+      "decided": {
+        "shortlisted": "{name} was marked as shortlisted. The provider is told when you send outcomes.",
+        "declined": "{name} was marked as declined. The provider is told when you send outcomes."
+      },
+      "send": {
+        "action": "Send outcomes ({count})",
+        "title": "Send outcomes to providers?",
+        "description": "{shortlisted, plural, one {# shortlisted} other {# shortlisted}} and {declined, plural, one {# declined} other {# declined}} will each get one email.",
+        "note": "Nobody outside your team sees a decision until you send it. You can still change a decision afterwards: the next send only emails the proposals that changed.",
+        "message": "Message in every email (optional)",
+        "confirm": "{count, plural, one {Send # outcome} other {Send # outcomes}}",
+        "cancel": "Cancel",
+        "done": "{count, plural, one {# outcome was sent.} other {# outcomes were sent.}}"
+      }
     },
     "actions": {
       "proposals": "Proposals",
@@ -7703,6 +7925,19 @@
         "disabled": "Editing is closed: this use case does not allow editing after sending.",
         "useCaseClosed": "Editing is closed because the use case has closed.",
         "windowPassed": "Editing is closed: the time to edit has ended."
+      },
+      "withdrawn": "You withdrew your proposal on {date}.",
+      "sendAgain": "Send again",
+      "status": "Status",
+      "outcome": {
+        "shortlisted": {
+          "state": "Shortlisted",
+          "note": "The organization that posted this use case shortlisted your proposal on {date}."
+        },
+        "declined": {
+          "state": "Not selected",
+          "note": "The outcome was sent to your email on {date}."
+        }
       }
     },
     "wizard": {
@@ -7834,11 +8069,12 @@
           "saved": "Organization saved.",
           "required": "Required.",
           "createTitle": "New organization",
-          "create": "Create",
+          "create": "Create organization",
           "created": "Organization created.",
           "full": "Create with the full form"
         }
-      }
+      },
+      "withdrawnNote": "You withdrew this proposal on {date}. Change it if you like, then send it again."
     },
     "view": {
       "metaTitle": "Your proposal · BeyondPilot",
@@ -7846,10 +8082,54 @@
       "edit": "Edit proposal",
       "sent": "Sent {date}",
       "edited": "Edited {date}",
-      "until": "edit until {when}"
+      "until": "edit until {when}",
+      "withdrawn": "Withdrawn {date}",
+      "sendAgain": "Send again",
+      "withdraw": {
+        "action": "Withdraw",
+        "title": "Withdraw this proposal?",
+        "description": "The organization that posted the use case will no longer see it. Nothing is deleted.",
+        "noteUntil": "You can send it again until the use case closes on {date}.",
+        "noteOpen": "You can send it again while the use case is open.",
+        "confirm": "Withdraw proposal",
+        "cancel": "Keep proposal",
+        "done": "Your proposal was withdrawn.",
+        "rows": {
+          "useCase": "Use case",
+          "sent": "Sent"
+        }
+      },
+      "notice": {
+        "withdrawn": {
+          "title": "You withdrew this proposal",
+          "until": "The organization that posted the use case can no longer see it. Nothing was deleted: you can send it again until the use case closes on {date}.",
+          "open": "The organization that posted the use case can no longer see it. Nothing was deleted: you can send it again while the use case is open.",
+          "closed": "The organization that posted the use case can no longer see it. The use case has closed, so it cannot be sent again."
+        },
+        "closed": {
+          "title": "This use case is closed",
+          "text": "Proposals can no longer be edited or withdrawn. The organization that posted the use case keeps reading yours."
+        },
+        "outcome": {
+          "shortlisted": {
+            "title": "Your proposal was shortlisted",
+            "text": "The organization that posted this use case shortlisted it on {date}. You can still withdraw it."
+          },
+          "declined": {
+            "title": "Your proposal was not selected",
+            "text": "The outcome was sent to your email on {date}. The proposal is now only read."
+          }
+        }
+      }
     },
     "solutionList": {
       "newTab": "(opens in a new tab)"
     }
+  },
+  "ExportMenu": {
+    "label": "Export",
+    "xlsx": "Excel (.xlsx)",
+    "csv": "CSV",
+    "failed": "We could not download the list. Try again."
   }
 }

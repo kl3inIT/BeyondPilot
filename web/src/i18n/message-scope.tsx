@@ -34,12 +34,16 @@ const areaPaths = {
   public: [
     "Account",
     "Application",
+    "Home.featured",
     "Mcp",
     "Program",
     "Programs",
     "Solution",
     "Talent",
     "UseCases",
+    // Taking back a proposal, on the page that reads it; the rest of the proposal belongs to the apply area.
+    "UseCaseProposal.view.withdraw",
+    "UseCaseProposal.errors",
   ],
   auth: ["SignIn"],
   apply: [
@@ -66,15 +70,21 @@ const areaPaths = {
   admin: [
     "Admin",
     "EntryList",
+    // The Export menu of the lists operators download.
+    "ExportMenu",
     "Matching",
+    "Messaging.assignments",
     "Mcp",
     "Organization",
     "Program",
     "Review",
     "Solution",
     "Talent",
+    // Deciding on the proposals of a use case, which the operators read as well.
+    "UseCaseProposal.received",
+    "UseCaseProposal.errors",
   ],
-  reviews: ["Review"],
+  reviews: ["ExportMenu", "Review"],
 } as const satisfies Record<string, readonly MessagePath[]>;
 
 type Area = keyof typeof areaPaths;

@@ -4,11 +4,16 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { MatchingPage } from "@/features/matching/matching-page";
 import { readMatching } from "@/features/matching/matching-queries";
+import { readReceivedBySender } from "@/features/proposal/received-queries";
 import { readMyOrganization } from "@/features/organization/organization-queries";
 import { hasUseCases, readMyUseCase } from "@/features/usecase/my-use-case-queries";
 import { getPathname } from "@/i18n/navigation";
 import { requireAccount } from "@/lib/auth/session";
-import { siteRoutes, workspaceUseCaseCandidatesRoute } from "@/lib/site";
+import {
+  siteRoutes,
+  workspaceUseCaseCandidatesRoute,
+  workspaceUseCaseProposalRoute,
+} from "@/lib/site";
 
 export async function generateMetadata({
   params,
@@ -42,5 +47,9 @@ export default async function OrganizationUseCaseCandidatesRoute({
     notFound();
   }
 
-  return <MatchingPage area="workspace" useCase={useCase} matching={matching} />;
+  const received = await readReceivedBySender(id, workspaceUseCaseProposalRoute);
+
+  return (
+    <MatchingPage area="workspace" useCase={useCase} matching={matching} received={received} />
+  );
 }

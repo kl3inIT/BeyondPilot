@@ -6,7 +6,7 @@
 // - A first message may be written to the talent profile of Arif Hidayat, to the solution Policy
 //   Chat and to the program GenAI Builders Hanoi; the owner of Pocket Policy may not write to their
 //   own solution.
-// - The operators read one reported first message.
+// - Operators can assign program conversations without reading their contents.
 //
 // The stub keeps nothing: what a test writes is answered as the backend would answer it, and the
 // lists stay as they are. The stream of events sends its opening comment and stays open, so a
@@ -207,32 +207,6 @@ const prospects = {
   },
 };
 
-/** The first messages reported as unwanted, as the operators read them. */
-const reported = [
-  {
-    id: "c0a1b2c3-0031-4d5e-8f90-a1b2c3d4e531",
-    kind: "talent",
-    subjectName: "Siti Rahma",
-    senderName: null,
-    senderEmail: "growth@spam.example",
-    senderOrganization: null,
-    message: "Buy ten thousand followers for your profile.",
-    createdAt: "2026-10-03T03:00:00Z",
-    reportedAt: "2026-10-04T03:00:00Z",
-  },
-  {
-    id: "c0a1b2c3-0032-4d5e-8f90-a1b2c3d4e532",
-    kind: "solution",
-    subjectName: "Policy Chat",
-    senderName: "Quang Vũ",
-    senderEmail: "",
-    senderOrganization: "First Call",
-    message: "Cheap leads for your sales team.\nAnswer today.",
-    createdAt: "2026-10-01T03:00:00Z",
-    reportedAt: "2026-10-02T03:00:00Z",
-  },
-];
-
 const refused = (status, code) => [status, { status, code }];
 
 function bodyOf(request) {
@@ -305,19 +279,14 @@ export function serveMessaging(request, response, url, session, account) {
     json(200, { unread: mine.unread, requests: mine.requests.length });
     return true;
   }
-  if (pathname === "/api/messaging/admin/reported") {
+  if (pathname === "/api/messaging/admin/program-assignments") {
     if (account.role !== "operator") {
       json(403, {});
       return true;
     }
-    const page = Number(url.searchParams.get("page") ?? 1);
-    const size = Number(url.searchParams.get("size") ?? 25);
-    json(200, {
-      items: reported.slice((page - 1) * size, page * size),
-      page,
-      pageSize: size,
-      total: reported.length,
-    });
+    json(200, [
+      { id: started, programName: "GenAI Builders Hanoi", createdAt: ago(1), assigneeId: null },
+    ]);
     return true;
   }
   if (pathname === "/api/messaging/prospect") {

@@ -13,5 +13,7 @@ public record ApplyingOrganizationResponse(@Schema(requiredMode = Schema.Require
 		@Schema(types = { "string", "null" }) @Nullable String country,
 		@Schema(types = { "string", "null" }) @Nullable String teamSize,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Whether GenAI Fund has reviewed and approved it; it applies either way.") boolean approved) {
+				description = "Whether GenAI Fund has reviewed and approved it; it applies either way.") boolean approved,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Whether the person applies as themselves and may still apply as a team or a company instead: nothing was sent under their name yet.") boolean changeable) {
 }

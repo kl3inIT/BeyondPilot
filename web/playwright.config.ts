@@ -14,6 +14,19 @@ export default defineConfig({
     trace: "retain-on-failure",
     // Entrance animations fade text in; accessibility checks read the settled page.
     reducedMotion: "reduce",
+    // The home page's announcement of the featured program starts put away, as for a visitor who
+    // has closed it once, so it covers no other test; home.spec.ts clears this to meet it.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: `http://localhost:${port}`,
+          localStorage: [
+            { name: "featured-program:nestle-vietnam-ai-reinvention", value: "minimised" },
+          ],
+        },
+      ],
+    },
   },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },

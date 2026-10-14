@@ -154,6 +154,39 @@ test.describe("admin organizations", () => {
     await expect(shownOrganizations(page)).toHaveCount(6);
   });
 
+  test("the download holds the list as the address narrows it, in the format chosen", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const asked: string[] = [];
+    await page.route("**/api/organization/admin/organizations/export**", async (route) => {
+      expect(route.request().headers()["x-beyondpilot-csrf"]).toBe("1");
+      asked.push(route.request().url());
+      await route.fulfill({
+        status: 200,
+        contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers: { "Content-Disposition": `attachment; filename="organizations-2026-10-14.xlsx"` },
+        body: "PK",
+      });
+    });
+    await page.goto("/admin/organizations?status=in_review&q=lumen");
+
+    const download = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Export" }).click();
+    await expectNoSeriousA11yViolations(page);
+    await page.getByRole("menuitem", { name: "Excel (.xlsx)" }).click();
+    expect((await download).suggestedFilename()).toBe("organizations-2026-10-14.xlsx");
+    expect(asked).toHaveLength(1);
+    const query = new URL(asked[0]).searchParams;
+    expect(query.get("format")).toBe("xlsx");
+    expect(query.get("status")).toBe("in_review");
+    expect(query.get("q")).toBe("lumen");
+    // Every page of the list goes into the file, so the page it shows is not sent.
+    expect(query.has("page")).toBe(false);
+  });
+
   test("the country and the page size are the address, and a new size starts the list again", async ({
     page,
     context,
@@ -576,7 +609,7 @@ test.describe("admin organizations", () => {
     ).toBeVisible();
     await expect(
       page.getByText(
-        "beyondpilot.genaifund.ai/organizations/pocket-policy-ltd now leads to the page of Pocket Policy.",
+        "beyondpilot.ai/organizations/pocket-policy-ltd now leads to the page of Pocket Policy.",
       ),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "Open Pocket Policy" })).toHaveAttribute(

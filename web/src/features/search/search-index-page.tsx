@@ -14,6 +14,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Button } from "@/components/actions/button";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { HelpPopover } from "@/components/composites/help-popover";
+import { StatCell, StatStrip } from "@/components/composites/stat-cell";
 import { Status } from "@/components/composites/status";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { getFormatter } from "@/i18n/format-server";
@@ -166,26 +167,23 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
         />
       </section>
 
-      <dl className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
+      <StatStrip columns={4}>
         {stats.map((stat) => (
-          <div key={stat.label} className="flex flex-col gap-1 rounded-lg border px-3.5 py-3">
-            <dt className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              {stat.label}
-              {stat.alert && (
-                <TriangleAlertIcon className="size-3.5 text-destructive" aria-hidden="true" />
-              )}
-            </dt>
-            <dd
-              className={`text-xl font-semibold md:text-2xl ${stat.alert ? "text-destructive" : ""}`}
-            >
-              {stat.value}
-            </dd>
-            <dd className={`text-xs ${stat.alert ? "text-destructive" : "text-muted-foreground"}`}>
-              {stat.note}
-            </dd>
-          </div>
+          <StatCell
+            key={stat.label}
+            label={stat.label}
+            value={stat.value}
+            alert={stat.alert}
+            icon={
+              stat.alert && (
+                <TriangleAlertIcon className="size-4 text-destructive" aria-hidden="true" />
+              )
+            }
+          >
+            {stat.note}
+          </StatCell>
         ))}
-      </dl>
+      </StatStrip>
 
       <section aria-labelledby="by-kind" className="flex flex-col gap-2.5">
         <div className="flex items-center gap-1">

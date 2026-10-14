@@ -13,7 +13,6 @@ import {
   FlagIcon,
   LanguagesIcon,
   LayersIcon,
-  LinkIcon,
   MapPinIcon,
   MessageCircleIcon,
   ShieldCheckIcon,
@@ -221,7 +220,7 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-5 px-5 pt-4 pb-24 md:gap-7 md:px-8 md:pt-6 xl:px-16 desktop:px-20">
+    <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-5 px-5 pt-4 pb-24 wrap-anywhere md:gap-7 md:px-8 md:pt-6 xl:px-16 desktop:px-20">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -263,7 +262,11 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
           <h1 className="text-3xl font-semibold tracking-title text-balance md:text-4xl xl:text-5xl xl:leading-none">
             {solution.name}
           </h1>
-          <TextButton size="sm" href={company} className="self-start">
+          <TextButton
+            size="sm"
+            href={company}
+            className="max-w-full self-start wrap-anywhere whitespace-normal"
+          >
             {directory("by", { name: solution.organizationName })}
             <ArrowRightIcon aria-hidden="true" />
           </TextButton>
@@ -439,9 +442,6 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
                       <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
                         <li className="whitespace-pre-line">{solution.notablePayingCustomers}</li>
                       </ul>
-                      <p className="text-xs text-muted-foreground">
-                        {t("proof.byCompany", { name: solution.organizationName })}
-                      </p>
                     </div>
                   )}
                 </div>
@@ -510,10 +510,6 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
                   <Evidence state="known">
                     <Badge variant="outline">{t("proof.milestones")}</Badge>
                     <p className="text-sm whitespace-pre-line">{solution.traction}</p>
-                    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <LinkIcon className="size-3.5 shrink-0" aria-hidden="true" />
-                      {t("proof.byCompany", { name: solution.organizationName })}
-                    </p>
                   </Evidence>
                 )}
                 {cases > 0 && (
@@ -577,9 +573,6 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
                     </div>
                   )}
                 </dl>
-                <p className="text-xs text-muted-foreground">
-                  {t("proof.byCompany", { name: solution.organizationName })}
-                </p>
               </SolutionSection>
             )}
 
@@ -590,9 +583,6 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
                 contentClassName="gap-2"
               >
                 <p className="whitespace-pre-line text-muted-foreground">{solution.competitors}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t("proof.byCompany", { name: solution.organizationName })}
-                </p>
               </SolutionSection>
             )}
 

@@ -86,6 +86,47 @@ test.describe("admin programs", () => {
     await expect(page).toHaveURL(`/admin/programs/${tasco}/settings`);
   });
 
+  test("a program read from Luma is marked, and its settings say that Luma overwrites them", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/programs");
+
+    // The draft is read from Luma; the Tasco challenge was created by an operator.
+    await expect(
+      page.getByText("From Luma", { exact: true }).and(page.locator(":visible")),
+    ).toHaveCount(1);
+
+    await page.goto(`/admin/programs/${draft}/settings`);
+    await expect(page.getByText("From Luma", { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("alert").filter({ hasText: "Updated from Luma every hour" }),
+    ).toContainText("Change them on Luma.");
+    await expectNoSeriousA11yViolations(page);
+  });
+
+  test("Pull from Luma reads the calendar now and says what changed", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/programs");
+
+    const read = await answer(page, "/api/program/admin/programs/luma/read", 200, {
+      created: 1,
+      updated: 0,
+      unpublished: 0,
+      failed: 0,
+    });
+
+    await page.getByRole("button", { name: "Pull from Luma" }).click();
+    await expect(page.getByText("Luma read: 1 new event, 0 updated, 0 unpublished.")).toBeVisible();
+    expect(read).toHaveLength(1);
+  });
+
   test("New program suggests the address from the name and opens the draft", async ({
     page,
     context,
@@ -376,7 +417,7 @@ test.describe("admin programs", () => {
     await page.getByRole("button", { name: "More actions" }).click();
     await page.getByRole("menuitem", { name: "Unpublish…" }).click();
     const confirm = page.getByRole("alertdialog");
-    await expect(confirm).toContainText("beyondpilot.genaifund.ai/programs/insurance-ai-tasco");
+    await expect(confirm).toContainText("beyondpilot.ai/programs/insurance-ai-tasco");
     await expectNoSeriousA11yViolations(page);
     await confirm.getByRole("button", { name: "Unpublish" }).click();
 
@@ -384,6 +425,31 @@ test.describe("admin programs", () => {
       page.getByText("AI for Insurance Challenge × Tasco is no longer public."),
     ).toBeVisible();
     expect(unpublished).toHaveLength(1);
+  });
+
+  test("a program is featured on the home page from its menu, and Undo stops it", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const featured = await answer(page, `/api/program/admin/programs/${tasco}/feature`, 204);
+    const unfeatured = await answer(page, `/api/program/admin/programs/${tasco}/unfeature`, 204);
+    await openSettings(page, tasco);
+    await expect(page.locator("[data-featured]")).toHaveCount(0);
+
+    await page.getByRole("button", { name: "More actions" }).click();
+    await page.getByRole("menuitem", { name: "Feature on home page" }).click();
+    await expect(
+      page.getByText("AI for Insurance Challenge × Tasco is featured on the home page."),
+    ).toBeVisible();
+    // Nobody was told and it can be put back, so the toast offers Undo, which stops featuring it.
+    await page.getByRole("button", { name: "Undo" }).click();
+    await expect(
+      page.getByText("AI for Insurance Challenge × Tasco is no longer featured."),
+    ).toBeVisible();
+    expect(featured).toHaveLength(1);
+    expect(unfeatured).toHaveLength(1);
   });
 
   test("a ready draft is published after the operator confirms", async ({

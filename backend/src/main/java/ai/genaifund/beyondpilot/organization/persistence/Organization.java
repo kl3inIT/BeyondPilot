@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.organization.Membership;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -34,6 +36,9 @@ public class Organization {
 
 	/** Merged into another organization by an operator: a record of where it went, which nobody changes. */
 	public static final String MERGED = "merged";
+
+	/** The type of a builder on their own: the organization stands for its one person, so nobody reviews it. */
+	public static final String INDIVIDUAL = Membership.INDIVIDUAL;
 
 	@Id
 	private UUID id;
@@ -124,16 +129,6 @@ public class Organization {
 		this.createdByAccountId = createdByAccountId;
 	}
 
-	/** Changes the facts a person gives when they make an organization; the rest of the profile stays. */
-	public void describeBasics(String name, String type, String teamSize, List<String> industries, String country) {
-		this.name = name;
-		this.type = type;
-		this.teamSize = teamSize;
-		this.companySizeLabel = null;
-		this.industries = industries.toArray(String[]::new);
-		this.country = country;
-	}
-
 	public void describe(String name, String type, @Nullable String website,
 			@Nullable String country, @Nullable String teamSize, List<String> industries,
 			@Nullable String description, @Nullable Integer foundedYear, @Nullable UUID logoFileId) {
@@ -149,10 +144,9 @@ public class Organization {
 		this.logoFileId = logoFileId;
 	}
 
-	/** Experience belongs to a team only, not its short description. */
-    public void describeTeam(@Nullable String background) {
-        this.teamBackground = "builder_team".equals(type) && background != null && !background.isBlank()
-                ? background.strip() : null;
+	/** Retains legacy experience when explicitly supplied, including across a type change. */
+	public void describeTeam(@Nullable String background) {
+		this.teamBackground = background != null && !background.isBlank() ? background.strip() : null;
 	}
 
 	public @Nullable String getTeamBackground() {
@@ -223,6 +217,43 @@ public class Organization {
 		mergedByAccountId = operatorAccountId;
 		mergedAt = at;
 		verifyDomain(null);
+	}
+
+	/**
+	 * Settles the review after the profile changed from one type to another. A person on their own is approved
+	 * without review, so one that waited is approved; an approved individual that becomes a team, a company or
+	 * another organization waits for GenAI Fund's review like any it makes. A refused or taken-down organization
+	 * keeps that decision whichever way its type goes, and a person on their own has no domain.
+	 */
+	public void settleTypeChange(String formerType, Instant at) {
+		boolean wasIndividual = INDIVIDUAL.equals(formerType);
+		if (isIndividual() && !wasIndividual) {
+			if (isInReview() || isSentBack()) {
+				approve(at);
+			}
+			verifyDomain(null);
+		}
+		else if (!isIndividual() && wasIndividual && isApproved()) {
+			status = IN_REVIEW;
+			decidedAt = null;
+		}
+	}
+
+	/**
+	 * Turns an individual into a team of the same person, which waits for GenAI Fund's review like any team.
+	 */
+	public void becomeTeam(String name, String teamSize, @Nullable String website) {
+		this.name = name;
+		this.type = "builder_team";
+		this.teamSize = teamSize;
+		this.website = website;
+		this.status = IN_REVIEW;
+		this.decidedAt = null;
+	}
+
+	/** A builder on their own: it is shown as its person, and it has no members, domain or page of its own. */
+	public boolean isIndividual() {
+		return INDIVIDUAL.equals(type);
 	}
 
 	public boolean isMerged() {

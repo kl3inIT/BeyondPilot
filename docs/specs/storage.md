@@ -2,7 +2,7 @@
 
 The `storage` module keeps every uploaded file: a row that records what the file is and who uploaded it, and the
 bytes, which sit in an object store (a local directory or an S3 bucket). It was designed and delivered by
-[BEY-32](../increments/active/bey-32-storage/design.md). The code is the `storage` application module,
+[BEY-32](../increments/completed/bey-32-storage/design.md). The code is the `storage` application module,
 `backend/src/main/java/ai/genaifund/beyondpilot/storage`. Nobody uses storage on its own: a file is always uploaded
 for a record of another module, and that module decides who may attach the file and who may read a private one.
 
@@ -27,7 +27,8 @@ for a record of another module, and that module decides who may attach the file 
 - **What it is:** `purpose`, `public_read`, `file_name`, `media_type` and `size_bytes` (greater than zero). None of
   them changes after the row is written: a file never changes, and a replacement is a new file.
 - **State:** `status` (`pending`, then `stored`), `created_at` and `stored_at`.
-- **Who:** `uploaded_by_account_id`, a foreign key to `identity_account`.
+- **Who:** `uploaded_by_account_id`, a foreign key to `identity_account`; null for a file the server stored itself
+  (V98).
 - **The upload:** `upload_expires_at`, and `upload_token_hash`, set only for a store that receives the bytes through
   this application and cleared when the token is spent or the file is stored.
 
@@ -153,6 +154,9 @@ else. It never holds a path, an object key or an address.
   transaction that saves their record.
 - **Describe.** `describe(id)` and `describe(ids)` return what is known of stored files (name, media type, size,
   purpose, uploader), for showing a record's attachments. Pending files are left out.
+- **Keep.** `keep(purpose, fileName, mediaType, bytes)` stores a file the server fetched itself, checked as an upload
+  is (the purpose's media types and size, and the content's first bytes), and returns it stored, with no uploader.
+  `program` keeps the covers of the events it reads from Luma.
 - **Delete.** `delete(id)` removes the bytes and then the row; an unknown identifier is not a failure. The owning
   module calls it once its record no longer names the file: `program` (`ReplacedCovers`) and `solution`
   (`DroppedFiles`) after the save commits, in a transaction of their own, logging a failure and leaving the file

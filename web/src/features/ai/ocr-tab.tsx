@@ -1,12 +1,12 @@
 import { getTranslations } from "next-intl/server";
 
+import { SettingsBlock } from "@/components/composites/settings-block";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { ChatSettings, OcrSettings } from "@/lib/api/generated";
 
 import { ConnectOcrPreset, OcrConnectionCard, OcrLogo } from "./ocr-connection-card";
 import { ocrPresets } from "./ocr-presets";
 import { OcrReader } from "./ocr-reader";
-import { SettingsBlock } from "./settings-block";
 
 /**
  * The OCR tab of Admin › AI › Providers: what reads a page that is only a picture, the OCR services

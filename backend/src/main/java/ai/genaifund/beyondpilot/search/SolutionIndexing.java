@@ -29,9 +29,13 @@ class SolutionIndexing {
 
 	private final SearchDocumentRepository index;
 
+	private final IndexLock lock;
+
 	private final SolutionPassages passages;
 
-	SolutionIndexing(SolutionDirectory solutions, SearchDocumentRepository index, SolutionPassages passages) {
+	SolutionIndexing(SolutionDirectory solutions, SearchDocumentRepository index, SolutionPassages passages,
+			IndexLock lock) {
+		this.lock = lock;
 		this.solutions = solutions;
 		this.index = index;
 		this.passages = passages;
@@ -39,27 +43,31 @@ class SolutionIndexing {
 
 	@ApplicationModuleListener
 	void on(SolutionChanged changed) {
-		UUID id = changed.solutionId();
-		solutions.indexed(id).ifPresentOrElse(solution -> {
-			index.save(document(solution));
-			// Its deck is read by the job, which finds a new file by itself.
-			passages.casesOf(id, solution.name());
-		}, () -> {
-			index.remove(SearchDocumentRepository.SOLUTION, id);
-			passages.forget(id);
+		lock.run(() -> {
+			UUID id = changed.solutionId();
+			solutions.indexed(id).ifPresentOrElse(solution -> {
+				index.save(document(solution));
+				// Its deck is read by the job, which finds a new file by itself.
+				passages.casesOf(id, solution.name());
+			}, () -> {
+				index.remove(SearchDocumentRepository.SOLUTION, id);
+				passages.forget(id);
+			});
 		});
 	}
 
 	/** Writes again what the organization's solutions show of it, and takes them out while it is not approved. */
 	@ApplicationModuleListener
 	void on(OrganizationChanged changed) {
-		List<IndexedSolution> shown = solutions.indexedOf(changed.organizationId());
-		shown.forEach(solution -> index.save(document(solution)));
-		List<UUID> kept = shown.stream().map(IndexedSolution::id).toList();
-		solutions.idsOf(changed.organizationId())
-			.stream()
-			.filter(id -> !kept.contains(id))
-			.forEach(id -> index.remove(SearchDocumentRepository.SOLUTION, id));
+		lock.run(() -> {
+			List<IndexedSolution> shown = solutions.indexedOf(changed.organizationId());
+			shown.forEach(solution -> index.save(document(solution)));
+			List<UUID> kept = shown.stream().map(IndexedSolution::id).toList();
+			solutions.idsOf(changed.organizationId())
+				.stream()
+				.filter(id -> !kept.contains(id))
+				.forEach(id -> index.remove(SearchDocumentRepository.SOLUTION, id));
+		});
 	}
 
 	/** Saves every approved solution and takes out every other. */

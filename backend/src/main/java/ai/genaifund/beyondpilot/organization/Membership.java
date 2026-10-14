@@ -10,4 +10,12 @@ import java.util.UUID;
  */
 public record Membership(UUID organizationId, String organizationName, String type, boolean owner,
 		boolean approved) {
+
+	/** The type of a builder on their own, an organization that stands for its one person. */
+	public static final String INDIVIDUAL = "independent_builder";
+
+	/** Whether the organization is the person on their own, rather than a company or a team. */
+	public boolean individual() {
+		return INDIVIDUAL.equals(type);
+	}
 }

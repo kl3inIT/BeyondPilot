@@ -25,6 +25,8 @@ import type { AdminSolutionList, AdminSolutionSummary } from "@/lib/api/generate
 import { siteRoutes } from "@/lib/site";
 
 import { CreateAdminSolution } from "./create-admin-solution";
+import { ExportSolutions } from "./export-solutions";
+import { adminSolutionFilters } from "./solution-queries";
 import { SolutionLogo } from "./solution-logo";
 import { SolutionFeature } from "./solution-feature";
 import {
@@ -130,6 +132,10 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
                   {t("awaiting", { count: solutions.awaitingReview })}
                 </TextButton>
               ))}
+            <ExportSolutions
+              filters={adminSolutionFilters(search)}
+              disabled={solutions.total === 0}
+            />
             <CreateAdminSolution />
           </div>
         }

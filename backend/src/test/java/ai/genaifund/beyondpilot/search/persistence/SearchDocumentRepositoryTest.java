@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
+import ai.genaifund.beyondpilot.search.IndexRepairs;
 import ai.genaifund.beyondpilot.search.dto.SearchRequest;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Document;
 import ai.genaifund.beyondpilot.search.persistence.SearchDocumentRepository.Hit;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
@@ -40,8 +42,12 @@ class SearchDocumentRepositoryTest {
 	@Autowired
 	private JdbcClient jdbc;
 
+	@Autowired
+	private ApplicationContext context;
+
 	@BeforeEach
 	void emptyIndex() {
+		IndexRepairs.awaitStartupRepair(context);
 		jdbc.sql("delete from search_document").update();
 	}
 

@@ -9,6 +9,7 @@ import {
   ExternalLinkIcon,
   FileQuestionIcon,
   FileTextIcon,
+  MailPlusIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -29,6 +30,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { MatchingDeck } from "./matching-deck";
 import { MatchingFeedback } from "./matching-feedback";
+import { InvitedMark } from "./matching-invite";
 import { StatusChip, useSourceLine } from "./matching-marks";
 import { useCandidateMeta } from "./matching-row";
 import { findingOf, openingOf, unreadOf, type Need } from "./matching-view";
@@ -43,7 +45,15 @@ type Quoted = Pick<MatchingCandidate, "solutionName" | "solutionSlug" | "listed"
  * that source word for word, the line says so with a tick, in the place of "From": that the words are
  * in the vendor's own material, not that what they say is true.
  */
-function SourceLine({ finding, solution }: { finding: MatchingFinding; solution: Quoted }) {
+function SourceLine({
+  finding,
+  solution,
+  onDeck,
+}: {
+  finding: MatchingFinding;
+  solution: Quoted;
+  onDeck?: (page: number, quote: string) => void;
+}) {
   const t = useTranslations("Matching.source");
   const found = finding.quoteState === "exact";
   const text = useSourceLine()(finding.source, found);
@@ -53,6 +63,14 @@ function SourceLine({ finding, solution }: { finding: MatchingFinding; solution:
   const opening = openingOf(finding, solution.listed);
   const tick = found && <CheckIcon data-slot="matching-found" aria-hidden="true" />;
 
+  if (opening?.how === "deck" && onDeck) {
+    return (
+      <TextButton size="sm" onClick={() => onDeck(opening.page, finding.quote)}>
+        {tick || <FileTextIcon aria-hidden="true" />}
+        {text}
+      </TextButton>
+    );
+  }
   if (opening?.how === "deck") {
     return (
       <MatchingDeck
@@ -114,6 +132,8 @@ type FindingItemProps = {
   tag?: string;
   finding: MatchingFinding | undefined;
   solution: Quoted;
+  /** Turns the deck that stands beside the finding to the page of its words, instead of a sheet. */
+  onDeck?: (page: number, quote: string) => void;
 };
 
 /**
@@ -122,7 +142,7 @@ type FindingItemProps = {
  * from under it, to open. Words that are only close to the vendor's, most of them there and not all,
  * say so before their source.
  */
-function FindingItem({ statement, tag, finding, solution }: FindingItemProps) {
+function FindingItem({ statement, tag, finding, solution, onDeck }: FindingItemProps) {
   const t = useTranslations("Matching.source");
   const quote = finding?.quote.trim();
   const reason = finding?.reason.trim();
@@ -150,7 +170,7 @@ function FindingItem({ statement, tag, finding, solution }: FindingItemProps) {
                 {t("close")}
               </span>
             )}
-            <SourceLine finding={finding} solution={solution} />
+            <SourceLine finding={finding} solution={solution} onDeck={onDeck} />
           </figcaption>
         </figure>
       )}
@@ -172,6 +192,10 @@ type MatchingPanelProps = {
   onNext?: () => void;
   onShortlist: () => void;
   onRemove: () => void;
+  /** Opens the invitation of the provider to propose; absent when the caller may not invite now. */
+  onInvite?: () => void;
+  /** Where the provider's proposal opens, once the invited provider sent one. */
+  proposalHref?: string;
 };
 
 /**
@@ -193,6 +217,8 @@ function MatchingPanel({
   onNext,
   onShortlist,
   onRemove,
+  onInvite,
+  proposalHref,
 }: MatchingPanelProps) {
   const t = useTranslations("Matching");
   const meta = useCandidateMeta()(candidate);
@@ -368,9 +394,19 @@ function MatchingPanel({
         <Button prominence="secondary" aria-keyshortcuts="N" disabled={pending} onClick={onRemove}>
           {t("row.remove")}
         </Button>
+        {candidate.invitedAt ? (
+          <InvitedMark candidate={candidate} proposalHref={proposalHref} />
+        ) : (
+          onInvite && (
+            <Button prominence="secondary" disabled={pending} onClick={onInvite}>
+              <MailPlusIcon aria-hidden="true" />
+              {t("invite.action")}
+            </Button>
+          )
+        )}
       </div>
     </div>
   );
 }
 
-export { MatchingPanel };
+export { FindingItem, MatchingPanel };

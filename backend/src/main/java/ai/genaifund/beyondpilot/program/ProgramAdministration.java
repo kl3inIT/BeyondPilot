@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.program;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -20,6 +21,7 @@ import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramListResponse;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramResponse;
 import ai.genaifund.beyondpilot.program.dto.CreateProgramRequest;
+import ai.genaifund.beyondpilot.program.dto.LumaReadResponse;
 import ai.genaifund.beyondpilot.program.dto.ProgramApplications;
 import ai.genaifund.beyondpilot.program.dto.ProgramEventEntry;
 import ai.genaifund.beyondpilot.program.dto.ProgramKeyDate;
@@ -40,10 +42,12 @@ import ai.genaifund.beyondpilot.storage.StorageException;
 import ai.genaifund.beyondpilot.storage.StorageService;
 import org.hibernate.exception.ConstraintViolationException;
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * What operators do with programs. Every operation first checks that the caller is an operator now, and every change
@@ -70,14 +74,47 @@ public class ProgramAdministration {
 
 	private final ApplicationEventPublisher events;
 
+	/** Present only where a Luma calendar is configured. */
+	private final ObjectProvider<LumaCalendar> luma;
+
+	private final TransactionTemplate transactions;
+
 	ProgramAdministration(ProgramRepository programs, ProgramQueryRepository programList, IdentityService identity,
-			StorageService storage, AuditTrail audit, ApplicationEventPublisher events) {
+			StorageService storage, AuditTrail audit, ApplicationEventPublisher events, ObjectProvider<LumaCalendar> luma,
+			TransactionTemplate transactions) {
 		this.programs = programs;
 		this.programList = programList;
 		this.identity = identity;
 		this.storage = storage;
 		this.audit = audit;
 		this.events = events;
+		this.luma = luma;
+		this.transactions = transactions;
+	}
+
+	/**
+	 * Reads the GenAI Fund calendar on Luma now, as the hourly read does, for an operator who just published an event
+	 * there. It runs without a transaction of its own: each event is written in its own, so one that fails leaves the
+	 * others done. A read already running finishes first.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProgramException when this environment reads no calendar, or Luma could not be read
+	 */
+	public LumaReadResponse readLuma(Actor actor) {
+		Operator operator = identity.requireOperator(actor);
+		LumaCalendar calendar = luma.getIfAvailable();
+		if (calendar == null) {
+			throw new ProgramException(ProgramErrorCode.LUMA_NOT_CONFIGURED, "No Luma calendar is configured");
+		}
+		LumaCalendar.Read read = calendar.read(Instant.now());
+		if (!read.calendarRead()) {
+			throw new ProgramException(ProgramErrorCode.LUMA_UNREACHABLE, "The Luma calendar could not be read");
+		}
+		transactions.executeWithoutResult(status -> audit.record(new AuditRecord(AuditAction.PROGRAM_LUMA_READ,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("luma_calendar", "gaf", "GenAI Fund on Luma"),
+				Map.of("created", String.valueOf(read.created()), "updated", String.valueOf(read.updated()),
+						"unpublished", String.valueOf(read.unpublished())))));
+		return new LumaReadResponse(read.created(), read.updated(), read.unpublished(), read.failed());
 	}
 
 	/**
@@ -210,12 +247,17 @@ public class ProgramAdministration {
 	/**
 	 * Once applications have opened, when they open is settled: moving it later, or taking the window away, would make
 	 * the program look unopened and free its questions while answers to them exist. When they close can still move.
+	 * The form names a moment to the minute, so an opening that names the same minute is the same opening.
 	 */
 	private static void requireOpeningKept(Program program, @Nullable ProgramApplications applications) {
 		if (opened(program) && (applications == null
-				|| !applications.opensAt().equals(program.getApplicationsOpenAt()))) {
+				|| !sameMinute(applications.opensAt(), program.getApplicationsOpenAt()))) {
 			throw refused(ProgramErrorCode.OPENING_FIXED, program.getId());
 		}
+	}
+
+	private static boolean sameMinute(Instant one, @Nullable Instant other) {
+		return other != null && one.truncatedTo(ChronoUnit.MINUTES).equals(other.truncatedTo(ChronoUnit.MINUTES));
 	}
 
 	private static void takeApplications(Program program, @Nullable ProgramApplications applications) {
@@ -230,8 +272,11 @@ public class ProgramAdministration {
 		if (outcomesDueOn != null && outcomesDueOn.isBefore(applications.closesAt().atZone(ProgramPhase.ZONE).toLocalDate())) {
 			throw refused(ProgramErrorCode.OUTCOMES_BEFORE_CLOSE, program.getId());
 		}
-		program.takeApplications(applications.opensAt(), applications.closesAt(), applications.shortlistSize(),
-				outcomesDueOn, applications.allowUpdatesUntilClose());
+		// An opening that has passed stays the moment it was, to the second (requireOpeningKept).
+		Instant kept = program.getApplicationsOpenAt();
+		Instant opensAt = opened(program) && kept != null ? kept : applications.opensAt();
+		program.takeApplications(opensAt, applications.closesAt(), applications.shortlistSize(), outcomesDueOn,
+				applications.allowUpdatesUntilClose());
 		program.titleWindowDates(text(applications.opensTitle()), text(applications.closesTitle()),
 				text(applications.outcomesTitle()));
 	}
@@ -320,6 +365,37 @@ public class ProgramAdministration {
 	}
 
 	/**
+	 * Features a program: the home page announces the most recently featured program that is published and still
+	 * takes applications. Any program can be featured, whatever its status, and it stays featured until an operator
+	 * stops it; one that is not public or no longer takes applications is simply not announced. Featuring one that is
+	 * featured already changes nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProgramException when the program does not exist
+	 */
+	@Transactional
+	public void feature(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Program program = programs.findById(id).orElseThrow(() -> notFound(id));
+		if (programs.feature(id, Instant.now()) == 1) {
+			record(AuditAction.PROGRAM_FEATURE, operator, program);
+		}
+	}
+
+	/**
+	 * Stops featuring a program. On one that is not featured it changes nothing and records nothing.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProgramException when the program does not exist
+	 */
+	@Transactional
+	public void unfeature(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		Program program = programs.findById(id).orElseThrow(() -> notFound(id));
+		if (programs.unfeature(id) == 1) {
+			record(AuditAction.PROGRAM_UNFEATURE, operator, program);
+		}
+	}
+
+	/**
 	 * The questions a program asks its applicants, and whether they can still change.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws ProgramException when the program does not exist
@@ -394,7 +470,7 @@ public class ProgramAdministration {
 		return new AdminProgramResponse(program.getId(), program.getSlug(), program.hasBeenPublished(),
 				PublishIssue.of(program).stream().map(PublishIssue::code).toList(), program.getName(), program.getType().code(), program.getPartnerName(), program.getSummary(),
 				program.getAbout(), program.getStartsOn(), program.getEndsOn(), program.getStatus().code(),
-				program.getPageKind().code(), program.getExternalUrl(), program.getCoverFileId(),
+				program.getPageKind().code(), program.getExternalUrl(), program.getCoverFileId(), program.getFeaturedAt(), program.getLumaEventId(),
 				opensAt == null || closesAt == null ? null
 						: new ProgramApplications(opensAt, closesAt, program.getShortlistSize(),
 								program.getOutcomesDueOn(), program.isAllowUpdatesUntilClose(),

@@ -187,7 +187,8 @@ A cool azure system with a sky light, three directory accents and the status rol
 ### Logo
 
 - The logo is GenAI Fund's approved kit, used as supplied: a purple tile (`#633ADB`) with a white B and a small GenAI Fund accent, beside a heavy wordmark, charcoal by day (`beyondpilot-logo.svg`) and white at night (`beyondpilot-logo-dark.svg`). Never recoloured, stretched, shadowed or given a gradient; its file carries its own clear space.
-- Wherever the icon is drawn small (the browser tab, the admin sidebar, the consent screen) it is the small-size form without the accent (`beyondpilot-icon.svg`).
+- The icon alone (the browser tab, the admin sidebar, the consent screen, `beyondpilot-icon.svg` and `web/src/app/icon.svg`) is the standalone icon with its GenAI Fund accent: GenAI Fund asked for it on 14 October 2026 in place of the kit's small-size form without the accent.
+- A link preview shows the full logo on white (`web/public/brand/beyondpilot-og.png`, 1200×630, named in the root layout's metadata), and the home-screen icon is the kit's standalone icon with its accent (`web/src/app/apple-icon.png`); neither is a small placement.
 - The logo's purple belongs to the logo. It is not a token and colours nothing else in the interface.
 
 ### Named Rules

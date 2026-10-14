@@ -60,7 +60,7 @@ function AdminOffersPage({ offers, search }: { offers: AdminOffer[]; search: Adm
       <DataTableRows
         columns={[
           { id: "title", header: list("columns.offer"), layout: { fill: true } },
-          { id: "writer", header: t("columns.writer") },
+          { id: "writer", header: t("columns.writer"), layout: { width: "md" } },
           { id: "state", header: t("columns.state") },
           { id: "url", header: list("columns.url"), layout: { from: "lg", width: "lg" } },
           { id: "solutions", header: list("columns.solutions"), layout: { numeric: true } },
@@ -86,9 +86,17 @@ function AdminOffersPage({ offers, search }: { offers: AdminOffer[]; search: Adm
                 </span>
               </div>
             ),
-            writer: offer.organizationName ?? t("genAiFund"),
+            writer: (
+              <span className="block max-w-36 truncate">
+                {offer.organizationName ?? t("genAiFund")}
+              </span>
+            ),
             state: <OfferState closed={offer.closed} />,
-            url: <OfferAddress url={offer.url} />,
+            url: (
+              <div className="w-56">
+                <OfferAddress url={offer.url} />
+              </div>
+            ),
             solutions: offer.solutions,
             actions: (
               <div className="flex justify-end">

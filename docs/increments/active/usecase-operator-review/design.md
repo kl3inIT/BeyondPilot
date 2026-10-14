@@ -4,8 +4,7 @@ Status: in progress, 7 October 2026. The Linear issue is not assigned yet; renam
 
 > **Update, 7 October 2026:** the organization no longer has a role (BEY-61, `V28__organization_drop_roles.sql`). Every approved organization has both solutions and use cases, so wherever this page says an approved enterprise or the enterprise role, it now means any approved organization; the migrations of this increment are numbered V32 to V36.
 
-> **Update, 7 October 2026:** the stored status `published` is now `approved`, the word every record GenAI Fund reviews uses ([BEY-76](../bey-76-review-lifecycle/design.md), `V47__usecase_review_lifecycle.sql`). Wherever this page names the status `published`, read `approved`; `published_at` keeps its name and still records when the use case went public.
-
+> **Update, 7 October 2026:** the stored status `published` is now `approved`, the word every record GenAI Fund reviews uses ([BEY-76](../../completed/bey-76-review-lifecycle/design.md), `V47__usecase_review_lifecycle.sql`). Wherever this page names the status `published`, read `approved`; `published_at` keeps its name and still records when the use case went public.
 
 ## Domain story
 
@@ -17,19 +16,19 @@ An operator opens Admin › Use cases and sees what waits for them. They open a 
 
 ## Statuses
 
-| From | Command | To | Notes |
-| --- | --- | --- | --- |
-| `in_review` | Approve | `published` | `published_at`, `reviewed_at` and `reviewed_by` set; the reason is cleared |
-| `in_review` | Send back | `needs_changes` | The reason is stored with who decided and when |
-| anything else | Approve, Send back | refused | `USECASE_NOT_AWAITING_REVIEW` |
+| From          | Command            | To              | Notes                                                                      |
+| ------------- | ------------------ | --------------- | -------------------------------------------------------------------------- |
+| `in_review`   | Approve            | `published`     | `published_at`, `reviewed_at` and `reviewed_by` set; the reason is cleared |
+| `in_review`   | Send back          | `needs_changes` | The reason is stored with who decided and when                             |
+| anything else | Approve, Send back | refused         | `USECASE_NOT_AWAITING_REVIEW`                                              |
 
 ## API
 
 Under `/api/usecase/admin`, operators only.
 
-| Request | `operationId` | Success | Refusals beyond 401 and 403 |
-| --- | --- | --- | --- |
-| `POST /use-cases/{id}/approve` | `approveAdminUseCase` | `200`, the use case | `404`; `409` not in review |
+| Request                          | `operationId`          | Success             | Refusals beyond 401 and 403                                                   |
+| -------------------------------- | ---------------------- | ------------------- | ----------------------------------------------------------------------------- |
+| `POST /use-cases/{id}/approve`   | `approveAdminUseCase`  | `200`, the use case | `404`; `409` not in review                                                    |
 | `POST /use-cases/{id}/send-back` | `sendBackAdminUseCase` | `200`, the use case | `400` the reason is blank or over 1000 characters; `404`; `409` not in review |
 
 `GET /use-cases/{id}` now carries who created it, who sent it and who decided, with the times and the reason, for the status history. Failure code added: `USECASE_NOT_AWAITING_REVIEW` (409). Audit actions: `use_case.approve`, `use_case.send_back`.

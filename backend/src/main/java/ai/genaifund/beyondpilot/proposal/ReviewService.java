@@ -2,7 +2,6 @@ package ai.genaifund.beyondpilot.proposal;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -14,21 +13,26 @@ import java.util.Objects;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
+import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
+import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.organization.OrganizationProfile;
 import ai.genaifund.beyondpilot.program.ApplicationForm;
 import ai.genaifund.beyondpilot.proposal.ReviewAccess.Reviewing;
-import ai.genaifund.beyondpilot.proposal.dto.ApplicationsCsv;
 import ai.genaifund.beyondpilot.proposal.dto.AttachedFileResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ContactDetails;
 import ai.genaifund.beyondpilot.proposal.dto.CriterionResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ExportApplicationsRequest;
+import ai.genaifund.beyondpilot.proposal.dto.ProgramDraftsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationsResponse;
+import ai.genaifund.beyondpilot.proposal.dto.ReviewDraftResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewHeadResponse;
 import ai.genaifund.beyondpilot.proposal.dto.SaveAssessmentRequest;
 import ai.genaifund.beyondpilot.proposal.persistence.Proposal;
@@ -41,6 +45,11 @@ import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecision;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecisionRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersion;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersionRepository;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.solution.OfferedSolution;
+import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.storage.StorageService;
 import org.jspecify.annotations.Nullable;
@@ -67,6 +76,9 @@ public class ReviewService {
 	private static final TypeReference<Map<UUID, Integer>> SCORES = new TypeReference<>() {
 	};
 
+	private static final TypeReference<Map<String, String>> ANSWERS = new TypeReference<>() {
+	};
+
 	private final ReviewSetup setup;
 
 	private final ReviewAccess access;
@@ -87,10 +99,16 @@ public class ReviewService {
 
 	private final JsonMapper json;
 
+	private final OrganizationDirectory organizations;
+
+	private final SolutionDirectory solutions;
+
 	ReviewService(ReviewSetup setup, ReviewAccess access, ProposalRepository proposals,
 			ProposalVersionRepository versions, ProposalAssessmentRepository assessments,
 			ProposalReviewDecisionRepository decisions, ProposalReleaseRepository releases, IdentityService identity,
-			StorageService storage, JsonMapper json) {
+			StorageService storage, JsonMapper json, OrganizationDirectory organizations, SolutionDirectory solutions) {
+		this.organizations = organizations;
+		this.solutions = solutions;
 		this.setup = setup;
 		this.access = access;
 		this.proposals = proposals;
@@ -145,13 +163,15 @@ public class ReviewService {
 	}
 
 	/**
-	 * A program's submitted applications as a spreadsheet reads them, the earliest submitted first, for GenAI Fund to
-	 * work with outside BeyondPilot. The download is recorded, since it takes applicants' contact details out.
+	 * A program's submitted applications as a spreadsheet, the earliest submitted first, for GenAI Fund to work with
+	 * outside BeyondPilot. The download is recorded, since it takes applicants' contact details out.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws ProposalException when the program takes no applications
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
 	 */
 	@Transactional
-	public ApplicationsCsv export(Actor actor, UUID programId, ExportApplicationsRequest request) {
+	public SpreadsheetFile export(Actor actor, UUID programId, ExportApplicationsRequest request,
+			SpreadsheetFormat format) {
 		Operator operator = access.operator(actor);
 		ApplicationForm form = setup.form(programId);
 		ReviewHeadResponse head = head(form, access.of(actor, programId));
@@ -168,33 +188,226 @@ public class ReviewService {
 		}
 		Map<VersionKey, Snapshot> snapshots = snapshots(submitted);
 		ReviewHeadResponse.ChoiceQuestion choice = head.choice();
-		CsvRows rows = new CsvRows();
-		rows.add(Arrays.asList("Application", "Organization", "Organization type", "Solution", "First name",
-				"Last name", "Email", "Phone", "Country", "LinkedIn", choice == null ? "Choice" : choice.label(),
-				"Submitted at (UTC)", "Version", "Review status", "Outcome released", "Scores", "Average score"));
-		int count = 0;
+		List<ApplicationLine> lines = new ArrayList<>();
 		for (Proposal proposal : submitted) {
 			Snapshot snapshot = snapshots.get(new VersionKey(proposal.getId(), proposal.getSubmissions()));
 			if (snapshot == null) {
 				continue;
 			}
 			List<ProposalAssessment> all = byProposal.getOrDefault(proposal.getId(), List.of());
-			ContactDetails contact = snapshot.applicant().contact();
-			rows.add(Arrays.asList(proposal.getId(), snapshot.organization().name(), snapshot.organization().type(),
-					snapshot.solution().name(), contact.firstName(), contact.lastName(), snapshot.applicant().email(),
-					contact.phone(), contact.country(), contact.linkedin(),
-					choice == null ? null : choiceOf(snapshot, choice.id()), proposal.getSubmittedAt(),
-					proposal.getSubmissions(), proposal.getReviewStatus(), head.releasedAt() == null ? "no" : "yes",
+			lines.add(new ApplicationLine(proposal.getId(), snapshot.organization().name(),
+					snapshot.organization().type(), snapshot.solution().name(), snapshot.applicant().contact(),
+					snapshot.applicant().email(), choice == null ? null : choiceOf(snapshot, choice.id()),
+					Objects.requireNonNull(proposal.getSubmittedAt()), proposal.getSubmissions(),
+					proposal.getReviewStatus(), head.releasedAt() != null,
 					all.stream().filter(assessment -> !assessment.isConflict()).count(), average(all)));
-			count++;
 		}
-		setup.record(AuditAction.PROPOSAL_EXPORT, operator, form, Map.of("count", String.valueOf(count)));
+		Spreadsheet<ApplicationLine> sheet = Spreadsheet.<ApplicationLine>of("Applications")
+			.text("Application", ApplicationLine::id)
+			.group("Applicant")
+			.text("Organization", ApplicationLine::organization)
+			.label("Organization type", ApplicationLine::organizationType)
+			.text("Solution", ApplicationLine::solution)
+			.group("Contact")
+			.text("First name", line -> line.contact().firstName())
+			.text("Last name", line -> line.contact().lastName())
+			.email("Email", ApplicationLine::email)
+			.text("Phone", line -> line.contact().phone())
+			.text("Country", line -> line.contact().country())
+			.link("LinkedIn", line -> line.contact().linkedin())
+			.ungrouped()
+			.text(choice == null ? "Choice" : choice.label(), ApplicationLine::choice)
+			.group("Review")
+			.time("Submitted at", ApplicationLine::submittedAt)
+			.count("Version", ApplicationLine::version)
+			.label("Review status", ApplicationLine::reviewStatus)
+			.yesNo("Outcome released", ApplicationLine::released)
+			.count("Scores", ApplicationLine::scores)
+			.decimal("Average score", ApplicationLine::average);
+		SpreadsheetFile file = sheet.write(format, form.slug() + "-applications", lines,
+				about(operator, only == null ? Map.of() : Map.of("Applications", "the ones the list showed")));
+		setup.record(AuditAction.PROPOSAL_EXPORT, operator, form, Map.of("count", String.valueOf(file.rows())));
 		LOG.atInfo()
 			.addKeyValue("event", "proposal.applications.exported")
 			.addKeyValue("program_id", programId)
-			.addKeyValue("count", count)
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
 			.log("Applications exported");
-		return new ApplicationsCsv(form.slug() + "-applications.csv", rows.toString());
+		return file;
+	}
+
+	/**
+	 * A program's drafts not submitted yet, the most recently saved first, for operators to follow up before the
+	 * close: who started each, how to reach them and how far they got. What a draft says stays the applicant's, so
+	 * neither its answers, its deck nor its solution are read out; judges never see drafts.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the program takes no applications
+	 */
+	@Transactional(readOnly = true)
+	public ProgramDraftsResponse drafts(Actor actor, UUID programId) {
+		access.operator(actor);
+		ApplicationForm form = setup.form(programId);
+		List<Proposal> drafts = proposals.findByProgramIdAndStatusOrderByUpdatedAtDesc(programId, Proposal.DRAFT);
+		Map<UUID, Person> people = identity.people(drafts.stream().map(Proposal::getAccountId).toList());
+		Map<UUID, OrganizationName> names = organizations
+			.names(drafts.stream().map(Proposal::getOrganizationId).filter(Objects::nonNull).toList());
+		Map<UUID, String> types = new HashMap<>();
+		for (UUID id : names.keySet()) {
+			organizations.profile(id).ifPresent(profile -> types.put(id, profile.type()));
+		}
+		List<ApplicationForm.Question> required = form.questions().stream().filter(ApplicationForm.Question::required).toList();
+		List<ProgramDraftsResponse.Item> items = new ArrayList<>();
+		for (Proposal draft : drafts) {
+			ContactDetails contact = json.readValue(draft.getContact(), ContactDetails.class);
+			Map<String, String> answers = json.readValue(draft.getAnswers(), ANSWERS);
+			Person person = people.get(draft.getAccountId());
+			UUID organizationId = draft.getOrganizationId();
+			OrganizationName organization = organizationId == null ? null : names.get(organizationId);
+			int answered = (int) required.stream()
+				.filter(question -> !blank(answers.get(question.id().toString())))
+				.count();
+			items.add(new ProgramDraftsResponse.Item(draft.getId(), text(contact.firstName()), text(contact.lastName()),
+					person == null ? "" : person.email(), text(contact.phone()), text(contact.country()),
+					organization == null ? null : organization.name(),
+					organizationId == null ? null : types.get(organizationId),
+					!blank(contact.firstName()) && !blank(contact.lastName()) && !blank(contact.phone())
+							&& !blank(contact.country()),
+					draft.getSolutionId() != null, draft.getDeckFileId() != null, answered, draft.getCreatedAt(),
+					draft.getUpdatedAt()));
+		}
+		return new ProgramDraftsResponse(items, required.size());
+	}
+
+	/**
+	 * A program's drafts not submitted yet as a spreadsheet, the most recently saved first, to write to their
+	 * applicants outside BeyondPilot. The download is recorded, since it takes their contact details out.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the program takes no applications
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile exportDrafts(Actor actor, UUID programId, SpreadsheetFormat format) {
+		Operator operator = access.operator(actor);
+		ApplicationForm form = setup.form(programId);
+		ProgramDraftsResponse drafts = drafts(actor, programId);
+		Spreadsheet<ProgramDraftsResponse.Item> sheet = Spreadsheet.<ProgramDraftsResponse.Item>of("Drafts")
+			.text("Draft", ProgramDraftsResponse.Item::id)
+			.group("Contact")
+			.text("First name", ProgramDraftsResponse.Item::firstName)
+			.text("Last name", ProgramDraftsResponse.Item::lastName)
+			.email("Email", ProgramDraftsResponse.Item::email)
+			.text("Phone", ProgramDraftsResponse.Item::phone)
+			.text("Country", ProgramDraftsResponse.Item::country)
+			.group("Organization")
+			.text("Organization", ProgramDraftsResponse.Item::organizationName)
+			.label("Organization type", ProgramDraftsResponse.Item::organizationType)
+			.group("Progress")
+			.yesNo("Contact complete", ProgramDraftsResponse.Item::contactComplete)
+			.yesNo("Solution chosen", ProgramDraftsResponse.Item::solutionChosen)
+			.yesNo("Deck attached", ProgramDraftsResponse.Item::deckAttached)
+			.text("Required questions answered", item -> item.requiredAnswered() + " of " + drafts.requiredQuestions())
+			.time("Started at", ProgramDraftsResponse.Item::startedAt)
+			.time("Last saved at", ProgramDraftsResponse.Item::lastSavedAt);
+		SpreadsheetFile file = sheet.write(format, form.slug() + "-drafts", drafts.items(), about(operator, Map.of()));
+		setup.record(AuditAction.PROPOSAL_DRAFTS_EXPORT, operator, form, Map.of("count", String.valueOf(file.rows())));
+		LOG.atInfo()
+			.addKeyValue("event", "proposal.drafts.exported")
+			.addKeyValue("program_id", programId)
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Drafts exported");
+		return file;
+	}
+
+	private static Spreadsheet.About about(Operator operator, Map<String, String> narrowed) {
+		return new Spreadsheet.About(operator.label(), Instant.now(), narrowed);
+	}
+
+	/** One submitted application as the download lists it. */
+	private record ApplicationLine(UUID id, String organization, String organizationType, String solution,
+			ContactDetails contact, String email, @Nullable String choice, Instant submittedAt, int version,
+			String reviewStatus, boolean released, long scores, @Nullable Double average) {
+	}
+
+	/**
+	 * An application not submitted yet as it stands now, for an operator to see who may yet apply; judges never read
+	 * a draft.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when there is no such draft
+	 */
+	@Transactional
+	public ReviewDraftResponse draft(Actor actor, UUID id) {
+		access.operator(actor);
+		Proposal draft = draftOf(id);
+		ApplicationForm form = setup.form(draft.getProgramId());
+		ContactDetails contact = json.readValue(draft.getContact(), ContactDetails.class);
+		Map<String, String> answers = json.readValue(draft.getAnswers(), ANSWERS);
+		Person person = identity.people(List.of(draft.getAccountId())).get(draft.getAccountId());
+		UUID organizationId = draft.getOrganizationId();
+		OrganizationProfile organization = organizationId == null ? null
+				: organizations.profile(organizationId).orElse(null);
+		UUID solutionId = draft.getSolutionId();
+		OfferedSolution solution = solutionId == null ? null : solutions.offered(solutionId).orElse(null);
+		UUID deckId = draft.getDeckFileId();
+		List<ReviewApplicationResponse.Answer> answered = new ArrayList<>();
+		for (ApplicationForm.Question question : form.questions()) {
+			String value = answers.get(question.id().toString());
+			if (blank(value)) {
+				continue;
+			}
+			AttachedFileResponse file = "file".equals(question.kind()) ? attached(UUID.fromString(value)) : null;
+			answered.add(new ReviewApplicationResponse.Answer(question.id(), question.label(), question.kind(), value,
+					file));
+		}
+		ReviewApplicationResponse.Submitted shown = new ReviewApplicationResponse.Submitted(
+				person == null ? "" : person.email(), contact, organization == null ? "" : organization.name(),
+				organization == null ? "" : organization.type(), organization == null ? null : organization.country(),
+				organization == null ? null : organization.teamSize(),
+				organization == null ? null : organization.website(), draft.getTeamBackground(),
+				solution == null ? "" : solution.name(), solution == null ? null : solution.summary(),
+				solution == null ? null : solution.problemsSolved(), solution == null ? null : solution.maturity(),
+				solution == null ? null : solution.demoUrl(), deckId == null ? null : attached(deckId),
+				draft.getBuiltWith(), draft.getTraction(), answered);
+		return new ReviewDraftResponse(head(form, access.of(actor, form.programId())), id, draft.getCreatedAt(),
+				draft.getUpdatedAt(), shown);
+	}
+
+	/**
+	 * A file of a draft, for an operator reading it: its deck or a file it answers a question with.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when there is no such draft, or the file is not one of it
+	 */
+	@Transactional
+	public FileDownload draftFile(Actor actor, UUID id, UUID fileId) {
+		access.operator(actor);
+		Proposal draft = draftOf(id);
+		Map<String, String> answers = json.readValue(draft.getAnswers(), ANSWERS);
+		boolean held = fileId.equals(draft.getDeckFileId()) || answers.containsValue(fileId.toString());
+		if (!held) {
+			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
+					"File " + fileId + " is not of draft " + id);
+		}
+		return storage.download(fileId);
+	}
+
+	private Proposal draftOf(UUID id) {
+		return proposals.findById(id)
+			.filter(proposal -> Proposal.DRAFT.equals(proposal.getStatus()))
+			.orElseThrow(() -> new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND, "No draft " + id));
+	}
+
+	private @Nullable AttachedFileResponse attached(UUID fileId) {
+		return storage.describe(fileId)
+			.map(file -> new AttachedFileResponse(file.id(), file.fileName(), file.sizeBytes()))
+			.orElse(null);
+	}
+
+	private static @Nullable String text(@Nullable String value) {
+		return blank(value) ? null : Objects.requireNonNull(value).strip();
+	}
+
+	private static boolean blank(@Nullable String value) {
+		return value == null || value.isBlank();
 	}
 
 	/**
@@ -225,6 +438,45 @@ public class ReviewService {
 		ApplicationForm form = setup.form(proposal.getProgramId());
 		Reviewing reviewing = access.of(actor, proposal.getProgramId());
 		return view(form, reviewing, proposal);
+	}
+
+	/**
+	 * One submitted application as its applicant sent it last, with every assessment, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when there is no such submitted application
+	 */
+	@Transactional
+	public SubmittedApplication applicationOf(Actor actor, UUID id) {
+		identity.requireOperator(actor);
+		ReviewApplicationResponse view = application(actor, id);
+		ReviewHeadResponse head = view.head();
+		ReviewApplicationResponse.Submitted sent = view.submitted();
+		ContactDetails contact = sent.contact();
+		List<SubmittedApplication.Assessment> assessments = new ArrayList<>();
+		if (view.mine() != null) {
+			assessments.add(assessment(Objects.requireNonNull(view.mine())));
+		}
+		view.others().forEach(other -> assessments.add(assessment(other)));
+		return new SubmittedApplication(view.id(),
+				new SubmittedApplication.Program(head.programId(), head.slug(), head.name()), view.version(),
+				view.submittedAt(), view.reviewStatus(), view.average(),
+				new SubmittedApplication.Applicant(sent.email(), contact.firstName(), contact.lastName(),
+						contact.phone(), contact.country(), contact.linkedin()),
+				new SubmittedApplication.Organization(sent.organizationName(), sent.organizationType(), sent.country(),
+						sent.teamSize(), sent.website(), sent.teamBackground()),
+				new SubmittedApplication.Solution(sent.solutionName(), sent.summary(), sent.problemsSolved(),
+						sent.maturity(), sent.demoUrl(), sent.builtWith(), sent.traction(), file(sent.deck())),
+				sent.answers()
+					.stream()
+					.map(answer -> new SubmittedApplication.Answer(answer.label(), answer.kind(), answer.value(),
+							file(answer.file())))
+					.toList(),
+				head.criteria()
+					.stream()
+					.map(criterion -> new SubmittedApplication.Criterion(criterion.id(), criterion.name(),
+							criterion.description()))
+					.toList(),
+				List.copyOf(assessments));
 	}
 
 	/**
@@ -283,20 +535,24 @@ public class ReviewService {
 	@Transactional
 	public FileDownload file(Actor actor, UUID id, UUID fileId) {
 		Proposal proposal = submitted(id);
-		Reviewing reviewing = access.of(actor, proposal.getProgramId());
-		Snapshot snapshot = snapshot(proposal);
-		boolean held = (snapshot.materials().deck() != null
-				&& Objects.requireNonNull(snapshot.materials().deck()).fileId().equals(fileId))
-				|| snapshot.answers()
-					.stream()
-					.anyMatch(answer -> answer.file() != null
-							&& Objects.requireNonNull(answer.file()).fileId().equals(fileId));
-		if (!held) {
-			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
-					"File " + fileId + " is not of application " + id);
-		}
-		setup.opened(reviewing.person(), setup.form(proposal.getProgramId()), id, fileId);
+		access.of(actor, proposal.getProgramId());
+		held(proposal, fileId);
 		return storage.download(fileId);
+	}
+
+	/**
+	 * A file of an application's last submission, opened for an operator's app to read, as {@link #file} opens it for
+	 * the page.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when there is no such submitted application, or the file is not one it holds
+	 */
+	@Transactional
+	public ApplicationFile fileOf(Actor actor, UUID id, UUID fileId) {
+		identity.requireOperator(actor);
+		Proposal proposal = submitted(id);
+		access.of(actor, proposal.getProgramId());
+		AttachedFileResponse file = held(proposal, fileId);
+		return new ApplicationFile(fileId, file.fileName(), storage.content(fileId));
 	}
 
 	ReviewHeadResponse head(ApplicationForm form, Reviewing reviewing) {
@@ -357,6 +613,30 @@ public class ReviewService {
 		ProposalVersion version = versions.findById(new ProposalVersion.Key(proposal.getId(), proposal.getSubmissions()))
 			.orElseThrow(() -> new IllegalStateException("Application " + proposal.getId() + " has no last version"));
 		return json.readValue(version.getSnapshot(), Snapshot.class);
+	}
+
+	/**
+	 * The file of a submission with this identifier: its deck or a file it answered with.
+	 * @throws ProposalException when the submission holds no such file
+	 */
+	private AttachedFileResponse held(Proposal proposal, UUID fileId) {
+		Snapshot snapshot = snapshot(proposal);
+		return Stream
+			.concat(Stream.ofNullable(snapshot.materials().deck()),
+					snapshot.answers().stream().map(Snapshot.Answer::file).filter(Objects::nonNull))
+			.filter(file -> file.fileId().equals(fileId))
+			.findFirst()
+			.orElseThrow(() -> new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
+					"File " + fileId + " is not of application " + proposal.getId()));
+	}
+
+	private static SubmittedApplication.@Nullable File file(@Nullable AttachedFileResponse file) {
+		return file == null ? null : new SubmittedApplication.File(file.fileId(), file.fileName(), file.sizeBytes());
+	}
+
+	private static SubmittedApplication.Assessment assessment(ReviewApplicationResponse.Assessment assessment) {
+		return new SubmittedApplication.Assessment(assessment.reviewer(), assessment.role(), assessment.scores(),
+				assessment.average(), assessment.note(), assessment.conflict(), assessment.version());
 	}
 
 	private ReviewApplicationResponse view(ApplicationForm form, Reviewing reviewing, Proposal proposal) {

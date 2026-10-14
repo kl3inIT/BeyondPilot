@@ -28,29 +28,36 @@ class UseCaseIndexing {
 
 	private final SearchDocumentRepository index;
 
-	UseCaseIndexing(UseCaseDirectory useCases, SearchDocumentRepository index) {
+	private final IndexLock lock;
+
+	UseCaseIndexing(UseCaseDirectory useCases, SearchDocumentRepository index, IndexLock lock) {
+		this.lock = lock;
 		this.useCases = useCases;
 		this.index = index;
 	}
 
 	@ApplicationModuleListener
 	void on(UseCaseChanged changed) {
-		UUID id = changed.useCaseId();
-		useCases.indexed(id)
-			.ifPresentOrElse(useCase -> index.save(document(useCase)),
-					() -> index.remove(SearchDocumentRepository.USE_CASE, id));
+		lock.run(() -> {
+			UUID id = changed.useCaseId();
+			useCases.indexed(id)
+				.ifPresentOrElse(useCase -> index.save(document(useCase)),
+						() -> index.remove(SearchDocumentRepository.USE_CASE, id));
+		});
 	}
 
 	/** Writes again what the organization's use cases show of it, and takes them out while it is not approved. */
 	@ApplicationModuleListener
 	void on(OrganizationChanged changed) {
-		List<IndexedUseCase> shown = useCases.indexedOf(changed.organizationId());
-		shown.forEach(useCase -> index.save(document(useCase)));
-		List<UUID> kept = shown.stream().map(IndexedUseCase::id).toList();
-		useCases.idsOf(changed.organizationId())
-			.stream()
-			.filter(id -> !kept.contains(id))
-			.forEach(id -> index.remove(SearchDocumentRepository.USE_CASE, id));
+		lock.run(() -> {
+			List<IndexedUseCase> shown = useCases.indexedOf(changed.organizationId());
+			shown.forEach(useCase -> index.save(document(useCase)));
+			List<UUID> kept = shown.stream().map(IndexedUseCase::id).toList();
+			useCases.idsOf(changed.organizationId())
+				.stream()
+				.filter(id -> !kept.contains(id))
+				.forEach(id -> index.remove(SearchDocumentRepository.USE_CASE, id));
+		});
 	}
 
 	/** Saves every published use case and takes out every other. */

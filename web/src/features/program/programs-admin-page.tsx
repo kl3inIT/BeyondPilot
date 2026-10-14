@@ -1,10 +1,11 @@
-import { ChevronRightIcon, LayoutListIcon, SearchXIcon } from "lucide-react";
+import { ChevronRightIcon, LayoutListIcon, RefreshCwIcon, SearchXIcon } from "lucide-react";
 import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { FeaturedBadge } from "@/components/composites/featured-badge";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
@@ -12,6 +13,7 @@ import type { AdminProgramSummary } from "@/lib/api/generated";
 import { adminProgramRoute, siteRoutes } from "@/lib/site";
 import { publicFileUrl } from "@/lib/storage/upload";
 
+import { LumaReadButton } from "./luma-read-button";
 import { NewProgramDialog } from "./new-program-dialog";
 import { programFormatter } from "./program-format";
 import { programState } from "./program-labels";
@@ -83,7 +85,18 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
       program,
       href: adminProgramRoute(program.id),
       kind: types(program.type),
-      state: <Badge variant={state.variant}>{t(`state.${state.key}`)}</Badge>,
+      state: (
+        <span className="flex flex-col items-start gap-1">
+          <Badge variant={state.variant}>{t(`state.${state.key}`)}</Badge>
+          {program.featuredAt && <FeaturedBadge>{t("featured")}</FeaturedBadge>}
+          {program.lumaEventId && (
+            <Badge variant="outline">
+              <RefreshCwIcon aria-hidden="true" />
+              {t("fromLuma")}
+            </Badge>
+          )}
+        </span>
+      ),
       runs: runs(program),
       window: window(program),
       quietWindow: state.key === "done" || !program.applications,
@@ -111,12 +124,16 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
       <AdminPageHeader
         destination="programs"
         title={t("title")}
-        actions={<NewProgramDialog locale={locale} />}
+        actions={
+          <>
+            <LumaReadButton />
+            <NewProgramDialog locale={locale} />
+          </>
+        }
       />
       <ProgramsToolbar counts={list.counts} total={list.total} />
 
       {/* The window gives way to the days on narrower desktops, where the table is made to fit. */}
-      {/* Each row is the containing block of its link's overlay, so the overlay covers that row only. */}
       <DataTableRows
         rowLinks
         sortKeys={list.sortKeys}
@@ -139,10 +156,10 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
               <div className="flex items-center gap-3">
                 <Thumbnail program={row.program} alt="" />
                 <div className="flex min-w-0 flex-col gap-0.5">
-                  {/* The name is the row's link; it covers the whole row for the pointer. */}
+                  {/* The name is the row's link; a press anywhere on the row follows it. */}
                   <Link
                     href={row.href}
-                    className="font-medium outline-none after:absolute after:inset-0 focus-visible:after:ring-3 focus-visible:after:ring-ring/50 focus-visible:after:ring-inset"
+                    className="rounded-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     {row.program.name}
                   </Link>

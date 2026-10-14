@@ -67,10 +67,14 @@ public class OrganizationQueryRepository {
 	public record Name(UUID id, String slug, String name, @Nullable String country, @Nullable UUID logoFileId) {
 	}
 
-	/** The approved organizations whose name contains the text, by name; at most {@code limit}. */
+	/**
+	 * The approved organizations a person may ask to join whose name contains the text, by name; at most
+	 * {@code limit}. A builder on their own is one person, so nobody asks to join it.
+	 */
 	public List<Match> search(String text, int limit) {
 		return jdbc.sql(MATCHES + """
-				where o.status = 'approved' and o.suspended_at is null and lower(o.name) like :pattern escape '\\'
+				where o.status = 'approved' and o.suspended_at is null and o.type <> 'independent_builder'
+				  and lower(o.name) like :pattern escape '\\'
 				order by lower(o.name), o.id
 				limit :limit
 				""").param("pattern", containing(text)).param("limit", limit).query(OrganizationQueryRepository::match).list();

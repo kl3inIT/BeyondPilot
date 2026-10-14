@@ -4,11 +4,9 @@ import {
   getConversationProspect,
   getUnreadMessages,
   listConversations,
-  listReportedConversations,
   type ConversationDetail,
   type ConversationList,
   type ConversationProspect,
-  type ReportedRequestList,
   type Unread,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
@@ -72,16 +70,4 @@ export async function readUnread(): Promise<Unread> {
   } catch {
     return { requests: 0, unread: 0 };
   }
-}
-
-/** One page of the first messages people reported, for the operator behind this request. Server only. */
-export async function readReportedRequests(
-  page: number,
-  size: number | null,
-): Promise<ReportedRequestList> {
-  const { data } = await listReportedConversations({
-    ...(await sessionRequest()),
-    query: { page: Math.max(1, page), size: size ?? undefined },
-  });
-  return data;
 }

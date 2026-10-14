@@ -54,14 +54,14 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertProblem(post(applicant, API + "/applications/" + id + "/submit", null), 400,
 				"PROPOSAL_ORGANIZATION_REQUIRED");
 
-		// On their own, a person applies through an organization made from their name, which waits for review.
+		// On their own, a person applies through an organization made from their name, which nobody reviews.
 		String organized = body(post(applicant, form.path() + "/organization",
 				Map.of("kind", "individual", "name", "Dat Phan", "country", "VN"))
 			.expectStatus()
 			.isOk());
 		assertThat(JsonPath.<String>read(organized, "$.organization.name")).isEqualTo("Dat Phan");
 		assertThat(JsonPath.<String>read(organized, "$.organization.type")).isEqualTo("independent_builder");
-		assertThat(JsonPath.<Boolean>read(organized, "$.organization.approved")).isFalse();
+		assertThat(JsonPath.<Boolean>read(organized, "$.organization.approved")).isTrue();
 		UUID solution = completeSolution(applicant, email, "Claim Copilot");
 
 		String saved = body(put(applicant, form.path(),
@@ -118,6 +118,71 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<String>read(fresh, "$.previous.deck.fileId")).isEqualTo(deck);
 		assertThat(JsonPath.<String>read(fresh, "$.previous.contact.lastName")).isEqualTo("Phan");
 		assertThat(JsonPath.<String>read(fresh, "$.previous.traction")).isEqualTo("Two pilots with insurers.");
+	}
+
+	@Test
+	void someoneOnTheirOwnKeepsTheNameTheyGaveAndMayApplyOtherwiseUntilTheySendSomething() {
+		Form form = program("alone-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+
+		// The organization keeps the name given to it, whatever the application's contact says, and a team can still be
+		// chosen instead.
+		String lan = TestSignIn.session(client, mail, "lan@alone.test");
+		String alone = body(post(lan, form.path() + "/organization",
+				Map.of("kind", "individual", "name", "Lan Nguyen", "country", "VN"))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<Boolean>read(alone, "$.organization.changeable")).isTrue();
+		String renamed = body(put(lan, form.path(),
+				application(Map.of("firstName", " Lan", "lastName", "Tran "), null, Map.of(), null))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(renamed, "$.organization.name")).isEqualTo("Lan Nguyen");
+		String team = body(post(lan, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Lan and Friends", "country", "VN", "teamSize", "2_9"))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(team, "$.organization.name")).isEqualTo("Lan and Friends");
+		assertThat(JsonPath.<String>read(team, "$.organization.type")).isEqualTo("builder_team");
+		assertThat(JsonPath.<Boolean>read(team, "$.organization.approved")).isFalse();
+		assertThat(JsonPath.<Boolean>read(team, "$.organization.changeable")).isFalse();
+		// A team stays one here: it may have members by now.
+		assertProblem(post(lan, form.path() + "/organization/leave", null), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
+
+		// Leaving leaves the application with no organization, to join or add a company.
+		String minh = TestSignIn.session(client, mail, "minh@alone.test");
+		post(minh, form.path() + "/organization", Map.of("kind", "individual", "name", "Minh Le", "country", "VN"))
+			.expectStatus()
+			.isOk();
+		put(minh, form.path(), application(contact(), null, Map.of(), null)).expectStatus().isOk();
+		String left = body(post(minh, form.path() + "/organization/leave", null).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(left, "$.organization")).isNull();
+		assertThat(jdbc.sql("select organization_id is null from proposal where account_id = (select id from"
+				+ " identity_account where email = 'minh@alone.test')").query(Boolean.class).single()).isTrue();
+
+		// Once something went out under their name, they keep applying as themselves.
+		String email = "hoa@alone.test";
+		String hoa = TestSignIn.session(client, mail, email);
+		post(hoa, form.path() + "/organization", Map.of("kind", "individual", "name", "Hoa Pham", "country", "VN"))
+			.expectStatus()
+			.isOk();
+		submitted(hoa, email, form, completeSolution(hoa, email, "Hoa Copilot"));
+		String sent = body(get(hoa, form.path()).expectStatus().isOk());
+		assertThat(JsonPath.<Boolean>read(sent, "$.organization.changeable")).isFalse();
+		assertProblem(post(hoa, form.path() + "/organization/leave", null), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
+		assertProblem(post(hoa, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Hoa Team", "country", "VN", "teamSize", "2_9")), 409,
+				"PROPOSAL_INDIVIDUAL_LOCKED");
+
+		// One GenAI Fund refused keeps that decision: neither a team nor a fresh start undoes it.
+		String khanh = TestSignIn.session(client, mail, "khanh@alone.test");
+		post(khanh, form.path() + "/organization", Map.of("kind", "individual", "name", "Khanh Vo", "country", "VN"))
+			.expectStatus()
+			.isOk();
+		jdbc.sql("update organization set status = 'rejected' where name = 'Khanh Vo'").update();
+		assertProblem(post(khanh, form.path() + "/organization/leave", null), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
+		assertProblem(post(khanh, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Khanh Team", "country", "VN", "teamSize", "2_9")), 409,
+				"PROPOSAL_INDIVIDUAL_LOCKED");
 	}
 
 	@Test

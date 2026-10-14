@@ -10,6 +10,11 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SolutionLogo } from "@/features/solution/solution-logo";
 import type { MatchingCandidate, RemoveMatchingCandidate } from "@/lib/api/generated";
 
+/** A removal with its reason, as this picker sends it. */
+export type Removal = RemoveMatchingCandidate & {
+  reason: NonNullable<RemoveMatchingCandidate["reason"]>;
+};
+
 /** Why a candidate is removed, in the order the picker offers the reasons. */
 const reasons = [
   "does_not_solve",
@@ -17,7 +22,7 @@ const reasons = [
   "closed_or_wrong_website",
   "duplicate",
   "other",
-] as const satisfies RemoveMatchingCandidate["reason"][];
+] as const satisfies Removal["reason"][];
 
 const MAX_NOTE = 500;
 
@@ -25,7 +30,7 @@ type MatchingRemoveProps = {
   candidate: Pick<MatchingCandidate, "solutionName" | "logoFileId">;
   pending: boolean;
   onCancel: () => void;
-  onRemove: (body: RemoveMatchingCandidate) => void;
+  onRemove: (body: Removal) => void;
 };
 
 /**
@@ -36,7 +41,7 @@ function MatchingRemove({ candidate, pending, onCancel, onRemove }: MatchingRemo
   const t = useTranslations("Matching.remove");
   const titleId = useId();
   const noteId = useId();
-  const [reason, setReason] = useState<RemoveMatchingCandidate["reason"] | null>(null);
+  const [reason, setReason] = useState<Removal["reason"] | null>(null);
   const [note, setNote] = useState("");
 
   return (

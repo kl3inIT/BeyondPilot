@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { readProposalCounts } from "@/features/proposal/received-queries";
+import { readProposalCounts, readReceivedBySender } from "@/features/proposal/received-queries";
 import { MatchingPage } from "@/features/matching/matching-page";
 import { readMatching } from "@/features/matching/matching-queries";
 import { loadMatchingSearch } from "@/features/matching/matching-search";
@@ -10,7 +10,7 @@ import { readAdminUseCase } from "@/features/usecase/admin-use-case-queries";
 import { getPathname } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
 import { requireRole } from "@/lib/auth/session";
-import { adminUseCaseCandidatesRoute, siteRoutes } from "@/lib/site";
+import { adminUseCaseCandidatesRoute, adminUseCaseProposalRoute, siteRoutes } from "@/lib/site";
 
 export async function generateMetadata({
   params,
@@ -48,7 +48,10 @@ export default async function AdminUseCaseCandidatesRoute({
     notFound();
   }
   const { solution } = await loadMatchingSearch(searchParams);
-  const proposals = await readProposalCounts([id]).catch(() => null);
+  const [proposals, received] = await Promise.all([
+    readProposalCounts([id]).catch(() => null),
+    readReceivedBySender(id, adminUseCaseProposalRoute),
+  ]);
 
   return (
     <MatchingPage
@@ -57,6 +60,7 @@ export default async function AdminUseCaseCandidatesRoute({
       matching={matching}
       proposals={proposals?.get(id)}
       selected={solution ?? undefined}
+      received={received}
     />
   );
 }

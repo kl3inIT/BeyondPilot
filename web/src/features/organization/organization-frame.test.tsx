@@ -34,6 +34,28 @@ function frame(organization: Organization, current: "profile" | "members", role 
   );
 }
 
+describe("OrganizationFrame, for a person on their own", () => {
+  it("is an ordinary organization: its type is named and it has the profile and members tabs", () => {
+    render(frame({ ...complete, type: "independent_builder", status: "approved" }, "members"));
+
+    expect(screen.getByText("Just me")).toBeVisible();
+    expect(screen.getByRole("link", { name: /Profile/ })).toBeVisible();
+    expect(screen.getByRole("link", { name: /Members/ })).toBeVisible();
+    expect(screen.queryByRole("link", { name: "Complete profile" })).not.toBeInTheDocument();
+  });
+
+  it("waits for review like any organization once it became a team or a company", () => {
+    render(
+      frame(
+        { ...complete, type: "independent_builder", status: "in_review", description: "" },
+        "members",
+      ),
+    );
+
+    expect(screen.getByRole("link", { name: "Complete profile" })).toBeVisible();
+  });
+});
+
 describe("OrganizationFrame, while the organization is in review", () => {
   it("counts and names what the profile lacks, and leads its owner to complete it", () => {
     render(frame({ ...complete, website: null, foundedYear: null, description: "" }, "members"));
@@ -48,10 +70,16 @@ describe("OrganizationFrame, while the organization is in review", () => {
     expect(screen.queryByRole("link", { name: "Edit profile" })).not.toBeInTheDocument();
   });
 
-  it("does not ask a builder for what only a company must give", () => {
+  it("does not ask a team for what only a company must give", () => {
     render(
       frame(
-        { ...complete, type: "independent_builder", website: null, foundedYear: null },
+        {
+          ...complete,
+          type: "builder_team",
+          website: null,
+          foundedYear: null,
+          teamBackground: "Built claims assistants.",
+        },
         "members",
       ),
     );

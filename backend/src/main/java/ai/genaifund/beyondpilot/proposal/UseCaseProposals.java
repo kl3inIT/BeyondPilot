@@ -12,8 +12,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import ai.genaifund.beyondpilot.audit.AuditAction;
+import ai.genaifund.beyondpilot.audit.AuditRecord;
+import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
+import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.Membership;
@@ -32,11 +36,17 @@ import ai.genaifund.beyondpilot.proposal.dto.SentByResponse;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalCountResponse;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalCountsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalFormResponse;
+import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalOutcomesResponse;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalResponse;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposal;
+import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalDecision;
+import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalDecisionRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalSolution;
 import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalSolutionRepository;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
@@ -82,9 +92,14 @@ public class UseCaseProposals {
 
 	private final EmailService email;
 
+	private final UseCaseProposalDecisionRepository decisions;
+
+	private final AuditTrail audit;
+
 	UseCaseProposals(UseCaseProposalRepository proposals, UseCaseProposalSolutionRepository offers,
 			UseCaseDirectory useCases, OrganizationDirectory organizations, SolutionDirectory solutions,
-			IdentityService identity, StorageService storage, JsonMapper json, EmailService email) {
+			IdentityService identity, StorageService storage, JsonMapper json, EmailService email,
+			UseCaseProposalDecisionRepository decisions, AuditTrail audit) {
 		this.proposals = proposals;
 		this.offers = offers;
 		this.useCases = useCases;
@@ -94,6 +109,8 @@ public class UseCaseProposals {
 		this.storage = storage;
 		this.json = json;
 		this.email = email;
+		this.decisions = decisions;
+		this.audit = audit;
 	}
 
 	/**
@@ -109,10 +126,10 @@ public class UseCaseProposals {
 		Membership membership = organizations.membershipOf(actor).orElse(null);
 		requireNotOwn(target, membership);
 		if (!target.open()) {
-			// A use case that no longer takes proposals still shows the caller the one their organization sent.
+			// A use case that no longer takes proposals still shows the caller the one their organization sent, or took back.
 			UseCaseProposal sent = membership == null ? null
 					: proposals.findByUseCaseIdAndOrganizationId(useCaseId, membership.organizationId())
-						.filter(UseCaseProposal::isSent)
+						.filter(found -> found.isSent() || found.getWithdrawnAt() != null)
 						.orElse(null);
 			if (sent == null) {
 				throw closed(useCaseId);
@@ -223,6 +240,37 @@ public class UseCaseProposals {
 		return form(actor, target, membership, proposal);
 	}
 
+	/**
+	 * Takes a sent proposal back while its use case still takes proposals: it is a draft again with what it held, the
+	 * organization that posted the use case no longer reads it or counts it, and its owner may change it and send it
+	 * again. Withdrawing is not bound by the time to edit: it ends only when the use case closes.
+	 * @throws ProposalException when the caller has no such proposal, it is not sent, or the use case no longer takes
+	 * proposals
+	 */
+	@Transactional
+	public UseCaseProposalFormResponse withdraw(Actor actor, UUID id) {
+		identity.requireActive(actor);
+		UseCaseProposal proposal = proposals.findForUpdate(id).orElseThrow(() -> notFound(id));
+		Membership membership = organizations.membershipOf(actor)
+			.filter(found -> found.organizationId().equals(proposal.getOrganizationId()))
+			.orElseThrow(() -> notFound(id));
+		UseCaseTarget target = known(proposal.getUseCaseId());
+		if (!proposal.isSent()) {
+			throw refused(ProposalErrorCode.NOT_SENT, id);
+		}
+		requireOpen(target);
+
+		proposal.withdraw(Instant.now());
+		proposals.saveAndFlush(proposal);
+		LOG.atInfo()
+			.addKeyValue("event", "proposal.use_case.withdrawn")
+			.addKeyValue("proposal_id", id)
+			.addKeyValue("use_case_id", proposal.getUseCaseId())
+			.addKeyValue("organization_id", proposal.getOrganizationId())
+			.log("Proposal to a use case withdrawn");
+		return form(actor, target, membership, proposal);
+	}
+
 	/** Queues the email that tells the sender their proposal is sent. It leaves once the sending commits. */
 	private void tellSender(Actor actor, UseCaseProposal proposal, UseCaseTarget target, Membership membership) {
 		Person sender = identity.person(actor);
@@ -243,20 +291,164 @@ public class UseCaseProposals {
 		Map<UUID, OrganizationName> names = organizations
 			.names(sent.stream().map(UseCaseProposal::getOrganizationId).distinct().toList());
 		Map<UUID, List<UseCaseProposalSolution>> offeredBy = offersOf(sent);
-		List<ReceivedUseCaseProposalSummaryResponse> items = sent.stream().map(proposal -> {
+		Map<UUID, Person> deciders = identity.people(sent.stream()
+			.map(UseCaseProposal::getDecidedByAccountId)
+			.filter(Objects::nonNull)
+			.distinct()
+			.toList());
+		List<ReceivedUseCaseProposalSummaryResponse> items = sent.stream()
+			.map(proposal -> summary(proposal, names, offeredBy, deciders))
+			.toList();
+		return new ReceivedUseCaseProposalsResponse(useCase(target), items,
+				(int) sent.stream().filter(proposal -> UseCaseProposal.SHORTLISTED.equals(proposal.getDecision())).count(),
+				(int) sent.stream().filter(proposal -> UseCaseProposal.DECLINED.equals(proposal.getDecision())).count(),
+				(int) sent.stream().filter(UseCaseProposal::outcomePending).count());
+	}
+
+	/**
+	 * The proposals a use case received as a spreadsheet, the latest first, for GenAI Fund to work with outside
+	 * BeyondPilot. Only operators download, and the download is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the use case is unknown
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, UUID useCaseId, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		ReceivedUseCaseProposalsResponse received = received(actor, useCaseId);
+		Spreadsheet<ReceivedUseCaseProposalSummaryResponse> sheet = Spreadsheet
+			.<ReceivedUseCaseProposalSummaryResponse>of("Proposals")
+			.text("Proposal", ReceivedUseCaseProposalSummaryResponse::id)
+			.group("Sender")
+			.text("Organization", ReceivedUseCaseProposalSummaryResponse::organizationName)
+			.yesNo("Organization approved", ReceivedUseCaseProposalSummaryResponse::organizationApproved)
+			.text("Contact", ReceivedUseCaseProposalSummaryResponse::contactName)
+			.text("Solutions", proposal -> String.join(", ", proposal.solutionNames()))
+			.time("Sent at", ReceivedUseCaseProposalSummaryResponse::sentAt)
+			.time("Edited at", ReceivedUseCaseProposalSummaryResponse::editedAt)
+			.group("Decision")
+			.label("Decision", ReceivedUseCaseProposalSummaryResponse::decision)
+			.time("Decided at", ReceivedUseCaseProposalSummaryResponse::decidedAt)
+			.text("Decided by", ReceivedUseCaseProposalSummaryResponse::decidedBy)
+			.yesNo("Outcome to send", ReceivedUseCaseProposalSummaryResponse::outcomePending)
+			.time("Outcome sent at", ReceivedUseCaseProposalSummaryResponse::outcomeSentAt);
+		SpreadsheetFile file = sheet.write(format, "use-case-proposals", received.items(),
+				new Spreadsheet.About(operator.label(), Instant.now(), Map.of("Use case", received.useCase().title())));
+		audit.record(new AuditRecord(AuditAction.USE_CASE_PROPOSAL_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("use_case", useCaseId.toString(), received.useCase().title()),
+				Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "proposal.use_case.proposals_exported")
+			.addKeyValue("use_case_id", useCaseId)
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Use case proposals exported");
+		return file;
+	}
+
+	private ReceivedUseCaseProposalSummaryResponse summary(UseCaseProposal proposal, Map<UUID, OrganizationName> names,
+			Map<UUID, List<UseCaseProposalSolution>> offeredBy, Map<UUID, Person> deciders) {
+		OrganizationName organization = names.get(proposal.getOrganizationId());
+		List<String> solutionNames = solutionsOf(offeredBy.getOrDefault(proposal.getId(), List.of())).stream()
+			.map(ProposalSolutionResponse::name)
+			.toList();
+		SentByResponse sentBy = sentBy(proposal);
+		UUID decider = proposal.getDecidedByAccountId();
+		Person decidedBy = decider == null ? null : deciders.get(decider);
+		return new ReceivedUseCaseProposalSummaryResponse(proposal.getId(), proposal.getOrganizationId(),
+				organization == null ? "" : organization.name(),
+				organization == null ? null : organization.logoFileId(), solutionNames,
+				organizations.isApproved(proposal.getOrganizationId()),
+				sentBy == null ? null : label(sentBy.name(), sentBy.email()),
+				Objects.requireNonNull(proposal.getSentAt()), proposal.getEditedAt(), proposal.getDecision(),
+				proposal.getDecidedAt(), decidedBy == null ? null : decidedBy.label(), proposal.outcomePending(),
+				proposal.getOutcomeSentAt());
+	}
+
+	/**
+	 * Records what the organization that posted the use case decides on a proposal it received, which a member or an
+	 * operator may change at any time, even after the outcomes were sent or the use case closed. It tells nobody, and
+	 * the same decision again changes nothing.
+	 * @throws ProposalException when the proposal was not sent, or the caller's organization did not post its use case
+	 */
+	@Transactional
+	public ReceivedUseCaseProposalSummaryResponse decide(Actor actor, UUID id, String decision) {
+		identity.requireActive(actor);
+		UseCaseProposal proposal = proposals.findForUpdate(id).filter(UseCaseProposal::isSent).orElseThrow(() -> notFound(id));
+		UseCaseTarget target = posted(actor, proposal.getUseCaseId());
+		if (!decision.equals(proposal.getDecision())) {
+			Instant now = Instant.now();
+			proposal.decide(decision, actor.accountId(), now);
+			proposals.saveAndFlush(proposal);
+			decisions.save(new UseCaseProposalDecision(UUID.randomUUID(), id, decision, actor.accountId(), now));
+			Person person = identity.person(actor);
+			audit.record(new AuditRecord(AuditAction.USE_CASE_PROPOSAL_DECIDE,
+					new AuditRecord.Actor(person.accountId(), person.label(), person.email()),
+					new AuditRecord.Resource("use_case_proposal", id.toString(), target.title()),
+					Map.of("decision", decision)));
+		}
+		Map<UUID, OrganizationName> names = organizations.names(List.of(proposal.getOrganizationId()));
+		return summary(proposal, names, offersOf(List.of(proposal)),
+				identity.people(List.of(Objects.requireNonNull(proposal.getDecidedByAccountId()))));
+	}
+
+	/**
+	 * E-mails the sender of each proposal whose decision is not the one they were last told, once for each, and notes
+	 * that they were told. Undecided proposals and those already told the same decision are left out. Whoever may
+	 * decide may send.
+	 * @throws ProposalException when the caller's organization did not post the use case, or no proposal has an
+	 * outcome to send
+	 */
+	@Transactional
+	public UseCaseProposalOutcomesResponse sendOutcomes(Actor actor, UUID useCaseId, @Nullable String message) {
+		identity.requireActive(actor);
+		UseCaseTarget target = posted(actor, useCaseId);
+		List<UseCaseProposal> pending = proposals.findSentForUpdate(useCaseId)
+			.stream()
+			.filter(UseCaseProposal::outcomePending)
+			.toList();
+		if (pending.isEmpty()) {
+			throw new ProposalException(ProposalErrorCode.NOTHING_TO_SEND,
+					"Use case " + useCaseId + " has no proposal with an outcome to send");
+		}
+		String note = text(message);
+		Map<UUID, OrganizationName> names = organizations
+			.names(pending.stream().map(UseCaseProposal::getOrganizationId).distinct().toList());
+		Instant now = Instant.now();
+		int shortlisted = 0;
+		int declined = 0;
+		for (UseCaseProposal proposal : pending) {
+			UUID sender = proposal.getSentByAccountId();
+			Person person = sender == null ? null : identity.people(List.of(sender)).get(sender);
+			if (person == null) {
+				continue;
+			}
+			boolean shortlist = UseCaseProposal.SHORTLISTED.equals(proposal.getDecision());
 			OrganizationName organization = names.get(proposal.getOrganizationId());
-			List<String> solutionNames = solutionsOf(offeredBy.getOrDefault(proposal.getId(), List.of())).stream()
-				.map(ProposalSolutionResponse::name)
-				.toList();
-			SentByResponse sentBy = sentBy(proposal);
-			return new ReceivedUseCaseProposalSummaryResponse(proposal.getId(),
-					organization == null ? "" : organization.name(),
-					organization == null ? null : organization.logoFileId(), solutionNames,
-					organizations.isApproved(proposal.getOrganizationId()),
-					sentBy == null ? null : label(sentBy.name(), sentBy.email()),
-					Objects.requireNonNull(proposal.getSentAt()), proposal.getEditedAt());
-		}).toList();
-		return new ReceivedUseCaseProposalsResponse(useCase(target), items);
+			email.sendProposalOutcome(person.email(), shortlist, person.displayName(), target.title(),
+					organization == null ? null : organization.name(), note, useCaseId);
+			proposal.communicate(now);
+			if (shortlist) {
+				shortlisted++;
+			}
+			else {
+				declined++;
+			}
+		}
+		proposals.saveAllAndFlush(pending);
+		Person person = identity.person(actor);
+		audit.record(new AuditRecord(AuditAction.USE_CASE_PROPOSAL_OUTCOMES_SEND,
+				new AuditRecord.Actor(person.accountId(), person.label(), person.email()),
+				new AuditRecord.Resource("use_case", useCaseId.toString(), target.title()),
+				Map.of("sent", String.valueOf(shortlisted + declined), "shortlisted", String.valueOf(shortlisted),
+						"declined", String.valueOf(declined))));
+		LOG.atInfo()
+			.addKeyValue("event", "proposal.use_case.outcomes_sent")
+			.addKeyValue("use_case_id", useCaseId)
+			.addKeyValue("sent", shortlisted + declined)
+			.log("Outcomes of proposals to a use case sent");
+		return new UseCaseProposalOutcomesResponse(shortlisted + declined, shortlisted, declined);
 	}
 
 	/**
@@ -271,12 +463,16 @@ public class UseCaseProposals {
 		OrganizationName organization = organizations.names(List.of(proposal.getOrganizationId()))
 			.get(proposal.getOrganizationId());
 		SenderProfileResponse sender = senderOf(proposal);
+		UUID decider = proposal.getDecidedByAccountId();
+		Person decidedBy = decider == null ? null : identity.people(List.of(decider)).get(decider);
 		return new ReceivedUseCaseProposalResponse(proposal.getId(), useCase(target),
 				organization == null ? "" : organization.name(), organization == null ? null : organization.logoFileId(),
 				solutions(proposal),
 				proposal.getApproach(), organizations.isApproved(proposal.getOrganizationId()), sender,
 				Objects.requireNonNull(sentBy(proposal)), proposal.getTeamBackground(), deck(proposal),
-				Objects.requireNonNull(proposal.getSentAt()), proposal.getEditedAt());
+				Objects.requireNonNull(proposal.getSentAt()), proposal.getEditedAt(), proposal.getDecision(),
+				proposal.getDecidedAt(), decidedBy == null ? null : decidedBy.label(), proposal.outcomePending(),
+				proposal.getOutcomeSentAt());
 	}
 
 	/**
@@ -426,7 +622,7 @@ public class UseCaseProposals {
 		return new UseCaseProposalResponse(proposal.getId(), proposal.getStatus(), solutions(proposal),
 				proposal.getApproach(), deck(proposal), proposal.getTeamBackground(), senderOf(proposal), sentBy(proposal),
 				proposal.getSentAt(),
-				editableUntil(proposal, target), proposal.getEditedAt(), proposal.getVersion(),
+				editableUntil(proposal, target), proposal.getEditedAt(), proposal.getWithdrawnAt(), proposal.getOutcome(), proposal.getOutcomeSentAt(), proposal.getVersion(),
 				proposal.getUpdatedAt());
 	}
 

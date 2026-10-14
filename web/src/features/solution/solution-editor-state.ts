@@ -29,6 +29,8 @@ export type HeldDeck = {
   fileId: string;
   fileName: string;
   sizeBytes: number;
+  /** A browser-only preview for an upload not yet readable through the solution's saved-deck route. */
+  previewUrl?: string;
   /** When the solution took it; null for a file the solution does not name yet. */
   attachedAt: string | null;
 };

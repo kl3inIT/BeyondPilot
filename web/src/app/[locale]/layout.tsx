@@ -8,6 +8,7 @@ import { Analytics } from "@/components/layout/analytics";
 import { Providers } from "@/components/layout/providers";
 import { MessageScope } from "@/i18n/message-scope";
 import { routing } from "@/i18n/routing";
+import { siteOrigin } from "@/lib/site";
 
 import "../globals.css";
 
@@ -32,8 +33,14 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
   const t = await getTranslations({ locale, namespace: "Metadata" });
 
   return {
+    // Link previews name their image by an absolute address; the public one serves it on every host.
+    metadataBase: new URL(siteOrigin),
     title: t("title"),
     description: t("description"),
+    // The full logo, as on the home page; the small icon is for the browser tab only (DESIGN.md › Logo).
+    openGraph: {
+      images: [{ url: "/brand/beyondpilot-og.png", width: 1200, height: 630, alt: "BeyondPilot" }],
+    },
   };
 }
 

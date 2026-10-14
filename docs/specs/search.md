@@ -89,8 +89,12 @@ A facet without a value, or an empty list, is left out of `facets`.
 ## Repair and rebuild
 
 `IndexRepair` rebuilds every kind in one transaction: it saves every item its owner publishes now and deletes every
-other row of that kind. It runs when the application is ready (which also fills an empty index), every night at
-03:30 `Asia/Ho_Chi_Minh`, and when an operator asks. One rebuild runs at a time. It logs `search.index.repaired` with
+other row of that kind. It runs in the background once the application is ready (which also fills an empty index),
+so that a deployment does not wait for it before taking traffic; every night at 03:30 `Asia/Ho_Chi_Minh`; and when an
+operator asks. A failure at start is logged as `search.index.repair_failed`. A listener never waits for a rebuild; while one runs,
+its change is also kept and done again at the end of the rebuild, in the rebuild's transaction (`IndexLock`), so the
+rebuild never commits an item as it was before a take-down. A write to a row the rebuild has written still waits for
+the rebuild's commit, so a take-down during a rebuild leaves search when the rebuild ends (about a minute). One rebuild runs at a time. It logs `search.index.repaired` with
 the counts, and keeps the last run (when, items saved, rows removed) in memory until the application stops.
 
 ## Public search
@@ -243,7 +247,7 @@ Expected failures are `SearchException` with a `SearchErrorCode`, turned into pr
 
 ## Passages
 
-What a solution's own material says, for matching ([design](../increments/active/bey-39-matching/design.md)). The public search never reads it.
+What a solution's own material says, for matching ([design](../increments/completed/bey-39-matching/design.md)). The public search never reads it.
 
 - **`search_passage` (V58)** holds one passage a row: the solution, the source (`deck`, `website` or `customer_case`), the page and the place on the page, the address of a web page, the text, how it was read (`text`, `model` or `unread`), what the source was made from, and the same full-text vector and embedding columns as `search_document`.
 - **A passage** is one slide of a deck, one customer case, or a part of a web page: `Passages` cuts a page at line ends into passages of at most 2,000 characters and reads a page to 20,000. Text is never reworded.

@@ -79,7 +79,7 @@ class MyOrganizationController {
 	@PutMapping(path = "/basics", consumes = MediaType.APPLICATION_JSON_VALUE,
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "saveMyOrganizationBasics",
-			summary = "Save the name, type, size, industries and country of the caller's organization, leaving the rest of its profile",
+			summary = "Save the required facts of the selected organization type, leaving optional profile facts unchanged",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The organization as saved.")
 	@ApiResponse(responseCode = "400", description = "A member is not valid.",

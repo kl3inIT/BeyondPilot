@@ -4,8 +4,7 @@ Status: in progress, 7 October 2026. The Linear issue is not assigned yet; renam
 
 > **Update, 7 October 2026:** the organization no longer has a role (BEY-61, `V28__organization_drop_roles.sql`). Every approved organization has both solutions and use cases, so wherever this page says an approved enterprise or the enterprise role, it now means any approved organization; the migrations of this increment are numbered V32 to V36.
 
-> **Update, 7 October 2026:** the stored status `published` is now `approved`, the word every record GenAI Fund reviews uses ([BEY-76](../bey-76-review-lifecycle/design.md), `V47__usecase_review_lifecycle.sql`). Wherever this page names the status `published`, read `approved`; `published_at` keeps its name and still records when the use case went public.
-
+> **Update, 7 October 2026:** the stored status `published` is now `approved`, the word every record GenAI Fund reviews uses ([BEY-76](../../completed/bey-76-review-lifecycle/design.md), `V47__usecase_review_lifecycle.sql`). Wherever this page names the status `published`, read `approved`; `published_at` keeps its name and still records when the use case went public.
 
 This slice is the organization's side of a use case. The operators' review (approve, send back with a reason) is the next slice: until it ships nothing leaves `in_review`.
 
@@ -22,14 +21,14 @@ _Failures:_ the caller is not a member of an approved organization that publishe
 
 ## Statuses and transitions
 
-| From | Command | To | Notes |
-| --- | --- | --- | --- |
-| – | Post a use case | `draft` | Empty. Named and filled in by saving |
-| `draft`, `needs_changes` | Save | same | Any part may be missing |
-| `published` | Save | `draft` | Leaves the directory; `published_at` is cleared |
-| `draft`, `needs_changes` | Submit | `in_review` | Needs every part and a future close date. Records who and when; clears the reason |
-| `in_review`, `published` | Move back to draft | `draft` | Audited with the status it left |
-| `in_review`, `closed` | Save | refused | `USECASE_NOT_EDITABLE` |
+| From                     | Command            | To          | Notes                                                                             |
+| ------------------------ | ------------------ | ----------- | --------------------------------------------------------------------------------- |
+| –                        | Post a use case    | `draft`     | Empty. Named and filled in by saving                                              |
+| `draft`, `needs_changes` | Save               | same        | Any part may be missing                                                           |
+| `published`              | Save               | `draft`     | Leaves the directory; `published_at` is cleared                                   |
+| `draft`, `needs_changes` | Submit             | `in_review` | Needs every part and a future close date. Records who and when; clears the reason |
+| `in_review`, `published` | Move back to draft | `draft`     | Audited with the status it left                                                   |
+| `in_review`, `closed`    | Save               | refused     | `USECASE_NOT_EDITABLE`                                                            |
 
 `closed` stays derived from `closes_at`; it wins over any stored status.
 
@@ -43,14 +42,14 @@ Membership comes from `OrganizationDirectory.membershipOf`; names from `Identity
 
 All under `/api/usecase/mine`, session required.
 
-| Request | `operationId` | Success | Refusals beyond 401 and 403 |
-| --- | --- | --- | --- |
-| `GET /` | `listMyUseCases` | `200`, `items` | |
-| `POST /` | `createMyUseCase` | `201`, the empty draft | |
-| `GET /{id}` | `getMyUseCase` | `200` | `404` |
-| `PUT /{id}` | `saveMyUseCase` | `200`, the use case with its new `version` | `400` a part is invalid or out of order; `404`; `409` in review or closed, or a newer version |
-| `POST /{id}/submit` | `submitMyUseCase` | `200` | `400` incomplete or past; `404`; `409` not a draft |
-| `POST /{id}/draft` | `moveMyUseCaseToDraft` | `200` | `404`; `409` not in review or published |
+| Request             | `operationId`          | Success                                    | Refusals beyond 401 and 403                                                                   |
+| ------------------- | ---------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `GET /`             | `listMyUseCases`       | `200`, `items`                             |                                                                                               |
+| `POST /`            | `createMyUseCase`      | `201`, the empty draft                     |                                                                                               |
+| `GET /{id}`         | `getMyUseCase`         | `200`                                      | `404`                                                                                         |
+| `PUT /{id}`         | `saveMyUseCase`        | `200`, the use case with its new `version` | `400` a part is invalid or out of order; `404`; `409` in review or closed, or a newer version |
+| `POST /{id}/submit` | `submitMyUseCase`      | `200`                                      | `400` incomplete or past; `404`; `409` not a draft                                            |
+| `POST /{id}/draft`  | `moveMyUseCaseToDraft` | `200`                                      | `404`; `409` not in review or published                                                       |
 
 Failure codes added: `USECASE_ENTERPRISE_REQUIRED` (403), `USECASE_CHANGED_MEANWHILE` (409), `USECASE_NOT_EDITABLE` (409), `USECASE_INCOMPLETE` (400), `USECASE_NOT_SUBMITTABLE` (409), `USECASE_CANNOT_MOVE_TO_DRAFT` (409). Audit actions: `use_case.submit`, `use_case.draft`. A save is not audited: it happens as the member types.
 

@@ -81,7 +81,7 @@ class MessagingClock {
 				if (starter != null) {
 					email.sendMessageRequestClosed(starter.email(), messaging.starterReads(request));
 				}
-				changes.tell(MessagingService.audience(request),
+				changes.tell(messaging.audience(request),
 						listener -> new MessagingEvent(Kind.CONVERSATION, request.id(), null, null, null, null, null));
 			})) {
 				closed++;

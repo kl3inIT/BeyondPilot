@@ -35,6 +35,9 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 	/** The person's applications, the most recently changed first. */
 	List<Proposal> findByAccountIdOrderByUpdatedAtDesc(UUID accountId);
 
+	/** The applications of a program in a status, the most recently saved first. */
+	List<Proposal> findByProgramIdAndStatusOrderByUpdatedAtDesc(UUID programId, String status);
+
 	/** The submitted applications of a program, the earliest first. */
 	List<Proposal> findByProgramIdAndStatusOrderBySubmittedAt(UUID programId, String status);
 
@@ -48,6 +51,9 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Proposal p set p.reviewStatus = :reviewStatus where p.id = :id")
 	void decide(UUID id, String reviewStatus);
+
+	/** Whether the organization ever submitted an application, to any program. */
+	boolean existsByOrganizationIdAndSubmittedAtIsNotNull(UUID organizationId);
 
 	/** Whether someone else of the organization has a submitted application to the program. */
 	boolean existsByProgramIdAndOrganizationIdAndStatusAndAccountIdNot(UUID programId, UUID organizationId,

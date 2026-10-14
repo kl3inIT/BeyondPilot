@@ -106,6 +106,8 @@ function ProposalWizardContent({
   const router = useRouter();
   const format = useFormatter();
   const editing = opened.proposal?.status === "sent";
+  // A proposal that was taken back is a draft again; the page says when, so the person knows why it is not sent.
+  const withdrawnAt = opened.proposal?.withdrawnAt;
   const editableUntil = opened.proposal?.editableUntil ?? null;
 
   // As the proposal was read: what the form starts from, whatever is read afterwards. What the
@@ -477,7 +479,13 @@ function ProposalWizardContent({
       current={step}
       done={done}
       onStep={(name) => void go(name)}
-      notes={editing ? [t("edit.note")] : []}
+      notes={
+        editing
+          ? [t("edit.note")]
+          : withdrawnAt
+            ? [t("withdrawnNote", { date: format.dateTime(new Date(withdrawnAt), "date") })]
+            : []
+      }
     >
       {editing && editableUntil && (
         <Alert>
@@ -561,6 +569,7 @@ function ProposalWizardContent({
               details={details}
               email={account.email}
               onEdit={(target) => void go(target)}
+              onOrganized={readOrganization}
             />
             {missing.length > 0 && (
               <Alert>

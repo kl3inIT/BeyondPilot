@@ -2,7 +2,7 @@
 
 A visitor who finds a person in the talent directory writes to them through BeyondPilot, and the two addresses are shared only when the person accepts. GenAI Fund's decisions on a profile become three distinct ones, each told by email. The profile gains the facts the screens show. Tracked in Linear as BEY-36.
 
-It changes what [BEY-33](../bey-33-organization-solution-talent/design.md) built: its [decision 10](../bey-33-organization-solution-talent/design.md#decisions) (the enquiry is emailed with the sender's address) is replaced, and its [decision 5](../bey-33-organization-solution-talent/design.md#decisions) (an edit to an approved profile is public at once) stays. The screens are the section `AI talent — directory, profile, enquiries and review` of `BeyondPilot — Product UI`, as [BEY-27](../bey-27-main-flows-design/design.md#ai-talent-directory-profile-enquiries-and-review) records them. The decisions were agreed with the product owner on 6 October 2026.
+It changes what [BEY-33](../../completed/bey-33-organization-solution-talent/design.md) built: its [decision 10](../../completed/bey-33-organization-solution-talent/design.md#decisions) (the enquiry is emailed with the sender's address) is replaced, and its [decision 5](../../completed/bey-33-organization-solution-talent/design.md#decisions) (an edit to an approved profile is public at once) stays. The screens are the section `AI talent — directory, profile, enquiries and review` of `BeyondPilot — Product UI`, as [BEY-27](../../completed/bey-27-main-flows-design/design.md#ai-talent-directory-profile-enquiries-and-review) records them. The decisions were agreed with the product owner on 6 October 2026.
 
 ## What a person can do
 

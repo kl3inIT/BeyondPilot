@@ -47,6 +47,16 @@ export async function readMembers(
   }
 }
 
+/** What narrows the operators' list, as the list and its download both send it. */
+export function adminOrganizationFilters(search: AdminOrganizationsSearch) {
+  return {
+    q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
+    status: search.status ?? undefined,
+    country: search.country ?? undefined,
+    sort: knownSort(search.sort, adminOrganizationSortKeys),
+  };
+}
+
 /** One page of organizations for the operator behind this request. Server only. */
 export async function readAdminOrganizations(
   search: AdminOrganizationsSearch,
@@ -54,10 +64,7 @@ export async function readAdminOrganizations(
   const { data } = await listAdminOrganizations({
     ...(await sessionRequest()),
     query: {
-      q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
-      status: search.status ?? undefined,
-      country: search.country ?? undefined,
-      sort: knownSort(search.sort, adminOrganizationSortKeys),
+      ...adminOrganizationFilters(search),
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },

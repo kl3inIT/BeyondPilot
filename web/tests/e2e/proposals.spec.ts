@@ -28,10 +28,15 @@ type Saved = {
  * the state the stub backend answers the page with (stub-wizards.mjs); sending moves it to `sent`,
  * so the page that follows reads a sent proposal. Returns what it saw.
  */
-async function fakeBackend(page: Page, baseURL: string, scene?: "draft" | "sent") {
+async function fakeBackend(
+  page: Page,
+  baseURL: string,
+  scene?: "draft" | "sent" | "shortlisted" | "declined" | "withdrawn" | "closed",
+) {
   const saves: Saved[] = [];
   const contacts: unknown[] = [];
   const sends: string[] = [];
+  const withdraws: string[] = [];
   const stand = (next: string) =>
     page.context().addCookies([{ name: "STUB_SCENE", value: next, url: baseURL }]);
   if (scene) {
@@ -80,6 +85,12 @@ async function fakeBackend(page: Page, baseURL: string, scene?: "draft" | "sent"
     await stand("sent");
     await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
   });
+  await page.route(`**/api/proposal/use-case-proposals/${proposalId}/withdraw`, async (route) => {
+    expect(route.request().headers()["x-beyondpilot-csrf"]).toBe("1");
+    withdraws.push(route.request().method());
+    await stand("withdrawn");
+    await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+  });
   await page.route("**/api/identity/me/contact", async (route) => {
     contacts.push(route.request().postDataJSON());
     await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
@@ -91,7 +102,7 @@ async function fakeBackend(page: Page, baseURL: string, scene?: "draft" | "sent"
   });
   const uploads = await answerUploads(page, [proposalDeck.fileId]);
 
-  return { saves, contacts, sends, uploads };
+  return { saves, contacts, sends, withdraws, uploads };
 }
 
 const pdf = {
@@ -123,50 +134,115 @@ async function openStep(page: Page, isMobile: boolean, name: string) {
   await steps(page).getByRole("button", { name, exact: true }).click();
 }
 
+/** Holds the organization a quick-create returns so the wizard's explicit refetch sees it. */
+async function watchQuickCreate(page: Page) {
+  const [, mine] = answerWorkspace(new URL("http://stub/api/organization/mine"), "invited")!;
+  let organization: Record<string, unknown> | null = null;
+  const creations: Record<string, unknown>[] = [];
+  await page.route("**/api/organization/mine", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...mine, organization, role: organization ? "owner" : null }),
+    }),
+  );
+  await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/proposal`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...proposalForm("invited"),
+        organization: organization
+          ? { ...organization, approved: organization.type === "independent_builder", owner: true }
+          : null,
+      }),
+    }),
+  );
+  await page.route("**/api/organization/organizations/basics", async (route) => {
+    expect(route.request().headers()["x-beyondpilot-csrf"]).toBe("1");
+    const body = route.request().postDataJSON();
+    creations.push(body);
+    organization = {
+      ...body,
+      id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c08",
+      version: 0,
+      logoFileId: null,
+    };
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify(organization),
+    });
+  });
+  return creations;
+}
+
 test.describe("a proposal to a use case", () => {
   test.use({ locale: "en-US", timezoneId: "Asia/Ho_Chi_Minh" });
 
-  test("quick-create validates company industries and team experience, then immediately shows About you", async ({
+  for (const kind of ["Just me", "A company"] as const) {
+    test(`quick-create submits ${kind} with its required facts`, async ({
+      page,
+      context,
+      baseURL,
+    }) => {
+      await signInAs(context, "invited", baseURL!);
+      const creations = await watchQuickCreate(page);
+      await page.goto(proposePath);
+      await page.getByRole("button", { name: "Create a new organization" }).click();
+      const dialog = page.getByRole("dialog");
+      await dialog.getByRole("radio", { name: kind, exact: true }).click();
+      await expect(dialog.getByRole("textbox")).toHaveCount(kind === "Just me" ? 1 : 4);
+      await expect(dialog.getByRole("combobox")).toHaveCount(kind === "Just me" ? 1 : 3);
+      await expect(dialog.getByText("Logo", { exact: true })).toHaveCount(0);
+      await dialog
+        .getByRole("textbox", {
+          name: kind === "Just me" ? "Your name" : "Organization name",
+          exact: true,
+        })
+        .fill("Doc Studio");
+      await dialog.getByRole("combobox", { name: "Country" }).click();
+      await page.getByRole("option", { name: "Vietnam", exact: true }).click();
+      if (kind === "A company") {
+        await dialog
+          .getByRole("textbox", { name: "Website", exact: true })
+          .fill("https://doc.example");
+        await dialog.getByRole("combobox", { name: "Team size" }).click();
+        await page.getByRole("option", { name: "2–9 people", exact: true }).click();
+        await dialog.getByRole("combobox", { name: "Industries" }).fill("Insurance");
+        await page.getByRole("option", { name: "Insurance", exact: true }).click();
+        await dialog.getByRole("textbox", { name: "Year founded", exact: true }).fill("2021");
+        await dialog
+          .getByRole("textbox", { name: "Short description", exact: true })
+          .fill("Insurance document assistants.");
+      }
+      await settled(page);
+      await dialog.getByRole("button", { name: "Create organization", exact: true }).click();
+      await expect(dialog).toBeHidden();
+      await expect(page.getByText("Doc Studio", { exact: true })).toBeVisible();
+      expect(creations).toEqual([
+        {
+          name: "Doc Studio",
+          country: "VN",
+          version: null,
+          type: kind === "Just me" ? "independent_builder" : "company",
+          teamSize: kind === "Just me" ? "just_me" : "2_9",
+          industries: kind === "Just me" ? [] : ["insurance"],
+          website: kind === "Just me" ? null : "https://doc.example",
+          foundedYear: kind === "Just me" ? null : 2021,
+          description: kind === "Just me" ? null : "Insurance document assistants.",
+        },
+      ]);
+    });
+  }
+
+  test("quick-create shows only required fields for each type and creates a team without background", async ({
     page,
     context,
     baseURL,
   }) => {
     await signInAs(context, "invited", baseURL!);
-    const [, mine] = answerWorkspace(new URL("http://stub/api/organization/mine"), "invited")!;
-    let organization: Record<string, unknown> | null = null;
-    const creations: Record<string, unknown>[] = [];
-    await page.route("**/api/organization/mine", (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ ...mine, organization, role: organization ? "owner" : null }),
-      }),
-    );
-    await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/proposal`, (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          ...proposalForm("invited"),
-          organization: organization ? { ...organization, approved: false, owner: true } : null,
-        }),
-      }),
-    );
-    await page.route("**/api/organization/organizations/basics", async (route) => {
-      const body = route.request().postDataJSON();
-      creations.push(body);
-      organization = {
-        ...body,
-        id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c08",
-        version: 0,
-        logoFileId: null,
-      };
-      await route.fulfill({
-        status: 201,
-        contentType: "application/json",
-        body: JSON.stringify(organization),
-      });
-    });
+    const creations = await watchQuickCreate(page);
     await page.goto(proposePath);
     await expect(page.getByRole("button", { name: "Continue" })).toBeDisabled();
     await expect(page.getByLabel("Name", { exact: true })).toHaveCount(0);
@@ -175,19 +251,52 @@ test.describe("a proposal to a use case", () => {
     await dialog.getByLabel("Organization name").fill("Doc Team");
     await dialog.getByRole("combobox", { name: "Country" }).click();
     await page.getByRole("option", { name: "Vietnam", exact: true }).click();
-    await dialog.getByRole("button", { name: "Create", exact: true }).click();
-    await expect(dialog.getByRole("combobox", { name: "Industries" })).toBeFocused();
+    await expect(dialog.getByRole("textbox", { name: "Website", exact: true })).toBeVisible();
+    await expect(dialog.getByLabel("Year founded")).toBeVisible();
+    await expect(dialog.getByLabel("Short description")).toBeVisible();
+    await expect(dialog.getByLabel("Team background")).toHaveCount(0);
+    await expect(dialog.getByText("Optional", { exact: true })).toHaveCount(0);
+    await dialog.getByRole("button", { name: "Create organization", exact: true }).click();
     await expect(dialog.getByText("Choose at least one industry.")).toBeVisible();
-    await dialog.getByRole("combobox", { name: "Type", exact: true }).click();
-    await page.getByRole("option", { name: "Builder team", exact: true }).click();
-    await dialog.getByRole("button", { name: "Create", exact: true }).click();
-    await expect(dialog.getByLabel("Team background")).toBeFocused();
-    await dialog.getByLabel("Team background").fill("Built document assistants.");
+    await dialog.getByRole("textbox", { name: "Website", exact: true }).fill("https://doc.example");
+    await dialog.getByRole("radio", { name: "Just me", exact: true }).click();
+    await expect(dialog.getByLabel("Your name")).toHaveValue("Doc Team");
+    for (const label of [
+      "Website",
+      "Year founded",
+      "Short description",
+      "Team size",
+      "Industries",
+    ]) {
+      await expect(dialog.getByLabel(label)).toHaveCount(0);
+    }
     await settled(page);
-    await dialog.getByRole("button", { name: "Create", exact: true }).click();
+    await dialog.getByRole("radio", { name: "A team", exact: true }).click();
+    await expect(dialog.getByRole("textbox")).toHaveCount(2);
+    await expect(dialog.getByRole("combobox")).toHaveCount(2);
+    await expect(dialog.getByRole("textbox", { name: "Website", exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("Year founded")).toHaveCount(0);
+    await expect(dialog.getByRole("combobox", { name: "Industries", exact: true })).toHaveCount(0);
+    await dialog.getByRole("combobox", { name: "Team size" }).click();
+    await page.getByRole("option", { name: "2–9 people", exact: true }).click();
+    await dialog.getByRole("button", { name: "Create organization", exact: true }).click();
+    await expect(dialog.getByLabel("Short description")).toBeFocused();
+    await dialog.getByLabel("Short description").fill("Built document assistants.");
+    await dialog.getByRole("radio", { name: "A company", exact: true }).click();
+    await expect(dialog.getByRole("textbox", { name: "Website", exact: true })).toHaveValue(
+      "https://doc.example",
+    );
+    await dialog.getByRole("radio", { name: "A team", exact: true }).click();
+    await settled(page);
+    const dimensions = await dialog.evaluate((element) => ({
+      width: element.clientWidth,
+      content: element.scrollWidth,
+    }));
+    expect(dimensions.content).toBeLessThanOrEqual(dimensions.width);
+    await dialog.getByRole("button", { name: "Create organization", exact: true }).click();
     await expect(dialog).toBeHidden();
     await expect(page.getByText("Doc Team", { exact: true })).toBeVisible();
-    await expect(page.getByLabel("Team background")).toHaveValue("Built document assistants.");
+    await expect(page.getByLabel("Team background")).toHaveValue("");
     await expect(page.getByLabel("Name", { exact: true })).toBeVisible();
     expect(creations).toEqual([
       {
@@ -196,7 +305,9 @@ test.describe("a proposal to a use case", () => {
         teamSize: "2_9",
         industries: [],
         country: "VN",
-        teamBackground: "Built document assistants.",
+        website: null,
+        foundedYear: null,
+        description: "Built document assistants.",
         version: null,
       },
     ]);
@@ -248,12 +359,45 @@ test.describe("a proposal to a use case", () => {
       await page.getByRole("button", { name: "Edit", exact: true }).click();
       const dialog = page.getByRole("dialog");
       await expect(dialog.getByLabel("Organization name")).toHaveValue(current.name);
+      // Any organization may be a team, a company or just its owner, so the three choices stay.
+      await expect(dialog.getByRole("radio", { name: "Just me", exact: true })).toHaveCount(1);
+      await expect(dialog.getByRole("radio")).toHaveCount(3);
       await dialog.getByLabel("Organization name").fill(name);
       await dialog.getByRole("button", { name: "Save", exact: true }).click();
       await expect(dialog).toBeHidden();
       await expect(page.getByText(name, { exact: true })).toBeVisible();
     }
     expect(versions).toEqual([3, 4]);
+    await settled(page);
+  });
+
+  test("the owner of a Just me organization edits it and reaches My organization like any other", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "alone", baseURL!);
+    await fakeBackend(page, baseURL!, "draft");
+    await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/proposal`, (route) =>
+      route.request().method() === "GET"
+        ? route.fulfill({ json: proposalForm("alone", "draft") })
+        : route.fallback(),
+    );
+    await page.goto(proposePath);
+    await expect(heading(page)).toHaveText("You and your team");
+    await expect(page.getByText("An Tr?n", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "My organization", exact: true })).toHaveAttribute(
+      "href",
+      "/workspace/organization",
+    );
+    await page.getByLabel("Country").selectOption({ label: "Vietnam" });
+    await page.getByLabel("Phone").fill("+84 912 345 678");
+    await openStep(page, isMobile, "Review");
+    await expect(heading(page)).toHaveText("Review");
+    await expect(page.getByRole("button", { name: "Edit", exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "My organization", exact: true })).toBeVisible();
     await settled(page);
   });
 
@@ -315,6 +459,11 @@ test.describe("a proposal to a use case", () => {
     // lacks is said under the field, and the first field in error takes the focus.
     await expect(heading(page)).toHaveText("You and your team");
     await expect(page.getByText("Pocket Policy", { exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "My organization", exact: true })).toHaveAttribute(
+      "href",
+      "/workspace/organization",
+    );
     await expect(page.getByRole("radiogroup")).toHaveCount(0);
     await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Minh Trần");
     await page.getByRole("button", { name: "Continue" }).click();
@@ -391,6 +540,11 @@ test.describe("a proposal to a use case", () => {
 
     // Step 3: everything once more, then a confirmation before it goes.
     await expect(heading(page)).toHaveText("Review");
+    await expect(page.getByRole("button", { name: "Edit", exact: true }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "My organization", exact: true })).toHaveAttribute(
+      "href",
+      "/workspace/organization",
+    );
     await expect(page.getByText("Finish these steps before you send")).toHaveCount(0);
     await expect(
       page.getByText("Policy Chat reads each claim and names the team it belongs to."),
@@ -520,5 +674,245 @@ test.describe("a proposal to a use case", () => {
         version: 7,
       },
     ]);
+  });
+
+  test("a sent proposal is taken back after asking, and may be sent again", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const { withdraws } = await fakeBackend(page, baseURL!, "sent");
+    await page.goto(`${proposePath}/view`);
+    await expect(heading(page)).toHaveText("Pocket Policy");
+    await expect(page.getByRole("link", { name: "Edit proposal" })).toBeVisible();
+
+    // Asking comes first: keeping the proposal closes the dialog and sends nothing.
+    await page.getByRole("button", { name: "Withdraw", exact: true }).click();
+    const dialog = page.getByRole("alertdialog", { name: "Withdraw this proposal?" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("Claims triage with document intelligence")).toBeVisible();
+    await expect(dialog.getByText("until the use case closes on")).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Keep proposal" })).toBeFocused();
+    await settled(page);
+    await dialog.getByRole("button", { name: "Keep proposal" }).click();
+    await expect(dialog).toBeHidden();
+    expect(withdraws).toEqual([]);
+
+    // Withdrawing leaves the proposal read, says so, and offers sending it again.
+    await page.getByRole("button", { name: "Withdraw", exact: true }).click();
+    await dialog.getByRole("button", { name: "Withdraw proposal" }).click();
+    await expect.poll(() => withdraws).toEqual(["POST"]);
+    await expect(page.getByText("You withdrew this proposal")).toBeVisible();
+    await expect(page.getByText("Withdrawn 12 Oct 2026")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Withdraw", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Send again" })).toHaveAttribute(
+      "href",
+      proposePath,
+    );
+    await settled(page);
+  });
+
+  test("a proposal to a use case that closed cannot be taken back", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await fakeBackend(page, baseURL!, "closed");
+    await page.goto(`${proposePath}/view`);
+    await expect(page.getByText("This use case is closed")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Withdraw", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Edit proposal" })).toHaveCount(0);
+    await settled(page);
+  });
+});
+
+const receivedPath = `/workspace/organization/use-cases/${proposalUseCaseId}/proposals`;
+
+/**
+ * Answers what the browser writes while a use case's proposals are decided, as the backend would;
+ * a decision moves the stub to `decided` and sending to `told`, so the page that follows reads them.
+ */
+async function fakeDecisions(page: Page, baseURL: string, scene: "received" | "decided" | "told") {
+  const decisions: { id: string; body: unknown }[] = [];
+  const sends: unknown[] = [];
+  const stand = (next: string) =>
+    page.context().addCookies([{ name: "STUB_SCENE", value: next, url: baseURL }]);
+  await stand(scene);
+  await page.route("**/api/proposal/use-case-proposals/*/decision", async (route) => {
+    const request = route.request();
+    expect(request.headers()["x-beyondpilot-csrf"]).toBe("1");
+    decisions.push({ id: request.url().split("/").at(-2)!, body: request.postDataJSON() });
+    await stand("decided");
+    await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+  });
+  await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/outcomes`, async (route) => {
+    const request = route.request();
+    expect(request.headers()["x-beyondpilot-csrf"]).toBe("1");
+    sends.push(request.postDataJSON());
+    await stand("told");
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ sent: 2, shortlisted: 1, declined: 1 }),
+    });
+  });
+  return { decisions, sends };
+}
+
+const tab = (page: Page, name: string, count: number) =>
+  page
+    .getByRole("navigation", { name: "Filter proposals" })
+    .getByRole("link", { name: new RegExp(`^${name} ?${count}$`) });
+
+test.describe("the proposals a use case received", () => {
+  test("recipients see proposal decisions, not the sender organization's review status", async ({
+    page,
+    context,
+    baseURL,
+  }, testInfo) => {
+    await signInAs(context, "owner", baseURL!);
+    await fakeDecisions(page, baseURL!, "received");
+    await page.goto(receivedPath);
+    const row = page.getByRole("row").filter({
+      has: page.getByRole("link", { name: "Orbit Claims", exact: true }),
+    });
+    const name = row.getByRole("link", { name: "Orbit Claims", exact: true });
+    await expect(page.getByText("Pending review", { exact: true })).toHaveCount(0);
+    await expect(row.getByText("Not decided", { exact: true })).toBeVisible();
+    expect(await name.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0);
+    const nameBox = await name.boundingBox();
+    expect(nameBox).not.toBeNull();
+    const detail = row.getByText(/^Policy Chat ·/);
+    await expect(detail).toBeVisible();
+    expect((await detail.boundingBox())!.y).toBeGreaterThanOrEqual(nameBox!.y + nameBox!.height);
+    expect(
+      await row
+        .locator("td")
+        .first()
+        .evaluate((cell) => cell.scrollWidth - cell.clientWidth),
+    ).toBe(0);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBe(0);
+    await settled(page);
+    await page.screenshot({ path: testInfo.outputPath("received-proposals.png"), fullPage: true });
+    await page.goto((await name.getAttribute("href"))!);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Orbit Claims");
+    await expect(page.getByText("Pending review", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Not decided", { exact: true })).toBeVisible();
+    await settled(page);
+  });
+
+  test("a reviewer marks proposals from the list, reads them by tab, and sends the outcomes", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const { decisions, sends } = await fakeDecisions(page, baseURL!, "received");
+    await page.goto(receivedPath);
+    await expect(heading(page)).toHaveText("Claims triage with document intelligence");
+    await expect(tab(page, "All", 3)).toHaveAttribute("aria-current", "page");
+    await expect(page.getByText("Not decided")).toHaveCount(3);
+    await expect(page.getByRole("button", { name: /^Send outcomes/ })).toBeDisabled();
+    await settled(page);
+
+    // Marking only saves: no popup, nobody is told.
+    await page.getByRole("button", { name: "Actions for Orbit Claims" }).click();
+    await page.getByRole("menuitem", { name: "Shortlist" }).click();
+    await expect.poll(() => decisions.length).toBe(1);
+    expect(decisions[0]).toEqual({
+      id: "7a1d2c3b-0000-4000-8000-000000000063",
+      body: { decision: "shortlisted" },
+    });
+    await expect(page.getByRole("alertdialog")).toHaveCount(0);
+
+    // The stub now holds two decisions that were not sent: the counts follow the response.
+    await expect(tab(page, "Shortlisted", 1)).toBeVisible();
+    await expect(tab(page, "Declined", 1)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send outcomes (2)" })).toBeVisible();
+    await tab(page, "Declined", 1).click();
+    await expect(page).toHaveURL(/\?tab=declined$/);
+    await expect(page.getByRole("link", { name: "Lumen AI" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Northwind Analytics" })).toHaveCount(0);
+    await tab(page, "All", 3).click();
+    await expect(page.getByRole("link", { name: "Northwind Analytics" })).toBeVisible();
+
+    // Sending asks first, says what goes out, and takes one note for every email.
+    await page.getByRole("button", { name: "Send outcomes (2)" }).click();
+    const dialog = page.getByRole("alertdialog", { name: "Send outcomes to providers?" });
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByText("1 shortlisted and 1 declined will each get one email."),
+    ).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "Cancel" })).toBeFocused();
+    await dialog.getByLabel("Message in every email (optional)").fill("Thank you for applying.");
+    await settled(page);
+    await dialog.getByRole("button", { name: "Send 2 outcomes" }).click();
+    await expect.poll(() => sends).toEqual([{ message: "Thank you for applying." }]);
+    await expect(dialog).toBeHidden();
+    await expect(page.getByText("2 outcomes were sent.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Send outcomes (0)" })).toBeDisabled();
+    await settled(page);
+  });
+
+  test("a reviewer decides from the proposal itself, and may change it", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const { decisions } = await fakeDecisions(page, baseURL!, "received");
+    await page.goto(`${receivedPath}/7a1d2c3b-0000-4000-8000-000000000061`);
+    await expect(heading(page)).toHaveText("Northwind Analytics");
+    await expect(page.getByText("Your assessment")).toBeVisible();
+    await expect(page.getByText("Not decided")).toBeVisible();
+    await settled(page);
+
+    await page.getByRole("button", { name: "Shortlist", exact: true }).click();
+    await expect
+      .poll(() => decisions.map((entry) => entry.body))
+      .toEqual([{ decision: "shortlisted" }]);
+    await expect(page.getByText("Hoa Lê on")).toBeVisible();
+    // What is decided is not offered again; the other choice stays.
+    await expect(page.getByRole("button", { name: "Shortlist", exact: true })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Decline", exact: true })).toBeEnabled();
+    await settled(page);
+  });
+});
+
+test.describe("what the sender of a proposal is told", () => {
+  test("a shortlisted proposal says so and keeps Withdraw", async ({ page, context, baseURL }) => {
+    await signInAs(context, "owner", baseURL!);
+    await fakeBackend(page, baseURL!, "shortlisted");
+    await page.goto(`${proposePath}/view`);
+    await expect(page.getByText("Your proposal was shortlisted")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Withdraw", exact: true })).toBeVisible();
+    await settled(page);
+
+    await page.goto(`/use-cases/${proposalUseCaseId}`);
+    await expect(page.getByText("shortlisted your proposal on 13 Oct 2026")).toBeVisible();
+    await expect(page.getByText("Shortlisted", { exact: true })).toBeVisible();
+    await settled(page);
+  });
+
+  test("a proposal that was not selected is only read", async ({ page, context, baseURL }) => {
+    await signInAs(context, "owner", baseURL!);
+    await fakeBackend(page, baseURL!, "declined");
+    await page.goto(`${proposePath}/view`);
+    await expect(page.getByText("Your proposal was not selected")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Withdraw", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Edit proposal" })).toHaveCount(0);
+    await settled(page);
+
+    await page.goto(`/use-cases/${proposalUseCaseId}`);
+    await expect(page.getByText("Not selected", { exact: true })).toBeVisible();
+    await expect(page.getByText("The outcome was sent to your email on 13 Oct 2026")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Edit proposal" })).toHaveCount(0);
+    await settled(page);
   });
 });

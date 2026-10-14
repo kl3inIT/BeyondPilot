@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDownIcon, CircleAlertIcon, XIcon } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import {
   useEffect,
@@ -14,6 +15,7 @@ import {
 
 import { IconButton } from "@/components/actions/icon-button";
 import { TextButton } from "@/components/actions/text-button";
+import { PresenceItem, PresenceList } from "@/components/composites/presence-list";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Sheet, SheetClose, SheetContent } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,6 +24,8 @@ import { useNotify } from "@/hooks/use-notify";
 import {
   addMatchingCandidate,
   giveMatchingFeedback,
+  giveMatchingRemovalReason,
+  inviteMatchingCandidate,
   removeMatchingCandidate,
   restoreMatchingCandidate,
   shortlistMatchingCandidate,
@@ -30,17 +34,27 @@ import {
   type GiveMatchingFeedback,
   type Matching,
   type MatchingCandidate,
-  type RemoveMatchingCandidate,
 } from "@/lib/api/generated";
 
 import { MatchingAdd } from "./matching-add";
 import { useMatchingChanges } from "./matching-changes";
 import { matchingWords } from "./matching-errors";
+import { MatchingInvite } from "./matching-invite";
+import { ARROWED, FIELDS, OVERLAYS } from "./matching-keys";
+import { reviewable } from "./matching-line";
 import { MatchingPanel } from "./matching-panel";
-import { MatchingRemove } from "./matching-remove";
+import { MatchingRemove, type Removal } from "./matching-remove";
 import { MatchingRemoved } from "./matching-removed";
 import { MatchingRow } from "./matching-row";
 import { MatchingRun } from "./matching-run";
+import {
+  openingView,
+  readViewChoice,
+  saveViewChoice,
+  subscribeViewChoice,
+  viewNames,
+  type ViewName,
+} from "./matching-view-choice";
 import {
   changesBetween,
   constraintsOf,
@@ -66,23 +80,13 @@ function subscribeToWidth(onChange: () => void) {
   return () => query.removeEventListener("change", onChange);
 }
 
+// The one-by-one review and the code that moves its cards are loaded when it is first chosen.
+const MatchingReview = dynamic(() =>
+  import("./matching-review").then((module) => module.MatchingReview),
+);
+
 const tabNames = ["matches", "shortlist", "removed"] as const;
 type TabName = (typeof tabNames)[number];
-
-/** Where a key is a letter being typed, not a shortcut. */
-const FIELDS =
-  'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="combobox"], [role="searchbox"]';
-
-/**
- * What lies over the page while it is open: a dialog, a menu, the deck's sheet. The sheet the panel
- * itself is read in on a narrow screen is not one of them.
- */
-const OVERLAYS =
-  '[role="dialog"]:not([data-panel="matching"]), [role="alertdialog"], [role="menu"], [role="listbox"]';
-
-/** Where the arrows already move something: between tabs, between the choices of a group. */
-const ARROWED =
-  '[role="tablist"], [role="radiogroup"], [role="toolbar"], [data-slot="toggle-group"]';
 
 /** How long a row that entered a group stays marked, in milliseconds: its highlight has faded by then. */
 const MARKED = 2500;
@@ -182,7 +186,14 @@ function GroupCard({ title, about, count, fold, children }: GroupCardProps) {
  * solution the AI has read moves from "Being read" into its group, and a line says so. `selected` is
  * the solution the address asks for, which opens with the page.
  */
-function MatchingBoard({ matching: read, selected }: { matching: Matching; selected?: string }) {
+type MatchingBoardProps = {
+  matching: Matching;
+  selected?: string;
+  /** Where each proposal the use case received opens, by the organization that sent it. */
+  received?: Record<string, string>;
+};
+
+function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoardProps) {
   const t = useTranslations("Matching");
   const reasonName = useTranslations("Matching.remove.reasons");
   const notify = useNotify();
@@ -194,6 +205,10 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
   );
   const [held, setHeld] = useState({ over: read, state: read });
   const [tab, setTab] = useState<TabName>("matches");
+  // What this person chose before is kept by the browser, so it is not known where the page is first
+  // drawn, on the server, nor until the browser has read it.
+  const choice = useSyncExternalStore(subscribeViewChoice, readViewChoice, () => undefined);
+  const [openedAs, setOpenedAs] = useState<ViewName | null>(null);
   const [need, setNeed] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(selected ?? null);
   const [sheetOpen, setSheetOpen] = useState(selected !== undefined);
@@ -203,6 +218,8 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
     return candidate ? { [sectionOf(candidate)]: true } : {};
   });
   const [removingId, setRemovingId] = useState<string | null>(null);
+  /** The candidate whose provider the person is about to invite to propose. */
+  const [invitingId, setInvitingId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   /** Whether the folding group is open, once a person opened or closed it. */
   const [opened, setOpened] = useState<Partial<Record<Section, boolean>>>(asked);
@@ -358,7 +375,7 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
           () => notify.success("Matching.done.shortlisted", { name: candidate.solutionName }),
         );
 
-  const remove = (candidate: MatchingCandidate, body: RemoveMatchingCandidate) =>
+  const remove = (candidate: MatchingCandidate, body: Removal) =>
     send(
       candidate.id,
       () => removeMatchingCandidate({ path: { candidateId: candidate.id }, body }),
@@ -371,6 +388,42 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
         );
       },
     );
+
+  // An invitation is emailed and cannot be taken back, so it is asked first; a member who invited as many
+  // providers as a day allows is offered none until tomorrow.
+  const inviting = matching.candidates.find((candidate) => candidate.id === invitingId) ?? null;
+  const mayInvite = matching.invitationsLeftToday !== 0;
+  const proposalOf = (candidate: MatchingCandidate) =>
+    candidate.invitedProviderId ? received[candidate.invitedProviderId] : undefined;
+  const askInvite = (candidate: MatchingCandidate) =>
+    mayInvite && !candidate.invitedAt ? () => setInvitingId(candidate.id) : undefined;
+  const invite = (candidate: MatchingCandidate, note: string | undefined) =>
+    send(
+      candidate.id,
+      () => inviteMatchingCandidate({ path: { candidateId: candidate.id }, body: { note } }),
+      () => {
+        setInvitingId(null);
+        notify.success("Matching.invite.done", {
+          name: candidate.organizationName ?? candidate.solutionName,
+        });
+      },
+    );
+
+  // The one-by-one review says under its card what was just decided, with Undo, so no toast does.
+  const review = {
+    onShortlist: (candidate: MatchingCandidate) =>
+      send(candidate.id, () => shortlistMatchingCandidate({ path: { candidateId: candidate.id } })),
+    onRemove: (candidate: MatchingCandidate) =>
+      send(candidate.id, () =>
+        removeMatchingCandidate({ path: { candidateId: candidate.id }, body: {} }),
+      ),
+    onReason: (candidate: MatchingCandidate, reason: Removal["reason"]) =>
+      send(candidate.id, () =>
+        giveMatchingRemovalReason({ path: { candidateId: candidate.id }, body: { reason } }),
+      ),
+    onRestore: (candidate: MatchingCandidate) =>
+      send(candidate.id, () => restoreMatchingCandidate({ path: { candidateId: candidate.id } })),
+  };
 
   // The panel itself says what was answered, so no toast does.
   const giveFeedback = (candidate: MatchingCandidate, body: GiveMatchingFeedback) =>
@@ -393,7 +446,18 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
   // it, S saves or unsaves it, N asks why it is not a fit. A key held with a modifier, typed in a
   // field, or pressed while a dialog, a menu or the deck lies over the page is left alone, and so is
   // an arrow where arrows already move something, as between tabs.
-  const panelOpen = chosen !== undefined && (wide || sheetOpen);
+  // The way the page opened holds for the visit: deciding on the last card does not turn it into the list.
+  const waits = matching.candidates.some(reviewable);
+  if (openedAs === null && choice !== undefined) {
+    setOpenedAs(openingView(choice, waits, selected !== undefined));
+  }
+  // Until the choice is known, a page with nothing to decide is the list; one with something waits.
+  const view = openedAs ?? (waits && selected === undefined ? null : "list");
+  const setView = (next: ViewName) => {
+    setOpenedAs(next);
+    saveViewChoice(next);
+  };
+  const panelOpen = view === "list" && chosen !== undefined && (wide || sheetOpen);
   const onKey = useEffectEvent((event: KeyboardEvent) => {
     if (
       !chosen ||
@@ -440,37 +504,42 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
     const view = views[section];
     return (
       <ul className="flex flex-col">
-        {sections[section].slice(0, view.shown).map((candidate) =>
-          candidate.id === removingId ? (
-            <li key={candidate.id} className="p-1">
-              <MatchingRemove
-                candidate={candidate}
-                pending={pending === candidate.id}
-                onCancel={() => setRemovingId(null)}
-                onRemove={(body) => void remove(candidate, body)}
-              />
-            </li>
-          ) : (
-            <MatchingRow
-              key={candidate.id}
-              candidate={candidate}
-              needs={needs}
-              selected={chosen?.id === candidate.id && (wide || sheetOpen)}
-              pending={pending === candidate.id}
-              reading={
-                running && stream.reading.includes(candidate.solutionId)
-                  ? "now"
-                  : reads && section === "waiting"
-                    ? "waiting"
-                    : undefined
-              }
-              arrived={seen.fresh.includes(candidate.id)}
-              onSelect={() => select(candidate)}
-              onShortlist={() => void shortlist(candidate)}
-              onRemove={() => askWhy(candidate)}
-            />
-          ),
-        )}
+        <PresenceList>
+          {sections[section].slice(0, view.shown).map((candidate) =>
+            candidate.id === removingId ? (
+              <PresenceItem key={candidate.id} className="p-1">
+                <MatchingRemove
+                  candidate={candidate}
+                  pending={pending === candidate.id}
+                  onCancel={() => setRemovingId(null)}
+                  onRemove={(body) => void remove(candidate, body)}
+                />
+              </PresenceItem>
+            ) : (
+              <PresenceItem key={candidate.id}>
+                <MatchingRow
+                  candidate={candidate}
+                  needs={needs}
+                  selected={chosen?.id === candidate.id && (wide || sheetOpen)}
+                  pending={pending === candidate.id}
+                  reading={
+                    running && stream.reading.includes(candidate.solutionId)
+                      ? "now"
+                      : reads && section === "waiting"
+                        ? "waiting"
+                        : undefined
+                  }
+                  arrived={seen.fresh.includes(candidate.id)}
+                  onSelect={() => select(candidate)}
+                  onShortlist={() => void shortlist(candidate)}
+                  onRemove={() => askWhy(candidate)}
+                  onInvite={askInvite(candidate)}
+                  proposalHref={proposalOf(candidate)}
+                />
+              </PresenceItem>
+            ),
+          )}
+        </PresenceList>
       </ul>
     );
   };
@@ -539,6 +608,8 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
       onNext={place < flat.length - 1 ? () => setSelectedId(flat[place + 1].id) : undefined}
       onShortlist={() => void shortlist(chosen)}
       onRemove={() => askWhy(chosen)}
+      onInvite={askInvite(chosen)}
+      proposalHref={proposalOf(chosen)}
     />
   );
 
@@ -594,7 +665,41 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
         </p>
       )}
 
-      {anything && (
+      {anything && view !== null && (
+        <ToggleGroup
+          aria-label={t("review.view.label")}
+          variant="outline"
+          size="sm"
+          className="self-start"
+          value={[view]}
+          onValueChange={(next) => {
+            const picked = viewNames.find((name) => name === next[0]);
+            if (picked) {
+              setView(picked);
+            }
+          }}
+        >
+          {viewNames.map((name) => (
+            <ToggleGroupItem key={name} value={name} className="pointer-coarse:min-h-11">
+              {t(`review.view.${name}`)}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      )}
+
+      {anything && view === "one" && (
+        <MatchingReview
+          candidates={matching.candidates}
+          needs={needs}
+          reading={reads}
+          {...review}
+          onInvite={mayInvite ? (candidate) => setInvitingId(candidate.id) : undefined}
+          proposalOf={proposalOf}
+          onList={() => setView("list")}
+        />
+      )}
+
+      {anything && view === "list" && (
         <>
           <div className="flex max-w-3xl flex-col gap-3">
             {several ? (
@@ -709,6 +814,13 @@ function MatchingBoard({ matching: read, selected }: { matching: Matching; selec
           </Tabs>
         </>
       )}
+
+      <MatchingInvite
+        candidate={inviting}
+        pending={inviting !== null && pending === inviting.id}
+        onOpenChange={(open) => !open && setInvitingId(null)}
+        onInvite={(note) => (inviting ? invite(inviting, note) : Promise.resolve(false))}
+      />
 
       {!wide && (
         <Sheet open={sheetOpen && chosen !== undefined} onOpenChange={setSheetOpen}>

@@ -3,7 +3,7 @@
 BeyondPilot's email: what it sends, in which words, through which provider, and what became of each message. Operators
 run it from Admin › Email. It is decided in [ADR 0005](../decisions/0005-operators-run-email-delivery.md) and
 delivered by [BEY-68](../increments/completed/bey-68-email-delivery/design.md); Brevo was added by
-[BEY-128](../increments/active/bey-128-brevo-email/design.md). The code is the `notification`
+[BEY-128](../increments/completed/bey-128-brevo-email/design.md). The code is the `notification`
 application module, `backend/src/main/java/ai/genaifund/beyondpilot/notification`. Its checks are in the
 [test matrix](../tests/notification.md).
 
@@ -48,9 +48,20 @@ meaning.
 | `organizations` | `organization_invitation`, `organization_approved`, `organization_refused`, `organization_sent_back`, `organization_request_approved`, `organization_request_declined`, `organization_taken_down`, `organization_restored`, `organization_merged` | `sendOrganizationInvitation`, `sendOrganizationDecision`, `sendOrganizationSentBack`, `sendOrganizationRequestDecision`, `sendOrganizationSuspension`, `sendOrganizationMerged` |
 | `applications`  | `application_received`, `reviewer_invitation`, `application_outcome`                                                                                                                                                                              | `sendApplicationReceived`, `sendReviewerInvitation`, `sendApplicationOutcome`                                                                                                   |
 | `solutions`     | `solution_approved`, `solution_sent_back`, `solution_rejected`, `solution_taken_down`, `solution_restored`                                                                                                                                        | `sendSolutionDecision`                                                                                                                                                          |
-| `use_cases`     | `use_case_approved`, `use_case_sent_back`, `proposal_sent`                                                                                                                                                                                        | `sendUseCaseDecision`, `sendProposalSent`                                                                                                                                       |
+| `use_cases`     | `use_case_approved`, `use_case_sent_back`, `proposal_sent`, `proposal_shortlisted`, `proposal_declined`, `matching_invitation`                                                                                                                    | `sendUseCaseDecision`, `sendProposalSent`, `sendProposalOutcome`, `sendMatchingInvitation`                                                                                      |
 | `talent`        | `talent_approved`, `talent_changes_requested`, `talent_removed`, `talent_restored`                                                                                                                                                                | `sendTalentDecision`                                                                                                                                                            |
 | `messages`      | `message_request`, `message_request_reminder`, `message_request_accepted`, `message_request_declined`, `message_request_closed`, `message_unread`                                                                                                 | `sendMessageRequest`, `sendMessageRequestReminder`, `sendMessageRequestAccepted`, `sendMessageRequestDeclined`, `sendMessageRequestClosed`, `sendUnreadMessages`                |
+
+**`proposal_shortlisted` and `proposal_declined`** are editable and are sent by `sendProposalOutcome`, once for each
+proposal whose decision the posting organization has not yet told its sender. Variables: `recipientName` (optional),
+`useCaseTitle` (required), `organizationName` (optional: the organization that sent the proposal), `proposalUrl`
+(optional) and the quote `message` (optional, labelled "Their message": the note written when the outcomes were sent).
+
+**`matching_invitation`** is editable and is sent by `sendMatchingInvitation` when a person invites the provider of a
+matched solution to propose for a use case (BEY-105): to the provider's owners, or, when nobody has taken the
+organization on yet, to the addresses GenAI Fund invited to own it. Variables: `inviterName` (required: the organization
+that posted the use case), `providerName` and `solutionName` (required), `useCaseTitle` (required), `closesAt`
+(optional, in ICT), `useCaseUrl` (optional) and the quote `note` (optional: the words of the person who invites).
 
 **`application_outcome` cannot be edited.** An operator writes its subject and message for each release of outcomes.
 The message is plain text, and its line breaks are kept. The button "View your application" follows the message.
@@ -66,6 +77,8 @@ The message is plain text, and its line breaks are kept. The button "View your a
   | Kind                                                 | Variable          | Button                 | Opens                                                                                                          |
   | ---------------------------------------------------- | ----------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------- |
   | `proposal_sent`                                      | `proposalUrl`     | View proposal          | `/use-cases/<use case id>/propose/view`                                                                        |
+  | `proposal_shortlisted`, `proposal_declined`          | `proposalUrl`     | View proposal          | `/use-cases/<use case id>/propose/view`                                                                        |
+  | `matching_invitation`                                | `useCaseUrl`      | Read the use case      | `/use-cases/<use case id>`, the public page where the provider chooses Send a proposal                         |
   | `application_received`, `application_outcome`        | `applicationUrl`  | View your application  | `/applications/<application id>`                                                                               |
   | `reviewer_invitation`                                | `reviewsUrl`      | Open Reviews           | `/reviews/<program id>`, the program's applications as the judge scores them                                   |
   | `organization_invitation`                            | `organizationUrl` | Open the invitation    | `/workspace/organization`, which shows the invitation to a person who belongs to no organization               |

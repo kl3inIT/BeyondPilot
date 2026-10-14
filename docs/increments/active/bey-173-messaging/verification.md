@@ -80,3 +80,5 @@ Figwright 0.6.0 connected to the open `BeyondPilot — Product UI` Figma file. `
 - `header-messages.test.tsx` verifies the destination, zero, received and read counts, preserving counts on failure, focus refresh, and skipping hidden tabs.
 - `pnpm --dir web test:e2e messages.spec.ts --project=desktop --project=mobile` passed: 24 browser tests, including the messaging and admin reported messages suites and accessibility checks on desktop and mobile. Updated the existing tests to find the header shortcut and assert that Messages is absent from the account menu.
 - Focused ESLint and Prettier checks for the updated browser spec passed. `git diff --check` passed.
+
+After synchronizing the PR branch with main, `pnpm --dir web check` passed again: 82 test files / 717 tests, 5719 matching catalog keys, 247 covered failure codes, and all other gate steps. Conflict resolution preserves main’s removal of reported-message administration and keeps the header shortcut, its count and the updated browser tests. The 24-test browser result above was obtained before this synchronization.

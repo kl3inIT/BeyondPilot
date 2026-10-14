@@ -17,7 +17,8 @@ import org.jspecify.annotations.Nullable;
  * may leave them out. Each one a company lacks is refused at its own member, so the screen marks that field.
  */
 @Documented
-@Constraint(validatedBy = { RequiredOfCompany.OnCreate.class, RequiredOfCompany.OnSave.class })
+@Constraint(validatedBy = { RequiredOfCompany.OnCreate.class, RequiredOfCompany.OnSave.class,
+		RequiredOfCompany.OnBasics.class })
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RequiredOfCompany {
@@ -46,7 +47,16 @@ public @interface RequiredOfCompany {
 
 	}
 
-	/** The rule both requests share. */
+	class OnBasics implements ConstraintValidator<RequiredOfCompany, SaveOrganizationBasicsRequest> {
+
+		@Override
+		public boolean isValid(@Nullable SaveOrganizationBasicsRequest request, ConstraintValidatorContext context) {
+			return request == null || Facts.given(request.type(), request.website(), request.foundedYear(), context);
+		}
+
+	}
+
+	/** The rule the profile and popup requests share. */
 	final class Facts {
 
 		private Facts() {

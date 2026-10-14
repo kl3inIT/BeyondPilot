@@ -4,7 +4,7 @@
  * and its images are stored files it names the same way.
  */
 @ApplicationModule(displayName = "Solution", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "audit", "identity", "notification", "organization", "storage" })
+		allowedDependencies = { "audit", "identity", "notification", "organization", "storage", "shared" })
 @NullMarked
 package ai.genaifund.beyondpilot.solution;
 

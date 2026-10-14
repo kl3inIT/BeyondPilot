@@ -128,6 +128,11 @@ public class Proposal {
 		this.organizationId = organizationId;
 	}
 
+	/** Belongs to no organization any more, until the applicant joins or adds one. */
+	public void leaveOrganization() {
+		this.organizationId = null;
+	}
+
 	/**
 	 * Submits what the form holds.
 	 * @return the number of the version this submission makes
@@ -214,6 +219,10 @@ public class Proposal {
 
 	public long getVersion() {
 		return version;
+	}
+
+	public Instant getCreatedAt() {
+		return createdAt;
 	}
 
 	public Instant getUpdatedAt() {

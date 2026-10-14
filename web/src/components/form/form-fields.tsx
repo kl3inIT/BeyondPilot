@@ -5,6 +5,7 @@ import type { ComponentProps, ReactNode } from "react";
 
 import { Button } from "@/components/actions/button";
 import { RequiredMark } from "@/components/composites/required-mark";
+import { Reveal } from "@/components/composites/reveal";
 import {
   RequiredUnlessOptional,
   useFieldValidity,
@@ -26,8 +27,10 @@ import {
   FieldDescription,
   FieldError,
   FieldLabel,
+  FieldTitle,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -196,7 +199,9 @@ function TextField({
         used={field.state.value.length}
         limit={counted ? input.maxLength : undefined}
       />
-      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
+      <Reveal open={invalid}>
+        <FieldError id={errorId} role={errorRole} errors={errors} />
+      </Reveal>
     </Field>
   );
 }
@@ -245,7 +250,9 @@ function TextareaField({
         used={field.state.value.length}
         limit={textarea.maxLength}
       />
-      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
+      <Reveal open={invalid}>
+        <FieldError id={errorId} role={errorRole} errors={errors} />
+      </Reveal>
     </Field>
   );
 }
@@ -308,7 +315,9 @@ function SelectField({
         </SelectContent>
       </Select>
       {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
-      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
+      <Reveal open={invalid}>
+        <FieldError id={errorId} role={errorRole} errors={errors} />
+      </Reveal>
     </Field>
   );
 }
@@ -372,8 +381,79 @@ function ComboboxField({
         </ComboboxContent>
       </Combobox>
       {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
-      {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
+      <Reveal open={invalid}>
+        <FieldError id={errorId} role={errorRole} errors={errors} />
+      </Reveal>
     </Field>
+  );
+}
+
+type ChoiceCardsFieldProps = {
+  label: string;
+  description?: ReactNode;
+  /** A line about the choice made, under the hint. */
+  note?: ReactNode;
+  options: { value: string; label: string; what?: string }[];
+  /** Classes of the group, for cards that stand side by side. */
+  className?: string;
+  /** What a choice asks for beyond itself, under the group with the field's error. */
+  detail?: ReactNode;
+};
+
+/**
+ * One choice among a few, each on a card, with a line that says what it means where one is given. Rendered inside
+ * `form.AppField`, which holds its value.
+ */
+function ChoiceCardsField({
+  label,
+  description,
+  note,
+  options,
+  className,
+  detail,
+}: ChoiceCardsFieldProps) {
+  const { field, invalid, errors, controlId, hintId, errorId, describedBy, required } =
+    useDescribedField<string>(description);
+  return (
+    <>
+      <Field data-invalid={invalid || undefined}>
+        <FieldLabel>{label}</FieldLabel>
+        <RadioGroup
+          id={controlId}
+          className={className}
+          value={field.state.value}
+          onValueChange={(value) => field.handleChange(String(value))}
+          aria-label={label}
+          aria-required={required}
+          aria-describedby={describedBy}
+        >
+          {options.map((option) => (
+            <FieldLabel key={option.value} htmlFor={`${controlId}-${option.value}`}>
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldTitle>{option.label}</FieldTitle>
+                  {option.what && <FieldDescription>{option.what}</FieldDescription>}
+                </FieldContent>
+                <RadioGroupItem
+                  value={option.value}
+                  id={`${controlId}-${option.value}`}
+                  aria-invalid={invalid || undefined}
+                />
+              </Field>
+            </FieldLabel>
+          ))}
+        </RadioGroup>
+        {description && <FieldDescription id={hintId}>{description}</FieldDescription>}
+        {invalid && !detail && <FieldError id={errorId} errors={errors} />}
+        {note && <FieldDescription>{note}</FieldDescription>}
+      </Field>
+      {detail && (
+        <section className="flex flex-col gap-3">
+          {detail}
+          {invalid && <FieldError id={errorId} errors={errors} />}
+        </section>
+      )}
+    </>
   );
 }
 
@@ -401,7 +481,9 @@ function CheckboxField({ label, disabled, required: mustTick = false }: Checkbox
       />
       <FieldContent>
         <FieldLabel htmlFor={controlId}>{label}</FieldLabel>
-        {invalid && <FieldError id={errorId} role={errorRole} errors={errors} />}
+        <Reveal open={invalid}>
+          <FieldError id={errorId} role={errorRole} errors={errors} />
+        </Reveal>
       </FieldContent>
     </Field>
   );
@@ -436,7 +518,11 @@ function FormError() {
       {(error) => {
         // TanStack Form keeps the `form` part of the errors setServerErrors gave as the form's own error.
         const message = typeof error === "string" ? error : undefined;
-        return message ? <FieldError>{message}</FieldError> : null;
+        return (
+          <Reveal open={message !== undefined}>
+            <FieldError>{message}</FieldError>
+          </Reveal>
+        );
       }}
     </form.Subscribe>
   );
@@ -445,6 +531,7 @@ function FormError() {
 export {
   AllRequired,
   CheckboxField,
+  ChoiceCardsField,
   ComboboxField,
   FormError,
   SelectField,

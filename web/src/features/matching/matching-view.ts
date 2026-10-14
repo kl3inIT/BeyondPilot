@@ -95,11 +95,18 @@ export function statusOf(
 
 /**
  * Whether a candidate is on the screen at all: one a run judged and put in no group is not, unless a
- * person decided on it, since a later run must not hide what someone shortlisted or removed. One that
- * waits to be judged is shown.
+ * person decided on it or invited its provider, since a later run must not hide what someone
+ * shortlisted, removed or emailed. One that waits to be judged is shown.
  */
-export function isShown(candidate: Pick<MatchingCandidate, "judged" | "bucket" | "decision">) {
-  return !candidate.judged || candidate.bucket !== "none" || candidate.decision !== "none";
+export function isShown(
+  candidate: Pick<MatchingCandidate, "judged" | "bucket" | "decision" | "invitedAt">,
+) {
+  return (
+    !candidate.judged ||
+    candidate.bucket !== "none" ||
+    candidate.decision !== "none" ||
+    Boolean(candidate.invitedAt)
+  );
 }
 
 /** The candidates of each tab. A removed candidate is in the Removed tab alone. */

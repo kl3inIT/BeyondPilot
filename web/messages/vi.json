@@ -87,7 +87,6 @@
   "Campaign": {
     "name": "AI for Insurance Challenge × Tasco",
     "partners": "GenAI Fund × Tasco",
-    "kind": "Thử thách doanh nghiệp · Bảo hiểm · Việt Nam",
     "question": "Làm sao để bảo hiểm ở Việt Nam trở thành thứ người dân thấy đáng có?",
     "live": "Đang mở",
     "apply": "Ứng tuyển",
@@ -95,7 +94,6 @@
     "readBrief": "Đọc đề bài",
     "submissionsClose": "Hạn nộp 23:59 ICT, 15/10",
     "closes": "Hạn nộp 23:59 ICT, 15/10",
-    "countdown": "{days, plural, =0 {Ngày cuối} other {Còn # ngày}} · hạn nộp 23:59 ICT, 15/10",
     "closed": "Đã đóng nhận hồ sơ lúc 23:59 ICT, 15/10",
     "facts": {
       "label": "Mốc thời gian",
@@ -104,12 +102,19 @@
       "demoDay": "Demo day",
       "demoDayWhen": "14:00–16:00, 22/10",
       "investment": "Có thể được xem xét đầu tư",
-      "investmentValue": "Tối đa 100.000 USD",
-      "notified": "Thông báo kết quả",
-      "notifiedWhen": "16/10"
+      "investmentValue": "Tối đa 100.000 USD"
     }
   },
   "Home": {
+    "featured": {
+      "eyebrow": "Chương trình nổi bật",
+      "lead": "Đừng bỏ lỡ cơ hội hợp tác với {partner}.",
+      "deadline": "Hạn chót",
+      "explore": "Xem chương trình và nộp đơn",
+      "later": "Để sau",
+      "close": "Đóng",
+      "view": "Xem chương trình"
+    },
     "hero": {
       "titleStart": "Bước tiếp theo của bạn với",
       "titleEnd": "AI bắt đầu từ đây.",
@@ -205,14 +210,8 @@
         "title": "Sự kiện AI",
         "description": "Kết nối với hệ sinh thái qua meetup, workshop và demo day.",
         "action": "Xem sự kiện",
-        "item1Month": "Th10",
-        "item1Day": "13",
-        "item1Title": "GenAI Builders Meetup",
-        "item1Meta": "Chuỗi meetup · tháng 10 đến tháng 12",
-        "item2Month": "Th10",
-        "item2Day": "22",
-        "item2Title": "Demo day · AI for Insurance Challenge",
-        "item2Meta": "Mười đội trình bày trực tiếp"
+        "online": "Trực tuyến",
+        "empty": "Sự kiện mới sẽ được thông báo tại đây ngay khi có lịch."
       },
       "programs": {
         "title": "Chương trình AI",
@@ -253,11 +252,6 @@
         "shortlist": "Lưu giải pháp phù hợp",
         "alt": "một ví dụ về ba bước. Bắt đầu bằng cách tìm trong danh bạ hoặc đăng một bài toán; các giải pháp có trên BeyondPilot gồm Revve AI và Shieldbase; bước tiếp theo là nhận đề xuất hoặc lưu các giải pháp được ghép với một bài toán."
       }
-    },
-    "challenge": {
-      "eyebrow": "Cơ hội nổi bật",
-      "description": "Tasco và GenAI Fund đang tìm các giải pháp AI cho những bài toán vận hành thực tế của ngành bảo hiểm Việt Nam. Ứng tuyển trực tiếp qua trang thử thách.",
-      "partners": "Cùng Microsoft for Startups và Notion"
     },
     "faq": {
       "eyebrow": "Hỏi đáp",
@@ -319,6 +313,10 @@
     "backToSolutions": "Về danh sách giải pháp"
   },
   "Errors": {
+    "ORGANIZATION_INDIVIDUAL": "Chỉ mình tôi là một người: không có thành viên khác, lời mời hay tên miền email. Hãy chuyển thành đội hoặc công ty trước.",
+    "ORGANIZATION_NOT_ALONE": "Tổ chức này còn thành viên khác, lời mời hoặc yêu cầu tham gia nên chưa thể chuyển thành Chỉ mình tôi. Hãy gỡ chúng trước.",
+    "ORGANIZATION_TEAM_SIZE_REQUIRED": "Chọn số người của đội hoặc công ty.",
+    "PROPOSAL_INDIVIDUAL_LOCKED": "Bạn đã gửi một thứ dưới tên mình, nên bạn tiếp tục nộp với tư cách cá nhân.",
     "unknown": "Chưa thực hiện được. Hãy thử lại.",
     "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
     "AI_PROVIDER_NOT_FOUND": "Provider này không còn nữa. Hãy tải lại trang.",
@@ -362,6 +360,12 @@
     "MATCHING_RUN_LIMIT": "Hôm nay bạn đã dùng hết lượt cho use case này. Hãy thử lại vào ngày mai.",
     "MATCHING_CANDIDATE_REMOVED": "Giải pháp này đã bị loại. Hãy khôi phục trước.",
     "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund đã loại giải pháp này nên chỉ GenAI Fund khôi phục được.",
+    "MATCHING_CANDIDATE_NOT_REMOVED": "Giải pháp này không còn bị loại nên không cần lý do.",
+    "MATCHING_REMOVED_BY_SOMEONE_ELSE": "Người khác đã loại giải pháp này; chỉ họ nêu được lý do.",
+    "MATCHING_USE_CASE_CLOSED": "Use case này không còn nhận đề xuất nên không mời ai được.",
+    "MATCHING_ALREADY_INVITED": "Nhà cung cấp này đã được mời gửi đề xuất cho use case này.",
+    "MATCHING_NOBODY_TO_INVITE": "Chưa ai đại diện nhà cung cấp này trên BeyondPilot nên không có ai để gửi email.",
+    "MATCHING_INVITATION_LIMIT": "Bạn đã mời đủ số nhà cung cấp cho phép trong một ngày với use case này. Hãy thử lại vào ngày mai.",
     "MATCHING_ALREADY_CANDIDATE": "Giải pháp này đã có trong danh sách của use case.",
     "MATCHING_OWN_SOLUTION": "Giải pháp này thuộc chính tổ chức sở hữu use case.",
     "MATCHING_SETTINGS_CHANGED": "Có người khác vừa đổi các thiết lập này. Hãy tải lại rồi thử lần nữa.",
@@ -378,7 +382,8 @@
     "MESSAGING_TOO_MANY_MESSAGES": "Bạn viết quá nhanh. Hãy chờ một chút rồi gửi lại.",
     "MESSAGING_NOT_OPEN": "Hội thoại này không mở nên không viết được.",
     "MESSAGING_NOT_WAITING": "Yêu cầu này đã được trả lời.",
-    "MESSAGING_OWNERS_ONLY": "Chỉ chủ sở hữu của tổ chức mới trả lời một tin đầu tiên.",
+    "MESSAGING_OWNERS_ONLY": "Chỉ chủ sở hữu của tổ chức mới được thực hiện thao tác này.",
+    "MESSAGING_MEMBER_NOT_FOUND": "Người này không phải thành viên tổ chức của bạn.",
     "MESSAGING_MESSAGE_CONFLICT": "Chưa gửi được tin này. Hãy viết lại.",
     "MESSAGING_READ_BEYOND_LAST_MESSAGE": "Tin này không có trong cuộc trò chuyện. Hãy tải lại và thử lần nữa.",
     "MCP_TOOL_NOT_FOUND": "Công cụ này không còn nữa. Hãy tải lại trang.",
@@ -474,6 +479,7 @@
     "PROPOSAL_NO_ORGANIZATION": "Hãy tham gia hoặc lập một tổ chức để gửi proposal.",
     "PROPOSAL_NOT_FOUND": "Không có proposal này.",
     "PROPOSAL_ALREADY_SENT": "Proposal này đã gửi nên không sửa được nữa.",
+    "PROPOSAL_NOT_SENT": "Chỉ rút được proposal đã gửi. Hãy tải lại trang để xem proposal của bạn đang ở đâu.",
     "PROPOSAL_APPROACH_REQUIRED": "Hãy nói giải pháp giải quyết use case này như thế nào.",
     "PROPOSAL_CONTACT_REQUIRED": "Hãy thêm tên, quốc gia và số điện thoại của bạn trước.",
     "PROPOSAL_PDF_REQUIRED": "Hãy thêm proposal dưới dạng PDF.",
@@ -545,7 +551,12 @@
     "USECASE_CANNOT_MOVE_TO_DRAFT": "Chỉ use case đang duyệt hoặc đã đăng mới chuyển về bản nháp được.",
     "USECASE_NOT_AWAITING_REVIEW": "Use case này không còn ở trạng thái đang duyệt. Trạng thái đã được đọc lại.",
     "USECASE_ATTACHMENT_NOT_USABLE": "Hãy tải tệp lên lại: không thể đính kèm tệp này.",
-    "USECASE_TIMELINE_OUT_OF_ORDER": "Thời gian dài nhất ngắn hơn thời gian ngắn nhất."
+    "USECASE_TIMELINE_OUT_OF_ORDER": "Thời gian dài nhất ngắn hơn thời gian ngắn nhất.",
+    "PROPOSAL_NOTHING_TO_SEND": "Không có quyết định nào để gửi. Hãy tải lại trang để xem tình trạng các đề xuất.",
+    "MESSAGING_OPERATOR_NOT_FOUND": "Người này không phải quản trị viên đang hoạt động.",
+    "SPREADSHEET_TOO_LARGE": "Danh sách này có nhiều dòng hơn mức một lần tải cho phép. Hãy thu hẹp bằng bộ lọc rồi tải lại.",
+    "PROGRAM_LUMA_NOT_CONFIGURED": "Môi trường này không đọc lịch Luma nào.",
+    "PROGRAM_LUMA_UNREACHABLE": "Hiện không đọc được Luma. Không có gì thay đổi; hãy thử lại sau vài phút."
   },
   "SignIn": {
     "metaTitle": "Đăng nhập · BeyondPilot",
@@ -722,7 +733,6 @@
       "solutions": "Giải pháp AI",
       "offers": "Ưu đãi",
       "talent": "Nhân lực AI",
-      "reportedMessages": "Tin bị báo cáo",
       "review": "Xét duyệt",
       "system": "Hệ thống",
       "useCases": "Use case",
@@ -733,7 +743,8 @@
       "aiMatching": "Ghép nối",
       "aiUsage": "Sử dụng",
       "mcp": "MCP",
-      "email": "Email"
+      "email": "Email",
+      "programMessages": "Phân công chat"
     },
     "toggleSidebar": "Thu gọn hoặc mở thanh bên",
     "notFound": {
@@ -957,6 +968,22 @@
           "lead": "Các thay đổi sẽ mất.",
           "leave": "Rời trang",
           "stay": "Ở lại"
+        },
+        "feature": {
+          "feature": "Đặt nổi bật trên trang chủ",
+          "unfeature": "Bỏ nổi bật",
+          "since": "Nổi bật từ {day}",
+          "hint": "Trang chủ giới thiệu chương trình được chọn nổi bật gần nhất, đã công bố và vẫn đang nhận hồ sơ.",
+          "done": {
+            "featured": "Đã đặt {name} nổi bật trên trang chủ.",
+            "unfeatured": "Đã bỏ nổi bật {name}."
+          }
+        },
+        "luma": {
+          "badge": "Từ Luma",
+          "title": "Cập nhật từ Luma mỗi giờ",
+          "lead": "Tên, tóm tắt, mô tả, ngày, trang, sự kiện và ảnh bìa lấy từ sự kiện trên Luma, và lần đọc tiếp theo sẽ ghi đè mọi thay đổi ở đây. Hãy sửa chúng trên Luma. Gỡ đăng ở đây thì chương trình vẫn không hiện trên trang.",
+          "open": "Mở trên Luma"
         }
       },
       "noDays": "Chưa đặt ngày",
@@ -1035,6 +1062,13 @@
           "leave": "Rời trang",
           "stay": "Ở lại"
         }
+      },
+      "featured": "Nổi bật",
+      "fromLuma": "Từ Luma",
+      "luma": {
+        "read": "Lấy từ Luma",
+        "hint": "Đọc lịch GenAI Fund trên Luma ngay; lịch này cũng được đọc mỗi giờ.",
+        "done": "Đã đọc Luma: {created, plural, =0 {không có sự kiện mới} other {# sự kiện mới}}, {updated} cập nhật, {unpublished} gỡ đăng{failed, plural, =0 {} other {; # không đọc được và sẽ thử lại}}."
       }
     },
     "accounts": {
@@ -1143,7 +1177,10 @@
           "create": "Tạo chương trình",
           "update": "Lưu chương trình",
           "publish": "Công bố chương trình",
-          "unpublish": "Gỡ chương trình"
+          "unpublish": "Gỡ chương trình",
+          "feature": "Đặt một chương trình nổi bật",
+          "unfeature": "Bỏ nổi bật một chương trình",
+          "luma_read": "Đọc lịch trên Luma"
         },
         "organization": {
           "create": "Thêm tổ chức",
@@ -1159,7 +1196,8 @@
           "restore": "Khôi phục một tổ chức",
           "update": "Lưu hồ sơ tổ chức",
           "invite": "Mời người vào một tổ chức",
-          "invitation_revoke": "Thu hồi một lời mời"
+          "invitation_revoke": "Thu hồi một lời mời",
+          "export": "Tải danh sách tổ chức"
         },
         "solution": {
           "approve": "Duyệt giải pháp",
@@ -1182,12 +1220,14 @@
           "offer_update": "Sửa ưu đãi",
           "offer_close": "Đóng ưu đãi với giải pháp mới",
           "offer_reopen": "Mở lại ưu đãi với giải pháp mới",
-          "offer_delete": "Xóa ưu đãi"
+          "offer_delete": "Xóa ưu đãi",
+          "export": "Tải danh sách giải pháp AI"
         },
         "messaging": {
           "request_accept": "Chấp nhận một tin đầu tiên",
           "request_decline": "Từ chối một tin đầu tiên",
-          "request_report": "Báo cáo một tin đầu tiên"
+          "request_report": "Báo cáo một tin đầu tiên",
+          "program_assign": "Phân công người phụ trách chat"
         },
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực",
@@ -1200,7 +1240,8 @@
           "restore": "Khôi phục một hồ sơ nhân lực",
           "feature": "Đặt một hồ sơ nhân lực nổi bật",
           "unfeature": "Bỏ nổi bật một hồ sơ nhân lực",
-          "delete": "Đã xóa một hồ sơ nhân lực"
+          "delete": "Đã xóa một hồ sơ nhân lực",
+          "export": "Tải danh sách nhân lực AI"
         },
         "proposal": {
           "criteria_update": "Đặt tiêu chí chấm",
@@ -1209,7 +1250,14 @@
           "decide": "Quyết định một đơn",
           "release": "Công bố kết quả",
           "file_open": "Mở một tệp của đơn nộp",
-          "export": "Tải danh sách đơn nộp"
+          "export": "Tải danh sách đơn nộp",
+          "drafts_export": "Tải danh sách đơn nháp",
+          "draft_open": "Mở một đơn nháp"
+        },
+        "use_case_proposal": {
+          "decide": "Quyết định về một đề xuất gửi tới use case",
+          "outcomes_send": "Gửi kết quả các đề xuất gửi tới use case",
+          "export": "Tải danh sách đề xuất gửi tới một use case"
         },
         "use_case": {
           "create": "Tạo một use case",
@@ -1238,7 +1286,8 @@
           "model_add": "Bật một model AI",
           "model_update": "Sửa một model AI",
           "model_remove": "Gỡ một model AI",
-          "task_model_change": "Chọn model AI cho một tác vụ"
+          "task_model_change": "Chọn model AI cho một tác vụ",
+          "usage_export": "Tải nhật ký lượt gọi AI"
         },
         "search": {
           "model_change": "Đổi model embedding",
@@ -1263,8 +1312,13 @@
           "candidate_add": "Thêm ứng viên bằng tay",
           "candidate_shortlist": "Lưu một ứng viên",
           "candidate_remove": "Loại một ứng viên",
+          "candidate_reason": "Nêu lý do đã loại một ứng viên",
           "candidate_restore": "Khôi phục một ứng viên",
+          "candidate_invite": "Mời một nhà cung cấp gửi đề xuất",
           "settings_change": "Đổi giới hạn của matching"
+        },
+        "audit": {
+          "export": "Tải nhật ký thao tác"
         }
       },
       "activity": {
@@ -1280,7 +1334,10 @@
           "create": "Đã tạo chương trình <resource></resource>",
           "update": "Đã lưu chương trình <resource></resource>",
           "publish": "Đã công bố chương trình <resource></resource>",
-          "unpublish": "Đã gỡ chương trình <resource></resource>"
+          "unpublish": "Đã gỡ chương trình <resource></resource>",
+          "feature": "Đã đặt chương trình <resource></resource> nổi bật trên trang chủ",
+          "unfeature": "Đã bỏ nổi bật chương trình <resource></resource>",
+          "luma_read": "Đọc <resource></resource> ngay"
         },
         "organization": {
           "create": "Thêm tổ chức <resource></resource>",
@@ -1296,7 +1353,8 @@
           "restore": "Khôi phục tổ chức <resource></resource>",
           "update": "Lưu hồ sơ của <resource></resource>",
           "invite": "Mời người vào <resource></resource>",
-          "invitation_revoke": "Thu hồi một lời mời vào <resource></resource>"
+          "invitation_revoke": "Thu hồi một lời mời vào <resource></resource>",
+          "export": "Tải danh sách tổ chức"
         },
         "solution": {
           "approve": "Duyệt giải pháp <resource></resource>",
@@ -1319,12 +1377,14 @@
           "offer_update": "Sửa ưu đãi <resource></resource>",
           "offer_close": "Đóng ưu đãi <resource></resource> với giải pháp mới",
           "offer_reopen": "Mở lại ưu đãi <resource></resource> với giải pháp mới",
-          "offer_delete": "Xóa ưu đãi <resource></resource>"
+          "offer_delete": "Xóa ưu đãi <resource></resource>",
+          "export": "Tải danh sách giải pháp AI"
         },
         "messaging": {
           "request_accept": "Đã chấp nhận một tin đầu tiên về <resource></resource>",
           "request_decline": "Đã từ chối một tin đầu tiên về <resource></resource>",
-          "request_report": "Đã báo cáo một tin đầu tiên về <resource></resource>"
+          "request_report": "Đã báo cáo một tin đầu tiên về <resource></resource>",
+          "program_assign": "Phân công người phụ trách chat về <resource></resource>"
         },
         "talent": {
           "approve": "Duyệt hồ sơ nhân lực của <resource></resource>",
@@ -1337,7 +1397,8 @@
           "restore": "Khôi phục hồ sơ nhân lực của <resource></resource>",
           "feature": "Đặt hồ sơ nhân lực của <resource></resource> nổi bật",
           "unfeature": "Bỏ nổi bật hồ sơ nhân lực của <resource></resource>",
-          "delete": "Đã xóa hồ sơ nhân lực của <resource></resource>"
+          "delete": "Đã xóa hồ sơ nhân lực của <resource></resource>",
+          "export": "Tải danh sách nhân lực AI"
         },
         "proposal": {
           "criteria_update": "Đặt tiêu chí chấm của <resource></resource>",
@@ -1346,7 +1407,14 @@
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
           "release": "Công bố kết quả của <resource></resource>",
           "file_open": "Mở một tệp của một đơn nộp vào <resource></resource>",
-          "export": "Tải danh sách đơn nộp vào <resource></resource>"
+          "export": "Tải danh sách đơn nộp vào <resource></resource>",
+          "drafts_export": "Tải danh sách đơn nháp của <resource></resource>",
+          "draft_open": "Mở một đơn nháp của <resource></resource>"
+        },
+        "use_case_proposal": {
+          "decide": "Quyết định về một đề xuất gửi tới <resource></resource>",
+          "outcomes_send": "Gửi kết quả các đề xuất gửi tới <resource></resource>",
+          "export": "Tải danh sách đề xuất gửi tới <resource></resource>"
         },
         "use_case": {
           "create": "Đã tạo use case <resource></resource>",
@@ -1375,7 +1443,8 @@
           "model_add": "Bật model AI <resource></resource>",
           "model_update": "Sửa model AI <resource></resource>",
           "model_remove": "Gỡ model AI <resource></resource>",
-          "task_model_change": "Chọn model AI cho tác vụ <resource></resource>"
+          "task_model_change": "Chọn model AI cho tác vụ <resource></resource>",
+          "usage_export": "Tải nhật ký lượt gọi AI"
         },
         "search": {
           "model_change": "Đổi model embedding trong <resource></resource>",
@@ -1400,8 +1469,13 @@
           "candidate_add": "Thêm ứng viên bằng tay cho use case <resource></resource>",
           "candidate_shortlist": "Lưu một ứng viên của use case <resource></resource>",
           "candidate_remove": "Loại một ứng viên của use case <resource></resource>",
+          "candidate_reason": "Nêu lý do đã loại một ứng viên của use case <resource></resource>",
           "candidate_restore": "Khôi phục một ứng viên của use case <resource></resource>",
+          "candidate_invite": "Mời một nhà cung cấp gửi đề xuất cho use case <resource></resource>",
           "settings_change": "Đổi giới hạn của matching"
+        },
+        "audit": {
+          "export": "Tải nhật ký thao tác"
         }
       },
       "columns": {
@@ -1854,7 +1928,6 @@
           "created": "Ngày tạo",
           "updated": "Sửa lần cuối"
         },
-        "closedNote": "Đã đóng với giải pháp mới. Các giải pháp bên dưới vẫn giữ và vẫn hiển thị ưu đãi này.",
         "solutions": {
           "title": "Giải pháp đi kèm",
           "empty": "Chưa giải pháp nào đi kèm ưu đãi này.",
@@ -2901,6 +2974,8 @@
           "search": "Tìm giải pháp đã hoặc chưa niêm yết, chương trình, talent, use case và công ty.",
           "fetch": "Đọc đầy đủ một mục theo id mà search trả về.",
           "list_applications": "Liệt kê hồ sơ ứng tuyển của một chương trình, kèm quyết định của GenAI Fund và điểm trung bình của người chấm.",
+          "get_application": "Đọc đầy đủ một hồ sơ: những gì người ứng tuyển gửi, mọi điểm chấm và các file đính kèm.",
+          "read_application_file": "Hiện các trang của một file PDF trong hồ sơ, như deck, dưới dạng ảnh kèm chữ của trang.",
           "list_pending_reviews": "Liệt kê những gì đang chờ duyệt: tổ chức, giải pháp, talent, use case và customer deployment."
         },
         "user": {
@@ -3083,6 +3158,18 @@
         },
         "proposal_sent": {
           "name": "Proposal đã gửi"
+        },
+        "proposal_shortlisted": {
+          "name": "Đề xuất được chọn",
+          "description": "Báo cho bên gửi rằng đề xuất được chọn vào danh sách rút gọn, kèm lời nhắn của tổ chức đăng use case."
+        },
+        "proposal_declined": {
+          "name": "Đề xuất không được chọn",
+          "description": "Báo cho bên gửi rằng đề xuất không được chọn, kèm lời nhắn của tổ chức đăng use case."
+        },
+        "matching_invitation": {
+          "name": "Lời mời gửi đề xuất",
+          "description": "Mời nhà cung cấp của một giải pháp được ghép gửi đề xuất cho use case, kèm ghi chú của người mời."
         },
         "talent_approved": {
           "name": "Hồ sơ nhân lực được duyệt"
@@ -3656,7 +3743,7 @@
     "organizationType": {
       "company": "Công ty",
       "builder_team": "Nhóm phát triển",
-      "independent_builder": "Nhà phát triển độc lập",
+      "independent_builder": "Chỉ mình tôi",
       "other": "Khác"
     },
     "teamSize": {
@@ -3939,7 +4026,7 @@
     "form": {
       "metaTitle": "Tạo tổ chức · BeyondPilot",
       "createTitle": "Tạo tổ chức của bạn",
-      "createLead": "Người làm độc lập có thể tạo một studio hoặc một nhóm.",
+      "createLead": "Mọi người tham gia qua một tổ chức. Nếu bạn đi một mình, tổ chức đó chỉ có bạn.",
       "edit": "Sửa hồ sơ",
       "complete": "Hoàn thiện hồ sơ",
       "profileTitle": "Hồ sơ tổ chức",
@@ -3957,7 +4044,8 @@
       "websiteInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://",
       "websiteRequired": "Hãy nhập website của tổ chức.",
       "description": "Mô tả ngắn",
-      "descriptionHint": "Tổ chức làm gì và cho ai.",
+      "descriptionHint": "Bạn làm gì, giúp ai và chuyên môn hoặc kinh nghiệm liên quan.",
+      "typeRequired": "Chọn Cá nhân, Nhóm hoặc Công ty.",
       "teamBackground": "Kinh nghiệm của team",
       "teamBackgroundHint": "Những gì team đã xây dựng, chuyên môn và kinh nghiệm liên quan.",
       "teamBackgroundRequired": "Mô tả kinh nghiệm của team trong tối đa 2.000 ký tự.",
@@ -4017,6 +4105,13 @@
       "existing": {
         "title": "Tổ chức của bạn có thể đã có trên BeyondPilot",
         "lead": "{count, plural, =1 {Nếu đây là tổ chức của bạn, hãy tham gia thay vì tạo lại. Nếu của bạn là tổ chức khác, hãy tiếp tục bên dưới.} other {Nếu một trong số này là tổ chức của bạn, hãy tham gia thay vì tạo lại. Nếu của bạn là tổ chức khác, hãy tiếp tục bên dưới.}}"
+      },
+      "ownName": "Tên của bạn",
+      "creator": {
+        "label": "Tổ chức này dành cho ai?",
+        "independent_builder": "Chỉ mình tôi",
+        "builder_team": "Một nhóm",
+        "company": "Một công ty"
       }
     },
     "find": {
@@ -4650,10 +4745,8 @@
         "programme": "Được chọn vào chương trình",
         "selected": "Được chọn vào {program}.",
         "byGenAiFund": "GenAI Fund xác nhận · {date}",
-        "stated": "Công ty tự công bố",
-        "byCompany": "Do {name} công bố",
         "milestones": "Cột mốc chính",
-        "cases": "{count} triển khai khách hàng đã được GenAI Fund duyệt, liệt kê bên dưới."
+        "cases": "{count} triển khai khách hàng, liệt kê bên dưới."
       },
       "company": {
         "title": "Công ty đứng sau giải pháp này",
@@ -4890,6 +4983,11 @@
         "uploaded": "{size} · Tải lên {when}",
         "waiting": "{size} · Chưa lưu",
         "download": "Tải {name} về",
+        "previewNamed": "Xem trước {name}",
+        "previewTitle": "Xem trước {name}",
+        "previewDescription": "Bản xem trước PDF",
+        "previewLoading": "Đang tải bản xem trước PDF…",
+        "previewFailed": "Không xem trước được PDF. Bạn có thể tải tệp về thay thế.",
         "replace": "Thay tệp",
         "remove": "Gỡ tệp",
         "errors": {
@@ -4972,6 +5070,7 @@
       "images": {
         "uploading": "Đang tải lên…",
         "details": "{size} · {dimensions}",
+        "previewNamed": "Xem trước {name}",
         "replace": "Thay ảnh",
         "remove": "Gỡ ảnh",
         "replaceNamed": "Thay {name}",
@@ -5010,7 +5109,7 @@
       "open": "{holds, select, all {Mở để đọc bài toán, những gì đã triển khai và kết quả.} delivered {Mở để đọc bài toán và những gì đã triển khai.} result {Mở để đọc bài toán và kết quả.} other {Mở để đọc bài toán.}}",
       "eyebrow": "Triển khai khách hàng",
       "line": "{solution} · {customer}",
-      "lead": "{stage}. Do {organization} tự khai và GenAI Fund duyệt ngày {day}. Khách hàng chưa xác nhận tại đây.",
+      "lead": "{stage}.",
       "problem": "Bài toán kinh doanh",
       "delivered": "Những gì đã triển khai",
       "scope": "Phạm vi và kết quả",
@@ -5023,8 +5122,7 @@
       "about": "Về dự án này",
       "deliveredBy": "Đơn vị triển khai",
       "customer": "Khách hàng",
-      "solutionUsed": "Giải pháp sử dụng",
-      "source": "Do {organization} tự khai và GenAI Fund duyệt ngày {day}. Khách hàng chưa xác nhận tại đây."
+      "solutionUsed": "Giải pháp sử dụng"
     },
     "deployments": {
       "title": "Triển khai khách hàng",
@@ -5438,9 +5536,13 @@
     },
     "open": "Đang mở",
     "upcoming": "Sắp diễn ra",
+    "current": "Đang mở và sắp diễn ra",
     "done": "Đã kết thúc",
     "programCount": "{count, plural, other {# chương trình}}",
-    "itemCount": "{count, plural, other {# sự kiện}}",
+    "kind": {
+      "program": "Chương trình",
+      "event": "Sự kiện"
+    },
     "undated": "Trước đó",
     "live": "Đang mở",
     "running": "Đang diễn ra",
@@ -5911,17 +6013,21 @@
           "label": "Ai được nộp",
           "value": "Từ cá nhân đến nhà cung cấp lâu năm"
         }
+      },
+      "name": {
+        "first": "Nestlé Vietnam",
+        "second": "AI Reinvention"
       }
     },
     "nav": {
       "label": "Trên trang này",
       "offers": "Quyền lợi",
       "areas": "Thách thức",
-      "use-cases": "Use case",
       "how": "Cách tham gia",
       "eligibility": "Điều kiện",
       "dates": "Mốc thời gian",
-      "faq": "Hỏi đáp"
+      "faq": "Hỏi đáp",
+      "top": "Về đầu trang"
     },
     "offers": {
       "title": "Chương trình mang lại gì",
@@ -6011,10 +6117,6 @@
     "early": {
       "ask": "Bạn thấy bài toán quen thuộc?",
       "text": "Nộp trước ngày 5 tháng 11 để được xét vào đợt briefing sớm. Ứng viên qua vòng sơ tuyển được briefing chi tiết từ ngày 6 tháng 11."
-    },
-    "useCases": {
-      "title": "Use case trong chương trình này",
-      "lead": "Các bài toán Nestlé Việt Nam đã đăng cho chương trình này. Mở từng bài để đọc mục tiêu, yêu cầu, ngân sách và thời gian."
     },
     "how": {
       "title": "Cách tham gia",
@@ -6107,7 +6209,8 @@
           "owner": "Mỗi kết nối có một người phụ trách đích danh"
         }
       },
-      "pocs": "PoC tùy thuộc vào việc tuyển chọn và phê duyệt."
+      "pocs": "PoC tùy thuộc vào việc tuyển chọn và phê duyệt.",
+      "start": "Hãy nộp sớm."
     },
     "faq": {
       "title": "Những câu hỏi bạn thật sự muốn hỏi.",
@@ -6149,18 +6252,16 @@
     "closing": {
       "title": "Giải pháp của bạn sẽ có mặt trong phòng ngày 15 tháng 12 chứ?",
       "text": "Danh sách rút gọn đang thành hình — nộp hôm nay để có cơ hội được chọn.",
-      "closes": "Hạn nộp đơn: {closes}."
+      "closes": "Hạn nộp đơn: {closes}.",
+      "info": "Xem lịch buổi giải đáp",
+      "share": "Biết đội phù hợp? Gửi trang này cho họ"
     },
-    "about": {
-      "label": "Về chương trình",
-      "tagline": "AI-First. Human-Led. Re-Inventing Nestlé.",
-      "text": "AI Solution Search là một phần của chương trình Nestlé Vietnam AI Reinvention và AI Hackathon 2026, do GenAI Fund điều hành cùng Nestlé Việt Nam. Việc tham gia và mọi hợp tác về sau tùy thuộc vào kết quả tuyển chọn, mức độ phù hợp kinh doanh và các yêu cầu hiện hành của Nestlé. Ứng viên giữ quyền sở hữu trí tuệ của mình."
-    },
-    "rail": {
-      "partners": "Đối tác",
-      "runBy": "Điều hành bởi",
-      "with": "Cùng với",
-      "questions": "Có câu hỏi về chương trình này?"
+    "pill": {
+      "label": "Nộp đơn",
+      "closes": "Hạn nộp {date}",
+      "time": "Khoảng 10 phút",
+      "opens": "Mở đơn {date}",
+      "closed": "Đã đóng đơn"
     }
   },
   "EntryList": {
@@ -6207,7 +6308,11 @@
       "notListedYet": "Chưa có trên danh mục",
       "applyingForHint": "GenAI Fund kiểm tra tổ chức mới trước khi đưa lên danh mục; đơn của bạn không bị chậm lại.",
       "applyingAs": "Nộp với tư cách",
-      "applyingAsHint": "Lựa chọn này được lưu vào tài khoản khi bạn tiếp tục, và sau đó không đổi được ở đây.",
+      "applyingAsHint": "Lựa chọn này được lưu với tài khoản của bạn khi bạn tiếp tục. Nếu nộp với tư cách cá nhân, bạn có thể đổi cho đến khi gửi một thứ gì đó dưới tên mình.",
+      "change": "Đổi",
+      "changeHint": "Bạn có thể nộp với tư cách đội hoặc công ty thay vì cá nhân cho đến khi gửi một thứ gì đó dưới tên mình.",
+      "companyInstead": "Để nộp cho một công ty, hãy thôi nộp với tư cách cá nhân trước, rồi tìm hoặc thêm công ty đó. Giải pháp bạn đã bắt đầu ở đây vẫn ở lại với bạn và không chuyển sang công ty.",
+      "companyInsteadAction": "Nộp cho một công ty",
       "whoRequired": "Chọn ai là người nộp.",
       "who": {
         "individual": {
@@ -6445,7 +6550,8 @@
         "shortlisted": "Vào vòng trong",
         "not_selected": "Không được chọn",
         "to_score": "Chưa chấm",
-        "scored": "Đã xong"
+        "scored": "Đã xong",
+        "drafts": "Nháp"
       },
       "search": "Tìm người nộp",
       "clear": "Xóa bộ lọc",
@@ -6522,8 +6628,6 @@
       },
       "footer": "{shown} đơn · {drafts} bản nháp chưa nộp · {withdrawn} đơn đã rút",
       "footerScored": "{scored}/{total} đơn đã có điểm",
-      "download": "Tải về (CSV)",
-      "downloadFailed": "Chưa tải được danh sách đơn. Hãy thử lại.",
       "own": "Của bạn"
     },
     "application": {
@@ -6776,6 +6880,39 @@
       "done": "Đã chấm hết",
       "progress": "Bạn đã chấm {done}/{total}",
       "closes": "Hạn nộp {closes}"
+    },
+    "drafts": {
+      "metaTitle": "Đơn nháp chưa nộp",
+      "back": "Đơn nộp",
+      "lead": "{count, plural, =0 {Không có đơn nháp nào.} other {# đơn nháp chưa nộp, lưu gần nhất ở trên.}}",
+      "caption": "Đơn nháp chưa nộp",
+      "columns": {
+        "applicant": "Người nộp",
+        "phone": "Điện thoại",
+        "organization": "Tổ chức",
+        "progress": "Tiến độ",
+        "saved": "Lưu lần cuối"
+      },
+      "steps": {
+        "contact": "thông tin liên hệ",
+        "solution": "giải pháp",
+        "deck": "deck",
+        "questions": "câu hỏi của chương trình"
+      },
+      "progress": "{done}/{total} bước",
+      "missing": "Còn thiếu: {steps}",
+      "noName": "Chưa có tên",
+      "none": "Chưa điền",
+      "empty": {
+        "title": "Không có đơn nháp",
+        "description": "Mọi người đã bắt đầu điền đơn đều đã nộp."
+      },
+      "detail": {
+        "metaTitle": "Đơn nháp",
+        "back": "Đơn nháp",
+        "lead": "Chưa nộp vào {program} · bắt đầu {started} · lưu lần cuối {saved}",
+        "note": "Đơn chưa nộp nên vẫn có thể thay đổi. Giám khảo không bao giờ thấy đơn nháp."
+      }
     }
   },
   "Search": {
@@ -7353,7 +7490,8 @@
         "customerCase": "Dự án khách hàng {number}",
         "deck": "Deck, tr. {page}",
         "website": "Website"
-      }
+      },
+      "invite": "Mời gửi đề xuất…"
     },
     "panel": {
       "label": "Giải pháp đang xem",
@@ -7458,6 +7596,57 @@
       "agreed": "Bạn đã đồng ý.",
       "said": "Bạn chọn: {group}.",
       "counts": "{n} câu trả lời, {d} không đồng ý"
+    },
+    "review": {
+      "view": {
+        "label": "Cách xem các giải pháp",
+        "one": "Từng cái một",
+        "list": "Danh sách"
+      },
+      "left": "Còn {left} trên {total}",
+      "group": "{group} · đáp ứng {met} trên {total} yêu cầu bắt buộc",
+      "actions": {
+        "label": "Quyết định cho {name}",
+        "save": "Lưu",
+        "remove": "Không phù hợp",
+        "later": "Để sau",
+        "undo": "Hoàn tác"
+      },
+      "last": {
+        "saved": "Đã lưu {name}.",
+        "removed": "{name} không phù hợp. Vì sao?",
+        "later": "{name} đã chuyển xuống cuối hàng."
+      },
+      "reasons": "Vì sao {name} không phù hợp",
+      "hint": "Phím: → lưu, ← không phù hợp, ↓ để sau, Z hoàn tác.",
+      "shared": "Nhóm của bạn và GenAI Fund thấy cùng một danh sách. Nhà cung cấp không được báo.",
+      "meanwhile": {
+        "shortlisted": "Trong lúc bạn xem, một người khác đã lưu giải pháp này.",
+        "removed": "Trong lúc bạn xem, một người khác đã loại giải pháp này."
+      },
+      "noDeck": "Giải pháp này không có trang deck nào để hiện.",
+      "summary": "Tóm tắt của AI",
+      "needs": "Những gì use case của bạn cần",
+      "end": {
+        "title": "Bạn đã xem hết các giải pháp.",
+        "reading": "Bạn đã xem hết các giải pháp đã đọc. AI vẫn đang đọc: giải pháp mới sẽ hiện ở đây.",
+        "saved": "{count, plural, =0 {Chưa lưu cái nào.} other {Đã lưu #.}}",
+        "list": "Xem danh sách"
+      },
+      "none": "Mọi giải pháp ở đây đã có quyết định. Thay đổi trong danh sách."
+    },
+    "invite": {
+      "action": "Mời gửi đề xuất",
+      "title": "Mời {name} gửi đề xuất?",
+      "description": "Chủ sở hữu của {name} nhận một email mời gửi đề xuất cho use case này, kèm đường dẫn tới nó. Không thu hồi được.",
+      "note": "Ghi chú cho nhà cung cấp (không bắt buộc)",
+      "confirm": "Gửi lời mời",
+      "cancel": "Hủy",
+      "done": "Đã mời {name} gửi đề xuất.",
+      "invited": "Đã mời {date}",
+      "invitedBy": "{name} đã mời ngày {date}",
+      "genaiFund": "GenAI Fund",
+      "received": "Đã nhận đề xuất"
     }
   },
   "Messaging": {
@@ -7558,9 +7747,9 @@
       "label": "Viết tin đầu tiên cho {name}",
       "beforeTitle": "Trước khi viết",
       "before": "Hãy nói bạn là ai và bạn cần gì. {name} đọc được tên và tổ chức của bạn, không bao giờ thấy email của bạn.",
-      "beforeOpen": "Hãy hỏi điều bạn cần biết về chương trình. Nhóm chương trình của GenAI Fund trả lời ở đây.",
+      "beforeOpen": "Hãy hỏi điều bạn cần biết về chương trình. Chỉ người phụ trách do GenAI Fund phân công mới đọc và trả lời.",
       "request": "Bạn chưa từng trò chuyện với {name}. Tin đầu tiên của bạn nằm chờ ở mục Tin chờ của họ cho tới khi họ chấp nhận.",
-      "open": "GenAI Fund đọc tin của bạn ngay; không cần chờ chấp nhận.",
+      "open": "Bạn có thể gửi tin ngay. Người phụ trách sẽ đọc sau khi được phân công.",
       "existsTitle": "Bạn đã có hội thoại với {name}",
       "existsLead": "Hội thoại đó đang chờ trả lời hoặc đang mở. Hãy viết ở đó.",
       "openExisting": "Mở hội thoại",
@@ -7585,7 +7774,7 @@
       "place": "Nơi làm việc",
       "skills": "Kỹ năng",
       "proof": "Bằng chứng",
-      "deployments": "{count, plural, other {# triển khai cho khách hàng, GenAI Fund đã duyệt}}",
+      "deployments": "{count, plural, other {# triển khai cho khách hàng}}",
       "someone": "Ai đó",
       "people": {
         "readers": "Ai đọc tin bạn viết",
@@ -7595,29 +7784,29 @@
         "owner": "Chủ sở hữu",
         "member": "Thành viên"
       },
+      "members": {
+        "title": "Quyền truy cập của tổ chức bạn",
+        "lead": "Chỉ chủ tổ chức và thành viên được thêm tại đây mới đọc được hội thoại này.",
+        "add": "Thêm",
+        "remove": "Xóa"
+      },
       "note": {
         "talent": "Chỉ người này đọc tin bạn viết ở đây. Họ không bao giờ thấy email của bạn.",
-        "solution": "Mọi người trong tổ chức này đều đọc và trả lời được. Họ không bao giờ thấy email của bạn.",
-        "program": "Nhóm chương trình của GenAI Fund đọc hội thoại này.",
+        "solution": "Chỉ chủ tổ chức và thành viên được họ thêm mới đọc và trả lời được. Họ không bao giờ thấy email của bạn.",
+        "program": "Chỉ người phụ trách được GenAI Fund phân công mới đọc cuộc chat này.",
         "recipient": "Họ không bao giờ thấy email của bạn."
       }
     },
-    "reported": {
-      "metaTitle": "Tin bị báo cáo",
-      "title": "Tin bị báo cáo",
-      "lead": "Những tin đầu tiên được bên nhận báo là không mong muốn. Người gửi chỉ được thông báo rằng yêu cầu đã bị từ chối.",
-      "empty": {
-        "title": "Chưa có tin nào bị báo cáo",
-        "lead": "Tin đầu tiên bị ai đó báo là không mong muốn sẽ hiện ở đây."
-      },
-      "columns": {
-        "sender": "Người gửi",
-        "message": "Nội dung",
-        "reported": "Ngày báo cáo"
-      },
-      "noOrganization": "Không có tổ chức",
-      "noAccount": "Tài khoản không còn đăng nhập",
-      "count": "{count, plural, other {# tin bị báo cáo}}"
+    "assignments": {
+      "unavailable": "Người phụ trách không còn hoạt động",
+      "title": "Phân công chat",
+      "lead": "Chỉ người được phân công mới đọc và trả lời cuộc chat. Chọn người phụ trách; việc đổi phân công sẽ thu hồi quyền của người trước đó.",
+      "program": "Chương trình",
+      "created": "Bắt đầu",
+      "assignee": "Người phụ trách",
+      "assign": "Phân công",
+      "unassigned": "Chưa phân công",
+      "empty": "Chưa có chat chương trình"
     }
   },
   "UseCaseProposal": {
@@ -7633,7 +7822,9 @@
       "count": "{count, plural, other {# đề xuất}}",
       "viewProposals": "Xem đề xuất",
       "status": {
-        "new": "Mới"
+        "undecided": "Chưa quyết định",
+        "shortlisted": "Đã chọn vào danh sách rút gọn",
+        "declined": "Đã từ chối"
       },
       "tabs": {
         "label": "Lọc đề xuất",
@@ -7652,7 +7843,12 @@
         "columns": {
           "proposal": "Đề xuất",
           "status": "Trạng thái",
-          "sent": "Ngày gửi"
+          "sent": "Ngày gửi",
+          "actions": "Thao tác"
+        },
+        "emptyTab": {
+          "title": "Chưa có đề xuất nào ở đây",
+          "description": "Đề xuất sẽ xuất hiện ở thẻ này sau khi bạn đánh dấu chúng."
         }
       },
       "detail": {
@@ -7686,9 +7882,35 @@
         "crumbs": "Vị trí",
         "useCases": "Bài toán",
         "pending": "Chờ duyệt",
-        "sentBy": "Người gửi"
+        "sentBy": "Người gửi",
+        "assessment": {
+          "title": "Đánh giá của bạn",
+          "decision": "Quyết định",
+          "decided": "Quyết định bởi",
+          "decidedBy": "{name} vào {date}"
+        }
       },
-      "edited": "Đã chỉnh sửa {date}"
+      "edited": "Đã chỉnh sửa {date}",
+      "actions": {
+        "open": "Thao tác cho {name}",
+        "view": "Xem đề xuất",
+        "shortlist": "Chọn vào danh sách rút gọn",
+        "decline": "Từ chối"
+      },
+      "decided": {
+        "shortlisted": "Đã đánh dấu {name} vào danh sách rút gọn. Nhà cung cấp chỉ được báo khi bạn gửi kết quả.",
+        "declined": "Đã đánh dấu từ chối {name}. Nhà cung cấp chỉ được báo khi bạn gửi kết quả."
+      },
+      "send": {
+        "action": "Gửi kết quả ({count})",
+        "title": "Gửi kết quả cho các nhà cung cấp?",
+        "description": "{shortlisted} đề xuất được chọn và {declined} đề xuất bị từ chối sẽ mỗi nơi nhận một email.",
+        "note": "Không ai ngoài nhóm của bạn thấy quyết định cho đến khi bạn gửi. Bạn vẫn có thể đổi quyết định sau đó: lần gửi tiếp theo chỉ gửi email cho các đề xuất đã thay đổi.",
+        "message": "Lời nhắn trong mỗi email (không bắt buộc)",
+        "confirm": "{count, plural, other {Gửi # kết quả}}",
+        "cancel": "Hủy",
+        "done": "{count, plural, other {Đã gửi # kết quả.}}"
+      }
     },
     "actions": {
       "proposals": "Đề xuất",
@@ -7703,6 +7925,19 @@
         "disabled": "Đã đóng chỉnh sửa: bài toán này không cho chỉnh sửa sau khi gửi.",
         "useCaseClosed": "Đã đóng chỉnh sửa vì bài toán đã đóng.",
         "windowPassed": "Đã đóng chỉnh sửa: đã hết thời gian chỉnh sửa."
+      },
+      "withdrawn": "Bạn đã rút proposal vào {date}.",
+      "sendAgain": "Gửi lại",
+      "status": "Trạng thái",
+      "outcome": {
+        "shortlisted": {
+          "state": "Được chọn vào danh sách rút gọn",
+          "note": "Tổ chức đăng use case này đã chọn đề xuất của bạn vào danh sách rút gọn vào {date}."
+        },
+        "declined": {
+          "state": "Không được chọn",
+          "note": "Kết quả đã được gửi tới email của bạn vào {date}."
+        }
       }
     },
     "wizard": {
@@ -7834,11 +8069,12 @@
           "saved": "Đã lưu tổ chức.",
           "required": "Bắt buộc.",
           "createTitle": "Tổ chức mới",
-          "create": "Tạo",
+          "create": "Tạo tổ chức",
           "created": "Đã tạo tổ chức.",
           "full": "Tạo bằng biểu mẫu đầy đủ"
         }
-      }
+      },
+      "withdrawnNote": "Bạn đã rút proposal này vào {date}. Hãy chỉnh sửa nếu muốn rồi gửi lại."
     },
     "view": {
       "metaTitle": "Đề xuất của bạn · BeyondPilot",
@@ -7846,10 +8082,54 @@
       "edit": "Sửa đề xuất",
       "sent": "Gửi {date}",
       "edited": "Đã chỉnh sửa {date}",
-      "until": "sửa đến {when}"
+      "until": "sửa đến {when}",
+      "withdrawn": "Đã rút {date}",
+      "sendAgain": "Gửi lại",
+      "withdraw": {
+        "action": "Rút lại",
+        "title": "Rút proposal này?",
+        "description": "Tổ chức đăng use case sẽ không còn thấy proposal này. Không có gì bị xóa.",
+        "noteUntil": "Bạn có thể gửi lại đến khi use case đóng vào {date}.",
+        "noteOpen": "Bạn có thể gửi lại khi use case còn mở.",
+        "confirm": "Rút proposal",
+        "cancel": "Giữ proposal",
+        "done": "Đã rút proposal của bạn.",
+        "rows": {
+          "useCase": "Use case",
+          "sent": "Đã gửi"
+        }
+      },
+      "notice": {
+        "withdrawn": {
+          "title": "Bạn đã rút proposal này",
+          "until": "Tổ chức đăng use case không còn thấy proposal này. Không có gì bị xóa: bạn có thể gửi lại đến khi use case đóng vào {date}.",
+          "open": "Tổ chức đăng use case không còn thấy proposal này. Không có gì bị xóa: bạn có thể gửi lại khi use case còn mở.",
+          "closed": "Tổ chức đăng use case không còn thấy proposal này. Use case đã đóng nên không gửi lại được."
+        },
+        "closed": {
+          "title": "Use case này đã đóng",
+          "text": "Không thể sửa hoặc rút proposal nữa. Tổ chức đăng use case vẫn đọc được proposal của bạn."
+        },
+        "outcome": {
+          "shortlisted": {
+            "title": "Đề xuất của bạn được chọn vào danh sách rút gọn",
+            "text": "Tổ chức đăng use case này đã chọn đề xuất vào {date}. Bạn vẫn có thể rút lại đề xuất."
+          },
+          "declined": {
+            "title": "Đề xuất của bạn không được chọn",
+            "text": "Kết quả đã được gửi tới email của bạn vào {date}. Đề xuất giờ chỉ để xem."
+          }
+        }
+      }
     },
     "solutionList": {
       "newTab": "(mở trong thẻ mới)"
     }
+  },
+  "ExportMenu": {
+    "label": "Xuất",
+    "xlsx": "Excel (.xlsx)",
+    "csv": "CSV",
+    "failed": "Chưa tải được danh sách. Hãy thử lại."
   }
 }

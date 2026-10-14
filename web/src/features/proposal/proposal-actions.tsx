@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/actions/button";
+import { Status } from "@/components/composites/status";
 import { getFormatter } from "@/i18n/format-server";
 import { ApiError } from "@/lib/api/client";
 import { getUseCaseProposalForm } from "@/lib/api/generated";
@@ -13,6 +14,9 @@ import {
   accessOfRefusal,
   closedAt,
   editStateOf,
+  mayChange,
+  outcomeOf,
+  type Outcome,
   type SenderAccess,
 } from "./proposal-access";
 
@@ -42,7 +46,12 @@ type SentProposalProps = {
   useCaseId: string;
   /** Until when it may be edited; null when it may not. */
   editable: boolean;
+  /** What the organization that posted the use case told the sender, if it did. */
+  outcome: Outcome | null;
   text: {
+    status: string;
+    state: string;
+    note: string | null;
     sent: string;
     sentOn: string;
     until: string;
@@ -53,19 +62,30 @@ type SentProposalProps = {
 };
 
 /** The card of an organization whose proposal was sent: when, until when it may change, and the way to read or edit it. */
-function SentProposal({ useCaseId, editable, text }: SentProposalProps) {
+function SentProposal({ useCaseId, editable, outcome, text }: SentProposalProps) {
   return (
     <>
       <dl className="flex flex-col gap-1.5 text-sm">
+        {outcome && (
+          <div className="flex items-center justify-between gap-3">
+            <dt className="text-muted-foreground">{text.status}</dt>
+            <dd>
+              <Status tone={outcome === "shortlisted" ? "success" : "neutral"}>{text.state}</Status>
+            </dd>
+          </div>
+        )}
         <div className="flex items-center justify-between gap-3">
           <dt className="text-muted-foreground">{text.sent}</dt>
           <dd>{text.sentOn}</dd>
         </div>
-        <div className="flex items-center justify-between gap-3">
-          <dt className="text-muted-foreground">{text.until}</dt>
-          <dd>{text.untilValue}</dd>
-        </div>
+        {mayChange(outcome) && (
+          <div className="flex items-center justify-between gap-3">
+            <dt className="text-muted-foreground">{text.until}</dt>
+            <dd>{text.untilValue}</dd>
+          </div>
+        )}
       </dl>
+      {text.note && <p className="text-sm text-muted-foreground">{text.note}</p>}
       <div className="flex gap-2">
         <Button className="flex-1" size="lg" href={site.proposalViewRoute(useCaseId)}>
           {text.view}
@@ -116,11 +136,18 @@ async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: Propos
     access.kind === "sent" ? editStateOf(access.proposal, { closesAt, proposalEditDays }) : null;
 
   if (access.kind === "sent") {
+    const outcome = outcomeOf(access.proposal);
+    const state = outcome ? o(`outcome.${outcome}.state`) : "";
+    const outcomeOn = access.proposal.outcomeSentAt ? day(access.proposal.outcomeSentAt) : "";
     return (
       <SentProposal
         useCaseId={useCaseId}
-        editable={edit?.kind === "editable"}
+        editable={edit?.kind === "editable" && mayChange(outcome)}
+        outcome={outcome}
         text={{
+          status: o("status"),
+          state,
+          note: outcome && outcomeOn ? o(`outcome.${outcome}.note`, { date: outcomeOn }) : null,
           sent: o("sent"),
           sentOn: access.proposal.sentAt ? day(access.proposal.sentAt) : "",
           until: o("until"),
@@ -129,6 +156,25 @@ async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: Propos
           edit: o("edit"),
         }}
       />
+    );
+  }
+
+  // A proposal that was taken back says so, and may be sent again while the use case takes proposals.
+  if (access.kind === "open" && access.withdrawnAt) {
+    return (
+      <>
+        <p className="text-sm text-muted-foreground">
+          {o("withdrawn", { date: day(access.withdrawnAt) })}
+        </p>
+        <div className="flex gap-2">
+          <Button className="flex-1" size="lg" href={site.proposeToUseCaseRoute(useCaseId)}>
+            {o("sendAgain")}
+          </Button>
+          <Button prominence="secondary" size="lg" href={site.proposalViewRoute(useCaseId)}>
+            {o("view")}
+          </Button>
+        </div>
+      </>
     );
   }
 

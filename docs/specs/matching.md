@@ -1,6 +1,6 @@
 # Matching
 
-For one published use case, the solutions on BeyondPilot that fit it, each with the reasons a person can check, and what people then decide on them. Designed in [BEY-39](../increments/active/bey-39-matching/design.md) and decided in [ADR 0007](../decisions/0007-a-matching-module-that-reads-through-search.md). This page says what exists.
+For one published use case, the solutions on BeyondPilot that fit it, each with the reasons a person can check, and what people then decide on them. Designed in [BEY-39](../increments/completed/bey-39-matching/design.md) and decided in [ADR 0007](../decisions/0007-a-matching-module-that-reads-through-search.md). This page says what exists.
 
 ## Module
 
@@ -26,7 +26,7 @@ A run is a row of `matching_run` that a worker takes, one run at a time, every `
 
 ## Changes told to an open page
 
-Designed in [a run seen while it works](../increments/active/bey-39-matching/live.md).
+Designed in [a run seen while it works](../increments/completed/bey-39-matching/live.md).
 
 - **The stream.** `GET /api/matching/use-cases/{id}/events` is a stream of server-sent events from Spring MVC, for whoever may read the use case's matching; the right is checked once, when the stream opens. It answers with `Cache-Control: no-store` and `X-Accel-Buffering: no`, sends a comment line when it opens and every 20 seconds, and has no end of its own.
 - **An event says that something changed, not what the state is.** Its name is the kind of change and its body is `{}`; the page reads `GET /api/matching/use-cases/{id}` again. Nothing is replayed: every change is in the database when it is told, so a page that lost its stream reads the state once when the stream is back.
@@ -55,15 +55,16 @@ Designed in [a run seen while it works](../increments/active/bey-39-matching/liv
 
 For the members of the use case's approved organization and for operators; anyone else is told there is no such use case. Every answer is the whole state after the request.
 
-- **Shortlist, remove, restore.** A candidate is undecided, shortlisted or removed: the last decision is its state, and decisions are only added. Removing takes a reason, those of the screen approved on 7 October (`does_not_solve`, `wrong_industry_or_size`, `closed_or_wrong_website`, `duplicate`, `other`), and a note if the person wants; who removed it and when is shown to both sides. It takes the candidate off the shortlist. Restoring puts it back as undecided. What an operator removed, only an operator restores.
+- **Shortlist, remove, restore.** A candidate is undecided, shortlisted or removed: the last decision is its state, and decisions are only added. Removing may take a reason, one of those of the screen approved on 7 October (`does_not_solve`, `wrong_industry_or_size`, `closed_or_wrong_website`, `duplicate`, `other`), and a note if the person wants; the one who removed may give them afterwards (`/removal-reason`), on that removal, which stays theirs (BEY-176); who removed it and when is shown to both sides. It takes the candidate off the shortlist. Restoring puts it back as undecided. What an operator removed, only an operator restores.
 - **Add by hand.** An operator adds an approved solution that is not a candidate and is not the organization's own; a run is queued to judge it.
 - **No run changes a decision**, and a candidate with a decision stays when a run no longer finds it.
 - **What a member does not see:** the steps of a run with their tokens, the model, which operator removed a candidate (only that GenAI Fund did), and the kind of failure of a run when it happened at the AI provider (they read `provider`). A candidate that is not the caller's reads as one that does not exist.
-- **Recorded** in the audit log: `matching.run_start`, `matching.candidate_add`, `matching.candidate_shortlist`, `matching.candidate_remove`, `matching.candidate_restore`, `matching.settings_change`.
+- **Invited.** A member or an operator invites the provider of a candidate to propose for the use case (BEY-105). Its owners are emailed, or, when nobody has taken the organization on yet, the addresses GenAI Fund invited to own it. One invitation for each use case and provider organization, kept in `matching_invitation`; it cannot be taken back. Refused for a removed candidate, a use case that takes no proposals, a provider invited already or with nobody to email, and past 10 a day for one member and one use case; operators have no limit. A candidate reads when, by whom and whether GenAI Fund invited it; a member is not told which operator did. When a provider is merged into another, its invitations go to the one kept (`MatchingOrganizationMerge`), and where both were invited for one use case the kept one's stands.
+- **Recorded** in the audit log: `matching.run_start`, `matching.candidate_add`, `matching.candidate_shortlist`, `matching.candidate_remove`, `matching.candidate_reason`, `matching.candidate_restore`, `matching.candidate_invite`, `matching.settings_change`.
 
 ## What people say about a group
 
-Designed in [people say whether the AI put a solution in the right group](../increments/active/bey-39-matching/feedback.md) (BEY-106). It measures how well matching judges; it changes neither a group nor the order of the list, and it is not in the audit log: `matching_feedback` is the record.
+Designed in [people say whether the AI put a solution in the right group](../increments/completed/bey-39-matching/feedback.md) (BEY-106). It measures how well matching judges; it changes neither a group nor the order of the list, and it is not in the audit log: `matching_feedback` is the record.
 
 - **An answer.** A member of the use case's approved organization, or an operator, says of a candidate a run judged that its group is the right one, or which group it belongs in (`direct`, `industry`, `technology` or `none`, never the AI's own), with the requirements the AI judged wrongly and a note of 500 characters at most, both if they want. Agreeing names no group. A requirement that is named is one of the use case's, and is kept once, in the order of the use case. A candidate no run judged takes no answer (409 `MATCHING_FEEDBACK_NOT_JUDGED`); a wrong or missing group is 400 `MATCHING_FEEDBACK_GROUP_INVALID`, an unknown requirement 400 `MATCHING_FEEDBACK_REQUIREMENT_UNKNOWN`. The database refuses the same.
 - **It belongs to a judgment.** A row keeps the candidate's fingerprint and the group the AI had given. Answers are only added: a person's last answer about a judgment is theirs. A candidate judged again from other material, or put in another group, is another judgment: the question is open again, and the earlier answers stay as history.
@@ -130,6 +131,7 @@ Why 8 at once: measured on 10 October 2026 through the provider route staging us
 | `POST /api/matching/use-cases/{id}/candidates`                        | Operator         | Adds a solution by hand                                                                                                                                              |
 | `POST /api/matching/candidates/{id}/shortlist`, `/remove`, `/restore` | Member, operator | Records the decision                                                                                                                                                 |
 | `POST /api/matching/candidates/{id}/feedback`                         | Member, operator | Keeps whether the group is right, and where the candidate belongs when it is not; answers the whole state                                                            |
+| `POST /api/matching/candidates/{id}/invite`                           | Member, operator | Emails the provider an invitation to propose, with an optional note; answers the whole state                                                                         |
 | `GET`, `PUT /api/matching/admin/settings`                             | Operator         | The limits                                                                                                                                                           |
 | `GET /api/matching/admin/feedback?page=`                              | Operator         | The answers of 30 days counted, and a page of the disagreements                                                                                                      |
 

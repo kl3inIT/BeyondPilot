@@ -14,7 +14,6 @@ import org.jspecify.annotations.Nullable;
 
 @Schema(name = "SaveOrganization", description = "The profile of an organization as its Profile screen holds it.")
 @RequiredOfCompany
-@RequiredOfTeam
 public record SaveOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

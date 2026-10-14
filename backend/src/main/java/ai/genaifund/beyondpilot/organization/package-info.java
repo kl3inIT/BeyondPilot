@@ -5,7 +5,7 @@
  * organization a person acts for.
  */
 @ApplicationModule(displayName = "Organization", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "audit", "identity", "notification", "storage" })
+		allowedDependencies = { "audit", "identity", "notification", "storage", "shared" })
 @NullMarked
 package ai.genaifund.beyondpilot.organization;
 

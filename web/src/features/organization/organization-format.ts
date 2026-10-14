@@ -43,5 +43,5 @@ export function isDomain(text: string): boolean {
   return text.length <= 253 && DOMAIN.test(text);
 }
 
-/** The longer account of a team's experience, not its short public description. */
+/** Limit on legacy organization background data retained for historical API compatibility. */
 export const MAX_TEAM_BACKGROUND = 2000;

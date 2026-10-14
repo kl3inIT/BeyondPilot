@@ -67,26 +67,145 @@ const sentProposal = {
   version: 7,
 };
 
+/** A proposal that was sent and taken back: a draft again, saying when it was. */
+const withdrawnProposal = {
+  ...storedProposal,
+  approach: "Policy Chat answers a policyholder's question from the policy itself.",
+  deck: proposalDeck,
+  withdrawnAt: "2026-10-12T03:00:00Z",
+  version: 8,
+};
+
+/** A sent proposal whose use case has closed: it is only read. */
+const closedProposal = { ...sentProposal, editableUntil: null };
+
+/** A sent proposal whose decision the posting organization has sent: shortlisted, or not selected. */
+const shortlistedProposal = {
+  ...sentProposal,
+  outcome: "shortlisted",
+  outcomeSentAt: "2026-10-13T03:00:00Z",
+};
+const declinedProposal = {
+  ...sentProposal,
+  outcome: "declined",
+  outcomeSentAt: "2026-10-13T03:00:00Z",
+};
+
 /** The form of the use case as one account reads it, holding the proposal of the scene. */
 export function proposalForm(session, scene) {
-  const belongs = session === "owner" || session === "member";
+  const belongs = session === "owner" || session === "member" || session === "alone";
+  const alone = session === "alone";
   return {
     useCase: {
       id: proposalUseCaseId,
       title: "Claims triage with document intelligence",
-      closesAt: "2026-12-31T16:59:00Z",
+      closesAt: scene === "closed" ? "2026-10-01T16:59:00Z" : "2026-12-31T16:59:00Z",
     },
     organization: belongs
       ? {
           id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
-          name: "Pocket Policy",
+          name: alone ? "An Tr?n" : "Pocket Policy",
           logoFileId: null,
           approved: true,
-          owner: session === "owner",
-          type: "company",
+          owner: session === "owner" || alone,
+          type: alone ? "independent_builder" : "company",
         }
       : null,
-    proposal: scene === "draft" ? storedProposal : scene === "sent" ? sentProposal : null,
+    proposal:
+      scene === "draft"
+        ? storedProposal
+        : scene === "sent"
+          ? sentProposal
+          : scene === "shortlisted"
+            ? shortlistedProposal
+            : scene === "declined"
+              ? declinedProposal
+              : scene === "withdrawn"
+                ? withdrawnProposal
+                : scene === "closed"
+                  ? closedProposal
+                  : null,
+  };
+}
+
+/** The proposals the use case of these tests received, as the organization that posted it reads them. */
+export const receivedIds = {
+  northwind: "7a1d2c3b-0000-4000-8000-000000000061",
+  lumen: "7a1d2c3b-0000-4000-8000-000000000062",
+  orbit: "7a1d2c3b-0000-4000-8000-000000000063",
+};
+
+const receivedNames = {
+  [receivedIds.northwind]: "Northwind Analytics",
+  [receivedIds.lumen]: "Lumen AI",
+  [receivedIds.orbit]: "Orbit Claims",
+};
+
+/** What was decided in a scene: nothing in `received`, two decisions in `decided`, and the same told to their senders in `told`. */
+function decisionOf(scene, id) {
+  if (scene !== "decided" && scene !== "told") {
+    return {};
+  }
+  const decision = { [receivedIds.northwind]: "shortlisted", [receivedIds.lumen]: "declined" }[id];
+  return decision
+    ? {
+        decision,
+        decidedAt: "2026-10-13T03:00:00Z",
+        decidedBy: "Hoa Lê",
+        outcomePending: scene === "decided",
+        ...(scene === "told" && { outcomeSentAt: "2026-10-13T04:00:00Z" }),
+      }
+    : {};
+}
+
+const receivedUseCase = {
+  id: proposalUseCaseId,
+  title: "Claims triage with document intelligence",
+  closesAt: "2026-12-31T16:59:00Z",
+};
+
+function receivedSummary(scene, id, sentAt) {
+  return {
+    id,
+    organizationName: receivedNames[id],
+    organizationLogoFileId: null,
+    solutionNames: ["Policy Chat"],
+    organizationApproved: id !== receivedIds.orbit,
+    contactName: minh.name,
+    sentAt,
+    editedAt: null,
+    outcomePending: false,
+    ...decisionOf(scene, id),
+  };
+}
+
+/** The list of received proposals in a scene, with the counts the tabs show. */
+export function receivedList(scene) {
+  const items = [
+    receivedSummary(scene, receivedIds.orbit, "2026-10-12T03:00:00Z"),
+    receivedSummary(scene, receivedIds.lumen, "2026-10-11T03:00:00Z"),
+    receivedSummary(scene, receivedIds.northwind, "2026-10-10T03:00:00Z"),
+  ];
+  return {
+    useCase: receivedUseCase,
+    items,
+    shortlisted: items.filter((item) => item.decision === "shortlisted").length,
+    declined: items.filter((item) => item.decision === "declined").length,
+    pending: items.filter((item) => item.outcomePending).length,
+  };
+}
+
+/** One received proposal in a scene. */
+export function receivedProposal(scene, id) {
+  const line = receivedList(scene).items.find((item) => item.id === id);
+  return {
+    ...line,
+    approach: "Policy Chat answers a policyholder's question from the policy itself.",
+    deck: proposalDeck,
+    solutions: [policyChat],
+    sentBy: sentProposal.sentBy,
+    teamBackground: null,
+    useCase: receivedUseCase,
   };
 }
 
@@ -133,6 +252,15 @@ export const draftUseCase = {
  */
 export function answerWizards(url, session, scene) {
   const { pathname } = url;
+  if (pathname === `/api/proposal/use-cases/${proposalUseCaseId}/proposals`) {
+    return session ? [200, receivedList(scene)] : [401, {}];
+  }
+  const received = pathname.startsWith("/api/proposal/use-case-proposals/")
+    ? pathname.split("/").at(-1)
+    : undefined;
+  if (received && received in receivedNames) {
+    return session ? [200, receivedProposal(scene, received)] : [401, {}];
+  }
   if (pathname === `/api/proposal/use-cases/${proposalUseCaseId}/proposal`) {
     return session ? [200, proposalForm(session, scene)] : [401, {}];
   }

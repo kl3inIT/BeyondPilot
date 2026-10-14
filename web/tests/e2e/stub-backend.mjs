@@ -95,6 +95,13 @@ const accounts = {
     displayName: "Lan Phạm",
     role: "user",
   },
+  // The only person of an organization of type Just me, approved when it was made (stub-workspace.mjs).
+  alone: {
+    id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a18",
+    email: "an.tran@example.com",
+    displayName: "An Tr?n",
+    role: "user",
+  },
   // A member moved into the organization when GenAI Fund merged a duplicate into it (stub-workspace.mjs).
   moved: {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a17",
@@ -175,7 +182,10 @@ const events = [
   requestId: null,
 }));
 
-/** The programs an operator edits: a draft that lacks what publishing needs, and a published one. */
+/**
+ * The programs an operator edits: a draft that lacks what publishing needs, read from Luma, and a
+ * published one.
+ */
 const programs = {
   "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c01": {
     id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c01",
@@ -193,6 +203,7 @@ const programs = {
     pageKind: "standard",
     externalUrl: null,
     coverFileId: null,
+    lumaEventId: "evt-genai-monthly-meetup",
     keyDates: [],
     events: [],
     version: 0,
@@ -289,9 +300,11 @@ const publicPrograms = {
     ],
   },
   // A second program with a page written for it; its window is open and it has key dates and an event.
+  // An operator featured it, so the home page announces it.
   "nestle-vietnam-ai-reinvention": {
     id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c09",
     slug: "nestle-vietnam-ai-reinvention",
+    featuredAt: inDays(-2),
     name: "Nestlé Vietnam AI Reinvention",
     type: "enterprise_challenge",
     partnerName: "Nestlé Vietnam",
@@ -354,6 +367,35 @@ const publicPrograms = {
       { title: "Doors open", startsAt: inDays(30), endsAt: null, allDay: false, note: null },
     ],
     events: [],
+  },
+  // An event and nothing else, read from Luma: listed by its event, with its cover and where to register.
+  "gaf-tinyfish-vn": {
+    id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c06",
+    slug: "gaf-tinyfish-vn",
+    name: "TinyFish, Big Minds",
+    type: "event",
+    partnerName: null,
+    summary: "A private dinner with TinyFish's leadership.",
+    about: null,
+    coverFileId: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5f06",
+    phase: "upcoming",
+    status: "published",
+    startsOn: inDays(12).slice(0, 10),
+    endsOn: inDays(12).slice(0, 10),
+    pageKind: "external",
+    externalUrl: "https://luma.com/gaf-tinyfish-vn",
+    keyDates: [],
+    events: [
+      {
+        title: "TinyFish, Big Minds",
+        startsAt: inDays(12),
+        endsAt: null,
+        online: false,
+        city: "Ho Chi Minh City",
+        country: "Vietnam",
+        registrationUrl: "https://luma.com/gaf-tinyfish-vn",
+      },
+    ],
   },
   "agentic-ai-build-week-2026": {
     id: "9b1e7c2a-4d3f-4a8b-9c6d-1e2f3a4b5c04",
@@ -572,8 +614,12 @@ createServer((request, response) => {
     return json(response, ...searched);
   }
   if (url.pathname === "/api/program/programs") {
+    const featured = url.searchParams.get("featured") === "true";
     const items = Object.values(publicPrograms)
       .filter((program) => program.status === "published")
+      // Asked for the featured ones, the most recently featured first, as the backend answers.
+      .filter((program) => !featured || program.featuredAt)
+      .sort((a, b) => (featured ? (b.featuredAt ?? "").localeCompare(a.featuredAt ?? "") : 0))
       .map((program) => ({
         slug: program.slug,
         name: program.name,
@@ -652,6 +698,8 @@ createServer((request, response) => {
         name: program.name,
         type: program.type,
         partnerName: program.partnerName,
+        featuredAt: program.featuredAt ?? null,
+        lumaEventId: program.lumaEventId ?? null,
         status: program.status,
         phase: program.status === "draft" ? "upcoming" : "open",
         applications: program.applications,

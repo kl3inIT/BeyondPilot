@@ -12,11 +12,12 @@ import { TextButton } from "@/components/actions/text-button";
 import { EntryList } from "@/components/composites/entry-list";
 import { StepsNav } from "@/components/composites/steps-nav";
 import { useAppForm } from "@/components/form/app-form";
-import { AllRequired } from "@/components/form/form-fields";
+import { AllRequired, ChoiceCardsField } from "@/components/form/form-fields";
 import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { isIndividual } from "@/features/organization/organization-codes";
 import { OrganizationFinder } from "@/features/organization/organization-finder";
 import { maturities } from "@/features/solution/solution-codes";
 import { getPathname, Link } from "@/i18n/navigation";
@@ -27,6 +28,7 @@ import {
   createSolution,
   getApplicationForm,
   getMySolution,
+  leaveApplyingAlone,
   organizeApplicant,
   saveApplication,
   saveSolution,
@@ -42,7 +44,6 @@ import { savable, saveBodyOf, type ApplyDraft } from "./apply-draft";
 import { applyWords, refusedFields, type RefusedSave } from "./apply-errors";
 import {
   AgreementField,
-  ChoiceCardsField,
   ChoicesField,
   NativeSelectField,
   Optional,
@@ -110,6 +111,10 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
   const [unsaved, setUnsaved] = useState(false);
   // Submitted, and on the way to the receipt: nothing is sent twice meanwhile.
   const [leaving, setLeaving] = useState(false);
+  // Someone applying as themselves who asked to apply as a team or a company instead, while nothing
+  // was sent under their name: step 1 asks who applies again.
+  const [changing, setChanging] = useState(false);
+  const applyingFor = changing ? null : view.organization;
 
   const program = view.program;
   const hasQuestions = program.questions.length > 0;
@@ -176,7 +181,7 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
     problems: (values) => {
       const found = problemsOf(
         applyStepSchema(step, words, {
-          organization: view.organization,
+          organization: applyingFor,
           who: values.who,
           questions: program.questions,
         }),
@@ -352,6 +357,19 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
    * person now is read here, after any save under way: no older answer then comes after it, and
    * nothing typed is touched. A read that fails is said, and the next save answers the same.
    */
+  /** Stops applying as oneself, so that the finder can join or add the company. */
+  async function applyForCompany() {
+    setProblem(null);
+    try {
+      const { data } = await leaveApplyingAlone({ path: { slug: program.slug } });
+      show(data);
+      setChanging(false);
+      version.current = data.application?.version ?? version.current;
+    } catch (error) {
+      setProblem(errorText(error));
+    }
+  }
+
   function readOrganization() {
     const run = queue.current.then(async () => {
       const { data } = await getApplicationForm({ path: { slug: program.slug } });
@@ -454,12 +472,16 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
       }
       // The step is saved before who applies is kept: a refused save then leaves nothing behind.
       await save(form.state.values.application);
-      if (step === "you" && !view.organization && values.who !== "") {
+      if (step === "you" && changing && values.who === "individual") {
+        setChanging(false);
+      } else if (step === "you" && !applyingFor && values.who !== "") {
+        // Someone applying as themselves who chose a team turns into that team.
         const { data } = await organizeApplicant({
           path: { slug: program.slug },
           body: organizationBodyOf(values),
         });
         show(data);
+        setChanging(false);
         version.current = data.application?.version ?? version.current;
       }
       goTo(index + 1);
@@ -637,7 +659,17 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
                 field by field to a screen reader. */}
             <AllRequired>
               {step === "you" && (
-                <StepYou form={form} view={view} onOrganization={readOrganization} />
+                <StepYou
+                  form={form}
+                  view={view}
+                  changing={changing}
+                  onChanging={(next) => {
+                    form.setFieldValue("who", "individual");
+                    setChanging(next);
+                  }}
+                  onCompany={applyForCompany}
+                  onOrganization={readOrganization}
+                />
               )}
               {step === "solution" && <StepSolution form={form} view={view} choose={choose} />}
               {step === "questions" && (
@@ -700,10 +732,18 @@ function ApplyFlow({ initial, account }: { initial: ApplicationView; account: Me
 function StepYou({
   form,
   view,
+  changing,
+  onChanging,
+  onCompany,
   onOrganization,
 }: {
   form: ApplyForm;
   view: ApplicationView;
+  /** Whether someone applying as themselves is choosing again who applies. */
+  changing: boolean;
+  onChanging: (changing: boolean) => void;
+  /** Someone applying as themselves chose to apply for a company instead. */
+  onCompany: () => Promise<void>;
   /** The person joined a company through the finder, or asked to. */
   onOrganization: () => Promise<void>;
 }) {
@@ -711,7 +751,8 @@ function StepYou({
   const typeName = useVocabulary("organizationType");
   const sizeName = useVocabulary("teamSize");
   const countryName = useCountryName();
-  const organization = view.organization;
+  const organization = changing ? null : view.organization;
+  const [leaving, setLeaving] = useState(false);
   const who = useStore(form.store, (state) => state.values.who);
   const name = useStore(form.store, (state) => {
     const contact = state.values.application.contact;
@@ -720,7 +761,33 @@ function StepYou({
 
   return (
     <>
-      {organization ? (
+      {organization && isIndividual(organization) ? (
+        // Someone applying as themselves is shown by the name their organization has, which needs no review.
+        <section className="flex flex-col gap-2">
+          <h2 className="text-sm font-medium">{t("applyingAs")}</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-4">
+            <div className="flex flex-col gap-1">
+              <span className="font-medium">{organization.name}</span>
+              <span className="text-sm text-muted-foreground">
+                {[
+                  typeName(organization.type),
+                  organization.country && countryName(organization.country),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            </div>
+            {organization.changeable && (
+              <Button prominence="secondary" size="sm" onClick={() => onChanging(true)}>
+                {t("change")}
+              </Button>
+            )}
+          </div>
+          {organization.changeable && (
+            <p className="text-xs text-muted-foreground">{t("changeHint")}</p>
+          )}
+        </section>
+      ) : organization ? (
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-medium">{t("applyingFor")}</h2>
           <div className="flex flex-col gap-1 rounded-xl border p-4">
@@ -757,12 +824,30 @@ function StepYou({
                 what: t(`who.${kind}.what`),
               }))}
               detail={
-                who === "company" && (
+                who === "company" &&
+                (changing ? (
+                  // The finder joins or adds a company for someone in no organization, so they stop
+                  // applying as themselves first.
+                  <div className="flex flex-col items-start gap-3">
+                    <p className="text-sm text-muted-foreground">{t("companyInstead")}</p>
+                    <Button
+                      prominence="secondary"
+                      pending={leaving}
+                      onClick={async () => {
+                        setLeaving(true);
+                        await onCompany();
+                        setLeaving(false);
+                      }}
+                    >
+                      {t("companyInsteadAction")}
+                    </Button>
+                  </div>
+                ) : (
                   <>
                     <h2 className="text-lg font-medium">{t("yourCompany")}</h2>
                     <OrganizationFinder suggestion={null} embedded onAnswered={onOrganization} />
                   </>
-                )
+                ))
               }
             />
           )}

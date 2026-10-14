@@ -7,6 +7,14 @@ export const organizationTypes = [
   "other",
 ] as const;
 
+/**
+ * Whether the organization is a person on their own: an ordinary organization of one person, which
+ * has no other member, invitation or email domain.
+ */
+export function isIndividual(organization: { type: string }): boolean {
+  return organization.type === "independent_builder";
+}
+
 export const teamSizes = [
   "just_me",
   "2_9",
@@ -17,6 +25,27 @@ export const teamSizes = [
   "1000_4999",
   "5000_plus",
 ] as const;
+
+/**
+ * The sizes an organization of this type may choose: just me goes with a person on their own, and
+ * a team, a company or another organization says how many people it has.
+ */
+export function teamSizesFor(type: string): readonly (typeof teamSizes)[number][] {
+  return type === "independent_builder"
+    ? ["just_me"]
+    : teamSizes.filter((size) => size !== "just_me");
+}
+
+/**
+ * The size an organization has once its type changes: just me for a person on their own, and for
+ * one that stops being that, a size chosen again, as its form asks.
+ */
+export function teamSizeAfterTypeChange(type: string, current: string): string {
+  if (type === "independent_builder") {
+    return "just_me";
+  }
+  return current === "just_me" ? "" : current;
+}
 
 /** The industries an organization works in or serves; a solution is filed under the same ones. */
 export const industries = [

@@ -34,6 +34,7 @@ import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
@@ -75,6 +76,9 @@ class SearchMeaningTest {
 	private JdbcClient jdbc;
 
 	@Autowired
+	private ApplicationContext context;
+
+	@Autowired
 	private AiProviders providers;
 
 	@Autowired
@@ -83,6 +87,7 @@ class SearchMeaningTest {
 	/** An empty index, and OpenAI's large model set the way an operator sets it, with semantic search on. */
 	@BeforeEach
 	void emptyIndex() {
+		IndexRepairs.awaitStartupRepair(context);
 		jdbc.sql("delete from search_document").update();
 		jdbc.sql("update search_settings set provider_id = null, model = null, semantic_enabled = true").update();
 		jdbc.sql("delete from ai_provider").update();

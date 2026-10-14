@@ -42,6 +42,8 @@ import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecision;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecisionRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersion;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersionRepository;
+import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposal;
+import ai.genaifund.beyondpilot.proposal.persistence.UseCaseProposalRepository;
 import ai.genaifund.beyondpilot.solution.OfferedSolution;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
@@ -110,10 +112,14 @@ public class ProposalService {
 
 	private final ProposalReviewDecisionRepository decisions;
 
+	private final UseCaseProposalRepository useCaseProposals;
+
 	ProposalService(ProposalRepository proposals, ProposalVersionRepository versions, ProgramService programs,
 			OrganizationDirectory organizations, OrganizationService organizationService, SolutionDirectory solutions,
 			StorageService storage, IdentityService identity, ApplicationEventPublisher events, JsonMapper json,
-			ProposalReleaseRepository releases, ProposalReviewDecisionRepository decisions) {
+			ProposalReleaseRepository releases, ProposalReviewDecisionRepository decisions,
+			UseCaseProposalRepository useCaseProposals) {
+		this.useCaseProposals = useCaseProposals;
 		this.releases = releases;
 		this.decisions = decisions;
 		this.proposals = proposals;
@@ -222,30 +228,81 @@ public class ProposalService {
 	}
 
 	/**
-	 * Makes the organization the caller applies through when they belong to none: themselves, or their team. It waits
-	 * for GenAI Fund's review, which does not hold up the application.
-	 * @throws ProposalException when the program takes no applications now or the caller already belongs to an
-	 * organization
+	 * Makes the organization the caller applies through when they belong to none: themselves, or their team. A team
+	 * waits for GenAI Fund's review, which does not hold up the application. Someone applying as themselves may still
+	 * become a team while nothing was sent under their name.
+	 * @throws ProposalException when the program takes no applications now, the caller already belongs to an
+	 * organization other than themselves, or sent something as themselves
 	 */
 	@Transactional
 	public ApplicationViewResponse organize(Actor actor, String slug, ApplicantOrganizationRequest request) {
 		identity.requireActive(actor);
 		ApplicationForm form = open(slug);
-		if (organizations.membershipOf(actor).isPresent()) {
+		boolean individual = "individual".equals(request.kind());
+		ApplicantOrganization applicant = new ApplicantOrganization(request.name().strip(),
+				individual ? Membership.INDIVIDUAL : "builder_team", request.country(),
+				individual ? "just_me" : Objects.requireNonNullElse(request.teamSize(), "2_9"), text(request.website()));
+		Membership membership = organizations.membershipOf(actor).orElse(null);
+		UUID organizationId;
+		if (membership == null) {
+			organizationId = organizationService.createForApplicant(actor, applicant);
+		}
+		else if (!individual && membership.individual()) {
+			requireSwitchable(membership);
+			organizationId = organizationService.becomeTeam(actor, applicant);
+		}
+		else {
 			throw new ProposalException(ProposalErrorCode.ALREADY_IN_ORGANIZATION,
 					"Account " + actor.accountId() + " already belongs to an organization");
 		}
-		boolean individual = "individual".equals(request.kind());
-		UUID organizationId = organizationService.createForApplicant(actor,
-				new ApplicantOrganization(request.name().strip(), individual ? "independent_builder" : "builder_team",
-						request.country(), individual ? "just_me" : Objects.requireNonNullElse(request.teamSize(), "2_9"),
-						text(request.website())));
 		Proposal proposal = proposals.findForUpdate(form.programId(), actor.accountId()).orElse(null);
 		if (proposal != null) {
 			proposal.belongTo(organizationId);
 			proposals.flush();
 		}
 		return view(actor, form, proposal);
+	}
+
+	/**
+	 * Takes someone applying as themselves out of that, so that they can apply for a company instead: the application
+	 * then belongs to no organization until they join or add one.
+	 * @throws ProposalException when the program takes no applications now, the caller does not apply as themselves,
+	 * or something was sent under their name
+	 */
+	@Transactional
+	public ApplicationViewResponse leaveIndividual(Actor actor, String slug) {
+		identity.requireActive(actor);
+		ApplicationForm form = open(slug);
+		Membership membership = organizations.membershipOf(actor)
+			.filter(Membership::individual)
+			.orElseThrow(() -> new ProposalException(ProposalErrorCode.INDIVIDUAL_LOCKED,
+					"Account " + actor.accountId() + " does not apply as themselves"));
+		requireSwitchable(membership);
+		organizationService.leaveIndividual(actor);
+		Proposal proposal = proposals.findForUpdate(form.programId(), actor.accountId()).orElse(null);
+		if (proposal != null) {
+			proposal.leaveOrganization();
+			proposals.flush();
+		}
+		return view(actor, form, proposal);
+	}
+
+	/**
+	 * Someone applying as themselves keeps doing so once something went out under their name (an application, a
+	 * proposal for a use case or a solution sent for review), or once GenAI Fund refused or took them down.
+	 */
+	private void requireSwitchable(Membership membership) {
+		// One that GenAI Fund refused or took down keeps that decision: neither a team nor a fresh start undoes it.
+		if (!membership.approved() || sentAnything(membership.organizationId())) {
+			throw new ProposalException(ProposalErrorCode.INDIVIDUAL_LOCKED,
+					"Individual " + membership.organizationId() + " already sent something");
+		}
+	}
+
+	private boolean sentAnything(UUID organizationId) {
+		return proposals.existsByOrganizationIdAndSubmittedAtIsNotNull(organizationId)
+				|| useCaseProposals.existsByOrganizationIdAndStatusNot(organizationId, UseCaseProposal.DRAFT)
+				|| solutions.offeredBy(organizationId).stream().anyMatch(OfferedSolution::sent);
 	}
 
 	/**
@@ -273,7 +330,7 @@ public class ProposalService {
 				|| blank(contact.country())) {
 			throw refused(ProposalErrorCode.CONTACT_INCOMPLETE, id);
 		}
-		boolean alone = "independent_builder".equals(organization.type());
+		boolean alone = Membership.INDIVIDUAL.equals(organization.type());
 		if (!alone && blank(proposal.getTeamBackground())) {
 			throw refused(ProposalErrorCode.TEAM_BACKGROUND_REQUIRED, id);
 		}
@@ -440,7 +497,9 @@ public class ProposalService {
 				person.email(), previous,
 				organization == null ? null
 						: new ApplyingOrganizationResponse(organization.id(), organization.name(), organization.type(),
-								organization.country(), organization.teamSize(), organization.approved()),
+								organization.country(), organization.teamSize(), organization.approved(),
+								Membership.INDIVIDUAL.equals(organization.type()) && organization.approved()
+										&& !sentAnything(organization.id())),
 				offered);
 	}
 

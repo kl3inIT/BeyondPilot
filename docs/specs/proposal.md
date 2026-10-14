@@ -89,8 +89,15 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 - **Alone or as a team.** `POST …/application/organization` makes an organization for a person in none, through
   `OrganizationService.createForApplicant`: `kind = individual` makes an `independent_builder` with team size
   `just_me`; `kind = team` makes a `builder_team` with the given team size (`2_9`, `10_49`, `50_99`; `2_9` when
-  absent). It waits for GenAI Fund's review like any new organization and is attached to the caller's application if
+  absent). A team waits for GenAI Fund's review like any new organization; an `independent_builder` is approved at once
+  ([BEY-189](../increments/completed/bey-189-solo-applicant/design.md)). Either is attached to the caller's application if
   one exists. A caller already in an organization is refused with `PROPOSAL_ALREADY_IN_ORGANIZATION`.
+- **Applying as oneself.** The `independent_builder` keeps the name it was given, which its owner may change like any
+  organization's ([this increment](../increments/active/just-me-is-an-organization/design.md)). While nothing of it was sent (no submitted application, no use-case proposal out of draft, no solution out of
+  draft), the application form's `organization.changeable` is true: `kind = team` turns it into that team, which waits
+  for review, and `POST …/application/organization/leave` takes the person out of it, leaving the application with no
+  organization so that they join or add a company. Once something was sent, both answer
+  `PROPOSAL_INDIVIDUAL_LOCKED`.
 - **As a company.** The person joins or creates the company through the `organization` module; the proposal module
   only reads the membership.
 
@@ -198,11 +205,11 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 ### Reading applications
 
 - **Only submitted applications** are reviewed, each as its last version's snapshot; drafts and withdrawals are
-  counted, not listed. The list is ordered by `submitted_at`, earliest first, and shows the answer to the program's
+  counted, not listed among them. An operator, never a judge, follows up the drafts on a page of their own before the close (`GET …/programs/{programId}/drafts`, BEY-193): each applicant's name, sign-in address, phone, country and organization, when the draft was started and last saved, and how far it got (contact complete, solution chosen, deck attached, required questions answered). `POST …/drafts/export` downloads the same as a spreadsheet, recorded as `proposal.drafts_export`. An operator opens one draft as it stands now, in the shape of a submission (`GET …/review/drafts/{id}`, its files at `…/drafts/{id}/files/{fileId}`), to see who may yet apply. Reading a draft or a file, by an operator or a judge, is not audited: it stays inside the reader's own permission (BEY-203). The list is ordered by `submitted_at`, earliest first, and shows the answer to the program's
   first `single_choice` question; a `multi_choice` answer is read on the application, not in the list.
 - **What every reviewer reads.** The submission as its snapshot holds it, with the link to the product's demo
   (`submitted.demoUrl`) when the solution had one at submission; the application page shows it under the solution and
-  opens it in a new tab. The list and the CSV download do not carry it.
+  opens it in a new tab. The list and the download do not carry it.
 - **What a judge reads.** Their own assessment and its mean; never anyone else's score, an average across judges, the
   decision or the decision history.
 - **What an operator reads.** Every assessment with its author, role (`reviewer` for a joined judge, `operator`
@@ -259,29 +266,64 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 Operator acts, and a file opened by an operator or a judge, are recorded through `AuditTrail` with that person as
 actor and the program as resource (type `program`); see [ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md).
 
-| Action                     | When                                       | Details                       |
-| -------------------------- | ------------------------------------------ | ----------------------------- |
-| `proposal.criteria_update` | Criteria replaced                          | `count`                       |
-| `proposal.reviewer_invite` | A judge invited, or the invitation re-sent | `email`                       |
-| `proposal.reviewer_remove` | A judge removed                            | `email`                       |
-| `proposal.decide`          | One per application whose decision changed | `decision`                    |
-| `proposal.release`         | Outcomes released                          | `shortlisted`, `not_selected` |
-| `proposal.file_open`       | A reviewer opened a file of an application | `application`, `file`         |
-| `proposal.export`          | An operator downloaded the applications    | `count`                       |
+| Action                     | When                                          | Details                       |
+| -------------------------- | --------------------------------------------- | ----------------------------- |
+| `proposal.criteria_update` | Criteria replaced                             | `count`                       |
+| `proposal.reviewer_invite` | A judge invited, or the invitation re-sent    | `email`                       |
+| `proposal.reviewer_remove` | A judge removed                               | `email`                       |
+| `proposal.decide`          | One per application whose decision changed    | `decision`                    |
+| `proposal.release`         | Outcomes released                             | `shortlisted`, `not_selected` |
+| `proposal.file_open`       | A reviewer opened a file (until 14 Oct 2026)  | `application`, `file`         |
+| `proposal.export`          | An operator downloaded the applications       | `count`                       |
+| `proposal.drafts_export`   | An operator downloaded the drafts             | `count`                       |
+| `proposal.draft_open`      | An operator opened a draft (14 Oct 2026 only) | `application`                 |
+| `use_case_proposal.export` | An operator downloaded a use case's proposals | `count`                       |
 
 ### Download
 
-An operator downloads a program's submitted applications as CSV (`ReviewService.export`): one row for each, the
-earliest submitted first, with the organization, the solution, the applicant's name, email, phone, country and
-LinkedIn, the answer to the first one-choice question, the submission time and version, GenAI Fund's decision,
-whether the outcomes are released, and how many judges scored it with their mean. The request may name the
-applications to include, which is how the web sends the list as it is narrowed. The file is UTF-8 with a byte order
-mark, and a cell a spreadsheet would run as a formula is written as text (`CsvRows`). A judge is refused. Each
-download is recorded as `proposal.export`, since it takes contact details out.
+An operator downloads a program's submitted applications as a spreadsheet (`ReviewService.export`, BEY-96), an Excel
+workbook or CSV as `?format=xlsx|csv` asks, written by `shared.Spreadsheet`: one row for each, the earliest submitted
+first, with the organization, the solution, the applicant's name, email, phone, country and LinkedIn, the answer to
+the first one-choice question, the submission time and version, GenAI Fund's decision, whether the outcomes are
+released, and how many judges scored it with their mean. The request may name the applications to include, which is
+how the web sends the list as it is narrowed. The file is named `<slug>-applications-<day>`. A judge is refused. Each
+download is recorded as `proposal.export`, since it takes contact details out. The drafts (`proposal.drafts_export`)
+and the proposals a use case received (`use_case_proposal.export`, operators only) are downloaded the same way.
 
 Applicants' acts, joining as a judge and assessments are not audited; they are logged as `proposal.submission.accepted`,
 `proposal.withdrawal.accepted`, `proposal.reviewer.joined` and `proposal.assessment.saved`, beside
 `proposal.decision.recorded` and `proposal.outcomes.released`.
+
+## Use-case proposals: decisions and outcomes
+
+An organization's proposal to a use case ([BEY-133](../increments/active/bey-133-use-case-proposals/design.md)) is read
+by the organization that posted the use case, which decides on it and then tells the senders. This is not the review of
+program applications above. The code is `UseCaseProposals` (`posted` is its authorization: a member of the posting
+organization, or an operator; anyone else finds no such use case or proposal).
+
+- **State.** `use_case_proposal` (V93) holds `decision` (`shortlisted`, `declined`, or null while undecided), `decided_at`,
+  `decided_by_account_id`, and `outcome` with `outcome_sent_at`, the decision last told to the sender. Checks: the three
+  decision columns are all set or all null, so are the two outcome columns, and a decision exists only while the status is
+  `sent`. `use_case_proposal_decision` appends one row (decision, who, when) for every change; it is never updated, and it
+  stays when a proposal is withdrawn.
+- **Deciding.** `POST /api/proposal/use-case-proposals/{id}/decision` (`decideUseCaseProposal`, body `{decision}`) needs a
+  sent proposal (otherwise `PROPOSAL_NOT_FOUND`). The decision may change between `shortlisted` and `declined` at any time,
+  after the outcomes were sent and after the use case closed, but never back to undecided. The same decision again changes
+  and records nothing. Deciding sends no email. It records the audit event `use_case_proposal.decide` (`decision`) on a
+  resource of type `use_case_proposal`. The answer is the proposal's line, `ReceivedUseCaseProposalSummary`.
+- **What the posting side reads.** The list and the single read carry `decision`, `decidedAt`, `decidedBy` (display name),
+  `outcomePending` (a decision is set and is not the one last told) and `outcomeSentAt`. The list also carries the counts
+  `shortlisted`, `declined` and `pending` (proposals with an outcome to send).
+- **Sending the outcomes.** `POST /api/proposal/use-cases/{useCaseId}/outcomes` (`sendUseCaseProposalOutcomes`, body
+  `{message}`, at most 2000 characters, optional) is one batch in one transaction: it locks the use case's sent proposals,
+  queues one email to the sender of each proposal with `outcomePending` (`proposal_shortlisted` or `proposal_declined`,
+  quoting the message) and sets `outcome` and `outcome_sent_at`. Undecided proposals and those already told the same
+  decision are left out. It answers `{sent, shortlisted, declined}`, and `PROPOSAL_NOTHING_TO_SEND` when nothing is
+  pending, so a second call finds nothing. It records `use_case_proposal.outcomes_send` (`sent`, `shortlisted`, `declined`)
+  on a resource of type `use_case`.
+- **What the sender reads.** The form's proposal carries `outcome` and `outcomeSentAt`: the decision last told, null
+  before. A decision not yet sent is never shown. A shortlisted proposal can still be withdrawn; withdrawing clears the
+  decision and the outcome and leaves the history rows.
 
 ## Events
 
@@ -298,36 +340,40 @@ The handlers are `@EventListener`s that queue email in the publisher's transacti
 
 Every endpoint needs a session.
 
-| Method and path                                                                | Contract                                                          |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| `GET /api/proposal/programs/{slug}/application`                                | The form, the caller's application and organization               |
-| `PUT /api/proposal/programs/{slug}/application`                                | Save the working copy (`SaveApplication`)                         |
-| `POST /api/proposal/programs/{slug}/application/organization`                  | Make the organization of an individual or a team                  |
-| `GET /api/proposal/applications`                                               | My applications                                                   |
-| `GET /api/proposal/applications/{id}`                                          | One of the caller's applications with its form                    |
-| `POST /api/proposal/applications/{id}/submit`                                  | Submit, or submit again                                           |
-| `POST /api/proposal/applications/{id}/withdraw`                                | Withdraw                                                          |
-| `GET /api/proposal/review/programs`                                            | The programs the caller reviews, with counts and whether released |
-| `GET`, `PUT /api/proposal/review/programs/{programId}/criteria`                | Read the criteria; an operator replaces them                      |
-| `GET`, `POST /api/proposal/review/programs/{programId}/reviewers`              | An operator lists judges or invites one                           |
-| `POST /api/proposal/review/programs/{programId}/reviewers/{reviewerId}/resend` | Re-send an unused invitation                                      |
-| `DELETE /api/proposal/review/programs/{programId}/reviewers/{reviewerId}`      | Remove a judge                                                    |
-| `GET /api/proposal/review/programs/{programId}/applications`                   | The submitted applications as the caller reviews them             |
-| `POST /api/proposal/review/programs/{programId}/applications/export`           | The submitted applications as CSV, for operators; recorded        |
-| `GET /api/proposal/review/applications/{id}`                                   | One application as submitted last, with assessments and history   |
-| `PUT /api/proposal/review/applications/{id}/assessment`                        | Save the caller's assessment                                      |
-| `GET /api/proposal/review/applications/{id}/files/{fileId}`                    | A file of the last submission                                     |
-| `POST /api/proposal/review/programs/{programId}/decisions`                     | Decide one application or several                                 |
-| `GET`, `POST /api/proposal/review/programs/{programId}/release`                | Preview the release; release                                      |
-| `PUT /api/proposal/review/programs/{programId}/release/draft`                  | Keep the release emails as they are written                       |
+| Method and path                                                                | Contract                                                           |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `GET /api/proposal/programs/{slug}/application`                                | The form, the caller's application and organization                |
+| `PUT /api/proposal/programs/{slug}/application`                                | Save the working copy (`SaveApplication`)                          |
+| `POST /api/proposal/programs/{slug}/application/organization`                  | Make the organization of an individual or a team                   |
+| `GET /api/proposal/applications`                                               | My applications                                                    |
+| `GET /api/proposal/applications/{id}`                                          | One of the caller's applications with its form                     |
+| `POST /api/proposal/applications/{id}/submit`                                  | Submit, or submit again                                            |
+| `POST /api/proposal/applications/{id}/withdraw`                                | Withdraw                                                           |
+| `GET /api/proposal/review/programs`                                            | The programs the caller reviews, with counts and whether released  |
+| `GET`, `PUT /api/proposal/review/programs/{programId}/criteria`                | Read the criteria; an operator replaces them                       |
+| `GET`, `POST /api/proposal/review/programs/{programId}/reviewers`              | An operator lists judges or invites one                            |
+| `POST /api/proposal/review/programs/{programId}/reviewers/{reviewerId}/resend` | Re-send an unused invitation                                       |
+| `DELETE /api/proposal/review/programs/{programId}/reviewers/{reviewerId}`      | Remove a judge                                                     |
+| `GET /api/proposal/review/programs/{programId}/applications`                   | The submitted applications as the caller reviews them              |
+| `POST /api/proposal/review/programs/{programId}/applications/export`           | The submitted applications as XLSX or CSV, for operators; recorded |
+| `POST /api/proposal/review/programs/{programId}/drafts/export`                 | The drafts as XLSX or CSV, for operators; recorded                 |
+| `POST /api/proposal/use-cases/{useCaseId}/proposals/export`                    | A use case's proposals as XLSX or CSV, for operators; recorded     |
+| `GET /api/proposal/review/applications/{id}`                                   | One application as submitted last, with assessments and history    |
+| `PUT /api/proposal/review/applications/{id}/assessment`                        | Save the caller's assessment                                       |
+| `GET /api/proposal/review/applications/{id}/files/{fileId}`                    | A file of the last submission                                      |
+| `POST /api/proposal/review/programs/{programId}/decisions`                     | Decide one application or several                                  |
+| `GET`, `POST /api/proposal/review/programs/{programId}/release`                | Preview the release; release                                       |
+| `PUT /api/proposal/review/programs/{programId}/release/draft`                  | Keep the release emails as they are written                        |
+| `POST /api/proposal/use-case-proposals/{id}/decision`                          | Shortlist or decline a received use-case proposal                  |
+| `POST /api/proposal/use-cases/{useCaseId}/outcomes`                            | E-mail the outcomes not yet told, in one batch                     |
 
 ## Error codes
 
 `ProposalErrorCode`; the category sets the status (validation 400, not permitted 403, not found 404, conflict 409).
 
-| Status | Codes                                                                                                                                                                                                                                                                                                                                                                                 |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 400    | `PROPOSAL_ORGANIZATION_REQUIRED`, `PROPOSAL_CONTACT_INCOMPLETE`, `PROPOSAL_TEAM_BACKGROUND_REQUIRED`, `PROPOSAL_SOLUTION_NOT_FOUND`, `PROPOSAL_SOLUTION_REQUIRED`, `PROPOSAL_SOLUTION_INCOMPLETE`, `PROPOSAL_DECK_REQUIRED`, `PROPOSAL_ANSWER_INVALID`, `PROPOSAL_ANSWER_REQUIRED`, `PROPOSAL_CRITERIA_INVALID`, `PROPOSAL_ASSESSMENT_INVALID`                                        |
-| 403    | `PROPOSAL_OWN_APPLICATION`, `PROPOSAL_REVIEW_NOT_ALLOWED`                                                                                                                                                                                                                                                                                                                             |
-| 404    | `PROPOSAL_APPLICATION_NOT_FOUND`, `PROPOSAL_REVIEW_PROGRAM_NOT_FOUND`, `PROPOSAL_REVIEWER_NOT_FOUND`                                                                                                                                                                                                                                                                                  |
-| 409    | `PROPOSAL_NOT_OPEN`, `PROPOSAL_CLOSED`, `PROPOSAL_LOCKED`, `PROPOSAL_WITHDRAWN_FOR_GOOD`, `PROPOSAL_CHANGED_MEANWHILE`, `PROPOSAL_ALREADY_IN_ORGANIZATION`, `PROPOSAL_ORGANIZATION_APPLIED`, `PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CRITERIA_FIXED`, `PROPOSAL_NO_CRITERIA`, `PROPOSAL_REVIEWER_INVITED`, `PROPOSAL_REVIEWER_JOINED`, `PROPOSAL_RELEASED`, `PROPOSAL_OUTCOMES_NOT_READY` |
+| Status | Codes                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `PROPOSAL_ORGANIZATION_REQUIRED`, `PROPOSAL_CONTACT_INCOMPLETE`, `PROPOSAL_TEAM_BACKGROUND_REQUIRED`, `PROPOSAL_SOLUTION_NOT_FOUND`, `PROPOSAL_SOLUTION_REQUIRED`, `PROPOSAL_SOLUTION_INCOMPLETE`, `PROPOSAL_DECK_REQUIRED`, `PROPOSAL_ANSWER_INVALID`, `PROPOSAL_ANSWER_REQUIRED`, `PROPOSAL_CRITERIA_INVALID`, `PROPOSAL_ASSESSMENT_INVALID`                                                                    |
+| 403    | `PROPOSAL_OWN_APPLICATION`, `PROPOSAL_REVIEW_NOT_ALLOWED`                                                                                                                                                                                                                                                                                                                                                         |
+| 404    | `PROPOSAL_APPLICATION_NOT_FOUND`, `PROPOSAL_REVIEW_PROGRAM_NOT_FOUND`, `PROPOSAL_REVIEWER_NOT_FOUND`                                                                                                                                                                                                                                                                                                              |
+| 409    | `PROPOSAL_NOT_OPEN`, `PROPOSAL_CLOSED`, `PROPOSAL_LOCKED`, `PROPOSAL_WITHDRAWN_FOR_GOOD`, `PROPOSAL_CHANGED_MEANWHILE`, `PROPOSAL_ALREADY_IN_ORGANIZATION`, `PROPOSAL_ORGANIZATION_APPLIED`, `PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CRITERIA_FIXED`, `PROPOSAL_NO_CRITERIA`, `PROPOSAL_REVIEWER_INVITED`, `PROPOSAL_REVIEWER_JOINED`, `PROPOSAL_RELEASED`, `PROPOSAL_OUTCOMES_NOT_READY`, `PROPOSAL_NOTHING_TO_SEND` |

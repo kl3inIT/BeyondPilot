@@ -8,20 +8,27 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.proposal.UseCaseProposals;
 import ai.genaifund.beyondpilot.proposal.dto.ApplicantOrganizationRequest;
+import ai.genaifund.beyondpilot.proposal.dto.DecideUseCaseProposalRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalResponse;
+import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalSummaryResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReceivedUseCaseProposalsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.SaveUseCaseProposalRequest;
+import ai.genaifund.beyondpilot.proposal.dto.SendUseCaseProposalOutcomesRequest;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalCountsRequest;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalCountsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalFormResponse;
+import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalOutcomesResponse;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.InputStreamSource;
@@ -38,6 +45,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** The proposals organizations send to use cases, and the reading of those a use case received. */
@@ -106,6 +114,54 @@ class UseCaseProposalsController {
 		return proposals.send(actor, id);
 	}
 
+	@PostMapping(path = "/use-case-proposals/{id}/withdraw", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "withdrawUseCaseProposal", summary = "Take a sent proposal back",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "The form with the proposal as a draft again, saying when it was taken back.")
+	@ApiResponse(responseCode = "404", description = "The caller's organization has no such proposal.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409",
+			description = "The proposal is not sent, or the use case no longer takes proposals.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseProposalFormResponse withdraw(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return proposals.withdraw(actor, id);
+	}
+
+	@PostMapping(path = "/use-case-proposals/{id}/decision", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "decideUseCaseProposal", summary = "Shortlist or decline a proposal a use case received",
+			description = "Records the decision and tells nobody; the outcomes are sent together. It may change at any time, but not back to undecided.",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The proposal's line with the decision as recorded.")
+	@ApiResponse(responseCode = "400", description = "The decision is neither shortlisted nor declined.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404",
+			description = "The proposal was not sent, or the caller is neither of the organization that posted its use case nor an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ReceivedUseCaseProposalSummaryResponse decide(@CurrentActor Actor actor, @PathVariable UUID id,
+			@Valid @RequestBody DecideUseCaseProposalRequest request) {
+		return proposals.decide(actor, id, request.decision());
+	}
+
+	@PostMapping(path = "/use-cases/{useCaseId}/outcomes", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "sendUseCaseProposalOutcomes", summary = "E-mail the outcomes of a use case's proposals",
+			description = "E-mails the sender of each proposal whose decision was not yet told, or changed since, in one batch.",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "How many senders were e-mailed, and of them how many shortlisted and declined.")
+	@ApiResponse(responseCode = "400", description = "The message is longer than 2000 characters.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404",
+			description = "There is no such use case, or the caller is neither of the organization that posted it nor an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "409", description = "No proposal has a decision to send.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	UseCaseProposalOutcomesResponse sendOutcomes(@CurrentActor Actor actor, @PathVariable UUID useCaseId,
+			@Valid @RequestBody SendUseCaseProposalOutcomesRequest request) {
+		return proposals.sendOutcomes(actor, useCaseId, request.message());
+	}
+
 	@GetMapping(path = "/use-cases/{useCaseId}/proposals", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listUseCaseProposals", summary = "The proposals a use case received",
 			security = @SecurityRequirement(name = "session"))
@@ -115,6 +171,28 @@ class UseCaseProposalsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ReceivedUseCaseProposalsResponse received(@CurrentActor Actor actor, @PathVariable UUID useCaseId) {
 		return proposals.received(actor, useCaseId);
+	}
+
+	@PostMapping(path = "/use-cases/{useCaseId}/proposals/export",
+			produces = { SpreadsheetFormat.XLSX_TYPE, SpreadsheetFormat.CSV_TYPE })
+	@Operation(operationId = "exportUseCaseProposals",
+			summary = "Download the proposals a use case received as a spreadsheet",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "One row for each sent proposal, the latest first, with its decision. The download is recorded.",
+			content = { @Content(mediaType = SpreadsheetFormat.XLSX_TYPE, schema = @Schema(type = "string", format = "binary")),
+					@Content(mediaType = SpreadsheetFormat.CSV_TYPE, schema = @Schema(type = "string", format = "binary")) })
+	@ApiResponse(responseCode = "400", description = "The download would hold too many rows.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such use case.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<byte[]> exportReceived(@CurrentActor Actor actor, @PathVariable UUID useCaseId,
+			@Parameter(description = SpreadsheetFormat.DESCRIPTION,
+					schema = @Schema(allowableValues = { "xlsx", "csv" }, defaultValue = "xlsx")) @RequestParam(
+							defaultValue = "xlsx") @Pattern(regexp = SpreadsheetFormat.PATTERN) String format) {
+		return proposals.export(actor, useCaseId, SpreadsheetFormat.of(format)).response();
 	}
 
 	@GetMapping(path = "/use-case-proposals/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

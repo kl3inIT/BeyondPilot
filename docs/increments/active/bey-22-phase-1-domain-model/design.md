@@ -145,11 +145,11 @@ AI-filled values stay `ai_extracted` until the owner confirms them.
 
 ### identity
 
-| Table                                     | Key columns                                                                                                                                                                                                         |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Table                                     | Key columns                                                                                                                                                                                                                      |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `identity_account`                        | `email` (unique on `lower(email)`), `display_name`, `status` (`active`, `disabled`), `platform_role` (`user`, `operator`), `last_login_at`. Implemented: see the [identity increment](../../completed/bey-30-identity/design.md) |
-| `identity_external_identity`              | `account_id`, `provider` (`google`), `subject` unique per provider                                                                                                                                                  |
-| Spring Security and Spring Session tables | One-time tokens for email links, JDBC sessions                                                                                                                                                                      |
+| `identity_external_identity`              | `account_id`, `provider` (`google`), `subject` unique per provider                                                                                                                                                               |
+| Spring Security and Spring Session tables | One-time tokens for email links, JDBC sessions                                                                                                                                                                                   |
 
 ### organization
 
@@ -278,7 +278,7 @@ Cleaning rules:
 ## Decisions of 3 October 2026
 
 - **Build order:** `identity`, `notification`, `storage`, `program`, `organization`, `solution`, `usecase`, `talent`, `proposal` (apply, then review), `search`, `matching`. Each has its own Linear issue (BEY-30 to BEY-39, with BEY-29 for `program`). The import from v1 follows the code; it does not gate it.
-- **Files:** every file goes through `storage` (named `document` in the first draft) behind a storage adapter: the file system first, MinIO or S3 later, chosen by configuration. No module stores a fixed image path. BEY-32 settled the names: the table is `storage_file`, a column that names a file is `<what>_file_id`, and `storage` depends on `identity`, because the upload addresses are its own ([storage increment](../bey-32-storage/design.md)). Versions and extracted text arrive with proposals and matching.
+- **Files:** every file goes through `storage` (named `document` in the first draft) behind a storage adapter: the file system first, MinIO or S3 later, chosen by configuration. No module stores a fixed image path. BEY-32 settled the names: the table is `storage_file`, a column that names a file is `<what>_file_id`, and `storage` depends on `identity`, because the upload addresses are its own ([storage increment](../../completed/bey-32-storage/design.md)). Versions and extracted text arrive with proposals and matching.
 - **Programs are entered, not seeded:** an operator creates and edits programs on screen, so `program` follows `identity` and `storage`.
 - **Program page content:** `program_section` holds the page's own presentation as ordered blocks (`position`, `kind`, `title`, `lead`, `content jsonb`) with four or five kinds; timeline, people, partners and events stay tables. It replaces `program.body`. A program page is one of three kinds: composed from blocks (the default), a hand-coded page in the web application for a program that needs it, or a redirect to an external landing page when `external_url` is set.
 - **Program partners** carry their own name and logo for now; the link to an organization is added when `organization` exists.

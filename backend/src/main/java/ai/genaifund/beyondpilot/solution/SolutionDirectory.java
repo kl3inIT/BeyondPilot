@@ -189,7 +189,7 @@ public class SolutionDirectory {
 		return new OfferedSolution(solution.getId(), solution.getOrganizationId(), solution.getName(),
 				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity(), solution.getDemoUrl(),
 				solution.getViewKey(), solution.getSlug(), shownLogo(solution.getLogoFileId(), organizationLogo),
-				solution.isApproved());
+				solution.isApproved(), !solution.isDraft());
 	}
 
 	/**

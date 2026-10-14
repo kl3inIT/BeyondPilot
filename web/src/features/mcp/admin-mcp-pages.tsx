@@ -1,8 +1,8 @@
 import { getTranslations } from "next-intl/server";
 
+import { PageTabs } from "@/components/composites/page-tabs";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "@/i18n/navigation";
 import type { AppHosts, McpSettings } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
@@ -14,6 +14,18 @@ import {
   UserServerSwitch,
 } from "./admin-mcp-actions";
 import { AddressField, AppSteps } from "./connect-panel";
+
+/** The operators' server's own tools, each described in the messages. */
+const OPERATOR_TOOLS = [
+  "list_applications",
+  "get_application",
+  "read_application_file",
+  "list_pending_reviews",
+] as const;
+
+function isOperatorTool(name: string): name is (typeof OPERATOR_TOOLS)[number] {
+  return (OPERATOR_TOOLS as readonly string[]).includes(name);
+}
 
 type McpTab = "setup" | "tools" | "apps" | "activity";
 
@@ -35,32 +47,17 @@ async function McpAdminHeader({ current, counts }: { current: McpTab; counts: Mc
 
   return (
     <AdminPageHeader destination="mcp" title={t("title")}>
-      {/* Wider than a phone in Vietnamese: the row scrolls, and its edge fades where tabs wait. */}
-      <nav
-        aria-label={t("tabs.label")}
-        className="relative scrollbar-none overflow-x-auto max-md:scroll-fade-x"
-      >
-        <ul className="flex w-max min-w-full gap-4 border-b md:gap-6">
-          {tabs.map((tab) => (
-            <li key={tab.key}>
-              <Link
-                href={tab.href}
-                aria-current={tab.key === current ? "page" : undefined}
-                className={
-                  tab.key === current
-                    ? "inline-flex min-h-11 items-center gap-1.5 border-b-2 border-foreground text-sm font-medium whitespace-nowrap outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
-                    : "inline-flex min-h-11 items-center gap-1.5 border-b-2 border-transparent text-sm whitespace-nowrap text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
-                }
-              >
-                {t(`tabs.${tab.key}`)}
-                {tab.count !== null && tab.count > 0 && (
-                  <span className="text-xs font-medium">{tab.count}</span>
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <PageTabs
+        label={t("tabs.label")}
+        current={current}
+        tabs={tabs.map((tab) => ({
+          key: tab.key,
+          href: tab.href,
+          label: t(`tabs.${tab.key}`),
+          // A count shows only when there is something to count.
+          count: tab.count !== null && tab.count > 0 ? tab.count : undefined,
+        }))}
+      />
     </AdminPageHeader>
   );
 }
@@ -180,11 +177,9 @@ async function McpToolsPage({ settings, counts }: { settings: McpSettings; count
                         ? t(`${server}.search`)
                         : tool.name === "fetch"
                           ? t(`${server}.fetch`)
-                          : tool.name === "list_applications"
-                            ? t("operator.list_applications")
-                            : tool.name === "list_pending_reviews"
-                              ? t("operator.list_pending_reviews")
-                              : tool.description}
+                          : isOperatorTool(tool.name)
+                            ? t(`operator.${tool.name}`)
+                            : tool.description}
                     </p>
                   </div>
                   <ToolSwitch

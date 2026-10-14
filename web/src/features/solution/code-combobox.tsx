@@ -29,6 +29,8 @@ type CodeComboboxProps = {
   removeLabel: (label: string) => string;
   /** How many may be chosen; at the limit the list offers only what is already chosen. */
   max: number;
+  /** Keep each option label on one line, truncating only its visual presentation. */
+  truncateOptionLabels?: boolean;
   invalid?: boolean;
   "aria-describedby"?: string;
 };
@@ -47,6 +49,7 @@ function CodeCombobox({
   emptyLabel,
   removeLabel,
   max,
+  truncateOptionLabels = false,
   invalid,
   "aria-describedby": describedBy,
 }: CodeComboboxProps) {
@@ -91,8 +94,15 @@ function CodeCombobox({
               key={option.value}
               value={option}
               disabled={full && !value.includes(option.value)}
+              className={
+                truncateOptionLabels ? "min-w-0" : "items-start break-all whitespace-normal"
+              }
             >
-              {option.label}
+              {truncateOptionLabels ? (
+                <span className="min-w-0 flex-1 truncate">{option.label}</span>
+              ) : (
+                option.label
+              )}
             </ComboboxItem>
           )}
         </ComboboxList>

@@ -2,7 +2,10 @@ package ai.genaifund.beyondpilot.proposal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -10,16 +13,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.TestPdf;
 import ai.genaifund.beyondpilot.identity.TestAppConnection;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
 import io.modelcontextprotocol.spec.McpSchema;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.ImageContent;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 /**
@@ -157,16 +165,11 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<List<String>>read(again, "$.submitted.answers[?(@.kind == 'multi_choice')].value"))
 			.containsExactly("[\"Claims\",\"Pricing\"]");
 		assertProblem(get(judge, one + "/files/" + UUID.randomUUID()), 404, "PROPOSAL_APPLICATION_NOT_FOUND");
-		assertThat(auditOf(form.programId())).doesNotContain("proposal.file_open");
 
-		// Opening a file of an application is recorded, with who opened which file.
+		// Opening a file of an application, inside the judge's own permission, is not audited.
 		String deck = JsonPath.read(again, "$.submitted.deck.fileId");
 		get(judge, one + "/files/" + deck);
-		assertThat(jdbc.sql("""
-				select actor_email || ' ' || (details ->> 'application') || ' ' || (details ->> 'file')
-				from audit_event where action = 'proposal.file_open' and resource_id = ?
-				""").params(form.programId().toString()).query(String.class).list())
-			.containsExactly("scorer@review.test " + first.id() + " " + deck);
+		assertThat(auditOf(form.programId())).doesNotContain("proposal.file_open");
 	}
 
 	@Test
@@ -221,32 +224,102 @@ class ReviewTest extends ApplicationsHttpTest {
 		post(judge, export, Map.of()).expectStatus().isForbidden();
 		assertThat(auditOf(form.programId())).doesNotContain("proposal.export");
 
-		String all = new String(post(operator, export, Map.of()).expectStatus()
+		String all = new String(post(operator, export + "?format=csv", Map.of()).expectStatus()
 			.isOk()
 			.expectHeader()
-			.valueMatches("Content-Disposition", "attachment; filename=\"exported-challenge-applications.csv\".*")
+			.contentType("text/csv;charset=UTF-8")
+			.expectHeader()
+			.valueMatches("Content-Disposition",
+					"attachment; filename=\"exported-challenge-applications-\\d{4}-\\d{2}-\\d{2}\\.csv\".*")
 			.expectBody()
 			.returnResult()
 			.getResponseBody(), StandardCharsets.UTF_8);
-		assertThat(all).startsWith("\uFEFFApplication,Organization,Organization type,Solution,First name,Last name,Email,");
+		assertThat(all).startsWith("﻿Application,Organization,Organization type,Solution,First name,Last name,Email,");
 		List<String> rows = all.lines().toList();
 		assertThat(rows).hasSize(3);
+		assertThat(rows.get(0)).contains(",Submitted at,Version,Review status,Outcome released,Scores,Average score");
 		assertThat(rows.get(1)).startsWith(first.id() + ",First Exporter,")
-			.contains(",Dat,Phan,first@exported.test,+84 912 345 678,VN,")
-			.contains(",shortlisted,no,0,");
-		assertThat(rows.get(2)).startsWith(second.id() + ",Second Exporter,").contains(",under_review,no,0,");
+			.contains(",First,Exporter,first@exported.test,+84 912 345 678,VN,")
+			.contains(",Shortlisted,No,0,");
+		assertThat(rows.get(2)).startsWith(second.id() + ",Second Exporter,").contains(",Under review,No,0,");
 
-		// The list as it was narrowed is what the download holds.
-		String one = new String(post(operator, export, Map.of("applicationIds", List.of(second.id()))).expectStatus()
+		// The list as it was narrowed is what the download holds, by default a workbook to read.
+		byte[] one = post(operator, export, Map.of("applicationIds", List.of(second.id()))).expectStatus()
 			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition",
+					"attachment; filename=\"exported-challenge-applications-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
 			.expectBody()
 			.returnResult()
-			.getResponseBody(), StandardCharsets.UTF_8);
-		assertThat(one.lines().toList()).hasSize(2).last().asString().startsWith(second.id() + ",");
+			.getResponseBody();
+		List<List<String>> sheet = Workbooks.rows(one);
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(0)).startsWith("Application", "Applicant", "Applicant", "Applicant", "Contact");
+		assertThat(sheet.get(1)).startsWith("Application", "Organization", "Organization type", "Solution", "First name")
+			.contains("Submitted at", "Review status", "Outcome released");
+		assertThat(sheet.get(2)).startsWith(second.id().toString(), "Second Exporter")
+			.contains("Second", "Exporter", "second@exported.test", "+84 912 345 678", "Under review", "No");
 		assertThat(jdbc.sql("""
 				select details ->> 'count' from audit_event where action = 'proposal.export' and resource_id = ?
 				order by occurred_at
 				""").params(form.programId().toString()).query(String.class).list()).containsExactly("2", "1");
+	}
+
+	@Test
+	void anOperatorFollowsUpTheDraftsWithoutReadingWhatTheySay() {
+		Form form = program("followed-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		String judge = judge(form, "reader@drafted.test");
+		applicant(form, "sent@drafted.test", "Sent Builder");
+		// One person has only typed their name; another has their contact details and an answer.
+		String early = TestSignIn.session(client, mail, "early@drafted.test");
+		put(early, form.path(), application(Map.of("firstName", "Early"), null, Map.of(), null)).expectStatus().isOk();
+		String later = TestSignIn.session(client, mail, "later@drafted.test");
+		Map<String, String> answered = new HashMap<>();
+		answered.put(form.approach().toString(), "Claims reach a decision without a hotline call.");
+		put(later, form.path(), application(contact("Later Builder"), null, answered, null)).expectStatus().isOk();
+		String drafts = REVIEW + form.programId() + "/drafts";
+
+		// Judges never see drafts.
+		get(judge, drafts).expectStatus().isForbidden();
+		post(judge, drafts + "/export", null).expectStatus().isForbidden();
+
+		String list = body(get(operator, drafts).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(list, "$.items[*].email")).containsExactly("later@drafted.test",
+				"early@drafted.test");
+		assertThat(JsonPath.<String>read(list, "$.items[0].phone")).isEqualTo("+84 912 345 678");
+		assertThat(JsonPath.<Boolean>read(list, "$.items[0].contactComplete")).isTrue();
+		assertThat(JsonPath.<Integer>read(list, "$.items[0].requiredAnswered")).isEqualTo(1);
+		assertThat(JsonPath.<Boolean>read(list, "$.items[1].contactComplete")).isFalse();
+		assertThat(JsonPath.<Boolean>read(list, "$.items[1].solutionChosen")).isFalse();
+		assertThat(JsonPath.<Integer>read(list, "$.requiredQuestions")).isPositive();
+		// The list does not read out what a draft says; an operator opens one to read it, and no reading is audited.
+		assertThat(list).doesNotContain("hotline");
+		String draftId = JsonPath.read(list, "$.items[0].id");
+		get(judge, REVIEW.replace("/programs/", "/drafts/") + draftId).expectStatus().isForbidden();
+		String one = body(get(operator, REVIEW.replace("/programs/", "/drafts/") + draftId).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(one, "$.draft.email")).isEqualTo("later@drafted.test");
+		assertThat(JsonPath.<List<String>>read(one, "$.draft.answers[*].value"))
+			.containsExactly("Claims reach a decision without a hotline call.");
+		assertThat(auditOf(form.programId())).doesNotContain("proposal.draft_open");
+
+		String csv = new String(post(operator, drafts + "/export?format=csv", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.valueMatches("Content-Disposition",
+					"attachment; filename=\"followed-challenge-drafts-\\d{4}-\\d{2}-\\d{2}\\.csv\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), StandardCharsets.UTF_8);
+		assertThat(csv).startsWith("﻿Draft,First name,Last name,Email,Phone,");
+		List<String> lines = csv.lines().toList();
+		assertThat(lines).hasSize(3);
+		assertThat(lines.get(1)).contains(",Later,Builder,later@drafted.test,+84 912 345 678,").contains(",Yes,");
+		assertThat(csv).doesNotContain("hotline");
+		assertThat(jdbc.sql("""
+				select details ->> 'count' from audit_event where action = 'proposal.drafts_export' and resource_id = ?
+				""").params(form.programId().toString()).query(String.class).list()).containsExactly("2");
 	}
 
 	@Test
@@ -410,9 +483,11 @@ class ReviewTest extends ApplicationsHttpTest {
 	}
 
 	@Test
-	void anOperatorsAppListsAProgramsApplicationsWithTheirDecisionsAndCounts() {
+	void anOperatorsAppListsAProgramsApplicationsReadsOneInFullAndSeesThePagesOfItsDeck(
+			@Value("${beyondpilot.storage.local.directory}") String storage) throws IOException {
 		Form form = program("listed-by-mcp", true, Instant.now().plus(Duration.ofDays(10)));
-		applicant(form, "first@mcp-apply.test", "First Builder");
+		List<String> criteria = criteriaOf(form, "Practical impact");
+		Applicant first = applicant(form, "first@mcp-apply.test", "First Builder");
 		applicant(form, "second@mcp-apply.test", "Second Builder");
 
 		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
@@ -426,7 +501,8 @@ class ReviewTest extends ApplicationsHttpTest {
 			.build();
 		app.initialize();
 		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
-			.containsExactly("search", "fetch", "list_applications", "list_pending_reviews");
+			.containsExactly("search", "fetch", "list_applications", "get_application", "read_application_file",
+					"list_pending_reviews");
 
 		CallToolResult result = app.callTool(McpSchema.CallToolRequest.builder("list_applications")
 			.arguments(Map.of("program", "program:listed-by-mcp"))
@@ -444,6 +520,49 @@ class ReviewTest extends ApplicationsHttpTest {
 			.arguments(Map.of("program", "program:no-such-program"))
 			.build());
 		assertThat(unknown.isError()).isTrue();
+
+		// One application in full: what the applicant sent, the scores by criterion and the files it holds.
+		put(operator, API + "/review/applications/" + first.id() + "/assessment",
+				scores(Map.of(criteria.get(0), 4)))
+			.expectStatus()
+			.isOk();
+		CallToolResult read = app.callTool(McpSchema.CallToolRequest.builder("get_application")
+			.arguments(Map.of("application", first.id().toString()))
+			.build());
+		assertThat(read.isError()).isFalse();
+		String application = ((TextContent) read.content().getFirst()).text();
+		assertThat(JsonPath.<String>read(application, "$.solution.name")).isEqualTo("First Builder Desk");
+		assertThat(JsonPath.<String>read(application, "$.applicant.email")).isEqualTo("first@mcp-apply.test");
+		assertThat(JsonPath.<Integer>read(application, "$.assessments[0].scores['Practical impact']")).isEqualTo(4);
+		assertThat(JsonPath.<List<String>>read(application, "$.files[*].holds")).contains("deck");
+		String deck = JsonPath.<List<String>>read(application, "$.files[?(@.holds == 'deck')].id").getFirst();
+
+		// Its deck, page by page: the text the file holds and the picture of each page.
+		Path stored = Path.of(storage).toAbsolutePath().resolve("test").resolve(deck);
+		Files.createDirectories(stored.getParent());
+		Files.write(stored, TestPdf.of("Claims triage in minutes.", ""));
+		CallToolResult pages = app.callTool(McpSchema.CallToolRequest.builder("read_application_file")
+			.arguments(Map.of("application", first.id().toString(), "file", deck))
+			.build());
+		assertThat(pages.isError()).isFalse();
+		String head = ((TextContent) pages.content().getFirst()).text();
+		assertThat(JsonPath.<Integer>read(head, "$.pages")).isEqualTo(2);
+		assertThat(JsonPath.<String>read(head, "$.shown")).isEqualTo("1-2");
+		assertThat(pages.content()).hasSize(5);
+		assertThat(((TextContent) pages.content().get(1)).text()).isEqualTo("Page 1:\nClaims triage in minutes.");
+		assertThat(((ImageContent) pages.content().get(2)).mimeType()).isEqualTo("image/jpeg");
+		assertThat(((TextContent) pages.content().get(3)).text()).contains("no text");
+
+		// A file the application does not hold, a page past its end and a page that is not a number are refused.
+		assertThat(app.callTool(McpSchema.CallToolRequest.builder("read_application_file")
+			.arguments(Map.of("application", first.id().toString(), "file", UUID.randomUUID().toString()))
+			.build()).isError()).isTrue();
+		assertThat(app.callTool(McpSchema.CallToolRequest.builder("read_application_file")
+			.arguments(Map.of("application", first.id().toString(), "file", deck, "page", 3))
+			.build()).isError()).isTrue();
+		assertThat(app.callTool(McpSchema.CallToolRequest.builder("read_application_file")
+			.arguments(Map.of("application", first.id().toString(), "file", deck, "page", "2"))
+			.build()).isError()).isTrue();
 		app.closeGracefully();
 	}
 
@@ -474,14 +593,15 @@ class ReviewTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isOk();
 		UUID solution = completeSolution(session, email, name + " Desk");
-		submitted(session, email, form, solution);
+		// On their own, a person is shown by the name their application gives.
+		submitted(session, email, form, solution, contact(name));
 		String id = JsonPath.read(body(get(session, API + "/applications").expectStatus().isOk()), "$.items[0].id");
-		return new Applicant(session, email, solution, UUID.fromString(id));
+		return new Applicant(session, email, solution, UUID.fromString(id), name);
 	}
 
 	private void resubmit(Form form, Applicant applicant) {
 		String view = body(get(applicant.session(), form.path()).expectStatus().isOk());
-		Map<String, Object> change = application(contact(), applicant.solution(), answers(form, applicant.email()),
+		Map<String, Object> change = application(contact(applicant.name()), applicant.solution(), answers(form, applicant.email()),
 				versionOf(view));
 		change.put("deckFileId", JsonPath.read(view, "$.application.deck.fileId"));
 		put(applicant.session(), form.path(), change).expectStatus().isOk();
@@ -503,7 +623,7 @@ class ReviewTest extends ApplicationsHttpTest {
 				"Hi {organization},\n\nNot this time.");
 	}
 
-	private record Applicant(String session, String email, UUID solution, UUID id) {
+	private record Applicant(String session, String email, UUID solution, UUID id, String name) {
 	}
 
 	private static Map<String, Object> criteria(String... names) {

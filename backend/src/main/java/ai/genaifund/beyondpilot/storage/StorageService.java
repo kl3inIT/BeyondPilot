@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.storage;
 
+import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -149,7 +150,7 @@ public class StorageService {
 	@Transactional
 	public StoredFileResponse confirm(Actor actor, UUID id) {
 		StorageFile file = files.findById(id)
-			.filter(found -> found.getUploadedByAccountId().equals(actor.accountId()))
+			.filter(found -> actor.accountId().equals(found.getUploadedByAccountId()))
 			.orElseThrow(() -> notFound(id));
 		if (!file.isStored()) {
 			ObjectStorageAdapter adapter = adapters.adapter(file.getProvider());
@@ -174,6 +175,45 @@ public class StorageService {
 				.log("File stored");
 		}
 		return new StoredFileResponse(file.getId(), file.getFileName(), file.getMediaType(), file.getSizeBytes());
+	}
+
+	/**
+	 * Stores a file the server fetched itself, such as the cover of an event read from another site. No person uploaded
+	 * it, so it names no uploader; it is checked as an upload is and is stored at once.
+	 * @throws StorageException when the purpose refuses the media type or the size, or the content is not of that type
+	 */
+	@Transactional
+	public StoredFile keep(FilePurpose purpose, String fileName, String mediaType, byte[] content) {
+		String type = mediaType.strip().toLowerCase(Locale.ROOT);
+		if (!purpose.mediaTypes().contains(type)) {
+			throw new StorageException(StorageErrorCode.MEDIA_TYPE_NOT_ALLOWED,
+					"Media type not accepted for " + purpose.value());
+		}
+		if (content.length > properties.maxSizeBytes(purpose)) {
+			throw new StorageException(StorageErrorCode.FILE_TOO_LARGE,
+					content.length + " bytes kept for " + purpose.value());
+		}
+		if (!startsAs(type, Arrays.copyOf(content, Math.min(content.length, SIGNATURE_LENGTH)))) {
+			throw new StorageException(StorageErrorCode.CONTENT_MISMATCH, "Content kept is not " + type);
+		}
+		UUID id = UUID.randomUUID();
+		Instant now = Instant.now();
+		ObjectStorageAdapter adapter = adapters.adapter(properties.provider());
+		String objectKey = purpose.value() + "/" + KEY_MONTH.format(now) + "/" + id;
+		StorageFile file = new StorageFile(id, adapter.provider(), objectKey, purpose, displayName(fileName), type,
+				content.length, null, null, now);
+		file.markStored(now);
+		files.save(file);
+		// Written in the transaction of the row: a write that fails leaves no row naming missing bytes.
+		adapter.write(objectKey, new ByteArrayInputStream(content), content.length, type);
+		LOG.atInfo()
+			.addKeyValue("event", "storage.file.kept")
+			.addKeyValue("file_id", id)
+			.addKeyValue("purpose", purpose.value())
+			.addKeyValue("provider", file.getProvider())
+			.addKeyValue("size_bytes", content.length)
+			.log("File kept");
+		return new StoredFile(id, purpose, file.getFileName(), type, content.length, null);
 	}
 
 	/**
@@ -221,7 +261,7 @@ public class StorageService {
 	public StoredFile stored(UUID id, FilePurpose purpose, Actor uploader) {
 		StorageFile file = files.findById(id)
 			.filter(found -> found.isStored() && found.getPurpose() == purpose
-					&& found.getUploadedByAccountId().equals(uploader.accountId()))
+					&& uploader.accountId().equals(found.getUploadedByAccountId()))
 			.orElseThrow(() -> notFound(id));
 		return new StoredFile(file.getId(), file.getPurpose(), file.getFileName(), file.getMediaType(),
 				file.getSizeBytes(), file.getUploadedByAccountId());
@@ -271,7 +311,7 @@ public class StorageService {
 
 	private StorageFile pendingOf(Actor actor, UUID id) {
 		return files.findById(id)
-			.filter(found -> !found.isStored() && found.getUploadedByAccountId().equals(actor.accountId()))
+			.filter(found -> !found.isStored() && actor.accountId().equals(found.getUploadedByAccountId()))
 			.orElseThrow(() -> notFound(id));
 	}
 

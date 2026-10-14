@@ -16,6 +16,9 @@ public interface UseCaseProposalRepository extends JpaRepository<UseCaseProposal
 
 	Optional<UseCaseProposal> findByUseCaseIdAndOrganizationId(UUID useCaseId, UUID organizationId);
 
+	/** Whether the organization has a proposal in another status than this one, a draft for instance. */
+	boolean existsByOrganizationIdAndStatusNot(UUID organizationId, String status);
+
 	/** The proposal, locked until the transaction ends, so two members saving it act one after the other. */
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select p from UseCaseProposal p where p.useCaseId = :useCaseId and p.organizationId = :organizationId")
@@ -27,6 +30,11 @@ public interface UseCaseProposalRepository extends JpaRepository<UseCaseProposal
 
 	/** The proposals a use case received, the latest first. */
 	List<UseCaseProposal> findByUseCaseIdAndStatusOrderBySentAtDesc(UUID useCaseId, String status);
+
+	/** The proposals a use case received, locked until the transaction ends, so two members sending outcomes act one after the other. */
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select p from UseCaseProposal p where p.useCaseId = :useCaseId and p.status = 'sent' order by p.sentAt desc")
+	List<UseCaseProposal> findSentForUpdate(UUID useCaseId);
 
 	/** How many proposals each of these use cases received; one that received none is not in the answer. */
 	@Query("select p.useCaseId as useCaseId, count(p) as sent from UseCaseProposal p"

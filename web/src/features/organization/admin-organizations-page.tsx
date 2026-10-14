@@ -23,6 +23,8 @@ import {
   adminOrganizationSortKeys,
 } from "./admin-organizations-search";
 import { AdminOrganizationsToolbar } from "./admin-organizations-toolbar";
+import { ExportOrganizations } from "./export-organizations";
+import { adminOrganizationFilters } from "./organization-queries";
 import { OrganizationMark } from "./organization-mark";
 import { OrganizationReviewQueue } from "./organization-review-queue";
 
@@ -131,7 +133,15 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       <AdminPageHeader
         destination="organizations"
         title={t("title")}
-        actions={<AdminCreateOrganization />}
+        actions={
+          <>
+            <ExportOrganizations
+              filters={adminOrganizationFilters(search)}
+              disabled={organizations.total === 0}
+            />
+            <AdminCreateOrganization />
+          </>
+        }
       />
       <AdminOrganizationsToolbar countries={organizations.countries} />
 

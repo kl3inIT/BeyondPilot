@@ -569,6 +569,95 @@ public class MatchingRepository {
 	}
 
 	/**
+	 * A provider invited to propose for a use case: from which candidate, by whom and when.
+	 * @param byOperator whether the person who invited was an operator then
+	 */
+	public record Invitation(UUID candidateId, UUID organizationId, UUID accountId, boolean byOperator,
+			Instant createdAt) {
+	}
+
+	/**
+	 * Records that a provider organization is invited to propose for a use case.
+	 * @return false when it was invited already, from this candidate or another of its solutions
+	 */
+	public boolean invite(UUID useCaseId, UUID organizationId, UUID candidateId, @Nullable String note, UUID accountId,
+			boolean byOperator) {
+		return jdbc.sql("""
+				insert into matching_invitation (use_case_id, organization_id, candidate_id, note, account_id, by_operator)
+				values (:useCaseId, :organizationId, :candidateId, :note, :accountId, :byOperator)
+				on conflict (use_case_id, organization_id) do nothing
+				""")
+			.param("useCaseId", useCaseId)
+			.param("organizationId", organizationId)
+			.param("candidateId", candidateId)
+			.param("note", note, Types.VARCHAR)
+			.param("accountId", accountId)
+			.param("byOperator", byOperator)
+			.update() == 1;
+	}
+
+	/** The invitations of a use case, oldest first. */
+	public List<Invitation> invitations(UUID useCaseId) {
+		return jdbc.sql("""
+				select candidate_id, organization_id, account_id, by_operator, created_at from matching_invitation
+				where use_case_id = :useCaseId order by created_at, id
+				""")
+			.param("useCaseId", useCaseId)
+			.query((row, number) -> new Invitation(row.getObject("candidate_id", UUID.class),
+					row.getObject("organization_id", UUID.class), row.getObject("account_id", UUID.class),
+					row.getBoolean("by_operator"), row.getTimestamp("created_at").toInstant()))
+			.list();
+	}
+
+	/**
+	 * Gives the invitations of a merged provider organization to the one kept; where both were invited for one use
+	 * case, the merged one's is dropped.
+	 */
+	public void moveInvitations(UUID organizationId, UUID intoId) {
+		jdbc.sql("""
+				delete from matching_invitation merged
+				where merged.organization_id = :organizationId
+				  and exists (select 1 from matching_invitation kept
+				              where kept.organization_id = :intoId and kept.use_case_id = merged.use_case_id)
+				""").param("organizationId", organizationId).param("intoId", intoId).update();
+		jdbc.sql("update matching_invitation set organization_id = :intoId where organization_id = :organizationId")
+			.param("organizationId", organizationId)
+			.param("intoId", intoId)
+			.update();
+	}
+
+	/** How many invitations one account sent for a use case in the last 24 hours. */
+	public int invitedToday(UUID useCaseId, UUID accountId) {
+		return jdbc.sql("""
+				select count(*) from matching_invitation
+				where use_case_id = :useCaseId and account_id = :accountId and created_at > now() - interval '24 hours'
+				""")
+			.param("useCaseId", useCaseId)
+			.param("accountId", accountId)
+			.query(Integer.class)
+			.single();
+	}
+
+	/**
+	 * Writes the reason and the note on a candidate's last decision when it is a removal by this account: the one
+	 * change a decision takes after it is added, since it changes neither the state nor who decided.
+	 * @return whether there was such a removal
+	 */
+	public boolean giveRemovalReason(UUID candidateId, UUID accountId, String reason, @Nullable String note) {
+		return jdbc.sql("""
+				update matching_decision set reason = :reason, note = :note
+				where id = (select id from matching_decision where candidate_id = :candidateId
+				            order by created_at desc, id limit 1)
+				  and kind = 'removed' and account_id = :accountId
+				""")
+			.param("candidateId", candidateId)
+			.param("accountId", accountId)
+			.param("reason", reason)
+			.param("note", note, Types.VARCHAR)
+			.update() == 1;
+	}
+
+	/**
 	 * Records what a person decided on a candidate. Decisions are only added; the last one is the candidate's state.
 	 * @param kind {@link #SHORTLISTED}, {@link #REMOVED} or {@link #RESTORED}
 	 */

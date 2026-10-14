@@ -1,6 +1,6 @@
 # Messages: conversations with solution providers, AI talent and GenAI Fund
 
-A signed-in person writes to the organization behind a solution, to the person behind a talent profile or to GenAI Fund about a program, and the two sides then talk on BeyondPilot, each message arriving while the screen is open. Tracked in Linear as BEY-173.
+A signed-in person writes to the organization behind a solution, to the person behind a talent profile or to GenAI Fund about a program, and the two sides then talk on BeyondPilot, each message arriving while the screen is open. Tracked in Linear as BEY-173. The later [private organization conversations decision](private-organization-chats.md) supersedes the organization audience and starter rules below where they differ.
 
 It replaces the enquiries through a talent profile ([BEY-36](../bey-36-talent-enquiries-and-review/design.md), with "Messages you sent" and the Enquiries tab), which ended in an exchange of email addresses. The requests for an introduction to a solution's provider ([BEY-34](../bey-34-solution-introductions/design.md)) had worked the same way; BEY-172 removed them on 13 October 2026, while this increment was being built, because none had ever been sent. What was studied is in the [research note](../../../research/2026-10-13-messaging-references.md). The screens are the note "I · PROPOSAL 13/10" and the frames under it in the section `AI talent — directory, profile, enquiries and review` of `BeyondPilot — Product UI`. The decisions were taken on 13 October 2026 by the member who directs BEY-173, on the screens and on a clickable prototype.
 
@@ -19,7 +19,7 @@ It replaces the enquiries through a talent profile ([BEY-36](../bey-36-talent-en
 
 ### Domain story
 
-1. Minh, of the enterprise Tasco, opens the solution "Claims voice agent" of Arcanic AI and chooses Contact. Messages opens with a first message to write; it says that everyone at Arcanic AI can read it and that it waits until they accept.
+1. Minh, an owner of the enterprise Tasco, opens the solution "Claims voice agent" of Arcanic AI and chooses Contact. Messages opens with a first message to write; it says that Arcanic AI's owners and members they add can read it and that it waits until they accept.
 2. Minh writes. The owners of Arcanic AI get an email: Minh of Tasco wrote about Claims voice agent. No address is in it.
 3. Juin, an owner, opens Messages › Requests, reads the message and accepts. Minh gets an email, and the conversation is open.
 4. Juin's colleague Tuan answers. Minh's screen shows the message at once, named "Tuan Phong". Minh answers; "Seen" appears under Tuan's message for Arcanic AI.
@@ -33,8 +33,8 @@ The same story holds for a talent profile, with one person in place of the organ
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Conversation    | The messages between one person and one other side about one subject                                                                                                           |
 | Subject         | What the conversation is about, and what decides the other side: a talent profile, a solution or a program. One conversation that waits or is open for each person and subject |
-| Starter         | The person who wrote first. Always one account, even when they belong to an organization, whose name the other side reads                                                      |
-| Recipient side  | The person behind the profile; every member of the organization that offers the solution; GenAI Fund's operators for a program                                                 |
+| Starter         | The account that wrote first for personal conversations; for a solution, their organization acts as the starter side and an owner writes first                                 |
+| Recipient side  | The person behind the profile; owners and invited members of the organization that offers the solution; GenAI Fund's operators for a program                                   |
 | Request         | A conversation whose first message waits for the recipient side: `pending`. It becomes `accepted`, `declined`, `reported` or `closed`                                          |
 | Answer          | Accept, decline or report. The person behind a profile answers for themselves; for an organization its owners do, as they decide for it. Final                                 |
 | Read            | How far one account has read one conversation: the `seq` of the last message. Unread is what the other side wrote after it                                                     |
@@ -70,11 +70,11 @@ The edges are `messaging → audit, identity, notification, organization, progra
 1. **One conversation for each person and subject.** The old platform showed several threads with one organization; a second thread with the same people about the same solution splits what they said. A person who writes again to someone they talk with writes in the open conversation.
 2. **A first message is a request, except to GenAI Fund.** As Messenger, Instagram and X do for someone new, and as BEY-34 and BEY-36 already required an answer before anything was shared. GenAI Fund runs the programs and answers as part of its work.
 3. **The rules against unwanted mail stay.** One waiting request for a sender and a subject, ten new conversations a sender a day, a reminder on day 7, closed on day 14 (BEY-36, decisions 3 and 6). A person in an open conversation writes at most 30 messages a minute.
-4. **A solution provider reads which organization asks.** The sender must belong to an approved organization, as a request for an introduction required (BEY-34, decision 2). A talent profile and a program are written to by anyone signed in.
-5. **A conversation with a provider belongs to the organization.** Every member reads and writes it, and each message names its writer; owners answer the request (BEY-34, decision 3). A person who leaves the organization stops reading it.
+4. **A solution provider reads which organization asks.** An owner of an approved organization starts the request. A talent profile and a program are written to by anyone signed in.
+5. **A conversation with a provider belongs to its two organizations.** Current owners read and write for their side. Other current members read and write only when an owner added them to this conversation. Owners answer a first message. A person who leaves the organization stops reading it.
 6. **No email address is shown, ever.** Chat replaces the exchange of addresses. People who want to talk elsewhere write their address themselves.
 7. **A report reads as a decline to the sender** (BEY-36, decision 4), and an answer is final (decision 5).
-8. **Live through server-sent events, written by POST.** Matching already streams events through the proxy with the session cookie ([live.md](../bey-39-matching/live.md)); a WebSocket would add a second transport, its own authentication and proxy rules, for a flow where only the server pushes. An event carries the message itself, so the screen shows it without asking again.
+8. **Live through server-sent events, written by POST.** Matching already streams events through the proxy with the session cookie ([live.md](../../completed/bey-39-matching/live.md)); a WebSocket would add a second transport, its own authentication and proxy rules, for a flow where only the server pushes. An event carries the message itself, so the screen shows it without asking again.
 9. **Every message is sent under an identifier the screen chooses, including the first one.** A message in an open conversation appears at once while it is sent; the backend writes it once. A retry of the first message returns the conversation already started, even after the recipient accepted or declined it.
 10. **Nothing is replayed on the stream.** A screen reads the lists and the messages after the last one it holds whenever its stream opens. The server ends each stream after ten minutes, so that who may hear is decided again from who the person is now.
 11. **An absent person gets one email until they read.** Without it a message would wait unseen; with one for each message a conversation would flood an inbox. GenAI Fund's operators are not emailed: they read Messages as part of their work.

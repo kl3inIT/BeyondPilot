@@ -25,6 +25,7 @@ type Thread = {
   conversation: Conversation;
   subject: ConversationSubject;
   participants: ConversationParticipant[];
+  manageableMembers: ConversationDetail["manageableMembers"];
   messages: ThreadMessage[];
   hasEarlier: boolean;
   /** How far the other side has read: the seq of the last message they read. */
@@ -94,6 +95,7 @@ function threadOf(detail: ConversationDetail): Thread {
     conversation: detail.conversation,
     subject: detail.subject,
     participants: detail.participants,
+    manageableMembers: detail.manageableMembers,
     messages: detail.messages.map(kept),
     hasEarlier: detail.hasEarlier,
     readByOtherSide: detail.readByOtherSide,
@@ -181,6 +183,7 @@ function refreshed(held: Thread, detail: ConversationDetail): Thread {
     conversation: detail.conversation,
     subject: detail.subject,
     participants: detail.participants,
+    manageableMembers: detail.manageableMembers,
     messages: merged(held.messages, detail.messages.map(kept)),
     hasEarlier: heldReachesBack ? held.hasEarlier : detail.hasEarlier,
     readByOtherSide: Math.max(held.readByOtherSide, detail.readByOtherSide),

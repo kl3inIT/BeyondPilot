@@ -41,7 +41,12 @@ import ai.genaifund.beyondpilot.organization.persistence.Organization;
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationQueryRepository;
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationQueryRepository.AdminRow;
 import ai.genaifund.beyondpilot.organization.persistence.OrganizationRepository;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +58,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class OrganizationAdministration {
+
+	private static final Logger LOG = LoggerFactory.getLogger(OrganizationAdministration.class);
 
 	/** The days of a review queue are Vietnam's, as the screens show them. */
 	private static final ZoneId QUEUE_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -114,6 +121,51 @@ public class OrganizationAdministration {
 	}
 
 	/**
+	 * Organizations as a spreadsheet: every page of the list as the request narrows it, in its order, for GenAI Fund to work
+	 * with outside BeyondPilot. The download is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, AdminOrganizationListRequest request, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		List<AdminOrganizationSummaryResponse> rows = Spreadsheet
+			.everyPage(page -> list(actor, new AdminOrganizationListRequest(request.q(), request.status(), request.country(), request.sort(), page,
+					Spreadsheet.PAGE_SIZE)).items());
+		Spreadsheet<AdminOrganizationSummaryResponse> sheet = Spreadsheet.<AdminOrganizationSummaryResponse>of("Organizations")
+			.text("Organization", AdminOrganizationSummaryResponse::name)
+			.label("Type", AdminOrganizationSummaryResponse::type)
+			.text("Country", AdminOrganizationSummaryResponse::country)
+			.label("Status", AdminOrganizationSummaryResponse::status)
+			.count("Members", AdminOrganizationSummaryResponse::members)
+			.yesNo("Has an owner", AdminOrganizationSummaryResponse::owned)
+			.group("Waiting on GenAI Fund")
+			.label("Request", AdminOrganizationSummaryResponse::request)
+			.text("Asked by", AdminOrganizationSummaryResponse::askedBy)
+			.time("Asked at", AdminOrganizationSummaryResponse::requestedAt)
+			.ungrouped()
+			.time("Created at", AdminOrganizationSummaryResponse::createdAt)
+			.time("Taken down at", AdminOrganizationSummaryResponse::suspendedAt)
+			.text("Merged into", AdminOrganizationSummaryResponse::mergedInto)
+			.text("Address", AdminOrganizationSummaryResponse::slug);
+		SpreadsheetFile file = sheet.write(format, "organizations", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("Search", request.q())
+					.narrowedBy("Status", request.status())
+					.narrowedBy("Country", request.country())
+					.narrowedBy("Order", request.sort()));
+		audit.record(new AuditRecord(AuditAction.ORGANIZATION_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("organization_list", "organizations", "Organizations"), Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "organization.list.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Organizations exported");
+		return file;
+	}
+
+	/**
 	 * One organization with the people in it, its open invitations and the open requests to own it.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws OrganizationException when the organization does not exist
@@ -133,6 +185,9 @@ public class OrganizationAdministration {
 	public AdminOrganizationResponse create(Actor actor, AdminCreateOrganizationRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		String domain = request.emailDomain();
+		if (domain != null && Organization.INDIVIDUAL.equals(request.type())) {
+			throw individualDomain();
+		}
 		if (domain != null && organizations.findByEmailDomain(domain).isPresent()) {
 			throw new OrganizationException(OrganizationErrorCode.DOMAIN_TAKEN,
 					"Second organization for one email domain");
@@ -250,6 +305,9 @@ public class OrganizationAdministration {
 		organization.describeTeam(OrganizationViews.text(profile.teamBackground()));
 		String domain = request.emailDomain();
 		if (!Objects.equals(domain, organization.getEmailDomain())) {
+			if (domain != null && organization.isIndividual()) {
+				throw individualDomain();
+			}
 			if (domain != null && organizations.findByEmailDomain(domain).isPresent()) {
 				throw new OrganizationException(OrganizationErrorCode.DOMAIN_TAKEN,
 						"Domain of organization " + id + " set to one another organization has");
@@ -514,11 +572,18 @@ public class OrganizationAdministration {
 		if (domain == null || domain.equals(organization.getEmailDomain())) {
 			return;
 		}
+		if (organization.isIndividual()) {
+			throw individualDomain();
+		}
 		if (organizations.findByEmailDomain(domain).isPresent()) {
 			throw new OrganizationException(OrganizationErrorCode.DOMAIN_TAKEN,
 					"Domain of organization " + organization.getId() + " set to one another organization has");
 		}
 		organization.verifyDomain(domain);
+	}
+
+	private static OrganizationException individualDomain() {
+		return new OrganizationException(OrganizationErrorCode.INDIVIDUAL, "Email domain given to an individual");
 	}
 
 	private Member member(Organization organization, UUID accountId) {
@@ -612,11 +677,15 @@ public class OrganizationAdministration {
 
 	/**
 	 * A domain the operator only has to confirm: the one the organization has, else its creator's work domain while
-	 * it waits for review, else its website's. None when another organization holds it.
+	 * it waits for review, else its website's. None for an individual, or when another organization holds it.
 	 */
 	private @Nullable String suggestedDomain(Organization organization, @Nullable Person creator) {
 		if (organization.getEmailDomain() != null) {
 			return organization.getEmailDomain();
+		}
+		if (organization.isIndividual()) {
+			// A person on their own stands for nobody else at their address.
+			return null;
 		}
 		String fromCreator = organization.isInReview() && creator != null
 				? OrganizationViews.workDomain(creator.email()) : null;

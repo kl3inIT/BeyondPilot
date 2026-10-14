@@ -44,9 +44,9 @@ function AdminSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href={home} />}>
-              <BrandMark className="size-8 shrink-0 group-data-[collapsible=icon]:-m-1 group-data-[collapsible=icon]:size-6" />
-              {/* The collapsed sidebar keeps the mark alone. */}
-              <span className="grid flex-1 text-left text-sm leading-tight">
+              <BrandMark className="size-8 shrink-0" />
+              {/* The collapsed sidebar shows the mark alone, filling its button; the name stays for screen readers. */}
+              <span className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:sr-only">
                 <span className="truncate font-semibold">{s("brand")}</span>
                 <span className="truncate text-xs text-muted-foreground">{area ?? t("title")}</span>
               </span>

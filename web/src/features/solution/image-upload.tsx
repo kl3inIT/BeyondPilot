@@ -1,7 +1,7 @@
 "use client";
 
 import { cva, type VariantProps } from "class-variance-authority";
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, XIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, XIcon, ZoomInIcon } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
@@ -11,6 +11,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { failedWith } from "@/lib/api/failure";
 import { publicFileUrl, uploadFile } from "@/lib/storage/upload";
 
+import { SolutionImageDialog } from "./solution-image-dialog";
 import { useFileSize } from "./solution-deck";
 import { limits, type HeldImage } from "./solution-editor-state";
 
@@ -47,7 +48,7 @@ async function store(file: File, place: Place): Promise<HeldImage | Problem> {
 }
 
 const tileVariants = cva(
-  "relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-muted text-muted-foreground",
+  "relative flex shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-muted text-muted-foreground outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
   {
     variants: {
       place: {
@@ -83,6 +84,7 @@ function UploadingTile({ place, label }: TileProps & { label: string }) {
 type ImageUploadProps = {
   /** The id of the control that chooses a file, so a link from another step reaches it. */
   id: string;
+  solutionName: string;
   place: "logo" | "cover";
   image: HeldImage | null;
   /** True when a review asks for this image and it is not there. */
@@ -96,13 +98,22 @@ type ImageUploadProps = {
  * One image of a solution, its logo or its cover: uploaded at once and named by the solution with
  * its next save. The backend removes an image the solution no longer names.
  */
-function ImageUpload({ id, place, image, invalid, describedBy, onChange }: ImageUploadProps) {
+function ImageUpload({
+  id,
+  solutionName,
+  place,
+  image,
+  invalid,
+  describedBy,
+  onChange,
+}: ImageUploadProps) {
   const t = useTranslations("Solution.editor.images");
   const size = useFileSize();
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [problem, setProblem] = useState<Problem | null>(null);
   const [dimensions, setDimensions] = useState<{ fileId: string; text: string } | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   async function upload(file: File) {
     setProblem(null);
@@ -142,7 +153,13 @@ function ImageUpload({ id, place, image, invalid, describedBy, onChange }: Image
         {uploading ? (
           <UploadingTile place={place} label={t("uploading")} />
         ) : image ? (
-          <div className={tileVariants({ place })}>
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(true)}
+            aria-label={t("previewNamed", { name: image.fileName })}
+            title={t("previewNamed", { name: image.fileName })}
+            className={tileVariants({ place })}
+          >
             <Image
               src={publicFileUrl(image.fileId)}
               alt={t(`${place}.alt`)}
@@ -157,7 +174,10 @@ function ImageUpload({ id, place, image, invalid, describedBy, onChange }: Image
                 })
               }
             />
-          </div>
+            <span className="absolute right-1 bottom-1 flex size-6 items-center justify-center rounded-md border bg-background/90 text-foreground shadow-sm">
+              <ZoomInIcon className="size-4" aria-hidden="true" />
+            </span>
+          </button>
         ) : (
           <button
             id={id}
@@ -208,12 +228,19 @@ function ImageUpload({ id, place, image, invalid, describedBy, onChange }: Image
           {problem === "size" ? t(`errors.size.${place}`) : t(`errors.${problem}`)}
         </p>
       )}
+      <SolutionImageDialog
+        name={solutionName}
+        imageFileIds={image ? [image.fileId] : []}
+        openIndex={previewOpen && image ? 0 : null}
+        onOpenIndexChange={(index) => setPreviewOpen(index !== null)}
+      />
     </div>
   );
 }
 
 type GalleryUploadProps = {
   id: string;
+  solutionName: string;
   images: HeldImage[];
   /** Adds an image whose upload ended; uploads end one by one, each after the list may have changed. */
   onAdd: (image: HeldImage) => void;
@@ -224,13 +251,14 @@ type GalleryUploadProps = {
  * The images shown under the cover: up to four, in the order a person gives them by dragging a tile
  * or with the arrows on it.
  */
-function GalleryUpload({ id, images, onAdd, onChange }: GalleryUploadProps) {
+function GalleryUpload({ id, solutionName, images, onAdd, onChange }: GalleryUploadProps) {
   const t = useTranslations("Solution.editor.images");
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(0);
   const [problem, setProblem] = useState<Problem | null>(null);
   const [dragged, setDragged] = useState<number | null>(null);
   const [moved, setMoved] = useState("");
+  const [previewOpen, setPreviewOpen] = useState<number | null>(null);
   const room = limits.images - images.length - uploading;
 
   async function upload(files: File[]) {
@@ -298,7 +326,13 @@ function GalleryUpload({ id, images, onAdd, onChange }: GalleryUploadProps) {
             data-dragged={dragged === index ? true : undefined}
             className="group/tile relative data-dragged:opacity-50"
           >
-            <div className={tileVariants({ place: "more" })}>
+            <button
+              type="button"
+              onClick={() => setPreviewOpen(index)}
+              aria-label={t("previewNamed", { name: image.fileName })}
+              title={t("previewNamed", { name: image.fileName })}
+              className={tileVariants({ place: "more" })}
+            >
               <Image
                 src={publicFileUrl(image.fileId)}
                 alt={t("more.alt", { position: index + 1, count: images.length })}
@@ -307,9 +341,12 @@ function GalleryUpload({ id, images, onAdd, onChange }: GalleryUploadProps) {
                 unoptimized
                 className="object-cover"
               />
-            </div>
+              <span className="absolute top-1 right-1 z-10 flex size-6 items-center justify-center rounded-md border bg-background/90 text-foreground shadow-sm">
+                <ZoomInIcon className="size-4" aria-hidden="true" />
+              </span>
+            </button>
             {/* Always there for a keyboard and a touch screen; a mouse sees them on the tile it is over. */}
-            <div className="absolute inset-x-1 bottom-1 flex justify-between gap-1 opacity-0 transition-opacity group-focus-within/tile:opacity-100 group-hover/tile:opacity-100 pointer-coarse:opacity-100">
+            <div className="absolute inset-x-1 bottom-1 z-20 flex justify-between gap-1 opacity-0 transition-opacity group-focus-within/tile:opacity-100 group-hover/tile:opacity-100 pointer-coarse:opacity-100">
               <span className="flex gap-1">
                 <TileAction
                   label={t("more.earlier", { position: index + 1 })}
@@ -364,6 +401,12 @@ function GalleryUpload({ id, images, onAdd, onChange }: GalleryUploadProps) {
           {problem === "size" ? t("errors.size.more") : t(`errors.${problem}`)}
         </p>
       )}
+      <SolutionImageDialog
+        name={solutionName}
+        imageFileIds={images.map((image) => image.fileId)}
+        openIndex={previewOpen}
+        onOpenIndexChange={setPreviewOpen}
+      />
     </div>
   );
 }

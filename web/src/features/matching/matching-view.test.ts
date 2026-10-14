@@ -110,6 +110,7 @@ const candidate = (
   findings,
   judged: true,
   listed: true,
+  hasDeck: true,
   origin: "recommended",
   requiredMet: findings.some((one) => one.requirement === 1 && one.status === "met") ? 1 : 0,
   requiredTotal: 1,
@@ -223,6 +224,13 @@ describe("tabs and groups", () => {
     expect(grouped(tabs.matches).kept).toEqual([shortlisted]);
     // It is kept, and it is not what the run recommends.
     expect(recommendedOf([direct, none, shortlisted, gone])).toEqual([direct]);
+  });
+
+  it("keeps a candidate whose provider was invited although the last run put it in no group", () => {
+    const invited = { ...none, solutionName: "Invited", invitedAt: "2026-10-14T03:00:00Z" };
+    const tabs = tabsOf([direct, none, invited]);
+    expect(grouped(tabs.matches).kept).toEqual([invited]);
+    expect(recommendedOf([direct, none, invited])).toEqual([direct]);
   });
 });
 

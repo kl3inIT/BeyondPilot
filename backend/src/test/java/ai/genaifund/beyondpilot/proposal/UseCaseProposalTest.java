@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 
@@ -117,6 +119,8 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			String list = body(get(reader, path + "s").expectStatus().isOk());
 			assertThat(JsonPath.<List<String>>read(list, "$.items[*].organizationName"))
 				.containsExactly("Team sends.test");
+			assertThat(JsonPath.<List<String>>read(list, "$.items[*].organizationId"))
+				.containsExactly(provider.organization().toString());
 			assertThat(JsonPath.<List<String>>read(list, "$.items[*].solutionNames[*]")).containsExactly("Claim Copilot");
 			assertThat(JsonPath.<List<String>>read(list, "$.items[*].contactName"))
 				.hasSize(1);
@@ -285,6 +289,325 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 	}
 
 	@Test
+	void aSentProposalIsTakenBackAndMayBeSentAgain() {
+		Provider provider = provider("withdraws.test");
+		Poster poster = poster("posts-withdraws.test");
+		UUID useCase = publishedUseCase(poster.organization, "Withdrawn proposals");
+		String path = path(useCase);
+		String id = sentProposal(provider, useCase);
+		String withdraw = API + "/use-case-proposals/" + id + "/withdraw";
+		assertThat(received(useCase)).isEqualTo(1);
+
+		// Somebody of another organization cannot take it back; it is not found for them.
+		Provider other = provider("withdraws-other.test");
+		assertProblem(post(other.founder, withdraw, null), 404, "PROPOSAL_NOT_FOUND");
+
+		// A member of the sending organization takes it back: it is a draft again with what it held, and says when.
+		String back = body(post(provider.colleague, withdraw, null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(back, "$.proposal.status")).isEqualTo("draft");
+		assertThat(JsonPath.<String>read(back, "$.proposal.withdrawnAt")).isNotNull();
+		assertThat(JsonPath.<Object>read(back, "$.proposal.sentAt")).isNull();
+		assertThat(JsonPath.<Object>read(back, "$.proposal.sentBy")).isNull();
+		assertThat(JsonPath.<Object>read(back, "$.proposal.editableUntil")).isNull();
+		assertThat(JsonPath.<String>read(back, "$.proposal.approach")).isEqualTo("We adapt it.");
+		assertThat(JsonPath.<List<String>>read(back, "$.proposal.solutions[*].name")).hasSize(1);
+
+		// The organization that posted the use case no longer reads it, and it no longer counts.
+		assertThat(received(useCase)).isZero();
+		assertThat(JsonPath.<List<String>>read(body(get(poster.founder, path + "s").expectStatus().isOk()),
+				"$.items[*].organizationName")).isEmpty();
+		assertProblem(get(poster.founder, API + "/use-case-proposals/" + id), 404, "PROPOSAL_NOT_FOUND");
+		// Only a sent proposal is taken back.
+		assertProblem(post(provider.founder, withdraw, null), 409, "PROPOSAL_NOT_SENT");
+
+		// It is a draft: it is saved, and sent again, which clears the note and starts the time to edit again.
+		String saved = body(put(provider.founder, path,
+				draft(provider.solution, "A second try.", file(provider.founderEmail), null, proposalVersion(back)))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<String>read(saved, "$.proposal.status")).isEqualTo("draft");
+		assertThat(JsonPath.<String>read(saved, "$.proposal.withdrawnAt")).isNotNull();
+		String again = body(post(provider.founder, API + "/use-case-proposals/" + id + "/send", null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(again, "$.proposal.status")).isEqualTo("sent");
+		assertThat(JsonPath.<Object>read(again, "$.proposal.withdrawnAt")).isNull();
+		assertThat(JsonPath.<String>read(again, "$.proposal.editableUntil")).isNotNull();
+		assertThat(received(useCase)).isEqualTo(1);
+		assertThat(JsonPath.<String>read(
+				body(get(poster.colleague, API + "/use-case-proposals/" + id).expectStatus().isOk()), "$.approach"))
+			.isEqualTo("A second try.");
+	}
+
+	@Test
+	void aProposalCannotBeTakenBackOnceTheUseCaseClosedButStaysReadable() {
+		Provider provider = provider("withdraws-closed.test");
+		Poster poster = poster("posts-withdraws-closed.test");
+		UUID useCase = publishedUseCase(poster.organization, "Closing after withdrawals");
+		String path = path(useCase);
+		String id = sentProposal(provider, useCase);
+		Provider taken = provider("withdraws-taken.test");
+		String takenId = sentProposal(taken, useCase);
+		post(taken.founder, API + "/use-case-proposals/" + takenId + "/withdraw", null).expectStatus().isOk();
+
+		jdbc.sql("update use_case set closes_at = now() - interval '1 minute' where id = ?").params(useCase).update();
+
+		// The use case no longer takes proposals: a sent one stays, whatever the time to edit says.
+		assertProblem(post(provider.founder, API + "/use-case-proposals/" + id + "/withdraw", null), 409,
+				"PROPOSAL_USE_CASE_CLOSED");
+		assertThat(JsonPath.<String>read(body(get(provider.founder, path).expectStatus().isOk()), "$.proposal.status"))
+			.isEqualTo("sent");
+		// One taken back before the closing is still found, saying it was.
+		String read = body(get(taken.founder, path).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(read, "$.proposal.status")).isEqualTo("draft");
+		assertThat(JsonPath.<String>read(read, "$.proposal.withdrawnAt")).isNotNull();
+		assertProblem(post(taken.founder, API + "/use-case-proposals/" + takenId + "/send", null), 409,
+				"PROPOSAL_USE_CASE_CLOSED");
+	}
+
+	@Test
+	void thePostingOrganizationAndOperatorsDecideOnProposalsAndNobodyIsTold() {
+		Provider provider = provider("decides.test");
+		Provider notSent = provider("decides-draft.test");
+		Poster poster = poster("posts-decides.test");
+		UUID useCase = publishedUseCase(poster.organization, "Decided proposals");
+		String id = sentProposal(provider, useCase);
+		String decide = API + "/use-case-proposals/" + id + "/decision";
+		long mails = mail.countTo(provider.founderEmail);
+
+		// Neither the provider, nor a stranger, nor another organization decides: the proposal is not found for them.
+		assertProblem(post(provider.founder, decide, Map.of("decision", "shortlisted")), 404,
+				"PROPOSAL_USE_CASE_NOT_FOUND");
+		assertProblem(post(TestSignIn.session(client, mail, "stranger-decides@nowhere.test"), decide,
+				Map.of("decision", "shortlisted")), 404, "PROPOSAL_USE_CASE_NOT_FOUND");
+		// Only shortlisted or declined is a decision.
+		assertProblem(post(poster.founder, decide, Map.of("decision", "maybe")), 400, "REQUEST_INVALID");
+		// A proposal that was not sent cannot be decided.
+		String draftId = JsonPath.read(body(put(notSent.founder, path(useCase),
+				draft(notSent.solution, "Not yet.", null, null, null)).expectStatus().isOk()), "$.proposal.id");
+		assertProblem(post(poster.founder, API + "/use-case-proposals/" + draftId + "/decision",
+				Map.of("decision", "shortlisted")), 404, "PROPOSAL_NOT_FOUND");
+
+		// Any member of the posting organization decides; the line says what, when and by whom.
+		String first = body(post(poster.colleague, decide, Map.of("decision", "shortlisted")).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(first, "$.id")).isEqualTo(id);
+		assertThat(JsonPath.<String>read(first, "$.decision")).isEqualTo("shortlisted");
+		assertThat(JsonPath.<String>read(first, "$.decidedAt")).isNotNull();
+		assertThat(JsonPath.<String>read(first, "$.decidedBy")).isNotBlank();
+		assertThat(JsonPath.<Boolean>read(first, "$.outcomePending")).isTrue();
+		assertThat(JsonPath.<Object>read(first, "$.outcomeSentAt")).isNull();
+
+		// It changes freely, an operator may change it, and the same decision again adds nothing.
+		String changed = body(post(operator, decide, Map.of("decision", "declined")).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(changed, "$.decision")).isEqualTo("declined");
+		post(operator, decide, Map.of("decision", "declined")).expectStatus().isOk();
+		post(poster.founder, decide, Map.of("decision", "shortlisted")).expectStatus().isOk();
+		assertThat(jdbc.sql("select decision from use_case_proposal_decision where proposal_id = ? order by decided_at")
+			.params(UUID.fromString(id))
+			.query(String.class)
+			.list()).containsExactly("shortlisted", "declined", "shortlisted");
+		assertThat(jdbc.sql("select count(*) from audit_event where action = 'use_case_proposal.decide' and resource_id = ?")
+			.params(id)
+			.query(Long.class)
+			.single()).isEqualTo(3L);
+
+		// Deciding tells nobody.
+		assertThat(mail.countTo(provider.founderEmail)).isEqualTo(mails);
+
+		// The list and the detail carry the decision, and the counts for the tabs.
+		String list = body(get(poster.founder, path(useCase) + "s").expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(list, "$.shortlisted")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(list, "$.declined")).isZero();
+		assertThat(JsonPath.<Integer>read(list, "$.pending")).isEqualTo(1);
+		assertThat(JsonPath.<List<String>>read(list, "$.items[*].decision")).containsExactly("shortlisted");
+		String detail = body(get(operator, API + "/use-case-proposals/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(detail, "$.decision")).isEqualTo("shortlisted");
+		assertThat(JsonPath.<Boolean>read(detail, "$.outcomePending")).isTrue();
+
+		// A decision may change even after the use case closed.
+		jdbc.sql("update use_case set closes_at = now() - interval '1 minute' where id = ?").params(useCase).update();
+		post(poster.founder, decide, Map.of("decision", "declined")).expectStatus().isOk();
+	}
+
+	@Test
+	void anOperatorDownloadsWhatAUseCaseReceivedAndTheDownloadIsRecorded() {
+		Provider provider = provider("exports.test");
+		Provider elsewhere = provider("exports-elsewhere.test");
+		Poster poster = poster("posts-exports.test");
+		UUID useCase = publishedUseCase(poster.organization, "Exported proposals");
+		String id = sentProposal(provider, useCase);
+		sentProposal(elsewhere, publishedUseCase(poster.organization, "Other proposals"));
+		post(poster.founder, API + "/use-case-proposals/" + id + "/decision", Map.of("decision", "shortlisted"))
+			.expectStatus()
+			.isOk();
+		String export = path(useCase) + "s/export";
+
+		// The posting organization reads what it received but does not download it.
+		assertProblem(post(poster.founder, export, null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts(useCase)).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(post(operator, export, null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"use-case-proposals-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(1)).startsWith("Proposal", "Organization", "Organization approved", "Contact", "Solutions");
+		assertThat(sheet.get(2)).startsWith(id, "Team exports.test", "Yes")
+			.contains("Claim Copilot", "Shortlisted")
+			.doesNotContain("Team exports-elsewhere.test");
+
+		String csv = body(post(operator, export + "?format=csv", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("\uFEFFProposal,Organization,Organization approved,Contact,Solutions,Sent at,");
+		assertThat(csv.lines().toList()).hasSize(2).last().asString().startsWith(id + ",Team exports.test,Yes,");
+		assertThat(exportCounts(useCase)).containsExactly("1", "1");
+	}
+
+	private List<String> exportCounts(UUID useCase) {
+		return jdbc.sql("""
+				select details ->> 'count' from audit_event where action = 'use_case_proposal.export' and resource_id = ?
+				order by occurred_at
+				""").params(useCase.toString()).query(String.class).list();
+	}
+
+	@Test
+	void outcomesAreEmailedOnceInABatchAndAgainOnlyWhenADecisionChanged() {
+		Provider yes = provider("outcome-yes.test");
+		Provider no = provider("outcome-no.test");
+		Provider undecided = provider("outcome-undecided.test");
+		Poster poster = poster("posts-outcomes.test");
+		UUID useCase = publishedUseCase(poster.organization, "Outcomes use case");
+		String send = API + "/use-cases/" + useCase + "/outcomes";
+		String yesId = sentProposal(yes, useCase);
+		String noId = sentProposal(no, useCase);
+		sentProposal(undecided, useCase);
+
+		// With nothing decided there is nothing to send.
+		assertProblem(post(poster.founder, send, Map.of()), 409, "PROPOSAL_NOTHING_TO_SEND");
+		post(poster.founder, API + "/use-case-proposals/" + yesId + "/decision", Map.of("decision", "shortlisted"))
+			.expectStatus()
+			.isOk();
+		post(poster.colleague, API + "/use-case-proposals/" + noId + "/decision", Map.of("decision", "declined"))
+			.expectStatus()
+			.isOk();
+		String before = body(get(poster.founder, path(useCase) + "s").expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(before, "$.pending")).isEqualTo(2);
+
+		// A provider does not send them.
+		assertProblem(post(yes.founder, send, Map.of()), 404, "PROPOSAL_USE_CASE_NOT_FOUND");
+		long yesMails = mail.countTo(yes.founderEmail);
+		long noMails = mail.countTo(no.founderEmail);
+		long undecidedMails = mail.countTo(undecided.founderEmail);
+		assertProblem(post(poster.founder, send, Map.of("message", "x".repeat(2001))), 400, "REQUEST_INVALID");
+
+		String sent = body(post(poster.colleague, send, Map.of("message", "Thank you all.")).expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(sent, "$.sent")).isEqualTo(2);
+		assertThat(JsonPath.<Integer>read(sent, "$.shortlisted")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(sent, "$.declined")).isEqualTo(1);
+		assertThat(mail.countTo(yes.founderEmail)).isEqualTo(yesMails + 1);
+		assertThat(mail.countTo(no.founderEmail)).isEqualTo(noMails + 1);
+		assertThat(mail.countTo(undecided.founderEmail)).isEqualTo(undecidedMails);
+		assertThat(mail.latestSubjectTo(yes.founderEmail)).isEqualTo("Shortlisted: Outcomes use case");
+		assertThat(mail.latestTextTo(yes.founderEmail)).contains("Thank you all.")
+			.contains("/use-cases/" + useCase + "/propose/view");
+		assertThat(mail.latestSubjectTo(no.founderEmail)).isEqualTo("Your proposal for Outcomes use case");
+		assertThat(mail.latestTextTo(no.founderEmail)).contains("Thank you all.");
+
+		// Sent once: a second send finds nothing, and the list says so.
+		assertProblem(post(poster.founder, send, Map.of()), 409, "PROPOSAL_NOTHING_TO_SEND");
+		String after = body(get(poster.founder, path(useCase) + "s").expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(after, "$.pending")).isZero();
+		assertThat(JsonPath.<Integer>read(after, "$.shortlisted")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(after, "$.declined")).isEqualTo(1);
+		assertThat(JsonPath.<List<Boolean>>read(after, "$.items[*].outcomePending")).containsOnly(false);
+		assertThat(jdbc.sql("select count(*) from audit_event where action = 'use_case_proposal.outcomes_send' and resource_id = ?")
+			.params(useCase.toString())
+			.query(Long.class)
+			.single()).isEqualTo(1L);
+
+		// Deciding the same again leaves nothing to send; changing a decision is sent again, for that proposal only.
+		post(poster.founder, API + "/use-case-proposals/" + yesId + "/decision", Map.of("decision", "shortlisted"))
+			.expectStatus()
+			.isOk();
+		assertProblem(post(poster.founder, send, Map.of()), 409, "PROPOSAL_NOTHING_TO_SEND");
+		post(poster.founder, API + "/use-case-proposals/" + yesId + "/decision", Map.of("decision", "declined"))
+			.expectStatus()
+			.isOk();
+		assertThat(JsonPath.<Integer>read(body(get(poster.founder, path(useCase) + "s").expectStatus().isOk()),
+				"$.pending")).isEqualTo(1);
+		String again = body(post(poster.founder, send, Map.of()).expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(again, "$.sent")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(again, "$.declined")).isEqualTo(1);
+		assertThat(mail.countTo(yes.founderEmail)).isEqualTo(yesMails + 2);
+		assertThat(mail.countTo(no.founderEmail)).isEqualTo(noMails + 1);
+		assertThat(mail.latestSubjectTo(yes.founderEmail)).isEqualTo("Your proposal for Outcomes use case");
+	}
+
+	@Test
+	void aProviderSeesTheOutcomeOnlyOnceItWasSentAndWithdrawingClearsIt() {
+		Provider provider = provider("sees-outcome.test");
+		Poster poster = poster("posts-sees-outcome.test");
+		UUID useCase = publishedUseCase(poster.organization, "Visible outcomes");
+		String path = path(useCase);
+		String id = sentProposal(provider, useCase);
+		String decide = API + "/use-case-proposals/" + id + "/decision";
+		String send = API + "/use-cases/" + useCase + "/outcomes";
+
+		assertThat(JsonPath.<Object>read(body(get(provider.founder, path).expectStatus().isOk()), "$.proposal.outcome"))
+			.isNull();
+		post(poster.founder, decide, Map.of("decision", "shortlisted")).expectStatus().isOk();
+		// Decided, not told: the provider sees nothing.
+		String hidden = body(get(provider.colleague, path).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(hidden, "$.proposal.outcome")).isNull();
+		assertThat(JsonPath.<Object>read(hidden, "$.proposal.outcomeSentAt")).isNull();
+		assertThat(hidden).doesNotContain("\"decision\"");
+
+		post(poster.founder, send, Map.of()).expectStatus().isOk();
+		String told = body(get(provider.colleague, path).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(told, "$.proposal.outcome")).isEqualTo("shortlisted");
+		assertThat(JsonPath.<String>read(told, "$.proposal.outcomeSentAt")).isNotNull();
+
+		// A change not yet sent stays hidden: the provider still reads what they were told.
+		post(poster.founder, decide, Map.of("decision", "declined")).expectStatus().isOk();
+		assertThat(JsonPath.<String>read(body(get(provider.founder, path).expectStatus().isOk()), "$.proposal.outcome"))
+			.isEqualTo("shortlisted");
+
+		// A shortlisted proposal can still be withdrawn: the decision and what was told go, the history stays.
+		String back = body(post(provider.founder, API + "/use-case-proposals/" + id + "/withdraw", null).expectStatus()
+			.isOk());
+		assertThat(JsonPath.<Object>read(back, "$.proposal.outcome")).isNull();
+		assertThat(JsonPath.<Object>read(back, "$.proposal.outcomeSentAt")).isNull();
+		assertThat(jdbc.sql("select count(*) from use_case_proposal where id = ? and decision is null"
+				+ " and decided_at is null and decided_by_account_id is null and outcome is null"
+				+ " and outcome_sent_at is null")
+			.params(UUID.fromString(id))
+			.query(Long.class)
+			.single()).isEqualTo(1L);
+		assertThat(jdbc.sql("select count(*) from use_case_proposal_decision where proposal_id = ?")
+			.params(UUID.fromString(id))
+			.query(Long.class)
+			.single()).isEqualTo(2L);
+		// The poster no longer reads it, and sending again finds nothing.
+		assertProblem(post(poster.founder, decide, Map.of("decision", "shortlisted")), 404, "PROPOSAL_NOT_FOUND");
+		assertProblem(post(poster.founder, send, Map.of()), 409, "PROPOSAL_NOTHING_TO_SEND");
+	}
+
+	/** How many proposals the use case received, as anyone reads it. */
+	private int received(UUID useCase) {
+		String counts = body(client.get()
+			.uri(API + "/use-case-proposal-counts?useCaseIds=" + useCase)
+			.exchange()
+			.expectStatus()
+			.isOk());
+		return JsonPath.<List<Integer>>read(counts, "$.items[*].received").get(0);
+	}
+
+	@Test
 	void aUseCaseThatAllowsNoEditsKeepsASentProposalAsSent() {
 		Provider provider = provider("nodays.test");
 		Poster poster = poster("posts-nodays.test");
@@ -327,7 +650,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		UUID useCase = publishedUseCase(poster.organization, "Claims triage");
 		String path = path(useCase);
 
-		// Someone in no organization makes one in this step; it waits for review, and it sends all the same.
+		// Someone in no organization makes one in this step: on their own, nobody reviews it before it sends.
 		String loner = TestSignIn.session(client, mail, "alone@waiting-send.test");
 		String made = body(post(loner, ORGANIZATION + "/organizations/basics", Map.of("name", "Alone Builder", "type",
 				"independent_builder", "teamSize", "just_me", "industries", List.of(), "country", "VN"))
@@ -335,7 +658,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.isCreated());
 		assertThat(JsonPath.<String>read(made, "$.name")).isEqualTo("Alone Builder");
 		String form = body(get(loner, path).expectStatus().isOk());
-		assertThat(JsonPath.<Boolean>read(form, "$.organization.approved")).isFalse();
+		assertThat(JsonPath.<Boolean>read(form, "$.organization.approved")).isTrue();
 		assertThat(JsonPath.<String>read(form, "$.organization.type")).isEqualTo("independent_builder");
 		UUID solution = completeSolution(loner, "alone@waiting-send.test", "Lone Solver");
 		String saved = body(put(loner, path, draft(solution, "Our approach.", file("alone@waiting-send.test"), null, null))
@@ -349,10 +672,10 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Object>read(sent, "$.proposal.sender")).isNull();
 		assertThat(JsonPath.<String>read(sent, "$.proposal.sentBy.email")).isEqualTo("alone@waiting-send.test");
 		String list = body(get(poster.founder, path + "s").expectStatus().isOk());
-		assertThat(JsonPath.<List<Boolean>>read(list, "$.items[*].organizationApproved")).containsExactly(false);
+		assertThat(JsonPath.<List<Boolean>>read(list, "$.items[*].organizationApproved")).containsExactly(true);
 		assertThat(JsonPath.<List<String>>read(list, "$.items[*].contactName")).containsExactly("Founder Provider");
 		String one = body(get(poster.founder, API + "/use-case-proposals/" + id).expectStatus().isOk());
-		assertThat(JsonPath.<Boolean>read(one, "$.organizationApproved")).isFalse();
+		assertThat(JsonPath.<Boolean>read(one, "$.organizationApproved")).isTrue();
 		assertThat(JsonPath.<String>read(one, "$.sentBy.email")).isEqualTo("alone@waiting-send.test");
 		assertThat(JsonPath.<Object>read(one, "$.teamBackground")).isNull();
 	}
@@ -364,14 +687,15 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		String path = path(useCase);
 
 		String lead = TestSignIn.session(client, mail, "lead@team-send.test");
-        post(lead, ORGANIZATION + "/organizations/basics", Map.of("name", "Doc Team", "type", "builder_team", "teamSize",
-                "2_9", "industries", List.of(), "country", "VN", "teamBackground", "Built document assistants."))
+        String made = body(post(lead, ORGANIZATION + "/organizations/basics", Map.of("name", "Doc Team", "type", "builder_team", "teamSize",
+                "2_9", "industries", List.of(), "country", "VN", "description", "Built document assistants."))
 			.expectStatus()
-			.isCreated();
+			.isCreated());
+        assertThat(JsonPath.<String>read(made, "$.description")).isEqualTo("Built document assistants.");
         assertThat(JsonPath.<String>read(body(get(lead, path).expectStatus().isOk()), "$.organization.type"))
             .isEqualTo("builder_team");
-        assertThat(JsonPath.<String>read(body(get(lead, path).expectStatus().isOk()), "$.organization.teamBackground"))
-            .isEqualTo("Built document assistants.");
+        assertThat(JsonPath.<Object>read(body(get(lead, path).expectStatus().isOk()), "$.organization.teamBackground"))
+            .isNull();
 		UUID solution = completeSolution(lead, "lead@team-send.test", "Doc Reader");
 		String saved = body(put(lead, path, draft(solution, "Our approach.", file("lead@team-send.test"), null, null))
 			.expectStatus()

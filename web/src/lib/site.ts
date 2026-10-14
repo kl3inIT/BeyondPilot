@@ -29,7 +29,7 @@ export const siteRoutes = {
   adminTalent: "/admin/talent",
   adminUseCases: "/admin/use-cases",
   adminUseCasesNew: "/admin/use-cases/new",
-  adminMessagesReported: "/admin/messages/reported",
+  adminProgramMessages: "/admin/messages/programs",
   adminAiProviders: "/admin/ai/providers",
   adminSearchIndex: "/admin/ai/search-index",
   adminAiMatching: "/admin/ai/matching",
@@ -55,7 +55,7 @@ export const siteRoutes = {
 } as const;
 
 /** The host the public site is served from, as an operator sees a program's address written out. */
-export const publicSiteHost = "beyondpilot.genaifund.ai";
+export const publicSiteHost = "beyondpilot.ai";
 
 /** A program's public page. */
 export function programRoute(slug: string) {
@@ -144,6 +144,16 @@ export function adminProgramApplicationsRoute(id: string) {
 }
 
 /** Where GenAI Fund releases a program's outcomes. */
+/** A program's applications not submitted yet, for operators to follow up. */
+export function adminProgramDraftsRoute(id: string) {
+  return `${adminProgramApplicationsRoute(id)}/drafts`;
+}
+
+/** One application not submitted yet, as an operator reads it. */
+export function adminProgramDraftRoute(id: string, draftId: string) {
+  return `${adminProgramDraftsRoute(id)}/${draftId}`;
+}
+
 export function adminProgramReleaseRoute(id: string) {
   return `${siteRoutes.adminPrograms}/${id}/release`;
 }

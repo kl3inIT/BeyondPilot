@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.program.persistence;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -8,7 +9,9 @@ import jakarta.persistence.LockModeType;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ProgramRepository extends JpaRepository<Program, UUID> {
 
@@ -27,4 +30,25 @@ public interface ProgramRepository extends JpaRepository<Program, UUID> {
 	boolean existsBySlug(String slug);
 
 	boolean existsByCoverFileId(UUID coverFileId);
+
+	Optional<Program> findByLumaEventId(String lumaEventId);
+
+	/** The programs read from Luma, in any status. */
+	List<Program> findByLumaEventIdNotNull();
+
+	/**
+	 * Features a program that is not featured, in one statement, so two operators who feature it together feature it
+	 * once and the first time stays. It leaves the version alone: an operator's save in another tab is not refused
+	 * for it.
+	 * @return 1 when it was featured now, 0 when it was featured already
+	 */
+	@Modifying
+	@Query(value = "update program set featured_at = :at where id = :id and featured_at is null", nativeQuery = true)
+	int feature(@Param("id") UUID id, @Param("at") Instant at);
+
+	/** Stops featuring a program; 1 when it was featured until now, 0 when it was not featured. */
+	@Modifying
+	@Query(value = "update program set featured_at = null where id = :id and featured_at is not null",
+			nativeQuery = true)
+	int unfeature(@Param("id") UUID id);
 }

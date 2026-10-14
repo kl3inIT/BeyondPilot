@@ -235,6 +235,43 @@ class ProgramAdministrationTest {
 			.containsExactly("program.create", "program.update", "program.publish", "program.unpublish");
 	}
 
+	@Test
+	void anOperatorFeaturesAProgramWithoutTouchingWhatASaveSends() {
+		String one = created("Featured", "featured-by-operator");
+		String user = TestSignIn.session(client, mail, "featuring@program.test");
+		assertProblem(command(user, one, "feature"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(command(user, one, "unfeature"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		command(null, one, "feature").expectStatus().isUnauthorized();
+		assertProblem(command(operator, PROGRAMS + "/" + UUID.randomUUID(), "feature"), 404, "PROGRAM_NOT_FOUND");
+
+		// A draft can be featured; featured again, the first time stays and nothing new is recorded.
+		command(operator, one, "feature").expectStatus().isNoContent();
+		String featuredAt = JsonPath.read(body(get(operator, one).expectStatus().isOk()), "$.featuredAt");
+		command(operator, one, "feature").expectStatus().isNoContent();
+		get(operator, one).expectBody().jsonPath("$.featuredAt").isEqualTo(featuredAt);
+		String list = body(get(operator, PROGRAMS).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(list, "$.items[?(@.slug == 'featured-by-operator')].featuredAt"))
+			.containsExactly(featuredAt);
+
+		// A save sent with the version read before featuring is not refused, and keeps the program featured.
+		save(operator, one, program(0, "Featured, renamed", "featured-by-operator")).expectStatus().isOk();
+		get(operator, one).expectBody().jsonPath("$.featuredAt").isEqualTo(featuredAt);
+
+		command(operator, one, "unfeature").expectStatus().isNoContent();
+		command(operator, one, "unfeature").expectStatus().isNoContent();
+		get(operator, one).expectBody().jsonPath("$.featuredAt").isEmpty();
+		assertThat(eventsOf(one.substring(one.lastIndexOf('/') + 1))).extracting(event -> event.get("action"))
+			.containsExactly("program.create", "program.feature", "program.update", "program.unfeature");
+	}
+
+	@Test
+	void readingLumaWhereNoCalendarIsConfiguredIsRefusedAndChangesNothing() {
+		String user = TestSignIn.session(client, mail, "plain@program.test");
+
+		assertProblem(command(user, PROGRAMS + "/luma", "read"), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertProblem(command(operator, PROGRAMS + "/luma", "read"), 503, "PROGRAM_LUMA_NOT_CONFIGURED");
+	}
+
 	private RestTestClient.ResponseSpec command(String session, String uri, String command) {
 		RestTestClient.RequestBodySpec request = client.post().uri(uri + "/" + command).header(TestSignIn.CSRF_HEADER, "1");
 		if (session != null) {
@@ -633,7 +670,13 @@ class ProgramAdministrationTest {
 		assertProblem(save(operator, uri, program(version, "Asks", "asks")), 409, "PROGRAM_OPENING_FIXED");
 		Map<String, Object> extended = program(version, "Asks", "asks");
 		extended.put("applications", applications("2026-01-01T00:00:00Z", "2099-03-01T00:00:00Z", "2099-03-10"));
-		save(operator, uri, extended).expectStatus().isOk();
+		version = JsonPath.read(body(save(operator, uri, extended).expectStatus().isOk()), "$.version");
+
+		// The form names the opening to the minute: the same minute is the same opening, kept as it was.
+		Map<String, Object> sameMinute = program(version, "Asks", "asks");
+		sameMinute.put("applications", applications("2026-01-01T00:00:42Z", "2099-03-01T00:00:00Z", "2099-03-10"));
+		assertThat(JsonPath.<String>read(body(save(operator, uri, sameMinute).expectStatus().isOk()),
+				"$.applications.opensAt")).isEqualTo("2026-01-01T00:00:00Z");
 	}
 
 	private static Map<String, Object> question(String kind, String label, List<String> options) {

@@ -3,7 +3,11 @@ import { describe, expect, it } from "vitest";
 import type { Organization } from "@/lib/api/generated";
 
 import {
+  aloneBodyOf,
+  basicsBodyOf,
   basicsSchema,
+  basicsValuesOf,
+  creationSchema,
   missingProfileFacts,
   profileBodyOf,
   profileSchema,
@@ -21,23 +25,100 @@ describe("organization basics", () => {
     teamSize: "2_9",
     industries: [],
     country: "VN",
-    teamBackground: "Built document assistants.",
+    website: "",
+    foundedYear: "",
+    description: "Built document assistants.",
   };
-  it("requires team experience but not company-only industries", () => {
+  it("requires a team short description but no separate background or company fields", () => {
     expect(basics.safeParse(team).success).toBe(true);
-    const empty = basics.safeParse({ ...team, teamBackground: " " });
-    expect(empty.error?.issues.map((issue) => issue.path)).toEqual([["teamBackground"]]);
+    const empty = basics.safeParse({ ...team, description: " " });
+    expect(empty.error?.issues.map((issue) => issue.path)).toEqual([["description"]]);
     expect(
-      basics.safeParse({ ...team, type: "independent_builder", teamBackground: "" }).success,
-    ).toBe(true);
-    expect(
-      basics.safeParse({ ...team, type: "company", industries: ["insurance"], teamBackground: "" })
+      basics.safeParse({ ...team, type: "independent_builder", teamSize: "", description: "" })
         .success,
     ).toBe(true);
+    expect(
+      basics.safeParse({ ...team, type: "company" }).error?.issues.map((issue) => issue.path[0]),
+    ).toEqual(["website", "industries", "foundedYear"]);
+    expect(
+      basics.safeParse({
+        ...team,
+        type: "company",
+        website: "https://doc.example",
+        industries: ["insurance"],
+        foundedYear: "2021",
+      }).success,
+    ).toBe(true);
   });
-  it("enforces the 2,000-character experience limit", () => {
-    expect(basics.safeParse({ ...team, teamBackground: "x".repeat(2000) }).success).toBe(true);
-    expect(basics.safeParse({ ...team, teamBackground: "x".repeat(2001) }).success).toBe(false);
+  it("enforces the short description limit", () => {
+    expect(basics.safeParse({ ...team, description: "x".repeat(280) }).success).toBe(true);
+    expect(basics.safeParse({ ...team, description: "x".repeat(281) }).success).toBe(false);
+  });
+  it("ignores invalid inactive values retained when switching types", () => {
+    expect(
+      basics.safeParse({
+        ...team,
+        website: "x".repeat(301),
+        foundedYear: "9999",
+        industries: Array(6).fill("insurance"),
+      }).success,
+    ).toBe(true);
+    expect(
+      basics.safeParse({
+        ...team,
+        type: "independent_builder",
+        teamSize: "",
+        description: "x".repeat(281),
+        foundedYear: "9999",
+      }).success,
+    ).toBe(true);
+  });
+  it("sends only active facts and holds no background or logo field", () => {
+    const values = {
+      ...basicsValuesOf(),
+      ...team,
+      type: "builder_team" as const,
+      website: "https://saved.example",
+      foundedYear: "2021",
+      industries: ["insurance"],
+    };
+    expect(basicsBodyOf(values, 4)).toEqual({
+      name: "Doc Team",
+      type: "builder_team",
+      teamSize: "2_9",
+      country: "VN",
+      industries: [],
+      website: null,
+      foundedYear: null,
+      description: "Built document assistants.",
+      version: 4,
+    });
+    expect(basicsBodyOf({ ...values, type: "independent_builder" })).toMatchObject({
+      teamSize: "just_me",
+      description: null,
+      version: null,
+    });
+    expect(basicsBodyOf({ ...values, type: "company" })).toMatchObject({
+      website: "https://saved.example",
+      foundedYear: 2021,
+      industries: ["insurance"],
+    });
+  });
+  it("refuses unsupported popup types and invalid company years", () => {
+    expect(basics.safeParse({ ...team, type: "other" }).error?.issues[0].message).toBe(
+      "typeRequired",
+    );
+    for (const foundedYear of ["1799", "20x1", "9999"]) {
+      expect(
+        basics.safeParse({
+          ...team,
+          type: "company",
+          foundedYear,
+          website: "https://doc.example",
+          industries: ["insurance"],
+        }).success,
+      ).toBe(false);
+    }
   });
 });
 
@@ -178,6 +259,18 @@ describe("profileValuesOf and profileBodyOf", () => {
     ).toMatchObject({ website: null, foundedYear: null });
   });
 
+  it("sends just me as the size of a person on their own, whatever the form held", () => {
+    expect(
+      profileBodyOf({ ...filled, type: "independent_builder", teamSize: "10_49" }),
+    ).toMatchObject({
+      type: "independent_builder",
+      teamSize: "just_me",
+    });
+    expect(profileBodyOf({ ...filled, type: "builder_team", teamSize: "2_9" })).toMatchObject({
+      teamSize: "2_9",
+    });
+  });
+
   it("trims the name, the website and the description", () => {
     expect(
       profileBodyOf({
@@ -187,6 +280,12 @@ describe("profileValuesOf and profileBodyOf", () => {
         description: " Routes. ",
       }),
     ).toMatchObject({ name: "Sài Gòn", website: "https://a.example", description: "Routes." });
+  });
+
+  it("preserves legacy background without asking for it, even when type changes", () => {
+    expect(profileBodyOf({ ...filled, type: "company" }).teamBackground).toBe(
+      "Built two products.",
+    );
   });
 });
 
@@ -238,6 +337,39 @@ describe("missingProfileFacts", () => {
         type: "builder_team",
         industries: [],
       } as unknown as Organization),
-    ).toEqual(["teamSize", "country", "description", "teamBackground"]);
+    ).toEqual(["teamSize", "country", "description"]);
+  });
+});
+
+describe("creationSchema", () => {
+  const creation = creationSchema((key) => key);
+  const refused = (values: ProfileValues) =>
+    creation.safeParse(values).error?.issues.map((issue) => issue.path.join(".")) ?? [];
+  const alone: ProfileValues = { ...profileValuesOf(), type: "independent_builder" };
+
+  it("asks a builder on their own for a name and a country only", () => {
+    expect(refused(alone)).toEqual(["name", "country"]);
+    expect(refused({ ...alone, name: "An Tran", country: "VN" })).toEqual([]);
+  });
+
+  it("asks a team or a company for the whole profile", () => {
+    expect(refused({ ...alone, type: "company", name: "An Tran", country: "VN" })).toEqual([
+      "teamSize",
+      "description",
+      "website",
+      "industries",
+      "foundedYear",
+    ]);
+    expect(refused({ ...filled, type: "builder_team", teamBackground: "" })).toEqual([]);
+  });
+
+  it("sends a builder on their own as an organization of one", () => {
+    expect(aloneBodyOf({ ...filled, name: " An Tran ", type: "independent_builder" })).toEqual({
+      name: "An Tran",
+      type: "independent_builder",
+      teamSize: "just_me",
+      industries: [],
+      country: "VN",
+    });
   });
 });

@@ -9,12 +9,14 @@ Linear: BEY-133. Design in Figma, page Screens: "Use case — apply with a propo
 - **Read proposals.** Every member of the organization that posted the use case reads the proposals it received, in a list and one by one. Reading is all they do for now.
 - **See how many.** Anyone, signed in or not, sees how many proposals a use case has received.
 
-Out of scope, kept as screens or left out: editing a sent proposal's sender snapshot, withdrawing a sent proposal, shortlist and decline, every email, anything for operators.
+- **Take it back (follow-up, 13 Oct 2026).** A member of the provider organization may withdraw a sent proposal while the use case is open. It becomes a draft again with what it held, the posting organization no longer reads or counts it, and it may be saved and sent again until the use case closes. See [Withdrawing](#withdrawing-a-sent-proposal).
+
+Out of scope, kept as screens or left out: editing a sent proposal's sender snapshot, every email other than the proposal-sent confirmation and the outcomes (see [Decisions and outcomes follow-up](#decisions-and-outcomes-follow-up)), a list of all the proposals an organization sent, anything for operators.
 
 ## Domain story
 
 1. A provider's member reads a published, open use case and chooses **Send a proposal**. The browser opens the form; the server makes one working copy for the provider's organization and that use case the first time something is saved.
-2. **You and your team (Apply v5).** A person in no organization first sees the organization finder and a quick-create dialog, not three sender-kind cards. Joining immediately or creating an organization opens About you; asking to join or claiming shows a pending request with Withdraw and blocks Continue. Quick-create asks for name, type, size, industries and country, plus required team background for a builder team. Owners may correct those facts in the same dialog. An organization in review may send a proposal; review decides public listing, not eligibility. About you keeps name, country and phone on the account, with the sign-in email read-only and the talent profile only a fallback for missing contact facts. Nothing creates an organization when Continue is pressed.
+2. **You and your team (Apply v5).** A person in no organization first sees the organization finder and a quick-create dialog, not three sender-kind cards. Joining immediately or creating an organization opens About you; asking to join or claiming shows a pending request with Withdraw and blocks Continue. Quick-create collects only required fields for Just me, A team or A company, as accepted in the [required-only popup decision](organization-popup-design.md). Short description includes team expertise; no separate organization background is collected. Owners may correct those facts in the same dialog. An organization in review may send a proposal; review decides public listing, not eligibility. About you keeps name, country and phone on the account, with the sign-in email read-only and the talent profile only a fallback for missing contact facts. Nothing creates an organization when Continue is pressed.
 3. **Your solution.** The member chooses one or more solutions of the organization, whatever their review says (draft, in review, sent back, approved, rejected, taken down; listed or not), writes how they solve this use case, and uploads one PDF. A missing solution is created on the spot with the existing Solution flow: its name is asked in the usual dialog, which creates a draft, and the Solution editor opens in a near-full-screen dialog over the proposal. Public listing of that solution stays with the existing review by GenAI Fund; the proposal never asks for it.
 4. **Review and send.** The server checks everything again, including that the sender's account has a name, a country and a number. The proposal is now **sent** and counts.
 5. A member of the posting organization opens the proposals of the use case and each proposal.
@@ -31,7 +33,7 @@ Failures. The use case closes while the form is open: sending is refused with th
 | Team background       | Organization-owned experience, separate from its short description. A proposal keeps its own contextual copy so editing the organization never rewrites an existing submission.                                      | A list of people with roles or the 280-character short description.                                                                                                                                                  |
 | Edit window           | The time after sending during which the provider organization may still save its proposal: the days `use_case.proposal_edit_days` (set by GenAI Fund for each use case) after `sent_at`, while the use case is open. | A deadline for sending, which is the use case's close date.                                                                                                                                                          |
 
-A proposal is **draft** or **sent**. A sent proposal never returns to draft in this increment; it stays sent while its organization edits it.
+A proposal is **draft** or **sent**. A sent proposal stays sent while its organization edits it; only withdrawing returns it to draft, with `withdrawn_at` set to say that it was sent and taken back.
 
 ## Boundary discovery
 
@@ -138,9 +140,17 @@ The proposal the sender reads carries `sentBy` (null for a draft). Each offered 
 
 The working copy is shared by the members of the provider organization; the `version` the form read travels with every save, as in the program application.
 
+## Withdrawing a sent proposal
+
+- **Rule.** `POST /use-case-proposals/{id}/withdraw` (`withdrawUseCaseProposal`), for a member of the proposal's organization, answers the form with the proposal as a draft again. It needs a sent proposal and a use case that still takes proposals; it is not bound by the edit window. A second call finds a draft and is refused with `PROPOSAL_NOT_SENT`; after the use case closed it is refused with `PROPOSAL_USE_CASE_CLOSED`; a person of another organization finds no such proposal (`PROPOSAL_NOT_FOUND`).
+- **State.** Migration `V92` adds `use_case_proposal.withdrawn_at` and the constraint that it is set only for a draft. Withdrawing clears what belonged to the sending (`sent_at`, `sent_by_account_id`, `edited_at`, the copy of the sender's profile) and sets `withdrawn_at`; sending again clears `withdrawn_at` and starts the edit window afresh. The `status` stays `draft` or `sent`: a withdrawn proposal is a draft with `withdrawnAt`.
+- **What the other side sees.** The posting organization's list, its single read and the public count read only sent proposals, so a withdrawn one leaves all three with no further change. Nothing is emailed.
+- **After the use case closes.** The form still answers for a withdrawn proposal, so its owner reads that it was taken back; it cannot be sent again.
+- **Web.** The sender's proposal page (`/use-cases/{id}/propose/view`) has Withdraw beside Edit proposal while the use case takes proposals, behind a confirmation that names the use case and the day it was sent and says until when it may be sent again. A withdrawn proposal reads on the same page with a notice, the date it was taken back and Send again (the wizard, which opens it as a draft with a note); a use case that closed shows a notice and no actions. The use case page's card says when it was taken back and offers Send again. Figma: "Use case — withdraw a sent proposal (draft)", at 1440 only.
+
 ## Errors
 
-New codes of `ProposalErrorCode`, all starting `PROPOSAL_`: `USE_CASE_NOT_OPEN` (not found, not published or past its close), `OWN_USE_CASE`, `ORGANIZATION_REQUIRED` (reused), `ALREADY_SENT`, `CONTACT_REQUIRED`, `TEAM_BACKGROUND_REQUIRED` (reused), `PDF_REQUIRED`, `SOLUTION_REQUIRED` (reused), `APPROACH_REQUIRED`, `CHANGED_MEANWHILE` (reused), `SOLUTION_NOT_FOUND` (a solution that is not the organization's, or named twice), `EDIT_WINDOW_CLOSED` (a save of a sent proposal after its edit window, or with no edit days, or after the use case closed; `ALREADY_SENT` stays for sending a sent proposal), `PROPOSAL_NOT_FOUND` (read of a proposal that does not exist or is not the caller's to read). `USE_CASE_NOT_OPEN` is `USE_CASE_NOT_FOUND` and `USE_CASE_CLOSED`, and `ORGANIZATION_REQUIRED` is `NO_ORGANIZATION`, in the code.
+New codes of `ProposalErrorCode`, all starting `PROPOSAL_` (and `NOT_SENT` for withdrawing a proposal that is not sent): `USE_CASE_NOT_OPEN` (not found, not published or past its close), `OWN_USE_CASE`, `ORGANIZATION_REQUIRED` (reused), `ALREADY_SENT`, `CONTACT_REQUIRED`, `TEAM_BACKGROUND_REQUIRED` (reused), `PDF_REQUIRED`, `SOLUTION_REQUIRED` (reused), `APPROACH_REQUIRED`, `CHANGED_MEANWHILE` (reused), `SOLUTION_NOT_FOUND` (a solution that is not the organization's, or named twice), `EDIT_WINDOW_CLOSED` (a save of a sent proposal after its edit window, or with no edit days, or after the use case closed; `ALREADY_SENT` stays for sending a sent proposal), `PROPOSAL_NOT_FOUND` (read of a proposal that does not exist or is not the caller's to read). `USE_CASE_NOT_OPEN` is `USE_CASE_NOT_FOUND` and `USE_CASE_CLOSED`, and `ORGANIZATION_REQUIRED` is `NO_ORGANIZATION`, in the code.
 
 ## Web
 
@@ -162,6 +172,8 @@ Mobbin, October 2026: proposal lists and review of applicants ([Upwork](https://
 
 Accepted on 2026-10-13. Figma Screens section `684:53048`, frames `711:55409`, `711:55529`, `711:55571`, `711:55761`, `711:55845`, `711:56005`.
 
+The separate organization-background requirement below was superseded on 2026-10-14 by the [required-only popup decision](organization-popup-design.md). Its migration and historical data remain, but neither organization form collects that field or requires it. Proposal-specific contextual experience is unchanged.
+
 - Migration V89 adds nullable `organization.team_background`, limited to 2,000 characters. No existing short description or submitted proposal is backfilled or rewritten.
 - Profile and basics commands accept `teamBackground`; a builder team supplies nonblank experience, while other types clear it. Existing teams without it are completed when edited. Operator creation may still create an incomplete profile.
 - Basics editing sends the version it read and refuses stale or missing versions with `ORGANIZATION_CHANGED_MEANWHILE`; creation omits the version.
@@ -174,3 +186,14 @@ Accepted on 2026-10-13. Figma Screens section `684:53048`, frames `711:55409`, `
 Application-generated API contracts and PostgreSQL integration tests pass in the full backend gate. The full web gate and all desktop/mobile proposal flows also pass locally. The complete browser suite and GitHub CI remain merge gates. Earlier increment items remain historical planning, not a current verification claim.
 
 Earlier outstanding acceptance: Open until the plan's last step: the behaviour of the merge listener on a conflicting proposal; the load of `proposal-counts` with the public use case list.
+
+## Decisions and outcomes follow-up
+
+The organization that posted a use case records a decision on each proposal it received, then tells the senders in one batch. Decisions and emails are separate acts, so a reviewer can change their mind before anyone is told.
+
+- **Who.** Any member of the posting organization and any operator (`posted`); anyone else finds no such use case. Only a sent proposal can be decided (`PROPOSAL_NOT_FOUND` otherwise).
+- **State.** A proposal is undecided (null), `shortlisted` or `declined`. The decision may change between the two at any time, even after the outcomes were sent or the use case closed, and never returns to undecided. Migration V93 adds `decision`, `decided_at`, `decided_by_account_id`, `outcome` (the decision last told) and `outcome_sent_at` to `use_case_proposal`, with checks that each group is all set or all null and that a decision needs the status `sent`. `use_case_proposal_decision` is the append-only history (who, when, decision). Withdrawing clears the decision and the outcome, not the history.
+- **Deciding.** `POST /use-case-proposals/{id}/decision` (`decideUseCaseProposal`) answers the proposal's line. The same decision again is a no-op. Each change appends a history row and the audit event `use_case_proposal.decide`. Nothing is emailed.
+- **Sending.** `POST /use-cases/{useCaseId}/outcomes` (`sendUseCaseProposalOutcomes`, optional `message` up to 2000 characters) emails the sender of every proposal whose decision differs from the outcome last told, one email each in one transaction, and marks them told. It answers `{sent, shortlisted, declined}`; with nothing pending it is refused with `PROPOSAL_NOTHING_TO_SEND`, which makes a repeated call harmless. It records `use_case_proposal.outcomes_send`.
+- **Emails.** Two editable kinds in the use cases group: `proposal_shortlisted` and `proposal_declined` (variables `recipientName`, `useCaseTitle`, `organizationName`, `proposalUrl`, and the quote `message`), with default wording in `notification/templates`.
+- **What each side reads.** The posting side's list and single read gain `decision`, `decidedAt`, `decidedBy`, `outcomePending` and `outcomeSentAt`; the list gains the counts `shortlisted`, `declined` and `pending`. The sender's proposal gains `outcome` and `outcomeSentAt`: a decision is shown to the provider only once it was sent. A provider may still withdraw a shortlisted proposal.

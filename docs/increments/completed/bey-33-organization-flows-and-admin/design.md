@@ -45,6 +45,7 @@ An operator may leave an organization without an owner: that is how a page is ha
    - `organization` publishes `OrganizationMerged(from, into)`. `solution`, `usecase`, `proposal`, `introduction` and `talent` move the rows they hold for the duplicate in a synchronous listener, so the merge commits whole or not at all. Each already depends on `organization`: no dependency edge is added.
 
    The public page of the duplicate's address answers with the kept organization, whose own address the web redirects to. The kept organization must not be merged itself, so an address leads one step at most. What moves is counted in the dialog for members and open invitations only: `organization` does not count another module's rows.
+
 9. **Shortcuts live in search only.** `/` focuses the search field of a list, as `FilterToolbar` already does; a dialog has no shortcut. The A, S and N keys of the solution and talent review pages are outside this increment.
 10. **Pastel status colours are tokens.** Five tints (`lemon`, `sky`, `mint`, `peach`, `rose`) with their foregrounds join `tokens.css`. `Status` gains a `pill` appearance that the organization lists use; the owner and member roles and the avatar initials take a tint. Other screens keep their look until they are redrawn.
 
@@ -67,17 +68,17 @@ Slice 2 adds `suspended` to the status check with `suspension_reason`, `suspensi
 
 Slice 1 changes, all under `/api/organization`:
 
-| Path                                     | Change                                                                                             |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `GET /mine`                              | `request` carries the organization's type, country and domain; `declined` is the declined answer   |
+| Path                                     | Change                                                                                                                                                                                                                  |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /mine`                              | `request` carries the organization's type, country and domain; `declined` is the declined answer                                                                                                                        |
 | `GET /mine/members`                      | `allowance` for an owner: whether inviting is open, and how many invitations are left today / open; `?page=` reads ten members at a time with `page`, `pageSize` and `total`, while invitations and requests stay whole |
-| `POST /mine/invitations`                 | `409 ORGANIZATION_NOT_APPROVED`; `429 ORGANIZATION_INVITATION_DAILY_LIMIT` and `…_OPEN_LIMIT`      |
-| `PUT /mine/auto-join`                    | `409 ORGANIZATION_DOMAIN_NOT_VERIFIED` when turned on without an approved, verified domain         |
-| `POST /organizations/{id}/join`          | The outcome `owner` is gone; an unowned organization always answers `requested`                    |
-| `GET /admin/organizations`               | Each row says what waits (`request`: `new`, `claim` or none), who asked and when                   |
-| `GET /admin/organizations/{id}`          | `suggestedDomain`                                                                                  |
-| `POST /admin/organizations/{id}/approve` | Body with `emailDomain`                                                                            |
-| `POST /admin/claims/{id}/approve`        | Body with `emailDomain`                                                                            |
+| `POST /mine/invitations`                 | `409 ORGANIZATION_NOT_APPROVED`; `429 ORGANIZATION_INVITATION_DAILY_LIMIT` and `…_OPEN_LIMIT`                                                                                                                           |
+| `PUT /mine/auto-join`                    | `409 ORGANIZATION_DOMAIN_NOT_VERIFIED` when turned on without an approved, verified domain                                                                                                                              |
+| `POST /organizations/{id}/join`          | The outcome `owner` is gone; an unowned organization always answers `requested`                                                                                                                                         |
+| `GET /admin/organizations`               | Each row says what waits (`request`: `new`, `claim` or none), who asked and when                                                                                                                                        |
+| `GET /admin/organizations/{id}`          | `suggestedDomain`                                                                                                                                                                                                       |
+| `POST /admin/organizations/{id}/approve` | Body with `emailDomain`                                                                                                                                                                                                 |
+| `POST /admin/claims/{id}/approve`        | Body with `emailDomain`                                                                                                                                                                                                 |
 
 The exact contract is `openapi.yml`, refreshed with each slice.
 

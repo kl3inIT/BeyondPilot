@@ -211,7 +211,7 @@ export type AdminOrganization = {
     merged?: MergedOrganization | null;
     organization: Organization;
     /**
-     * A domain the operator may verify with a decision: the one it has, else the creator's work domain while it waits for review, else its website's. Null when another organization holds it.
+     * A domain the operator may verify with a decision: the one it has, else the creator's work domain while it waits for review, else its website's. Null for an individual, or when another organization holds it.
      */
     suggestedDomain?: string | null;
 };
@@ -305,8 +305,16 @@ export type AdminProgram = {
     endsOn?: string | null;
     events: Array<ProgramEvent>;
     externalUrl?: string | null;
+    /**
+     * When an operator featured the program; null while it is not featured.
+     */
+    featuredAt?: string | null;
     id: string;
     keyDates: Array<ProgramKeyDate>;
+    /**
+     * The Luma event the program is read from every hour, `evt-…`; null for a program an operator created. What Luma supplies overwrites an operator's edit at the next read.
+     */
+    lumaEventId?: string | null;
     name: string;
     /**
      * `standard` is built from these fields, `custom` is written in the web application for this address, `external` links to `externalUrl`.
@@ -369,7 +377,15 @@ export type AdminProgramSummary = {
      */
     coverFileId?: string | null;
     endsOn?: string | null;
+    /**
+     * When an operator featured the program; null while it is not featured.
+     */
+    featuredAt?: string | null;
     id: string;
+    /**
+     * The Luma event the program is read from every hour, `evt-…`; null for a program an operator created. What Luma supplies overwrites an operator's edit at the next read.
+     */
+    lumaEventId?: string | null;
     name: string;
     partnerName?: string | null;
     /**
@@ -988,6 +1004,10 @@ export type ApplyingOrganization = {
      * Whether GenAI Fund has reviewed and approved it; it applies either way.
      */
     approved: boolean;
+    /**
+     * Whether the person applies as themselves and may still apply as a team or a company instead: nothing was sent under their name yet.
+     */
+    changeable: boolean;
     country?: string | null;
     id: string;
     name: string;
@@ -1040,7 +1060,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
+    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -1400,6 +1420,10 @@ export type ConversationDetail = {
      */
     hasEarlier: boolean;
     /**
+     * Members of the caller's organization an owner may add or remove. Empty for other callers.
+     */
+    manageableMembers: Array<ConversationMember>;
+    /**
      * The latest messages, the oldest first, at most 50.
      */
     messages: Array<Message>;
@@ -1430,6 +1454,16 @@ export type ConversationList = {
      * How many messages the caller has not read across the open conversations.
      */
     unread: number;
+};
+
+/**
+ * A member of the caller's organization whom its owner may add to this conversation.
+ */
+export type ConversationMember = {
+    accountId: string;
+    email: string;
+    included: boolean;
+    name?: string | null;
 };
 
 /**
@@ -1696,6 +1730,13 @@ export type Decide = {
      * Private; the applicant never sees it.
      */
     reason?: string | null;
+};
+
+/**
+ * What the organization that posted a use case decides on a proposal it received. Nobody is told until the outcomes are sent.
+ */
+export type DecideUseCaseProposal = {
+    decision: 'shortlisted' | 'declined';
 };
 
 /**
@@ -2166,6 +2207,17 @@ export type GiveMatchingFeedback = {
 };
 
 /**
+ * Why the caller removed a candidate, said afterwards.
+ */
+export type GiveMatchingRemovalReason = {
+    /**
+     * A few words more, if the person wants.
+     */
+    note?: string;
+    reason: 'does_not_solve' | 'wrong_industry_or_size' | 'closed_or_wrong_website' | 'duplicate' | 'other';
+};
+
+/**
  * How many more people an organization's owners may invite now.
  */
 export type InvitationAllowance = {
@@ -2189,6 +2241,16 @@ export type InvitationAllowance = {
      * The most invitations that wait for an answer at once.
      */
     openLimit: number;
+};
+
+/**
+ * Invites the provider of a candidate to propose for the use case.
+ */
+export type InviteMatchingCandidate = {
+    /**
+     * A few words to the provider, quoted in the email.
+     */
+    note?: string;
 };
 
 /**
@@ -2248,6 +2310,28 @@ export type LastMessage = {
     senderName?: string | null;
 };
 
+/**
+ * What a read of the GenAI Fund calendar on Luma changed. An event that could not be read is tried again at the next read.
+ */
+export type LumaRead = {
+    /**
+     * Events still to come that became programs.
+     */
+    created: number;
+    /**
+     * Events that could not be read this time.
+     */
+    failed: number;
+    /**
+     * Programs unpublished because their event left the calendar.
+     */
+    unpublished: number;
+    /**
+     * Programs that took what Luma says now.
+     */
+    updated: number;
+};
+
 export type MarkReadRequest = {
     /**
      * The seq of the last message the caller has read.
@@ -2263,6 +2347,10 @@ export type Matching = {
      * The candidates, in the order the last run found them.
      */
     candidates: Array<MatchingCandidate>;
+    /**
+     * How many more providers the caller may invite today; absent for operators, who have no limit.
+     */
+    invitationsLeftToday?: number;
     /**
      * Whether an AI model is set for matching; without one no run starts.
      */
@@ -2319,11 +2407,31 @@ export type MatchingCandidate = {
      * One finding per requirement, in their order.
      */
     findings: Array<MatchingFinding>;
+    /**
+     * Whether it has a deck.
+     */
+    hasDeck: boolean;
     id: string;
     /**
      * Whether the vendor delivered a similar workflow in the use case's industry.
      */
     industry?: MatchingFinding;
+    /**
+     * When its provider was invited to propose for the use case; absent when it was not.
+     */
+    invitedAt?: string;
+    /**
+     * Who invited it, by the name they are shown by; absent for a member when GenAI Fund invited it.
+     */
+    invitedBy?: string;
+    /**
+     * Whether GenAI Fund invited it.
+     */
+    invitedByOperator?: boolean;
+    /**
+     * The provider organization invited; absent when it was not.
+     */
+    invitedProviderId?: string;
     /**
      * Whether a run judged it; one added by hand waits for the next run.
      */
@@ -3568,6 +3676,68 @@ export type ProgramApplications = {
 };
 
 /**
+ * Program conversation assignment metadata; message content and sender are omitted.
+ */
+export type ProgramConversationAssignment = {
+    assigneeId?: string | null;
+    createdAt: string;
+    id: string;
+    programName: string;
+};
+
+/**
+ * Who started an application, how to reach them and how far they got.
+ */
+export type ProgramDraft = {
+    /**
+     * First and last name, phone and country are filled.
+     */
+    contactComplete: boolean;
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country?: string | null;
+    /**
+     * A deck is attached.
+     */
+    deckAttached: boolean;
+    /**
+     * The address the applicant signs in with.
+     */
+    email: string;
+    firstName?: string | null;
+    id: string;
+    lastName?: string | null;
+    lastSavedAt: string;
+    /**
+     * The organization the applicant applies for, once they have one.
+     */
+    organizationName?: string | null;
+    organizationType?: 'company' | 'builder_team' | 'independent_builder' | 'other';
+    phone?: string | null;
+    /**
+     * How many of the program's required questions are answered.
+     */
+    requiredAnswered: number;
+    /**
+     * A solution is chosen.
+     */
+    solutionChosen: boolean;
+    startedAt: string;
+};
+
+/**
+ * A program's applications not submitted yet, for operators to follow up; what each says stays the applicant's.
+ */
+export type ProgramDrafts = {
+    items: Array<ProgramDraft>;
+    /**
+     * How many required questions the program asks.
+     */
+    requiredQuestions: number;
+};
+
+/**
  * A session of a program that people register for somewhere else.
  */
 export type ProgramEvent = {
@@ -4219,6 +4389,15 @@ export type PublicUseCaseSummary = {
  */
 export type ReceivedUseCaseProposal = {
     approach?: string | null;
+    decidedAt?: string | null;
+    /**
+     * Who made the latest decision.
+     */
+    decidedBy?: string | null;
+    /**
+     * What the posting organization decided; null while undecided.
+     */
+    decision?: 'shortlisted' | 'declined';
     deck?: AttachedFile | null;
     /**
      * When the sending organization last edited the proposal after sending it; null while it is as sent.
@@ -4234,6 +4413,14 @@ export type ReceivedUseCaseProposal = {
      */
     organizationLogoFileId?: string | null;
     organizationName: string;
+    /**
+     * Whether the decision is set and the sender was not yet told it.
+     */
+    outcomePending: boolean;
+    /**
+     * When the sender was last e-mailed the outcome; null if never.
+     */
+    outcomeSentAt?: string | null;
     /**
      * The sender's talent profile, when it went with the proposal.
      */
@@ -4256,6 +4443,15 @@ export type ReceivedUseCaseProposalSummary = {
      * Who sent it.
      */
     contactName?: string | null;
+    decidedAt?: string | null;
+    /**
+     * Who made the latest decision.
+     */
+    decidedBy?: string | null;
+    /**
+     * What the posting organization decided; null while undecided.
+     */
+    decision?: 'shortlisted' | 'declined';
     /**
      * When the sending organization last edited the proposal after sending it; null while it is as sent.
      */
@@ -4266,10 +4462,22 @@ export type ReceivedUseCaseProposalSummary = {
      */
     organizationApproved: boolean;
     /**
+     * The sending organization.
+     */
+    organizationId: string;
+    /**
      * Read at /api/storage/files/{id}.
      */
     organizationLogoFileId?: string | null;
     organizationName: string;
+    /**
+     * Whether the decision is set and the sender was not yet told it.
+     */
+    outcomePending: boolean;
+    /**
+     * When the sender was last e-mailed the outcome; null if never.
+     */
+    outcomeSentAt?: string | null;
     sentAt: string;
     /**
      * The names of the solutions offered.
@@ -4281,7 +4489,19 @@ export type ReceivedUseCaseProposalSummary = {
  * The proposals a use case received, the latest first.
  */
 export type ReceivedUseCaseProposals = {
+    /**
+     * How many proposals are declined.
+     */
+    declined: number;
     items: Array<ReceivedUseCaseProposalSummary>;
+    /**
+     * How many proposals have an outcome to send.
+     */
+    pending: number;
+    /**
+     * How many proposals are shortlisted.
+     */
+    shortlisted: number;
     useCase: ProposalUseCase;
 };
 
@@ -4370,14 +4590,17 @@ export type ReleaseItem = {
 };
 
 /**
- * Why a candidate is taken off the list.
+ * Takes a candidate off the list. The reason is optional: it can be given with the removal or afterwards.
  */
 export type RemoveMatchingCandidate = {
     /**
      * A few words more, if the person wants.
      */
     note?: string;
-    reason: 'does_not_solve' | 'wrong_industry_or_size' | 'closed_or_wrong_website' | 'duplicate' | 'other';
+    /**
+     * Why, if the person says.
+     */
+    reason?: 'does_not_solve' | 'wrong_industry_or_size' | 'closed_or_wrong_website' | 'duplicate' | 'other';
 };
 
 export type ReportedChatModel = {
@@ -4408,46 +4631,6 @@ export type ReportedChatModel = {
  */
 export type ReportedChatModels = {
     models: Array<ReportedChatModel>;
-};
-
-/**
- * A first message the side written to reported as unwanted.
- */
-export type ReportedRequest = {
-    createdAt: string;
-    id: string;
-    kind: 'talent' | 'solution' | 'program';
-    message: string;
-    /**
-     * When it was reported.
-     */
-    reportedAt?: string | null;
-    /**
-     * The sender's address; empty when the account no longer signs in.
-     */
-    senderEmail: string;
-    /**
-     * The sender's name; null when they gave none.
-     */
-    senderName?: string | null;
-    /**
-     * The organization the sender belonged to; null when none.
-     */
-    senderOrganization?: string | null;
-    /**
-     * The profile or solution it was sent about.
-     */
-    subjectName: string;
-};
-
-/**
- * One page of the reported first messages, the newest first.
- */
-export type ReportedRequestList = {
-    items: Array<ReportedRequest>;
-    page: number;
-    pageSize: number;
-    total: number;
 };
 
 /**
@@ -4609,6 +4792,20 @@ export type ReviewCriterion = {
     description?: string | null;
     id: string;
     name: string;
+};
+
+/**
+ * An application not submitted yet, as it stands now, for an operator; judges never read it.
+ */
+export type ReviewDraft = {
+    /**
+     * What the draft holds now, in the shape of a submission; a part not written yet is empty.
+     */
+    draft: SubmittedApplication;
+    head: ReviewHead;
+    id: string;
+    lastSavedAt: string;
+    startedAt: string;
 };
 
 export type ReviewEvent = {
@@ -5124,7 +5321,7 @@ export type SaveOrganization = {
 };
 
 /**
- * The facts a person gives when they make an organization, which a save changes alone. The rest of the profile is left as it is.
+ * The required facts of the selected organization type. A save leaves optional profile facts unchanged.
  */
 export type SaveOrganizationBasics = {
     /**
@@ -5132,20 +5329,28 @@ export type SaveOrganizationBasics = {
      */
     country: string;
     /**
+     * Required for a team or company, including relevant expertise and experience; omitted for a builder on their own.
+     */
+    description?: string | null;
+    /**
+     * Required for a company; omitted for other types.
+     */
+    foundedYear?: number | null;
+    /**
      * The industries it works in or serves; a company names at least one.
      */
     industries: Array<string>;
     name: string;
-    /**
-     * What the team has built before, separate from its short description.
-     */
-    teamBackground?: string | null;
     teamSize: string;
     type: 'company' | 'builder_team' | 'independent_builder' | 'other';
     /**
      * Required when editing; omitted when creating.
      */
     version?: number | null;
+    /**
+     * Required for a company; omitted for other types.
+     */
+    website?: string | null;
 };
 
 /**
@@ -5658,6 +5863,16 @@ export type SendMessageRequest = {
      * An identifier the sender chooses for the message. Sending it again writes nothing more, so a send that got no answer is safe to repeat.
      */
     id: string;
+};
+
+/**
+ * Sends the outcomes of a use case's proposals that were decided and not yet told.
+ */
+export type SendUseCaseProposalOutcomes = {
+    /**
+     * A note quoted in every e-mail sent; optional.
+     */
+    message?: string | null;
 };
 
 /**
@@ -6420,6 +6635,14 @@ export type UseCaseProposal = {
     editedAt?: string | null;
     id: string;
     /**
+     * The decision the posting organization last told the sender; null until the outcomes were sent.
+     */
+    outcome?: 'shortlisted' | 'declined';
+    /**
+     * When the sender was told `outcome`.
+     */
+    outcomeSentAt?: string | null;
+    /**
      * The sender's talent profile as it was when the proposal was sent; null for a draft and for a proposal sent without it, as every new one is.
      */
     sender?: SenderProfile | null;
@@ -6432,6 +6655,9 @@ export type UseCaseProposal = {
      * The solutions offered, in the order shown.
      */
     solutions: Array<ProposalSolution>;
+    /**
+     * A proposal that was taken back is a draft again, and says when in `withdrawnAt`.
+     */
     status: 'draft' | 'sent';
     teamBackground?: string | null;
     updatedAt: string;
@@ -6439,6 +6665,10 @@ export type UseCaseProposal = {
      * Sent back with the next save, so a save made on a stale copy is refused.
      */
     version: number;
+    /**
+     * When the proposal was taken back; null if it never was, and once it is sent again.
+     */
+    withdrawnAt?: string | null;
 };
 
 /**
@@ -6469,6 +6699,24 @@ export type UseCaseProposalForm = {
      */
     proposal?: UseCaseProposal | null;
     useCase: ProposalUseCase;
+};
+
+/**
+ * How many senders were e-mailed their outcome.
+ */
+export type UseCaseProposalOutcomes = {
+    /**
+     * Of them, told they were declined.
+     */
+    declined: number;
+    /**
+     * E-mails queued: one for each proposal.
+     */
+    sent: number;
+    /**
+     * Of them, told they were shortlisted.
+     */
+    shortlisted: number;
 };
 
 /**
@@ -7068,6 +7316,68 @@ export type ListAiUsageCallsResponses = {
 
 export type ListAiUsageCallsResponse = ListAiUsageCallsResponses[keyof ListAiUsageCallsResponses];
 
+export type ExportAiUsageCallsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Today, or the last 7 or 30 days with today, in Asia/Ho_Chi_Minh.
+         */
+        period?: 'today' | '7d' | '30d';
+        /**
+         * Only calls made for this task, as the call named it.
+         */
+        task?: string | null;
+        /**
+         * Only calls to the provider with this name.
+         */
+        provider?: string | null;
+        /**
+         * Only calls to the model with this name.
+         */
+        model?: string | null;
+        /**
+         * Only calls that ended this way.
+         */
+        outcome?: 'ok' | 'failed';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/ai/admin/usage/calls/export';
+};
+
+export type ExportAiUsageCallsErrors = {
+    /**
+     * A parameter is not valid, or the download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportAiUsageCallsError = ExportAiUsageCallsErrors[keyof ExportAiUsageCallsErrors];
+
+export type ExportAiUsageCallsResponses = {
+    /**
+     * Every call the parameters select, the newest first, one row each. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportAiUsageCallsResponse = ExportAiUsageCallsResponses[keyof ExportAiUsageCallsResponses];
+
 export type GetAiUsageOverviewData = {
     body?: never;
     path?: never;
@@ -7117,7 +7427,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_restore' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -7514,6 +7824,52 @@ export type RevokePersonsAppResponses = {
 
 export type RevokePersonsAppResponse = RevokePersonsAppResponses[keyof RevokePersonsAppResponses];
 
+export type ExportAuditEventsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only events at or after this instant.
+         */
+        from?: string | null;
+        /**
+         * Only events of this action.
+         */
+        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.settings_change';
+        /**
+         * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/identity/admin/audit-events/export';
+};
+
+export type ExportAuditEventsErrors = {
+    /**
+     * A parameter is not valid, or the download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportAuditEventsError = ExportAuditEventsErrors[keyof ExportAuditEventsErrors];
+
+export type ExportAuditEventsResponses = {
+    /**
+     * Every event the parameters select, newest first, one row each. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportAuditEventsResponse = ExportAuditEventsResponses[keyof ExportAuditEventsResponses];
+
 export type ListConnectedAppsData = {
     body?: never;
     path?: never;
@@ -7794,6 +8150,92 @@ export type GiveMatchingFeedbackResponses = {
 
 export type GiveMatchingFeedbackResponse = GiveMatchingFeedbackResponses[keyof GiveMatchingFeedbackResponses];
 
+export type InviteMatchingCandidateData = {
+    body: InviteMatchingCandidate;
+    path: {
+        candidateId: string;
+    };
+    query?: never;
+    url: '/api/matching/candidates/{candidateId}/invite';
+};
+
+export type InviteMatchingCandidateErrors = {
+    /**
+     * The note is longer than 500 characters.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The candidate is unknown to the caller.
+     */
+    404: Problem;
+    /**
+     * The candidate was removed, the use case takes no proposals, the provider was invited already, or nobody answers for it.
+     */
+    409: Problem;
+    /**
+     * A member invited as many providers as a day allows.
+     */
+    429: Problem;
+};
+
+export type InviteMatchingCandidateError = InviteMatchingCandidateErrors[keyof InviteMatchingCandidateErrors];
+
+export type InviteMatchingCandidateResponses = {
+    /**
+     * The provider is invited.
+     */
+    200: Matching;
+};
+
+export type InviteMatchingCandidateResponse = InviteMatchingCandidateResponses[keyof InviteMatchingCandidateResponses];
+
+export type GiveMatchingRemovalReasonData = {
+    body: GiveMatchingRemovalReason;
+    path: {
+        candidateId: string;
+    };
+    query?: never;
+    url: '/api/matching/candidates/{candidateId}/removal-reason';
+};
+
+export type GiveMatchingRemovalReasonErrors = {
+    /**
+     * The reason is not one of the five.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * Someone else removed the candidate.
+     */
+    403: Problem;
+    /**
+     * The candidate is unknown to the caller.
+     */
+    404: Problem;
+    /**
+     * The candidate is no longer removed.
+     */
+    409: Problem;
+};
+
+export type GiveMatchingRemovalReasonError = GiveMatchingRemovalReasonErrors[keyof GiveMatchingRemovalReasonErrors];
+
+export type GiveMatchingRemovalReasonResponses = {
+    /**
+     * The reason is on the removal and who removed it is unchanged.
+     */
+    200: Matching;
+};
+
+export type GiveMatchingRemovalReasonResponse = GiveMatchingRemovalReasonResponses[keyof GiveMatchingRemovalReasonResponses];
+
 export type RemoveMatchingCandidateData = {
     body: RemoveMatchingCandidate;
     path: {
@@ -7805,7 +8247,7 @@ export type RemoveMatchingCandidateData = {
 
 export type RemoveMatchingCandidateErrors = {
     /**
-     * The reason is not valid, or is other and nothing says what.
+     * The reason is not one of the five.
      */
     400: Problem;
     /**
@@ -8174,27 +8616,14 @@ export type SwitchMcpUserServerResponses = {
 
 export type SwitchMcpUserServerResponse = SwitchMcpUserServerResponses[keyof SwitchMcpUserServerResponses];
 
-export type ListReportedConversationsData = {
+export type ListProgramConversationAssignmentsData = {
     body?: never;
     path?: never;
-    query?: {
-        /**
-         * The page, counted from 1.
-         */
-        page?: number;
-        /**
-         * How many items a page holds; the list's own page size when absent.
-         */
-        size?: number;
-    };
-    url: '/api/messaging/admin/reported';
+    query?: never;
+    url: '/api/messaging/admin/program-assignments';
 };
 
-export type ListReportedConversationsErrors = {
-    /**
-     * A parameter is not valid.
-     */
-    400: Problem;
+export type ListProgramConversationAssignmentsErrors = {
     /**
      * Nobody is signed in.
      */
@@ -8205,16 +8634,52 @@ export type ListReportedConversationsErrors = {
     403: Problem;
 };
 
-export type ListReportedConversationsError = ListReportedConversationsErrors[keyof ListReportedConversationsErrors];
+export type ListProgramConversationAssignmentsError = ListProgramConversationAssignmentsErrors[keyof ListProgramConversationAssignmentsErrors];
 
-export type ListReportedConversationsResponses = {
+export type ListProgramConversationAssignmentsResponses = {
     /**
-     * One page of the reported first messages.
+     * Up to 100 program conversations, unassigned first.
      */
-    200: ReportedRequestList;
+    200: Array<ProgramConversationAssignment>;
 };
 
-export type ListReportedConversationsResponse = ListReportedConversationsResponses[keyof ListReportedConversationsResponses];
+export type ListProgramConversationAssignmentsResponse = ListProgramConversationAssignmentsResponses[keyof ListProgramConversationAssignmentsResponses];
+
+export type AssignProgramConversationData = {
+    body?: never;
+    path: {
+        id: string;
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/messaging/admin/program-assignments/{id}/{accountId}';
+};
+
+export type AssignProgramConversationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The program conversation or active operator is absent.
+     */
+    404: Problem;
+};
+
+export type AssignProgramConversationError = AssignProgramConversationErrors[keyof AssignProgramConversationErrors];
+
+export type AssignProgramConversationResponses = {
+    /**
+     * Only the assigned operator may read and answer the conversation.
+     */
+    204: void;
+};
+
+export type AssignProgramConversationResponse = AssignProgramConversationResponses[keyof AssignProgramConversationResponses];
 
 export type ListConversationsData = {
     body?: never;
@@ -8394,6 +8859,78 @@ export type DeclineConversationResponses = {
 };
 
 export type DeclineConversationResponse = DeclineConversationResponses[keyof DeclineConversationResponses];
+
+export type RemoveConversationMemberData = {
+    body?: never;
+    path: {
+        id: string;
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/messaging/conversations/{id}/members/{accountId}';
+};
+
+export type RemoveConversationMemberErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of either organization side.
+     */
+    403: Problem;
+    /**
+     * The conversation is absent.
+     */
+    404: Problem;
+};
+
+export type RemoveConversationMemberError = RemoveConversationMemberErrors[keyof RemoveConversationMemberErrors];
+
+export type RemoveConversationMemberResponses = {
+    /**
+     * The conversation with the updated member list.
+     */
+    200: ConversationDetail;
+};
+
+export type RemoveConversationMemberResponse = RemoveConversationMemberResponses[keyof RemoveConversationMemberResponses];
+
+export type AddConversationMemberData = {
+    body?: never;
+    path: {
+        id: string;
+        accountId: string;
+    };
+    query?: never;
+    url: '/api/messaging/conversations/{id}/members/{accountId}';
+};
+
+export type AddConversationMemberErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an owner of either organization side.
+     */
+    403: Problem;
+    /**
+     * The conversation or organization member is absent.
+     */
+    404: Problem;
+};
+
+export type AddConversationMemberError = AddConversationMemberErrors[keyof AddConversationMemberErrors];
+
+export type AddConversationMemberResponses = {
+    /**
+     * The conversation with the updated member list.
+     */
+    200: ConversationDetail;
+};
+
+export type AddConversationMemberResponse = AddConversationMemberResponses[keyof AddConversationMemberResponses];
 
 export type ListMessagesData = {
     body?: never;
@@ -9624,6 +10161,68 @@ export type CreateAdminOrganizationResponses = {
 };
 
 export type CreateAdminOrganizationResponse = CreateAdminOrganizationResponses[keyof CreateAdminOrganizationResponses];
+
+export type ExportAdminOrganizationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Organizations whose name or domain contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only organizations of this review status; `in_review` also selects an approved one with an open claim, `approved` leaves out those taken down, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.
+         */
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended' | 'merged';
+        /**
+         * Only organizations in this country, ISO 3166-1 alpha-2.
+         */
+        country?: string | null;
+        /**
+         * The order: `name` by the name, `received` by when its open claim arrived, or when the organization was created when none is open, `members` by how many people belong to it; `-` before a key turns it round. Without it, those a decision waits on first, then the most recently received.
+         */
+        sort?: 'name' | '-name' | 'received' | '-received' | 'members' | '-members';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/organization/admin/organizations/export';
+};
+
+export type ExportAdminOrganizationsErrors = {
+    /**
+     * A parameter is not valid, or the download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportAdminOrganizationsError = ExportAdminOrganizationsErrors[keyof ExportAdminOrganizationsErrors];
+
+export type ExportAdminOrganizationsResponses = {
+    /**
+     * Every organization the parameters select, in the list's order, one row each. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportAdminOrganizationsResponse = ExportAdminOrganizationsResponses[keyof ExportAdminOrganizationsResponses];
 
 export type GetOrganizationReviewQueueData = {
     body?: never;
@@ -10936,6 +11535,39 @@ export type CreateProgramResponses = {
 
 export type CreateProgramResponse = CreateProgramResponses[keyof CreateProgramResponses];
 
+export type ReadLumaCalendarData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/program/admin/programs/luma/read';
+};
+
+export type ReadLumaCalendarErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * This environment reads no Luma calendar, or Luma could not be read; nothing changed.
+     */
+    503: Problem;
+};
+
+export type ReadLumaCalendarError = ReadLumaCalendarErrors[keyof ReadLumaCalendarErrors];
+
+export type ReadLumaCalendarResponses = {
+    /**
+     * What the read changed.
+     */
+    200: LumaRead;
+};
+
+export type ReadLumaCalendarResponse = ReadLumaCalendarResponses[keyof ReadLumaCalendarResponses];
+
 export type GetAdminProgramData = {
     body?: never;
     path: {
@@ -11013,6 +11645,41 @@ export type SaveProgramResponses = {
 };
 
 export type SaveProgramResponse = SaveProgramResponses[keyof SaveProgramResponses];
+
+export type FeatureProgramData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}/feature';
+};
+
+export type FeatureProgramErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+};
+
+export type FeatureProgramError = FeatureProgramErrors[keyof FeatureProgramErrors];
+
+export type FeatureProgramResponses = {
+    /**
+     * The program is featured.
+     */
+    204: void;
+};
+
+export type FeatureProgramResponse = FeatureProgramResponses[keyof FeatureProgramResponses];
 
 export type PublishProgramData = {
     body?: never;
@@ -11131,6 +11798,41 @@ export type SaveProgramQuestionsResponses = {
 
 export type SaveProgramQuestionsResponse = SaveProgramQuestionsResponses[keyof SaveProgramQuestionsResponses];
 
+export type UnfeatureProgramData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/program/admin/programs/{id}/unfeature';
+};
+
+export type UnfeatureProgramErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program.
+     */
+    404: Problem;
+};
+
+export type UnfeatureProgramError = UnfeatureProgramErrors[keyof UnfeatureProgramErrors];
+
+export type UnfeatureProgramResponses = {
+    /**
+     * The program is no longer featured.
+     */
+    204: void;
+};
+
+export type UnfeatureProgramResponse = UnfeatureProgramResponses[keyof UnfeatureProgramResponses];
+
 export type UnpublishProgramData = {
     body?: never;
     path: {
@@ -11178,6 +11880,10 @@ export type ListProgramsData = {
          * Only programs of this type.
          */
         type?: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
+        /**
+         * Only the programs an operator featured, the most recently featured first; the home page announces the first that still takes applications.
+         */
+        featured?: boolean | null;
     };
     url: '/api/program/programs';
 };
@@ -11458,6 +12164,37 @@ export type OrganizeApplicantResponses = {
 
 export type OrganizeApplicantResponse = OrganizeApplicantResponses[keyof OrganizeApplicantResponses];
 
+export type LeaveApplyingAloneData = {
+    body?: never;
+    path: {
+        slug: string;
+    };
+    query?: never;
+    url: '/api/proposal/programs/{slug}/application/organization/leave';
+};
+
+export type LeaveApplyingAloneErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The program takes no applications now, the caller does not apply as themselves, or something was already sent under their name.
+     */
+    409: Problem;
+};
+
+export type LeaveApplyingAloneError = LeaveApplyingAloneErrors[keyof LeaveApplyingAloneErrors];
+
+export type LeaveApplyingAloneResponses = {
+    /**
+     * The form, with no organization.
+     */
+    200: ApplicationView;
+};
+
+export type LeaveApplyingAloneResponse = LeaveApplyingAloneResponses[keyof LeaveApplyingAloneResponses];
+
 export type GetReviewApplicationData = {
     body?: never;
     path: {
@@ -11572,6 +12309,77 @@ export type GetReviewFileResponses = {
 
 export type GetReviewFileResponse = GetReviewFileResponses[keyof GetReviewFileResponses];
 
+export type GetReviewDraftData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/drafts/{id}';
+};
+
+export type GetReviewDraftErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such draft.
+     */
+    404: Problem;
+};
+
+export type GetReviewDraftError = GetReviewDraftErrors[keyof GetReviewDraftErrors];
+
+export type GetReviewDraftResponses = {
+    /**
+     * What the draft holds now. The reading is recorded.
+     */
+    200: ReviewDraft;
+};
+
+export type GetReviewDraftResponse = GetReviewDraftResponses[keyof GetReviewDraftResponses];
+
+export type GetReviewDraftFileData = {
+    body?: never;
+    path: {
+        id: string;
+        fileId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/drafts/{id}/files/{fileId}';
+};
+
+export type GetReviewDraftFileErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * The draft holds no such file.
+     */
+    404: Problem;
+};
+
+export type GetReviewDraftFileError = GetReviewDraftFileErrors[keyof GetReviewDraftFileErrors];
+
+export type GetReviewDraftFileResponses = {
+    /**
+     * The bytes of the file, saved under its name.
+     */
+    200: Blob | File;
+};
+
+export type GetReviewDraftFileResponse = GetReviewDraftFileResponses[keyof GetReviewDraftFileResponses];
+
 export type ListReviewProgramsData = {
     body?: never;
     path?: never;
@@ -11637,11 +12445,20 @@ export type ExportReviewApplicationsData = {
     path: {
         programId: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
     url: '/api/proposal/review/programs/{programId}/applications/export';
 };
 
 export type ExportReviewApplicationsErrors = {
+    /**
+     * The download would hold too many rows.
+     */
+    400: Problem;
     /**
      * Nobody is signed in.
      */
@@ -11662,7 +12479,7 @@ export type ExportReviewApplicationsResponses = {
     /**
      * One row for each application, with its applicant's contact details, decision and scores. The download is recorded.
      */
-    200: string;
+    200: Blob | File;
 };
 
 export type ExportReviewApplicationsResponse = ExportReviewApplicationsResponses[keyof ExportReviewApplicationsResponses];
@@ -11787,6 +12604,85 @@ export type DecideApplicationsResponses = {
 };
 
 export type DecideApplicationsResponse = DecideApplicationsResponses[keyof DecideApplicationsResponses];
+
+export type ListProgramDraftsData = {
+    body?: never;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/proposal/review/programs/{programId}/drafts';
+};
+
+export type ListProgramDraftsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+};
+
+export type ListProgramDraftsError = ListProgramDraftsErrors[keyof ListProgramDraftsErrors];
+
+export type ListProgramDraftsResponses = {
+    /**
+     * Each draft's applicant, how to reach them and how far they got, the most recently saved first. What a draft says is not read out.
+     */
+    200: ProgramDrafts;
+};
+
+export type ListProgramDraftsResponse = ListProgramDraftsResponses[keyof ListProgramDraftsResponses];
+
+export type ExportProgramDraftsData = {
+    body?: never;
+    path: {
+        programId: string;
+    };
+    query?: {
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/proposal/review/programs/{programId}/drafts/export';
+};
+
+export type ExportProgramDraftsErrors = {
+    /**
+     * The download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller does not review this program, or the action is an operator's.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+};
+
+export type ExportProgramDraftsError = ExportProgramDraftsErrors[keyof ExportProgramDraftsErrors];
+
+export type ExportProgramDraftsResponses = {
+    /**
+     * One row for each draft, with its applicant's contact details and how far they got. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportProgramDraftsResponse = ExportProgramDraftsResponses[keyof ExportProgramDraftsResponses];
 
 export type GetReleaseData = {
     body?: never;
@@ -12120,6 +13016,37 @@ export type GetReceivedUseCaseProposalResponses = {
 
 export type GetReceivedUseCaseProposalResponse = GetReceivedUseCaseProposalResponses[keyof GetReceivedUseCaseProposalResponses];
 
+export type DecideUseCaseProposalData = {
+    body: DecideUseCaseProposal;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-case-proposals/{id}/decision';
+};
+
+export type DecideUseCaseProposalErrors = {
+    /**
+     * The decision is neither shortlisted nor declined.
+     */
+    400: Problem;
+    /**
+     * The proposal was not sent, or the caller is neither of the organization that posted its use case nor an operator.
+     */
+    404: Problem;
+};
+
+export type DecideUseCaseProposalError = DecideUseCaseProposalErrors[keyof DecideUseCaseProposalErrors];
+
+export type DecideUseCaseProposalResponses = {
+    /**
+     * The proposal's line with the decision as recorded.
+     */
+    200: ReceivedUseCaseProposalSummary;
+};
+
+export type DecideUseCaseProposalResponse = DecideUseCaseProposalResponses[keyof DecideUseCaseProposalResponses];
+
 export type GetUseCaseProposalFileData = {
     body?: never;
     path: {
@@ -12185,6 +13112,72 @@ export type SendUseCaseProposalResponses = {
 };
 
 export type SendUseCaseProposalResponse = SendUseCaseProposalResponses[keyof SendUseCaseProposalResponses];
+
+export type WithdrawUseCaseProposalData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-case-proposals/{id}/withdraw';
+};
+
+export type WithdrawUseCaseProposalErrors = {
+    /**
+     * The caller's organization has no such proposal.
+     */
+    404: Problem;
+    /**
+     * The proposal is not sent, or the use case no longer takes proposals.
+     */
+    409: Problem;
+};
+
+export type WithdrawUseCaseProposalError = WithdrawUseCaseProposalErrors[keyof WithdrawUseCaseProposalErrors];
+
+export type WithdrawUseCaseProposalResponses = {
+    /**
+     * The form with the proposal as a draft again, saying when it was taken back.
+     */
+    200: UseCaseProposalForm;
+};
+
+export type WithdrawUseCaseProposalResponse = WithdrawUseCaseProposalResponses[keyof WithdrawUseCaseProposalResponses];
+
+export type SendUseCaseProposalOutcomesData = {
+    body: SendUseCaseProposalOutcomes;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-cases/{useCaseId}/outcomes';
+};
+
+export type SendUseCaseProposalOutcomesErrors = {
+    /**
+     * The message is longer than 2000 characters.
+     */
+    400: Problem;
+    /**
+     * There is no such use case, or the caller is neither of the organization that posted it nor an operator.
+     */
+    404: Problem;
+    /**
+     * No proposal has a decision to send.
+     */
+    409: Problem;
+};
+
+export type SendUseCaseProposalOutcomesError = SendUseCaseProposalOutcomesErrors[keyof SendUseCaseProposalOutcomesErrors];
+
+export type SendUseCaseProposalOutcomesResponses = {
+    /**
+     * How many senders were e-mailed, and of them how many shortlisted and declined.
+     */
+    200: UseCaseProposalOutcomes;
+};
+
+export type SendUseCaseProposalOutcomesResponse = SendUseCaseProposalOutcomesResponses[keyof SendUseCaseProposalOutcomesResponses];
 
 export type GetUseCaseProposalFormData = {
     body?: never;
@@ -12286,6 +13279,46 @@ export type ListUseCaseProposalsResponses = {
 };
 
 export type ListUseCaseProposalsResponse = ListUseCaseProposalsResponses[keyof ListUseCaseProposalsResponses];
+
+export type ExportUseCaseProposalsData = {
+    body?: never;
+    path: {
+        useCaseId: string;
+    };
+    query?: {
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/proposal/use-cases/{useCaseId}/proposals/export';
+};
+
+export type ExportUseCaseProposalsErrors = {
+    /**
+     * The download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case.
+     */
+    404: Problem;
+};
+
+export type ExportUseCaseProposalsError = ExportUseCaseProposalsErrors[keyof ExportUseCaseProposalsErrors];
+
+export type ExportUseCaseProposalsResponses = {
+    /**
+     * One row for each sent proposal, the latest first, with its decision. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportUseCaseProposalsResponse = ExportUseCaseProposalsResponses[keyof ExportUseCaseProposalsResponses];
 
 export type SearchData = {
     body?: never;
@@ -13150,6 +14183,76 @@ export type CreateAdminSolutionResponses = {
 };
 
 export type CreateAdminSolutionResponse = CreateAdminSolutionResponses[keyof CreateAdminSolutionResponses];
+
+export type ExportAdminSolutionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Solutions whose name, or whose organization's name, contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only solutions offered by this organization.
+         */
+        organizationId?: string | null;
+        /**
+         * Only solutions of this review status, or `suspended` for those taken down; `approved` leaves out those taken down. Drafts are never listed.
+         */
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended';
+        /**
+         * Only solutions for this industry.
+         */
+        industry?: string | null;
+        /**
+         * Only solutions featured when true, only those not featured when false.
+         */
+        featured?: boolean | null;
+        /**
+         * The order: `name` by the name, `submitted` by when it was last sent for review; `-` before a key turns it round, and one never sent comes last either way. Without it, those with something waiting for review first, the longest wait on top.
+         */
+        sort?: 'name' | '-name' | 'submitted' | '-submitted';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/solution/admin/solutions/export';
+};
+
+export type ExportAdminSolutionsErrors = {
+    /**
+     * A parameter is not valid, or the download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportAdminSolutionsError = ExportAdminSolutionsErrors[keyof ExportAdminSolutionsErrors];
+
+export type ExportAdminSolutionsResponses = {
+    /**
+     * Every solution the parameters select, in the list's order, one row each. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportAdminSolutionsResponse = ExportAdminSolutionsResponses[keyof ExportAdminSolutionsResponses];
 
 export type ListAdminSolutionOrganizationsData = {
     body?: never;
@@ -14731,6 +15834,68 @@ export type ListAdminTalentResponses = {
 };
 
 export type ListAdminTalentResponse = ListAdminTalentResponses[keyof ListAdminTalentResponses];
+
+export type ExportAdminTalentData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Profiles whose name contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only profiles of this review status; `approved` leaves out those taken down, and `suspended` selects those taken down. Drafts are never listed.
+         */
+        status?: 'in_review' | 'needs_changes' | 'approved' | 'suspended';
+        /**
+         * Only profiles featured when true, only those not featured when false.
+         */
+        featured?: boolean | null;
+        /**
+         * The order: `name` by the name, `submitted` by when it was last sent for review; `-` before a key turns it round, and one never sent comes last either way. Without it, those waiting for review first, the longest wait on top.
+         */
+        sort?: 'name' | '-name' | 'submitted' | '-submitted';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/talent/admin/profiles/export';
+};
+
+export type ExportAdminTalentErrors = {
+    /**
+     * A parameter is not valid, or the download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportAdminTalentError = ExportAdminTalentErrors[keyof ExportAdminTalentErrors];
+
+export type ExportAdminTalentResponses = {
+    /**
+     * Every profile the parameters select, in the list's order, one row each, with its person's email. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportAdminTalentResponse = ExportAdminTalentResponses[keyof ExportAdminTalentResponses];
 
 export type GetTalentReviewQueueData = {
     body?: never;

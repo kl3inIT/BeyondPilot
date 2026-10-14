@@ -5,12 +5,15 @@ import { TextButton } from "@/components/actions/text-button";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { Solution, SolutionImage } from "@/lib/api/generated";
 
+import { deckAddress } from "./solution-deck";
+import { SolutionDeckPreview } from "./solution-deck-preview";
 import { SolutionRecordImages } from "./solution-record-images";
 
 /** What a review reads of a solution. */
 type SolutionRecordProps = {
   solution: Pick<
     Solution,
+    | "slug"
     | "name"
     | "summary"
     | "problemsSolved"
@@ -50,7 +53,12 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
   const words = (labels: string[]) => (labels.length > 0 ? labels.join(", ") : null);
   const link = (href: string | null | undefined) =>
     href ? (
-      <TextButton href={href} target="_blank" rel="noreferrer" className="break-all">
+      <TextButton
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="max-w-full break-all whitespace-normal"
+      >
         {href.replace(/^https?:\/\//, "")}
         <ExternalLinkIcon aria-hidden="true" />
       </TextButton>
@@ -68,6 +76,12 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
     ...(solution.cover ? [picture(solution.cover, t("cover"), "wide")] : []),
     ...solution.images.map((image, index) => picture(image, String(index + 1), "square")),
   ];
+  const deck = solution.deck && (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="break-all">{solution.deck.fileName}</span>
+      <SolutionDeckPreview fileName={solution.deck.fileName} fileUrl={deckAddress(solution.slug)} />
+    </div>
+  );
 
   const groups: {
     title: string;
@@ -113,8 +127,8 @@ function SolutionRecord({ solution }: SolutionRecordProps) {
         ...(solution.images.length > 0 ? [] : [{ label: t("moreImages"), value: null }]),
         { label: t("website"), value: link(solution.website) },
         { label: t("demo"), value: link(solution.demoUrl) },
-        // The file is named, not linked: the address of a deck answers only once its solution is approved.
-        { label: t("deck"), value: solution.deck?.fileName ?? null },
+        // The preview uses the permission-checked deck route; the direct file address is private.
+        { label: t("deck"), value: deck },
         {
           label: t("deployments"),
           value:

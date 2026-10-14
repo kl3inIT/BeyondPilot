@@ -137,6 +137,7 @@ class EmailRendererTest {
 				"organization_sent_back", "organization_request_approved", "organization_restored",
 				"application_received", "reviewer_invitation", "application_outcome", "solution_approved",
 				"solution_sent_back", "solution_restored", "use_case_approved", "use_case_sent_back",
+				"proposal_shortlisted", "proposal_declined", "matching_invitation",
 				"talent_approved", "talent_changes_requested", "talent_restored", "message_request",
 				"message_request_reminder", "message_request_accepted", "message_request_declined",
 				"message_request_closed", "message_unread");

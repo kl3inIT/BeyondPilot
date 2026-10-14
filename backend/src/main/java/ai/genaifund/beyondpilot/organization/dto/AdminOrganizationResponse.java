@@ -12,7 +12,7 @@ public record AdminOrganizationResponse(
 				description = "Who created it, as they are shown.") String createdBy,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String createdByEmail,
 		@Schema(types = { "string", "null" },
-				description = "A domain the operator may verify with a decision: the one it has, else the creator's work domain while it waits for review, else its website's. Null when another organization holds it.") @Nullable String suggestedDomain,
+				description = "A domain the operator may verify with a decision: the one it has, else the creator's work domain while it waits for review, else its website's. Null for an individual, or when another organization holds it.") @Nullable String suggestedDomain,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<MemberResponse> members,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<InvitationResponse> invitations,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

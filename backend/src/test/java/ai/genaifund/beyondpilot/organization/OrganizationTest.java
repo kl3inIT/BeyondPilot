@@ -17,6 +17,8 @@ import java.util.stream.IntStream;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -122,12 +124,125 @@ class OrganizationTest {
 		String created = body(post(signIn("dat@builder.test"), API + "/organizations", builder).expectStatus()
 			.isCreated());
 		assertThat(JsonPath.<String>read(created, "$.type")).isEqualTo("independent_builder");
-		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
+		// Nothing about a builder on their own waits for GenAI Fund.
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
 
 		Map<String, Object> company = new HashMap<>(creation("No Industry Co"));
 		company.put("industries", List.of());
 		assertProblem(post(signIn("founder@no-industry.test"), API + "/organizations", company), 400,
 				"ORGANIZATION_INDUSTRIES_REQUIRED");
+	}
+
+	@Test
+	void aBuilderOnTheirOwnIsAnOrdinaryOrganizationOfOnePersonWithoutMembersOrDomain() {
+		String builder = signIn("solo@company.test");
+		Map<String, Object> request = new HashMap<>(creation("Solo Builder"));
+		request.put("type", "independent_builder");
+		request.put("teamSize", "just_me");
+		request.put("industries", List.of());
+		String created = body(post(builder, API + "/organizations", request).expectStatus().isCreated());
+		String id = JsonPath.read(created, "$.id");
+		String slug = JsonPath.read(created, "$.slug");
+
+		// Approved at once, it waits in no queue and is offered no domain, not even the person's employer's.
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<List<String>>read(
+				body(get(operator, API + "/admin/organizations?status=in_review").expectStatus().isOk()),
+				"$.items[*].id"))
+			.doesNotContain(id);
+		String record = body(get(operator, API + "/admin/organizations/" + id).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(record, "$.suggestedDomain")).isNull();
+		Map<String, Object> withDomain = new HashMap<>();
+		withDomain.put("profile", save(request, JsonPath.<Integer>read(record, "$.organization.version")));
+		withDomain.put("emailDomain", "company.test");
+		assertProblem(put(operator, API + "/admin/organizations/" + id, withDomain), 409,
+				"ORGANIZATION_INDIVIDUAL");
+
+		// It is one person: nobody asks to join it and it invites nobody; it has a public page like any organization.
+		assertThat(JsonPath.<List<String>>read(
+				body(get(signIn("someone@else.test"), API + "/organizations?q=solo").expectStatus().isOk()),
+				"$.items[*].id"))
+			.doesNotContain(id);
+		assertProblem(post(signIn("joiner@else.test"), API + "/organizations/" + id + "/join", Map.of()), 404,
+				"ORGANIZATION_NOT_FOUND");
+		assertProblem(post(builder, API + "/mine/invitations", Map.of("email", "friend@else.test", "role", "member")),
+				409, "ORGANIZATION_INDIVIDUAL");
+		assertThat(JsonPath.<String>read(
+				body(get(signIn("visitor@else.test"), API + "/organizations/" + slug).expectStatus().isOk()), "$.name"))
+			.isEqualTo("Solo Builder");
+
+		// Its owner edits it, and choosing a team needs a size other than just me.
+		Map<String, Object> edited = new HashMap<>(request);
+		edited.put("name", "Solo Studio");
+		edited.put("description", "Claims help from one person.");
+		put(builder, API + "/mine", save(edited, JsonPath.<Integer>read(mine(builder), "$.organization.version")))
+			.expectStatus()
+			.isOk();
+		assertThat(JsonPath.<String>read(mine(builder), "$.organization.name")).isEqualTo("Solo Studio");
+		Map<String, Object> team = new HashMap<>(profile("Solo Team"));
+		team.put("type", "builder_team");
+		team.put("teamSize", "just_me");
+		team.put("teamBackground", "Built claims assistants.");
+		assertProblem(put(builder, API + "/mine", save(team, versionOf(mine(builder)))), 400,
+				"ORGANIZATION_TEAM_SIZE_REQUIRED");
+
+		// As a team it waits for GenAI Fund's review like any team, and an owner invites once it is approved.
+		team.put("teamSize", "2_9");
+		put(builder, API + "/mine", save(team, versionOf(mine(builder)))).expectStatus().isOk();
+		String asTeam = mine(builder);
+		assertThat(JsonPath.<String>read(asTeam, "$.organization.type")).isEqualTo("builder_team");
+		assertThat(JsonPath.<String>read(asTeam, "$.organization.status")).isEqualTo("in_review");
+		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of("emailDomain", "solo-team.test"))
+			.expectStatus()
+			.isNoContent();
+		post(builder, API + "/mine/invitations", Map.of("email", "friend@else.test", "role", "member")).expectStatus()
+			.isNoContent();
+
+		// With an invitation open it cannot be a person on their own again, whichever form saves it.
+		Map<String, Object> alone = new HashMap<>(request);
+		alone.put("name", "Solo Again");
+		assertProblem(put(builder, API + "/mine", save(alone, versionOf(mine(builder)))), 409,
+				"ORGANIZATION_NOT_ALONE");
+		Map<String, Object> basics = new HashMap<>(alone);
+		basics.put("version", versionOf(mine(builder)));
+		assertProblem(put(builder, API + "/mine/basics", basics), 409, "ORGANIZATION_NOT_ALONE");
+	}
+
+	@Test
+	void aTeamBecomesAPersonOnTheirOwnOnlyWithoutOtherMembersAndAnApprovedOneStaysApproved() {
+		String founder = signIn("founder@alone.test");
+		UUID id = create(founder, "Alone Co");
+		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of("emailDomain", "alone.test"))
+			.expectStatus()
+			.isNoContent();
+		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
+		assertThat(outcome(post(signIn("colleague@alone.test"), API + "/organizations/" + id + "/join", Map.of())))
+			.isEqualTo("joined");
+
+		Map<String, Object> alone = new HashMap<>(profile("Alone Co"));
+		alone.put("type", "independent_builder");
+		alone.put("teamSize", "just_me");
+		assertProblem(put(founder, API + "/mine", save(alone, versionOf(mine(founder)))), 409,
+				"ORGANIZATION_NOT_ALONE");
+		Map<String, Object> basics = new HashMap<>(alone);
+		basics.put("version", versionOf(mine(founder)));
+		assertProblem(put(founder, API + "/mine/basics", basics), 409, "ORGANIZATION_NOT_ALONE");
+
+		// Alone again, it may become a person on their own: just me is the size, and the domain goes.
+		String loner = signIn("loner@alone.test");
+		UUID lonerId = create(loner, "Loner Co");
+		post(operator, API + "/admin/organizations/" + lonerId + "/approve", Map.of("emailDomain", "loner.test"))
+			.expectStatus()
+			.isNoContent();
+		Map<String, Object> single = new HashMap<>(profile("Loner Co"));
+		single.put("type", "independent_builder");
+		single.put("teamSize", "2_9");
+		put(loner, API + "/mine", save(single, versionOf(mine(loner)))).expectStatus().isOk();
+		String saved = mine(loner);
+		assertThat(JsonPath.<String>read(saved, "$.organization.type")).isEqualTo("independent_builder");
+		assertThat(JsonPath.<String>read(saved, "$.organization.teamSize")).isEqualTo("just_me");
+		assertThat(JsonPath.<String>read(saved, "$.organization.status")).isEqualTo("approved");
+		assertThat(JsonPath.<Object>read(saved, "$.organization.emailDomain")).isNull();
 	}
 
 	@Test
@@ -160,20 +275,27 @@ class OrganizationTest {
 
 	@Test
 	void onlyACompanyMustGiveItsWebsiteAndTheYearItWasFounded() {
-		// A builder on their own creates a practice without either, and saves it as a team without either.
-		String builder = signIn("dat@no-website.test");
+		// A builder on their own and a team are both made without either, and a team saves without either.
 		Map<String, Object> practice = new HashMap<>(creation("Dat Studio"));
 		practice.put("type", "independent_builder");
 		practice.put("teamSize", "just_me");
 		practice.remove("website");
 		practice.remove("foundedYear");
-		String created = body(post(builder, API + "/organizations", practice).expectStatus().isCreated());
+		String created = body(post(signIn("dat@no-website.test"), API + "/organizations", practice).expectStatus()
+			.isCreated());
 		assertThat(JsonPath.<Object>read(created, "$.website")).isNull();
 		assertThat(JsonPath.<Object>read(created, "$.foundedYear")).isNull();
 
+		String builder = signIn("team@no-website.test");
+		Map<String, Object> founded = new HashMap<>(creation("Dat Team"));
+		founded.put("type", "builder_team");
+		founded.put("teamBackground", "Built claims assistants.");
+		founded.remove("website");
+		founded.remove("foundedYear");
+		post(builder, API + "/organizations", founded).expectStatus().isCreated();
+
 		Map<String, Object> team = new HashMap<>(profile("Dat Team"));
         team.put("type", "builder_team");
-        team.put("teamBackground", "Built claims assistants.");
 		team.remove("website");
 		team.remove("foundedYear");
 		int version = JsonPath.<Integer>read(mine(builder), "$.organization.version");
@@ -324,13 +446,17 @@ class OrganizationTest {
 	}
 
 	@Test
-	void anOwnerCorrectsWhatTheyGaveWhenTheyMadeTheOrganizationWithoutTheRestOfTheProfile() {
+	void requiredFactsCanBeEditedWithoutErasingHiddenProfileFacts() {
 		String founder = signIn("founder@basics.test");
-		create(founder, "Basics Co");
+        UUID logo = uploadedLogo(founder);
+        Map<String, Object> original = new HashMap<>(creation("Basics Co"));
+        original.put("logoFileId", logo);
+        original.put("teamBackground", "Historical team experience.");
+        post(founder, API + "/organizations", original).expectStatus().isCreated();
 		String basics = API + "/mine/basics";
         Map<String, Object> request = new HashMap<>(Map.of("name", " Basics Team ", "type", "builder_team", "teamSize",
                 "10_49", "industries", List.of("insurance"), "country", "SG"));
-        request.put("teamBackground", " Built claims assistants. ");
+        request.put("description", " Built claims assistants. ");
         request.put("version", JsonPath.<Integer>read(mine(founder), "$.organization.version"));
 
 		put(founder, basics, request).expectStatus().isOk();
@@ -338,23 +464,31 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(saved, "$.organization.name")).isEqualTo("Basics Team");
 		assertThat(JsonPath.<String>read(saved, "$.organization.type")).isEqualTo("builder_team");
 		assertThat(JsonPath.<String>read(saved, "$.organization.teamSize")).isEqualTo("10_49");
-		assertThat(JsonPath.<List<String>>read(saved, "$.organization.industries")).containsExactly("insurance");
+		assertThat(JsonPath.<List<String>>read(saved, "$.organization.industries")).containsExactly("insurance", "banking_finance");
         assertThat(JsonPath.<String>read(saved, "$.organization.country")).isEqualTo("SG");
-        assertThat(JsonPath.<String>read(saved, "$.organization.teamBackground")).isEqualTo("Built claims assistants.");
+        assertThat(JsonPath.<String>read(saved, "$.organization.description")).isEqualTo("Built claims assistants.");
+        assertThat(JsonPath.<String>read(saved, "$.organization.teamBackground")).isEqualTo("Historical team experience.");
+        assertThat(JsonPath.<String>read(saved, "$.organization.logoFileId")).isEqualTo(logo.toString());
         assertProblem(put(founder, basics, request), 409, "ORGANIZATION_CHANGED_MEANWHILE");
         request.put("version", JsonPath.<Integer>read(saved, "$.organization.version"));
 		// What the request does not carry stays, and the organization still waits for review.
-		assertThat(JsonPath.<String>read(saved, "$.organization.description")).isEqualTo("Assistants for insurers.");
+		assertThat(JsonPath.<String>read(saved, "$.organization.website")).isEqualTo("https://example.test");
+		assertThat(JsonPath.<Integer>read(saved, "$.organization.foundedYear")).isEqualTo(2021);
 		assertThat(JsonPath.<String>read(saved, "$.organization.status")).isEqualTo("in_review");
 
 		// A company names an industry; the other kinds may leave them out.
 		request.put("type", "company");
 		request.put("industries", List.of());
+        request.put("website", "https://basics.test");
+        request.put("foundedYear", 2022);
 		assertProblem(put(founder, basics, request), 400, "ORGANIZATION_INDUSTRIES_REQUIRED");
-		request.put("type", "independent_builder");
-		request.put("teamSize", "just_me");
+		request.put("type", "other");
+		request.put("teamSize", "2_9");
         put(founder, basics, request).expectStatus().isOk();
-        assertThat(JsonPath.<Object>read(mine(founder), "$.organization.teamBackground")).isNull();
+        assertThat(JsonPath.<String>read(mine(founder), "$.organization.teamBackground")).isEqualTo("Historical team experience.");
+        assertThat(JsonPath.<String>read(mine(founder), "$.organization.logoFileId")).isEqualTo(logo.toString());
+        assertThat(JsonPath.<String>read(mine(founder), "$.organization.description")).isEqualTo("Built claims assistants.");
+        assertThat(JsonPath.<String>read(mine(founder), "$.organization.website")).isEqualTo("https://example.test");
 		request.put("country", "Vietnam");
 		assertProblem(put(founder, basics, request), 400, "REQUEST_INVALID");
 		request.put("country", "VN");
@@ -363,29 +497,64 @@ class OrganizationTest {
 	}
 
 	@Test
-	void aPersonWithoutAnOrganizationMakesOneFromItsNameKindSizeIndustriesAndCountry() {
+	void aTeamIsCreatedWithShortDescriptionAndNoSeparateBackground() {
 		String founder = signIn("founder@fromfew.test");
 		String path = API + "/organizations/basics";
         Map<String, Object> request = new HashMap<>(Map.of("name", " Few Team ", "type", "builder_team", "teamSize",
                 "2_9", "industries", List.of(), "country", "VN"));
         String missing = body(post(founder, path, request).expectStatus().isBadRequest());
-        assertThat(JsonPath.<List<String>>read(missing, "$.errors[*].pointer")).contains("#/teamBackground");
-        request.put("teamBackground", "x".repeat(2001));
+        assertThat(JsonPath.<List<String>>read(missing, "$.errors[*].pointer")).contains("#/description");
+        request.put("description", "x".repeat(281));
         assertProblem(post(founder, path, request), 400, "REQUEST_INVALID");
-        request.put("teamBackground", "Built two production assistants.");
+        request.put("description", "Built two production assistants.");
 
 		// A company names an industry; a team may leave them out.
 		request.put("type", "company");
+        request.put("website", "https://few.test");
+        request.put("foundedYear", 2021);
 		assertProblem(post(founder, path, request), 400, "ORGANIZATION_INDUSTRIES_REQUIRED");
 		request.put("type", "builder_team");
 		String created = body(post(founder, path, request).expectStatus().isCreated());
         assertThat(JsonPath.<String>read(created, "$.name")).isEqualTo("Few Team");
-        assertThat(JsonPath.<String>read(created, "$.teamBackground")).isEqualTo("Built two production assistants.");
+        assertThat(JsonPath.<String>read(created, "$.description")).isEqualTo("Built two production assistants.");
+        assertThat(JsonPath.<Object>read(created, "$.teamBackground")).isNull();
+        assertThat(JsonPath.<Object>read(created, "$.website")).isNull();
+        assertThat(JsonPath.<Object>read(created, "$.foundedYear")).isNull();
 		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
 		assertThat(JsonPath.<String>read(mine(founder), "$.role")).isEqualTo("owner");
 		// One organization for one person.
 		assertProblem(post(founder, path, request), 409, "ORGANIZATION_ALREADY_MEMBER");
 	}
+
+    @Test
+    void aSoloPopupNeedsOnlyNameAndCountryAndACompanyNeedsEveryCompanyFact() {
+        String path = API + "/organizations/basics";
+        Map<String, Object> solo = Map.of("name", "An Tran", "type", "independent_builder",
+            "teamSize", "just_me", "industries", List.of(), "country", "VN");
+        String created = body(post(signIn("solo@popup.test"), path, solo).expectStatus().isCreated());
+        assertThat(JsonPath.<String>read(created, "$.teamSize")).isEqualTo("just_me");
+        assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
+        assertThat(JsonPath.<Object>read(created, "$.description")).isNull();
+
+        String founder = signIn("company@popup.test");
+        Map<String, Object> company = new HashMap<>(Map.of("name", "Popup Co", "type", "company",
+            "teamSize", "2_9", "industries", List.of("insurance"), "country", "VN"));
+        String missing = body(post(founder, path, company).expectStatus().isBadRequest());
+        assertThat(JsonPath.<List<String>>read(missing, "$.errors[*].pointer"))
+            .containsExactlyInAnyOrder("#/website", "#/foundedYear", "#/description");
+        company.put("website", "https://popup.test");
+        company.put("foundedYear", 2021);
+        company.put("description", "Insurance assistants.");
+        String made = body(post(founder, path, company).expectStatus().isCreated());
+        assertThat(JsonPath.<String>read(made, "$.website")).isEqualTo("https://popup.test");
+        assertThat(JsonPath.<Integer>read(made, "$.foundedYear")).isEqualTo(2021);
+        assertThat(JsonPath.<String>read(made, "$.description")).isEqualTo("Insurance assistants.");
+        Map<String, Object> team = new HashMap<>(creation("Full Form Team"));
+        team.put("type", "builder_team");
+        team.remove("website");
+        team.remove("foundedYear");
+        post(signIn("full-team@popup.test"), API + "/organizations", team).expectStatus().isCreated();
+    }
 
 	@Test
 	void aRefusedOrganizationIsRefusedForGoodAndOnlyWhileItWaitsForReview() {
@@ -974,6 +1143,44 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOperatorDownloadsTheOrganizationsAsTheListNarrowsThemAndTheDownloadIsRecorded() {
+		for (String[] one : new String[][] { { "Exported Beta", "VN" }, { "Exported Alpha", "VN" },
+				{ "Exported Gamma", "SG" } }) {
+			post(operator, API + "/admin/organizations", Map.of("name", one[0], "type", "builder_team", "country", one[1]))
+				.expectStatus()
+				.isCreated();
+		}
+		String export = API + "/admin/organizations/export?q=exported&country=VN&sort=name";
+
+		assertProblem(post(signIn("member@exported-organizations.test"), export, null), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(post(operator, export, null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"organizations-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(4);
+		assertThat(sheet.get(1)).startsWith("Organization", "Type", "Country", "Status", "Members", "Has an owner",
+				"Request");
+		assertThat(sheet.get(2)).startsWith("Exported Alpha", "Builder team", "VN", "Approved", "0", "No");
+		assertThat(sheet.get(3)).startsWith("Exported Beta");
+
+		String csv = body(post(operator, export + "&format=csv", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("﻿Organization,Type,Country,Status,Members,Has an owner,Request,");
+		assertThat(csv.lines().toList()).hasSize(3).element(1).asString().startsWith("Exported Alpha,Builder team,VN,");
+		assertThat(exportCounts()).containsExactly("2", "2");
+	}
+
+	@Test
 	void anOperatorCreatesAnOrganizationAndTheInvitedPersonOwnsIt() {
 		String created = body(post(operator, API + "/admin/organizations",
 				Map.of("name", "Handed Over", "type", "company", "emailDomain",
@@ -1451,6 +1658,12 @@ class OrganizationTest {
 				select action from audit_event where resource_type = 'organization' and resource_id = ?
 				order by occurred_at, id
 				""").param(organization.toString()).query(String.class).list();
+	}
+
+	private List<String> exportCounts() {
+		return jdbc.sql("select details ->> 'count' from audit_event where action = 'organization.export' order by occurred_at")
+			.query(String.class)
+			.list();
 	}
 
 	private static void assertProblem(RestTestClient.ResponseSpec response, int status, String code) {

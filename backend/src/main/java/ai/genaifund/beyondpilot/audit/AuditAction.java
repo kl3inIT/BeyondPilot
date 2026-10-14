@@ -23,6 +23,12 @@ public enum AuditAction {
 
 	OPERATOR_WITHDRAW("operator.withdraw"),
 
+	/**
+	 * An operator downloaded the audit log as a spreadsheet, with the operators' email. {@code count} is how many
+	 * events the download holds.
+	 */
+	AUDIT_EXPORT("audit.export", "count"),
+
 	PROGRAM_CREATE("program.create"),
 
 	PROGRAM_UPDATE("program.update"),
@@ -30,6 +36,17 @@ public enum AuditAction {
 	PROGRAM_PUBLISH("program.publish"),
 
 	PROGRAM_UNPUBLISH("program.unpublish"),
+
+	/**
+	 * An operator read the GenAI Fund calendar on Luma now instead of waiting for the hourly read. {@code created},
+	 * {@code updated} and {@code unpublished} are how many programs the read changed.
+	 */
+	PROGRAM_LUMA_READ("program.luma_read", "created", "updated", "unpublished"),
+
+	/** An operator featured a program, which the home page announces while it takes applications. */
+	PROGRAM_FEATURE("program.feature"),
+
+	PROGRAM_UNFEATURE("program.unfeature"),
 
 	/** An operator created an organization for a company that is not here yet. */
 	ORGANIZATION_CREATE("organization.create"),
@@ -70,6 +87,11 @@ public enum AuditAction {
 	 * An operator merged a duplicate organization into another. {@code into} is the identifier of the one kept.
 	 */
 	ORGANIZATION_MERGE("organization.merge", "into"),
+
+	/**
+	 * An operator downloaded the organizations as a spreadsheet. {@code count} is how many the download holds.
+	 */
+	ORGANIZATION_EXPORT("organization.export", "count"),
 
 	SOLUTION_APPROVE("solution.approve"),
 
@@ -138,6 +160,9 @@ public enum AuditAction {
 	 */
 	SOLUTION_ENRICH("solution.enrich", "fields", "evidence"),
 
+	/** An operator downloaded the solutions as a spreadsheet. {@code count} is how many the download holds. */
+	SOLUTION_EXPORT("solution.export", "count"),
+
 	/**
 	 * An operator created a use case for an organization. {@code organization} is that organization's identifier,
 	 * {@code status} is {@code draft} or {@code published}.
@@ -162,6 +187,8 @@ public enum AuditAction {
 
 	/** The side written to accepted a first message, which opened the conversation. */
 	MESSAGING_REQUEST_ACCEPT("messaging.request_accept"),
+
+	MESSAGING_PROGRAM_ASSIGN("messaging.program_assign", "account"),
 
 	MESSAGING_REQUEST_DECLINE("messaging.request_decline"),
 
@@ -205,6 +232,12 @@ public enum AuditAction {
 	/** The person deleted their own profile. */
 	TALENT_DELETE("talent.delete"),
 
+	/**
+	 * An operator downloaded the talent profiles as a spreadsheet, with their people's email. {@code count} is how
+	 * many the download holds.
+	 */
+	TALENT_EXPORT("talent.export", "count"),
+
 	/** An operator replaced the criteria a program's applications are judged on. {@code count} is how many. */
 	PROPOSAL_CRITERIA_UPDATE("proposal.criteria_update", "count"),
 
@@ -220,8 +253,9 @@ public enum AuditAction {
 	PROPOSAL_RELEASE("proposal.release", "shortlisted", "not_selected"),
 
 	/**
-	 * An operator or a judge opened a file of a submitted application. {@code application} and {@code file} are their
-	 * identifiers.
+	 * An operator or a judge opened a file of an application. {@code application} and {@code file} are their
+	 * identifiers. Recorded until 14 October 2026 only: reads inside the reader's own permission are not audited. Kept
+	 * so the events written before still read.
 	 */
 	PROPOSAL_FILE_OPEN("proposal.file_open", "application", "file"),
 
@@ -230,6 +264,30 @@ public enum AuditAction {
 	 * many applications the download holds.
 	 */
 	PROPOSAL_EXPORT("proposal.export", "count"),
+
+	/**
+	 * An operator downloaded a program's drafts not submitted yet, with their applicants' contact details, to follow
+	 * them up. {@code count} is how many drafts the download holds.
+	 */
+	PROPOSAL_DRAFTS_EXPORT("proposal.drafts_export", "count"),
+
+	/**
+	 * An operator read an application not submitted yet. {@code application} is its identifier. Recorded on 14 October
+	 * 2026 only: reads inside the reader's own permission are not audited. Kept so the events written then still read.
+	 */
+	PROPOSAL_DRAFT_OPEN("proposal.draft_open", "application"),
+
+	/** A member of the organization that posted a use case, or an operator, decided on a proposal it received. {@code decision} is {@code shortlisted} or {@code declined}. */
+	USE_CASE_PROPOSAL_DECIDE("use_case_proposal.decide", "decision"),
+
+	/** The outcomes of a use case's proposals were e-mailed to their senders; the counts are how many of each. */
+	USE_CASE_PROPOSAL_OUTCOMES_SEND("use_case_proposal.outcomes_send", "sent", "shortlisted", "declined"),
+
+	/**
+	 * An operator downloaded the proposals a use case received. {@code count} is how many proposals the download
+	 * holds.
+	 */
+	USE_CASE_PROPOSAL_EXPORT("use_case_proposal.export", "count"),
 
 	/** An operator changed who delivers email or as whom. {@code provider} is the provider chosen. */
 	EMAIL_SETTINGS_UPDATE("email.settings_update", "provider"),
@@ -284,6 +342,9 @@ public enum AuditAction {
 	 */
 	AI_TASK_MODEL_CHANGE("ai.task_model_change", "model", "reasoning", "ocr"),
 
+	/** An operator downloaded the log of AI calls as a spreadsheet. {@code count} is how many calls it holds. */
+	AI_USAGE_EXPORT("ai.usage_export", "count"),
+
 	/** An operator chose the provider and model search embeds with. {@code model} is the model. */
 	SEARCH_MODEL_CHANGE("search.model_change", "model"),
 
@@ -335,7 +396,13 @@ public enum AuditAction {
 	/** {@code reason} is the code of the reason given. */
 	MATCHING_CANDIDATE_REMOVE("matching.candidate_remove", "solution", "reason"),
 
+	/** Someone said why they removed a candidate, after the removal. {@code reason} is the code of the reason. */
+	MATCHING_CANDIDATE_REASON("matching.candidate_reason", "solution", "reason"),
+
 	MATCHING_CANDIDATE_RESTORE("matching.candidate_restore", "solution"),
+
+	/** Someone invited the provider of a candidate to propose. {@code provider} is the organization emailed. */
+	MATCHING_CANDIDATE_INVITE("matching.candidate_invite", "solution", "provider"),
 
 	/** An operator changed the limits of matching. */
 	MATCHING_SETTINGS_CHANGE("matching.settings_change");
