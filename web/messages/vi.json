@@ -1232,7 +1232,8 @@
           "decide": "Quyết định một đơn",
           "release": "Công bố kết quả",
           "file_open": "Mở một tệp của đơn nộp",
-          "export": "Tải danh sách đơn nộp"
+          "export": "Tải danh sách đơn nộp",
+          "drafts_export": "Tải danh sách đơn nháp"
         },
         "use_case_proposal": {
           "decide": "Quyết định về một đề xuất gửi tới use case",
@@ -1378,7 +1379,8 @@
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
           "release": "Công bố kết quả của <resource></resource>",
           "file_open": "Mở một tệp của một đơn nộp vào <resource></resource>",
-          "export": "Tải danh sách đơn nộp vào <resource></resource>"
+          "export": "Tải danh sách đơn nộp vào <resource></resource>",
+          "drafts_export": "Tải danh sách đơn nháp của <resource></resource>"
         },
         "use_case_proposal": {
           "decide": "Quyết định về một đề xuất gửi tới <resource></resource>",
@@ -6591,7 +6593,8 @@
       "footerScored": "{scored}/{total} đơn đã có điểm",
       "download": "Tải về (CSV)",
       "downloadFailed": "Chưa tải được danh sách đơn. Hãy thử lại.",
-      "own": "Của bạn"
+      "own": "Của bạn",
+      "drafts": "{count} đơn nháp"
     },
     "application": {
       "metaTitle": "Đơn nộp",
@@ -6843,6 +6846,35 @@
       "done": "Đã chấm hết",
       "progress": "Bạn đã chấm {done}/{total}",
       "closes": "Hạn nộp {closes}"
+    },
+    "drafts": {
+      "metaTitle": "Đơn nháp chưa nộp",
+      "back": "Đơn nộp",
+      "lead": "{count, plural, =0 {Không có đơn nháp nào.} other {# đơn nháp chưa nộp, lưu gần nhất ở trên.}}",
+      "caption": "Đơn nháp chưa nộp",
+      "columns": {
+        "applicant": "Người nộp",
+        "phone": "Điện thoại",
+        "organization": "Tổ chức",
+        "progress": "Tiến độ",
+        "saved": "Lưu lần cuối"
+      },
+      "steps": {
+        "contact": "thông tin liên hệ",
+        "solution": "giải pháp",
+        "deck": "deck",
+        "questions": "câu hỏi của chương trình"
+      },
+      "progress": "{done}/{total} bước",
+      "missing": "Còn thiếu: {steps}",
+      "noName": "Chưa có tên",
+      "none": "Chưa điền",
+      "download": "Tải về (CSV)",
+      "private": "Nội dung đơn nháp được giữ kín cho tới khi người nộp gửi đi. Giám khảo không bao giờ thấy đơn nháp.",
+      "empty": {
+        "title": "Không có đơn nháp",
+        "description": "Mọi người đã bắt đầu điền đơn đều đã nộp."
+      }
     }
   },
   "Search": {

@@ -950,6 +950,7 @@ paths:
           - proposal.release
           - proposal.file_open
           - proposal.export
+          - proposal.drafts_export
           - use_case_proposal.decide
           - use_case_proposal.outcomes_send
           - email.settings_update
@@ -7035,6 +7036,91 @@ paths:
       security:
       - session: []
       summary: "Shortlist applications, or mark them not selected"
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/drafts:
+    get:
+      operationId: listProgramDrafts
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgramDrafts"
+          description: "Each draft's applicant, how to reach them and how far they\
+            \ got, the most recently saved first. What a draft says is not read out."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: "A program's applications not submitted yet, for operators to follow\
+        \ up"
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/drafts/export:
+    post:
+      operationId: exportProgramDrafts
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            text/csv:
+              schema:
+                type: string
+          description: "One row for each draft, with its applicant's contact details\
+            \ and how far they got. The download is recorded."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: Download a program's applications not submitted yet as a spreadsheet
       tags:
       - Review
   /api/proposal/review/programs/{programId}/release:
@@ -14381,6 +14467,7 @@ components:
           - proposal.release
           - proposal.file_open
           - proposal.export
+          - proposal.drafts_export
           - use_case_proposal.decide
           - use_case_proposal.outcomes_send
           - email.settings_update
@@ -19025,6 +19112,93 @@ components:
       - createdAt
       - id
       - programName
+    ProgramDraft:
+      type: object
+      description: "Who started an application, how to reach them and how far they\
+        \ got."
+      properties:
+        contactComplete:
+          type: boolean
+          description: "First and last name, phone and country are filled."
+        country:
+          type:
+          - string
+          - "null"
+          description: ISO 3166-1 alpha-2.
+        deckAttached:
+          type: boolean
+          description: A deck is attached.
+        email:
+          type: string
+          description: The address the applicant signs in with.
+        firstName:
+          type:
+          - string
+          - "null"
+        id:
+          type: string
+          format: uuid
+        lastName:
+          type:
+          - string
+          - "null"
+        lastSavedAt:
+          type: string
+          format: date-time
+        organizationName:
+          type:
+          - string
+          - "null"
+          description: "The organization the applicant applies for, once they have\
+            \ one."
+        organizationType:
+          type:
+          - string
+          - "null"
+          enum:
+          - company
+          - builder_team
+          - independent_builder
+          - other
+        phone:
+          type:
+          - string
+          - "null"
+        requiredAnswered:
+          type: integer
+          format: int32
+          description: How many of the program's required questions are answered.
+        solutionChosen:
+          type: boolean
+          description: A solution is chosen.
+        startedAt:
+          type: string
+          format: date-time
+      required:
+      - contactComplete
+      - deckAttached
+      - email
+      - id
+      - lastSavedAt
+      - requiredAnswered
+      - solutionChosen
+      - startedAt
+    ProgramDrafts:
+      type: object
+      description: "A program's applications not submitted yet, for operators to follow\
+        \ up; what each says stays the applicant's."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgramDraft"
+        requiredQuestions:
+          type: integer
+          format: int32
+          description: How many required questions the program asks.
+      required:
+      - items
+      - requiredQuestions
     ProgramEvent:
       type: object
       description: A session of a program that people register for somewhere else.

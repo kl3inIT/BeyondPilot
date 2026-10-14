@@ -9,7 +9,7 @@ import { applyFormatter } from "@/features/apply/apply-format";
 import { programFormatter } from "@/features/program/program-format";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { ReviewApplicationItem, ReviewApplications } from "@/lib/api/generated";
-import { adminProgramReleaseRoute } from "@/lib/site";
+import { adminProgramDraftsRoute, adminProgramReleaseRoute } from "@/lib/site";
 
 import { ExportApplications } from "./export-applications";
 import { listApplications, reviewSearch, type ReviewSearch } from "./review-search";
@@ -32,7 +32,8 @@ type ReviewApplicationsPageProps = {
  * A program's submitted applications to review, sorted by a column header and paged. An operator
  * reads GenAI Fund's decisions and every judge's average, the highest first once any is scored, and
  * decides on several at once; a judge reads their own scores, the earliest submitted first. Drafts
- * and withdrawn applications are counted under the list, never listed. An operator downloads the
+ * and withdrawn applications are counted under the list; an operator opens the drafts on a page of
+ * their own to follow them up. An operator downloads the
  * applications the search matches, and reads under the list how many have a score.
  */
 function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplicationsPageProps) {
@@ -122,6 +123,12 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
         actions={
           head.operator && (
             <>
+              {/* An operator follows up the drafts not submitted yet; a judge never sees them. */}
+              {data.drafts > 0 && (
+                <Button prominence="secondary" href={adminProgramDraftsRoute(head.programId)}>
+                  {t("drafts", { count: data.drafts })}
+                </Button>
+              )}
               <ExportApplications
                 programId={head.programId}
                 slug={head.slug}
