@@ -112,13 +112,13 @@ describe("OrganizationForm, changing a saved organization of one person", () => 
     const { user } = render(<OrganizationForm organization={justMe} />);
 
     await user.click(screen.getByRole("combobox", { name: /^Type/ }));
-    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
+    expect((await screen.findAllByRole("option")).map((option) => option.textContent)).toEqual([
       "Company",
       "Builder team",
       "Just me",
       "Other",
     ]);
-    await user.click(screen.getByRole("option", { name: "Builder team" }));
+    await user.click(await screen.findByRole("option", { name: "Builder team" }));
 
     // The size of one person goes with the type, and the team says how big it is.
     expect(screen.getByRole("combobox", { name: /^Team size/ })).toHaveTextContent("Select a size");
@@ -128,7 +128,7 @@ describe("OrganizationForm, changing a saved organization of one person", () => 
 
     await user.click(screen.getByRole("combobox", { name: /^Team size/ }));
     expect(screen.queryByRole("option", { name: "Just me" })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("option", { name: "2–9 people" }));
+    await user.click(await screen.findByRole("option", { name: "2–9 people" }));
     await user.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() =>
@@ -144,7 +144,7 @@ describe("OrganizationForm, changing a saved organization of one person", () => 
     const { user } = render(<OrganizationForm organization={team} />);
 
     await user.click(screen.getByRole("combobox", { name: /^Type/ }));
-    await user.click(screen.getByRole("option", { name: "Just me" }));
+    await user.click(await screen.findByRole("option", { name: "Just me" }));
     await user.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() =>
