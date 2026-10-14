@@ -1898,7 +1898,6 @@
           "created": "Ngày tạo",
           "updated": "Sửa lần cuối"
         },
-        "closedNote": "Đã đóng với giải pháp mới. Các giải pháp bên dưới vẫn giữ và vẫn hiển thị ưu đãi này.",
         "solutions": {
           "title": "Giải pháp đi kèm",
           "empty": "Chưa giải pháp nào đi kèm ưu đãi này.",
@@ -4954,6 +4953,11 @@
         "uploaded": "{size} · Tải lên {when}",
         "waiting": "{size} · Chưa lưu",
         "download": "Tải {name} về",
+        "previewNamed": "Xem trước {name}",
+        "previewTitle": "Xem trước {name}",
+        "previewDescription": "Bản xem trước PDF",
+        "previewLoading": "Đang tải bản xem trước PDF…",
+        "previewFailed": "Không xem trước được PDF. Bạn có thể tải tệp về thay thế.",
         "replace": "Thay tệp",
         "remove": "Gỡ tệp",
         "errors": {
@@ -5036,6 +5040,7 @@
       "images": {
         "uploading": "Đang tải lên…",
         "details": "{size} · {dimensions}",
+        "previewNamed": "Xem trước {name}",
         "replace": "Thay ảnh",
         "remove": "Gỡ ảnh",
         "replaceNamed": "Thay {name}",

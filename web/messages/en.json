@@ -1898,7 +1898,6 @@
           "created": "Created",
           "updated": "Last changed"
         },
-        "closedNote": "Closed to new solutions. The solutions below keep it and still show it.",
         "solutions": {
           "title": "Solutions that come with it",
           "empty": "No solution comes with this offer.",
@@ -4954,6 +4953,11 @@
         "uploaded": "{size} · Uploaded {when}",
         "waiting": "{size} · Not saved yet",
         "download": "Download {name}",
+        "previewNamed": "Preview {name}",
+        "previewTitle": "Preview {name}",
+        "previewDescription": "PDF preview",
+        "previewLoading": "Loading PDF preview…",
+        "previewFailed": "The PDF could not be previewed. You can download it instead.",
         "replace": "Replace",
         "remove": "Remove",
         "errors": {
@@ -5036,6 +5040,7 @@
       "images": {
         "uploading": "Uploading…",
         "details": "{size} · {dimensions}",
+        "previewNamed": "Preview {name}",
         "replace": "Replace",
         "remove": "Remove",
         "replaceNamed": "Replace {name}",

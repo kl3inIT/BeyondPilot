@@ -46,3 +46,6 @@ output/
 # JVM crash reports
 hs_err_pid*.log
 replay_pid*.log
+
+# Local code graph output
+graphify-out/

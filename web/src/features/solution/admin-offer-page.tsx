@@ -56,8 +56,6 @@ function AdminOfferPage({ detail }: { detail: AdminOfferDetail }) {
         actions={<CloseOffer offer={offer} own={false} />}
       />
 
-      {offer.closed && <p className="text-sm text-muted-foreground">{page("closedNote")}</p>}
-
       <DetailList
         columns={4}
         details={facts.map(([term, value]) => ({ key: term, label: term, value }))}

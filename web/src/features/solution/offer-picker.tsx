@@ -94,6 +94,7 @@ function OfferPicker({
         emptyLabel={t("noMatch")}
         removeLabel={(name) => t("remove", { name })}
         max={limits.offers}
+        truncateOptionLabels
         aria-describedby={describedBy}
       />
       <TextButton size="sm" onClick={() => setAdding(true)}>
