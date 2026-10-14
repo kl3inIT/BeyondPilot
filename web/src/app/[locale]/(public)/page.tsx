@@ -15,6 +15,12 @@ import { readFeaturedProgram } from "@/features/program/program-public-queries";
 import { routing } from "@/i18n/routing";
 import { genaiFundLinks, siteOrigin } from "@/lib/site";
 
+/**
+ * The page is built ahead of time, when the backend cannot be reached, and rendered again at most a
+ * minute after a visit, so the featured program an operator chooses reaches it within a minute.
+ */
+export const revalidate = 60;
+
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
   setRequestLocale(locale);
