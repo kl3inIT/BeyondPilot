@@ -97,7 +97,7 @@ class OrganizationsController {
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(operationId = "createOrganizationFromBasics",
-			summary = "Create an organization the caller owns from its name, kind, size, industries and country",
+			summary = "Create an organization from the required facts of its selected type",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "201", description = "The organization, waiting for GenAI Fund's review.")
 	@ApiResponse(responseCode = "400", description = "A member is not valid, or a company names no industry.",

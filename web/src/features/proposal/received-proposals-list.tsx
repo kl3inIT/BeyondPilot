@@ -3,8 +3,8 @@ import { useTranslations } from "next-intl";
 
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { ReviewStatus } from "@/components/composites/review-status";
 import { Status } from "@/components/composites/status";
-import { Badge } from "@/components/ui/badge";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
@@ -73,19 +73,26 @@ function ReceivedProposalsList({ useCaseId, proposals, tab, area }: ReceivedProp
             name={proposal.organizationName}
             logoFileId={proposal.organizationLogoFileId}
           />
-          <div className="grid min-w-0 text-sm">
-            <Link
-              href={href}
-              className="truncate rounded-sm font-semibold outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              {proposal.organizationName}
-            </Link>
-            {!proposal.organizationApproved && (
-              <Badge variant="secondary" className="self-start">
-                {t("detail.pending")}
-              </Badge>
+          <div className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
+            <div className="flex min-w-0 items-center gap-2">
+              <Link
+                href={href}
+                title={proposal.organizationName}
+                className="min-w-0 truncate rounded-sm font-semibold outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                {proposal.organizationName}
+              </Link>
+              {admin && !proposal.organizationApproved && (
+                <ReviewStatus state="in_review" appearance="pill">
+                  {t("detail.pending")}
+                </ReviewStatus>
+              )}
+            </div>
+            {detail && (
+              <span title={detail} className="truncate text-xs text-muted-foreground">
+                {detail}
+              </span>
             )}
-            {detail && <span className="truncate text-muted-foreground">{detail}</span>}
           </div>
         </div>
       ),
@@ -147,7 +154,15 @@ function ReceivedProposalsList({ useCaseId, proposals, tab, area }: ReceivedProp
         <DataTableRows
           surface
           columns={[
-            { id: "proposal", header: t("list.columns.proposal"), layout: { fill: true } },
+            {
+              id: "proposal",
+              header: admin ? (
+                <span className="block max-md:min-w-64">{t("list.columns.proposal")}</span>
+              ) : (
+                t("list.columns.proposal")
+              ),
+              layout: { fill: true },
+            },
             { id: "status", header: t("list.columns.status"), layout: { width: "md" } },
             { id: "sent", header: t("list.columns.sent"), layout: { width: "md" } },
             {

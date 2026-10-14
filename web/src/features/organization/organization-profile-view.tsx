@@ -92,9 +92,6 @@ function OrganizationProfileView({ organization, action }: OrganizationProfileVi
               },
               { label: t("foundedYear"), value: organization.foundedYear?.toString() },
               { label: t("description"), value: organization.description, wide: true },
-              ...(organization.type === "builder_team"
-                ? [{ label: t("teamBackground"), value: organization.teamBackground, wide: true }]
-                : []),
             ]}
           />
         </OrganizationProfileSection>

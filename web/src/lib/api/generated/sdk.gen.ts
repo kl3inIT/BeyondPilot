@@ -1698,7 +1698,7 @@ export const changeOrganizationAutoJoin = <ThrowOnError extends boolean = true>(
 });
 
 /**
- * Save the name, type, size, industries and country of the caller's organization, leaving the rest of its profile
+ * Save the required facts of the selected organization type, leaving optional profile facts unchanged
  */
 export const saveMyOrganizationBasics = <ThrowOnError extends boolean = true>(options: Options<SaveMyOrganizationBasicsData, ThrowOnError>): RequestResult<SaveMyOrganizationBasicsResponses, SaveMyOrganizationBasicsErrors, ThrowOnError> => (options.client ?? client).put<SaveMyOrganizationBasicsResponses, SaveMyOrganizationBasicsErrors, ThrowOnError>({
     security: [{
@@ -1874,7 +1874,7 @@ export const createOrganization = <ThrowOnError extends boolean = true>(options:
 });
 
 /**
- * Create an organization the caller owns from its name, kind, size, industries and country
+ * Create an organization from the required facts of its selected type
  */
 export const createOrganizationFromBasics = <ThrowOnError extends boolean = true>(options: Options<CreateOrganizationFromBasicsData, ThrowOnError>): RequestResult<CreateOrganizationFromBasicsResponses, CreateOrganizationFromBasicsErrors, ThrowOnError> => (options.client ?? client).post<CreateOrganizationFromBasicsResponses, CreateOrganizationFromBasicsErrors, ThrowOnError>({
     security: [{

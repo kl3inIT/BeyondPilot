@@ -226,7 +226,6 @@ class OrganizationTest {
 
 		Map<String, Object> team = new HashMap<>(profile("Dat Team"));
         team.put("type", "builder_team");
-        team.put("teamBackground", "Built claims assistants.");
 		team.remove("website");
 		team.remove("foundedYear");
 		int version = JsonPath.<Integer>read(mine(builder), "$.organization.version");
@@ -377,13 +376,17 @@ class OrganizationTest {
 	}
 
 	@Test
-	void anOwnerCorrectsWhatTheyGaveWhenTheyMadeTheOrganizationWithoutTheRestOfTheProfile() {
+	void requiredFactsCanBeEditedWithoutErasingHiddenProfileFacts() {
 		String founder = signIn("founder@basics.test");
-		create(founder, "Basics Co");
+        UUID logo = uploadedLogo(founder);
+        Map<String, Object> original = new HashMap<>(creation("Basics Co"));
+        original.put("logoFileId", logo);
+        original.put("teamBackground", "Historical team experience.");
+        post(founder, API + "/organizations", original).expectStatus().isCreated();
 		String basics = API + "/mine/basics";
         Map<String, Object> request = new HashMap<>(Map.of("name", " Basics Team ", "type", "builder_team", "teamSize",
                 "10_49", "industries", List.of("insurance"), "country", "SG"));
-        request.put("teamBackground", " Built claims assistants. ");
+        request.put("description", " Built claims assistants. ");
         request.put("version", JsonPath.<Integer>read(mine(founder), "$.organization.version"));
 
 		put(founder, basics, request).expectStatus().isOk();
@@ -391,23 +394,31 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(saved, "$.organization.name")).isEqualTo("Basics Team");
 		assertThat(JsonPath.<String>read(saved, "$.organization.type")).isEqualTo("builder_team");
 		assertThat(JsonPath.<String>read(saved, "$.organization.teamSize")).isEqualTo("10_49");
-		assertThat(JsonPath.<List<String>>read(saved, "$.organization.industries")).containsExactly("insurance");
+		assertThat(JsonPath.<List<String>>read(saved, "$.organization.industries")).containsExactly("insurance", "banking_finance");
         assertThat(JsonPath.<String>read(saved, "$.organization.country")).isEqualTo("SG");
-        assertThat(JsonPath.<String>read(saved, "$.organization.teamBackground")).isEqualTo("Built claims assistants.");
+        assertThat(JsonPath.<String>read(saved, "$.organization.description")).isEqualTo("Built claims assistants.");
+        assertThat(JsonPath.<String>read(saved, "$.organization.teamBackground")).isEqualTo("Historical team experience.");
+        assertThat(JsonPath.<String>read(saved, "$.organization.logoFileId")).isEqualTo(logo.toString());
         assertProblem(put(founder, basics, request), 409, "ORGANIZATION_CHANGED_MEANWHILE");
         request.put("version", JsonPath.<Integer>read(saved, "$.organization.version"));
 		// What the request does not carry stays, and the organization still waits for review.
-		assertThat(JsonPath.<String>read(saved, "$.organization.description")).isEqualTo("Assistants for insurers.");
+		assertThat(JsonPath.<String>read(saved, "$.organization.website")).isEqualTo("https://example.test");
+		assertThat(JsonPath.<Integer>read(saved, "$.organization.foundedYear")).isEqualTo(2021);
 		assertThat(JsonPath.<String>read(saved, "$.organization.status")).isEqualTo("in_review");
 
 		// A company names an industry; the other kinds may leave them out.
 		request.put("type", "company");
 		request.put("industries", List.of());
+        request.put("website", "https://basics.test");
+        request.put("foundedYear", 2022);
 		assertProblem(put(founder, basics, request), 400, "ORGANIZATION_INDUSTRIES_REQUIRED");
 		request.put("type", "other");
 		request.put("teamSize", "2_9");
         put(founder, basics, request).expectStatus().isOk();
-        assertThat(JsonPath.<Object>read(mine(founder), "$.organization.teamBackground")).isNull();
+        assertThat(JsonPath.<String>read(mine(founder), "$.organization.teamBackground")).isEqualTo("Historical team experience.");
+        assertThat(JsonPath.<String>read(mine(founder), "$.organization.logoFileId")).isEqualTo(logo.toString());
+        assertThat(JsonPath.<String>read(mine(founder), "$.organization.description")).isEqualTo("Built claims assistants.");
+        assertThat(JsonPath.<String>read(mine(founder), "$.organization.website")).isEqualTo("https://example.test");
 		request.put("country", "Vietnam");
 		assertProblem(put(founder, basics, request), 400, "REQUEST_INVALID");
 		request.put("country", "VN");
@@ -416,29 +427,64 @@ class OrganizationTest {
 	}
 
 	@Test
-	void aPersonWithoutAnOrganizationMakesOneFromItsNameKindSizeIndustriesAndCountry() {
+	void aTeamIsCreatedWithShortDescriptionAndNoSeparateBackground() {
 		String founder = signIn("founder@fromfew.test");
 		String path = API + "/organizations/basics";
         Map<String, Object> request = new HashMap<>(Map.of("name", " Few Team ", "type", "builder_team", "teamSize",
                 "2_9", "industries", List.of(), "country", "VN"));
         String missing = body(post(founder, path, request).expectStatus().isBadRequest());
-        assertThat(JsonPath.<List<String>>read(missing, "$.errors[*].pointer")).contains("#/teamBackground");
-        request.put("teamBackground", "x".repeat(2001));
+        assertThat(JsonPath.<List<String>>read(missing, "$.errors[*].pointer")).contains("#/description");
+        request.put("description", "x".repeat(281));
         assertProblem(post(founder, path, request), 400, "REQUEST_INVALID");
-        request.put("teamBackground", "Built two production assistants.");
+        request.put("description", "Built two production assistants.");
 
 		// A company names an industry; a team may leave them out.
 		request.put("type", "company");
+        request.put("website", "https://few.test");
+        request.put("foundedYear", 2021);
 		assertProblem(post(founder, path, request), 400, "ORGANIZATION_INDUSTRIES_REQUIRED");
 		request.put("type", "builder_team");
 		String created = body(post(founder, path, request).expectStatus().isCreated());
         assertThat(JsonPath.<String>read(created, "$.name")).isEqualTo("Few Team");
-        assertThat(JsonPath.<String>read(created, "$.teamBackground")).isEqualTo("Built two production assistants.");
+        assertThat(JsonPath.<String>read(created, "$.description")).isEqualTo("Built two production assistants.");
+        assertThat(JsonPath.<Object>read(created, "$.teamBackground")).isNull();
+        assertThat(JsonPath.<Object>read(created, "$.website")).isNull();
+        assertThat(JsonPath.<Object>read(created, "$.foundedYear")).isNull();
 		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
 		assertThat(JsonPath.<String>read(mine(founder), "$.role")).isEqualTo("owner");
 		// One organization for one person.
 		assertProblem(post(founder, path, request), 409, "ORGANIZATION_ALREADY_MEMBER");
 	}
+
+    @Test
+    void aSoloPopupNeedsOnlyNameAndCountryAndACompanyNeedsEveryCompanyFact() {
+        String path = API + "/organizations/basics";
+        Map<String, Object> solo = Map.of("name", "An Tran", "type", "independent_builder",
+            "teamSize", "just_me", "industries", List.of(), "country", "VN");
+        String created = body(post(signIn("solo@popup.test"), path, solo).expectStatus().isCreated());
+        assertThat(JsonPath.<String>read(created, "$.teamSize")).isEqualTo("just_me");
+        assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
+        assertThat(JsonPath.<Object>read(created, "$.description")).isNull();
+
+        String founder = signIn("company@popup.test");
+        Map<String, Object> company = new HashMap<>(Map.of("name", "Popup Co", "type", "company",
+            "teamSize", "2_9", "industries", List.of("insurance"), "country", "VN"));
+        String missing = body(post(founder, path, company).expectStatus().isBadRequest());
+        assertThat(JsonPath.<List<String>>read(missing, "$.errors[*].pointer"))
+            .containsExactlyInAnyOrder("#/website", "#/foundedYear", "#/description");
+        company.put("website", "https://popup.test");
+        company.put("foundedYear", 2021);
+        company.put("description", "Insurance assistants.");
+        String made = body(post(founder, path, company).expectStatus().isCreated());
+        assertThat(JsonPath.<String>read(made, "$.website")).isEqualTo("https://popup.test");
+        assertThat(JsonPath.<Integer>read(made, "$.foundedYear")).isEqualTo(2021);
+        assertThat(JsonPath.<String>read(made, "$.description")).isEqualTo("Insurance assistants.");
+        Map<String, Object> team = new HashMap<>(creation("Full Form Team"));
+        team.put("type", "builder_team");
+        team.remove("website");
+        team.remove("foundedYear");
+        post(signIn("full-team@popup.test"), API + "/organizations", team).expectStatus().isCreated();
+    }
 
 	@Test
 	void aRefusedOrganizationIsRefusedForGoodAndOnlyWhileItWaitsForReview() {

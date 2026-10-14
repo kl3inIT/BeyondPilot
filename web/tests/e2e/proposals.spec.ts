@@ -134,50 +134,115 @@ async function openStep(page: Page, isMobile: boolean, name: string) {
   await steps(page).getByRole("button", { name, exact: true }).click();
 }
 
+/** Holds the organization a quick-create returns so the wizard's explicit refetch sees it. */
+async function watchQuickCreate(page: Page) {
+  const [, mine] = answerWorkspace(new URL("http://stub/api/organization/mine"), "invited")!;
+  let organization: Record<string, unknown> | null = null;
+  const creations: Record<string, unknown>[] = [];
+  await page.route("**/api/organization/mine", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...mine, organization, role: organization ? "owner" : null }),
+    }),
+  );
+  await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/proposal`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...proposalForm("invited"),
+        organization: organization
+          ? { ...organization, approved: organization.type === "independent_builder", owner: true }
+          : null,
+      }),
+    }),
+  );
+  await page.route("**/api/organization/organizations/basics", async (route) => {
+    expect(route.request().headers()["x-beyondpilot-csrf"]).toBe("1");
+    const body = route.request().postDataJSON();
+    creations.push(body);
+    organization = {
+      ...body,
+      id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c08",
+      version: 0,
+      logoFileId: null,
+    };
+    await route.fulfill({
+      status: 201,
+      contentType: "application/json",
+      body: JSON.stringify(organization),
+    });
+  });
+  return creations;
+}
+
 test.describe("a proposal to a use case", () => {
   test.use({ locale: "en-US", timezoneId: "Asia/Ho_Chi_Minh" });
 
-  test("quick-create validates company industries and team experience, then immediately shows About you", async ({
+  for (const kind of ["Just me", "A company"] as const) {
+    test(`quick-create submits ${kind} with its required facts`, async ({
+      page,
+      context,
+      baseURL,
+    }) => {
+      await signInAs(context, "invited", baseURL!);
+      const creations = await watchQuickCreate(page);
+      await page.goto(proposePath);
+      await page.getByRole("button", { name: "Create a new organization" }).click();
+      const dialog = page.getByRole("dialog");
+      await dialog.getByRole("radio", { name: kind, exact: true }).click();
+      await expect(dialog.getByRole("textbox")).toHaveCount(kind === "Just me" ? 1 : 4);
+      await expect(dialog.getByRole("combobox")).toHaveCount(kind === "Just me" ? 1 : 3);
+      await expect(dialog.getByText("Logo", { exact: true })).toHaveCount(0);
+      await dialog
+        .getByRole("textbox", {
+          name: kind === "Just me" ? "Your name" : "Organization name",
+          exact: true,
+        })
+        .fill("Doc Studio");
+      await dialog.getByRole("combobox", { name: "Country" }).click();
+      await page.getByRole("option", { name: "Vietnam", exact: true }).click();
+      if (kind === "A company") {
+        await dialog
+          .getByRole("textbox", { name: "Website", exact: true })
+          .fill("https://doc.example");
+        await dialog.getByRole("combobox", { name: "Team size" }).click();
+        await page.getByRole("option", { name: "2–9 people", exact: true }).click();
+        await dialog.getByRole("combobox", { name: "Industries" }).fill("Insurance");
+        await page.getByRole("option", { name: "Insurance", exact: true }).click();
+        await dialog.getByRole("textbox", { name: "Year founded", exact: true }).fill("2021");
+        await dialog
+          .getByRole("textbox", { name: "Short description", exact: true })
+          .fill("Insurance document assistants.");
+      }
+      await settled(page);
+      await dialog.getByRole("button", { name: "Create organization", exact: true }).click();
+      await expect(dialog).toBeHidden();
+      await expect(page.getByText("Doc Studio", { exact: true })).toBeVisible();
+      expect(creations).toEqual([
+        {
+          name: "Doc Studio",
+          country: "VN",
+          version: null,
+          type: kind === "Just me" ? "independent_builder" : "company",
+          teamSize: kind === "Just me" ? "just_me" : "2_9",
+          industries: kind === "Just me" ? [] : ["insurance"],
+          website: kind === "Just me" ? null : "https://doc.example",
+          foundedYear: kind === "Just me" ? null : 2021,
+          description: kind === "Just me" ? null : "Insurance document assistants.",
+        },
+      ]);
+    });
+  }
+
+  test("quick-create shows only required fields for each type and creates a team without background", async ({
     page,
     context,
     baseURL,
   }) => {
     await signInAs(context, "invited", baseURL!);
-    const [, mine] = answerWorkspace(new URL("http://stub/api/organization/mine"), "invited")!;
-    let organization: Record<string, unknown> | null = null;
-    const creations: Record<string, unknown>[] = [];
-    await page.route("**/api/organization/mine", (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ ...mine, organization, role: organization ? "owner" : null }),
-      }),
-    );
-    await page.route(`**/api/proposal/use-cases/${proposalUseCaseId}/proposal`, (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          ...proposalForm("invited"),
-          organization: organization ? { ...organization, approved: false, owner: true } : null,
-        }),
-      }),
-    );
-    await page.route("**/api/organization/organizations/basics", async (route) => {
-      const body = route.request().postDataJSON();
-      creations.push(body);
-      organization = {
-        ...body,
-        id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c08",
-        version: 0,
-        logoFileId: null,
-      };
-      await route.fulfill({
-        status: 201,
-        contentType: "application/json",
-        body: JSON.stringify(organization),
-      });
-    });
+    const creations = await watchQuickCreate(page);
     await page.goto(proposePath);
     await expect(page.getByRole("button", { name: "Continue" })).toBeDisabled();
     await expect(page.getByLabel("Name", { exact: true })).toHaveCount(0);
@@ -186,19 +251,52 @@ test.describe("a proposal to a use case", () => {
     await dialog.getByLabel("Organization name").fill("Doc Team");
     await dialog.getByRole("combobox", { name: "Country" }).click();
     await page.getByRole("option", { name: "Vietnam", exact: true }).click();
-    await dialog.getByRole("button", { name: "Create", exact: true }).click();
-    await expect(dialog.getByRole("combobox", { name: "Industries" })).toBeFocused();
+    await expect(dialog.getByRole("textbox", { name: "Website", exact: true })).toBeVisible();
+    await expect(dialog.getByLabel("Year founded")).toBeVisible();
+    await expect(dialog.getByLabel("Short description")).toBeVisible();
+    await expect(dialog.getByLabel("Team background")).toHaveCount(0);
+    await expect(dialog.getByText("Optional", { exact: true })).toHaveCount(0);
+    await dialog.getByRole("button", { name: "Create organization", exact: true }).click();
     await expect(dialog.getByText("Choose at least one industry.")).toBeVisible();
-    await dialog.getByRole("combobox", { name: "Type", exact: true }).click();
-    await page.getByRole("option", { name: "Builder team", exact: true }).click();
-    await dialog.getByRole("button", { name: "Create", exact: true }).click();
-    await expect(dialog.getByLabel("Team background")).toBeFocused();
-    await dialog.getByLabel("Team background").fill("Built document assistants.");
+    await dialog.getByRole("textbox", { name: "Website", exact: true }).fill("https://doc.example");
+    await dialog.getByRole("radio", { name: "Just me", exact: true }).click();
+    await expect(dialog.getByLabel("Your name")).toHaveValue("Doc Team");
+    for (const label of [
+      "Website",
+      "Year founded",
+      "Short description",
+      "Team size",
+      "Industries",
+    ]) {
+      await expect(dialog.getByLabel(label)).toHaveCount(0);
+    }
     await settled(page);
-    await dialog.getByRole("button", { name: "Create", exact: true }).click();
+    await dialog.getByRole("radio", { name: "A team", exact: true }).click();
+    await expect(dialog.getByRole("textbox")).toHaveCount(2);
+    await expect(dialog.getByRole("combobox")).toHaveCount(2);
+    await expect(dialog.getByRole("textbox", { name: "Website", exact: true })).toHaveCount(0);
+    await expect(dialog.getByLabel("Year founded")).toHaveCount(0);
+    await expect(dialog.getByRole("combobox", { name: "Industries", exact: true })).toHaveCount(0);
+    await dialog.getByRole("combobox", { name: "Team size" }).click();
+    await page.getByRole("option", { name: "2–9 people", exact: true }).click();
+    await dialog.getByRole("button", { name: "Create organization", exact: true }).click();
+    await expect(dialog.getByLabel("Short description")).toBeFocused();
+    await dialog.getByLabel("Short description").fill("Built document assistants.");
+    await dialog.getByRole("radio", { name: "A company", exact: true }).click();
+    await expect(dialog.getByRole("textbox", { name: "Website", exact: true })).toHaveValue(
+      "https://doc.example",
+    );
+    await dialog.getByRole("radio", { name: "A team", exact: true }).click();
+    await settled(page);
+    const dimensions = await dialog.evaluate((element) => ({
+      width: element.clientWidth,
+      content: element.scrollWidth,
+    }));
+    expect(dimensions.content).toBeLessThanOrEqual(dimensions.width);
+    await dialog.getByRole("button", { name: "Create organization", exact: true }).click();
     await expect(dialog).toBeHidden();
     await expect(page.getByText("Doc Team", { exact: true })).toBeVisible();
-    await expect(page.getByLabel("Team background")).toHaveValue("Built document assistants.");
+    await expect(page.getByLabel("Team background")).toHaveValue("");
     await expect(page.getByLabel("Name", { exact: true })).toBeVisible();
     expect(creations).toEqual([
       {
@@ -207,7 +305,9 @@ test.describe("a proposal to a use case", () => {
         teamSize: "2_9",
         industries: [],
         country: "VN",
-        teamBackground: "Built document assistants.",
+        website: null,
+        foundedYear: null,
+        description: "Built document assistants.",
         version: null,
       },
     ]);
@@ -259,6 +359,8 @@ test.describe("a proposal to a use case", () => {
       await page.getByRole("button", { name: "Edit", exact: true }).click();
       const dialog = page.getByRole("dialog");
       await expect(dialog.getByLabel("Organization name")).toHaveValue(current.name);
+      await expect(dialog.getByRole("radio", { name: "Just me", exact: true })).toHaveCount(0);
+      await expect(dialog.getByRole("radio")).toHaveCount(2);
       await dialog.getByLabel("Organization name").fill(name);
       await dialog.getByRole("button", { name: "Save", exact: true }).click();
       await expect(dialog).toBeHidden();
@@ -624,6 +726,46 @@ const tab = (page: Page, name: string, count: number) =>
     .getByRole("link", { name: new RegExp(`^${name} ?${count}$`) });
 
 test.describe("the proposals a use case received", () => {
+  test("recipients see proposal decisions, not the sender organization's review status", async ({
+    page,
+    context,
+    baseURL,
+  }, testInfo) => {
+    await signInAs(context, "owner", baseURL!);
+    await fakeDecisions(page, baseURL!, "received");
+    await page.goto(receivedPath);
+    const row = page.getByRole("row").filter({
+      has: page.getByRole("link", { name: "Orbit Claims", exact: true }),
+    });
+    const name = row.getByRole("link", { name: "Orbit Claims", exact: true });
+    await expect(page.getByText("Pending review", { exact: true })).toHaveCount(0);
+    await expect(row.getByText("Not decided", { exact: true })).toBeVisible();
+    expect(await name.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0);
+    const nameBox = await name.boundingBox();
+    expect(nameBox).not.toBeNull();
+    const detail = row.getByText(/^Policy Chat ·/);
+    await expect(detail).toBeVisible();
+    expect((await detail.boundingBox())!.y).toBeGreaterThanOrEqual(nameBox!.y + nameBox!.height);
+    expect(
+      await row
+        .locator("td")
+        .first()
+        .evaluate((cell) => cell.scrollWidth - cell.clientWidth),
+    ).toBe(0);
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBe(0);
+    await settled(page);
+    await page.screenshot({ path: testInfo.outputPath("received-proposals.png"), fullPage: true });
+    await page.goto((await name.getAttribute("href"))!);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Orbit Claims");
+    await expect(page.getByText("Pending review", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Not decided", { exact: true })).toBeVisible();
+    await settled(page);
+  });
+
   test("a reviewer marks proposals from the list, reads them by tab, and sends the outcomes", async ({
     page,
     context,
