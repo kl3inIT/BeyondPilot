@@ -1,4 +1,4 @@
-import { ChevronRightIcon, LayoutListIcon, SearchXIcon } from "lucide-react";
+import { ChevronRightIcon, LayoutListIcon, RefreshCwIcon, SearchXIcon } from "lucide-react";
 import Image from "next/image";
 import { getLocale, getTranslations } from "next-intl/server";
 
@@ -88,6 +88,12 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
         <span className="flex flex-col items-start gap-1">
           <Badge variant={state.variant}>{t(`state.${state.key}`)}</Badge>
           {program.featuredAt && <FeaturedBadge>{t("featured")}</FeaturedBadge>}
+          {program.lumaEventId && (
+            <Badge variant="outline">
+              <RefreshCwIcon aria-hidden="true" />
+              {t("fromLuma")}
+            </Badge>
+          )}
         </span>
       ),
       runs: runs(program),
@@ -122,7 +128,6 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
       <ProgramsToolbar counts={list.counts} total={list.total} />
 
       {/* The window gives way to the days on narrower desktops, where the table is made to fit. */}
-      {/* Each row is the containing block of its link's overlay, so the overlay covers that row only. */}
       <DataTableRows
         rowLinks
         sortKeys={list.sortKeys}
@@ -145,10 +150,10 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
               <div className="flex items-center gap-3">
                 <Thumbnail program={row.program} alt="" />
                 <div className="flex min-w-0 flex-col gap-0.5">
-                  {/* The name is the row's link; it covers the whole row for the pointer. */}
+                  {/* The name is the row's link; a press anywhere on the row follows it. */}
                   <Link
                     href={row.href}
-                    className="font-medium outline-none after:absolute after:inset-0 focus-visible:after:ring-3 focus-visible:after:ring-ring/50 focus-visible:after:ring-inset"
+                    className="rounded-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     {row.program.name}
                   </Link>

@@ -114,7 +114,7 @@ async function EmailActivityPage({
             email: (
               <Link
                 href={adminEmailMessageRoute(message.id)}
-                className="flex min-w-0 items-center gap-2 outline-none after:absolute after:inset-0 focus-visible:after:ring-3 focus-visible:after:ring-ring/50 focus-visible:after:ring-inset"
+                className="flex min-w-0 items-center gap-2 rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <KindIcon kind={message.kind} />
                 <span className="flex min-w-0 flex-col">

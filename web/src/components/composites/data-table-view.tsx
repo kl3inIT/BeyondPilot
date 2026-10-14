@@ -139,7 +139,12 @@ type DataTableViewProps<TData extends RowData> = {
    * names the region the table becomes while it scrolls sideways.
    */
   caption?: string;
-  /** A cell of each row holds a link stretched over the row, so the row is its frame. */
+  /**
+   * A cell of each row holds the row's link, and a press anywhere else on the row follows it. The
+   * row is not the frame of an overlay stretched from the link: an iPhone's in-app browser (BEY-191)
+   * did not keep the overlay within its table row, so every row's overlay covered the table and
+   * each press opened the same program.
+   */
   rowLinks?: boolean;
   /** The table stands on a tinted ground and is white itself. */
   surface?: boolean;
@@ -156,6 +161,34 @@ type DataTableViewProps<TData extends RowData> = {
  * The table is a table at every width. When it does not fit, on a phone above all, its frame
  * scrolls it sideways (`TableScroll`); a page writes no second list.
  */
+/**
+ * Follows the link of the row that was pressed, unless the press was on something of its own: a
+ * link, a button, a field or selected text. With Ctrl or Cmd it opens in a new tab, as a link does.
+ */
+function followRowLink(event: React.MouseEvent<HTMLTableRowElement>) {
+  if (event.defaultPrevented || event.button !== 0) {
+    return;
+  }
+  const pressed = event.target as HTMLElement;
+  if (
+    pressed.closest("a, button, input, select, textarea, label, [role=button], [role=checkbox]")
+  ) {
+    return;
+  }
+  if (window.getSelection()?.toString()) {
+    return;
+  }
+  const link = event.currentTarget.querySelector<HTMLAnchorElement>("a[href]");
+  if (!link) {
+    return;
+  }
+  if (event.metaKey || event.ctrlKey) {
+    window.open(link.href, "_blank", "noopener");
+    return;
+  }
+  link.click();
+}
+
 function DataTableView<TData extends RowData>({
   columns,
   data,
@@ -276,10 +309,7 @@ function DataTableView<TData extends RowData>({
 
   return (
     <div className={cn("flex flex-col gap-3", className)}>
-      <DataTable
-        label={caption}
-        className={cn(rowLinks && "[&_tbody_tr]:relative", surface && "bg-background")}
-      >
+      <DataTable label={caption} className={cn(surface && "bg-background")}>
         {caption && <TableCaption className="sr-only">{caption}</TableCaption>}
         <TableHeader>
           {table.getHeaderGroups().map((group) => (
@@ -343,7 +373,12 @@ function DataTableView<TData extends RowData>({
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id} data-state={row.getIsSelected() ? "selected" : undefined}>
+            <TableRow
+              key={row.id}
+              data-state={row.getIsSelected() ? "selected" : undefined}
+              className={cn(rowLinks && "cursor-pointer")}
+              onClick={rowLinks ? followRowLink : undefined}
+            >
               {row.getAllCells().map((cell) => (
                 <TableCell
                   key={cell.id}

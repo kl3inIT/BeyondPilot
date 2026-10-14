@@ -13,6 +13,8 @@ import ai.genaifund.beyondpilot.proposal.ReviewService;
 import ai.genaifund.beyondpilot.proposal.dto.ApplicationsCsv;
 import ai.genaifund.beyondpilot.proposal.dto.DecideRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ExportApplicationsRequest;
+import ai.genaifund.beyondpilot.proposal.dto.ProgramDraftsResponse;
+import ai.genaifund.beyondpilot.proposal.dto.ReviewDraftResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseDraftRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseEmails;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseResponse;
@@ -96,6 +98,41 @@ class ReviewController {
 			.body(("\uFEFF" + csv.content()).getBytes(StandardCharsets.UTF_8));
 	}
 
+	@GetMapping(path = "/programs/{programId}/drafts", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "listProgramDrafts",
+			summary = "A program's applications not submitted yet, for operators to follow up",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "Each draft's applicant, how to reach them and how far they got, the most recently saved first. What a draft says is not read out.")
+	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such program taking applications.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ProgramDraftsResponse drafts(@CurrentActor Actor actor, @PathVariable UUID programId) {
+		return review.drafts(actor, programId);
+	}
+
+	@PostMapping(path = "/programs/{programId}/drafts/export", produces = "text/csv")
+	@Operation(operationId = "exportProgramDrafts",
+			summary = "Download a program's applications not submitted yet as a spreadsheet",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "One row for each draft, with its applicant's contact details and how far they got. The download is recorded.",
+			content = @Content(mediaType = "text/csv", schema = @Schema(type = "string")))
+	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such program taking applications.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<byte[]> exportDrafts(@CurrentActor Actor actor, @PathVariable UUID programId) {
+		ApplicationsCsv csv = review.exportDrafts(actor, programId);
+		return ResponseEntity.ok()
+			.contentType(new MediaType("text", "csv", StandardCharsets.UTF_8))
+			.cacheControl(CacheControl.noStore())
+			.header(HttpHeaders.CONTENT_DISPOSITION,
+					ContentDisposition.attachment().filename(csv.fileName(), StandardCharsets.UTF_8).build().toString())
+			.body(("﻿" + csv.content()).getBytes(StandardCharsets.UTF_8));
+	}
+
 	@GetMapping(path = "/applications/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getReviewApplication", summary = "One application as it was submitted last",
 			security = @SecurityRequirement(name = "session"))
@@ -123,6 +160,33 @@ class ReviewController {
 		return review.assess(actor, id, request);
 	}
 
+	@GetMapping(path = "/drafts/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getReviewDraft", summary = "An application not submitted yet, as it stands now",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "What the draft holds now. The reading is recorded.")
+	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such draft.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ReviewDraftResponse draft(@CurrentActor Actor actor, @PathVariable UUID id) {
+		return review.draft(actor, id);
+	}
+
+	@GetMapping("/drafts/{id}/files/{fileId}")
+	@Operation(operationId = "getReviewDraftFile", summary = "A file of an application not submitted yet",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The bytes of the file, saved under its name.",
+			content = @Content(mediaType = MediaType.ALL_VALUE, schema = @Schema(type = "string", format = "binary")))
+	@ApiResponse(responseCode = "302", description = "The address the object store serves the file at, for a while.",
+			content = @Content)
+	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "The draft holds no such file.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<Resource> draftFile(@CurrentActor Actor actor, @PathVariable UUID id, @PathVariable UUID fileId) {
+		return served(review.draftFile(actor, id, fileId));
+	}
+
 	@GetMapping("/applications/{id}/files/{fileId}")
 	@Operation(operationId = "getReviewFile", summary = "A file of an application's last submission",
 			security = @SecurityRequirement(name = "session"))
@@ -133,7 +197,11 @@ class ReviewController {
 	@ApiResponse(responseCode = "404", description = "The submission holds no such file.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ResponseEntity<Resource> file(@CurrentActor Actor actor, @PathVariable UUID id, @PathVariable UUID fileId) {
-		FileDownload download = review.file(actor, id, fileId);
+		return served(review.file(actor, id, fileId));
+	}
+
+	/** A stored file as its answer: a redirect to the object store, or its bytes under its name. */
+	private static ResponseEntity<Resource> served(FileDownload download) {
 		URI redirect = download.redirect();
 		if (redirect != null) {
 			return ResponseEntity.status(HttpStatus.FOUND).location(redirect).cacheControl(CacheControl.noStore()).build();

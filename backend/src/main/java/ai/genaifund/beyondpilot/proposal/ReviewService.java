@@ -20,6 +20,9 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
+import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
+import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.organization.OrganizationProfile;
 import ai.genaifund.beyondpilot.program.ApplicationForm;
 import ai.genaifund.beyondpilot.proposal.ReviewAccess.Reviewing;
 import ai.genaifund.beyondpilot.proposal.dto.ApplicationsCsv;
@@ -27,8 +30,10 @@ import ai.genaifund.beyondpilot.proposal.dto.AttachedFileResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ContactDetails;
 import ai.genaifund.beyondpilot.proposal.dto.CriterionResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ExportApplicationsRequest;
+import ai.genaifund.beyondpilot.proposal.dto.ProgramDraftsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationsResponse;
+import ai.genaifund.beyondpilot.proposal.dto.ReviewDraftResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewHeadResponse;
 import ai.genaifund.beyondpilot.proposal.dto.SaveAssessmentRequest;
 import ai.genaifund.beyondpilot.proposal.persistence.Proposal;
@@ -41,6 +46,8 @@ import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecision;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecisionRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersion;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalVersionRepository;
+import ai.genaifund.beyondpilot.solution.OfferedSolution;
+import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.storage.StorageService;
 import org.jspecify.annotations.Nullable;
@@ -67,6 +74,9 @@ public class ReviewService {
 	private static final TypeReference<Map<UUID, Integer>> SCORES = new TypeReference<>() {
 	};
 
+	private static final TypeReference<Map<String, String>> ANSWERS = new TypeReference<>() {
+	};
+
 	private final ReviewSetup setup;
 
 	private final ReviewAccess access;
@@ -87,10 +97,16 @@ public class ReviewService {
 
 	private final JsonMapper json;
 
+	private final OrganizationDirectory organizations;
+
+	private final SolutionDirectory solutions;
+
 	ReviewService(ReviewSetup setup, ReviewAccess access, ProposalRepository proposals,
 			ProposalVersionRepository versions, ProposalAssessmentRepository assessments,
 			ProposalReviewDecisionRepository decisions, ProposalReleaseRepository releases, IdentityService identity,
-			StorageService storage, JsonMapper json) {
+			StorageService storage, JsonMapper json, OrganizationDirectory organizations, SolutionDirectory solutions) {
+		this.organizations = organizations;
+		this.solutions = solutions;
 		this.setup = setup;
 		this.access = access;
 		this.proposals = proposals;
@@ -195,6 +211,163 @@ public class ReviewService {
 			.addKeyValue("count", count)
 			.log("Applications exported");
 		return new ApplicationsCsv(form.slug() + "-applications.csv", rows.toString());
+	}
+
+	/**
+	 * A program's drafts not submitted yet, the most recently saved first, for operators to follow up before the
+	 * close: who started each, how to reach them and how far they got. What a draft says stays the applicant's, so
+	 * neither its answers, its deck nor its solution are read out; judges never see drafts.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the program takes no applications
+	 */
+	@Transactional(readOnly = true)
+	public ProgramDraftsResponse drafts(Actor actor, UUID programId) {
+		access.operator(actor);
+		ApplicationForm form = setup.form(programId);
+		List<Proposal> drafts = proposals.findByProgramIdAndStatusOrderByUpdatedAtDesc(programId, Proposal.DRAFT);
+		Map<UUID, Person> people = identity.people(drafts.stream().map(Proposal::getAccountId).toList());
+		Map<UUID, OrganizationName> names = organizations
+			.names(drafts.stream().map(Proposal::getOrganizationId).filter(Objects::nonNull).toList());
+		Map<UUID, String> types = new HashMap<>();
+		for (UUID id : names.keySet()) {
+			organizations.profile(id).ifPresent(profile -> types.put(id, profile.type()));
+		}
+		List<ApplicationForm.Question> required = form.questions().stream().filter(ApplicationForm.Question::required).toList();
+		List<ProgramDraftsResponse.Item> items = new ArrayList<>();
+		for (Proposal draft : drafts) {
+			ContactDetails contact = json.readValue(draft.getContact(), ContactDetails.class);
+			Map<String, String> answers = json.readValue(draft.getAnswers(), ANSWERS);
+			Person person = people.get(draft.getAccountId());
+			UUID organizationId = draft.getOrganizationId();
+			OrganizationName organization = organizationId == null ? null : names.get(organizationId);
+			int answered = (int) required.stream()
+				.filter(question -> !blank(answers.get(question.id().toString())))
+				.count();
+			items.add(new ProgramDraftsResponse.Item(draft.getId(), text(contact.firstName()), text(contact.lastName()),
+					person == null ? "" : person.email(), text(contact.phone()), text(contact.country()),
+					organization == null ? null : organization.name(),
+					organizationId == null ? null : types.get(organizationId),
+					!blank(contact.firstName()) && !blank(contact.lastName()) && !blank(contact.phone())
+							&& !blank(contact.country()),
+					draft.getSolutionId() != null, draft.getDeckFileId() != null, answered, draft.getCreatedAt(),
+					draft.getUpdatedAt()));
+		}
+		return new ProgramDraftsResponse(items, required.size());
+	}
+
+	/**
+	 * A program's drafts not submitted yet as a spreadsheet, the most recently saved first, to write to their
+	 * applicants outside BeyondPilot. The download is recorded, since it takes their contact details out.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the program takes no applications
+	 */
+	@Transactional
+	public ApplicationsCsv exportDrafts(Actor actor, UUID programId) {
+		Operator operator = access.operator(actor);
+		ApplicationForm form = setup.form(programId);
+		ProgramDraftsResponse drafts = drafts(actor, programId);
+		CsvRows rows = new CsvRows();
+		rows.add(Arrays.asList("Draft", "First name", "Last name", "Email", "Phone", "Country", "Organization",
+				"Organization type", "Contact complete", "Solution chosen", "Deck attached",
+				"Required questions answered", "Started at (UTC)", "Last saved at (UTC)"));
+		for (ProgramDraftsResponse.Item item : drafts.items()) {
+			rows.add(Arrays.asList(item.id(), item.firstName(), item.lastName(), item.email(), item.phone(),
+					item.country(), item.organizationName(), item.organizationType(), item.contactComplete() ? "yes" : "no",
+					item.solutionChosen() ? "yes" : "no", item.deckAttached() ? "yes" : "no",
+					item.requiredAnswered() + " of " + drafts.requiredQuestions(), item.startedAt(), item.lastSavedAt()));
+		}
+		setup.record(AuditAction.PROPOSAL_DRAFTS_EXPORT, operator, form,
+				Map.of("count", String.valueOf(drafts.items().size())));
+		LOG.atInfo()
+			.addKeyValue("event", "proposal.drafts.exported")
+			.addKeyValue("program_id", programId)
+			.addKeyValue("count", drafts.items().size())
+			.log("Drafts exported");
+		return new ApplicationsCsv(form.slug() + "-drafts.csv", rows.toString());
+	}
+
+	/**
+	 * An application not submitted yet as it stands now, for an operator to see who may yet apply; judges never read
+	 * a draft. Each reading is recorded, since its applicant has not sent it.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when there is no such draft
+	 */
+	@Transactional
+	public ReviewDraftResponse draft(Actor actor, UUID id) {
+		Operator operator = access.operator(actor);
+		Proposal draft = draftOf(id);
+		ApplicationForm form = setup.form(draft.getProgramId());
+		ContactDetails contact = json.readValue(draft.getContact(), ContactDetails.class);
+		Map<String, String> answers = json.readValue(draft.getAnswers(), ANSWERS);
+		Person person = identity.people(List.of(draft.getAccountId())).get(draft.getAccountId());
+		UUID organizationId = draft.getOrganizationId();
+		OrganizationProfile organization = organizationId == null ? null
+				: organizations.profile(organizationId).orElse(null);
+		UUID solutionId = draft.getSolutionId();
+		OfferedSolution solution = solutionId == null ? null : solutions.offered(solutionId).orElse(null);
+		UUID deckId = draft.getDeckFileId();
+		List<ReviewApplicationResponse.Answer> answered = new ArrayList<>();
+		for (ApplicationForm.Question question : form.questions()) {
+			String value = answers.get(question.id().toString());
+			if (blank(value)) {
+				continue;
+			}
+			AttachedFileResponse file = "file".equals(question.kind()) ? attached(UUID.fromString(value)) : null;
+			answered.add(new ReviewApplicationResponse.Answer(question.id(), question.label(), question.kind(), value,
+					file));
+		}
+		ReviewApplicationResponse.Submitted shown = new ReviewApplicationResponse.Submitted(
+				person == null ? "" : person.email(), contact, organization == null ? "" : organization.name(),
+				organization == null ? "" : organization.type(), organization == null ? null : organization.country(),
+				organization == null ? null : organization.teamSize(),
+				organization == null ? null : organization.website(), draft.getTeamBackground(),
+				solution == null ? "" : solution.name(), solution == null ? null : solution.summary(),
+				solution == null ? null : solution.problemsSolved(), solution == null ? null : solution.maturity(),
+				solution == null ? null : solution.demoUrl(), deckId == null ? null : attached(deckId),
+				draft.getBuiltWith(), draft.getTraction(), answered);
+		setup.record(AuditAction.PROPOSAL_DRAFT_OPEN, operator, form, Map.of("application", id.toString()));
+		return new ReviewDraftResponse(head(form, access.of(actor, form.programId())), id, draft.getCreatedAt(),
+				draft.getUpdatedAt(), shown);
+	}
+
+	/**
+	 * A file of a draft, for an operator reading it: its deck or a file it answers a question with. The opening is
+	 * recorded, as a reviewer's opening of a submitted file is.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when there is no such draft, or the file is not one of it
+	 */
+	@Transactional
+	public FileDownload draftFile(Actor actor, UUID id, UUID fileId) {
+		access.operator(actor);
+		Proposal draft = draftOf(id);
+		Map<String, String> answers = json.readValue(draft.getAnswers(), ANSWERS);
+		boolean held = fileId.equals(draft.getDeckFileId()) || answers.containsValue(fileId.toString());
+		if (!held) {
+			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
+					"File " + fileId + " is not of draft " + id);
+		}
+		setup.opened(access.of(actor, draft.getProgramId()).person(), setup.form(draft.getProgramId()), id, fileId);
+		return storage.download(fileId);
+	}
+
+	private Proposal draftOf(UUID id) {
+		return proposals.findById(id)
+			.filter(proposal -> Proposal.DRAFT.equals(proposal.getStatus()))
+			.orElseThrow(() -> new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND, "No draft " + id));
+	}
+
+	private @Nullable AttachedFileResponse attached(UUID fileId) {
+		return storage.describe(fileId)
+			.map(file -> new AttachedFileResponse(file.id(), file.fileName(), file.sizeBytes()))
+			.orElse(null);
+	}
+
+	private static @Nullable String text(@Nullable String value) {
+		return blank(value) ? null : Objects.requireNonNull(value).strip();
+	}
+
+	private static boolean blank(@Nullable String value) {
+		return value == null || value.isBlank();
 	}
 
 	/**

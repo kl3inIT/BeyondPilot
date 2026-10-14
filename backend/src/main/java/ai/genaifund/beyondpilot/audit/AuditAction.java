@@ -238,6 +238,18 @@ public enum AuditAction {
 	 */
 	PROPOSAL_EXPORT("proposal.export", "count"),
 
+	/**
+	 * An operator downloaded a program's drafts not submitted yet, with their applicants' contact details, to follow
+	 * them up. {@code count} is how many drafts the download holds.
+	 */
+	PROPOSAL_DRAFTS_EXPORT("proposal.drafts_export", "count"),
+
+	/**
+	 * An operator read an application not submitted yet, which its applicant has not sent. {@code application} is its
+	 * identifier.
+	 */
+	PROPOSAL_DRAFT_OPEN("proposal.draft_open", "application"),
+
 	/** A member of the organization that posted a use case, or an operator, decided on a proposal it received. {@code decision} is {@code shortlisted} or {@code declined}. */
 	USE_CASE_PROPOSAL_DECIDE("use_case_proposal.decide", "decision"),
 

@@ -977,6 +977,12 @@
             "featured": "Đã đặt {name} nổi bật trên trang chủ.",
             "unfeatured": "Đã bỏ nổi bật {name}."
           }
+        },
+        "luma": {
+          "badge": "Từ Luma",
+          "title": "Cập nhật từ Luma mỗi giờ",
+          "lead": "Tên, tóm tắt, mô tả, ngày, trang, sự kiện và ảnh bìa lấy từ sự kiện trên Luma, và lần đọc tiếp theo sẽ ghi đè mọi thay đổi ở đây. Hãy sửa chúng trên Luma. Gỡ đăng ở đây thì chương trình vẫn không hiện trên trang.",
+          "open": "Mở trên Luma"
         }
       },
       "noDays": "Chưa đặt ngày",
@@ -1056,7 +1062,8 @@
           "stay": "Ở lại"
         }
       },
-      "featured": "Nổi bật"
+      "featured": "Nổi bật",
+      "fromLuma": "Từ Luma"
     },
     "accounts": {
       "metaTitle": "Tài khoản · BeyondPilot",
@@ -1233,7 +1240,9 @@
           "decide": "Quyết định một đơn",
           "release": "Công bố kết quả",
           "file_open": "Mở một tệp của đơn nộp",
-          "export": "Tải danh sách đơn nộp"
+          "export": "Tải danh sách đơn nộp",
+          "drafts_export": "Tải danh sách đơn nháp",
+          "draft_open": "Mở một đơn nháp"
         },
         "use_case_proposal": {
           "decide": "Quyết định về một đề xuất gửi tới use case",
@@ -1379,7 +1388,9 @@
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
           "release": "Công bố kết quả của <resource></resource>",
           "file_open": "Mở một tệp của một đơn nộp vào <resource></resource>",
-          "export": "Tải danh sách đơn nộp vào <resource></resource>"
+          "export": "Tải danh sách đơn nộp vào <resource></resource>",
+          "drafts_export": "Tải danh sách đơn nháp của <resource></resource>",
+          "draft_open": "Mở một đơn nháp của <resource></resource>"
         },
         "use_case_proposal": {
           "decide": "Quyết định về một đề xuất gửi tới <resource></resource>",
@@ -6512,7 +6523,8 @@
         "shortlisted": "Vào vòng trong",
         "not_selected": "Không được chọn",
         "to_score": "Chưa chấm",
-        "scored": "Đã xong"
+        "scored": "Đã xong",
+        "drafts": "Nháp"
       },
       "search": "Tìm người nộp",
       "clear": "Xóa bộ lọc",
@@ -6843,6 +6855,40 @@
       "done": "Đã chấm hết",
       "progress": "Bạn đã chấm {done}/{total}",
       "closes": "Hạn nộp {closes}"
+    },
+    "drafts": {
+      "metaTitle": "Đơn nháp chưa nộp",
+      "back": "Đơn nộp",
+      "lead": "{count, plural, =0 {Không có đơn nháp nào.} other {# đơn nháp chưa nộp, lưu gần nhất ở trên.}}",
+      "caption": "Đơn nháp chưa nộp",
+      "columns": {
+        "applicant": "Người nộp",
+        "phone": "Điện thoại",
+        "organization": "Tổ chức",
+        "progress": "Tiến độ",
+        "saved": "Lưu lần cuối"
+      },
+      "steps": {
+        "contact": "thông tin liên hệ",
+        "solution": "giải pháp",
+        "deck": "deck",
+        "questions": "câu hỏi của chương trình"
+      },
+      "progress": "{done}/{total} bước",
+      "missing": "Còn thiếu: {steps}",
+      "noName": "Chưa có tên",
+      "none": "Chưa điền",
+      "download": "Tải về (CSV)",
+      "empty": {
+        "title": "Không có đơn nháp",
+        "description": "Mọi người đã bắt đầu điền đơn đều đã nộp."
+      },
+      "detail": {
+        "metaTitle": "Đơn nháp",
+        "back": "Đơn nháp",
+        "lead": "Chưa nộp vào {program} · bắt đầu {started} · lưu lần cuối {saved}",
+        "note": "Đơn chưa nộp nên vẫn có thể thay đổi. Giám khảo không bao giờ thấy đơn nháp, và mỗi lần mở được ghi vào nhật ký kiểm toán."
+      }
     }
   },
   "Search": {

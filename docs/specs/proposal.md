@@ -205,7 +205,7 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 ### Reading applications
 
 - **Only submitted applications** are reviewed, each as its last version's snapshot; drafts and withdrawals are
-  counted, not listed. The list is ordered by `submitted_at`, earliest first, and shows the answer to the program's
+  counted, not listed among them. An operator, never a judge, follows up the drafts on a page of their own before the close (`GET …/programs/{programId}/drafts`, BEY-193): each applicant's name, sign-in address, phone, country and organization, when the draft was started and last saved, and how far it got (contact complete, solution chosen, deck attached, required questions answered). `POST …/drafts/export` downloads the same as a spreadsheet, recorded as `proposal.drafts_export`. An operator opens one draft as it stands now, in the shape of a submission (`GET …/review/drafts/{id}`, its files at `…/drafts/{id}/files/{fileId}`), to see who may yet apply; each opening is recorded as `proposal.draft_open`, each file opened as `proposal.file_open`. The list is ordered by `submitted_at`, earliest first, and shows the answer to the program's
   first `single_choice` question; a `multi_choice` answer is read on the application, not in the list.
 - **What every reviewer reads.** The submission as its snapshot holds it, with the link to the product's demo
   (`submitted.demoUrl`) when the solution had one at submission; the application page shows it under the solution and
@@ -275,6 +275,8 @@ actor and the program as resource (type `program`); see [ADR 0003](../decisions/
 | `proposal.release`         | Outcomes released                          | `shortlisted`, `not_selected` |
 | `proposal.file_open`       | A reviewer opened a file of an application | `application`, `file`         |
 | `proposal.export`          | An operator downloaded the applications    | `count`                       |
+| `proposal.drafts_export`   | An operator downloaded the drafts          | `count`                       |
+| `proposal.draft_open`      | An operator opened a draft                 | `application`                 |
 
 ### Download
 

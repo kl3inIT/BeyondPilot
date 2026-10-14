@@ -35,6 +35,9 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 	/** The person's applications, the most recently changed first. */
 	List<Proposal> findByAccountIdOrderByUpdatedAtDesc(UUID accountId);
 
+	/** The applications of a program in a status, the most recently saved first. */
+	List<Proposal> findByProgramIdAndStatusOrderByUpdatedAtDesc(UUID programId, String status);
+
 	/** The submitted applications of a program, the earliest first. */
 	List<Proposal> findByProgramIdAndStatusOrderBySubmittedAt(UUID programId, String status);
 

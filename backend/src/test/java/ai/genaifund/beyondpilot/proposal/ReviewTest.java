@@ -250,6 +250,57 @@ class ReviewTest extends ApplicationsHttpTest {
 	}
 
 	@Test
+	void anOperatorFollowsUpTheDraftsWithoutReadingWhatTheySay() {
+		Form form = program("followed-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		String judge = judge(form, "reader@drafted.test");
+		applicant(form, "sent@drafted.test", "Sent Builder");
+		// One person has only typed their name; another has their contact details and an answer.
+		String early = TestSignIn.session(client, mail, "early@drafted.test");
+		put(early, form.path(), application(Map.of("firstName", "Early"), null, Map.of(), null)).expectStatus().isOk();
+		String later = TestSignIn.session(client, mail, "later@drafted.test");
+		Map<String, String> answered = new HashMap<>();
+		answered.put(form.approach().toString(), "Claims reach a decision without a hotline call.");
+		put(later, form.path(), application(contact("Later Builder"), null, answered, null)).expectStatus().isOk();
+		String drafts = REVIEW + form.programId() + "/drafts";
+
+		// Judges never see drafts.
+		get(judge, drafts).expectStatus().isForbidden();
+		post(judge, drafts + "/export", null).expectStatus().isForbidden();
+
+		String list = body(get(operator, drafts).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(list, "$.items[*].email")).containsExactly("later@drafted.test",
+				"early@drafted.test");
+		assertThat(JsonPath.<String>read(list, "$.items[0].phone")).isEqualTo("+84 912 345 678");
+		assertThat(JsonPath.<Boolean>read(list, "$.items[0].contactComplete")).isTrue();
+		assertThat(JsonPath.<Integer>read(list, "$.items[0].requiredAnswered")).isEqualTo(1);
+		assertThat(JsonPath.<Boolean>read(list, "$.items[1].contactComplete")).isFalse();
+		assertThat(JsonPath.<Boolean>read(list, "$.items[1].solutionChosen")).isFalse();
+		assertThat(JsonPath.<Integer>read(list, "$.requiredQuestions")).isPositive();
+		// The list does not read out what a draft says; an operator opens one to read it, and the reading is recorded.
+		assertThat(list).doesNotContain("hotline");
+		String draftId = JsonPath.read(list, "$.items[0].id");
+		get(judge, REVIEW.replace("/programs/", "/drafts/") + draftId).expectStatus().isForbidden();
+		String one = body(get(operator, REVIEW.replace("/programs/", "/drafts/") + draftId).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(one, "$.draft.email")).isEqualTo("later@drafted.test");
+		assertThat(JsonPath.<List<String>>read(one, "$.draft.answers[*].value"))
+			.containsExactly("Claims reach a decision without a hotline call.");
+		assertThat(auditOf(form.programId())).contains("proposal.draft_open");
+
+		String csv = new String(post(operator, drafts + "/export", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"followed-challenge-drafts.csv\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), StandardCharsets.UTF_8);
+		assertThat(csv).startsWith("﻿Draft,First name,Last name,Email,Phone,");
+		assertThat(csv.lines().toList()).hasSize(3);
+		assertThat(jdbc.sql("""
+				select details ->> 'count' from audit_event where action = 'proposal.drafts_export' and resource_id = ?
+				""").params(form.programId().toString()).query(String.class).list()).containsExactly("2");
+	}
+
+	@Test
 	void outcomesAreReleasedOnceAfterTheCloseAndEveryDecision() {
 		Form form = program("released-challenge", true, Instant.now().plus(Duration.ofDays(10)));
 		criteriaOf(form, "Practical impact");

@@ -238,6 +238,9 @@ closed, with its next key date. Featuring publishes no `ProgramChanged`: the ind
   nothing, and the image is copied again only when its address changes, the replaced cover going after the commit.
   The job never changes a held program's status, except to unpublish a published one whose event is still to come
   and is no longer in the feed.
+- **In Admin.** `AdminProgram` and `AdminProgramSummary` carry `lumaEventId`. The list and the program's screen mark
+  such a program **From Luma**, and its Settings say that Luma overwrites its fields at the next read, with a link to
+  its Luma page.
 - **Failures.** A feed that cannot be read, or is not a calendar, changes nothing (`program.luma.feed_failed`). An
   event whose page, image or write fails is skipped and tried at the next read (`program.luma.event_failed`); the
   others go on. A read that changed something logs `program.luma.read` with its counts.
