@@ -69,15 +69,20 @@ async function ProgramsPage({
     getLocale(),
   ]);
   const format = programFormatter(locale);
-  const comingUp = groups.upcoming.length + groups.events.length;
+  const programs = groups.current.filter((listing) => listing.kind === "program").length;
+  const events = groups.current.length - programs;
+  const current =
+    search.phase === "open"
+      ? t("open")
+      : search.phase === "upcoming"
+        ? t("upcoming")
+        : t("current");
   const byYear = new Map<number, ProgramSummary[]>();
   for (const program of groups.done) {
     const year = program.endsOn ? vietnamDay(program.endsOn).getFullYear() : 0;
     byYear.set(year, [...(byYear.get(year) ?? []), program]);
   }
-  const empty = results
-    ? ranked?.length === 0
-    : groups.open.length + comingUp + groups.done.length === 0;
+  const empty = results ? ranked?.length === 0 : groups.current.length + groups.done.length === 0;
 
   return (
     <div className="flex-1 bg-muted" lang={locale}>
@@ -94,7 +99,7 @@ async function ProgramsPage({
             <div className="flex flex-col gap-4">
               {ranked?.map((program) =>
                 program.phase === "open" || program.phase === "running" ? (
-                  <OpenProgram
+                  <ProgramCard
                     key={program.slug}
                     program={program}
                     kind={types(program.type)}
@@ -129,61 +134,36 @@ async function ProgramsPage({
           </>
         )}
 
-        {!results && groups.open.length > 0 && (
-          <section className="flex flex-col gap-4" aria-label={t("open")}>
+        {!results && groups.current.length > 0 && (
+          <section className="flex flex-col gap-4" aria-label={current}>
             <SectionHead
-              title={t("open")}
-              count={t("programCount", { count: groups.open.length })}
+              title={current}
+              count={[
+                programs > 0 && t("programCount", { count: programs }),
+                events > 0 && t("itemCount", { count: events }),
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             />
-            {groups.open.map((program, index) => (
-              <OpenProgram
-                key={program.slug}
-                program={program}
-                preload={index === 0}
-                kind={types(program.type)}
-                format={format}
-              />
-            ))}
-          </section>
-        )}
-
-        {!results && groups.events.length > 0 && (
-          <section className="flex flex-col gap-3" aria-label={t("upcomingEvents")}>
-            <SectionHead
-              title={t("upcomingEvents")}
-              count={t("itemCount", { count: groups.events.length })}
-            />
-            <ul className="flex flex-col gap-3">
-              {groups.events.map(({ program, event }) => (
-                <EventRow
-                  key={`${program.slug}-${event.startsAt}-${event.title}`}
-                  kicker={program.name === event.title ? types(program.type) : program.name}
-                  event={event}
-                  cover={listedAsEvent(program) ? program.coverFileId : null}
-                  href={hrefOf(program)}
+            {groups.current.map((listing, index) =>
+              listing.kind === "program" ? (
+                <ProgramCard
+                  key={listing.program.slug}
+                  program={listing.program}
+                  preload={index === 0}
+                  kind={types(listing.program.type)}
                   format={format}
                 />
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {!results && groups.upcoming.length > 0 && (
-          <section className="flex flex-col gap-3" aria-label={t("upcoming")}>
-            <SectionHead
-              title={t("upcoming")}
-              count={t("programCount", { count: groups.upcoming.length })}
-            />
-            <ul className="flex flex-col gap-3">
-              {groups.upcoming.map((program) => (
-                <UpcomingProgram
-                  key={program.slug}
-                  program={program}
-                  kind={types(program.type)}
+              ) : (
+                <EventCard
+                  key={`${listing.program.slug}-${listing.event.startsAt}-${listing.event.title}`}
+                  program={listing.program}
+                  event={listing.event}
+                  preload={index === 0}
                   format={format}
                 />
-              ))}
-            </ul>
+              ),
+            )}
           </section>
         )}
 
@@ -223,31 +203,28 @@ async function ProgramsPage({
   );
 }
 
-/** A program taking applications, or running after they closed: what to decide whether to apply. */
-async function OpenProgram({
-  program,
-  kind,
-  format,
-  preload = false,
+/**
+ * The frame every card of the list of what is open and coming up shares: the cover, or the name on
+ * the brand colour without one, beside what the card says.
+ */
+function ListingFrame({
+  cover,
+  name,
+  preload,
+  children,
 }: {
-  program: ProgramSummary;
-  kind: string;
-  format: Format;
+  cover: string | null | undefined;
+  name: string;
   /** The first card preloads its cover, the largest paint of the page on a phone. */
-  preload?: boolean;
+  preload: boolean;
+  children: React.ReactNode;
 }) {
-  const t = await getTranslations("Programs");
-  const applications = program.applications;
-  const open = program.phase === "open";
-  const apply = programApplyRoute(program.slug);
-  const facts = program.upcomingEvents.slice(0, openCardEvents);
-
   return (
     <article className="flex flex-col gap-1 rounded-3xl border bg-card p-2 text-card-foreground shadow-raised md:gap-2 md:p-3 xl:flex-row xl:gap-8">
       <div className="relative h-55 shrink-0 overflow-hidden rounded-xl bg-primary xl:h-auto xl:min-h-64 xl:w-120">
-        {program.coverFileId ? (
+        {cover ? (
           <Image
-            src={publicFileUrl(program.coverFileId)}
+            src={publicFileUrl(cover)}
             alt=""
             fill
             preload={preload}
@@ -256,137 +233,178 @@ async function OpenProgram({
           />
         ) : (
           <div className="flex h-full flex-col justify-end bg-linear-150 from-foreground/60 via-transparent via-60% to-transparent p-5 md:p-7">
-            <p className="text-2xl font-semibold text-primary-foreground md:text-3xl">
-              {program.name}
-            </p>
+            <p className="text-2xl font-semibold text-primary-foreground md:text-3xl">{name}</p>
           </div>
         )}
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-3 px-2.5 pt-4 pb-3 md:gap-4 md:pt-5 md:pr-4 md:pb-5 md:pl-3 xl:pl-0">
-        <div className="flex flex-col items-start gap-2 md:flex-row md:items-center md:gap-2.5">
-          <Badge variant={open ? "success" : "info"}>{t(open ? "live" : "running")}</Badge>
-          <p className="text-sm text-muted-foreground">
-            {[kind, program.partnerName].filter(Boolean).join(" · ")}
-          </p>
-        </div>
-        <h3 className="text-2xl font-semibold md:text-3xl md:tracking-title">
-          <Link
-            href={hrefOf(program)}
-            className="rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            {program.name}
-          </Link>
-        </h3>
-        {open && applications ? (
-          <p className="text-base font-medium text-primary md:text-lg md:font-normal">
-            <ProgramCountdown
-              deadline={applications.closesAt}
-              closes={deadlineText(format, applications)}
-            />
-          </p>
-        ) : (
-          program.summary && <p className="text-muted-foreground">{program.summary}</p>
-        )}
-        {facts.length > 0 && (
-          <dl
-            aria-label={t("nextUp")}
-            className="flex flex-col gap-2.5 border-y py-3.5 md:flex-row md:gap-6 md:py-5"
-          >
-            {facts.map((event) => (
-              <div
-                key={`${event.startsAt}-${event.title}`}
-                className="flex flex-col gap-1 md:flex-1"
-              >
-                <dt className="text-xs font-medium text-muted-foreground">{event.title}</dt>
-                <dd className="text-sm font-semibold md:text-lg">{whenText(format, event)}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-        <div className="flex flex-col gap-2 md:flex-row md:gap-3">
-          {open && apply && (
-            <Button size="lg" href={apply}>
-              {t("applyNow")}
-            </Button>
-          )}
-          <Button
-            size="lg"
-            prominence={open && apply ? "secondary" : "primary"}
-            href={hrefOf(program)}
-          >
-            {t("readBrief")}
-          </Button>
-        </div>
+        {children}
       </div>
     </article>
   );
 }
 
-/**
- * An event still to come: its day, what it is, and where to register. An event that is a program
- * of its own shows its cover, as the sites that list Luma events do.
- */
-async function EventRow({
-  kicker,
-  event,
-  cover,
-  href,
-  format,
+/** What a card is, a program or an event, and where it stands, above its title. */
+function ListingHead({
+  label,
+  status,
+  detail,
 }: {
-  kicker: string;
-  event: ProgramEvent;
-  cover?: string | null;
-  /** The page of the program the event belongs to, which its title opens. */
-  href?: string;
+  label: string;
+  status?: React.ReactNode;
+  detail?: string | null;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 md:gap-2.5">
+      <Badge variant="outline">{label}</Badge>
+      {status}
+      {detail && <p className="text-sm text-muted-foreground">{detail}</p>}
+    </div>
+  );
+}
+
+/**
+ * A program taking applications, running after they closed, or coming up: what to decide whether
+ * to apply.
+ */
+async function ProgramCard({
+  program,
+  kind,
+  format,
+  preload = false,
+}: {
+  program: ProgramSummary;
+  kind: string;
   format: Format;
+  preload?: boolean;
 }) {
   const t = await getTranslations("Programs");
-  const starts = new Date(event.startsAt);
+  const applications = program.applications;
+  const open = program.phase === "open";
+  const upcoming = program.phase === "upcoming";
+  const apply = programApplyRoute(program.slug);
+  const facts = program.upcomingEvents.slice(0, openCardEvents);
+
   return (
-    <li className="flex flex-col gap-3 rounded-xl border bg-card py-3.5 pr-4.5 pl-3.5 shadow-card md:flex-row md:items-center md:justify-between">
-      <div className="flex items-center gap-3.5">
-        {cover && (
-          <div className="relative size-16 shrink-0 overflow-hidden rounded-lg border bg-muted sm:size-20">
-            <Image src={publicFileUrl(cover)} alt="" fill sizes="5rem" className="object-cover" />
-          </div>
-        )}
-        <time
-          dateTime={event.startsAt}
-          className="flex h-14 w-13 shrink-0 flex-col items-center justify-center rounded-lg border bg-muted"
+    <ListingFrame cover={program.coverFileId} name={program.name} preload={preload}>
+      <ListingHead
+        label={t("kind.program")}
+        status={
+          <Badge variant={open ? "success" : upcoming ? "secondary" : "info"}>
+            {t(open ? "live" : upcoming ? "upcoming" : "running")}
+          </Badge>
+        }
+        detail={[kind, program.partnerName].filter(Boolean).join(" · ")}
+      />
+      <h3 className="text-2xl font-semibold md:text-3xl md:tracking-title">
+        <Link
+          href={hrefOf(program)}
+          className="rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          <span className="text-xs font-semibold text-primary uppercase">
-            {format.dateTime(starts, { month: "short" })}
-          </span>
-          <span className="text-lg font-semibold">
-            {format.dateTime(starts, { day: "numeric" })}
-          </span>
-        </time>
-        <div className="flex min-w-0 flex-col gap-0.5">
-          <p className="text-xs text-muted-foreground">{kicker}</p>
-          <p className="text-sm font-semibold">
-            {href ? (
-              <Link
-                href={href}
-                className="rounded-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                {event.title}
-              </Link>
-            ) : (
-              event.title
-            )}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {[whenText(format, event), placeOf(event, t("online"))].filter(Boolean).join(" · ")}
-          </p>
-        </div>
-      </div>
-      {event.registrationUrl && (
-        <Button size="sm" prominence="secondary" href={event.registrationUrl}>
-          {t("register")}
-          <ArrowUpRightIcon aria-hidden="true" />
-        </Button>
+          {program.name}
+        </Link>
+      </h3>
+      {open && applications ? (
+        <p className="text-base font-medium text-primary md:text-lg md:font-normal">
+          <ProgramCountdown
+            deadline={applications.closesAt}
+            closes={deadlineText(format, applications)}
+          />
+        </p>
+      ) : upcoming ? (
+        <p className="text-base font-medium text-primary md:text-lg md:font-normal">
+          {applications
+            ? t("opensOn", { date: format.dateTime(new Date(applications.opensAt), "day") })
+            : program.startsOn && program.endsOn
+              ? daysText(format, program.startsOn, program.endsOn)
+              : program.summary}
+        </p>
+      ) : (
+        program.summary && <p className="text-muted-foreground">{program.summary}</p>
       )}
-    </li>
+      {facts.length > 0 && (
+        <dl
+          aria-label={t("nextUp")}
+          className="flex flex-col gap-2.5 border-y py-3.5 md:flex-row md:gap-6 md:py-5"
+        >
+          {facts.map((event) => (
+            <div key={`${event.startsAt}-${event.title}`} className="flex flex-col gap-1 md:flex-1">
+              <dt className="text-xs font-medium text-muted-foreground">{event.title}</dt>
+              <dd className="text-sm font-semibold md:text-lg">{whenText(format, event)}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      <div className="flex flex-col gap-2 md:flex-row md:gap-3">
+        {open && apply && (
+          <Button size="lg" href={apply}>
+            {t("applyNow")}
+          </Button>
+        )}
+        <Button
+          size="lg"
+          prominence={open && apply ? "secondary" : "primary"}
+          href={hrefOf(program)}
+        >
+          {t("readBrief")}
+        </Button>
+      </div>
+    </ListingFrame>
+  );
+}
+
+/**
+ * An event still to come, of a program that is an event and nothing else: its day and place, and
+ * where to register, on the same card as a program, as the sites that list Luma events do.
+ */
+async function EventCard({
+  program,
+  event,
+  format,
+  preload = false,
+}: {
+  program: ProgramSummary;
+  event: ProgramEvent;
+  format: Format;
+  preload?: boolean;
+}) {
+  const t = await getTranslations("Programs");
+  return (
+    <ListingFrame
+      cover={listedAsEvent(program) ? program.coverFileId : null}
+      name={event.title}
+      preload={preload}
+    >
+      <ListingHead
+        label={t("kind.event")}
+        detail={program.name === event.title ? null : program.name}
+      />
+      <h3 className="text-2xl font-semibold md:text-3xl md:tracking-title">
+        <Link
+          href={hrefOf(program)}
+          className="rounded-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          {event.title}
+        </Link>
+      </h3>
+      <p className="text-base font-medium text-primary md:text-lg md:font-normal">
+        <time dateTime={event.startsAt}>
+          {[whenText(format, event), placeOf(event, t("online"))].filter(Boolean).join(" · ")}
+        </time>
+      </p>
+      <div className="flex flex-col gap-2 md:flex-row md:gap-3">
+        {event.registrationUrl ? (
+          <Button size="lg" href={event.registrationUrl}>
+            {t("register")}
+            <ArrowUpRightIcon aria-hidden="true" />
+          </Button>
+        ) : (
+          <Button size="lg" href={hrefOf(program)}>
+            {t("readPage")}
+          </Button>
+        )}
+      </div>
+    </ListingFrame>
   );
 }
 

@@ -39,11 +39,15 @@ export type ProgramsPublicSearch = {
   type: (typeof programTypes)[number] | null;
 };
 
+/** One entry of the list of what is open and coming up: a program, or an event to register for. */
+export type Listing =
+  | { kind: "program"; program: ProgramSummary }
+  | { kind: "event"; program: ProgramSummary; event: ProgramSummary["upcomingEvents"][number] };
+
 export type ProgramGroups = {
-  open: ProgramSummary[];
-  upcoming: ProgramSummary[];
+  /** What is open and coming up, programs and events together, by the day the reader acts on. */
+  current: Listing[];
   done: ProgramSummary[];
-  events: { program: ProgramSummary; event: ProgramSummary["upcomingEvents"][number] }[];
   counts: Record<(typeof publicPhases)[number] | "all", number>;
 };
 
@@ -57,10 +61,28 @@ export function listedAsEvent(program: ProgramSummary) {
 }
 
 /**
+ * The day a reader acts on: the deadline of a program taking applications, the day its applications
+ * open or it starts for one to come, the next event or the end of one running, and an event's day.
+ */
+function actOn(listing: Listing) {
+  if (listing.kind === "event") {
+    return Date.parse(listing.event.startsAt);
+  }
+  const { program } = listing;
+  const applications = program.applications;
+  const day = (value: string | null | undefined) => (value ? Date.parse(value) : Infinity);
+  if (program.phase === "open" && applications) return Date.parse(applications.closesAt);
+  if (program.phase === "upcoming")
+    return applications ? Date.parse(applications.opensAt) : day(program.startsOn);
+  return Math.min(day(program.upcomingEvents[0]?.startsAt), day(program.endsOn));
+}
+
+/**
  * The programs the search selects, grouped as the page shows them, and how many programs are in
- * each phase of the selected type, for the tabs. A program still running after its applications
- * closed is shown under Open now. Upcoming events are listed by date apart from the programs, as
- * the sites that list Luma events do: an event is registered for, a program is applied to.
+ * each phase of the selected type, for the tabs. Programs open now, running or coming up and the
+ * events still to come are one list, each labelled program or event, by the day the reader acts on
+ * (BEY-199): two lists counted two ways read as two different things. A program's own events stay on
+ * its card; an event and nothing else is listed by each of its events.
  */
 export function groupPrograms(
   programs: ProgramSummary[],
@@ -77,23 +99,21 @@ export function groupPrograms(
   );
   const asEvents = ofType.filter(listedAsEvent);
   const done = ofType.filter((program) => program.phase === "done" && !listedAsEvent(program));
+  const current: Listing[] = [
+    ...(shown("open") ? open : []).map((program) => ({ kind: "program" as const, program })),
+    ...(shown("upcoming") ? upcoming : []).map((program) => ({
+      kind: "program" as const,
+      program,
+    })),
+    ...(shown("upcoming") ? asEvents : []).flatMap((program) =>
+      program.upcomingEvents.map((event) => ({ kind: "event" as const, program, event })),
+    ),
+  ];
   return {
-    open: shown("open") ? open : [],
-    upcoming: shown("upcoming") ? upcoming : [],
-    // The events still to come: those of a program that is an event, and those of programs that
-    // are open or running, except those their card under Open now already shows.
-    events: shown("upcoming")
-      ? [
-          ...asEvents.flatMap((program) =>
-            program.upcomingEvents.map((event) => ({ program, event })),
-          ),
-          ...open.flatMap((program) =>
-            program.upcomingEvents
-              .slice(shown("open") ? openCardEvents : 0)
-              .map((event) => ({ program, event })),
-          ),
-        ].sort((a, b) => a.event.startsAt.localeCompare(b.event.startsAt))
-      : [],
+    current: current
+      .map((listing) => ({ listing, at: actOn(listing) }))
+      .sort((a, b) => a.at - b.at)
+      .map(({ listing }) => listing),
     done: shown("done") ? done : [],
     counts: {
       open: open.length,

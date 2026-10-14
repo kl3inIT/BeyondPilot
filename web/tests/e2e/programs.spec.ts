@@ -8,29 +8,30 @@ const applyUrl = "/programs/insurance-ai-tasco/apply";
 test.describe("programs", () => {
   test.use({ locale: "en-US", timezoneId: "Europe/Paris" });
 
-  test("the list shows what is open now, what is coming up and what is done", async ({ page }) => {
+  test("what is open and what is coming up is one list, each labelled program or event", async ({
+    page,
+  }) => {
     await page.goto("/programs");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Programs and events");
-    // Two programs take applications; each card carries its own countdown and Apply.
-    const open = page.getByRole("region", { name: "Open now" });
-    await expect(open.getByRole("link", { name: "Nestlé Vietnam AI Reinvention" })).toBeVisible();
-    const tasco = open.getByRole("article").filter({ hasText: "Tasco" });
+    const current = page.getByRole("region", { name: "Open and coming up" });
+    // Programs and events are one list, so the page counts them once (BEY-199).
+    await expect(page.getByRole("region", { name: "Upcoming events" })).toHaveCount(0);
     await expect(
-      tasco.getByRole("link", { name: "AI for Insurance Challenge × Tasco" }),
+      current.getByRole("link", { name: "Nestlé Vietnam AI Reinvention" }),
     ).toBeVisible();
+    await expect(current.getByRole("link", { name: "GenAI Builders Hanoi" })).toBeVisible();
+    // Two programs take applications; each card carries its label, its countdown and Apply.
+    const tasco = current
+      .getByRole("article")
+      .filter({ hasText: "AI for Insurance Challenge × Tasco" });
+    await expect(tasco.getByText("Program", { exact: true })).toBeVisible();
     await expect(tasco.getByText(/days left · closes/)).toBeVisible();
     await expect(tasco.getByRole("link", { name: "Apply now" })).toHaveAttribute("href", applyUrl);
-
-    // An event the open card already shows is not repeated under Coming up.
+    // A program's own event stays on its card and is not a card of its own.
     await expect(
-      open.getByText("Stop Guessing What Insurers Need: Tasco Challenge Briefing"),
-    ).toBeVisible();
-    const coming = page.getByRole("region", { name: "Coming up" });
-    await expect(
-      coming.getByText("Stop Guessing What Insurers Need", { exact: false }),
-    ).toHaveCount(0);
-    await expect(coming.getByRole("link", { name: "GenAI Builders Hanoi" })).toBeVisible();
+      current.getByRole("article").filter({ hasText: "Stop Guessing What Insurers Need" }),
+    ).toHaveCount(1);
 
     // A program whose page is somewhere else links there, and is never a draft on the list.
     const done = page.getByRole("region", { name: "Done" });
@@ -42,17 +43,17 @@ test.describe("programs", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("an event and nothing else is listed by date under Upcoming events, with its cover and Register", async ({
+  test("an event and nothing else is a card labelled event, with its cover, place and Register", async ({
     page,
   }) => {
     await page.goto("/programs");
 
-    const events = page.getByRole("region", { name: "Upcoming events" });
-    const dinner = events.getByRole("listitem").filter({ hasText: "TinyFish, Big Minds" });
-    await expect(dinner).toContainText("Event");
+    const current = page.getByRole("region", { name: "Open and coming up" });
+    const dinner = current.getByRole("article").filter({ hasText: "TinyFish, Big Minds" });
+    await expect(dinner.getByText("Event", { exact: true })).toBeVisible();
     await expect(dinner).toContainText("Ho Chi Minh City, Vietnam");
     await expect(dinner.locator("img")).toHaveCount(1);
-    // Its title opens the program's page, here its page on Luma, so a row without Register still leads somewhere.
+    // Its title opens the program's page, here its page on Luma.
     await expect(dinner.getByRole("link", { name: "TinyFish, Big Minds" })).toHaveAttribute(
       "href",
       "https://luma.com/gaf-tinyfish-vn",
@@ -61,23 +62,23 @@ test.describe("programs", () => {
       "href",
       "https://luma.com/gaf-tinyfish-vn",
     );
-    // It is neither a program to apply to nor one coming up.
-    await expect(page.getByRole("region", { name: "Open now" })).not.toContainText("TinyFish");
-    await expect(page.getByRole("region", { name: "Coming up" })).not.toContainText("TinyFish");
+    // It is not a program to apply to.
+    await expect(dinner.getByRole("link", { name: "Apply now" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
   });
 
   test("the tabs and the type are the address", async ({ page }) => {
     await page.goto("/programs");
 
-    // Under Coming up alone, the open program's next event is listed again.
+    // Under Coming up alone, the list holds what is coming up, and not what is open now.
     await page.getByRole("tab", { name: "Coming up" }).click();
-    await expect(
-      page.getByText("Stop Guessing What Insurers Need: Tasco Challenge Briefing"),
-    ).toBeVisible();
+    const coming = page.getByRole("region", { name: "Coming up" });
+    await expect(coming.getByRole("link", { name: "GenAI Builders Hanoi" })).toBeVisible();
+    await expect(coming.getByRole("link", { name: "TinyFish, Big Minds" })).toBeVisible();
+    await expect(coming).not.toContainText("AI for Insurance Challenge × Tasco");
     await page.getByRole("tab", { name: "Done" }).click();
     await expect(page).toHaveURL(/[?&]phase=done/);
-    await expect(page.getByRole("region", { name: "Open now" })).toHaveCount(0);
+    await expect(page.getByRole("region", { name: "Coming up" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Agentic AI Build Week 2026" })).toBeVisible();
 
     await page.goto("/programs?type=event_series");

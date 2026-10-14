@@ -5538,10 +5538,14 @@
     },
     "open": "Open now",
     "upcoming": "Coming up",
-    "upcomingEvents": "Upcoming events",
+    "current": "Open and coming up",
     "done": "Done",
     "programCount": "{count, plural, one {# program} other {# programs}}",
     "itemCount": "{count, plural, one {# event} other {# events}}",
+    "kind": {
+      "program": "Program",
+      "event": "Event"
+    },
     "undated": "Earlier",
     "live": "Open now",
     "running": "Running",
