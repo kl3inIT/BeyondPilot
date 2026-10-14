@@ -2,7 +2,7 @@
 
 import { InfoIcon, SendIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
 import { IconButton } from "@/components/actions/icon-button";
@@ -32,6 +32,8 @@ import {
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
+  useMessageScroller,
+  useMessageScrollerScrollable,
 } from "@/components/ui/message-scroller";
 import { initials } from "@/lib/initials";
 
@@ -71,6 +73,32 @@ type ConversationThreadProps = {
  * The screen keys it by the conversation, so where the reader had scrolled to and an answer they
  * were asked to confirm belong to one conversation and never show in the next.
  */
+/**
+ * Keeps what was just written in view for a reader who is at the end of the conversation, and always
+ * for what the reader wrote. The scroller follows the end by itself only while it holds that it is
+ * following, and it stops holding so after a wheel or a key at the end, or after the tab was behind
+ * another one: a message that arrived then stayed under the edge. A reader who scrolled up to read
+ * is left where they are, with the button that leads to the newest message.
+ */
+function FollowNewest({ newest, mine }: { newest: string; mine: boolean }) {
+  const { scrollToEnd } = useMessageScroller();
+  const { end: more } = useMessageScrollerScrollable();
+  const atEnd = useRef(true);
+  const followed = useRef(newest);
+  useEffect(() => {
+    if (newest === followed.current) {
+      // Nothing was written: only where the reader is has changed.
+      atEnd.current = !more;
+      return;
+    }
+    followed.current = newest;
+    if (mine || atEnd.current) {
+      scrollToEnd();
+    }
+  }, [newest, mine, more, scrollToEnd]);
+  return null;
+}
+
 function ConversationThread({
   thread,
   connected,
@@ -124,6 +152,10 @@ function ConversationThread({
       </ThreadHeader>
       <div className="flex min-h-0 flex-1 flex-col px-4 py-2 md:px-6">
         <MessageScrollerProvider autoScroll>
+          <FollowNewest
+            newest={`${messages.at(-1)?.id ?? ""}${thread.typing ? "+" : ""}`}
+            mine={messages.at(-1)?.mine ?? false}
+          />
           <MessageScroller>
             <MessageScrollerViewport>
               <MessageScrollerContent>
