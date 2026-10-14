@@ -73,7 +73,12 @@ function ProgramDraftsPage({
               { key: "solution", done: draft.solutionChosen },
               { key: "deck", done: draft.deckAttached },
               ...(drafts.requiredQuestions > 0
-                ? [{ key: "questions" as const, done: draft.requiredAnswered >= drafts.requiredQuestions }]
+                ? [
+                    {
+                      key: "questions" as const,
+                      done: draft.requiredAnswered >= drafts.requiredQuestions,
+                    },
+                  ]
                 : []),
             ];
             const missing = steps
