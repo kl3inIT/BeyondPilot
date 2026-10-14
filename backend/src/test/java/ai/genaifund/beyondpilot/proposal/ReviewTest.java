@@ -232,7 +232,7 @@ class ReviewTest extends ApplicationsHttpTest {
 		List<String> rows = all.lines().toList();
 		assertThat(rows).hasSize(3);
 		assertThat(rows.get(1)).startsWith(first.id() + ",First Exporter,")
-			.contains(",Dat,Phan,first@exported.test,+84 912 345 678,VN,")
+			.contains(",First,Exporter,first@exported.test,+84 912 345 678,VN,")
 			.contains(",shortlisted,no,0,");
 		assertThat(rows.get(2)).startsWith(second.id() + ",Second Exporter,").contains(",under_review,no,0,");
 
@@ -474,14 +474,15 @@ class ReviewTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isOk();
 		UUID solution = completeSolution(session, email, name + " Desk");
-		submitted(session, email, form, solution);
+		// On their own, a person is shown by the name their application gives.
+		submitted(session, email, form, solution, contact(name));
 		String id = JsonPath.read(body(get(session, API + "/applications").expectStatus().isOk()), "$.items[0].id");
-		return new Applicant(session, email, solution, UUID.fromString(id));
+		return new Applicant(session, email, solution, UUID.fromString(id), name);
 	}
 
 	private void resubmit(Form form, Applicant applicant) {
 		String view = body(get(applicant.session(), form.path()).expectStatus().isOk());
-		Map<String, Object> change = application(contact(), applicant.solution(), answers(form, applicant.email()),
+		Map<String, Object> change = application(contact(applicant.name()), applicant.solution(), answers(form, applicant.email()),
 				versionOf(view));
 		change.put("deckFileId", JsonPath.read(view, "$.application.deck.fileId"));
 		put(applicant.session(), form.path(), change).expectStatus().isOk();
@@ -503,7 +504,7 @@ class ReviewTest extends ApplicationsHttpTest {
 				"Hi {organization},\n\nNot this time.");
 	}
 
-	private record Applicant(String session, String email, UUID solution, UUID id) {
+	private record Applicant(String session, String email, UUID solution, UUID id, String name) {
 	}
 
 	private static Map<String, Object> criteria(String... names) {

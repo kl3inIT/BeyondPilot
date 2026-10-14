@@ -598,7 +598,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		UUID useCase = publishedUseCase(poster.organization, "Claims triage");
 		String path = path(useCase);
 
-		// Someone in no organization makes one in this step; it waits for review, and it sends all the same.
+		// Someone in no organization makes one in this step: on their own, nobody reviews it before it sends.
 		String loner = TestSignIn.session(client, mail, "alone@waiting-send.test");
 		String made = body(post(loner, ORGANIZATION + "/organizations/basics", Map.of("name", "Alone Builder", "type",
 				"independent_builder", "teamSize", "just_me", "industries", List.of(), "country", "VN"))
@@ -606,7 +606,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.isCreated());
 		assertThat(JsonPath.<String>read(made, "$.name")).isEqualTo("Alone Builder");
 		String form = body(get(loner, path).expectStatus().isOk());
-		assertThat(JsonPath.<Boolean>read(form, "$.organization.approved")).isFalse();
+		assertThat(JsonPath.<Boolean>read(form, "$.organization.approved")).isTrue();
 		assertThat(JsonPath.<String>read(form, "$.organization.type")).isEqualTo("independent_builder");
 		UUID solution = completeSolution(loner, "alone@waiting-send.test", "Lone Solver");
 		String saved = body(put(loner, path, draft(solution, "Our approach.", file("alone@waiting-send.test"), null, null))
@@ -620,10 +620,10 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Object>read(sent, "$.proposal.sender")).isNull();
 		assertThat(JsonPath.<String>read(sent, "$.proposal.sentBy.email")).isEqualTo("alone@waiting-send.test");
 		String list = body(get(poster.founder, path + "s").expectStatus().isOk());
-		assertThat(JsonPath.<List<Boolean>>read(list, "$.items[*].organizationApproved")).containsExactly(false);
+		assertThat(JsonPath.<List<Boolean>>read(list, "$.items[*].organizationApproved")).containsExactly(true);
 		assertThat(JsonPath.<List<String>>read(list, "$.items[*].contactName")).containsExactly("Founder Provider");
 		String one = body(get(poster.founder, API + "/use-case-proposals/" + id).expectStatus().isOk());
-		assertThat(JsonPath.<Boolean>read(one, "$.organizationApproved")).isFalse();
+		assertThat(JsonPath.<Boolean>read(one, "$.organizationApproved")).isTrue();
 		assertThat(JsonPath.<String>read(one, "$.sentBy.email")).isEqualTo("alone@waiting-send.test");
 		assertThat(JsonPath.<Object>read(one, "$.teamBackground")).isNull();
 	}

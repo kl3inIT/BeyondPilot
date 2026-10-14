@@ -321,6 +321,8 @@
     "backToSolutions": "Back to solutions"
   },
   "Errors": {
+    "ORGANIZATION_INDIVIDUAL": "Someone applying on their own has no members, domain or profile of an organization. Apply as a team or a company instead.",
+    "PROPOSAL_INDIVIDUAL_LOCKED": "You already sent something under your name, so you keep applying as yourself.",
     "unknown": "That did not work. Try again.",
     "REQUEST_INVALID": "Check the marked fields and try again.",
     "AI_PROVIDER_NOT_FOUND": "This provider no longer exists. Reload the page.",

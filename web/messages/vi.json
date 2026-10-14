@@ -321,6 +321,8 @@
     "backToSolutions": "Về danh sách giải pháp"
   },
   "Errors": {
+    "ORGANIZATION_INDIVIDUAL": "Người nộp với tư cách cá nhân không có thành viên, tên miền hay hồ sơ tổ chức. Hãy nộp với tư cách đội hoặc công ty.",
+    "PROPOSAL_INDIVIDUAL_LOCKED": "Bạn đã gửi một thứ dưới tên mình, nên bạn tiếp tục nộp với tư cách cá nhân.",
     "unknown": "Chưa thực hiện được. Hãy thử lại.",
     "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
     "AI_PROVIDER_NOT_FOUND": "Provider này không còn nữa. Hãy tải lại trang.",

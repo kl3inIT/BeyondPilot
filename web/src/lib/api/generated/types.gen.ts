@@ -211,7 +211,7 @@ export type AdminOrganization = {
     merged?: MergedOrganization | null;
     organization: Organization;
     /**
-     * A domain the operator may verify with a decision: the one it has, else the creator's work domain while it waits for review, else its website's. Null when another organization holds it.
+     * A domain the operator may verify with a decision: the one it has, else the creator's work domain while it waits for review, else its website's. Null for an individual, or when another organization holds it.
      */
     suggestedDomain?: string | null;
 };

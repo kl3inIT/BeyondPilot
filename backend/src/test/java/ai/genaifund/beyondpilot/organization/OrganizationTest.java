@@ -151,7 +151,7 @@ class OrganizationTest {
 		String record = body(get(operator, API + "/admin/organizations/" + id).expectStatus().isOk());
 		assertThat(JsonPath.<Object>read(record, "$.suggestedDomain")).isNull();
 		Map<String, Object> withDomain = new HashMap<>();
-		withDomain.put("profile", save(request, JsonPath.<Integer>read(record, "$.version")));
+		withDomain.put("profile", save(request, JsonPath.<Integer>read(record, "$.organization.version")));
 		withDomain.put("emailDomain", "company.test");
 		assertProblem(put(operator, API + "/admin/organizations/" + id, withDomain), 409,
 				"ORGANIZATION_INDIVIDUAL");
@@ -404,8 +404,8 @@ class OrganizationTest {
 		request.put("type", "company");
 		request.put("industries", List.of());
 		assertProblem(put(founder, basics, request), 400, "ORGANIZATION_INDUSTRIES_REQUIRED");
-		request.put("type", "independent_builder");
-		request.put("teamSize", "just_me");
+		request.put("type", "other");
+		request.put("teamSize", "2_9");
         put(founder, basics, request).expectStatus().isOk();
         assertThat(JsonPath.<Object>read(mine(founder), "$.organization.teamBackground")).isNull();
 		request.put("country", "Vietnam");
