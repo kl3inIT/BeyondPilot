@@ -378,7 +378,11 @@ test.describe("solutions matched to a use case", () => {
     await which.getByRole("checkbox", { name: "Check rules" }).click();
     await question.getByRole("textbox", { name: "Note (optional)" }).fill("Invoices only, so far.");
     await expectNoSeriousA11yViolations(page);
-    await picture(page, testInfo, "feedback", !isMobile);
+    // A full-page capture temporarily resizes the viewport and can remount the responsive panel.
+    const feedbackFile = `member-feedback-${testInfo.project.name}.png`;
+    const feedbackPath = testInfo.outputPath(feedbackFile);
+    await question.screenshot({ path: feedbackPath });
+    await testInfo.attach(feedbackFile, { path: feedbackPath, contentType: "image/png" });
     await send.click();
 
     await expect(question.getByText("You said: Experience in your industry.")).toBeVisible();
