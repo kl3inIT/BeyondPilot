@@ -91,25 +91,32 @@ public class OrganizationDirectory {
 		return organizations.findById(organizationId).filter(Organization::isApproved).isPresent();
 	}
 
-	/** The approved organization at this address, as another module shows it; empty when there is none. */
+	/**
+	 * The approved organization at this address, as another module shows it; empty when there is none, and for an
+	 * individual, which has no page.
+	 */
 	@Transactional(readOnly = true)
 	public Optional<OrganizationName> approvedAt(String slug) {
 		return organizations.findBySlug(slug)
 			.filter(Organization::isApproved)
+			.filter(organization -> !organization.isIndividual())
 			.map(organization -> new OrganizationName(organization.getId(), organization.getSlug(),
-					organization.getName(), organization.getCountry(), organization.getLogoFileId()));
+					organization.getName(), organization.getCountry(), organization.getLogoFileId(),
+					organization.isIndividual()));
 	}
 
 	/**
 	 * The approved organization with this identifier, the kind that can have use cases; empty for one that is
-	 * unknown, waits for review or was refused.
+	 * unknown, waits for review, was refused or is an individual.
 	 */
 	@Transactional(readOnly = true)
 	public Optional<OrganizationName> approvedOrganization(UUID id) {
 		return organizations.findById(id)
 			.filter(Organization::isApproved)
+			.filter(organization -> !organization.isIndividual())
 			.map(organization -> new OrganizationName(organization.getId(), organization.getSlug(),
-					organization.getName(), organization.getCountry(), organization.getLogoFileId()));
+					organization.getName(), organization.getCountry(), organization.getLogoFileId(),
+					organization.isIndividual()));
 	}
 
 	/**
@@ -120,22 +127,23 @@ public class OrganizationDirectory {
 	public List<OrganizationName> approvedOrganizations(@Nullable String text, int limit) {
 		return organizationList.approvedOrganizations(OrganizationViews.text(text), limit)
 			.stream()
-			.map(name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country(), name.logoFileId()))
+			.map(name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country(), name.logoFileId(),
+							Organization.INDIVIDUAL.equals(name.type())))
 			.toList();
 	}
 
 	/**
 	 * The public page of an approved organization. The address of a merged one answers with the organization it was
 	 * merged into, whose own address the page then shows.
-	 * @throws OrganizationException when no approved organization has the address; one that waits for review or
-	 * was refused answers the same, so the address does not reveal that it exists
+	 * @throws OrganizationException when no approved organization has the address; one that waits for review, was
+	 * refused or is an individual answers the same, so the address does not reveal that it exists
 	 */
 	@Transactional(readOnly = true)
 	public PublicOrganizationResponse publicPage(String slug) {
 		Organization organization = organizations.findBySlug(slug)
 			.flatMap(found -> found.isMerged()
 					? Optional.ofNullable(found.getMergedIntoId()).flatMap(organizations::findById) : Optional.of(found))
-			.filter(Organization::isApproved)
+			.filter(found -> found.isApproved() && !found.isIndividual())
 			.orElseThrow(() -> new OrganizationException(OrganizationErrorCode.ORGANIZATION_NOT_FOUND,
 					"No approved organization at " + slug));
 		return new PublicOrganizationResponse(organization.getSlug(), organization.getName(), organization.getType(),
@@ -149,7 +157,8 @@ public class OrganizationDirectory {
 		return organizationList.approvedNames(organizationIds)
 			.stream()
 			.collect(Collectors.toMap(OrganizationQueryRepository.Name::id,
-					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country(), name.logoFileId())));
+					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country(), name.logoFileId(),
+							Organization.INDIVIDUAL.equals(name.type()))));
 	}
 
 	/**
@@ -167,6 +176,7 @@ public class OrganizationDirectory {
 		return organizationList.names(organizationIds)
 			.stream()
 			.collect(Collectors.toMap(OrganizationQueryRepository.Name::id,
-					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country(), name.logoFileId())));
+					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country(), name.logoFileId(),
+							Organization.INDIVIDUAL.equals(name.type()))));
 	}
 }

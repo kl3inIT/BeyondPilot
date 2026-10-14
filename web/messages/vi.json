@@ -27,6 +27,7 @@
       "signOut": "Đăng xuất",
       "signOutFailed": "Chưa đăng xuất được. Bạn thử lại.",
       "organization": "Tổ chức của tôi",
+      "solutions": "Giải pháp của tôi",
       "talentProfile": "Hồ sơ nhân lực",
       "messages": "Tin nhắn",
       "messagesWaiting": "{count, plural, other {# đang chờ bạn}}",
@@ -320,6 +321,8 @@
     "backToSolutions": "Về danh sách giải pháp"
   },
   "Errors": {
+    "ORGANIZATION_INDIVIDUAL": "Người nộp với tư cách cá nhân không có thành viên, tên miền hay hồ sơ tổ chức. Hãy nộp với tư cách đội hoặc công ty.",
+    "PROPOSAL_INDIVIDUAL_LOCKED": "Bạn đã gửi một thứ dưới tên mình, nên bạn tiếp tục nộp với tư cách cá nhân.",
     "unknown": "Chưa thực hiện được. Hãy thử lại.",
     "REQUEST_INVALID": "Hãy kiểm tra các trường được đánh dấu rồi thử lại.",
     "AI_PROVIDER_NOT_FOUND": "Provider này không còn nữa. Hãy tải lại trang.",
@@ -3704,7 +3707,7 @@
     "organizationType": {
       "company": "Công ty",
       "builder_team": "Nhóm phát triển",
-      "independent_builder": "Nhà phát triển độc lập",
+      "independent_builder": "Cá nhân",
       "other": "Khác"
     },
     "teamSize": {
@@ -4712,6 +4715,7 @@
       },
       "company": {
         "title": "Công ty đứng sau giải pháp này",
+        "individualTitle": "Người đứng sau giải pháp này",
         "metaDescription": "{name} trên BeyondPilot: thông tin công ty và các giải pháp AI được đăng trong danh bạ của GenAI Fund.",
         "view": "Xem công ty",
         "viewSolutions": "Xem các giải pháp",
@@ -6261,7 +6265,11 @@
       "notListedYet": "Chưa có trên danh mục",
       "applyingForHint": "GenAI Fund kiểm tra tổ chức mới trước khi đưa lên danh mục; đơn của bạn không bị chậm lại.",
       "applyingAs": "Nộp với tư cách",
-      "applyingAsHint": "Lựa chọn này được lưu vào tài khoản khi bạn tiếp tục, và sau đó không đổi được ở đây.",
+      "applyingAsHint": "Lựa chọn này được lưu với tài khoản của bạn khi bạn tiếp tục. Nếu nộp với tư cách cá nhân, bạn có thể đổi cho đến khi gửi một thứ gì đó dưới tên mình.",
+      "change": "Đổi",
+      "changeHint": "Bạn có thể nộp với tư cách đội hoặc công ty thay vì cá nhân cho đến khi gửi một thứ gì đó dưới tên mình.",
+      "companyInstead": "Để nộp cho một công ty, hãy thôi nộp với tư cách cá nhân trước, rồi tìm hoặc thêm công ty đó. Giải pháp bạn đã bắt đầu ở đây vẫn ở lại với bạn và không chuyển sang công ty.",
+      "companyInsteadAction": "Nộp cho một công ty",
       "whoRequired": "Chọn ai là người nộp.",
       "who": {
         "individual": {

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.IdentityService;
+import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.organization.OrganizationProfile;
@@ -102,7 +103,8 @@ public class SolutionDirectory {
 		Map<UUID, List<OfferResponse>> offered = offers.of(rows.stream().map(SolutionQueryRepository.Row::id).toList());
 		return new PublicSolutionListResponse(rows.stream().filter(row -> names.containsKey(row.organizationId())).map(row -> {
 			OrganizationName organization = names.get(row.organizationId());
-			return new PublicSolutionSummaryResponse(row.slug(), row.name(), organization.name(), organization.slug(),
+			return new PublicSolutionSummaryResponse(row.slug(), row.name(), organization.name(),
+					organization.individual() ? null : organization.slug(),
 					organization.country(), row.summary(), row.maturity(), row.focusAreas(), row.industries(),
 					shownLogo(row.logoFileId(), organization.logoFileId()), row.coverFileId(), row.backing(), row.deployments(),
 					row.featuredAt() != null, shownOffers(offered.get(row.id())));
@@ -142,7 +144,7 @@ public class SolutionDirectory {
 
 	private PublicSolutionResponse shown(Solution solution, OrganizationProfile organization) {
 		return new PublicSolutionResponse(solution.getSlug(), solution.getName(), organization.name(),
-				organization.slug(), organization.country(), organization.foundedYear(), organization.teamSize(),
+				Membership.INDIVIDUAL.equals(organization.type()) ? null : organization.slug(), organization.country(), organization.foundedYear(), organization.teamSize(),
 				organization.companySizeLabel(), solution.getSummary(), solution.getProblemsSolved(),
 				solution.getValueProposition(), solution.getMaturity(), solution.getTraction(), solution.getProductNames(),
 				solution.getCoreTechnology(), solution.getInfrastructureUsed(), solution.getSegmentFocus(),
@@ -189,7 +191,7 @@ public class SolutionDirectory {
 		return new OfferedSolution(solution.getId(), solution.getOrganizationId(), solution.getName(),
 				solution.getSummary(), solution.getProblemsSolved(), solution.getMaturity(), solution.getDemoUrl(),
 				solution.getViewKey(), solution.getSlug(), shownLogo(solution.getLogoFileId(), organizationLogo),
-				solution.isApproved());
+				solution.isApproved(), !solution.isDraft());
 	}
 
 	/**

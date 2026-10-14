@@ -1,0 +1,12 @@
+# Plan: a person applying on their own is themselves
+
+Design: [design.md](design.md). Linear: [BEY-189](https://linear.app/beyondpilot/issue/BEY-189).
+
+| Step | What                                                                                                                                                                                            | Done when                                                                              |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 1    | `organization`: an individual is approved when made, refused for invitations, joins, domains and type changes, left out of search, pickers and the public page; `V96` approves the ones waiting | `OrganizationTest` covers each refusal and the listing; `:backend:check` passes        |
+| 2    | `proposal`: the name follows the application's contact; `organize` turns a switchable individual into a team; `leave` lets the person go to a company                                           | `ProposalTest` covers rename, switch to a team, leave, and the lock after a submission |
+| 3    | `solution` and `usecase`: no organization slug for an individual on public solutions; no use case for one                                                                                       | `:backend:check` passes                                                                |
+| 4    | `openapi.yml` and the generated web client                                                                                                                                                      | `OpenApiContractTest` and the drift check pass                                         |
+| 5    | Web: Apply step 1 card and Change; My solutions in the account menu and the frame; "Individual" in the vocabulary; no team size row; solution card and page without a link                      | `pnpm --dir web check` passes                                                          |
+| 6    | `docs/specs/proposal.md` and `docs/tests/<module>.md` updated                                                                                                                                   | the specs read what the code does                                                      |

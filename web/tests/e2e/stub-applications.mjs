@@ -174,6 +174,7 @@ const pocketPolicy = {
   country: "VN",
   teamSize: "2_9",
   approved: true,
+  changeable: false,
 };
 
 const anTran = {
@@ -182,7 +183,8 @@ const anTran = {
   type: "independent_builder",
   country: "VN",
   teamSize: "just_me",
-  approved: false,
+  approved: true,
+  changeable: true,
 };
 
 export function answerApplication(url, session, email) {

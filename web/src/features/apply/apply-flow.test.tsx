@@ -33,7 +33,8 @@ function draft(
       type: "independent_builder",
       country: "VN",
       teamSize: "just_me",
-      approved: false,
+      approved: true,
+      changeable: true,
     },
     solutions: [
       {

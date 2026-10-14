@@ -7,6 +7,7 @@ import {
   loadOrganizationMembersSearch,
   organizationMemberSortKeys,
 } from "@/features/organization/organization-members-search";
+import { isIndividual } from "@/features/organization/organization-codes";
 import { readMembers, readMyOrganization } from "@/features/organization/organization-queries";
 import { readMySolutions } from "@/features/solution/solution-queries";
 import { getPathname } from "@/i18n/navigation";
@@ -40,6 +41,11 @@ export default async function OrganizationMembersRoute({
   // A person without an organization has no members to read; the first page offers the ways in.
   if (!organization || !members) {
     redirect(getPathname({ href: siteRoutes.workspaceOrganization, locale }));
+  }
+
+  // A person on their own has no profile or members of an organization: their page is their solutions.
+  if (isIndividual(organization)) {
+    redirect(getPathname({ href: siteRoutes.workspaceSolutions, locale }));
   }
 
   const [solutions, useCases] = await Promise.all([
