@@ -109,13 +109,18 @@ export function isShown(
   );
 }
 
-/** The candidates of each tab. A removed candidate is in the Removed tab alone. */
+/**
+ * The candidates of each tab. A removed candidate is in the Removed tab alone. What a run read and put
+ * in no group, with nobody's decision on it, is Not matched: operators read it there with the AI's
+ * reasons.
+ */
 export function tabsOf(candidates: MatchingCandidate[]) {
   const shown = candidates.filter(isShown);
   return {
     matches: shown.filter((candidate) => candidate.decision !== "removed"),
     shortlist: shown.filter((candidate) => candidate.decision === "shortlisted"),
     removed: shown.filter((candidate) => candidate.decision === "removed"),
+    notMatched: candidates.filter((candidate) => !isShown(candidate)),
   };
 }
 

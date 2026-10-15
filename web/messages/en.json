@@ -7430,7 +7430,8 @@
       "label": "Solutions by what you decided",
       "matches": "Matches",
       "shortlist": "Saved",
-      "removed": "Removed"
+      "removed": "Removed",
+      "notMatched": "Not matched"
     },
     "groups": {
       "direct": {
@@ -7456,6 +7457,10 @@
       "kept": {
         "title": "Saved, no longer suggested",
         "about": "They stay until someone unsaves them."
+      },
+      "notMatched": {
+        "title": "Not matched",
+        "about": "AI read these and put them in no group. Only GenAI Fund sees them."
       },
       "emptyDirect": "No solution meets the key requirement yet."
     },
@@ -7582,7 +7587,8 @@
       "none": "AI found no solution on BeyondPilot that fits this use case.",
       "shortlist": "Save the solutions you want to talk to.",
       "need": "No solution here shows evidence for: {need}",
-      "clear": "Show all solutions"
+      "clear": "Show all solutions",
+      "notMatched": "AI put every solution it read in a group."
     },
     "done": {
       "started": "Looking for solutions.",
