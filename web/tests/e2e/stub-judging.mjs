@@ -1,7 +1,7 @@
 // What the stub backend answers about reviewing the Tasco challenge's applications, for the web
 // server's reads. What the browser writes is answered by each test. Plain Cover's deck is the real PDF
-// of three slides the matching deck reads (fixtures/deck.pdf; see `serveJudgingFile`).
-import { readFileSync } from "node:fs";
+// of three slides the matching deck reads, served by stub-backend.mjs: this module is also imported by
+// judging.spec.ts, where `import.meta` cannot be read.
 
 const day = 24 * 60 * 60 * 1000;
 
@@ -291,23 +291,4 @@ export function answerJudging(url, account) {
     ];
   }
   return [404, {}];
-}
-
-const deck = readFileSync(new URL("./fixtures/deck.pdf", import.meta.url));
-
-/**
- * Plain Cover's deck, as the backend serves a file of an application to a reviewer: the bytes of a PDF,
- * saved under its name. Answers the request and returns true for that file, false otherwise.
- */
-export function serveJudgingFile(response, url) {
-  if (url.pathname !== `/api/proposal/review/applications/${ids.plain}/files/${plainCoverDeckId}`) {
-    return false;
-  }
-  response.writeHead(200, {
-    "Content-Type": "application/pdf",
-    "Content-Length": deck.length,
-    "Content-Disposition": 'attachment; filename="plain-cover-deck.pdf"',
-  });
-  response.end(deck);
-  return true;
 }
