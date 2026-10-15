@@ -36,6 +36,11 @@ async function ReleasePage({ release }: { release: Release }) {
         ? t("blocked.undecided", { count: release.undecided.length })
         : null;
 
+  const recipient = (item: ReleaseItem) => ({
+    organization: item.organizationName,
+    solution: item.solutionName,
+  });
+
   const groups: {
     key: string;
     title: string;
@@ -152,9 +157,9 @@ async function ReleasePage({ release }: { release: Release }) {
           <ReleaseForm
             programId={head.programId}
             emails={release.emails}
-            counts={{
-              shortlisted: release.shortlisted.length,
-              notSelected: release.notSelected.length,
+            recipients={{
+              shortlisted: release.shortlisted.map(recipient),
+              notSelected: release.notSelected.map(recipient),
             }}
             ready={release.ready}
             blocked={blocked}
