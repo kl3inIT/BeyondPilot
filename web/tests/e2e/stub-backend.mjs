@@ -8,7 +8,7 @@ import { answerAiAdmin } from "./stub-ai.mjs";
 import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
 import { answerEmail } from "./stub-email.mjs";
-import { answerJudging } from "./stub-judging.mjs";
+import { answerJudging, serveJudgingFile } from "./stub-judging.mjs";
 import { answerMatching, serveMatchingDeck, serveMatchingLive } from "./stub-matching.mjs";
 import { answerMcp } from "./stub-mcp.mjs";
 import { serveMessaging } from "./stub-messaging.mjs";
@@ -454,6 +454,10 @@ createServer((request, response) => {
   }
   // And one that is a file: the deck of a matched solution, which the deck viewer reads in the browser.
   if (serveMatchingDeck(response, url)) {
+    return;
+  }
+  // And the deck of an application, which the review's file viewer reads in the browser.
+  if (serveJudgingFile(response, url)) {
     return;
   }
 

@@ -1,5 +1,7 @@
 // What the stub backend answers about reviewing the Tasco challenge's applications, for the web
-// server's reads. What the browser writes is answered by each test.
+// server's reads. What the browser writes is answered by each test. Plain Cover's deck is the real PDF
+// of three slides the matching deck reads (fixtures/deck.pdf; see `serveJudgingFile`).
+import { readFileSync } from "node:fs";
 
 const day = 24 * 60 * 60 * 1000;
 
@@ -82,6 +84,7 @@ const applications = [
 ];
 
 export const plainCoverId = ids.plain;
+export const plainCoverDeckId = "f0000000-0000-4000-8000-000000000001";
 
 function list(operator) {
   return {
@@ -123,7 +126,7 @@ function application(operator) {
       maturity: "production",
       demoUrl: "https://plaincover.example/demo",
       deck: {
-        fileId: "f0000000-0000-4000-8000-000000000001",
+        fileId: plainCoverDeckId,
         fileName: "plain-cover-deck.pdf",
         sizeBytes: 3100000,
       },
@@ -288,4 +291,23 @@ export function answerJudging(url, account) {
     ];
   }
   return [404, {}];
+}
+
+const deck = readFileSync(new URL("./fixtures/deck.pdf", import.meta.url));
+
+/**
+ * Plain Cover's deck, as the backend serves a file of an application to a reviewer: the bytes of a PDF,
+ * saved under its name. Answers the request and returns true for that file, false otherwise.
+ */
+export function serveJudgingFile(response, url) {
+  if (url.pathname !== `/api/proposal/review/applications/${ids.plain}/files/${plainCoverDeckId}`) {
+    return false;
+  }
+  response.writeHead(200, {
+    "Content-Type": "application/pdf",
+    "Content-Length": deck.length,
+    "Content-Disposition": 'attachment; filename="plain-cover-deck.pdf"',
+  });
+  response.end(deck);
+  return true;
 }

@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
-import { criteria, judgedProgramId, plainCoverId } from "./stub-judging.mjs";
+import { criteria, judgedProgramId, plainCoverDeckId, plainCoverId } from "./stub-judging.mjs";
 
 const admin = `/admin/programs/${judgedProgramId}`;
 const reviews = `/reviews/${judgedProgramId}`;
@@ -115,14 +115,23 @@ test.describe("judging applications", () => {
     await expect(page.getByText("2 of 3")).toBeVisible();
     // An answer of several choices reads as the choices, one a line.
     await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
-    await expect(
-      page
-        .getByRole("link", { name: "plain-cover-deck.pdf" })
-        .or(page.getByRole("link", { name: "Open", exact: true })),
-    ).toHaveAttribute(
+    // The deck opens full screen in the page, every page of it, instead of downloading; the download
+    // stays at hand, and Escape gives the focus back to Open.
+    const open = page
+      .getByRole("region", { name: "Files and links" })
+      .getByRole("button", { name: "Open", exact: true });
+    await open.click();
+    const viewer = page.getByRole("dialog", { name: "plain-cover-deck.pdf" });
+    await expect(viewer.getByRole("group", { name: /^Page \d$/ })).toHaveCount(3);
+    await expect(viewer.getByText("Page 1 / 3")).toBeVisible();
+    await expect(viewer.getByRole("link", { name: "Download" })).toHaveAttribute(
       "href",
-      `/api/proposal/review/applications/${plainCoverId}/files/f0000000-0000-4000-8000-000000000001`,
+      `/api/proposal/review/applications/${plainCoverId}/files/${plainCoverDeckId}`,
     );
+    await expectNoSeriousA11yViolations(page);
+    await page.keyboard.press("Escape");
+    await expect(viewer).toHaveCount(0);
+    await expect(open).toBeFocused();
     // The demo the applicant gave opens in a tab of its own, away from the review.
     const demo = page.getByRole("link", { name: "https://plaincover.example/demo" });
     await expect(demo).toHaveAttribute("href", "https://plaincover.example/demo");
