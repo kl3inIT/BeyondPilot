@@ -25,7 +25,7 @@ describe("header messages", () => {
 
   it("opens Messages and hides the badge when nothing waits", async () => {
     unread.mockResolvedValue(answer(0));
-    render(<HeaderMessages waiting={0} />);
+    render(<HeaderMessages />);
     const link = screen.getByRole("link", { name: "Messages" });
     expect(link).toHaveAttribute("href", "/workspace/messages");
     await waitFor(() => expect(unread).toHaveBeenCalledOnce());
@@ -35,28 +35,36 @@ describe("header messages", () => {
   it("counts incoming messages and requests, then clears after they are read", async () => {
     vi.useFakeTimers();
     unread.mockResolvedValue(answer(2, 1));
-    render(<HeaderMessages waiting={3} />);
+    render(<HeaderMessages />);
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
     });
     expect(screen.getByRole("link", { name: "Messages, 3 wait for you" })).toHaveTextContent("3");
     unread.mockResolvedValue(answer(6, 1));
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(10_000);
+      await vi.advanceTimersByTimeAsync(60_000);
     });
     expect(screen.getByRole("link", { name: "Messages, 7 wait for you" })).toHaveTextContent("7");
     unread.mockResolvedValue(answer(0));
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(10_000);
+      await vi.advanceTimersByTimeAsync(60_000);
     });
     expect(screen.getByRole("link", { name: "Messages" })).toHaveTextContent("");
   });
 
   it("keeps the known count on failure and refreshes when focus returns", async () => {
+    vi.useFakeTimers();
+    unread.mockResolvedValue(answer(4));
+    render(<HeaderMessages />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
     unread.mockRejectedValue(new Error("offline"));
-    render(<HeaderMessages waiting={4} />);
-    await waitFor(() => expect(unread).toHaveBeenCalledOnce());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60_000);
+    });
     expect(screen.getByRole("link", { name: "Messages, 4 wait for you" })).toHaveTextContent("4");
+    vi.useRealTimers();
     unread.mockResolvedValue(answer(1));
     fireEvent.focus(window);
     expect(
@@ -64,10 +72,18 @@ describe("header messages", () => {
     ).toHaveTextContent("1");
   });
 
+  it("says 99+ above 99, and the whole number to a screen reader", async () => {
+    unread.mockResolvedValue(answer(120, 5));
+    render(<HeaderMessages />);
+    expect(
+      await screen.findByRole("link", { name: "Messages, 125 wait for you" }),
+    ).toHaveTextContent("99+");
+  });
+
   it("skips refreshes while hidden and reads again when the tab becomes visible", async () => {
     const visibility = vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
     unread.mockResolvedValue(answer(2));
-    render(<HeaderMessages waiting={0} />);
+    render(<HeaderMessages />);
     expect(unread).not.toHaveBeenCalled();
     visibility.mockReturnValue("visible");
     fireEvent(document, new Event("visibilitychange"));
