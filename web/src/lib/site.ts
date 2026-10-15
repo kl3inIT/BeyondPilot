@@ -34,6 +34,7 @@ export const siteRoutes = {
   adminSearchIndex: "/admin/ai/search-index",
   adminAiMatching: "/admin/ai/matching",
   adminAiMatchingFeedback: "/admin/ai/matching/feedback",
+  adminAiMatchingRuns: "/admin/ai/matching/runs",
   adminAiUsage: "/admin/ai/usage",
   adminAiUsageCalls: "/admin/ai/usage/calls",
   adminMcp: "/admin/ai/mcp",
@@ -121,6 +122,11 @@ export function programApplyRoute(slug: string) {
 /** One kind of email's wording in the admin area. */
 export function adminEmailTemplateRoute(kind: string) {
   return `${siteRoutes.adminEmailTemplates}/${kind}`;
+}
+
+/** One run of matching, as operators read it under Admin › AI › Matching › Runs. */
+export function adminAiMatchingRunRoute(id: string) {
+  return `${siteRoutes.adminAiMatchingRuns}/${id}`;
 }
 
 /** One sent email in the admin area's log. */

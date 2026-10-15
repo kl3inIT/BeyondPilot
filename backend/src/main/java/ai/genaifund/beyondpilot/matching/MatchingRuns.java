@@ -22,6 +22,7 @@ import ai.genaifund.beyondpilot.ai.AiTask;
 import ai.genaifund.beyondpilot.ai.ProviderFailures;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange.Kind;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingRunHistory;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Judged;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Requirement;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Run;
@@ -68,6 +69,9 @@ class MatchingRuns {
 	 */
 	static final String REQUEST_REFUSED = "request_refused";
 
+	/** What the calls of a run are recorded about, with the run's id, so its cost can be read back. */
+	static final String SUBJECT = "matching_run";
+
 	/** How many more solutions are asked of the search, to make up for the organization's own. */
 	private static final int OWN_SOLUTIONS = 10;
 
@@ -89,6 +93,8 @@ class MatchingRuns {
 
 	private final MatchingChanges changes;
 
+	private final MatchingRunHistory history;
+
 	/** Whether the runs a stopped application left running were queued again. */
 	private volatile boolean recovered;
 
@@ -97,7 +103,7 @@ class MatchingRuns {
 
 	MatchingRuns(MatchingRepository matching, Requirements requirements, UseCaseDirectory useCases,
 			SolutionDirectory solutions, SolutionEvidence evidence, AiModels models, MatchingSettings settings,
-			TransactionTemplate transactions, MatchingChanges changes) {
+			TransactionTemplate transactions, MatchingChanges changes, MatchingRunHistory history) {
 		this.matching = matching;
 		this.requirements = requirements;
 		this.useCases = useCases;
@@ -107,6 +113,7 @@ class MatchingRuns {
 		this.settings = settings;
 		this.transactions = transactions;
 		this.changes = changes;
+		this.history = history;
 	}
 
 	/**
@@ -248,7 +255,7 @@ class MatchingRuns {
 		Semaphore room = new Semaphore(limits.parallel());
 		// The same instructions for every candidate of the run, first in each call, so the provider caches them.
 		String instructions = Prompts.judging(brief, read.requirements());
-		try (AiChat chat = models.chat(AiTask.MATCHING, new AiSubject("matching_run", run.id().toString()));
+		try (AiChat chat = models.chat(AiTask.MATCHING, new AiSubject(SUBJECT, run.id().toString()));
 				ExecutorService workers = Executors.newVirtualThreadPerTaskExecutor()) {
 			matching.judgedWith(run.id(), chat.modelName());
 			for (UUID solutionId : candidates) {
@@ -264,6 +271,7 @@ class MatchingRuns {
 						String fingerprint = Quotes.fingerprint(Integer.toString(Prompts.VERSION), read.sourceHash(),
 								sources.fingerprint());
 						if (fingerprint.equals(judgedBefore.get(solutionId))) {
+							history.record(run.id(), run.useCaseId(), solutionId, false);
 							changes.tell(run.useCaseId(), Kind.READ, solutionId);
 							return;
 						}
@@ -275,6 +283,7 @@ class MatchingRuns {
 						output.addAndGet(answer.outputTokens());
 						Judged settled = Buckets.settle(answer.value(), read.requirements(), sources, fingerprint);
 						matching.judged(run.useCaseId(), solutionId, run.id(), settled);
+						history.record(run.id(), run.useCaseId(), solutionId, true);
 						judged.incrementAndGet();
 						changes.tell(run.useCaseId(), Kind.READ, solutionId);
 					}

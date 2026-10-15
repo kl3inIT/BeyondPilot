@@ -497,6 +497,120 @@ export function serveMatchingDeck(response, url) {
  * allows. And the limits of matching and what people said about its groups, which only an operator reads
  * (Admin › AI › Matching).
  */
+/** Two runs of the claims use case: the first one, and one after it that read the brief from the cache. */
+export const matchingRunIds = {
+  first: "7a3e1c00-0000-4000-8000-000000000001",
+  second: "7a3e1c00-0000-4000-8000-000000000002",
+};
+
+const runOf = (id, more) => ({
+  id,
+  useCaseId: matchedUseCaseId,
+  useCaseTitle: "Claims triage",
+  state: "done",
+  origin: "operator",
+  startedBy: "Đạt Phan",
+  promptVersion: 6,
+  modelName: "claude-sonnet-5-5",
+  failure: null,
+  unpricedCalls: 0,
+  ...more,
+});
+
+const matchingRuns = [
+  runOf(matchingRunIds.second, {
+    createdAt: "2026-10-16T02:00:00Z",
+    startedAt: "2026-10-16T02:00:05Z",
+    endedAt: "2026-10-16T02:00:36Z",
+    judged: 2,
+    kept: 4,
+    calls: 3,
+    failedCalls: 0,
+    inputTokens: 30_400,
+    outputTokens: 2_100,
+    cacheReadTokens: 2_250,
+    cacheWriteTokens: 1_125,
+    cost: 0.0912,
+  }),
+  runOf(matchingRunIds.first, {
+    origin: "approved",
+    startedBy: null,
+    createdAt: "2026-10-15T09:00:00Z",
+    startedAt: "2026-10-15T09:00:02Z",
+    endedAt: "2026-10-15T09:00:28Z",
+    judged: 6,
+    kept: 0,
+    calls: 7,
+    failedCalls: 1,
+    inputTokens: 64_000,
+    outputTokens: 5_400,
+    cacheReadTokens: 0,
+    cacheWriteTokens: 0,
+    cost: 0.2733,
+  }),
+];
+
+const steps = [
+  {
+    name: "requirements",
+    takenIn: 1,
+    givenOut: 3,
+    calls: 0,
+    inputTokens: 0,
+    outputTokens: 0,
+    millis: 4,
+  },
+  {
+    name: "candidates",
+    takenIn: 3,
+    givenOut: 6,
+    calls: 0,
+    inputTokens: 0,
+    outputTokens: 0,
+    millis: 1_200,
+  },
+  {
+    name: "judgment",
+    takenIn: 6,
+    givenOut: 2,
+    calls: 3,
+    inputTokens: 30_400,
+    outputTokens: 2_100,
+    millis: 29_800,
+  },
+];
+
+const matchingRunDetails = {
+  [matchingRunIds.second]: {
+    run: matchingRuns[0],
+    steps,
+    previousRunId: matchingRunIds.first,
+    compared: true,
+    groups: [
+      { bucket: "direct", before: 1, after: 1 },
+      { bucket: "industry", before: 1, after: 2 },
+      { bucket: "technology", before: 2, after: 1 },
+      { bucket: "none", before: 2, after: 2 },
+    ],
+    moves: [
+      {
+        solutionId: "50101000-0000-4000-8000-000000000003",
+        solutionName: "Docbase",
+        before: "technology",
+        after: "industry",
+      },
+    ],
+  },
+  [matchingRunIds.first]: {
+    run: matchingRuns[1],
+    steps,
+    previousRunId: null,
+    compared: false,
+    groups: [],
+    moves: [],
+  },
+};
+
 export function answerMatching(url, account) {
   const { pathname } = url;
   if (pathname === "/api/matching/admin/settings") {
@@ -522,6 +636,16 @@ export function answerMatching(url, account) {
         total: none ? 0 : disagreements.length,
       },
     ];
+  }
+  if (pathname === "/api/matching/admin/runs" || pathname.startsWith("/api/matching/admin/runs/")) {
+    if (account?.role !== "operator") {
+      return [account ? 403 : 401, { code: "IDENTITY_OPERATOR_REQUIRED" }];
+    }
+    if (pathname === "/api/matching/admin/runs") {
+      return [200, { items: matchingRuns, page: 1, pageSize: 50, total: matchingRuns.length }];
+    }
+    const detail = matchingRunDetails[pathname.slice("/api/matching/admin/runs/".length)];
+    return detail ? [200, detail] : [404, { code: "MATCHING_RUN_NOT_FOUND" }];
   }
   const id = /\/([0-9a-f-]{36})$/.exec(pathname)?.[1];
   const useCase = id ? findUseCase(id) : undefined;

@@ -6,8 +6,11 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -25,7 +28,8 @@ public class AiUsageRepository {
 	/**
 	 * What a call would cost, in US dollars, at the prices kept with it; null for a call that failed and for one
 	 * without a price. A service is billed by the call. A model is billed by the token: input tokens include those
-	 * read from a cache, which cost the cached price where the model has one.
+	 * read from a cache, which cost the cached price where the model has one, and those written to it, which cost a
+	 * quarter more than the input price, as Anthropic bills them (only Anthropic reports writes).
 	 */
 	private static final String COST = """
 			case
@@ -35,6 +39,7 @@ public class AiUsageRepository {
 			        and output_tokens is not null then (
 			            (input_tokens - least(coalesce(cache_read_tokens, 0), input_tokens)) * input_price
 			            + least(coalesce(cache_read_tokens, 0), input_tokens) * coalesce(cached_input_price, input_price)
+			            + least(coalesce(cache_write_tokens, 0), input_tokens) * input_price * 0.25
 			            + output_tokens * output_price) / 1000000
 			end""";
 
@@ -85,6 +90,33 @@ public class AiUsageRepository {
 			.param("cachedInputPrice", call.cachedInputPrice())
 			.param("pricePerThousandCalls", call.pricePerThousandCalls())
 			.update();
+	}
+
+	/** What the calls about each of some subjects came to, by subject id; a subject without a call is absent. */
+	public Map<String, SubjectTotals> bySubject(String subjectType, Collection<String> subjectIds) {
+		if (subjectIds.isEmpty()) {
+			return Map.of();
+		}
+		return jdbc.sql("""
+				select subject_id, count(*) as calls, count(*) filter (where outcome = 'failed') as failed,
+				    coalesce(sum(input_tokens), 0)::bigint as input_tokens,
+				    coalesce(sum(output_tokens), 0)::bigint as output_tokens,
+				    coalesce(sum(cache_read_tokens), 0)::bigint as cache_read_tokens,
+				    coalesce(sum(cache_write_tokens), 0)::bigint as cache_write_tokens,
+				    sum(cost) as cost, count(*) filter (where outcome = 'ok' and cost is null) as unpriced
+				from (select *,\s""" + COST + """
+				 as cost from ai_usage where subject_type = :subjectType and subject_id in (:subjectIds)) as call
+				group by subject_id
+				""")
+			.param("subjectType", subjectType)
+			.param("subjectIds", subjectIds)
+			.query((row, number) -> new SubjectTotals(row.getString("subject_id"), row.getLong("calls"),
+					row.getLong("failed"), row.getLong("input_tokens"), row.getLong("output_tokens"),
+					row.getLong("cache_read_tokens"), row.getLong("cache_write_tokens"), row.getBigDecimal("cost"),
+					row.getLong("unpriced")))
+			.list()
+			.stream()
+			.collect(Collectors.toMap(SubjectTotals::subjectId, totals -> totals));
 	}
 
 	/** What the calls of a period came to. */
@@ -275,6 +307,15 @@ public class AiUsageRepository {
 	 */
 	public record Totals(long calls, long failed, long inputTokens, long outputTokens, @Nullable BigDecimal cost,
 			long priced, long unpriced) {
+	}
+
+	/**
+	 * What the calls about one subject came to.
+	 * @param cost the estimated cost of the calls with a known price, in US dollars; null when none has one
+	 * @param unpriced how many calls answered without a known price
+	 */
+	public record SubjectTotals(String subjectId, long calls, long failed, long inputTokens, long outputTokens,
+			long cacheReadTokens, long cacheWriteTokens, @Nullable BigDecimal cost, long unpriced) {
 	}
 
 	/**
