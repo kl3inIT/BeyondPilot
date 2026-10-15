@@ -234,13 +234,16 @@ public class OutcomeService {
 				draft.getNotSelectedSubject(), draft.getNotSelectedMessage());
 	}
 
-	/** The emails an operator starts from, in the words of the program. */
+	/**
+	 * The emails an operator starts from, in the words of the program. They carry no sign-off: the email's layout adds
+	 * "The BeyondPilot team at GenAI Fund".
+	 */
 	private static ReleaseEmails starting(ApplicationForm form) {
 		return new ReleaseEmails("You're shortlisted for " + form.name(),
-				"Hi {organization},\n\n{solution} is one of the solutions shortlisted for" + form.name()
-						+ ". We will be in touch about what comes next.\n\nYour application stays on BeyondPilot under My applications.\n\nGenAI Fund",
+				"Hi {organization},\n\n{solution} is one of the solutions shortlisted for " + form.name()
+						+ ". We will be in touch about what comes next.\n\nYour application stays on BeyondPilot under My applications.",
 				"Your application to " + form.name(),
-				"Hi {organization},\n\nThank you for applying with {solution}. It was not selected this time.\n\nYour application stays on BeyondPilot under My applications, and we hope to see you in the next program.\n\nGenAI Fund");
+				"Hi {organization},\n\nThank you for applying with {solution}. It was not selected this time.\n\nYour application stays on BeyondPilot under My applications, and we hope to see you in the next program.");
 	}
 
 	private static String fill(String text, ReviewService.Snapshot snapshot) {
