@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
+import { hydrated } from "./hydration";
 
 test.describe("how it works page", () => {
   test.use({ locale: "en-US" });
@@ -27,7 +28,7 @@ test.describe("how it works page", () => {
 
   test("is reached from the header and the home page", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: "How It Works" }).first().click();
+    await (await hydrated(page.getByRole("link", { name: "How It Works" }).first())).click();
 
     await expect(page).toHaveURL(/\/how-it-works$/);
   });
