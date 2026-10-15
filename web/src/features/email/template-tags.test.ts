@@ -1,34 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { switchVariables, tagFaults } from "./template-tags";
+import { tagFaults } from "./template-tags";
 
 const invitation =
   "{{inviterName}} invited you to {{#owner}}own{{/owner}}{{^owner}}join{{/owner}} {{organizationName}}.\n\n[Open]({{organizationUrl}})";
 const request =
   "{{#senderName}}{{senderName}}{{/senderName}}{{^senderName}}Someone{{/senderName}}{{#senderOrganization}} of an organization{{/senderOrganization}} wrote about {{about}}.";
-
-describe("switchVariables", () => {
-  it("names what the default wording only shows or hides text with", () => {
-    expect([
-      ...switchVariables(
-        ["organizationName", "inviterName", "owner", "organizationUrl"],
-        "You are invited to {{organizationName}}",
-        invitation,
-      ),
-    ]).toEqual(["owner"]);
-  });
-
-  it("leaves out a value that is printed inside the piece it shows", () => {
-    expect([
-      ...switchVariables(["senderName", "senderOrganization", "about", "message"], "", request),
-    ]).toEqual(["senderOrganization"]);
-  });
-
-  it("names nothing the kind does not offer, and nothing without a default wording", () => {
-    expect(switchVariables(["code"], "", "{{#other}}x{{/other}} {{code}}").size).toBe(0);
-    expect(switchVariables(["owner"]).size).toBe(0);
-  });
-});
 
 describe("tagFaults", () => {
   it("finds nothing wrong in wording that is written correctly", () => {

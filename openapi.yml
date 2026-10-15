@@ -17524,6 +17524,14 @@ components:
     EmailTemplateVariable:
       type: object
       properties:
+        kind:
+          type: string
+          description: "A value is printed where the wording names it; a switch only\
+            \ shows or hides the passage between {{#name}} and {{/name}}, or {{^name}}\
+            \ and {{/name}}."
+          enum:
+          - value
+          - switch
         name:
           type: string
         required:
@@ -17534,6 +17542,7 @@ components:
           - "null"
           description: What the preview puts in its place.
       required:
+      - kind
       - name
       - required
     EmailTest:

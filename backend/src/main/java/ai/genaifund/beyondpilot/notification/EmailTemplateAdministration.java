@@ -226,7 +226,8 @@ public class EmailTemplateAdministration {
 			.stream()
 			.filter(variable -> !variable.quoted())
 			.map(variable -> new EmailTemplateResponse.Variable(variable.name(), variable.required(),
-					variable.sample() == null ? null : String.valueOf(variable.sample())))
+					variable.sample() == null ? null : String.valueOf(variable.sample()),
+					variable.isSwitch() ? "switch" : "value"))
 			.toList();
 		return override
 			.map(edited -> new EmailTemplateResponse(kind.value(), kind.group().value(), edited.getSubject(),

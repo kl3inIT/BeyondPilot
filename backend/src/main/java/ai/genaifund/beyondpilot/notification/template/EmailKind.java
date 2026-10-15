@@ -235,6 +235,14 @@ public enum EmailKind {
 			return new Variable(name, sample, false, true);
 		}
 
+		/**
+		 * Whether it only shows or hides a passage, never printed: a variable whose sample is true or false, as
+		 * {@code owner} of an invitation is.
+		 */
+		public boolean isSwitch() {
+			return sample instanceof Boolean;
+		}
+
 	}
 
 }

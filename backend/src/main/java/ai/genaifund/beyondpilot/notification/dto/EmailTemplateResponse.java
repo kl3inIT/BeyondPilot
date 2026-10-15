@@ -18,7 +18,10 @@ public record EmailTemplateResponse(@Schema(requiredMode = Schema.RequiredMode.R
 
 	@Schema(name = "EmailTemplateVariable")
 	public record Variable(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name, @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean required,
-			@Schema(types = { "string", "null" }, description = "What the preview puts in its place.") @Nullable String sample) {
+			@Schema(types = { "string", "null" }, description = "What the preview puts in its place.") @Nullable String sample,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+					description = "A value is printed where the wording names it; a switch only shows or hides the passage between {{#name}} and {{/name}}, or {{^name}} and {{/name}}.",
+					allowableValues = { "value", "switch" }) String kind) {
 	}
 
 }

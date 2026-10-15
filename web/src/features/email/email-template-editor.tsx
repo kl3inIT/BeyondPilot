@@ -32,7 +32,7 @@ import { EmailPreview } from "./email-preview";
 import { testFailures } from "./email-test-failures";
 import { TestSend } from "./test-send";
 import { TemplateCodeEditor, type TemplateCodeEditorHandle } from "./template-code-editor";
-import { switchVariables, tagFaults } from "./template-tags";
+import { tagFaults } from "./template-tags";
 
 /** How long typing pauses before the preview is rendered again. */
 const PREVIEW_DELAY = 400;
@@ -232,13 +232,9 @@ function EmailTemplateEditor({
     };
   }, [preview, t]);
 
-  const switches = switchVariables(
-    current.variables.map((variable) => variable.name),
-    current.defaultSubject,
-    current.defaultBody,
-  );
-  const values = current.variables.filter((variable) => !switches.has(variable.name));
-  const conditions = current.variables.filter((variable) => switches.has(variable.name));
+  // The backend says which variables are printed and which only show or hide a passage.
+  const values = current.variables.filter((variable) => variable.kind === "value");
+  const conditions = current.variables.filter((variable) => variable.kind === "switch");
   // What a switch shows text for is written per switch; one without words is said in general.
   const switchWords = (name: string) => {
     const key = `switches.${name}` as "switches.other";

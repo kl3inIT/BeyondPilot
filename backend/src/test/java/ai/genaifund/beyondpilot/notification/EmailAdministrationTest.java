@@ -234,6 +234,13 @@ class EmailAdministrationTest {
 		// A kind that is no longer sent has no wording to read or change.
 		assertProblem(get(operator, API + "/templates/talent_enquiry"), 404, "NOTIFICATION_TEMPLATE_NOT_FOUND");
 
+		// Each variable says whether it is printed or only shows or hides a passage, as an invitation's owner does.
+		String invitation = body(get(operator, API + "/templates/organization_invitation").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(invitation, "$.variables[?(@.name == 'owner')].kind"))
+			.containsExactly("switch");
+		assertThat(JsonPath.<List<String>>read(invitation, "$.variables[?(@.name == 'organizationName')].kind"))
+			.containsExactly("value");
+
 		String preview = body(post(operator, API + "/templates/sign_in_code/preview",
 				Map.of("subject", "Your code", "body", "Use **{{codee}}**")).expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(preview, "$.problems[*].type")).containsExactlyInAnyOrder(
