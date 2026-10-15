@@ -128,7 +128,8 @@ test.describe("judging applications", () => {
     await open.click();
     const viewer = page.getByRole("dialog", { name: "plain-cover-deck.pdf" });
     await expect(viewer.getByRole("group", { name: /^Page \d$/ })).toHaveCount(3);
-    await expect(viewer.getByText("Page 1 / 3")).toBeVisible();
+    // The header says it on a wide screen, the bottom bar on a phone.
+    await expect(viewer.getByText("Page 1 / 3").filter({ visible: true })).toHaveCount(1);
     await expect(viewer.getByRole("link", { name: "Download" })).toHaveAttribute(
       "href",
       `/api/proposal/review/applications/${plainCoverId}/files/${plainCoverDeckId}`,
