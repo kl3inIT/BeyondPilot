@@ -5,6 +5,7 @@ import { signInAs } from "./session";
 import { criteria, judgedProgramId, plainCoverDeckId, plainCoverId } from "./stub-judging.mjs";
 
 const admin = `/admin/programs/${judgedProgramId}`;
+const stubOrigin = "http://localhost:3190";
 const reviews = `/reviews/${judgedProgramId}`;
 
 type Call = { method: string; url: string; body: unknown };
@@ -120,6 +121,10 @@ test.describe("judging applications", () => {
     const open = page
       .getByRole("region", { name: "Files and links" })
       .getByRole("button", { name: "Open", exact: true });
+    // The browser reads the file from the stub, as it reads it from the backend.
+    await page.route("**/api/proposal/review/applications/*/files/*", (route) =>
+      route.continue({ url: `${stubOrigin}${new URL(route.request().url()).pathname}` }),
+    );
     await open.click();
     const viewer = page.getByRole("dialog", { name: "plain-cover-deck.pdf" });
     await expect(viewer.getByRole("group", { name: /^Page \d$/ })).toHaveCount(3);
