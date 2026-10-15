@@ -377,8 +377,14 @@ class ReviewTest extends ApplicationsHttpTest {
 		String draft = release + "/draft";
 
 		// Until someone writes, the emails are the starting point in the words of the program.
-		assertThat(JsonPath.<String>read(body(get(operator, release).expectStatus().isOk()), "$.emails.shortlistedSubject"))
+		String starting = body(get(operator, release).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(starting, "$.emails.shortlistedSubject"))
 			.isEqualTo("You're shortlisted for Drafted challenge");
+		// The layout signs every email, so the message does not.
+		assertThat(JsonPath.<String>read(starting, "$.emails.shortlistedMessage"))
+			.contains("shortlisted for Drafted challenge.")
+			.doesNotContain("GenAI Fund");
+		assertThat(JsonPath.<String>read(starting, "$.emails.notSelectedMessage")).doesNotContain("GenAI Fund");
 
 		// Only an operator writes them, and what is written is there when the page is opened again.
 		put(judge, draft, emails()).expectStatus().isForbidden();
