@@ -202,7 +202,7 @@ class UseCaseAdministrationTest {
 		hidden.put("hideOrganizationName", true);
 		hidden.put("budgetMembersOnly", true);
 		hidden.put("industry", "insurance");
-		post(operator, USE_CASES, hidden).expectStatus().isCreated();
+		String quietId = created(hidden);
 
 		String all = body(client.get().uri(DIRECTORY + "?q=" + tag).exchange().expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(all, "$.items[*].title")).containsExactlyInAnyOrder("Open case " + tag,
@@ -229,6 +229,17 @@ class UseCaseAdministrationTest {
 		assertThat(JsonPath.<String>read(publicDetail, "$.problemStatement"))
 			.isEqualTo("Our service team checks documents by hand.");
 		assertThat(JsonPath.<String>read(publicDetail, "$.currentSolutions")).isEqualTo("A basic OCR tool.");
+		// A budget for members only: its amounts go to a signed-in member, never to a visitor.
+		assertThat(JsonPath.<Object>read(body(client.get().uri(DIRECTORY + "/" + quietId).exchange().expectStatus().isOk()),
+				"$.budgetMax")).isNull();
+		String member = TestSignIn.session(client, mail, "member@usecase.test");
+		String memberDetail = body(get(member, DIRECTORY + "/" + quietId).expectStatus().isOk());
+		assertThat(JsonPath.<Integer>read(memberDetail, "$.budgetMin")).isEqualTo(15000);
+		assertThat(JsonPath.<Integer>read(memberDetail, "$.budgetMax")).isEqualTo(40000);
+		assertThat(JsonPath.<Boolean>read(memberDetail, "$.budgetMembersOnly")).isTrue();
+		String memberList = body(get(member, DIRECTORY + "?q=" + tag).expectStatus().isOk());
+		assertThat(JsonPath.<List<Integer>>read(memberList, "$.items[?(@.title == 'Quiet case " + tag + "')].budgetMax"))
+			.containsExactly(40000);
 
 		String byOrganization = body(client.get().uri(DIRECTORY + "?q={q}", "quiet bank " + tag).exchange().expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(byOrganization, "$.items")).isEmpty();

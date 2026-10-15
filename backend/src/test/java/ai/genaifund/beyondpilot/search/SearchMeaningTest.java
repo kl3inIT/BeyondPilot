@@ -119,7 +119,7 @@ class SearchMeaningTest {
 		assertThat(titles("dự báo bán lẻ")).containsExactly("ShopSense");
 		// Nothing near enough in meaning, and no word in common: no result.
 		assertThat(titles("công thức nấu phở")).isEmpty();
-		var selected = search.search(SearchRequest.builder("chăm sóc khách hàng").kind(SOLUTION).build());
+		var selected = search.search(SearchRequest.builder("chăm sóc khách hàng").kind(SOLUTION).build(), false);
 		assertThat(selected.total()).isEqualTo(1);
 		assertThat(selected.counts().solution()).isEqualTo(1);
 		assertThat(selected.counts().talent()).isEqualTo(1);
@@ -181,9 +181,9 @@ class SearchMeaningTest {
 				case "program" -> request.type("hackathon").phase("open").sort("name");
 				default -> request.sort("newest");
 			}
-			var first = search.search(request.page(1).build());
-			var second = search.search(request.page(2).build());
-			var past = search.search(request.page(3).build());
+			var first = search.search(request.page(1).build(), false);
+			var second = search.search(request.page(2).build(), false);
+			var past = search.search(request.page(3).build(), false);
 
 			assertThat(first.total()).as(kind).isEqualTo(2);
 			assertThat(first.items()).extracting(SearchItem::kind).containsExactly(kind);
@@ -197,12 +197,12 @@ class SearchMeaningTest {
 					assertThat(first.items()).extracting(SearchItem::phase).containsExactly("running");
 				}
 			}
-			assertThat(search.search(request.page(1).sort("newest").build()).items())
+			assertThat(search.search(request.page(1).sort("newest").build(), false).items())
 				.extracting(SearchItem::title).containsExactly("Zulu " + kind);
 			if ("use_case".equals(kind)) {
-				assertThat(search.search(request.sort("deadline").build()).items())
+				assertThat(search.search(request.sort("deadline").build(), false).items())
 					.extracting(SearchItem::title).containsExactly("Alpha " + kind);
-				assertThat(search.search(request.sort("budget").build()).items())
+				assertThat(search.search(request.sort("budget").build(), false).items())
 					.extracting(SearchItem::title).containsExactly("Zulu " + kind);
 			}
 		}
@@ -285,7 +285,7 @@ class SearchMeaningTest {
 	}
 
 	private List<String> titles(String query) {
-		return search.search(SearchRequest.builder(query).kind(SOLUTION).page(1).build())
+		return search.search(SearchRequest.builder(query).kind(SOLUTION).page(1).build(), false)
 			.items().stream().map(SearchItem::title).toList();
 	}
 

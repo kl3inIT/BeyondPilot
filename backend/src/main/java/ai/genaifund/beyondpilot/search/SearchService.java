@@ -39,8 +39,12 @@ public class SearchService {
 		this.embeddings = embeddings;
 	}
 
+	/**
+	 * A page of what matches the request.
+	 * @param member whether the reader is signed in, and so reads a use case's budget shown to members only
+	 */
 	@Transactional(readOnly = true)
-	public SearchResponse search(SearchRequest request) {
+	public SearchResponse search(SearchRequest request, boolean member) {
 		String query = request.q().strip();
 		String kind = request.kind();
 		int page = request.page() == null ? 1 : request.page();
@@ -62,9 +66,9 @@ public class SearchService {
 		Instant now = Instant.now();
 		// Every kind at once is the best few of each, the kinds in the order of their best item; one kind is paged.
 		List<Hit> hits = kind == null ? index.bestOfEachKind(criteria, meaning, true, PER_KIND)
-				: index.page(criteria, meaning, true, size, (page - 1) * size);
+				: index.page(criteria, meaning, true, member, size, (page - 1) * size);
 		List<SearchItem> items = hits.stream()
-			.map(hit -> item(hit, now))
+			.map(hit -> item(hit, now, member))
 			.toList();
 		return new SearchResponse(
 				new SearchCounts(all, counts.getOrDefault(SearchDocumentRepository.PROGRAM, 0L),
@@ -97,14 +101,16 @@ public class SearchService {
 		String trimmed = query.strip();
 		Meaning meaning = embeddings.of(trimmed).orElse(null);
 		return kinds.stream()
-			.flatMap(kind -> index.page(SearchRequest.builder(trimmed).kind(kind).build(), meaning, listedOnly,
+			.flatMap(kind -> index.page(SearchRequest.builder(trimmed).kind(kind).build(), meaning, listedOnly, false,
 					PAGE_SIZE, 0).stream())
 			.map(hit -> new Found(hit.kind(), hit.slug(), hit.title()))
 			.toList();
 	}
 
-	private static SearchItem item(Hit hit, Instant now) {
+	private static SearchItem item(Hit hit, Instant now, boolean member) {
 		Map<String, Object> facets = hit.facets();
+		// A budget shown to members only is indexed with its amounts, which a visitor is not given.
+		boolean hiddenBudget = Boolean.TRUE.equals(bool(facets, Cards.BUDGET_MEMBERS_ONLY)) && !member;
 		String phase = SearchDocumentRepository.PROGRAM.equals(hit.kind())
 				? ProgramPhase.of(hit.startsOn(), hit.endsOn(), instant(facets, Cards.OPENS_AT),
 						instant(facets, Cards.CLOSES_AT), now).code()
@@ -116,8 +122,9 @@ public class SearchService {
 				integer(facets, Cards.CUSTOMER_DEPLOYMENTS),
 				texts(facets, Cards.INDUSTRIES), texts(facets, Cards.FOCUS_AREAS), texts(facets, Cards.ROLES),
 				texts(facets, Cards.SKILLS), text(facets, Cards.CITY), text(facets, Cards.WORKS_AT),
-				uuid(facets, Cards.PHOTO), instant(facets, Cards.CLOSES), whole(facets, Cards.BUDGET_MIN),
-				whole(facets, Cards.BUDGET_MAX),
+				uuid(facets, Cards.PHOTO), instant(facets, Cards.CLOSES),
+				hiddenBudget ? null : whole(facets, Cards.BUDGET_MIN),
+				hiddenBudget ? null : whole(facets, Cards.BUDGET_MAX),
 				bool(facets, Cards.BUDGET_TO_BE_DETERMINED), text(facets, Cards.CURRENCY),
 				bool(facets, Cards.FEATURED), text(facets, Cards.BACKING), integer(facets, Cards.PROJECT_COUNT),
 				text(facets, Cards.LEAD_PROJECT_TITLE), text(facets, Cards.LEAD_PROJECT_STAGE),
