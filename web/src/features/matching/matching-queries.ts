@@ -1,10 +1,14 @@
 import { ApiError } from "@/lib/api/client";
 import {
   getMatching,
+  getMatchingRun,
   getMatchingSettings,
   listMatchingFeedback,
+  listMatchingRuns,
   type Matching,
   type MatchingFeedbackList,
+  type MatchingRunDetail,
+  type MatchingRunList,
   type MatchingSettings,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
@@ -41,4 +45,29 @@ export async function readMatchingFeedback(
     query: { page: page > 1 ? page : undefined, size: size ?? undefined },
   });
   return data;
+}
+
+/** One page of the runs of every use case, for the operator behind this request. Server only. */
+export async function readMatchingRuns(
+  page: number,
+  size: number | null,
+): Promise<MatchingRunList> {
+  const { data } = await listMatchingRuns({
+    ...(await sessionRequest()),
+    query: { page: page > 1 ? page : undefined, size: size ?? undefined },
+  });
+  return data;
+}
+
+/** One run in detail, for the operator behind this request; null when there is no such run. Server only. */
+export async function readMatchingRun(runId: string): Promise<MatchingRunDetail | null> {
+  try {
+    const { data } = await getMatchingRun({ ...(await sessionRequest()), path: { runId } });
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
 }

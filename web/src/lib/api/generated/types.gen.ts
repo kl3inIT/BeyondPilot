@@ -2706,6 +2706,172 @@ export type MatchingRun = {
 };
 
 /**
+ * One run in detail: what it cost, its steps, and which solutions changed group since the run of the same use case before it.
+ */
+export type MatchingRunDetail = {
+    /**
+     * Whether both runs kept the group of each solution, so that they can be compared; false for a first run and for one before the groups were kept.
+     */
+    compared: boolean;
+    /**
+     * How many solutions each group held in the run before and in this one; empty when not compared.
+     */
+    groups: Array<MatchingRunGroup>;
+    /**
+     * The solutions whose group changed, entered or left; empty when not compared.
+     */
+    moves: Array<MatchingRunMove>;
+    /**
+     * The run of the same use case before it; null for its first.
+     */
+    previousRunId?: string | null;
+    run: MatchingRunSummary;
+    /**
+     * What it did in each step, in order.
+     */
+    steps: Array<MatchingRunStep>;
+};
+
+/**
+ * How many solutions a group held in two runs.
+ */
+export type MatchingRunGroup = {
+    after: number;
+    before: number;
+    bucket: 'direct' | 'industry' | 'technology' | 'none';
+};
+
+/**
+ * One page of the runs of every use case, the newest first.
+ */
+export type MatchingRunList = {
+    items: Array<MatchingRunSummary>;
+    /**
+     * The page returned, counted from 1.
+     */
+    page: number;
+    /**
+     * How many runs a page holds.
+     */
+    pageSize: number;
+    /**
+     * How many runs there are, over all pages.
+     */
+    total: number;
+};
+
+/**
+ * A solution whose group differs between two runs.
+ */
+export type MatchingRunMove = {
+    /**
+     * Its group in this run; null when it left.
+     */
+    after?: 'direct' | 'industry' | 'technology' | 'none';
+    /**
+     * Its group in the run before; null when it was not in it.
+     */
+    before?: 'direct' | 'industry' | 'technology' | 'none';
+    solutionId: string;
+    /**
+     * The name of the solution; null when it is no longer shown anywhere.
+     */
+    solutionName?: string | null;
+};
+
+/**
+ * What a run did in one step.
+ */
+export type MatchingRunStep = {
+    calls: number;
+    /**
+     * How many it produced.
+     */
+    givenOut: number;
+    inputTokens: number;
+    millis: number;
+    name: 'requirements' | 'candidates' | 'judgment';
+    outputTokens: number;
+    /**
+     * How many the step was given.
+     */
+    takenIn: number;
+};
+
+/**
+ * One run of matching for a use case, with what its calls to the AI came to. Costs are estimates from the prices kept with each call.
+ */
+export type MatchingRunSummary = {
+    /**
+     * Input tokens read from the provider's cache.
+     */
+    cacheReadTokens: number;
+    /**
+     * Input tokens written to the provider's cache.
+     */
+    cacheWriteTokens: number;
+    /**
+     * Calls that reached the provider.
+     */
+    calls: number;
+    /**
+     * The estimated cost in US dollars of the calls with a known price; null when none has one.
+     */
+    cost?: number | null;
+    createdAt: string;
+    endedAt?: string | null;
+    /**
+     * Of them, the calls that failed.
+     */
+    failedCalls: number;
+    /**
+     * Why it failed or waits, as a code.
+     */
+    failure?: string | null;
+    id: string;
+    /**
+     * Every input token, those read from and written to the provider's cache included.
+     */
+    inputTokens: number;
+    /**
+     * How many solutions it judged itself; null for a run before the groups of each run were kept (16 October 2026).
+     */
+    judged?: number | null;
+    /**
+     * How many it found unchanged and kept as judged before; null like judged.
+     */
+    kept?: number | null;
+    /**
+     * The model that judged; null until the run reached one.
+     */
+    modelName?: string | null;
+    /**
+     * What started it: the use case's approval or a change of it, an operator or a member.
+     */
+    origin: 'approved' | 'operator' | 'member';
+    outputTokens: number;
+    /**
+     * The version of the judgment's wording it ran with.
+     */
+    promptVersion: number;
+    startedAt?: string | null;
+    /**
+     * Who started it, by the name they are shown by; null when the approval or a change did.
+     */
+    startedBy?: string | null;
+    state: 'queued' | 'running' | 'waiting' | 'done' | 'failed';
+    /**
+     * Calls that answered without a known price, which the cost leaves out.
+     */
+    unpricedCalls: number;
+    useCaseId: string;
+    /**
+     * The title of the use case; null when it is no longer published.
+     */
+    useCaseTitle?: string | null;
+};
+
+/**
  * The limits of matching, as operators set them.
  */
 export type MatchingSettings = {
@@ -8044,6 +8210,83 @@ export type ListMatchingFeedbackResponses = {
 };
 
 export type ListMatchingFeedbackResponse = ListMatchingFeedbackResponses[keyof ListMatchingFeedbackResponses];
+
+export type ListMatchingRunsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+        /**
+         * How many runs a page holds; the list's own page size when absent.
+         */
+        size?: number;
+    };
+    url: '/api/matching/admin/runs';
+};
+
+export type ListMatchingRunsErrors = {
+    /**
+     * The page is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ListMatchingRunsError = ListMatchingRunsErrors[keyof ListMatchingRunsErrors];
+
+export type ListMatchingRunsResponses = {
+    /**
+     * One page of the runs, the newest first.
+     */
+    200: MatchingRunList;
+};
+
+export type ListMatchingRunsResponse = ListMatchingRunsResponses[keyof ListMatchingRunsResponses];
+
+export type GetMatchingRunData = {
+    body?: never;
+    path: {
+        runId: string;
+    };
+    query?: never;
+    url: '/api/matching/admin/runs/{runId}';
+};
+
+export type GetMatchingRunErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such run.
+     */
+    404: Problem;
+};
+
+export type GetMatchingRunError = GetMatchingRunErrors[keyof GetMatchingRunErrors];
+
+export type GetMatchingRunResponses = {
+    /**
+     * The run in detail.
+     */
+    200: MatchingRunDetail;
+};
+
+export type GetMatchingRunResponse = GetMatchingRunResponses[keyof GetMatchingRunResponses];
 
 export type GetMatchingSettingsData = {
     body?: never;

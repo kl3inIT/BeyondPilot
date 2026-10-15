@@ -41,15 +41,15 @@ tags:
   name: AI administration
 - description: The solutions operators review.
   name: Solution administration
-- description: "The limits of matching that operators set, and what people said about\
-    \ the groups the AI gave."
-  name: Matching administration
 - description: The solutions of the caller's organization.
   name: My solutions
 - description: The accounts operators manage.
   name: Accounts
 - description: Program chat assignment without message content.
   name: Messaging administration
+- description: "The limits of matching that operators set, what people said about\
+    \ the groups the AI gave, and the runs with what they cost."
+  name: Matching administration
 - description: The public directory of approved AI solutions.
   name: Solutions
 - description: "Search over the programs, solutions, talent and use cases the public\
@@ -1966,6 +1966,100 @@ paths:
       - session: []
       summary: "How often people agreed with the group the AI gave a solution, and\
         \ the answers that say a group is wrong"
+      tags:
+      - Matching administration
+  /api/matching/admin/runs:
+    get:
+      operationId: listMatchingRuns
+      parameters:
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many runs a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchingRunList"
+          description: "One page of the runs, the newest first."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The page is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: "The runs of every use case, each with what its calls to the AI came\
+        \ to"
+      tags:
+      - Matching administration
+  /api/matching/admin/runs/{runId}:
+    get:
+      operationId: getMatchingRun
+      parameters:
+      - in: path
+        name: runId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchingRunDetail"
+          description: The run in detail.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such run.
+      security:
+      - session: []
+      summary: "One run: what it cost, its steps, and which solutions changed group\
+        \ since the run before it"
       tags:
       - Matching administration
   /api/matching/admin/settings:
@@ -18305,6 +18399,293 @@ components:
       - origin
       - state
       - total
+    MatchingRunDetail:
+      type: object
+      description: "One run in detail: what it cost, its steps, and which solutions\
+        \ changed group since the run of the same use case before it."
+      properties:
+        compared:
+          type: boolean
+          description: "Whether both runs kept the group of each solution, so that\
+            \ they can be compared; false for a first run and for one before the groups\
+            \ were kept."
+        groups:
+          type: array
+          description: How many solutions each group held in the run before and in
+            this one; empty when not compared.
+          items:
+            $ref: "#/components/schemas/MatchingRunGroup"
+        moves:
+          type: array
+          description: "The solutions whose group changed, entered or left; empty\
+            \ when not compared."
+          items:
+            $ref: "#/components/schemas/MatchingRunMove"
+        previousRunId:
+          type:
+          - string
+          - "null"
+          format: uuid
+          description: The run of the same use case before it; null for its first.
+        run:
+          $ref: "#/components/schemas/MatchingRunSummary"
+        steps:
+          type: array
+          description: "What it did in each step, in order."
+          items:
+            $ref: "#/components/schemas/MatchingRunStep"
+      required:
+      - compared
+      - groups
+      - moves
+      - run
+      - steps
+    MatchingRunGroup:
+      type: object
+      description: How many solutions a group held in two runs.
+      properties:
+        after:
+          type: integer
+          format: int32
+        before:
+          type: integer
+          format: int32
+        bucket:
+          type: string
+          enum:
+          - direct
+          - industry
+          - technology
+          - none
+      required:
+      - after
+      - before
+      - bucket
+    MatchingRunList:
+      type: object
+      description: "One page of the runs of every use case, the newest first."
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MatchingRunSummary"
+        page:
+          type: integer
+          format: int32
+          description: "The page returned, counted from 1."
+        pageSize:
+          type: integer
+          format: int32
+          description: How many runs a page holds.
+        total:
+          type: integer
+          format: int64
+          description: "How many runs there are, over all pages."
+      required:
+      - items
+      - page
+      - pageSize
+      - total
+    MatchingRunMove:
+      type: object
+      description: A solution whose group differs between two runs.
+      properties:
+        after:
+          type:
+          - string
+          - "null"
+          description: Its group in this run; null when it left.
+          enum:
+          - direct
+          - industry
+          - technology
+          - none
+        before:
+          type:
+          - string
+          - "null"
+          description: Its group in the run before; null when it was not in it.
+          enum:
+          - direct
+          - industry
+          - technology
+          - none
+        solutionId:
+          type: string
+          format: uuid
+        solutionName:
+          type:
+          - string
+          - "null"
+          description: The name of the solution; null when it is no longer shown anywhere.
+      required:
+      - solutionId
+    MatchingRunStep:
+      type: object
+      description: What a run did in one step.
+      properties:
+        calls:
+          type: integer
+          format: int32
+        givenOut:
+          type: integer
+          format: int32
+          description: How many it produced.
+        inputTokens:
+          type: integer
+          format: int64
+        millis:
+          type: integer
+          format: int64
+        name:
+          type: string
+          enum:
+          - requirements
+          - candidates
+          - judgment
+        outputTokens:
+          type: integer
+          format: int64
+        takenIn:
+          type: integer
+          format: int32
+          description: How many the step was given.
+      required:
+      - calls
+      - givenOut
+      - inputTokens
+      - millis
+      - name
+      - outputTokens
+      - takenIn
+    MatchingRunSummary:
+      type: object
+      description: "One run of matching for a use case, with what its calls to the\
+        \ AI came to. Costs are estimates from the prices kept with each call."
+      properties:
+        cacheReadTokens:
+          type: integer
+          format: int64
+          description: Input tokens read from the provider's cache.
+        cacheWriteTokens:
+          type: integer
+          format: int64
+          description: Input tokens written to the provider's cache.
+        calls:
+          type: integer
+          format: int64
+          description: Calls that reached the provider.
+        cost:
+          type:
+          - number
+          - "null"
+          description: The estimated cost in US dollars of the calls with a known
+            price; null when none has one.
+        createdAt:
+          type: string
+          format: date-time
+        endedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        failedCalls:
+          type: integer
+          format: int64
+          description: "Of them, the calls that failed."
+        failure:
+          type:
+          - string
+          - "null"
+          description: "Why it failed or waits, as a code."
+        id:
+          type: string
+          format: uuid
+        inputTokens:
+          type: integer
+          format: int64
+          description: "Every input token, those read from and written to the provider's\
+            \ cache included."
+        judged:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: How many solutions it judged itself; null for a run before
+            the groups of each run were kept (16 October 2026).
+        kept:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: How many it found unchanged and kept as judged before; null
+            like judged.
+        modelName:
+          type:
+          - string
+          - "null"
+          description: The model that judged; null until the run reached one.
+        origin:
+          type: string
+          description: "What started it: the use case's approval or a change of it,\
+            \ an operator or a member."
+          enum:
+          - approved
+          - operator
+          - member
+        outputTokens:
+          type: integer
+          format: int64
+        promptVersion:
+          type: integer
+          format: int32
+          description: The version of the judgment's wording it ran with.
+        startedAt:
+          type:
+          - string
+          - "null"
+          format: date-time
+        startedBy:
+          type:
+          - string
+          - "null"
+          description: "Who started it, by the name they are shown by; null when the\
+            \ approval or a change did."
+        state:
+          type: string
+          enum:
+          - queued
+          - running
+          - waiting
+          - done
+          - failed
+        unpricedCalls:
+          type: integer
+          format: int64
+          description: "Calls that answered without a known price, which the cost\
+            \ leaves out."
+        useCaseId:
+          type: string
+          format: uuid
+        useCaseTitle:
+          type:
+          - string
+          - "null"
+          description: The title of the use case; null when it is no longer published.
+      required:
+      - cacheReadTokens
+      - cacheWriteTokens
+      - calls
+      - createdAt
+      - failedCalls
+      - id
+      - inputTokens
+      - origin
+      - outputTokens
+      - promptVersion
+      - state
+      - unpricedCalls
+      - useCaseId
     MatchingSettings:
       type: object
       description: "The limits of matching, as operators set them."

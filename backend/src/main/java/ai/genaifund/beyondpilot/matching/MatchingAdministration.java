@@ -2,12 +2,18 @@ package ai.genaifund.beyondpilot.matching;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import ai.genaifund.beyondpilot.ai.AiSubjectUsage;
+import ai.genaifund.beyondpilot.ai.AiUsageReports;
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
 import ai.genaifund.beyondpilot.audit.AuditTrail;
@@ -17,6 +23,10 @@ import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.matching.dto.MatchingFeedbackListRequest;
 import ai.genaifund.beyondpilot.matching.dto.MatchingFeedbackListResponse;
+import ai.genaifund.beyondpilot.matching.dto.MatchingRunListRequest;
+import ai.genaifund.beyondpilot.matching.dto.MatchingRunListResponse;
+import ai.genaifund.beyondpilot.matching.dto.MatchingRunResponse;
+import ai.genaifund.beyondpilot.matching.dto.MatchingRunSummary;
 import ai.genaifund.beyondpilot.matching.dto.MatchingSettingsResponse;
 import ai.genaifund.beyondpilot.matching.dto.SaveMatchingSettingsRequest;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository;
@@ -25,10 +35,14 @@ import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository.
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Requirement;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Settings;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingRunHistory;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingRunHistory.Judgment;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingRunHistory.Run;
 import ai.genaifund.beyondpilot.search.SolutionEvidence;
 import ai.genaifund.beyondpilot.search.SolutionEvidence.Shown;
 import ai.genaifund.beyondpilot.usecase.IndexedUseCase;
 import ai.genaifund.beyondpilot.usecase.UseCaseDirectory;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +61,9 @@ public class MatchingAdministration {
 	/** How far back the answers are counted. */
 	private static final Duration FEEDBACK_PERIOD = Duration.ofDays(30);
 
+	/** How many runs a page of the list holds. */
+	static final int RUN_PAGE_SIZE = 50;
+
 	private final MatchingRepository matching;
 
 	private final MatchingFeedbackRepository feedback;
@@ -59,8 +76,15 @@ public class MatchingAdministration {
 
 	private final AuditTrail audit;
 
+	private final MatchingRunHistory history;
+
+	private final AiUsageReports usage;
+
 	MatchingAdministration(MatchingRepository matching, MatchingFeedbackRepository feedback, UseCaseDirectory useCases,
-			SolutionEvidence evidence, IdentityService identity, AuditTrail audit) {
+			SolutionEvidence evidence, IdentityService identity, AuditTrail audit, MatchingRunHistory history,
+			AiUsageReports usage) {
+		this.history = history;
+		this.usage = usage;
 		this.matching = matching;
 		this.feedback = feedback;
 		this.useCases = useCases;
@@ -111,6 +135,100 @@ public class MatchingAdministration {
 		}).toList();
 		return new MatchingFeedbackListResponse(totals.answers(), totals.agreements(), items, page, size,
 				feedback.disagreementCount());
+	}
+
+	/**
+	 * One page of the runs of every use case, the newest first, each with what its calls to the AI came to. A page past
+	 * the end is empty.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public MatchingRunListResponse runs(Actor actor, MatchingRunListRequest request) {
+		identity.requireOperator(actor);
+		int page = request.page() == null ? 1 : request.page();
+		int size = request.size() == null ? RUN_PAGE_SIZE : request.size();
+		List<MatchingRunSummary> items = summaries(history.runs(size, (long) (page - 1) * size));
+		return new MatchingRunListResponse(items, page, size, history.count());
+	}
+
+	/**
+	 * One run in detail: what it cost, its steps, and which solutions changed group since the run of the same use case
+	 * before it, when both kept the group of each solution.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws MatchingException when there is no such run
+	 */
+	@Transactional(readOnly = true)
+	public MatchingRunResponse run(Actor actor, UUID runId) {
+		identity.requireOperator(actor);
+		Run run = history.run(runId)
+			.orElseThrow(() -> new MatchingException(MatchingErrorCode.RUN_NOT_FOUND, "No run " + runId));
+		List<MatchingRunResponse.Step> steps = matching.steps(runId)
+			.stream()
+			.map(step -> new MatchingRunResponse.Step(step.name(), step.takenIn(), step.givenOut(), step.calls(),
+					step.inputTokens(), step.outputTokens(), step.millis()))
+			.toList();
+		UUID previousId = history.previous(runId).orElse(null);
+		Map<UUID, Judgment> now = bySolution(history.judgments(runId));
+		Map<UUID, Judgment> before = previousId == null ? Map.of() : bySolution(history.judgments(previousId));
+		boolean compared = !now.isEmpty() && !before.isEmpty();
+		List<MatchingRunResponse.Group> groups = List.of();
+		List<MatchingRunResponse.Move> moves = List.of();
+		if (compared) {
+			groups = BUCKETS.stream()
+				.map(bucket -> new MatchingRunResponse.Group(bucket, count(before, bucket), count(now, bucket)))
+				.toList();
+			Set<UUID> solutionIds = new LinkedHashSet<>(before.keySet());
+			solutionIds.addAll(now.keySet());
+			Map<UUID, Shown> shown = evidence.shown(solutionIds);
+			moves = solutionIds.stream()
+				.filter(id -> !Objects.equals(bucket(before, id), bucket(now, id)))
+				.map(id -> {
+					Shown solution = shown.get(id);
+					return new MatchingRunResponse.Move(id, solution == null ? null : solution.name(),
+							bucket(before, id), bucket(now, id));
+				})
+				.sorted(Comparator.comparing(move -> move.solutionName() == null ? "" : move.solutionName()))
+				.toList();
+		}
+		return new MatchingRunResponse(summaries(List.of(run)).getFirst(), steps, previousId, compared, groups, moves);
+	}
+
+	/** The groups, strongest first, as the comparison of two runs counts them. */
+	private static final List<String> BUCKETS = List.of("direct", "industry", "technology", "none");
+
+	private List<MatchingRunSummary> summaries(List<Run> runs) {
+		Map<String, AiSubjectUsage> used = usage.ofSubjects(MatchingRuns.SUBJECT,
+				runs.stream().map(run -> run.id().toString()).toList());
+		Map<UUID, Person> people = identity.people(
+				runs.stream().map(Run::startedBy).filter(Objects::nonNull).collect(Collectors.toSet()));
+		Map<UUID, String> titles = new HashMap<>();
+		for (UUID useCaseId : runs.stream().map(Run::useCaseId).collect(Collectors.toSet())) {
+			useCases.indexed(useCaseId).map(IndexedUseCase::title).ifPresent(title -> titles.put(useCaseId, title));
+		}
+		AiSubjectUsage nothing = new AiSubjectUsage(0, 0, 0, 0, 0, 0, null, 0);
+		return runs.stream().map(run -> {
+			AiSubjectUsage calls = used.getOrDefault(run.id().toString(), nothing);
+			UUID startedBy = run.startedBy();
+			Person starter = startedBy == null ? null : people.get(startedBy);
+			return new MatchingRunSummary(run.id(), run.useCaseId(), titles.get(run.useCaseId()), run.state(),
+					run.origin(), starter == null ? null : starter.label(), run.promptVersion(), run.modelName(),
+					run.failure(), run.createdAt(), run.startedAt(), run.endedAt(), run.judged(), run.kept(),
+					calls.calls(), calls.failed(), calls.inputTokens(), calls.outputTokens(), calls.cacheReadTokens(),
+					calls.cacheWriteTokens(), calls.cost(), calls.unpriced());
+		}).toList();
+	}
+
+	private static Map<UUID, Judgment> bySolution(List<Judgment> judgments) {
+		return judgments.stream().collect(Collectors.toMap(Judgment::solutionId, judgment -> judgment));
+	}
+
+	private static int count(Map<UUID, Judgment> judgments, String bucket) {
+		return (int) judgments.values().stream().filter(judgment -> judgment.bucket().equals(bucket)).count();
+	}
+
+	private static @Nullable String bucket(Map<UUID, Judgment> judgments, UUID solutionId) {
+		Judgment judgment = judgments.get(solutionId);
+		return judgment == null ? null : judgment.bucket();
 	}
 
 	/** @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator */

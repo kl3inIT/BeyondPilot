@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -25,6 +26,7 @@ import ai.genaifund.beyondpilot.shared.Spreadsheet;
 import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
 import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +67,21 @@ public class AiUsageReports {
 		this.usage = usage;
 		this.identity = identity;
 		this.audit = audit;
+	}
+
+	/**
+	 * What the calls about each of some subjects came to, by subject id, for the module that named them. A subject
+	 * without a recorded call is absent. Who may read it is the caller's to check.
+	 */
+	@Transactional(readOnly = true)
+	public Map<String, AiSubjectUsage> ofSubjects(String subjectType, Collection<String> subjectIds) {
+		return usage.bySubject(subjectType, subjectIds)
+			.values()
+			.stream()
+			.collect(Collectors.toMap(AiUsageRepository.SubjectTotals::subjectId,
+					totals -> new AiSubjectUsage(totals.calls(), totals.failed(), totals.inputTokens(),
+							totals.outputTokens(), totals.cacheReadTokens(), totals.cacheWriteTokens(), totals.cost(),
+							totals.unpriced())));
 	}
 
 	/**

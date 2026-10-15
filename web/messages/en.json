@@ -353,6 +353,7 @@
     "IDENTITY_OPERATOR_CONFIGURED": "This operator is set in the server configuration, so the role cannot be withdrawn here.",
     "MATCHING_USE_CASE_NOT_FOUND": "This use case no longer exists.",
     "MATCHING_CANDIDATE_NOT_FOUND": "This solution is no longer on the list. Reload the page.",
+    "MATCHING_RUN_NOT_FOUND": "This run no longer exists.",
     "MATCHING_SOLUTION_NOT_FOUND": "This solution is no longer approved, so it cannot be added.",
     "MATCHING_OPERATORS_ONLY": "Only GenAI Fund can do this.",
     "MATCHING_NO_MODEL": "We can't look for solutions now: no AI model is chosen for it.",
@@ -2785,7 +2786,88 @@
       },
       "tabs": {
         "limits": "Limits",
-        "feedback": "Feedback"
+        "feedback": "Feedback",
+        "runs": "Runs"
+      },
+      "runs": {
+        "count": "{count, plural, one {# run} other {# runs}}",
+        "lead": "Every run of every use case, the newest first, with what its calls to the AI came to. Costs are estimates from each model's prices.",
+        "empty": "No run yet.",
+        "columns": {
+          "run": "Run",
+          "started": "Started by",
+          "status": "Status",
+          "solutions": "Solutions",
+          "tokens": "Tokens in",
+          "time": "Time",
+          "cost": "Cost"
+        },
+        "origin": {
+          "approved": "Brief approved or edited",
+          "operator": "GenAI Fund",
+          "member": "A member"
+        },
+        "state": {
+          "queued": "Queued",
+          "running": "Running",
+          "waiting": "Waiting",
+          "done": "Done",
+          "failed": "Failed"
+        },
+        "judged": "{judged} read · {kept} unchanged",
+        "notKept": "Not kept",
+        "cached": "{tokens} cached",
+        "seconds": "{seconds} s",
+        "unpriced": "{count, plural, one {# call without a price} other {# calls without a price}}",
+        "back": "Runs",
+        "detailLead": "{date} · {model} · prompt {version}",
+        "noModel": "no model yet",
+        "failure": "Stopped: {failure}",
+        "stats": {
+          "cost": "Cost",
+          "costNone": "No price",
+          "calls": "Calls",
+          "callsFailed": "{count, plural, =0 {none failed} one {# failed} other {# failed}}",
+          "input": "Tokens in",
+          "inputCache": "{read} read from cache · {written} written",
+          "output": "Tokens out",
+          "time": "Time",
+          "timeNone": "Not ended"
+        },
+        "steps": {
+          "title": "Steps",
+          "columns": {
+            "step": "Step",
+            "count": "In → out",
+            "calls": "Calls",
+            "tokens": "Tokens in / out",
+            "time": "Time"
+          },
+          "requirements": "Read the brief",
+          "candidates": "Searched the solutions",
+          "judgment": "Read each solution",
+          "none": "This run did no step yet."
+        },
+        "changes": {
+          "title": "Since the run before",
+          "first": "This is the first run of this use case, so there is nothing to compare.",
+          "notKept": "The run before kept no groups: they are kept from 16 October 2026.",
+          "noneKept": "This run kept no groups yet.",
+          "previous": "Open the run before",
+          "groupsLabel": "Solutions in each group, before and now",
+          "before": "Before",
+          "now": "Now",
+          "moved": "{count, plural, =0 {No solution changed group.} one {# solution changed group} other {# solutions changed group}}",
+          "columns": {
+            "solution": "Solution",
+            "before": "Before",
+            "now": "Now"
+          },
+          "entered": "New in this run",
+          "left": "Not in this run",
+          "unnamed": "A solution no longer shown"
+        },
+        "groupNone": "No group"
       }
     },
     "aiUsage": {

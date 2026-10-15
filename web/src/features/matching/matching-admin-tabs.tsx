@@ -6,12 +6,13 @@ import { siteRoutes } from "@/lib/site";
 const tabs = [
   { key: "limits", href: siteRoutes.adminAiMatching },
   { key: "feedback", href: siteRoutes.adminAiMatchingFeedback },
+  { key: "runs", href: siteRoutes.adminAiMatchingRuns },
 ] as const;
 
 /**
- * The two pages of Admin › AI › Matching: the limits operators set, and what people said about the
- * groups the AI gave. The row links between them and is drawn on both; each has its own address, so
- * leaving the limits with a change unsaved asks first, as any link does.
+ * The pages of Admin › AI › Matching: the limits operators set, what people said about the groups
+ * the AI gave, and the runs with what they cost. The row links between them and is drawn on each;
+ * each has its own address, so leaving the limits with a change unsaved asks first, as any link does.
  */
 function MatchingAdminTabs({ current }: { current: (typeof tabs)[number]["key"] }) {
   const t = useTranslations("Admin.matching");

@@ -353,6 +353,7 @@
     "IDENTITY_OPERATOR_CONFIGURED": "Operator này được khai trong cấu hình máy chủ nên không thu quyền ở đây được.",
     "MATCHING_USE_CASE_NOT_FOUND": "Use case này không còn tồn tại.",
     "MATCHING_CANDIDATE_NOT_FOUND": "Giải pháp này không còn trong danh sách. Hãy tải lại trang.",
+    "MATCHING_RUN_NOT_FOUND": "Lượt chạy này không còn nữa.",
     "MATCHING_SOLUTION_NOT_FOUND": "Giải pháp này không còn được duyệt nên không thể thêm.",
     "MATCHING_OPERATORS_ONLY": "Chỉ GenAI Fund mới làm được việc này.",
     "MATCHING_NO_MODEL": "Chưa thể tìm giải pháp: chưa chọn mô hình AI cho việc này.",
@@ -2785,7 +2786,88 @@
       },
       "tabs": {
         "limits": "Giới hạn",
-        "feedback": "Phản hồi"
+        "feedback": "Phản hồi",
+        "runs": "Lượt chạy"
+      },
+      "runs": {
+        "count": "{count, plural, other {# lượt chạy}}",
+        "lead": "Mọi lượt chạy của mọi use case, mới nhất trước, kèm chi phí gọi AI. Chi phí là ước tính theo giá của từng model.",
+        "empty": "Chưa có lượt chạy nào.",
+        "columns": {
+          "run": "Lượt chạy",
+          "started": "Người chạy",
+          "status": "Trạng thái",
+          "solutions": "Giải pháp",
+          "tokens": "Token vào",
+          "time": "Thời gian",
+          "cost": "Chi phí"
+        },
+        "origin": {
+          "approved": "Brief được duyệt hoặc sửa",
+          "operator": "GenAI Fund",
+          "member": "Một thành viên"
+        },
+        "state": {
+          "queued": "Đang chờ",
+          "running": "Đang chạy",
+          "waiting": "Tạm dừng",
+          "done": "Xong",
+          "failed": "Lỗi"
+        },
+        "judged": "{judged} đã đọc · {kept} không đổi",
+        "notKept": "Không lưu",
+        "cached": "{tokens} từ cache",
+        "seconds": "{seconds} giây",
+        "unpriced": "{count, plural, other {# lần gọi chưa có giá}}",
+        "back": "Lượt chạy",
+        "detailLead": "{date} · {model} · prompt {version}",
+        "noModel": "chưa có model",
+        "failure": "Dừng: {failure}",
+        "stats": {
+          "cost": "Chi phí",
+          "costNone": "Chưa có giá",
+          "calls": "Lần gọi",
+          "callsFailed": "{count, plural, =0 {không lỗi} other {# lỗi}}",
+          "input": "Token vào",
+          "inputCache": "{read} đọc từ cache · {written} ghi vào",
+          "output": "Token ra",
+          "time": "Thời gian",
+          "timeNone": "Chưa xong"
+        },
+        "steps": {
+          "title": "Các bước",
+          "columns": {
+            "step": "Bước",
+            "count": "Vào → ra",
+            "calls": "Lần gọi",
+            "tokens": "Token vào / ra",
+            "time": "Thời gian"
+          },
+          "requirements": "Đọc brief",
+          "candidates": "Tìm giải pháp",
+          "judgment": "Đọc từng giải pháp",
+          "none": "Lượt chạy này chưa làm bước nào."
+        },
+        "changes": {
+          "title": "So với lượt trước",
+          "first": "Đây là lượt chạy đầu tiên của use case này nên chưa có gì để so sánh.",
+          "notKept": "Lượt trước không lưu nhóm: nhóm được lưu từ ngày 16/10/2026.",
+          "noneKept": "Lượt này chưa lưu nhóm nào.",
+          "previous": "Mở lượt trước",
+          "groupsLabel": "Số giải pháp mỗi nhóm, trước và nay",
+          "before": "Trước",
+          "now": "Nay",
+          "moved": "{count, plural, =0 {Không giải pháp nào đổi nhóm.} other {# giải pháp đổi nhóm}}",
+          "columns": {
+            "solution": "Giải pháp",
+            "before": "Trước",
+            "now": "Nay"
+          },
+          "entered": "Mới trong lượt này",
+          "left": "Không có trong lượt này",
+          "unnamed": "Một giải pháp không còn hiển thị"
+        },
+        "groupNone": "Không nhóm nào"
       }
     },
     "aiUsage": {

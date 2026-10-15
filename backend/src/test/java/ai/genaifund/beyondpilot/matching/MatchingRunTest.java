@@ -297,6 +297,34 @@ class MatchingRunTest {
 		assertThat(runsOf(useCase)).containsExactly("done approved", "done operator", "done operator");
 		assertThat(asked).containsExactly("requirements", "judgment", "judgment");
 
+		// Operators read the runs, the newest first, each with what its calls came to and what it judged or kept.
+		String listed = body(call("GET", operator, "/api/matching/admin/runs?size=100", null).expectStatus().isOk());
+		String ofThis = "$.items[?(@.useCaseId == '" + useCase + "')]";
+		assertThat(JsonPath.<List<String>>read(listed, ofThis + ".id")).hasSize(3).first().isEqualTo(third.toString());
+		assertThat(JsonPath.<List<String>>read(listed, ofThis + ".useCaseTitle")).containsOnly("Claims triage " + word);
+		// The third asked twice: once refused at the provider's limit, once after its wait.
+		assertThat(JsonPath.<List<Integer>>read(listed, ofThis + ".calls")).containsExactly(2, 0, 2);
+		assertThat(JsonPath.<List<Integer>>read(listed, ofThis + ".failedCalls")).containsExactly(1, 0, 0);
+		assertThat(JsonPath.<List<Integer>>read(listed, ofThis + ".judged")).containsExactly(1, 0, 1);
+		assertThat(JsonPath.<List<Integer>>read(listed, ofThis + ".kept")).containsExactly(0, 1, 0);
+		assertThat(JsonPath.<List<String>>read(listed, ofThis + ".modelName")).containsOnly("gpt-5-mini");
+		// One run in detail: its steps, and the solution kept its group since the run before.
+		String detail = body(call("GET", operator, "/api/matching/admin/runs/" + third, null).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(detail, "$.steps[*].name")).contains("judgment");
+		assertThat(JsonPath.<Boolean>read(detail, "$.compared")).isTrue();
+		assertThat(JsonPath.<List<String>>read(detail, "$.groups[*].bucket"))
+			.containsExactly("direct", "industry", "technology", "none");
+		assertThat(JsonPath.<Integer>read(detail, "$.groups[0].before")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(detail, "$.groups[0].after")).isEqualTo(1);
+		assertThat(JsonPath.<List<Object>>read(detail, "$.moves")).isEmpty();
+		// The first run of a use case has nothing to be compared with; a member reads none of it.
+		String first = JsonPath.<List<String>>read(listed, ofThis + ".id").get(2);
+		assertThat(JsonPath.<Boolean>read(body(call("GET", operator, "/api/matching/admin/runs/" + first, null)
+			.expectStatus()
+			.isOk()), "$.compared")).isFalse();
+		call("GET", buyer, "/api/matching/admin/runs", null).expectStatus().isForbidden();
+		call("GET", operator, "/api/matching/admin/runs/" + UUID.randomUUID(), null).expectStatus().isNotFound();
+
 		// A member of the use case's organization reads the candidates with their reasons, and nothing of the cost.
 		String read = body(call("GET", buyer, path, null).expectStatus().isOk());
 		assertThat(JsonPath.<Boolean>read(read, "$.operator")).isFalse();

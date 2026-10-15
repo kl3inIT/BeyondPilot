@@ -110,7 +110,7 @@ class Requirements {
 		Map<String, String> attachments = attachments(brief, runId);
 		String text = Prompts.brief(brief, attachments);
 		Asking.Answer<Extracted> answer;
-		try (AiChat chat = models.chat(AiTask.MATCHING, new AiSubject("matching_run", runId.toString()))) {
+		try (AiChat chat = models.chat(AiTask.MATCHING, new AiSubject(MatchingRuns.SUBJECT, runId.toString()))) {
 			answer = Asking.ask(chat, Prompts.REQUIREMENTS, text, Extracted.class);
 		}
 		List<Requirement> checked = checked(answer.value(), text);
@@ -181,7 +181,7 @@ class Requirements {
 					}
 				}
 				if (!pictures.isEmpty() && documents.readsPictures()) {
-					documents.readPictures(file.content(), pictures, new AiSubject("matching_run", runId.toString()))
+					documents.readPictures(file.content(), pictures, new AiSubject(MatchingRuns.SUBJECT, runId.toString()))
 						.forEach((page, read) -> pages.set(page - 1, read));
 				}
 				String text = pages.stream().filter(page -> !page.isBlank()).collect(Collectors.joining("\n\n"));

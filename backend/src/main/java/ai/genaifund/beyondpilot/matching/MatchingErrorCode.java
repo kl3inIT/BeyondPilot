@@ -7,6 +7,7 @@ public enum MatchingErrorCode implements ErrorCode {
 
 	USE_CASE_NOT_FOUND("MATCHING_USE_CASE_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such use case."),
 	CANDIDATE_NOT_FOUND("MATCHING_CANDIDATE_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such candidate."),
+	RUN_NOT_FOUND("MATCHING_RUN_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such run."),
 	SOLUTION_NOT_FOUND("MATCHING_SOLUTION_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such approved solution."),
 	OPERATORS_ONLY("MATCHING_OPERATORS_ONLY", ErrorCategory.NOT_PERMITTED, "Only GenAI Fund can do this."),
 	NO_MODEL("MATCHING_NO_MODEL", ErrorCategory.SERVICE_UNAVAILABLE,

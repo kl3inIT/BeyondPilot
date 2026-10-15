@@ -357,4 +357,62 @@ test.describe("admin matching settings", () => {
     await expect(said.locator('[data-slot="matching-disagreements"]')).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
   });
+
+  test("an operator reads each run with what it cost, and what changed since the run before", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/ai/matching/feedback");
+    await page
+      .getByRole("main")
+      .getByRole("navigation", { name: "Matching" })
+      .getByRole("link", { name: "Runs" })
+      .click();
+    await expect(page).toHaveURL(/\/admin\/ai\/matching\/runs$/);
+
+    // The newest run first, with what it read, the tokens it read from the cache and its cost.
+    const main = page.getByRole("main");
+    const rows = main.getByRole("table").getByRole("row");
+    await expect(rows).toHaveCount(3);
+    await expect(rows.nth(1)).toContainText("Claims triage");
+    await expect(rows.nth(1)).toContainText("Done");
+    await expect(rows.nth(1)).toContainText("2.25K cached");
+    await expect(rows.nth(1)).toContainText("$0.0912");
+    await expect(main.getByText("2 runs")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    // A run in detail: its steps, and the solution that changed group since the run before.
+    await rows.nth(1).getByRole("link", { name: "Claims triage" }).click();
+    await expect(page).toHaveURL(
+      /\/admin\/ai\/matching\/runs\/7a3e1c00-0000-4000-8000-000000000002$/,
+    );
+    await expect(main.getByRole("heading", { level: 1 })).toHaveText("Claims triage");
+    await expect(main.getByText("2.25K read from cache · 1.13K written")).toBeVisible();
+    const steps = main.getByRole("region", { name: "Steps" });
+    await expect(steps.getByRole("row", { name: /Read each solution/ })).toContainText("6 → 2");
+    const changes = main.getByRole("region", { name: "Since the run before" });
+    await expect(changes.getByText("1 solution changed group")).toBeVisible();
+    await expect(changes.getByRole("row", { name: /Docbase/ })).toContainText(
+      "Right technology, less proof",
+    );
+    await expect(changes.getByRole("row", { name: /Docbase/ })).toContainText(
+      "Experience in your industry",
+    );
+    await expectNoSeriousA11yViolations(page);
+
+    // The first run of the use case has nothing to compare with.
+    await changes.getByRole("link", { name: "Open the run before" }).click();
+    await expect(
+      main.getByText("This is the first run of this use case, so there is nothing to compare."),
+    ).toBeVisible();
+  });
+
+  test("nobody but an operator gets the runs", async ({ page, context, baseURL }) => {
+    await signInAs(context, "owner", baseURL!);
+    await page.goto("/admin/ai/matching/runs");
+    await expect(page.getByRole("heading", { name: "Runs" })).toHaveCount(0);
+    await expect(page.getByRole("table")).toHaveCount(0);
+  });
 });
