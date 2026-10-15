@@ -60,3 +60,13 @@ Revised the original desktop/tablet/mobile private frames in place and replaced 
 The default desktop prototype starts at `772:57035`; the default mobile entry is `773:59589`. New responsive details and creation states are in the last rows of the same section. English and Vietnamese mobile threads fit a 390 × 844 viewport, including the composer. The desktop creation dialog fits a 900px viewport.
 
 Verification: exported and inspected the revised private desktop, tablet, mobile list/thread/details, creation dialog/sheet, and Vietnamese private thread. Read back all 10 revised/new frames and checked composer containment; checked 22 navigation sources through `get_reactions`. No missing link or composer overflow was found in those checks. A source-list width issue, clipped Vietnamese header and mobile composer overflow were corrected before the final export. Application code is unchanged.
+
+## Messenger and Zalo chat-box study
+
+The client then requested learning both conversation logic and the actual chat-box presentation from Messenger and Zalo. The [reference note](../../../../research/2026-10-15-messenger-zalo-chat.md) records the evidence and its limits. Messenger's native captures came through Mobbin MCP; Zalo queries returned other products, so Zalo evidence instead comes from official Help and a visibly older official PC illustration. No claim is made that this illustration is the current Zalo release.
+
+Replaced the three Group conversation frames (`773:57857`, `773:57936`, `773:58015`) and the three New member history frames (`773:58637`, `773:58713`, `773:58789`) with the same native Messages shell used for Private chat. The revised names begin **Group chat — Conversation** or **Group chat — New member history**, followed by **Messenger/Zalo study** and their width. The section still has 60 frames.
+
+The boxes have a compact avatar/name/participant-count header, group information navigation, left/right message bubbles, sender name and organization on received group messages, inline creation/join events, an outgoing read indicator, and a bottom composer. The current group is highlighted in the list. The member's list does not contain the owners' private chat; mobile back navigation returns to the member view. Older messages are absent from the new-member sample.
+
+Verification: read all six revised boxes and checked composer containment and the six information-navigation targets through Figwright; exported the six frames and visually inspected desktop and mobile group/new-member views. The original group-settings screens are retained. The reference study does not add Zalo's configurable history sharing or the other apps' calling/media capabilities to the proposed scope.
