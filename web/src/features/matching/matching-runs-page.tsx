@@ -114,7 +114,12 @@ async function MatchingRunsPage({ runs, size }: { runs: MatchingRunList; size: n
                   ),
                   time:
                     duration == null ? "—" : t("seconds", { seconds: numbers.seconds(duration) }),
-                  cost: run.cost == null ? "—" : numbers.cost(run.cost),
+                  cost:
+                    run.calls === 0
+                      ? numbers.cost(0)
+                      : run.cost == null
+                        ? "—"
+                        : numbers.cost(run.cost),
                 },
               };
             })}

@@ -79,6 +79,9 @@ test.describe("admin audit log", () => {
     await page.getByRole("combobox", { name: "Action" }).click();
     // The actions are offered by area, under the names the sidebar gives the areas.
     await expect(page.getByRole("group", { name: "Programs" })).toContainText("Invited a judge");
+    // A hundred actions are narrowed by typing; an area keeps only what matches.
+    await page.getByRole("combobox", { name: "Search actions" }).fill("operator role");
+    await expect(page.getByRole("group", { name: "Programs" })).toHaveCount(0);
     await page
       .getByRole("group", { name: "Accounts" })
       .getByRole("option", { name: "Gave the operator role" })

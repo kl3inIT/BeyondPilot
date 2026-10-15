@@ -30,6 +30,10 @@ function AuditLogToolbar() {
           key: "action",
           label: t("filters.action.label"),
           all: t("filters.action.all"),
+          searchable: {
+            placeholder: t("filters.action.search"),
+            empty: t("filters.action.empty"),
+          },
           // The actions are read by area, the areas named and ordered as the sidebar has them.
           options: auditActionGroups.map((group) => ({
             label: nav(group.area),

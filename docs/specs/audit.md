@@ -138,6 +138,10 @@ a signed-in account that is not an operator gets the not-found page.
 
 - **Filters in the address:** `?period=&action=&q=&before=&after=`. `period` is `day`, `week` (the default),
   `month` (30 days) or `all`, and becomes `from` when the page reads. A change of filter drops the cursors.
+- **The action filter** offers every action the backend publishes, grouped by the areas of the admin sidebar
+  (`audit-log-search.ts`). The list is checked against the generated `AuditEvent["action"]` when the web is compiled,
+  so an action added in the backend and missing from the filter fails `pnpm check`. It opens with a field that narrows
+  the hundred-odd actions as one types, keeping each area with what matches (BEY-170, F-084).
 - **Rows:** time, person and activity. An event without an actor names "System". The activity is a sentence from the
   action's wording in the message catalogs (`Admin.auditLog`), ending in the resource's label. A row is the whole
   event; nothing opens.
