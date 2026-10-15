@@ -105,9 +105,9 @@ test.describe("admin matching settings", () => {
       "After an edit",
       "Runs per day",
     ]);
-    // Two tabs, each a page of its own; this one is Limits.
+    // Three tabs, each a page of its own; this one is Limits.
     const tabs = page.getByRole("main").getByRole("navigation", { name: "Matching" });
-    await expect(tabs.getByRole("link")).toHaveText(["Limits", "Feedback"]);
+    await expect(tabs.getByRole("link")).toHaveText(["Limits", "Feedback", "Runs"]);
     await expect(tabs.getByRole("link", { name: "Limits" })).toHaveAttribute(
       "aria-current",
       "page",
