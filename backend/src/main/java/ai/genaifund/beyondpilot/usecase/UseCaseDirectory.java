@@ -251,7 +251,7 @@ public class UseCaseDirectory {
 				useCase.getCurrentSolutions(), useCase.getTargetUsers(), useCase.getDataReadiness(),
 				useCase.getIntegrationRequirements(), hiddenBudget ? null : useCase.getBudgetMin(),
 				hiddenBudget ? null : useCase.getBudgetMax(), useCase.getCurrency(), useCase.isBudgetToBeDetermined(),
-				hiddenBudget, useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(), useCase.getClosesAt(),
+				useCase.isBudgetMembersOnly(), useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(), useCase.getClosesAt(),
 				useCase.getProposalEditDays(), publishedAt);
 	}
 
