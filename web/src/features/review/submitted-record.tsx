@@ -1,11 +1,10 @@
-import { FileTextIcon, LinkIcon } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import type { AttachedFile, SubmittedApplication } from "@/lib/api/generated";
 import { chosenOptions } from "@/lib/chosen-options";
-import { cn } from "cn";
 
 import { linkedinAddress, mailAddress, phoneAddress, webAddress } from "./applicant-links";
+import { RecordFiles, type RecordFile } from "./record-files";
 
 type Row = [string, React.ReactNode];
 
@@ -85,35 +84,30 @@ async function SubmittedRecord({
   const linkedin = contact.linkedin ? linkedinAddress(contact.linkedin) : null;
   const website = submitted.website ? webAddress(submitted.website) : null;
 
-  const files: {
-    label: string;
-    meta: string;
-    file?: AttachedFile;
-    link?: string;
-    /** A link answer that is not a web address: shown, never opened. */
-    text?: boolean;
-  }[] = [];
+  const files: RecordFile[] = [];
   if (submitted.deck) {
     files.push({
+      kind: "file",
       label: submitted.deck.fileName,
       meta: `${t("deck")} · ${size(submitted.deck.sizeBytes)}`,
-      file: submitted.deck,
+      href: fileHref(applicationId, submitted.deck, draft),
     });
   }
   for (const answer of submitted.answers) {
     if (answer.kind === "file" && answer.file) {
       files.push({
+        kind: "file",
         label: answer.file.fileName,
         meta: `${answer.label} · ${size(answer.file.sizeBytes)}`,
-        file: answer.file,
+        href: fileHref(applicationId, answer.file, draft),
       });
     }
     if (answer.kind === "link") {
       const link = webAddress(answer.value);
       files.push(
         link
-          ? { label: answer.label, meta: answer.value, link }
-          : { label: answer.label, meta: answer.value, text: true },
+          ? { kind: "link", label: answer.label, meta: answer.value, href: link }
+          : { kind: "text", label: answer.label, meta: answer.value },
       );
     }
   }
@@ -225,41 +219,11 @@ async function SubmittedRecord({
           <h2 id="record-files" className="font-medium">
             {t("blocks.files")}
           </h2>
-          <ul className="flex flex-col divide-y">
-            {files.map((item) => (
-              <li
-                key={`${item.label}-${item.meta}`}
-                className="flex items-center gap-3 py-2.5 text-sm"
-              >
-                {item.link || item.text ? (
-                  <LinkIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
-                ) : (
-                  <FileTextIcon
-                    aria-hidden="true"
-                    className="size-4 shrink-0 text-muted-foreground"
-                  />
-                )}
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span title={item.label} className="truncate font-medium">
-                    {item.label}
-                  </span>
-                  <span title={item.meta} className="truncate text-muted-foreground">
-                    {item.meta}
-                  </span>
-                </span>
-                {!item.text && (
-                  <a
-                    href={item.link ?? fileHref(applicationId, item.file as AttachedFile, draft)}
-                    target={item.link ? "_blank" : undefined}
-                    rel={item.link ? "noreferrer" : undefined}
-                    className={cn("hit-area shrink-0", link)}
-                  >
-                    {item.link ? t("openLink") : t("open")}
-                  </a>
-                )}
-              </li>
-            ))}
-          </ul>
+          <RecordFiles
+            items={files}
+            labels={{ open: t("open"), openLink: t("openLink") }}
+            linkClassName={link}
+          />
         </section>
       )}
     </div>

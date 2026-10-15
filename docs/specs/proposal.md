@@ -217,7 +217,11 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   decisions with reason and who decided.
 - **Files.** `GET /review/applications/{id}/files/{fileId}` serves a file only when the last submission's snapshot
   holds it as the deck or a file answer, to anyone who reviews the program; otherwise `PROPOSAL_APPLICATION_NOT_FOUND`.
-  The response is the bytes as an attachment, or a 302 to the object store, both `no-store`.
+  The response is the bytes as an attachment, or a 302 to the object store, both `no-store`. On the review page
+  Open reads the file in the page instead of downloading it (BEY-205): a full-screen viewer (`PdfViewer`, drawn by
+  `react-pdf`, loaded on first open) shows every page one under the other, "Page n / N" as the reader scrolls, the
+  record's other files one step away with the arrows or ← and →, and the download at hand; a file it cannot draw
+  offers the download instead. Viewing in the page is a convenience, not a protection: the file can still be saved.
 
 ### Assessments
 

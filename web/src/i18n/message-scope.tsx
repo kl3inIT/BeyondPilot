@@ -76,6 +76,8 @@ const areaPaths = {
     "Messaging.assignments",
     "Mcp",
     "Organization",
+    // The full-screen reader of an application's files.
+    "PdfViewer",
     "Program",
     "Review",
     "Solution",
@@ -84,7 +86,7 @@ const areaPaths = {
     "UseCaseProposal.received",
     "UseCaseProposal.errors",
   ],
-  reviews: ["ExportMenu", "Review"],
+  reviews: ["ExportMenu", "PdfViewer", "Review"],
 } as const satisfies Record<string, readonly MessagePath[]>;
 
 type Area = keyof typeof areaPaths;

@@ -1,5 +1,7 @@
 // What the stub backend answers about reviewing the Tasco challenge's applications, for the web
-// server's reads. What the browser writes is answered by each test.
+// server's reads. What the browser writes is answered by each test. Plain Cover's deck is the real PDF
+// of three slides the matching deck reads, served by stub-backend.mjs: this module is also imported by
+// judging.spec.ts, where `import.meta` cannot be read.
 
 const day = 24 * 60 * 60 * 1000;
 
@@ -82,6 +84,7 @@ const applications = [
 ];
 
 export const plainCoverId = ids.plain;
+export const plainCoverDeckId = "f0000000-0000-4000-8000-000000000001";
 
 function list(operator) {
   return {
@@ -123,7 +126,7 @@ function application(operator) {
       maturity: "production",
       demoUrl: "https://plaincover.example/demo",
       deck: {
-        fileId: "f0000000-0000-4000-8000-000000000001",
+        fileId: plainCoverDeckId,
         fileName: "plain-cover-deck.pdf",
         sizeBytes: 3100000,
       },
