@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
+import { hydrated } from "./hydration";
 
 test.describe("home page", () => {
   test.use({ locale: "en-US" });
@@ -163,7 +164,7 @@ test.describe("home page on a phone", () => {
   test("opens the menu from the menu button", async ({ page }) => {
     await page.goto("/");
 
-    await page.getByRole("button", { name: "Open menu" }).click();
+    await (await hydrated(page.getByRole("button", { name: "Open menu" }))).click();
     await expect(page.getByRole("dialog").getByRole("link", { name: /AI Talent/ })).toBeVisible();
   });
 });

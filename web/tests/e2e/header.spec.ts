@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { answerSignOut, signInAs } from "./session";
+import { hydrated } from "./hydration";
 
 test.describe("header", () => {
   test.use({ locale: "en-US" });
@@ -83,7 +84,7 @@ test.describe("header", () => {
     await signInAs(context, "operator", baseURL!);
     await page.goto("/");
 
-    await page.getByRole("button", { name: "Open menu" }).click();
+    await (await hydrated(page.getByRole("button", { name: "Open menu" }))).click();
     const menu = page.getByRole("dialog");
     await expect(menu.getByRole("link", { name: "Events & Programs" })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Get started" })).toHaveCount(0);
