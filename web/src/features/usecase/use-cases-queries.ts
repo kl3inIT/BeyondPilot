@@ -6,6 +6,7 @@ import {
   type PublicUseCase,
   type PublicUseCaseList,
 } from "@/lib/api/generated";
+import { sessionRequest } from "@/lib/auth/session";
 import { maxSearchPage } from "@/lib/page-size";
 
 import type { UseCasesSearch } from "./use-cases-search";
@@ -15,12 +16,15 @@ const MAX_SEARCH = 100;
 
 export type UseCaseList = PublicUseCaseList;
 
-/** One page of the public list. Read without a session and never kept: a decision shows at once. */
+/**
+ * One page of the public list, read as the visitor so a signed-in member also gets a budget kept for
+ * members. Never kept: a decision shows at once.
+ */
 export async function readUseCases(search: UseCasesSearch): Promise<UseCaseList> {
   const q = search.q.trim().slice(0, MAX_SEARCH);
   if (q) {
     const { data } = await searchDirectory({
-      cache: "no-store",
+      ...(await sessionRequest()),
       query: {
         q,
         kind: "use_case",
@@ -54,7 +58,7 @@ export async function readUseCases(search: UseCasesSearch): Promise<UseCaseList>
     };
   }
   const { data } = await listUseCases({
-    cache: "no-store",
+    ...(await sessionRequest()),
     query: {
       q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
       industry: search.industry.length === 0 ? undefined : search.industry,
@@ -72,17 +76,22 @@ export async function readUseCases(search: UseCasesSearch): Promise<UseCaseList>
  */
 export async function readProgramUseCases(program: string): Promise<UseCaseList> {
   try {
-    const { data } = await listUseCases({ cache: "no-store", query: { program, sort: "newest" } });
+    const { data } = await listUseCases({
+      ...(await sessionRequest()),
+      query: { program, sort: "newest" },
+    });
     return data;
   } catch {
     return { items: [], page: 1, pageSize: 0, total: 0 };
   }
 }
 
-/** One public brief by identifier, or `null` when it is unavailable to visitors. */
+/**
+ * One public brief by identifier, read as the visitor, or `null` when it is unavailable to visitors.
+ */
 export async function readUseCase(id: string): Promise<PublicUseCase | null> {
   try {
-    const { data } = await getUseCase({ cache: "no-store", path: { id } });
+    const { data } = await getUseCase({ ...(await sessionRequest()), path: { id } });
     return data;
   } catch (error) {
     if (error instanceof ApiError && (error.status === 400 || error.status === 404)) {
