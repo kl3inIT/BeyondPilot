@@ -113,15 +113,16 @@ public class UseCaseQueryRepository {
 	/**
 	 * One page of the public list; {@code sort} is newest, deadline or budget. A budget in đồng orders as its value in
 	 * US dollars at {@code vndPerUsd}, which no reader sees. With {@code featuredFirst} the featured use cases come
-	 * before the others, the earliest featured on top.
+	 * before the others, the earliest featured on top. A budget shown to members only orders the list for a
+	 * {@code member} alone.
 	 */
 	public List<PublicRow> publicPage(@Nullable String text, List<UUID> matching, @Nullable List<String> industries,
-			@Nullable UUID program, String sort, boolean featuredFirst, long vndPerUsd, Instant now, int limit,
+			@Nullable UUID program, String sort, boolean featuredFirst, boolean member, long vndPerUsd, Instant now, int limit,
 			long offset) {
 		String order = switch (sort) {
 			case "deadline" -> "closes_at nulls last, id";
-			// A budget for members only is not a number a visitor sees, so it does not order the list either.
-			case "budget" -> "(case when budget_members_only then null when currency = 'VND' "
+			// A budget for members only is not a number a visitor sees, so it does not order their list either.
+			case "budget" -> "(case when budget_members_only and not :member then null when currency = 'VND' "
 					+ "then budget_max::numeric / :vndPerUsd else budget_max end) desc nulls last, id";
 			default -> "published_at desc, id";
 		};
@@ -130,6 +131,7 @@ public class UseCaseQueryRepository {
 				+ "timeline_min_weeks, timeline_max_weeks, closes_at, published_at, featured_at from use_case\n"
 				+ PUBLIC_FILTER + "order by " + (featuredFirst ? "featured_at asc nulls last, " : "") + order + " limit :limit offset :offset", text, matching, industries, program, now)
 			.param("vndPerUsd", vndPerUsd)
+			.param("member", member)
 			.param("limit", limit)
 			.param("offset", offset)
 			.query((row, index) -> new PublicRow(row.getObject("id", UUID.class),

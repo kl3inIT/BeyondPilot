@@ -29,8 +29,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The public list of use cases, read without a session: the published ones whose deadline has not passed. A use case
- * whose organization asked to stay anonymous shows no name, and no search finds it by that name.
+ * The public list of use cases, read with or without a session: the published ones whose deadline has not passed. A use
+ * case whose organization asked to stay anonymous shows no name, and no search finds it by that name. A budget its
+ * organization shows to signed-in members only has its amounts given to a signed-in reader alone.
  */
 @Service
 @EnableConfigurationProperties(UseCaseProperties.class)
@@ -165,13 +166,12 @@ public class UseCaseDirectory {
 		return published.stream().filter(useCase -> names.containsKey(useCase.getOrganizationId())).map(useCase -> {
 			OrganizationName organization = useCase.isHideOrganizationName() ? null
 					: names.get(useCase.getOrganizationId());
-			boolean hidden = useCase.isBudgetMembersOnly();
 			return new IndexedUseCase(useCase.getId(), useCase.getTitle(),
 					organization == null ? null : organization.name(), useCase.getIndustry(),
-					useCase.getTechnologies(), useCase.getExpectedOutcomes(),
-					hidden ? null : useCase.getBudgetMin(), hidden ? null : useCase.getBudgetMax(),
-					useCase.getCurrency(), useCase.isBudgetToBeDetermined(), hidden, useCase.getClosesAt(),
-					useCase.getPublishedAt(), hidden || useCase.getBudgetMax() == null ? null
+					useCase.getTechnologies(), useCase.getExpectedOutcomes(), useCase.getBudgetMin(),
+					useCase.getBudgetMax(), useCase.getCurrency(), useCase.isBudgetToBeDetermined(),
+					useCase.isBudgetMembersOnly(), useCase.getClosesAt(), useCase.getPublishedAt(),
+					useCase.getBudgetMax() == null ? null
 							: BigDecimal.valueOf(useCase.getBudgetMax()).divide(
 									BigDecimal.valueOf("VND".equals(useCase.getCurrency()) ? properties.vndPerUsd() : 1),
 									MathContext.DECIMAL128),
@@ -185,9 +185,10 @@ public class UseCaseDirectory {
 	 * for nothing, chosen no industry or program and reads the newest first, the featured use cases come first; as
 	 * soon as the reader searches, filters or picks another order, the list is ordered by that alone. A featured use
 	 * case that is closed or not published stays out like any other.
+	 * @param member whether the reader is signed in, and so reads a budget shown to members only
 	 */
 	@Transactional(readOnly = true)
-	public PublicUseCaseListResponse list(PublicUseCaseListRequest request) {
+	public PublicUseCaseListResponse list(PublicUseCaseListRequest request, boolean member) {
 		String text = request.q() == null || request.q().isBlank() ? null : request.q().strip();
 		int page = request.page() == null ? 1 : request.page();
 		int size = request.size() == null ? PAGE_SIZE : request.size();
@@ -210,22 +211,23 @@ public class UseCaseDirectory {
 		boolean opening = text == null && (request.industry() == null || request.industry().isEmpty())
 				&& program == null && OPENING_SORT.equals(sort);
 		List<UseCaseQueryRepository.PublicRow> rows = useCaseList.publicPage(text, matching, request.industry(), program,
-				sort, opening, properties.vndPerUsd(), now, size, (long) (page - 1) * size);
+				sort, opening, member, properties.vndPerUsd(), now, size, (long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations.names(rows.stream()
 			.filter(row -> !row.hideOrganizationName())
 			.map(UseCaseQueryRepository.PublicRow::organizationId)
 			.collect(Collectors.toSet()));
-		List<PublicUseCaseSummaryResponse> items = rows.stream().map(row -> summary(row, names)).toList();
+		List<PublicUseCaseSummaryResponse> items = rows.stream().map(row -> summary(row, names, member)).toList();
 		return new PublicUseCaseListResponse(items, page, size,
 				useCaseList.publicCount(text, matching, request.industry(), program, now));
 	}
 
 	/**
 	 * One published use case that is still open, as a visitor reads the whole brief.
+	 * @param member whether the reader is signed in, and so reads a budget shown to members only
 	 * @throws UseCaseException when the identifier is unknown, no longer open, or its organization is not public
 	 */
 	@Transactional(readOnly = true)
-	public PublicUseCaseResponse get(UUID id) {
+	public PublicUseCaseResponse get(UUID id, boolean member) {
 		Instant now = Instant.now();
 		UseCase useCase = useCases.findById(id)
 			.filter(found -> UseCase.APPROVED.equals(found.getStatus()) && !UseCase.CLOSED.equals(found.statusAt(now)))
@@ -242,7 +244,7 @@ public class UseCaseDirectory {
 			throw notFound(id);
 		}
 		boolean anonymous = useCase.isHideOrganizationName();
-		boolean hiddenBudget = useCase.isBudgetMembersOnly();
+		boolean hiddenBudget = useCase.isBudgetMembersOnly() && !member;
 		return new PublicUseCaseResponse(useCase.getId(), title, anonymous ? null : organization.name(),
 				anonymous ? null : organization.logoFileId(), industry, useCase.getProblemStatement(),
 				useCase.getTechnologies(), useCase.getExpectedOutcomes(), useCase.getCurrentProcess(),
@@ -254,9 +256,9 @@ public class UseCaseDirectory {
 	}
 
 	private static PublicUseCaseSummaryResponse summary(UseCaseQueryRepository.PublicRow row,
-			Map<UUID, OrganizationName> names) {
+			Map<UUID, OrganizationName> names, boolean member) {
 		OrganizationName organization = row.hideOrganizationName() ? null : names.get(row.organizationId());
-		boolean hidden = row.budgetMembersOnly();
+		boolean hidden = row.budgetMembersOnly() && !member;
 		return new PublicUseCaseSummaryResponse(row.id(), row.title(), organization == null ? null : organization.name(),
 				organization == null ? null : organization.logoFileId(), row.industry(), row.goal(), row.technologies(), hidden ? null : row.budgetMin(),
 				hidden ? null : row.budgetMax(), row.currency(), row.budgetToBeDetermined(), row.budgetMembersOnly(),
