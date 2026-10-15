@@ -1159,7 +1159,9 @@
         },
         "action": {
           "label": "Action",
-          "all": "All actions"
+          "all": "All actions",
+          "search": "Search actions",
+          "empty": "No action matches."
         }
       },
       "period": {

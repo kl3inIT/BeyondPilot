@@ -11,6 +11,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { selectTriggerClass } from "@/components/ui/select";
 import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react";
 
 const Combobox = ComboboxPrimitive.Root;
@@ -19,11 +20,22 @@ function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {
   return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />;
 }
 
-function ComboboxTrigger({ className, children, ...props }: ComboboxPrimitive.Trigger.Props) {
+/**
+ * Opens the list. With a `size` it is drawn as a select's trigger, for a combobox that stands among
+ * selects, such as a filter of a long list whose popup searches; without one it is the bare button
+ * at the end of `ComboboxInput`.
+ */
+function ComboboxTrigger({
+  className,
+  children,
+  size,
+  ...props
+}: ComboboxPrimitive.Trigger.Props & { size?: "sm" | "default" }) {
   return (
     <ComboboxPrimitive.Trigger
       data-slot="combobox-trigger"
-      className={cn("[&_svg:not([class*='size-'])]:size-4", className)}
+      data-size={size}
+      className={cn(size ? selectTriggerClass : "[&_svg:not([class*='size-'])]:size-4", className)}
       {...props}
     >
       {children}

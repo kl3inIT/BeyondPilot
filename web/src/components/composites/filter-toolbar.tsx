@@ -6,6 +6,20 @@ import { Fragment, useEffect, useRef, useState, useTransition, type FormEvent } 
 
 import { Button } from "@/components/actions/button";
 import {
+  Combobox,
+  ComboboxCollection,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxLabel,
+  ComboboxList,
+  ComboboxSeparator,
+  ComboboxTrigger,
+  ComboboxValue,
+} from "@/components/ui/combobox";
+import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
@@ -48,6 +62,11 @@ type Filter = {
    * the part it is in before the option; options given outside a group come first.
    */
   options: (Option | OptionGroup)[];
+  /**
+   * A list too long to read through, such as a hundred actions: the select opens with a field that
+   * narrows the options as one types, with the words it shows empty and when nothing matches.
+   */
+  searchable?: { placeholder: string; empty: string };
 };
 
 function isGroup(entry: Option | OptionGroup): entry is OptionGroup {
@@ -276,12 +295,76 @@ function FilterToolbar({
               ...(filter.all === undefined ? [] : [{ value: ALL, label: filter.all }]),
               ...filter.options.filter((entry): entry is Option => !isGroup(entry)),
             ];
+            const chosen = String(values[filter.key] ?? ALL);
+            if (filter.searchable) {
+              const all = [...loose, ...groups.flatMap((group) => group.options)];
+              // The options outside a group come first, in a group without a name.
+              const listed = [
+                ...(loose.length > 0 ? [{ label: "", options: loose }] : []),
+                ...groups,
+              ].map((group) => ({ value: group.label, items: group.options }));
+              return (
+                <Combobox
+                  key={filter.key}
+                  items={listed}
+                  autoHighlight
+                  value={all.find((item) => item.value === chosen) ?? null}
+                  isItemEqualToValue={(item: Option, other: Option) => item.value === other.value}
+                  itemToStringLabel={(item: Option) => item.label}
+                  onValueChange={(item: Option | null) => {
+                    if (!item) {
+                      return;
+                    }
+                    setSearch({
+                      [filter.key]:
+                        item.value === ALL && filter.all !== undefined ? null : item.value,
+                      ...start,
+                    });
+                  }}
+                >
+                  <ComboboxTrigger
+                    size="sm"
+                    aria-label={filter.label}
+                    className="flex-1 md:max-w-72 md:min-w-36 md:flex-none"
+                  >
+                    <span className="min-w-0 flex-1 truncate text-left">
+                      <ComboboxValue />
+                    </span>
+                  </ComboboxTrigger>
+                  <ComboboxContent className="md:w-80">
+                    <ComboboxInput
+                      showTrigger={false}
+                      placeholder={filter.searchable.placeholder}
+                      aria-label={filter.searchable.placeholder}
+                    />
+                    <ComboboxEmpty>{filter.searchable.empty}</ComboboxEmpty>
+                    <ComboboxList aria-label={filter.label}>
+                      {(group: { value: string; items: Option[] }, index: number) => (
+                        <Fragment key={group.value}>
+                          {index > 0 && <ComboboxSeparator />}
+                          <ComboboxGroup items={group.items}>
+                            {group.value && <ComboboxLabel>{group.value}</ComboboxLabel>}
+                            <ComboboxCollection>
+                              {(item: Option) => (
+                                <ComboboxItem key={item.value} value={item}>
+                                  {item.label}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxCollection>
+                          </ComboboxGroup>
+                        </Fragment>
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
+              );
+            }
             return (
               <Select
                 key={filter.key}
                 // Every option by its value: the trigger finds the words of the chosen one there.
                 items={[...loose, ...groups.flatMap((group) => group.options)]}
-                value={String(values[filter.key] ?? ALL)}
+                value={chosen}
                 onValueChange={(value) =>
                   setSearch({
                     [filter.key]: value === ALL && filter.all !== undefined ? null : value,

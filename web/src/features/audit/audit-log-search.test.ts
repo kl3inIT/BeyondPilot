@@ -1,6 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
-import { auditActionGroups, auditActions } from "./audit-log-search";
+import type { AuditEvent } from "@/lib/api/generated";
+
+import { auditActionGroups, auditActions, type AuditAction } from "./audit-log-search";
+
+describe("auditActions", () => {
+  it("is the backend's catalog, every action and nothing else, so the filter misses none", () => {
+    // Checked when the code is compiled: an action the backend adds and the list lacks fails here.
+    expectTypeOf<AuditAction>().toEqualTypeOf<AuditEvent["action"]>();
+  });
+});
 
 describe("auditActionGroups", () => {
   it("files every action under one area, so the filter offers each of them once", () => {

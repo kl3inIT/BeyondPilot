@@ -1159,7 +1159,9 @@
         },
         "action": {
           "label": "Hành động",
-          "all": "Mọi hành động"
+          "all": "Mọi hành động",
+          "search": "Tìm thao tác",
+          "empty": "Không có thao tác nào khớp."
         }
       },
       "period": {
