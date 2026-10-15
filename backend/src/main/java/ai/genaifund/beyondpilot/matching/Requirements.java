@@ -90,7 +90,7 @@ class Requirements {
 	 * attached, and the version of the prompt.
 	 */
 	static String fingerprint(UseCaseBrief brief) {
-		return Quotes.fingerprint(Integer.toString(Prompts.VERSION), Prompts.brief(brief, Map.of()),
+		return Quotes.fingerprint(Integer.toString(Prompts.REQUIREMENTS_VERSION), Prompts.brief(brief, Map.of()),
 				brief.attachments().stream().map(file -> file.fileId().toString()).collect(Collectors.joining(",")));
 	}
 

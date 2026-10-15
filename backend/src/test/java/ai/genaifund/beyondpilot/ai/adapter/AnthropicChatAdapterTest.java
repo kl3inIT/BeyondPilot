@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ai.genaifund.beyondpilot.ai.ReasoningEffort;
@@ -13,6 +14,8 @@ import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import tools.jackson.databind.JsonNode;
@@ -86,6 +89,22 @@ class AnthropicChatAdapterTest {
 		assertThat(sent.path("thinking").path("type").asString()).isEqualTo("adaptive");
 		assertThat(sent.path("output_config").path("effort").asString()).isEqualTo("low");
 		assertThat(sent.path("max_tokens").asInt()).isEqualTo(8_000);
+	}
+
+	@Test
+	void theSystemPromptIsMarkedForTheProviderCache() {
+		String address = "http://127.0.0.1:" + server.getAddress().getPort() + "/v1";
+		ChatModel model = new AnthropicChatAdapter().connect(new ChatConnection(address, "test-key"), "claude-sonnet-5-5",
+				new ChatModelOptions(8_000, false, ReasoningEffort.OFF, Duration.ofSeconds(20)));
+		model.call(new Prompt(List.of(new SystemMessage("What every call of the run shares."),
+				new UserMessage("What this call asks."))));
+
+		JsonNode sent = sent();
+		JsonNode system = sent.path("system").get(0);
+		assertThat(system.path("text").asString()).isEqualTo("What every call of the run shares.");
+		assertThat(system.path("cache_control").path("type").asString()).isEqualTo("ephemeral");
+		// The part that changes from call to call is not marked.
+		assertThat(sent.path("messages").get(0).toString()).doesNotContain("cache_control");
 	}
 
 	private String call(ChatModelOptions options) {
