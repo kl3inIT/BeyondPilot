@@ -72,7 +72,7 @@ const approved = {
   updatedBy: "Hà Lê",
   updatedAt: ago(30),
   version: 2,
-  variables: [{ name: "organizationName", required: true, sample: "Plain Cover" }],
+  variables: [{ name: "organizationName", required: true, sample: "Plain Cover", kind: "value" }],
 };
 
 const message = (id, hours, recipient, kind, subject, status) => ({

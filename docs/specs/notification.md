@@ -421,25 +421,25 @@ A test can be sent from Settings or from a template.
 Every path below requires a session and an operator: `IdentityService.requireOperator`, otherwise
 `IDENTITY_OPERATOR_REQUIRED`. The base path is `/api/notification/admin/email`.
 
-| Method and path                   | Contract                                                                                                                                                      |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /settings`                   | `EmailSettings`, with no secrets; includes the events URLs `<siteUrl>/api/notification/email/events/ses`, `/resend` and `/brevo`                              |
-| `PUT /settings`                   | Saves provider, sender, connections, SES events topic, Resend webhook secret and Brevo webhook token against `version`; records `email.settings_update`       |
-| `PUT /settings/appearance`        | Saves accent colour and footer against `version`; records `email.appearance_update`                                                                           |
-| `POST /settings/test?to=`         | Sends a test through the settings in the body                                                                                                                 |
-| `GET /settings/checks`            | The setup checklist and DNS records of the saved provider                                                                                                     |
-| `GET /templates`                  | Every kind that can be edited, in catalog order, with its group, the subject in use, and whether it was edited                                                |
-| `GET /templates/{kind}`           | The wording in use, the default, the variables with their samples, and `version` (null while the default is in use)                                           |
-| `PUT /templates/{kind}`           | Replaces the wording; the subject is at most 200 characters, the body at most 20,000; records `email.template_update`                                         |
-| `DELETE /templates/{kind}`        | Puts the default back; records `email.template_reset` only when there was a row to delete                                                                     |
-| `POST /templates/{kind}/preview`  | Renders a draft with sample values and lists its problems. With problems, the default is rendered. An appearance in the body is previewed without being saved |
-| `POST /templates/{kind}/test?to=` | Sends the draft with sample values as a test                                                                                                                  |
-| `GET /messages`                   | A page of the log with the period's counts                                                                                                                    |
-| `GET /messages/{id}`              | One message, its events, its suppression and whether it can be resent                                                                                         |
-| `POST /messages/{id}/resend`      | `201` with the new message's id                                                                                                                               |
-| `GET /suppressions`               | A page of suppressed addresses                                                                                                                                |
-| `POST /suppressions`              | `201`; adds an address manually; records `email.suppression_add`                                                                                              |
-| `DELETE /suppressions/{address}`  | `204`; records `email.suppression_remove` with the earlier `reason`                                                                                           |
+| Method and path                   | Contract                                                                                                                                                                                       |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /settings`                   | `EmailSettings`, with no secrets; includes the events URLs `<siteUrl>/api/notification/email/events/ses`, `/resend` and `/brevo`                                                               |
+| `PUT /settings`                   | Saves provider, sender, connections, SES events topic, Resend webhook secret and Brevo webhook token against `version`; records `email.settings_update`                                        |
+| `PUT /settings/appearance`        | Saves accent colour and footer against `version`; records `email.appearance_update`                                                                                                            |
+| `POST /settings/test?to=`         | Sends a test through the settings in the body                                                                                                                                                  |
+| `GET /settings/checks`            | The setup checklist and DNS records of the saved provider                                                                                                                                      |
+| `GET /templates`                  | Every kind that can be edited, in catalog order, with its group, the subject in use, and whether it was edited                                                                                 |
+| `GET /templates/{kind}`           | The wording in use, the default, the variables with their samples and kind (`value`, printed; `switch`, which only shows or hides a passage), and `version` (null while the default is in use) |
+| `PUT /templates/{kind}`           | Replaces the wording; the subject is at most 200 characters, the body at most 20,000; records `email.template_update`                                                                          |
+| `DELETE /templates/{kind}`        | Puts the default back; records `email.template_reset` only when there was a row to delete                                                                                                      |
+| `POST /templates/{kind}/preview`  | Renders a draft with sample values and lists its problems. With problems, the default is rendered. An appearance in the body is previewed without being saved                                  |
+| `POST /templates/{kind}/test?to=` | Sends the draft with sample values as a test                                                                                                                                                   |
+| `GET /messages`                   | A page of the log with the period's counts                                                                                                                                                     |
+| `GET /messages/{id}`              | One message, its events, its suppression and whether it can be resent                                                                                                                          |
+| `POST /messages/{id}/resend`      | `201` with the new message's id                                                                                                                                                                |
+| `GET /suppressions`               | A page of suppressed addresses                                                                                                                                                                 |
+| `POST /suppressions`              | `201`; adds an address manually; records `email.suppression_add`                                                                                                                               |
+| `DELETE /suppressions/{address}`  | `204`; records `email.suppression_remove` with the earlier `reason`                                                                                                                            |
 
 **Templates.** A kind that does not exist fails with `NOTIFICATION_TEMPLATE_NOT_FOUND`, and `application_outcome`
 fails with `NOTIFICATION_TEMPLATE_NOT_EDITABLE`.

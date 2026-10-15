@@ -67,23 +67,3 @@ export function tagFaults(text: string): TagFault[] {
   }
   return faults.sort((one, other) => one.from - other.from);
 }
-
-/**
- * The variables of a kind that are switches: those its default wording only ever uses to show or
- * hide a piece of text, and never prints. A value that is sometimes absent is not one, since the
- * default wording prints it inside the piece it shows. The API names the variables without their
- * type, so the default wording, which the backend wrote for these variables, is what tells.
- *
- * @param names the variables the kind offers
- * @param defaults the default subject and body
- */
-export function switchVariables(names: readonly string[], ...defaults: string[]): Set<string> {
-  const printed = new Set<string>();
-  const sections = new Set<string>();
-  for (const text of defaults) {
-    for (const [, mark, name] of text.matchAll(/\{\{([#^/]?)\s*([\w.]+)\s*\}\}/g)) {
-      (mark ? sections : printed).add(name!);
-    }
-  }
-  return new Set(names.filter((name) => sections.has(name) && !printed.has(name)));
-}

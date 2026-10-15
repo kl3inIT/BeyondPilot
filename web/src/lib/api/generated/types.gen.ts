@@ -2119,6 +2119,10 @@ export type EmailTemplateProblem = {
 };
 
 export type EmailTemplateVariable = {
+    /**
+     * A value is printed where the wording names it; a switch only shows or hides the passage between {{#name}} and {{/name}}, or {{^name}} and {{/name}}.
+     */
+    kind: 'value' | 'switch';
     name: string;
     required: boolean;
     /**
