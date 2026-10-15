@@ -61,7 +61,14 @@ async function MatchingRunPage({ detail }: { detail: MatchingRunDetail }) {
       <StatStrip columns={5}>
         <StatCell
           label={t("stats.cost")}
-          value={run.cost == null ? t("stats.costNone") : numbers.cost(run.cost)}
+          value={
+            // A run that asked nothing cost nothing; one whose calls have no price says so.
+            run.calls === 0
+              ? numbers.cost(0)
+              : run.cost == null
+                ? t("stats.costNone")
+                : numbers.cost(run.cost)
+          }
         >
           {run.unpricedCalls > 0 ? t("unpriced", { count: run.unpricedCalls }) : null}
         </StatCell>
