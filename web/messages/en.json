@@ -683,8 +683,9 @@
         },
         "codex": {
           "name": "Codex",
-          "step1": "In a terminal, run <cmd>codex mcp add beyondpilot --url {address}</cmd>",
-          "step2": "Then run <cmd>codex mcp login beyondpilot</cmd>. When your browser opens BeyondPilot, sign in and choose <ui>Allow</ui>."
+          "step1": "In a terminal, add BeyondPilot to Codex:",
+          "step2": "Sign in: when your browser opens BeyondPilot, sign in and choose <ui>Allow</ui>.",
+          "step3": "Check it works: run <cmd>/mcp</cmd> inside Codex and find beyondpilot with its tools."
         },
         "other": {
           "name": "Other apps",
@@ -702,7 +703,9 @@
         "claims": "Find AI solutions for claims triage in insurance, deployed in Vietnam.",
         "programs": "Which AI programs by GenAI Fund are open for applications now?",
         "compare": "Compare the voice agents listed on BeyondPilot for a bank's call centre."
-      }
+      },
+      "copyCommand": "Copy the command",
+      "guide": "{app}'s guide to MCP"
     },
     "apps": {
       "none": "No app is connected",

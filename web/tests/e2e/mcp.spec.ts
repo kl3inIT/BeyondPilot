@@ -40,6 +40,14 @@ test.describe("MCP", () => {
     ).toBeVisible();
     await page.getByRole("tab", { name: "Codex" }).click();
     await expect(page.getByText(/codex mcp add beyondpilot --url .*\/mcp/)).toBeVisible();
+    // Each command stands on its own line with its own Copy; the last step checks the connection.
+    await expect(page.getByText("codex mcp login beyondpilot", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Copy the command" })).toHaveCount(2);
+    await expect(page.getByText(/run \/mcp inside Codex/)).toBeVisible();
+    await expect(page.getByRole("link", { name: "Codex's guide to MCP" })).toHaveAttribute(
+      "href",
+      "https://learn.chatgpt.com/docs/extend/mcp?surface=cli",
+    );
     await expectNoSeriousA11yViolations(page);
 
     await page.getByRole("tab", { name: /Connected apps/ }).click();
