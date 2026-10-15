@@ -9,10 +9,11 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A published use case as search indexes it: what its public listing shows, and nothing it keeps for members, such as
- * the problem statement.
+ * the problem statement. A budget shown to signed-in members only is indexed with its amounts, which search gives
+ * only to a signed-in reader.
  * @param organizationName null when the organization asked to stay anonymous, so no search finds it by that name
- * @param budgetMin null when the budget is to be determined or shown to members only
- * @param budgetMax null when the budget is to be determined or shown to members only
+ * @param budgetMin null when the budget is to be determined
+ * @param budgetMax null when the budget is to be determined
  * @param currency USD or VND, the currency of the amounts
  * @param closesAt when it stops taking proposals; past it, search leaves it out
  */

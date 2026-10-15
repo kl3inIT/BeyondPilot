@@ -89,9 +89,9 @@ class SearchDocumentRepositoryTest {
 	void anUnlistedSolutionReachesMatchingButNoVisitor() {
 		save(SOLUTION, "Fraud Radar", "Gamma", "Flags suspicious claims", false);
 
-		assertThat(index.page(SearchRequest.builder("fraud").build(), null, true, 12, 0)).isEmpty();
+		assertThat(index.page(SearchRequest.builder("fraud").build(), null, true, false, 12, 0)).isEmpty();
 		assertThat(index.counts(SearchRequest.builder("fraud").build(), null, true)).isEmpty();
-		assertThat(index.page(SearchRequest.builder("fraud").build(), null, false, 12, 0))
+		assertThat(index.page(SearchRequest.builder("fraud").build(), null, false, false, 12, 0))
 			.extracting(Hit::title).containsExactly("Fraud Radar");
 	}
 
@@ -104,10 +104,10 @@ class SearchDocumentRepositoryTest {
 
 		assertThat(index.counts(SearchRequest.builder("insurance").build(), null, true)).containsExactlyInAnyOrderEntriesOf(
 				Map.of(PROGRAM, 1L, SOLUTION, 2L, TALENT, 1L));
-		assertThat(index.page(SearchRequest.builder("insurance").kind(SOLUTION).build(), null, true, 12, 0)).extracting(Hit::kind)
+		assertThat(index.page(SearchRequest.builder("insurance").kind(SOLUTION).build(), null, true, false, 12, 0)).extracting(Hit::kind)
 			.containsOnly(SOLUTION)
 			.hasSize(2);
-		assertThat(index.page(SearchRequest.builder("insurance").build(), null, true, 2, 2)).hasSize(2);
+		assertThat(index.page(SearchRequest.builder("insurance").build(), null, true, false, 2, 2)).hasSize(2);
 	}
 
 	@Test
@@ -141,11 +141,11 @@ class SearchDocumentRepositoryTest {
 	void theSnippetMarksTheMatchedWordsAsTheyAreWritten() {
 		save(PROGRAM, "Chương trình Đổi mới Sáng tạo", null, "Doanh nghiệp Việt Nam thử nghiệm AI", true);
 
-		assertThat(index.page(SearchRequest.builder("viet nam").build(), null, true, 12, 0)).extracting(Hit::snippet)
+		assertThat(index.page(SearchRequest.builder("viet nam").build(), null, true, false, 12, 0)).extracting(Hit::snippet)
 			.containsExactly("Doanh nghiệp Việt Nam thử nghiệm AI");
 		// A word is marked whole, never inside another word.
 		save(SOLUTION, "GenAI Desk", "Beta", "GenAI tools for AI teams", true);
-		assertThat(index.page(SearchRequest.builder("ai teams").kind(SOLUTION).build(), null, true, 12, 0)).extracting(Hit::snippet)
+		assertThat(index.page(SearchRequest.builder("ai teams").kind(SOLUTION).build(), null, true, false, 12, 0)).extracting(Hit::snippet)
 			.containsExactly("GenAI tools for AI teams");
 	}
 
@@ -177,7 +177,7 @@ class SearchDocumentRepositoryTest {
 	}
 
 	private List<String> titles(String query) {
-		return index.page(SearchRequest.builder(query).build(), null, true, 12, 0).stream().map(Hit::title).toList();
+		return index.page(SearchRequest.builder(query).build(), null, true, false, 12, 0).stream().map(Hit::title).toList();
 	}
 
 	private UUID save(String kind, String title, @Nullable String subtitle, String summary, boolean listed) {

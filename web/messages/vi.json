@@ -8131,5 +8131,17 @@
     "xlsx": "Excel (.xlsx)",
     "csv": "CSV",
     "failed": "Chưa tải được danh sách. Hãy thử lại."
+  },
+  "PdfViewer": {
+    "loading": "Đang mở tệp…",
+    "close": "Đóng",
+    "download": "Tải về",
+    "downloadInstead": "Tải về thay vì xem",
+    "failed": "Không hiển thị được tệp này ở đây.",
+    "previous": "Tệp trước",
+    "next": "Tệp sau",
+    "pageOf": "Trang {page} / {total}",
+    "pageLabel": "Trang {page}",
+    "meta": "{meta} · Tệp {index} / {count}"
   }
 }

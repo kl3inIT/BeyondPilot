@@ -2,9 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
-import { criteria, judgedProgramId, plainCoverId } from "./stub-judging.mjs";
+import { criteria, judgedProgramId, plainCoverDeckId, plainCoverId } from "./stub-judging.mjs";
 
 const admin = `/admin/programs/${judgedProgramId}`;
+const stubOrigin = "http://localhost:3190";
 const reviews = `/reviews/${judgedProgramId}`;
 
 type Call = { method: string; url: string; body: unknown };
@@ -115,14 +116,28 @@ test.describe("judging applications", () => {
     await expect(page.getByText("2 of 3")).toBeVisible();
     // An answer of several choices reads as the choices, one a line.
     await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
-    await expect(
-      page
-        .getByRole("link", { name: "plain-cover-deck.pdf" })
-        .or(page.getByRole("link", { name: "Open", exact: true })),
-    ).toHaveAttribute(
-      "href",
-      `/api/proposal/review/applications/${plainCoverId}/files/f0000000-0000-4000-8000-000000000001`,
+    // The deck opens full screen in the page, every page of it, instead of downloading; the download
+    // stays at hand, and Escape gives the focus back to Open.
+    const open = page
+      .getByRole("region", { name: "Files and links" })
+      .getByRole("button", { name: "Open", exact: true });
+    // The browser reads the file from the stub, as it reads it from the backend.
+    await page.route("**/api/proposal/review/applications/*/files/*", (route) =>
+      route.continue({ url: `${stubOrigin}${new URL(route.request().url()).pathname}` }),
     );
+    await open.click();
+    const viewer = page.getByRole("dialog", { name: "plain-cover-deck.pdf" });
+    await expect(viewer.getByRole("group", { name: /^Page \d$/ })).toHaveCount(3);
+    // The header says it on a wide screen, the bottom bar on a phone.
+    await expect(viewer.getByText("Page 1 / 3").filter({ visible: true })).toHaveCount(1);
+    await expect(viewer.getByRole("link", { name: "Download" })).toHaveAttribute(
+      "href",
+      `/api/proposal/review/applications/${plainCoverId}/files/${plainCoverDeckId}`,
+    );
+    await expectNoSeriousA11yViolations(page);
+    await page.keyboard.press("Escape");
+    await expect(viewer).toHaveCount(0);
+    await expect(open).toBeFocused();
     // The demo the applicant gave opens in a tab of its own, away from the review.
     const demo = page.getByRole("link", { name: "https://plaincover.example/demo" });
     await expect(demo).toHaveAttribute("href", "https://plaincover.example/demo");

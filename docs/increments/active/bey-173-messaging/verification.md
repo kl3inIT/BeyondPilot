@@ -96,3 +96,5 @@ Messages was absent from the avatar menu. The header and conversation had no hor
 ## Round header message icon — 15 October 2026
 
 Changed the header glyph to Lucide MessageCircleMoreIcon at 20px, matching the requested round speech bubble with three dots while retaining the library’s default stroke. `pnpm --dir web check` passed: 82 files / 717 tests, 5719 matching catalog keys, 247 covered failure codes, ESLint, Prettier, TypeScript, generated-client drift and knip. The staging acceptance above exercised the previous square glyph; the badge and messaging behavior are unchanged by this visual adjustment.
+
+After merging main at f4445963, `pnpm --dir web check` passed again with 82 files / 718 tests, 5729 matching catalog keys and 247 covered failure codes. There were no merge conflicts. The final implementation retains BEY-206’s browser-only unread read, one-minute refresh and `99+` cap, with the requested round Lucide glyph at 20px.

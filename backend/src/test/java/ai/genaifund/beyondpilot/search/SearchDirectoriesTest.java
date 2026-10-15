@@ -282,6 +282,38 @@ class SearchDirectoriesTest {
 		await().atMost(WAIT).until(() -> total("claims triage " + word) == 0);
 	}
 
+	@Test
+	void aBudgetForMembersOnlyIsFoundWithItsAmountsBySignedInMembersAlone() {
+		String owner = TestSignIn.session(client, mail, "quiet-" + word + "@directories.test");
+		UUID organization = organization(owner, "Quiet " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		Map<String, Object> membersOnly = useCase("Fraud review " + word, organization);
+		membersOnly.put("budgetMembersOnly", true);
+		client.post()
+			.uri("/api/usecase/admin/use-cases")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(membersOnly)
+			.exchange()
+			.expectStatus()
+			.is2xxSuccessful();
+		await().atMost(WAIT).until(() -> total("fraud review " + word) == 1);
+
+		String visitor = search("fraud%20review%20" + word);
+		assertThat(JsonPath.<Boolean>read(visitor, "$.items[0].budgetMembersOnly")).isTrue();
+		assertThat(JsonPath.<Object>read(visitor, "$.items[0].budgetMin")).isNull();
+		assertThat(JsonPath.<Object>read(visitor, "$.items[0].budgetMax")).isNull();
+		String member = body(client.get()
+			.uri(URI.create("http://localhost:" + port + "/api/search?q=fraud%20review%20" + word))
+			.cookie(TestSignIn.SESSION_COOKIE, owner)
+			.exchange()
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<Integer>read(member, "$.items[0].budgetMin")).isEqualTo(10000);
+		assertThat(JsonPath.<Integer>read(member, "$.items[0].budgetMax")).isNotNull();
+	}
+
 	private static Map<String, Object> useCase(String title, UUID organization) {
 		Map<String, Object> request = new HashMap<>();
 		request.put("organizationId", organization);

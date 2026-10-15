@@ -81,8 +81,9 @@ What each kind puts in its row:
   `budgetMax`, `budgetToBeDetermined`, `budgetMembersOnly`, `currency`, `publishedAt`, `technologies`,
   `timelineMinWeeks`, `timelineMaxWeeks`, `organizationLogoFileId`, `featured` and `budgetUsd` (the public maximum
   budget normalized with the configured VND/USD rate for sorting). Only what the public list shows is indexed:
-  never the problem statement, never the organization's name or logo when anonymous, and no budget amounts,
-  including the sort amount, when the budget is for members only.
+  never the problem statement, and never the organization's name or logo when anonymous. A budget shown to
+  signed-in members only is indexed with its amounts; `SearchService.search` gives them to a signed-in reader alone,
+  and for a visitor such a budget orders no `budget` sort.
 
 A facet without a value, or an empty list, is left out of `facets`.
 
@@ -99,7 +100,8 @@ the counts, and keeps the last run (when, items saved, rows removed) in memory u
 
 ## Public search
 
-`GET /api/search` is open without a session (`SecurityConfiguration`) and served by `SearchService.search`.
+`GET /api/search` is open without a session (`SecurityConfiguration`) and served by `SearchService.search`. It reads the
+session when there is one: a signed-in reader also gets the amounts of a use case's budget shown to members only.
 
 | Parameter               | Contract                                                                                                                                                                                                                            |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

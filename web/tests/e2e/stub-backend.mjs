@@ -2,13 +2,14 @@
 // lists a page reads on the server, which a browser-side route cannot answer. The cookie's value
 // picks the account, so a test signs in by setting a cookie. What the browser sends (a command, a
 // sign-out) is answered by the test itself, with page.route.
+import { readFileSync } from "node:fs";
 import { createServer } from "node:http";
 
 import { answerAiAdmin } from "./stub-ai.mjs";
 import { answerApplication } from "./stub-applications.mjs";
 import { answerDirectory } from "./stub-directories.mjs";
 import { answerEmail } from "./stub-email.mjs";
-import { answerJudging } from "./stub-judging.mjs";
+import { answerJudging, plainCoverDeckId, plainCoverId } from "./stub-judging.mjs";
 import { answerMatching, serveMatchingDeck, serveMatchingLive } from "./stub-matching.mjs";
 import { answerMcp } from "./stub-mcp.mjs";
 import { serveMessaging } from "./stub-messaging.mjs";
@@ -16,6 +17,10 @@ import { answerReview } from "./stub-reviews.mjs";
 import { answerSearch, answerSearchAdmin } from "./stub-search.mjs";
 import { answerWizards } from "./stub-wizards.mjs";
 import { answerWorkspace } from "./stub-workspace.mjs";
+
+// Plain Cover's deck, which the review's file viewer reads in the browser: the real PDF of three slides
+// the matching deck reads too.
+const applicationDeck = readFileSync(new URL("./fixtures/deck.pdf", import.meta.url));
 
 /** A PNG of one pixel, as in stored-files.ts. */
 const pixel = Buffer.from(
@@ -454,6 +459,18 @@ createServer((request, response) => {
   }
   // And one that is a file: the deck of a matched solution, which the deck viewer reads in the browser.
   if (serveMatchingDeck(response, url)) {
+    return;
+  }
+  // And the deck of an application, which the review's file viewer reads in the browser.
+  if (
+    url.pathname === `/api/proposal/review/applications/${plainCoverId}/files/${plainCoverDeckId}`
+  ) {
+    response.writeHead(200, {
+      "Content-Type": "application/pdf",
+      "Content-Length": applicationDeck.length,
+      "Content-Disposition": 'attachment; filename="plain-cover-deck.pdf"',
+    });
+    response.end(applicationDeck);
     return;
   }
 

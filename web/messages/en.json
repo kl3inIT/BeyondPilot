@@ -8131,5 +8131,17 @@
     "xlsx": "Excel (.xlsx)",
     "csv": "CSV",
     "failed": "We could not download the list. Try again."
+  },
+  "PdfViewer": {
+    "loading": "Opening the file…",
+    "close": "Close",
+    "download": "Download",
+    "downloadInstead": "Download instead",
+    "failed": "This file could not be shown here.",
+    "previous": "Previous file",
+    "next": "Next file",
+    "pageOf": "Page {page} / {total}",
+    "pageLabel": "Page {page}",
+    "meta": "{meta} · File {index} of {count}"
   }
 }

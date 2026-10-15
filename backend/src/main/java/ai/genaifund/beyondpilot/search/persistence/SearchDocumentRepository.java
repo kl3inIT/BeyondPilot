@@ -409,14 +409,16 @@ public class SearchDocumentRepository {
 	}
 
 	/**
-	 * One page of the matching items in the requested order.
+	 * One page of the matching items in the requested order. A use case's budget shown to members only orders the page
+	 * for a {@code member} alone.
 	 */
-	public List<Hit> page(SearchRequest request, @Nullable Meaning meaning, boolean listedOnly, int limit, int offset) {
+	public List<Hit> page(SearchRequest request, @Nullable Meaning meaning, boolean listedOnly, boolean member,
+			int limit, int offset) {
 		String sql = matches(request) + RESULT + """
 				from matched m join search_document d on d.kind = m.kind and d.item_id = m.item_id cross join input
 				order by %s
 				limit :limit offset :offset
-				""".formatted(order(request));
+				""".formatted(order(request, member));
 		return matching(sql, request, meaning, listedOnly)
 			.param("limit", limit)
 			.param("offset", offset)
@@ -451,7 +453,7 @@ public class SearchDocumentRepository {
 		return MATCHES.formatted(terms(request.q()), scoped ? "materialized" : "not materialized");
 	}
 
-	private static String order(SearchRequest request) {
+	private static String order(SearchRequest request, boolean member) {
 		String sort = request.sort();
 		if ("name".equals(sort)) {
 			return "lower(d.title), d.item_id";
@@ -465,7 +467,9 @@ public class SearchDocumentRepository {
 			return "cast(d.facets ->> 'closesAt' as timestamptz) nulls last, d.item_id";
 		}
 		if ("budget".equals(sort)) {
-			return "cast(d.facets ->> 'budgetUsd' as numeric) desc nulls last, d.item_id";
+			return member ? "cast(d.facets ->> 'budgetUsd' as numeric) desc nulls last, d.item_id"
+					: "(case when d.facets ->> 'budgetMembersOnly' = 'true' then null"
+							+ " else cast(d.facets ->> 'budgetUsd' as numeric) end) desc nulls last, d.item_id";
 		}
 		return "m.score desc, d.title, d.item_id";
 	}
