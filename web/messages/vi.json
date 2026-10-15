@@ -6787,6 +6787,17 @@
       "subject": "Tiêu đề",
       "message": "Nội dung",
       "placeholders": "{organization} và {solution} được điền theo từng người nộp.",
+      "unknown": "{placeholders} sẽ không được điền. Dùng {organization} hoặc {solution}.",
+      "fixFirst": "Sửa các chỗ trống không được điền rồi mới công bố.",
+      "preview": {
+        "title": "Xem trước",
+        "to": "Gửi {organization} · {solution}",
+        "previous": "Người nộp trước",
+        "next": "Người nộp sau",
+        "position": "{index}/{count}",
+        "link": "View your application",
+        "signOff": "The BeyondPilot team at GenAI Fund"
+      },
       "confirmLabel": "Công bố",
       "release": "Công bố cho {count} người nộp",
       "notReady": "Chưa thể công bố",

@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/actions/button";
 import { ConfirmDialog } from "@/components/composites/confirm-dialog";
 import { LeaveGuard } from "@/components/composites/leave-guard";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,13 +16,17 @@ import { useNotify } from "@/hooks/use-notify";
 import { useFormatter } from "@/i18n/format";
 import { keepReleaseDraft, releaseOutcomes, type ReleaseEmails } from "@/lib/api/generated";
 
+import { type OutcomeRecipient, unknownPlaceholders } from "./outcome-placeholders";
+import { OutcomePreview } from "./outcome-preview";
+
 /** How long after the last key the emails are saved. */
 const SAVE_AFTER_MS = 1200;
 
 type ReleaseFormProps = {
   programId: string;
   emails: ReleaseEmails;
-  counts: { shortlisted: number; notSelected: number };
+  /** Who gets each group's email, with the names that fill it in. */
+  recipients: { shortlisted: OutcomeRecipient[]; notSelected: OutcomeRecipient[] };
   /** The program's applications have closed and every one has a decision. */
   ready: boolean;
   /** The words of what still holds the release back, when it is not ready. */
@@ -33,10 +37,18 @@ type ReleaseFormProps = {
 /**
  * The email each group gets, written by the operator, and the release itself. What is typed is
  * saved as the operator goes, so that it is there when the page is opened again; nothing is sent
- * until the release. Releasing asks again, naming how many applicants of each group get their
- * email: an email cannot be taken back.
+ * until the release. Each group's email is previewed as one of its applicants gets it, and a
+ * placeholder the backend would not fill in holds the release back. Releasing asks again, naming how
+ * many applicants of each group get their email: an email cannot be taken back.
  */
-function ReleaseForm({ programId, emails, counts, ready, blocked, released }: ReleaseFormProps) {
+function ReleaseForm({
+  programId,
+  emails,
+  recipients,
+  ready,
+  blocked,
+  released,
+}: ReleaseFormProps) {
   const t = useTranslations("Review.release");
   const notify = useNotify();
   const router = useRouter();
@@ -53,6 +65,15 @@ function ReleaseForm({ programId, emails, counts, ready, blocked, released }: Re
   // Saves go one after another: an earlier one never lands on top of a later one.
   const saving = useRef<Promise<void>>(Promise.resolve());
   const filled = Object.values(draft).every((value) => value.trim() !== "");
+  const counts = {
+    shortlisted: recipients.shortlisted.length,
+    notSelected: recipients.notSelected.length,
+  };
+  const unknown = {
+    shortlisted: unknownPlaceholders(draft.shortlistedSubject, draft.shortlistedMessage),
+    notSelected: unknownPlaceholders(draft.notSelectedSubject, draft.notSelectedMessage),
+  };
+  const mistyped = unknown.shortlisted.length + unknown.notSelected.length > 0;
 
   function write(next: ReleaseEmails) {
     edits.current += 1;
@@ -123,7 +144,22 @@ function ReleaseForm({ programId, emails, counts, ready, blocked, released }: Re
         <FieldDescription>
           {t("placeholders", { organization: "{organization}", solution: "{solution}" })}
         </FieldDescription>
+        {!released && unknown[key].length > 0 && (
+          <FieldError>
+            {t("unknown", {
+              placeholders: unknown[key].join(", "),
+              organization: "{organization}",
+              solution: "{solution}",
+            })}
+          </FieldError>
+        )}
       </Field>
+      <OutcomePreview
+        id={`${key}-preview`}
+        subject={draft[`${key}Subject`]}
+        message={draft[`${key}Message`]}
+        recipients={recipients[key]}
+      />
     </div>
   );
 
@@ -177,9 +213,15 @@ function ReleaseForm({ programId, emails, counts, ready, blocked, released }: Re
           className="flex flex-col gap-3 rounded-lg border bg-card p-5"
         >
           <p className="text-sm text-muted-foreground">
-            {!ready ? (blocked ?? t("notReady")) : filled ? t("checkFirst") : t("fillFirst")}
+            {!ready
+              ? (blocked ?? t("notReady"))
+              : !filled
+                ? t("fillFirst")
+                : mistyped
+                  ? t("fixFirst")
+                  : t("checkFirst")}
           </p>
-          <Button disabled={!ready || !filled} onClick={() => setAsking(true)}>
+          <Button disabled={!ready || !filled || mistyped} onClick={() => setAsking(true)}>
             {t("release", { count: counts.shortlisted + counts.notSelected })}
           </Button>
         </section>

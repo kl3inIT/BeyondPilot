@@ -255,6 +255,10 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 - **Draft.** `PUT …/release/draft` keeps the two subjects and messages as an operator is writing them, in
   `proposal_release_draft`; a part may be empty, and nothing is sent. The page saves a moment after the last key.
   It is refused with `PROPOSAL_RELEASED` once released, and the release removes the draft.
+- **Preview on the page.** Under each group's message the release page shows the email as one applicant of that group
+  gets it, with `{organization}` and `{solution}` filled in as the release fills them, one applicant after another,
+  and the link and sign-off the email adds (BEY-209). Any other `{…}` in a subject or message is named under it, and
+  Release stays disabled until it is fixed: the release would send it as typed.
 - **Release.** `POST …/release` is refused with `PROPOSAL_OUTCOMES_NOT_READY` before the close, when nothing was
   submitted, or while a submitted application is `under_review`, and with `PROPOSAL_RELEASED` once released. It stores the two subjects (at most 200
   characters) and messages (at most 5000) once in `proposal_release`.

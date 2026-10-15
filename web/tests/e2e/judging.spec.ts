@@ -313,6 +313,42 @@ test.describe("judging applications", () => {
     });
   });
 
+  test("each group's email is previewed as an applicant gets it, and a mistyped placeholder holds the release back", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const calls = await recordWrites(page);
+    await page.goto(`${admin}/release`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Release outcomes");
+
+    // The shortlisted email as its first applicant gets it, then as the second.
+    const preview = page.getByRole("region", { name: "Preview" });
+    await expect(preview).toContainText("To Pocket Policy · Claim Copilot");
+    await expect(preview).toContainText("Hi Pocket Policy,");
+    await expect(preview).toContainText("Claim Copilot is shortlisted.");
+    await expect(preview).toContainText("The BeyondPilot team at GenAI Fund");
+    await preview.getByRole("button", { name: "Next applicant" }).click();
+    await expect(preview).toContainText("Hi Plain Cover Pte,");
+    await expect(preview).toContainText("2 of 2");
+
+    // A placeholder the backend would not fill in is named, and the release waits for it.
+    await page.getByLabel("Message").fill("Hi {organisation},\n\n{Solution} is shortlisted.");
+    await expect(
+      page.getByText(
+        "{organisation}, {Solution} won't be filled in. Use {organization} or {solution}.",
+      ),
+    ).toBeVisible();
+    await expect(preview).toContainText("Hi {organisation},");
+    await expect(page.getByRole("button", { name: "Release to 3 applicants" })).toBeDisabled();
+    await page.getByLabel("Message").fill("Hi {organization},\n\n{solution} is shortlisted.");
+    await expect(page.getByRole("button", { name: "Release to 3 applicants" })).toBeEnabled();
+    await settled(page);
+    await expectNoSeriousA11yViolations(page);
+    expect(calls.filter((call) => !call.url.includes("/release/draft"))).toHaveLength(0);
+  });
+
   test("the emails of a release are saved as they are written, and leaving before that asks first", async ({
     page,
     context,

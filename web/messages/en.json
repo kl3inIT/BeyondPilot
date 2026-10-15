@@ -6787,6 +6787,17 @@
       "subject": "Subject",
       "message": "Message",
       "placeholders": "{organization} and {solution} are filled in for each applicant.",
+      "unknown": "{placeholders} won't be filled in. Use {organization} or {solution}.",
+      "fixFirst": "Fix the placeholders that won't be filled in, then release.",
+      "preview": {
+        "title": "Preview",
+        "to": "To {organization} · {solution}",
+        "previous": "Previous applicant",
+        "next": "Next applicant",
+        "position": "{index} of {count}",
+        "link": "View your application",
+        "signOff": "The BeyondPilot team at GenAI Fund"
+      },
       "confirmLabel": "Release",
       "release": "{count, plural, one {Release to # applicant} other {Release to # applicants}}",
       "notReady": "Not ready to release",
