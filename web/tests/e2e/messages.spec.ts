@@ -325,6 +325,8 @@ test.describe("messages", () => {
     baseURL,
   }) => {
     await signInAs(context, "owner", baseURL!);
+    // The browser reads the count, from the stub as from the backend.
+    await answerMessaging(page);
     await page.goto("/");
 
     // Two unread messages and one first message to answer.

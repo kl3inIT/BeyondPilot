@@ -2,12 +2,10 @@ import { ApiError } from "@/lib/api/client";
 import {
   getConversation,
   getConversationProspect,
-  getUnreadMessages,
   listConversations,
   type ConversationDetail,
   type ConversationList,
   type ConversationProspect,
-  type Unread,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 
@@ -53,21 +51,5 @@ export async function readProspect(target: MessagingTarget): Promise<ProspectRea
       return { refusal: error.code };
     }
     throw error;
-  }
-}
-
-/**
- * What waits for the caller in Messages, for the header message icon; a failure counts as nothing, since
- * the header is on every page. Server only.
- */
-export async function readUnread(): Promise<Unread> {
-  try {
-    const { data } = await getUnreadMessages({
-      ...(await sessionRequest()),
-      signal: AbortSignal.timeout(3000),
-    });
-    return data;
-  } catch {
-    return { requests: 0, unread: 0 };
   }
 }
