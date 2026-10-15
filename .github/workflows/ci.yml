@@ -84,7 +84,7 @@ jobs:
 
       - name: Upload backend test reports
         if: ${{ failure() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: backend-test-reports
           path: backend/build/reports/tests/
@@ -155,7 +155,7 @@ jobs:
 
       - name: Upload Playwright report
         if: ${{ failure() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: playwright-report-${{ matrix.shard }}
           path: web/playwright-report/
@@ -166,7 +166,7 @@ jobs:
       # pictures of the tests it ran, and none when it ran none of them.
       - name: Upload the pictures of the Matched solutions page
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: matching-pictures-${{ matrix.shard }}
           path: web/test-results/*/member-*.png
@@ -288,7 +288,7 @@ jobs:
             "$GITHUB_SHA" "$API_IMAGE" "$WEB_IMAGE" > release/images.env
 
       - name: Upload the release
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-${{ github.sha }}
           path: release/images.env
