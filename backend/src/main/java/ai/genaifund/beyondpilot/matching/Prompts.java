@@ -23,8 +23,16 @@ final class Prompts {
 	 * keeps what a capability acts on and what for, names only the heart of the problem as required, defines each
 	 * status by what the quote shows, and asks for a reason between the quote and the status. Version 5 only adds
 	 * a label of two or three words to each requirement, for the lists of the screen; its other words are those of 4.
+	 * Version 6 moves the use case and its requirements from after a candidate's sources into the instructions, so
+	 * that what every candidate of a run shares comes first and the provider can cache it; its words are those of 5.
 	 */
-	static final int VERSION = 5;
+	static final int VERSION = 6;
+
+	/**
+	 * The wording of {@link #REQUIREMENTS}, part of what a use case's requirements were read from. It stays 5 while only
+	 * the judgment changes, so a new judgment does not read every brief again.
+	 */
+	static final int REQUIREMENTS_VERSION = 5;
 
 	static final String REQUIREMENTS = """
 			You read an enterprise's use case brief and list what a vendor's product must do to answer it, \
@@ -69,7 +77,8 @@ final class Prompts {
 
 	static final String JUDGMENT = """
 			You assess whether one AI product fits an enterprise use case, requirement by requirement, from the \
-			vendor's own sources only. The sources come first, then the use case, its problem and its requirements.
+			vendor's own sources only. The use case, its problem and its requirements follow these instructions; \
+			the vendor's sources come in the message.
 
 			For each requirement, in `findings`, with its id in `requirementId`, fill in this order:
 			1. `quote`: the passage of the sources that best shows the product doing what the requirement names, copied word \
@@ -152,22 +161,31 @@ final class Prompts {
 	private static final int PROBLEM_LIMIT = 1500;
 
 	/**
-	 * One candidate as the model reads it: every source first, then the use case, its problem and its requirements.
-	 * Long material before the question is read better than after it.
+	 * The instructions of a run's judgments: {@link #JUDGMENT}, then the use case, its problem and its requirements.
+	 * Every candidate of the run is judged against the same text, so it is the part the provider caches.
 	 */
-	static String candidate(UseCaseBrief brief, List<Requirement> requirements, Map<String, String> sources) {
+	static String judging(UseCaseBrief brief, List<Requirement> requirements) {
 		String listed = requirements.stream()
 			.map(requirement -> requirement.name() + " (" + requirement.kind() + ", " + requirement.necessity() + "): "
 					+ requirement.statement())
 			.collect(Collectors.joining("\n"));
+		return JUDGMENT + "\n\nUSE CASE: " + brief.title() + "\nIndustry: "
+				+ (brief.industry() == null ? "not named" : brief.industry()) + "\nTechnologies named: "
+				+ (brief.technologies().isEmpty() ? "none" : String.join(", ", brief.technologies())) + "\nProblem: "
+				+ problem(brief) + "\n\nREQUIREMENTS:\n" + listed;
+	}
+
+	/**
+	 * One candidate as the model reads it: its sources, then the question again in a line, since what is asked is read
+	 * better after long material than before it.
+	 */
+	static String candidate(Map<String, String> sources) {
 		String body = sources.entrySet()
 			.stream()
 			.map(source -> "<source name=\"" + source.getKey() + "\">\n" + source.getValue() + "\n</source>")
 			.collect(Collectors.joining("\n"));
-		return "PRODUCT SOURCES:\n" + body + "\n\nUSE CASE: " + brief.title() + "\nIndustry: "
-				+ (brief.industry() == null ? "not named" : brief.industry()) + "\nTechnologies named: "
-				+ (brief.technologies().isEmpty() ? "none" : String.join(", ", brief.technologies())) + "\nProblem: "
-				+ problem(brief) + "\n\nREQUIREMENTS:\n" + listed;
+		return "PRODUCT SOURCES:\n" + body
+				+ "\n\nJudge this product against the use case and each of its requirements, as instructed.";
 	}
 
 	/** What the enterprise wants solved, in its own words, to a limit. */

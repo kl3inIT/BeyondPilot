@@ -246,6 +246,8 @@ class MatchingRuns {
 		AtomicReference<@Nullable String> refusal = new AtomicReference<>();
 		long judging = System.nanoTime();
 		Semaphore room = new Semaphore(limits.parallel());
+		// The same instructions for every candidate of the run, first in each call, so the provider caches them.
+		String instructions = Prompts.judging(brief, read.requirements());
 		try (AiChat chat = models.chat(AiTask.MATCHING, new AiSubject("matching_run", run.id().toString()));
 				ExecutorService workers = Executors.newVirtualThreadPerTaskExecutor()) {
 			matching.judgedWith(run.id(), chat.modelName());
@@ -266,8 +268,8 @@ class MatchingRuns {
 							return;
 						}
 						changes.tell(run.useCaseId(), Kind.READING, solutionId);
-						Asking.Answer<Judgment> answer = Asking.ask(chat, Prompts.JUDGMENT,
-								Prompts.candidate(brief, read.requirements(), sources.texts()), Judgment.class);
+						Asking.Answer<Judgment> answer = Asking.ask(chat, instructions,
+								Prompts.candidate(sources.texts()), Judgment.class);
 						calls.addAndGet(answer.calls());
 						input.addAndGet(answer.inputTokens());
 						output.addAndGet(answer.outputTokens());

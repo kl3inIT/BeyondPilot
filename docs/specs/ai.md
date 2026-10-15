@@ -90,6 +90,7 @@ The AI providers BeyondPilot calls, the chat models operators enabled, the model
 - **`AiModels.chat(task, subject)`** answers an `AiChat` holding a Spring AI `ChatClient`. The caller closes it when its work is done.
 - **Clients are leased** (`ModelClients`, after MemoryOS): one per model and level, at most `beyondpilot.ai.max-clients` (32). When the provider or the model is saved, the next call gets a new client and the old one is closed once its last call has returned. A full cache gives up an idle client, and refuses with `AI_BUSY` when every one is in use.
 - **A call** waits at most `beyondpilot.ai.call-timeout` (120 s) and is retried once by the client.
+- **The provider's prompt cache.** The Anthropic adapter marks every call's system prompt for Anthropic's five-minute cache (`AnthropicCacheStrategy.SYSTEM_ONLY`). Calls that share a long system prompt, such as matching's judgments of one run, read it at the cached price after the first; a system prompt under the model's minimum is not cached and costs nothing more. OpenAI-compatible providers cache a long shared start of the prompt by themselves.
 - **Every call is recorded** by one advisor around the whole call, from Spring AI's `Usage`: tokens in and out, tokens read from and written to the provider's cache, the duration, the outcome and the model's prices at that moment. A call that fails is recorded with the class of the failure. No prompt and no answer is kept, and a record that cannot be written never fails the call.
 
 ## HTTP

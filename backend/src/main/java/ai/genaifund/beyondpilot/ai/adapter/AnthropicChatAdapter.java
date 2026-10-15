@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.anthropic.models.messages.OutputConfig;
+import org.springframework.ai.anthropic.AnthropicCacheOptions;
+import org.springframework.ai.anthropic.AnthropicCacheStrategy;
 import org.springframework.ai.anthropic.AnthropicChatModel;
 import org.springframework.ai.anthropic.AnthropicChatOptions;
 import org.springframework.ai.chat.model.ChatModel;
@@ -19,6 +21,12 @@ import org.springframework.stereotype.Component;
  * several of them refuse {@code disabled} too (Sonnet 5.5, Opus 5.5, Fable). Models before 4.6, which know a budget
  * only, are not served (platform.claude.com/docs/en/build-with-claude/thinking-troubleshooting, read on 10 October
  * 2026).
+ *
+ * <p>
+ * The system prompt is marked for Anthropic's prompt cache, for five minutes. A task whose calls share one long system
+ * prompt, as matching's judgments of one run do, then pays a tenth of the input price for it after the first call. A
+ * system prompt shorter than the model's minimum (1,024 tokens on Sonnet) is not cached and costs nothing more, so a
+ * task asked once is not charged the cache write.
  */
 @Component
 class AnthropicChatAdapter implements ChatAdapter {
@@ -53,7 +61,8 @@ class AnthropicChatAdapter implements ChatAdapter {
 			.model(model)
 			.timeout(options.timeout())
 			.maxRetries(1)
-			.maxTokens(limit);
+			.maxTokens(limit)
+			.cacheOptions(AnthropicCacheOptions.builder().strategy(AnthropicCacheStrategy.SYSTEM_ONLY).build());
 		chat.thinkingAdaptive();
 		chat.effort(effort(options));
 		return new AnswerWithoutThinking(AnthropicChatModel.builder().options(chat.build()).build());
