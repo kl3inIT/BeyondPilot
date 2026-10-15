@@ -1,6 +1,6 @@
 "use client";
 
-import { MessagesSquareIcon } from "lucide-react";
+import { MessageCircleMoreIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
@@ -57,7 +57,7 @@ function HeaderMessages({ waiting }: { waiting: number }) {
       }
       className="hit-area relative size-9 shrink-0 rounded-full px-0"
     >
-      <MessagesSquareIcon aria-hidden="true" className="size-5" />
+      <MessageCircleMoreIcon aria-hidden="true" className="size-5" />
       {count > 0 && (
         <Badge
           variant="notification"

@@ -86,3 +86,13 @@ After synchronizing the PR branch with main, `pnpm --dir web check` passed again
 ## Header icon consistency — 15 October 2026
 
 Replaced the 24px `MessageCircleMoreIcon` with the messaging screen’s existing Lucide `MessagesSquareIcon` at 20px. `pnpm --dir web check` passed: 82 test files / 717 tests, matching catalogs (5719 keys), 247 covered failure codes, and the remaining gate steps. The current main was already contained in anhnd; no merge conflict was present.
+
+## Staging messaging acceptance — 15 October 2026
+
+Walked the deployed a2ea15b7 revision on staging with playwright-cli and two accounts the user signed into directly. The actual header glyph was Lucide MessagesSquareIcon at 20px, between language and avatar. A pending request produced badge 1; accepting it enabled both composers without a reload and cleared the badge. Sending two labelled test messages while the receiver stayed on the homepage produced badge 0 → 1 → 2, matching the unread API. Reading the conversation displayed both messages, cleared the API total and badge, and showed Seen to the sender. A third message and a reply arrived live in the two open conversations without reloading; all four sends returned HTTP 200. Both accounts ended with unread 0 and requests 0.
+
+Messages was absent from the avatar menu. The header and conversation had no horizontal overflow at 390 × 844; desktop was checked at 1440 × 900. The screenshots were visually reviewed. A video of the receiver’s interactions and screenshots of counts 1, 2 and zero, the avatar menu and desktop/mobile chat are retained locally under the git-ignored `.tmp/staging-messages-20261015/`, with a detailed report. The badge’s ten-second polling delay is expected; the open conversation uses live events. The existing request was accepted and four labelled test messages remain in this conversation.
+
+## Round header message icon — 15 October 2026
+
+Changed the header glyph to Lucide MessageCircleMoreIcon at 20px, matching the requested round speech bubble with three dots while retaining the library’s default stroke. `pnpm --dir web check` passed: 82 files / 717 tests, 5719 matching catalog keys, 247 covered failure codes, ESLint, Prettier, TypeScript, generated-client drift and knip. The staging acceptance above exercised the previous square glyph; the badge and messaging behavior are unchanged by this visual adjustment.
