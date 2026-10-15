@@ -16,6 +16,10 @@ const toggleVariants = cva(
         // Chosen is `aria-pressed` on a toggle and `aria-checked` on the radio of a `RadioGroupToggle`.
         rating:
           "border border-input bg-background text-foreground hover:bg-muted aria-checked:border-primary aria-checked:bg-primary aria-checked:text-primary-foreground aria-checked:hover:bg-primary aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary",
+        // One part of a segmented control (`ToggleGroup variant="segmented"`): the parts sit on a sunken
+        // track and the chosen one is raised, as Linear switches its views.
+        segmented:
+          "gap-1.5 bg-transparent text-muted-foreground hover:bg-transparent hover:text-foreground aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-xs",
       },
       size: {
         default:

@@ -7430,7 +7430,8 @@
       "label": "Giải pháp theo quyết định của bạn",
       "matches": "Phù hợp",
       "shortlist": "Đã lưu",
-      "removed": "Đã loại"
+      "removed": "Đã loại",
+      "notMatched": "Không khớp"
     },
     "groups": {
       "direct": {
@@ -7456,6 +7457,10 @@
       "kept": {
         "title": "Đã lưu, AI không còn gợi ý",
         "about": "Chúng vẫn ở đây cho tới khi có người bỏ lưu."
+      },
+      "notMatched": {
+        "title": "Không khớp",
+        "about": "AI đã đọc nhưng không xếp vào nhóm nào. Chỉ GenAI Fund thấy."
       },
       "emptyDirect": "Chưa giải pháp nào đáp ứng yêu cầu chính."
     },
@@ -7582,7 +7587,8 @@
       "none": "AI chưa tìm thấy giải pháp nào trên BeyondPilot phù hợp với use case này.",
       "shortlist": "Hãy lưu những giải pháp bạn muốn trao đổi.",
       "need": "Ở đây chưa giải pháp nào có dẫn chứng cho: {need}",
-      "clear": "Xem tất cả giải pháp"
+      "clear": "Xem tất cả giải pháp",
+      "notMatched": "AI đã xếp mọi giải pháp đã đọc vào một nhóm."
     },
     "done": {
       "started": "Đang tìm giải pháp.",

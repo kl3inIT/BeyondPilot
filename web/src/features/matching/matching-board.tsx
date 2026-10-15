@@ -1,6 +1,12 @@
 "use client";
 
-import { ChevronDownIcon, CircleAlertIcon, XIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  CircleAlertIcon,
+  GalleryVerticalEndIcon,
+  ListIcon,
+  XIcon,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import {
@@ -85,7 +91,7 @@ const MatchingReview = dynamic(() =>
   import("./matching-review").then((module) => module.MatchingReview),
 );
 
-const tabNames = ["matches", "shortlist", "removed"] as const;
+const tabNames = ["matches", "shortlist", "removed", "notMatched"] as const;
 type TabName = (typeof tabNames)[number];
 
 /** How long a row that entered a group stays marked, in milliseconds: its highlight has faded by then. */
@@ -299,7 +305,11 @@ function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoar
   const several = needs.length > 1;
   const chosenNeed = several ? needs.find((one) => one.position === need) : undefined;
   const position = chosenNeed ? chosenNeed.position : null;
-  const sections = grouped(withNeed(tab === "shortlist" ? tabs.shortlist : tabs.matches, position));
+  // Not matched is the operators' alone; a member never has it.
+  const visibleTabs = operator ? tabNames : tabNames.filter((name) => name !== "notMatched");
+  const listed =
+    tab === "shortlist" ? tabs.shortlist : tab === "notMatched" ? tabs.notMatched : tabs.matches;
+  const sections = grouped(withNeed(listed, position));
   const total = sectionNames.reduce((sum, section) => sum + sections[section].length, 0);
   // The last group can be folded on the Matches tab, and only under a stronger group: alone, it is the
   // list. It starts open with every row, since a closed or shortened group read as "there are only
@@ -559,6 +569,11 @@ function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoar
           {t("empty.shortlist")}
         </p>
       )}
+      {total === 0 && !chosenNeed && tab === "notMatched" && (
+        <p className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
+          {t("empty.notMatched")}
+        </p>
+      )}
       {sectionNames.map((section) => {
         // The first group is drawn even when it is empty, so the page says that nobody is a strong fit.
         const lone =
@@ -568,7 +583,13 @@ function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoar
         }
         const view = views[section];
         // While a run works, what is not read yet is what the AI is reading.
-        const name = section === "waiting" && reads ? "reading" : section;
+        // On Not matched, the solutions in no group are what the AI left out, not what someone kept.
+        const name =
+          section === "waiting" && reads
+            ? "reading"
+            : section === "kept" && tab === "notMatched"
+              ? "notMatched"
+              : section;
         return (
           <GroupCard
             key={section}
@@ -634,7 +655,8 @@ function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoar
     </div>
   );
 
-  const anything = tabs.matches.length + tabs.removed.length > 0;
+  const anything =
+    tabs.matches.length + tabs.removed.length + (operator ? tabs.notMatched.length : 0) > 0;
   const covered = coverage.filter((one) => one.best === "met").length;
   const gaps = coverage.filter((one) => one.best === "not_shown");
 
@@ -659,17 +681,19 @@ function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoar
         />
       )}
 
-      {!anything && matching.run?.state === "done" && (
+      {tabs.matches.length + tabs.removed.length === 0 && matching.run?.state === "done" && (
         <p className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
           {t("empty.none")}
         </p>
       )}
 
       {anything && view !== null && (
+        // One control of two parts on a sunken track, the chosen part raised, as Linear switches its views.
         <ToggleGroup
           aria-label={t("review.view.label")}
-          variant="outline"
+          variant="segmented"
           size="sm"
+          spacing={0.5}
           className="self-start"
           value={[view]}
           onValueChange={(next) => {
@@ -679,11 +703,15 @@ function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoar
             }
           }}
         >
-          {viewNames.map((name) => (
-            <ToggleGroupItem key={name} value={name} className="pointer-coarse:min-h-11">
-              {t(`review.view.${name}`)}
-            </ToggleGroupItem>
-          ))}
+          {viewNames.map((name) => {
+            const Icon = name === "one" ? GalleryVerticalEndIcon : ListIcon;
+            return (
+              <ToggleGroupItem key={name} value={name} className="pointer-coarse:min-h-11">
+                <Icon aria-hidden="true" />
+                {t(`review.view.${name}`)}
+              </ToggleGroupItem>
+            );
+          })}
         </ToggleGroup>
       )}
 
@@ -766,7 +794,7 @@ function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoar
                 >
                   {t("filter.showing", {
                     count: total,
-                    total: (tab === "shortlist" ? tabs.shortlist : tabs.matches).length,
+                    total: listed.length,
                     need:
                       coverage.find((one) => one.position === chosenNeed.position)?.name ??
                       chosenNeed.statement,
@@ -782,7 +810,7 @@ function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoar
           <Tabs
             value={tab}
             onValueChange={(next) => {
-              setTab(tabNames.find((name) => name === next) ?? "matches");
+              setTab(visibleTabs.find((name) => name === next) ?? "matches");
               setRemovingId(null);
             }}
           >
@@ -791,7 +819,7 @@ function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoar
               aria-label={t("tabs.label")}
               className="pointer-coarse:min-h-11"
             >
-              {tabNames.map((name) => (
+              {visibleTabs.map((name) => (
                 <TabsTrigger key={name} value={name} className="pointer-coarse:min-h-11">
                   {t(`tabs.${name}`)}{" "}
                   <span className="text-xs text-muted-foreground">
@@ -802,6 +830,7 @@ function MatchingBoard({ matching: read, selected, received = {} }: MatchingBoar
             </TabsList>
             <TabsContent value="matches">{listAndPanel}</TabsContent>
             <TabsContent value="shortlist">{listAndPanel}</TabsContent>
+            {operator && <TabsContent value="notMatched">{listAndPanel}</TabsContent>}
             {/* What was removed is a plain list: it has the whole width, and no panel beside it. */}
             <TabsContent value="removed">
               <MatchingRemoved

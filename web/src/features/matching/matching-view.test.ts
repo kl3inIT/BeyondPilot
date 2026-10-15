@@ -198,6 +198,12 @@ describe("tabs and groups", () => {
     expect(tabs.removed.map((one) => one.solutionName)).toEqual(["Peakflo"]);
   });
 
+  it("lists as not matched what a run put in no group, until someone decides on it or invites it", () => {
+    const shortlisted = { ...none, solutionName: "Kept", decision: "shortlisted" as const };
+    const invited = { ...none, solutionName: "Invited", invitedAt: "2026-10-14T03:00:00Z" };
+    expect(tabsOf([direct, none, shortlisted, invited]).notMatched).toEqual([none]);
+  });
+
   it("count as recommended what is judged, in a group and not removed", () => {
     expect(recommendedOf(candidates).map((one) => one.solutionName)).toEqual([
       "Staple",

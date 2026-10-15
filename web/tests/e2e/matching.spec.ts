@@ -514,6 +514,35 @@ test.describe("solutions matched to a use case", () => {
     await expect(page.getByRole("region", { name: "Why is Staple AI not a fit?" })).toBeVisible();
   });
 
+  test("an operator reads what the AI put in no group, with its reasons; a member has no such tab", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto(adminPath);
+    await page.getByRole("button", { name: "List", exact: true }).click();
+    await page.getByRole("tab", { name: "Not matched 1" }).click();
+    await expect(page.getByRole("heading", { name: /^Not matched/ })).toBeVisible();
+    await expect(page.getByText("AI read these and put them in no group.")).toBeVisible();
+    await expect(rowName(page, "Staple AI")).toHaveCount(0);
+    await rowName(page, "OmniShelf").click();
+    const panel = isMobile
+      ? page.getByRole("dialog")
+      : page.getByRole("complementary", { name: "The solution you picked" });
+    await expect(panel.getByRole("heading", { level: 2, name: "OmniShelf" })).toBeVisible();
+    await expect(panel.getByText("It reads shelf photos, not claims.")).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+
+    await context.clearCookies();
+    await signInAs(context, "owner", baseURL!);
+    await page.goto(memberPath);
+    await page.getByRole("button", { name: "List", exact: true }).click();
+    await expect(page.getByRole("tab", { name: /^Matches/ })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^Not matched/ })).toHaveCount(0);
+  });
+
   test("an operator reads how many people answered about a group", async ({
     page,
     context,
