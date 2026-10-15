@@ -3,12 +3,20 @@ import { siClaude, siCursor, siZedindustries } from "simple-icons";
 
 import { openAiMark } from "@/components/composites/openai-mark";
 
-type Mark = { viewBox: string; path: string };
+/**
+ * A mark and, for a brand that has one, its colour from Simple Icons, which reads on both themes.
+ * OpenAI's and Cursor's marks are black or white by their own guidelines, so they follow the text.
+ */
+type Mark = { viewBox: string; path: string; colour?: string };
 
 const openAi: Mark = openAiMark;
-const claude: Mark = { viewBox: "0 0 24 24", path: siClaude.path };
+const claude: Mark = { viewBox: "0 0 24 24", path: siClaude.path, colour: `#${siClaude.hex}` };
 const cursor: Mark = { viewBox: "0 0 24 24", path: siCursor.path };
-const zed: Mark = { viewBox: "0 0 24 24", path: siZedindustries.path };
+const zed: Mark = {
+  viewBox: "0 0 24 24",
+  path: siZedindustries.path,
+  colour: `#${siZedindustries.hex}`,
+};
 
 /** The marks of the AI apps people connect, by the host their client ID belongs to. */
 const marksByHost: Record<string, Mark> = {
@@ -22,8 +30,9 @@ const marksByHost: Record<string, Mark> = {
 const marksByClient: Record<string, Mark> = { cursor };
 
 /**
- * An AI app's mark in a framed square, in the text colour so it follows the theme: OpenAI's for ChatGPT and Codex, Claude's, Zed's, Cursor's, or a
- * plain window for any other. Decorative: the app's name always stands beside it.
+ * An AI app's mark in a framed square: OpenAI's for ChatGPT and Codex and Cursor's in the text colour,
+ * Claude's and Zed's in their brand colour, or a plain window for any other. Decorative: the app's
+ * name always stands beside it.
  */
 function AppMark({
   host,
@@ -39,7 +48,7 @@ function AppMark({
   const drawn = mark ? (
     <svg
       viewBox={mark.viewBox}
-      fill="currentColor"
+      fill={mark.colour ?? "currentColor"}
       className={inline ? "size-4 text-foreground" : "size-6.5 text-foreground"}
     >
       <path d={mark.path} />

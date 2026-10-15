@@ -1,28 +1,58 @@
 "use client";
 
-import { MessageSquareIcon, SparklesIcon } from "lucide-react";
+import { ExternalLinkIcon, MessageSquareIcon, SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId } from "react";
 
 import { CopyButton } from "@/components/actions/copy-button";
+import { TextButton } from "@/components/actions/text-button";
 import { HelpPopover } from "@/components/composites/help-popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AppMark } from "@/features/identity/app-mark";
 
-/** The apps the pages explain, with the host their marks are known by and the steps to connect. */
-const apps = {
+type AppName = "chatgpt" | "claude" | "codex" | "other";
+
+/** One step: its sentence, and the command it asks to run, shown on its own line to copy. */
+type Step = { key: `apps.${AppName}.step${1 | 2 | 3}`; command?: (address: string) => string };
+
+/**
+ * The apps the pages explain: the host their marks are known by, the steps to connect, and the app's
+ * own guide to MCP where it publishes one. Commands are typed as they stand, so they are not words
+ * to translate.
+ */
+const apps: Record<AppName, { host: string | null; steps: readonly Step[]; guide?: string }> = {
   chatgpt: {
     host: "chatgpt.com",
-    steps: ["apps.chatgpt.step1", "apps.chatgpt.step2", "apps.chatgpt.step3"],
+    steps: [
+      { key: "apps.chatgpt.step1" },
+      { key: "apps.chatgpt.step2" },
+      { key: "apps.chatgpt.step3" },
+    ],
   },
   claude: {
     host: "claude.ai",
-    steps: ["apps.claude.step1", "apps.claude.step2", "apps.claude.step3"],
+    steps: [
+      { key: "apps.claude.step1" },
+      { key: "apps.claude.step2" },
+      { key: "apps.claude.step3" },
+    ],
+    guide: "https://claude.com/docs/connectors/custom/add-unlisted",
   },
-  codex: { host: "chatgpt.com", steps: ["apps.codex.step1", "apps.codex.step2"] },
-  other: { host: null, steps: ["apps.other.step1", "apps.other.step3"] },
-} as const;
+  codex: {
+    host: "chatgpt.com",
+    steps: [
+      {
+        key: "apps.codex.step1",
+        command: (address) => `codex mcp add beyondpilot --url ${address}`,
+      },
+      { key: "apps.codex.step2", command: () => "codex mcp login beyondpilot" },
+      { key: "apps.codex.step3" },
+    ],
+    guide: "https://learn.chatgpt.com/docs/extend/mcp?surface=cli",
+  },
+  other: { host: null, steps: [{ key: "apps.other.step1" }, { key: "apps.other.step3" }] },
+};
 
 type AppKey = keyof typeof apps;
 
@@ -36,6 +66,18 @@ function stepParts(address: string) {
     ui: (chunks: React.ReactNode) => <span className="font-medium">{chunks}</span>,
     cmd: (chunks: React.ReactNode) => <code className="font-mono text-xs break-all">{chunks}</code>,
   };
+}
+
+/** A command to run as it stands, on its own line in the type of a terminal, with a button that copies it. */
+function Command({ command }: { command: string }) {
+  const t = useTranslations("Mcp.connect");
+
+  return (
+    <div className="flex items-center gap-2 rounded-lg bg-muted py-1 pr-1 pl-3">
+      <code className="min-w-0 flex-1 font-mono text-xs break-all">{command}</code>
+      <CopyButton appearance="icon" value={command} label={t("copyCommand")} />
+    </div>
+  );
 }
 
 /**
@@ -82,16 +124,28 @@ function AppSteps({ address, keys }: { address: string; keys: readonly AppKey[] 
           <TabsContent key={key} value={key}>
             <ol className="mt-4 flex flex-col gap-3">
               {apps[key].steps.map((step, index) => (
-                <li key={step} className="flex items-start gap-3 text-sm">
+                <li key={step.key} className="flex items-start gap-3 text-sm">
                   <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-primary">
                     {index + 1}
                   </span>
-                  <span className="min-w-0 pt-0.5 break-words">
-                    {t.rich(step, stepParts(address))}
-                  </span>
+                  <div className="flex min-w-0 flex-1 flex-col gap-2 pt-0.5">
+                    <span className="break-words">{t.rich(step.key, stepParts(address))}</span>
+                    {step.command && <Command command={step.command(address)} />}
+                  </div>
                 </li>
               ))}
             </ol>
+            {apps[key].guide && (
+              <TextButton
+                href={apps[key].guide}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4"
+              >
+                {t("guide", { app: t(`apps.${key}.name`) })}
+                <ExternalLinkIcon aria-hidden="true" />
+              </TextButton>
+            )}
             {/* Not a step: what only the person whose app names no client needs to know. */}
             {key === "other" && (
               <p className="mt-3 flex items-center gap-1 text-sm text-muted-foreground">

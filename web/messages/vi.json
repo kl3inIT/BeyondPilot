@@ -683,8 +683,9 @@
         },
         "codex": {
           "name": "Codex",
-          "step1": "Trong terminal, chạy <cmd>codex mcp add beyondpilot --url {address}</cmd>",
-          "step2": "Rồi chạy <cmd>codex mcp login beyondpilot</cmd>. Khi trình duyệt mở BeyondPilot, hãy đăng nhập và chọn <ui>Cho phép</ui>."
+          "step1": "Trong terminal, thêm BeyondPilot vào Codex:",
+          "step2": "Đăng nhập: khi trình duyệt mở BeyondPilot, hãy đăng nhập và chọn <ui>Cho phép</ui>.",
+          "step3": "Kiểm tra: chạy <cmd>/mcp</cmd> trong Codex và tìm beyondpilot cùng các công cụ của nó."
         },
         "other": {
           "name": "Ứng dụng khác",
@@ -702,7 +703,9 @@
         "claims": "Tìm giải pháp AI xử lý hồ sơ bồi thường bảo hiểm đã triển khai ở Việt Nam.",
         "programs": "Chương trình AI nào của GenAI Fund đang nhận hồ sơ?",
         "compare": "So sánh các voice agent trên BeyondPilot cho tổng đài của ngân hàng."
-      }
+      },
+      "copyCommand": "Sao chép lệnh",
+      "guide": "Hướng dẫn MCP của {app}"
     },
     "apps": {
       "none": "Chưa có ứng dụng nào kết nối",
