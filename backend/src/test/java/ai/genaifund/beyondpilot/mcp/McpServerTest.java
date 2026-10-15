@@ -148,7 +148,7 @@ class McpServerTest {
 		assertThat(JsonPath.<String>read(all, "$.items[0].clientId")).isEqualTo(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.apps[*].clientId")).contains(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch", "list_applications",
-				"list_pending_reviews");
+				"get_application", "read_application_file", "list_pending_reviews");
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&outcome=refused"),
 				"$.total")).isEqualTo(1);
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&tool=search"),
@@ -297,7 +297,8 @@ class McpServerTest {
 		McpSyncClient app = app(token, "/mcp/operator");
 		app.initialize();
 		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
-			.containsExactly("search", "fetch", "list_applications", "list_pending_reviews");
+			.containsExactly("search", "fetch", "list_applications", "get_application",
+					"read_application_file", "list_pending_reviews");
 
 		String found = text(app.callTool(McpSchema.CallToolRequest.builder("search")
 			.arguments(Map.of("query", "hidden agent " + word))
@@ -387,7 +388,7 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(6);
+			.isEqualTo(8);
 
 		switchTool("user", "fetch", false);
 		try {

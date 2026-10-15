@@ -7,7 +7,6 @@ import {
   FileTextIcon,
   LayoutDashboardIcon,
   LogOutIcon,
-  MessagesSquareIcon,
   UserRoundCogIcon,
   UserRoundIcon,
 } from "lucide-react";
@@ -15,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -37,8 +36,6 @@ type AccountMenuProps = {
   operator: boolean;
   /** Whether they judge a program's applications, which their Reviews lead to. */
   reviewer?: boolean;
-  /** How many messages they have not read and first messages wait for them, together. */
-  waiting?: number;
 };
 
 /**
@@ -51,7 +48,7 @@ function AccountMenuPanel({
   email,
   operator,
   children,
-}: Omit<AccountMenuProps, "reviewer" | "waiting"> & { children: React.ReactNode }) {
+}: Omit<AccountMenuProps, "reviewer"> & { children: React.ReactNode }) {
   const t = useTranslations("Site.account");
   const router = useRouter();
   const [state, setState] = useState<"idle" | "pending" | "failed">("idle");
@@ -97,11 +94,9 @@ function AccountMenuPanel({
 function SiteAccountItems({
   operator,
   reviewer = false,
-  waiting = 0,
 }: {
   operator: boolean;
   reviewer?: boolean;
-  waiting?: number;
 }) {
   const t = useTranslations("Site.account");
 
@@ -118,16 +113,6 @@ function SiteAccountItems({
       <DropdownMenuItem render={<Link href={siteRoutes.talentProfile} />}>
         <UserRoundIcon aria-hidden="true" />
         {t("talentProfile")}
-      </DropdownMenuItem>
-      <DropdownMenuItem render={<Link href={siteRoutes.messages} />}>
-        <MessagesSquareIcon aria-hidden="true" />
-        {t("messages")}
-        {waiting > 0 && (
-          <Badge className="ml-auto">
-            <span aria-hidden="true">{waiting}</span>
-            <span className="sr-only">{t("messagesWaiting", { count: waiting })}</span>
-          </Badge>
-        )}
       </DropdownMenuItem>
       <DropdownMenuItem render={<Link href={siteRoutes.account} />}>
         <UserRoundCogIcon aria-hidden="true" />
@@ -154,7 +139,7 @@ function SiteAccountItems({
 }
 
 /** The signed-in person's place in the header: an avatar that opens their account menu. */
-function AccountMenu({ name, email, operator, reviewer, waiting = 0 }: AccountMenuProps) {
+function AccountMenu({ name, email, operator, reviewer }: AccountMenuProps) {
   const t = useTranslations("Site.account");
 
   return (
@@ -163,25 +148,18 @@ function AccountMenu({ name, email, operator, reviewer, waiting = 0 }: AccountMe
         render={
           <button
             type="button"
-            aria-label={
-              waiting > 0
-                ? t("openWaiting", { name: name ?? email, count: waiting })
-                : t("open", { name: name ?? email })
-            }
+            aria-label={t("open", { name: name ?? email })}
             className="hit-area rounded-full text-sm transition-shadow outline-none hover:ring-1 hover:ring-ring focus-visible:ring-3 focus-visible:ring-ring/50 data-popup-open:ring-1 data-popup-open:ring-ring"
           />
         }
       >
         <Avatar className="size-9">
           <AvatarFallback variant="accent">{initials(name, email)}</AvatarFallback>
-          {/* The count is in the menu, next to Messages; here a mark says that something waits,
-              and the name of the button says how much. */}
-          {waiting > 0 && <AvatarBadge aria-hidden="true" className="top-0 bottom-auto" />}
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-66">
         <AccountMenuPanel name={name} email={email} operator={operator}>
-          <SiteAccountItems operator={operator} reviewer={reviewer} waiting={waiting} />
+          <SiteAccountItems operator={operator} reviewer={reviewer} />
         </AccountMenuPanel>
       </DropdownMenuContent>
     </DropdownMenu>

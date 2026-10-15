@@ -22,7 +22,6 @@
     },
     "account": {
       "open": "Account menu for {name}",
-      "openWaiting": "Account menu for {name}, {count, plural, one {# waits for you} other {# wait for you}}",
       "operator": "Operator",
       "signOut": "Sign out",
       "signOutFailed": "We could not sign you out. Try again.",
@@ -2975,6 +2974,8 @@
           "search": "Finds solutions listed or not, programs, talent, use cases and companies.",
           "fetch": "Reads one of them in full by the id search returned.",
           "list_applications": "Lists a program's applications with GenAI Fund's decision and the judges' mean score.",
+          "get_application": "Reads one application in full: what the applicant sent, every score and the files it holds.",
+          "read_application_file": "Shows the pages of an application's PDF, such as its deck, as pictures with their text.",
           "list_pending_reviews": "Lists what waits for review: organizations, solutions, talent, use cases and customer deployments."
         },
         "user": {
@@ -4744,10 +4745,8 @@
         "programme": "Programme selection",
         "selected": "Selected for {program}.",
         "byGenAiFund": "Confirmed by GenAI Fund · {date}",
-        "stated": "Stated by the company",
-        "byCompany": "Stated by {name}",
         "milestones": "Key milestones",
-        "cases": "{count, plural, one {One customer deployment reviewed by GenAI Fund, shown below.} other {# customer deployments reviewed by GenAI Fund, shown below.}}"
+        "cases": "{count, plural, one {One customer deployment, shown below.} other {# customer deployments, shown below.}}"
       },
       "company": {
         "title": "The company behind this solution",
@@ -5110,7 +5109,7 @@
       "open": "{holds, select, all {Open to read the problem, what was deployed and the result.} delivered {Open to read the problem and what was deployed.} result {Open to read the problem and the result.} other {Open to read the problem.}}",
       "eyebrow": "Customer deployment",
       "line": "{solution} · {customer}",
-      "lead": "{stage}. Stated by {organization} and reviewed by GenAI Fund on {day}. The customer has not confirmed it here.",
+      "lead": "{stage}.",
       "problem": "The business problem",
       "delivered": "What was deployed",
       "scope": "Scope and result",
@@ -5123,8 +5122,7 @@
       "about": "About this project",
       "deliveredBy": "Delivered by",
       "customer": "Customer",
-      "solutionUsed": "Solution used",
-      "source": "Stated by {organization} and reviewed by GenAI Fund on {day}. The customer has not confirmed it here."
+      "solutionUsed": "Solution used"
     },
     "deployments": {
       "title": "Customer deployments",
@@ -5538,10 +5536,13 @@
     },
     "open": "Open now",
     "upcoming": "Coming up",
-    "upcomingEvents": "Upcoming events",
+    "current": "Open and coming up",
     "done": "Done",
     "programCount": "{count, plural, one {# program} other {# programs}}",
-    "itemCount": "{count, plural, one {# event} other {# events}}",
+    "kind": {
+      "program": "Program",
+      "event": "Event"
+    },
     "undated": "Earlier",
     "live": "Open now",
     "running": "Running",
@@ -6910,7 +6911,7 @@
         "metaTitle": "Draft",
         "back": "Drafts",
         "lead": "Not submitted to {program} · started {started} · last saved {saved}",
-        "note": "Not submitted yet, so it may still change. Judges never see drafts, and each opening is recorded in the audit log."
+        "note": "Not submitted yet, so it may still change. Judges never see drafts."
       }
     }
   },
@@ -7773,7 +7774,7 @@
       "place": "Where",
       "skills": "Skills",
       "proof": "Proof",
-      "deployments": "{count, plural, one {# customer deployment, reviewed by GenAI Fund} other {# customer deployments, reviewed by GenAI Fund}}",
+      "deployments": "{count, plural, one {# customer deployment} other {# customer deployments}}",
       "someone": "Someone",
       "people": {
         "readers": "Who reads what you write",

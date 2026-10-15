@@ -34,3 +34,5 @@ Boundaries follow [conventions › Testing](../conventions.md#testing). `Messagi
 Program assignment regression coverage verifies metadata without messages or sender details, refusal before assignment, assignment and reassignment, live event exclusion for unrelated and revoked operators, and an audit record for each assignment.
 
 `admin-messages.spec.ts` verifies operator-only assignment management, short Chat assignments labels, and the removed reported-message page and API returning 404.
+
+The header message shortcut is covered by `header-messages.test.tsx`: its destination, no badge at zero, unread messages plus pending requests, refresh after receiving and reading, retaining the last count during a failed request, and refreshing after focus or visibility returns.

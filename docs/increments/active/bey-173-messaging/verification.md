@@ -66,3 +66,23 @@ The review of the finished screen found that a client could mark messages beyond
 A later static review found two more cases: a pending request's reader could reveal they had opened it, and a slow refresh could erase a message received on the event stream after the server took its snapshot. Both now have regression tests at the HTTP and state boundaries respectively.
 
 After these changes, `./gradlew :backend:check --no-daemon` passed with `JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Ho_Chi_Minh`, and `pnpm --dir web check` passed with 658 unit tests, 5501 message keys and 230 covered failure codes. SonarQube Scanner and a SonarQube server were not available locally; the review used the repository gates and manual static inspection.
+
+## Admin reported messages review on 14 October 2026
+
+Figwright 0.6.0 connected to the open `BeyondPilot — Product UI` Figma file. `Screens` has no dedicated Reported messages frame, so the Admin Audit log desktop frame (`178:27970`) supplied the table spacing and information hierarchy. The report list now presents the sender, the subject and full message, then the report date. This also resolves the clipped sender observed above: the sender column has enough room for a name, and email addresses wrap. The mobile table keeps the sender and message first when it scrolls sideways. The lead now says plainly what the operator is reviewing.
+
+`pnpm --dir web check` passed with 668 unit tests, 5520 message keys and 230 covered failure codes. The focused Admin reported messages Playwright suite passed on desktop and mobile (four runs, including axe). The rendered page was inspected at 1440 × 900 and 390 × 844.
+
+## Header message shortcut — 15 October 2026
+
+- Moved Messages between the language selector and avatar, using the supplied speech-bubble reference and the existing unread API. The compact notification badge counts unread messages plus pending requests and disappears at zero.
+- `pnpm --dir web check` passed: generated-client drift, ESLint, Prettier, route types and TypeScript, 77 test files / 672 tests, matching catalogs and error codes, and knip.
+- `header-messages.test.tsx` verifies the destination, zero, received and read counts, preserving counts on failure, focus refresh, and skipping hidden tabs.
+- `pnpm --dir web test:e2e messages.spec.ts --project=desktop --project=mobile` passed: 24 browser tests, including the messaging and admin reported messages suites and accessibility checks on desktop and mobile. Updated the existing tests to find the header shortcut and assert that Messages is absent from the account menu.
+- Focused ESLint and Prettier checks for the updated browser spec passed. `git diff --check` passed.
+
+After synchronizing the PR branch with main, `pnpm --dir web check` passed again: 82 test files / 717 tests, 5719 matching catalog keys, 247 covered failure codes, and all other gate steps. Conflict resolution preserves main’s removal of reported-message administration and keeps the header shortcut, its count and the updated browser tests. The 24-test browser result above was obtained before this synchronization.
+
+## Header icon consistency — 15 October 2026
+
+Replaced the 24px `MessageCircleMoreIcon` with the messaging screen’s existing Lucide `MessagesSquareIcon` at 20px. `pnpm --dir web check` passed: 82 test files / 717 tests, matching catalogs (5719 keys), 247 covered failure codes, and the remaining gate steps. The current main was already contained in anhnd; no merge conflict was present.

@@ -76,17 +76,26 @@ const tasco = program({
 const meetup = program({ slug: "genai-builders-hanoi", type: "event_series" });
 
 describe("groupPrograms", () => {
-  it("lists an event and nothing else by its events, apart from the programs, soonest first", () => {
+  it("lists programs and events together, each by the day the reader acts on", () => {
     const groups = groupPrograms([dinner, tasco, meetup], all);
 
-    expect(groups.open.map((p) => p.slug)).toEqual(["insurance-ai-tasco"]);
-    expect(groups.upcoming.map((p) => p.slug)).toEqual(["genai-builders-hanoi"]);
-    // Tasco's card shows its first three events; the fourth and the dinner are listed by date.
-    expect(groups.events.map(({ event }) => event.title)).toEqual([
-      "Demo day",
-      "TinyFish, Big Minds",
+    // Tasco closes on 15 October, the dinner is on 26 October, the meetup starts on 1 November.
+    expect(
+      groups.current.map((listing) =>
+        listing.kind === "event"
+          ? `event ${listing.event.title}`
+          : `program ${listing.program.slug}`,
+      ),
+    ).toEqual([
+      "program insurance-ai-tasco",
+      "event TinyFish, Big Minds",
+      "program genai-builders-hanoi",
     ]);
     expect(groups.counts).toEqual({ open: 1, upcoming: 2, done: 0, all: 3 });
+  });
+
+  it("keeps a program's own events on its card, not as entries of the list", () => {
+    expect(groupPrograms([tasco], all).current).toEqual([{ kind: "program", program: tasco }]);
   });
 
   it("keeps an event without an event still to come, or one taking applications, as a program", () => {
@@ -96,8 +105,10 @@ describe("groupPrograms", () => {
   });
 
   it("lists the dinner under Coming up alone, not under Open now or Done", () => {
-    expect(groupPrograms([dinner], { ...all, phase: "upcoming" }).events).toHaveLength(1);
-    expect(groupPrograms([dinner], { ...all, phase: "open" }).events).toHaveLength(0);
+    expect(groupPrograms([dinner], { ...all, phase: "upcoming" }).current).toHaveLength(1);
+    expect(groupPrograms([dinner, tasco], { ...all, phase: "open" }).current).toEqual([
+      { kind: "program", program: tasco },
+    ]);
     expect(groupPrograms([dinner], { ...all, phase: "done" }).done).toHaveLength(0);
   });
 });

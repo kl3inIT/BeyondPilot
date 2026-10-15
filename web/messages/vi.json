@@ -22,7 +22,6 @@
     },
     "account": {
       "open": "Menu tài khoản của {name}",
-      "openWaiting": "Menu tài khoản của {name}, {count, plural, other {# đang chờ bạn}}",
       "operator": "Operator",
       "signOut": "Đăng xuất",
       "signOutFailed": "Chưa đăng xuất được. Bạn thử lại.",
@@ -2975,6 +2974,8 @@
           "search": "Tìm giải pháp đã hoặc chưa niêm yết, chương trình, talent, use case và công ty.",
           "fetch": "Đọc đầy đủ một mục theo id mà search trả về.",
           "list_applications": "Liệt kê hồ sơ ứng tuyển của một chương trình, kèm quyết định của GenAI Fund và điểm trung bình của người chấm.",
+          "get_application": "Đọc đầy đủ một hồ sơ: những gì người ứng tuyển gửi, mọi điểm chấm và các file đính kèm.",
+          "read_application_file": "Hiện các trang của một file PDF trong hồ sơ, như deck, dưới dạng ảnh kèm chữ của trang.",
           "list_pending_reviews": "Liệt kê những gì đang chờ duyệt: tổ chức, giải pháp, talent, use case và customer deployment."
         },
         "user": {
@@ -4744,10 +4745,8 @@
         "programme": "Được chọn vào chương trình",
         "selected": "Được chọn vào {program}.",
         "byGenAiFund": "GenAI Fund xác nhận · {date}",
-        "stated": "Công ty tự công bố",
-        "byCompany": "Do {name} công bố",
         "milestones": "Cột mốc chính",
-        "cases": "{count} triển khai khách hàng đã được GenAI Fund duyệt, liệt kê bên dưới."
+        "cases": "{count} triển khai khách hàng, liệt kê bên dưới."
       },
       "company": {
         "title": "Công ty đứng sau giải pháp này",
@@ -5110,7 +5109,7 @@
       "open": "{holds, select, all {Mở để đọc bài toán, những gì đã triển khai và kết quả.} delivered {Mở để đọc bài toán và những gì đã triển khai.} result {Mở để đọc bài toán và kết quả.} other {Mở để đọc bài toán.}}",
       "eyebrow": "Triển khai khách hàng",
       "line": "{solution} · {customer}",
-      "lead": "{stage}. Do {organization} tự khai và GenAI Fund duyệt ngày {day}. Khách hàng chưa xác nhận tại đây.",
+      "lead": "{stage}.",
       "problem": "Bài toán kinh doanh",
       "delivered": "Những gì đã triển khai",
       "scope": "Phạm vi và kết quả",
@@ -5123,8 +5122,7 @@
       "about": "Về dự án này",
       "deliveredBy": "Đơn vị triển khai",
       "customer": "Khách hàng",
-      "solutionUsed": "Giải pháp sử dụng",
-      "source": "Do {organization} tự khai và GenAI Fund duyệt ngày {day}. Khách hàng chưa xác nhận tại đây."
+      "solutionUsed": "Giải pháp sử dụng"
     },
     "deployments": {
       "title": "Triển khai khách hàng",
@@ -5538,10 +5536,13 @@
     },
     "open": "Đang mở",
     "upcoming": "Sắp diễn ra",
-    "upcomingEvents": "Sự kiện sắp diễn ra",
+    "current": "Đang mở và sắp diễn ra",
     "done": "Đã kết thúc",
     "programCount": "{count, plural, other {# chương trình}}",
-    "itemCount": "{count, plural, other {# sự kiện}}",
+    "kind": {
+      "program": "Chương trình",
+      "event": "Sự kiện"
+    },
     "undated": "Trước đó",
     "live": "Đang mở",
     "running": "Đang diễn ra",
@@ -6910,7 +6911,7 @@
         "metaTitle": "Đơn nháp",
         "back": "Đơn nháp",
         "lead": "Chưa nộp vào {program} · bắt đầu {started} · lưu lần cuối {saved}",
-        "note": "Đơn chưa nộp nên vẫn có thể thay đổi. Giám khảo không bao giờ thấy đơn nháp, và mỗi lần mở được ghi vào nhật ký kiểm toán."
+        "note": "Đơn chưa nộp nên vẫn có thể thay đổi. Giám khảo không bao giờ thấy đơn nháp."
       }
     }
   },
@@ -7773,7 +7774,7 @@
       "place": "Nơi làm việc",
       "skills": "Kỹ năng",
       "proof": "Bằng chứng",
-      "deployments": "{count, plural, other {# triển khai cho khách hàng, GenAI Fund đã duyệt}}",
+      "deployments": "{count, plural, other {# triển khai cho khách hàng}}",
       "someone": "Ai đó",
       "people": {
         "readers": "Ai đọc tin bạn viết",

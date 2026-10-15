@@ -14,6 +14,7 @@ import ai.genaifund.beyondpilot.ai.adapter.OcrConnection;
 import ai.genaifund.beyondpilot.ai.adapter.OcrProviderException;
 import ai.genaifund.beyondpilot.ai.persistence.AiTaskModelRepository;
 import ai.genaifund.beyondpilot.ai.persistence.AiUsageRepository;
+import ai.genaifund.beyondpilot.shared.PdfPages;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
