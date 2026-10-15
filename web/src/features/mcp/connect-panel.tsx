@@ -73,8 +73,8 @@ function Command({ command }: { command: string }) {
   const t = useTranslations("Mcp.connect");
 
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-muted py-1 pr-1 pl-3">
-      <code className="min-w-0 flex-1 font-mono text-xs break-all">{command}</code>
+    <div className="flex items-center gap-2 rounded-lg border bg-background py-1 pr-1 pl-3">
+      <code className="min-w-0 flex-1 font-mono text-xs wrap-break-word">{command}</code>
       <CopyButton appearance="icon" value={command} label={t("copyCommand")} />
     </div>
   );
