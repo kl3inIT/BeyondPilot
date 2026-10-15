@@ -50,7 +50,7 @@ pnpm test:e2e                                   # Playwright, against the produc
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs on every branch push, so a branch is verified before `main` is fast-forwarded onto it. A newer push to the same branch cancels the older run.
+`.github/workflows/ci.yml` runs on every branch push, so a branch is verified before `main` is fast-forwarded onto it. A push that changes only documents (`docs/`, `.claude/`, Markdown at the root, and any `README.md`, `AGENTS.md` or `CLAUDE.md`) runs no CI and so publishes no release; the email templates in `backend/src/main/resources` are Markdown the api ships and still run it. A newer push to the same branch cancels the older run.
 
 | Job                   | Runs                                                                                                                                                     |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |

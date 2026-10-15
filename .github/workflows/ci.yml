@@ -1,9 +1,19 @@
 name: CI
 
 # Every branch push runs CI, so a feature branch is verified before main is fast-forwarded onto it,
-# and pull requests from branches of this repository show the same runs.
+# and pull requests from branches of this repository show the same runs. A push that changes only
+# documents runs nothing: no build reads them, and gitleaks scans the whole history on the next run.
+# The email templates under backend/src/main/resources are Markdown the api ships, so only these
+# paths are skipped, not every .md file.
 "on":
   push:
+    paths-ignore:
+      - "docs/**"
+      - ".claude/**"
+      - "*.md"
+      - "**/README.md"
+      - "**/AGENTS.md"
+      - "**/CLAUDE.md"
   workflow_dispatch:
 
 permissions:
