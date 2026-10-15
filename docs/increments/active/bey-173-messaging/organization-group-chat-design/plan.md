@@ -11,9 +11,11 @@ This increment contains design work only. Production API, data migrations and cl
 
 ## Delivery — 15 October 2026
 
-File: **BeyondPilot — Product UI**. Page: **Screens**. Section: **Messages — Private chats & organization groups (design proposal)**, node `772:57034`.
+File: **BeyondPilot — Product UI**. Page: **Screens**. Section: **Private chat & Groups — BeyondPilot format · Mobbin study**, node `772:57034`. It is immediately left of the main AI Talent section, at canvas position `(21000, 0)`.
 
 There are 54 frames: 17 English states at each of the three viewport widths, and three Vietnamese mobile copy checks. The existing deployed-reference sections were retained.
+
+The later private-chat revision below retains these frame IDs, replaces four existing frames, and adds six frames, bringing the section to 60 frames. The original 54-frame evidence records the first version, not a fresh verification of the entire revised section.
 
 | Review entry | Desktop | Tablet | Mobile |
 | --- | --- | --- | --- |
@@ -42,3 +44,19 @@ The prototype uses fixed sample values. Search, changing checkbox selections, na
 ### Tooling note
 
 Figwright 0.6.0 required local development-plugin fixes: resolve local variables before remote lookup, and replace uniform-font text directly while retaining the original path for mixed text. These fixes avoid connection errors and stalled text updates in this file. The original plugin bundle was backed up locally; neither plugin bundle nor design helper scripts are committed.
+
+## Private chat revision — existing format and Mobbin
+
+Research: [existing BeyondPilot layouts and Mobbin observations](../../../../research/2026-10-15-private-chat-design.md). Mobbin MCP returned actual screenshots for Campsite, Whop, X, Substack, Slack and ClickUp; their images were examined, not inferred from search metadata.
+
+Revised the original desktop/tablet/mobile private frames in place and replaced mobile list `773:59589`. They reuse the original Messages shell, compact rows and MessageBubble instances. Added:
+
+| State | Tablet | Mobile | Desktop |
+| --- | --- | --- | --- |
+| Conversation information | `779:56343` | `779:56576` | Integrated in `772:57035` |
+| Create separate group — contextual dialog/sheet | `779:56934` | `779:57182` | `779:56686` |
+| Vietnamese private chat check | — | `779:57333` | — |
+
+The default desktop prototype starts at `772:57035`; the default mobile entry is `773:59589`. New responsive details and creation states are in the last rows of the same section. English and Vietnamese mobile threads fit a 390 × 844 viewport, including the composer. The desktop creation dialog fits a 900px viewport.
+
+Verification: exported and inspected the revised private desktop, tablet, mobile list/thread/details, creation dialog/sheet, and Vietnamese private thread. Read back all 10 revised/new frames and checked composer containment; checked 22 navigation sources through `get_reactions`. No missing link or composer overflow was found in those checks. A source-list width issue, clipped Vietnamese header and mobile composer overflow were corrected before the final export. Application code is unchanged.

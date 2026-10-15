@@ -28,4 +28,12 @@ Before implementation, define ownership transfer and how a group continues when 
 
 ## Design system
 
-Reuse the file's SiteHeader, Button, Input, Checkbox and Avatar instances, Inter text styles, Theme colors and Scale dimensions. Place the proposal in a separate Screens section; keep deployed reference screens intact.
+Reuse the file's SiteHeader, Button, Input, Checkbox, Avatar and MessageBubble instances, Inter text styles, Theme colors and Scale dimensions. Place the proposal in a separate Screens section; keep deployed reference screens intact.
+
+## Private chat revision after reference research
+
+The client requested a revision that follows the existing Figma format and learns from comparable applications through Mobbin MCP. The [research note](../../../../research/2026-10-15-private-chat-design.md) distinguishes screenshots observed from proposed behavior.
+
+The revised private chat uses the native Messages shell (`702:53185` / `702:54292` / `702:54092`) rather than the original oversized conversation cards. Desktop keeps list, thread and solution/organization context in one bordered surface. Tablet moves details out of the main shell. Mobile has distinct list, thread and information views; the composer fits inside the 844px viewport. A contextual group-creation dialog retains the conversation behind it, while the mobile form occupies a full-height sheet. Avatar editing remains in group settings.
+
+Only organization owners appear in the private conversation and reader information. The former employee sender is replaced. Private and Group labels distinguish list entries. Both Messages-level and contextual group creation remain available, and the group receives no private history.
