@@ -37,7 +37,9 @@ public record SearchRequest(
 		@Parameter(description = "Only programs in this phase; open includes running.",
 				schema = @Schema(allowableValues = { "open", "upcoming", "done" })) @Pattern(regexp = "open|upcoming|done") @Nullable String phase,
 		@Parameter(description = "Relevance by default; a directory's explicit order otherwise.",
-				schema = @Schema(allowableValues = { "relevance", "newest", "name", "deadline", "budget" }, defaultValue = "relevance")) @Pattern(regexp = "relevance|newest|name|deadline|budget") @Nullable String sort) {
+				schema = @Schema(allowableValues = { "relevance", "newest", "name", "deadline", "budget" }, defaultValue = "relevance")) @Pattern(regexp = "relevance|newest|name|deadline|budget") @Nullable String sort,
+		@Parameter(description = "Only use cases with open or closed proposals; both when absent.",
+				schema = @Schema(allowableValues = { "open", "closed" })) @Pattern(regexp = "open|closed") @Nullable String proposalStatus) {
 
 	@AssertTrue(message = "must be an order supported by the selected kind")
 	@Schema(hidden = true)
@@ -69,6 +71,7 @@ public record SearchRequest(
 		private @Nullable String type;
 		private @Nullable String phase;
 		private @Nullable String sort;
+		private @Nullable String proposalStatus;
 
 		private Builder(String q) {
 			this.q = q;
@@ -124,8 +127,14 @@ public record SearchRequest(
 			return this;
 		}
 
+		public Builder proposalStatus(@Nullable String value) {
+			proposalStatus = value;
+			return this;
+		}
+
 		public SearchRequest build() {
-			return new SearchRequest(q, kind, page, size, industry, focusArea, maturity, role, type, phase, sort);
+			return new SearchRequest(q, kind, page, size, industry, focusArea, maturity, role, type, phase, sort,
+					proposalStatus);
 		}
 	}
 }

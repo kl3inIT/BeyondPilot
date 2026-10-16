@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { serveStoredImages } from "./stored-files";
-import { longTextUseCase } from "./stub-directories.mjs";
+import { closedUseCase, longTextUseCase } from "./stub-directories.mjs";
 
 test.describe("use cases", () => {
   test.use({ locale: "en-US" });
@@ -29,6 +29,14 @@ test.describe("use cases", () => {
     await expect(page.locator("[data-featured]")).toHaveCount(0);
     await expect(first.getByText("Apply by 31 Dec 2026")).toBeVisible();
     await expect(first.getByText("23:59 ICT")).toBeVisible();
+    const status = first.getByText("Open to proposals", { exact: true });
+    await expect(status).toBeVisible();
+    // Availability belongs with the deadline/action, below the facts, not beside the industry.
+    const statusBox = await status.boundingBox();
+    const timelineBox = await first.getByText("Timeline", { exact: true }).boundingBox();
+    const deadlineBox = await first.getByText("Apply by 31 Dec 2026").boundingBox();
+    expect(statusBox!.y).toBeGreaterThan(timelineBox!.y);
+    expect(Math.abs(statusBox!.x - deadlineBox!.x)).toBeLessThan(2);
     await expect(
       first.getByRole("link", { name: "Voice assistant for vehicle owners" }),
     ).toHaveAttribute("href", "/use-cases/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0001");
@@ -55,6 +63,56 @@ test.describe("use cases", () => {
       /\/use-cases\/0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0001\/propose$/,
     );
     await expectNoSeriousA11yViolations(page);
+  });
+
+  test("published expired briefs stay paged, readable and closed to new proposals", async ({
+    page,
+  }) => {
+    await page.goto("/use-cases?q=archive&size=1");
+    await expect(page.getByRole("heading", { name: "Archive intake" })).toBeVisible();
+    await expect(page.getByText("2 use cases", { exact: true })).toBeVisible();
+    const next = page.getByRole("link", { name: "Go to the next page" });
+    await expect(next).toHaveAttribute("href", /(?=.*q=archive)(?=.*size=1)(?=.*page=2)/);
+    await next.click();
+
+    await expect(page.getByRole("heading", { name: closedUseCase.title })).toBeVisible();
+    await expect(page.getByText("Closed", { exact: true })).toHaveAttribute("data-tone", "neutral");
+    await page.getByRole("link", { name: "View use case" }).click();
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(closedUseCase.title);
+    await expect(page.locator('aside [data-slot="status"]')).toHaveText("Closed");
+    await expect(page.locator('aside [data-slot="status"]')).toHaveAttribute(
+      "data-tone",
+      "neutral",
+    );
+    const closedAction = page.getByRole("button", { name: "Proposals closed" });
+    await expect(closedAction).toBeVisible();
+    await expect(closedAction).toBeDisabled();
+    await expect(closedAction).toHaveAttribute("data-tone", "danger");
+    expect(await closedAction.evaluate((element) => getComputedStyle(element).opacity)).toBe("1");
+    await expect(page.getByRole("link", { name: "Send a proposal" })).toHaveCount(0);
+    await expect(page.getByText("Open to proposals", { exact: true })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+  });
+
+  test("the closed-proposals filter keeps paging and searches in the URL", async ({ page }) => {
+    await page.goto("/use-cases?q=archive&proposalStatus=closed&size=1");
+    await expect(page.getByRole("combobox", { name: "Proposals" })).toContainText("Closed");
+    await expect(page.getByRole("heading", { name: closedUseCase.title })).toBeVisible();
+    await expect(page.getByText("1 use case", { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Go to the next page" })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
+
+    await page.goto(`/vi/use-cases/${closedUseCase.id}`);
+    await expect(page.locator('aside [data-slot="status"]')).toHaveText("Đã đóng");
+    await expect(page.locator('aside [data-slot="status"]')).toHaveAttribute(
+      "data-tone",
+      "neutral",
+    );
+    const closedAction = page.getByRole("button", { name: "Đã hết hạn nộp" });
+    await expect(closedAction).toBeVisible();
+    await expect(closedAction).toBeDisabled();
+    await expect(closedAction).toHaveAttribute("data-tone", "danger");
   });
 
   test("long numbers, words and URLs stay inside the public brief's content column", async ({

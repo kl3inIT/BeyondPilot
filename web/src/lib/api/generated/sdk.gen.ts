@@ -4007,11 +4007,11 @@ export const submitMyUseCase = <ThrowOnError extends boolean = true>(options: Op
 });
 
 /**
- * The published use cases that still accept proposals
+ * Published use cases, including after proposals close
  */
 export const listUseCases = <ThrowOnError extends boolean = true>(options?: Options<ListUseCasesData, ThrowOnError>): RequestResult<ListUseCasesResponses, ListUseCasesErrors, ThrowOnError> => (options?.client ?? client).get<ListUseCasesResponses, ListUseCasesErrors, ThrowOnError>({ url: '/api/usecase/use-cases', ...options });
 
 /**
- * One published use case that still accepts proposals
+ * One published use case, including after proposals close
  */
 export const getUseCase = <ThrowOnError extends boolean = true>(options: Options<GetUseCaseData, ThrowOnError>): RequestResult<GetUseCaseResponses, GetUseCaseErrors, ThrowOnError> => (options.client ?? client).get<GetUseCaseResponses, GetUseCaseErrors, ThrowOnError>({ url: '/api/usecase/use-cases/{id}', ...options });

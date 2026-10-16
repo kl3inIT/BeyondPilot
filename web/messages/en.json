@@ -7068,6 +7068,12 @@
     "title": "Use cases",
     "lead": "Business problems that enterprises want solved with AI.",
     "search": "Search use cases",
+    "proposalStatus": {
+      "label": "Proposals",
+      "all": "All statuses",
+      "open": "Open to proposals",
+      "closed": "Closed"
+    },
     "sort": {
       "label": "Sort by",
       "relevance": "Relevance",
@@ -7099,6 +7105,7 @@
     },
     "deadline": {
       "date": "Apply by {date}",
+      "closed": "Closed on {date}",
       "time": "{time} ICT",
       "none": "Open, no deadline"
     },
@@ -7109,6 +7116,11 @@
       "applyBy": "Apply by",
       "published": "Published",
       "notSpecified": "Not specified",
+      "closed": {
+        "on": "Closed {when}",
+        "label": "Closed on",
+        "action": "Proposals closed"
+      },
       "sections": {
         "problem": "Problem statement",
         "outcomes": "Expected outcomes and success metrics",

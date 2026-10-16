@@ -7068,6 +7068,12 @@
     "title": "Bài toán",
     "lead": "Những bài toán kinh doanh mà doanh nghiệp muốn giải bằng AI.",
     "search": "Tìm bài toán",
+    "proposalStatus": {
+      "label": "Nhận đề xuất",
+      "all": "Mọi trạng thái",
+      "open": "Đang nhận đề xuất",
+      "closed": "Đã đóng"
+    },
     "sort": {
       "label": "Sắp xếp",
       "relevance": "Mức độ phù hợp",
@@ -7099,6 +7105,7 @@
     },
     "deadline": {
       "date": "Hạn nộp {date}",
+      "closed": "Đã đóng ngày {date}",
       "time": "{time} ICT",
       "none": "Đang mở, không có hạn"
     },
@@ -7109,6 +7116,11 @@
       "applyBy": "Hạn nộp",
       "published": "Ngày đăng",
       "notSpecified": "Chưa nêu",
+      "closed": {
+        "on": "Đã đóng {when}",
+        "label": "Đã đóng vào",
+        "action": "Đã hết hạn nộp"
+      },
       "sections": {
         "problem": "Vấn đề cần giải quyết",
         "outcomes": "Kết quả kỳ vọng và chỉ số thành công",

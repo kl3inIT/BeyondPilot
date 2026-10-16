@@ -101,21 +101,27 @@ function SentProposal({ useCaseId, editable, outcome, text }: SentProposalProps)
 }
 
 /**
- * Send a proposal, in the card of a public use case. Nobody sees them for a use case
- * that takes no more proposals, and the posting organization sees a way to the proposals it received instead; an organization still waiting for GenAI Fund's review, or
+ * Send a proposal, in the card of a public use case. An expired brief keeps a non-interactive
+ * deadline control in its place. Existing senders read their proposal, and the posting organization
+ * sees a way to the proposals it received instead; an organization still waiting for GenAI Fund's review, or
  * none yet, sends all the same. Reading what the caller may do never stops the page from showing.
  */
 async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: ProposalActionsProps) {
   const closed = closedAt(closesAt);
   const [t, o, account, format] = await Promise.all([
-    getTranslations("UseCases.detail.open"),
+    getTranslations("UseCases.detail"),
     getTranslations("UseCaseProposal.actions"),
     getCurrentAccount(),
     getFormatter(),
   ]);
+  const closedAction = (
+    <Button className="w-full disabled:opacity-100" tone="danger" size="lg" disabled>
+      {t("closed.action")}
+    </Button>
+  );
   // A use case that no longer takes proposals still shows the proposal the organization sent.
   if (closed && !account) {
-    return null;
+    return closedAction;
   }
   const access: SenderAccess = account
     ? await readAccess(useCaseId)
@@ -128,7 +134,10 @@ async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: Propos
       </Button>
     );
   }
-  if (access.kind === "hidden" || (closed && access.kind !== "sent")) {
+  if (closed && access.kind !== "sent") {
+    return closedAction;
+  }
+  if (access.kind === "hidden") {
     return null;
   }
   const day = (instant: string) => format.dateTime(new Date(instant), "date");
@@ -180,7 +189,7 @@ async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: Propos
 
   return (
     <Button className="w-full" size="lg" href={site.proposeToUseCaseRoute(useCaseId)}>
-      {access.kind === "open" && access.draft ? o("continue") : t("send")}
+      {access.kind === "open" && access.draft ? o("continue") : t("open.send")}
     </Button>
   );
 }

@@ -91,10 +91,13 @@ public class UseCaseQueryRepository {
 	}
 
 	/**
-	 * The published use cases a visitor can answer: the deadline is ahead, or there is none. The text matches a title or the expected
+	 * Published use cases, including those past their proposal deadline. The text matches a title or the expected
 	 * outcomes, or an organization the caller found by name that did not ask to stay anonymous.
 	 */
-	private static final String PUBLIC_FILTER = "where status = 'approved' and (closes_at is null or closes_at > :now)\n"
+	private static final String PUBLIC_FILTER = "where status = 'approved' and published_at is not null\n"
+			+ "  and (cast(:proposalStatus as text) is null\n"
+			+ "       or (:proposalStatus = 'open' and (closes_at is null or closes_at > :now))\n"
+			+ "       or (:proposalStatus = 'closed' and closes_at <= :now))\n"
 			+ "  and (cast(:pattern as text) is null or lower(title) like :pattern escape '\\'\n"
 			+ "       or lower(expected_outcomes) like :pattern escape '\\'\n"
 			+ "       or (not hide_organization_name and organization_id::text = any(:matching)))\n"
@@ -117,8 +120,8 @@ public class UseCaseQueryRepository {
 	 * {@code member} alone.
 	 */
 	public List<PublicRow> publicPage(@Nullable String text, List<UUID> matching, @Nullable List<String> industries,
-			@Nullable UUID program, String sort, boolean featuredFirst, boolean member, long vndPerUsd, Instant now, int limit,
-			long offset) {
+			@Nullable UUID program, @Nullable String proposalStatus, String sort, boolean featuredFirst, boolean member,
+			long vndPerUsd, Instant now, int limit, long offset) {
 		String order = switch (sort) {
 			case "deadline" -> "closes_at nulls last, id";
 			// A budget for members only is not a number a visitor sees, so it does not order their list either.
@@ -129,7 +132,9 @@ public class UseCaseQueryRepository {
 		return publicFiltered("select id, organization_id, hide_organization_name, title, industry, expected_outcomes, "
 				+ "technologies, budget_min, budget_max, currency, budget_to_be_determined, budget_members_only, "
 				+ "timeline_min_weeks, timeline_max_weeks, closes_at, published_at, featured_at from use_case\n"
-				+ PUBLIC_FILTER + "order by " + (featuredFirst ? "featured_at asc nulls last, " : "") + order + " limit :limit offset :offset", text, matching, industries, program, now)
+				+ PUBLIC_FILTER + "order by case when closes_at <= :now then 1 else 0 end, "
+				+ (featuredFirst ? "featured_at asc nulls last, " : "") + order + " limit :limit offset :offset",
+				text, matching, industries, program, proposalStatus, now)
 			.param("vndPerUsd", vndPerUsd)
 			.param("member", member)
 			.param("limit", limit)
@@ -147,19 +152,20 @@ public class UseCaseQueryRepository {
 
 	/** How many use cases the public list holds for these parameters, over all pages. */
 	public long publicCount(@Nullable String text, List<UUID> matching, @Nullable List<String> industries,
-			@Nullable UUID program, Instant now) {
-		return publicFiltered("select count(*) from use_case\n" + PUBLIC_FILTER, text, matching, industries, program, now)
+			@Nullable UUID program, @Nullable String proposalStatus, Instant now) {
+		return publicFiltered("select count(*) from use_case\n" + PUBLIC_FILTER, text, matching, industries, program, proposalStatus, now)
 			.query(Long.class)
 			.single();
 	}
 
 	private JdbcClient.StatementSpec publicFiltered(String sql, @Nullable String text, List<UUID> matching,
-			@Nullable List<String> industries, @Nullable UUID program, Instant now) {
+			@Nullable List<String> industries, @Nullable UUID program, @Nullable String proposalStatus, Instant now) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
 			.param("matching", matching.stream().map(UUID::toString).toArray(String[]::new))
 			.param("industries", industries == null || industries.isEmpty() ? null : industries.toArray(String[]::new))
 			.param("program", program == null ? null : program.toString(), Types.VARCHAR)
+			.param("proposalStatus", proposalStatus, Types.VARCHAR)
 			.param("now", Timestamp.from(now));
 	}
 

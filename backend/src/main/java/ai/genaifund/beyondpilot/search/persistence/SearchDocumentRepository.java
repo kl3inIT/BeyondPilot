@@ -48,8 +48,10 @@ public class SearchDocumentRepository {
 			    select d.* from search_document d
 			    where (d.listed or not :listedOnly)
 			      and (cast(:kind as text) is null or d.kind = :kind)
-			      and (d.kind <> 'use_case' or d.facets ->> 'closesAt' is null
-			           or cast(d.facets ->> 'closesAt' as timestamptz) > now())
+			      and (cast(:proposalStatus as text) is null or (d.kind = 'use_case' and
+			           ((:proposalStatus = 'open' and (d.facets ->> 'closesAt' is null
+			             or cast(d.facets ->> 'closesAt' as timestamptz) > now()))
+			            or (:proposalStatus = 'closed' and cast(d.facets ->> 'closesAt' as timestamptz) <= now()))))
 			      and (cast(:industries as jsonb) = '[]'::jsonb or exists (
 			           select 1 from jsonb_array_elements_text(cast(:industries as jsonb)) industry
 			           where jsonb_exists(d.facets -> 'industries', industry)))
@@ -448,28 +450,30 @@ public class SearchDocumentRepository {
 	private static String matches(SearchRequest request) {
 		boolean scoped = request.kind() != null || (request.industry() != null && !request.industry().isEmpty())
 				|| request.focusArea() != null || request.maturity() != null || request.role() != null
-				|| request.type() != null || request.phase() != null;
+				|| request.type() != null || request.phase() != null || request.proposalStatus() != null;
 		// A scoped exact pool cannot lose eligible items to the global HNSW graph's candidate limit.
 		return MATCHES.formatted(terms(request.q()), scoped ? "materialized" : "not materialized");
 	}
 
 	private static String order(SearchRequest request, boolean member) {
 		String sort = request.sort();
+		String openFirst = USE_CASE.equals(request.kind())
+				? "case when cast(d.facets ->> 'closesAt' as timestamptz) <= now() then 1 else 0 end, " : "";
 		if ("name".equals(sort)) {
 			return "lower(d.title), d.item_id";
 		}
 		if ("newest".equals(sort)) {
-			return PROGRAM.equals(request.kind())
+			return openFirst + (PROGRAM.equals(request.kind())
 					? "d.starts_on desc nulls last, cast(d.facets ->> 'createdAt' as timestamptz) desc, d.item_id"
-					: "cast(d.facets ->> 'publishedAt' as timestamptz) desc nulls last, d.item_id";
+					: "cast(d.facets ->> 'publishedAt' as timestamptz) desc nulls last, d.item_id");
 		}
 		if ("deadline".equals(sort)) {
-			return "cast(d.facets ->> 'closesAt' as timestamptz) nulls last, d.item_id";
+			return openFirst + "cast(d.facets ->> 'closesAt' as timestamptz) nulls last, d.item_id";
 		}
 		if ("budget".equals(sort)) {
-			return member ? "cast(d.facets ->> 'budgetUsd' as numeric) desc nulls last, d.item_id"
+			return openFirst + (member ? "cast(d.facets ->> 'budgetUsd' as numeric) desc nulls last, d.item_id"
 					: "(case when d.facets ->> 'budgetMembersOnly' = 'true' then null"
-							+ " else cast(d.facets ->> 'budgetUsd' as numeric) end) desc nulls last, d.item_id";
+							+ " else cast(d.facets ->> 'budgetUsd' as numeric) end) desc nulls last, d.item_id");
 		}
 		return "m.score desc, d.title, d.item_id";
 	}
@@ -525,6 +529,7 @@ public class SearchDocumentRepository {
 			.param("role", request.role(), Types.VARCHAR)
 			.param("type", request.type(), Types.VARCHAR)
 			.param("phase", request.phase(), Types.VARCHAR)
+			.param("proposalStatus", request.proposalStatus(), Types.VARCHAR)
 			.param("similarity", TITLE_SIMILARITY)
 			.param("headline", "StartSel=\"" + MARK_START + "\", StopSel=\"" + MARK_END + "\", HighlightAll=true")
 			.param("fusionK", FUSION_K);

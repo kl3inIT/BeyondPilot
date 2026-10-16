@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Keeps the published use cases in the index; any other is taken out. A change is read again from the usecase module,
- * so a late or repeated delivery writes what the use case is now. One past its close date stays in the index and is
- * left out of results by that date. Only what the public list of use cases shows is indexed, its goal and not its
+ * so a late or repeated delivery writes what the use case is now. One past its close date stays in the index and
+ * remains discoverable with its closed proposal status. Only what the public list of use cases shows is indexed, its goal and not its
  * problem statement, and the organization's name never for a use case that hides it.
  */
 @Component

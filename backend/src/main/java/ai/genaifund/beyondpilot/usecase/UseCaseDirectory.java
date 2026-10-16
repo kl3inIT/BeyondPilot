@@ -29,7 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * The public list of use cases, read with or without a session: the published ones whose deadline has not passed. A use
+ * The public list of use cases, read with or without a session: published briefs remain readable after proposals close. A use
  * case whose organization asked to stay anonymous shows no name, and no search finds it by that name. A budget its
  * organization shows to signed-in members only has its amounts given to a signed-in reader alone.
  */
@@ -184,7 +184,7 @@ public class UseCaseDirectory {
 	 * One page of the use cases the parameters select. In the view the list opens with, where the reader has searched
 	 * for nothing, chosen no industry or program and reads the newest first, the featured use cases come first; as
 	 * soon as the reader searches, filters or picks another order, the list is ordered by that alone. A featured use
-	 * case that is closed or not published stays out like any other.
+	 * case stays in its availability group; one not published stays out.
 	 * @param member whether the reader is signed in, and so reads a budget shown to members only
 	 */
 	@Transactional(readOnly = true)
@@ -209,28 +209,27 @@ public class UseCaseDirectory {
 					.map(OrganizationName::id)
 					.toList();
 		boolean opening = text == null && (request.industry() == null || request.industry().isEmpty())
-				&& program == null && OPENING_SORT.equals(sort);
+				&& program == null && request.proposalStatus() == null && OPENING_SORT.equals(sort);
 		List<UseCaseQueryRepository.PublicRow> rows = useCaseList.publicPage(text, matching, request.industry(), program,
-				sort, opening, member, properties.vndPerUsd(), now, size, (long) (page - 1) * size);
+				request.proposalStatus(), sort, opening, member, properties.vndPerUsd(), now, size, (long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations.names(rows.stream()
 			.filter(row -> !row.hideOrganizationName())
 			.map(UseCaseQueryRepository.PublicRow::organizationId)
 			.collect(Collectors.toSet()));
 		List<PublicUseCaseSummaryResponse> items = rows.stream().map(row -> summary(row, names, member)).toList();
 		return new PublicUseCaseListResponse(items, page, size,
-				useCaseList.publicCount(text, matching, request.industry(), program, now));
+				useCaseList.publicCount(text, matching, request.industry(), program, request.proposalStatus(), now));
 	}
 
 	/**
-	 * One published use case that is still open, as a visitor reads the whole brief.
+	 * One published use case, including after proposals close, as a visitor reads the whole brief.
 	 * @param member whether the reader is signed in, and so reads a budget shown to members only
-	 * @throws UseCaseException when the identifier is unknown, no longer open, or its organization is not public
+	 * @throws UseCaseException when the identifier is unknown, unpublished, or its organization is not public
 	 */
 	@Transactional(readOnly = true)
 	public PublicUseCaseResponse get(UUID id, boolean member) {
-		Instant now = Instant.now();
 		UseCase useCase = useCases.findById(id)
-			.filter(found -> UseCase.APPROVED.equals(found.getStatus()) && !UseCase.CLOSED.equals(found.statusAt(now)))
+			.filter(found -> UseCase.APPROVED.equals(found.getStatus()))
 			.orElseThrow(() -> notFound(id));
 		String title = useCase.getTitle();
 		String industry = useCase.getIndustry();

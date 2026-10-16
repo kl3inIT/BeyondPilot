@@ -2,7 +2,9 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { Badge } from "@/components/ui/badge";
+import { Status } from "@/components/composites/status";
 import { OrganizationMark } from "@/features/organization/organization-mark";
+import { closedAt } from "@/features/proposal/proposal-access";
 import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
@@ -31,6 +33,7 @@ function UseCaseCard({
   const locale = useLocale();
   const organizationName = useCase.organizationName ?? t("anonymous");
   const deadline = useCase.closesAt ? new Date(useCase.closesAt) : null;
+  const closed = closedAt(useCase.closesAt);
   const technologies = useCase.technologies.map((technology) => technologyName(technology));
   const budget = useCase.budgetToBeDetermined
     ? t("budget.toBeDetermined")
@@ -111,24 +114,29 @@ function UseCaseCard({
             </div>
           )}
         </dl>
-        <p className="text-sm text-muted-foreground">
-          {deadline ? (
-            <>
-              {t("deadline.date", {
-                date: format.dateTime(deadline, "date"),
-              })}
-              <br />
-              {t("deadline.time", {
-                time: format.dateTime(deadline, "time"),
-              })}
-            </>
-          ) : (
-            t("deadline.none")
-          )}
-        </p>
-        <Button href={useCaseRoute(useCase.id)} size="sm">
-          {t("view")}
-        </Button>
+        <div className="flex flex-col gap-3">
+          <Status className="self-start" tone={closed ? "neutral" : "success"} appearance="pill">
+            {t(`proposalStatus.${closed ? "closed" : "open"}`)}
+          </Status>
+          <div className="flex items-center justify-between gap-3 md:flex-col md:items-stretch">
+            <p className="text-sm text-muted-foreground">
+              {deadline ? (
+                <>
+                  {t(closed ? "deadline.closed" : "deadline.date", {
+                    date: format.dateTime(deadline, "date"),
+                  })}
+                  <br />
+                  {t("deadline.time", {
+                    time: format.dateTime(deadline, "time"),
+                  })}
+                </>
+              ) : (
+                t("deadline.none")
+              )}
+            </p>
+            <Button href={useCaseRoute(useCase.id)}>{t("view")}</Button>
+          </div>
+        </div>
       </div>
     </li>
   );

@@ -26,5 +26,8 @@ public record PublicUseCaseListRequest(
 				schema = @Schema(type = "integer", format = "int32", minimum = "1", maximum = "100")) @Min(1) @Max(
 						100) @Nullable Integer size,
 		@Parameter(description = "Only use cases of the published program at this address.") @Size(
-				max = 120) @Nullable String program) {
+				max = 120) @Nullable String program,
+		@Parameter(description = "Whether proposals are open or closed; both when absent.",
+				schema = @Schema(allowableValues = { "open", "closed" })) @Pattern(
+						regexp = "open|closed") @Nullable String proposalStatus) {
 }

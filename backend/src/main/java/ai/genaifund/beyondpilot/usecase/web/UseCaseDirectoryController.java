@@ -37,7 +37,7 @@ class UseCaseDirectoryController {
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "listUseCases", summary = "The published use cases that still accept proposals")
+	@Operation(operationId = "listUseCases", summary = "Published use cases, including after proposals close")
 	@ApiResponse(responseCode = "200", description = "One page of the use cases the parameters select.")
 	@ApiResponse(responseCode = "400", description = "A parameter is not valid.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
@@ -47,9 +47,9 @@ class UseCaseDirectoryController {
 	}
 
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getUseCase", summary = "One published use case that still accepts proposals")
+	@Operation(operationId = "getUseCase", summary = "One published use case, including after proposals close")
 	@ApiResponse(responseCode = "200", description = "The use case.")
-	@ApiResponse(responseCode = "404", description = "No published use case has this identifier, or it has closed.",
+	@ApiResponse(responseCode = "404", description = "No public, published use case has this identifier.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	PublicUseCaseResponse get(@PathVariable UUID id, @CurrentActor @Nullable Actor actor) {
 		return directory.get(id, actor != null);
