@@ -1030,13 +1030,14 @@ export type ApproveOrganization = {
  */
 export type Assessment = {
     average?: number | null;
+    bookmarked: boolean;
     conflict: boolean;
     note?: string | null;
     reviewer: string;
     role: 'operator' | 'reviewer';
     savedAt: string;
     /**
-     * The score of each criterion, by its identifier; empty for a conflict.
+     * The score of each criterion, by its identifier; empty for a conflict or a note without scores.
      */
     scores: {
         [key: string]: number;
@@ -4842,7 +4843,7 @@ export type RetryEmbeddings = {
  */
 export type ReviewApplication = {
     /**
-     * The mean of every judge's score, for an operator; null for a judge. In points when the criteria are worth points, otherwise from 1 to 5.
+     * The mean of every judge's score, for an operator; null for a judge. In points when the criteria have points, otherwise from 1 to 10.
      */
     average?: number | null;
     head: ReviewHead;
@@ -4885,9 +4886,13 @@ export type ReviewApplication = {
 
 export type ReviewApplicationItem = {
     /**
-     * For an operator the mean of every judge's score; for a judge their own. In points when the criteria are worth points, otherwise from 1 to 5.
+     * For an operator the mean of every judge's score; for a judge their own. In points when the criteria have points, otherwise from 1 to 10.
      */
     average?: number | null;
+    /**
+     * Whether the caller bookmarked it.
+     */
+    bookmarked: boolean;
     /**
      * The answer to the program's first one-choice question.
      */
@@ -4895,9 +4900,9 @@ export type ReviewApplicationItem = {
     country?: string | null;
     id: string;
     /**
-     * What the caller did with it.
+     * What the caller did with it: noted is a note or a bookmark without scores.
      */
-    mine: 'none' | 'scored' | 'conflict';
+    mine: 'none' | 'noted' | 'scored' | 'conflict';
     organizationName: string;
     /**
      * The organization's type, such as independent_builder, builder_team or company.
@@ -4961,7 +4966,7 @@ export type ReviewCriteria = {
 };
 
 /**
- * One thing a program's applications are judged on, scored at one of five levels.
+ * One thing a program's applications are judged on, scored from 1 to 10.
  */
 export type ReviewCriterion = {
     /**
@@ -4970,7 +4975,7 @@ export type ReviewCriterion = {
     description?: string | null;
     id: string;
     /**
-     * The points the highest level gives; a level gives level × maxPoints / 5. Null when the program's criteria are not worth points, and a score is the mean of the levels.
+     * The criterion's weight: a score gives score / 10 × maxPoints. Null when the program's criteria have no points, and a score is the mean of the scores.
      */
     maxPoints?: number | null;
     name: string;
@@ -5153,16 +5158,20 @@ export type SaveApplication = {
 };
 
 /**
- * The caller's assessment: a score from 1 to 5 for every criterion and a private note, or a conflict of interest without scores.
+ * The caller's assessment: a score from 1 to 10 for every criterion or none yet, a private note and a bookmark, or a conflict of interest without scores.
  */
 export type SaveAssessment = {
+    /**
+     * The caller marks the application to come back to.
+     */
+    bookmarked: boolean;
     /**
      * The caller knows the applicant, so their score is left out.
      */
     conflict: boolean;
     note?: string | null;
     /**
-     * By criterion identifier.
+     * By criterion identifier: every criterion, or none to keep only the note and the bookmark.
      */
     scores: {
         [key: string]: number;
@@ -5595,7 +5604,7 @@ export type SaveReviewCriteria = {
 export type SaveReviewCriterion = {
     description?: string | null;
     /**
-     * The points the highest level gives, a multiple of 5; every criterion has them or none.
+     * The criterion's weight, the points a 10 gives; every criterion has them or none. Judges do not see it.
      */
     maxPoints?: number | null;
     name: string;

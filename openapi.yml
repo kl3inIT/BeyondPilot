@@ -15346,6 +15346,8 @@ components:
           - number
           - "null"
           format: double
+        bookmarked:
+          type: boolean
         conflict:
           type: boolean
         note:
@@ -15368,13 +15370,14 @@ components:
             type: integer
             format: int32
           description: "The score of each criterion, by its identifier; empty for\
-            \ a conflict."
+            \ a conflict or a note without scores."
         version:
           type: integer
           format: int32
           description: The version it was made on; earlier than the application's
             when it was submitted again since.
       required:
+      - bookmarked
       - conflict
       - reviewer
       - role
@@ -22326,8 +22329,8 @@ components:
           - "null"
           format: double
           description: "The mean of every judge's score, for an operator; null for\
-            \ a judge. In points when the criteria are worth points, otherwise from\
-            \ 1 to 5."
+            \ a judge. In points when the criteria have points, otherwise from 1 to\
+            \ 10."
         head:
           $ref: "#/components/schemas/ReviewHead"
         history:
@@ -22413,8 +22416,11 @@ components:
           - "null"
           format: double
           description: "For an operator the mean of every judge's score; for a judge\
-            \ their own. In points when the criteria are worth points, otherwise from\
-            \ 1 to 5."
+            \ their own. In points when the criteria have points, otherwise from 1\
+            \ to 10."
+        bookmarked:
+          type: boolean
+          description: Whether the caller bookmarked it.
         choice:
           type:
           - string
@@ -22429,9 +22435,11 @@ components:
           format: uuid
         mine:
           type: string
-          description: What the caller did with it.
+          description: "What the caller did with it: noted is a note or a bookmark\
+            \ without scores."
           enum:
           - none
+          - noted
           - scored
           - conflict
         organizationName:
@@ -22473,6 +22481,7 @@ components:
           format: int32
           description: The number of the version under review.
       required:
+      - bookmarked
       - id
       - mine
       - organizationName
@@ -22539,8 +22548,8 @@ components:
       - fixed
     ReviewCriterion:
       type: object
-      description: "One thing a program's applications are judged on, scored at one\
-        \ of five levels."
+      description: "One thing a program's applications are judged on, scored from\
+        \ 1 to 10."
       properties:
         description:
           type:
@@ -22555,9 +22564,9 @@ components:
           - integer
           - "null"
           format: int32
-          description: "The points the highest level gives; a level gives level ×\
-            \ maxPoints / 5. Null when the program's criteria are not worth points,\
-            \ and a score is the mean of the levels."
+          description: "The criterion's weight: a score gives score / 10 × maxPoints.\
+            \ Null when the program's criteria have no points, and a score is the\
+            \ mean of the scores."
         name:
           type: string
       required:
@@ -22899,9 +22908,13 @@ components:
       - contact
     SaveAssessment:
       type: object
-      description: "The caller's assessment: a score from 1 to 5 for every criterion\
-        \ and a private note, or a conflict of interest without scores."
+      description: "The caller's assessment: a score from 1 to 10 for every criterion\
+        \ or none yet, a private note and a bookmark, or a conflict of interest without\
+        \ scores."
       properties:
+        bookmarked:
+          type: boolean
+          description: The caller marks the application to come back to.
         conflict:
           type: boolean
           description: "The caller knows the applicant, so their score is left out."
@@ -22916,8 +22929,10 @@ components:
           additionalProperties:
             type: integer
             format: int32
-          description: By criterion identifier.
+          description: "By criterion identifier: every criterion, or none to keep\
+            \ only the note and the bookmark."
       required:
+      - bookmarked
       - conflict
       - scores
     SaveChatModel:
@@ -23874,10 +23889,10 @@ components:
           - integer
           - "null"
           format: int32
-          description: "The points the highest level gives, a multiple of 5; every\
-            \ criterion has them or none."
+          description: "The criterion's weight, the points a 10 gives; every criterion\
+            \ has them or none. Judges do not see it."
           maximum: 100
-          minimum: 5
+          minimum: 1
         name:
           type: string
           maxLength: 80

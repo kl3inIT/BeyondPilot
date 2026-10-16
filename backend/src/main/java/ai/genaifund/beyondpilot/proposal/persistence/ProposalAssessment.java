@@ -42,6 +42,9 @@ public class ProposalAssessment {
 	private boolean conflict;
 
 	@Column(nullable = false)
+	private boolean bookmarked;
+
+	@Column(nullable = false)
 	private Instant savedAt;
 
 	@SuppressWarnings("NullAway.Init")
@@ -54,12 +57,23 @@ public class ProposalAssessment {
 		this.accountId = accountId;
 	}
 
-	public void write(int versionNumber, String scores, @Nullable String note, boolean conflict, Instant at) {
+	public void write(int versionNumber, String scores, @Nullable String note, boolean conflict, boolean bookmarked,
+			Instant at) {
 		this.versionNumber = versionNumber;
 		this.scores = scores;
 		this.note = note;
 		this.conflict = conflict;
+		this.bookmarked = bookmarked;
 		this.savedAt = at;
+	}
+
+	/** Whether every criterion was scored; a note or a bookmark alone holds no scores. */
+	public boolean isScored() {
+		return !conflict && !"{}".equals(scores);
+	}
+
+	public boolean isBookmarked() {
+		return bookmarked;
 	}
 
 	public UUID getProposalId() {

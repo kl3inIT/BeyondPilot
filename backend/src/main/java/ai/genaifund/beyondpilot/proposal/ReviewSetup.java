@@ -55,8 +55,8 @@ public class ReviewSetup {
 
 	private static final String PROGRAM = "program";
 
-	/** A criterion is scored at one of five levels; the highest gives its most points. */
-	static final int LEVELS = 5;
+	/** The highest score of a criterion, which gives all its points. */
+	static final int SCALE = 10;
 
 	private final ReviewAccess access;
 
@@ -132,7 +132,7 @@ public class ReviewSetup {
 	/**
 	 * Replaces a program's criteria, in order. They are fixed once an application of the program has been scored.
 	 * @throws ProposalException when the program takes no applications, an application was scored, two criteria
-	 * share a name, or some criteria are worth points and others not, or points are not a multiple of 5
+	 * share a name, or some criteria have points and others not
 	 */
 	@Transactional
 	public CriteriaResponse saveCriteria(Actor actor, UUID programId, SaveCriteriaRequest request) {
@@ -150,10 +150,7 @@ public class ReviewSetup {
 			}
 		}
 		long worth = request.criteria().stream().filter(criterion -> criterion.maxPoints() != null).count();
-		boolean wholePoints = request.criteria()
-			.stream()
-			.allMatch(criterion -> criterion.maxPoints() == null || criterion.maxPoints() % LEVELS == 0);
-		if ((worth != 0 && worth != request.criteria().size()) || !wholePoints) {
+		if (worth != 0 && worth != request.criteria().size()) {
 			throw new ProposalException(ProposalErrorCode.CRITERIA_POINTS_INVALID,
 					"Criteria of program " + programId + " with points that do not hold together");
 		}

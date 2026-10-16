@@ -19,6 +19,6 @@ public record SaveCriteriaRequest(
 	public record Criterion(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 80) String name,
 			@Schema(types = { "string", "null" }) @Size(max = 300) @Nullable String description,
 			@Schema(types = { "integer", "null" },
-					description = "The points the highest level gives, a multiple of 5; every criterion has them or none.") @Min(5) @Max(100) @Nullable Integer maxPoints) {
+					description = "The criterion's weight, the points a 10 gives; every criterion has them or none. Judges do not see it.") @Min(1) @Max(100) @Nullable Integer maxPoints) {
 	}
 }
