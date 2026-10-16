@@ -152,6 +152,7 @@ public class ReviewService {
 				.orElse(null);
 			items.add(new ReviewApplicationsResponse.Item(proposal.getId(), snapshot.solution().name(),
 					snapshot.organization().name(), snapshot.organization().type(), snapshot.organization().country(),
+					reviewing.operator() ? snapshot.applicant().email() : null,
 					choice == null ? null : choiceOf(snapshot, choice.id()), Objects.requireNonNull(proposal.getSubmittedAt()),
 					proposal.getSubmissions(), reviewing.operator() ? proposal.getReviewStatus() : null,
 					Proposal.SHORTLISTED.equals(proposal.getReviewStatus()),

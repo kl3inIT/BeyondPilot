@@ -4898,6 +4898,10 @@ export type ReviewApplicationItem = {
      */
     choice?: string | null;
     country?: string | null;
+    /**
+     * The applicant's email, which the list's search matches; null for a judge, who reads no contact details.
+     */
+    email?: string | null;
     id: string;
     /**
      * What the caller did with it: noted is a note or a bookmark without scores.

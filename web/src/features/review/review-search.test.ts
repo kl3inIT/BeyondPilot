@@ -62,6 +62,14 @@ describe("listApplications", () => {
     expect(ids(listApplications(items, search({ sort: "budget" }), true))).toEqual(["b", "c", "a"]);
   });
 
+  it("finds an applicant by part of their email, such as its domain", () => {
+    const withEmail = [
+      { ...item("g", "2026-10-01T00:00:00Z"), email: "gulshan@pragyaa.ai" },
+      item("h", "2026-10-02T00:00:00Z"),
+    ];
+    expect(ids(listApplications(withEmail, search({ q: "Pragyaa" }), true))).toEqual(["g"]);
+  });
+
   it("pages the list, and a page past the end shows the last", () => {
     const many = Array.from({ length: REVIEW_PAGE_SIZE + 3 }, (_, index) =>
       item(

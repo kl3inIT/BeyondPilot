@@ -124,6 +124,10 @@ class ReviewTest extends ApplicationsHttpTest {
 				"Second Builder");
 		assertThat(JsonPath.<List<String>>read(list, "$.items[*].choice")).containsExactly("Claiming", "Claiming");
 		assertThat(JsonPath.<List<Object>>read(list, "$.items[*].reviewStatus")).containsOnlyNulls();
+		assertThat(JsonPath.<List<Object>>read(list, "$.items[*].email")).containsOnlyNulls();
+		assertThat(JsonPath.<List<String>>read(body(get(operator, REVIEW + form.programId() + "/applications")
+			.expectStatus()
+			.isOk()), "$.items[*].email")).containsExactly("first@scored.test", "second@scored.test");
 		assertThat(JsonPath.<String>read(list, "$.head.choice.label")).isEqualTo("Direction");
 
 		assertProblem(put(judge, one + "/assessment", scores(Map.of(criteria.get(0), 4))), 400,

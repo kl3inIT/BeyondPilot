@@ -147,7 +147,9 @@ function narrowApplications(
       inTab(item, search.tab, released) &&
       (!text ||
         folded(item.solutionName).includes(text) ||
-        folded(item.organizationName).includes(text)) &&
+        folded(item.organizationName).includes(text) ||
+        // An operator finds an applicant by part of their email, such as its domain.
+        folded(item.email ?? "").includes(text)) &&
       (!search.choice || item.choice === search.choice) &&
       (!search.kind ||
         (search.kind === "company"
