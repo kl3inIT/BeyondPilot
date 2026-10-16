@@ -2,13 +2,13 @@
 
 Design: [design.md](design.md). Tracked in Linear as BEY-213. Needed on production before the Tasco Demo Day on 22 October 2026.
 
-| #   | Step                                                                                                                                                         | State   |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
-| 1   | This design and plan                                                                                                                                         | Done    |
-| 2   | Backend: `V101`, the maximum on save and read, `maxTotal`, averages in points, `shortlisted` for judges, scoring the shortlist after the release, the export | Planned |
-| 3   | `openapi.yml` and the web client refreshed                                                                                                                   | Planned |
-| 4   | Web: the maximum in the criteria editor; the points, labels and total in the assessment panel; the Shortlisted tab first for judges; averages in points      | Planned |
-| 5   | Documents made true: `docs/tests/proposal.md`, BEY-38's design noted as changed by this one                                                                  | Planned |
+| #   | Step                                                                                                                                                    | State |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| 1   | This design and plan                                                                                                                                    | Done  |
+| 2   | Backend: `V101`, the maximum on save and read, averages in points, `shortlisted` for judges, scoring the shortlist after the release, the export        | Done  |
+| 3   | `openapi.yml` and the web client refreshed                                                                                                              | Done  |
+| 4   | Web: the maximum in the criteria editor; the points, labels and total in the assessment panel; the Shortlisted tab first for judges; averages in points | Done  |
+| 5   | Documents made true: `docs/tests/proposal.md`, BEY-38's design noted as changed by this one                                                             | Done  |
 
 Each step is one or more commits, pushed as it is finished, on one branch with one pull request.
 
