@@ -3,9 +3,14 @@ import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } fro
 import type { ReviewApplicationItem } from "@/lib/api/generated";
 import { listSort, sortParam, type ListSort } from "@/lib/list-sort";
 
-/** The tabs of the list: GenAI Fund's decisions for an operator, the caller's own work for a judge. */
+import { waits } from "./review-queue";
+
+/**
+ * The tabs of the list: GenAI Fund's decisions for an operator, the caller's own work for a judge.
+ * A judge's list leads with the shortlist, which is what GenAI Fund asks judges to focus on.
+ */
 export const operatorTabs = ["all", "undecided", "shortlisted", "not_selected"] as const;
-export const judgeTabs = ["all", "to_score", "scored"] as const;
+export const judgeTabs = ["shortlisted", "all", "to_score", "scored"] as const;
 const tabs = [...new Set([...operatorTabs, ...judgeTabs])] as const;
 
 /** Who applies, as the list narrows it. */
@@ -43,16 +48,16 @@ function folded(text: string) {
   return text.normalize("NFD").replace(/\p{M}/gu, "").replace(/[đĐ]/g, "d").toLowerCase();
 }
 
-function inTab(item: ReviewApplicationItem, tab: Tab) {
+function inTab(item: ReviewApplicationItem, tab: Tab, released: boolean) {
   switch (tab) {
     case "undecided":
       return item.reviewStatus === "under_review";
     case "shortlisted":
+      return item.shortlisted;
     case "not_selected":
       return item.reviewStatus === tab;
     case "to_score":
-      // A judge never scores an application of their own.
-      return item.mine === "none" && !item.own;
+      return waits(item, released);
     case "scored":
       return item.mine !== "none";
     default:
@@ -103,11 +108,12 @@ export function listApplications(
   items: ReviewApplicationItem[],
   search: ReviewSearch,
   operator: boolean,
+  released = false,
 ) {
   const fallback = defaultReviewSort(items, operator);
   const keys = operator ? reviewSortKeys : reviewSortKeys.filter((key) => key !== "score");
   const sort = listSort(search.sort, keys, fallback);
-  const { shown, counts } = narrowApplications(items, search);
+  const { shown, counts } = narrowApplications(items, search, released);
   const ordered = [...shown].sort(
     (a, b) => compare(a, b, sort) || a.submittedAt.localeCompare(b.submittedAt),
   );
@@ -125,14 +131,18 @@ export function listApplications(
 }
 
 /** The applications the search selects, and how many each tab holds whatever the search. */
-function narrowApplications(items: ReviewApplicationItem[], search: ReviewSearch) {
+function narrowApplications(
+  items: ReviewApplicationItem[],
+  search: ReviewSearch,
+  released: boolean,
+) {
   const counts = Object.fromEntries(
-    tabs.map((tab) => [tab, items.filter((item) => inTab(item, tab)).length]),
+    tabs.map((tab) => [tab, items.filter((item) => inTab(item, tab, released)).length]),
   ) as Record<Tab, number>;
   const text = folded(search.q.trim());
   const shown = items.filter(
     (item) =>
-      inTab(item, search.tab) &&
+      inTab(item, search.tab, released) &&
       (!text ||
         folded(item.solutionName).includes(text) ||
         folded(item.organizationName).includes(text)) &&

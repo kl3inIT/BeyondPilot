@@ -125,7 +125,15 @@ function ReviewersPage({
               <li key={criterion.id} className="flex gap-3 py-2.5 text-sm">
                 <span className="w-5 text-muted-foreground tabular-nums">{index + 1}</span>
                 <span className="flex flex-col">
-                  <span>{criterion.name}</span>
+                  <span>
+                    {criterion.name}
+                    {criterion.maxPoints != null && (
+                      <span className="text-muted-foreground">
+                        {" · "}
+                        {c("upTo", { max: criterion.maxPoints })}
+                      </span>
+                    )}
+                  </span>
                   {criterion.description && (
                     <span className="text-muted-foreground">{criterion.description}</span>
                   )}

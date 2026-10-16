@@ -32,13 +32,45 @@ const scale = (name: string) => screen.getByRole("radiogroup", { name });
 const save = () => screen.getAllByRole("button", { name: "Save" })[0];
 
 describe("AssessmentPanel", () => {
+  it("shows the points each level gives when the criteria are worth points, and their total", async () => {
+    const { user } = render(
+      <AssessmentPanel
+        applicationId="a1"
+        criteria={[
+          { id: "p1", name: "Practical impact", description: null, maxPoints: 20 },
+          { id: "p2", name: "Clarity", description: null, maxPoints: 5 },
+        ]}
+        mine={null}
+        version={1}
+        judge
+        released={false}
+        nextHref={null}
+      />,
+    );
+
+    const impact = within(scale("Practical impact"));
+    expect(impact.getAllByRole("radio").map((radio) => radio.textContent)).toEqual([
+      "4",
+      "8",
+      "12",
+      "16",
+      "20",
+    ]);
+    await user.click(impact.getByRole("radio", { name: "16 of 20 points, Very good" }));
+    await user.click(within(scale("Clarity")).getByRole("radio", { name: "3 of 5 points, Good" }));
+    await waitFor(() => expect(screen.getAllByText(/19 \/ 25 pts/)).toHaveLength(2));
+    expect(screen.getByText("Very good")).toBeVisible();
+    expect(screen.getByText("· up to 20 pts")).toBeVisible();
+    expect(screen.queryByText(/^Average/)).not.toBeInTheDocument();
+  });
+
   it("offers each criterion as one choice of five, named by the criterion and described by what a judge looks for", () => {
     render(panel());
 
     const fit = scale("Problem fit");
     expect(within(fit).getAllByRole("radio")).toHaveLength(5);
     expect(fit).toHaveAccessibleDescription("How well it answers the challenge.");
-    expect(within(fit).getByRole("radio", { name: "4 out of 5" })).not.toBeChecked();
+    expect(within(fit).getByRole("radio", { name: "4 out of 5, Very good" })).not.toBeChecked();
     expect(scale("Feasibility")).not.toHaveAccessibleDescription();
   });
 
@@ -46,13 +78,13 @@ describe("AssessmentPanel", () => {
     const { user } = render(panel());
     const fit = within(scale("Problem fit"));
 
-    await user.click(fit.getByRole("radio", { name: "2 out of 5" }));
-    await waitFor(() => expect(fit.getByRole("radio", { name: "2 out of 5" })).toBeChecked());
+    await user.click(fit.getByRole("radio", { name: "2 out of 5, Fair" }));
+    await waitFor(() => expect(fit.getByRole("radio", { name: "2 out of 5, Fair" })).toBeChecked());
 
     await user.keyboard("{ArrowRight}");
-    await waitFor(() => expect(fit.getByRole("radio", { name: "3 out of 5" })).toBeChecked());
-    expect(fit.getByRole("radio", { name: "3 out of 5" })).toHaveFocus();
-    expect(fit.getByRole("radio", { name: "2 out of 5" })).not.toBeChecked();
+    await waitFor(() => expect(fit.getByRole("radio", { name: "3 out of 5, Good" })).toBeChecked());
+    expect(fit.getByRole("radio", { name: "3 out of 5, Good" })).toHaveFocus();
+    expect(fit.getByRole("radio", { name: "2 out of 5, Fair" })).not.toBeChecked();
     expect(fit.getAllByRole("radio", { checked: true })).toHaveLength(1);
   });
 
@@ -66,13 +98,15 @@ describe("AssessmentPanel", () => {
       "3 criteria still need a score before you can save.",
     );
 
-    await user.click(within(scale("Problem fit")).getByRole("radio", { name: "4 out of 5" }));
-    await user.click(within(scale("Feasibility")).getByRole("radio", { name: "3 out of 5" }));
+    await user.click(
+      within(scale("Problem fit")).getByRole("radio", { name: "4 out of 5, Very good" }),
+    );
+    await user.click(within(scale("Feasibility")).getByRole("radio", { name: "3 out of 5, Good" }));
     await waitFor(() => expect(screen.getAllByText("Scored 2 of 3")).toHaveLength(2));
     expect(screen.getByText("1 criterion still needs a score before you can save.")).toBeVisible();
     expect(screen.queryByText(/^Average/)).not.toBeInTheDocument();
 
-    await user.click(within(scale("Team")).getByRole("radio", { name: "5 out of 5" }));
+    await user.click(within(scale("Team")).getByRole("radio", { name: "5 out of 5, Excellent" }));
     await waitFor(() => expect(save()).toBeEnabled());
     expect(screen.getByText("Average 4.0")).toBeVisible();
     expect(screen.queryByText(/still need/)).not.toBeInTheDocument();

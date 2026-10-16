@@ -23,6 +23,8 @@ import {
   type ReviewCriterion,
 } from "@/lib/api/generated";
 
+import { POINT_CHOICES } from "./review-points";
+
 /** Invites an address to judge the program; the person signs in with it and finds the program. */
 function InviteReviewer({ programId, programName }: { programId: string; programName: string }) {
   const t = useTranslations("Review.reviewers.invite");
@@ -143,9 +145,12 @@ function ReviewerRowActions({
 /** The most criteria a program is judged on. */
 const MAX_CRITERIA = 12;
 
+/** A criterion's points as the select holds them: a number, or none. */
+const NO_POINTS = "none";
+
 /**
- * Edits a program's judging criteria in a dialog, in order, and saves them together. They are
- * fixed once an application has been scored on them.
+ * Edits a program's judging criteria in a dialog, in order, and saves them together. Each may be
+ * worth points, every one or none. They are fixed once an application has been scored on them.
  */
 function CriteriaEditor({
   programId,
@@ -166,8 +171,9 @@ function CriteriaEditor({
           ? criteria.map((criterion) => ({
               name: criterion.name,
               description: criterion.description ?? "",
+              points: criterion.maxPoints == null ? NO_POINTS : String(criterion.maxPoints),
             }))
-          : [{ name: "", description: "" }],
+          : [{ name: "", description: "", points: NO_POINTS }],
     },
     onSubmit: async ({ value }) => {
       try {
@@ -177,6 +183,7 @@ function CriteriaEditor({
             criteria: value.criteria.map((draft) => ({
               name: draft.name.trim(),
               description: draft.description.trim() === "" ? null : draft.description.trim(),
+              maxPoints: draft.points === NO_POINTS ? null : Number(draft.points),
             })),
           },
         });
@@ -190,6 +197,10 @@ function CriteriaEditor({
   });
   const drafts = useStore(form.store, (state) => state.values.criteria);
   const filled = drafts.length > 0 && drafts.every((draft) => draft.name.trim() !== "");
+  const worth = drafts.filter((draft) => draft.points !== NO_POINTS);
+  // Points add up to a total only when every criterion has them.
+  const mixed = worth.length > 0 && worth.length < drafts.length;
+  const totalPoints = worth.reduce((sum, draft) => sum + Number(draft.points), 0);
 
   return (
     <>
@@ -205,7 +216,7 @@ function CriteriaEditor({
         width="xl"
         submitLabel={t("save")}
         cancelLabel={t("cancel")}
-        submitDisabled={!filled}
+        submitDisabled={!filled || mixed}
       >
         <form.Field name="criteria" mode="array">
           {(list) => (
@@ -236,6 +247,22 @@ function CriteriaEditor({
                           />
                         )}
                       </form.AppField>
+                      <form.AppField name={`criteria[${index}].points`}>
+                        {(field) => (
+                          <field.SelectField
+                            label={t("pointsLabel")}
+                            optional
+                            description={t("pointsHint")}
+                            options={[
+                              { value: NO_POINTS, label: t("noPoints") },
+                              ...POINT_CHOICES.map((points) => ({
+                                value: String(points),
+                                label: String(points),
+                              })),
+                            ]}
+                          />
+                        )}
+                      </form.AppField>
                     </div>
                     <IconButton
                       aria-label={t("remove", { number: index + 1 })}
@@ -254,11 +281,16 @@ function CriteriaEditor({
                 size="sm"
                 className="self-start"
                 disabled={list.state.value.length >= MAX_CRITERIA}
-                onClick={() => list.pushValue({ name: "", description: "" })}
+                onClick={() => list.pushValue({ name: "", description: "", points: NO_POINTS })}
               >
                 <PlusIcon aria-hidden="true" />
                 {t("addOne")}
               </Button>
+              {(worth.length > 0 || mixed) && (
+                <p role="status" className="text-sm text-muted-foreground">
+                  {mixed ? t("pointsMixed") : t("pointsTotal", { total: totalPoints })}
+                </p>
+              )}
             </>
           )}
         </form.Field>

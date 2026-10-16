@@ -12,6 +12,7 @@ import type { ReviewApplicationItem, ReviewApplications } from "@/lib/api/genera
 import { adminProgramDraftsRoute, adminProgramReleaseRoute } from "@/lib/site";
 
 import { ExportApplications } from "./export-applications";
+import { maxTotal, scoreText } from "./review-points";
 import { listApplications, reviewSearch, type ReviewSearch } from "./review-search";
 import { PageLeadingAction, ReviewSelection } from "./review-selection";
 import { ReviewTable, type ReviewRow } from "./review-table";
@@ -47,7 +48,8 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
   /** "3 Oct", the day of an instant in Vietnam time. */
   const day = (at: string) => dates.dateTime(new Date(at), "day");
   const { head } = data;
-  const list = listApplications(data.items, search, head.operator);
+  const total = maxTotal(head.criteria);
+  const list = listApplications(data.items, search, head.operator, Boolean(head.releasedAt));
   const { ordered: shown, counts } = list;
 
   function status(item: ReviewApplicationItem): ReviewRow["status"] {
@@ -71,7 +73,7 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
     }
     return item.average == null
       ? { label: t("mine.none"), variant: "outline" }
-      : { label: t("average", { value: item.average.toFixed(1) }), variant: "info" };
+      : { label: t("average", { value: scoreText(item.average, total) }), variant: "info" };
   }
 
   const rows: ReviewRow[] = list.rows.map((item) => ({
@@ -90,7 +92,10 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
     scores: head.operator
       ? item.average == null
         ? t("scored", { count: item.scored ?? 0 })
-        : t("scoredAverage", { count: item.scored ?? 0, value: item.average.toFixed(1) })
+        : t("scoredAverage", {
+            count: item.scored ?? 0,
+            value: scoreText(item.average, total),
+          })
       : null,
     status: status(item),
     own: item.own,

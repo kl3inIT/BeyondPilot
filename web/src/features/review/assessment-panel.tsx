@@ -13,7 +13,10 @@ import { useNotify } from "@/hooks/use-notify";
 import { getPathname } from "@/i18n/navigation";
 import { saveAssessment, type Assessment, type ReviewCriterion } from "@/lib/api/generated";
 
-const SCORES = ["1", "2", "3", "4", "5"] as const;
+import { LEVELS, levelPoints, maxTotal } from "./review-points";
+
+/** A level as the radio group and the messages hold it. */
+type Level = `${(typeof LEVELS)[number]}`;
 
 type AssessmentPanelProps = {
   applicationId: string;
@@ -23,15 +26,17 @@ type AssessmentPanelProps = {
   version: number;
   /** Whether the caller is a judge rather than GenAI Fund staff: the note says who reads it. */
   judge: boolean;
-  /** Scores no longer change once the outcomes are released. */
+  /** Scores no longer change once the outcomes are released, except of a shortlisted application. */
   released: boolean;
   /** The next application of the program, which Skip and a save lead to. */
   nextHref: string | null;
 };
 
 /**
- * The caller's assessment of an application: each criterion scored from 1 to 5 and a private note,
- * or a conflict of interest that leaves their score out. It changes until the outcomes are released.
+ * The caller's assessment of an application: each criterion scored at one of five levels and a
+ * private note, or a conflict of interest that leaves their score out. When the criteria are worth
+ * points, each level shows the points it gives and the score is their total. It changes until the
+ * outcomes are released.
  */
 function AssessmentPanel({
   applicationId,
@@ -64,8 +69,17 @@ function AssessmentPanel({
   const scored = criteria
     .filter((criterion) => scores[criterion.id])
     .map((criterion) => Number(scores[criterion.id]));
+  const total = maxTotal(criteria);
+  const points = criteria.reduce(
+    (sum, criterion) =>
+      sum +
+      (scores[criterion.id] && criterion.maxPoints != null
+        ? levelPoints(Number(scores[criterion.id]), criterion.maxPoints)
+        : 0),
+    0,
+  );
   const average =
-    scored.length === criteria.length && scored.length > 0
+    total == null && scored.length === criteria.length && scored.length > 0
       ? scored.reduce((a, b) => a + b, 0) / scored.length
       : null;
   // One primary action a screen: "Save and next" is a judge's. An operator's is the decision above
@@ -135,13 +149,18 @@ function AssessmentPanel({
         >
           {/* How far the scoring is, at every width: the bar of a narrow screen only repeats it. */}
           <div className="mb-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm font-medium">
-            <span id="assessment-criteria">{t("criteria")}</span>
+            <span id="assessment-criteria">
+              {total == null ? t("criteria") : t("criteriaPoints")}
+            </span>
             <span className="flex gap-2 tabular-nums">
               <span className={complete ? "text-muted-foreground" : undefined}>
                 {t("bar.progress", { scored: scored.length, total: criteria.length })}
               </span>
               {average !== null && (
                 <span className="text-primary">{t("average", { value: average.toFixed(1) })}</span>
+              )}
+              {total != null && (
+                <span className="text-primary">{t("total", { points, total })}</span>
               )}
             </span>
           </div>
@@ -152,10 +171,23 @@ function AssessmentPanel({
               className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5"
             >
               <span className="flex min-w-0 flex-col text-sm">
-                <span id={`criterion-${criterion.id}`}>{criterion.name}</span>
+                {/* The scale is named by the criterion; each level says its points. */}
+                <span>
+                  <span id={`criterion-${criterion.id}`}>{criterion.name}</span>
+                  {criterion.maxPoints != null && (
+                    <span className="text-muted-foreground">
+                      {` · ${t("upTo", { max: criterion.maxPoints })}`}
+                    </span>
+                  )}
+                </span>
                 {criterion.description && (
                   <span id={`criterion-${criterion.id}-what`} className="text-muted-foreground">
                     {criterion.description}
+                  </span>
+                )}
+                {scores[criterion.id] && (
+                  <span className="text-xs text-muted-foreground">
+                    {t(`levels.${scores[criterion.id] as Level}`)}
                   </span>
                 )}
               </span>
@@ -172,16 +204,33 @@ function AssessmentPanel({
                   setScores((current) => ({ ...current, [criterion.id]: String(value) }))
                 }
               >
-                {SCORES.map((score) => (
-                  <RadioGroupToggle
-                    key={score}
-                    size="sm"
-                    value={score}
-                    aria-label={t("score", { score })}
-                  >
-                    {score}
-                  </RadioGroupToggle>
-                ))}
+                {LEVELS.map((level) => {
+                  const value = String(level) as Level;
+                  const label = t(`levels.${value}`);
+                  return criterion.maxPoints != null ? (
+                    <RadioGroupToggle
+                      key={level}
+                      size="sm"
+                      value={value}
+                      aria-label={t("points", {
+                        points: levelPoints(level, criterion.maxPoints),
+                        max: criterion.maxPoints,
+                        level: label,
+                      })}
+                    >
+                      {levelPoints(level, criterion.maxPoints)}
+                    </RadioGroupToggle>
+                  ) : (
+                    <RadioGroupToggle
+                      key={level}
+                      size="sm"
+                      value={value}
+                      aria-label={t("score", { score: level, level: label })}
+                    >
+                      {level}
+                    </RadioGroupToggle>
+                  );
+                })}
               </RadioGroup>
             </div>
           ))}
@@ -249,6 +298,7 @@ function AssessmentPanel({
         <div className="fixed inset-x-0 bottom-0 z-20 flex items-center gap-3 border-t bg-background px-4 py-3 lg:hidden">
           <span className="flex-1 text-sm tabular-nums">
             {t("bar.progress", { scored: scored.length, total: criteria.length })}
+            {total != null && ` · ${t("total", { points, total })}`}
           </span>
           {complete ? (
             <Button

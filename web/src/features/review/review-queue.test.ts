@@ -4,8 +4,8 @@ import type { ReviewApplicationItem } from "@/lib/api/generated";
 
 import { judgeQueue } from "./review-queue";
 
-const item = (id: string, mine: ReviewApplicationItem["mine"], own = false) =>
-  ({ id, mine, own }) as ReviewApplicationItem;
+const item = (id: string, mine: ReviewApplicationItem["mine"], own = false, shortlisted = false) =>
+  ({ id, mine, own, shortlisted }) as ReviewApplicationItem;
 
 describe("judgeQueue", () => {
   const items = [
@@ -35,6 +35,12 @@ describe("judgeQueue", () => {
       left: 0,
       nextId: null,
     });
+  });
+
+  it("once the outcomes are released, leaves only the shortlisted to score", () => {
+    const released = [item("a", "none"), item("b", "none", false, true), item("c", "none")];
+    expect(judgeQueue(released, "a", true)).toEqual({ left: 1, nextId: "b" });
+    expect(judgeQueue(released, "a")).toEqual({ left: 3, nextId: "b" });
   });
 
   it("never sends a judge to their own application", () => {
