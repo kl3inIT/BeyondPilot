@@ -6505,14 +6505,20 @@ export type SubmittedAnswer = {
 export type SubmittedApplication = {
     answers: Array<SubmittedAnswer>;
     builtWith: Array<string>;
-    contact: ContactDetails;
+    /**
+     * Null for a judge, who reads no contact details.
+     */
+    contact?: ContactDetails | null;
     country?: string | null;
     deck?: AttachedFile | null;
     /**
      * The link to the product's demo the solution held at submission.
      */
     demoUrl?: string | null;
-    email: string;
+    /**
+     * Null for a judge, who reads no contact details.
+     */
+    email?: string | null;
     maturity?: string | null;
     organizationName: string;
     organizationType: string;

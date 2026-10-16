@@ -238,8 +238,8 @@ test.describe("judging applications", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Reviews");
     await page.getByRole("link", { name: /AI for Insurance Challenge × Tasco/ }).click();
     await expect(page).toHaveURL(reviews);
-    // The shortlist leads a judge's tabs.
-    await expect(page.getByRole("tab").first()).toHaveAccessibleName("Shortlisted 1");
+    // A judge reads only the shortlist.
+    await expect(page.getByRole("tab", { name: "All 2" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "To score 1" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Release outcomes" })).toHaveCount(0);
     await expect(page.getByRole("checkbox")).toHaveCount(0);
@@ -248,12 +248,15 @@ test.describe("judging applications", () => {
 
     await page.goto(`${reviews}/${plainCoverId}`);
     await expect(page.getByText("Only you and GenAI Fund read this.")).toBeVisible();
+    // The submission without the applicant's contact details.
+    await expect(page.getByText("wei.ling@plaincover.example")).toHaveCount(0);
+    await expect(page.getByText("+65 8123 4567")).toHaveCount(0);
     await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
     await expect(page.getByRole("region", { name: "Judges' scores" })).toHaveCount(0);
     await expect(page.getByRole("region", { name: "Decision" })).toHaveCount(0);
-    // The judge has scored one and declared a conflict on another, so the one on show is the last
-    // one left: nothing is next, and the way back is the application before it.
-    await expect(page.getByText("2 of 3 · 1 left to score")).toBeVisible();
+    // The judge has scored the other shortlisted application, so the one on show is the last one
+    // left: nothing is next, and the way back is the application before it.
+    await expect(page.getByText("2 of 2 · 1 left to score")).toBeVisible();
     await expect(page.getByRole("link", { name: "Skip", exact: true })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Previous", exact: true })).toHaveAttribute(
       "href",

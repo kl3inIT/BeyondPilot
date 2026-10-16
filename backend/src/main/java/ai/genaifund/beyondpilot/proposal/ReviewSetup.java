@@ -94,12 +94,15 @@ public class ReviewSetup {
 		this.events = events;
 	}
 
-	/** The programs the caller reviews: every program taking applications for an operator, their invitations otherwise. */
+	/**
+	 * The programs the caller reviews: every program taking applications for an operator, their invitations otherwise.
+	 * A judge counts only the shortlisted applications, the ones they read.
+	 */
 	@Transactional
 	public ReviewProgramsResponse programs(Actor actor) {
 		Person person = identity.person(actor);
-		List<UUID> ids = identity.isOperator(actor) ? proposals.findProgramsWithSubmissions()
-				: access.programsOf(person);
+		boolean operator = identity.isOperator(actor);
+		List<UUID> ids = operator ? proposals.findProgramsWithSubmissions() : access.programsOf(person);
 		Map<UUID, ApplicationForm> forms = programs.formsUnderReview(ids);
 		List<ReviewProgramResponse> items = new ArrayList<>();
 		for (UUID id : ids) {
@@ -107,10 +110,11 @@ public class ReviewSetup {
 			if (form == null) {
 				continue;
 			}
-			List<UUID> submitted = submitted(id);
+			List<UUID> submitted = readable(id, operator);
 			long assessed = assessments.findByProposalIdIn(submitted)
 				.stream()
 				.filter(assessment -> assessment.getAccountId().equals(person.accountId()))
+				.filter(assessment -> assessment.isScored() || assessment.isConflict())
 				.count();
 			items.add(new ReviewProgramResponse(id, form.slug(), form.name(), form.closesAt(), form.outcomesDueOn(),
 					releases.existsById(id), submitted.size(), assessed));
@@ -173,10 +177,13 @@ public class ReviewSetup {
 	public ReviewersResponse reviewers(Actor actor, UUID programId) {
 		access.operator(actor);
 		form(programId);
-		List<UUID> submitted = submitted(programId);
+		List<UUID> submitted = readable(programId, true);
 		Map<UUID, Long> assessed = new HashMap<>();
 		for (ProposalAssessment assessment : assessments.findByProposalIdIn(submitted)) {
-			assessed.merge(assessment.getAccountId(), 1L, Long::sum);
+			// A note or a bookmark alone is not a score; a conflict is a judge's answer.
+			if (assessment.isScored() || assessment.isConflict()) {
+				assessed.merge(assessment.getAccountId(), 1L, Long::sum);
+			}
 		}
 		List<ProposalReviewer> invited = reviewers.findByProgramIdAndRemovedAtIsNullOrderByInvitedAt(programId);
 		Set<UUID> accounts = new LinkedHashSet<>(assessed.keySet());
@@ -266,10 +273,14 @@ public class ReviewSetup {
 		return reviewers.findJudgeAccounts(programId);
 	}
 
-	/** The identifiers of a program's submitted applications. */
-	List<UUID> submitted(UUID programId) {
+	/**
+	 * The identifiers of a program's submitted applications the caller reads, the earliest first: every one for an
+	 * operator, the shortlisted for a judge.
+	 */
+	List<UUID> readable(UUID programId, boolean operator) {
 		return proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED)
 			.stream()
+			.filter(proposal -> operator || proposal.isShortlisted())
 			.map(Proposal::getId)
 			.toList();
 	}

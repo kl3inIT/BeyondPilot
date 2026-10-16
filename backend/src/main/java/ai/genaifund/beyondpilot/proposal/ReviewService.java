@@ -130,7 +130,11 @@ public class ReviewService {
 		ApplicationForm form = setup.form(programId);
 		Reviewing reviewing = access.of(actor, programId);
 		ReviewHeadResponse head = head(form, reviewing);
-		List<Proposal> submitted = proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED);
+		// A judge reads only what GenAI Fund shortlisted (Kai, BEY-213).
+		List<Proposal> submitted = proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED)
+			.stream()
+			.filter(proposal -> reviewing.operator() || proposal.isShortlisted())
+			.toList();
 		Map<UUID, List<ProposalAssessment>> byProposal = new HashMap<>();
 		for (ProposalAssessment assessment : assessments
 			.findByProposalIdIn(submitted.stream().map(Proposal::getId).toList())) {
@@ -155,7 +159,7 @@ public class ReviewService {
 					reviewing.operator() ? snapshot.applicant().email() : null,
 					choice == null ? null : choiceOf(snapshot, choice.id()), Objects.requireNonNull(proposal.getSubmittedAt()),
 					proposal.getSubmissions(), reviewing.operator() ? proposal.getReviewStatus() : null,
-					Proposal.SHORTLISTED.equals(proposal.getReviewStatus()),
+					proposal.isShortlisted(),
 					reviewing.operator() ? average(all, points) : mine == null ? null : score(mine, points),
 					reviewing.operator() ? (int) all.stream().filter(ProposalAssessment::isScored).count() : null,
 					mine == null ? "none" : mine.isConflict() ? "conflict" : mine.isScored() ? "scored" : "noted",
@@ -435,13 +439,15 @@ public class ReviewService {
 	/**
 	 * One submitted application as its applicant sent it last, with the caller's assessment; an operator also reads
 	 * every other assessment and the decisions.
-	 * @throws ProposalException when there is no such submitted application, or the caller does not review its program
+	 * @throws ProposalException when there is no such submitted application, the caller does not review its program, or
+	 * the caller is a judge and it is not shortlisted
 	 */
 	@Transactional
 	public ReviewApplicationResponse application(Actor actor, UUID id) {
 		Proposal proposal = submitted(id);
 		ApplicationForm form = setup.form(proposal.getProgramId());
 		Reviewing reviewing = access.of(actor, proposal.getProgramId());
+		requireReadable(reviewing, proposal);
 		return view(form, reviewing, proposal);
 	}
 
@@ -456,7 +462,7 @@ public class ReviewService {
 		ReviewApplicationResponse view = application(actor, id);
 		ReviewHeadResponse head = view.head();
 		ReviewApplicationResponse.Submitted sent = view.submitted();
-		ContactDetails contact = sent.contact();
+		ContactDetails contact = Objects.requireNonNull(sent.contact());
 		List<SubmittedApplication.Assessment> assessments = new ArrayList<>();
 		if (view.mine() != null) {
 			assessments.add(assessment(Objects.requireNonNull(view.mine())));
@@ -465,7 +471,7 @@ public class ReviewService {
 		return new SubmittedApplication(view.id(),
 				new SubmittedApplication.Program(head.programId(), head.slug(), head.name()), view.version(),
 				view.submittedAt(), view.reviewStatus(), view.average(),
-				new SubmittedApplication.Applicant(sent.email(), contact.firstName(), contact.lastName(),
+				new SubmittedApplication.Applicant(Objects.requireNonNull(sent.email()), contact.firstName(), contact.lastName(),
 						contact.phone(), contact.country(), contact.linkedin()),
 				new SubmittedApplication.Organization(sent.organizationName(), sent.organizationType(), sent.country(),
 						sent.teamSize(), sent.website(), sent.teamBackground()),
@@ -496,6 +502,7 @@ public class ReviewService {
 		Proposal proposal = submitted(id);
 		ApplicationForm form = setup.form(proposal.getProgramId());
 		Reviewing reviewing = access.of(actor, proposal.getProgramId());
+		requireReadable(reviewing, proposal);
 		requireNotOwn(reviewing, proposal);
 		requireScorable(form, proposal);
 		List<CriterionResponse> criteria = setup.criteriaOf(form.programId()).criteria();
@@ -543,7 +550,7 @@ public class ReviewService {
 	@Transactional
 	public FileDownload file(Actor actor, UUID id, UUID fileId) {
 		Proposal proposal = submitted(id);
-		access.of(actor, proposal.getProgramId());
+		requireReadable(access.of(actor, proposal.getProgramId()), proposal);
 		held(proposal, fileId);
 		return storage.download(fileId);
 	}
@@ -599,12 +606,23 @@ public class ReviewService {
 	}
 
 	/**
+	 * Refuses a judge an application GenAI Fund has not shortlisted, as if it did not exist.
+	 * @throws ProposalException when the caller is a judge and the application is not shortlisted
+	 */
+	private static void requireReadable(Reviewing reviewing, Proposal proposal) {
+		if (!reviewing.operator() && !proposal.isShortlisted()) {
+			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
+					"Application " + proposal.getId() + " is not shortlisted for a judge");
+		}
+	}
+
+	/**
 	 * Refuses a score once the outcomes are released, except of a shortlisted application: the shortlist is judged
 	 * after it is announced, as at a demo day.
 	 * @throws ProposalException when the outcomes are released and the application is not shortlisted
 	 */
 	private void requireScorable(ApplicationForm form, Proposal proposal) {
-		if (!Proposal.SHORTLISTED.equals(proposal.getReviewStatus())) {
+		if (!proposal.isShortlisted()) {
 			requireNotReleased(form);
 		}
 	}
@@ -709,12 +727,12 @@ public class ReviewService {
 		}
 		history.sort(Comparator.comparing(ReviewApplicationResponse.Event::at));
 
-		List<UUID> order = setup.submitted(form.programId());
+		List<UUID> order = setup.readable(form.programId(), reviewing.operator());
 		int index = order.indexOf(proposal.getId());
 		return new ReviewApplicationResponse(head, proposal.getId(), proposal.getSubmissions(),
-				Objects.requireNonNull(proposal.getSubmittedAt()), submitted(snapshot),
+				Objects.requireNonNull(proposal.getSubmittedAt()), submitted(snapshot, reviewing.operator()),
 				reviewing.operator() ? proposal.getReviewStatus() : null,
-				Proposal.SHORTLISTED.equals(proposal.getReviewStatus()), mine, others,
+				proposal.isShortlisted(), mine, others,
 				reviewing.operator() ? average(all, points) : null, history, index + 1, order.size(),
 				index > 0 ? order.get(index - 1) : null, index >= 0 && index + 1 < order.size() ? order.get(index + 1) : null,
 				reviewing.owns(proposal));
@@ -765,11 +783,13 @@ public class ReviewService {
 		return snapshots;
 	}
 
-	private static ReviewApplicationResponse.Submitted submitted(Snapshot snapshot) {
+	/** What the applicant sent; a judge reads no contact details (Kai, BEY-213). */
+	private static ReviewApplicationResponse.Submitted submitted(Snapshot snapshot, boolean operator) {
 		Snapshot.Organization organization = snapshot.organization();
 		Snapshot.Solution solution = snapshot.solution();
 		Snapshot.Materials materials = snapshot.materials();
-		return new ReviewApplicationResponse.Submitted(snapshot.applicant().email(), snapshot.applicant().contact(),
+		return new ReviewApplicationResponse.Submitted(operator ? snapshot.applicant().email() : null,
+				operator ? snapshot.applicant().contact() : null,
 				organization.name(), organization.type(), organization.country(), organization.teamSize(),
 				organization.website(), organization.teamBackground(), solution.name(), solution.summary(),
 				solution.problemsSolved(), solution.maturity(), solution.demoUrl(), materials.deck(),

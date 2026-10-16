@@ -7,10 +7,10 @@ import { waits } from "./review-queue";
 
 /**
  * The tabs of the list: GenAI Fund's decisions for an operator, the caller's own work for a judge.
- * A judge's list leads with the shortlist, which is what GenAI Fund asks judges to focus on.
+ * A judge reads only the shortlist, so their tabs narrow it by what they did.
  */
 export const operatorTabs = ["all", "undecided", "shortlisted", "not_selected"] as const;
-export const judgeTabs = ["shortlisted", "bookmarked", "all", "to_score", "scored"] as const;
+export const judgeTabs = ["all", "bookmarked", "to_score", "scored"] as const;
 const tabs = [...new Set([...operatorTabs, ...judgeTabs])] as const;
 
 /** Who applies, as the list narrows it. */

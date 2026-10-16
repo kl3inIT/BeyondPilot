@@ -35,8 +35,9 @@ public record ReviewApplicationResponse(@Schema(requiredMode = Schema.RequiredMo
 				description = "The caller's own application, or their organization's, which they never score or decide.") boolean own) {
 
 	@Schema(name = "SubmittedApplication", description = "What the applicant sent, as it was.")
-	public record Submitted(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String email,
-			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) ContactDetails contact,
+	public record Submitted(
+			@Schema(types = { "string", "null" }, description = "Null for a judge, who reads no contact details.") @Nullable String email,
+			@Schema(types = { "object", "null" }, description = "Null for a judge, who reads no contact details.") @Nullable ContactDetails contact,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String organizationName,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String organizationType,
 			@Schema(types = { "string", "null" }) @Nullable String country,

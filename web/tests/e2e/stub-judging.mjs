@@ -95,11 +95,19 @@ export const plainCoverDeckId = "f0000000-0000-4000-8000-000000000001";
 function list(operator) {
   return {
     head: head(operator, false),
-    items: applications.map((item) =>
-      operator
-        ? item
-        : { ...item, reviewStatus: null, scored: null, average: item.mine === "scored" ? 4 : null },
-    ),
+    // A judge reads only the shortlist: here Claim Copilot and Plain Cover, shortlisted for them.
+    items: operator
+      ? applications
+      : applications
+          .filter((item) => item.id !== ids.renew)
+          .map((item) => ({
+            ...item,
+            reviewStatus: null,
+            shortlisted: true,
+            email: null,
+            scored: null,
+            average: item.mine === "scored" ? 4 : null,
+          })),
     drafts: 4,
     withdrawn: 1,
   };
@@ -112,14 +120,17 @@ function application(operator) {
     version: 2,
     submittedAt: applications[1].submittedAt,
     submitted: {
-      email: "wei.ling@plaincover.example",
-      contact: {
-        firstName: "Wei Ling",
-        lastName: "Tan",
-        phone: "+65 8123 4567",
-        country: "SG",
-        linkedin: "https://www.linkedin.com/in/weilingtan",
-      },
+      // A judge reads no contact details.
+      email: operator ? "wei.ling@plaincover.example" : null,
+      contact: operator
+        ? {
+            firstName: "Wei Ling",
+            lastName: "Tan",
+            phone: "+65 8123 4567",
+            country: "SG",
+            linkedin: "https://www.linkedin.com/in/weilingtan",
+          }
+        : null,
       organizationName: "Plain Cover Pte",
       organizationType: "company",
       country: "SG",
@@ -157,7 +168,7 @@ function application(operator) {
       ],
     },
     reviewStatus: operator ? "under_review" : null,
-    shortlisted: false,
+    shortlisted: !operator,
     mine: null,
     others: operator
       ? [
@@ -186,9 +197,9 @@ function application(operator) {
       },
     ],
     position: 2,
-    total: 3,
+    total: operator ? 3 : 2,
     previousId: ids.claim,
-    nextId: ids.renew,
+    nextId: operator ? ids.renew : null,
   };
 }
 

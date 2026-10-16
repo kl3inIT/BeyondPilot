@@ -25598,7 +25598,11 @@ components:
           items:
             type: string
         contact:
+          type:
+          - object
+          - "null"
           $ref: "#/components/schemas/ContactDetails"
+          description: "Null for a judge, who reads no contact details."
         country:
           type:
           - string
@@ -25614,7 +25618,10 @@ components:
           - "null"
           description: The link to the product's demo the solution held at submission.
         email:
-          type: string
+          type:
+          - string
+          - "null"
+          description: "Null for a judge, who reads no contact details."
         maturity:
           type:
           - string
@@ -25652,8 +25659,6 @@ components:
       required:
       - answers
       - builtWith
-      - contact
-      - email
       - organizationName
       - organizationType
       - solutionName
