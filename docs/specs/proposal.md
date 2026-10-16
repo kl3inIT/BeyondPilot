@@ -11,34 +11,42 @@ was delivered by [BEY-37](../increments/completed/bey-37-proposal/design.md), re
 ## Module
 
 - **Published API.** The package root: the application services `ProposalService` (applying), `ReviewSetup`
-  (criteria and judges), `ReviewService` (reading and scoring) and `OutcomeService` (decisions and release); the
-  events `ProposalSubmitted` and `OutcomesReleased`; `ProposalErrorCode` and `ProposalException`. `ReviewAccess`,
-  `ReviewerInvited`, `SubmissionMail` and `ReviewMail` are package-private.
-- **HTTP.** `proposal.web` holds `ApplicationsController` (`/api/proposal`), `ReviewSetupController` and
-  `ReviewController` (both `/api/proposal/review`). Request and response records are in `proposal.dto`.
+  (criteria and judges), `ReviewService` (reading and scoring), `OutcomeService` (decisions and release) and
+  `UseCaseProposals` (proposals to use cases); the events `ProposalSubmitted` and `OutcomesReleased`; the records
+  `ProgramApplications`, `SubmittedApplication` and `ApplicationFile` that `mcp` reads through `ReviewService`;
+  `ProposalErrorCode` and `ProposalException`. `ReviewAccess`, `ReviewerInvited`, `SubmissionMail`, `ReviewMail` and
+  `ProposalOrganizationMerge` are package-private.
+- **HTTP.** `proposal.web` holds `ApplicationsController` and `UseCaseProposalsController` (both `/api/proposal`),
+  `ReviewSetupController` and `ReviewController` (both `/api/proposal/review`). Request and response records are in
+  `proposal.dto`.
 - **Persistence.** `proposal.persistence` holds the JPA entities and Spring Data repositories: `Proposal`,
-  `ProposalVersion`, `ReviewCriterion`, `ProposalReviewer`, `ProposalAssessment`, `ProposalReviewDecision` and
-  `ProposalRelease`. Row locks (`ProposalRepository.findForUpdate`) and the decision update
+  `ProposalVersion`, `ReviewCriterion`, `ProposalReviewer`, `ProposalAssessment`, `ProposalReviewDecision`,
+  `ProposalRelease`, `ProposalReleaseDraft`, `UseCaseProposal`, `UseCaseProposalSolution` and
+  `UseCaseProposalDecision`. Row locks (`ProposalRepository.findForUpdate`) and the decision update
   (`ProposalRepository.decide`) are declared there.
 - **Dependencies.** A closed Spring Modulith module allowed `identity`, `program`, `organization`, `solution`,
-  `storage`, `notification` and `audit` (`package-info.java`); nothing depends on it. It reads a program's form through
-  `ProgramService`, the caller's organization through `OrganizationDirectory`, makes an applicant's organization
-  through `OrganizationService.createForApplicant`, reads solutions through `SolutionDirectory`, checks and serves files
-  through `StorageService`, queues email through `EmailService` and records operator acts through `AuditTrail`. The
-  module's place in the system is in [ARCHITECTURE.md](../../ARCHITECTURE.md).
+  `storage`, `notification`, `audit`, `shared` and `usecase` (`package-info.java`); `mcp` depends on it. It reads a
+  program's form through `ProgramService`, the caller's organization through `OrganizationDirectory`, makes an
+  applicant's organization through `OrganizationService.createForApplicant`, reads solutions through
+  `SolutionDirectory`, reads a use case through `UseCaseDirectory`, checks and serves files through `StorageService`,
+  writes downloads through `shared.Spreadsheet`, queues email through `EmailService` and records operator acts through
+  `AuditTrail`. The module's place in the system is in [ARCHITECTURE.md](../../ARCHITECTURE.md).
 
 ## Tables
 
-| Table (migration)                | Holds                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `proposal` (V13, V17)            | The working copy: `program_id`, `account_id`, `organization_id`, `solution_id`, `status` (`draft`, `submitted`, `withdrawn`), `contact jsonb`, `team_background`, `deck_file_id`, `built_with text[]`, `traction`, `answers jsonb` (by question identifier), `submissions`, `submitted_at`, `withdrawn_at`, `version`, and from V17 `review_status` (`under_review`, `shortlisted`, `not_selected`, default `under_review`). Unique on `(program_id, account_id)` |
-| `proposal_version` (V13)         | One row per submission: `(proposal_id, number)`, `submitted_at`, `snapshot jsonb`                                                                                                                                                                                                                                                                                                                                                                                 |
-| `review_criterion` (V17)         | A program's criteria in order: `program_id`, `position` (unique per program), `name`, `description`                                                                                                                                                                                                                                                                                                                                                               |
-| `proposal_reviewer` (V17)        | A judge invited by address: `program_id`, `email`, `account_id` (set on joining), `invited_by_account_id`, `invited_at`, `expires_at`, `joined_at`, `removed_at`. An address is unique per program, case-insensitively, among rows not removed                                                                                                                                                                                                                    |
-| `proposal_assessment` (V17)      | One per application and person, keyed `(proposal_id, account_id)`: `version_number`, `scores jsonb` (by criterion identifier), `note`, `conflict`, `saved_at`                                                                                                                                                                                                                                                                                                     |
-| `proposal_review_decision` (V17) | Every change of a decision: `proposal_id`, `account_id`, `from_status`, `to_status`, `reason`, `decided_at`                                                                                                                                                                                                                                                                                                                                                       |
-| `proposal_release` (V17)         | One row per released program, keyed `program_id`: `released_at`, `released_by_account_id`, and the subject and message sent to each group                                                                                                                                                                                                                                                                                                                         |
-| `proposal_release_draft` (V72)   | One row per program whose release emails an operator has written, keyed `program_id`: the subject and message of each group as last written, `updated_by_account_id` and `updated_at`. Removed by the release                                                                                                                                                                                                                                                     |
+| Table (migration)                                  | Holds                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `proposal` (V13, V17, V88)                         | The working copy: `program_id`, `account_id`, `organization_id`, `solution_id`, `status` (`draft`, `submitted`, `withdrawn`), `contact jsonb`, `team_background`, `deck_file_id`, `built_with text[]`, `traction`, `answers jsonb` (by question identifier), `submissions`, `submitted_at`, `withdrawn_at`, `version`, and from V17 `review_status` (`under_review`, `shortlisted`, `not_selected`, default `under_review`). Unique on `(program_id, account_id)`          |
+| `proposal_version` (V13)                           | One row per submission: `(proposal_id, number)`, `submitted_at`, `snapshot jsonb`                                                                                                                                                                                                                                                                                                                                                                                          |
+| `review_criterion` (V17)                           | A program's criteria in order: `program_id`, `position` (unique per program), `name`, `description`                                                                                                                                                                                                                                                                                                                                                                        |
+| `proposal_reviewer` (V17)                          | A judge invited by address: `program_id`, `email`, `account_id` (set on joining), `invited_by_account_id`, `invited_at`, `expires_at`, `joined_at`, `removed_at`. An address is unique per program, case-insensitively, among rows not removed                                                                                                                                                                                                                             |
+| `proposal_assessment` (V17)                        | One per application and person, keyed `(proposal_id, account_id)`: `version_number`, `scores jsonb` (by criterion identifier), `note`, `conflict`, `saved_at`                                                                                                                                                                                                                                                                                                              |
+| `proposal_review_decision` (V17)                   | Every change of a decision: `proposal_id`, `account_id`, `from_status`, `to_status`, `reason`, `decided_at`                                                                                                                                                                                                                                                                                                                                                                |
+| `proposal_release` (V17)                           | One row per released program, keyed `program_id`: `released_at`, `released_by_account_id`, and the subject and message sent to each group                                                                                                                                                                                                                                                                                                                                  |
+| `proposal_release_draft` (V72)                     | One row per program whose release emails an operator has written, keyed `program_id`: the subject and message of each group as last written, `updated_by_account_id` and `updated_at`. Removed by the release                                                                                                                                                                                                                                                              |
+| `use_case_proposal` (V78, V82, V83, V88, V92, V93) | An organization's proposal to a use case, unique on `(use_case_id, organization_id)`: `status` (`draft`, `sent`), `approach`, `deck_file_id`, `team_background`, `created_by_account_id`, `sent_by_account_id`, `sent_at`, `edited_at`, `withdrawn_at` (only on a draft), the decision and outcome columns of V93, `version`. `talent` holds the sender's profile only for a proposal sent before V83; `use_case_proposal_member` (V78) is no longer written or read (V88) |
+| `use_case_proposal_solution` (V78)                 | The solutions a proposal offers, in order: `(proposal_id, solution_id)`, `position`                                                                                                                                                                                                                                                                                                                                                                                        |
+| `use_case_proposal_decision` (V93)                 | Every decision on a use-case proposal: `decision`, `decided_by_account_id`, `decided_at`                                                                                                                                                                                                                                                                                                                                                                                   |
 
 ## Applying
 
@@ -93,7 +101,7 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   ([BEY-189](../increments/completed/bey-189-solo-applicant/design.md)). Either is attached to the caller's application if
   one exists. A caller already in an organization is refused with `PROPOSAL_ALREADY_IN_ORGANIZATION`.
 - **Applying as oneself.** The `independent_builder` keeps the name it was given, which its owner may change like any
-  organization's ([this increment](../increments/active/just-me-is-an-organization/design.md)). While nothing of it was sent (no submitted application, no use-case proposal out of draft, no solution out of
+  organization's ([this increment](../increments/completed/just-me-is-an-organization/design.md)). While nothing of it was sent (no submitted application, no use-case proposal out of draft, no solution out of
   draft), the application form's `organization.changeable` is true: `kind = team` turns it into that team, which waits
   for review, and `POST …/application/organization/leave` takes the person out of it, leaving the application with no
   organization so that they join or add a company. Once something was sent, both answer
@@ -302,6 +310,37 @@ Applicants' acts, joining as a judge and assessments are not audited; they are l
 `proposal.withdrawal.accepted`, `proposal.reviewer.joined` and `proposal.assessment.saved`, beside
 `proposal.decision.recorded` and `proposal.outcomes.released`.
 
+## Use-case proposals: sending
+
+An organization proposes to a use case another organization posted (BEY-133). The code is `UseCaseProposals`; a member
+of any organization other than the one that posted the use case proposes for it, and GenAI Fund's review of that
+organization does not hold the proposal up.
+
+- **One working copy per organization and use case,** shared by its members. The first save makes it. A save keeps what
+  the form holds, under the `version` it read (`PROPOSAL_CHANGED_MEANWHILE`): the solutions offered, each of the
+  organization's own and once, whatever their review says (`PROPOSAL_SOLUTION_NOT_FOUND`), the approach, a PDF uploaded
+  by the caller as an `application_file`, and the team background.
+- **Who.** Someone in no organization is refused with `PROPOSAL_NO_ORGANIZATION`; a member of the posting organization
+  with `PROPOSAL_OWN_USE_CASE`; an unknown use case is `PROPOSAL_USE_CASE_NOT_FOUND`, and one that has closed takes no
+  save, send or withdrawal (`PROPOSAL_USE_CASE_CLOSED`). The form of a closed use case still shows the caller the
+  proposal their organization sent or took back.
+- **Sending** (`POST …/use-case-proposals/{id}/send`) checks again, in order: a solution (`PROPOSAL_SOLUTION_REQUIRED`),
+  an approach (`PROPOSAL_APPROACH_REQUIRED`), the PDF (`PROPOSAL_PDF_REQUIRED`), and for a `builder_team` its team
+  background (`PROPOSAL_TEAM_BACKGROUND_REQUIRED`); then the sender's account must hold a name, a country and a phone
+  number (`PROPOSAL_CONTACT_REQUIRED`). A proposal sent already is `PROPOSAL_ALREADY_SENT`. The sender is emailed
+  (`proposal_sent`) once the sending commits, with until when it may still be edited.
+- **Editing after sending.** A sent proposal may be saved until `sent_at` plus the use case's `proposal_edit_days`
+  while the use case is open, and must stay complete; after that `PROPOSAL_EDIT_WINDOW_CLOSED`. A use case that allows
+  no days keeps a sent proposal as sent.
+- **Taking it back.** `POST …/use-case-proposals/{id}/withdraw` turns a sent proposal (otherwise `PROPOSAL_NOT_SENT`)
+  into a draft with `withdrawn_at`, while the use case is open whatever the time to edit; the posting organization no
+  longer reads or counts it, and it may be sent again.
+- **What the posting side reads.** Its members and operators read the sent proposals of the use case, one of them,
+  and its PDF. `GET /api/proposal/use-case-proposal-counts` answers anyone, without a session, how many proposals each
+  use case received.
+- **A merge** gives the merged organization's proposals to the one kept, with a new version, except for a use case
+  the kept one has a proposal for; the duplicate's draft for such a use case is dropped (`ProposalOrganizationMerge`).
+
 ## Use-case proposals: decisions and outcomes
 
 An organization's proposal to a use case ([BEY-133](../increments/active/bey-133-use-case-proposals/design.md)) is read
@@ -346,13 +385,14 @@ The handlers are `@EventListener`s that queue email in the publisher's transacti
 
 ## HTTP
 
-Every endpoint needs a session.
+Every endpoint needs a session, except `GET /api/proposal/use-case-proposal-counts`.
 
 | Method and path                                                                | Contract                                                           |
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
 | `GET /api/proposal/programs/{slug}/application`                                | The form, the caller's application and organization                |
 | `PUT /api/proposal/programs/{slug}/application`                                | Save the working copy (`SaveApplication`)                          |
 | `POST /api/proposal/programs/{slug}/application/organization`                  | Make the organization of an individual or a team                   |
+| `POST /api/proposal/programs/{slug}/application/organization/leave`            | Leave an individual organization nothing was sent under            |
 | `GET /api/proposal/applications`                                               | My applications                                                    |
 | `GET /api/proposal/applications/{id}`                                          | One of the caller's applications with its form                     |
 | `POST /api/proposal/applications/{id}/submit`                                  | Submit, or submit again                                            |
@@ -364,7 +404,9 @@ Every endpoint needs a session.
 | `DELETE /api/proposal/review/programs/{programId}/reviewers/{reviewerId}`      | Remove a judge                                                     |
 | `GET /api/proposal/review/programs/{programId}/applications`                   | The submitted applications as the caller reviews them              |
 | `POST /api/proposal/review/programs/{programId}/applications/export`           | The submitted applications as XLSX or CSV, for operators; recorded |
+| `GET /api/proposal/review/programs/{programId}/drafts`                         | The drafts not submitted, for operators                            |
 | `POST /api/proposal/review/programs/{programId}/drafts/export`                 | The drafts as XLSX or CSV, for operators; recorded                 |
+| `GET /api/proposal/review/drafts/{id}`, `…/drafts/{id}/files/{fileId}`         | One draft as it stands, and its files, for operators               |
 | `POST /api/proposal/use-cases/{useCaseId}/proposals/export`                    | A use case's proposals as XLSX or CSV, for operators; recorded     |
 | `GET /api/proposal/review/applications/{id}`                                   | One application as submitted last, with assessments and history    |
 | `PUT /api/proposal/review/applications/{id}/assessment`                        | Save the caller's assessment                                       |
@@ -372,6 +414,11 @@ Every endpoint needs a session.
 | `POST /api/proposal/review/programs/{programId}/decisions`                     | Decide one application or several                                  |
 | `GET`, `POST /api/proposal/review/programs/{programId}/release`                | Preview the release; release                                       |
 | `PUT /api/proposal/review/programs/{programId}/release/draft`                  | Keep the release emails as they are written                        |
+| `GET`, `PUT /api/proposal/use-cases/{useCaseId}/proposal`                      | The caller's proposal form; keep what it holds                     |
+| `POST /api/proposal/use-case-proposals/{id}/send`, `/withdraw`                 | Send the proposal; take a sent one back                            |
+| `GET /api/proposal/use-cases/{useCaseId}/proposals`                            | The proposals a use case received                                  |
+| `GET /api/proposal/use-case-proposals/{id}`, `…/{id}/file`                     | One received proposal, and its PDF                                 |
+| `GET /api/proposal/use-case-proposal-counts`                                   | How many proposals each use case received; no session needed       |
 | `POST /api/proposal/use-case-proposals/{id}/decision`                          | Shortlist or decline a received use-case proposal                  |
 | `POST /api/proposal/use-cases/{useCaseId}/outcomes`                            | E-mail the outcomes not yet told, in one batch                     |
 
@@ -379,9 +426,9 @@ Every endpoint needs a session.
 
 `ProposalErrorCode`; the category sets the status (validation 400, not permitted 403, not found 404, conflict 409).
 
-| Status | Codes                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 400    | `PROPOSAL_ORGANIZATION_REQUIRED`, `PROPOSAL_CONTACT_INCOMPLETE`, `PROPOSAL_TEAM_BACKGROUND_REQUIRED`, `PROPOSAL_SOLUTION_NOT_FOUND`, `PROPOSAL_SOLUTION_REQUIRED`, `PROPOSAL_SOLUTION_INCOMPLETE`, `PROPOSAL_DECK_REQUIRED`, `PROPOSAL_ANSWER_INVALID`, `PROPOSAL_ANSWER_REQUIRED`, `PROPOSAL_CRITERIA_INVALID`, `PROPOSAL_ASSESSMENT_INVALID`                                                                    |
-| 403    | `PROPOSAL_OWN_APPLICATION`, `PROPOSAL_REVIEW_NOT_ALLOWED`                                                                                                                                                                                                                                                                                                                                                         |
-| 404    | `PROPOSAL_APPLICATION_NOT_FOUND`, `PROPOSAL_REVIEW_PROGRAM_NOT_FOUND`, `PROPOSAL_REVIEWER_NOT_FOUND`                                                                                                                                                                                                                                                                                                              |
-| 409    | `PROPOSAL_NOT_OPEN`, `PROPOSAL_CLOSED`, `PROPOSAL_LOCKED`, `PROPOSAL_WITHDRAWN_FOR_GOOD`, `PROPOSAL_CHANGED_MEANWHILE`, `PROPOSAL_ALREADY_IN_ORGANIZATION`, `PROPOSAL_ORGANIZATION_APPLIED`, `PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CRITERIA_FIXED`, `PROPOSAL_NO_CRITERIA`, `PROPOSAL_REVIEWER_INVITED`, `PROPOSAL_REVIEWER_JOINED`, `PROPOSAL_RELEASED`, `PROPOSAL_OUTCOMES_NOT_READY`, `PROPOSAL_NOTHING_TO_SEND` |
+| Status | Codes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `PROPOSAL_ORGANIZATION_REQUIRED`, `PROPOSAL_CONTACT_INCOMPLETE`, `PROPOSAL_TEAM_BACKGROUND_REQUIRED`, `PROPOSAL_SOLUTION_NOT_FOUND`, `PROPOSAL_SOLUTION_REQUIRED`, `PROPOSAL_SOLUTION_INCOMPLETE`, `PROPOSAL_DECK_REQUIRED`, `PROPOSAL_ANSWER_INVALID`, `PROPOSAL_ANSWER_REQUIRED`, `PROPOSAL_CRITERIA_INVALID`, `PROPOSAL_ASSESSMENT_INVALID`, `PROPOSAL_APPROACH_REQUIRED`, `PROPOSAL_CONTACT_REQUIRED`, `PROPOSAL_PDF_REQUIRED`                                                                                                                       |
+| 403    | `PROPOSAL_OWN_APPLICATION`, `PROPOSAL_REVIEW_NOT_ALLOWED`, `PROPOSAL_OWN_USE_CASE`, `PROPOSAL_NO_ORGANIZATION`                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 404    | `PROPOSAL_APPLICATION_NOT_FOUND`, `PROPOSAL_REVIEW_PROGRAM_NOT_FOUND`, `PROPOSAL_REVIEWER_NOT_FOUND`, `PROPOSAL_USE_CASE_NOT_FOUND`, `PROPOSAL_NOT_FOUND`                                                                                                                                                                                                                                                                                                                                                                                                |
+| 409    | `PROPOSAL_NOT_OPEN`, `PROPOSAL_CLOSED`, `PROPOSAL_LOCKED`, `PROPOSAL_WITHDRAWN_FOR_GOOD`, `PROPOSAL_CHANGED_MEANWHILE`, `PROPOSAL_ALREADY_IN_ORGANIZATION`, `PROPOSAL_INDIVIDUAL_LOCKED`, `PROPOSAL_ORGANIZATION_APPLIED`, `PROPOSAL_NOT_SUBMITTED`, `PROPOSAL_CRITERIA_FIXED`, `PROPOSAL_NO_CRITERIA`, `PROPOSAL_REVIEWER_INVITED`, `PROPOSAL_REVIEWER_JOINED`, `PROPOSAL_RELEASED`, `PROPOSAL_OUTCOMES_NOT_READY`, `PROPOSAL_NOTHING_TO_SEND`, `PROPOSAL_NOT_SENT`, `PROPOSAL_ALREADY_SENT`, `PROPOSAL_EDIT_WINDOW_CLOSED`, `PROPOSAL_USE_CASE_CLOSED` |

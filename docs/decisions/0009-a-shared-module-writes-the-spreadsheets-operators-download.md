@@ -6,7 +6,7 @@
 
 ## Context
 
-Operators take lists out of BeyondPilot to work in Excel (brief §7.10). Before this decision `proposal` wrote two of them, a program's applications and its drafts, as CSV through its own `CsvRows`. On 14 October 2026 Đạt decided that every list operators work with downloads the same way, as an Excel workbook or as CSV: applications, drafts, a use case's proposals, organizations, solutions, talent, the AI calls and the audit log ([BEY-96](../increments/active/bey-96-spreadsheet-exports/design.md)). Seven modules write one.
+Operators take lists out of BeyondPilot to work in Excel (brief §7.10). Before this decision `proposal` wrote two of them, a program's applications and its drafts, as CSV through its own `CsvRows`. On 14 October 2026 Đạt decided that every list operators work with downloads the same way, as an Excel workbook or as CSV: applications, drafts, a use case's proposals, organizations, solutions, talent, the AI calls and the audit log ([BEY-96](../increments/completed/bey-96-spreadsheet-exports/design.md)). Seven modules write one.
 
 Writing a styled workbook is not a module's business: it knows nothing of programs or organizations, and the same columns, styles, file names and row limit must hold in every module.
 

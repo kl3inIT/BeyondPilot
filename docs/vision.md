@@ -41,4 +41,4 @@ The people it serves are public visitors, enterprises seeking innovation, AI pro
 - English and Vietnamese from the first screen.
 - Operable by a small team: one command to run locally, a staging environment that follows the main branch, tested backups, and visible running costs.
 
-Not yet decided, and therefore not part of this target: where the system is hosted; the email sign-in method (passwordless or password) beside Google; whether the existing Builder Hub and AI Talent systems are integrated, replaced or left as they are; the exact Phase 1 boundary and dates. Each becomes an ADR or a roadmap entry when it is accepted.
+Not yet decided, and therefore not part of this target: where the system is hosted for the long term; whether the existing Builder Hub and AI Talent systems are integrated, replaced or left as they are; the exact Phase 1 boundary and dates. Each becomes an ADR or a roadmap entry when it is accepted.
