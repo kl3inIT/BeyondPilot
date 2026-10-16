@@ -1030,13 +1030,14 @@ export type ApproveOrganization = {
  */
 export type Assessment = {
     average?: number | null;
+    bookmarked: boolean;
     conflict: boolean;
     note?: string | null;
     reviewer: string;
     role: 'operator' | 'reviewer';
     savedAt: string;
     /**
-     * The score of each criterion, by its identifier; empty for a conflict.
+     * The score of each criterion, by its identifier; empty for a conflict or a note without scores.
      */
     scores: {
         [key: string]: number;
@@ -4842,7 +4843,7 @@ export type RetryEmbeddings = {
  */
 export type ReviewApplication = {
     /**
-     * The mean of every judge's score, for an operator; null for a judge.
+     * The mean of every judge's score, for an operator; null for a judge. In points when the criteria have points, otherwise from 1 to 10.
      */
     average?: number | null;
     head: ReviewHead;
@@ -4870,6 +4871,10 @@ export type ReviewApplication = {
      * GenAI Fund's decision; null for a judge.
      */
     reviewStatus?: 'under_review' | 'shortlisted' | 'not_selected';
+    /**
+     * Whether GenAI Fund shortlisted it, the one part of the decision a judge reads; a shortlisted application is still scored after the release.
+     */
+    shortlisted: boolean;
     submitted: SubmittedApplication;
     submittedAt: string;
     total: number;
@@ -4881,19 +4886,27 @@ export type ReviewApplication = {
 
 export type ReviewApplicationItem = {
     /**
-     * For an operator the mean of every judge's score; for a judge their own.
+     * For an operator the mean of every judge's score; for a judge their own. In points when the criteria have points, otherwise from 1 to 10.
      */
     average?: number | null;
+    /**
+     * Whether the caller bookmarked it.
+     */
+    bookmarked: boolean;
     /**
      * The answer to the program's first one-choice question.
      */
     choice?: string | null;
     country?: string | null;
+    /**
+     * The applicant's email, which the list's search matches; null for a judge, who reads no contact details.
+     */
+    email?: string | null;
     id: string;
     /**
-     * What the caller did with it.
+     * What the caller did with it: noted is a note or a bookmark without scores.
      */
-    mine: 'none' | 'scored' | 'conflict';
+    mine: 'none' | 'noted' | 'scored' | 'conflict';
     organizationName: string;
     /**
      * The organization's type, such as independent_builder, builder_team or company.
@@ -4911,6 +4924,10 @@ export type ReviewApplicationItem = {
      * How many scored it; null for a judge.
      */
     scored?: number | null;
+    /**
+     * Whether GenAI Fund shortlisted it, the one part of the decision a judge reads.
+     */
+    shortlisted: boolean;
     solutionName: string;
     submittedAt: string;
     /**
@@ -4953,7 +4970,7 @@ export type ReviewCriteria = {
 };
 
 /**
- * One thing a program's applications are judged on, scored 1 to 5.
+ * One thing a program's applications are judged on, scored from 1 to 10.
  */
 export type ReviewCriterion = {
     /**
@@ -4961,6 +4978,10 @@ export type ReviewCriterion = {
      */
     description?: string | null;
     id: string;
+    /**
+     * The criterion's weight: a score gives score / 10 × maxPoints. Null when the program's criteria have no points, and a score is the mean of the scores; always null for a judge, who never reads the weights.
+     */
+    maxPoints?: number | null;
     name: string;
 };
 
@@ -5141,16 +5162,20 @@ export type SaveApplication = {
 };
 
 /**
- * The caller's assessment: a score from 1 to 5 for every criterion and a private note, or a conflict of interest without scores.
+ * The caller's assessment: a score from 1 to 10 for every criterion or none yet, a private note and a bookmark, or a conflict of interest without scores.
  */
 export type SaveAssessment = {
+    /**
+     * The caller marks the application to come back to.
+     */
+    bookmarked: boolean;
     /**
      * The caller knows the applicant, so their score is left out.
      */
     conflict: boolean;
     note?: string | null;
     /**
-     * By criterion identifier.
+     * By criterion identifier: every criterion, or none to keep only the note and the bookmark.
      */
     scores: {
         [key: string]: number;
@@ -5582,6 +5607,10 @@ export type SaveReviewCriteria = {
 
 export type SaveReviewCriterion = {
     description?: string | null;
+    /**
+     * The criterion's weight, the points a 10 gives; every criterion has them or none. Judges do not see it.
+     */
+    maxPoints?: number | null;
     name: string;
 };
 
@@ -6476,14 +6505,20 @@ export type SubmittedAnswer = {
 export type SubmittedApplication = {
     answers: Array<SubmittedAnswer>;
     builtWith: Array<string>;
-    contact: ContactDetails;
+    /**
+     * Null for a judge, who reads no contact details.
+     */
+    contact?: ContactDetails | null;
     country?: string | null;
     deck?: AttachedFile | null;
     /**
      * The link to the product's demo the solution held at submission.
      */
     demoUrl?: string | null;
-    email: string;
+    /**
+     * Null for a judge, who reads no contact details.
+     */
+    email?: string | null;
     maturity?: string | null;
     organizationName: string;
     organizationType: string;
@@ -12488,7 +12523,7 @@ export type SaveAssessmentData = {
 
 export type SaveAssessmentErrors = {
     /**
-     * A criterion is not scored from 1 to 5.
+     * Some criteria are scored and others not, or a score is outside 1 to 10.
      */
     400: Problem;
     /**

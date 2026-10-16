@@ -8,6 +8,7 @@ import type { ReviewApplication, ReviewApplicationItem } from "@/lib/api/generat
 
 import { AssessmentPanel } from "./assessment-panel";
 import { DecisionPanel } from "./decision-panel";
+import { maxTotal, scoreText } from "./review-points";
 import { judgeQueue } from "./review-queue";
 import { SubmittedRecord } from "./submitted-record";
 
@@ -30,10 +31,11 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
   const [t, locale] = await Promise.all([getTranslations("Review.application"), getLocale()]);
   const format = applyFormatter(locale);
   const { head, submitted } = review;
+  const total = maxTotal(head.criteria);
   const released = Boolean(head.releasedAt);
   // A judge goes on to the next application they have yet to score; an operator, who reads them
   // all to decide, to the next in the list.
-  const judging = head.operator ? null : judgeQueue(queue, review.id);
+  const judging = head.operator ? null : judgeQueue(queue, review.id, released);
   const nextId = judging ? judging.nextId : review.nextId;
   const nextHref = nextId ? `${base}/${nextId}` : null;
 
@@ -105,7 +107,6 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
               applicationId={review.id}
               decision={review.reviewStatus ?? "under_review"}
               released={released}
-              nextHref={nextHref}
             />
           )}
           {review.own ? (
@@ -118,7 +119,8 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
               mine={review.mine ?? null}
               version={review.version}
               judge={!head.operator}
-              released={released}
+              // The shortlist is still judged after the release, as at a demo day.
+              released={released && !review.shortlisted}
               nextHref={nextHref}
             />
           )}
@@ -133,7 +135,7 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
                 </h2>
                 {review.average != null && (
                   <span className="text-sm font-medium tabular-nums">
-                    {t("scores.average", { value: review.average.toFixed(1) })}
+                    {t("scores.average", { value: scoreText(review.average, total) })}
                   </span>
                 )}
               </div>
@@ -151,7 +153,7 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
                         <span className="tabular-nums">
                           {other.conflict
                             ? t("scores.conflict")
-                            : t("scores.average", { value: (other.average ?? 0).toFixed(1) })}
+                            : t("scores.average", { value: scoreText(other.average ?? 0, total) })}
                         </span>
                       </span>
                       <span className="text-muted-foreground">

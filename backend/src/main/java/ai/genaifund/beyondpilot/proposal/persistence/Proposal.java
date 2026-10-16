@@ -153,6 +153,11 @@ public class Proposal {
 		return SUBMITTED.equals(status);
 	}
 
+	/** Whether GenAI Fund shortlisted it, which is all of its review a judge reads. */
+	public boolean isShortlisted() {
+		return SHORTLISTED.equals(reviewStatus);
+	}
+
 	public UUID getId() {
 		return id;
 	}

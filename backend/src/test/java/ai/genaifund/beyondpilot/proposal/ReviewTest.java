@@ -118,17 +118,27 @@ class ReviewTest extends ApplicationsHttpTest {
 		Applicant second = applicant(form, "second@scored.test", "Second Builder");
 		String one = API + "/review/applications/" + first.id();
 		String two = API + "/review/applications/" + second.id();
+		// A judge reads only what GenAI Fund shortlisted.
+		assertThat(JsonPath.<List<Object>>read(body(get(judge, REVIEW + form.programId() + "/applications")
+			.expectStatus()
+			.isOk()), "$.items")).isEmpty();
+		assertProblem(get(judge, one), 404, "PROPOSAL_APPLICATION_NOT_FOUND");
+		shortlist(form, first.id(), second.id());
 
 		String list = body(get(judge, REVIEW + form.programId() + "/applications").expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(list, "$.items[*].organizationName")).containsExactly("First Builder",
 				"Second Builder");
 		assertThat(JsonPath.<List<String>>read(list, "$.items[*].choice")).containsExactly("Claiming", "Claiming");
 		assertThat(JsonPath.<List<Object>>read(list, "$.items[*].reviewStatus")).containsOnlyNulls();
+		assertThat(JsonPath.<List<Object>>read(list, "$.items[*].email")).containsOnlyNulls();
+		assertThat(JsonPath.<List<String>>read(body(get(operator, REVIEW + form.programId() + "/applications")
+			.expectStatus()
+			.isOk()), "$.items[*].email")).containsExactly("first@scored.test", "second@scored.test");
 		assertThat(JsonPath.<String>read(list, "$.head.choice.label")).isEqualTo("Direction");
 
 		assertProblem(put(judge, one + "/assessment", scores(Map.of(criteria.get(0), 4))), 400,
 				"PROPOSAL_ASSESSMENT_INVALID");
-		assertProblem(put(judge, one + "/assessment", scores(Map.of(criteria.get(0), 6, criteria.get(1), 3))), 400,
+		assertProblem(put(judge, one + "/assessment", scores(Map.of(criteria.get(0), 11, criteria.get(1), 3))), 400,
 				"PROPOSAL_ASSESSMENT_INVALID");
 		String scored = body(put(judge, one + "/assessment", scores(Map.of(criteria.get(0), 4, criteria.get(1), 3)))
 			.expectStatus()
@@ -145,11 +155,17 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<List<Object>>read(own, "$.others")).isEmpty();
 		assertThat(JsonPath.<Object>read(own, "$.average")).isNull();
 		assertThat(JsonPath.<Object>read(own, "$.reviewStatus")).isNull();
+		// A judge reads the submission without the applicant's contact details.
+		assertThat(JsonPath.<Object>read(own, "$.submitted.email")).isNull();
+		assertThat(JsonPath.<Object>read(own, "$.submitted.contact")).isNull();
+		assertThat(JsonPath.<String>read(own, "$.submitted.organizationName")).isEqualTo("First Builder");
+		assertThat(JsonPath.<String>read(body(get(operator, one).expectStatus().isOk()), "$.submitted.email"))
+			.isEqualTo("first@scored.test");
 		assertProblem(put(operator, REVIEW + form.programId() + "/criteria", criteria("Anything")), 409,
 				"PROPOSAL_CRITERIA_FIXED");
 
 		// A judge who knows the applicant steps back, and their score is left out.
-		body(put(judge, two + "/assessment", Map.of("scores", Map.of(), "conflict", true)).expectStatus().isOk());
+		body(put(judge, two + "/assessment", Map.of("scores", Map.of(), "conflict", true, "bookmarked", false)).expectStatus().isOk());
 		String counted = body(get(operator, REVIEW + form.programId() + "/applications").expectStatus().isOk());
 		assertThat(JsonPath.<List<Integer>>read(counted, "$.items[*].scored")).containsExactly(2, 0);
 		assertThat(JsonPath.<List<String>>read(body(get(judge, REVIEW + form.programId() + "/applications")
@@ -188,6 +204,7 @@ class ReviewTest extends ApplicationsHttpTest {
 		submitted(session, "shown@demo.test", form, solution);
 		String with = JsonPath.read(body(get(session, API + "/applications").expectStatus().isOk()), "$.items[0].id");
 		Applicant without = applicant(form, "plain@demo.test", "Plain Builder");
+		shortlist(form, UUID.fromString(with), without.id());
 
 		assertThat(JsonPath.<String>read(body(get(judge, API + "/review/applications/" + with).expectStatus().isOk()),
 				"$.submitted.demoUrl"))
@@ -323,9 +340,65 @@ class ReviewTest extends ApplicationsHttpTest {
 	}
 
 	@Test
+	void weightedCriteriaTurnScoresIntoPointsAndANoteNeedsNoScore() {
+		Form form = program("points-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		String criteria = REVIEW + form.programId() + "/criteria";
+		assertProblem(put(operator, criteria, Map.of("criteria", List.of(Map.of("name", "Impact", "maxPoints", 20),
+				Map.of("name", "Execution")))), 400, "PROPOSAL_CRITERIA_POINTS_INVALID");
+		put(operator, criteria, Map.of("criteria", List.of(Map.of("name", "Impact", "maxPoints", 0))))
+			.expectStatus()
+			.isBadRequest();
+		put(operator, criteria, Map.of("criteria", List.of(Map.of("name", "Impact", "maxPoints", 105))))
+			.expectStatus()
+			.isBadRequest();
+		String saved = body(put(operator, criteria, Map.of("criteria",
+				List.of(Map.of("name", "Impact", "maxPoints", 20), Map.of("name", "Execution", "maxPoints", 5))))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<Integer>>read(saved, "$.criteria[*].maxPoints")).containsExactly(20, 5);
+		List<String> ids = JsonPath.read(saved, "$.criteria[*].id");
+
+		String judge = judge(form, "pointer@review.test");
+		Applicant applicant = applicant(form, "points@scored.test", "Points Builder");
+		shortlist(form, applicant.id());
+		String one = API + "/review/applications/" + applicant.id();
+		// A judge who scores after every pitch keeps a note and a bookmark first; it is still theirs to score.
+		put(judge, one + "/assessment", Map.of("scores", Map.of(), "note", "Strong demo.", "conflict", false,
+				"bookmarked", true))
+			.expectStatus()
+			.isOk();
+		String noted = body(get(judge, REVIEW + form.programId() + "/applications").expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(noted, "$.items[*].mine")).containsExactly("noted");
+		assertThat(JsonPath.<List<Boolean>>read(noted, "$.items[*].bookmarked")).containsExactly(true);
+		assertThat(JsonPath.<List<Integer>>read(body(get(operator, REVIEW + form.programId() + "/applications")
+			.expectStatus()
+			.isOk()), "$.items[*].scored")).containsExactly(0);
+		assertProblem(put(judge, one + "/assessment", scores(Map.of(ids.get(0), 4))), 400,
+				"PROPOSAL_ASSESSMENT_INVALID");
+		// A note fixes nothing: the criteria change until a score is saved.
+		assertThat(JsonPath.<Boolean>read(body(get(operator, criteria).expectStatus().isOk()), "$.fixed")).isFalse();
+
+		// A judge rates quality and never reads the weights: their own score is the mean of their scores.
+		assertThat(JsonPath.<List<Object>>read(body(get(judge, criteria).expectStatus().isOk()),
+				"$.criteria[*].maxPoints")).containsOnlyNulls();
+		assertThat(JsonPath.<List<Object>>read(noted, "$.head.criteria[*].maxPoints")).containsOnlyNulls();
+		String scored = body(put(judge, one + "/assessment", scores(Map.of(ids.get(0), 4, ids.get(1), 3)))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<Double>read(scored, "$.mine.average")).isEqualTo(3.5);
+		assertThat(JsonPath.<List<Object>>read(scored, "$.head.criteria[*].maxPoints")).containsOnlyNulls();
+
+		// For GenAI Fund, 4 of 10 on a 20-point criterion gives 8, 3 of 10 on a 5-point one gives 1.5.
+		String read = body(get(operator, one).expectStatus().isOk());
+		assertThat(JsonPath.<List<Double>>read(read, "$.others[*].average")).containsExactly(9.5);
+		put(operator, one + "/assessment", scores(Map.of(ids.get(0), 10, ids.get(1), 10))).expectStatus().isOk();
+		assertThat(JsonPath.<Double>read(body(get(operator, one).expectStatus().isOk()), "$.average")).isEqualTo(17.3);
+	}
+
+	@Test
 	void outcomesAreReleasedOnceAfterTheCloseAndEveryDecision() {
 		Form form = program("released-challenge", true, Instant.now().plus(Duration.ofDays(10)));
-		criteriaOf(form, "Practical impact");
+		List<String> criteria = criteriaOf(form, "Practical impact");
 		String judge = judge(form, "decider@review.test");
 		Applicant chosen = applicant(form, "chosen@released.test", "Chosen Builder");
 		Applicant other = applicant(form, "other@released.test", "Other Builder");
@@ -334,6 +407,13 @@ class ReviewTest extends ApplicationsHttpTest {
 
 		post(judge, decisions, decision(List.of(chosen.id()), "shortlisted")).expectStatus().isForbidden();
 		post(operator, decisions, decision(List.of(chosen.id()), "shortlisted")).expectStatus().isOk();
+		// A judge reads which applications are shortlisted, and nothing else of the decisions.
+		String listed = body(get(judge, REVIEW + form.programId() + "/applications").expectStatus().isOk());
+		assertThat(JsonPath.<List<Boolean>>read(listed, "$.items[*].shortlisted")).containsExactly(true);
+		assertThat(JsonPath.<List<Object>>read(listed, "$.items[*].reviewStatus")).containsOnlyNulls();
+		assertThat(JsonPath.<Boolean>read(body(get(judge, API + "/review/applications/" + chosen.id())
+			.expectStatus()
+			.isOk()), "$.shortlisted")).isTrue();
 		assertProblem(post(operator, release, emails()), 409, "PROPOSAL_OUTCOMES_NOT_READY");
 		close(form);
 		assertProblem(post(operator, release, emails()), 409, "PROPOSAL_OUTCOMES_NOT_READY");
@@ -358,9 +438,16 @@ class ReviewTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isOk()), "$.application.outcome")).isEqualTo("not_selected");
 
-		// It happens once, and the review no longer changes.
+		// It happens once, and the decisions no longer change; the shortlist is still judged, as at a demo day.
 		assertProblem(post(operator, release, emails()), 409, "PROPOSAL_RELEASED");
 		assertProblem(post(operator, decisions, decision(List.of(other.id()), "shortlisted")), 409, "PROPOSAL_RELEASED");
+		put(judge, API + "/review/applications/" + chosen.id() + "/assessment", scores(Map.of(criteria.get(0), 4)))
+			.expectStatus()
+			.isOk();
+		assertProblem(put(judge, API + "/review/applications/" + other.id() + "/assessment",
+				scores(Map.of(criteria.get(0), 4))), 404, "PROPOSAL_APPLICATION_NOT_FOUND");
+		assertProblem(put(operator, API + "/review/applications/" + other.id() + "/assessment",
+				scores(Map.of(criteria.get(0), 4))), 409, "PROPOSAL_RELEASED");
 		String history = body(get(operator, API + "/review/applications/" + chosen.id()).expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(history, "$.history[*].kind")).containsExactly("submitted", "decided");
 		assertThat(JsonPath.<List<String>>read(history, "$.history[*].reason")).contains("The strongest in Claiming.");
@@ -435,6 +522,7 @@ class ReviewTest extends ApplicationsHttpTest {
 		Applicant other = applicant(form, "other@own.test", "Other Builder");
 		// The same person is invited to judge the program they applied to.
 		post(operator, REVIEW + form.programId() + "/reviewers", Map.of("email", applicant.email())).expectStatus().isOk();
+		shortlist(form, applicant.id(), other.id());
 
 		String list = body(get(applicant.session(), REVIEW + form.programId() + "/applications").expectStatus().isOk());
 		assertThat(JsonPath.<List<Boolean>>read(list, "$.items[*].own")).containsExactly(true, false);
@@ -442,7 +530,7 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Boolean>read(body(get(applicant.session(), own).expectStatus().isOk()), "$.own")).isTrue();
 		assertProblem(put(applicant.session(), own + "/assessment", scores(Map.of(criteria.get(0), 5))), 403,
 				"PROPOSAL_OWN_APPLICATION");
-		assertProblem(put(applicant.session(), own + "/assessment", Map.of("scores", Map.of(), "conflict", true)), 403,
+		assertProblem(put(applicant.session(), own + "/assessment", Map.of("scores", Map.of(), "conflict", true, "bookmarked", false)), 403,
 				"PROPOSAL_OWN_APPLICATION");
 		put(applicant.session(), API + "/review/applications/" + other.id() + "/assessment",
 				scores(Map.of(criteria.get(0), 4)))
@@ -586,6 +674,13 @@ class ReviewTest extends ApplicationsHttpTest {
 			.isOk()), "$.criteria[*].id");
 	}
 
+	/** GenAI Fund shortlists the applications, which judges then read. */
+	private void shortlist(Form form, UUID... ids) {
+		post(operator, REVIEW + form.programId() + "/decisions", decision(List.of(ids), "shortlisted"))
+			.expectStatus()
+			.isOk();
+	}
+
 	/** A judge of the program, invited and signed in with the invited address. */
 	private String judge(Form form, String email) {
 		post(operator, REVIEW + form.programId() + "/reviewers", Map.of("email", email)).expectStatus().isOk();
@@ -615,7 +710,7 @@ class ReviewTest extends ApplicationsHttpTest {
 	}
 
 	private static Map<String, Object> scores(Map<String, Integer> scores) {
-		return Map.of("scores", scores, "note", "Clear on consent.", "conflict", false);
+		return Map.of("scores", scores, "note", "Clear on consent.", "conflict", false, "bookmarked", false);
 	}
 
 	private static Map<String, Object> decision(List<UUID> ids, String decision) {

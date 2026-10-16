@@ -16,8 +16,10 @@ function ReviewDraftPage({ draft }: { draft: ReviewDraft }) {
   const t = useTranslations("Review.drafts.detail");
   const format = applyFormatter(useLocale());
   const { head } = draft;
+  // Drafts are an operator's, who always reads the contact.
   const contact = draft.draft.contact;
-  const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ") || draft.draft.email;
+  const name =
+    [contact?.firstName, contact?.lastName].filter(Boolean).join(" ") || draft.draft.email || "";
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 pt-2 pb-12 md:px-6 lg:px-8">

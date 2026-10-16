@@ -185,15 +185,19 @@ test.describe("judging applications", () => {
     await expect(
       assessment.getByText("2 criteria still need a score before you can save."),
     ).toBeVisible();
-    // A score is one choice of five: a radio group, which the arrow keys move along.
+    // A score is one choice of ten, with what the numbers mean in sight: a radio group, which the
+    // arrow keys move along.
+    await expect(
+      assessment.getByText("1–3 Weak · 4–6 Average · 7–8 Strong · 9–10 Outstanding"),
+    ).toBeVisible();
     const first = page.getByRole("radiogroup", { name: criteria[0].name });
-    await first.getByRole("radio", { name: "3 out of 5" }).click();
+    await first.getByRole("radio", { name: "3 out of 10, Weak" }).click();
     await page.keyboard.press("ArrowRight");
-    await expect(first.getByRole("radio", { name: "4 out of 5" })).toBeChecked();
-    await expect(first.getByRole("radio", { name: "3 out of 5" })).not.toBeChecked();
+    await expect(first.getByRole("radio", { name: "4 out of 10, Average" })).toBeChecked();
+    await expect(first.getByRole("radio", { name: "3 out of 10, Weak" })).not.toBeChecked();
     await page
       .getByRole("radiogroup", { name: criteria[1].name })
-      .getByRole("radio", { name: "3 out of 5" })
+      .getByRole("radio", { name: "3 out of 10, Weak" })
       .click();
     await expect(assessment.getByText("Average 3.5")).toBeVisible();
     // How far the scoring is stands in the panel at every width; a narrow screen repeats it in its bar.
@@ -208,16 +212,19 @@ test.describe("judging applications", () => {
         scores: { [criteria[0].id]: 4, [criteria[1].id]: 3 },
         note: "Clear on consent.",
         conflict: false,
+        bookmarked: false,
       },
     });
 
+    // A decision stays on the application, which then shows it.
     await page.goto(`${admin}/applications/${plainCoverId}`);
-    await page.getByRole("button", { name: "Shortlist and next" }).click();
+    await page.getByRole("button", { name: "Shortlist", exact: true }).click();
     await expect.poll(() => calls.length).toBe(2);
     expect(calls[1].body).toMatchObject({
       applicationIds: [plainCoverId],
       decision: "shortlisted",
     });
+    await expect(page).toHaveURL(new RegExp(`${plainCoverId}$`));
   });
 
   test("a judge finds their program under Reviews, scores without seeing anyone else's, and never decides", async ({
@@ -231,6 +238,8 @@ test.describe("judging applications", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Reviews");
     await page.getByRole("link", { name: /AI for Insurance Challenge × Tasco/ }).click();
     await expect(page).toHaveURL(reviews);
+    // A judge reads only the shortlist.
+    await expect(page.getByRole("tab", { name: "All 2" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "To score 1" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Release outcomes" })).toHaveCount(0);
     await expect(page.getByRole("checkbox")).toHaveCount(0);
@@ -239,12 +248,15 @@ test.describe("judging applications", () => {
 
     await page.goto(`${reviews}/${plainCoverId}`);
     await expect(page.getByText("Only you and GenAI Fund read this.")).toBeVisible();
+    // The submission without the applicant's contact details.
+    await expect(page.getByText("wei.ling@plaincover.example")).toHaveCount(0);
+    await expect(page.getByText("+65 8123 4567")).toHaveCount(0);
     await expect(page.getByText("Claims Pricing, and underwriting")).toBeVisible();
     await expect(page.getByRole("region", { name: "Judges' scores" })).toHaveCount(0);
     await expect(page.getByRole("region", { name: "Decision" })).toHaveCount(0);
-    // The judge has scored one and declared a conflict on another, so the one on show is the last
-    // one left: nothing is next, and the way back is the application before it.
-    await expect(page.getByText("2 of 3 · 1 left to score")).toBeVisible();
+    // The judge has scored the other shortlisted application, so the one on show is the last one
+    // left: nothing is next, and the way back is the application before it.
+    await expect(page.getByText("2 of 2 · 1 left to score")).toBeVisible();
     await expect(page.getByRole("link", { name: "Skip", exact: true })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Previous", exact: true })).toHaveAttribute(
       "href",

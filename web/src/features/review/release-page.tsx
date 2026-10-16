@@ -10,6 +10,7 @@ import type { Release, ReleaseItem } from "@/lib/api/generated";
 import { adminProgramApplicationsRoute } from "@/lib/site";
 
 import { ReleaseForm } from "./release-form";
+import { maxTotal, scoreText } from "./review-points";
 
 /**
  * Admin › a program › Release outcomes: who is shortlisted and who is not, the email each group
@@ -23,6 +24,7 @@ async function ReleasePage({ release }: { release: Release }) {
   ]);
   const format = applyFormatter(locale);
   const { head } = release;
+  const total = maxTotal(head.criteria);
   const applications = adminProgramApplicationsRoute(head.programId);
   const words = vocabulary as unknown as { (key: string): string; has: (key: string) => boolean };
   const word = (set: "organizationType" | "country", code: string) =>
@@ -139,7 +141,7 @@ async function ReleasePage({ release }: { release: Release }) {
                       <span className="shrink-0 text-muted-foreground tabular-nums">
                         {item.average == null
                           ? t("notScored")
-                          : t("average", { value: item.average.toFixed(1) })}
+                          : t("average", { value: scoreText(item.average, total) })}
                       </span>
                     </li>
                   ))}

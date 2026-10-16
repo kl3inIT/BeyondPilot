@@ -29,16 +29,22 @@ public class ReviewCriterion {
 	@Column(updatable = false)
 	private @Nullable String description;
 
+	/** The points the highest level gives; null when the program's criteria are not worth points. */
+	@Column(updatable = false)
+	private @Nullable Integer maxPoints;
+
 	@SuppressWarnings("NullAway.Init")
 	protected ReviewCriterion() {
 	}
 
-	public ReviewCriterion(UUID id, UUID programId, int position, String name, @Nullable String description) {
+	public ReviewCriterion(UUID id, UUID programId, int position, String name, @Nullable String description,
+			@Nullable Integer maxPoints) {
 		this.id = id;
 		this.programId = programId;
 		this.position = position;
 		this.name = name;
 		this.description = description;
+		this.maxPoints = maxPoints;
 	}
 
 	public UUID getId() {
@@ -59,5 +65,9 @@ public class ReviewCriterion {
 
 	public @Nullable String getDescription() {
 		return description;
+	}
+
+	public @Nullable Integer getMaxPoints() {
+		return maxPoints;
 	}
 }

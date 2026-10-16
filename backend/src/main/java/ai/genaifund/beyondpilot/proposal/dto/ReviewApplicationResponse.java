@@ -17,11 +17,13 @@ public record ReviewApplicationResponse(@Schema(requiredMode = Schema.RequiredMo
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Submitted submitted,
 		@Schema(types = { "string", "null" }, allowableValues = { "under_review", "shortlisted", "not_selected" },
 				description = "GenAI Fund's decision; null for a judge.") @Nullable String reviewStatus,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "Whether GenAI Fund shortlisted it, the one part of the decision a judge reads; a shortlisted application is still scored after the release.") boolean shortlisted,
 		@Schema(types = { "object", "null" }) @Nullable Assessment mine,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Every other assessment, for an operator; empty for a judge.") List<Assessment> others,
 		@Schema(types = { "number", "null" },
-				description = "The mean of every judge's score, for an operator; null for a judge.") @Nullable Double average,
+				description = "The mean of every judge's score, for an operator; null for a judge. In points when the criteria have points, otherwise from 1 to 10.") @Nullable Double average,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Submissions and, for an operator, decisions, the oldest first.") List<Event> history,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
@@ -33,8 +35,9 @@ public record ReviewApplicationResponse(@Schema(requiredMode = Schema.RequiredMo
 				description = "The caller's own application, or their organization's, which they never score or decide.") boolean own) {
 
 	@Schema(name = "SubmittedApplication", description = "What the applicant sent, as it was.")
-	public record Submitted(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String email,
-			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) ContactDetails contact,
+	public record Submitted(
+			@Schema(types = { "string", "null" }, description = "Null for a judge, who reads no contact details.") @Nullable String email,
+			@Schema(types = { "object", "null" }, description = "Null for a judge, who reads no contact details.") @Nullable ContactDetails contact,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String organizationName,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String organizationType,
 			@Schema(types = { "string", "null" }) @Nullable String country,
@@ -65,10 +68,11 @@ public record ReviewApplicationResponse(@Schema(requiredMode = Schema.RequiredMo
 	public record Assessment(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String reviewer,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "operator", "reviewer" }) String role,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-					description = "The score of each criterion, by its identifier; empty for a conflict.") Map<UUID, Integer> scores,
+					description = "The score of each criterion, by its identifier; empty for a conflict or a note without scores.") Map<UUID, Integer> scores,
 			@Schema(types = { "number", "null" }) @Nullable Double average,
 			@Schema(types = { "string", "null" }) @Nullable String note,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean conflict,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean bookmarked,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 					description = "The version it was made on; earlier than the application's when it was submitted again since.") int version,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant savedAt) {

@@ -71,7 +71,7 @@ public class ReviewService {
 
 	private static final int LOWEST = 1;
 
-	private static final int HIGHEST = 5;
+	private static final int HIGHEST = ReviewSetup.SCALE;
 
 	private static final TypeReference<Map<UUID, Integer>> SCORES = new TypeReference<>() {
 	};
@@ -130,7 +130,11 @@ public class ReviewService {
 		ApplicationForm form = setup.form(programId);
 		Reviewing reviewing = access.of(actor, programId);
 		ReviewHeadResponse head = head(form, reviewing);
-		List<Proposal> submitted = proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED);
+		// A judge reads only what GenAI Fund shortlisted (Kai, BEY-213).
+		List<Proposal> submitted = proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED)
+			.stream()
+			.filter(proposal -> reviewing.operator() || proposal.isShortlisted())
+			.toList();
 		Map<UUID, List<ProposalAssessment>> byProposal = new HashMap<>();
 		for (ProposalAssessment assessment : assessments
 			.findByProposalIdIn(submitted.stream().map(Proposal::getId).toList())) {
@@ -138,6 +142,7 @@ public class ReviewService {
 		}
 		Map<VersionKey, Snapshot> snapshots = snapshots(submitted);
 		ReviewHeadResponse.ChoiceQuestion choice = head.choice();
+		Map<UUID, Integer> points = points(head.criteria());
 		List<ReviewApplicationsResponse.Item> items = new ArrayList<>();
 		for (Proposal proposal : submitted) {
 			Snapshot snapshot = snapshots.get(new VersionKey(proposal.getId(), proposal.getSubmissions()));
@@ -151,11 +156,14 @@ public class ReviewService {
 				.orElse(null);
 			items.add(new ReviewApplicationsResponse.Item(proposal.getId(), snapshot.solution().name(),
 					snapshot.organization().name(), snapshot.organization().type(), snapshot.organization().country(),
+					reviewing.operator() ? snapshot.applicant().email() : null,
 					choice == null ? null : choiceOf(snapshot, choice.id()), Objects.requireNonNull(proposal.getSubmittedAt()),
 					proposal.getSubmissions(), reviewing.operator() ? proposal.getReviewStatus() : null,
-					reviewing.operator() ? average(all) : mine == null ? null : mean(mine),
-					reviewing.operator() ? (int) all.stream().filter(assessment -> !assessment.isConflict()).count() : null,
-					mine == null ? "none" : mine.isConflict() ? "conflict" : "scored", reviewing.owns(proposal)));
+					proposal.isShortlisted(),
+					reviewing.operator() ? average(all, points) : mine == null ? null : score(mine, points),
+					reviewing.operator() ? (int) all.stream().filter(ProposalAssessment::isScored).count() : null,
+					mine == null ? "none" : mine.isConflict() ? "conflict" : mine.isScored() ? "scored" : "noted",
+					mine != null && mine.isBookmarked(), reviewing.owns(proposal)));
 		}
 		return new ReviewApplicationsResponse(head, items,
 				proposals.countByProgramIdAndStatus(programId, Proposal.DRAFT),
@@ -188,6 +196,7 @@ public class ReviewService {
 		}
 		Map<VersionKey, Snapshot> snapshots = snapshots(submitted);
 		ReviewHeadResponse.ChoiceQuestion choice = head.choice();
+		Map<UUID, Integer> points = points(head.criteria());
 		List<ApplicationLine> lines = new ArrayList<>();
 		for (Proposal proposal : submitted) {
 			Snapshot snapshot = snapshots.get(new VersionKey(proposal.getId(), proposal.getSubmissions()));
@@ -200,7 +209,7 @@ public class ReviewService {
 					snapshot.applicant().email(), choice == null ? null : choiceOf(snapshot, choice.id()),
 					Objects.requireNonNull(proposal.getSubmittedAt()), proposal.getSubmissions(),
 					proposal.getReviewStatus(), head.releasedAt() != null,
-					all.stream().filter(assessment -> !assessment.isConflict()).count(), average(all)));
+					all.stream().filter(ProposalAssessment::isScored).count(), average(all, points)));
 		}
 		Spreadsheet<ApplicationLine> sheet = Spreadsheet.<ApplicationLine>of("Applications")
 			.text("Application", ApplicationLine::id)
@@ -430,13 +439,15 @@ public class ReviewService {
 	/**
 	 * One submitted application as its applicant sent it last, with the caller's assessment; an operator also reads
 	 * every other assessment and the decisions.
-	 * @throws ProposalException when there is no such submitted application, or the caller does not review its program
+	 * @throws ProposalException when there is no such submitted application, the caller does not review its program, or
+	 * the caller is a judge and it is not shortlisted
 	 */
 	@Transactional
 	public ReviewApplicationResponse application(Actor actor, UUID id) {
 		Proposal proposal = submitted(id);
 		ApplicationForm form = setup.form(proposal.getProgramId());
 		Reviewing reviewing = access.of(actor, proposal.getProgramId());
+		requireReadable(reviewing, proposal);
 		return view(form, reviewing, proposal);
 	}
 
@@ -451,7 +462,7 @@ public class ReviewService {
 		ReviewApplicationResponse view = application(actor, id);
 		ReviewHeadResponse head = view.head();
 		ReviewApplicationResponse.Submitted sent = view.submitted();
-		ContactDetails contact = sent.contact();
+		ContactDetails contact = Objects.requireNonNull(sent.contact());
 		List<SubmittedApplication.Assessment> assessments = new ArrayList<>();
 		if (view.mine() != null) {
 			assessments.add(assessment(Objects.requireNonNull(view.mine())));
@@ -460,7 +471,7 @@ public class ReviewService {
 		return new SubmittedApplication(view.id(),
 				new SubmittedApplication.Program(head.programId(), head.slug(), head.name()), view.version(),
 				view.submittedAt(), view.reviewStatus(), view.average(),
-				new SubmittedApplication.Applicant(sent.email(), contact.firstName(), contact.lastName(),
+				new SubmittedApplication.Applicant(Objects.requireNonNull(sent.email()), contact.firstName(), contact.lastName(),
 						contact.phone(), contact.country(), contact.linkedin()),
 				new SubmittedApplication.Organization(sent.organizationName(), sent.organizationType(), sent.country(),
 						sent.teamSize(), sent.website(), sent.teamBackground()),
@@ -483,22 +494,25 @@ public class ReviewService {
 	 * Keeps the caller's assessment of an application on the version it was submitted as last. It changes until the
 	 * outcomes are released.
 	 * @throws ProposalException when there is no such submitted application, the caller does not review its program,
-	 * the program has no criteria, its outcomes were released, or a criterion is not scored from 1 to 5
+	 * the program has no criteria, its outcomes were released and it is not shortlisted, or the scores are neither
+	 * none nor every criterion from 1 to 10
 	 */
 	@Transactional
 	public ReviewApplicationResponse assess(Actor actor, UUID id, SaveAssessmentRequest request) {
 		Proposal proposal = submitted(id);
 		ApplicationForm form = setup.form(proposal.getProgramId());
 		Reviewing reviewing = access.of(actor, proposal.getProgramId());
+		requireReadable(reviewing, proposal);
 		requireNotOwn(reviewing, proposal);
-		requireNotReleased(form);
+		requireScorable(form, proposal);
 		List<CriterionResponse> criteria = setup.criteriaOf(form.programId()).criteria();
 		if (criteria.isEmpty()) {
 			throw new ProposalException(ProposalErrorCode.NO_CRITERIA,
 					"Assessment of application " + id + " before its program has criteria");
 		}
 		Map<UUID, Integer> scores = new LinkedHashMap<>();
-		if (!request.conflict()) {
+		// No scores keep the note and the bookmark alone, for a judge who scores after hearing every pitch.
+		if (!request.conflict() && !request.scores().isEmpty()) {
 			Set<UUID> expected = new HashSet<>();
 			criteria.forEach(criterion -> expected.add(criterion.id()));
 			if (!request.scores().keySet().equals(expected)) {
@@ -517,7 +531,8 @@ public class ReviewService {
 			.orElseGet(() -> new ProposalAssessment(id, reviewing.accountId()));
 		String note = request.note();
 		assessment.write(proposal.getSubmissions(), json.writeValueAsString(scores),
-				note == null || note.isBlank() ? null : note.strip(), request.conflict(), Instant.now());
+				note == null || note.isBlank() ? null : note.strip(), request.conflict(), request.bookmarked(),
+				Instant.now());
 		assessments.saveAndFlush(assessment);
 		LOG.atInfo()
 			.addKeyValue("event", "proposal.assessment.saved")
@@ -535,7 +550,7 @@ public class ReviewService {
 	@Transactional
 	public FileDownload file(Actor actor, UUID id, UUID fileId) {
 		Proposal proposal = submitted(id);
-		access.of(actor, proposal.getProgramId());
+		requireReadable(access.of(actor, proposal.getProgramId()), proposal);
 		held(proposal, fileId);
 		return storage.download(fileId);
 	}
@@ -565,7 +580,7 @@ public class ReviewService {
 		return new ReviewHeadResponse(form.programId(), form.slug(), form.name(), form.closesAt(),
 				form.outcomesDueOn(), !Instant.now().isBefore(form.closesAt()),
 				releases.findById(form.programId()).map(ProposalRelease::getReleasedAt).orElse(null),
-				reviewing.operator(), setup.criteriaOf(form.programId()).criteria(), choice);
+				reviewing.operator(), setup.criteriaFor(form.programId(), reviewing.operator()).criteria(), choice);
 	}
 
 	/**
@@ -590,6 +605,28 @@ public class ReviewService {
 		}
 	}
 
+	/**
+	 * Refuses a judge an application GenAI Fund has not shortlisted, as if it did not exist.
+	 * @throws ProposalException when the caller is a judge and the application is not shortlisted
+	 */
+	private static void requireReadable(Reviewing reviewing, Proposal proposal) {
+		if (!reviewing.operator() && !proposal.isShortlisted()) {
+			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
+					"Application " + proposal.getId() + " is not shortlisted for a judge");
+		}
+	}
+
+	/**
+	 * Refuses a score once the outcomes are released, except of a shortlisted application: the shortlist is judged
+	 * after it is announced, as at a demo day.
+	 * @throws ProposalException when the outcomes are released and the application is not shortlisted
+	 */
+	private void requireScorable(ApplicationForm form, Proposal proposal) {
+		if (!proposal.isShortlisted()) {
+			requireNotReleased(form);
+		}
+	}
+
 	void requireNotReleased(ApplicationForm form) {
 		if (releases.existsById(form.programId())) {
 			throw new ProposalException(ProposalErrorCode.RELEASED,
@@ -597,11 +634,23 @@ public class ReviewService {
 		}
 	}
 
-	/** The mean of every judge's own mean, leaving out conflicts; null when nobody scored. */
-	@Nullable Double average(Collection<ProposalAssessment> all) {
+	/** What each criterion weighs in points, by its identifier; empty when the program's criteria have no points. */
+	static Map<UUID, Integer> points(List<CriterionResponse> criteria) {
+		Map<UUID, Integer> points = new HashMap<>();
+		for (CriterionResponse criterion : criteria) {
+			Integer most = criterion.maxPoints();
+			if (most != null) {
+				points.put(criterion.id(), most);
+			}
+		}
+		return points;
+	}
+
+	/** The mean of every judge's own score, leaving out conflicts; null when nobody scored. */
+	@Nullable Double average(Collection<ProposalAssessment> all, Map<UUID, Integer> points) {
 		OptionalDouble mean = all.stream()
 			.filter(assessment -> !assessment.isConflict())
-			.map(this::mean)
+			.map(assessment -> score(assessment, points))
 			.filter(Objects::nonNull)
 			.mapToDouble(Double::doubleValue)
 			.average();
@@ -650,12 +699,14 @@ public class ReviewService {
 		Map<UUID, Person> people = identity.people(authors);
 		Set<UUID> judges = new HashSet<>();
 		setup.judgesOf(form.programId()).forEach(judges::add);
+		ReviewHeadResponse head = head(form, reviewing);
+		Map<UUID, Integer> points = points(head.criteria());
 
 		ReviewApplicationResponse.Assessment mine = null;
 		List<ReviewApplicationResponse.Assessment> others = new ArrayList<>();
 		for (ProposalAssessment assessment : all) {
 			ReviewApplicationResponse.Assessment shown = shown(assessment, people.get(assessment.getAccountId()),
-					judges.contains(assessment.getAccountId()) ? "reviewer" : "operator");
+					judges.contains(assessment.getAccountId()) ? "reviewer" : "operator", points);
 			if (assessment.getAccountId().equals(reviewing.accountId())) {
 				mine = shown;
 			}
@@ -676,33 +727,44 @@ public class ReviewService {
 		}
 		history.sort(Comparator.comparing(ReviewApplicationResponse.Event::at));
 
-		List<UUID> order = setup.submitted(form.programId());
+		List<UUID> order = setup.readable(form.programId(), reviewing.operator());
 		int index = order.indexOf(proposal.getId());
-		return new ReviewApplicationResponse(head(form, reviewing), proposal.getId(), proposal.getSubmissions(),
-				Objects.requireNonNull(proposal.getSubmittedAt()), submitted(snapshot),
-				reviewing.operator() ? proposal.getReviewStatus() : null, mine, others,
-				reviewing.operator() ? average(all) : null, history, index + 1, order.size(),
+		return new ReviewApplicationResponse(head, proposal.getId(), proposal.getSubmissions(),
+				Objects.requireNonNull(proposal.getSubmittedAt()), submitted(snapshot, reviewing.operator()),
+				reviewing.operator() ? proposal.getReviewStatus() : null,
+				proposal.isShortlisted(), mine, others,
+				reviewing.operator() ? average(all, points) : null, history, index + 1, order.size(),
 				index > 0 ? order.get(index - 1) : null, index >= 0 && index + 1 < order.size() ? order.get(index + 1) : null,
 				reviewing.owns(proposal));
 	}
 
 	private ReviewApplicationResponse.Assessment shown(ProposalAssessment assessment, @Nullable Person person,
-			String role) {
+			String role, Map<UUID, Integer> points) {
 		return new ReviewApplicationResponse.Assessment(person == null ? "" : person.label(), role,
-				json.readValue(assessment.getScores(), SCORES), mean(assessment), assessment.getNote(),
-				assessment.isConflict(), assessment.getVersionNumber(), assessment.getSavedAt());
+				json.readValue(assessment.getScores(), SCORES), score(assessment, points), assessment.getNote(),
+				assessment.isConflict(), assessment.isBookmarked(), assessment.getVersionNumber(),
+				assessment.getSavedAt());
 	}
 
-	private @Nullable Double mean(ProposalAssessment assessment) {
+	/**
+	 * One person's score: the points their scores give when the criteria have points, otherwise the mean of their
+	 * scores; null for a conflict or a note without scores.
+	 */
+	private @Nullable Double score(ProposalAssessment assessment, Map<UUID, Integer> points) {
 		if (assessment.isConflict()) {
 			return null;
 		}
-		OptionalDouble mean = json.readValue(assessment.getScores(), SCORES)
-			.values()
-			.stream()
-			.mapToInt(Integer::intValue)
-			.average();
-		return mean.isPresent() ? round(mean.getAsDouble()) : null;
+		Map<UUID, Integer> scores = json.readValue(assessment.getScores(), SCORES);
+		if (scores.isEmpty()) {
+			return null;
+		}
+		if (!points.isEmpty()) {
+			return round(scores.entrySet()
+				.stream()
+				.mapToDouble(score -> score.getValue() * points.getOrDefault(score.getKey(), 0) / (double) ReviewSetup.SCALE)
+				.sum());
+		}
+		return round(scores.values().stream().mapToInt(Integer::intValue).average().orElseThrow());
 	}
 
 	private static double round(double value) {
@@ -721,11 +783,13 @@ public class ReviewService {
 		return snapshots;
 	}
 
-	private static ReviewApplicationResponse.Submitted submitted(Snapshot snapshot) {
+	/** What the applicant sent; a judge reads no contact details (Kai, BEY-213). */
+	private static ReviewApplicationResponse.Submitted submitted(Snapshot snapshot, boolean operator) {
 		Snapshot.Organization organization = snapshot.organization();
 		Snapshot.Solution solution = snapshot.solution();
 		Snapshot.Materials materials = snapshot.materials();
-		return new ReviewApplicationResponse.Submitted(snapshot.applicant().email(), snapshot.applicant().contact(),
+		return new ReviewApplicationResponse.Submitted(operator ? snapshot.applicant().email() : null,
+				operator ? snapshot.applicant().contact() : null,
 				organization.name(), organization.type(), organization.country(), organization.teamSize(),
 				organization.website(), organization.teamBackground(), solution.name(), solution.summary(),
 				solution.problemsSolved(), solution.maturity(), solution.demoUrl(), materials.deck(),
@@ -748,7 +812,7 @@ public class ReviewService {
 
 	private static ProposalException invalid(UUID id) {
 		return new ProposalException(ProposalErrorCode.ASSESSMENT_INVALID,
-				"Assessment of application " + id + " does not score every criterion from 1 to 5");
+				"Assessment of application " + id + " does not score every criterion from 1 to 10");
 	}
 
 	private record VersionKey(UUID proposalId, int number) {

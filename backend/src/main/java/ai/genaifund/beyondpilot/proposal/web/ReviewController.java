@@ -152,7 +152,7 @@ class ReviewController {
 	@Operation(operationId = "saveAssessment", summary = "Keep the caller's assessment of an application",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The application with the assessment as saved.")
-	@ApiResponse(responseCode = "400", description = "A criterion is not scored from 1 to 5.",
+	@ApiResponse(responseCode = "400", description = "Some criteria are scored and others not, or a score is outside 1 to 10.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "There is no such submitted application.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))

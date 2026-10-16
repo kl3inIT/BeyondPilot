@@ -55,6 +55,9 @@ public class ReviewSetup {
 
 	private static final String PROGRAM = "program";
 
+	/** The highest score of a criterion, which gives all its points. */
+	static final int SCALE = 10;
+
 	private final ReviewAccess access;
 
 	private final ProgramService programs;
@@ -91,12 +94,15 @@ public class ReviewSetup {
 		this.events = events;
 	}
 
-	/** The programs the caller reviews: every program taking applications for an operator, their invitations otherwise. */
+	/**
+	 * The programs the caller reviews: every program taking applications for an operator, their invitations otherwise.
+	 * A judge counts only the shortlisted applications, the ones they read.
+	 */
 	@Transactional
 	public ReviewProgramsResponse programs(Actor actor) {
 		Person person = identity.person(actor);
-		List<UUID> ids = identity.isOperator(actor) ? proposals.findProgramsWithSubmissions()
-				: access.programsOf(person);
+		boolean operator = identity.isOperator(actor);
+		List<UUID> ids = operator ? proposals.findProgramsWithSubmissions() : access.programsOf(person);
 		Map<UUID, ApplicationForm> forms = programs.formsUnderReview(ids);
 		List<ReviewProgramResponse> items = new ArrayList<>();
 		for (UUID id : ids) {
@@ -104,10 +110,11 @@ public class ReviewSetup {
 			if (form == null) {
 				continue;
 			}
-			List<UUID> submitted = submitted(id);
+			List<UUID> submitted = readable(id, operator);
 			long assessed = assessments.findByProposalIdIn(submitted)
 				.stream()
 				.filter(assessment -> assessment.getAccountId().equals(person.accountId()))
+				.filter(assessment -> assessment.isScored() || assessment.isConflict())
 				.count();
 			items.add(new ReviewProgramResponse(id, form.slug(), form.name(), form.closesAt(), form.outcomesDueOn(),
 					releases.existsById(id), submitted.size(), assessed));
@@ -122,14 +129,13 @@ public class ReviewSetup {
 	@Transactional
 	public CriteriaResponse criteria(Actor actor, UUID programId) {
 		form(programId);
-		access.of(actor, programId);
-		return criteriaOf(programId);
+		return criteriaFor(programId, access.of(actor, programId).operator());
 	}
 
 	/**
 	 * Replaces a program's criteria, in order. They are fixed once an application of the program has been scored.
-	 * @throws ProposalException when the program takes no applications, an application was scored, or two criteria
-	 * share a name
+	 * @throws ProposalException when the program takes no applications, an application was scored, two criteria
+	 * share a name, or some criteria have points and others not
 	 */
 	@Transactional
 	public CriteriaResponse saveCriteria(Actor actor, UUID programId, SaveCriteriaRequest request) {
@@ -146,11 +152,16 @@ public class ReviewSetup {
 						"Two criteria of program " + programId + " share a name");
 			}
 		}
+		long worth = request.criteria().stream().filter(criterion -> criterion.maxPoints() != null).count();
+		if (worth != 0 && worth != request.criteria().size()) {
+			throw new ProposalException(ProposalErrorCode.CRITERIA_POINTS_INVALID,
+					"Criteria of program " + programId + " with points that do not hold together");
+		}
 		criteria.deleteByProgramId(programId);
 		int position = 0;
 		for (SaveCriteriaRequest.Criterion criterion : request.criteria()) {
 			criteria.save(new ReviewCriterion(UUID.randomUUID(), programId, position++, criterion.name().strip(),
-					text(criterion.description())));
+					text(criterion.description()), criterion.maxPoints()));
 		}
 		criteria.flush();
 		record(AuditAction.PROPOSAL_CRITERIA_UPDATE, operator, form,
@@ -166,10 +177,13 @@ public class ReviewSetup {
 	public ReviewersResponse reviewers(Actor actor, UUID programId) {
 		access.operator(actor);
 		form(programId);
-		List<UUID> submitted = submitted(programId);
+		List<UUID> submitted = readable(programId, true);
 		Map<UUID, Long> assessed = new HashMap<>();
 		for (ProposalAssessment assessment : assessments.findByProposalIdIn(submitted)) {
-			assessed.merge(assessment.getAccountId(), 1L, Long::sum);
+			// A note or a bookmark alone is not a score; a conflict is a judge's answer.
+			if (assessment.isScored() || assessment.isConflict()) {
+				assessed.merge(assessment.getAccountId(), 1L, Long::sum);
+			}
 		}
 		List<ProposalReviewer> invited = reviewers.findByProgramIdAndRemovedAtIsNullOrderByInvitedAt(programId);
 		Set<UUID> accounts = new LinkedHashSet<>(assessed.keySet());
@@ -259,10 +273,14 @@ public class ReviewSetup {
 		return reviewers.findJudgeAccounts(programId);
 	}
 
-	/** The identifiers of a program's submitted applications. */
-	List<UUID> submitted(UUID programId) {
+	/**
+	 * The identifiers of a program's submitted applications the caller reads, the earliest first: every one for an
+	 * operator, the shortlisted for a judge.
+	 */
+	List<UUID> readable(UUID programId, boolean operator) {
 		return proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED)
 			.stream()
+			.filter(proposal -> operator || proposal.isShortlisted())
 			.map(Proposal::getId)
 			.toList();
 	}
@@ -280,10 +298,20 @@ public class ReviewSetup {
 		return form;
 	}
 
+	/** The criteria as the caller reads them: a judge rates quality and never reads the weights. */
+	CriteriaResponse criteriaFor(UUID programId, boolean operator) {
+		CriteriaResponse all = criteriaOf(programId);
+		return operator ? all : new CriteriaResponse(all.criteria()
+			.stream()
+			.map(criterion -> new CriterionResponse(criterion.id(), criterion.name(), criterion.description(), null))
+			.toList(), all.fixed());
+	}
+
 	CriteriaResponse criteriaOf(UUID programId) {
 		return new CriteriaResponse(criteria.findByProgramIdOrderByPosition(programId)
 			.stream()
-			.map(criterion -> new CriterionResponse(criterion.getId(), criterion.getName(), criterion.getDescription()))
+			.map(criterion -> new CriterionResponse(criterion.getId(), criterion.getName(), criterion.getDescription(),
+					criterion.getMaxPoints()))
 			.toList(), assessments.existsForProgram(programId));
 	}
 

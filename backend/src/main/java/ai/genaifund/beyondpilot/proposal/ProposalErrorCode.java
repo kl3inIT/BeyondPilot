@@ -80,6 +80,9 @@ public enum ProposalErrorCode implements ErrorCode {
 	CRITERIA_INVALID("PROPOSAL_CRITERIA_INVALID", ErrorCategory.VALIDATION,
 			"Give each criterion its own name."),
 
+	CRITERIA_POINTS_INVALID("PROPOSAL_CRITERIA_POINTS_INVALID", ErrorCategory.VALIDATION,
+			"Give every criterion its points, or give none of them points."),
+
 	NO_CRITERIA("PROPOSAL_NO_CRITERIA", ErrorCategory.CONFLICT,
 			"This program has no judging criteria yet."),
 
@@ -93,7 +96,7 @@ public enum ProposalErrorCode implements ErrorCode {
 			"This judge has already signed in; there is no invitation to send again."),
 
 	ASSESSMENT_INVALID("PROPOSAL_ASSESSMENT_INVALID", ErrorCategory.VALIDATION,
-			"Score every criterion from 1 to 5, or declare a conflict."),
+			"Score every criterion from 1 to 10, or none to keep only a note, or declare a conflict."),
 
 	RELEASED("PROPOSAL_RELEASED", ErrorCategory.CONFLICT,
 			"The outcomes of this program have been released, so the review can no longer change."),

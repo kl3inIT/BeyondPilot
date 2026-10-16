@@ -61,27 +61,40 @@ async function SubmittedRecord({
     set: "organizationType" | "teamSize" | "maturity" | "country",
     code?: string | null,
   ) => (!code ? none : words.has(`${set}.${code}`) ? words(`${set}.${code}`) : code);
-  const contact = submitted.contact;
+  // A judge reads no contact details: the backend sends none, and the rows are left out.
+  const contact = submitted.contact ?? null;
   const demo = submitted.demoUrl ? webAddress(submitted.demoUrl) : null;
-  const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ");
-  // What the applicant typed is a link only where it leads to what its row says; otherwise text.
-  const mail = mailAddress(submitted.email);
-  const email = mail ? (
-    <a href={mail} className={link}>
-      {submitted.email}
-    </a>
-  ) : (
-    submitted.email
-  );
-  const dial = contact.phone ? phoneAddress(contact.phone) : null;
-  const phone = dial ? (
-    <a href={dial} className={link}>
-      {contact.phone}
-    </a>
-  ) : (
-    (contact.phone ?? none)
-  );
-  const linkedin = contact.linkedin ? linkedinAddress(contact.linkedin) : null;
+  const contactRows: Row[] = [];
+  const linkedinRows: Row[] = [];
+  if (contact) {
+    const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ");
+    // What the applicant typed is a link only where it leads to what its row says; otherwise text.
+    const mail = submitted.email ? mailAddress(submitted.email) : null;
+    const email = mail ? (
+      <a href={mail} className={link}>
+        {submitted.email}
+      </a>
+    ) : (
+      (submitted.email ?? none)
+    );
+    const dial = contact.phone ? phoneAddress(contact.phone) : null;
+    const phone = dial ? (
+      <a href={dial} className={link}>
+        {contact.phone}
+      </a>
+    ) : (
+      (contact.phone ?? none)
+    );
+    const linkedin = contact.linkedin ? linkedinAddress(contact.linkedin) : null;
+    // One row each: the email and the phone are copied from here to reach the applicant.
+    contactRows.push([t("name"), name || none], [t("email"), email], [t("phone"), phone]);
+    if (contact.linkedin) {
+      linkedinRows.push([
+        t("linkedin"),
+        linkedin ? <Outside href={linkedin}>{contact.linkedin}</Outside> : contact.linkedin,
+      ]);
+    }
+  }
   const website = submitted.website ? webAddress(submitted.website) : null;
 
   const files: RecordFile[] = [];
@@ -121,22 +134,12 @@ async function SubmittedRecord({
           t("applyingAs"),
           `${submitted.organizationName} · ${word("organizationType", submitted.organizationType)}`,
         ],
-        // One row each: the email and the phone are copied from here to reach the applicant.
-        [t("name"), name || none],
-        [t("email"), email],
-        [t("phone"), phone],
-        [t("country"), word("country", submitted.country ?? contact.country)],
+        ...contactRows,
+        [t("country"), word("country", submitted.country ?? contact?.country)],
         ...(submitted.teamSize
           ? [[t("teamSize"), word("teamSize", submitted.teamSize)] as Row]
           : []),
-        ...(contact.linkedin
-          ? [
-              [
-                t("linkedin"),
-                linkedin ? <Outside href={linkedin}>{contact.linkedin}</Outside> : contact.linkedin,
-              ] as Row,
-            ]
-          : []),
+        ...linkedinRows,
         ...(submitted.website
           ? [
               [

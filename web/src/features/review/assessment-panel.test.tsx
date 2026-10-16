@@ -32,27 +32,35 @@ const scale = (name: string) => screen.getByRole("radiogroup", { name });
 const save = () => screen.getAllByRole("button", { name: "Save" })[0];
 
 describe("AssessmentPanel", () => {
-  it("offers each criterion as one choice of five, named by the criterion and described by what a judge looks for", () => {
+  it("offers each criterion as one choice of ten, named by the criterion and described by what a judge looks for", () => {
     render(panel());
 
     const fit = scale("Problem fit");
-    expect(within(fit).getAllByRole("radio")).toHaveLength(5);
+    expect(within(fit).getAllByRole("radio")).toHaveLength(10);
     expect(fit).toHaveAccessibleDescription("How well it answers the challenge.");
-    expect(within(fit).getByRole("radio", { name: "4 out of 5" })).not.toBeChecked();
+    expect(within(fit).getByRole("radio", { name: "7 out of 10, Strong" })).not.toBeChecked();
     expect(scale("Feasibility")).not.toHaveAccessibleDescription();
+    // What the numbers mean is in sight above the scale.
+    expect(
+      screen.getByText("1–3 Weak · 4–6 Average · 7–8 Strong · 9–10 Outstanding"),
+    ).toBeVisible();
   });
 
-  it("chooses one score a criterion, and moves along the scale with the arrow keys", async () => {
+  it("chooses one score a criterion, says what it means, and moves along the scale with the arrow keys", async () => {
     const { user } = render(panel());
     const fit = within(scale("Problem fit"));
 
-    await user.click(fit.getByRole("radio", { name: "2 out of 5" }));
-    await waitFor(() => expect(fit.getByRole("radio", { name: "2 out of 5" })).toBeChecked());
+    await user.click(fit.getByRole("radio", { name: "6 out of 10, Average" }));
+    await waitFor(() =>
+      expect(fit.getByRole("radio", { name: "6 out of 10, Average" })).toBeChecked(),
+    );
+    expect(screen.getByText("Average")).toBeVisible();
 
     await user.keyboard("{ArrowRight}");
-    await waitFor(() => expect(fit.getByRole("radio", { name: "3 out of 5" })).toBeChecked());
-    expect(fit.getByRole("radio", { name: "3 out of 5" })).toHaveFocus();
-    expect(fit.getByRole("radio", { name: "2 out of 5" })).not.toBeChecked();
+    await waitFor(() =>
+      expect(fit.getByRole("radio", { name: "7 out of 10, Strong" })).toBeChecked(),
+    );
+    expect(fit.getByRole("radio", { name: "7 out of 10, Strong" })).toHaveFocus();
     expect(fit.getAllByRole("radio", { checked: true })).toHaveLength(1);
   });
 
@@ -66,17 +74,47 @@ describe("AssessmentPanel", () => {
       "3 criteria still need a score before you can save.",
     );
 
-    await user.click(within(scale("Problem fit")).getByRole("radio", { name: "4 out of 5" }));
-    await user.click(within(scale("Feasibility")).getByRole("radio", { name: "3 out of 5" }));
+    await user.click(
+      within(scale("Problem fit")).getByRole("radio", { name: "8 out of 10, Strong" }),
+    );
+    await user.click(
+      within(scale("Feasibility")).getByRole("radio", { name: "6 out of 10, Average" }),
+    );
     await waitFor(() => expect(screen.getAllByText("Scored 2 of 3")).toHaveLength(2));
     expect(screen.getByText("1 criterion still needs a score before you can save.")).toBeVisible();
-    expect(screen.queryByText(/^Average/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Average \d/)).not.toBeInTheDocument();
 
-    await user.click(within(scale("Team")).getByRole("radio", { name: "5 out of 5" }));
+    await user.click(
+      within(scale("Team")).getByRole("radio", { name: "10 out of 10, Outstanding" }),
+    );
     await waitFor(() => expect(save()).toBeEnabled());
-    expect(screen.getByText("Average 4.0")).toBeVisible();
+    expect(screen.getByText("Average 8.0")).toBeVisible();
     expect(screen.queryByText(/still need/)).not.toBeInTheDocument();
     expect(save()).not.toHaveAccessibleDescription();
+  });
+
+  it("keeps a note and a bookmark without a score, and never shows the weights", async () => {
+    const { user } = render(
+      <AssessmentPanel
+        applicationId="a1"
+        criteria={[{ id: "p1", name: "Practical impact", description: null, maxPoints: 20 }]}
+        mine={null}
+        version={1}
+        judge
+        released={false}
+        nextHref={null}
+      />,
+    );
+
+    const note = screen.getByRole("button", { name: "Save note" });
+    expect(note).toBeDisabled();
+    await user.type(screen.getByLabelText("Private note"), "Strong live demo.");
+    await waitFor(() => expect(note).toBeEnabled());
+    expect(screen.getByRole("button", { name: "Bookmark" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(screen.queryByText(/20/)).not.toBeInTheDocument();
   });
 
   it("draws a judge's Save and next as the primary action, beside Skip", () => {

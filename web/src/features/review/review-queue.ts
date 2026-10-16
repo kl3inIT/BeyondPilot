@@ -1,8 +1,14 @@
 import type { ReviewApplicationItem } from "@/lib/api/generated";
 
-/** Whether the caller still has this application to score: their own is never theirs to score. */
-function waits(item: ReviewApplicationItem) {
-  return item.mine === "none" && !item.own;
+/**
+ * Whether the caller still has this application to score: their own is never theirs to score, and
+ * once the outcomes are released only the shortlisted are still scored.
+ */
+export function waits(item: ReviewApplicationItem, released = false) {
+  // A note or a bookmark alone leaves the application to score.
+  return (
+    (item.mine === "none" || item.mine === "noted") && !item.own && (!released || item.shortlisted)
+  );
 }
 
 /**
@@ -10,9 +16,9 @@ function waits(item: ReviewApplicationItem) {
  * of those after this one, going round to the start of the list. Nothing is next when the only one
  * left is the one on show.
  */
-export function judgeQueue(items: ReviewApplicationItem[], currentId: string) {
-  const left = items.filter(waits).length;
+export function judgeQueue(items: ReviewApplicationItem[], currentId: string, released = false) {
+  const left = items.filter((item) => waits(item, released)).length;
   const index = items.findIndex((item) => item.id === currentId);
   const after = index < 0 ? items : [...items.slice(index + 1), ...items.slice(0, index)];
-  return { left, nextId: after.find(waits)?.id ?? null };
+  return { left, nextId: after.find((item) => waits(item, released))?.id ?? null };
 }

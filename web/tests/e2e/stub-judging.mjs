@@ -49,6 +49,8 @@ const applications = [
     submittedAt: new Date(Date.now() - 3 * day).toISOString(),
     version: 1,
     reviewStatus: "shortlisted",
+    shortlisted: true,
+    bookmarked: false,
     average: 4.3,
     scored: 2,
     mine: "scored",
@@ -63,6 +65,8 @@ const applications = [
     submittedAt: new Date(Date.now() - 2 * day).toISOString(),
     version: 2,
     reviewStatus: "under_review",
+    shortlisted: false,
+    bookmarked: false,
     average: null,
     scored: 0,
     mine: "none",
@@ -77,6 +81,8 @@ const applications = [
     submittedAt: new Date(Date.now() - day).toISOString(),
     version: 1,
     reviewStatus: "not_selected",
+    shortlisted: false,
+    bookmarked: false,
     average: 2.5,
     scored: 1,
     mine: "conflict",
@@ -89,11 +95,19 @@ export const plainCoverDeckId = "f0000000-0000-4000-8000-000000000001";
 function list(operator) {
   return {
     head: head(operator, false),
-    items: applications.map((item) =>
-      operator
-        ? item
-        : { ...item, reviewStatus: null, scored: null, average: item.mine === "scored" ? 4 : null },
-    ),
+    // A judge reads only the shortlist: here Claim Copilot and Plain Cover, shortlisted for them.
+    items: operator
+      ? applications
+      : applications
+          .filter((item) => item.id !== ids.renew)
+          .map((item) => ({
+            ...item,
+            reviewStatus: null,
+            shortlisted: true,
+            email: null,
+            scored: null,
+            average: item.mine === "scored" ? 4 : null,
+          })),
     drafts: 4,
     withdrawn: 1,
   };
@@ -106,14 +120,17 @@ function application(operator) {
     version: 2,
     submittedAt: applications[1].submittedAt,
     submitted: {
-      email: "wei.ling@plaincover.example",
-      contact: {
-        firstName: "Wei Ling",
-        lastName: "Tan",
-        phone: "+65 8123 4567",
-        country: "SG",
-        linkedin: "https://www.linkedin.com/in/weilingtan",
-      },
+      // A judge reads no contact details.
+      email: operator ? "wei.ling@plaincover.example" : null,
+      contact: operator
+        ? {
+            firstName: "Wei Ling",
+            lastName: "Tan",
+            phone: "+65 8123 4567",
+            country: "SG",
+            linkedin: "https://www.linkedin.com/in/weilingtan",
+          }
+        : null,
       organizationName: "Plain Cover Pte",
       organizationType: "company",
       country: "SG",
@@ -151,6 +168,7 @@ function application(operator) {
       ],
     },
     reviewStatus: operator ? "under_review" : null,
+    shortlisted: !operator,
     mine: null,
     others: operator
       ? [
@@ -161,6 +179,7 @@ function application(operator) {
             average: 4,
             note: "Strong on consent.",
             conflict: false,
+            bookmarked: false,
             version: 1,
             savedAt: new Date(Date.now() - day).toISOString(),
           },
@@ -178,9 +197,9 @@ function application(operator) {
       },
     ],
     position: 2,
-    total: 3,
+    total: operator ? 3 : 2,
     previousId: ids.claim,
-    nextId: ids.renew,
+    nextId: operator ? ids.renew : null,
   };
 }
 

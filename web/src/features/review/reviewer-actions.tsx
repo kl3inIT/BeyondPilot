@@ -143,9 +143,14 @@ function ReviewerRowActions({
 /** The most criteria a program is judged on. */
 const MAX_CRITERIA = 12;
 
+/** Whether a weight as typed is a whole number of points from 1 to 100. */
+function validWeight(points: string) {
+  return /^\d{1,3}$/.test(points) && Number(points) >= 1 && Number(points) <= 100;
+}
+
 /**
- * Edits a program's judging criteria in a dialog, in order, and saves them together. They are
- * fixed once an application has been scored on them.
+ * Edits a program's judging criteria in a dialog, in order, and saves them together. Each may be
+ * worth points, every one or none. They are fixed once an application has been scored on them.
  */
 function CriteriaEditor({
   programId,
@@ -166,8 +171,9 @@ function CriteriaEditor({
           ? criteria.map((criterion) => ({
               name: criterion.name,
               description: criterion.description ?? "",
+              points: criterion.maxPoints == null ? "" : String(criterion.maxPoints),
             }))
-          : [{ name: "", description: "" }],
+          : [{ name: "", description: "", points: "" }],
     },
     onSubmit: async ({ value }) => {
       try {
@@ -177,6 +183,7 @@ function CriteriaEditor({
             criteria: value.criteria.map((draft) => ({
               name: draft.name.trim(),
               description: draft.description.trim() === "" ? null : draft.description.trim(),
+              maxPoints: draft.points.trim() === "" ? null : Number(draft.points.trim()),
             })),
           },
         });
@@ -190,6 +197,11 @@ function CriteriaEditor({
   });
   const drafts = useStore(form.store, (state) => state.values.criteria);
   const filled = drafts.length > 0 && drafts.every((draft) => draft.name.trim() !== "");
+  const worth = drafts.filter((draft) => draft.points.trim() !== "");
+  // Weights add up to a total only when every criterion has one.
+  const mixed = worth.length > 0 && worth.length < drafts.length;
+  const invalid = worth.some((draft) => !validWeight(draft.points.trim()));
+  const totalPoints = worth.reduce((sum, draft) => sum + Number(draft.points), 0);
 
   return (
     <>
@@ -205,7 +217,7 @@ function CriteriaEditor({
         width="xl"
         submitLabel={t("save")}
         cancelLabel={t("cancel")}
-        submitDisabled={!filled}
+        submitDisabled={!filled || mixed || invalid}
       >
         <form.Field name="criteria" mode="array">
           {(list) => (
@@ -236,6 +248,18 @@ function CriteriaEditor({
                           />
                         )}
                       </form.AppField>
+                      <form.AppField name={`criteria[${index}].points`}>
+                        {(field) => (
+                          <field.TextField
+                            label={t("pointsLabel")}
+                            optional
+                            inputMode="numeric"
+                            maxLength={3}
+                            uncounted
+                            description={t("pointsHint")}
+                          />
+                        )}
+                      </form.AppField>
                     </div>
                     <IconButton
                       aria-label={t("remove", { number: index + 1 })}
@@ -254,11 +278,20 @@ function CriteriaEditor({
                 size="sm"
                 className="self-start"
                 disabled={list.state.value.length >= MAX_CRITERIA}
-                onClick={() => list.pushValue({ name: "", description: "" })}
+                onClick={() => list.pushValue({ name: "", description: "", points: "" })}
               >
                 <PlusIcon aria-hidden="true" />
                 {t("addOne")}
               </Button>
+              {worth.length > 0 && (
+                <p role="status" className="text-sm text-muted-foreground">
+                  {invalid
+                    ? t("pointsInvalid")
+                    : mixed
+                      ? t("pointsMixed")
+                      : t("pointsTotal", { total: totalPoints })}
+                </p>
+              )}
             </>
           )}
         </form.Field>
