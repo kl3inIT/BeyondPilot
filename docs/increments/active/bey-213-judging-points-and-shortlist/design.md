@@ -1,6 +1,6 @@
 # Proposals: a 1 to 10 scale with hidden weights, notes before scores, and the shortlist after the release
 
-Status: revised on 16 October 2026 after Kai's review, before any of it reached staging. Tracked in Linear as BEY-213. It changes the review of [BEY-38](../../completed/bey-38-review/design.md).
+Status: revised on 16 October 2026 after Kai's review and built the same day; waiting to be checked on staging. A judge reads no weight: the criteria they receive carry none, and their own score is the mean of their scores. Tracked in Linear as BEY-213. It changes the review of [BEY-38](../../completed/bey-38-review/design.md).
 
 GenAI Fund tested the judging of the AI for Insurance Challenge × Tasco on production. Minh and Kai shortlist the top 10 themselves, announce it, and the judges score those 10 live at the Demo Day on 22 October. They asked for:
 

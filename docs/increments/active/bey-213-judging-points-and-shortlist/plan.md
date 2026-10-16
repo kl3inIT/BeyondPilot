@@ -4,13 +4,13 @@ Design: [design.md](design.md). Tracked in Linear as BEY-213. Needed on producti
 
 The first build gave each level its points on the button. Kai's review asked for a plain 1 to 10 scale, notes before scores and decisions that stay on the page. Steps 2 to 4 rework that build on the same branch before anything is pushed.
 
-| #   | Step                                                                                                                                                          | State   |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| 1   | This design and plan, revised after Kai's review                                                                                                              | Done    |
-| 2   | Backend: `V101` reworked (weights 1 to 100, bookmark, scores doubled); scores 1 to 10; a note and a bookmark without scores; `noted`; totals with the weights | Planned |
-| 3   | `openapi.yml` and the web client refreshed                                                                                                                    | Planned |
-| 4   | Web: ten buttons and the scale's meaning; note and bookmark saved alone; Bookmarked tab; weights in the criteria editor; decisions that stay on the page      | Planned |
-| 5   | Documents made true: `docs/tests/proposal.md`, the end-to-end judging spec                                                                                    | Planned |
+| #   | Step                                                                                                                                                          | State |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| 1   | This design and plan, revised after Kai's review                                                                                                              | Done  |
+| 2   | Backend: `V101` reworked (weights 1 to 100, bookmark, scores doubled); scores 1 to 10; a note and a bookmark without scores; `noted`; totals with the weights | Done  |
+| 3   | `openapi.yml` and the web client refreshed                                                                                                                    | Done  |
+| 4   | Web: ten buttons and the scale's meaning; note and bookmark saved alone; Bookmarked tab; weights in the criteria editor; decisions that stay on the page      | Done  |
+| 5   | Documents made true: `docs/tests/proposal.md`, the end-to-end judging spec                                                                                    | Done  |
 
 Each step is one or more commits on one branch with one pull request.
 
