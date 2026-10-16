@@ -10,15 +10,17 @@ it asks applicants, and whether the public site shows it. It was delivered by
 
 - **Published API.** The package root: `ProgramService` (what visitors and other modules read), `ProgramAdministration`
   (what operators do), `ProgramPhase`, `ProgramChanged`, `ApplicationForm`, `ProgramName`, `IndexedProgram`,
-  `ProgramErrorCode` and `ProgramException`. `PublishIssue` and `ReplacedCovers` are package-private.
+  `ProgramErrorCode` and `ProgramException`. `PublishIssue`, `ReplacedCovers` and `LumaCalendar` are package-private;
+  `program.luma` holds the Luma reads.
 - **Persistence.** `program.persistence` holds the JPA aggregate `Program` with its value lists `ProgramMilestone`,
   `ProgramEvent` and `ProgramQuestion`, the Spring Data `ProgramRepository`, and `ProgramQueryRepository`, the
   `JdbcClient` reads behind the public list and the operators' list. Enum values are stored as lowercase codes.
 - **Dependencies.** Closed, with `allowedDependencies = { "audit", "identity", "storage" }`: `identity` says whether
   the caller is an operator, `storage` checks and removes the cover file, and `audit` records each change.
 - **Readers.** `proposal` reads `ApplicationForm` (through `applicationForm`, `applicationForms` and
-  `formsUnderReview`), `usecase` reads `ProgramName` (through `names` and `named`), and `search` reads `IndexedProgram`
-  (through `indexed` and `indexedAll`) and uses `ProgramPhase` for its result cards.
+  `formsUnderReview`), `usecase` and `messaging` read `ProgramName` (through `names` and `named`), `search` reads
+  `IndexedProgram` (through `indexed` and `indexedAll`) and uses `ProgramPhase` for its result cards, and `mcp` reads
+  `ProgramName` through `named` and `IndexedProgram` through `published`.
 
 ## Data
 
@@ -289,6 +291,8 @@ The contract is `openapi.yml`.
 | `PROGRAM_SLUG_FIXED`            | 409    | A new address for a program that has been published                              |
 | `PROGRAM_CHANGED_MEANWHILE`     | 409    | The `version` sent is not the program's                                          |
 | `PROGRAM_QUESTIONS_FIXED`       | 409    | The questions are saved after the applications opened                            |
+| `PROGRAM_OPENING_FIXED`         | 409    | A save moves a passed opening or takes the window away                           |
+| `PROGRAM_PUBLISHED_INCOMPLETE`  | 400    | A save leaves a published program without what publishing asks for               |
 | `PROGRAM_DAYS_OUT_OF_ORDER`     | 400    | `endsOn` before `startsOn`                                                       |
 | `PROGRAM_WINDOW_OUT_OF_ORDER`   | 400    | `closesAt` not after `opensAt`                                                   |
 | `PROGRAM_OUTCOMES_BEFORE_CLOSE` | 400    | `outcomesDueOn` before the closing day in Vietnam                                |
@@ -299,3 +303,5 @@ The contract is `openapi.yml`.
 | `PROGRAM_CHOICES_REQUIRED`      | 400    | A `single_choice` or `multi_choice` question with fewer than two options         |
 | `PROGRAM_NOT_READY_TO_PUBLISH`  | 400    | Publishing while `publishIssues` is not empty                                    |
 | `PROGRAM_COVER_NOT_USABLE`      | 400    | The cover is not a stored `program_image` of the caller, or is another program's |
+| `PROGRAM_LUMA_NOT_CONFIGURED`   | 503    | Pull from Luma where no calendar is configured                                   |
+| `PROGRAM_LUMA_UNREACHABLE`      | 503    | Pull from Luma when Luma could not be read                                       |

@@ -41,7 +41,8 @@ Rules on the table:
 - **Readability is recorded per file.** `public_read` is copied from the purpose at reservation.
 - **References from other modules.** `program.cover_file_id` (V4), `proposal.deck_file_id` (V13),
   `talent_profile.photo_file_id` (V20), `solution.deck_file_id` (V25), `organization.logo_file_id` (V29),
-  `use_case_attachment.file_id` (V34), and `solution.logo_file_id` and `solution.cover_file_id` (V38) are foreign keys
+  `use_case_attachment.file_id` (V34), `solution.logo_file_id` and `solution.cover_file_id` (V38), and
+  `use_case_proposal.deck_file_id` (V78) are foreign keys
   to `storage_file`. `solution.image_file_ids` (V38) is a `uuid[]` without a foreign key.
 
 ## Purposes
@@ -57,7 +58,7 @@ anyone may read the stored file. The largest size is a property of `StoragePrope
 | `solution_logo`       | PNG, JPEG, WebP                                                        | `solution-logo-max-size`, 2MB        | Any active account | Yes                        |
 | `solution_image`      | PNG, JPEG, WebP                                                        | `solution-image-max-size`, 5MB       | Any active account | Yes                        |
 | `application_file`    | PDF                                                                    | `application-file-max-size`, 25MB    | Any active account | No                         |
-| `solution_deck`       | PDF                                                                    | `solution-deck-max-size`, 25MB       | Any active account | No                         |
+| `solution_deck`       | PDF                                                                    | `solution-deck-max-size`, 100MB      | Any active account | No                         |
 | `use_case_attachment` | PDF, PNG, JPEG, WebP, DOCX, XLSX, PPTX, DOC, XLS, PPT, CSV, plain text | `use-case-attachment-max-size`, 25MB | Any active account | No                         |
 
 The properties sit under `beyondpilot.storage`. SVG is in no list. Who may attach a file of a purpose to a record
@@ -162,8 +163,8 @@ else. It never holds a path, an object key or an address.
   (`DroppedFiles`) after the save commits, in a transaction of their own, logging a failure and leaving the file
   behind; `talent` and `organization` (`OrganizationLogos`) within the save.
 
-Consumers today: `program` (cover), `proposal` (application files), `talent` (photo), `organization` (logo),
-`solution` (deck, logo, cover, images) and `usecase` (attachments).
+Consumers today: `program` (cover), `proposal` (application files, and a use case proposal's deck), `talent`
+(photo), `organization` (logo), `solution` (deck, logo, cover, images) and `usecase` (attachments).
 
 ## Object stores
 

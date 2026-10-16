@@ -34,7 +34,7 @@ Success means:
 - Run by an AI venture fund with real enterprise programs. The people who set a brief hold the budget and sit at demo day (source: the Insurance Challenge page).
 - Solutions with proof, not a directory of logos. Customer cases, deployments and demos come with their sources, and a candidate's fit is classified as *direct relevance*, *industry relevance* or *technology capability* rather than scored by keywords. *(inferred from Kai's research skill and the prototype's "AI solutions, with proof")*
 - Every research run and every application enriches the same database, so the next search starts from what is already known.
-- Later (Phase 2), reachable from a user's own ChatGPT through MCP.
+- Reachable from a user's own AI assistant, such as ChatGPT, through MCP (BEY-78).
 
 ## Operating Context
 
@@ -53,12 +53,12 @@ Success means:
   - 6 October 2026: main flows as UI.
   - 9 October: the live site, with listings of programs, solutions, use cases and talent, and a working application flow.
   - Before 16 October: AI matching.
-- **Sign-in:** Google or an email link. No passwords.
+- **Sign-in:** Google or a six-digit code sent by email. No passwords.
 - **Access:** authorization is enforced on the server; non-public proposals and files are protected.
-- **Out of scope:** transactions, payments, ratings and contract management. Automatic outreach and MCP are Phase 2.
+- **Out of scope:** transactions, payments, ratings and contract management. Automatic outreach is Phase 2.
 - **Undecided:**
   - web research in Phase 1 (BEY-23);
-  - messaging, use case voting and anonymous use cases (BEY-24);
+  - use case voting and anonymous use cases (BEY-24);
   - who creates offers, and joining an organization by email domain (BEY-25);
   - an official BeyondPilot identity from GenAI Fund (logo, colours); the team's own palette stands in until then.
 - **Terms:** Program, Use case, Solution, Proposal, Candidate and Organization have one meaning each; see the glossary in the [Phase 1 domain model](docs/increments/active/bey-22-phase-1-domain-model/design.md#glossary) once it is merged.
@@ -76,7 +76,7 @@ Success means:
   - the AI for Insurance Challenge: question, directions, dates, judges, terms;
   - 21 GenAI Fund programs and 56 events from the blog and Luma (Linear document "Dữ liệu Programs & Events từ blog và Luma (2/10)");
   - partner logos from genaifund.ai;
-  - the v1 data export, expected on 5 October 2026.
+  - the v1 data export, imported in BEY-74.
 - **Not available, never to be invented:** testimonials, usage metrics or customer counts for BeyondPilot itself. The prototype's sample solutions are fictional ("Mock solution profile").
 
 ## Product Principles

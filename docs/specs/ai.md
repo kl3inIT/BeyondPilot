@@ -10,11 +10,13 @@ The AI providers BeyondPilot calls, the chat models operators enabled, the model
   - `AiAdministration`: what operators do in the Chat tab;
   - `OcrAdministration`: what operators do in the OCR tab;
   - `DocumentPages`: the text of a PDF's pages, for the modules that keep what a file says;
-  - `AiTask`, `AiSubject`, `AiChat`, `ReasoningEffort`, `AiException` and `AiErrorCode`.
+  - `AiUsageReports`: what the calls took, for Admin › AI › Usage and, by subject (`AiSubjectUsage`), for the module that named the subject;
+  - `ProviderFailures`: whether a failed call was refused by the provider, so that sending it again would be refused again;
+  - `AiTask`, `AiSubject`, `AiChat`, `ReasoningEffort`, `AiConnection`, `AiProviderChange`, `AiProviderView`, `AiException` and `AiErrorCode`.
 - **Adapters.** `ai.adapter` holds `ChatAdapter`, one implementation per API, and `ChatAdapterRegistry`, an open family keyed by the adapter's type: two beans with one type stop the application from starting. `OcrAdapter` and `OcrAdapterRegistry` are the same for OCR services, with `aihay` as the first.
 - **Outbound HTTP.** What an adapter asks outside its vendor's SDK, listing models and reading a picture, goes through `ai.adapter.OutboundHttp`, a `RestClient` kept to MemoryOS's rules (its ADR 0025): no redirect is followed, an exchange ends at its deadline, an answer is read up to a bound, and the status comes back with the bytes whatever it is, so a provider's text reaches no exception and no log. Plain `http` stays on HTTP/1.1, which self-hosted gateways speak. Chat and embedding calls go through the vendors' SDKs.
 - **Persistence.** `ai.persistence`: `AiProvider`, `AiModel`, `AiTaskModel` with their Spring Data repositories, and `AiUsageRepository`, which adds usage rows and reads them for Admin › AI › Usage with `JdbcClient`.
-- **Dependencies.** `audit` and `identity`. The module knows no caller: `search` depends on it for its embedding provider.
+- **Dependencies.** `audit`, `identity` and `shared` (whose `PdfPages` reads and draws a PDF's pages). The module knows no caller: `search` depends on it for its embedding provider and to read decks, and `matching` for its chat model and its usage.
 
 ## Data
 
@@ -63,7 +65,7 @@ The AI providers BeyondPilot calls, the chat models operators enabled, the model
 - **A task is named in code** (`AiTask`): `matching` and `document_reading`. Each has a model and a reasoning level (`off`, `low`, `medium`, `high`); the task's own default applies until an operator sets one.
 - **A model can be chosen** only while its provider is switched on and has a key.
 - **A task is available** when a model is chosen, its provider is switched on and its key can be read. Otherwise `AiModels.chat` refuses with `AI_TASK_NOT_CONFIGURED`. No model is used that nobody chose.
-- **The level is sent only to a model that reasons**, the way its API asks for it: `reasoning_effort` for the OpenAI API, with off as `none`. Claude is always asked for adaptive thinking and an effort (`output_config.effort`: low, medium or high), and off is the low effort: Claude from 4.7 on refuses a thinking budget with a 400, and Sonnet 5.5, Opus 5.5 and Fable refuse thinking turned off too, so this is the one request every model from 4.6 on accepts. Claude 4.5 and earlier, which know a budget only, are not served. An answer is at most 20,000 tokens, thinking included. Claude answers in blocks with its thinking first, and Spring AI makes a result of each block; the adapter leaves the thinking out of the response, so the first result, which every caller reads, is the answer.
+- **The level is sent only to a model that reasons**, the way its API asks for it: `reasoning_effort` for the OpenAI API, with off as `none`. Claude is always asked for adaptive thinking and an effort (`output_config.effort`: low, medium or high), and off is the low effort: Claude from 4.7 on refuses a thinking budget with a 400, and Sonnet 5.5, Opus 5.5 and Fable refuse thinking turned off too, so this is the one request every model from 4.6 on accepts. Claude 4.5 and earlier, which know a budget only, are not served. A model not marked as reasoning is asked the same way, at the low effort. An answer is at most 20,000 tokens, thinking included, or the model's own answer limit when that is smaller. Claude answers in blocks with its thinking first, and Spring AI makes a result of each block; the adapter leaves the thinking out of the response, so the first result, which every caller reads, is the answer.
 
 ## Reading documents
 
@@ -77,7 +79,7 @@ The AI providers BeyondPilot calls, the chat models operators enabled, the model
 
 ## Usage
 
-`AiUsageReports` reads `ai_usage` for Admin › AI › Usage. It writes nothing.
+`AiUsageReports` reads `ai_usage` for Admin › AI › Usage. It writes no usage row; an export is audited.
 
 - **What a call costs** is computed when read, from what the row keeps. A model: `(input − cache read) × input price + cache read × cached price + cache write × input price × 0.25 + output × output price`, per million tokens; without a cached price, cached input costs the input price. A token written to the cache costs a quarter more than the input price, as Anthropic bills it; only Anthropic reports writes. `input_tokens` is the whole input for every provider: OpenAI counts cached input inside its prompt tokens, and Anthropic reports it beside them, so `UsageRecorder` adds it. An OCR service: its price per 1,000 calls divided by 1,000. A failed call costs nothing. A call that answered without a price has no cost and is counted apart as "price unavailable", never as free, so the cost shown is a lower bound and says how many calls it is computed from.
 - **Failing.** A task on a model is failing when, in the last 24 hours, at least 5 of its calls failed and they are at least 10% of its calls. It is judged on the last day whatever period is shown.
@@ -109,14 +111,24 @@ Every endpoint is for operators and is under `/api/ai/admin/chat`. Each change a
 | `POST /models/{id}/test`                                           | Ask a model one line to prove it answers                             |
 | `PUT /tasks/{task}`                                                | Choose a task's model and level                                      |
 
+The OCR tab's endpoints are under `/api/ai/admin/ocr`, for operators only, and each change answers the whole of the OCR settings.
+
+| Endpoint                                                           | Does                                                      |
+| ------------------------------------------------------------------ | --------------------------------------------------------- |
+| `GET`                                                              | The OCR providers, the adapters, and what reads documents |
+| `POST /providers`, `PUT /providers/{id}`, `DELETE /providers/{id}` | Connect, change, remove an OCR provider                   |
+| `POST /providers/test`                                             | Try a connection, saved or not                            |
+| `PUT /reader`                                                      | Choose the model or the OCR provider that reads documents |
+
 The embedding providers keep their endpoints under `/api/search/admin` ([search](search.md)).
 
-The usage is read under `/api/ai/admin/usage`, by operators only. Both endpoints take `period`: `today`, `7d` or `30d`, the last two with today, in `Asia/Ho_Chi_Minh`.
+The usage is read under `/api/ai/admin/usage`, by operators only. Each endpoint takes `period`: `today`, `7d` or `30d`, the last two with today, in `Asia/Ho_Chi_Minh`.
 
-| Endpoint        | Does                                                                                                                                                      |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /overview` | Takes `by` (`model`, `task`, `provider`). The totals of the period, what is failing, the calls by hour (today) or by day, and where the calls went        |
-| `GET /calls`    | Takes `task`, `provider`, `model`, `outcome` and `page`. Fifty calls a page, newest first, with the total and what was called in the period, to filter by |
+| Endpoint             | Does                                                                                                                                                                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /overview`      | Takes `by` (`model`, `task`, `provider`). The totals of the period, what is failing, the calls by hour (today) or by day, and where the calls went                                                        |
+| `GET /calls`         | Takes `task`, `provider`, `model`, `outcome`, `page` and `size` (1 to 100). Fifty calls a page unless `size` says otherwise, newest first, with the total and what was called in the period, to filter by |
+| `POST /calls/export` | Takes the filters of `GET /calls` and answers every page of the log they narrow, as XLSX or CSV                                                                                                           |
 
 ## Screen
 

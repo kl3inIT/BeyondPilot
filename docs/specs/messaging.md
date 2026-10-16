@@ -5,7 +5,7 @@ The conversations people have on BeyondPilot: with the person behind a talent pr
 ## Module
 
 - **`messaging` is a closed module** that depends on `audit`, `identity`, `notification`, `organization`, `program`, `solution` and `talent`. Nothing depends on it. `MessagingService` is what people use; `MessagingAdministration` is what operators read.
-- **It owns** `messaging_conversation`, `messaging_message` and `messaging_read` (V90), and `messaging_participant` (V97). V91 moved the talent enquiries into them and dropped their table. V97 also records which organization side wrote each message.
+- **It owns** `messaging_conversation`, `messaging_message` and `messaging_read` (V90), and `messaging_participant` (V97). V91 moved the talent enquiries into them and dropped their table. V97 also records which side wrote each message and the operator a program conversation is assigned to (`program_assignee_account_id`).
 - **It reads** the person behind a listed profile and the profile as its page says it (`TalentDirectory.recipient`, `indexed`), the approved solution at an address and its page (`SolutionDirectory.approvedAt`, `indexed`), the published program at an address (`ProgramService.named`, `names`), a person's organization, an organization's owners, members and name (`OrganizationDirectory`), people and who is an operator (`IdentityService`).
 - **HTTP** is `messaging.web`: `MessagingController` at `/api/messaging` and `AdminMessagingController` at `/api/messaging/admin`. Every path needs a session.
 

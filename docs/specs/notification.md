@@ -20,7 +20,8 @@ application module, `backend/src/main/java/ai/genaifund/beyondpilot/notification
   - `persistence`: SQL and the two JPA entities.
   - `web` and `dto`: the HTTP contract.
 - **Persistence.** `V41__notification_create_email.sql` creates every table, and `V73__notification_add_brevo.sql`
-  adds Brevo to the providers and its two secrets to the settings:
+  adds Brevo to the providers and its two secrets to the settings. `V87__introduction_drop_requests.sql` and
+  `V91__messaging_move_enquiries.sql` delete operators' wording of the kinds those changes stopped sending:
   - `email_settings`: one row, `id = 1`.
   - `email_template`: an operator's wording of a kind.
   - `email_message`: the queue and the log.
@@ -28,8 +29,8 @@ application module, `backend/src/main/java/ai/genaifund/beyondpilot/notification
   - `email_suppression`: addresses never sent to.
 - **Dependencies.** `@ApplicationModule(type = CLOSED, allowedDependencies = { "audit", "identity" })`.
   - **`identity` does not depend on this module.** It publishes `SignInCodeRequested`, and `SignInCodeMail` sends it.
-  - **Modules that call `EmailService`:** `organization`, `messaging`, `proposal`, `solution`, `talent` and
-    `usecase`.
+  - **Modules that call `EmailService`:** `organization`, `matching`, `messaging`, `proposal`, `solution`, `talent`
+    and `usecase`.
 
 ## Kinds of email
 
@@ -199,7 +200,7 @@ The message is plain text, and its line breaks are kept. The button "View your a
   - `SignInCodeMail` is a synchronous `@EventListener`, not an `@ApplicationModuleListener`, so the code never reaches
     the event publication registry.
 - **Logging.** Events are named `notification.email.sent`, `retrying`, `failed`, `skipped`, `expired`, `purged`,
-  `reported`, `report_not_taken`, `test_sent` and `test_failed`. They carry the message id, kind, provider and `error_code`, never the
+  `reported`, `report_unknown`, `report_not_taken`, `sns_subscription_confirmed`, `test_sent` and `test_failed`. They carry the message id, kind, provider and `error_code`, never the
   recipient or the content.
 
 ## Providers
@@ -450,7 +451,7 @@ fails with `NOTIFICATION_TEMPLATE_NOT_EDITABLE`.
 
 **Web.** The screens are under `/admin/email`, which opens on `templates`. The other pages are `templates/[kind]`,
 `activity`, `activity/[id]`, `suppressions`, `settings` and `appearance`. Each page checks the operator role on the
-server.
+server. `templates/[kind]` answers not-found for a kind that cannot be edited, as for an unknown one.
 
 ## Error codes
 

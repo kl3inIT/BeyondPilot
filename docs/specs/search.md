@@ -9,12 +9,13 @@ model is set. It was delivered by [BEY-65](../increments/completed/bey-65-search
 
 ## Module
 
-- **Published API.** The package root: `SearchService` (the public search), `SearchAdministration` (Admin › AI),
-  `SearchErrorCode` and `SearchException`. Everything else at the root is package-private: the four indexing
-  listeners, `IndexRepair`, `SearchEmbeddings`, `EmbeddingClients`, `OpenAiEmbeddings`,
-  `EmbeddingVendor`, `EmbeddingSettings`, `Cards` and `Rebuilt`.
+- **Published API.** The package root: `SearchService` (the public search, and `find` and `findForOperators`, which
+  answer `Found` records for the [MCP server](../tests/mcp.md)'s `search` tool), `SolutionEvidence` (what matching
+  reads), `SearchAdministration` (Admin › AI), `SearchErrorCode` and `SearchException`. Everything else at the root is
+  package-private: the four indexing listeners, `IndexRepair`, `IndexLock`, `SearchEmbeddings`, `EmbeddingClients`,
+  `OpenAiEmbeddings`, `EmbeddingVendor`, `EmbeddingSettings`, `Cards`, `Passages`, `SolutionPassages` and `Rebuilt`.
 - **Persistence.** `search.persistence` holds `SearchDocumentRepository` (`JdbcClient`: the index rows, the ranked
-  query and the embedding queue) and the JPA entity `SearchSettings` with its repository. The providers and their keys
+  query and the embedding queue), `SearchPassageRepository` (`JdbcClient`: the passages) and the JPA entity `SearchSettings` with its repository. The providers and their keys
   are the [`ai` module](ai.md)'s; search reads its embedding provider through `AiProviders`.
 - **Dependencies.** A closed module that may use `ai`, `audit`, `identity`, `organization`, `program`, `solution`, `talent`
   and `usecase`. The owning modules stay the source of truth; the index is a projection that can always be rebuilt
@@ -115,7 +116,7 @@ session when there is one: a signed-in reader also gets the amounts of a use cas
 | `type`, `phase`         | Optional program type and phase (`open`, `upcoming`, `done`); open includes running                                                                                                                                                 |
 | `sort`                  | Optional explicit directory order; absent or `relevance` uses hybrid ranking; solutions/talent/programs support `newest` and `name`, use cases `newest`, `deadline` and `budget`; incompatible kind/order combinations return `400` |
 
-The response, `SearchResults`, holds:
+The response, `SearchResponse`, holds:
 
 - **`counts`:** how many items of each kind match, and `all`, whatever kind is shown.
 - **`items`:** without `kind`, the best 3 of each kind (`PER_KIND`), the kinds in the order of their best item; with
@@ -128,9 +129,9 @@ members; a member of another kind is null or an empty list. A program also gets 
 
 Rules of the results:
 
-- **Visitors see listed items only.** Every query `SearchService` runs passes `listedOnly`, so an unlisted solution
-  is in no visitor's results or counts. The repository can include unlisted rows; no caller in the application does
-  today.
+- **Visitors see listed items only.** `search` and `find` pass `listedOnly`, so an unlisted solution is in no
+  visitor's results or counts. Only `findForOperators`, for the operators' MCP server, and `SolutionEvidence`, for
+  matching, include unlisted rows.
 - **A use case leaves at its close date.** A row whose `closesAt` facet is past is left out of results and counts at
   query time, without waiting for the repair.
 - **The snippet** is the summary, or a person's headline when they have one, with each matched word between U+0002
@@ -193,7 +194,7 @@ Behavior:
 
 ## Administration
 
-Admin › AI has two screens of search, the Embedding tab of `/admin/ai/providers` (`?tab=embedding`; the Chat tab is the [`ai` module](ai.md#screen)'s) and `/admin/ai/search-index`, served by `SearchAdminController` at
+Admin › AI has two screens of search, the Embedding tab of `/admin/ai/providers` (`?tab=embedding`; the Chat and OCR tabs are the [`ai` module](ai.md#screen)'s) and `/admin/ai/search-index`, served by `SearchAdminController` at
 `/api/search/admin`. Every call requires an operator (`IdentityService.requireOperator`).
 
 | Method and path          | Contract                                                                                                                                                                                                                            |

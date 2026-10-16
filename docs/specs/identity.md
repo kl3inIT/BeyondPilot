@@ -9,14 +9,17 @@ delivered by [BEY-30](../increments/completed/bey-30-identity/design.md), and th
 
 ## Module
 
-- **Published API.** The package root: `IdentityService`, `AccountAdministration`, `Actor`, `@CurrentActor`,
-  `Operator`, `Person`, `SignInCodeRequested`, `IdentityProperties`, `IdentityErrorCode` and `IdentityException`.
+- **Published API.** The package root: `IdentityService`, `AccountAdministration`, `AppConnections`,
+  `AppHostAdministration`, `AuditLogDownload`, `Actor`, `@CurrentActor`, `Operator`, `Person`, `McpAudience`,
+  `McpCaller`, `McpCallers`, `McpCallRefused`, `SignInCodeRequested`, `IdentityProperties`, `IdentityErrorCode` and
+  `IdentityException`.
 - **Internal packages.** `signin` holds the Spring Security adapters (the code service, its request guard and limits,
-  the code converter and sender, the Google user service, the principals and `SignInConfiguration`); `web` the
-  controllers; `dto` the request and response records; `persistence` the entities and repositories.
-- **Dependencies.** `@ApplicationModule(type = CLOSED, allowedDependencies = { "audit" })`. `identity` records its
-  changes through `audit` ([ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md)). It does not
-  depend on `notification`: a sign-in code leaves as the event `SignInCodeRequested`
+  the code converter and sender, the Google user service, the principals and `SignInConfiguration`); `oauth` the
+  authorization server AI apps sign in through ([Connecting AI apps](#connecting-ai-apps)); `web` the controllers; `dto`
+  the request and response records; `persistence` the entities and repositories.
+- **Dependencies.** `@ApplicationModule(type = CLOSED, allowedDependencies = { "audit", "shared" })`. `identity`
+  records its changes through `audit` ([ADR 0003](../decisions/0003-an-audit-module-that-modules-record-through.md)).
+  It does not depend on `notification`: a sign-in code leaves as the event `SignInCodeRequested`
   ([ADR 0005](../decisions/0005-operators-run-email-delivery.md)).
 - **Wiring without a module edge.** `config` names no `identity` type. `identity` publishes beans of Spring Security's
   own interfaces (`OneTimeTokenService`, `OneTimeTokenGenerationSuccessHandler`, `AuthenticationConverter`,
@@ -33,12 +36,16 @@ delivered by [BEY-30](../increments/completed/bey-30-identity/design.md), and th
 - **`IdentityService.requireOperator(actor)`** returns `Operator(accountId, label, email)` for an operator whose account
   is not disabled, and refuses anyone else with `IDENTITY_OPERATOR_REQUIRED`. `isOperator(actor)` answers the same
   question as a boolean.
-- **`IdentityService.person(actor)`** returns `Person(accountId, email, displayName)` of an active account, refusing a
-  disabled one; `people(accountIds)` returns a map of the people behind those accounts, leaving unknown ones out and
-  not filtering by status.
+- **`IdentityService.person(actor)`** returns `Person(accountId, email, displayName, country, phone)` of an active
+  account, refusing a disabled one; `people(accountIds)` returns a map of the people behind those accounts, leaving
+  unknown ones out and not filtering by status.
 - **`IdentityService.reachAtIfUnknown(actor, country, phone)`** keeps a country and a phone number the person gave
   elsewhere where the account has none; what the account holds is left as it is. `proposal` calls it on a submission.
 - **Labels.** `Person.label()` and `Operator.label` are the display name, or the address while there is none.
+- **The MCP servers' callers.** `McpCallers.authenticate(token, audience)` returns the
+  `McpCaller(accountId, clientId, connectionId)` behind a call to the server `McpAudience` names, or throws
+  `McpCallRefused`; `site()` and `address(audience)` give the public addresses. `AppConnections.appNames(clientIds)`
+  names apps as people see them. `mcp` calls these.
 
 ## Data
 
@@ -57,6 +64,11 @@ delivered by [BEY-30](../increments/completed/bey-30-identity/design.md), and th
   `email`, `code_hash`, `failed_attempts`, `expires_at`, `created_at`; indexed on `lower(email)`.
 - **`spring_session`, `spring_session_attributes`.** Spring Session JDBC's tables, created by Flyway
   (`spring.session.jdbc.initialize-schema: never`).
+- **`oauth2_registered_client`, `oauth2_authorization`.** Spring Authorization Server's JDBC tables, created by
+  `V51__identity_create_oauth_authorization.sql`: the AI apps that have signed in, and each connection with its code
+  and tokens.
+- **`identity_app_host`, `identity_app_setting`.** The reviewed app hosts and the single row saying whether apps of
+  other hosts may connect (default yes), created and seeded by `V54__identity_create_app_hosts.sql`.
 
 Other modules' tables reference `identity_account (id)` by foreign key. Persistence is split as the
 [persistence guideline](../guidelines/persistence.md) describes: `AccountRepository`, `ExternalIdentityRepository` and
@@ -74,7 +86,8 @@ of the operators' list.
   joined (`IDENTITY_EMAIL_NOT_VERIFIED`). The subject is then linked to the account with
   `on conflict (provider, subject) do nothing`. A Google answer without an address fails with the OAuth error
   `email_missing`.
-- **Name.** A provider's name fills `display_name` only while it is empty; a code sign-in brings no name.
+- **Name.** A provider's name fills `display_name` only while it is empty; a code sign-in brings no name. The person
+  changes it on the Account page with the contact below (at most 120 characters; left out or blank keeps it).
 - **Country and phone.** Both are optional and never asked at sign-in. The person sets or clears them on the Account
   page (`/account`, `PUT /api/identity/me/contact`); a first submitted application fills the ones still empty. The
   apply form starts from them where neither the application nor the latest other one holds a value.
@@ -210,39 +223,91 @@ requires an operator whose account is not disabled (`IDENTITY_OPERATOR_REQUIRED`
 - **Each item** (`AccountSummary`): `id`, `email`, `displayName`, `role`, `status`, `lastSignInAt`, `createdAt`, and
   `configuredOperator`, true when the configuration names the address.
 
+## Connecting AI apps
+
+AI apps reach BeyondPilot's two MCP servers, `/mcp` for every signed-in person and `/mcp/operator` for operators,
+through Spring Authorization Server inside this application ([BEY-78](../increments/completed/bey-78-mcp/design.md)).
+Its filter chain (`oauth.AuthorizationServerConfiguration`) comes before the application's, covers its own endpoints
+only and shares the session, so a person signed in on the site is signed in there. Settings are under
+`beyondpilot.identity.oauth` (`OAuthSettings`): `issuer` (the site's address), `signing-key` (the RSA key that signs
+tokens; without it a key is made at each start, so tokens do not survive a restart), and the lifetimes and fetch limits
+below.
+
+- **Which apps.** An app is identified by a client ID metadata document: its client ID is the HTTPS address of a JSON
+  document naming it and its redirect addresses. `ClientMetadataDocuments` reads it through `OutsideHttp` (public
+  addresses only, as resolved, no redirect, five seconds, five kilobytes), stores it, and reads it again once the time
+  its Cache-Control asks for has passed, kept between five minutes and a day. An address that could not be read is not
+  fetched again for five minutes, and fetches are limited per minute for each requester (10), each document host (30)
+  and all together (120). Two clients are BeyondPilot's own: `cursor`, and `mcp-local` for an agent on the person's
+  computer. There is no dynamic registration.
+- **Reviewed hosts.** Operators keep the hosts whose apps BeyondPilot has reviewed (`AppHostAdministration`, Admin › AI
+  › MCP), and whether apps of any other host may connect, labelled Not reviewed. Each change is audited as
+  `mcp.host_add`, `mcp.host_remove`, `mcp.other_hosts_allow` or `mcp.other_hosts_refuse`; a repeat records nothing.
+- **Consent.** A person not signed in is sent to `/sign-in` and back. Every connection shows the consent page
+  (`/oauth-consent`), even for an app allowed before; the page reads only the caller's own waiting request
+  (`GET /api/identity/apps/connecting`). A redirect must match the document exactly, except that `localhost`,
+  `127.0.0.1` and `::1` match on any port. A request names one server as its resource and asks for its scope
+  (`mcp.read` or `mcp.research`, with `offline_access` for a refresh token); the operators' scope is taken out of the
+  consent of anyone who is not an operator. The code is returned with `iss` and needs its PKCE verifier (S256).
+- **Tokens.** A signed JWT for exactly one server, valid for `access-token-lifetime` (`1h`). A refresh token is good for
+  one use and replaced at each (`refresh-token-lifetime`, `30d`), also for apps that hold no secret. Every issue,
+  refresh included, needs an active account and, for the operators' scope, an operator now. A connection ends
+  `connection-lifetime` (`180d`) after the consent however often it is refreshed; `ExpiredConnections` deletes dead
+  connections once a day.
+- **At each call.** `McpCallers.authenticate` checks that the token is for that server with its scope, that its
+  connection still stands, that the account is active and, for `/mcp/operator`, an operator; otherwise
+  `McpCallRefused` answers `401` `invalid_token` or `403` `insufficient_scope`.
+- **Connected apps.** A person lists the apps they connected, with the servers each may call, and revokes one
+  (`/account/mcp`); operators list every person's connections and revoke one (Admin › AI › MCP). A revoke stops the
+  refresh token at once and the access token at its next call, and is audited as `mcp.app_revoke`.
+
 ## HTTP
 
-| Method and path                                                           | Answer                                                                                                                                                                                                                                                                           |
-| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST /ott/generate`                                                      | `204`; `400` not a plain address; `429` limited, `503` email not sent, both with `Retry-After`                                                                                                                                                                                   |
-| `POST /login/ott`                                                         | `204` signed in; `401` wrong code; `410` no code waiting, expired or used; `429` too many wrong codes; `403` account disabled                                                                                                                                                    |
-| `GET /oauth2/authorization/google`                                        | A redirect to Google, then to the remembered path or `/`, or to `/sign-in?error=google`                                                                                                                                                                                          |
-| `POST /logout`                                                            | `204`                                                                                                                                                                                                                                                                            |
-| `GET /api/identity/me` (`getMe`)                                          | `Me`: `id`, `email`, `displayName`, `role`, `country`, `phone`; `401` no session; `403` `IDENTITY_ACCOUNT_DISABLED`                                                                                                                                                              |
-| `PUT /api/identity/me/contact` (`updateMyContact`)                        | `Me` after replacing `country` and `phone` (a part left out is cleared); `400` not written as asked; `401`; `403`                                                                                                                                                                |
-| `GET /api/identity/accounts` (`listAccounts`)                             | `AccountList`; `400` invalid parameter                                                                                                                                                                                                                                           |
-| `POST /api/identity/accounts/{id}/disable` (`disableAccount`)             | `204`; `404`; `409` own account                                                                                                                                                                                                                                                  |
-| `POST /api/identity/accounts/{id}/enable` (`enableAccount`)               | `204`; `404`                                                                                                                                                                                                                                                                     |
-| `POST /api/identity/accounts/{id}/grant-operator` (`grantOperator`)       | `204`; `404`                                                                                                                                                                                                                                                                     |
-| `POST /api/identity/admin/audit-events/export` (`exportAuditEvents`)      | The audit log as an Excel workbook or CSV, narrowed by `from`, `action` and `q`, every page of it; recorded as `audit.export`. Here and not in `audit`, which cannot name the caller (ADR 0004); `AuditLogDownload` checks the operator and reads through `AuditLog.spreadsheet` |
-| `POST /api/identity/accounts/{id}/withdraw-operator` (`withdrawOperator`) | `204`; `404`; `409` own account or configured operator                                                                                                                                                                                                                           |
+| Method and path                                                              | Answer                                                                                                                                                                                                                                                                           |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /ott/generate`                                                         | `204`; `400` not a plain address; `429` limited, `503` email not sent, both with `Retry-After`                                                                                                                                                                                   |
+| `POST /login/ott`                                                            | `204` signed in; `401` wrong code; `410` no code waiting, expired or used; `429` too many wrong codes; `403` account disabled                                                                                                                                                    |
+| `GET /oauth2/authorization/google`                                           | A redirect to Google, then to the remembered path or `/`, or to `/sign-in?error=google`                                                                                                                                                                                          |
+| `POST /logout`                                                               | `204`                                                                                                                                                                                                                                                                            |
+| `GET /api/identity/me` (`getMe`)                                             | `Me`: `id`, `email`, `displayName`, `role`, `country`, `phone`; `401` no session; `403` `IDENTITY_ACCOUNT_DISABLED`                                                                                                                                                              |
+| `PUT /api/identity/me/contact` (`updateMyContact`)                           | `Me` after replacing `country` and `phone` (a part left out is cleared) and `name`; `400` not written as asked; `401`; `403`                                                                                                                                                     |
+| `GET /api/identity/accounts` (`listAccounts`)                                | `AccountList`; `400` invalid parameter                                                                                                                                                                                                                                           |
+| `POST /api/identity/accounts/{id}/disable` (`disableAccount`)                | `204`; `404`; `409` own account                                                                                                                                                                                                                                                  |
+| `POST /api/identity/accounts/{id}/enable` (`enableAccount`)                  | `204`; `404`                                                                                                                                                                                                                                                                     |
+| `POST /api/identity/accounts/{id}/grant-operator` (`grantOperator`)          | `204`; `404`                                                                                                                                                                                                                                                                     |
+| `POST /api/identity/admin/audit-events/export` (`exportAuditEvents`)         | The audit log as an Excel workbook or CSV, narrowed by `from`, `action` and `q`, every page of it; recorded as `audit.export`. Here and not in `audit`, which cannot name the caller (ADR 0004); `AuditLogDownload` checks the operator and reads through `AuditLog.spreadsheet` |
+| `POST /api/identity/accounts/{id}/withdraw-operator` (`withdrawOperator`)    | `204`; `404`; `409` own account or configured operator                                                                                                                                                                                                                           |
+| `GET /api/identity/apps/connecting` (`getConnectingApp`)                     | The app waiting for the caller's consent; `404` `IDENTITY_APP_REQUEST_NOT_FOUND`                                                                                                                                                                                                 |
+| `GET /api/identity/apps` (`listConnectedApps`)                               | The caller's connected apps, the latest used first                                                                                                                                                                                                                               |
+| `POST /api/identity/apps/{id}/revoke` (`revokeConnectedApp`)                 | `204`; `404` `IDENTITY_APP_NOT_CONNECTED`                                                                                                                                                                                                                                        |
+| `GET /api/identity/admin/apps` (`listEveryConnectedApp`)                     | Every person's connected apps                                                                                                                                                                                                                                                    |
+| `POST /api/identity/admin/apps/{accountId}/{id}/revoke` (`revokePersonsApp`) | `204`; `404` `IDENTITY_APP_NOT_CONNECTED`                                                                                                                                                                                                                                        |
+| `GET /api/identity/admin/app-hosts` (`getAppHosts`)                          | The reviewed hosts, each with the apps known to publish on it, and whether other hosts may connect                                                                                                                                                                               |
+| `POST /api/identity/admin/app-hosts/add` (`addAppHost`)                      | `204`; `400` `IDENTITY_APP_HOST_INVALID`                                                                                                                                                                                                                                         |
+| `POST /api/identity/admin/app-hosts/remove` (`removeAppHost`)                | `204`; `404` `IDENTITY_APP_HOST_NOT_FOUND`                                                                                                                                                                                                                                       |
+| `PUT /api/identity/admin/app-hosts/other-hosts` (`allowOtherAppHosts`)       | `204`                                                                                                                                                                                                                                                                            |
 
-The four sign-in paths are Spring Security's and are not in `openapi.yml`; the `/api/identity` paths are, under the
-security scheme `session`. Every account path also answers `401` without a session and `403` for a caller who is not an
-operator. Every refusal is an RFC 9457 problem with the request identifier.
+The four sign-in paths and the authorization server's endpoints are Spring Security's and are not in `openapi.yml`; the
+`/api/identity` paths are, under the security scheme `session`. Every account path and every `/api/identity/admin` path
+also answers `401` without a session and `403` for a caller who is not an operator. Every refusal is an RFC 9457
+problem with the request identifier.
 
 ## Errors
 
 `IdentityErrorCode`, turned into problems by `config.ApiExceptionHandler`:
 
-| Code                           | Category, status     | When                                                    |
-| ------------------------------ | -------------------- | ------------------------------------------------------- |
-| `IDENTITY_ACCOUNT_DISABLED`    | Not permitted, `403` | The account is disabled, or a session's account is gone |
-| `IDENTITY_EMAIL_NOT_VERIFIED`  | Not permitted, `403` | A first Google sign-in with an unverified address       |
-| `IDENTITY_OPERATOR_REQUIRED`   | Not permitted, `403` | The caller is not an operator now                       |
-| `IDENTITY_ACCOUNT_NOT_FOUND`   | Not found, `404`     | No account has that id                                  |
-| `IDENTITY_OWN_ACCOUNT`         | Conflict, `409`      | An operator disables or demotes themselves              |
-| `IDENTITY_OPERATOR_CONFIGURED` | Conflict, `409`      | Withdrawing the role of a configured operator           |
+| Code                             | Category, status     | When                                                    |
+| -------------------------------- | -------------------- | ------------------------------------------------------- |
+| `IDENTITY_ACCOUNT_DISABLED`      | Not permitted, `403` | The account is disabled, or a session's account is gone |
+| `IDENTITY_EMAIL_NOT_VERIFIED`    | Not permitted, `403` | A first Google sign-in with an unverified address       |
+| `IDENTITY_OPERATOR_REQUIRED`     | Not permitted, `403` | The caller is not an operator now                       |
+| `IDENTITY_ACCOUNT_NOT_FOUND`     | Not found, `404`     | No account has that id                                  |
+| `IDENTITY_APP_HOST_INVALID`      | Validation, `400`    | An app host that is not a host name                     |
+| `IDENTITY_APP_HOST_NOT_FOUND`    | Not found, `404`     | Removing a host that is not in the reviewed list        |
+| `IDENTITY_APP_NOT_CONNECTED`     | Not found, `404`     | Revoking an app the person has not connected            |
+| `IDENTITY_APP_REQUEST_NOT_FOUND` | Not found, `404`     | No connection request of the caller's is waiting        |
+| `IDENTITY_OWN_ACCOUNT`           | Conflict, `409`      | An operator disables or demotes themselves              |
+| `IDENTITY_OPERATOR_CONFIGURED`   | Conflict, `409`      | Withdrawing the role of a configured operator           |
 
 During sign-in these codes do not reach the browser as problems: on the code path `IDENTITY_ACCOUNT_DISABLED` becomes
 the status `403`, and on the Google path any code becomes the redirect to `/sign-in?error=google`.
@@ -258,6 +323,6 @@ the status `403`, and on the Google path any code becomes the redirect to `/sign
 ## Not done
 
 - No password, no enterprise single sign-on, and no provider but Google.
-- No editing of a name or an address, no deletion of an account, no invitation of someone who has not signed in.
+- No editing of an address, no deletion of an account, no invitation of someone who has not signed in.
 - No limit by network address on asking for codes: the limits above are per address only.
 - The backend reads no `locale` field on `POST /ott/generate`; the code email is the same whatever the screen sends.
