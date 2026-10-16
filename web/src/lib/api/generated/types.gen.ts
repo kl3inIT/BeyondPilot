@@ -13615,6 +13615,10 @@ export type SearchData = {
          * Relevance by default; a directory's explicit order otherwise.
          */
         sort?: 'relevance' | 'newest' | 'name' | 'deadline' | 'budget';
+        /**
+         * Only use cases with open or closed proposals; both when absent.
+         */
+        proposalStatus?: 'open' | 'closed';
     };
     url: '/api/search';
 };
@@ -17285,6 +17289,10 @@ export type ListUseCasesData = {
          * Only use cases of the published program at this address.
          */
         program?: string | null;
+        /**
+         * Whether proposals are open or closed; both when absent.
+         */
+        proposalStatus?: 'open' | 'closed';
     };
     url: '/api/usecase/use-cases';
 };
@@ -17318,7 +17326,7 @@ export type GetUseCaseData = {
 
 export type GetUseCaseErrors = {
     /**
-     * No published use case has this identifier, or it has closed.
+     * No public, published use case has this identifier.
      */
     404: Problem;
 };

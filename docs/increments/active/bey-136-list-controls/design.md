@@ -51,7 +51,7 @@ The alternatives were:
 2. The web asks `/api/search` for the ranked items of a kind without extending its contract. Refused: industry, focus area, maturity, role, program type/phase and explicit sorting would not apply.
 3. Extend the existing search contract with the directory facets and ordering. Accepted: it keeps one ranking and applies the existing filters without a reverse module dependency.
 
-Facet and kind restrictions must be applied before the semantic candidate-pool limit. Counts and page results use the same eligibility rules, including public visibility and closed-use-case exclusion. Search defaults to relevance; an explicitly selected directory sort remains supported. Programs keep phase groups and upcoming events when browsing without a query; a query shows a paged, ranked set of program cards.
+Facet and kind restrictions must be applied before the semantic candidate-pool limit. Counts and page results use the same eligibility rules, including publication visibility and the optional open/closed proposal-status filter. Published use cases remain discoverable after expiry; draft and other unapproved records remain private. Search defaults to relevance; an explicitly selected directory sort remains supported. Programs keep phase groups and upcoming events when browsing without a query; a query shows a paged, ranked set of program cards.
 
 The web retains the existing domain cards and their real data, not per-result detail requests or invented defaults. Search/filter/size changes clear the page; the selected size remains available even when its result set now fits on one page. A cursor list with only a size control renders no empty pagination navigation.
 

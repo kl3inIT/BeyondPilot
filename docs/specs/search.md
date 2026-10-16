@@ -9,6 +9,8 @@ model is set. It was delivered by [BEY-65](../increments/completed/bey-65-search
 
 ## Module
 
+Published use cases remain searchable after their proposal deadline. The optional `proposalStatus=open|closed` filter is applied before candidate selection, counting and pagination. With no filter, both states are eligible; unpublished records remain absent from the index. Relevance remains the default. Explicit use-case directory orders put open cases first, then apply the requested order within each group.
+
 - **Published API.** The package root: `SearchService` (the public search), `SearchAdministration` (Admin › AI),
   `SearchErrorCode` and `SearchException`. Everything else at the root is package-private: the four indexing
   listeners, `IndexRepair`, `SearchEmbeddings`, `EmbeddingClients`, `OpenAiEmbeddings`,

@@ -16,7 +16,7 @@ import {
 import { useVocabulary } from "@/i18n/vocabulary";
 
 import { useCaseIndustries } from "./admin-use-case-codes";
-import { useCaseSorts, useCasesSearch } from "./use-cases-search";
+import { useCaseProposalStatuses, useCaseSorts, useCasesSearch } from "./use-cases-search";
 
 /** How long the search waits after the last keystroke before it asks the server. */
 const SEARCH_DELAY_MS = 300;
@@ -42,6 +42,10 @@ function UseCasesToolbar({ count }: UseCasesToolbarProps) {
   const [search, setSearch] = useQueryStates(useCasesSearch, { shallow: false, startTransition });
 
   const industries = useCaseIndustries.map((value) => ({ value, label: industryName(value) }));
+  const proposalStatuses = [
+    { value: "all", label: t("proposalStatus.all") },
+    ...useCaseProposalStatuses.map((value) => ({ value, label: t(`proposalStatus.${value}`) })),
+  ];
   const sorts = [
     ...(search.q.trim() ? [{ value: "relevance", label: t("sort.relevance") }] : []),
     ...useCaseSorts.map((sort) => ({ value: sort, label: t(`sort.${sort}`) })),
@@ -61,14 +65,37 @@ function UseCasesToolbar({ count }: UseCasesToolbarProps) {
       }}
       count={count}
       clear={
-        search.industry.length > 0
+        search.industry.length > 0 || search.proposalStatus != null
           ? {
               label: t("industry.clear"),
-              onClick: () => setSearch({ industry: null, page: null }),
+              onClick: () => setSearch({ industry: null, proposalStatus: null, page: null }),
             }
           : undefined
       }
     >
+      <Select
+        items={proposalStatuses}
+        value={search.proposalStatus ?? "all"}
+        onValueChange={(value) =>
+          setSearch({
+            proposalStatus: useCaseProposalStatuses.find((status) => status === value) ?? null,
+            page: null,
+          })
+        }
+      >
+        <SelectTrigger size="lg" aria-label={t("proposalStatus.label")} className="w-full md:w-44">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {proposalStatuses.map((status) => (
+              <SelectItem key={status.value} value={status.value}>
+                {status.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
       <Select
         multiple
         items={industries}

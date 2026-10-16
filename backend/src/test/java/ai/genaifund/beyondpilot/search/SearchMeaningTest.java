@@ -179,7 +179,7 @@ class SearchMeaningTest {
 				case "solution" -> request.focusArea("document_processing").maturity("pilot").sort("name");
 				case "talent" -> request.role("ml_engineer").sort("name");
 				case "program" -> request.type("hackathon").phase("open").sort("name");
-				default -> request.sort("newest");
+				default -> request.proposalStatus("open").sort("newest");
 			}
 			var first = search.search(request.page(1).build(), false);
 			var second = search.search(request.page(2).build(), false);
@@ -204,6 +204,15 @@ class SearchMeaningTest {
 					.extracting(SearchItem::title).containsExactly("Alpha " + kind);
 				assertThat(search.search(request.sort("budget").build(), false).items())
 					.extracting(SearchItem::title).containsExactly("Zulu " + kind);
+				// A lexical match includes all three, independent of the two-item semantic candidate limit.
+				SearchRequest.Builder withClosed = SearchRequest.builder("customer calls").kind("use_case").size(1)
+					.industry(List.of("insurance", "healthcare")).sort("newest");
+				var includingClosed = search.search(withClosed.page(3).build(), false);
+				assertThat(includingClosed.total()).isEqualTo(3);
+				assertThat(includingClosed.items()).extracting(SearchItem::title).containsExactly("Excluded closesAt");
+				var closedOnly = search.search(withClosed.proposalStatus("closed").page(1).build(), false);
+				assertThat(closedOnly.total()).isEqualTo(1);
+				assertThat(closedOnly.items()).extracting(SearchItem::title).containsExactly("Excluded closesAt");
 			}
 		}
 	}

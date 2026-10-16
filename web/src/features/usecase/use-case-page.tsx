@@ -11,6 +11,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { ProposalActions } from "@/features/proposal/proposal-actions";
+import { closedAt } from "@/features/proposal/proposal-access";
 import { OrganizationMark } from "@/features/organization/organization-mark";
 import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
@@ -59,7 +60,7 @@ function Fact({ label, value }: FactProps) {
 }
 
 /**
- * The public brief of one open use case, with how many proposals it received and the actions to
+ * The public brief of one published use case, with how many proposals it received and the actions to
  * send one. `proposals` is null when the count could not be read: the page shows without it.
  */
 function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals: number | null }) {
@@ -69,6 +70,7 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
   const technologyName = useVocabulary("technology");
   const format = useFormatter();
   const locale = useLocale();
+  const closed = closedAt(useCase.closesAt);
   const organizationName = useCase.organizationName ?? t("anonymous");
   const budget = useCase.budgetToBeDetermined
     ? t("budget.toBeDetermined")
@@ -94,7 +96,7 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
       })
     : t("deadline.none");
   const proposalDeadline = useCase.closesAt
-    ? t("detail.open.closes", {
+    ? t(closed ? "detail.closed.on" : "detail.open.closes", {
         when: format.dateTime(new Date(useCase.closesAt), "day"),
       })
     : t("detail.open.noDeadline");
@@ -152,7 +154,7 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
       <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Fact label={t("budget.label")} value={budget} />
         <Fact label={t("timeline.label")} value={timeline} />
-        <Fact label={t("detail.applyBy")} value={deadline} />
+        <Fact label={t(closed ? "detail.closed.label" : "detail.applyBy")} value={deadline} />
         {proposals !== null && <Fact label={p("proposals")} value={String(proposals)} />}
       </dl>
 
@@ -179,10 +181,10 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
           )}
         </div>
 
-        <aside className="flex flex-col gap-4 rounded-2xl border bg-card p-6 shadow-sm lg:sticky lg:top-23 lg:w-75 lg:shrink-0 xl:w-95">
+        <aside className="flex flex-col gap-4.5 rounded-2xl border bg-card p-6 shadow-sm lg:sticky lg:top-23 lg:w-75 lg:shrink-0 xl:w-95">
           <div className="flex items-center justify-between gap-2">
-            <Status tone="success" appearance="pill">
-              {t("detail.open.status")}
+            <Status tone={closed ? "neutral" : "success"} appearance="pill">
+              {t(closed ? "proposalStatus.closed" : "detail.open.status")}
             </Status>
             <span className="text-sm text-muted-foreground">{proposalDeadline}</span>
           </div>

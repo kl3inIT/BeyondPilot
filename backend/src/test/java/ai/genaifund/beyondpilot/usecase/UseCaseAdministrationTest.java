@@ -444,6 +444,41 @@ class UseCaseAdministrationTest {
 			.isNotEmpty();
 		assertThat(titles("?status=closed&q=" + title)).containsExactly(title);
 		assertThat(titles("?status=approved&q=" + title)).isEmpty();
+		client.get().uri(DIRECTORY + "/" + id).exchange().expectStatus().isOk();
+		assertThat(publicTitles("?q=" + title)).containsExactly(title);
+	}
+
+	@Test
+	void onlyPublishedUseCasesRemainPublicAfterClosingAndPaginationCountsThem() {
+		String tag = UUID.randomUUID().toString().substring(0, 8);
+		UUID organization = organization("Archive Bank " + tag);
+		String open = created(useCase(organization, "Open " + tag, true));
+		String closed = created(useCase(organization, "Closed " + tag, true));
+		String draft = created(useCase(organization, "Draft " + tag, false));
+		String review = created(useCase(organization, "Review " + tag, false));
+		String returned = created(useCase(organization, "Returned " + tag, false));
+		jdbc.sql("update use_case set status = 'in_review', submitted_at = now(), "
+				+ "submitted_by_account_id = created_by_account_id where id = ?").param(UUID.fromString(review)).update();
+		jdbc.sql("update use_case set status = 'needs_changes' where id = ?").param(UUID.fromString(returned)).update();
+		for (String id : List.of(closed, draft, review, returned)) {
+			jdbc.sql("update use_case set closes_at = now() - interval '1 day' where id = ?")
+				.param(UUID.fromString(id)).update();
+		}
+		String first = body(client.get().uri(DIRECTORY + "?q=" + tag + "&size=1").exchange().expectStatus().isOk());
+		assertThat(JsonPath.<Number>read(first, "$.total").intValue()).isEqualTo(2);
+		assertThat(JsonPath.<Number>read(first, "$.pageSize").intValue()).isEqualTo(1);
+		assertThat(JsonPath.<List<String>>read(first, "$.items[*].id")).containsExactly(open);
+		assertThat(publicTitles("?q=" + tag + "&size=1&page=2")).containsExactly("Closed " + tag);
+		assertThat(publicTitles("?q=" + tag + "&size=1&page=3")).isEmpty();
+		assertThat(publicTitles("?q=" + tag + "&proposalStatus=open")).containsExactly("Open " + tag);
+		String archive = body(client.get().uri(DIRECTORY + "?q=" + tag + "&proposalStatus=closed")
+			.exchange().expectStatus().isOk());
+		assertThat(JsonPath.<Number>read(archive, "$.total").intValue()).isEqualTo(1);
+		assertThat(JsonPath.<List<String>>read(archive, "$.items[*].id")).containsExactly(closed);
+		for (String id : List.of(draft, review, returned)) {
+			client.get().uri(DIRECTORY + "/" + id).exchange().expectStatus().isNotFound();
+		}
+		client.get().uri(DIRECTORY + "?proposalStatus=draft").exchange().expectStatus().isBadRequest();
 	}
 
 	@Test
@@ -552,16 +587,16 @@ class UseCaseAdministrationTest {
 			post(operator, USE_CASES + "/" + id + "/feature", Map.of()).expectStatus().isNoContent();
 		}
 
-		// The opening view: no search, no filter, the newest first. One closed or not published stays out, featured or not.
-		String opening = body(client.get().uri(DIRECTORY).exchange().expectStatus().isOk());
+		// Featured briefs lead within the open group; unpublished records stay out, regardless of their deadline.
+		String opening = body(client.get().uri(DIRECTORY + "?size=100").exchange().expectStatus().isOk());
 		assertThat(tagged(JsonPath.read(opening, "$.items[*].title"), tag)).containsExactly("First " + tag,
-				"Second " + tag, "Third " + tag);
-		assertThat(JsonPath.<List<Boolean>>read(opening, "$.items[*].featured"))
+				"Second " + tag, "Third " + tag, "Closed " + tag);
+		assertThat(JsonPath.<List<Boolean>>read(opening, "$.items[?(@.title != 'Closed " + tag + "')].featured"))
 			.isSortedAccordingTo(Comparator.reverseOrder());
 		assertThat(JsonPath.<Number>read(opening, "$.total").intValue()).isEqualTo(total);
 		assertThat(publicTitles("?page=2")).doesNotContain("First " + tag, "Second " + tag);
-		assertThat(tagged(publicTitles("?sort=newest"), tag)).containsExactly("First " + tag, "Second " + tag,
-				"Third " + tag);
+		assertThat(tagged(publicTitles("?sort=newest&size=100"), tag)).containsExactly("First " + tag, "Second " + tag,
+				"Third " + tag, "Closed " + tag);
 
 		// A search, a filter or another order is ordered by that alone, as it was before.
 		for (int index = 0; index < chosen.size(); index++) {
@@ -569,10 +604,10 @@ class UseCaseAdministrationTest {
 		}
 		String searched = body(client.get().uri(DIRECTORY + "?q=" + tag).exchange().expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(searched, "$.items[*].title")).containsExactly("Third " + tag,
-				"Second " + tag, "First " + tag);
+				"Second " + tag, "First " + tag, "Closed " + tag);
 		// Its card says it is featured wherever the list shows it.
 		assertThat(JsonPath.<List<String>>read(searched, "$.items[?(@.featured == true)].title"))
-			.containsExactly("Second " + tag, "First " + tag);
+			.containsExactly("Second " + tag, "First " + tag, "Closed " + tag);
 
 		// The operators' list marks them and narrows to the featured ones, or to the others, whatever their status.
 		assertThat(titles("?q=" + tag + "&featured=true")).containsExactlyInAnyOrder("First " + tag, "Second " + tag,

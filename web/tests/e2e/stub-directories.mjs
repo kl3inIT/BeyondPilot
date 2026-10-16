@@ -347,6 +347,18 @@ export const longTextUseCase = {
   integrationRequirements: `https://example.com/${"path".repeat(250)}`,
 };
 
+/** An opt-in archived directory, isolated from the baseline marketplace fixtures. */
+export const closedUseCase = {
+  ...useCaseDetails[0],
+  id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0098",
+  title: "Archive claims triage",
+  closesAt: "2020-01-01T16:59:00Z",
+};
+const archiveUseCases = [
+  { ...useCaseDetails[0], id: "0c8f6f0e-5a0d-4d5e-9f3e-2f4e5a7a0097", title: "Archive intake" },
+  closedUseCase,
+];
+
 /** The public list of use cases: the search looks in the title, the goal and the organization's name. */
 function pageOfUseCases(url) {
   const { searchParams: query } = url;
@@ -356,19 +368,24 @@ function pageOfUseCases(url) {
     .flatMap((industry) => industry.split(","))
     .filter(Boolean);
   const program = query.get("program");
-  const items = useCases
+  const proposalStatus = query.get("proposalStatus");
+  const closed = (item) => item.closesAt != null && Date.parse(item.closesAt) <= Date.now();
+  const items = (query.get("q")?.includes("archive") ? archiveUseCases : useCases)
     .filter(
       (item) =>
         (!program || (programUseCases[program] ?? []).includes(item.title)) &&
         has(query.get("q"), item.title, item.goal, item.organizationName) &&
-        (industries.length === 0 || industries.includes(item.industry)),
+        (industries.length === 0 || industries.includes(item.industry)) &&
+        (!proposalStatus || closed(item) === (proposalStatus === "closed")),
     )
-    .toSorted((one, other) =>
-      sort === "deadline"
-        ? one.closesAt.localeCompare(other.closesAt)
-        : sort === "budget"
-          ? (other.budgetMax ?? 0) - (one.budgetMax ?? 0)
-          : other.publishedAt.localeCompare(one.publishedAt),
+    .toSorted(
+      (one, other) =>
+        Number(closed(one)) - Number(closed(other)) ||
+        (sort === "deadline"
+          ? one.closesAt.localeCompare(other.closesAt)
+          : sort === "budget"
+            ? (other.budgetMax ?? 0) - (one.budgetMax ?? 0)
+            : other.publishedAt.localeCompare(one.publishedAt)),
     );
   const pageNumber = Number(query.get("page") ?? "1");
   const pageSize = Number(query.get("size") ?? "10");
@@ -405,7 +422,7 @@ export function answerDirectory(url) {
     const found =
       useCaseId === longTextUseCase.id
         ? longTextUseCase
-        : useCaseDetails.find((item) => item.id === useCaseId);
+        : [...useCaseDetails, ...archiveUseCases].find((item) => item.id === useCaseId);
     return found ? [200, found] : missing;
   }
   const [, area, list, slug] = /^\/api\/(\w+)\/(\w+)(?:\/([^/]+))?$/.exec(pathname) ?? [];

@@ -8715,6 +8715,16 @@ paths:
           - deadline
           - budget
           pattern: relevance|newest|name|deadline|budget
+      - description: Only use cases with open or closed proposals; both when absent.
+        in: query
+        name: proposalStatus
+        required: false
+        schema:
+          type: string
+          enum:
+          - open
+          - closed
+          pattern: open|closed
       responses:
         "200":
           content:
@@ -13313,6 +13323,16 @@ paths:
           - "null"
           maxLength: 120
           minLength: 0
+      - description: Whether proposals are open or closed; both when absent.
+        in: query
+        name: proposalStatus
+        required: false
+        schema:
+          type: string
+          enum:
+          - open
+          - closed
+          pattern: open|closed
       responses:
         "200":
           content:
@@ -13326,7 +13346,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Problem"
           description: A parameter is not valid.
-      summary: The published use cases that still accept proposals
+      summary: "Published use cases, including after proposals close"
       tags:
       - Use cases
   /api/usecase/use-cases/{id}:
@@ -13351,8 +13371,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "No published use case has this identifier, or it has closed."
-      summary: One published use case that still accepts proposals
+          description: "No public, published use case has this identifier."
+      summary: "One published use case, including after proposals close"
       tags:
       - Use cases
 components:

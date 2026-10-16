@@ -164,7 +164,7 @@ class SearchDocumentRepositoryTest {
 	}
 
 	@Test
-	void aUseCaseLeavesTheResultsAtItsCloseDate() {
+	void aPublishedUseCaseStaysInResultsAfterItsCloseDateAndCanBeFiltered() {
 		for (var closes : Map.of("Open claims triage", Duration.ofDays(1), "Closed claims triage", Duration.ofDays(-1))
 			.entrySet()) {
 			UUID id = UUID.randomUUID();
@@ -173,7 +173,17 @@ class SearchDocumentRepositoryTest {
 					null));
 		}
 
-		assertThat(titles("claims triage")).containsExactly("Open claims triage");
+		assertThat(titles("claims triage")).containsExactlyInAnyOrder("Open claims triage", "Closed claims triage");
+		SearchRequest open = SearchRequest.builder("claims triage").kind(USE_CASE).proposalStatus("open").build();
+		SearchRequest closed = SearchRequest.builder("claims triage").kind(USE_CASE).proposalStatus("closed").build();
+		assertThat(index.page(open, null, true, false, 10, 0)).extracting(Hit::title).containsExactly("Open claims triage");
+		assertThat(index.page(closed, null, true, false, 10, 0)).extracting(Hit::title).containsExactly("Closed claims triage");
+		assertThat(index.counts(open, null, true).get(USE_CASE)).isEqualTo(1L);
+		assertThat(index.counts(closed, null, true).get(USE_CASE)).isEqualTo(1L);
+		SearchRequest ordered = SearchRequest.builder("claims triage").kind(USE_CASE).sort("deadline").build();
+		assertThat(index.page(ordered, null, true, false, 1, 0)).extracting(Hit::title).containsExactly("Open claims triage");
+		assertThat(index.page(ordered, null, true, false, 1, 1)).extracting(Hit::title).containsExactly("Closed claims triage");
+		assertThat(index.page(ordered, null, true, false, 1, 2)).isEmpty();
 	}
 
 	private List<String> titles(String query) {

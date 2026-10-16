@@ -277,6 +277,21 @@ class SearchDirectoriesTest {
 		String indexed = jdbc.sql("select concat_ws(' ', title, subtitle, summary, keywords, card) from search_document"
 				+ " where item_id = cast(? as uuid)").param(id).query(String.class).single();
 		assertThat(indexed).contains("first assessment").doesNotContain("wait days").doesNotContain("Bank");
+		// Expiry changes proposal availability, never publication. Keep the indexed deadline in step with the brief.
+		jdbc.sql("update use_case set closes_at = now() - interval '1 day' where id = cast(? as uuid)")
+			.param(id).update();
+		jdbc.sql("update search_document set facets = jsonb_set(facets, '{closesAt}', "
+				+ "to_jsonb(now() - interval '1 day')) where kind = 'use_case' and item_id = cast(? as uuid)")
+			.param(id).update();
+		String closed = search("claims%20triage%20" + word + "&kind=use_case&proposalStatus=closed&size=1");
+		assertThat(JsonPath.<Number>read(closed, "$.total").intValue()).isEqualTo(1);
+		assertThat(JsonPath.<String>read(closed, "$.items[0].slug")).isEqualTo(id);
+		assertThat(JsonPath.<Number>read(search("claims%20triage%20" + word
+				+ "&kind=use_case&proposalStatus=open"), "$.total").intValue()).isZero();
+		assertThat(total("claims triage " + word)).isEqualTo(1);
+		// Sending back still requires an open use case; expiry never grants an operator a new transition.
+		jdbc.sql("update use_case set closes_at = now() + interval '1 day' where id = cast(? as uuid)")
+			.param(id).update();
 
 		post(operator, "/api/usecase/admin/use-cases/" + id + "/send-back", Map.of("reason", "Say what the data is."));
 		await().atMost(WAIT).until(() -> total("claims triage " + word) == 0);
