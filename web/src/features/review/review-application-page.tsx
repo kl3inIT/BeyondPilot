@@ -107,7 +107,6 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
               applicationId={review.id}
               decision={review.reviewStatus ?? "under_review"}
               released={released}
-              nextHref={nextHref}
             />
           )}
           {review.own ? (

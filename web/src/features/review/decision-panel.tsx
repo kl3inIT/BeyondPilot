@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { Button } from "@/components/actions/button";
@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
-import { getPathname } from "@/i18n/navigation";
 import { decideApplications } from "@/lib/api/generated";
 
 type Decision = "under_review" | "shortlisted" | "not_selected";
@@ -19,25 +18,17 @@ type DecisionPanelProps = {
   applicationId: string;
   decision: Decision;
   released: boolean;
-  /** The next application of the program, which a first decision leads to. */
-  nextHref: string | null;
 };
 
 /**
- * GenAI Fund's decision on an application, with a private reason. A first decision moves on to the
- * next application; a decision changes until the outcomes are released, and each change is kept.
+ * GenAI Fund's decision on an application, with a private reason. The page stays on the
+ * application, which shows the decision made; a decision changes until the outcomes are released,
+ * and each change is kept.
  */
-function DecisionPanel({
-  programId,
-  applicationId,
-  decision,
-  released,
-  nextHref,
-}: DecisionPanelProps) {
+function DecisionPanel({ programId, applicationId, decision, released }: DecisionPanelProps) {
   const t = useTranslations("Review.decision");
   const notify = useNotify();
   const router = useRouter();
-  const locale = useLocale();
   const [reason, setReason] = useState("");
   const [pending, setPending] = useState<Decision | null>(null);
   const undecided = decision === "under_review";
@@ -55,11 +46,7 @@ function DecisionPanel({
       });
       notify.success(`Review.decision.done.${to}`);
       setReason("");
-      if (undecided && nextHref) {
-        router.push(getPathname({ href: nextHref, locale }));
-      } else {
-        router.refresh();
-      }
+      router.refresh();
     } catch (error) {
       notify.failure(error);
     } finally {
@@ -104,11 +91,7 @@ function DecisionPanel({
                 disabled={pending !== null}
                 onClick={() => decide("shortlisted")}
               >
-                {undecided
-                  ? nextHref
-                    ? t("shortlistAndNext")
-                    : t("shortlist")
-                  : t("changeToShortlisted")}
+                {undecided ? t("shortlist") : t("changeToShortlisted")}
               </Button>
             )}
             {decision !== "not_selected" && (
@@ -118,11 +101,7 @@ function DecisionPanel({
                 disabled={pending !== null}
                 onClick={() => decide("not_selected")}
               >
-                {undecided
-                  ? nextHref
-                    ? t("notSelectedAndNext")
-                    : t("notSelected")
-                  : t("changeToNotSelected")}
+                {undecided ? t("notSelected") : t("changeToNotSelected")}
               </Button>
             )}
           </div>

@@ -10,7 +10,7 @@ import { waits } from "./review-queue";
  * A judge's list leads with the shortlist, which is what GenAI Fund asks judges to focus on.
  */
 export const operatorTabs = ["all", "undecided", "shortlisted", "not_selected"] as const;
-export const judgeTabs = ["shortlisted", "all", "to_score", "scored"] as const;
+export const judgeTabs = ["shortlisted", "bookmarked", "all", "to_score", "scored"] as const;
 const tabs = [...new Set([...operatorTabs, ...judgeTabs])] as const;
 
 /** Who applies, as the list narrows it. */
@@ -54,12 +54,14 @@ function inTab(item: ReviewApplicationItem, tab: Tab, released: boolean) {
       return item.reviewStatus === "under_review";
     case "shortlisted":
       return item.shortlisted;
+    case "bookmarked":
+      return item.bookmarked;
     case "not_selected":
       return item.reviewStatus === tab;
     case "to_score":
       return waits(item, released);
     case "scored":
-      return item.mine !== "none";
+      return item.mine === "scored" || item.mine === "conflict";
     default:
       return true;
   }

@@ -5,7 +5,10 @@ import type { ReviewApplicationItem } from "@/lib/api/generated";
  * once the outcomes are released only the shortlisted are still scored.
  */
 export function waits(item: ReviewApplicationItem, released = false) {
-  return item.mine === "none" && !item.own && (!released || item.shortlisted);
+  // A note or a bookmark alone leaves the application to score.
+  return (
+    (item.mine === "none" || item.mine === "noted") && !item.own && (!released || item.shortlisted)
+  );
 }
 
 /**
