@@ -2,7 +2,7 @@
 
 BeyondPilot connects enterprises that have business problems with AI solution providers and AI talent who can solve them. GenAI Fund runs campaigns and challenges on it: an enterprise publishes use cases, providers register and apply, reviewers assess the proposals and shortlist providers. The client's scope is in the [product brief](docs/brief/BeyondPilot-Vendor-Product-Brief-and-Scope.md).
 
-The repository holds one Spring Boot backend, one Next.js web application and the documents that describe them. It is at the foundation stage: the error contract, the API contract pipeline, the public home page and continuous integration exist; no business capability is implemented yet. [ARCHITECTURE.md](ARCHITECTURE.md) states exactly what exists.
+The repository holds one Spring Boot backend, one Next.js web application and the documents that describe them. It runs on staging and in production: programs and applications to them, their review, organizations, the directories of solutions, talent and use cases, search, matching, messages, email, the AI providers and the MCP servers. [ARCHITECTURE.md](ARCHITECTURE.md) states exactly what exists; the [roadmap](docs/roadmap.md) lists what was delivered and what is in progress.
 
 ## Start here
 
@@ -29,7 +29,8 @@ Versions, Windows notes and environment variables are in the [development runtim
 | `openapi.yml` | The API contract, generated from the backend and consumed by the web; never edited by hand |
 | `docs/` | Brief, vision, conventions, guidelines, decisions and runbooks ([operating model](docs/guidelines/operating-model.md)) |
 | `gradle/`, `settings.gradle.kts`, `gradlew` | The Gradle wrapper and the version catalog `gradle/libs.versions.toml` |
-| `.github/` | Continuous integration and Dependabot |
+| `infrastructure/` | The deployment compositions and script, the nightly backup, and the one-off import scripts |
+| `.github/` | Continuous integration, the deployment workflows and Dependabot |
 
 ## Build and verify
 
@@ -53,7 +54,7 @@ A change to a controller, its records or the shared problem schema regenerates `
 
 ## Deployment
 
-No deployed environment exists yet. The backend has `production` and `staging` profiles that read their database from environment variables ([profiles and environment variables](docs/runbooks/development-runtime.md#profiles-and-environment-variables)); hosting is not decided.
+Staging runs at `https://beyondpilot.vadan.app` and follows every successful main CI run; production runs at `https://beyondpilot.ai` and is deployed by hand with a release accepted on staging ([CI and delivery](docs/runbooks/ci-cd.md)). The backend's `production` and `staging` profiles read their settings from environment variables ([profiles and environment variables](docs/runbooks/development-runtime.md#profiles-and-environment-variables)).
 
 ## Engineering policies
 
