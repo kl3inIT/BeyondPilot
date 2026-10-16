@@ -65,6 +65,7 @@ async function SubmittedRecord({
   const contact = submitted.contact ?? null;
   const demo = submitted.demoUrl ? webAddress(submitted.demoUrl) : null;
   const contactRows: Row[] = [];
+  const linkedinRows: Row[] = [];
   if (contact) {
     const name = [contact.firstName, contact.lastName].filter(Boolean).join(" ");
     // What the applicant typed is a link only where it leads to what its row says; otherwise text.
@@ -88,7 +89,7 @@ async function SubmittedRecord({
     // One row each: the email and the phone are copied from here to reach the applicant.
     contactRows.push([t("name"), name || none], [t("email"), email], [t("phone"), phone]);
     if (contact.linkedin) {
-      contactRows.push([
+      linkedinRows.push([
         t("linkedin"),
         linkedin ? <Outside href={linkedin}>{contact.linkedin}</Outside> : contact.linkedin,
       ]);
@@ -138,6 +139,7 @@ async function SubmittedRecord({
         ...(submitted.teamSize
           ? [[t("teamSize"), word("teamSize", submitted.teamSize)] as Row]
           : []),
+        ...linkedinRows,
         ...(submitted.website
           ? [
               [
