@@ -12513,7 +12513,7 @@ export type SaveAssessmentData = {
 
 export type SaveAssessmentErrors = {
     /**
-     * A criterion is not scored from 1 to 5.
+     * Some criteria are scored and others not, or a score is outside 1 to 10.
      */
     400: Problem;
     /**

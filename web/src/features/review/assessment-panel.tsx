@@ -95,7 +95,8 @@ function AssessmentPanel({
           // A note or a bookmark keeps the scores already saved, or none.
           scores: kind === "conflict" || mine?.conflict ? {} : kept,
           note: note.trim() === "" ? null : note,
-          conflict: kind === "conflict",
+          // Only a save of the scores takes a declared conflict back; a note or a bookmark keeps it.
+          conflict: kind === "conflict" || (kind !== "save" && (mine?.conflict ?? false)),
           bookmarked: kind === "bookmark" ? !bookmarked : bookmarked,
         },
       });

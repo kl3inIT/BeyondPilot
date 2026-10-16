@@ -472,7 +472,7 @@
     "PROPOSAL_REVIEWER_INVITED": "Địa chỉ này đã được mời chấm chương trình.",
     "PROPOSAL_REVIEWER_NOT_FOUND": "Giám khảo này không còn trong danh sách. Hãy tải lại trang.",
     "PROPOSAL_REVIEWER_JOINED": "Giám khảo này đã đăng nhập; không còn lời mời nào để gửi lại.",
-    "PROPOSAL_ASSESSMENT_INVALID": "Hãy chấm mọi tiêu chí từ 1 đến 5, hoặc khai xung đột lợi ích.",
+    "PROPOSAL_ASSESSMENT_INVALID": "Hãy chấm mọi tiêu chí từ 1 đến 10, hoặc không chấm tiêu chí nào để chỉ lưu ghi chú, hoặc khai xung đột lợi ích.",
     "PROPOSAL_RELEASED": "Kết quả của chương trình đã được công bố, nên việc chấm không còn thay đổi được.",
     "PROPOSAL_OUTCOMES_NOT_READY": "Kết quả chỉ được công bố khi đã hết hạn nộp và mọi đơn đều có quyết định.",
     "PROPOSAL_USE_CASE_NOT_FOUND": "Không có use case này.",

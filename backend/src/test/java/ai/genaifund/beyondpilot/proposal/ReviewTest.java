@@ -357,6 +357,8 @@ class ReviewTest extends ApplicationsHttpTest {
 			.isOk()), "$.items[*].scored")).containsExactly(0);
 		assertProblem(put(judge, one + "/assessment", scores(Map.of(ids.get(0), 4))), 400,
 				"PROPOSAL_ASSESSMENT_INVALID");
+		// A note fixes nothing: the criteria change until a score is saved.
+		assertThat(JsonPath.<Boolean>read(body(get(operator, criteria).expectStatus().isOk()), "$.fixed")).isFalse();
 
 		// A judge rates quality and never reads the weights: their own score is the mean of their scores.
 		assertThat(JsonPath.<List<Object>>read(body(get(judge, criteria).expectStatus().isOk()),

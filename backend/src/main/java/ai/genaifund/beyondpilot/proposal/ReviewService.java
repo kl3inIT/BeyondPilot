@@ -791,7 +791,7 @@ public class ReviewService {
 
 	private static ProposalException invalid(UUID id) {
 		return new ProposalException(ProposalErrorCode.ASSESSMENT_INVALID,
-				"Assessment of application " + id + " does not score every criterion from 1 to 5");
+				"Assessment of application " + id + " does not score every criterion from 1 to 10");
 	}
 
 	private record VersionKey(UUID proposalId, int number) {

@@ -472,7 +472,7 @@
     "PROPOSAL_REVIEWER_INVITED": "This address is already invited to judge this program.",
     "PROPOSAL_REVIEWER_NOT_FOUND": "This judge is no longer on the list. Reload the page.",
     "PROPOSAL_REVIEWER_JOINED": "This judge has already signed in; there is no invitation to send again.",
-    "PROPOSAL_ASSESSMENT_INVALID": "Score every criterion from 1 to 5, or declare a conflict.",
+    "PROPOSAL_ASSESSMENT_INVALID": "Score every criterion from 1 to 10, or none to keep only a note, or declare a conflict.",
     "PROPOSAL_RELEASED": "The outcomes of this program have been released, so the review no longer changes.",
     "PROPOSAL_OUTCOMES_NOT_READY": "Outcomes are released once applications have closed and every application has a decision.",
     "PROPOSAL_USE_CASE_NOT_FOUND": "There is no such use case.",

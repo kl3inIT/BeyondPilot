@@ -13,7 +13,13 @@ public interface ProposalAssessmentRepository extends JpaRepository<ProposalAsse
 
 	List<ProposalAssessment> findByProposalIdOrderBySavedAt(UUID proposalId);
 
-	/** Whether anyone has assessed an application of the program, which fixes its criteria. */
-	@Query("select count(a) > 0 from ProposalAssessment a, Proposal p where p.id = a.proposalId and p.programId = :programId")
+	/**
+	 * Whether anyone has scored an application of the program, which fixes its criteria. A note, a bookmark or a
+	 * conflict holds no scores and fixes nothing.
+	 */
+	@Query(value = """
+			select exists (select 1 from proposal_assessment a join proposal p on p.id = a.proposal_id
+			               where p.program_id = :programId and a.scores <> '{}'::jsonb)
+			""", nativeQuery = true)
 	boolean existsForProgram(UUID programId);
 }

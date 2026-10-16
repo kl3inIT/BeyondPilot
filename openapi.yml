@@ -7215,7 +7215,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: A criterion is not scored from 1 to 5.
+          description: "Some criteria are scored and others not, or a score is outside\
+            \ 1 to 10."
         "401":
           content:
             application/problem+json:
