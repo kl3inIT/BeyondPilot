@@ -22326,7 +22326,8 @@ components:
           - "null"
           format: double
           description: "The mean of every judge's score, for an operator; null for\
-            \ a judge."
+            \ a judge. In points when the criteria are worth points, otherwise from\
+            \ 1 to 5."
         head:
           $ref: "#/components/schemas/ReviewHead"
         history:
@@ -22375,6 +22376,10 @@ components:
           - under_review
           - shortlisted
           - not_selected
+        shortlisted:
+          type: boolean
+          description: "Whether GenAI Fund shortlisted it, the one part of the decision\
+            \ a judge reads; a shortlisted application is still scored after the release."
         submitted:
           $ref: "#/components/schemas/SubmittedApplication"
         submittedAt:
@@ -22394,6 +22399,7 @@ components:
       - others
       - own
       - position
+      - shortlisted
       - submitted
       - submittedAt
       - total

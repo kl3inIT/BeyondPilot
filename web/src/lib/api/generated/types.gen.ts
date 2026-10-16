@@ -4842,7 +4842,7 @@ export type RetryEmbeddings = {
  */
 export type ReviewApplication = {
     /**
-     * The mean of every judge's score, for an operator; null for a judge.
+     * The mean of every judge's score, for an operator; null for a judge. In points when the criteria are worth points, otherwise from 1 to 5.
      */
     average?: number | null;
     head: ReviewHead;
@@ -4870,6 +4870,10 @@ export type ReviewApplication = {
      * GenAI Fund's decision; null for a judge.
      */
     reviewStatus?: 'under_review' | 'shortlisted' | 'not_selected';
+    /**
+     * Whether GenAI Fund shortlisted it, the one part of the decision a judge reads; a shortlisted application is still scored after the release.
+     */
+    shortlisted: boolean;
     submitted: SubmittedApplication;
     submittedAt: string;
     total: number;

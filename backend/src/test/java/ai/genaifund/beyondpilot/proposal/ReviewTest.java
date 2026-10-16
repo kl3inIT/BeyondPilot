@@ -368,6 +368,9 @@ class ReviewTest extends ApplicationsHttpTest {
 		String listed = body(get(judge, REVIEW + form.programId() + "/applications").expectStatus().isOk());
 		assertThat(JsonPath.<List<Boolean>>read(listed, "$.items[*].shortlisted")).containsExactly(true, false);
 		assertThat(JsonPath.<List<Object>>read(listed, "$.items[*].reviewStatus")).containsOnlyNulls();
+		assertThat(JsonPath.<Boolean>read(body(get(judge, API + "/review/applications/" + chosen.id())
+			.expectStatus()
+			.isOk()), "$.shortlisted")).isTrue();
 		assertProblem(post(operator, release, emails()), 409, "PROPOSAL_OUTCOMES_NOT_READY");
 		close(form);
 		assertProblem(post(operator, release, emails()), 409, "PROPOSAL_OUTCOMES_NOT_READY");

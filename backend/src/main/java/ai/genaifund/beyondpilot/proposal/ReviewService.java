@@ -708,7 +708,8 @@ public class ReviewService {
 		int index = order.indexOf(proposal.getId());
 		return new ReviewApplicationResponse(head, proposal.getId(), proposal.getSubmissions(),
 				Objects.requireNonNull(proposal.getSubmittedAt()), submitted(snapshot),
-				reviewing.operator() ? proposal.getReviewStatus() : null, mine, others,
+				reviewing.operator() ? proposal.getReviewStatus() : null,
+				Proposal.SHORTLISTED.equals(proposal.getReviewStatus()), mine, others,
 				reviewing.operator() ? average(all, points) : null, history, index + 1, order.size(),
 				index > 0 ? order.get(index - 1) : null, index >= 0 && index + 1 < order.size() ? order.get(index + 1) : null,
 				reviewing.owns(proposal));
