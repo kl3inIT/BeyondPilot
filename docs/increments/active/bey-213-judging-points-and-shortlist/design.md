@@ -1,43 +1,55 @@
-# Proposals: criteria worth points, and judging the shortlist after the release
+# Proposals: a 1 to 10 scale with hidden weights, notes before scores, and the shortlist after the release
 
-Status: built on 16 October 2026, waiting to be checked on staging. Tracked in Linear as BEY-213. It changes the review of [BEY-38](../../completed/bey-38-review/design.md).
+Status: revised on 16 October 2026 after Kai's review, before any of it reached staging. Tracked in Linear as BEY-213. It changes the review of [BEY-38](../../completed/bey-38-review/design.md).
 
-GenAI Fund tested the judging of the AI for Insurance Challenge × Tasco on production and asked for two things. First, its rubric gives each criterion its own weight (8 criteria worth 5 to 20 points, 100 in total), while every criterion is scored 1 to 5 the same way. Second, Minh and Kai shortlist the top 10 themselves, announce it, and the judges score those 10 live at the Demo Day on 22 October. Today the release locks every score, so the judges could not score at all.
+GenAI Fund tested the judging of the AI for Insurance Challenge × Tasco on production. Minh and Kai shortlist the top 10 themselves, announce it, and the judges score those 10 live at the Demo Day on 22 October. They asked for:
+
+- **A rubric with weights.** Tasco has 8 criteria worth 5 to 20 points, 100 in total, while every criterion was scored 1 to 5 the same way.
+- **A scale judges read at a glance.** Kai: "just give them 1-10 and make it easy for them to see and know what does it mean for 1/5/10", and "remove all the other complicated stuff".
+- **Notes before scores.** Kai: judges "might not do any scoring until they finish hearing all the pitches", so they bookmark an application and write brief notes first.
+- **Judging after the release.** Today the release locks every score, so the judges could not score at the Demo Day.
+- **Deciding without leaving the page.** Kai: "once shortlisted, it's ok to stay on the same page".
 
 ## What people can do
 
-- **An operator gives each criterion its maximum points** (5, 10, 15, 20 …), or leaves every criterion without points as today. The criteria editor shows the total of the maximums.
-- **A judge scores a criterion that is worth points with the same five buttons, each showing the points it gives**: 4, 8, 12, 16 and 20 on a 20-point criterion. Each level is named Poor, Fair, Good, Very good or Excellent, in the button's accessible name and under the criterion once chosen. The panel shows the running total out of the maximum.
-- **An application's score is the mean of the judges' totals**, in points out of the program's maximum, when its criteria are worth points; it is the mean of the judges' means, 1 to 5, when they are not.
-- **A judge sees which applications are shortlisted**, in a Shortlisted tab that comes first in their tabs.
-- **After the outcomes are released, judges and operators keep scoring the shortlisted applications.** The not selected stay locked, and every decision stays final. A judge's To score tab and their next application then count only the shortlisted.
+- **An operator gives each criterion its weight in points** (1 to 100), or leaves every criterion without points. The criteria editor shows their total.
+- **A judge scores each criterion from 1 to 10**, with the meaning of the scale on screen: 1–3 Weak, 4–6 Average, 7–8 Strong, 9–10 Outstanding. Judges never see the weights.
+- **An application's score is the mean of the judges' totals.** When the criteria have points, a judge's total is the sum of `score / 10 × points`, out of the sum of the points. Without points, it is the mean of their scores, 1 to 10.
+- **A judge or an operator bookmarks an application and keeps a private note at any time**, scored or not. Saving the scores still needs every criterion.
+- **A judge sees which applications are shortlisted and which they bookmarked**, in the tabs Shortlisted, Bookmarked, All, To score and Scored.
+- **After the outcomes are released, the shortlisted applications are still scored.** The others stay locked, and every decision stays final.
+- **An operator decides on an application's page and stays on it**: Shortlist and Not selected record the decision, and the page shows it.
 
 ## Decisions
 
-1. **Points are a maximum per criterion; the judge still picks one of five levels.** Award Force, Submittable Next and Evalato give each criterion its own maximum, and Devpost for Teams weights a 1 to 5 scale ([research](../../../research/sources/2026-10-06-judging-platforms.md), pattern 3). GenAI Fund ruled out typing and sliders, and the 1 to 5 scale alone left judges guessing the weight. Five buttons that show the points keep the judging quick and alike between judges, and work on a phone during a live pitch. A level is worth `level × max / 5` points. Award Force's dropdown of every integer up to the maximum is the next step if a program needs finer points.
-2. **A maximum is a multiple of 5, from 5 to 100**, so every level is a whole number of points. Tasco's rubric is in multiples of 5.
-3. **Either every criterion of a program is worth points or none is.** A total out of a maximum means nothing when part of the criteria have none. A program without points keeps BEY-38's 1 to 5 mean, so the programs already reviewed do not change.
-4. **The stored score stays the level, 1 to 5.** Points are derived from the level and the maximum. No assessment is rewritten, and the maximum is part of the criteria, which lock when the first assessment is saved (BEY-38).
-5. **A release closes the decisions and keeps the shortlist open to scoring.** The applicant's outcome and the email of the release do not change, and scores never reach applicants. Judging the shortlist after it is announced is the second round that Award Force and Submittable Next run as rounds. One rule does it here without rounds, assignments or a winner status, which no program has asked for. Operators read the shortlist ordered by score and choose from it.
-6. **Judges see the shortlisted status and nothing else of the decisions.** The shortlist is what GenAI Fund wants judges to focus on. Not selected and the reasons stay operators' only.
+1. **Scores are 1 to 10, and weights are the operator's.** Submittable Next's default scale is 1 to 10. Submittable Next, Award Force and Evalato weight each criterion, and Devpost for Teams weights a fixed scale ([research](../../../research/sources/2026-10-06-judging-platforms.md): pattern 3, and Weights under where they differ). A judge rates quality, and the platform applies the weights, so judges do not reckon with them. Ten levels separate ten finalists better than five. Their wider spread between judges is met by the meaning on screen, as COPILOT labels its scale.
+2. **Weights are whole points from 1 to 100, every criterion or none.** A total out of a maximum means nothing when part of the criteria have no weight. Totals are shown to one decimal.
+3. **One scale for every program.** No program has scores on production. Staging's test scores move from 1–5 to 1–10 by doubling, which keeps what they meant.
+4. **A note and a bookmark need no score.** Submittable Next saves a review as a draft and Award Force saves every few seconds (research, their Scoring sections). An assessment holds what is saved: a note, a bookmark, the scores once every criterion has one, or a conflict. It counts as scored only with all its scores.
+5. **The release closes the decisions and keeps the shortlist open to scoring.** Judging the shortlist after it is announced is the second round that Award Force and Submittable Next run as rounds. One rule does it here, without rounds, assignments or a winner status, which no program has asked for.
+6. **Judges see the shortlisted status and nothing else of the decisions.**
+7. **A decision on an application's page stays on the page.** Moving on after each decision suits screening every application in turn. GenAI Fund picks a few out of many and checks what it chose. The header's Next and the list's bulk decisions remain.
 
 ## Data
 
-`V101` adds `review_criterion.max_points integer`, null or a multiple of 5 from 5 to 100. Assessments are unchanged.
+`V101` adds `review_criterion.max_points integer` (null or 1 to 100) and `proposal_assessment.bookmarked boolean`, and doubles the scores already saved.
 
 ## HTTP
 
-| Change                                                                    | Use                                                                                             |
-| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `SaveReviewCriterion.maxPoints`, `ReviewCriterion.maxPoints`              | A criterion's maximum; a save refuses a mix of criteria with and without points, or a bad value |
-| `ReviewApplicationItem.shortlisted`, `ReviewApplication.shortlisted`      | Whether the application is shortlisted, for judges as for operators                             |
-| `PUT /api/proposal/review/applications/{id}/assessment` after the release | Accepted for a shortlisted application; `PROPOSAL_RELEASED` for the others, as before           |
+| Change                                                                    | Use                                                                                    |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `SaveReviewCriterion.maxPoints`, `ReviewCriterion.maxPoints`              | A criterion's weight; a save refuses a mix of criteria with and without points         |
+| `SaveAssessment.scores` 1 to 10, empty or complete; `bookmarked`          | Saves a note and a bookmark with or without scores; a partial set of scores is refused |
+| `ReviewApplicationItem.mine`                                              | Also `noted` for an assessment kept without scores; `bookmarked` beside it             |
+| `ReviewApplicationItem.shortlisted`, `ReviewApplication.shortlisted`      | Whether the application is shortlisted, for judges as for operators                    |
+| `PUT /api/proposal/review/applications/{id}/assessment` after the release | Accepted for a shortlisted application; `PROPOSAL_RELEASED` for the others, as before  |
 
-Every average (the list, the application page, the release and the spreadsheet export) is in points when the criteria are worth points. The web adds up the maximums from the criteria the head already carries, so no total is sent.
+Every average (the list, the application page, the release and the spreadsheet export) is in points when the criteria have points.
 
 ## Web
 
-- The criteria editor (`/admin/programs/[id]/reviewers`) takes a maximum per criterion and shows the total.
-- The assessment panel shows the points on each button with the level in its accessible name, the level chosen under the criterion, and the total out of the maximum. It stays editable after the release for a shortlisted application.
-- The judges' tabs are Shortlisted, All, To score and Scored. The list keeps opening on All: Shortlisted leads the row with its count, and an address of its own (`?tab=shortlisted`) can be sent to judges.
-- Averages read as "62.5 / 100" when the criteria are worth points.
+- The criteria editor (`/admin/programs/[id]/reviewers`) takes a weight in points per criterion and shows the total.
+- The assessment panel shows ten buttons per criterion, the meaning of the scale above them, a bookmark, and a note saved on its own. Scores save when every criterion has one. It stays editable after the release for a shortlisted application.
+- The judges' tabs are Shortlisted, Bookmarked, All, To score and Scored.
+- The decision panel's buttons are Shortlist and Not selected, and the page stays.
+- Averages read as "62.5 / 100" when the criteria have points.
