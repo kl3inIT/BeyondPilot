@@ -1,6 +1,5 @@
 import { useTranslations } from "next-intl";
 
-import { ChallengeBar } from "@/components/layout/challenge-bar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { MessageScope } from "@/i18n/message-scope";
@@ -16,7 +15,6 @@ export default function PublicLayout({ children }: LayoutProps<"/[locale]">) {
       >
         {t("skipToContent")}
       </a>
-      <ChallengeBar />
       <SiteHeader />
       <main id="content" className="flex flex-1 flex-col">
         {children}

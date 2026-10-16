@@ -6,14 +6,9 @@ import { hydrated } from "./hydration";
 test.describe("home page", () => {
   test.use({ locale: "en-US" });
 
-  test("shows the live challenge, the sections and the footer", async ({ page }) => {
-    // The challenge bar goes once submissions close, so the test stands before the deadline.
-    await page.clock.setFixedTime(new Date("2026-10-10T09:00:00+07:00"));
+  test("shows the sections and the footer", async ({ page }) => {
     await page.goto("/");
 
-    await expect(
-      page.getByRole("link", { name: /AI for Insurance Challenge × Tasco.*Apply/ }),
-    ).toHaveAttribute("href", "/programs/insurance-ai-tasco");
     await expect(
       page.getByRole("heading", { level: 1, name: /Your next step in\s+AI starts here/ }),
     ).toBeVisible();
@@ -74,18 +69,6 @@ test.describe("home page", () => {
     await expect(page.getByRole("button", { name: /Nestlé Vietnam AI Reinvention/ })).toHaveCount(
       0,
     );
-  });
-
-  test("the challenge bar goes once submissions have closed", async ({ page }) => {
-    await page.clock.setFixedTime(new Date("2026-10-16T09:00:00+07:00"));
-    await page.goto("/");
-
-    await expect(
-      page.getByRole("heading", { level: 1, name: /Your next step in\s+AI starts here/ }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: /AI for Insurance Challenge × Tasco.*Apply/ }),
-    ).toHaveCount(0);
   });
 
   test("the five categories lead to their directories", async ({ page }) => {
