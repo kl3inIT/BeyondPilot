@@ -20,6 +20,7 @@ import ai.genaifund.beyondpilot.proposal.dto.ReleaseDraftRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseEmails;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationsResponse;
+import ai.genaifund.beyondpilot.proposal.dto.ReviewHeadResponse;
 import ai.genaifund.beyondpilot.proposal.persistence.Proposal;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalAssessment;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalAssessmentRepository;
@@ -205,6 +206,8 @@ public class OutcomeService {
 			.findByProposalIdIn(submitted.stream().map(Proposal::getId).toList())) {
 			byProposal.computeIfAbsent(assessment.getProposalId(), id -> new ArrayList<>()).add(assessment);
 		}
+		ReviewHeadResponse head = review.head(form, reviewing);
+		Map<UUID, Integer> points = ReviewService.points(head.criteria());
 		List<ReleaseResponse.Item> shortlisted = new ArrayList<>();
 		List<ReleaseResponse.Item> notSelected = new ArrayList<>();
 		List<ReleaseResponse.Item> undecided = new ArrayList<>();
@@ -212,7 +215,7 @@ public class OutcomeService {
 			ReviewService.Snapshot snapshot = review.snapshot(proposal);
 			ReleaseResponse.Item item = new ReleaseResponse.Item(proposal.getId(), snapshot.solution().name(),
 					snapshot.organization().name(), snapshot.organization().type(), snapshot.organization().country(),
-					review.average(byProposal.getOrDefault(proposal.getId(), List.of())));
+					review.average(byProposal.getOrDefault(proposal.getId(), List.of()), points));
 			switch (proposal.getReviewStatus()) {
 				case Proposal.SHORTLISTED -> shortlisted.add(item);
 				case Proposal.NOT_SELECTED -> notSelected.add(item);
@@ -222,7 +225,7 @@ public class OutcomeService {
 		ProposalRelease released = releases.findById(form.programId()).orElse(null);
 		boolean ready = released == null && !Instant.now().isBefore(form.closesAt()) && undecided.isEmpty()
 				&& !submitted.isEmpty();
-		return new ReleaseResponse(review.head(form, reviewing), ready, shortlisted, notSelected, undecided,
+		return new ReleaseResponse(head, ready, shortlisted, notSelected, undecided,
 				proposals.countByProgramIdAndStatus(form.programId(), Proposal.WITHDRAWN),
 				released == null ? drafts.findById(form.programId()).map(OutcomeService::emails).orElseGet(() -> starting(form))
 						: new ReleaseEmails(released.getShortlistedSubject(), released.getShortlistedMessage(),

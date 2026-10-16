@@ -4,6 +4,8 @@ import java.util.List;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -15,6 +17,8 @@ public record SaveCriteriaRequest(
 
 	@Schema(name = "SaveReviewCriterion")
 	public record Criterion(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 80) String name,
-			@Schema(types = { "string", "null" }) @Size(max = 300) @Nullable String description) {
+			@Schema(types = { "string", "null" }) @Size(max = 300) @Nullable String description,
+			@Schema(types = { "integer", "null" },
+					description = "The points the highest level gives, a multiple of 5; every criterion has them or none.") @Min(5) @Max(100) @Nullable Integer maxPoints) {
 	}
 }

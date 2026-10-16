@@ -4881,7 +4881,7 @@ export type ReviewApplication = {
 
 export type ReviewApplicationItem = {
     /**
-     * For an operator the mean of every judge's score; for a judge their own.
+     * For an operator the mean of every judge's score; for a judge their own. In points when the criteria are worth points, otherwise from 1 to 5.
      */
     average?: number | null;
     /**
@@ -4911,6 +4911,10 @@ export type ReviewApplicationItem = {
      * How many scored it; null for a judge.
      */
     scored?: number | null;
+    /**
+     * Whether GenAI Fund shortlisted it, the one part of the decision a judge reads.
+     */
+    shortlisted: boolean;
     solutionName: string;
     submittedAt: string;
     /**
@@ -4953,7 +4957,7 @@ export type ReviewCriteria = {
 };
 
 /**
- * One thing a program's applications are judged on, scored 1 to 5.
+ * One thing a program's applications are judged on, scored at one of five levels.
  */
 export type ReviewCriterion = {
     /**
@@ -4961,6 +4965,10 @@ export type ReviewCriterion = {
      */
     description?: string | null;
     id: string;
+    /**
+     * The points the highest level gives; a level gives level × maxPoints / 5. Null when the program's criteria are not worth points, and a score is the mean of the levels.
+     */
+    maxPoints?: number | null;
     name: string;
 };
 
@@ -5582,6 +5590,10 @@ export type SaveReviewCriteria = {
 
 export type SaveReviewCriterion = {
     description?: string | null;
+    /**
+     * The points the highest level gives, a multiple of 5; every criterion has them or none.
+     */
+    maxPoints?: number | null;
     name: string;
 };
 

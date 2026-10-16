@@ -323,9 +323,39 @@ class ReviewTest extends ApplicationsHttpTest {
 	}
 
 	@Test
+	void criteriaWorthPointsScoreEachLevelForItsShareOfThePoints() {
+		Form form = program("points-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		String criteria = REVIEW + form.programId() + "/criteria";
+		assertProblem(put(operator, criteria, Map.of("criteria", List.of(Map.of("name", "Impact", "maxPoints", 20),
+				Map.of("name", "Execution")))), 400, "PROPOSAL_CRITERIA_POINTS_INVALID");
+		assertProblem(put(operator, criteria, Map.of("criteria", List.of(Map.of("name", "Impact", "maxPoints", 12)))),
+				400, "PROPOSAL_CRITERIA_POINTS_INVALID");
+		put(operator, criteria, Map.of("criteria", List.of(Map.of("name", "Impact", "maxPoints", 105))))
+			.expectStatus()
+			.isBadRequest();
+		String saved = body(put(operator, criteria, Map.of("criteria",
+				List.of(Map.of("name", "Impact", "maxPoints", 20), Map.of("name", "Execution", "maxPoints", 5))))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<List<Integer>>read(saved, "$.criteria[*].maxPoints")).containsExactly(20, 5);
+		List<String> ids = JsonPath.read(saved, "$.criteria[*].id");
+
+		String judge = judge(form, "pointer@review.test");
+		Applicant applicant = applicant(form, "points@scored.test", "Points Builder");
+		String one = API + "/review/applications/" + applicant.id();
+		// Level 4 of 20 points gives 16, level 3 of 5 points gives 3.
+		String scored = body(put(judge, one + "/assessment", scores(Map.of(ids.get(0), 4, ids.get(1), 3)))
+			.expectStatus()
+			.isOk());
+		assertThat(JsonPath.<Double>read(scored, "$.mine.average")).isEqualTo(19.0);
+		put(operator, one + "/assessment", scores(Map.of(ids.get(0), 5, ids.get(1), 5))).expectStatus().isOk();
+		assertThat(JsonPath.<Double>read(body(get(operator, one).expectStatus().isOk()), "$.average")).isEqualTo(22.0);
+	}
+
+	@Test
 	void outcomesAreReleasedOnceAfterTheCloseAndEveryDecision() {
 		Form form = program("released-challenge", true, Instant.now().plus(Duration.ofDays(10)));
-		criteriaOf(form, "Practical impact");
+		List<String> criteria = criteriaOf(form, "Practical impact");
 		String judge = judge(form, "decider@review.test");
 		Applicant chosen = applicant(form, "chosen@released.test", "Chosen Builder");
 		Applicant other = applicant(form, "other@released.test", "Other Builder");
@@ -334,6 +364,10 @@ class ReviewTest extends ApplicationsHttpTest {
 
 		post(judge, decisions, decision(List.of(chosen.id()), "shortlisted")).expectStatus().isForbidden();
 		post(operator, decisions, decision(List.of(chosen.id()), "shortlisted")).expectStatus().isOk();
+		// A judge reads which applications are shortlisted, and nothing else of the decisions.
+		String listed = body(get(judge, REVIEW + form.programId() + "/applications").expectStatus().isOk());
+		assertThat(JsonPath.<List<Boolean>>read(listed, "$.items[*].shortlisted")).containsExactly(true, false);
+		assertThat(JsonPath.<List<Object>>read(listed, "$.items[*].reviewStatus")).containsOnlyNulls();
 		assertProblem(post(operator, release, emails()), 409, "PROPOSAL_OUTCOMES_NOT_READY");
 		close(form);
 		assertProblem(post(operator, release, emails()), 409, "PROPOSAL_OUTCOMES_NOT_READY");
@@ -358,9 +392,14 @@ class ReviewTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isOk()), "$.application.outcome")).isEqualTo("not_selected");
 
-		// It happens once, and the review no longer changes.
+		// It happens once, and the decisions no longer change; the shortlist is still judged, as at a demo day.
 		assertProblem(post(operator, release, emails()), 409, "PROPOSAL_RELEASED");
 		assertProblem(post(operator, decisions, decision(List.of(other.id()), "shortlisted")), 409, "PROPOSAL_RELEASED");
+		put(judge, API + "/review/applications/" + chosen.id() + "/assessment", scores(Map.of(criteria.get(0), 4)))
+			.expectStatus()
+			.isOk();
+		assertProblem(put(judge, API + "/review/applications/" + other.id() + "/assessment",
+				scores(Map.of(criteria.get(0), 4))), 409, "PROPOSAL_RELEASED");
 		String history = body(get(operator, API + "/review/applications/" + chosen.id()).expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(history, "$.history[*].kind")).containsExactly("submitted", "decided");
 		assertThat(JsonPath.<List<String>>read(history, "$.history[*].reason")).contains("The strongest in Claiming.");

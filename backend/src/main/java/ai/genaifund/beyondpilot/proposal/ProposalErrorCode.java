@@ -80,6 +80,9 @@ public enum ProposalErrorCode implements ErrorCode {
 	CRITERIA_INVALID("PROPOSAL_CRITERIA_INVALID", ErrorCategory.VALIDATION,
 			"Give each criterion its own name."),
 
+	CRITERIA_POINTS_INVALID("PROPOSAL_CRITERIA_POINTS_INVALID", ErrorCategory.VALIDATION,
+			"Give every criterion its points, a multiple of 5 from 5 to 100, or give none of them points."),
+
 	NO_CRITERIA("PROPOSAL_NO_CRITERIA", ErrorCategory.CONFLICT,
 			"This program has no judging criteria yet."),
 

@@ -71,7 +71,7 @@ public class ReviewService {
 
 	private static final int LOWEST = 1;
 
-	private static final int HIGHEST = 5;
+	private static final int HIGHEST = ReviewSetup.LEVELS;
 
 	private static final TypeReference<Map<UUID, Integer>> SCORES = new TypeReference<>() {
 	};
@@ -138,6 +138,7 @@ public class ReviewService {
 		}
 		Map<VersionKey, Snapshot> snapshots = snapshots(submitted);
 		ReviewHeadResponse.ChoiceQuestion choice = head.choice();
+		Map<UUID, Integer> points = points(head.criteria());
 		List<ReviewApplicationsResponse.Item> items = new ArrayList<>();
 		for (Proposal proposal : submitted) {
 			Snapshot snapshot = snapshots.get(new VersionKey(proposal.getId(), proposal.getSubmissions()));
@@ -153,7 +154,8 @@ public class ReviewService {
 					snapshot.organization().name(), snapshot.organization().type(), snapshot.organization().country(),
 					choice == null ? null : choiceOf(snapshot, choice.id()), Objects.requireNonNull(proposal.getSubmittedAt()),
 					proposal.getSubmissions(), reviewing.operator() ? proposal.getReviewStatus() : null,
-					reviewing.operator() ? average(all) : mine == null ? null : mean(mine),
+					Proposal.SHORTLISTED.equals(proposal.getReviewStatus()),
+					reviewing.operator() ? average(all, points) : mine == null ? null : score(mine, points),
 					reviewing.operator() ? (int) all.stream().filter(assessment -> !assessment.isConflict()).count() : null,
 					mine == null ? "none" : mine.isConflict() ? "conflict" : "scored", reviewing.owns(proposal)));
 		}
@@ -188,6 +190,7 @@ public class ReviewService {
 		}
 		Map<VersionKey, Snapshot> snapshots = snapshots(submitted);
 		ReviewHeadResponse.ChoiceQuestion choice = head.choice();
+		Map<UUID, Integer> points = points(head.criteria());
 		List<ApplicationLine> lines = new ArrayList<>();
 		for (Proposal proposal : submitted) {
 			Snapshot snapshot = snapshots.get(new VersionKey(proposal.getId(), proposal.getSubmissions()));
@@ -200,7 +203,7 @@ public class ReviewService {
 					snapshot.applicant().email(), choice == null ? null : choiceOf(snapshot, choice.id()),
 					Objects.requireNonNull(proposal.getSubmittedAt()), proposal.getSubmissions(),
 					proposal.getReviewStatus(), head.releasedAt() != null,
-					all.stream().filter(assessment -> !assessment.isConflict()).count(), average(all)));
+					all.stream().filter(assessment -> !assessment.isConflict()).count(), average(all, points)));
 		}
 		Spreadsheet<ApplicationLine> sheet = Spreadsheet.<ApplicationLine>of("Applications")
 			.text("Application", ApplicationLine::id)
@@ -491,7 +494,7 @@ public class ReviewService {
 		ApplicationForm form = setup.form(proposal.getProgramId());
 		Reviewing reviewing = access.of(actor, proposal.getProgramId());
 		requireNotOwn(reviewing, proposal);
-		requireNotReleased(form);
+		requireScorable(form, proposal);
 		List<CriterionResponse> criteria = setup.criteriaOf(form.programId()).criteria();
 		if (criteria.isEmpty()) {
 			throw new ProposalException(ProposalErrorCode.NO_CRITERIA,
@@ -590,6 +593,17 @@ public class ReviewService {
 		}
 	}
 
+	/**
+	 * Refuses a score once the outcomes are released, except of a shortlisted application: the shortlist is judged
+	 * after it is announced, as at a demo day.
+	 * @throws ProposalException when the outcomes are released and the application is not shortlisted
+	 */
+	private void requireScorable(ApplicationForm form, Proposal proposal) {
+		if (!Proposal.SHORTLISTED.equals(proposal.getReviewStatus())) {
+			requireNotReleased(form);
+		}
+	}
+
 	void requireNotReleased(ApplicationForm form) {
 		if (releases.existsById(form.programId())) {
 			throw new ProposalException(ProposalErrorCode.RELEASED,
@@ -597,11 +611,23 @@ public class ReviewService {
 		}
 	}
 
-	/** The mean of every judge's own mean, leaving out conflicts; null when nobody scored. */
-	@Nullable Double average(Collection<ProposalAssessment> all) {
+	/** What each criterion is worth, by its identifier; empty when the program's criteria are not worth points. */
+	static Map<UUID, Integer> points(List<CriterionResponse> criteria) {
+		Map<UUID, Integer> points = new HashMap<>();
+		for (CriterionResponse criterion : criteria) {
+			Integer most = criterion.maxPoints();
+			if (most != null) {
+				points.put(criterion.id(), most);
+			}
+		}
+		return points;
+	}
+
+	/** The mean of every judge's own score, leaving out conflicts; null when nobody scored. */
+	@Nullable Double average(Collection<ProposalAssessment> all, Map<UUID, Integer> points) {
 		OptionalDouble mean = all.stream()
 			.filter(assessment -> !assessment.isConflict())
-			.map(this::mean)
+			.map(assessment -> score(assessment, points))
 			.filter(Objects::nonNull)
 			.mapToDouble(Double::doubleValue)
 			.average();
@@ -650,12 +676,14 @@ public class ReviewService {
 		Map<UUID, Person> people = identity.people(authors);
 		Set<UUID> judges = new HashSet<>();
 		setup.judgesOf(form.programId()).forEach(judges::add);
+		ReviewHeadResponse head = head(form, reviewing);
+		Map<UUID, Integer> points = points(head.criteria());
 
 		ReviewApplicationResponse.Assessment mine = null;
 		List<ReviewApplicationResponse.Assessment> others = new ArrayList<>();
 		for (ProposalAssessment assessment : all) {
 			ReviewApplicationResponse.Assessment shown = shown(assessment, people.get(assessment.getAccountId()),
-					judges.contains(assessment.getAccountId()) ? "reviewer" : "operator");
+					judges.contains(assessment.getAccountId()) ? "reviewer" : "operator", points);
 			if (assessment.getAccountId().equals(reviewing.accountId())) {
 				mine = shown;
 			}
@@ -678,31 +706,40 @@ public class ReviewService {
 
 		List<UUID> order = setup.submitted(form.programId());
 		int index = order.indexOf(proposal.getId());
-		return new ReviewApplicationResponse(head(form, reviewing), proposal.getId(), proposal.getSubmissions(),
+		return new ReviewApplicationResponse(head, proposal.getId(), proposal.getSubmissions(),
 				Objects.requireNonNull(proposal.getSubmittedAt()), submitted(snapshot),
 				reviewing.operator() ? proposal.getReviewStatus() : null, mine, others,
-				reviewing.operator() ? average(all) : null, history, index + 1, order.size(),
+				reviewing.operator() ? average(all, points) : null, history, index + 1, order.size(),
 				index > 0 ? order.get(index - 1) : null, index >= 0 && index + 1 < order.size() ? order.get(index + 1) : null,
 				reviewing.owns(proposal));
 	}
 
 	private ReviewApplicationResponse.Assessment shown(ProposalAssessment assessment, @Nullable Person person,
-			String role) {
+			String role, Map<UUID, Integer> points) {
 		return new ReviewApplicationResponse.Assessment(person == null ? "" : person.label(), role,
-				json.readValue(assessment.getScores(), SCORES), mean(assessment), assessment.getNote(),
+				json.readValue(assessment.getScores(), SCORES), score(assessment, points), assessment.getNote(),
 				assessment.isConflict(), assessment.getVersionNumber(), assessment.getSavedAt());
 	}
 
-	private @Nullable Double mean(ProposalAssessment assessment) {
+	/**
+	 * One person's score: the points their levels give when the criteria are worth points, otherwise the mean of the
+	 * levels; null for a conflict.
+	 */
+	private @Nullable Double score(ProposalAssessment assessment, Map<UUID, Integer> points) {
 		if (assessment.isConflict()) {
 			return null;
 		}
-		OptionalDouble mean = json.readValue(assessment.getScores(), SCORES)
-			.values()
-			.stream()
-			.mapToInt(Integer::intValue)
-			.average();
-		return mean.isPresent() ? round(mean.getAsDouble()) : null;
+		Map<UUID, Integer> levels = json.readValue(assessment.getScores(), SCORES);
+		if (levels.isEmpty()) {
+			return null;
+		}
+		if (!points.isEmpty()) {
+			return (double) levels.entrySet()
+				.stream()
+				.mapToInt(level -> level.getValue() * points.getOrDefault(level.getKey(), 0) / ReviewSetup.LEVELS)
+				.sum();
+		}
+		return round(levels.values().stream().mapToInt(Integer::intValue).average().orElseThrow());
 	}
 
 	private static double round(double value) {

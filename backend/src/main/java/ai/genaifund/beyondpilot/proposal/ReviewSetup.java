@@ -55,6 +55,9 @@ public class ReviewSetup {
 
 	private static final String PROGRAM = "program";
 
+	/** A criterion is scored at one of five levels; the highest gives its most points. */
+	static final int LEVELS = 5;
+
 	private final ReviewAccess access;
 
 	private final ProgramService programs;
@@ -128,8 +131,8 @@ public class ReviewSetup {
 
 	/**
 	 * Replaces a program's criteria, in order. They are fixed once an application of the program has been scored.
-	 * @throws ProposalException when the program takes no applications, an application was scored, or two criteria
-	 * share a name
+	 * @throws ProposalException when the program takes no applications, an application was scored, two criteria
+	 * share a name, or some criteria are worth points and others not, or points are not a multiple of 5
 	 */
 	@Transactional
 	public CriteriaResponse saveCriteria(Actor actor, UUID programId, SaveCriteriaRequest request) {
@@ -146,11 +149,19 @@ public class ReviewSetup {
 						"Two criteria of program " + programId + " share a name");
 			}
 		}
+		long worth = request.criteria().stream().filter(criterion -> criterion.maxPoints() != null).count();
+		boolean wholePoints = request.criteria()
+			.stream()
+			.allMatch(criterion -> criterion.maxPoints() == null || criterion.maxPoints() % LEVELS == 0);
+		if ((worth != 0 && worth != request.criteria().size()) || !wholePoints) {
+			throw new ProposalException(ProposalErrorCode.CRITERIA_POINTS_INVALID,
+					"Criteria of program " + programId + " with points that do not hold together");
+		}
 		criteria.deleteByProgramId(programId);
 		int position = 0;
 		for (SaveCriteriaRequest.Criterion criterion : request.criteria()) {
 			criteria.save(new ReviewCriterion(UUID.randomUUID(), programId, position++, criterion.name().strip(),
-					text(criterion.description())));
+					text(criterion.description()), criterion.maxPoints()));
 		}
 		criteria.flush();
 		record(AuditAction.PROPOSAL_CRITERIA_UPDATE, operator, form,
@@ -283,7 +294,8 @@ public class ReviewSetup {
 	CriteriaResponse criteriaOf(UUID programId) {
 		return new CriteriaResponse(criteria.findByProgramIdOrderByPosition(programId)
 			.stream()
-			.map(criterion -> new CriterionResponse(criterion.getId(), criterion.getName(), criterion.getDescription()))
+			.map(criterion -> new CriterionResponse(criterion.getId(), criterion.getName(), criterion.getDescription(),
+					criterion.getMaxPoints()))
 			.toList(), assessments.existsForProgram(programId));
 	}
 

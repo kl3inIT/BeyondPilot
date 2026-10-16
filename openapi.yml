@@ -22406,8 +22406,9 @@ components:
           - number
           - "null"
           format: double
-          description: For an operator the mean of every judge's score; for a judge
-            their own.
+          description: "For an operator the mean of every judge's score; for a judge\
+            \ their own. In points when the criteria are worth points, otherwise from\
+            \ 1 to 5."
         choice:
           type:
           - string
@@ -22452,6 +22453,10 @@ components:
           - "null"
           format: int32
           description: How many scored it; null for a judge.
+        shortlisted:
+          type: boolean
+          description: "Whether GenAI Fund shortlisted it, the one part of the decision\
+            \ a judge reads."
         solutionName:
           type: string
         submittedAt:
@@ -22467,6 +22472,7 @@ components:
       - organizationName
       - organizationType
       - own
+      - shortlisted
       - solutionName
       - submittedAt
       - version
@@ -22527,8 +22533,8 @@ components:
       - fixed
     ReviewCriterion:
       type: object
-      description: "One thing a program's applications are judged on, scored 1 to\
-        \ 5."
+      description: "One thing a program's applications are judged on, scored at one\
+        \ of five levels."
       properties:
         description:
           type:
@@ -22538,6 +22544,14 @@ components:
         id:
           type: string
           format: uuid
+        maxPoints:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: "The points the highest level gives; a level gives level ×\
+            \ maxPoints / 5. Null when the program's criteria are not worth points,\
+            \ and a score is the mean of the levels."
         name:
           type: string
       required:
@@ -23849,6 +23863,15 @@ components:
           - "null"
           maxLength: 300
           minLength: 0
+        maxPoints:
+          type:
+          - integer
+          - "null"
+          format: int32
+          description: "The points the highest level gives, a multiple of 5; every\
+            \ criterion has them or none."
+          maximum: 100
+          minimum: 5
         name:
           type: string
           maxLength: 80
