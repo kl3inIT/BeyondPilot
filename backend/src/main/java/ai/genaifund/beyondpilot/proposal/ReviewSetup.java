@@ -125,8 +125,7 @@ public class ReviewSetup {
 	@Transactional
 	public CriteriaResponse criteria(Actor actor, UUID programId) {
 		form(programId);
-		access.of(actor, programId);
-		return criteriaOf(programId);
+		return criteriaFor(programId, access.of(actor, programId).operator());
 	}
 
 	/**
@@ -286,6 +285,15 @@ public class ReviewSetup {
 					"No program " + programId + " taking applications");
 		}
 		return form;
+	}
+
+	/** The criteria as the caller reads them: a judge rates quality and never reads the weights. */
+	CriteriaResponse criteriaFor(UUID programId, boolean operator) {
+		CriteriaResponse all = criteriaOf(programId);
+		return operator ? all : new CriteriaResponse(all.criteria()
+			.stream()
+			.map(criterion -> new CriterionResponse(criterion.id(), criterion.name(), criterion.description(), null))
+			.toList(), all.fixed());
 	}
 
 	CriteriaResponse criteriaOf(UUID programId) {

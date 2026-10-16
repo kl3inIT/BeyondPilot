@@ -358,11 +358,19 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertProblem(put(judge, one + "/assessment", scores(Map.of(ids.get(0), 4))), 400,
 				"PROPOSAL_ASSESSMENT_INVALID");
 
-		// 4 of 10 on a 20-point criterion gives 8, 3 of 10 on a 5-point one gives 1.5.
+		// A judge rates quality and never reads the weights: their own score is the mean of their scores.
+		assertThat(JsonPath.<List<Object>>read(body(get(judge, criteria).expectStatus().isOk()),
+				"$.criteria[*].maxPoints")).containsOnlyNulls();
+		assertThat(JsonPath.<List<Object>>read(noted, "$.head.criteria[*].maxPoints")).containsOnlyNulls();
 		String scored = body(put(judge, one + "/assessment", scores(Map.of(ids.get(0), 4, ids.get(1), 3)))
 			.expectStatus()
 			.isOk());
-		assertThat(JsonPath.<Double>read(scored, "$.mine.average")).isEqualTo(9.5);
+		assertThat(JsonPath.<Double>read(scored, "$.mine.average")).isEqualTo(3.5);
+		assertThat(JsonPath.<List<Object>>read(scored, "$.head.criteria[*].maxPoints")).containsOnlyNulls();
+
+		// For GenAI Fund, 4 of 10 on a 20-point criterion gives 8, 3 of 10 on a 5-point one gives 1.5.
+		String read = body(get(operator, one).expectStatus().isOk());
+		assertThat(JsonPath.<List<Double>>read(read, "$.others[*].average")).containsExactly(9.5);
 		put(operator, one + "/assessment", scores(Map.of(ids.get(0), 10, ids.get(1), 10))).expectStatus().isOk();
 		assertThat(JsonPath.<Double>read(body(get(operator, one).expectStatus().isOk()), "$.average")).isEqualTo(17.3);
 	}

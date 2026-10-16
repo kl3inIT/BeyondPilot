@@ -4975,7 +4975,7 @@ export type ReviewCriterion = {
     description?: string | null;
     id: string;
     /**
-     * The criterion's weight: a score gives score / 10 × maxPoints. Null when the program's criteria have no points, and a score is the mean of the scores.
+     * The criterion's weight: a score gives score / 10 × maxPoints. Null when the program's criteria have no points, and a score is the mean of the scores; always null for a judge, who never reads the weights.
      */
     maxPoints?: number | null;
     name: string;

@@ -572,7 +572,7 @@ public class ReviewService {
 		return new ReviewHeadResponse(form.programId(), form.slug(), form.name(), form.closesAt(),
 				form.outcomesDueOn(), !Instant.now().isBefore(form.closesAt()),
 				releases.findById(form.programId()).map(ProposalRelease::getReleasedAt).orElse(null),
-				reviewing.operator(), setup.criteriaOf(form.programId()).criteria(), choice);
+				reviewing.operator(), setup.criteriaFor(form.programId(), reviewing.operator()).criteria(), choice);
 	}
 
 	/**
