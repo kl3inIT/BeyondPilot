@@ -116,8 +116,12 @@ class McpServerTest {
 				""").param("email", "reader-" + word + "@mcp.test").query().listOfRows();
 		assertThat(calls).extracting(row -> row.get("tool") + " " + row.get("outcome"))
 			.containsExactly("search ok", "fetch ok", "fetch refused");
+		// No column holds what was asked or answered: a call keeps only the one record it read, by name and page.
 		assertThat(calls.getFirst().keySet()).containsExactlyInAnyOrder("id", "called_at", "account_id", "client_id",
-				"server", "tool", "outcome", "duration_ms");
+				"server", "tool", "outcome", "duration_ms", "target_kind", "target_id", "target_label", "target_path");
+		assertThat(calls).extracting(row -> row.get("target_label"))
+			.containsExactly(null, "Voice Agent " + word, null);
+		assertThat((String) calls.get(1).get("target_path")).startsWith("/solutions/");
 	}
 
 	@Test

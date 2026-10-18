@@ -94,7 +94,9 @@ class ListingTools {
 			.title("Search BeyondPilot")
 			.description(operator
 					? "Search BeyondPilot as a GenAI Fund operator: AI solutions, listed or not, programs, AI talent, "
-							+ "use cases and companies. Returns results with an id to read in full with fetch."
+							+ "use cases and companies, as far as they are approved or published. Returns results with "
+							+ "an id to read in full with fetch. For what is in review, needs changes, rejected or a "
+							+ "draft, use list_records."
 					: "Search the AI solutions and the programs listed on BeyondPilot, GenAI Fund's network for "
 							+ "enterprises and AI builders. Returns results with an id to read in full with fetch.")
 			.annotations(READ_ONLY)
