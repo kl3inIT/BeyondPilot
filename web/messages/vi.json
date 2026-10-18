@@ -1592,7 +1592,8 @@
         "tabs": {
           "label": "Các phần của tổ chức này",
           "profile": "Hồ sơ",
-          "members": "Thành viên"
+          "members": "Thành viên",
+          "offers": "Ưu đãi"
         },
         "viewPage": "Xem trang",
         "takenDown": {
@@ -1925,7 +1926,8 @@
         }
       },
       "noMatch": "Không có ưu đãi nào khớp với tìm kiếm.",
-      "empty": "Ưu đãi được viết ở hồ sơ của một giải pháp, hoặc do tổ chức viết cho giải pháp của mình.",
+      "empty": "Ưu đãi được viết ở hồ sơ của tổ chức cung cấp, hoặc do tổ chức tự viết cho giải pháp của mình.",
+      "organizationEmpty": "Thêm những gì tổ chức này cung cấp kèm giải pháp, ví dụ credit GenAI Fund đã thỏa thuận với họ.",
       "detail": {
         "back": "Ưu đãi",
         "fields": {
@@ -4699,7 +4701,7 @@
         "titleTaken": "Đã có một ưu đãi khác ghi giống hệt.",
         "url": "Liên kết",
         "urlInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://.",
-        "fromGenAiFund": "GenAI Fund đã thỏa thuận ưu đãi này với tổ chức",
+        "fromGenAiFund": "GenAI Fund đã thỏa thuận ưu đãi này với tổ chức; thẻ sẽ mang dấu của GenAI Fund",
         "cancel": "Hủy",
         "create": "Thêm ưu đãi",
         "save": "Lưu"

@@ -1,5 +1,6 @@
 import { useLocale, useTranslations } from "next-intl";
 import { createSerializer } from "nuqs/server";
+import type { ReactNode } from "react";
 
 import { Button } from "@/components/actions/button";
 import { DataTableRows } from "@/components/composites/data-table-view";
@@ -48,15 +49,28 @@ type AdminOrganizationPageProps = {
   size: number | null;
   /** The order of the members, as the URL holds it; none is the tab's own. */
   sort: string;
+  /** The Offers tab: what the organization gives with its solutions, which the solution area draws. */
+  offers: ReactNode;
+  /** How many offers the organization gives, beside the tab's name. */
+  offerCount: number;
 };
 
 /**
  * Admin › Organisations › one organization: its profile and verified domain, which an operator
  * changes as its owners do, and its people. An operator also decides what waits (the review of a new
  * organization, a claim on one nobody owns), takes an approved organization down or restores it, and
- * merges a duplicate into the one to keep. A merged one only says where it went.
+ * merges a duplicate into the one to keep, and writes the offers it gives. A merged one only says
+ * where it went.
  */
-function AdminOrganizationPage({ detail, tab, page, size, sort }: AdminOrganizationPageProps) {
+function AdminOrganizationPage({
+  detail,
+  tab,
+  page,
+  size,
+  sort,
+  offers,
+  offerCount,
+}: AdminOrganizationPageProps) {
   const t = useTranslations("Admin.organizations.detail");
   const s = useTranslations("Organization.status");
   const typeName = useVocabulary("organizationType");
@@ -75,7 +89,7 @@ function AdminOrganizationPage({ detail, tab, page, size, sort }: AdminOrganizat
   const tabs = adminOrganizationTabs.map((key) => ({
     key,
     label: t(`tabs.${key}`),
-    count: key === "members" ? detail.members.length : undefined,
+    count: key === "members" ? detail.members.length : key === "offers" ? offerCount : undefined,
   }));
   const kind = [
     typeName(organization.type),
@@ -222,6 +236,8 @@ function AdminOrganizationPage({ detail, tab, page, size, sort }: AdminOrganizat
       ) : tab === "profile" ? (
         // The key gives a saved organization a fresh editor, reading the new version.
         <OrganizationProfileEditor key={organization.version} organization={organization} admin />
+      ) : tab === "offers" ? (
+        offers
       ) : (
         <AdminMembers detail={detail} page={page} size={size} sort={sort} record={record} />
       )}

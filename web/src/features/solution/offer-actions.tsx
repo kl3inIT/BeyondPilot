@@ -1,5 +1,6 @@
 "use client";
 
+import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -40,21 +41,29 @@ type Scope = {
 };
 
 /**
- * The action that adds an offer of the caller's organization. An operator writes one on the record
- * of a solution, where the organization that gives it is known.
+ * The action that adds an offer: of the caller's organization, or, given one, of that organization
+ * as an operator writes it on its record.
  */
-function CreateOffer() {
+function CreateOffer({ organizationId }: { organizationId?: string }) {
   const t = useTranslations("Solution.offers.manage");
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const own = organizationId === undefined;
 
   return (
     <>
       {/* An organization's page words its actions alone, as Add a solution above this one. */}
-      <Button size="lg" onClick={() => setOpen(true)}>
+      <Button size="lg" prominence={own ? undefined : "secondary"} onClick={() => setOpen(true)}>
+        {!own && <PlusIcon aria-hidden="true" />}
         {t("create")}
       </Button>
-      <OfferDialog open={open} onOpenChange={setOpen} own onSaved={() => router.refresh()} />
+      <OfferDialog
+        open={open}
+        onOpenChange={setOpen}
+        own={own}
+        organizationId={organizationId}
+        onSaved={() => router.refresh()}
+      />
     </>
   );
 }

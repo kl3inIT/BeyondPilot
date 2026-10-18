@@ -2,7 +2,7 @@ import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } fro
 import { pageSize } from "@/lib/page-size";
 
 /** The tabs of an organization's record. */
-export const adminOrganizationTabs = ["profile", "members"] as const;
+export const adminOrganizationTabs = ["profile", "members", "offers"] as const;
 
 export type AdminOrganizationTab = (typeof adminOrganizationTabs)[number];
 

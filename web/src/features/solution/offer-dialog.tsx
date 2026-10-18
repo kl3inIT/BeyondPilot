@@ -30,7 +30,7 @@ type OfferDialogProps = {
    * Without it an operator writes, and says whether GenAI Fund arranged the offer.
    */
   own?: boolean;
-  /** The organization an operator's new offer is given by: the one of the solution it is written on. */
+  /** The organization an operator's new offer is given by: the one whose record it is written on. */
   organizationId?: string;
   /** Called with the offer as the backend keeps it. */
   onSaved: (offer: Pick<Offer, "id" | "title" | "url" | "fromGenAiFund" | "closed">) => void;
@@ -56,12 +56,12 @@ function OfferDialog({
   const schema = offerSchema(say, t("urlInvalid")).extend({ fromGenAiFund: z.boolean() });
 
   const form = useAppForm({
-    // The offer as the list holds it now, which each opening starts from. What an operator writes
-    // is mostly what GenAI Fund arranged with a partner, so a new one starts marked.
+    // The offer as the list holds it now, which each opening starts from. GenAI Fund's mark says it
+    // vouches for the offer, so a new one is marked only when an operator says so.
     defaultValues: {
       title: offer?.title ?? "",
       url: offer?.url ?? "",
-      fromGenAiFund: offer?.fromGenAiFund ?? !own,
+      fromGenAiFund: offer?.fromGenAiFund ?? false,
     },
     validationLogic: revalidateLogic(),
     validators: { onDynamic: schema },

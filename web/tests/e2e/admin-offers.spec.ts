@@ -7,6 +7,7 @@ import { signInAs } from "./session";
 import { serveStoredImages } from "./stored-files";
 
 const policyChat = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e03";
+const pocketPolicy = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03";
 
 const offersPath = "**/api/solution/admin/offers**";
 
@@ -185,21 +186,21 @@ test.describe("admin offers", () => {
     );
   });
 
-  test("an operator writes an offer for the organization of a solution, one line and an https address, and a title another offer has is said under the field", async ({
+  test("an operator writes an offer on the record of the organization that gives it, one line and an https address, and a title another offer has is said under the field", async ({
     page,
     context,
     baseURL,
   }) => {
     await signInAs(context, "operator", baseURL!);
-    await answerOfferList(page);
-    // A new offer is written on the record of a solution, for the organization that gives it.
+    // A new offer is written on the record of its organization, whose tab lists the offers it gives.
     await page.goto("/admin/offers");
     await expect(page.getByRole("button", { name: "New offer" })).toHaveCount(0);
-    await page.goto(`/admin/solutions/${policyChat}`);
-    await page
-      .getByRole("form", { name: "Offers" })
-      .getByRole("button", { name: "New offer…" })
-      .click();
+    await page.goto(`/admin/organizations/${pocketPolicy}?tab=offers`);
+    const tab = page.getByRole("region", { name: "Offers" });
+    await expect(
+      tab.getByText("Ten hours of onboarding support").filter({ visible: true }),
+    ).toHaveCount(1);
+    await tab.getByRole("button", { name: "New offer" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading", { name: "New offer" })).toBeVisible();
 
@@ -212,7 +213,7 @@ test.describe("admin offers", () => {
     );
     await dialog.getByRole("button", { name: "Add offer" }).click();
     await expect(dialog.getByText("Fill this in.")).toHaveCount(2);
-    await dialog.getByLabel("Offer", { exact: true }).fill("$1,000 in cloud credits");
+    await dialog.getByRole("textbox", { name: "Offer" }).fill("$1,000 in cloud credits");
     await dialog.getByLabel("Link").fill("http://offers.example/plain");
     await dialog.getByRole("button", { name: "Add offer" }).click();
     await expect(dialog.getByText("Enter a full address that starts with https://.")).toBeVisible();
@@ -220,6 +221,11 @@ test.describe("admin offers", () => {
     // Away from the button just pressed, so the page is read at rest and not under the pointer.
     await page.mouse.move(0, 0);
     await expectNoSeriousA11yViolations(page);
+
+    // GenAI Fund's mark is set on purpose, never by default.
+    const mark = dialog.getByRole("checkbox", { name: /GenAI Fund agreed this offer/ });
+    await expect(mark).not.toBeChecked();
+    await mark.click();
 
     // The backend keeps titles apart; its refusal is said where the title is typed, never as its own text.
     await dialog.getByLabel("Link").fill("https://offers.example/again");
@@ -230,8 +236,7 @@ test.describe("admin offers", () => {
       {
         call: "POST /api/solution/admin/offers",
         body: {
-          // Pocket Policy, whose solution this is; what an operator writes starts marked as arranged.
-          organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+          organizationId: pocketPolicy,
           title: "$1,000 in cloud credits",
           url: "https://offers.example/again",
           fromGenAiFund: true,
@@ -261,10 +266,10 @@ test.describe("admin offers", () => {
       .click();
     await page.getByRole("menuitem", { name: "Edit…" }).click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByLabel("Offer", { exact: true })).toHaveValue(
+    await expect(dialog.getByRole("textbox", { name: "Offer" })).toHaveValue(
       "$1,000 in cloud credits",
     );
-    await dialog.getByLabel("Offer", { exact: true }).fill("$2,000 in cloud credits");
+    await dialog.getByRole("textbox", { name: "Offer" }).fill("$2,000 in cloud credits");
     await dialog.getByRole("button", { name: "Save" }).click();
 
     await expect(page.getByText("$2,000 in cloud credits saved.")).toBeVisible();

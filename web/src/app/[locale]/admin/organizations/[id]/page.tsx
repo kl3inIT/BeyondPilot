@@ -5,6 +5,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AdminOrganizationPage } from "@/features/organization/admin-organization-page";
 import { loadAdminOrganizationSearch } from "@/features/organization/admin-organization-search";
 import { readAdminOrganization } from "@/features/organization/organization-queries";
+import { AdminOrganizationOffers } from "@/features/solution/admin-organization-offers";
+import { readAdminOffers } from "@/features/solution/solution-queries";
 import { requireRole } from "@/lib/auth/session";
 import { siteRoutes, titleSuffix } from "@/lib/site";
 
@@ -31,10 +33,21 @@ export default async function AdminOrganizationRoute({
   setRequestLocale(locale);
   await requireRole("operator", `${siteRoutes.adminOrganizations}/${id}`);
   const { tab, page, size, sort } = await loadAdminOrganizationSearch(searchParams);
-  const detail = await readAdminOrganization(id);
+  const [detail, every] = await Promise.all([readAdminOrganization(id), readAdminOffers()]);
   if (!detail) {
     notFound();
   }
+  const offers = every.filter((offer) => offer.organizationId === id);
 
-  return <AdminOrganizationPage detail={detail} tab={tab} page={page} size={size} sort={sort} />;
+  return (
+    <AdminOrganizationPage
+      detail={detail}
+      tab={tab}
+      page={page}
+      size={size}
+      sort={sort}
+      offers={<AdminOrganizationOffers organizationId={id} offers={offers} />}
+      offerCount={offers.length}
+    />
+  );
 }

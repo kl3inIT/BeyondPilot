@@ -31,8 +31,8 @@ function matching(offers: AdminOffer[], { q, state }: AdminOffersSearch) {
 /**
  * Admin › Offers: what solutions come with, such as cloud credits, by the organization that gives
  * each, which only its solutions come with. An operator reads them here, corrects, closes and
- * deletes them, and marks the ones GenAI Fund arranged; a new one is written on the record of a
- * solution. A closed offer is chosen by no more solutions, and stays on those that come with it.
+ * deletes them, and marks the ones GenAI Fund arranged; a new one is written on the record of its
+ * organization. A closed offer is chosen by no more solutions, and stays on those that come with it.
  * Its record names them.
  */
 function AdminOffersPage({ offers, search }: { offers: AdminOffer[]; search: AdminOffersSearch }) {
