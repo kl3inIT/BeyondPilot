@@ -212,7 +212,7 @@ test.describe("admin offers", () => {
     );
     await dialog.getByRole("button", { name: "Add offer" }).click();
     await expect(dialog.getByText("Fill this in.")).toHaveCount(2);
-    await dialog.getByLabel("Offer").fill("$1,000 in cloud credits");
+    await dialog.getByLabel("Offer", { exact: true }).fill("$1,000 in cloud credits");
     await dialog.getByLabel("Link").fill("http://offers.example/plain");
     await dialog.getByRole("button", { name: "Add offer" }).click();
     await expect(dialog.getByText("Enter a full address that starts with https://.")).toBeVisible();
@@ -261,8 +261,10 @@ test.describe("admin offers", () => {
       .click();
     await page.getByRole("menuitem", { name: "Edit…" }).click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByLabel("Offer")).toHaveValue("$1,000 in cloud credits");
-    await dialog.getByLabel("Offer").fill("$2,000 in cloud credits");
+    await expect(dialog.getByLabel("Offer", { exact: true })).toHaveValue(
+      "$1,000 in cloud credits",
+    );
+    await dialog.getByLabel("Offer", { exact: true }).fill("$2,000 in cloud credits");
     await dialog.getByRole("button", { name: "Save" }).click();
 
     await expect(page.getByText("$2,000 in cloud credits saved.")).toBeVisible();
