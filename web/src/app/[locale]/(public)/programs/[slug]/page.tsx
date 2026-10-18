@@ -3,20 +3,26 @@ import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 
 import { contactRoute } from "@/features/messaging/messaging-search";
-import { customProgramPages } from "@/features/program/custom-pages";
+import { customProgramPages, customProgramShareImages } from "@/features/program/custom-pages";
 import { ProgramPage } from "@/features/program/program-page";
 import { readProgram } from "@/features/program/program-public-queries";
 import { getCurrentAccount } from "@/lib/auth/session";
+import { publicFileUrl } from "@/lib/storage/upload";
 
 export async function generateMetadata({
   params,
 }: PageProps<"/[locale]/programs/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const program = await readProgram(slug);
+  // A shared link previews with the program's own picture: its cover, else its written page's.
+  const image = program.coverFileId
+    ? publicFileUrl(program.coverFileId)
+    : customProgramShareImages[program.slug];
 
   return {
     title: `${program.name} · BeyondPilot`,
     description: program.summary ?? undefined,
+    openGraph: image ? { images: [{ url: image, alt: program.name }] } : undefined,
     // A draft is seen by operators only, and never indexed.
     robots: program.status === "draft" ? { index: false } : undefined,
   };
