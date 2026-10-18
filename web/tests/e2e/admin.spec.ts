@@ -132,7 +132,6 @@ test.describe("admin", () => {
       "Programs",
       "Use cases",
       "AI solutions",
-      "Offers",
       "AI talent",
       "Organizations",
       "Chat assignments",

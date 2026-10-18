@@ -9,7 +9,7 @@ import { siteRoutes, titleSuffix } from "@/lib/site";
 
 export async function generateMetadata({
   params,
-}: PageProps<"/[locale]/admin/offers/[id]">): Promise<Metadata> {
+}: PageProps<"/[locale]/admin/solutions/offers/[id]">): Promise<Metadata> {
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: "Admin.offers" });
 
@@ -24,7 +24,7 @@ export async function generateMetadata({
 
 export default async function AdminOfferRoute({
   params,
-}: PageProps<"/[locale]/admin/offers/[id]">) {
+}: PageProps<"/[locale]/admin/solutions/offers/[id]">) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   await requireRole("operator", `${siteRoutes.adminOffers}/${id}`);

@@ -35,6 +35,7 @@ import {
   type AdminSolutionsSearch,
 } from "./solutions-search";
 import { SolutionsToolbar } from "./solutions-toolbar";
+import { SolutionsAdminTabs } from "./solutions-admin-tabs";
 
 const address = createSerializer(adminSolutionsSearch);
 
@@ -139,7 +140,9 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
             <CreateAdminSolution />
           </div>
         }
-      />
+      >
+        <SolutionsAdminTabs current="solutions" />
+      </AdminPageHeader>
       <SolutionsToolbar list="admin" organizationOptions={solutions.organizations} />
 
       {/* Where the table is made to fit, the sender gives way first, then the organization joins */}

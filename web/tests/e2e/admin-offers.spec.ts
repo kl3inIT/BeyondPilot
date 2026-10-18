@@ -17,12 +17,12 @@ test.describe("admin offers", () => {
   test.use({ locale: "en-US" });
 
   test("nobody but an operator gets the list of offers", async ({ page, context, baseURL }) => {
-    const visitor = await page.request.get("/admin/offers", { maxRedirects: 0 });
+    const visitor = await page.request.get("/admin/solutions/offers", { maxRedirects: 0 });
     expect(visitor.status()).toBe(307);
-    expect(visitor.headers()["location"]).toBe("/sign-in?returnTo=%2Fadmin%2Foffers");
+    expect(visitor.headers()["location"]).toBe("/sign-in?returnTo=%2Fadmin%2Fsolutions%2Foffers");
 
     await signInAs(context, "unnamed", baseURL!);
-    expect((await page.goto("/admin/offers"))?.status()).toBe(404);
+    expect((await page.goto("/admin/solutions/offers"))?.status()).toBe(404);
   });
 
   test("an operator reads the offers, each with where it is claimed and how many solutions come with it", async ({
@@ -32,10 +32,10 @@ test.describe("admin offers", () => {
     isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
-    await page.goto("/admin/offers");
+    await page.goto("/admin/solutions/offers");
 
     if (!isMobile) {
-      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Offers");
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Solutions");
     }
     await expect(page.getByText("$1,000 in cloud credits").filter({ visible: true })).toHaveCount(
       1,
@@ -43,12 +43,18 @@ test.describe("admin offers", () => {
     await expect(
       page.getByRole("link", { name: "offers.example/cloud-credits" }).filter({ visible: true }),
     ).toHaveAttribute("href", "https://offers.example/cloud-credits");
-    // The sidebar leads here, beside the solutions the offers go with.
+    // A tab of AI solutions, beside the solutions the offers go with, which the sidebar marks.
+    const tabs = page.getByRole("main").getByRole("navigation", { name: "Solutions" });
+    await expect(tabs.getByRole("link")).toHaveText(["Solutions", "Offers"]);
+    await expect(tabs.getByRole("link", { name: "Offers" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
     if (!isMobile) {
       await expect(
         page
           .getByRole("navigation", { name: "Admin navigation" })
-          .getByRole("link", { name: "Offers" }),
+          .getByRole("link", { name: "AI solutions" }),
       ).toHaveAttribute("aria-current", "page");
     }
     await expectNoSeriousA11yViolations(page);
@@ -110,7 +116,7 @@ test.describe("admin offers", () => {
         closed: true,
       },
     );
-    await page.goto("/admin/offers");
+    await page.goto("/admin/solutions/offers");
     // Both offers are open to new solutions.
     await expect(page.getByText("Open", { exact: true }).filter({ visible: true })).toHaveCount(2);
 
@@ -143,12 +149,12 @@ test.describe("admin offers", () => {
     baseURL,
   }) => {
     await signInAs(context, "operator", baseURL!);
-    await page.goto("/admin/offers?state=closed");
+    await page.goto("/admin/solutions/offers?state=closed");
     // None of the stub's offers is closed.
     await expect(
       page.getByText("No offer matches the search.").filter({ visible: true }),
     ).toBeVisible();
-    await page.goto("/admin/offers?state=open&q=onboarding");
+    await page.goto("/admin/solutions/offers?state=open&q=onboarding");
     await expect(
       page.getByText("Ten hours of onboarding support").filter({ visible: true }),
     ).toHaveCount(1);
@@ -162,13 +168,13 @@ test.describe("admin offers", () => {
     isMobile,
   }) => {
     await signInAs(context, "operator", baseURL!);
-    await page.goto("/admin/offers");
+    await page.goto("/admin/solutions/offers");
     await page
       .getByRole("link", { name: "$1,000 in cloud credits" })
       .filter({ visible: true })
       .click();
 
-    await expect(page).toHaveURL(`/admin/offers/${cloudCredits.id}`);
+    await expect(page).toHaveURL(`/admin/solutions/offers/${cloudCredits.id}`);
     if (!isMobile) {
       await expect(page.getByRole("heading", { level: 1 })).toHaveText("$1,000 in cloud credits");
     }
@@ -181,9 +187,9 @@ test.describe("admin offers", () => {
     await expectNoSeriousA11yViolations(page);
 
     // An offer there is none of answers as a page that does not exist.
-    expect((await page.goto("/admin/offers/0ffe7a11-0000-4000-8000-0000000000ff"))?.status()).toBe(
-      404,
-    );
+    expect(
+      (await page.goto("/admin/solutions/offers/0ffe7a11-0000-4000-8000-0000000000ff"))?.status(),
+    ).toBe(404);
   });
 
   test("an operator writes an offer on the record of the organization that gives it, one line and an https address, and a title another offer has is said under the field", async ({
@@ -193,7 +199,7 @@ test.describe("admin offers", () => {
   }) => {
     await signInAs(context, "operator", baseURL!);
     // A new offer is written on the record of its organization, whose tab lists the offers it gives.
-    await page.goto("/admin/offers");
+    await page.goto("/admin/solutions/offers");
     await expect(page.getByRole("button", { name: "New offer" })).toHaveCount(0);
     await page.goto(`/admin/organizations/${pocketPolicy}?tab=offers`);
     const tab = page.getByRole("region", { name: "Offers" });
@@ -259,7 +265,7 @@ test.describe("admin offers", () => {
       version: 1,
       updatedAt: "2026-10-03T07:32:00Z",
     });
-    await page.goto("/admin/offers");
+    await page.goto("/admin/solutions/offers");
     await page
       .getByRole("button", { name: "Actions for $1,000 in cloud credits" })
       .filter({ visible: true })

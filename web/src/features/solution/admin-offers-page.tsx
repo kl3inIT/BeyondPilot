@@ -12,6 +12,7 @@ import { OfferRowMenu } from "./offer-actions";
 import { OfferAddress } from "./offer-address";
 import { OfferState } from "./offer-state";
 import { OfferTitle } from "./solution-offers";
+import { SolutionsAdminTabs } from "./solutions-admin-tabs";
 import type { AdminOffersSearch } from "./offers-search";
 import { OffersToolbar } from "./offers-toolbar";
 
@@ -29,7 +30,7 @@ function matching(offers: AdminOffer[], { q, state }: AdminOffersSearch) {
 }
 
 /**
- * Admin › Offers: what solutions come with, such as cloud credits, by the organization that gives
+ * Admin › AI solutions › Offers: what solutions come with, such as cloud credits, by the organization that gives
  * each, which only its solutions come with. An operator reads them here, corrects, closes and
  * deletes them, and marks the ones GenAI Fund arranged; a new one is written on the record of its
  * organization. A closed offer is chosen by no more solutions, and stays on those that come with it.
@@ -37,6 +38,7 @@ function matching(offers: AdminOffer[], { q, state }: AdminOffersSearch) {
  */
 function AdminOffersPage({ offers, search }: { offers: AdminOffer[]; search: AdminOffersSearch }) {
   const t = useTranslations("Admin.offers");
+  const solutions = useTranslations("Admin.solutions");
   // The words of a list of offers, which an organization's own list shares.
   const list = useTranslations("Solution.offers.manage");
   const locale = useLocale();
@@ -55,7 +57,9 @@ function AdminOffersPage({ offers, search }: { offers: AdminOffer[]; search: Adm
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <AdminPageHeader destination="offers" title={t("title")} />
+      <AdminPageHeader destination="solutions" title={solutions("title")}>
+        <SolutionsAdminTabs current="offers" />
+      </AdminPageHeader>
       <OffersToolbar />
 
       {/* Where the table is made to fit, the address joins the offer; on a phone it keeps its column. */}

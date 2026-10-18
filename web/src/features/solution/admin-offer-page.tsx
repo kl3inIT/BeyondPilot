@@ -21,7 +21,7 @@ const link =
   "rounded-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
 
 /**
- * Admin › Offers › one offer: what it says, the organization that gives it and whether GenAI Fund
+ * Admin › AI solutions › Offers › one offer: what it says, the organization that gives it and whether GenAI Fund
  * arranged it, whether it is open to new solutions, and the solutions that come with it, which keep
  * it when it is closed.
  */
