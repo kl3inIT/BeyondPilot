@@ -2906,7 +2906,7 @@ export const listAdminOffers = <ThrowOnError extends boolean = true>(options?: O
 });
 
 /**
- * Add an offer to the list solutions choose from
+ * Add an offer for the organization that gives it, which only its solutions come with
  */
 export const createOffer = <ThrowOnError extends boolean = true>(options: Options<CreateOfferData, ThrowOnError>): RequestResult<CreateOfferResponses, CreateOfferErrors, ThrowOnError> => (options.client ?? client).post<CreateOfferResponses, CreateOfferErrors, ThrowOnError>({
     security: [{
@@ -3138,7 +3138,7 @@ export const featureSolution = <ThrowOnError extends boolean = true>(options: Op
 });
 
 /**
- * Choose the offers a submitted solution comes with, from the list GenAI Fund keeps
+ * Choose the offers a submitted solution comes with, of those its organization gives
  */
 export const chooseSolutionOffers = <ThrowOnError extends boolean = true>(options: Options<ChooseSolutionOffersData, ThrowOnError>): RequestResult<ChooseSolutionOffersResponses, ChooseSolutionOffersErrors, ThrowOnError> => (options.client ?? client).put<ChooseSolutionOffersResponses, ChooseSolutionOffersErrors, ThrowOnError>({
     security: [{
@@ -3409,7 +3409,7 @@ export const withdrawCustomerDeployment = <ThrowOnError extends boolean = true>(
 });
 
 /**
- * The offers a solution may come with, by title: GenAI Fund's list and its organization's own
+ * The offers a solution may come with, by title: those its organization gives
  */
 export const listSolutionOffers = <ThrowOnError extends boolean = true>(options: Options<ListSolutionOffersData, ThrowOnError>): RequestResult<ListSolutionOffersResponses, ListSolutionOffersErrors, ThrowOnError> => (options.client ?? client).get<ListSolutionOffersResponses, ListSolutionOffersErrors, ThrowOnError>({
     security: [{
@@ -3439,7 +3439,7 @@ export const createOwnOffer = <ThrowOnError extends boolean = true>(options: Opt
 });
 
 /**
- * The offers the caller's organization wrote, by title
+ * The offers the caller's organization gives, by title
  */
 export const listOwnOffers = <ThrowOnError extends boolean = true>(options?: Options<ListOwnOffersData, ThrowOnError>): RequestResult<ListOwnOffersResponses, ListOwnOffersErrors, ThrowOnError> => (options?.client ?? client).get<ListOwnOffersResponses, ListOwnOffersErrors, ThrowOnError>({
     security: [{

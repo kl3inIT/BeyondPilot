@@ -74,10 +74,11 @@ function OfferCorner({ offers, className }: OfferCornerProps) {
 }
 
 /**
- * What an offer is called. One of GenAI Fund's list carries the mark the card gives to what GenAI
- * Fund says of a solution, with the words for those who do not see it; an organization's own has none.
+ * What an offer is called. One GenAI Fund arranged carries the mark the card gives to what GenAI
+ * Fund says of a solution, with the words for those who do not see it; one the organization wrote
+ * alone has none.
  */
-function OfferTitle({ offer }: { offer: PublicOffer }) {
+function OfferTitle({ offer }: { offer: Pick<PublicOffer, "title" | "fromGenAiFund"> }) {
   const t = useTranslations("Solution.offers");
 
   return (
@@ -207,4 +208,4 @@ function OfferPanel({ offers }: { offers: PublicOffer[] }) {
   );
 }
 
-export { OfferCorner, OfferLine, OfferPanel };
+export { OfferCorner, OfferLine, OfferPanel, OfferTitle };

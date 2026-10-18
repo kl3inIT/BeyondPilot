@@ -77,6 +77,28 @@ export type AddMatchingCandidate = {
 };
 
 /**
+ * A new offer an operator writes for the organization that gives it.
+ */
+export type AdminCreateOffer = {
+    /**
+     * Whether GenAI Fund arranged it with the organization, which its card marks.
+     */
+    fromGenAiFund: boolean;
+    /**
+     * The organization that gives it; only its solutions come with it.
+     */
+    organizationId: string;
+    /**
+     * The line that names it on a card.
+     */
+    title: string;
+    /**
+     * The https address where it is claimed.
+     */
+    url: string;
+};
+
+/**
  * An organization an operator creates for a company that is not here yet. It is approved from the start and has no member until someone accepts the invitation to own it, or claims it.
  */
 export type AdminCreateOrganization = {
@@ -130,22 +152,26 @@ export type AdminCreateSolution = {
 };
 
 /**
- * An offer as an operator reads it: GenAI Fund's, or an organization's own.
+ * An offer as an operator reads it, with the organization that gives it.
  */
 export type AdminOffer = {
     /**
      * True once it is closed to new solutions; the solutions that come with it keep it.
      */
     closed: boolean;
+    /**
+     * True when GenAI Fund arranged it with the organization, which its card marks.
+     */
+    fromGenAiFund: boolean;
     id: string;
     /**
-     * The organization that wrote it; null for an offer of GenAI Fund's list.
+     * The organization that gives it.
      */
-    organizationId?: string | null;
+    organizationId: string;
     /**
-     * The name of that organization; null for an offer of GenAI Fund's list.
+     * The name of that organization.
      */
-    organizationName?: string | null;
+    organizationName: string;
     /**
      * How many solutions come with it; it is deleted only when none does.
      */
@@ -397,6 +423,28 @@ export type AdminProgramSummary = {
     status: 'draft' | 'published';
     type: 'enterprise_challenge' | 'open_innovation_call' | 'accelerator' | 'hackathon' | 'buildathon' | 'grant' | 'venture_building' | 'pitch_competition' | 'event_series' | 'event';
     updatedAt: string;
+};
+
+/**
+ * An offer as an operator's form holds it.
+ */
+export type AdminSaveOffer = {
+    /**
+     * Whether GenAI Fund arranged it with the organization, which its card marks.
+     */
+    fromGenAiFund: boolean;
+    /**
+     * The line that names it on a card.
+     */
+    title: string;
+    /**
+     * The https address where it is claimed.
+     */
+    url: string;
+    /**
+     * The version the form read; a save is refused when the offer changed since.
+     */
+    version?: number | null;
 };
 
 /**
@@ -3391,7 +3439,7 @@ export type Offer = {
      */
     closed: boolean;
     /**
-     * True for an offer of GenAI Fund's list; false for one the organization wrote.
+     * True when GenAI Fund arranged it with the organization; false for one the organization wrote alone.
      */
     fromGenAiFund: boolean;
     id: string;
@@ -3612,13 +3660,17 @@ export type OrganizationSearch = {
 };
 
 /**
- * An offer an organization wrote for its solutions, as its members read it.
+ * An offer an organization gives with its solutions, as its members read it.
  */
 export type OwnOffer = {
     /**
      * True once it is closed to new solutions; the solutions that come with it keep it.
      */
     closed: boolean;
+    /**
+     * True when GenAI Fund arranged it, which only GenAI Fund then changes.
+     */
+    fromGenAiFund: boolean;
     id: string;
     /**
      * How many of the organization's solutions come with it; it is deleted only when none does.
@@ -4142,7 +4194,7 @@ export type PublicCustomerDeploymentList = {
  */
 export type PublicOffer = {
     /**
-     * True for an offer of GenAI Fund's list, which its card marks; false for one the solution's organization wrote.
+     * True when GenAI Fund arranged it with the solution's organization, which its card marks; false for one the organization wrote alone.
      */
     fromGenAiFund: boolean;
     /**
@@ -5664,7 +5716,7 @@ export type SaveSolution = {
     maturity?: 'idea' | 'prototype' | 'pilot' | 'production' | 'scaled';
     name: string;
     /**
-     * The offers it comes with, from the list GenAI Fund keeps; empty for none.
+     * The offers it comes with, of those its organization gives; empty for none.
      */
     offerIds: Array<string>;
     problemsSolved?: string | null;
@@ -5977,7 +6029,7 @@ export type SearchItem = {
  */
 export type SearchOffer = {
     /**
-     * True for an offer of GenAI Fund's list.
+     * True when GenAI Fund arranged it.
      */
     fromGenAiFund: boolean;
     title: string;
@@ -6186,7 +6238,7 @@ export type SetSemanticSearch = {
  */
 export type SetSolutionOffers = {
     /**
-     * Offers of the list GenAI Fund keeps; empty for none.
+     * Offers its organization gives; empty for none.
      */
     offerIds: Array<string>;
 };
@@ -14175,7 +14227,7 @@ export type ListAdminOffersResponses = {
 export type ListAdminOffersResponse = ListAdminOffersResponses[keyof ListAdminOffersResponses];
 
 export type CreateOfferData = {
-    body: SaveOffer;
+    body: AdminCreateOffer;
     path?: never;
     query?: never;
     url: '/api/solution/admin/offers';
@@ -14195,7 +14247,11 @@ export type CreateOfferErrors = {
      */
     403: Problem;
     /**
-     * Another offer reads the same.
+     * There is no such organization.
+     */
+    404: Problem;
+    /**
+     * Another offer of the organization reads the same.
      */
     409: Problem;
 };
@@ -14286,7 +14342,7 @@ export type GetAdminOfferResponses = {
 export type GetAdminOfferResponse = GetAdminOfferResponses[keyof GetAdminOfferResponses];
 
 export type SaveOfferData = {
-    body: SaveOffer;
+    body: AdminSaveOffer;
     path: {
         id: string;
     };
@@ -15682,7 +15738,7 @@ export type DeleteOwnOfferErrors = {
      */
     401: Problem;
     /**
-     * The caller belongs to no organization.
+     * The caller belongs to no organization, or GenAI Fund arranged the offer, which only it changes.
      */
     403: Problem;
     /**
@@ -15725,7 +15781,7 @@ export type SaveOwnOfferErrors = {
      */
     401: Problem;
     /**
-     * The caller belongs to no organization.
+     * The caller belongs to no organization, or GenAI Fund arranged the offer, which only it changes.
      */
     403: Problem;
     /**
@@ -15764,7 +15820,7 @@ export type SetOwnOfferClosedErrors = {
      */
     401: Problem;
     /**
-     * The caller belongs to no organization.
+     * The caller belongs to no organization, or GenAI Fund arranged the offer, which only it changes.
      */
     403: Problem;
     /**

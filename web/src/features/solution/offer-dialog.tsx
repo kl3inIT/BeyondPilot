@@ -2,6 +2,7 @@
 
 import { revalidateLogic } from "@tanstack/react-form";
 import { useTranslations } from "next-intl";
+import { z } from "zod";
 
 import { FormDialog } from "@/components/composites/form-dialog";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
@@ -23,42 +24,63 @@ type OfferDialogProps = {
   onOpenChange: (open: boolean) => void;
   /** The offer to change; none for a new one. */
   offer?: Pick<AdminOffer, "id" | "title" | "url" | "version"> &
-    Partial<Pick<AdminOffer, "organizationId" | "closed">>;
+    Partial<Pick<AdminOffer, "fromGenAiFund" | "closed">>;
   /**
    * True where a member writes an offer of their organization, which only its solutions come with.
-   * Without it the offer is of GenAI Fund's list, which an operator writes.
+   * Without it an operator writes, and says whether GenAI Fund arranged the offer.
    */
   own?: boolean;
+  /** The organization an operator's new offer is given by: the one whose record it is written on. */
+  organizationId?: string;
   /** Called with the offer as the backend keeps it. */
   onSaved: (offer: Pick<Offer, "id" | "title" | "url" | "fromGenAiFund" | "closed">) => void;
 };
 
 /**
- * An offer, new or changed: the line a card says and the address where it is claimed. An operator
- * writes GenAI Fund's list, a member the offers of their own organization. A change shows at once
- * on every solution that comes with the offer.
+ * An offer, new or changed: the line a card says and the address where it is claimed. A member
+ * writes the offers of their own organization; an operator writes them for any organization, and
+ * marks the ones GenAI Fund arranged with it, which then only GenAI Fund changes. A change shows at
+ * once on every solution that comes with the offer.
  */
-function OfferDialog({ open, onOpenChange, offer, own = false, onSaved }: OfferDialogProps) {
+function OfferDialog({
+  open,
+  onOpenChange,
+  offer,
+  own = false,
+  organizationId,
+  onSaved,
+}: OfferDialogProps) {
   const t = useTranslations("Solution.offers.form");
   const say = useTranslations("Form.errors");
   const notify = useNotify();
-  const schema = offerSchema(say, t("urlInvalid"));
+  const schema = offerSchema(say, t("urlInvalid")).extend({ fromGenAiFund: z.boolean() });
 
   const form = useAppForm({
-    // The offer as the list holds it now, which each opening starts from.
-    defaultValues: { title: offer?.title ?? "", url: offer?.url ?? "" },
+    // The offer as the list holds it now, which each opening starts from. GenAI Fund's mark says it
+    // vouches for the offer, so a new one is marked only when an operator says so.
+    defaultValues: {
+      title: offer?.title ?? "",
+      url: offer?.url ?? "",
+      fromGenAiFund: offer?.fromGenAiFund ?? false,
+    },
     validationLogic: revalidateLogic(),
     validators: { onDynamic: schema },
     onSubmit: async ({ value, formApi }) => {
       try {
-        const body = { ...schema.parse(value), version: offer?.version ?? null };
-        const { data } = offer
-          ? own
-            ? await saveOwnOffer({ path: { id: offer.id }, body })
-            : await saveOffer({ path: { id: offer.id }, body })
-          : own
-            ? await createOwnOffer({ body })
-            : await createOffer({ body });
+        const { title, url, fromGenAiFund } = schema.parse(value);
+        const version = offer?.version ?? null;
+        const { data } = own
+          ? offer
+            ? await saveOwnOffer({ path: { id: offer.id }, body: { title, url, version } })
+            : await createOwnOffer({ body: { title, url, version } })
+          : offer
+            ? await saveOffer({
+                path: { id: offer.id },
+                body: { title, url, fromGenAiFund, version },
+              })
+            : await createOffer({
+                body: { organizationId: organizationId ?? "", title, url, fromGenAiFund },
+              });
         notify.success(offer ? "Solution.offers.done.saved" : "Solution.offers.done.created", {
           name: data.title,
         });
@@ -66,7 +88,7 @@ function OfferDialog({ open, onOpenChange, offer, own = false, onSaved }: OfferD
           id: data.id,
           title: data.title,
           url: data.url,
-          fromGenAiFund: !own && !offer?.organizationId,
+          fromGenAiFund: own ? false : fromGenAiFund,
           closed: offer?.closed ?? false,
         });
         onOpenChange(false);
@@ -112,6 +134,11 @@ function OfferDialog({ open, onOpenChange, offer, own = false, onSaved }: OfferD
           />
         )}
       </form.AppField>
+      {!own && (
+        <form.AppField name="fromGenAiFund">
+          {(field) => <field.CheckboxField label={t("fromGenAiFund")} />}
+        </form.AppField>
+      )}
     </FormDialog>
   );
 }

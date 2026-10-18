@@ -4,16 +4,17 @@ import java.time.Instant;
 import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.jspecify.annotations.Nullable;
 
-@Schema(name = "AdminOffer", description = "An offer as an operator reads it: GenAI Fund's, or an organization's own.")
+@Schema(name = "AdminOffer", description = "An offer as an operator reads it, with the organization that gives it.")
 public record AdminOfferResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String title,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String url,
-		@Schema(types = { "string", "null" }, format = "uuid",
-				description = "The organization that wrote it; null for an offer of GenAI Fund's list.") @Nullable UUID organizationId,
-		@Schema(types = { "string", "null" },
-				description = "The name of that organization; null for an offer of GenAI Fund's list.") @Nullable String organizationName,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The organization that gives it.") UUID organizationId,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "The name of that organization.") String organizationName,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "True when GenAI Fund arranged it with the organization, which its card marks.") boolean fromGenAiFund,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "How many solutions come with it; it is deleted only when none does.") int solutions,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

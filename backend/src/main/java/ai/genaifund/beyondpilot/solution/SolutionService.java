@@ -139,7 +139,7 @@ public class SolutionService {
 	 * back waits for the owner to submit it again; a solution refused for good is not changed. A deck or an image the
 	 * solution stops naming is removed from
 	 * the store. A solution that was sent for review does not lose anything a review needs; one approved before a
-	 * logo and a cover were asked for may stay without them. The offers it comes with are those of GenAI Fund's list.
+	 * logo and a cover were asked for may stay without them. The offers it comes with are its organization's.
 	 * @throws SolutionException when the caller is not a member, the organization has no such
 	 * solution, it changed since the screen read it, a deck or an image it names is not a stored file the caller
 	 * may give it, or an offer it names is not in the list

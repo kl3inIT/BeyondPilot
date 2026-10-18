@@ -7,5 +7,5 @@ public record SearchOffer(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) S
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The https address where it is claimed.") String url,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "True for an offer of GenAI Fund's list.") boolean fromGenAiFund) {
+				description = "True when GenAI Fund arranged it.") boolean fromGenAiFund) {
 }

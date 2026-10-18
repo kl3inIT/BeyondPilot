@@ -8,6 +8,7 @@ import type { OwnOffer } from "@/lib/api/generated";
 
 import { CreateOffer, OfferRowMenu } from "./offer-actions";
 import { OfferState } from "./offer-state";
+import { OfferTitle } from "./solution-offers";
 
 type OrganizationOffersProps = {
   offers: OwnOffer[];
@@ -16,9 +17,10 @@ type OrganizationOffersProps = {
 };
 
 /**
- * My organization › Solutions › Offers: what the organization wrote for its solutions to come with,
- * such as a pilot package. An offer is written here or while a solution is edited, chosen on the
- * solutions it goes with, and deleted once none comes with it.
+ * My organization › Solutions › Offers: what the organization gives with its solutions, such as a
+ * pilot package. An offer is written here or while a solution is edited, chosen on the solutions it
+ * goes with, and deleted once none comes with it. One GenAI Fund arranged carries its mark and is
+ * GenAI Fund's to change, so it has no actions here.
  */
 function OrganizationOffers({ offers, editable }: OrganizationOffersProps) {
   const t = useTranslations("Solution.offers.manage");
@@ -39,7 +41,7 @@ function OrganizationOffers({ offers, editable }: OrganizationOffersProps) {
       id="offers-list"
       title={t("title")}
       summary={offers.length > 0 ? String(offers.length) : undefined}
-      action={editable && <CreateOffer own />}
+      action={editable && <CreateOffer />}
     >
       {offers.length === 0 ? (
         <div className="rounded-lg border bg-background">
@@ -70,11 +72,15 @@ function OrganizationOffers({ offers, editable }: OrganizationOffersProps) {
           rows={offers.map((offer) => ({
             id: offer.id,
             cells: {
-              title: <span className="truncate font-medium">{offer.title}</span>,
+              title: (
+                <span className="truncate font-medium">
+                  <OfferTitle offer={offer} />
+                </span>
+              ),
               state: <OfferState closed={offer.closed} />,
               url: address(offer.url),
               solutions: offer.solutions,
-              actions: (
+              actions: offer.fromGenAiFund ? null : (
                 <div className="flex justify-end">
                   <OfferRowMenu offer={offer} own />
                 </div>

@@ -7,6 +7,7 @@ import { signInAs } from "./session";
 import { serveStoredImages } from "./stored-files";
 
 const policyChat = "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e03";
+const pocketPolicy = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03";
 
 const offersPath = "**/api/solution/admin/offers**";
 
@@ -100,9 +101,10 @@ test.describe("admin offers", () => {
         id: cloudCredits.id,
         title: cloudCredits.title,
         url: cloudCredits.url,
-        organizationId: null,
-        organizationName: null,
-        solutions: 2,
+        organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+        organizationName: "Pocket Policy",
+        fromGenAiFund: true,
+        solutions: 1,
         version: 1,
         updatedAt: "2026-10-03T07:32:00Z",
         closed: true,
@@ -174,7 +176,8 @@ test.describe("admin offers", () => {
     await expect(
       page.getByRole("link", { name: "Policy Chat" }).filter({ visible: true }),
     ).toHaveAttribute("href", `/admin/solutions/ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e03`);
-    await expect(page.getByText("Lumen Health").filter({ visible: true })).toBeVisible();
+    await expect(page.getByText("Pocket Policy").filter({ visible: true }).first()).toBeVisible();
+    await expect(page.getByText("From GenAI Fund", { exact: true })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
 
     // An offer there is none of answers as a page that does not exist.
@@ -183,14 +186,21 @@ test.describe("admin offers", () => {
     );
   });
 
-  test("an offer is one line and an https address, and a title another offer has is said under the field", async ({
+  test("an operator writes an offer on the record of the organization that gives it, one line and an https address, and a title another offer has is said under the field", async ({
     page,
     context,
     baseURL,
   }) => {
     await signInAs(context, "operator", baseURL!);
+    // A new offer is written on the record of its organization, whose tab lists the offers it gives.
     await page.goto("/admin/offers");
-    await page.getByRole("button", { name: "New offer" }).click();
+    await expect(page.getByRole("button", { name: "New offer" })).toHaveCount(0);
+    await page.goto(`/admin/organizations/${pocketPolicy}?tab=offers`);
+    const tab = page.getByRole("region", { name: "Offers" });
+    await expect(
+      tab.getByText("Ten hours of onboarding support").filter({ visible: true }),
+    ).toHaveCount(1);
+    await tab.getByRole("button", { name: "New offer" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading", { name: "New offer" })).toBeVisible();
 
@@ -203,7 +213,7 @@ test.describe("admin offers", () => {
     );
     await dialog.getByRole("button", { name: "Add offer" }).click();
     await expect(dialog.getByText("Fill this in.")).toHaveCount(2);
-    await dialog.getByLabel("Offer").fill("$1,000 in cloud credits");
+    await dialog.getByRole("textbox", { name: "Offer" }).fill("$1,000 in cloud credits");
     await dialog.getByLabel("Link").fill("http://offers.example/plain");
     await dialog.getByRole("button", { name: "Add offer" }).click();
     await expect(dialog.getByText("Enter a full address that starts with https://.")).toBeVisible();
@@ -211,6 +221,11 @@ test.describe("admin offers", () => {
     // Away from the button just pressed, so the page is read at rest and not under the pointer.
     await page.mouse.move(0, 0);
     await expectNoSeriousA11yViolations(page);
+
+    // GenAI Fund's mark is set on purpose, never by default.
+    const mark = dialog.getByRole("checkbox", { name: /GenAI Fund agreed this offer/ });
+    await expect(mark).not.toBeChecked();
+    await mark.click();
 
     // The backend keeps titles apart; its refusal is said where the title is typed, never as its own text.
     await dialog.getByLabel("Link").fill("https://offers.example/again");
@@ -221,9 +236,10 @@ test.describe("admin offers", () => {
       {
         call: "POST /api/solution/admin/offers",
         body: {
+          organizationId: pocketPolicy,
           title: "$1,000 in cloud credits",
           url: "https://offers.example/again",
-          version: null,
+          fromGenAiFund: true,
         },
       },
     ]);
@@ -250,8 +266,10 @@ test.describe("admin offers", () => {
       .click();
     await page.getByRole("menuitem", { name: "Edit…" }).click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog.getByLabel("Offer")).toHaveValue("$1,000 in cloud credits");
-    await dialog.getByLabel("Offer").fill("$2,000 in cloud credits");
+    await expect(dialog.getByRole("textbox", { name: "Offer" })).toHaveValue(
+      "$1,000 in cloud credits",
+    );
+    await dialog.getByRole("textbox", { name: "Offer" }).fill("$2,000 in cloud credits");
     await dialog.getByRole("button", { name: "Save" }).click();
 
     await expect(page.getByText("$2,000 in cloud credits saved.")).toBeVisible();
@@ -261,6 +279,7 @@ test.describe("admin offers", () => {
         body: {
           title: "$2,000 in cloud credits",
           url: "https://offers.example/cloud-credits",
+          fromGenAiFund: true,
           version: 0,
         },
       },
@@ -287,7 +306,7 @@ test.describe("admin offers", () => {
     await expect(
       form.getByRole("button", { name: "Remove $1,000 in cloud credits" }),
     ).toBeVisible();
-    // An operator adds to the list from where the offers are chosen.
+    // An operator writes a new offer of the organization from where the offers are chosen.
     await expect(form.getByRole("button", { name: "New offer…" })).toBeVisible();
     await form.getByRole("button", { name: "Save offers" }).click();
 

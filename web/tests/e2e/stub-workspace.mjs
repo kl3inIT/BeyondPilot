@@ -402,15 +402,26 @@ export function answerWorkspace(url, session) {
     return role ? [200, { items: [] }] : refused(403, "USECASE_ENTERPRISE_REQUIRED");
   }
   if (pathname === "/api/solution/offers/mine") {
-    // One offer the organization wrote, which one of its solutions comes with, so it cannot be deleted.
+    // One offer GenAI Fund arranged with the organization, which only GenAI Fund changes, and one the
+    // organization wrote; one of its solutions comes with each, so neither can be deleted.
     return [
       200,
       role
         ? [
             {
+              id: "0ffe7a11-0000-4000-8000-000000000001",
+              title: "$1,000 in cloud credits",
+              url: "https://offers.example/cloud-credits",
+              fromGenAiFund: true,
+              solutions: 1,
+              version: 0,
+              closed: false,
+            },
+            {
               id: "0ffe7a11-0000-4000-8000-000000000002",
               title: "Ten hours of onboarding support",
               url: "https://offers.example/onboarding",
+              fromGenAiFund: false,
               solutions: 1,
               version: 0,
               closed: false,

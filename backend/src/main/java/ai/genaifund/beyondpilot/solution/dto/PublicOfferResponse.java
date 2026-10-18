@@ -9,6 +9,6 @@ public record PublicOfferResponse(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The https address where it is claimed.") String url,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "True for an offer of GenAI Fund's list, which its card marks; false for one the "
-						+ "solution's organization wrote.") boolean fromGenAiFund) {
+				description = "True when GenAI Fund arranged it with the solution's organization, which its card "
+						+ "marks; false for one the organization wrote alone.") boolean fromGenAiFund) {
 }

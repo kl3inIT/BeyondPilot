@@ -365,10 +365,11 @@ public class SolutionAdministration {
 	}
 
 	/**
-	 * Chooses the offers a solution that was sent for review comes with, from the list GenAI Fund keeps. Its owners
+	 * Chooses the offers a solution that was sent for review comes with, of those its organization gives. Its owners
 	 * choose them in their editor; an operator does it here for a solution whose owners do not.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws SolutionException when no submitted solution has this identifier, or an offer named is not in the list
+	 * @throws SolutionException when no submitted solution has this identifier, or an offer named is not its
+	 * organization's
 	 */
 	@Transactional
 	public void offer(Actor actor, UUID id, SolutionOffersRequest request) {

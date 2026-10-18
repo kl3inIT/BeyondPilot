@@ -11,7 +11,7 @@ public record OfferResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED)
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The https address where it is claimed.") String url,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "True for an offer of GenAI Fund's list; false for one the organization wrote.") boolean fromGenAiFund,
+				description = "True when GenAI Fund arranged it with the organization; false for one the organization wrote alone.") boolean fromGenAiFund,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "True once it is closed to new solutions; the solutions that come with it keep it.") boolean closed) {
 }

@@ -10,6 +10,6 @@ import jakarta.validation.constraints.Size;
 @Schema(name = "SetSolutionOffers", description = "The offers a solution comes with, as an operator chooses them.")
 public record SolutionOffersRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Offers of the list GenAI Fund keeps; empty for none.") @NotNull @Size(
+				description = "Offers its organization gives; empty for none.") @NotNull @Size(
 						max = SolutionCodes.MAX_OFFERS) List<@NotNull UUID> offerIds) {
 }

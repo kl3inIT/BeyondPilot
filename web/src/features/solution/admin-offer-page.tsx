@@ -5,6 +5,7 @@ import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { DetailList } from "@/components/composites/detail-list";
 import { ReviewStatus, reviewState } from "@/components/composites/review-status";
+import { Status } from "@/components/composites/status";
 import { useFormatter } from "@/i18n/format";
 import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { Link } from "@/i18n/navigation";
@@ -20,20 +21,21 @@ const link =
   "rounded-sm outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50";
 
 /**
- * Admin › Offers › one offer: what it says and who wrote it, whether it is open to new solutions,
- * and the solutions that come with it, which keep it when it is closed.
+ * Admin › Offers › one offer: what it says, the organization that gives it and whether GenAI Fund
+ * arranged it, whether it is open to new solutions, and the solutions that come with it, which keep
+ * it when it is closed.
  */
 function AdminOfferPage({ detail }: { detail: AdminOfferDetail }) {
-  const t = useTranslations("Admin.offers");
   const page = useTranslations("Admin.offers.detail");
   const list = useTranslations("Solution.offers.manage");
+  const offers = useTranslations("Solution.offers");
   const status = useVocabulary("reviewStatus");
   const format = useFormatter();
   const locale = useLocale();
   const { offer, solutionList } = detail;
   const day = (value: string) => format.dateTime(new Date(value), { dateStyle: "medium" });
   const facts = [
-    [page("fields.writer"), offer.organizationName ?? t("genAiFund")],
+    [page("fields.writer"), offer.organizationName],
     [page("fields.address"), <OfferAddress key="url" url={offer.url} />],
     [page("fields.created"), day(detail.createdAt)],
     [page("fields.updated"), day(offer.updatedAt)],
@@ -52,7 +54,12 @@ function AdminOfferPage({ detail }: { detail: AdminOfferDetail }) {
       <AdminPageHeader
         back={{ href: siteRoutes.adminOffers, label: page("back") }}
         title={offer.title}
-        badges={<OfferState closed={offer.closed} />}
+        badges={
+          <>
+            <OfferState closed={offer.closed} />
+            {offer.fromGenAiFund && <Status appearance="pill">{offers("fromGenAiFund")}</Status>}
+          </>
+        }
         actions={<CloseOffer offer={offer} own={false} />}
       />
 
