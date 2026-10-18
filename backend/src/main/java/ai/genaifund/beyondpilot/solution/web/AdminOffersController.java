@@ -6,9 +6,10 @@ import java.util.UUID;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.solution.SolutionOffers;
+import ai.genaifund.beyondpilot.solution.dto.AdminCreateOfferRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminOfferDetailResponse;
 import ai.genaifund.beyondpilot.solution.dto.AdminOfferResponse;
-import ai.genaifund.beyondpilot.solution.dto.SaveOfferRequest;
+import ai.genaifund.beyondpilot.solution.dto.AdminSaveOfferRequest;
 import ai.genaifund.beyondpilot.solution.dto.SetOfferClosedRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The list of offers GenAI Fund keeps, which solutions choose from. */
+/** Every organization's offers, which operators write for an organization and mark when GenAI Fund arranged one. */
 @RestController
 @RequestMapping("/api/solution/admin/offers")
 @Tag(name = "Solution administration", description = "The solutions operators review.")
@@ -63,14 +64,17 @@ class AdminOffersController {
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	@Operation(operationId = "createOffer", summary = "Add an offer to the list solutions choose from",
+	@Operation(operationId = "createOffer",
+			summary = "Add an offer for the organization that gives it, which only its solutions come with",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "201", description = "The offer.")
 	@ApiResponse(responseCode = "400", description = NOT_VALID,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "Another offer reads the same.",
+	@ApiResponse(responseCode = "404", description = "There is no such organization.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	AdminOfferResponse create(@CurrentActor Actor actor, @Valid @RequestBody SaveOfferRequest request) {
+	@ApiResponse(responseCode = "409", description = "Another offer of the organization reads the same.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	AdminOfferResponse create(@CurrentActor Actor actor, @Valid @RequestBody AdminCreateOfferRequest request) {
 		return offers.create(actor, request);
 	}
 
@@ -87,7 +91,7 @@ class AdminOffersController {
 	@ApiResponse(responseCode = "409", description = "The offer changed since it was read, or another reads the same.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	AdminOfferResponse save(@CurrentActor Actor actor, @PathVariable UUID id,
-			@Valid @RequestBody SaveOfferRequest request) {
+			@Valid @RequestBody AdminSaveOfferRequest request) {
 		return offers.save(actor, id, request);
 	}
 

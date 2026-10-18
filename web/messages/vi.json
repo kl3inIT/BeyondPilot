@@ -515,6 +515,8 @@
     "SOLUTION_DEPLOYMENT_NOT_WITHDRAWN": "Triển khai khách hàng này đã trở lại trên giải pháp.",
     "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Có người vừa lưu triển khai khách hàng này. Hãy tải lại trang rồi sửa lại.",
     "SOLUTION_OFFER_NOT_FOUND": "Ưu đãi này không còn tồn tại. Hãy tải lại trang.",
+    "SOLUTION_OFFER_ORGANIZATION_NOT_FOUND": "Tổ chức này không còn tồn tại. Hãy tải lại trang.",
+    "SOLUTION_OFFER_ARRANGED": "GenAI Fund đã thỏa thuận ưu đãi này, nên chỉ GenAI Fund thay đổi được.",
     "SOLUTION_OFFER_TITLE_TAKEN": "Đã có một ưu đãi khác ghi giống hệt.",
     "SOLUTION_OFFER_IN_USE": "Vẫn còn giải pháp đi kèm ưu đãi này. Hãy gỡ ưu đãi khỏi các giải pháp đó trước.",
     "SOLUTION_OFFER_CHANGED_MEANWHILE": "Có người vừa lưu ưu đãi này. Hãy tải lại trang rồi sửa lại.",
@@ -1900,7 +1902,7 @@
         "title": "Ưu đãi",
         "lead": "Những gì đi kèm giải pháp, hiện trên thẻ và trang của nó. Chủ giải pháp cũng chọn được trong trình soạn.",
         "field": "Ưu đãi",
-        "hint": "Tối đa {max}, từ danh sách ưu đãi.",
+        "hint": "Tối đa {max}, từ các ưu đãi của tổ chức sở hữu giải pháp.",
         "save": "Lưu ưu đãi",
         "saved": "Đã lưu ưu đãi cho {name}."
       },
@@ -1911,9 +1913,8 @@
     "offers": {
       "metaTitle": "Ưu đãi · BeyondPilot",
       "title": "Ưu đãi",
-      "genAiFund": "GenAI Fund",
       "columns": {
-        "writer": "Người tạo",
+        "writer": "Tổ chức",
         "state": "Trạng thái"
       },
       "filters": {
@@ -1924,10 +1925,11 @@
         }
       },
       "noMatch": "Không có ưu đãi nào khớp với tìm kiếm.",
+      "empty": "Ưu đãi được viết ở hồ sơ của một giải pháp, hoặc do tổ chức viết cho giải pháp của mình.",
       "detail": {
         "back": "Ưu đãi",
         "fields": {
-          "writer": "Người tạo",
+          "writer": "Tổ chức cung cấp",
           "address": "Nhận tại",
           "created": "Ngày tạo",
           "updated": "Sửa lần cuối"
@@ -4697,6 +4699,7 @@
         "titleTaken": "Đã có một ưu đãi khác ghi giống hệt.",
         "url": "Liên kết",
         "urlInvalid": "Hãy nhập địa chỉ đầy đủ, bắt đầu bằng https://.",
+        "fromGenAiFund": "GenAI Fund đã thỏa thuận ưu đãi này với tổ chức",
         "cancel": "Hủy",
         "create": "Thêm ưu đãi",
         "save": "Lưu"
@@ -4733,7 +4736,6 @@
         },
         "empty": {
           "title": "Chưa có ưu đãi nào",
-          "description": "Thêm những gì đi kèm giải pháp, rồi chọn ưu đãi đó ở giải pháp.",
           "own": "Viết những gì đi kèm giải pháp của bạn, ví dụ gói pilot, rồi chọn ưu đãi đó ở giải pháp."
         },
         "confirmDelete": {
@@ -5025,7 +5027,7 @@
         "builtWithPlaceholder": "Thêm mô hình, công cụ hoặc framework",
         "builtWithHint": "Nhấn Enter sau mỗi mục, tối đa {max}.",
         "offers": "Ưu đãi",
-        "offersHint": "Những gì khách hàng nhận kèm, ví dụ credit cloud. Chọn tối đa {max}: từ danh sách của GenAI Fund, hoặc ưu đãi bạn tự viết cho tổ chức.",
+        "offersHint": "Những gì khách hàng nhận kèm, ví dụ credit cloud. Chọn tối đa {max} ưu đãi của tổ chức bạn, hoặc viết ưu đãi mới.",
         "removeTag": "Gỡ {name}",
         "industries": "Ngành",
         "industriesPlaceholder": "Thêm ngành",

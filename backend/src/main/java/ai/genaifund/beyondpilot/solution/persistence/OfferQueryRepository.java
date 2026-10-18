@@ -21,7 +21,7 @@ import org.springframework.stereotype.Repository;
 public class OfferQueryRepository {
 
 	private static final String ROW = """
-			select id, organization_id, title, url, version, updated_at, closed_at,
+			select id, organization_id, title, url, from_genai_fund, version, updated_at, closed_at,
 			       (select count(*) from solution_offer so where so.offer_id = offer.id) as solutions
 			from offer
 			""";
@@ -34,10 +34,11 @@ public class OfferQueryRepository {
 
 	/**
 	 * One offer, with how many solutions come with it.
-	 * @param organizationId the organization that wrote it; null for an offer of GenAI Fund's list
+	 * @param organizationId the organization that gives it
+	 * @param fromGenAiFund whether GenAI Fund arranged it
 	 */
-	public record Row(UUID id, @Nullable UUID organizationId, String title, String url, int solutions, long version,
-			Instant updatedAt, boolean closed) {
+	public record Row(UUID id, UUID organizationId, String title, String url, boolean fromGenAiFund, int solutions,
+			long version, Instant updatedAt, boolean closed) {
 	}
 
 	/** A solution that comes with an offer, as the operators' record of the offer lists it. */
@@ -46,24 +47,23 @@ public class OfferQueryRepository {
 	}
 
 	/** An offer as one solution comes with it. */
-	public record Attached(UUID solutionId, UUID id, @Nullable UUID organizationId, String title, String url,
-			boolean closed) {
+	public record Attached(UUID solutionId, UUID id, String title, String url, boolean fromGenAiFund, boolean closed) {
 	}
 
-	/** Every offer: GenAI Fund's first, then each organization's, by title. */
+	/** Every offer, each organization's together, by title. */
 	public List<Row> all() {
-		return jdbc.sql(ROW + "order by organization_id nulls first, lower(title), id")
+		return jdbc.sql(ROW + "order by organization_id, lower(title), id")
 			.query(OfferQueryRepository::row)
 			.list();
 	}
 
 	/**
-	 * The offers the solution may come with, by title: the open ones of GenAI Fund's list and of the organization's own,
-	 * and a closed one the solution already comes with, which it keeps.
+	 * The offers the solution may come with, by title: the open ones of its organization, and a closed one the solution
+	 * already comes with, which it keeps.
 	 */
 	public List<Row> availableTo(UUID organizationId, UUID solutionId) {
 		return jdbc.sql(ROW + """
-				where (organization_id is null or organization_id = :organizationId)
+				where organization_id = :organizationId
 				  and (closed_at is null or exists (
 				         select 1 from solution_offer so where so.offer_id = offer.id and so.solution_id = :solutionId))
 				order by lower(title), id
@@ -74,7 +74,7 @@ public class OfferQueryRepository {
 			.list();
 	}
 
-	/** The offers an organization wrote, by title. */
+	/** The offers an organization gives, by title. */
 	public List<Row> writtenBy(UUID organizationId) {
 		return jdbc.sql(ROW + "where organization_id = :organizationId order by lower(title), id")
 			.param("organizationId", organizationId)
@@ -105,7 +105,7 @@ public class OfferQueryRepository {
 			return List.of();
 		}
 		return jdbc.sql("""
-				select so.solution_id, o.id, o.organization_id, o.title, o.url, o.closed_at
+				select so.solution_id, o.id, o.title, o.url, o.from_genai_fund, o.closed_at
 				from solution_offer so
 				join offer o on o.id = so.offer_id
 				where so.solution_id = any(cast(:solutionIds as uuid[]))
@@ -115,8 +115,8 @@ public class OfferQueryRepository {
 			.param("solutionIds", solutionIds.stream().map(UUID::toString).collect(Collectors.joining(",", "{", "}")),
 					Types.VARCHAR)
 			.query((row, index) -> new Attached(row.getObject("solution_id", UUID.class),
-					row.getObject("id", UUID.class), row.getObject("organization_id", UUID.class),
-					row.getString("title"), row.getString("url"), row.getTimestamp("closed_at") != null))
+					row.getObject("id", UUID.class), row.getString("title"), row.getString("url"),
+					row.getBoolean("from_genai_fund"), row.getTimestamp("closed_at") != null))
 			.list();
 	}
 
@@ -132,7 +132,8 @@ public class OfferQueryRepository {
 
 	private static Row row(ResultSet row, int index) throws SQLException {
 		return new Row(row.getObject("id", UUID.class), row.getObject("organization_id", UUID.class),
-				row.getString("title"), row.getString("url"), row.getInt("solutions"), row.getLong("version"),
+				row.getString("title"), row.getString("url"), row.getBoolean("from_genai_fund"), row.getInt("solutions"),
+				row.getLong("version"),
 				row.getTimestamp("updated_at").toInstant(), row.getTimestamp("closed_at") != null);
 	}
 }

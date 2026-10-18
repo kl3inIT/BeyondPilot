@@ -52,7 +52,7 @@ class SolutionOffersController {
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listSolutionOffers",
-			summary = "The offers a solution may come with, by title: GenAI Fund's list and its organization's own",
+			summary = "The offers a solution may come with, by title: those its organization gives",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The offers, by title.")
 	@ApiResponse(responseCode = "404", description = "The caller writes no such solution.",
@@ -78,7 +78,7 @@ class SolutionOffersController {
 	}
 
 	@GetMapping(path = "/mine", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "listOwnOffers", summary = "The offers the caller's organization wrote, by title",
+	@Operation(operationId = "listOwnOffers", summary = "The offers the caller's organization gives, by title",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The offers; none for a caller who belongs to no organization.")
 	List<OwnOfferResponse> mine(@CurrentActor Actor actor) {
@@ -93,7 +93,8 @@ class SolutionOffersController {
 	@ApiResponse(responseCode = "200", description = "The offer as saved, with its new version.")
 	@ApiResponse(responseCode = "400", description = "The title is blank or too long, or the address is not an https one.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "403", description = "The caller belongs to no organization.",
+	@ApiResponse(responseCode = "403",
+			description = "The caller belongs to no organization, or GenAI Fund arranged the offer, which only it changes.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "The caller's organization wrote no such offer.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
@@ -110,7 +111,8 @@ class SolutionOffersController {
 			summary = "Close an offer of the caller's organization to new solutions, or open it again",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The offer as saved, with its new version.")
-	@ApiResponse(responseCode = "403", description = "The caller belongs to no organization.",
+	@ApiResponse(responseCode = "403",
+			description = "The caller belongs to no organization, or GenAI Fund arranged the offer, which only it changes.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "The caller's organization wrote no such offer.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
@@ -127,7 +129,8 @@ class SolutionOffersController {
 			summary = "Delete an offer of the caller's organization no solution comes with",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "204", description = "The offer is gone.", content = @Content)
-	@ApiResponse(responseCode = "403", description = "The caller belongs to no organization.",
+	@ApiResponse(responseCode = "403",
+			description = "The caller belongs to no organization, or GenAI Fund arranged the offer, which only it changes.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "The caller's organization wrote no such offer.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))

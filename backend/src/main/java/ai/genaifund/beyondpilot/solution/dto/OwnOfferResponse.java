@@ -4,10 +4,12 @@ import java.util.UUID;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(name = "OwnOffer", description = "An offer an organization wrote for its solutions, as its members read it.")
+@Schema(name = "OwnOffer", description = "An offer an organization gives with its solutions, as its members read it.")
 public record OwnOfferResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID id,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String title,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String url,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
+				description = "True when GenAI Fund arranged it, which only GenAI Fund then changes.") boolean fromGenAiFund,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "How many of the organization's solutions come with it; it is deleted only when none does.") int solutions,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

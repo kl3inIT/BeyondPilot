@@ -527,14 +527,14 @@ function queueOf(waiting) {
  * nothing when the path is neither.
  */
 export function answerReview(url, account) {
-  // The list of offers an operator keeps. The picker reads its own from the browser, which a test answers.
-  const listed = offers.map(({ fromGenAiFund, ...offer }, index) => ({
+  // Every organization's offers, which an operator reads. The picker reads its own from the browser,
+  // which a test answers. Both are Pocket Policy's: GenAI Fund arranged the first, the second it wrote.
+  const listed = offers.map((offer, index) => ({
     ...offer,
-    // The second is an organization's own.
-    organizationId: fromGenAiFund ? null : "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
-    organizationName: fromGenAiFund ? null : "Pocket Policy",
-    // The first goes with two solutions, so it cannot be deleted; the second with none.
-    solutions: index === 0 ? 2 : 0,
+    organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
+    organizationName: "Pocket Policy",
+    // The first goes with a solution, so it cannot be deleted; the second with none.
+    solutions: index === 0 ? 1 : 0,
     version: 0,
     updatedAt: day,
     closed: false,
@@ -568,15 +568,6 @@ export function answerReview(url, account) {
             organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
             organizationName: "Pocket Policy",
             status: "approved",
-            suspendedAt: null,
-          },
-          {
-            id: "ad5a7e96-4d42-4e97-9e99-4b7d0d0f1e04",
-            slug: "clinic-triage",
-            name: "Clinic Triage",
-            organizationId: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
-            organizationName: "Lumen Health",
-            status: "in_review",
             suspendedAt: null,
           },
         ],

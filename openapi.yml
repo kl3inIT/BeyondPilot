@@ -9324,7 +9324,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SaveOffer"
+              $ref: "#/components/schemas/AdminCreateOffer"
         required: true
       responses:
         "201":
@@ -9352,15 +9352,22 @@ paths:
               schema:
                 $ref: "#/components/schemas/Problem"
           description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such organization.
         "409":
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: Another offer reads the same.
+          description: Another offer of the organization reads the same.
       security:
       - session: []
-      summary: Add an offer to the list solutions choose from
+      summary: "Add an offer for the organization that gives it, which only its solutions\
+        \ come with"
       tags:
       - Solution administration
   /api/solution/admin/offers/{id}:
@@ -9457,7 +9464,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SaveOffer"
+              $ref: "#/components/schemas/AdminSaveOffer"
         required: true
       responses:
         "200":
@@ -10239,8 +10246,8 @@ paths:
           description: There is no such submitted solution.
       security:
       - session: []
-      summary: "Choose the offers a submitted solution comes with, from the list GenAI\
-        \ Fund keeps"
+      summary: "Choose the offers a submitted solution comes with, of those its organization\
+        \ gives"
       tags:
       - Solution administration
   /api/solution/admin/solutions/{id}/publish:
@@ -11135,8 +11142,8 @@ paths:
           description: The caller writes no such solution.
       security:
       - session: []
-      summary: "The offers a solution may come with, by title: GenAI Fund's list and\
-        \ its organization's own"
+      summary: "The offers a solution may come with, by title: those its organization\
+        \ gives"
       tags:
       - My solutions
     post:
@@ -11205,7 +11212,7 @@ paths:
           description: Nobody is signed in.
       security:
       - session: []
-      summary: "The offers the caller's organization wrote, by title"
+      summary: "The offers the caller's organization gives, by title"
       tags:
       - My solutions
   /api/solution/offers/{id}:
@@ -11232,7 +11239,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The caller belongs to no organization.
+          description: "The caller belongs to no organization, or GenAI Fund arranged\
+            \ the offer, which only it changes."
         "404":
           content:
             application/problem+json:
@@ -11290,7 +11298,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The caller belongs to no organization.
+          description: "The caller belongs to no organization, or GenAI Fund arranged\
+            \ the offer, which only it changes."
         "404":
           content:
             application/problem+json:
@@ -11344,7 +11353,8 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The caller belongs to no organization.
+          description: "The caller belongs to no organization, or GenAI Fund arranged\
+            \ the offer, which only it changes."
         "404":
           content:
             application/problem+json:
@@ -13483,6 +13493,36 @@ components:
           description: An approved solution that is not a candidate yet.
       required:
       - solutionId
+    AdminCreateOffer:
+      type: object
+      description: A new offer an operator writes for the organization that gives
+        it.
+      properties:
+        fromGenAiFund:
+          type: boolean
+          description: "Whether GenAI Fund arranged it with the organization, which\
+            \ its card marks."
+        organizationId:
+          type: string
+          format: uuid
+          description: The organization that gives it; only its solutions come with
+            it.
+        title:
+          type: string
+          description: The line that names it on a card.
+          maxLength: 80
+          minLength: 0
+        url:
+          type: string
+          description: The https address where it is claimed.
+          maxLength: 2048
+          minLength: 0
+          pattern: "https://[^\\s]+"
+      required:
+      - fromGenAiFund
+      - organizationId
+      - title
+      - url
     AdminCreateOrganization:
       type: object
       description: "An organization an operator creates for a company that is not\
@@ -13597,29 +13637,27 @@ components:
       - organizationId
     AdminOffer:
       type: object
-      description: "An offer as an operator reads it: GenAI Fund's, or an organization's\
-        \ own."
+      description: "An offer as an operator reads it, with the organization that gives\
+        \ it."
       properties:
         closed:
           type: boolean
           description: True once it is closed to new solutions; the solutions that
             come with it keep it.
+        fromGenAiFund:
+          type: boolean
+          description: "True when GenAI Fund arranged it with the organization, which\
+            \ its card marks."
         id:
           type: string
           format: uuid
         organizationId:
-          type:
-          - string
-          - "null"
+          type: string
           format: uuid
-          description: The organization that wrote it; null for an offer of GenAI
-            Fund's list.
+          description: The organization that gives it.
         organizationName:
-          type:
-          - string
-          - "null"
-          description: The name of that organization; null for an offer of GenAI Fund's
-            list.
+          type: string
+          description: The name of that organization.
         solutions:
           type: integer
           format: int32
@@ -13639,7 +13677,10 @@ components:
             \ since."
       required:
       - closed
+      - fromGenAiFund
       - id
+      - organizationId
+      - organizationName
       - solutions
       - title
       - updatedAt
@@ -14113,6 +14154,36 @@ components:
       - status
       - type
       - updatedAt
+    AdminSaveOffer:
+      type: object
+      description: An offer as an operator's form holds it.
+      properties:
+        fromGenAiFund:
+          type: boolean
+          description: "Whether GenAI Fund arranged it with the organization, which\
+            \ its card marks."
+        title:
+          type: string
+          description: The line that names it on a card.
+          maxLength: 80
+          minLength: 0
+        url:
+          type: string
+          description: The https address where it is claimed.
+          maxLength: 2048
+          minLength: 0
+          pattern: "https://[^\\s]+"
+        version:
+          type:
+          - integer
+          - "null"
+          format: int64
+          description: The version the form read; a save is refused when the offer
+            changed since.
+      required:
+      - fromGenAiFund
+      - title
+      - url
     AdminSaveOrganization:
       type: object
       description: "The profile of an organization and its verified domain, as an\
@@ -19623,8 +19694,8 @@ components:
             come with it keep it.
         fromGenAiFund:
           type: boolean
-          description: True for an offer of GenAI Fund's list; false for one the organization
-            wrote.
+          description: True when GenAI Fund arranged it with the organization; false
+            for one the organization wrote alone.
         id:
           type: string
           format: uuid
@@ -20045,13 +20116,17 @@ components:
       - items
     OwnOffer:
       type: object
-      description: "An offer an organization wrote for its solutions, as its members\
+      description: "An offer an organization gives with its solutions, as its members\
         \ read it."
       properties:
         closed:
           type: boolean
           description: True once it is closed to new solutions; the solutions that
             come with it keep it.
+        fromGenAiFund:
+          type: boolean
+          description: "True when GenAI Fund arranged it, which only GenAI Fund then\
+            \ changes."
         id:
           type: string
           format: uuid
@@ -20071,6 +20146,7 @@ components:
             \ since."
       required:
       - closed
+      - fromGenAiFund
       - id
       - solutions
       - title
@@ -21011,8 +21087,8 @@ components:
       properties:
         fromGenAiFund:
           type: boolean
-          description: "True for an offer of GenAI Fund's list, which its card marks;\
-            \ false for one the solution's organization wrote."
+          description: "True when GenAI Fund arranged it with the solution's organization,\
+            \ which its card marks; false for one the organization wrote alone."
         title:
           type: string
           description: "The line that names it, such as \"$1,000 in cloud credits\"\
@@ -24020,7 +24096,7 @@ components:
           minLength: 0
         offerIds:
           type: array
-          description: "The offers it comes with, from the list GenAI Fund keeps;\
+          description: "The offers it comes with, of those its organization gives;\
             \ empty for none."
           items:
             type: string
@@ -24644,7 +24720,7 @@ components:
       properties:
         fromGenAiFund:
           type: boolean
-          description: True for an offer of GenAI Fund's list.
+          description: True when GenAI Fund arranged it.
         title:
           type: string
         url:
@@ -24990,7 +25066,7 @@ components:
       properties:
         offerIds:
           type: array
-          description: Offers of the list GenAI Fund keeps; empty for none.
+          description: Offers its organization gives; empty for none.
           items:
             type: string
             format: uuid

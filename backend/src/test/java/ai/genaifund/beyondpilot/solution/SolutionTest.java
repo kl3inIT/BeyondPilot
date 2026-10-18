@@ -1424,34 +1424,47 @@ class SolutionTest {
 	}
 
 	@Test
-	void anOperatorKeepsTheListOfOffersSolutionsChooseFrom() {
+	void anOperatorWritesAnOfferForTheOrganizationThatGivesIt() {
 		String founder = approvedOwner("founder@offer-list.test", "Offer List Co");
+		UUID organization = organizationOf(founder);
 		String address = "https://offers.example.test/platypus";
-		Map<String, Object> credits = Map.of("title", "  $1,000  Platypus credits ", "url", address);
+		Map<String, Object> credits = Map.of("organizationId", organization, "title", "  $1,000  Platypus credits ",
+				"url", address, "fromGenAiFund", true);
 
-		// Only an operator writes the list, and an offer is one line and an https address.
+		// Only an operator writes for an organization, and an offer is one line and an https address.
 		assertProblem(post(founder, OFFER_LIST, credits), 403, "IDENTITY_OPERATOR_REQUIRED");
 		assertProblem(get(founder, OFFER_LIST), 403, "IDENTITY_OPERATOR_REQUIRED");
-		assertProblem(post(operator, OFFER_LIST, Map.of("title", " ", "url", address)), 400, "REQUEST_INVALID");
-		assertProblem(post(operator, OFFER_LIST, Map.of("title", "x".repeat(81), "url", address)), 400,
+		assertProblem(post(operator, OFFER_LIST,
+				Map.of("organizationId", organization, "title", " ", "url", address, "fromGenAiFund", true)), 400,
 				"REQUEST_INVALID");
 		assertProblem(post(operator, OFFER_LIST,
-				Map.of("title", "Platypus over http", "url", "http://offers.example.test/platypus")), 400, "REQUEST_INVALID");
-		assertProblem(post(operator, OFFER_LIST, Map.of("title", "Platypus script", "url", "javascript:alert(1)")), 400,
-				"REQUEST_INVALID");
+				Map.of("organizationId", organization, "title", "x".repeat(81), "url", address, "fromGenAiFund", true)),
+				400, "REQUEST_INVALID");
+		assertProblem(post(operator, OFFER_LIST, Map.of("organizationId", organization, "title", "Platypus over http",
+				"url", "http://offers.example.test/platypus", "fromGenAiFund", true)), 400, "REQUEST_INVALID");
+		assertProblem(post(operator, OFFER_LIST, Map.of("organizationId", organization, "title", "Platypus script",
+				"url", "javascript:alert(1)", "fromGenAiFund", true)), 400, "REQUEST_INVALID");
+		// Every offer is given by an organization.
+		assertProblem(post(operator, OFFER_LIST,
+				Map.of("title", "Nobody's credits", "url", address, "fromGenAiFund", true)), 400, "REQUEST_INVALID");
+		assertProblem(post(operator, OFFER_LIST, Map.of("organizationId", UUID.randomUUID(), "title", "Ghost credits",
+				"url", address, "fromGenAiFund", true)), 404, "SOLUTION_OFFER_ORGANIZATION_NOT_FOUND");
 
 		String created = body(post(operator, OFFER_LIST, credits).expectStatus().isCreated());
 		UUID offer = UUID.fromString(JsonPath.read(created, "$.id"));
 		assertThat(JsonPath.<String>read(created, "$.title")).isEqualTo("$1,000 Platypus credits");
+		assertThat(JsonPath.<String>read(created, "$.organizationName")).isEqualTo("Offer List Co");
+		assertThat(JsonPath.<Boolean>read(created, "$.fromGenAiFund")).isTrue();
 		assertThat(JsonPath.<Integer>read(created, "$.solutions")).isZero();
-		// Two offers that read the same could not be told apart where one is chosen.
-		assertProblem(post(operator, OFFER_LIST, Map.of("title", "$1,000 PLATYPUS credits", "url", address)), 409,
-				"SOLUTION_OFFER_TITLE_TAKEN");
+		// Two offers of one organization that read the same could not be told apart where one is chosen.
+		assertProblem(post(operator, OFFER_LIST, Map.of("organizationId", organization, "title",
+				"$1,000 PLATYPUS credits", "url", address, "fromGenAiFund", true)), 409, "SOLUTION_OFFER_TITLE_TAKEN");
 
 		// A save sends the version its form read.
 		Map<String, Object> doubled = new HashMap<>();
 		doubled.put("title", "$2,000 Platypus credits");
 		doubled.put("url", "https://offers.example.test/platypus-doubled");
+		doubled.put("fromGenAiFund", true);
 		assertProblem(put(operator, OFFER_LIST + "/" + offer, doubled), 409, "SOLUTION_OFFER_CHANGED_MEANWHILE");
 		doubled.put("version", versionOf(created));
 		assertProblem(put(founder, OFFER_LIST + "/" + offer, doubled), 403, "IDENTITY_OPERATOR_REQUIRED");
@@ -1461,9 +1474,19 @@ class SolutionTest {
 		assertThat(versionOf(saved)).isGreaterThan(versionOf(created));
 		assertProblem(put(operator, OFFER_LIST + "/" + offer, doubled), 409, "SOLUTION_OFFER_CHANGED_MEANWHILE");
 
+		// The organization reads the offer GenAI Fund arranged among its own, and only GenAI Fund changes it.
+		String mine = body(get(founder, OFFERS + "/mine").expectStatus().isOk());
+		assertThat(JsonPath.<List<Boolean>>read(mine, "$[?(@.id == '" + offer + "')].fromGenAiFund")).containsExactly(true);
+		Map<String, Object> rewritten = Map.of("title", "$5,000 Platypus credits", "url", address, "version",
+				versionOf(saved));
+		assertProblem(put(founder, OFFERS + "/" + offer, rewritten), 403, "SOLUTION_OFFER_ARRANGED");
+		assertProblem(put(founder, OFFERS + "/" + offer + "/closed", Map.of("closed", true, "version", versionOf(saved))),
+				403, "SOLUTION_OFFER_ARRANGED");
+		assertProblem(delete(founder, OFFERS + "/" + offer), 403, "SOLUTION_OFFER_ARRANGED");
+
 		// An offer stays while a solution comes with it, and goes once none does.
 		UUID solution = create(founder, "Platypus Desk");
-		// Whoever writes the solution reads the list to choose from, marked as GenAI Fund's; a visitor does not.
+		// Whoever writes the solution reads the offers to choose from, marked as GenAI Fund's; a visitor does not.
 		String options = body(get(founder, OFFERS + "?solutionId=" + solution).expectStatus().isOk());
 		assertThat(JsonPath.<List<Boolean>>read(options, "$[?(@.id == '" + offer + "')].fromGenAiFund"))
 			.containsExactly(true);
@@ -1491,7 +1514,8 @@ class SolutionTest {
 	void anOrganizationWritesOffersOfItsOwnWhichOnlyItsSolutionsComeWith() {
 		String founder = approvedOwner("founder@own-offers.test", "Own Offers Co");
 		String neighbour = approvedOwner("founder@other-offers.test", "Other Offers Co");
-		UUID fromTheFund = offer("Cassowary credits from GenAI Fund", "https://offers.example.test/cassowary-credits");
+		UUID fromTheFund = offer(organizationOf(founder), "Cassowary credits from GenAI Fund",
+				"https://offers.example.test/cassowary-credits");
 		Map<String, Object> pilot = Map.of("title", "Cassowary pilot package", "url",
 				"https://offers.example.test/cassowary-pilot");
 
@@ -1511,42 +1535,45 @@ class SolutionTest {
 		UUID solution = approved(founder, "Cassowary Desk", description);
 		UUID other = submitted(neighbour, "Neighbour Desk");
 
-		// A solution is given GenAI Fund's list and its organization's own, and nobody else reads that choice.
+		// A solution is given its organization's offers, and nobody else reads that choice.
 		assertThat(JsonPath.<List<String>>read(body(get(founder, OFFERS + "?solutionId=" + solution).expectStatus().isOk()),
 				"$[*].id"))
 			.contains(own.toString(), fromTheFund.toString())
 			.doesNotContain(theirs.toString());
 		assertThat(JsonPath.<List<String>>read(body(get(operator, OFFERS + "?solutionId=" + other).expectStatus().isOk()),
 				"$[*].id"))
-			.contains(theirs.toString(), fromTheFund.toString())
-			.doesNotContain(own.toString());
+			.contains(theirs.toString())
+			.doesNotContain(own.toString(), fromTheFund.toString());
 		assertProblem(get(neighbour, OFFERS + "?solutionId=" + solution), 404, "SOLUTION_NOT_FOUND");
 
-		// Another organization's offer goes with no solution of this one, whoever chooses it.
+		// Another organization's offer goes with no solution of this one, whoever chooses it, GenAI Fund's mark or not.
 		String theirSolution = body(get(neighbour, MINE + "/" + other).expectStatus().isOk());
 		Map<String, Object> borrowed = keeping(theirSolution, described("Neighbour Desk", versionOf(theirSolution)));
 		borrowed.put("offerIds", List.of(own));
 		assertProblem(put(neighbour, MINE + "/" + other, borrowed), 400, "SOLUTION_OFFER_NOT_USABLE");
+		borrowed.put("offerIds", List.of(fromTheFund));
+		assertProblem(put(neighbour, MINE + "/" + other, borrowed), 400, "SOLUTION_OFFER_NOT_USABLE");
 		assertProblem(put(operator, ADMIN + "/" + other + "/offers", Map.of("offerIds", List.of(own))), 400,
 				"SOLUTION_OFFER_NOT_USABLE");
 
-		// The page says which offer is GenAI Fund's and which the organization wrote.
+		// The page says which offer GenAI Fund arranged and which the organization wrote alone.
 		String page = body(client.get().uri(DIRECTORY + "/cassowary-desk").exchange().expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(page, "$.offers[*].title"))
 			.containsExactly("Cassowary credits from GenAI Fund", "Cassowary pilot package");
 		assertThat(JsonPath.<List<Boolean>>read(page, "$.offers[*].fromGenAiFund")).containsExactly(true, false);
 
-		// Its members read the offers their organization wrote, change one, and delete one no solution comes with;
-		// another organization reaches none of them.
+		// Its members read the offers their organization gives, change one it wrote, and delete one no solution comes
+		// with; another organization reaches none of them, and the one GenAI Fund arranged is GenAI Fund's to change.
 		String mine = body(get(founder, OFFERS + "/mine").expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(mine, "$[*].id")).containsExactly(own.toString());
-		assertThat(JsonPath.<List<Integer>>read(mine, "$[*].solutions")).containsExactly(1);
+		assertThat(JsonPath.<List<String>>read(mine, "$[*].id")).containsExactly(fromTheFund.toString(), own.toString());
+		assertThat(JsonPath.<List<Integer>>read(mine, "$[*].solutions")).containsExactly(1, 1);
 		Map<String, Object> renamed = new HashMap<>(pilot);
 		renamed.put("title", "Cassowary pilot package, six weeks");
 		assertProblem(put(founder, OFFERS + "/" + own, renamed), 409, "SOLUTION_OFFER_CHANGED_MEANWHILE");
-		renamed.put("version", JsonPath.<List<Number>>read(mine, "$[*].version").get(0).longValue());
+		renamed.put("version",
+				JsonPath.<List<Number>>read(mine, "$[?(@.id == '" + own + "')].version").get(0).longValue());
 		assertProblem(put(neighbour, OFFERS + "/" + own, renamed), 404, "SOLUTION_OFFER_NOT_FOUND");
-		assertProblem(put(founder, OFFERS + "/" + fromTheFund, renamed), 404, "SOLUTION_OFFER_NOT_FOUND");
+		assertProblem(put(founder, OFFERS + "/" + fromTheFund, renamed), 403, "SOLUTION_OFFER_ARRANGED");
 		String saved = body(put(founder, OFFERS + "/" + own, renamed).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(saved, "$.title")).isEqualTo("Cassowary pilot package, six weeks");
 		assertProblem(delete(neighbour, OFFERS + "/" + own), 404, "SOLUTION_OFFER_NOT_FOUND");
@@ -1561,8 +1588,8 @@ class SolutionTest {
 		String listed = body(get(operator, OFFER_LIST).expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(listed, "$[?(@.id == '" + own + "')].organizationName"))
 			.containsExactly("Own Offers Co");
-		assertThat(JsonPath.<List<Object>>read(listed, "$[?(@.id == '" + fromTheFund + "')].organizationName"))
-			.containsExactly((Object) null);
+		assertThat(JsonPath.<List<String>>read(listed, "$[?(@.id == '" + fromTheFund + "')].organizationName"))
+			.containsExactly("Own Offers Co");
 		assertProblem(delete(operator, OFFER_LIST + "/" + own), 409, "SOLUTION_OFFER_IN_USE");
 		delete(operator, OFFER_LIST + "/" + theirs).expectStatus().isNoContent();
 	}
@@ -1570,8 +1597,8 @@ class SolutionTest {
 	@Test
 	void aSolutionShowsTheOffersItComesWithWhereverItIsRead() {
 		String founder = approvedOwner("founder@offered.test", "Offered Co");
-		UUID credits = offer("Echidna cloud credits", "https://offers.example.test/echidna-credits");
-		UUID trial = offer("A free Echidna trial", "https://offers.example.test/echidna-trial");
+		UUID credits = offer(organizationOf(founder), "Echidna cloud credits", "https://offers.example.test/echidna-credits");
+		UUID trial = offer(organizationOf(founder), "A free Echidna trial", "https://offers.example.test/echidna-trial");
 
 		// Its owners choose them in its editor; one named twice is chosen once.
 		Map<String, Object> description = described("Echidna Desk", 0);
@@ -1596,14 +1623,14 @@ class SolutionTest {
 		String listed = body(get(operator, OFFER_LIST).expectStatus().isOk());
 		long version = JsonPath.<List<Number>>read(listed, "$[?(@.id == '" + credits + "')].version").get(0).longValue();
 		put(operator, OFFER_LIST + "/" + credits, Map.of("title", "Echidna cloud credits, doubled", "url",
-				"https://offers.example.test/echidna-doubled", "version", version))
+				"https://offers.example.test/echidna-doubled", "fromGenAiFund", true, "version", version))
 			.expectStatus()
 			.isOk();
 		page = body(client.get().uri(DIRECTORY + "/echidna-desk").exchange().expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(page, "$.offers[*].url")).contains(
 				"https://offers.example.test/echidna-doubled");
 
-		// A solution comes with offers of the list, and with five at most.
+		// A solution comes with offers that exist, and with five at most.
 		Map<String, Object> request = keeping(mine, described("Echidna Desk", versionOf(mine)));
 		request.put("offerIds", List.of(trial, UUID.randomUUID()));
 		assertProblem(put(founder, MINE + "/" + id, request), 400, "SOLUTION_OFFER_NOT_USABLE");
@@ -1632,7 +1659,8 @@ class SolutionTest {
 	void aClosedOfferIsChosenNoMoreAndTheSolutionsThatComeWithItKeepIt() {
 		String founder = approvedOwner("founder@closed-offers.test", "Closed Offers Co");
 		String neighbour = approvedOwner("founder@closed-neighbour.test", "Closed Neighbour Co");
-		UUID offer = offer("Dunnart credits for the first hundred", "https://offers.example.test/dunnart");
+		UUID offer = offer(organizationOf(founder), "Dunnart credits for the first hundred",
+				"https://offers.example.test/dunnart");
 		Map<String, Object> description = described("Dunnart Desk", 0);
 		description.put("offerIds", List.of(offer));
 		UUID partner = approved(founder, "Dunnart Desk", description);
@@ -1663,14 +1691,14 @@ class SolutionTest {
 		assertThat(JsonPath.<Number>read(unchanged, "$.version").longValue())
 			.isEqualTo(JsonPath.<Number>read(closed, "$.version").longValue());
 
-		// Another solution does not choose it, nor is it offered to it.
-		UUID other = create(neighbour, "Dunnart Rival");
-		assertThat(JsonPath.<List<String>>read(body(get(neighbour, OFFERS + "?solutionId=" + other).expectStatus().isOk()),
+		// Another solution of the organization does not choose it, nor is it offered to it.
+		UUID other = create(founder, "Dunnart Sequel");
+		assertThat(JsonPath.<List<String>>read(body(get(founder, OFFERS + "?solutionId=" + other).expectStatus().isOk()),
 				"$[*].id"))
 			.doesNotContain(offer.toString());
-		Map<String, Object> rival = described("Dunnart Rival", 0);
-		rival.put("offerIds", List.of(offer));
-		assertProblem(put(neighbour, MINE + "/" + other, rival), 400, "SOLUTION_OFFER_NOT_USABLE");
+		Map<String, Object> sequel = described("Dunnart Sequel", 0);
+		sequel.put("offerIds", List.of(offer));
+		assertProblem(put(founder, MINE + "/" + other, sequel), 400, "SOLUTION_OFFER_NOT_USABLE");
 
 		// The solution that comes with it keeps it: it is offered to it as closed, its card and page show it as
 		// before, and saving the solution again is not refused.
@@ -1689,7 +1717,7 @@ class SolutionTest {
 		assertThat(JsonPath.<Boolean>read(body(put(operator, OFFER_LIST + "/" + offer + "/closed", reopen).expectStatus().isOk()),
 				"$.closed"))
 			.isFalse();
-		assertThat(JsonPath.<List<String>>read(body(get(neighbour, OFFERS + "?solutionId=" + other).expectStatus().isOk()),
+		assertThat(JsonPath.<List<String>>read(body(get(founder, OFFERS + "?solutionId=" + other).expectStatus().isOk()),
 				"$[*].id"))
 			.contains(offer.toString());
 
@@ -1697,17 +1725,20 @@ class SolutionTest {
 		String written = body(post(founder, OFFERS, Map.of("title", "Dunnart pilot package", "url",
 				"https://offers.example.test/dunnart-pilot")).expectStatus().isCreated());
 		UUID own = UUID.fromString(JsonPath.read(written, "$.id"));
-		long ownVersion = JsonPath.<List<Number>>read(body(get(founder, OFFERS + "/mine").expectStatus().isOk()), "$[*].version")
+		long ownVersion = JsonPath
+			.<List<Number>>read(body(get(founder, OFFERS + "/mine").expectStatus().isOk()),
+					"$[?(@.id == '" + own + "')].version")
 			.get(0)
 			.longValue();
 		Map<String, Object> closeOwn = Map.of("closed", true, "version", ownVersion);
 		assertProblem(put(neighbour, OFFERS + "/" + own + "/closed", closeOwn), 404, "SOLUTION_OFFER_NOT_FOUND");
-		assertProblem(put(founder, OFFERS + "/" + offer + "/closed", closeOwn), 404, "SOLUTION_OFFER_NOT_FOUND");
+		assertProblem(put(founder, OFFERS + "/" + offer + "/closed", closeOwn), 403, "SOLUTION_OFFER_ARRANGED");
 		assertProblem(put(founder, OFFERS + "/" + own + "/closed", Map.of("closed", true, "version", 99)), 409,
 				"SOLUTION_OFFER_CHANGED_MEANWHILE");
 		String ownClosed = body(put(founder, OFFERS + "/" + own + "/closed", closeOwn).expectStatus().isOk());
 		assertThat(JsonPath.<Boolean>read(ownClosed, "$.closed")).isTrue();
-		assertThat(JsonPath.<List<Boolean>>read(body(get(founder, OFFERS + "/mine").expectStatus().isOk()), "$[*].closed"))
+		assertThat(JsonPath.<List<Boolean>>read(body(get(founder, OFFERS + "/mine").expectStatus().isOk()),
+				"$[?(@.id == '" + own + "')].closed"))
 			.containsExactly(true);
 
 		assertThat(jdbc.sql("""
@@ -1758,10 +1789,12 @@ class SolutionTest {
 		return IntStream.range(0, after.size()).mapToObj(day -> after.get(day) - before.get(day)).toList();
 	}
 
-	/** An offer of the list GenAI Fund keeps, added by the operator. */
-	private UUID offer(String title, String url) {
-		return UUID.fromString(JsonPath.read(
-				body(post(operator, OFFER_LIST, Map.of("title", title, "url", url)).expectStatus().isCreated()), "$.id"));
+	/** An offer GenAI Fund arranged with the organization, written by the operator. */
+	private UUID offer(UUID organization, String title, String url) {
+		return UUID.fromString(JsonPath.read(body(post(operator, OFFER_LIST,
+				Map.of("organizationId", organization, "title", title, "url", url, "fromGenAiFund", true))
+			.expectStatus()
+			.isCreated()), "$.id"));
 	}
 
 	/** How many solutions the operators' list says come with the offer. */

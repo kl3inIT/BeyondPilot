@@ -14,9 +14,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.jspecify.annotations.Nullable;
 
 /**
- * An offer solutions come with, such as cloud credits: the line that names it and the page where it is claimed.
- * GenAI Fund keeps a list every solution chooses from; an organization writes offers of its own, which only its
- * solutions come with.
+ * An offer solutions come with, such as cloud credits: the line that names it and the page where it is claimed. It
+ * belongs to the organization that gives it, and only that organization's solutions come with it.
  */
 @Entity
 @Table(name = "offer")
@@ -25,15 +24,19 @@ public class Offer {
 	@Id
 	private UUID id;
 
-	/** The organization that wrote it; null for an offer of GenAI Fund's list. */
-	@Column(updatable = false)
-	private @Nullable UUID organizationId;
+	/** The organization that gives it. */
+	@Column(nullable = false, updatable = false)
+	private UUID organizationId;
 
 	@Column(nullable = false)
 	private String title;
 
 	@Column(nullable = false)
 	private String url;
+
+	/** Whether GenAI Fund arranged it with the organization, which its card marks; only an operator says so. */
+	@Column(name = "from_genai_fund", nullable = false)
+	private boolean fromGenAiFund;
 
 	/** When it was closed to new solutions; null while it is open. */
 	private @Nullable Instant closedAt;
@@ -54,16 +57,26 @@ public class Offer {
 	}
 
 	@SuppressWarnings("NullAway.Init")
-	public Offer(UUID id, @Nullable UUID organizationId, String title, String url) {
+	public Offer(UUID id, UUID organizationId, String title, String url, boolean fromGenAiFund) {
 		this.id = id;
 		this.organizationId = organizationId;
 		this.title = title;
 		this.url = url;
+		this.fromGenAiFund = fromGenAiFund;
 	}
 
 	public void describe(String title, String url) {
 		this.title = title;
 		this.url = url;
+	}
+
+	/** Says whether GenAI Fund arranged it. */
+	public void arrangedByGenAiFund(boolean arranged) {
+		this.fromGenAiFund = arranged;
+	}
+
+	public boolean isFromGenAiFund() {
+		return fromGenAiFund;
 	}
 
 	/** Closes it to new solutions, or opens it again; answers whether that changed it. */
@@ -83,13 +96,8 @@ public class Offer {
 		return id;
 	}
 
-	public @Nullable UUID getOrganizationId() {
+	public UUID getOrganizationId() {
 		return organizationId;
-	}
-
-	/** Whether a solution of this organization may come with it: GenAI Fund's, or the organization's own. */
-	public boolean isFor(UUID organization) {
-		return organizationId == null || organizationId.equals(organization);
 	}
 
 	public String getTitle() {

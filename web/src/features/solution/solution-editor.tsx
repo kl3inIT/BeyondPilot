@@ -702,6 +702,7 @@ function SolutionEditor({
                     form={form}
                     errorOf={errorOf}
                     solutionId={solution.id}
+                    organizationId={solution.organizationId}
                     operator={operator}
                   />
                 )}

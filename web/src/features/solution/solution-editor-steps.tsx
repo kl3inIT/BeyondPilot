@@ -110,12 +110,14 @@ function about(field: keyof SolutionDraft, error: string | undefined, hint: bool
 
 type BasicsStepProps = StepProps & {
   solutionId: string;
-  /** True for an operator, whose new offer joins GenAI Fund's list; a member's is their organization's. */
+  /** The solution's organization, which gives its offers. */
+  organizationId: string;
+  /** True for an operator, who marks a new offer GenAI Fund arranged; a member's is their organization's. */
   operator: boolean;
 };
 
 /** Step 1: what the solution is, how far it has come, what it is built with and what it comes with. */
-function BasicsStep({ form, errorOf, solutionId, operator }: BasicsStepProps) {
+function BasicsStep({ form, errorOf, solutionId, organizationId, operator }: BasicsStepProps) {
   const t = useTranslations("Solution.editor");
   const maturity = useVocabulary("maturity");
 
@@ -241,6 +243,7 @@ function BasicsStep({ form, errorOf, solutionId, operator }: BasicsStepProps) {
             <OfferPicker
               id={fieldId("offers")}
               solutionId={solutionId}
+              organizationId={organizationId}
               value={field.state.value}
               onValueChange={field.handleChange}
               operator={operator}

@@ -53,7 +53,7 @@ public record SaveSolutionRequest(
 				description = "The stored images shown under the cover, in their order: those it has and those "
 						+ "the caller uploaded for it.") @NotNull @Size(max = 4) List<@NotNull UUID> imageFileIds,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The offers it comes with, from the list GenAI Fund keeps; empty for none.") @NotNull @Size(
+				description = "The offers it comes with, of those its organization gives; empty for none.") @NotNull @Size(
 						max = SolutionCodes.MAX_OFFERS) List<@NotNull UUID> offerIds,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether it appears in the public directory once approved.") @NotNull Boolean listed,

@@ -1,6 +1,5 @@
 "use client";
 
-import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -27,31 +26,35 @@ import {
 import { OfferDialog } from "./offer-dialog";
 
 /** An offer as a list shows it: the operators' list, or an organization's own. */
-type ListedOffer = Pick<AdminOffer, "id" | "title" | "url" | "version" | "solutions" | "closed"> &
-  Partial<Pick<AdminOffer, "organizationId">>;
+type ListedOffer = Pick<
+  AdminOffer,
+  "id" | "title" | "url" | "version" | "solutions" | "closed" | "fromGenAiFund"
+>;
 
 type Scope = {
   /**
-   * True on an organization's own page, where its members write its offers. Without it the list is
-   * the operators', and a new offer joins GenAI Fund's.
+   * True on an organization's own page, where its members change the offers it wrote alone.
+   * Without it the list is the operators', who change any offer.
    */
   own?: boolean;
 };
 
-/** The action that adds an offer to the list. */
-function CreateOffer({ own = false }: Scope) {
+/**
+ * The action that adds an offer of the caller's organization. An operator writes one on the record
+ * of a solution, where the organization that gives it is known.
+ */
+function CreateOffer() {
   const t = useTranslations("Solution.offers.manage");
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
   return (
     <>
+      {/* An organization's page words its actions alone, as Add a solution above this one. */}
       <Button size="lg" onClick={() => setOpen(true)}>
-        {/* An organization's page words its actions alone, as Add a solution above this one. */}
-        {!own && <PlusIcon aria-hidden="true" />}
         {t("create")}
       </Button>
-      <OfferDialog open={open} onOpenChange={setOpen} own={own} onSaved={() => router.refresh()} />
+      <OfferDialog open={open} onOpenChange={setOpen} own onSaved={() => router.refresh()} />
     </>
   );
 }

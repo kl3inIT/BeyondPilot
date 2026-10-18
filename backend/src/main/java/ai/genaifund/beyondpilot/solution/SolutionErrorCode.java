@@ -64,6 +64,12 @@ public enum SolutionErrorCode implements ErrorCode {
 
 	OFFER_NOT_FOUND("SOLUTION_OFFER_NOT_FOUND", ErrorCategory.NOT_FOUND, "There is no such offer."),
 
+	OFFER_ORGANIZATION_NOT_FOUND("SOLUTION_OFFER_ORGANIZATION_NOT_FOUND", ErrorCategory.NOT_FOUND,
+			"There is no such organization to give the offer."),
+
+	OFFER_ARRANGED("SOLUTION_OFFER_ARRANGED", ErrorCategory.NOT_PERMITTED,
+			"GenAI Fund arranged this offer, so only GenAI Fund changes, closes or deletes it."),
+
 	OFFER_TITLE_TAKEN("SOLUTION_OFFER_TITLE_TAKEN", ErrorCategory.CONFLICT,
 			"Another offer already reads the same. Choose that one, or name this one differently."),
 

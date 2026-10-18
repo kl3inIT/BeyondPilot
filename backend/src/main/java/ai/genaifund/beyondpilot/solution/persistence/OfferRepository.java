@@ -18,15 +18,8 @@ public interface OfferRepository extends JpaRepository<Offer, UUID> {
 	Optional<Offer> findForUpdate(UUID id);
 
 	/**
-	 * Whether another offer of GenAI Fund's list reads the same; the identifier is one no offer has for a new offer.
+	 * Whether another offer of the organization reads the same; the identifier is one no offer has for a new offer.
 	 */
-	@Query("""
-			select count(o) > 0 from Offer o
-			where o.organizationId is null and lower(o.title) = lower(:title) and o.id <> :id
-			""")
-	boolean existsOtherOfTheList(String title, UUID id);
-
-	/** Whether another offer of the organization reads the same. */
 	@Query("""
 			select count(o) > 0 from Offer o
 			where o.organizationId = :organizationId and lower(o.title) = lower(:title) and o.id <> :id

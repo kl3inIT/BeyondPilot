@@ -19,7 +19,7 @@ import { limits } from "./solution-editor-state";
 function SolutionOffersChoice({
   solution,
 }: {
-  solution: Pick<Solution, "id" | "name" | "offers">;
+  solution: Pick<Solution, "id" | "name" | "organizationId" | "offers">;
 }) {
   const t = useTranslations("Admin.solutions.offers");
   const notify = useNotify();
@@ -63,6 +63,7 @@ function SolutionOffersChoice({
             <OfferPicker
               id="solution-offers-choice-field"
               solutionId={solution.id}
+              organizationId={solution.organizationId}
               value={field.state.value}
               onValueChange={field.handleChange}
               operator

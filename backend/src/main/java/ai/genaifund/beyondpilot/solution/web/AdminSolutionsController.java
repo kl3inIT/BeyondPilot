@@ -211,7 +211,7 @@ class AdminSolutionsController {
 	@PutMapping(path = "/{id}/offers", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@Operation(operationId = "chooseSolutionOffers",
-			summary = "Choose the offers a submitted solution comes with, from the list GenAI Fund keeps",
+			summary = "Choose the offers a submitted solution comes with, of those its organization gives",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "204", description = "The solution comes with the offers named.", content = @Content)
 	@ApiResponse(responseCode = "400", description = "More than five offers, or one that is not in the list.",

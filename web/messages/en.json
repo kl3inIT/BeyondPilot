@@ -515,6 +515,8 @@
     "SOLUTION_DEPLOYMENT_NOT_WITHDRAWN": "This customer deployment is already back on the solution.",
     "SOLUTION_DEPLOYMENT_CHANGED_MEANWHILE": "Someone else saved this customer deployment in the meantime. Reload the page and make your changes again.",
     "SOLUTION_OFFER_NOT_FOUND": "This offer no longer exists. Reload the page.",
+    "SOLUTION_OFFER_ORGANIZATION_NOT_FOUND": "This organization no longer exists. Reload the page.",
+    "SOLUTION_OFFER_ARRANGED": "GenAI Fund arranged this offer, so only GenAI Fund changes it.",
     "SOLUTION_OFFER_TITLE_TAKEN": "Another offer already reads the same.",
     "SOLUTION_OFFER_IN_USE": "A solution still comes with this offer. Take it off those solutions first.",
     "SOLUTION_OFFER_CHANGED_MEANWHILE": "Someone else saved this offer in the meantime. Reload the page and make your changes again.",
@@ -1900,7 +1902,7 @@
         "title": "Offers",
         "lead": "What the solution comes with, shown on its card and page. Its owners choose these in their editor too.",
         "field": "Offers",
-        "hint": "Up to {max}, from the list of offers.",
+        "hint": "Up to {max}, from the offers its organization gives.",
         "save": "Save offers",
         "saved": "Offers saved for {name}."
       },
@@ -1911,9 +1913,8 @@
     "offers": {
       "metaTitle": "Offers · BeyondPilot",
       "title": "Offers",
-      "genAiFund": "GenAI Fund",
       "columns": {
-        "writer": "Written by",
+        "writer": "Organization",
         "state": "Status"
       },
       "filters": {
@@ -1924,10 +1925,11 @@
         }
       },
       "noMatch": "No offer matches the search.",
+      "empty": "Offers are written on the record of a solution, or by an organization for its own solutions.",
       "detail": {
         "back": "Offers",
         "fields": {
-          "writer": "Written by",
+          "writer": "Given by",
           "address": "Claimed at",
           "created": "Created",
           "updated": "Last changed"
@@ -4697,6 +4699,7 @@
         "titleTaken": "Another offer already reads the same.",
         "url": "Link",
         "urlInvalid": "Enter a full address that starts with https://.",
+        "fromGenAiFund": "GenAI Fund arranged this offer with the organization",
         "cancel": "Cancel",
         "create": "Add offer",
         "save": "Save"
@@ -4733,7 +4736,6 @@
         },
         "empty": {
           "title": "No offers yet",
-          "description": "Add what a solution comes with, then choose it on the solution.",
           "own": "Write what your solutions come with, such as a pilot package, then choose it on a solution."
         },
         "confirmDelete": {
@@ -5025,7 +5027,7 @@
         "builtWithPlaceholder": "Add a model, tool or framework",
         "builtWithHint": "Press Enter after each one, up to {max}.",
         "offers": "Offers",
-        "offersHint": "What a customer gets with it, such as cloud credits. Choose up to {max}: from GenAI Fund's list, or one you write for your organization.",
+        "offersHint": "What a customer gets with it, such as cloud credits. Choose up to {max} of your organization's offers, or write a new one.",
         "removeTag": "Remove {name}",
         "industries": "Industries",
         "industriesPlaceholder": "Add an industry",

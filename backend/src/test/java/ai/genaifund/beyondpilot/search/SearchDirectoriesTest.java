@@ -178,7 +178,8 @@ class SearchDirectoriesTest {
 			.header(TestSignIn.CSRF_HEADER, "1")
 			.cookie(TestSignIn.SESSION_COOKIE, operator)
 			.contentType(MediaType.APPLICATION_JSON)
-			.body(Map.of("title", "Numbat credits " + word, "url", "https://offers.example.test/" + word))
+			.body(Map.of("organizationId", organization, "title", "Numbat credits " + word, "url",
+					"https://offers.example.test/" + word, "fromGenAiFund", true))
 			.exchange()
 			.expectStatus()
 			.isCreated());
@@ -196,8 +197,8 @@ class SearchDirectoriesTest {
 
 		// A change to the offer reaches the card of every solution that comes with it.
 		put(operator, "/api/solution/admin/offers/" + offerId,
-				Map.of("title", "Numbat credits " + word, "url", "https://offers.example.test/moved-" + word, "version",
-						JsonPath.<Number>read(offer, "$.version").longValue()));
+				Map.of("title", "Numbat credits " + word, "url", "https://offers.example.test/moved-" + word,
+						"fromGenAiFund", true, "version", JsonPath.<Number>read(offer, "$.version").longValue()));
 		await().atMost(WAIT)
 			.until(() -> List.of("https://offers.example.test/moved-" + word)
 				.equals(JsonPath.<List<String>>read(search("claims%20reader%20" + word), "$.items[0].offers[*].url")));

@@ -14,28 +14,30 @@ import { limits } from "./solution-editor-state";
 
 type OfferPickerProps = {
   id: string;
-  /** The solution the offers are chosen for: it is given GenAI Fund's list and its organization's own. */
+  /** The solution the offers are chosen for: it is given the offers of its organization. */
   solutionId: string;
+  /** The solution's organization, which gives the offers an operator writes from here. */
+  organizationId: string;
   /** The offers the solution comes with. */
   value: Offer[];
   onValueChange: (offers: Offer[]) => void;
   /**
-   * True for an operator, whose new offer joins GenAI Fund's list. A member's new offer is their
-   * organization's own.
+   * True for an operator, who writes a new offer for the solution's organization and says whether
+   * GenAI Fund arranged it. A member's new offer is their organization's own.
    */
   operator?: boolean;
   "aria-describedby"?: string;
 };
 
 /**
- * The offers a solution comes with: those of the list GenAI Fund keeps, marked as its own, and those
- * the solution's organization wrote. Whoever chooses also writes a new one from here. The picker
- * reads the list itself: it is drawn by the editor of a solution wherever that opens, and by the
- * operators' page of one.
+ * The offers a solution comes with: those its organization gives, the ones GenAI Fund arranged
+ * marked as such. Whoever chooses also writes a new one from here. The picker reads the list itself:
+ * it is drawn by the editor of a solution wherever that opens, and by the operators' page of one.
  */
 function OfferPicker({
   id,
   solutionId,
+  organizationId,
   value,
   onValueChange,
   operator = false,
@@ -105,6 +107,7 @@ function OfferPicker({
         open={adding}
         onOpenChange={setAdding}
         own={!operator}
+        organizationId={organizationId}
         onSaved={(added) => {
           setListed((current) => [...current, added]);
           // The offer was written for this solution, so it is chosen while there is room.

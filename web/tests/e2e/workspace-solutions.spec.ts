@@ -374,7 +374,7 @@ test.describe("workspace solutions", () => {
     });
   });
 
-  test("an owner chooses the offers a solution comes with from the list GenAI Fund keeps", async ({
+  test("an owner chooses the offers a solution comes with from those its organization gives", async ({
     page,
     context,
     baseURL,
@@ -431,6 +431,13 @@ test.describe("workspace solutions", () => {
     await expect(page.getByRole("menuitem", { name: "Edit…" })).toBeEnabled();
     await expect(page.getByRole("menuitem", { name: "Delete…" })).toBeDisabled();
     await page.keyboard.press("Escape");
+    // The one GenAI Fund arranged carries its mark, and only GenAI Fund changes it.
+    await expect(offers.getByText("$1,000 in cloud credits").filter({ visible: true })).toHaveCount(
+      1,
+    );
+    await expect(
+      offers.getByRole("button", { name: "Actions for $1,000 in cloud credits" }),
+    ).toHaveCount(0);
 
     // A new one is written here too, as the organization's own.
     const written = await answerDecisions(page, "**/api/solution/offers", 201, {
@@ -477,7 +484,7 @@ test.describe("workspace solutions", () => {
 
     const offers = page.getByRole("region", { name: "Offers" });
     await expect(offers.getByText("Open", { exact: true }).filter({ visible: true })).toHaveCount(
-      1,
+      2,
     );
     await offers
       .getByRole("button", { name: "Actions for Ten hours of onboarding support" })
