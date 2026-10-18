@@ -42,6 +42,9 @@ updates:
       # 0.2.1 judges classes on a trigger whose render prop is a plain element, which 78 places break;
       # held on 0.2.0 until they are fixed (BEY-219).
       - dependency-name: "@shadcn/lint"
+      # The PDF worker comes from this package and must be the version react-pdf pins, or no PDF opens;
+      # it moves by hand with react-pdf.
+      - dependency-name: pdfjs-dist
     groups:
       npm-minor-and-patch:
         update-types:
