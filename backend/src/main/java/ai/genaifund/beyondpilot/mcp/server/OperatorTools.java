@@ -148,6 +148,7 @@ class OperatorTools {
 						+ application.id());
 				applications.add(item);
 			}
+			CallLog.read("program", program.id(), program.name(), "/admin/programs/" + program.id() + "/applications");
 			Map<String, Object> result = new LinkedHashMap<>();
 			result.put("program", Map.of("id", "program:" + program.slug(), "name", program.name(), "url",
 					callers.site() + "/admin/programs/" + program.id() + "/applications"));
@@ -198,6 +199,8 @@ class OperatorTools {
 				}
 			}
 			SubmittedApplication.Program program = application.program();
+			CallLog.read("application", application.id(), solution.name() + " · " + program.name(),
+					"/admin/programs/" + program.id() + "/applications/" + application.id());
 			SubmittedApplication.Applicant applicant = application.applicant();
 			SubmittedApplication.Organization organization = application.organization();
 			Map<String, Object> result = fields("id", application.id().toString(), "program",
@@ -275,6 +278,7 @@ class OperatorTools {
 			}
 			try {
 				PdfPages.Pages read = PdfPages.pages(file.content(), first, PAGES_PER_CALL, PICTURE_BYTES);
+				CallLog.read("application_file", fileId, file.name(), null);
 				if (read.pages().isEmpty()) {
 					return error("The file has " + read.count() + " pages.");
 				}
