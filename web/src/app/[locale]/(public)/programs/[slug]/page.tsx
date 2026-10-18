@@ -14,15 +14,17 @@ export async function generateMetadata({
 }: PageProps<"/[locale]/programs/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const program = await readProgram(slug);
-  // A shared link previews with the program's own picture: its cover, else its written page's.
-  const image = program.coverFileId
-    ? publicFileUrl(program.coverFileId)
-    : customProgramShareImages[program.slug];
+  // A shared link previews with the program's own picture: the one made for its written page when
+  // that page is shown, else its cover. Without either it keeps the site's.
+  const pageImage =
+    program.pageKind === "custom" ? customProgramShareImages[program.slug] : undefined;
+  const image = pageImage ?? (program.coverFileId ? publicFileUrl(program.coverFileId) : undefined);
 
   return {
     title: `${program.name} · BeyondPilot`,
     description: program.summary ?? undefined,
-    openGraph: image ? { images: [{ url: image, alt: program.name }] } : undefined,
+    // A key set to undefined still replaces the layout's, so it is left out instead.
+    ...(image && { openGraph: { images: [{ url: image, alt: program.name }] } }),
     // A draft is seen by operators only, and never indexed.
     robots: program.status === "draft" ? { index: false } : undefined,
   };

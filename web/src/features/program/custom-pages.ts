@@ -16,7 +16,7 @@ export const customProgramPages: Partial<
   "nestle-vietnam-ai-reinvention": NestlePage,
 };
 
-/** The picture a link to a written page previews with when the program has no cover, 1200 × 630. */
+/** The picture a link to a written page previews with, before the program's cover, 1200 × 630. */
 export const customProgramShareImages: Partial<Record<string, string>> = {
   "nestle-vietnam-ai-reinvention": "/programs/nestle/share.jpg",
 };
