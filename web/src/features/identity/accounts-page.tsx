@@ -37,6 +37,8 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
     getFormatter(),
     getLocale(),
   ]);
+  // Server component: the date is read once per request.
+  // oxlint-disable-next-line react/purity
   const today = format.dateTime(new Date(), { dateStyle: "short" });
 
   /** "Today, 21:36" for a sign-in of today in Vietnam time, "3 Oct, 14:32" before that. */

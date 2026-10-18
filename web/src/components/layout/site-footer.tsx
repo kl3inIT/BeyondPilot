@@ -85,6 +85,8 @@ function SiteFooter() {
         </div>
         <div className="flex flex-col gap-2 border-t pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            {/* Server component: the year is read once per request. */}
+            {/* oxlint-disable-next-line react/purity */}
             <p>{t("footer.copyright", { year: new Date().getFullYear() })}</p>
             <Link href={siteRoutes.privacy} className={legalLinkClass}>
               {t("footer.privacy")}

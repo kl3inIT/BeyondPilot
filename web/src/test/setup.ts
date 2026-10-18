@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 
-// eslint-disable-next-line testing-library/no-manual-cleanup
+// oxlint-disable-next-line testing-library/no-manual-cleanup
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 

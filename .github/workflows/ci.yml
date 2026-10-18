@@ -109,7 +109,7 @@ jobs:
           cache: true
           require-lockfile: true
 
-      # The generated-client drift check, ESLint, Prettier, tsc, the message catalogs and knip.
+      # The generated-client drift check, Oxlint, Prettier, tsc, the message catalogs and knip.
       - name: Verify
         run: pnpm --dir web check
 
