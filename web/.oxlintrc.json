@@ -1245,7 +1245,22 @@
         "shadcn/no-restyle": [
           "error",
           {
-            "allow": ["layout"]
+            "allow": ["layout", "hit-area"],
+            "contracts": [
+              {
+                "pattern": "^(PopoverTrigger|DropdownMenuTrigger|DialogClose|Collapsible)$",
+                "allow": [
+                  "layout",
+                  "color",
+                  "typography",
+                  "spacing",
+                  "shape",
+                  "effects",
+                  "motion",
+                  "hit-area"
+                ]
+              }
+            ]
           }
         ],
         "no-restricted-imports": [
