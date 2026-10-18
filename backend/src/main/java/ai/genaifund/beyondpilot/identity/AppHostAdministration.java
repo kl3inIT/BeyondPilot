@@ -34,7 +34,8 @@ public class AppHostAdministration {
 	 */
 	private static final Map<String, List<String>> KNOWN_APPS = Map.of("chatgpt.com", List.of("ChatGPT", "Codex"),
 			"claude.ai", List.of("Claude", "Claude Code"), "claude.com", List.of("Claude"), "vscode.dev",
-			List.of("Visual Studio Code"), "zed.dev", List.of("Zed"), "goose-docs.ai", List.of("Goose"));
+			List.of("Visual Studio Code"), "zed.dev", List.of("Zed"), "goose-docs.ai", List.of("Goose"), "cursor.com",
+			List.of("Cursor", "Grok Bot"));
 
 	private final AppHostRepository hosts;
 

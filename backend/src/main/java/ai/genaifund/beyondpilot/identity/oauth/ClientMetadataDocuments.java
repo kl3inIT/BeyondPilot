@@ -264,7 +264,8 @@ class ClientMetadataDocuments {
 	/**
 	 * What BeyondPilot keeps of the document at {@code clientId}, or empty when it does not describe a usable client:
 	 * it must name its own address, keep at least one accepted redirect, and authenticate with nothing or with a key
-	 * published on its own host. Accepted redirects: HTTPS on the document's host, this computer on any port, or an
+	 * published on its own host. Accepted redirects: HTTPS on the document's host or one of its subdomains, this
+	 * computer on any port, or an
 	 * app's own scheme named after the reverse of the document's host, such as {@code dev.zed://} for a document on
 	 * {@code zed.dev}. Unknown fields are ignored, so a document cannot set anything else.
 	 */
@@ -303,7 +304,9 @@ class ClientMetadataDocuments {
 		}
 		String scheme = uri.getScheme().toLowerCase(Locale.ROOT);
 		return switch (scheme) {
-			case "https" -> host.equalsIgnoreCase(uri.getHost());
+			// The document's host holds its subdomains too: Cursor's document on cursor.com redirects to www.cursor.com.
+			case "https" -> uri.getHost() != null && (host.equalsIgnoreCase(uri.getHost())
+					|| uri.getHost().toLowerCase(Locale.ROOT).endsWith("." + host.toLowerCase(Locale.ROOT)));
 			case "http" -> RedirectAddresses.isThisComputer(uri.getHost());
 			// An app's own scheme is named after the reverse of a domain it holds (RFC 8252 §7.1), here the document's:
 			// any other could open another app, a browser among them, that sends the code elsewhere.

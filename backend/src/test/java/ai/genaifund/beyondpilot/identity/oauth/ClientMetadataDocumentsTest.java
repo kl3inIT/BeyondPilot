@@ -100,6 +100,20 @@ class ClientMetadataDocumentsTest {
 	}
 
 	@Test
+	void aSubdomainOfTheDocumentsHostIsKeptButAHostMerelyEndingLikeItIsNot() {
+		String cursor = "https://cursor.com/oauth/mcp-client.json";
+		var metadata = documents.metadata(cursor, json.readTree("""
+				{"client_id": "%s", "client_name": "Cursor",
+				 "redirect_uris": ["https://www.cursor.com/agents/mcp/oauth/callback", "https://grok.com/connectors-oauth-exchange-code/",
+				                   "https://evilcursor.com/cb", "https://cursor.com.attacker.example/cb", "http://127.0.0.1:8787/callback"],
+				 "token_endpoint_auth_method": "none"}
+				""".formatted(cursor)));
+
+		assertThat(metadata).hasValueSatisfying(client -> assertThat(client.redirectUris())
+			.containsExactly("https://www.cursor.com/agents/mcp/oauth/callback", "http://127.0.0.1:8787/callback"));
+	}
+
+	@Test
 	void aDocumentThatNamesAnotherClientNoUsableRedirectOrASecretIsRefused() {
 		assertThat(documents.metadata(CLAUDE, json.readTree("""
 				{"client_id": "https://claude.ai/other", "redirect_uris": ["https://claude.ai/cb"]}

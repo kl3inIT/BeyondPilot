@@ -9,7 +9,9 @@ import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.ManagedHttpClientConnectionFactory;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.core5.http.config.Http1Config;
 import org.apache.hc.core5.util.Timeout;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -21,11 +23,18 @@ import org.springframework.web.client.RestClient;
 /**
  * The only way the authorization server reads an address an outsider names: client ID metadata documents and the keys
  * a client signs with. It connects to public addresses only ({@link PublicAddresses}), follows no redirect, reads at
- * most a set number of bytes, and gives up five seconds after asking, however slowly the answer trickles in.
+ * most a set number of bytes of the body and bounded headers, and gives up five seconds after asking, however slowly
+ * the answer trickles in.
  */
 final class OutsideHttp {
 
 	private static final Timeout FIVE_SECONDS = Timeout.of(5, TimeUnit.SECONDS);
+
+	/**
+	 * Header lines up to 32 kilobytes, a hundred of them: cursor.com sends a Content-Security-Policy of about 12, past
+	 * the default limit of 8, so its document could not be read (BEY-221).
+	 */
+	private static final Http1Config HEADERS = Http1Config.custom().setMaxLineLength(32 * 1024).setMaxHeaderCount(100).build();
 
 	private OutsideHttp() {
 	}
@@ -38,6 +47,7 @@ final class OutsideHttp {
 	private static HttpComponentsClientHttpRequestFactory requests() {
 		CloseableHttpClient http = HttpClients.custom()
 			.setConnectionManager(PoolingHttpClientConnectionManagerBuilder.create()
+				.setConnectionFactory(ManagedHttpClientConnectionFactory.builder().http1Config(HEADERS).build())
 				.setDnsResolver(new PublicAddresses())
 				.setDefaultConnectionConfig(
 						ConnectionConfig.custom().setConnectTimeout(FIVE_SECONDS).setSocketTimeout(FIVE_SECONDS).build())
