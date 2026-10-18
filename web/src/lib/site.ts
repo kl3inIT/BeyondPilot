@@ -25,7 +25,7 @@ export const siteRoutes = {
   adminAuditLog: "/admin/audit-log",
   adminOrganizations: "/admin/organizations",
   adminSolutions: "/admin/solutions",
-  adminOffers: "/admin/offers",
+  adminOffers: "/admin/solutions/offers",
   adminTalent: "/admin/talent",
   adminUseCases: "/admin/use-cases",
   adminUseCasesNew: "/admin/use-cases/new",

@@ -735,7 +735,6 @@
       "auditLog": "Nhật ký thao tác",
       "organizations": "Tổ chức",
       "solutions": "Giải pháp AI",
-      "offers": "Ưu đãi",
       "talent": "Nhân lực AI",
       "review": "Xét duyệt",
       "system": "Hệ thống",
@@ -1759,6 +1758,10 @@
         "submit": "Tạo và mở trình soạn"
       },
       "title": "Giải pháp",
+      "tabs": {
+        "solutions": "Giải pháp",
+        "offers": "Ưu đãi"
+      },
       "columns": {
         "solution": "Giải pháp",
         "organization": "Tổ chức",

@@ -16,7 +16,7 @@ import { OfferTitle } from "./solution-offers";
  * The Offers tab of an organization's record in Admin: what the organization gives with its
  * solutions, which only its solutions come with. An operator writes them here for an organization
  * nobody signed in for, such as a partner's credits GenAI Fund arranged, and changes, closes and
- * deletes them as on Admin › Offers.
+ * deletes them as on AI solutions › Offers.
  */
 function AdminOrganizationOffers({
   organizationId,

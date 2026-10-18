@@ -735,7 +735,6 @@
       "auditLog": "Audit log",
       "organizations": "Organizations",
       "solutions": "AI solutions",
-      "offers": "Offers",
       "talent": "AI talent",
       "review": "Review",
       "system": "System",
@@ -1759,6 +1758,10 @@
         "submit": "Create and open editor"
       },
       "title": "Solutions",
+      "tabs": {
+        "solutions": "Solutions",
+        "offers": "Offers"
+      },
       "columns": {
         "solution": "Solution",
         "organization": "Organization",

@@ -8,7 +8,7 @@ describe("auditResourceRoute", () => {
   it.each([
     ["organization", `/admin/organizations/${id}`],
     ["solution", `/admin/solutions/${id}`],
-    ["solution_offer", `/admin/offers/${id}`],
+    ["solution_offer", `/admin/solutions/offers/${id}`],
     ["talent", `/admin/talent/${id}`],
     ["use_case", `/admin/use-cases/${id}`],
     ["program", `/admin/programs/${id}/settings`],

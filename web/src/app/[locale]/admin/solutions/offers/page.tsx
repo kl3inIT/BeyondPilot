@@ -11,7 +11,7 @@ import { siteRoutes } from "@/lib/site";
 
 export async function generateMetadata({
   params,
-}: PageProps<"/[locale]/admin/offers">): Promise<Metadata> {
+}: PageProps<"/[locale]/admin/solutions/offers">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Admin.offers" });
 
@@ -21,7 +21,7 @@ export async function generateMetadata({
 export default async function AdminOffersRoute({
   params,
   searchParams,
-}: PageProps<"/[locale]/admin/offers">) {
+}: PageProps<"/[locale]/admin/solutions/offers">) {
   const { locale } = await params;
   setRequestLocale(locale);
   await requireRole("operator", siteRoutes.adminOffers);
