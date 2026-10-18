@@ -5,13 +5,12 @@ allowBuilds:
   unrs-resolver: false
 auditConfig:
   # braces <=3.0.3 has a stack-exhaustion advisory with no patched release. It reaches us only
-  # through build-time tooling (the shadcn CLI and the Next.js ESLint plugin) that never receives
+  # through build-time tooling (the shadcn CLI) that never receives
   # untrusted glob patterns. Drop this once braces ships a fix and fast-glob/micromatch pick it up.
   ignoreGhsas:
     - GHSA-vfj7-8cjw-p6xm
 minimumReleaseAgeExclude:
   - "@next/env@16.4.0"
-  - "@next/eslint-plugin-next@16.4.0"
   - "@next/swc-darwin-arm64@16.4.0"
   - "@next/swc-darwin-x64@16.4.0"
   - "@next/swc-linux-arm64-gnu@16.4.0"
@@ -20,7 +19,6 @@ minimumReleaseAgeExclude:
   - "@next/swc-linux-x64-musl@16.4.0"
   - "@next/swc-win32-arm64-msvc@16.4.0"
   - "@next/swc-win32-x64-msvc@16.4.0"
-  - eslint-config-next@16.4.0
   - next@16.4.0
 overrides:
   # @hey-api/json-schema-ref-parser 1.4.4 pins js-yaml 4.2.0, which has high advisories

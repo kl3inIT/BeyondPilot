@@ -136,13 +136,13 @@ function CoverUpload({ id, value, onChange, invalid, kept }: CoverUploadProps) {
       ) : (
         // The button stands for the file field, so it is what says the field is in error and what
         // takes the focus after a refused save (docs/conventions.md › Forms).
-        // eslint-disable-next-line jsx-a11y/role-supports-aria-props
         <button
           id={id}
           type="button"
           disabled={uploading}
           aria-labelledby={`${id}-name`}
           aria-describedby={`${id}-limits`}
+          // oxlint-disable-next-line jsx-a11y/role-supports-aria-props
           aria-invalid={invalid || undefined}
           onClick={() => input.current?.click()}
           className={

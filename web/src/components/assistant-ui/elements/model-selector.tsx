@@ -263,6 +263,7 @@ function ModelSelectorTrigger({
       data-slot="model-selector-trigger"
       data-variant={variant ?? "outline"}
       data-size={size ?? "default"}
+      // oxlint-disable-next-line jsx-a11y/role-has-required-aria-props -- the popover trigger sets aria-expanded and aria-controls at runtime
       role="combobox"
       aria-haspopup="listbox"
       className={cn(modelSelectorTriggerVariants({ variant, size }), className)}

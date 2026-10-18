@@ -91,6 +91,7 @@ async function SubmittedRecord({
     if (contact.linkedin) {
       linkedinRows.push([
         t("linkedin"),
+        // oxlint-disable-next-line react/jsx-key -- a [label, value] row, not a rendered list
         linkedin ? <Outside href={linkedin}>{contact.linkedin}</Outside> : contact.linkedin,
       ]);
     }
@@ -144,6 +145,7 @@ async function SubmittedRecord({
           ? [
               [
                 t("website"),
+                // oxlint-disable-next-line react/jsx-key -- a [label, value] row, not a rendered list
                 website ? <Outside href={website}>{submitted.website}</Outside> : submitted.website,
               ] as Row,
             ]
@@ -165,6 +167,7 @@ async function SubmittedRecord({
           ? [
               [
                 t("demoUrl"),
+                // oxlint-disable-next-line react/jsx-key -- a [label, value] row, not a rendered list
                 demo ? <Outside href={demo}>{submitted.demoUrl}</Outside> : submitted.demoUrl,
               ] as Row,
             ]

@@ -40,6 +40,8 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
     getFormatter(),
     getLocale(),
   ]);
+  // Server component: the date is read once per request.
+  // oxlint-disable-next-line react/purity
   const today = format.dateTime(new Date(), { dateStyle: "short" });
 
   /** "Today, 09:41:07" for an event of today in Vietnam time, "3 Oct 2026, 14:32:07" before that. */

@@ -17,7 +17,7 @@ For work under `web/`: the Next.js App Router application. This page points to t
 Run from the repository root with `pnpm --dir web <script>`, or inside `web/`.
 
 - `pnpm dev` serves the app on port 3000 and forwards Spring's paths to `BEYONDPILOT_API_ORIGIN` ([development runtime](../docs/runbooks/development-runtime.md#web-application)).
-- `pnpm check` is the gate: the generated-client drift check, ESLint with the shadcn rules, Prettier, `tsc`, the unit tests, the message-catalog check and knip.
+- `pnpm check` is the gate: the generated-client drift check, Oxlint with the shadcn rules, Prettier, `tsc` (TypeScript 7), the unit tests, the message-catalog check and knip.
 - `pnpm test:unit` runs the Vitest files: `src/**/*.test.ts` in Node and `src/**/*.test.tsx`, the component tests, in jsdom ([component tests](../docs/guidelines/testing.md#component-tests)).
 - `pnpm generate:api` regenerates `src/lib/api/generated` from the repository's `openapi.yml` ([refresh the API contract](../docs/runbooks/development-runtime.md#refresh-the-api-contract)). Never edit the generated files.
 - `pnpm test:e2e` builds the app and runs Playwright with axe on desktop and mobile Chrome.

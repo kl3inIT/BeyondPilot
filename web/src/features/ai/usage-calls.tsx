@@ -36,6 +36,8 @@ async function UsageCallsPage({
     getFormatter(),
     taskNames(),
   ]);
+  // Server component: the date is read once per request.
+  // oxlint-disable-next-line react/purity
   const today = format.dateTime(new Date(), { dateStyle: "short" });
   const numbers = usageNumbers(format);
 
