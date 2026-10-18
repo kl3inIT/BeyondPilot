@@ -39,6 +39,9 @@ updates:
       - dependency-name: "@types/node"
         update-types:
           - version-update:semver-major
+      # 0.2.1 judges classes on a trigger whose render prop is a plain element, which 78 places break;
+      # held on 0.2.0 until they are fixed (BEY-219).
+      - dependency-name: "@shadcn/lint"
     groups:
       npm-minor-and-patch:
         update-types:
