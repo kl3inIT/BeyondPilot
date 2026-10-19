@@ -83,7 +83,37 @@ class EmailRendererTest {
 				defaults.template(EmailKind.APPLICATION_OUTCOME), values, APPEARANCE);
 		assertThat(outcome.html()).contains("Hi Minh,<br><br>Your team is on the shortlist.")
 			.contains("href=\"" + url + "\"");
-		assertThat(outcome.text()).contains("Your team is on the shortlist.").contains(url);	}
+		assertThat(outcome.text()).contains("Your team is on the shortlist.").contains(url);
+	}
+
+	@Test
+	void theOutcomeMessageKeepsTheLinksTheOperatorWroteAndNoNameBecomesOne() {
+		Map<String, Object> values = new HashMap<>();
+		values.put("subject", "Shortlisted");
+		values.put("message", """
+				Hi {organization},
+
+				Read the [Demo Day brief](https://docs.example/brief?a=1&b=2) before {solution} presents.
+				Join on https://zoom.example/j/1. Or [this](javascript:alert(1)).""");
+		values.put("organization", "<b>Evil</b> [win](https://evil.example)");
+		values.put("solution", "https://evil.example/claim");
+		values.put("applicationUrl", "https://beyondpilot.test/applications/42");
+
+		RenderedEmail email = renderer.render(EmailKind.APPLICATION_OUTCOME,
+				defaults.template(EmailKind.APPLICATION_OUTCOME), values, APPEARANCE);
+
+		assertThat(email.html())
+			.contains("<a href=\"https://docs.example/brief?a=1&amp;b=2\" style=\"color:#0070C0;text-decoration:underline;\">"
+					+ "Demo Day brief</a>")
+			.contains("<a href=\"https://zoom.example/j/1\" style=\"color:#0070C0;text-decoration:underline;\">"
+					+ "https://zoom.example/j/1</a>.")
+			.contains("Hi &lt;b&gt;Evil&lt;/b&gt; [win](https://evil.example),<br><br>")
+			.contains("before https://evil.example/claim presents.")
+			.doesNotContain("href=\"https://evil.example")
+			.doesNotContain("href=\"javascript");
+		assertThat(email.text()).contains("Read the Demo Day brief (https://docs.example/brief?a=1&b=2) before")
+			.contains("Join on https://zoom.example/j/1.");
+	}
 
 	@Test
 	void aWordingSavedBeforeAKindOfferedTheLinkIsStillValidAndStillRenders() {

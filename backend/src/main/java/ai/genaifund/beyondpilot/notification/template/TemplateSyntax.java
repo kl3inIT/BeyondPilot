@@ -1,10 +1,12 @@
 package ai.genaifund.beyondpilot.notification.template;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
@@ -25,6 +27,7 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.commonmark.renderer.text.LineBreakRendering;
 import org.commonmark.renderer.text.TextContentRenderer;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.util.HtmlUtils;
 
 /**
@@ -159,7 +162,7 @@ final class TemplateSyntax {
 	 * The body as HTML with inline styles, which is what mail clients read. Two lines read as more than text: a line
 	 * that is only bold, such as a code, stands out in a box; a line that is only a link becomes a button.
 	 */
-	static String html(String markdown, Map<String, ?> values, String accentColor) {
+	static String html(String markdown, Map<String, ?> values, Set<String> written, String accentColor) {
 		Node document = MARKDOWN.parse(markdown);
 		HtmlRenderer renderer = HtmlRenderer.builder()
 			.escapeHtml(true)
@@ -185,7 +188,21 @@ final class TemplateSyntax {
 				}
 			})
 			.build();
-		return HTML.compile(renderer.render(document)).execute(values);
+		// Written text carries its own markup, which the escaping of values would undo: it goes in after them.
+		Map<String, @Nullable Object> marked = new HashMap<>(values);
+		Map<String, String> markers = new HashMap<>();
+		for (String name : written) {
+			if (values.get(name) instanceof String text) {
+				String marker = "written-" + UUID.randomUUID();
+				marked.put(name, marker);
+				markers.put(marker, WrittenText.html(text, values, accentColor));
+			}
+		}
+		String html = HTML.compile(renderer.render(document)).execute(marked);
+		for (Map.Entry<String, String> marker : markers.entrySet()) {
+			html = html.replace(marker.getKey(), marker.getValue());
+		}
+		return html;
 	}
 
 	private static final String HIGHLIGHT = "display:block;text-align:center;padding:18px 24px;background-color:#F6F9FC;"
@@ -204,8 +221,14 @@ final class TemplateSyntax {
 	}
 
 	/** The body as plain text, paragraphs apart. */
-	static String text(String markdown, Map<String, ?> values) {
-		return PLAIN.compile(TEXT.render(MARKDOWN.parse(markdown))).execute(values).strip();
+	static String text(String markdown, Map<String, ?> values, Set<String> written) {
+		Map<String, @Nullable Object> filled = new HashMap<>(values);
+		for (String name : written) {
+			if (values.get(name) instanceof String text) {
+				filled.put(name, WrittenText.text(text, values));
+			}
+		}
+		return PLAIN.compile(TEXT.render(MARKDOWN.parse(markdown))).execute(filled).strip();
 	}
 
 	/** A value written as it is: escaped, its line breaks kept. */

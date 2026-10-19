@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { IconButton } from "@/components/actions/icon-button";
 
-import { fillOutcome, type OutcomeRecipient } from "./outcome-placeholders";
+import { fillOutcome, outcomeParts, type OutcomeRecipient } from "./outcome-placeholders";
 
 type OutcomePreviewProps = {
   /** Where the preview's heading points, for the group it belongs to. */
@@ -70,7 +70,23 @@ function OutcomePreview({ id, subject, message, recipients }: OutcomePreviewProp
       </div>
       <div className="flex flex-col gap-3 rounded-md border bg-card p-4 text-sm">
         <p className="font-medium break-words">{fillOutcome(subject, recipient)}</p>
-        <p className="break-words whitespace-pre-line">{fillOutcome(message, recipient)}</p>
+        <p className="break-words whitespace-pre-line">
+          {outcomeParts(message, recipient).map((part, at) =>
+            part.href ? (
+              <a
+                key={at}
+                href={part.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline underline-offset-4"
+              >
+                {part.text}
+              </a>
+            ) : (
+              part.text
+            ),
+          )}
+        </p>
         <p className="font-medium text-primary underline underline-offset-4">{t("link")}</p>
         <p className="text-muted-foreground">{t("signOff")}</p>
       </div>

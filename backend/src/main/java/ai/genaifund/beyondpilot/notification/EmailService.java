@@ -332,14 +332,17 @@ public class EmailService {
 
 	/**
 	 * Sends an applicant the outcome of their application, as the operator wrote it for the applicant's group. The
-	 * message is plain text; its line breaks are kept. A link to the application follows it, which opens after signing
-	 * in and acts on nothing.
+	 * message is plain text with its line breaks kept and its links, written {@code [words](https://…)} or as an
+	 * address on its own. A link to the application follows it, which opens after signing in and acts on nothing.
+	 * @param message as the operator wrote it; {@code {organization}} and {@code {solution}} are filled in after its
+	 * links are read, so a name the applicant chose never becomes a link
 	 * @param applicationId the application, which the link opens
 	 */
 	@Transactional
-	public void sendApplicationOutcome(String recipient, String subject, String message, UUID applicationId) {
+	public void sendApplicationOutcome(String recipient, String subject, String message, String organization,
+			String solution, UUID applicationId) {
 		queue(EmailKind.APPLICATION_OUTCOME, recipient, values("subject", subject, "message", message.strip(),
-				"applicationUrl", applicationUrl(applicationId)));
+				"organization", organization, "solution", solution, "applicationUrl", applicationUrl(applicationId)));
 	}
 
 	/**
