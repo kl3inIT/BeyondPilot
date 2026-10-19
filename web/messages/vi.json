@@ -3124,10 +3124,17 @@
           "person": "Người dùng",
           "app": "Ứng dụng",
           "tool": "Công cụ",
-          "outcome": "Kết quả"
+          "outcome": "Kết quả",
+          "read": "Đã đọc"
         },
         "today": "Hôm nay, {time}",
         "dayAndTime": "{day}, {time}",
+        "nothingRead": "—",
+        "counts": {
+          "calls": "Lượt gọi",
+          "refused": "Bị từ chối",
+          "failed": "Lỗi"
+        },
         "goneAccount": "Tài khoản đã xóa",
         "count": "{count} lời gọi",
         "noMatch": {

@@ -209,7 +209,15 @@ test.describe("MCP", () => {
     const calls = page.getByRole("row");
     await expect(calls.filter({ hasText: "Minh Tran" })).toContainText("Refused");
     await expect(calls.filter({ hasText: "Đạt Phan" })).toContainText("Succeeded");
-    await expect(page.getByText("2 calls")).toBeVisible();
+    await expect(page.getByText("3 calls")).toBeVisible();
+    // The record a call read opens on its admin page; the counts link to the calls they count.
+    await expect(
+      page.getByRole("link", { name: "Opsis Emotion AI · Nestlé Vietnam AI Reinvention" }),
+    ).toHaveAttribute("href", /\/admin\/programs\/.+\/applications\//);
+    await expect(page.getByRole("link", { name: /Refused/ })).toHaveAttribute(
+      "href",
+      /outcome=refused/,
+    );
     await expectNoSeriousA11yViolations(page);
 
     await page.getByRole("combobox", { name: "Outcome" }).click();

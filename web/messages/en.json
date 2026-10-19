@@ -3124,10 +3124,17 @@
           "person": "Person",
           "app": "App",
           "tool": "Tool",
-          "outcome": "Outcome"
+          "outcome": "Outcome",
+          "read": "Read"
         },
         "today": "Today, {time}",
         "dayAndTime": "{day}, {time}",
+        "nothingRead": "—",
+        "counts": {
+          "calls": "Calls",
+          "refused": "Refused",
+          "failed": "Failed"
+        },
         "goneAccount": "A deleted account",
         "count": "{count, plural, one {# call} other {# calls}}",
         "noMatch": {
