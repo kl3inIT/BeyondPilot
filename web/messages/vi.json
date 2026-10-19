@@ -609,10 +609,11 @@
       "limit": "Không thể thay đổi gì. Thu hồi bất cứ lúc nào."
     },
     "operator": {
-      "searchSolutions": "Tìm giải pháp, kể cả chưa đăng",
-      "readUseCases": "Đọc use case",
-      "findCompanies": "Tìm công ty",
-      "limit": "Không thể đăng hay sửa nội dung. Thu hồi bất cứ lúc nào."
+      "readPrograms": "Đọc chương trình, hồ sơ và điểm của giám khảo",
+      "readRecords": "Đọc bản ghi đang duyệt, đề xuất và lịch sử của chúng",
+      "readAccounts": "Đọc tài khoản, audit log và email đã gửi",
+      "readMatching": "Đọc các lần chạy AI matching và kết quả",
+      "limit": "Chỉ đọc: không thể thay đổi gì. Thu hồi bất cứ lúc nào."
     },
     "deny": "Từ chối",
     "allow": "Cho phép",
