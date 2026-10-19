@@ -6807,6 +6807,9 @@
         "progress": "Scored {scored} of {total}",
         "score": "Score"
       },
+      "more": "More",
+      "less": "Less",
+      "notScored": "Not scored yet",
       "scale": "1–3 Weak · 4–6 Average · 7–8 Strong · 9–10 Outstanding",
       "bands": {
         "weak": "Weak",
