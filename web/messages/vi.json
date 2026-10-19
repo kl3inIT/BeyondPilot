@@ -6789,6 +6789,9 @@
         "progress": "Đã chấm {scored}/{total}",
         "score": "Chấm điểm"
       },
+      "more": "Xem thêm",
+      "less": "Thu gọn",
+      "notScored": "Chưa chấm",
       "scale": "1–3 Yếu · 4–6 Trung bình · 7–8 Tốt · 9–10 Xuất sắc",
       "bands": {
         "weak": "Yếu",
