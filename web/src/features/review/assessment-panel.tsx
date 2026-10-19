@@ -230,7 +230,10 @@ function AssessmentPanel({
                           {chosen} · <span>{t(`bands.${bandOf(Number(chosen))}`)}</span>
                         </span>
                       ) : (
-                        <span aria-label={t("notScored")}>—</span>
+                        <>
+                          <span aria-hidden="true">—</span>
+                          <span className="sr-only">{t("notScored")}</span>
+                        </>
                       )}
                     </span>
                   </div>
