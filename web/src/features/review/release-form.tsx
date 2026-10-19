@@ -17,6 +17,7 @@ import { useFormatter } from "@/i18n/format";
 import { keepReleaseDraft, releaseOutcomes, type ReleaseEmails } from "@/lib/api/generated";
 
 import { type OutcomeRecipient, unknownPlaceholders } from "./outcome-placeholders";
+import { OutcomeLinkPopover } from "./outcome-link-popover";
 import { OutcomePreview } from "./outcome-preview";
 
 /** How long after the last key the emails are saved. */
@@ -64,6 +65,10 @@ function ReleaseForm({
   const edits = useRef(0);
   // Saves go one after another: an earlier one never lands on top of a later one.
   const saving = useRef<Promise<void>>(Promise.resolve());
+  const messages = {
+    shortlisted: useRef<HTMLTextAreaElement>(null),
+    notSelected: useRef<HTMLTextAreaElement>(null),
+  };
   const filled = Object.values(draft).every((value) => value.trim() !== "");
   const counts = {
     shortlisted: recipients.shortlisted.length,
@@ -132,8 +137,18 @@ function ReleaseForm({
         />
       </Field>
       <Field>
-        <FieldLabel htmlFor={`${key}-message`}>{t("message")}</FieldLabel>
+        <div className="flex items-center justify-between gap-2">
+          <FieldLabel htmlFor={`${key}-message`}>{t("message")}</FieldLabel>
+          {!released && (
+            <OutcomeLinkPopover
+              id={key}
+              textarea={messages[key]}
+              onAdd={(message) => write({ ...draft, [`${key}Message`]: message })}
+            />
+          )}
+        </div>
         <Textarea
+          ref={messages[key]}
           id={`${key}-message`}
           rows={10}
           value={draft[`${key}Message`]}

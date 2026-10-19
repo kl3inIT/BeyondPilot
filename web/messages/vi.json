@@ -6912,6 +6912,13 @@
       "subject": "Tiêu đề",
       "message": "Nội dung",
       "placeholders": "{organization} và {solution} được điền theo từng người nộp.",
+      "link": {
+        "add": "Thêm liên kết",
+        "words": "Chữ hiển thị",
+        "wordsPlaceholder": "Tài liệu Demo Day",
+        "address": "Liên kết",
+        "submit": "Thêm"
+      },
       "unknown": "{placeholders} sẽ không được điền. Dùng {organization} hoặc {solution}.",
       "fixFirst": "Sửa các chỗ trống không được điền rồi mới công bố.",
       "preview": {

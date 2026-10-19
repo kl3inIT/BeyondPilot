@@ -28,7 +28,7 @@ class ReviewMail {
 	void outcomes(OutcomesReleased released) {
 		for (OutcomesReleased.Outcome outcome : released.outcomes()) {
 			email.sendApplicationOutcome(outcome.recipient(), outcome.subject(), outcome.message(),
-					outcome.proposalId());
+					outcome.organization(), outcome.solution(), outcome.proposalId());
 		}
 	}
 }

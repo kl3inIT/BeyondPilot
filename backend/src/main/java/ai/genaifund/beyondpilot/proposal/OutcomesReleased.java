@@ -11,7 +11,10 @@ public record OutcomesReleased(UUID programId, List<Outcome> outcomes) {
 
 	/**
 	 * @param decision {@code shortlisted} or {@code not_selected}
+	 * @param subject with the organization and the solution filled in
+	 * @param message as the operator wrote it, its {@code {organization}} and {@code {solution}} still to fill in
 	 */
-	public record Outcome(UUID proposalId, String decision, String recipient, String subject, String message) {
+	public record Outcome(UUID proposalId, String decision, String recipient, String subject, String message,
+			String organization, String solution) {
 	}
 }

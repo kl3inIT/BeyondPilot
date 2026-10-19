@@ -6912,6 +6912,13 @@
       "subject": "Subject",
       "message": "Message",
       "placeholders": "{organization} and {solution} are filled in for each applicant.",
+      "link": {
+        "add": "Add link",
+        "words": "Text",
+        "wordsPlaceholder": "Demo Day brief",
+        "address": "Link",
+        "submit": "Add"
+      },
       "unknown": "{placeholders} won't be filled in. Use {organization} or {solution}.",
       "fixFirst": "Fix the placeholders that won't be filled in, then release.",
       "preview": {

@@ -224,7 +224,8 @@ public class OutcomeService {
 			ReviewService.Snapshot snapshot = review.snapshot(proposal);
 			outcomes.add(new OutcomesReleased.Outcome(proposal.getId(), proposal.getReviewStatus(), applicant.email(),
 					fill(chosen ? emails.shortlistedSubject() : emails.notSelectedSubject(), snapshot),
-					fill(chosen ? emails.shortlistedMessage() : emails.notSelectedMessage(), snapshot)));
+					chosen ? emails.shortlistedMessage() : emails.notSelectedMessage(), snapshot.organization().name(),
+					snapshot.solution().name()));
 		}
 		setup.record(AuditAction.PROPOSAL_RELEASE, operator, form, Map.of("shortlisted", String.valueOf(shortlisted),
 				"not_selected", String.valueOf(outcomes.size() - shortlisted)));

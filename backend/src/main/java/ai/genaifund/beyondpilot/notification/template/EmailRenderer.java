@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
@@ -43,19 +45,24 @@ public class EmailRenderer {
 		Map<String, @Nullable Object> filled = new HashMap<>();
 		kind.variables().forEach(variable -> filled.put(variable.name(), values.get(variable.name())));
 		String quote = kind.quote() == null ? null : (String) filled.get(kind.quote());
-		return render(template, filled, quote, "note".equals(kind.quote()) ? "From GenAI Fund" : "Their message",
-				appearance);
+		Set<String> written = kind.variables()
+			.stream()
+			.filter(EmailKind.Variable::written)
+			.map(EmailKind.Variable::name)
+			.collect(Collectors.toSet());
+		return render(template, filled, written, quote,
+				"note".equals(kind.quote()) ? "From GenAI Fund" : "Their message", appearance);
 	}
 
 	/** BeyondPilot's own message, such as a connection test, in the same layout and without variables. */
 	public RenderedEmail render(EmailTemplate template, Appearance appearance) {
-		return render(template, Map.of(), null, "", appearance);
+		return render(template, Map.of(), Set.of(), null, "", appearance);
 	}
 
-	private RenderedEmail render(EmailTemplate template, Map<String, ?> filled, @Nullable String quote,
-			String quoteLabel, Appearance appearance) {
+	private RenderedEmail render(EmailTemplate template, Map<String, ?> filled, Set<String> written,
+			@Nullable String quote, String quoteLabel, Appearance appearance) {
 		String subject = TemplateSyntax.subject(template, filled);
-		StringBuilder text = new StringBuilder(TemplateSyntax.text(template.body(), filled));
+		StringBuilder text = new StringBuilder(TemplateSyntax.text(template.body(), filled, written));
 		boolean quoted = quote != null && !quote.isBlank();
 		if (quoted) {
 			text.append("\n\n").append(quoteLabel).append(":\n\n").append(quote.strip());
@@ -70,7 +77,7 @@ public class EmailRenderer {
 		page.put("logoOnDarkUrl", appearance.logoOnDarkUrl());
 		page.put("siteUrl", appearance.siteUrl());
 		page.put("siteHost", appearance.siteHost());
-		page.put("body", TemplateSyntax.html(template.body(), filled, appearance.accentColor()));
+		page.put("body", TemplateSyntax.html(template.body(), filled, written, appearance.accentColor()));
 		page.put("quote", quoted ? TemplateSyntax.quoteHtml(quote) : null);
 		page.put("quoteLabel", quoteLabel);
 		page.put("footer", TemplateSyntax.quoteHtml(appearance.footer()));

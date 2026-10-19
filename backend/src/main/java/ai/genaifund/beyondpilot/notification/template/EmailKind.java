@@ -69,7 +69,8 @@ public enum EmailKind {
 	/** The subject and the message are what an operator wrote for one release of outcomes; nobody edits a template. */
 	APPLICATION_OUTCOME("application_outcome", EmailGroup.APPLICATIONS, false, null,
 			Variable.required("subject", "Shortlisted: AI for Insurance Challenge × Tasco"),
-			Variable.required("message", "Hi Minh,\n\nYour team is on the shortlist."),
+			Variable.written("message", "Hi {organization},\n\n{solution} is on the [shortlist](https://beyondpilot.example/)."),
+			Variable.optional("organization", "Plain Cover"), Variable.optional("solution", "ClaimLens"),
 			Variable.optional("applicationUrl", "https://beyondpilot.example/applications/1")),
 
 	SOLUTION_APPROVED("solution_approved", EmailGroup.SOLUTIONS, true, null,
@@ -220,19 +221,25 @@ public enum EmailKind {
 	 * @param sample what the preview shows in its place; null for a quote that is often absent
 	 * @param required whether every template of the kind must use it
 	 * @param quoted whether the layout quotes it instead of the templates
+	 * @param written whether it is text an operator wrote in full, which keeps its links and fills in the other values
+	 * named in it as {@code {name}}
 	 */
-	public record Variable(String name, @Nullable Object sample, boolean required, boolean quoted) {
+	public record Variable(String name, @Nullable Object sample, boolean required, boolean quoted, boolean written) {
 
 		static Variable required(String name, Object sample) {
-			return new Variable(name, sample, true, false);
+			return new Variable(name, sample, true, false, false);
 		}
 
 		static Variable optional(String name, Object sample) {
-			return new Variable(name, sample, false, false);
+			return new Variable(name, sample, false, false, false);
 		}
 
 		static Variable quote(String name, @Nullable Object sample) {
-			return new Variable(name, sample, false, true);
+			return new Variable(name, sample, false, true, false);
+		}
+
+		static Variable written(String name, Object sample) {
+			return new Variable(name, sample, true, false, true);
 		}
 
 		/**
