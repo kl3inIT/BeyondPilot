@@ -3207,116 +3207,140 @@
       },
       "kinds": {
         "sign_in_code": {
-          "name": "Sign-in code"
+          "name": "Sign-in code",
+          "description": "Sent each time someone asks for a code to sign in with their address."
         },
         "organization_invitation": {
-          "name": "Organization invitation"
+          "name": "Organization invitation",
+          "description": "Sent when an owner, or GenAI Fund, invites an address to join an organization or to own it."
         },
         "organization_approved": {
-          "name": "Organization approved"
+          "name": "Organization approved",
+          "description": "Sent to the owners when GenAI Fund approves their organization."
         },
         "organization_refused": {
-          "name": "Organization not approved"
+          "name": "Organization not approved",
+          "description": "Sent to the owners when GenAI Fund refuses their organization."
         },
         "organization_sent_back": {
-          "name": "Organization sent back"
+          "name": "Organization sent back",
+          "description": "Sent to the owners when GenAI Fund sends their organization back with what to change."
         },
         "organization_request_approved": {
-          "name": "Request to join approved"
+          "name": "Request to join approved",
+          "description": "Sent when a request to join an organization, or to own one, is approved."
         },
         "organization_request_declined": {
-          "name": "Request to join declined"
+          "name": "Request to join declined",
+          "description": "Sent when a request to join an organization, or to own one, is declined."
         },
         "organization_taken_down": {
-          "name": "Organization taken down"
+          "name": "Organization taken down",
+          "description": "Sent to the owners when GenAI Fund takes their organization down."
         },
         "organization_restored": {
-          "name": "Organization restored"
+          "name": "Organization restored",
+          "description": "Sent to the owners when GenAI Fund restores their organization."
         },
         "organization_merged": {
           "name": "Organization merged",
-          "description": "Tells the members of a duplicate organization which one they belong to now."
+          "description": "Sent to the members of a duplicate organization when GenAI Fund merges it, naming the one they belong to now."
         },
         "application_received": {
-          "name": "Application received"
+          "name": "Application received",
+          "description": "Sent to an applicant each time they submit an application to a program, the first time and again after a change. Their application is in."
         },
         "reviewer_invitation": {
-          "name": "Judge invitation"
+          "name": "Judge invitation",
+          "description": "Sent when GenAI Fund invites an address to judge a program's applications, or sends the invitation again."
         },
         "application_outcome": {
           "name": "Application outcome",
-          "description": "The result of an application, written by an operator for each release."
+          "description": "Sent to every applicant of a program when GenAI Fund releases the outcomes, as the operator wrote it for their group."
         },
         "solution_approved": {
-          "name": "Solution approved"
+          "name": "Solution approved",
+          "description": "Sent to every member of the organization when GenAI Fund approves its solution."
         },
         "solution_sent_back": {
-          "name": "Solution sent back"
+          "name": "Solution sent back",
+          "description": "Sent to every member of the organization when GenAI Fund sends its solution back with what to change."
         },
         "solution_rejected": {
           "name": "Solution not approved",
-          "description": "Tells an organization's members their solution was refused for good."
+          "description": "Sent to every member of the organization when GenAI Fund refuses its solution for good."
         },
         "solution_taken_down": {
-          "name": "Solution taken down"
+          "name": "Solution taken down",
+          "description": "Sent to every member of the organization when GenAI Fund takes its solution down."
         },
         "solution_restored": {
-          "name": "Solution restored"
+          "name": "Solution restored",
+          "description": "Sent to every member of the organization when GenAI Fund restores its solution."
         },
         "use_case_approved": {
-          "name": "Use case published"
+          "name": "Use case published",
+          "description": "Sent to every member of the organization when GenAI Fund approves and publishes its use case."
         },
         "use_case_sent_back": {
-          "name": "Use case sent back"
+          "name": "Use case sent back",
+          "description": "Sent to every member of the organization when GenAI Fund sends its use case back with what to change."
         },
         "proposal_sent": {
-          "name": "Proposal sent"
+          "name": "Proposal sent",
+          "description": "Sent to the person who sends a proposal for a use case, once it is sent. Their proposal is complete and the organization that posted the use case can read it."
         },
         "proposal_shortlisted": {
           "name": "Proposal shortlisted",
-          "description": "Tells the sender its proposal was shortlisted, with the note of the organization that posted the use case."
+          "description": "Sent to the sender of a proposal when the organization that posted the use case sends its outcomes and shortlisted this one, with that organization's note."
         },
         "proposal_declined": {
           "name": "Proposal not selected",
-          "description": "Tells the sender its proposal was not selected, with the note of the organization that posted the use case."
+          "description": "Sent to the sender of a proposal when the organization that posted the use case sends its outcomes and did not select this one, with that organization's note."
         },
         "matching_invitation": {
           "name": "Invitation to propose",
-          "description": "Invites the provider of a matched solution to send a proposal for a use case, with the note of the person who invites."
+          "description": "Sent to the owners of a matched solution's organization when someone invites it to propose for a use case, with their note."
         },
         "talent_approved": {
-          "name": "Talent profile approved"
+          "name": "Talent profile approved",
+          "description": "Sent to the person when GenAI Fund approves their talent profile."
         },
         "talent_changes_requested": {
-          "name": "Talent profile sent back"
+          "name": "Talent profile sent back",
+          "description": "Sent to the person when GenAI Fund sends their talent profile back with what to change."
         },
         "talent_removed": {
-          "name": "Talent profile taken down"
+          "name": "Talent profile taken down",
+          "description": "Sent to the person when GenAI Fund takes their talent profile down."
         },
         "talent_restored": {
-          "name": "Talent profile restored"
+          "name": "Talent profile restored",
+          "description": "Sent to the person when GenAI Fund restores their talent profile."
         },
         "message_request": {
           "name": "First message",
-          "description": "Tells the side written to that someone wrote to them, without the sender's address."
+          "description": "Sent to the side written to when someone sends a first message, without the sender's address."
         },
         "message_request_reminder": {
-          "name": "First message reminder"
+          "name": "First message reminder",
+          "description": "Sent once to the side written to when a first message has waited 7 days without an answer."
         },
         "message_request_accepted": {
-          "name": "First message accepted"
+          "name": "First message accepted",
+          "description": "Sent to the sender of a first message when it is accepted."
         },
         "message_request_declined": {
           "name": "First message declined",
-          "description": "Tells the sender it will not be taken further, whether it was declined or reported."
+          "description": "Sent to the sender of a first message when it is declined or reported; both read the same."
         },
         "message_request_closed": {
           "name": "First message closed",
-          "description": "Tells the sender the message closed without an answer after 14 days."
+          "description": "Sent to the sender of a first message when it closes without an answer after 14 days."
         },
         "message_unread": {
           "name": "Unread message",
-          "description": "Tells a person who is away that a message waits, once until they read it."
+          "description": "Sent when a message arrives for someone who does not have BeyondPilot open, once until they read it. GenAI Fund's operators are not emailed."
         }
       },
       "status": {

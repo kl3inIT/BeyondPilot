@@ -3207,116 +3207,140 @@
       },
       "kinds": {
         "sign_in_code": {
-          "name": "Mã đăng nhập"
+          "name": "Mã đăng nhập",
+          "description": "Gửi mỗi lần có người xin mã để đăng nhập bằng địa chỉ email của họ."
         },
         "organization_invitation": {
-          "name": "Lời mời vào tổ chức"
+          "name": "Lời mời vào tổ chức",
+          "description": "Gửi khi chủ sở hữu, hoặc GenAI Fund, mời một địa chỉ tham gia hoặc sở hữu một tổ chức."
         },
         "organization_approved": {
-          "name": "Tổ chức được duyệt"
+          "name": "Tổ chức được duyệt",
+          "description": "Gửi cho các chủ sở hữu khi GenAI Fund duyệt tổ chức của họ."
         },
         "organization_refused": {
-          "name": "Tổ chức chưa được duyệt"
+          "name": "Tổ chức chưa được duyệt",
+          "description": "Gửi cho các chủ sở hữu khi GenAI Fund từ chối tổ chức của họ."
         },
         "organization_sent_back": {
-          "name": "Tổ chức bị trả lại"
+          "name": "Tổ chức bị trả lại",
+          "description": "Gửi cho các chủ sở hữu khi GenAI Fund gửi trả tổ chức kèm những gì cần sửa."
         },
         "organization_request_approved": {
-          "name": "Yêu cầu tham gia được chấp nhận"
+          "name": "Yêu cầu tham gia được chấp nhận",
+          "description": "Gửi khi yêu cầu tham gia, hoặc yêu cầu sở hữu, một tổ chức được chấp thuận."
         },
         "organization_request_declined": {
-          "name": "Yêu cầu tham gia bị từ chối"
+          "name": "Yêu cầu tham gia bị từ chối",
+          "description": "Gửi khi yêu cầu tham gia, hoặc yêu cầu sở hữu, một tổ chức bị từ chối."
         },
         "organization_taken_down": {
-          "name": "Tổ chức bị gỡ"
+          "name": "Tổ chức bị gỡ",
+          "description": "Gửi cho các chủ sở hữu khi GenAI Fund gỡ tổ chức của họ xuống."
         },
         "organization_restored": {
-          "name": "Tổ chức được khôi phục"
+          "name": "Tổ chức được khôi phục",
+          "description": "Gửi cho các chủ sở hữu khi GenAI Fund khôi phục tổ chức của họ."
         },
         "organization_merged": {
           "name": "Tổ chức đã được gộp",
-          "description": "Báo cho thành viên của tổ chức trùng lặp biết họ thuộc tổ chức nào từ nay."
+          "description": "Gửi cho thành viên của một tổ chức trùng lặp khi GenAI Fund gộp nó, nêu tổ chức họ thuộc về từ nay."
         },
         "application_received": {
-          "name": "Đã nhận đơn"
+          "name": "Đã nhận đơn",
+          "description": "Gửi cho người nộp mỗi lần họ nộp hồ sơ vào một chương trình, lần đầu và lần nộp lại sau khi sửa. Hồ sơ của họ đã được nhận."
         },
         "reviewer_invitation": {
-          "name": "Lời mời chấm đơn"
+          "name": "Lời mời chấm đơn",
+          "description": "Gửi khi GenAI Fund mời một địa chỉ chấm hồ sơ của một chương trình, hoặc gửi lại lời mời."
         },
         "application_outcome": {
           "name": "Kết quả đơn",
-          "description": "Kết quả của đơn, do operator viết cho mỗi lần công bố."
+          "description": "Gửi cho mọi người nộp của một chương trình khi GenAI Fund công bố kết quả, theo nội dung người vận hành viết cho nhóm của họ."
         },
         "solution_approved": {
-          "name": "Giải pháp được duyệt"
+          "name": "Giải pháp được duyệt",
+          "description": "Gửi cho mọi thành viên của tổ chức khi GenAI Fund duyệt giải pháp của họ."
         },
         "solution_sent_back": {
-          "name": "Giải pháp bị trả lại"
+          "name": "Giải pháp bị trả lại",
+          "description": "Gửi cho mọi thành viên của tổ chức khi GenAI Fund gửi trả giải pháp kèm những gì cần sửa."
         },
         "solution_rejected": {
           "name": "Giải pháp không được duyệt",
-          "description": "Báo các thành viên của tổ chức rằng giải pháp bị từ chối hẳn."
+          "description": "Gửi cho mọi thành viên của tổ chức khi GenAI Fund từ chối hẳn giải pháp của họ."
         },
         "solution_taken_down": {
-          "name": "Giải pháp bị gỡ xuống"
+          "name": "Giải pháp bị gỡ xuống",
+          "description": "Gửi cho mọi thành viên của tổ chức khi GenAI Fund gỡ giải pháp của họ xuống."
         },
         "solution_restored": {
-          "name": "Giải pháp được khôi phục"
+          "name": "Giải pháp được khôi phục",
+          "description": "Gửi cho mọi thành viên của tổ chức khi GenAI Fund khôi phục giải pháp của họ."
         },
         "use_case_approved": {
-          "name": "Use case được đăng"
+          "name": "Use case được đăng",
+          "description": "Gửi cho mọi thành viên của tổ chức khi GenAI Fund duyệt và đăng use case của họ."
         },
         "use_case_sent_back": {
-          "name": "Use case bị trả lại"
+          "name": "Use case bị trả lại",
+          "description": "Gửi cho mọi thành viên của tổ chức khi GenAI Fund gửi trả use case kèm những gì cần sửa."
         },
         "proposal_sent": {
-          "name": "Proposal đã gửi"
+          "name": "Proposal đã gửi",
+          "description": "Gửi cho người gửi đề xuất cho một use case, ngay khi gửi xong. Đề xuất của họ đã hoàn tất và tổ chức đăng use case có thể đọc được."
         },
         "proposal_shortlisted": {
           "name": "Đề xuất được chọn",
-          "description": "Báo cho bên gửi rằng đề xuất được chọn vào danh sách rút gọn, kèm lời nhắn của tổ chức đăng use case."
+          "description": "Gửi cho người gửi đề xuất khi tổ chức đăng use case gửi kết quả và chọn vào danh sách rút gọn, kèm ghi chú của tổ chức đó."
         },
         "proposal_declined": {
           "name": "Đề xuất không được chọn",
-          "description": "Báo cho bên gửi rằng đề xuất không được chọn, kèm lời nhắn của tổ chức đăng use case."
+          "description": "Gửi cho người gửi đề xuất khi tổ chức đăng use case gửi kết quả và không chọn đề xuất này, kèm ghi chú của tổ chức đó."
         },
         "matching_invitation": {
           "name": "Lời mời gửi đề xuất",
-          "description": "Mời nhà cung cấp của một giải pháp được ghép gửi đề xuất cho use case, kèm ghi chú của người mời."
+          "description": "Gửi cho các chủ sở hữu của tổ chức có giải pháp được ghép khi có người mời họ gửi đề xuất cho một use case, kèm ghi chú của người mời."
         },
         "talent_approved": {
-          "name": "Hồ sơ nhân lực được duyệt"
+          "name": "Hồ sơ nhân lực được duyệt",
+          "description": "Gửi cho người đó khi GenAI Fund duyệt hồ sơ nhân tài của họ."
         },
         "talent_changes_requested": {
-          "name": "Đề nghị sửa hồ sơ nhân lực"
+          "name": "Đề nghị sửa hồ sơ nhân lực",
+          "description": "Gửi cho người đó khi GenAI Fund gửi trả hồ sơ nhân tài kèm những gì cần sửa."
         },
         "talent_removed": {
-          "name": "Hồ sơ nhân lực bị gỡ xuống"
+          "name": "Hồ sơ nhân lực bị gỡ xuống",
+          "description": "Gửi cho người đó khi GenAI Fund gỡ hồ sơ nhân tài của họ xuống."
         },
         "talent_restored": {
-          "name": "Hồ sơ nhân lực được khôi phục"
+          "name": "Hồ sơ nhân lực được khôi phục",
+          "description": "Gửi cho người đó khi GenAI Fund khôi phục hồ sơ nhân tài của họ."
         },
         "message_request": {
           "name": "Tin đầu tiên",
-          "description": "Báo cho bên nhận rằng có người viết cho họ, không kèm địa chỉ của người gửi."
+          "description": "Gửi cho bên được nhắn khi có người gửi tin nhắn đầu tiên, không kèm địa chỉ email của người gửi."
         },
         "message_request_reminder": {
-          "name": "Nhắc tin đầu tiên"
+          "name": "Nhắc tin đầu tiên",
+          "description": "Gửi một lần cho bên được nhắn khi tin nhắn đầu tiên đã chờ 7 ngày chưa được trả lời."
         },
         "message_request_accepted": {
-          "name": "Tin đầu tiên được chấp nhận"
+          "name": "Tin đầu tiên được chấp nhận",
+          "description": "Gửi cho người gửi tin nhắn đầu tiên khi nó được chấp nhận."
         },
         "message_request_declined": {
           "name": "Tin đầu tiên bị từ chối",
-          "description": "Báo cho người gửi rằng tin sẽ không được tiếp tục, dù bị từ chối hay bị báo cáo."
+          "description": "Gửi cho người gửi tin nhắn đầu tiên khi nó bị từ chối hoặc bị báo cáo; hai trường hợp đọc giống nhau."
         },
         "message_request_closed": {
           "name": "Tin đầu tiên đã đóng",
-          "description": "Báo cho người gửi rằng tin đã đóng sau 14 ngày không có trả lời."
+          "description": "Gửi cho người gửi tin nhắn đầu tiên khi nó tự đóng vì không có trả lời sau 14 ngày."
         },
         "message_unread": {
           "name": "Tin chưa đọc",
-          "description": "Báo cho người đang vắng mặt rằng có tin đang chờ, một lần cho tới khi họ đọc."
+          "description": "Gửi khi có tin nhắn đến cho người không đang mở BeyondPilot, một lần cho tới khi họ đọc. Người vận hành của GenAI Fund không nhận email này."
         }
       },
       "status": {

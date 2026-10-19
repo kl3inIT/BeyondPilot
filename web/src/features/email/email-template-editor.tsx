@@ -88,8 +88,8 @@ function EmailTemplateEditor({
 }: {
   template: EmailTemplate;
   name: string;
-  /** What the name does not say about the email; most kinds have none. */
-  description?: string;
+  /** When the email is sent, and to whom. */
+  description: string;
   /** Where a test goes unless another address is written. */
   operatorEmail: string;
 }) {
@@ -276,7 +276,7 @@ function EmailTemplateEditor({
         badges={current.edited && <Badge variant="outline">{t("edited")}</Badge>}
         lead={
           <div className="flex flex-col gap-1">
-            {description && <p>{description}</p>}
+            <p>{description}</p>
             {/* The wording has one language: an operator reading Vietnamese edits the English everyone gets. */}
             <p>{t("sentInEnglish")}</p>
             {current.edited && current.updatedBy && current.updatedAt && (
