@@ -3071,6 +3071,8 @@
           "list_pending_reviews": "Liệt kê những gì đang chờ duyệt: tổ chức, giải pháp, talent, use case và customer deployment.",
           "list_records": "Liệt kê tổ chức, giải pháp, talent, use case hoặc offer ở mọi trạng thái, như các danh sách admin.",
           "get_record": "Đọc một bản ghi trong số đó, kèm trạng thái, quyết định gần nhất và lịch sử duyệt.",
+          "list_proposals": "Liệt kê các đề xuất nhà cung cấp AI gửi cho một use case, kèm quyết định cho từng đề xuất.",
+          "get_proposal": "Đọc một đề xuất: nhà cung cấp, giải pháp đề xuất, người gửi, deck và quyết định.",
           "list_programs": "Liệt kê mọi chương trình ở mọi trạng thái, kèm thời gian nhận hồ sơ và số hồ sơ.",
           "get_program": "Đọc cài đặt, câu hỏi, tiêu chí, giám khảo và kết quả của một chương trình; không công bố gì.",
           "list_accounts": "Liệt kê tài khoản kèm vai trò, trạng thái và lần đăng nhập gần nhất.",

@@ -476,6 +476,52 @@ public class UseCaseProposals {
 	}
 
 	/**
+	 * {@link #received} for another module, for operators only.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the use case is unknown
+	 */
+	@Transactional(readOnly = true)
+	public UseCaseProposalList proposalsOf(Actor actor, UUID useCaseId) {
+		identity.requireOperator(actor);
+		ReceivedUseCaseProposalsResponse received = received(actor, useCaseId);
+		return new UseCaseProposalList(received.useCase().id(), received.useCase().title(),
+				received.useCase().closesAt(), received.shortlisted(), received.declined(), received.pending(),
+				received.items()
+					.stream()
+					.map(item -> new UseCaseProposalList.Item(item.id(), item.organizationName(), item.solutionNames(),
+							item.contactName(), item.sentAt(), item.editedAt(), item.decision(), item.decidedAt(),
+							item.decidedBy(), item.outcomeSentAt()))
+					.toList());
+	}
+
+	/**
+	 * {@link #receivedOne} for another module, for operators only.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the proposal was not sent
+	 */
+	@Transactional(readOnly = true)
+	public ReceivedProposal proposalOf(Actor actor, UUID id) {
+		identity.requireOperator(actor);
+		ReceivedUseCaseProposalResponse one = receivedOne(actor, id);
+		SenderProfileResponse sender = one.sender();
+		AttachedFileResponse deck = one.deck();
+		return new ReceivedProposal(one.id(), one.useCase().id(), one.useCase().title(), one.organizationName(),
+				one.organizationApproved(), one.solutions()
+					.stream()
+					.map(solution -> new ReceivedProposal.Solution(solution.id(), solution.name(), solution.summary(),
+							solution.slug()))
+					.toList(),
+				one.approach(), one.teamBackground(),
+				new ReceivedProposal.Contact(one.sentBy().name(), one.sentBy().email(), one.sentBy().country(),
+						one.sentBy().phone()),
+				sender == null ? null
+						: new ReceivedProposal.Sender(sender.name(), sender.headline(), sender.bio(), sender.roles(),
+								sender.skills(), sender.country(), sender.worksAt(), sender.website()),
+				deck == null ? null : new ReceivedProposal.Deck(deck.fileId(), deck.fileName(), deck.sizeBytes()),
+				one.sentAt(), one.editedAt(), one.decision(), one.decidedAt(), one.decidedBy(), one.outcomeSentAt());
+	}
+
+	/**
 	 * The PDF of a proposal a use case received.
 	 * @throws ProposalException when the proposal was not sent, or the caller's organization did not post its use case
 	 */

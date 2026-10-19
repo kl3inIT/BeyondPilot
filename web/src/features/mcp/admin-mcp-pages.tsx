@@ -23,6 +23,8 @@ const OPERATOR_TOOLS = [
   "list_pending_reviews",
   "list_records",
   "get_record",
+  "list_proposals",
+  "get_proposal",
   "list_programs",
   "get_program",
   "list_accounts",

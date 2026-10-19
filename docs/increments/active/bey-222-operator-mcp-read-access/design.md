@@ -6,13 +6,13 @@ Tracked in Linear as BEY-222. Asked by GenAI Fund (Kai, 18 October 2026): read-o
 
 The operators' server, `/mcp/operator` (scope `mcp.research`, operators only), gains read-only tools over what the admin screens read. Each tool calls the application service its admin screen calls, with the caller as the actor, so the operator role is checked again there.
 
-| Area                       | Tools                                                                                                                           |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Applications               | `list_applications` (status, challenge area, drafts), `get_application` (submitted or draft, `detail`), `read_application_file` |
-| Programs                   | `list_programs`, `get_program` (settings, window, questions, criteria, judges, outcome status)                                  |
-| Review queues              | `list_records(area, status, q)`, `get_record(area, id, detail)` with history; `list_pending_reviews`                            |
-| Accounts, audit, email, AI | `list_accounts`, `list_audit_events`, `list_emails`, `get_email`, `list_matching_runs`, `get_matching_run`, `get_matches`       |
-| Search                     | `search` finds a record by its name before others that share its words, on both servers                                         |
+| Area                       | Tools                                                                                                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Applications               | `list_applications` (status, challenge area, drafts), `get_application` (submitted or draft, `detail`), `read_application_file`                                    |
+| Programs                   | `list_programs`, `get_program` (settings, window, questions, criteria, judges, outcome status)                                                                     |
+| Review queues              | `list_records(area, status, q)`, `get_record(area, id, detail)` with history; `list_pending_reviews`; `list_proposals(use_case)`, `get_proposal(proposal, detail)` |
+| Accounts, audit, email, AI | `list_accounts`, `list_audit_events`, `list_emails`, `get_email`, `list_matching_runs`, `get_matching_run`, `get_matches`                                          |
+| Search                     | `search` finds a record by its name before others that share its words, on both servers                                                                            |
 
 Admin › AI › MCP › Activity shows the record each call read, linked to its admin page, under the calls, refused and failed counts of the period.
 

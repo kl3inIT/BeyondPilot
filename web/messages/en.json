@@ -3071,6 +3071,8 @@
           "list_pending_reviews": "Lists what waits for review: organizations, solutions, talent, use cases and customer deployments.",
           "list_records": "Lists organizations, solutions, talent, use cases or offers in any status, as the admin lists do.",
           "get_record": "Reads one of them with its status, latest decision and review history.",
+          "list_proposals": "Lists the proposals AI providers sent to a use case, with the decision on each.",
+          "get_proposal": "Reads one proposal: the provider, the solutions offered, who sent it, its deck and the decision.",
           "list_programs": "Lists every program in any status, with its application window and counts.",
           "get_program": "Reads a program's settings, questions, criteria, judges and outcomes; releases nothing.",
           "list_accounts": "Lists accounts with their role, status and last sign-in.",

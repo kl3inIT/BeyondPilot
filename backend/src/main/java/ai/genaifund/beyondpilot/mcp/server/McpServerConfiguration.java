@@ -235,6 +235,10 @@ class McpServerConfiguration {
 			all.add(log.logged(name, reviewRecordTools.listRecords()));
 			all.add(log.logged(name, reviewRecordTools.getRecord()));
 		}
+		if (operatorTools != null) {
+			all.add(log.logged(name, operatorTools.listProposals()));
+			all.add(log.logged(name, operatorTools.getProposal()));
+		}
 		if (programTools != null) {
 			all.add(log.logged(name, programTools.listPrograms()));
 			all.add(log.logged(name, programTools.getProgram()));

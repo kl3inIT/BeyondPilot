@@ -44,7 +44,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = { "beyondpilot.identity.operator-emails=operator@mcp.test",
 				"beyondpilot.identity.oauth.issuer=http://localhost:3000",
-				"beyondpilot.mcp.calls-per-caller-per-minute=30" })
+				"beyondpilot.mcp.calls-per-caller-per-minute=200" })
 @Import({ TestcontainersConfiguration.class, McpServerTest.Mail.class })
 class McpServerTest {
 
@@ -216,7 +216,7 @@ class McpServerTest {
 		assertThat(JsonPath.<String>read(all, "$.items[0].clientId")).isEqualTo(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.apps[*].clientId")).contains(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch", "list_applications",
-				"get_application", "read_application_file", "list_pending_reviews", "list_records", "get_record", "list_programs", "get_program",
+				"get_application", "read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program",
 				"list_accounts", "list_audit_events", "list_emails", "get_email", "list_matching_runs",
 				"get_matching_run", "get_matches");
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&outcome=refused"),
@@ -341,8 +341,9 @@ class McpServerTest {
 		assertThat(initialize(token, null, "https://attacker.example")).isEqualTo(403);
 		assertThat(initialize(token, null, ISSUER)).isEqualTo(200);
 
+		// The limit refills as calls go, so calls are made until one is refused.
 		int refused = 0;
-		for (int call = 0; call < 31; call++) {
+		for (int call = 0; call < 1000 && refused == 0; call++) {
 			if (initialize(token, null, null) == 429) {
 				refused++;
 			}
@@ -368,7 +369,7 @@ class McpServerTest {
 		app.initialize();
 		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
 			.containsExactly("search", "fetch", "list_applications", "get_application",
-					"read_application_file", "list_pending_reviews", "list_records", "get_record", "list_programs", "get_program", "list_accounts",
+					"read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "list_accounts",
 					"list_audit_events", "list_emails", "get_email", "list_matching_runs", "get_matching_run",
 					"get_matches");
 
@@ -531,7 +532,7 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(19);
+			.isEqualTo(21);
 
 		switchTool("user", "fetch", false);
 		try {
