@@ -125,14 +125,14 @@ public class UseCaseProposals {
 		UseCaseTarget target = known(useCaseId);
 		Membership membership = organizations.membershipOf(actor).orElse(null);
 		requireNotOwn(target, membership);
-		if (!target.open()) {
-			// A use case that no longer takes proposals still shows the caller the one their organization sent, or took back.
+		if (!target.open() || target.challenge() != null) {
+			// A use case that takes no new proposals still shows the caller the one their organization sent, or took back.
 			UseCaseProposal sent = membership == null ? null
 					: proposals.findByUseCaseIdAndOrganizationId(useCaseId, membership.organizationId())
 						.filter(found -> found.isSent() || found.getWithdrawnAt() != null)
 						.orElse(null);
 			if (sent == null) {
-				throw closed(useCaseId);
+				throw target.open() ? inChallenge(target) : closed(useCaseId);
 			}
 			return form(actor, target, membership, sent);
 		}
@@ -155,7 +155,7 @@ public class UseCaseProposals {
 		boolean created = proposal == null;
 		boolean edit = false;
 		if (proposal == null) {
-			requireOpen(target);
+			requireOpenToNew(target);
 			proposal = new UseCaseProposal(UUID.randomUUID(), useCaseId, organizationId, actor.accountId());
 		}
 		else {
@@ -549,7 +549,7 @@ public class UseCaseProposals {
 
 	private UseCaseTarget open(UUID useCaseId) {
 		UseCaseTarget target = known(useCaseId);
-		requireOpen(target);
+		requireOpenToNew(target);
 		return target;
 	}
 
@@ -562,6 +562,23 @@ public class UseCaseProposals {
 		if (!target.open()) {
 			throw closed(target.id());
 		}
+	}
+
+	/**
+	 * A new proposal is made and sent only while the use case is open and outside a challenge that takes applications:
+	 * there, answers go to the challenge's application, so that they are all reviewed in one place. What was sent before
+	 * stays, and can be edited or withdrawn under the use case's own dates.
+	 */
+	private static void requireOpenToNew(UseCaseTarget target) {
+		requireOpen(target);
+		if (target.challenge() != null) {
+			throw inChallenge(target);
+		}
+	}
+
+	private static ProposalException inChallenge(UseCaseTarget target) {
+		return new ProposalException(ProposalErrorCode.USE_CASE_IN_CHALLENGE,
+				"Use case " + target.id() + " is answered through challenge " + target.challenge());
 	}
 
 	private static ProposalException closed(UUID useCaseId) {

@@ -126,3 +126,47 @@ describe("proposal actions after the deadline", () => {
     expect(screen.queryByRole("button", { name: "Proposals closed" })).not.toBeInTheDocument();
   });
 });
+
+describe("proposal actions on a use case of a challenge taking applications", () => {
+  const challenge = { name: "Claims challenge", slug: "claims", closesAt: "2099-01-01T00:00:00Z" };
+  const open = { useCaseId: useCase.id, closesAt: null, challenge };
+
+  beforeEach(() => {
+    account.mockReset().mockResolvedValue({ id: "a" });
+  });
+
+  it("leads a visitor to the challenge's application instead of a proposal", async () => {
+    account.mockResolvedValue(null);
+    render(await ProposalActions(open));
+
+    expect(screen.getByRole("link", { name: "Apply to the challenge" })).toHaveAttribute(
+      "href",
+      "/programs/claims/apply",
+    );
+    expect(screen.queryByRole("link", { name: "Send a proposal" })).not.toBeInTheDocument();
+  });
+
+  it("leads an organization with a draft to the challenge too", async () => {
+    readForm.mockRejectedValue(
+      new ApiError(409, {
+        code: "PROPOSAL_USE_CASE_IN_CHALLENGE",
+        status: 409,
+        title: "Conflict",
+        requestId: "challenge-read",
+      }),
+    );
+    render(await ProposalActions(open));
+
+    expect(screen.getByRole("link", { name: "Apply to the challenge" })).toBeInTheDocument();
+  });
+
+  it("still shows the proposal an organization sent before", async () => {
+    readForm.mockResolvedValue({
+      data: { useCase, proposal: { ...draft, status: "sent", sentAt: "2026-10-01T00:00:00Z" } },
+    });
+    render(await ProposalActions(open));
+
+    expect(screen.getByRole("link", { name: "View proposal" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Apply to the challenge" })).not.toBeInTheDocument();
+  });
+});

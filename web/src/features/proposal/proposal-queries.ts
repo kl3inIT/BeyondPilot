@@ -6,6 +6,7 @@ import { sessionRequest } from "@/lib/auth/session";
 export type ProposalFormResult =
   | { kind: "form"; form: UseCaseProposalForm }
   | { kind: "blocked"; reason: "own" | "closed" }
+  | { kind: "challenge" }
   | { kind: "absent" };
 
 /** The proposal form of a use case for the person behind this request. Server only. */
@@ -18,6 +19,10 @@ export async function readProposalForm(useCaseId: string): Promise<ProposalFormR
     return { kind: "form", form: data };
   } catch (error) {
     if (error instanceof ApiError) {
+      // A use case of a challenge that takes applications is answered by applying to the challenge.
+      if (error.code === "PROPOSAL_USE_CASE_IN_CHALLENGE") {
+        return { kind: "challenge" };
+      }
       if (error.status === 409) {
         return { kind: "blocked", reason: "closed" };
       }

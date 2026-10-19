@@ -4527,6 +4527,10 @@ export type PublicUseCase = {
     budgetMin?: number | null;
     budgetToBeDetermined: boolean;
     /**
+     * The program it belongs to that takes applications now; while there is one, the use case is answered by applying to it, not by a proposal. Null otherwise.
+     */
+    challenge?: UseCaseChallenge | null;
+    /**
      * Proposals close at this instant; null for no deadline.
      */
     closesAt?: string | null;
@@ -6851,6 +6855,21 @@ export type UseCaseAttachment = {
     id: string;
     mediaType: string;
     sizeBytes: number;
+};
+
+/**
+ * The program a use case belongs to that takes applications now: whoever answers the use case applies to it, and sends no proposal.
+ */
+export type UseCaseChallenge = {
+    /**
+     * Applications close at this instant.
+     */
+    closesAt: string;
+    name: string;
+    /**
+     * The address of its public page, whose application form it opens.
+     */
+    slug: string;
 };
 
 /**
