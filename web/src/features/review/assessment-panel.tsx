@@ -1,13 +1,16 @@
 "use client";
 
-import { BookmarkIcon } from "lucide-react";
+import { cn } from "cn";
+import { BookmarkIcon, CheckIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { TextButton } from "@/components/actions/text-button";
 import { LeaveGuard, onGuardEntry } from "@/components/composites/leave-guard";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupToggle } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
@@ -189,27 +192,60 @@ function AssessmentPanel({
                 )}
               </span>
             </div>
+            <Progress
+              value={criteria.length === 0 ? 0 : (scored.length / criteria.length) * 100}
+              aria-hidden="true"
+            />
             <p id="assessment-scale" className="text-xs text-muted-foreground">
               {t("scale")}
             </p>
           </div>
-          {criteria.map((criterion) => {
-            const chosen = scores[criterion.id];
-            return (
-              // The scale goes under the name of its criterion, and wraps on a narrow screen.
-              <div key={criterion.id} className="flex flex-col gap-1.5">
-                <span className="flex min-w-0 flex-col text-sm">
-                  <span id={`criterion-${criterion.id}`}>{criterion.name}</span>
-                  {criterion.description && (
-                    <span id={`criterion-${criterion.id}-what`} className="text-muted-foreground">
-                      {criterion.description}
+          {/* One block a criterion, divided, so a judge sees where each starts and which are left (Minh, BEY-223). */}
+          <ol className="flex flex-col divide-y">
+            {criteria.map((criterion, index) => {
+              const chosen = scores[criterion.id];
+              return (
+                <li
+                  key={criterion.id}
+                  className="@container flex flex-col gap-2 py-3.5 first:pt-0 last:pb-0"
+                >
+                  <div className="flex items-start gap-2 text-sm">
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "mt-px flex size-5 shrink-0 items-center justify-center rounded-full border text-xs font-semibold tabular-nums",
+                        chosen
+                          ? "border-success bg-success text-success-foreground"
+                          : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {chosen ? <CheckIcon className="size-3" /> : index + 1}
                     </span>
+                    <span id={`criterion-${criterion.id}`} className="min-w-0 flex-1 font-semibold">
+                      {criterion.name}
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                      {chosen ? (
+                        <span className="font-medium text-foreground">
+                          {chosen} · <span>{t(`bands.${bandOf(Number(chosen))}`)}</span>
+                        </span>
+                      ) : (
+                        <>
+                          <span aria-hidden="true">—</span>
+                          <span className="sr-only">{t("notScored")}</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
+                  {criterion.description && (
+                    <CriterionDescription
+                      id={`criterion-${criterion.id}-what`}
+                      text={criterion.description}
+                    />
                   )}
-                </span>
-                {/* One score of ten: a radio group, so the arrow keys move along the scale. */}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  {/* One score of ten, on one row where it fits and two even rows of five where not: a radio group, so the arrow keys move along the scale. */}
                   <RadioGroup
-                    className="flex w-fit flex-wrap"
+                    className="grid-cols-5 @sm:grid-cols-10"
                     aria-labelledby={`criterion-${criterion.id}`}
                     aria-describedby={
                       criterion.description ? `criterion-${criterion.id}-what` : undefined
@@ -224,6 +260,7 @@ function AssessmentPanel({
                       <RadioGroupToggle
                         key={score}
                         size="sm"
+                        className="w-full"
                         value={String(score)}
                         aria-label={t("score", { score, band: t(`bands.${bandOf(score)}`) })}
                       >
@@ -231,15 +268,10 @@ function AssessmentPanel({
                       </RadioGroupToggle>
                     ))}
                   </RadioGroup>
-                  {chosen && (
-                    <span className="text-xs text-muted-foreground">
-                      {t(`bands.${bandOf(Number(chosen))}`)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                </li>
+              );
+            })}
+          </ol>
         </div>
       )}
 
@@ -347,6 +379,42 @@ function AssessmentPanel({
         stayLabel={t("leave.stay")}
       />
     </section>
+  );
+}
+
+/**
+ * What a judge looks for in a criterion, cut to two lines with More to read the rest. More shows
+ * only when the text runs longer than the two lines.
+ */
+function CriterionDescription({ id, text }: { id: string; text: string }) {
+  const t = useTranslations("Review.assessment");
+  const [open, setOpen] = useState(false);
+  const [long, setLong] = useState(false);
+  const ref = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element || open) {
+      return;
+    }
+    const measure = () => setLong(element.scrollHeight > element.clientHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [open, text]);
+
+  return (
+    <div className="flex flex-col items-start gap-0.5">
+      <p ref={ref} id={id} className={cn("text-xs text-muted-foreground", !open && "line-clamp-2")}>
+        {text}
+      </p>
+      {(long || open) && (
+        <TextButton size="sm" aria-expanded={open} onClick={() => setOpen(!open)}>
+          {open ? t("less") : t("more")}
+        </TextButton>
+      )}
+    </div>
   );
 }
 
