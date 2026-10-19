@@ -13,10 +13,24 @@ import org.jspecify.annotations.Nullable;
  * @param decision GenAI Fund's decision: {@code under_review}, {@code shortlisted} or {@code not_selected}
  * @param averageScore the mean of every judge's score; null until one scores it
  * @param criteria what the program's judges score, in order
+ * @param history its submissions and GenAI Fund's decisions, the oldest first
  */
 public record SubmittedApplication(UUID id, Program program, int version, Instant submittedAt,
 		@Nullable String decision, @Nullable Double averageScore, Applicant applicant, Organization organization,
-		Solution solution, List<Answer> answers, List<Criterion> criteria, List<Assessment> assessments) {
+		Solution solution, List<Answer> answers, List<Criterion> criteria, List<Assessment> assessments,
+		List<Event> history) {
+
+	/**
+	 * A submission or a decision.
+	 * @param kind {@code submitted} or {@code decided}
+	 * @param version the version a submission made
+	 * @param decision the decision made: {@code under_review}, {@code shortlisted} or {@code not_selected}
+	 * @param reason why, as the operator who decided wrote it
+	 * @param by who decided
+	 */
+	public record Event(String kind, Instant at, @Nullable Integer version, @Nullable String decision,
+			@Nullable String reason, @Nullable String by) {
+	}
 
 	public record Program(UUID id, String slug, String name) {
 	}

@@ -660,6 +660,123 @@ class ReviewTest extends ApplicationsHttpTest {
 		app.closeGracefully();
 	}
 
+	@Test
+	void anOperatorsAppNarrowsTheApplicationsReadsADraftAndAProgramsReviewWithoutReleasingIt() {
+		Form form = program("reviewed-by-mcp", true, Instant.now().plus(Duration.ofDays(10)));
+		criteriaOf(form, "Practical impact");
+		judge(form, "judge@program-mcp.test");
+		Applicant chosen = applicant(form, "chosen@program-mcp.test", "Chosen Builder");
+		applicant(form, "waiting@program-mcp.test", "Waiting Builder");
+		shortlist(form, chosen.id());
+		String later = TestSignIn.session(client, mail, "later@program-mcp.test");
+		Map<String, String> answered = new HashMap<>();
+		answered.put(form.approach().toString(), "Claims reach a decision without a hotline call.");
+		put(later, form.path(), application(contact("Later Builder"), null, answered, null)).expectStatus().isOk();
+		McpSyncClient app = operatorApp();
+
+		// Narrowed by decision and by challenge area, whose options the answer gives; the drafts when asked.
+		String shortlisted = call(app, "list_applications",
+				Map.of("program", "program:reviewed-by-mcp", "status", "shortlisted", "drafts", true));
+		assertThat(JsonPath.<Integer>read(shortlisted, "$.submitted")).isEqualTo(2);
+		assertThat(JsonPath.<List<String>>read(shortlisted, "$.applications[*].email"))
+			.containsExactly("chosen@program-mcp.test");
+		assertThat(JsonPath.<List<String>>read(shortlisted, "$.challengeArea.options")).containsExactly("Buying",
+				"Carrying", "Claiming");
+		assertThat(JsonPath.<List<String>>read(shortlisted, "$.draftApplications[*].email"))
+			.containsExactly("later@program-mcp.test");
+		assertThat(JsonPath.<Integer>read(shortlisted, "$.draftApplications[0].requiredAnswered")).isEqualTo(1);
+		assertThat(JsonPath.<List<String>>read(call(app, "list_applications",
+				Map.of("program", "reviewed-by-mcp", "challenge_area", "claiming")), "$.applications[*].challengeArea"))
+			.containsExactly("Claiming", "Claiming");
+		assertThat(JsonPath.<List<Object>>read(call(app, "list_applications",
+				Map.of("program", "reviewed-by-mcp", "challenge_area", "Buying")), "$.applications")).isEmpty();
+		assertThat(app.callTool(McpSchema.CallToolRequest.builder("list_applications")
+			.arguments(Map.of("program", "reviewed-by-mcp", "challenge_area", "Sailing"))
+			.build()).isError()).isTrue();
+
+		// An application's decisions, with who decided and why; the answers only in detail; a draft as it stands.
+		String application = call(app, "get_application", Map.of("application", chosen.id().toString()));
+		assertThat(JsonPath.<String>read(application, "$.state")).isEqualTo("submitted");
+		assertThat(application).doesNotContain("\"answers\"");
+		assertThat(JsonPath.<List<String>>read(call(app, "get_application",
+				Map.of("application", chosen.id().toString(), "detail", true)), "$.answers[*].value"))
+			.contains("Claiming");
+		assertThat(JsonPath.<List<String>>read(application, "$.history[*].kind")).containsExactly("submitted",
+				"decided");
+		assertThat(JsonPath.<String>read(application, "$.history[1].decision")).isEqualTo("shortlisted");
+		assertThat(JsonPath.<String>read(application, "$.history[1].reason")).isEqualTo("The strongest in Claiming.");
+		String draftId = JsonPath.read(shortlisted, "$.draftApplications[0].id");
+		String draft = call(app, "get_application", Map.of("application", draftId, "detail", true));
+		assertThat(JsonPath.<String>read(draft, "$.state")).isEqualTo("draft");
+		assertThat(JsonPath.<String>read(draft, "$.applicant.email")).isEqualTo("later@program-mcp.test");
+		assertThat(JsonPath.<List<String>>read(draft, "$.answers[*].value"))
+			.containsExactly("Claims reach a decision without a hotline call.");
+		assertThat(JsonPath.<String>read(draft, "$.url"))
+			.endsWith("/admin/programs/" + form.programId() + "/applications/drafts/" + draftId);
+
+		// Every program with its counts; one program with its form and its review, which releases nothing.
+		String programs = call(app, "list_programs", Map.of());
+		String counts = "$.programs[?(@.programId == '" + form.programId() + "')].applicationCounts.";
+		assertThat(JsonPath.<List<Integer>>read(programs, counts + "submitted")).containsExactly(2);
+		assertThat(JsonPath.<List<Integer>>read(programs, counts + "drafts")).containsExactly(1);
+		String program = call(app, "get_program", Map.of("program", form.programId().toString()));
+		assertThat(JsonPath.<String>read(program, "$.id")).isEqualTo("program:reviewed-by-mcp");
+		assertThat(JsonPath.<String>read(program, "$.applications.closesAt")).isNotBlank();
+		assertThat(JsonPath.<List<String>>read(program, "$.questions[*].label")).contains("Direction");
+		assertThat(JsonPath.<List<List<String>>>read(call(app, "get_program",
+				Map.of("program", "program:reviewed-by-mcp", "detail", true)),
+				"$.questions[?(@.label == 'Direction')].options")).containsExactly(List.of("Buying", "Carrying",
+						"Claiming"));
+		assertThat(JsonPath.<List<String>>read(program, "$.review.criteria[*].name"))
+			.containsExactly("Practical impact");
+		assertThat(JsonPath.<List<String>>read(program, "$.review.judges[*].email"))
+			.containsExactly("judge@program-mcp.test");
+		assertThat(JsonPath.<Boolean>read(program, "$.review.outcomes.released")).isFalse();
+		assertThat(JsonPath.<List<String>>read(program, "$.review.outcomes.shortlisted[*].id"))
+			.containsExactly(chosen.id().toString());
+		assertThat(JsonPath.<List<String>>read(program, "$.review.outcomes.undecided[*].organization"))
+			.containsExactly("Waiting Builder");
+		assertThat(jdbc.sql("select count(*) from proposal_release where program_id = ?")
+			.params(form.programId())
+			.query(Long.class)
+			.single()).isZero();
+		assertThat(auditOf(form.programId())).doesNotContain("proposal.release");
+
+		// The activity names what each call read and links its admin page.
+		assertThat(jdbc.sql("""
+				select tool || ' ' || target_kind || ' ' || target_label || ' ' || target_path from mcp_call
+				where tool in ('get_program', 'get_application') and target_id in (?, ?) order by called_at
+				""").params(form.programId().toString(), draftId).query(String.class).list()).containsExactly(
+				"get_application draft Later Builder · Reviewed by mcp /admin/programs/" + form.programId()
+						+ "/applications/drafts/" + draftId,
+				"get_program program Reviewed by mcp /admin/programs/" + form.programId(),
+				"get_program program Reviewed by mcp /admin/programs/" + form.programId());
+		app.closeGracefully();
+	}
+
+	/** An app connected to the operators' server by the operator, initialized. */
+	private McpSyncClient operatorApp() {
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = McpClient
+			.sync(HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
+				.endpoint("/mcp/operator")
+				.httpRequestCustomizer((builder, method, uri, body, context) -> builder.header("Authorization",
+						"Bearer " + token))
+				.build())
+			.requestTimeout(Duration.ofSeconds(20))
+			.build();
+		app.initialize();
+		return app;
+	}
+
+	/** The JSON text a tool answered, which must not be an error. */
+	private static String call(McpSyncClient app, String tool, Map<String, Object> arguments) {
+		CallToolResult result = app.callTool(McpSchema.CallToolRequest.builder(tool).arguments(arguments).build());
+		String text = ((TextContent) result.content().getFirst()).text();
+		assertThat(result.isError()).as(text).isFalse();
+		return text;
+	}
+
 	/** Submits an application of the caller, who already belongs to an organization, and answers its identifier. */
 	private String submittedBy(String session, String email, Form form) {
 		UUID solution = completeSolution(session, email, "Operator Desk");

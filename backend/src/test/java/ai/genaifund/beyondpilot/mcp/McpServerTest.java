@@ -216,9 +216,9 @@ class McpServerTest {
 		assertThat(JsonPath.<String>read(all, "$.items[0].clientId")).isEqualTo(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.apps[*].clientId")).contains(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch", "list_applications",
-				"get_application", "read_application_file", "list_pending_reviews", "list_accounts",
-				"list_audit_events", "list_emails", "get_email", "list_matching_runs", "get_matching_run",
-				"get_matches");
+				"get_application", "read_application_file", "list_pending_reviews", "list_programs", "get_program",
+				"list_accounts", "list_audit_events", "list_emails", "get_email", "list_matching_runs",
+				"get_matching_run", "get_matches");
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&outcome=refused"),
 				"$.total")).isEqualTo(1);
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&tool=search"),
@@ -368,8 +368,9 @@ class McpServerTest {
 		app.initialize();
 		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
 			.containsExactly("search", "fetch", "list_applications", "get_application",
-					"read_application_file", "list_pending_reviews", "list_accounts", "list_audit_events",
-					"list_emails", "get_email", "list_matching_runs", "get_matching_run", "get_matches");
+					"read_application_file", "list_pending_reviews", "list_programs", "get_program", "list_accounts",
+					"list_audit_events", "list_emails", "get_email", "list_matching_runs", "get_matching_run",
+					"get_matches");
 
 		String found = text(app.callTool(McpSchema.CallToolRequest.builder("search")
 			.arguments(Map.of("query", "hidden agent " + word))
@@ -459,7 +460,7 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(15);
+			.isEqualTo(17);
 
 		switchTool("user", "fetch", false);
 		try {

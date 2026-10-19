@@ -139,6 +139,65 @@ public class ProgramAdministration {
 	}
 
 	/**
+	 * Every program in any status, as {@link #list} gives it, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public List<ProgramOverview> overviews(Actor actor) {
+		return list(actor).items()
+			.stream()
+			.map(item -> new ProgramOverview(item.id(), item.slug(), item.name(), item.type(), item.partnerName(),
+					item.status(), item.phase(), window(item.applications()), item.startsOn(), item.endsOn(),
+					item.featuredAt(), item.updatedAt()))
+			.toList();
+	}
+
+	/**
+	 * One program as its Settings and Questions pages hold it, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProgramException when the program does not exist
+	 */
+	@Transactional(readOnly = true)
+	public ProgramSettings settingsOf(Actor actor, UUID id) {
+		AdminProgramResponse program = get(actor, id);
+		ProgramQuestionsResponse questions = questions(actor, id);
+		ProgramApplications applications = program.applications();
+		String phase = ProgramPhase
+			.of(program.startsOn(), program.endsOn(), applications == null ? null : applications.opensAt(),
+					applications == null ? null : applications.closesAt(), Instant.now())
+			.code();
+		return new ProgramSettings(
+				new ProgramOverview(program.id(), program.slug(), program.name(), program.type(),
+						program.partnerName(), program.status(), phase, window(applications), program.startsOn(),
+						program.endsOn(), program.featuredAt(), program.updatedAt()),
+				program.summary(), program.about(), program.pageKind(), program.externalUrl(), program.lumaEventId(),
+				program.publishIssues(),
+				program.keyDates()
+					.stream()
+					.map(date -> new ProgramSettings.KeyDate(date.title(), date.startsAt(), date.endsAt(), date.allDay(),
+							date.note()))
+					.toList(),
+				program.events()
+					.stream()
+					.map(event -> new ProgramSettings.Event(event.title(), event.startsAt(), event.endsAt(),
+							event.online(), event.city(), event.country(), event.registrationUrl()))
+					.toList(),
+				questions.questions()
+					.stream()
+					.map(question -> new ProgramSettings.Question(question.kind(), question.label(), question.help(),
+							question.required(), question.options(), question.maxLength()))
+					.toList(),
+				questions.fixed(), program.createdAt());
+	}
+
+	private static ProgramOverview.@Nullable Window window(@Nullable ProgramApplications applications) {
+		return applications == null ? null
+				: new ProgramOverview.Window(applications.opensAt(), applications.closesAt(),
+						applications.shortlistSize(), applications.outcomesDueOn(),
+						applications.allowUpdatesUntilClose());
+	}
+
+	/**
 	 * Creates a draft, which only operators see until it is published.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws ProgramException when another program has the address

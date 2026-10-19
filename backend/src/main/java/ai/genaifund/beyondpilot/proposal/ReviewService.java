@@ -389,14 +389,21 @@ public class ReviewService {
 	@Transactional
 	public FileDownload draftFile(Actor actor, UUID id, UUID fileId) {
 		access.operator(actor);
-		Proposal draft = draftOf(id);
+		requireHeldByDraft(draftOf(id), fileId);
+		return storage.download(fileId);
+	}
+
+	/**
+	 * Refuses a file the draft holds neither as its deck nor as an answer.
+	 * @throws ProposalException when the draft does not hold it
+	 */
+	private void requireHeldByDraft(Proposal draft, UUID fileId) {
 		Map<String, String> answers = json.readValue(draft.getAnswers(), ANSWERS);
 		boolean held = fileId.equals(draft.getDeckFileId()) || answers.containsValue(fileId.toString());
 		if (!held) {
 			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
-					"File " + fileId + " is not of draft " + id);
+					"File " + fileId + " is not of draft " + draft.getId());
 		}
-		return storage.download(fileId);
 	}
 
 	private Proposal draftOf(UUID id) {
@@ -428,12 +435,82 @@ public class ReviewService {
 	public ProgramApplications applicationsOf(Actor actor, UUID programId) {
 		identity.requireOperator(actor);
 		ReviewApplicationsResponse response = applications(actor, programId);
-		return new ProgramApplications(response.drafts(), response.withdrawn(), response.items()
+		ReviewHeadResponse.ChoiceQuestion choice = response.head().choice();
+		return new ProgramApplications(
+				choice == null ? null : new ProgramApplications.ChallengeArea(choice.label(), choice.options()),
+				response.drafts(), response.withdrawn(), response.items()
+					.stream()
+					.map(item -> new ProgramApplications.Application(item.id(), item.solutionName(),
+							item.organizationName(), item.organizationType(), item.country(), item.email(),
+							item.choice(), item.submittedAt(), item.version(), item.reviewStatus(), item.average(),
+							item.scored() == null ? 0 : item.scored()))
+					.toList());
+	}
+
+	/**
+	 * A program's drafts not submitted yet, as {@link #drafts} lists them, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the program takes no applications
+	 */
+	@Transactional(readOnly = true)
+	public ProgramDrafts draftsOf(Actor actor, UUID programId) {
+		ProgramDraftsResponse response = drafts(actor, programId);
+		return new ProgramDrafts(response.requiredQuestions(), response.items()
 			.stream()
-			.map(item -> new ProgramApplications.Application(item.id(), item.solutionName(), item.organizationName(),
-					item.organizationType(), item.country(), item.submittedAt(), item.version(), item.reviewStatus(),
-					item.average(), item.scored() == null ? 0 : item.scored()))
+			.map(item -> new ProgramDrafts.Draft(item.id(), item.firstName(), item.lastName(), item.email(),
+					item.phone(), item.country(), item.organizationName(), item.organizationType(),
+					item.contactComplete(), item.solutionChosen(), item.deckAttached(), item.requiredAnswered(),
+					item.startedAt(), item.lastSavedAt()))
 			.toList());
+	}
+
+	/**
+	 * A draft as it stands now, as {@link #draft} reads it for the admin page, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when there is no such draft
+	 */
+	@Transactional
+	public DraftApplication draftApplication(Actor actor, UUID id) {
+		ReviewDraftResponse view = draft(actor, id);
+		ReviewHeadResponse head = view.head();
+		ReviewApplicationResponse.Submitted sent = view.draft();
+		ContactDetails contact = sent.contact() == null ? ContactDetails.EMPTY : sent.contact();
+		return new DraftApplication(view.id(),
+				new SubmittedApplication.Program(head.programId(), head.slug(), head.name()), view.startedAt(),
+				view.lastSavedAt(),
+				new SubmittedApplication.Applicant(sent.email() == null ? "" : sent.email(), contact.firstName(),
+						contact.lastName(), contact.phone(), contact.country(), contact.linkedin()),
+				sent.organizationName().isBlank() ? null
+						: new SubmittedApplication.Organization(sent.organizationName(), sent.organizationType(),
+								sent.country(), sent.teamSize(), sent.website(), sent.teamBackground()),
+				new SubmittedApplication.Solution(sent.solutionName(), sent.summary(), sent.problemsSolved(),
+						sent.maturity(), sent.demoUrl(), sent.builtWith(), sent.traction(), file(sent.deck())),
+				sent.answers()
+					.stream()
+					.map(answer -> new SubmittedApplication.Answer(answer.label(), answer.kind(), answer.value(),
+							file(answer.file())))
+					.toList());
+	}
+
+	/**
+	 * How many applications each program has, submitted, in draft and withdrawn, by program; a program nobody
+	 * applied to is absent.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public Map<UUID, ApplicationCounts> countsOf(Actor actor) {
+		identity.requireOperator(actor);
+		Map<UUID, ApplicationCounts> counts = new HashMap<>();
+		for (ProposalRepository.StatusCount row : proposals.countByProgramAndStatus()) {
+			ApplicationCounts was = counts.getOrDefault(row.getProgramId(), ApplicationCounts.NONE);
+			counts.put(row.getProgramId(), switch (row.getStatus()) {
+				case Proposal.SUBMITTED -> new ApplicationCounts(row.getCount(), was.drafts(), was.withdrawn());
+				case Proposal.DRAFT -> new ApplicationCounts(was.submitted(), row.getCount(), was.withdrawn());
+				case Proposal.WITHDRAWN -> new ApplicationCounts(was.submitted(), was.drafts(), row.getCount());
+				default -> was;
+			});
+		}
+		return counts;
 	}
 
 	/**
@@ -487,7 +564,12 @@ public class ReviewService {
 					.map(criterion -> new SubmittedApplication.Criterion(criterion.id(), criterion.name(),
 							criterion.description()))
 					.toList(),
-				List.copyOf(assessments));
+				List.copyOf(assessments),
+				view.history()
+					.stream()
+					.map(event -> new SubmittedApplication.Event(event.kind(), event.at(), event.version(),
+							event.decision(), event.reason(), event.by()))
+					.toList());
 	}
 
 	/**
@@ -557,16 +639,27 @@ public class ReviewService {
 
 	/**
 	 * A file of an application's last submission, opened for an operator's app to read, as {@link #file} opens it for
-	 * the page.
+	 * the page; a draft's file too, as {@link #draftFile} opens it.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws ProposalException when there is no such submitted application, or the file is not one it holds
+	 * @throws ProposalException when there is no such submitted application or draft, or the file is not one it holds
 	 */
 	@Transactional
 	public ApplicationFile fileOf(Actor actor, UUID id, UUID fileId) {
 		identity.requireOperator(actor);
-		Proposal proposal = submitted(id);
+		Proposal proposal = proposals.findById(id)
+			.filter(found -> found.isSubmitted() || Proposal.DRAFT.equals(found.getStatus()))
+			.orElseThrow(() -> new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
+					"No submitted application or draft " + id));
 		access.of(actor, proposal.getProgramId());
-		AttachedFileResponse file = held(proposal, fileId);
+		if (proposal.isSubmitted()) {
+			return new ApplicationFile(fileId, held(proposal, fileId).fileName(), storage.content(fileId));
+		}
+		requireHeldByDraft(proposal, fileId);
+		AttachedFileResponse file = attached(fileId);
+		if (file == null) {
+			throw new ProposalException(ProposalErrorCode.APPLICATION_NOT_FOUND,
+					"File " + fileId + " of draft " + id + " is not stored");
+		}
 		return new ApplicationFile(fileId, file.fileName(), storage.content(fileId));
 	}
 

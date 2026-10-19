@@ -47,6 +47,21 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 	@Query("select distinct p.programId from Proposal p where p.status = 'submitted'")
 	List<UUID> findProgramsWithSubmissions();
 
+	/** How many applications each program has in each status; a program with none is absent. */
+	@Query("select p.programId as programId, p.status as status, count(p) as count from Proposal p "
+			+ "group by p.programId, p.status")
+	List<StatusCount> countByProgramAndStatus();
+
+	interface StatusCount {
+
+		UUID getProgramId();
+
+		String getStatus();
+
+		long getCount();
+
+	}
+
 	/** Records GenAI Fund's decision without touching the version the applicant edits. */
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
 	@Query("update Proposal p set p.reviewStatus = :reviewStatus where p.id = :id")
