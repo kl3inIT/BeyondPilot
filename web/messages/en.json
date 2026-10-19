@@ -609,10 +609,11 @@
       "limit": "Cannot change anything. Revoke any time."
     },
     "operator": {
-      "searchSolutions": "Search solutions, listed or not",
-      "readUseCases": "Read use cases",
-      "findCompanies": "Find companies",
-      "limit": "Cannot publish or edit listings. Revoke any time."
+      "readPrograms": "Read programs, applications and judges' scores",
+      "readRecords": "Read records in review, proposals and their history",
+      "readAccounts": "Read accounts, the audit log and emails sent",
+      "readMatching": "Read AI matching runs and results",
+      "limit": "Read only: cannot change anything. Revoke any time."
     },
     "deny": "Deny",
     "allow": "Allow",

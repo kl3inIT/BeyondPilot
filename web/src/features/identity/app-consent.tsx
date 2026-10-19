@@ -1,14 +1,15 @@
 import {
   ArrowLeftRightIcon,
   BoxIcon,
-  BriefcaseBusinessIcon,
-  Building2Icon,
+  BuildingIcon,
   CalendarRangeIcon,
   CornerDownLeftIcon,
   GlobeIcon,
   InfoIcon,
+  ScrollTextIcon,
   SearchIcon,
   ShieldCheckIcon,
+  SlidersHorizontalIcon,
   TriangleAlertIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -71,9 +72,11 @@ function AppConsent({ app, account, scopes, state }: AppConsentProps) {
 
   const abilities: { icon: LucideIcon; text: string }[] = forOperators
     ? [
-        { icon: SearchIcon, text: t("operator.searchSolutions") },
-        { icon: BriefcaseBusinessIcon, text: t("operator.readUseCases") },
-        { icon: Building2Icon, text: t("operator.findCompanies") },
+        // The same icons as these destinations in the admin sidebar.
+        { icon: CalendarRangeIcon, text: t("operator.readPrograms") },
+        { icon: BuildingIcon, text: t("operator.readRecords") },
+        { icon: ScrollTextIcon, text: t("operator.readAccounts") },
+        { icon: SlidersHorizontalIcon, text: t("operator.readMatching") },
       ]
     : [
         { icon: SearchIcon, text: t("user.searchSolutions") },
