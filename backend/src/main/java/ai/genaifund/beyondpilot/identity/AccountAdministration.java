@@ -12,6 +12,7 @@ import ai.genaifund.beyondpilot.identity.dto.AccountListResponse;
 import ai.genaifund.beyondpilot.identity.persistence.Account;
 import ai.genaifund.beyondpilot.identity.persistence.AccountQueryRepository;
 import ai.genaifund.beyondpilot.identity.persistence.AccountRepository;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +58,23 @@ public class AccountAdministration {
 				accountList.page(text, request.status(), request.role(), request.sort(), properties.operatorEmails(),
 						size, (long) (page - 1) * size),
 				page, size, accountList.count(text, request.status(), request.role()));
+	}
+
+	/**
+	 * {@link #list} for another module: one page of the accounts, latest sign-in first.
+	 * @param status {@code active}, {@code disabled} or null for both
+	 * @param role {@code user}, {@code operator} or null for both
+	 * @throws IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public AccountList accounts(Actor actor, @Nullable String q, @Nullable String status, @Nullable String role,
+			int page, int size) {
+		AccountListResponse found = list(actor, new AccountListRequest(q, status, role, null, page, size));
+		return new AccountList(found.items()
+			.stream()
+			.map(account -> new AccountList.Item(account.id(), account.email(), account.displayName(), account.role(),
+					account.status(), account.lastSignInAt(), account.createdAt()))
+			.toList(), found.page(), found.pageSize(), found.total());
 	}
 
 	/**

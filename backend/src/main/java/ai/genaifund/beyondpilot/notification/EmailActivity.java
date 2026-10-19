@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.notification;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -101,6 +102,62 @@ public class EmailActivity {
 				message.kind(), message.subject(), message.html(), message.text(), message.status(), message.attempts(),
 				message.provider(), message.providerMessageId(), message.lastError(), log.events(id), suppression,
 				resendable(message, suppression));
+	}
+
+	/**
+	 * {@link #list} for another module, towards the past only, a sign-in code's subject withheld.
+	 * @param before the {@code older} cursor of a page, or null for the newest page
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws IllegalArgumentException when the cursor is not one this log gave
+	 */
+	@Transactional(readOnly = true)
+	public EmailLog messages(Actor actor, @Nullable Instant from, @Nullable String kind, @Nullable String status,
+			@Nullable String q, @Nullable String before, int size) {
+		if (before != null && !before.matches(EmailMessageListRequest.CURSOR)) {
+			throw new IllegalArgumentException("Not a cursor of the email log");
+		}
+		EmailMessageListResponse page = list(actor, new EmailMessageListRequest(from, kind, status, q, before, null,
+				size));
+		EmailMessageListResponse.Counts counts = page.counts();
+		String words = q == null ? "" : q.strip().toLowerCase(Locale.ROOT);
+		return new EmailLog(page.items()
+			.stream()
+			// A search matches a code's subject too: a code is kept only when its address matches, so searching
+			// digits cannot tell a live code apart.
+			.filter(message -> !signInCode(message.kind()) || words.isEmpty()
+					|| message.recipient().toLowerCase(Locale.ROOT).contains(words))
+			.map(message -> new EmailLog.Item(message.id(), message.createdAt(), message.recipient(), message.kind(),
+					signInCode(message.kind()) ? EmailLog.SIGN_IN_CODE_SUBJECT : message.subject(), message.status(),
+					message.attempts(), message.lastError()))
+			.toList(), page.older(), new EmailLog.Counts(counts.total(), counts.sent(), counts.delivered(),
+					counts.bounced(), counts.complained(), counts.notSent()));
+	}
+
+	/**
+	 * {@link #get} for another module, a sign-in code's subject and body withheld.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws NotificationException when there is no such message
+	 */
+	@Transactional(readOnly = true)
+	public SentEmail message(Actor actor, UUID id) {
+		EmailMessageResponse message = get(actor, id);
+		boolean code = signInCode(message.kind());
+		EmailSuppressionResponse suppression = message.suppression();
+		return new SentEmail(message.id(), message.createdAt(), message.sentAt(), message.recipient(), message.kind(),
+				code ? EmailLog.SIGN_IN_CODE_SUBJECT : message.subject(), code ? null : message.html(),
+				code ? null : message.text(), message.status(), message.attempts(), message.provider(),
+				message.lastError(),
+				message.events()
+					.stream()
+					.map(event -> new SentEmail.Event(event.type(), event.occurredAt(), event.detail()))
+					.toList(),
+				suppression == null ? null
+						: new SentEmail.Suppression(suppression.reason(), suppression.createdAt(),
+								suppression.createdBy()));
+	}
+
+	private static boolean signInCode(String kind) {
+		return EmailKind.SIGN_IN_CODE.value().equals(kind);
 	}
 
 	/**

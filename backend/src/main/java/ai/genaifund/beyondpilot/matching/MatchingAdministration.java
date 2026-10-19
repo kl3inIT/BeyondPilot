@@ -193,6 +193,50 @@ public class MatchingAdministration {
 		return new MatchingRunResponse(summaries(List.of(run)).getFirst(), steps, previousId, compared, groups, moves);
 	}
 
+	/**
+	 * {@link #runs} for another module.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public MatchingRunList runList(Actor actor, int page, int size) {
+		MatchingRunListResponse found = runs(actor, new MatchingRunListRequest(page, size));
+		return new MatchingRunList(found.items().stream().map(MatchingAdministration::published).toList(),
+				found.page(), found.pageSize(), found.total());
+	}
+
+	/**
+	 * {@link #run} for another module.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws MatchingException when there is no such run
+	 */
+	@Transactional(readOnly = true)
+	public MatchingRunDetail runDetail(Actor actor, UUID runId) {
+		MatchingRunResponse found = run(actor, runId);
+		return new MatchingRunDetail(published(found.run()),
+				found.steps()
+					.stream()
+					.map(step -> new MatchingRunDetail.Step(step.name(), step.takenIn(), step.givenOut(), step.calls(),
+							step.inputTokens(), step.outputTokens(), step.millis()))
+					.toList(),
+				found.previousRunId(), found.compared(),
+				found.groups()
+					.stream()
+					.map(group -> new MatchingRunDetail.Group(group.bucket(), group.before(), group.after()))
+					.toList(),
+				found.moves()
+					.stream()
+					.map(move -> new MatchingRunDetail.Move(move.solutionId(), move.solutionName(), move.before(),
+							move.after()))
+					.toList());
+	}
+
+	private static MatchingRunList.Run published(MatchingRunSummary run) {
+		return new MatchingRunList.Run(run.id(), run.useCaseId(), run.useCaseTitle(), run.state(), run.origin(),
+				run.startedBy(), run.modelName(), run.failure(), run.createdAt(), run.startedAt(), run.endedAt(),
+				run.judged(), run.kept(), run.calls(), run.failedCalls(), run.inputTokens(), run.outputTokens(),
+				run.cost());
+	}
+
 	/** The groups, strongest first, as the comparison of two runs counts them. */
 	private static final List<String> BUCKETS = List.of("direct", "industry", "technology", "none");
 

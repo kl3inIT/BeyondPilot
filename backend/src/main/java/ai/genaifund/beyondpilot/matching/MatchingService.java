@@ -136,6 +136,49 @@ public class MatchingService {
 	}
 
 	/**
+	 * What matching holds for a use case, as an operator reads it, for another module.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws MatchingException when the use case is not published
+	 */
+	@Transactional(readOnly = true)
+	public UseCaseMatches matchesOf(Actor actor, UUID useCaseId) {
+		identity.requireOperator(actor);
+		Access access = access(actor, useCaseId);
+		MatchingResponse view = view(actor, access);
+		MatchingResponse.Run run = view.run();
+		return new UseCaseMatches(useCaseId, access.brief().title(),
+				run == null ? null
+						: new UseCaseMatches.Run(run.id(), run.state(), run.origin(), run.createdAt(), run.endedAt(),
+								run.failure(), run.judged(), run.total(), run.modelName()),
+				view.requirements()
+					.stream()
+					.map(requirement -> new UseCaseMatches.Requirement(requirement.position(), requirement.kind(),
+							requirement.necessity(), requirement.label(), requirement.statement(),
+							requirement.quote()))
+					.toList(),
+				view.candidates()
+					.stream()
+					.map(candidate -> new UseCaseMatches.Candidate(candidate.solutionId(), candidate.solutionName(),
+							candidate.organizationName(), candidate.listed(), candidate.origin(), candidate.bucket(),
+							candidate.requiredMet(), candidate.requiredTotal(), candidate.decision(),
+							candidate.removedReason(), candidate.removedNote(), candidate.removedBy(),
+							candidate.invitedAt(), candidate.judged(), candidate.summary(), candidate.unread(),
+							candidate.findings().stream().map(MatchingService::published).toList(),
+							publishedIfAny(candidate.problem()), publishedIfAny(candidate.industry()),
+							publishedIfAny(candidate.technology()), candidate.feedbackCount(), candidate.disagreeCount()))
+					.toList());
+	}
+
+	private static UseCaseMatches.Finding published(MatchingResponse.Finding finding) {
+		return new UseCaseMatches.Finding(finding.requirement(), finding.status(), finding.quote(), finding.source(),
+				finding.sourceUrl(), finding.reason(), finding.quoteState());
+	}
+
+	private static UseCaseMatches.@Nullable Finding publishedIfAny(MatchingResponse.@Nullable Finding finding) {
+		return finding == null ? null : published(finding);
+	}
+
+	/**
 	 * The changes of what matching holds for a use case, from now on and for as long as the caller listens: that a run
 	 * moved, that the brief is read, that solutions are found, that one is being read or is read, that a person
 	 * decided. A change carries no state; the caller reads {@link #get} again. Who may listen is decided once, when

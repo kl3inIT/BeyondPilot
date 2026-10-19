@@ -595,7 +595,7 @@ class ReviewTest extends ApplicationsHttpTest {
 			.build();
 		app.initialize();
 		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
-			.containsExactly("search", "fetch", "list_applications", "get_application", "read_application_file",
+			.startsWith("search", "fetch", "list_applications", "get_application", "read_application_file",
 					"list_pending_reviews");
 
 		CallToolResult result = app.callTool(McpSchema.CallToolRequest.builder("list_applications")
