@@ -470,6 +470,50 @@ public class UseCaseAdministration {
 	}
 
 	/**
+	 * One page of the operators' list of use cases, in its own order, for the MCP server.
+	 * @param status one of the list's statuses, or null for every one
+	 * @param q only use cases whose title or organization name contains it; every one when null
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public UseCaseReviewList reviewList(Actor actor, @Nullable String status, @Nullable String q, int page, int size) {
+		AdminUseCaseListResponse found = list(actor, new AdminUseCaseListRequest(q, status, null, null, null, page, size));
+		return new UseCaseReviewList(found.total(), found.items()
+			.stream()
+			.map(item -> new UseCaseReviewList.Item(item.id(), item.title(), item.organization().name(),
+					item.status(), item.closesAt(), item.featuredAt(), item.updatedAt()))
+			.toList());
+	}
+
+	/**
+	 * One use case as its admin page shows it, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when the use case does not exist
+	 */
+	@Transactional(readOnly = true)
+	public UseCaseReviewRecord reviewRecord(Actor actor, UUID id) {
+		AdminUseCaseResponse found = get(actor, id);
+		UseCasePersonResponse submittedBy = found.submittedBy();
+		UseCasePersonResponse reviewedBy = found.reviewedBy();
+		return new UseCaseReviewRecord(found.id(), found.organization().id(), found.organization().name(),
+				found.title(), found.status(), found.problemStatement(), found.industry(), found.technologies(),
+				found.expectedOutcomes(), found.currentProcess(), found.currentSolutions(), found.targetUsers(),
+				found.requirements()
+					.stream()
+					.map(requirement -> new UseCaseReviewRecord.Requirement(requirement.statement(),
+							requirement.necessity()))
+					.toList(),
+				found.dataReadiness(), found.integrationRequirements(),
+				found.attachments().stream().map(UseCaseAttachmentResponse::fileName).toList(), found.budgetMin(),
+				found.budgetMax(), found.currency(), found.budgetToBeDetermined(), found.budgetMembersOnly(),
+				found.timelineMinWeeks(), found.timelineMaxWeeks(), found.hideOrganizationName(),
+				found.programs().stream().map(UseCaseProgramResponse::name).toList(), found.publishedAt(),
+				found.closesAt(), found.featuredAt(), found.createdAt(), found.createdBy().name(),
+				found.submittedAt(), submittedBy == null ? null : submittedBy.name(), found.reviewedAt(),
+				reviewedBy == null ? null : reviewedBy.name(), found.reviewNote(), found.updatedAt());
+	}
+
+	/**
 	 * How many use cases wait for review now, since when the oldest has waited, and how many
 	 * waited at the end of each of the last 14 days, for the admin home.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator

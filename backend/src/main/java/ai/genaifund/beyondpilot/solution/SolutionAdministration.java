@@ -33,6 +33,9 @@ import ai.genaifund.beyondpilot.solution.dto.RejectSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SaveSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SendBackSolutionRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionBackingRequest;
+import ai.genaifund.beyondpilot.solution.dto.OfferResponse;
+import ai.genaifund.beyondpilot.solution.dto.SolutionBackingResponse;
+import ai.genaifund.beyondpilot.solution.dto.SolutionDeckResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionOffersRequest;
 import ai.genaifund.beyondpilot.solution.dto.SolutionResponse;
 import ai.genaifund.beyondpilot.solution.dto.SolutionReviewQueueResponse;
@@ -610,6 +613,57 @@ public class SolutionAdministration {
 					.map(row -> new SolutionsAwaitingReview.Item(row.id(), row.name(),
 							names.containsKey(row.organizationId()) ? names.get(row.organizationId()).name() : null,
 							row.summary(), row.submittedAt()))
+					.toList());
+	}
+
+	/**
+	 * One page of the operators' list of submitted solutions, in its own order, for the MCP server.
+	 * @param status one of the list's statuses, or null for every one
+	 * @param q only solutions whose name, or whose organization's name, contains it; every one when null
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public SolutionReviewList reviewList(Actor actor, @Nullable String status, @Nullable String q, int page,
+			int size) {
+		AdminSolutionListResponse found = list(actor,
+				new AdminSolutionListRequest(q, null, status, null, null, null, page, size));
+		return new SolutionReviewList(found.total(), found.items()
+			.stream()
+			.map(item -> new SolutionReviewList.Item(item.id(), item.name(), item.organizationName(), item.summary(),
+					item.industries(), item.maturity(), item.status(), item.suspendedAt(), item.listed(),
+					item.featuredAt(), item.submittedAt(), item.submittedBy(), item.updatedAt(),
+					item.deploymentsAwaitingReview()))
+			.toList());
+	}
+
+	/**
+	 * One submitted solution as its admin page shows it, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when no submitted solution has this identifier
+	 */
+	@Transactional(readOnly = true)
+	public SolutionReviewRecord reviewRecord(Actor actor, UUID id) {
+		SolutionResponse found = get(actor, id);
+		SolutionBackingResponse backing = found.backing();
+		SolutionDeckResponse deck = found.deck();
+		return new SolutionReviewRecord(found.id(), found.slug(), found.name(), found.organizationId(),
+				found.organizationName(), found.summary(), found.problemsSolved(), found.valueProposition(),
+				found.maturity(), found.traction(), found.builtWith(), found.industries(), found.focusAreas(),
+				found.languages(), found.deployment(), found.channels(), found.bestCustomerProfile(), found.website(),
+				found.demoUrl(), deck == null ? null : deck.fileName(),
+				backing == null ? null
+						: new SolutionReviewRecord.Backing(backing.backedBy(), backing.program(), backing.funding()),
+				found.offers().stream().map(OfferResponse::title).toList(), found.status(), found.decisionReason(),
+				found.decisionMessage(), found.suspendedAt(), found.suspensionReason(), found.suspensionMessage(),
+				found.listed(), found.featuredAt(), found.complete(), found.submittedAt(), found.submittedBy(),
+				found.updatedAt(),
+				found.customerDeployments()
+					.stream()
+					.map(deployment -> new SolutionReviewRecord.Deployment(deployment.id(), deployment.title(),
+							deployment.customer(), deployment.problem(), deployment.delivered(), deployment.stage(),
+							deployment.period(), deployment.result(), deployment.status(),
+							deployment.decisionReason(), deployment.decisionMessage(), deployment.withdrawnAt(),
+							deployment.updatedAt()))
 					.toList());
 	}
 

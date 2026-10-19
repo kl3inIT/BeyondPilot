@@ -81,6 +81,17 @@ public class AuditLog {
 	}
 
 	/**
+	 * The events recorded on one resource, newest first, at most {@code limit}. Like {@link #list}, it takes no
+	 * caller: the module that calls it answers for who reads.
+	 * @param resourceType the kind its recorder names, such as {@code solution}
+	 * @param resourceId its identifier as recorded
+	 */
+	@Transactional(readOnly = true)
+	public List<AuditEntry> history(String resourceType, String resourceId, int limit) {
+		return events.of(resourceType, resourceId, limit);
+	}
+
+	/**
 	 * Every event the filters select, newest first, as a spreadsheet. Like {@link #list}, it takes no caller: the
 	 * module that calls it answers for who reads, and records the download.
 	 * @param downloadedBy the operator who downloads it, named on the file's About sheet

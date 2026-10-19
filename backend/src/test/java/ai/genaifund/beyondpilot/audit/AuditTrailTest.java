@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.audit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 import java.util.Map;
 import java.util.UUID;
@@ -18,7 +19,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * The audit record against PostgreSQL: what an event keeps, that it lives and dies with the change it describes, and
- * that the database itself refuses to alter or remove one.
+ * that the database itself refuses to alter or remove one; and a resource's history as another module reads it.
  */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -26,6 +27,9 @@ class AuditTrailTest {
 
 	@Autowired
 	private AuditTrail trail;
+
+	@Autowired
+	private AuditLog log;
 
 	@Autowired
 	private TransactionTemplate transaction;
@@ -108,6 +112,28 @@ class AuditTrailTest {
 			.isInstanceOf(DataAccessException.class)
 			.hasMessageContaining("append-only");
 		assertThat(eventsOf(account)).isOne();
+	}
+
+	@Test
+	void aResourcesHistoryHoldsItsOwnEventsNewestFirstUpToTheLimit() {
+		String solution = UUID.randomUUID().toString();
+		AuditRecord.Actor operator = new AuditRecord.Actor(UUID.randomUUID(), "Hà Lê", "ha.le@example.test");
+		transaction.executeWithoutResult(status -> trail.record(new AuditRecord(AuditAction.SOLUTION_SEND_BACK, operator,
+				new AuditRecord.Resource("solution", solution, "Voice Agent"), Map.of())));
+		transaction.executeWithoutResult(status -> trail.record(new AuditRecord(AuditAction.SOLUTION_REJECT, operator,
+				new AuditRecord.Resource("solution", solution, "Voice Agent"), Map.of("reason", "duplicate"))));
+		transaction.executeWithoutResult(status -> trail.record(new AuditRecord(AuditAction.SOLUTION_TAKE_DOWN, null,
+				new AuditRecord.Resource("solution", solution, "Voice Agent"), Map.of("reason", "other"))));
+		// Another kind of resource with the same identifier is another resource.
+		transaction.executeWithoutResult(status -> trail.record(new AuditRecord(AuditAction.TALENT_APPROVE, operator,
+				new AuditRecord.Resource("talent", solution, "Minh Trần"), Map.of())));
+
+		assertThat(log.history("solution", solution, 50)).extracting(AuditEntry::action, AuditEntry::actor)
+			.containsExactly(tuple("solution.take_down", null),
+					tuple("solution.reject", "Hà Lê"),
+					tuple("solution.send_back", "Hà Lê"));
+		assertThat(log.history("solution", solution, 2)).extracting(AuditEntry::details)
+			.containsExactly(Map.of("reason", "other"), Map.of("reason", "duplicate"));
 	}
 
 	@Test

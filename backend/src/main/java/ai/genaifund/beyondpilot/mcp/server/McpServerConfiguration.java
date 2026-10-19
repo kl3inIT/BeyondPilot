@@ -172,7 +172,7 @@ class McpServerConfiguration {
 			.capabilities(McpSchema.ServerCapabilities.builder().tools(false).build())
 			.jsonMapper(new JacksonMcpJsonMapper(json))
 			.immediateExecution(true)
-			.tools(toolsOf(McpAudience.USER, tools, null, null, null, log))
+			.tools(toolsOf(McpAudience.USER, tools, null, null, null, null, log))
 			.build();
 	}
 
@@ -188,8 +188,8 @@ class McpServerConfiguration {
 
 	@Bean(destroyMethod = "close")
 	McpStatelessSyncServer operatorMcpServer(WebMvcStatelessServerTransport operatorMcpTransport, ListingTools tools,
-			OperatorTools operatorTools, ProgramTools programTools, OperationsTools operationsTools, CallLog log,
-			JsonMapper json) {
+			OperatorTools operatorTools, ReviewRecordTools reviewRecordTools, ProgramTools programTools,
+			OperationsTools operationsTools, CallLog log, JsonMapper json) {
 		return McpServer.sync(operatorMcpTransport)
 			.serverInfo("BeyondPilot for operators", "1")
 			.instructions("Research BeyondPilot as a GenAI Fund operator: AI solutions listed or not, programs, AI "
@@ -198,24 +198,27 @@ class McpServerConfiguration {
 			.capabilities(McpSchema.ServerCapabilities.builder().tools(false).build())
 			.jsonMapper(new JacksonMcpJsonMapper(json))
 			.immediateExecution(true)
-			.tools(toolsOf(McpAudience.OPERATOR, tools, operatorTools, programTools, operationsTools, log))
+			.tools(toolsOf(McpAudience.OPERATOR, tools, operatorTools, reviewRecordTools, programTools,
+					operationsTools, log))
 			.build();
 	}
 
 	@Bean
 	McpSwitches mcpSwitches(McpStatelessSyncServer userMcpServer, McpStatelessSyncServer operatorMcpServer,
-			ListingTools tools, OperatorTools operatorTools, ProgramTools programTools,
-			OperationsTools operationsTools, CallLog log, McpSwitchRepository switches) {
+			ListingTools tools, OperatorTools operatorTools, ReviewRecordTools reviewRecordTools,
+			ProgramTools programTools, OperationsTools operationsTools, CallLog log, McpSwitchRepository switches) {
 		return new McpSwitches(Map.of(McpAudience.USER, userMcpServer, McpAudience.OPERATOR, operatorMcpServer),
-				Map.of(McpAudience.USER, toolsOf(McpAudience.USER, tools, null, null, null, log), McpAudience.OPERATOR,
-						toolsOf(McpAudience.OPERATOR, tools, operatorTools, programTools, operationsTools, log)),
+				Map.of(McpAudience.USER, toolsOf(McpAudience.USER, tools, null, null, null, null, log),
+						McpAudience.OPERATOR,
+						toolsOf(McpAudience.OPERATOR, tools, operatorTools, reviewRecordTools, programTools,
+								operationsTools, log)),
 				switches);
 	}
 
 	/** Every tool of a server, logged; the switches decide which it lists. The operators' server has its own too. */
 	private static List<SyncToolSpecification> toolsOf(McpAudience server, ListingTools tools,
-			@Nullable OperatorTools operatorTools, @Nullable ProgramTools programTools,
-			@Nullable OperationsTools operationsTools, CallLog log) {
+			@Nullable OperatorTools operatorTools, @Nullable ReviewRecordTools reviewRecordTools,
+			@Nullable ProgramTools programTools, @Nullable OperationsTools operationsTools, CallLog log) {
 		String name = server.name().toLowerCase(Locale.ROOT);
 		List<SyncToolSpecification> all = new ArrayList<>(
 				List.of(log.logged(name, tools.search(server)), log.logged(name, tools.fetch(server))));
@@ -224,6 +227,10 @@ class McpServerConfiguration {
 			all.add(log.logged(name, operatorTools.getApplication()));
 			all.add(log.logged(name, operatorTools.readApplicationFile()));
 			all.add(log.logged(name, operatorTools.listPendingReviews()));
+		}
+		if (reviewRecordTools != null) {
+			all.add(log.logged(name, reviewRecordTools.listRecords()));
+			all.add(log.logged(name, reviewRecordTools.getRecord()));
 		}
 		if (programTools != null) {
 			all.add(log.logged(name, programTools.listPrograms()));

@@ -22,6 +22,7 @@ import ai.genaifund.beyondpilot.talent.dto.AdminTalentListRequest;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentListResponse;
 import ai.genaifund.beyondpilot.talent.dto.AdminTalentResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentDecisionRequest;
+import ai.genaifund.beyondpilot.talent.dto.TalentProfileResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentReviewQueueResponse;
 import ai.genaifund.beyondpilot.talent.dto.TalentSummaryResponse;
 import ai.genaifund.beyondpilot.talent.persistence.TalentDetailRepository;
@@ -316,6 +317,46 @@ public class TalentAdministration {
 					.stream()
 					.map(row -> new TalentAwaitingReview.Item(row.id(), row.name(), row.headline(), row.submittedAt()))
 					.toList());
+	}
+
+	/**
+	 * One page of the operators' list of submitted profiles, in its own order, for the MCP server.
+	 * @param status one of the list's statuses, or null for every one
+	 * @param q only profiles whose name contains it; every one when null
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public TalentReviewList reviewList(Actor actor, @Nullable String status, @Nullable String q, int page, int size) {
+		AdminTalentListResponse found = list(actor, new AdminTalentListRequest(q, status, null, null, page, size));
+		return new TalentReviewList(found.total(), found.items()
+			.stream()
+			.map(item -> new TalentReviewList.Item(item.id(), item.name(), item.email(), item.headline(),
+					item.status(), item.suspendedAt(), item.listed(), item.featuredAt(), item.submittedAt(),
+					item.updatedAt()))
+			.toList());
+	}
+
+	/**
+	 * One submitted profile as its admin page shows it, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws TalentException when no submitted profile has this identifier
+	 */
+	@Transactional(readOnly = true)
+	public TalentReviewRecord reviewRecord(Actor actor, UUID id) {
+		AdminTalentResponse found = get(actor, id);
+		TalentProfileResponse profile = found.profile();
+		return new TalentReviewRecord(profile.id(), profile.slug(), profile.name(), found.email(), profile.headline(),
+				profile.bio(), profile.roles(), profile.skills(), profile.industries(), profile.languages(),
+				profile.engagement(), profile.rateBand(), profile.worksAt(), profile.city(), profile.country(),
+				profile.website(),
+				profile.projects()
+					.stream()
+					.map(project -> new TalentReviewRecord.Project(project.title(), project.summary(), project.url(),
+							project.year(), project.stage()))
+					.toList(),
+				profile.status(), profile.decisionReason(), profile.decisionMessage(), profile.suspendedAt(),
+				profile.suspensionReason(), profile.suspensionMessage(), profile.listed(), found.featuredAt(),
+				profile.complete(), profile.submittedAt(), profile.updatedAt());
 	}
 
 	/**
