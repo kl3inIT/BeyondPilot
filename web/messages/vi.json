@@ -474,6 +474,7 @@
     "PROPOSAL_OUTCOMES_NOT_READY": "Kết quả chỉ được công bố khi đã hết hạn nộp và mọi đơn đều có quyết định.",
     "PROPOSAL_USE_CASE_NOT_FOUND": "Không có use case này.",
     "PROPOSAL_USE_CASE_CLOSED": "Use case này không còn nhận proposal.",
+    "PROPOSAL_USE_CASE_IN_CHALLENGE": "Use case này thuộc một thử thách đang nhận hồ sơ: hãy nộp hồ sơ vào thử thách.",
     "PROPOSAL_OWN_USE_CASE": "Tổ chức của bạn đã đăng use case này nên không gửi proposal cho nó được.",
     "PROPOSAL_NO_ORGANIZATION": "Hãy tham gia hoặc lập một tổ chức để gửi proposal.",
     "PROPOSAL_NOT_FOUND": "Không có proposal này.",
@@ -8109,6 +8110,10 @@
     "actions": {
       "proposals": "Đề xuất",
       "viewReceived": "Xem các proposal",
+      "challenge": {
+        "lead": "Use case này thuộc {challenge}. Hãy trả lời bằng cách nộp hồ sơ vào thử thách: mọi hồ sơ đều được xét ở đó.",
+        "apply": "Nộp hồ sơ vào thử thách"
+      },
       "continue": "Tiếp tục đề xuất của bạn",
       "sent": "Đã gửi",
       "view": "Xem đề xuất",

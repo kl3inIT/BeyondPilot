@@ -21707,6 +21707,14 @@ components:
             or is for members only.
         budgetToBeDetermined:
           type: boolean
+        challenge:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/UseCaseChallenge"
+          description: "The program it belongs to that takes applications now; while\
+            \ there is one, the use case is answered by applying to it, not by a proposal.\
+            \ Null otherwise."
         closesAt:
           type:
           - string
@@ -26241,6 +26249,25 @@ components:
       - id
       - mediaType
       - sizeBytes
+    UseCaseChallenge:
+      type: object
+      description: "The program a use case belongs to that takes applications now:\
+        \ whoever answers the use case applies to it, and sends no proposal."
+      properties:
+        closesAt:
+          type: string
+          format: date-time
+          description: Applications close at this instant.
+        name:
+          type: string
+        slug:
+          type: string
+          description: "The address of its public page, whose application form it\
+            \ opens."
+      required:
+      - closesAt
+      - name
+      - slug
     UseCaseOrganization:
       type: object
       description: The organization a use case is for.

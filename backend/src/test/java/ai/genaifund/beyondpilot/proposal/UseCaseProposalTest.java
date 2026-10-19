@@ -226,6 +226,52 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 	}
 
 	@Test
+	void aUseCaseInAChallengeTakingApplicationsIsAnsweredByApplyingUntilTheChallengeCloses() {
+		Provider sender = provider("challenge-sent.test");
+		Provider drafter = provider("challenge-draft.test");
+		Provider newcomer = provider("challenge-new.test");
+		Poster poster = poster("posts-challenge.test");
+		UUID useCase = publishedUseCase(poster.organization, "Challenge brief");
+		String path = path(useCase);
+		String sent = body(put(sender.founder, path, draft(sender.solution, "Sent before.", file(sender.founderEmail), null, null))
+			.expectStatus()
+			.isOk());
+		reachable(sender.founder);
+		post(sender.founder, API + "/use-case-proposals/" + JsonPath.read(sent, "$.proposal.id") + "/send", null)
+			.expectStatus()
+			.isOk();
+		String drafted = body(put(drafter.founder, path, draft(drafter.solution, "Not sent.", file(drafter.founderEmail), null, null))
+			.expectStatus()
+			.isOk());
+		reachable(drafter.founder);
+
+		Form challenge = program("use-case-challenge", false, Instant.now().plus(10, ChronoUnit.DAYS));
+		put(operator, "/api/usecase/admin/use-cases/" + useCase + "/programs",
+				Map.of("programIds", List.of(challenge.programId()))).expectStatus().isOk();
+
+		// The brief names the challenge, whose application answers it.
+		String brief = body(get(newcomer.founder, "/api/usecase/use-cases/" + useCase).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(brief, "$.challenge.slug")).isEqualTo("use-case-challenge");
+		// No new proposal is made or sent; the one sent before stays readable.
+		assertProblem(get(newcomer.founder, path), 409, "PROPOSAL_USE_CASE_IN_CHALLENGE");
+		assertProblem(put(newcomer.founder, path, draft(newcomer.solution, "After.", null, null, null)), 409,
+				"PROPOSAL_USE_CASE_IN_CHALLENGE");
+		assertProblem(post(drafter.founder, API + "/use-case-proposals/" + JsonPath.read(drafted, "$.proposal.id") + "/send",
+				null), 409, "PROPOSAL_USE_CASE_IN_CHALLENGE");
+		get(sender.founder, path).expectStatus().isOk();
+
+		// Once the challenge closes, the use case takes proposals again under its own dates.
+		jdbc.sql("update program set applications_open_at = now() - interval '2 days', applications_close_at = now() - interval '1 minute' where id = ?")
+			.params(challenge.programId())
+			.update();
+		String reopened = body(get(newcomer.founder, "/api/usecase/use-cases/" + useCase).expectStatus().isOk());
+		assertThat(JsonPath.<Object>read(reopened, "$.challenge")).isNull();
+		post(drafter.founder, API + "/use-case-proposals/" + JsonPath.read(drafted, "$.proposal.id") + "/send", null)
+			.expectStatus()
+			.isOk();
+	}
+
+	@Test
 	void aSentProposalCanBeEditedWhileTheUseCaseAllowsItAndThePostersSeeIt() {
 		Provider provider = provider("edits.test");
 		Poster poster = poster("posts-edits.test");

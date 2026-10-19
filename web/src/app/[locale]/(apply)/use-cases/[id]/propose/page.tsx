@@ -8,9 +8,15 @@ import { ProposalWizard } from "@/features/proposal/proposal-wizard";
 import { readMyOrganization } from "@/features/organization/organization-queries";
 import { readMySolutions } from "@/features/solution/solution-queries";
 import { readMyTalent } from "@/features/talent/talent-queries";
+import { readUseCase } from "@/features/usecase/use-cases-queries";
 import { getPathname } from "@/i18n/navigation";
 import { requireAccount } from "@/lib/auth/session";
-import { proposalViewRoute, proposeToUseCaseRoute as proposeRoute } from "@/lib/site";
+import {
+  programApplyRoute,
+  proposalViewRoute,
+  proposeToUseCaseRoute as proposeRoute,
+  useCaseRoute as briefOf,
+} from "@/lib/site";
 
 export async function generateMetadata({
   params,
@@ -32,6 +38,12 @@ export default async function ProposeRoute({
 
   if (result.kind === "absent") {
     notFound();
+  }
+  if (result.kind === "challenge") {
+    // The challenge's application answers the use case; once it closes, the use case takes proposals again.
+    const useCase = await readUseCase(id);
+    const href = useCase?.challenge ? programApplyRoute(useCase.challenge.slug) : briefOf(id);
+    redirect(getPathname({ href, locale: await getLocale() }));
   }
   if (result.kind === "blocked") {
     return <ProposalBlocked useCaseId={id} reason={result.reason} />;

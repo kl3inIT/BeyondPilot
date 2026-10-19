@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.usecase;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.program.ApplicationForm;
 import ai.genaifund.beyondpilot.program.ProgramName;
 import ai.genaifund.beyondpilot.program.ProgramService;
 import ai.genaifund.beyondpilot.storage.StorageService;
@@ -20,6 +22,7 @@ import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseResponse;
 import ai.genaifund.beyondpilot.usecase.dto.PublicUseCaseSummaryResponse;
+import ai.genaifund.beyondpilot.usecase.dto.UseCaseChallengeResponse;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCase;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseQueryRepository;
 import ai.genaifund.beyondpilot.usecase.persistence.UseCaseRepository;
@@ -92,7 +95,24 @@ public class UseCaseDirectory {
 					Objects.requireNonNull(useCase.getTitle()), useCase.getClosesAt(), useCase.getProposalEditDays(),
 					!UseCase.CLOSED.equals(useCase.statusAt(now)) && organizations
 						.approvedNames(List.of(useCase.getOrganizationId()))
-						.containsKey(useCase.getOrganizationId())));
+						.containsKey(useCase.getOrganizationId()),
+					challenge(useCase, now).map(ApplicationForm::slug).orElse(null)));
+	}
+
+	/**
+	 * The challenge a use case is answered through: the published program it belongs to that takes applications at
+	 * this instant, the one closing first when there are several. Empty when there is none, and once it closes the use
+	 * case takes proposals again under its own dates.
+	 */
+	private Optional<ApplicationForm> challenge(UseCase useCase, Instant now) {
+		if (useCase.getProgramIds().isEmpty()) {
+			return Optional.empty();
+		}
+		return programs.applicationForms(useCase.getProgramIds())
+			.values()
+			.stream()
+			.filter(form -> form.openAt(now))
+			.min(Comparator.comparing(ApplicationForm::closesAt));
 	}
 
 	/**
@@ -251,7 +271,10 @@ public class UseCaseDirectory {
 				useCase.getIntegrationRequirements(), hiddenBudget ? null : useCase.getBudgetMin(),
 				hiddenBudget ? null : useCase.getBudgetMax(), useCase.getCurrency(), useCase.isBudgetToBeDetermined(),
 				useCase.isBudgetMembersOnly(), useCase.getTimelineMinWeeks(), useCase.getTimelineMaxWeeks(), useCase.getClosesAt(),
-				useCase.getProposalEditDays(), publishedAt);
+				useCase.getProposalEditDays(), publishedAt,
+				challenge(useCase, Instant.now())
+					.map(form -> new UseCaseChallengeResponse(form.name(), form.slug(), form.closesAt()))
+					.orElse(null));
 	}
 
 	private static PublicUseCaseSummaryResponse summary(UseCaseQueryRepository.PublicRow row,

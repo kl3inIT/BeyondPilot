@@ -4,7 +4,7 @@ import { Button } from "@/components/actions/button";
 import { Status } from "@/components/composites/status";
 import { getFormatter } from "@/i18n/format-server";
 import { ApiError } from "@/lib/api/client";
-import { getUseCaseProposalForm } from "@/lib/api/generated";
+import { getUseCaseProposalForm, type UseCaseChallenge } from "@/lib/api/generated";
 import { getCurrentAccount, sessionRequest } from "@/lib/auth/session";
 // The route helpers are named `useCase…`, which the hooks rule reads as hooks: they are called through the module.
 import * as site from "@/lib/site";
@@ -25,6 +25,8 @@ type ProposalActionsProps = {
   closesAt?: string | null;
   /** How many days after sending a proposal may still be edited; null when the brief does not say. */
   proposalEditDays?: number | null;
+  /** The challenge taking applications that the use case belongs to, which answers to it go through. */
+  challenge?: UseCaseChallenge | null;
 };
 
 /** What the signed-in visitor may do about the use case; a failed read leaves the buttons in place. */
@@ -106,7 +108,12 @@ function SentProposal({ useCaseId, editable, outcome, text }: SentProposalProps)
  * sees a way to the proposals it received instead; an organization still waiting for GenAI Fund's review, or
  * none yet, sends all the same. Reading what the caller may do never stops the page from showing.
  */
-async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: ProposalActionsProps) {
+async function ProposalActions({
+  useCaseId,
+  closesAt,
+  proposalEditDays,
+  challenge,
+}: ProposalActionsProps) {
   const closed = closedAt(closesAt);
   const [t, o, account, format] = await Promise.all([
     getTranslations("UseCases.detail"),
@@ -136,6 +143,19 @@ async function ProposalActions({ useCaseId, closesAt, proposalEditDays }: Propos
   }
   if (closed && access.kind !== "sent") {
     return closedAction;
+  }
+  // Answers to a use case of a challenge go through the challenge's application, reviewed with all the others.
+  if (challenge && access.kind !== "sent") {
+    return (
+      <>
+        <p className="text-sm text-muted-foreground">
+          {o("challenge.lead", { challenge: challenge.name })}
+        </p>
+        <Button className="w-full" size="lg" href={site.programApplyRoute(challenge.slug)}>
+          {o("challenge.apply")}
+        </Button>
+      </>
+    );
   }
   if (access.kind === "hidden") {
     return null;

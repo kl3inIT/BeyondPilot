@@ -110,6 +110,9 @@ public enum ProposalErrorCode implements ErrorCode {
 	USE_CASE_CLOSED("PROPOSAL_USE_CASE_CLOSED", ErrorCategory.CONFLICT,
 			"This use case no longer takes proposals."),
 
+	USE_CASE_IN_CHALLENGE("PROPOSAL_USE_CASE_IN_CHALLENGE", ErrorCategory.CONFLICT,
+			"This use case is part of a challenge that takes applications: apply to the challenge instead."),
+
 	OWN_USE_CASE("PROPOSAL_OWN_USE_CASE", ErrorCategory.NOT_PERMITTED,
 			"Your organization posted this use case, so it cannot send a proposal to it."),
 

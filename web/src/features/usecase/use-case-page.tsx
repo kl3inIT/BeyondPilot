@@ -192,6 +192,7 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
             useCaseId={useCase.id}
             closesAt={useCase.closesAt}
             proposalEditDays={useCase.proposalEditDays}
+            challenge={useCase.challenge ?? null}
           />
         </aside>
       </div>

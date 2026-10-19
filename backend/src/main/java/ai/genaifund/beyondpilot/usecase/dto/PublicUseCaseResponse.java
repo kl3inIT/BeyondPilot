@@ -38,5 +38,7 @@ public record PublicUseCaseResponse(@Schema(requiredMode = Schema.RequiredMode.R
 				description = "Proposals close at this instant; null for no deadline.") @Nullable Instant closesAt,
 		@Schema(types = { "integer", "null" },
 				description = "How many days after sending a proposal its organization may still edit it; 0 allows no edit after sending.") @Nullable Integer proposalEditDays,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant publishedAt) {
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant publishedAt,
+		@Schema(types = { "object", "null" },
+				description = "The program it belongs to that takes applications now; while there is one, the use case is answered by applying to it, not by a proposal. Null otherwise.") @Nullable UseCaseChallengeResponse challenge) {
 }
