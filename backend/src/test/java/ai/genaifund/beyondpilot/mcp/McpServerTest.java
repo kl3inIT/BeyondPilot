@@ -44,7 +44,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = { "beyondpilot.identity.operator-emails=operator@mcp.test",
 				"beyondpilot.identity.oauth.issuer=http://localhost:3000",
-				"beyondpilot.mcp.calls-per-caller-per-minute=30" })
+				"beyondpilot.mcp.calls-per-caller-per-minute=200" })
 @Import({ TestcontainersConfiguration.class, McpServerTest.Mail.class })
 class McpServerTest {
 
@@ -116,8 +116,76 @@ class McpServerTest {
 				""").param("email", "reader-" + word + "@mcp.test").query().listOfRows();
 		assertThat(calls).extracting(row -> row.get("tool") + " " + row.get("outcome"))
 			.containsExactly("search ok", "fetch ok", "fetch refused");
+		// No column holds what was asked or answered: a call keeps only the one record it read, by name and page.
 		assertThat(calls.getFirst().keySet()).containsExactlyInAnyOrder("id", "called_at", "account_id", "client_id",
-				"server", "tool", "outcome", "duration_ms");
+				"server", "tool", "outcome", "duration_ms", "target_kind", "target_id", "target_label", "target_path");
+		assertThat(calls).extracting(row -> row.get("target_label"))
+			.containsExactly(null, "Voice Agent " + word, null);
+		assertThat((String) calls.get(1).get("target_path")).startsWith("/solutions/");
+	}
+
+	@Test
+	void anOperatorsAppReadsAccountsTheAuditLogEmailAndMatchingAndTheLogNamesTheEmailRead() {
+		String email = "mailed-" + word + "@mcp.test";
+		String owner = TestSignIn.session(client, mail, email);
+		UUID organization = organization(owner, "Mailed " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = app(token, "/mcp/operator");
+		app.initialize();
+
+		String accounts = text(call(app, "list_accounts", Map.of("q", "mailed-" + word)));
+		assertThat(JsonPath.<Integer>read(accounts, "$.total")).isEqualTo(1);
+		assertThat(JsonPath.<String>read(accounts, "$.accounts[0].email")).isEqualTo(email);
+		assertThat(JsonPath.<String>read(accounts, "$.accounts[0].role")).isEqualTo("user");
+		assertThat(call(app, "list_accounts", Map.of("role", "owner")).isError()).isTrue();
+
+		String audit = text(call(app, "list_audit_events", Map.of("action", "organization.approve", "q", word)));
+		assertThat(JsonPath.<List<String>>read(audit, "$.events[*].resource.name")).containsExactly("Mailed " + word);
+		assertThat(JsonPath.<String>read(audit, "$.events[0].actor")).contains("operator@mcp.test");
+		assertThat(call(app, "list_audit_events", Map.of("before", "not-a-cursor")).isError()).isTrue();
+
+		String sent = text(call(app, "list_emails", Map.of("q", email, "kind", "organization_approved")));
+		assertThat(JsonPath.<List<Object>>read(sent, "$.emails")).hasSize(1);
+		assertThat(JsonPath.<Integer>read(sent, "$.counts.total")).isPositive();
+		String id = JsonPath.read(sent, "$.emails[0].id");
+		String subject = JsonPath.read(sent, "$.emails[0].subject");
+
+		String read = text(call(app, "get_email", Map.of("email", id)));
+		assertThat(JsonPath.<String>read(read, "$.recipient")).isEqualTo(email);
+		assertThat(JsonPath.<String>read(read, "$.text")).contains("Mailed " + word);
+		assertThat(JsonPath.<Map<String, Object>>read(read, "$")).doesNotContainKey("html");
+		String withHtml = text(call(app, "get_email", Map.of("email", id, "detail", true)));
+		assertThat(JsonPath.<String>read(withHtml, "$.html")).contains("<");
+
+		// A sign-in code still signs in for minutes: neither its subject nor its body leaves BeyondPilot.
+		String codes = text(call(app, "list_emails", Map.of("q", email, "kind", "sign_in_code")));
+		assertThat(JsonPath.<List<String>>read(codes, "$.emails[*].subject")).isNotEmpty()
+			.allMatch("A sign-in code"::equals);
+		String code = text(call(app, "get_email", Map.of("email", JsonPath.read(codes, "$.emails[0].id"))));
+		assertThat(JsonPath.<Map<String, Object>>read(code, "$")).doesNotContainKeys("text", "html");
+		assertThat(code).doesNotContain(mail.latestCodeTo(email));
+		// Nor can a search by its digits find it.
+		String digits = text(call(app, "list_emails", Map.of("q", mail.latestCodeTo(email), "kind", "sign_in_code")));
+		assertThat(JsonPath.<List<Object>>read(digits, "$.emails")).isEmpty();
+
+		assertThat(JsonPath.<Integer>read(text(call(app, "list_matching_runs", Map.of())), "$.page")).isEqualTo(1);
+		assertThat(call(app, "get_matching_run", Map.of("run", UUID.randomUUID().toString())).isError()).isTrue();
+		assertThat(call(app, "get_matches", Map.of("use_case", UUID.randomUUID().toString())).isError()).isTrue();
+		app.closeGracefully();
+
+		List<Map<String, Object>> reads = jdbc.sql("""
+				select target_kind, target_id, target_label, target_path from mcp_call
+				where tool = 'get_email' and target_id = :id
+				""").param("id", id).query().listOfRows();
+		assertThat(reads).hasSize(2).allSatisfy(row -> assertThat(row).containsEntry("target_kind", "email")
+			.containsEntry("target_label", subject + " → " + email)
+			.containsEntry("target_path", "/admin/email/activity/" + id));
+	}
+
+	private static CallToolResult call(McpSyncClient app, String tool, Map<String, Object> arguments) {
+		return app.callTool(McpSchema.CallToolRequest.builder(tool).arguments(arguments).build());
 	}
 
 	@Test
@@ -148,7 +216,9 @@ class McpServerTest {
 		assertThat(JsonPath.<String>read(all, "$.items[0].clientId")).isEqualTo(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.apps[*].clientId")).contains(TestAppConnection.CLIENT);
 		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch", "list_applications",
-				"get_application", "read_application_file", "list_pending_reviews");
+				"get_application", "read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program",
+				"list_accounts", "list_audit_events", "list_emails", "get_email", "list_matching_runs",
+				"get_matching_run", "get_matches");
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&outcome=refused"),
 				"$.total")).isEqualTo(1);
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&tool=search"),
@@ -271,8 +341,9 @@ class McpServerTest {
 		assertThat(initialize(token, null, "https://attacker.example")).isEqualTo(403);
 		assertThat(initialize(token, null, ISSUER)).isEqualTo(200);
 
+		// The limit refills as calls go, so calls are made until one is refused.
 		int refused = 0;
-		for (int call = 0; call < 31; call++) {
+		for (int call = 0; call < 1000 && refused == 0; call++) {
 			if (initialize(token, null, null) == 429) {
 				refused++;
 			}
@@ -298,7 +369,9 @@ class McpServerTest {
 		app.initialize();
 		assertThat(app.listTools().tools()).extracting(McpSchema.Tool::name)
 			.containsExactly("search", "fetch", "list_applications", "get_application",
-					"read_application_file", "list_pending_reviews");
+					"read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "list_accounts",
+					"list_audit_events", "list_emails", "get_email", "list_matching_runs", "get_matching_run",
+					"get_matches");
 
 		String found = text(app.callTool(McpSchema.CallToolRequest.builder("search")
 			.arguments(Map.of("query", "hidden agent " + word))
@@ -365,6 +438,77 @@ class McpServerTest {
 	}
 
 	@Test
+	void anOperatorsAppListsRecordsOfAnyStatusAndReadsOneWithItsHistory() {
+		String owner = TestSignIn.session(client, mail, "records-" + word + "@mcp.test");
+		UUID organization = organization(owner, "Records " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		UUID sentBack = submittedSolution(owner, "Claims Agent " + word);
+		UUID waiting = submittedSolution(owner, "Quotes Agent " + word);
+		post(operator, "/api/solution/admin/solutions/" + sentBack + "/send-back",
+				Map.of("reason", "Name a customer it serves."));
+
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = app(token, "/mcp/operator");
+		app.initialize();
+
+		String needsChanges = text(app.callTool(McpSchema.CallToolRequest.builder("list_records")
+			.arguments(Map.of("area", "solutions", "status", "needs_changes", "q", word))
+			.build()));
+		assertThat(JsonPath.<Integer>read(needsChanges, "$.total")).isEqualTo(1);
+		assertThat(JsonPath.<String>read(needsChanges, "$.items[0].id")).isEqualTo(sentBack.toString());
+		assertThat(JsonPath.<String>read(needsChanges, "$.items[0].status")).isEqualTo("needs_changes");
+		assertThat(JsonPath.<String>read(needsChanges, "$.items[0].organizationName")).isEqualTo("Records " + word);
+		assertThat(JsonPath.<String>read(needsChanges, "$.items[0].url"))
+			.isEqualTo(ISSUER + "/admin/solutions/" + sentBack);
+
+		String first = text(app.callTool(McpSchema.CallToolRequest.builder("list_records")
+			.arguments(Map.of("area", "solutions", "q", word, "size", 1))
+			.build()));
+		assertThat(JsonPath.<Integer>read(first, "$.total")).isEqualTo(2);
+		assertThat(JsonPath.<Integer>read(first, "$.nextPage")).isEqualTo(2);
+		String second = text(app.callTool(McpSchema.CallToolRequest.builder("list_records")
+			.arguments(Map.of("area", "solutions", "q", word, "size", 1, "page", 2))
+			.build()));
+		assertThat(JsonPath.<Object>read(second, "$.nextPage")).isNull();
+		assertThat(List.of(JsonPath.<String>read(first, "$.items[0].id"), JsonPath.<String>read(second, "$.items[0].id")))
+			.containsExactlyInAnyOrder(sentBack.toString(), waiting.toString());
+		assertThat(app.callTool(McpSchema.CallToolRequest.builder("list_records")
+			.arguments(Map.of("area", "talent", "status", "rejected"))
+			.build()).isError()).isTrue();
+
+		String record = text(app.callTool(McpSchema.CallToolRequest.builder("get_record")
+			.arguments(Map.of("area", "solutions", "id", sentBack.toString()))
+			.build()));
+		assertThat(JsonPath.<String>read(record, "$.status")).isEqualTo("needs_changes");
+		assertThat(JsonPath.<String>read(record, "$.decisionMessage")).isEqualTo("Name a customer it serves.");
+		assertThat(JsonPath.<String>read(record, "$.url")).isEqualTo(ISSUER + "/admin/solutions/" + sentBack);
+		assertThat(JsonPath.<String>read(record, "$.history[0].action")).isEqualTo("solution.send_back");
+		assertThat(JsonPath.<String>read(record, "$.history[0].by")).isNotBlank();
+		assertThat(JsonPath.<Map<String, Object>>read(record, "$")).doesNotContainKey("focusAreas");
+		String full = text(app.callTool(McpSchema.CallToolRequest.builder("get_record")
+			.arguments(Map.of("area", "solutions", "id", sentBack.toString(), "detail", true))
+			.build()));
+		assertThat(JsonPath.<List<String>>read(full, "$.focusAreas")).containsExactly("document_processing");
+		assertThat(JsonPath.<String>read(full, "$.decisionMessage")).isEqualTo("Name a customer it serves.");
+		String company = text(app.callTool(McpSchema.CallToolRequest.builder("get_record")
+			.arguments(Map.of("area", "organizations", "id", organization.toString()))
+			.build()));
+		assertThat(JsonPath.<String>read(company, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<List<String>>read(company, "$.history[*].action")).contains("organization.approve");
+		assertThat(app.callTool(McpSchema.CallToolRequest.builder("get_record")
+			.arguments(Map.of("area", "talent", "id", sentBack.toString()))
+			.build()).isError()).isTrue();
+		app.closeGracefully();
+
+		List<String> read = jdbc.sql("""
+				select target_kind || ' ' || target_label || ' ' || target_path from mcp_call
+				where tool = 'get_record' and outcome = 'ok' and target_id = :id
+				""").param("id", sentBack.toString()).query(String.class).list();
+		assertThat(read).hasSize(2)
+			.allMatch(row -> row.equals("solution Claims Agent " + word + " /admin/solutions/" + sentBack));
+	}
+
+	@Test
 	void operatorsSwitchAToolOffAndTheUserServerOffAndEachChangeIsAudited() {
 		String person = TestSignIn.session(client, mail, "switched-" + word + "@mcp.test");
 		String token = TestAppConnection.connect(client, port, person, "mcp.read").access();
@@ -388,7 +532,7 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(8);
+			.isEqualTo(21);
 
 		switchTool("user", "fetch", false);
 		try {

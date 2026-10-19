@@ -94,6 +94,26 @@ const calls = {
       tool: "search",
       outcome: "ok",
       durationMs: 41,
+      target: null,
+    },
+    {
+      calledAt: "2026-10-07T07:31:30Z",
+      accountId: "5b1f2c3d-0000-4000-8000-000000000002",
+      personName: "Đạt Phan",
+      personEmail: "dat.phan@example.com",
+      clientId: "https://claude.ai/oauth/claude-code-client-metadata",
+      appName: "Claude Code",
+      appHost: "claude.ai",
+      server: "operator",
+      tool: "get_application",
+      outcome: "ok",
+      durationMs: 64,
+      target: {
+        kind: "application",
+        id: "7c2e9a10-0000-4000-8000-000000000003",
+        label: "Opsis Emotion AI · Nestlé Vietnam AI Reinvention",
+        path: "/admin/programs/7c2e9a10-0000-4000-8000-000000000009/applications/7c2e9a10-0000-4000-8000-000000000003",
+      },
     },
     {
       calledAt: "2026-10-07T07:31:00Z",
@@ -107,11 +127,12 @@ const calls = {
       tool: "fetch",
       outcome: "refused",
       durationMs: 12,
+      target: null,
     },
   ],
   page: 1,
   pageSize: 50,
-  total: 2,
+  total: 3,
   apps: [
     { clientId: "https://chatgpt.com/oauth/client.json", name: "ChatGPT", host: "chatgpt.com" },
     {
@@ -120,7 +141,8 @@ const calls = {
       host: "claude.ai",
     },
   ],
-  tools: ["search", "fetch"],
+  tools: ["search", "fetch", "get_application"],
+  counts: { calls: 3, refused: 1, failed: 0 },
 };
 
 export function answerMcp(url, session) {

@@ -3068,7 +3068,20 @@
           "list_applications": "Liệt kê hồ sơ ứng tuyển của một chương trình, kèm quyết định của GenAI Fund và điểm trung bình của người chấm.",
           "get_application": "Đọc đầy đủ một hồ sơ: những gì người ứng tuyển gửi, mọi điểm chấm và các file đính kèm.",
           "read_application_file": "Hiện các trang của một file PDF trong hồ sơ, như deck, dưới dạng ảnh kèm chữ của trang.",
-          "list_pending_reviews": "Liệt kê những gì đang chờ duyệt: tổ chức, giải pháp, talent, use case và customer deployment."
+          "list_pending_reviews": "Liệt kê những gì đang chờ duyệt: tổ chức, giải pháp, talent, use case và customer deployment.",
+          "list_records": "Liệt kê tổ chức, giải pháp, talent, use case hoặc offer ở mọi trạng thái, như các danh sách admin.",
+          "get_record": "Đọc một bản ghi trong số đó, kèm trạng thái, quyết định gần nhất và lịch sử duyệt.",
+          "list_proposals": "Liệt kê các đề xuất nhà cung cấp AI gửi cho một use case, kèm quyết định cho từng đề xuất.",
+          "get_proposal": "Đọc một đề xuất: nhà cung cấp, giải pháp đề xuất, người gửi, deck và quyết định.",
+          "list_programs": "Liệt kê mọi chương trình ở mọi trạng thái, kèm thời gian nhận hồ sơ và số hồ sơ.",
+          "get_program": "Đọc cài đặt, câu hỏi, tiêu chí, giám khảo và kết quả của một chương trình; không công bố gì.",
+          "list_accounts": "Liệt kê tài khoản kèm vai trò, trạng thái và lần đăng nhập gần nhất.",
+          "list_audit_events": "Liệt kê audit log, mới nhất trước, lọc theo hành động và từ khóa.",
+          "list_emails": "Liệt kê email BeyondPilot đã gửi, kèm trạng thái giao thư.",
+          "get_email": "Đọc nội dung chữ của một email và diễn biến giao thư; không bao giờ đọc mã đăng nhập.",
+          "list_matching_runs": "Liệt kê các lần chạy AI matching kèm model, kết quả và chi phí.",
+          "get_matching_run": "Đọc một lần chạy matching; các bước và thay đổi khi được hỏi.",
+          "get_matches": "Đọc các ứng viên của một use case kèm nhóm xếp hạng và quyết định."
         },
         "user": {
           "title": "Server cho người dùng",
@@ -3124,10 +3137,17 @@
           "person": "Người dùng",
           "app": "Ứng dụng",
           "tool": "Công cụ",
-          "outcome": "Kết quả"
+          "outcome": "Kết quả",
+          "read": "Đã đọc"
         },
         "today": "Hôm nay, {time}",
         "dayAndTime": "{day}, {time}",
+        "nothingRead": "—",
+        "counts": {
+          "calls": "Lượt gọi",
+          "refused": "Bị từ chối",
+          "failed": "Lỗi"
+        },
         "goneAccount": "Tài khoản đã xóa",
         "count": "{count} lời gọi",
         "noMatch": {

@@ -25,7 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Admin › AI › MCP › Activity (BEY-78): the calls AI apps made, newest first, by whom, through which app, to which
- * tool, and how each ended. What was asked is never kept, so never shown. Only an operator reads it.
+ * tool, the record each read (BEY-222) and how each ended, with the counts of the period. What was asked is never
+ * kept, so never shown. Only an operator reads it.
  */
 @Service
 public class McpActivity {
@@ -61,6 +62,10 @@ public class McpActivity {
 		int size = request.size() == null ? PAGE_SIZE : request.size();
 		List<LoggedCall> found = calls.page(filter, size, (long) (page - 1) * size);
 		List<String> callers = calls.clientsSince(request.from());
+		// The counts keep every outcome, so choosing one to list leaves them as they are.
+		McpCallRepository.Counts counts = calls
+			.count(new Filter(request.from(), request.app(), request.tool(), null, people));
+		long total = request.outcome() == null ? counts.calls() : calls.count(filter).calls();
 
 		Set<String> clientIds = new HashSet<>(callers);
 		found.forEach(call -> clientIds.add(call.clientId()));
@@ -73,7 +78,9 @@ public class McpActivity {
 			return new McpCallListResponse.Item(call.calledAt(), call.accountId(),
 					person == null ? null : person.displayName(), person == null ? null : person.email(),
 					call.clientId(), app.name(), app.host(), call.server(), call.tool(), call.outcome(),
-					call.durationMs());
+					call.durationMs(), call.target() == null ? null
+							: new McpCallListResponse.Target(call.target().kind(), call.target().id(),
+									call.target().label(), call.target().path()));
 		}).toList();
 		List<McpCallListResponse.App> appOptions = callers.stream()
 			.map(clientId -> new McpCallListResponse.App(clientId, names.get(clientId).name(),
@@ -85,7 +92,8 @@ public class McpActivity {
 			.map(tool -> tool.tool().tool().name())
 			.distinct()
 			.toList();
-		return new McpCallListResponse(items, page, size, calls.count(filter), appOptions, tools);
+		return new McpCallListResponse(items, page, size, total, appOptions, tools,
+				new McpCallListResponse.Counts(counts.calls(), counts.refused(), counts.failed()));
 	}
 
 }

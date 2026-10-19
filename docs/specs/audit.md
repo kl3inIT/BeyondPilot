@@ -11,10 +11,11 @@ module, `backend/src/main/java/ai/genaifund/beyondpilot/audit`. What each contra
 ## Module
 
 - **Published API.** The package root: `AuditTrail` (writes), `AuditRecord` (one event on its way in, with its
-  `Actor` and `Resource`), `AuditAction` (the catalog) and `AuditLog` (the operators' read, and `spreadsheet`, which
-  `identity` calls for the download).
+  `Actor` and `Resource`), `AuditAction` (the catalog), `AuditLog` (the operators' read; `spreadsheet`, which
+  `identity` calls for the download; and `history`, one resource's events newest first as `AuditEntry` records, which
+  `mcp` calls for `get_record` after checking the caller is an operator).
 - **Internal.** `audit.persistence` holds the SQL: `AuditEventRepository` (insert and count) and
-  `AuditEventQueryRepository` (the filtered, keyset-paged read). `audit.dto` holds `AuditEventListRequest`,
+  `AuditEventQueryRepository` (the filtered, keyset-paged read, and one resource's history). `audit.dto` holds `AuditEventListRequest`,
   `AuditEventListResponse` and `AuditEventResponse`. `audit.web` holds `AuditEventsController` and
   `AuditActionConverter`.
 - **No module dependency.** The module is closed with `allowedDependencies = { "shared" }`, for the spreadsheet

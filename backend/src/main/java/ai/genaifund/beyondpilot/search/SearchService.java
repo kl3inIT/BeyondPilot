@@ -1,7 +1,11 @@
 package ai.genaifund.beyondpilot.search;
 
+import java.text.Normalizer;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -97,14 +101,43 @@ public class SearchService {
 		return find(query, kinds, false);
 	}
 
+	/**
+	 * The best of each kind side by side: each kind's first, then each kind's second, and so on, since one kind's
+	 * scores do not compare with another's. An item whose title is the query comes first, then one whose title holds
+	 * it whole, so a program asked for by name is not behind a page of solutions that share its words (BEY-222).
+	 */
 	private List<Found> find(String query, List<String> kinds, boolean listedOnly) {
 		String trimmed = query.strip();
 		Meaning meaning = embeddings.of(trimmed).orElse(null);
-		return kinds.stream()
-			.flatMap(kind -> index.page(SearchRequest.builder(trimmed).kind(kind).build(), meaning, listedOnly, false,
-					PAGE_SIZE, 0).stream())
-			.map(hit -> new Found(hit.kind(), hit.slug(), hit.title()))
+		String asked = comparable(trimmed);
+		record Placed(Found found, int match, int place, int kind) {
+		}
+		List<Placed> placed = new ArrayList<>();
+		for (int kind = 0; kind < kinds.size(); kind++) {
+			List<Hit> hits = index.page(SearchRequest.builder(trimmed).kind(kinds.get(kind)).build(), meaning,
+					listedOnly, false, PAGE_SIZE, 0);
+			for (int place = 0; place < hits.size(); place++) {
+				Hit hit = hits.get(place);
+				String title = comparable(hit.title());
+				int match = title.equals(asked) ? 0 : !asked.isEmpty() && title.contains(asked) ? 1 : 2;
+				placed.add(new Placed(new Found(hit.kind(), hit.slug(), hit.title()), match, place, kind));
+			}
+		}
+		return placed.stream()
+			.sorted(Comparator.comparingInt(Placed::match)
+				.thenComparingInt(Placed::place)
+				.thenComparingInt(Placed::kind))
+			.map(Placed::found)
 			.toList();
+	}
+
+	/** Text as a title is compared with the query: without accents or case, words parted by one space. */
+	private static String comparable(String text) {
+		String plain = Normalizer.normalize(text, Normalizer.Form.NFD)
+			.replaceAll("\\p{M}", "")
+			.replace('đ', 'd')
+			.replace('Đ', 'D');
+		return plain.toLowerCase(Locale.ROOT).replaceAll("[^\\p{L}\\p{N}]+", " ").strip();
 	}
 
 	private static SearchItem item(Hit hit, Instant now, boolean member) {

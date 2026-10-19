@@ -21,6 +21,19 @@ const OPERATOR_TOOLS = [
   "get_application",
   "read_application_file",
   "list_pending_reviews",
+  "list_records",
+  "get_record",
+  "list_proposals",
+  "get_proposal",
+  "list_programs",
+  "get_program",
+  "list_accounts",
+  "list_audit_events",
+  "list_emails",
+  "get_email",
+  "list_matching_runs",
+  "get_matching_run",
+  "get_matches",
 ] as const;
 
 function isOperatorTool(name: string): name is (typeof OPERATOR_TOOLS)[number] {

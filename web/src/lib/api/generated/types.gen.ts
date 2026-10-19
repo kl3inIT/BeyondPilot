@@ -2991,6 +2991,10 @@ export type McpCall = {
      */
     personName?: string | null;
     server: 'user' | 'operator';
+    /**
+     * The one record the call read; null for a call that read none, such as a search, or that was refused.
+     */
+    target?: McpCallTarget | null;
     tool: string;
 };
 
@@ -2998,6 +3002,12 @@ export type McpCallApp = {
     clientId: string;
     host?: string | null;
     name: string;
+};
+
+export type McpCallCounts = {
+    calls: number;
+    failed: number;
+    refused: number;
 };
 
 /**
@@ -3008,6 +3018,10 @@ export type McpCallList = {
      * The apps that called in the period, to filter by.
      */
     apps: Array<McpCallApp>;
+    /**
+     * The calls the period, person, app and tool keep, whatever their outcome, and how many were refused or failed.
+     */
+    counts: McpCallCounts;
     items: Array<McpCall>;
     /**
      * The page returned, counted from 1.
@@ -3025,6 +3039,22 @@ export type McpCallList = {
      * How many calls match, over all pages.
      */
     total: number;
+};
+
+export type McpCallTarget = {
+    id: string;
+    /**
+     * What it is, such as `application`, `program` or `email`.
+     */
+    kind: string;
+    /**
+     * Its name when it was read.
+     */
+    label: string;
+    /**
+     * Its admin page from the site's root; null when it has none.
+     */
+    path?: string | null;
 };
 
 /**

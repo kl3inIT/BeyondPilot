@@ -53,6 +53,9 @@ class SearchTest {
 	@Autowired
 	private IndexRepair repair;
 
+	@Autowired
+	private SearchService search;
+
 	private RestTestClient client;
 
 	/** A word only this test's programs carry, so other tests' programs never match. */
@@ -117,6 +120,30 @@ class SearchTest {
 
 		String body = search("?q=" + word);
 		assertThat(JsonPath.<List<String>>read(body, "$.items[*].slug")).containsExactly("missed-" + word);
+	}
+
+	@Test
+	void anAppSearchingForAProgramByNameFindsItBeforeTheSolutionsThatShareItsWords() {
+		// Thirteen solutions hold every word of the program's name: before, twelve of them came ahead of it.
+		for (int number = 0; number < 13; number++) {
+			jdbc.sql("""
+					insert into search_document (kind, item_id, slug, title, summary, keywords, card, listed)
+					values ('solution', ?, ?, ?, 'Retail analytics.', '', '', true)
+					""").params(UUID.randomUUID(), "kit-" + number + "-" + word,
+					"Nestle Vietnam AI Reinvention Kit " + number + " " + word).update();
+		}
+		jdbc.sql("""
+				insert into search_document (kind, item_id, slug, title, summary, keywords, card, listed)
+				values ('program', ?, ?, ?, 'A challenge.', '', '', true)
+				""").params(UUID.randomUUID(), "nestle-" + word, "Nestlé Vietnam AI Reinvention " + word).update();
+
+		List<String> slugs = search.find("nestle vietnam ai reinvention " + word, List.of("solution", "program"))
+			.stream()
+			.map(Found::slug)
+			.toList();
+
+		assertThat(slugs.getFirst()).isEqualTo("nestle-" + word);
+		assertThat(slugs).hasSize(13);
 	}
 
 	@Test

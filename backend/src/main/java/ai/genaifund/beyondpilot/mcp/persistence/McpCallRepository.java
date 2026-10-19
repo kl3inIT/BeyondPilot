@@ -24,8 +24,10 @@ public class McpCallRepository {
 
 	public void record(Call call) {
 		jdbc.sql("""
-				insert into mcp_call (id, called_at, account_id, client_id, server, tool, outcome, duration_ms)
-				values (:id, :at, :account, :client, :server, :tool, :outcome, :duration)
+				insert into mcp_call (id, called_at, account_id, client_id, server, tool, outcome, duration_ms,
+				                      target_kind, target_id, target_label, target_path)
+				values (:id, :at, :account, :client, :server, :tool, :outcome, :duration,
+				        :kind, :target, :label, :path)
 				""")
 			.param("id", UUID.randomUUID())
 			.param("at", OffsetDateTime.ofInstant(call.calledAt(), ZoneOffset.UTC))
@@ -35,24 +37,42 @@ public class McpCallRepository {
 			.param("tool", call.tool())
 			.param("outcome", call.outcome())
 			.param("duration", call.durationMs())
+			.param("kind", call.target() == null ? null : call.target().kind())
+			.param("target", call.target() == null ? null : call.target().id())
+			.param("label", call.target() == null ? null : call.target().label())
+			.param("path", call.target() == null ? null : call.target().path())
 			.update();
 	}
 
 	/** One page of the calls the filter keeps, newest first. */
 	public List<LoggedCall> page(Filter filter, int limit, long offset) {
-		return filtered("select called_at, account_id, client_id, server, tool, outcome, duration_ms from mcp_call",
-				filter, " order by called_at desc, id limit :limit offset :offset")
+		return filtered("""
+				select called_at, account_id, client_id, server, tool, outcome, duration_ms,
+				       target_kind, target_id, target_label, target_path
+				from mcp_call""", filter, " order by called_at desc, id limit :limit offset :offset")
 			.param("limit", limit)
 			.param("offset", offset)
-			.query((row, number) -> new LoggedCall(row.getObject("called_at", OffsetDateTime.class).toInstant(),
-					row.getObject("account_id", UUID.class), row.getString("client_id"), row.getString("server"),
-					row.getString("tool"), row.getString("outcome"), row.getInt("duration_ms")))
+			.query((row, number) -> {
+				String kind = row.getString("target_kind");
+				Target target = kind == null ? null
+						: new Target(kind, row.getString("target_id"), row.getString("target_label"),
+								row.getString("target_path"));
+				return new LoggedCall(row.getObject("called_at", OffsetDateTime.class).toInstant(),
+						row.getObject("account_id", UUID.class), row.getString("client_id"), row.getString("server"),
+						row.getString("tool"), row.getString("outcome"), row.getInt("duration_ms"), target);
+			})
 			.list();
 	}
 
-	/** How many calls the filter keeps. */
-	public long count(Filter filter) {
-		return filtered("select count(*) from mcp_call", filter, "").query(Long.class).single();
+	/** How many calls the filter keeps, and how many of them were refused or failed. */
+	public Counts count(Filter filter) {
+		return filtered("""
+				select count(*) as calls,
+				       count(*) filter (where outcome = 'refused') as refused,
+				       count(*) filter (where outcome = 'failed') as failed
+				from mcp_call""", filter, "")
+			.query((row, number) -> new Counts(row.getLong("calls"), row.getLong("refused"), row.getLong("failed")))
+			.single();
 	}
 
 	/** The apps that called since this instant, or ever when it is null. */
@@ -116,12 +136,24 @@ public class McpCallRepository {
 	 * {@code failed} (it broke)
 	 */
 	public record Call(Instant calledAt, UUID accountId, String clientId, String server, String tool, String outcome,
-			int durationMs) {
+			int durationMs, @Nullable Target target) {
 	}
 
 	/** A call as the log keeps it. */
 	public record LoggedCall(Instant calledAt, UUID accountId, String clientId, String server, String tool,
-			String outcome, int durationMs) {
+			String outcome, int durationMs, @Nullable Target target) {
+	}
+
+	/**
+	 * The one record a call read.
+	 * @param label its name when it was read
+	 * @param path its admin page from the site's root, or null when it has none
+	 */
+	public record Target(String kind, String id, String label, @Nullable String path) {
+	}
+
+	/** How many calls a filter keeps, and how many of them were refused or failed. */
+	public record Counts(long calls, long refused, long failed) {
 	}
 
 	/**

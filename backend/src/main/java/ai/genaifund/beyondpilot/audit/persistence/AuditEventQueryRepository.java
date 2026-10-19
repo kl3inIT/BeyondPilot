@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
+import ai.genaifund.beyondpilot.audit.AuditEntry;
 import ai.genaifund.beyondpilot.audit.dto.AuditEventResponse;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -64,6 +65,24 @@ public class AuditEventQueryRepository {
 				order by occurred_at, id
 				limit :limit
 				""", from, action, text, at, id, limit);
+	}
+
+	/** Up to {@code limit} events recorded on one resource, newest first, read by {@code audit_event_resource_idx}. */
+	public List<AuditEntry> of(String resourceType, String resourceId, int limit) {
+		return jdbc.sql("""
+				select occurred_at, action, actor_label, details::text as details
+				from audit_event
+				where resource_type = :type and resource_id = :id
+				order by occurred_at desc, id desc
+				limit :limit
+				""")
+			.param("type", resourceType)
+			.param("id", resourceId)
+			.param("limit", limit)
+			.query((row, index) -> new AuditEntry(row.getObject("occurred_at", OffsetDateTime.class).toInstant(),
+					row.getString("action"), row.getString("actor_label"),
+					json.readValue(row.getString("details"), DETAILS)))
+			.list();
 	}
 
 	private List<AuditEventResponse> filtered(String sql, @Nullable Instant from, @Nullable AuditAction action,

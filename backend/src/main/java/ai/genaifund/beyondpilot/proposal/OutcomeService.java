@@ -15,12 +15,14 @@ import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.program.ApplicationForm;
 import ai.genaifund.beyondpilot.proposal.ReviewAccess.Reviewing;
+import ai.genaifund.beyondpilot.proposal.dto.CriteriaResponse;
 import ai.genaifund.beyondpilot.proposal.dto.DecideRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseDraftRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseEmails;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewApplicationsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewHeadResponse;
+import ai.genaifund.beyondpilot.proposal.dto.ReviewersResponse;
 import ai.genaifund.beyondpilot.proposal.persistence.Proposal;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalAssessment;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalAssessmentRepository;
@@ -129,6 +131,43 @@ public class OutcomeService {
 		access.operator(actor);
 		ApplicationForm form = setup.form(programId);
 		return preview(form, access.of(actor, programId));
+	}
+
+	/**
+	 * How a program's applications are reviewed, for the MCP server: its criteria and judges as their admin pages
+	 * show them, and where its outcomes stand as the release page shows it. It reads only; nothing is released.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ProposalException when the program takes no applications
+	 */
+	@Transactional(readOnly = true)
+	public ProgramReview reviewOf(Actor actor, UUID programId) {
+		access.operator(actor);
+		ApplicationForm form = setup.form(programId);
+		ReleaseResponse outcomes = preview(form, access.of(actor, programId));
+		CriteriaResponse criteria = setup.criteria(actor, programId);
+		ReviewersResponse judges = setup.reviewers(actor, programId);
+		return new ProgramReview(
+				criteria.criteria()
+					.stream()
+					.map(criterion -> new ProgramReview.Criterion(criterion.name(), criterion.description(),
+							criterion.maxPoints()))
+					.toList(),
+				criteria.fixed(),
+				judges.items()
+					.stream()
+					.map(judge -> new ProgramReview.Judge(judge.email(), judge.name(), judge.role(), judge.status(),
+							judge.invitedAt(), judge.assessed()))
+					.toList(),
+				proposals.countByProgramIdAndStatus(programId, Proposal.DRAFT), outcomes.withdrawn(),
+				outcomes.head().releasedAt(), outcomes.ready(), outcomes(outcomes.shortlisted()),
+				outcomes(outcomes.notSelected()), outcomes(outcomes.undecided()));
+	}
+
+	private static List<ProgramReview.Outcome> outcomes(List<ReleaseResponse.Item> items) {
+		return items.stream()
+			.map(item -> new ProgramReview.Outcome(item.id(), item.solutionName(), item.organizationName(),
+					item.average()))
+			.toList();
 	}
 
 	/**

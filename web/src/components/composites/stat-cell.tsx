@@ -5,9 +5,10 @@ import { cn } from "@/lib/utils";
 
 const statStripVariants = cva("grid overflow-hidden rounded-lg border", {
   variants: {
-    /** How many cells a row holds once there is room; a phone always shows two. */
+    /** How many cells a row holds once there is room; a phone shows two, or a strip of three whole. */
     columns: {
       2: "grid-cols-2 lg:grid-cols-1",
+      3: "grid-cols-3",
       4: "grid-cols-2 lg:grid-cols-4",
       5: "grid-cols-2 md:grid-cols-3 xl:grid-cols-5",
       6: "grid-cols-2 md:grid-cols-3 xl:grid-cols-6",

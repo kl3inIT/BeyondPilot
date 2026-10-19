@@ -28,6 +28,7 @@ import ai.genaifund.beyondpilot.organization.dto.ApproveOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.MergedOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.MergeOrganizationRequest;
+import ai.genaifund.beyondpilot.organization.dto.OrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationReviewQueueResponse;
 import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationRequest;
@@ -748,6 +749,62 @@ public class OrganizationAdministration {
 					.map(row -> new OrganizationsAwaitingReview.Item(row.id(), row.name(), row.type(), row.country(),
 							row.createdAt()))
 					.toList());
+	}
+
+	/**
+	 * One page of the operators' list of organizations, in its own order, for the MCP server.
+	 * @param status one of the list's statuses, or null for every one
+	 * @param q only organizations whose name or domain contains it; every one when null
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public OrganizationReviewList reviewList(Actor actor, @Nullable String status, @Nullable String q, int page,
+			int size) {
+		AdminOrganizationListResponse found = list(actor,
+				new AdminOrganizationListRequest(q, status, null, null, page, size));
+		return new OrganizationReviewList(found.total(), found.items()
+			.stream()
+			.map(item -> new OrganizationReviewList.Item(item.id(), item.name(), item.type(), item.country(),
+					item.status(), item.suspendedAt(), item.members(), item.owned(), item.request(), item.askedBy(),
+					item.requestedAt(), item.createdAt(), item.mergedInto()))
+			.toList());
+	}
+
+	/**
+	 * One organization as its admin page shows it, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws OrganizationException when the organization does not exist
+	 */
+	@Transactional(readOnly = true)
+	public OrganizationReviewRecord reviewRecord(Actor actor, UUID id) {
+		AdminOrganizationResponse found = get(actor, id);
+		OrganizationResponse organization = found.organization();
+		MergedOrganizationResponse merged = found.merged();
+		return new OrganizationReviewRecord(organization.id(), organization.slug(), organization.name(),
+				organization.type(), organization.website(), organization.country(), organization.teamSize(),
+				organization.industries(), organization.description(), organization.foundedYear(),
+				organization.teamBackground(), organization.emailDomain(), organization.status(),
+				organization.decisionReason(), organization.decisionMessage(), organization.suspensionReason(),
+				organization.suspensionMessage(), organization.suspendedAt(), organization.createdAt(),
+				found.createdBy(), found.createdByEmail(),
+				found.members()
+					.stream()
+					.map(member -> new OrganizationReviewRecord.Member(member.name(), member.email(), member.role(),
+							member.jobTitle(), member.joinedAt()))
+					.toList(),
+				found.invitations()
+					.stream()
+					.map(invitation -> new OrganizationReviewRecord.Invitation(invitation.email(), invitation.role(),
+							invitation.invitedBy(), invitation.createdAt(), invitation.expiresAt()))
+					.toList(),
+				found.claims()
+					.stream()
+					.map(claim -> new OrganizationReviewRecord.Claim(claim.name(), claim.email(), claim.message(),
+							claim.createdAt()))
+					.toList(),
+				merged == null ? null
+						: new OrganizationReviewRecord.Merged(merged.intoId(), merged.intoName(), merged.mergedAt(),
+								merged.mergedBy()));
 	}
 
 	/**

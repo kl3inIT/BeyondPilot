@@ -5,9 +5,11 @@ import { createSerializer } from "nuqs/server";
 import { Button } from "@/components/actions/button";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
+import { StatCell, StatStrip } from "@/components/composites/stat-cell";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AppMark } from "@/features/identity/app-mark";
 import { getFormatter } from "@/i18n/format-server";
+import { Link } from "@/i18n/navigation";
 import type { McpCall, McpCallList, PersonConnectedApp } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -38,7 +40,8 @@ async function McpAppsPage({ apps, counts }: { apps: PersonConnectedApp[]; count
 
 /**
  * Admin › AI › MCP › Activity: the calls AI apps made, newest first: when, who, which app, which
- * tool and how it ended. What was asked is never kept. Search, filters and the page are the URL.
+ * tool, the record it read and how it ended, under the period's calls, refusals and failures. What
+ * was asked is never kept. Search, filters and the page are the URL.
  */
 async function McpActivityPage({
   calls,
@@ -86,6 +89,18 @@ async function McpActivityPage({
           <span className="text-xs text-muted-foreground">{t(`server.${call.server}`)}</span>
         </span>
       ),
+      // The record the call read, named as it was then; a search or a refused call read none.
+      read: call.target ? (
+        call.target.path ? (
+          <Link href={call.target.path} className="hover:underline">
+            {call.target.label}
+          </Link>
+        ) : (
+          call.target.label
+        )
+      ) : (
+        <span className="text-muted-foreground">{t("nothingRead")}</span>
+      ),
       outcome: (
         <span className="flex items-center gap-2">
           <span
@@ -122,6 +137,29 @@ async function McpActivityPage({
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
       <McpAdminHeader current="activity" counts={counts} />
+      {/* A cell lists the calls it counts; the counts keep every outcome, so they stay as one is chosen. */}
+      <StatStrip columns={3}>
+        {(
+          [
+            { key: "calls", value: calls.counts.calls, outcome: null },
+            { key: "refused", value: calls.counts.refused, outcome: "refused" },
+            { key: "failed", value: calls.counts.failed, outcome: "failed" },
+          ] as const
+        ).map((cell) => (
+          <StatCell
+            key={cell.key}
+            label={t(`counts.${cell.key}`)}
+            value={format.number(cell.value)}
+            href={address(siteRoutes.adminMcpActivity, {
+              ...search,
+              outcome: cell.outcome,
+              page: 1,
+            })}
+            quiet={cell.key !== "calls" && cell.value === 0}
+          />
+        ))}
+      </StatStrip>
+
       <McpActivityToolbar apps={calls.apps} tools={calls.tools} />
 
       {/* A click on the short time opens the full date and time, to the second. */}
@@ -131,6 +169,7 @@ async function McpActivityPage({
           { id: "person", header: t("columns.person") },
           { id: "app", header: t("columns.app") },
           { id: "tool", header: t("columns.tool") },
+          { id: "read", header: t("columns.read") },
           { id: "outcome", header: t("columns.outcome") },
         ]}
         rows={rows.map((row) => ({
@@ -156,6 +195,7 @@ async function McpActivityPage({
             person: row.person,
             app: row.app,
             tool: row.tool,
+            read: row.read,
             outcome: row.outcome,
           },
         }))}

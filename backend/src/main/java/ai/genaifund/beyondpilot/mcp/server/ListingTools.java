@@ -94,7 +94,9 @@ class ListingTools {
 			.title("Search BeyondPilot")
 			.description(operator
 					? "Search BeyondPilot as a GenAI Fund operator: AI solutions, listed or not, programs, AI talent, "
-							+ "use cases and companies. Returns results with an id to read in full with fetch."
+							+ "use cases and companies, as far as they are approved or published. Returns results with "
+							+ "an id to read in full with fetch. For what is in review, needs changes, rejected or a "
+							+ "draft, use list_records."
 					: "Search the AI solutions and the programs listed on BeyondPilot, GenAI Fund's network for "
 							+ "enterprises and AI builders. Returns results with an id to read in full with fetch.")
 			.annotations(READ_ONLY)
@@ -148,6 +150,12 @@ class ListingTools {
 				case "organization" -> operator ? company(id, key) : Optional.empty();
 				default -> Optional.empty();
 			};
+			document.ifPresent(found -> {
+				// The record's page on the site; a program on a partner's site has none here.
+				String url = String.valueOf(found.get("url"));
+				CallLog.read(kind, key, String.valueOf(found.get("title")),
+						url.startsWith(callers.site()) ? url.substring(callers.site().length()) : null);
+			});
 			return document.map(this::text).orElseGet(() -> error("Nothing on BeyondPilot has this id for you."));
 		});
 	}

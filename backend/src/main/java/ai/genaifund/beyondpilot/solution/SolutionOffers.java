@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.solution;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -295,6 +296,37 @@ public class SolutionOffers {
 		}).toList();
 		return new AdminOfferDetailResponse(view(offer, organizationName(offer.getOrganizationId()), solutions.size()),
 				offer.getCreatedAt(), solutions);
+	}
+
+	/**
+	 * Every offer, in the order of {@link #list}, without the solutions that come with each, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 */
+	@Transactional(readOnly = true)
+	public List<SolutionOfferRecord> offerRecords(Actor actor) {
+		return list(actor).stream().map(offer -> offerRecord(offer, null, List.of())).toList();
+	}
+
+	/**
+	 * One offer as its admin page shows it, with the solutions that come with it, for the MCP server.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws SolutionException when the offer does not exist
+	 */
+	@Transactional(readOnly = true)
+	public SolutionOfferRecord offerRecord(Actor actor, UUID id) {
+		AdminOfferDetailResponse found = detail(actor, id);
+		return offerRecord(found.offer(), found.createdAt(), found.solutionList()
+			.stream()
+			.map(solution -> new SolutionOfferRecord.Solution(solution.id(), solution.name(),
+					solution.organizationName(), solution.status(), solution.suspendedAt()))
+			.toList());
+	}
+
+	private static SolutionOfferRecord offerRecord(AdminOfferResponse offer, @Nullable Instant createdAt,
+			List<SolutionOfferRecord.Solution> solutions) {
+		return new SolutionOfferRecord(offer.id(), offer.title(), offer.url(), offer.organizationId(),
+				offer.organizationName(), offer.fromGenAiFund(), offer.closed(), offer.solutions(), createdAt,
+				offer.updatedAt(), solutions);
 	}
 
 	/**

@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.proposal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -11,11 +12,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.identity.TestAppConnection;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
+import io.modelcontextprotocol.client.McpClient;
+import io.modelcontextprotocol.client.McpSyncClient;
+import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
+import io.modelcontextprotocol.spec.McpSchema;
+import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.web.server.LocalServerPort;
 
 /**
  * An organization's proposal to a use case over real HTTP against PostgreSQL: who may send, a working copy saved by two
@@ -24,6 +33,9 @@ import org.junit.jupiter.api.Test;
 class UseCaseProposalTest extends ApplicationsHttpTest {
 
 	private static final String ORGANIZATION = "/api/organization";
+
+	@LocalServerPort
+	private int port;
 
 	@Test
 	void anApprovedOrganizationSendsAProposalAndThePostersReadIt() {
@@ -425,6 +437,67 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		// A decision may change even after the use case closed.
 		jdbc.sql("update use_case set closes_at = now() - interval '1 minute' where id = ?").params(useCase).update();
 		post(poster.founder, decide, Map.of("decision", "declined")).expectStatus().isOk();
+	}
+
+	@Test
+	void anOperatorsAppListsTheProposalsAUseCaseReceivedAndReadsOneWithItsDecision() {
+		Provider provider = provider("mcp-proposals.test");
+		Poster poster = poster("posts-mcp-proposals.test");
+		UUID useCase = publishedUseCase(poster.organization, "Proposals read by an app");
+		String id = sentProposal(provider, useCase);
+		post(poster.founder, API + "/use-case-proposals/" + id + "/decision", Map.of("decision", "shortlisted"))
+			.expectStatus()
+			.isOk();
+
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = McpClient
+			.sync(HttpClientStreamableHttpTransport.builder("http://localhost:" + port)
+				.endpoint("/mcp/operator")
+				.httpRequestCustomizer((builder, method, uri, body, context) -> builder.header("Authorization",
+						"Bearer " + token))
+				.build())
+			.requestTimeout(Duration.ofSeconds(20))
+			.build();
+		app.initialize();
+
+		String listed = text(app.callTool(McpSchema.CallToolRequest.builder("list_proposals")
+			.arguments(Map.of("use_case", "use_case:" + useCase))
+			.build()));
+		assertThat(JsonPath.<Integer>read(listed, "$.received")).isEqualTo(1);
+		assertThat(JsonPath.<Integer>read(listed, "$.shortlisted")).isEqualTo(1);
+		assertThat(JsonPath.<String>read(listed, "$.proposals[0].id")).isEqualTo(id);
+		assertThat(JsonPath.<String>read(listed, "$.proposals[0].decision")).isEqualTo("shortlisted");
+		assertThat(JsonPath.<String>read(listed, "$.proposals[0].url"))
+			.endsWith("/admin/use-cases/" + useCase + "/proposals/" + id);
+
+		// Concise by default; the approach and the team come with detail.
+		String brief = text(app.callTool(
+				McpSchema.CallToolRequest.builder("get_proposal").arguments(Map.of("proposal", id)).build()));
+		assertThat(JsonPath.<String>read(brief, "$.sentBy.email")).isEqualTo(provider.founderEmail);
+		assertThat(JsonPath.<String>read(brief, "$.deck.name")).isNotBlank();
+		assertThat(JsonPath.<Map<String, Object>>read(brief, "$")).doesNotContainKey("approach");
+		String full = text(app.callTool(McpSchema.CallToolRequest.builder("get_proposal")
+			.arguments(Map.of("proposal", id, "detail", true))
+			.build()));
+		assertThat(JsonPath.<String>read(full, "$.approach")).isEqualTo("We adapt it.");
+
+		CallToolResult unknown = app.callTool(McpSchema.CallToolRequest.builder("get_proposal")
+			.arguments(Map.of("proposal", UUID.randomUUID().toString()))
+			.build());
+		assertThat(unknown.isError()).isTrue();
+		app.closeGracefully();
+
+		// The activity names what was read and links to it.
+		assertThat(jdbc.sql("""
+				select target_path from mcp_call where tool = 'get_proposal' and outcome = 'ok' and target_id = ?
+				""").params(id).query(String.class).list())
+			.hasSize(2)
+			.allMatch(("/admin/use-cases/" + useCase + "/proposals/" + id)::equals);
+	}
+
+	private static String text(CallToolResult result) {
+		assertThat(result.isError()).isFalse();
+		return ((TextContent) result.content().getFirst()).text();
 	}
 
 	@Test

@@ -18912,6 +18912,13 @@ components:
           enum:
           - user
           - operator
+        target:
+          type:
+          - object
+          - "null"
+          $ref: "#/components/schemas/McpCallTarget"
+          description: "The one record the call read; null for a call that read none,\
+            \ such as a search, or that was refused."
         tool:
           type: string
       required:
@@ -18937,6 +18944,22 @@ components:
       required:
       - clientId
       - name
+    McpCallCounts:
+      type: object
+      properties:
+        calls:
+          type: integer
+          format: int64
+        failed:
+          type: integer
+          format: int64
+        refused:
+          type: integer
+          format: int64
+      required:
+      - calls
+      - failed
+      - refused
     McpCallList:
       type: object
       description: "One page of the calls AI apps made to the MCP servers, newest\
@@ -18947,6 +18970,10 @@ components:
           description: "The apps that called in the period, to filter by."
           items:
             $ref: "#/components/schemas/McpCallApp"
+        counts:
+          $ref: "#/components/schemas/McpCallCounts"
+          description: "The calls the period, person, app and tool keep, whatever\
+            \ their outcome, and how many were refused or failed."
         items:
           type: array
           items:
@@ -18970,11 +18997,32 @@ components:
           description: "How many calls match, over all pages."
       required:
       - apps
+      - counts
       - items
       - page
       - pageSize
       - tools
       - total
+    McpCallTarget:
+      type: object
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          description: "What it is, such as `application`, `program` or `email`."
+        label:
+          type: string
+          description: Its name when it was read.
+        path:
+          type:
+          - string
+          - "null"
+          description: Its admin page from the site's root; null when it has none.
+      required:
+      - id
+      - kind
+      - label
     McpSettings:
       type: object
       description: "The MCP servers, their switches and their tools."

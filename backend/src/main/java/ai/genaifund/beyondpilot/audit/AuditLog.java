@@ -32,6 +32,9 @@ public class AuditLog {
 
 	static final int PAGE_SIZE = 50;
 
+	/** Microseconds since the epoch and the event's identifier, as the request checks it. */
+	private static final String CURSOR = "\\d{1,18}_[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}";
+
 	private final AuditEventQueryRepository events;
 
 	AuditLog(AuditEventQueryRepository events) {
@@ -53,6 +56,39 @@ public class AuditLog {
 		List<AuditEventResponse> page = found.subList(0, Math.min(found.size(), size));
 		return new AuditEventListResponse(page, place == null || page.isEmpty() ? null : cursor(page.getFirst()),
 				found.size() > size ? cursor(page.getLast()) : null);
+	}
+
+	/**
+	 * {@link #list} for another module, towards the past only. Like it, it takes no caller: the module that calls it
+	 * answers for who reads.
+	 * @param before the {@code older} cursor of a page, or null for the newest page
+	 * @throws IllegalArgumentException when the cursor is not one this log gave
+	 */
+	@Transactional(readOnly = true)
+	public AuditEvents events(@Nullable Instant from, @Nullable AuditAction action, @Nullable String q,
+			@Nullable String before, int size) {
+		if (before != null && !before.matches(CURSOR)) {
+			throw new IllegalArgumentException("Not a cursor of the audit log");
+		}
+		AuditEventListResponse page = list(new AuditEventListRequest(from, action, q, before, null, size));
+		return new AuditEvents(page.items()
+			.stream()
+			.map(event -> new AuditEvents.Event(event.occurredAt(), event.action().value(),
+					event.actor() == null ? null : event.actor().label(),
+					event.actor() == null ? null : event.actor().email(), event.resource().type(),
+					event.resource().id(), event.resource().label(), event.details(), event.requestId()))
+			.toList(), page.older());
+	}
+
+	/**
+	 * The events recorded on one resource, newest first, at most {@code limit}. Like {@link #list}, it takes no
+	 * caller: the module that calls it answers for who reads.
+	 * @param resourceType the kind its recorder names, such as {@code solution}
+	 * @param resourceId its identifier as recorded
+	 */
+	@Transactional(readOnly = true)
+	public List<AuditEntry> history(String resourceType, String resourceId, int limit) {
+		return events.of(resourceType, resourceId, limit);
 	}
 
 	/**
