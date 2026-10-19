@@ -498,6 +498,9 @@ class MessagingTest {
 		String sender = signIn("minh@clock-sender.test");
 		String id = JsonPath.read(body(start(sender, "talent", slug, "Hello.").expectStatus().isOk()), "$.conversation.id");
 		Instant now = Instant.now();
+		// The email of the request has arrived before the reminder is queued: two emails queued together are
+		// delivered side by side, and the reminder could then arrive first and not be the latest.
+		assertThat(mail.latestSubjectTo("mei@clock-talent.test")).isEqualTo("A first message for you on BeyondPilot");
 
 		assertThat(clock.remind(now.plus(Duration.ofDays(6)))).isZero();
 		clock.remind(now.plus(Duration.ofDays(8)));
