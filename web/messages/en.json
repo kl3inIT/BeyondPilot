@@ -3068,7 +3068,18 @@
           "list_applications": "Lists a program's applications with GenAI Fund's decision and the judges' mean score.",
           "get_application": "Reads one application in full: what the applicant sent, every score and the files it holds.",
           "read_application_file": "Shows the pages of an application's PDF, such as its deck, as pictures with their text.",
-          "list_pending_reviews": "Lists what waits for review: organizations, solutions, talent, use cases and customer deployments."
+          "list_pending_reviews": "Lists what waits for review: organizations, solutions, talent, use cases and customer deployments.",
+          "list_records": "Lists organizations, solutions, talent, use cases or offers in any status, as the admin lists do.",
+          "get_record": "Reads one of them with its status, latest decision and review history.",
+          "list_programs": "Lists every program in any status, with its application window and counts.",
+          "get_program": "Reads a program's settings, questions, criteria, judges and outcomes; releases nothing.",
+          "list_accounts": "Lists accounts with their role, status and last sign-in.",
+          "list_audit_events": "Lists the audit log, newest first, narrowed by action and words.",
+          "list_emails": "Lists the emails BeyondPilot sent, with their delivery status.",
+          "get_email": "Reads one email's text and what happened to it; never a sign-in code.",
+          "list_matching_runs": "Lists AI matching runs with their model, results and cost.",
+          "get_matching_run": "Reads one matching run; its steps and changes on request.",
+          "get_matches": "Reads a use case's candidates with their bucket and decision."
         },
         "user": {
           "title": "User server",
