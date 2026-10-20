@@ -1338,6 +1338,7 @@
           "candidate_reason": "Said why a candidate was removed",
           "candidate_restore": "Restored a candidate",
           "candidate_invite": "Invited a provider to propose",
+          "feedback_export": "Downloaded the matching feedback",
           "settings_change": "Changed the limits of matching"
         },
         "audit": {
@@ -1504,6 +1505,7 @@
           "candidate_reason": "Said why a candidate of the use case <resource></resource> was removed",
           "candidate_restore": "Restored a candidate of the use case <resource></resource>",
           "candidate_invite": "Invited a provider to propose for the use case <resource></resource>",
+          "feedback_export": "Downloaded the matching feedback",
           "settings_change": "Changed the limits of matching"
         },
         "audit": {

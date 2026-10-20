@@ -138,6 +138,7 @@ export const auditActions = [
   "matching.candidate_restore",
   "matching.candidate_invite",
   "matching.settings_change",
+  "matching.feedback_export",
 ] as const;
 
 /**

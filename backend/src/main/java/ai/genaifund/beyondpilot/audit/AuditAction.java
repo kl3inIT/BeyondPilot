@@ -438,6 +438,12 @@ public enum AuditAction {
 	/** Someone invited the provider of a candidate to propose. {@code provider} is the organization emailed. */
 	MATCHING_CANDIDATE_INVITE("matching.candidate_invite", "solution", "provider"),
 
+	/**
+	 * An operator downloaded the answers that say a group is wrong as a spreadsheet. {@code count} is how many the
+	 * download holds.
+	 */
+	MATCHING_FEEDBACK_EXPORT("matching.feedback_export", "count"),
+
 	/** An operator changed the limits of matching. */
 	MATCHING_SETTINGS_CHANGE("matching.settings_change");
 

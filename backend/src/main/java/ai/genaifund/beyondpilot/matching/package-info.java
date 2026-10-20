@@ -9,7 +9,7 @@
  */
 @ApplicationModule(displayName = "Matching", type = ApplicationModule.Type.CLOSED,
 		allowedDependencies = { "ai", "audit", "identity", "notification", "organization", "proposal", "search",
-				"solution", "usecase" })
+				"shared", "solution", "usecase" })
 @NullMarked
 package ai.genaifund.beyondpilot.matching;
 
