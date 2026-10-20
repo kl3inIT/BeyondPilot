@@ -2,7 +2,12 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type { AuditEvent } from "@/lib/api/generated";
 
-import { auditActionGroups, auditActions, type AuditAction } from "./audit-log-search";
+import {
+  actionsMatching,
+  auditActionGroups,
+  auditActions,
+  type AuditAction,
+} from "./audit-log-search";
 
 describe("auditActions", () => {
   it("is the backend's catalog, every action and nothing else, so the filter misses none", () => {
@@ -28,5 +33,24 @@ describe("auditActionGroups", () => {
 
     expect(areaOf("operator.grant")).toBe("accounts");
     expect(areaOf("proposal.reviewer_invite")).toBe("programs");
+  });
+});
+
+describe("actionsMatching", () => {
+  const names = (action: AuditAction) =>
+    action === "audit.export"
+      ? ["Downloaded the audit log", "Downloaded the audit log"]
+      : action === "account.export"
+        ? ["Downloaded the accounts", "Downloaded the accounts"]
+        : ["Something else"];
+
+  it("finds the actions whose names hold the words, ignoring case", () => {
+    expect(actionsMatching("  downloaded THE ", names)).toEqual(["account.export", "audit.export"]);
+    expect(actionsMatching("audit log", names)).toEqual(["audit.export"]);
+  });
+
+  it("names none for an empty search or words no name holds", () => {
+    expect(actionsMatching("   ", names)).toEqual([]);
+    expect(actionsMatching("mina@audit.test", names)).toEqual([]);
   });
 });

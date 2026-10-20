@@ -193,3 +193,18 @@ export const auditLogSearch = {
 export const loadAuditLogSearch = createLoader(auditLogSearch);
 
 export type AuditLogSearch = Awaited<ReturnType<typeof loadAuditLogSearch>>;
+
+/**
+ * The actions whose names hold the words searched for, ignoring case: the backend knows actions by
+ * their codes and their names only exist here, in the reader's language. `namesOf` gives the
+ * words an action is shown by, such as its name and its sentence.
+ */
+export function actionsMatching(q: string, namesOf: (action: AuditAction) => string[]) {
+  const words = q.trim().toLocaleLowerCase();
+  if (words === "") {
+    return [];
+  }
+  return auditActions.filter((action) =>
+    namesOf(action).some((name) => name.toLocaleLowerCase().includes(words)),
+  );
+}

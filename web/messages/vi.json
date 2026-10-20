@@ -1164,7 +1164,7 @@
     "auditLog": {
       "metaTitle": "Nhật ký thao tác · BeyondPilot",
       "title": "Nhật ký thao tác",
-      "search": "Tìm người hoặc tài khoản",
+      "search": "Tìm người, hồ sơ hoặc hành động",
       "clear": "Xóa bộ lọc",
       "filters": {
         "period": {

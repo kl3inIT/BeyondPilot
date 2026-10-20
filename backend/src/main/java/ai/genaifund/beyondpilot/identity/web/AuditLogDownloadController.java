@@ -46,7 +46,7 @@ class AuditLogDownloadController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ResponseEntity<byte[]> export(@CurrentActor Actor actor, @Valid @ParameterObject AuditLogExportRequest request) {
 		SpreadsheetFormat format = SpreadsheetFormat.of(request.format() == null ? "xlsx" : request.format());
-		return download.export(actor, request.from(), request.action(), request.q(), format).response();
+		return download.export(actor, request.from(), request.action(), request.q(), request.actions(), format).response();
 	}
 
 }

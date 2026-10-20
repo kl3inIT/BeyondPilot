@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.identity;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
@@ -44,10 +45,10 @@ public class AuditLogDownload {
 	 */
 	@Transactional
 	public SpreadsheetFile export(Actor actor, @Nullable Instant from, @Nullable AuditAction action, @Nullable String q,
-			SpreadsheetFormat format) {
+			@Nullable List<AuditAction> actions, SpreadsheetFormat format) {
 		Operator operator = identity.requireOperator(actor);
 		String text = q == null || q.isBlank() ? null : q.strip();
-		SpreadsheetFile file = log.spreadsheet(from, action, text, format, operator.label());
+		SpreadsheetFile file = log.spreadsheet(from, action, text, actions, format, operator.label());
 		audit.record(new AuditRecord(AuditAction.AUDIT_EXPORT,
 				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
 				new AuditRecord.Resource("audit_log", "audit-log", "Audit log"),

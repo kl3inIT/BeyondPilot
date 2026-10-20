@@ -576,13 +576,16 @@ createServer((request, response) => {
     }
     const text = (url.searchParams.get("q") ?? "").toLowerCase();
     const action = url.searchParams.get("action");
+    // The actions whose names the search matched, which the page found in the reader's language.
+    const named = url.searchParams.getAll("actions");
     const from = url.searchParams.get("from");
     const matching = events.filter(
       (event) =>
-        (!text ||
-          event.resource.label.toLowerCase().includes(text) ||
-          (event.actor?.label ?? "").toLowerCase().includes(text) ||
-          (event.actor?.email ?? "").toLowerCase().includes(text)) &&
+        ((!text && named.length === 0) ||
+          (text !== "" && event.resource.label.toLowerCase().includes(text)) ||
+          (text !== "" && (event.actor?.label ?? "").toLowerCase().includes(text)) ||
+          (text !== "" && (event.actor?.email ?? "").toLowerCase().includes(text)) ||
+          named.includes(event.action)) &&
         (!action || event.action === action) &&
         (!from || event.occurredAt >= from),
     );

@@ -13,7 +13,7 @@ import type { AuditEvent, AuditEventList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 import { clockText } from "@/i18n/formats";
 
-import { auditLogSearch, type AuditLogSearch } from "./audit-log-search";
+import { auditLogSearch, type AuditAction, type AuditLogSearch } from "./audit-log-search";
 import { auditResourceRoute } from "./audit-resource";
 import { AuditLogToolbar } from "./audit-log-toolbar";
 import { PageSizeSelect } from "@/components/composites/page-size-select";
@@ -27,6 +27,8 @@ const address = createSerializer(auditLogSearch);
 
 type AuditLogPageProps = {
   events: AuditEventList;
+  /** The actions whose names the search matched, which the download narrows by as the list does. */
+  named: AuditAction[];
   search: AuditLogSearch;
 };
 
@@ -35,7 +37,7 @@ type AuditLogPageProps = {
  * the whole event: when, who, and what was done to whom. The list arrives already read; search,
  * filters and the page are the URL.
  */
-async function AuditLogPage({ events, search }: AuditLogPageProps) {
+async function AuditLogPage({ events, named, search }: AuditLogPageProps) {
   const [t, format, locale] = await Promise.all([
     getTranslations("Admin.auditLog"),
     getFormatter(),
@@ -137,7 +139,10 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
         destination="auditLog"
         title={t("title")}
         actions={
-          <ExportAuditLog filters={auditLogFilters(search)} disabled={events.items.length === 0} />
+          <ExportAuditLog
+            filters={auditLogFilters(search, named)}
+            disabled={events.items.length === 0}
+          />
         }
       />
       <AuditLogToolbar />

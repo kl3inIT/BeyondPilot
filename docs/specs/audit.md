@@ -118,13 +118,14 @@ first.
 - **No caller in the service.** `AuditLog` takes no caller and trusts the chain. A module that calls it directly
   answers for who reads.
 
-| Query parameter | Contract                                                                                                                                                  |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `from`          | An ISO instant; only events at or after it                                                                                                                |
-| `action`        | A stored action name, such as `account.disable`; only events of that action                                                                               |
-| `q`             | Up to 100 characters; events whose actor's name or address, or whose resource's label, contains it, ignoring case. `%`, `_` and `\` are matched literally |
-| `before`        | The `older` cursor of a page: the page of events before it. Used when both cursors are given                                                              |
-| `after`         | The `newer` cursor of a page: the page of events after it                                                                                                 |
+| Query parameter | Contract                                                                                                                                                                                                                                                             |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `from`          | An ISO instant; only events at or after it                                                                                                                                                                                                                           |
+| `action`        | A stored action name, such as `account.disable`; only events of that action                                                                                                                                                                                          |
+| `q`             | Up to 100 characters; events whose actor's name or address, or whose resource's label, contains it, ignoring case. `%`, `_` and `\` are matched literally                                                                                                            |
+| `actions`       | Up to 300 stored action names, repeated: the actions whose names, in the reader's language, hold the words of the search, which the web finds since names exist only there. An event of one of them matches the search as well; with no `q`, they alone are searched |
+| `before`        | The `older` cursor of a page: the page of events before it. Used when both cursors are given                                                                                                                                                                         |
+| `after`         | The `newer` cursor of a page: the page of events after it                                                                                                                                                                                                            |
 
 - **Response.** `items`, each an `AuditEvent`: `id`, `occurredAt`, `action` (its stored name), `actor` (`id`,
   `label`, `email`) or null, `resource` (`type`, `id`, `label`), `details` and `requestId`. `older` is the cursor

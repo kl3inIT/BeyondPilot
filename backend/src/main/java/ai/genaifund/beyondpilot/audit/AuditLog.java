@@ -51,7 +51,7 @@ public class AuditLog {
 		}
 		Place place = request.before() == null ? null : Place.of(request.before());
 		// One more than a page tells whether an older page exists.
-		List<AuditEventResponse> found = events.older(request.from(), request.action(), text,
+		List<AuditEventResponse> found = events.older(request.from(), request.action(), text, actionsOf(request),
 				place == null ? null : place.at(), place == null ? null : place.id(), size + 1);
 		List<AuditEventResponse> page = found.subList(0, Math.min(found.size(), size));
 		return new AuditEventListResponse(page, place == null || page.isEmpty() ? null : cursor(page.getFirst()),
@@ -70,7 +70,7 @@ public class AuditLog {
 		if (before != null && !before.matches(CURSOR)) {
 			throw new IllegalArgumentException("Not a cursor of the audit log");
 		}
-		AuditEventListResponse page = list(new AuditEventListRequest(from, action, q, before, null, size));
+		AuditEventListResponse page = list(new AuditEventListRequest(from, action, q, null, before, null, size));
 		return new AuditEvents(page.items()
 			.stream()
 			.map(event -> new AuditEvents.Event(event.occurredAt(), event.action().value(),
@@ -99,11 +99,11 @@ public class AuditLog {
 	 */
 	@Transactional(readOnly = true)
 	public SpreadsheetFile spreadsheet(@Nullable Instant from, @Nullable AuditAction action, @Nullable String q,
-			SpreadsheetFormat format, String downloadedBy) {
+			@Nullable List<AuditAction> actions, SpreadsheetFormat format, String downloadedBy) {
 		List<AuditEventResponse> rows = new ArrayList<>();
 		String before = null;
 		do {
-			AuditEventListResponse page = list(new AuditEventListRequest(from, action, q, before, null,
+			AuditEventListResponse page = list(new AuditEventListRequest(from, action, q, actions, before, null,
 					Spreadsheet.PAGE_SIZE));
 			rows.addAll(page.items());
 			Spreadsheet.bounded(rows.size());
@@ -138,7 +138,8 @@ public class AuditLog {
 
 	private AuditEventListResponse towardsThePresent(AuditEventListRequest request, @Nullable String text, Place place,
 			int size) {
-		List<AuditEventResponse> found = events.newer(request.from(), request.action(), text, place.at(), place.id(),
+		List<AuditEventResponse> found = events.newer(request.from(), request.action(), text, actionsOf(request), place.at(),
+				place.id(),
 				size + 1);
 		List<AuditEventResponse> page = found.subList(0, Math.min(found.size(), size)).reversed();
 		return new AuditEventListResponse(page, found.size() > size ? cursor(page.getFirst()) : null,
@@ -158,6 +159,12 @@ public class AuditLog {
 					UUID.fromString(cursor.substring(cut + 1)));
 		}
 
+	}
+
+
+	/** The actions whose names the search matched, which the reader's language found; none when not given. */
+	private static List<AuditAction> actionsOf(AuditEventListRequest request) {
+		return request.actions() == null ? List.of() : request.actions();
 	}
 
 }

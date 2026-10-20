@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createSerializer } from "nuqs/server";
 
 import { AuditLogPage } from "@/features/audit/audit-log-page";
-import { readAuditLog } from "@/features/audit/audit-log-queries";
+import { actionsNamed, readAuditLog } from "@/features/audit/audit-log-queries";
 import { auditLogSearch, loadAuditLogSearch } from "@/features/audit/audit-log-search";
 import { getPathname } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
@@ -31,7 +31,8 @@ export default async function AuditLogRoute({
   await requireRole("operator", siteRoutes.adminAuditLog);
   const search = await loadAuditLogSearch(searchParams);
   const paged = search.before !== null || search.after !== null;
-  const events = await readAuditLog(search).catch((error: unknown) => {
+  const named = await actionsNamed(search);
+  const events = await readAuditLog(search, named).catch((error: unknown) => {
     // The role was withdrawn, or the session ended, between the check above and this read.
     if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
       notFound();
@@ -52,5 +53,5 @@ export default async function AuditLogRoute({
     );
   }
 
-  return <AuditLogPage events={events} search={search} />;
+  return <AuditLogPage events={events} named={named} search={search} />;
 }

@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.audit.dto;
 
 import java.time.Instant;
+import java.util.List;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,8 +19,10 @@ public record AuditEventListRequest(
 				iso = DateTimeFormat.ISO.DATE_TIME) @Nullable Instant from,
 		@Parameter(description = "Only events of this action.") @Nullable AuditAction action,
 		@Parameter(
-				description = "Events whose actor's name or address, or whose resource's name, contains this, ignoring case.") @Size(
+				description = "Events whose actor's name or address, or whose resource's name, contains this, ignoring case; with `actions`, the events of those actions too.") @Size(
 						max = 100) @Nullable String q,
+		@Parameter(description = "Actions whose names the search matches, in the reader's language: an event of one of them matches the search as well as one whose people or resource match `q`.") @Size(
+				max = 300) @Nullable List<AuditAction> actions,
 		@Parameter(description = "The `older` cursor of a page: the events before it. Used when both cursors are given.") @Pattern(
 				regexp = CURSOR) @Nullable String before,
 		@Parameter(description = "The `newer` cursor of a page: the events after it.") @Pattern(

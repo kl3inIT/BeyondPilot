@@ -92,7 +92,7 @@ test.describe("admin audit log", () => {
       "Gave the operator role to Đạt Phan",
     ]);
 
-    await page.getByRole("searchbox", { name: "Search people or accounts" }).fill("minh");
+    await page.getByRole("searchbox", { name: "Search people, records or actions" }).fill("minh");
     await expect(page).toHaveURL(/[?&]q=minh/);
     await expect(shownEvents(page)).toHaveText(["Gave the operator role to Minh Trần"]);
 
@@ -102,6 +102,13 @@ test.describe("admin audit log", () => {
     await expect(page.getByRole("combobox", { name: "Action" })).toContainText(
       "Gave the operator role",
     );
+
+    // The search finds an action by its name too, as the table words it.
+    await page.goto("/admin/audit-log?q=gave%20the%20operator%20role");
+    await expect(shownEvents(page)).toHaveText([
+      "Gave the operator role to Minh Trần",
+      "Gave the operator role to Đạt Phan",
+    ]);
   });
 
   test("a log longer than a page is walked towards the past and back, keeping the search", async ({
