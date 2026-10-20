@@ -165,7 +165,8 @@ public enum AuditAction {
 
 	/**
 	 * An operator created a use case for an organization. {@code organization} is that organization's identifier,
-	 * {@code status} is {@code draft} or {@code published}.
+	 * {@code status} is {@code draft}, {@code approved} (published at once), or {@code private} for a draft only operators
+	 * see.
 	 */
 	USE_CASE_CREATE("use_case.create", "organization", "status"),
 
@@ -184,6 +185,12 @@ public enum AuditAction {
 
 	/** An operator set the programs a use case belongs to. */
 	USE_CASE_SET_PROGRAMS("use_case.set_programs", "organization"),
+
+	/** An operator changed a private draft GenAI Fund keeps for an organization. */
+	USE_CASE_UPDATE("use_case.update", "organization"),
+
+	/** An operator published a private draft GenAI Fund kept for an organization. */
+	USE_CASE_PUBLISH("use_case.publish", "organization"),
 
 	/** The side written to accepted a first message, which opened the conversation. */
 	MESSAGING_REQUEST_ACCEPT("messaging.request_accept"),

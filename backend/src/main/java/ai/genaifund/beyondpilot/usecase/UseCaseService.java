@@ -75,7 +75,10 @@ public class UseCaseService {
 	public MyUseCasesResponse mine(Actor actor) {
 		Membership membership = writer(actor);
 		Instant now = Instant.now();
-		List<UseCase> own = useCases.findByOrganizationIdOrderByUpdatedAtDescIdAsc(membership.organizationId());
+		List<UseCase> own = useCases.findByOrganizationIdOrderByUpdatedAtDescIdAsc(membership.organizationId())
+			.stream()
+			.filter(UseCaseService::seenByMembers)
+			.toList();
 		People people = people(actor, own);
 		return new MyUseCasesResponse(own.stream()
 			.map(useCase -> new MyUseCaseSummaryResponse(useCase.getId(), useCase.getTitle(), useCase.statusAt(now),
@@ -94,6 +97,7 @@ public class UseCaseService {
 		Membership membership = writer(actor);
 		UseCase useCase = useCases.findById(id)
 			.filter(found -> found.getOrganizationId().equals(membership.organizationId()))
+			.filter(UseCaseService::seenByMembers)
 			.orElseThrow(() -> notFound(id));
 		return response(actor, membership, useCase);
 	}
@@ -107,6 +111,7 @@ public class UseCaseService {
 		Membership membership = writer(actor);
 		UseCase useCase = useCases.findById(id)
 			.filter(found -> found.getOrganizationId().equals(membership.organizationId()))
+			.filter(UseCaseService::seenByMembers)
 			.orElseThrow(() -> notFound(id));
 		return files.open(useCase, fileId);
 	}
@@ -245,7 +250,13 @@ public class UseCaseService {
 	private UseCase own(Membership membership, UUID id) {
 		return useCases.findForUpdate(id)
 			.filter(found -> found.getOrganizationId().equals(membership.organizationId()))
+			.filter(UseCaseService::seenByMembers)
 			.orElseThrow(() -> notFound(id));
+	}
+
+	/** A draft GenAI Fund keeps private is not its members' until it is published (BEY-232). */
+	private static boolean seenByMembers(UseCase useCase) {
+		return !useCase.isOperatorsOnly();
 	}
 
 	private static UseCaseException notFound(UUID id) {

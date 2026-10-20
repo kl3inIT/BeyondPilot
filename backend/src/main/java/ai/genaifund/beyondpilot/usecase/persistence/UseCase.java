@@ -140,6 +140,9 @@ public class UseCase {
 
 	private boolean changedSinceReview;
 
+	/** A draft GenAI Fund keeps to itself: only operators see it until it is published (BEY-232). */
+	private boolean operatorsOnly;
+
 	@ElementCollection
 	@CollectionTable(name = "use_case_requirement", joinColumns = @JoinColumn(name = "use_case_id"))
 	@OrderColumn(name = "position")
@@ -260,6 +263,16 @@ public class UseCase {
 	public void publish(Instant now) {
 		this.status = APPROVED;
 		this.publishedAt = now;
+		this.operatorsOnly = false;
+	}
+
+	/** Keeps this draft from its organization's members until GenAI Fund publishes it. */
+	public void keepFromMembers() {
+		this.operatorsOnly = true;
+	}
+
+	public boolean isOperatorsOnly() {
+		return operatorsOnly;
 	}
 
 	/** Sends the use case to GenAI Fund: from then on it waits for a decision and its organization cannot edit it. */
