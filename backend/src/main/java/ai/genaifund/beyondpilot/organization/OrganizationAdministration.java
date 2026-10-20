@@ -8,7 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.Set;
 import java.util.stream.Stream;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
@@ -85,9 +90,12 @@ public class OrganizationAdministration {
 
 	private final ApplicationEventPublisher events;
 
+	private final Validator validator;
+
 	OrganizationAdministration(OrganizationRepository organizations, OrganizationQueryRepository organizationList,
 			MembershipRepository memberships, IdentityService identity, EmailService email, AuditTrail audit,
-			OrganizationLogos logos, ApplicationEventPublisher events) {
+			OrganizationLogos logos, ApplicationEventPublisher events, Validator validator) {
+		this.validator = validator;
 		this.organizations = organizations;
 		this.organizationList = organizationList;
 		this.memberships = memberships;
@@ -223,6 +231,25 @@ public class OrganizationAdministration {
 	}
 
 	/**
+	 * Creates an approved organization nobody owns yet and invites nobody, for a caller that is not the admin screen,
+	 * such as an operator's MCP tool. It is checked as the admin screen's form is.
+	 * @return the organization's identifier
+	 * @throws ConstraintViolationException when a field breaks what the form allows
+	 * @see #create(Actor, AdminCreateOrganizationRequest)
+	 */
+	@Transactional
+	public UUID create(Actor actor, String name, String type, @Nullable String website, @Nullable String country,
+			List<String> industries, @Nullable String description) {
+		AdminCreateOrganizationRequest request = new AdminCreateOrganizationRequest(name, type, website, country, null,
+				industries, description, null, null, null, null, null);
+		Set<ConstraintViolation<AdminCreateOrganizationRequest>> violations = validator.validate(request);
+		if (!violations.isEmpty()) {
+			throw new ConstraintViolationException(violations);
+		}
+		return create(actor, request).organization().id();
+	}
+
+	/**
 	 * Approves an organization that waits for review, with the email domain the operator verified for it when they
 	 * did, and tells its owners.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
@@ -238,6 +265,16 @@ public class OrganizationAdministration {
 		record(AuditAction.ORGANIZATION_APPROVE, operator, organization, Map.of());
 		events.publishEvent(new OrganizationChanged(organization.getId()));
 		tellOwners(organization, true);
+	}
+
+	/**
+	 * Approves an organization that waits for review without vouching for a domain, for a caller that is not the admin
+	 * screen, such as an operator's MCP tool.
+	 * @see #approve(Actor, UUID, ApproveOrganizationRequest)
+	 */
+	@Transactional
+	public void approve(Actor actor, UUID id) {
+		approve(actor, id, new ApproveOrganizationRequest(null));
 	}
 
 	/**
@@ -272,6 +309,15 @@ public class OrganizationAdministration {
 		events.publishEvent(new OrganizationChanged(organization.getId()));
 		owners(organization)
 			.forEach(owner -> email.sendOrganizationSentBack(owner.email(), organization.getName(), reason));
+	}
+
+	/**
+	 * Sends an organization back with what to change, for a caller that is not the admin screen.
+	 * @see #sendBack(Actor, UUID, SendBackOrganizationRequest)
+	 */
+	@Transactional
+	public void sendBack(Actor actor, UUID id, String reason) {
+		sendBack(actor, id, new SendBackOrganizationRequest(reason));
 	}
 
 	/**

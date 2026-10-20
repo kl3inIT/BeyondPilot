@@ -754,6 +754,43 @@ class ReviewTest extends ApplicationsHttpTest {
 		app.closeGracefully();
 	}
 
+	@Test
+	void anOperatorsAppDecidesOneApplicationAtATimeUntilTheOutcomesAreReleased() {
+		Form form = program("decided-by-mcp", true, Instant.now().plus(Duration.ofDays(10)));
+		criteriaOf(form, "Practical impact");
+		Applicant chosen = applicant(form, "chosen@decided-mcp.test", "Chosen Builder");
+		Applicant other = applicant(form, "other@decided-mcp.test", "Other Builder");
+		McpSyncClient app = operatorApp();
+
+		String decided = call(app, "decide_application", Map.of("application", chosen.id().toString(), "decision",
+				"shortlisted", "reason", "Clear on consent."));
+		assertThat(JsonPath.<String>read(decided, "$.before")).isEqualTo("under_review");
+		assertThat(JsonPath.<String>read(decided, "$.after")).isEqualTo("shortlisted");
+		assertThat(JsonPath.<String>read(decided, "$.url"))
+			.endsWith("/admin/programs/" + form.programId() + "/applications/" + chosen.id());
+		String again = call(app, "decide_application",
+				Map.of("application", chosen.id().toString(), "decision", "shortlisted"));
+		assertThat(JsonPath.<String>read(again, "$.before")).isEqualTo("shortlisted");
+		// One application per call: the other is untouched; the reason is kept with the decision.
+		assertThat(JsonPath.<List<String>>read(body(get(operator, API + "/review/applications/" + other.id())
+			.expectStatus()
+			.isOk()), "$.history[*].kind")).containsExactly("submitted");
+		assertThat(JsonPath.<List<String>>read(body(get(operator, API + "/review/applications/" + chosen.id())
+			.expectStatus()
+			.isOk()), "$.history[*].reason")).contains("Clear on consent.");
+
+		call(app, "decide_application", Map.of("application", other.id().toString(), "decision", "not_selected"));
+		close(form);
+		post(operator, REVIEW + form.programId() + "/release", emails()).expectStatus().isOk();
+		CallToolResult released = app.callTool(McpSchema.CallToolRequest.builder("decide_application")
+			.arguments(Map.of("application", chosen.id().toString(), "decision", "not_selected"))
+			.build());
+		assertThat(released.isError()).isTrue();
+		assertThat(((TextContent) released.content().getFirst()).text()).contains("PROPOSAL_RELEASED");
+		app.closeGracefully();
+		assertThat(auditOf(form.programId())).contains("proposal.decide");
+	}
+
 	/** An app connected to the operators' server by the operator, initialized. */
 	private McpSyncClient operatorApp() {
 		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();

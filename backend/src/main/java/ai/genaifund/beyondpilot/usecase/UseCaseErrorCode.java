@@ -49,7 +49,9 @@ public enum UseCaseErrorCode implements ErrorCode {
 			"An attachment is not a file you uploaded for a use case, or it is attached to another use case."),
 
 	TIMELINE_OUT_OF_ORDER("USECASE_TIMELINE_OUT_OF_ORDER", ErrorCategory.VALIDATION,
-			"The shortest timeline is longer than the longest.");
+			"The shortest timeline is longer than the longest."),
+	NOT_PRIVATE("USECASE_NOT_PRIVATE", ErrorCategory.CONFLICT,
+			"Only a private draft GenAI Fund keeps can be changed or published this way.");
 
 	private final String code;
 	private final ErrorCategory category;

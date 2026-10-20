@@ -18,6 +18,8 @@ export const general = {
     "Answers Amazon SNS when it asks to confirm a subscription.",
   NOTIFICATION_REPORT_NOT_TAKEN:
     "Answers the email provider's delivery report when too many arrive.",
+  USECASE_NOT_PRIVATE:
+    "Raised only by the operators' MCP tools that change a private use case, which say it in the tool's answer.",
 };
 
 /** Codes the backend's exception handler raises itself, outside the modules' enums. */

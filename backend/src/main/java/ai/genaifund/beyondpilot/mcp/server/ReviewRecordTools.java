@@ -75,7 +75,7 @@ class ReviewRecordTools {
 					"complete", "submittedAt", "updatedAt"),
 			"use_cases",
 			List.of("id", "title", "organizationName", "industry", "status", "publishedAt", "closesAt", "featuredAt",
-					"submittedAt", "submittedBy", "reviewedAt", "reviewedBy", "reviewNote", "updatedAt"),
+					"submittedAt", "submittedBy", "reviewedAt", "reviewedBy", "reviewNote", "operatorsOnly", "updatedAt"),
 			"offers", List.of("id", "title", "claimUrl", "organizationName", "fromGenAiFund", "status", "solutions",
 					"updatedAt"));
 

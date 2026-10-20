@@ -11,6 +11,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
+
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
 import ai.genaifund.beyondpilot.audit.AuditTrail;
@@ -89,9 +93,13 @@ public class UseCaseAdministration {
 
 	private final ProgramService programs;
 
+	private final Validator validator;
+
 	UseCaseAdministration(UseCaseRepository useCases, UseCaseQueryRepository useCaseList,
 			OrganizationDirectory organizations, IdentityService identity, AuditTrail audit, UseCaseAttachments files,
-			UseCasePeople people, EmailService email, ApplicationEventPublisher events, ProgramService programs) {
+			UseCasePeople people, EmailService email, ApplicationEventPublisher events, ProgramService programs,
+			Validator validator) {
+		this.validator = validator;
 		this.events = events;
 		this.programs = programs;
 		this.useCases = useCases;
@@ -181,11 +189,110 @@ public class UseCaseAdministration {
 	 */
 	@Transactional
 	public AdminUseCaseResponse create(Actor actor, CreateUseCaseRequest request) {
+		Created created = created(actor, request, false);
+		OrganizationName organization = created.organization();
+		return response(actor, created.useCase(),
+				new UseCaseOrganizationResponse(organization.id(), organization.name(), organization.logoFileId()),
+				Instant.now());
+	}
+
+	/**
+	 * Creates a draft GenAI Fund keeps private for an organization: only operators see it, until one publishes it
+	 * with {@link #publishPrivate}. Nobody is told.
+	 * @return the use case's identifier
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException as {@link #create} does
+	 * @throws ConstraintViolationException when a field breaks what the admin screen's form allows
+	 */
+	@Transactional
+	public UUID createPrivate(Actor actor, UUID organizationId, PrivateUseCase useCase) {
+		return created(actor, valid(request(organizationId, useCase)), true).useCase().getId();
+	}
+
+	/**
+	 * Replaces what a private draft says. Its files and programs stay as they are. Nobody is told.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when there is no such use case, it is not a private draft, or a check of
+	 * {@link #create} fails
+	 * @throws ConstraintViolationException when a field breaks what the admin screen's form allows
+	 */
+	@Transactional
+	public void savePrivate(Actor actor, UUID id, PrivateUseCase written) {
+		Operator operator = identity.requireOperator(actor);
+		UseCase useCase = privateDraft(id);
+		CreateUseCaseRequest request = valid(request(useCase.getOrganizationId(), written));
+		check(request, Instant.now());
+		write(useCase, request);
+		useCase.editedBy(operator.accountId());
+		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(id));
+		record(AuditAction.USE_CASE_UPDATE, operator, useCase);
+	}
+
+	/**
+	 * Publishes a private draft: from now on it reads as any published use case, to everyone and to its
+	 * organization's members. Nobody is emailed, as for a use case an operator publishes when creating it.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when there is no such use case, it is not a private draft, or its close date passed
+	 */
+	@Transactional
+	public void publishPrivate(Actor actor, UUID id) {
+		Operator operator = identity.requireOperator(actor);
+		UseCase useCase = privateDraft(id);
+		Instant now = Instant.now();
+		Instant closesAt = useCase.getClosesAt();
+		if (closesAt != null && !closesAt.isAfter(now)) {
+			throw refused(UseCaseErrorCode.CLOSES_IN_THE_PAST, "Close date " + closesAt + " is not after " + now);
+		}
+		useCase.publish(now);
+		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(id));
+		record(AuditAction.USE_CASE_PUBLISH, operator, useCase);
+	}
+
+	/**
+	 * Sends a use case back with what to change, for a caller that is not the admin screen.
+	 * @see #sendBack(Actor, UUID, SendBackUseCaseRequest)
+	 */
+	@Transactional
+	public void sendBack(Actor actor, UUID id, String reason) {
+		sendBack(actor, id, valid(new SendBackUseCaseRequest(reason)));
+	}
+
+	private record Created(UseCase useCase, OrganizationName organization) {
+	}
+
+	private Created created(Actor actor, CreateUseCaseRequest request, boolean operatorsOnly) {
 		Operator operator = identity.requireOperator(actor);
 		Instant now = Instant.now();
 		OrganizationName organization = organizations.approvedOrganization(request.organizationId())
 			.orElseThrow(() -> refused(UseCaseErrorCode.ORGANIZATION_NOT_ELIGIBLE,
 					"Organization " + request.organizationId() + " is not an approved organization"));
+		check(request, now);
+		UseCase useCase = new UseCase(organization.id(), operator.accountId(), request.closesAt());
+		write(useCase, request);
+		useCase.belongTo(programsNamed(request.programIds() == null ? List.of() : request.programIds()).keySet());
+		List<UUID> attachments = request.attachmentFileIds() == null ? List.of() : request.attachmentFileIds();
+		files.requireUsable(actor, attachments, List.of());
+		useCase.attach(attachments);
+		if (operatorsOnly) {
+			useCase.keepFromMembers();
+		}
+		else if (request.publishNow()) {
+			useCase.publish(now);
+		}
+		useCases.saveAndFlush(useCase);
+		events.publishEvent(new UseCaseChanged(useCase.getId()));
+		audit.record(new AuditRecord(AuditAction.USE_CASE_CREATE,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource(USE_CASE, useCase.getId().toString(), useCase.getTitle()),
+				Map.of("organization", organization.id().toString(), "status",
+						operatorsOnly ? "private" : useCase.getStatus())));
+		return new Created(useCase, organization);
+	}
+
+	/** The close date, the budget and the timeline of what an operator wrote, as the form checks them. */
+	private static void check(CreateUseCaseRequest request, Instant now) {
 		Instant closesAt = request.closesAt();
 		if (closesAt != null && !closesAt.isAfter(now)) {
 			throw refused(UseCaseErrorCode.CLOSES_IN_THE_PAST, "Close date " + closesAt + " is not after " + now);
@@ -200,8 +307,11 @@ public class UseCaseAdministration {
 			throw refused(UseCaseErrorCode.TIMELINE_OUT_OF_ORDER, "Timeline " + request.timelineMinWeeks() + " to "
 					+ request.timelineMaxWeeks() + " weeks");
 		}
+	}
+
+	/** Writes what an operator wrote into the use case; its files and programs are set apart. */
+	private static void write(UseCase useCase, CreateUseCaseRequest request) {
 		// An operator may leave out what a brief does not say; only a member's own submission needs every part.
-		UseCase useCase = new UseCase(organization.id(), operator.accountId(), closesAt);
 		useCase.describe(request.title().strip(), request.problemStatement().strip(), request.industry(),
 				request.technologies() == null ? List.of() : request.technologies().stream().distinct().toList());
 		useCase.explain(request.expectedOutcomes().strip(), text(request.currentProcess()),
@@ -214,26 +324,53 @@ public class UseCaseAdministration {
 				text(request.dataReadiness()), text(request.integrationRequirements()));
 		useCase.budget(currencyOf(request.currency()), request.budgetMin(), request.budgetMax(),
 				request.budgetToBeDetermined(), request.budgetMembersOnly());
-		useCase.belongTo(programsNamed(request.programIds() == null ? List.of() : request.programIds()).keySet());
-		List<UUID> attachments = request.attachmentFileIds() == null ? List.of() : request.attachmentFileIds();
-		files.requireUsable(actor, attachments, List.of());
-		useCase.attach(attachments);
-		useCase.takeWeeks(minWeeks, maxWeeks);
+		useCase.takeWeeks(request.timelineMinWeeks(), request.timelineMaxWeeks());
+		useCase.closeAt(request.closesAt());
 		useCase.showCompanyName(request.hideOrganizationName());
 		if (request.proposalEditDays() != null) {
 			useCase.allowProposalEdits(request.proposalEditDays());
 		}
-		if (request.publishNow()) {
-			useCase.publish(now);
+	}
+
+	/** The form's request for what a caller other than the admin screen wrote, saved as a draft. */
+	private static CreateUseCaseRequest request(UUID organizationId, PrivateUseCase written) {
+		return new CreateUseCaseRequest(organizationId, written.title(), written.problemStatement(), written.industry(),
+				written.technologies(), written.expectedOutcomes(), written.currentProcess(),
+				written.currentSolutions(), written.targetUsers(),
+				written.requirements()
+					.stream()
+					.map(requirement -> new UseCaseRequirementEntry(requirement.statement(),
+							requirement.required() ? "required" : "optional"))
+					.toList(),
+				written.dataReadiness(), written.integrationRequirements(), List.of(), written.currency(),
+				written.budgetMin(), written.budgetMax(), written.budgetToBeDetermined(), written.budgetMembersOnly(),
+				written.timelineMinWeeks(), written.timelineMaxWeeks(), written.closesAt(), null,
+				written.hideOrganizationName(), false, List.of());
+	}
+
+	/** The request, when it holds what the admin screen's form allows. */
+	private <T> T valid(T request) {
+		Set<ConstraintViolation<T>> violations = validator.validate(request);
+		if (!violations.isEmpty()) {
+			throw new ConstraintViolationException(violations);
 		}
-		useCases.saveAndFlush(useCase);
-		events.publishEvent(new UseCaseChanged(useCase.getId()));
-		audit.record(new AuditRecord(AuditAction.USE_CASE_CREATE,
+		return request;
+	}
+
+	private UseCase privateDraft(UUID id) {
+		UseCase useCase = useCases.findForUpdate(id)
+			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No use case " + id));
+		if (!useCase.isOperatorsOnly()) {
+			throw new UseCaseException(UseCaseErrorCode.NOT_PRIVATE, "Use case " + id + " is not a private draft");
+		}
+		return useCase;
+	}
+
+	private void record(AuditAction action, Operator operator, UseCase useCase) {
+		audit.record(new AuditRecord(action,
 				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
-				new AuditRecord.Resource(USE_CASE, useCase.getId().toString(), useCase.getTitle()),
-				Map.of("organization", organization.id().toString(), "status", useCase.getStatus())));
-		return response(actor, useCase,
-				new UseCaseOrganizationResponse(organization.id(), organization.name(), organization.logoFileId()), now);
+				new AuditRecord.Resource(USE_CASE, useCase.getId().toString(), titleOf(useCase)),
+				Map.of("organization", useCase.getOrganizationId().toString())));
 	}
 
 	/**
@@ -524,7 +661,8 @@ public class UseCaseAdministration {
 				found.programs().stream().map(UseCaseProgramResponse::name).toList(), found.publishedAt(),
 				found.closesAt(), found.featuredAt(), found.createdAt(), found.createdBy().name(),
 				found.submittedAt(), submittedBy == null ? null : submittedBy.name(), found.reviewedAt(),
-				reviewedBy == null ? null : reviewedBy.name(), found.reviewNote(), found.updatedAt());
+				reviewedBy == null ? null : reviewedBy.name(), found.reviewNote(), found.updatedAt(),
+				useCases.findById(id).map(UseCase::isOperatorsOnly).orElse(false));
 	}
 
 	/**

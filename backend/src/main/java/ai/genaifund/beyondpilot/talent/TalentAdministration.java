@@ -197,6 +197,16 @@ public class TalentAdministration {
 	}
 
 	/**
+	 * Sends a profile back to its person, for a caller that is not the admin screen.
+	 * @param reason {@code incomplete}, {@code unverifiable}, {@code inappropriate} or {@code other}
+	 * @see #sendBack(Actor, UUID, TalentDecisionRequest)
+	 */
+	@Transactional
+	public void sendBack(Actor actor, UUID id, String reason, @Nullable String message) {
+		sendBack(actor, id, new TalentDecisionRequest(reason, message));
+	}
+
+	/**
 	 * Takes an approved profile down from the public, with a reason its person reads. Its review stays approved; they
 	 * can correct it and send it again, or an operator restores it.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator

@@ -12,6 +12,8 @@ import org.jspecify.annotations.Nullable;
  * @param status as a reader sees it now: {@code draft}, {@code in_review}, {@code needs_changes}, {@code approved} or
  * {@code closed} once its close date has passed
  * @param reviewNote what GenAI Fund asked to change, while it is sent back
+ * @param operatorsOnly a draft GenAI Fund keeps private: its organization's members do not see it until it is
+ * published
  */
 public record UseCaseReviewRecord(UUID id, UUID organizationId, String organizationName, @Nullable String title,
 		String status, @Nullable String problemStatement, @Nullable String industry, List<String> technologies,
@@ -23,7 +25,7 @@ public record UseCaseReviewRecord(UUID id, UUID organizationId, String organizat
 		List<String> programs, @Nullable Instant publishedAt, @Nullable Instant closesAt,
 		@Nullable Instant featuredAt, Instant createdAt, String createdBy, @Nullable Instant submittedAt,
 		@Nullable String submittedBy, @Nullable Instant reviewedAt, @Nullable String reviewedBy,
-		@Nullable String reviewNote, Instant updatedAt) {
+		@Nullable String reviewNote, Instant updatedAt, boolean operatorsOnly) {
 
 	/** @param necessity {@code required} or {@code optional} */
 	public record Requirement(String statement, String necessity) {

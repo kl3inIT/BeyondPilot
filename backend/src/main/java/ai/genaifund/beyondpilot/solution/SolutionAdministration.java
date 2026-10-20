@@ -404,6 +404,15 @@ public class SolutionAdministration {
 	}
 
 	/**
+	 * Sends a solution back with what to change, for a caller that is not the admin screen.
+	 * @see #sendBack(Actor, UUID, SendBackSolutionRequest)
+	 */
+	@Transactional
+	public void sendBack(Actor actor, UUID id, String reason) {
+		sendBack(actor, id, new SendBackSolutionRequest(reason));
+	}
+
+	/**
 	 * Refuses a solution that waits for review for good, with a reason its owners read; they cannot send it again.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws SolutionException when the solution does not exist or does not wait for review
@@ -532,6 +541,16 @@ public class SolutionAdministration {
 		deployment.reject(request.reason(), SolutionViews.text(request.message()), Instant.now());
 		record(AuditAction.SOLUTION_DEPLOYMENT_REJECT, operator, deployment, Map.of("reason", request.reason()));
 		events.publishEvent(new SolutionChanged(deployment.getSolutionId()));
+	}
+
+	/**
+	 * Rejects a customer deployment, for a caller that is not the admin screen.
+	 * @param reason {@code incomplete}, {@code unverifiable} or {@code other}
+	 * @see #rejectDeployment(Actor, UUID, RejectCustomerDeploymentRequest)
+	 */
+	@Transactional
+	public void rejectDeployment(Actor actor, UUID id, String reason, @Nullable String message) {
+		rejectDeployment(actor, id, new RejectCustomerDeploymentRequest(reason, message));
 	}
 
 	private CustomerDeployment deployment(UUID id) {
