@@ -1164,7 +1164,7 @@
     "auditLog": {
       "metaTitle": "Audit log · BeyondPilot",
       "title": "Audit log",
-      "search": "Search people or accounts",
+      "search": "Search people, records or actions",
       "clear": "Clear filters",
       "filters": {
         "period": {

@@ -6,10 +6,12 @@ import java.sql.Types;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditEntry;
@@ -33,9 +35,10 @@ public class AuditEventQueryRepository {
 			from audit_event
 			where (cast(:from as timestamptz) is null or occurred_at >= :from)
 			  and (cast(:action as text) is null or action = :action)
-			  and (cast(:pattern as text) is null
+			  and ((cast(:pattern as text) is null and cardinality(cast(:actions as text[])) = 0)
 			       or lower(actor_label) like :pattern escape '\\' or lower(actor_email) like :pattern escape '\\'
-			       or lower(resource_label) like :pattern escape '\\')
+			       or lower(resource_label) like :pattern escape '\\'
+			       or action = any(cast(:actions as text[])))
 			""";
 
 	private final JdbcClient jdbc;
@@ -49,22 +52,22 @@ public class AuditEventQueryRepository {
 
 	/** Up to {@code limit} events older than the place given, or the newest ones without a place; newest first. */
 	public List<AuditEventResponse> older(@Nullable Instant from, @Nullable AuditAction action, @Nullable String text,
-			@Nullable Instant at, @Nullable UUID id, int limit) {
+			Collection<AuditAction> actions, @Nullable Instant at, @Nullable UUID id, int limit) {
 		return filtered(SELECT + """
 				  and (cast(:at as timestamptz) is null or (occurred_at, id) < (:at, cast(:id as uuid)))
 				order by occurred_at desc, id desc
 				limit :limit
-				""", from, action, text, at, id, limit);
+				""", from, action, text, actions, at, id, limit);
 	}
 
 	/** Up to {@code limit} events newer than the place given, nearest first: the reverse of the order they are shown in. */
 	public List<AuditEventResponse> newer(@Nullable Instant from, @Nullable AuditAction action, @Nullable String text,
-			Instant at, UUID id, int limit) {
+			Collection<AuditAction> actions, Instant at, UUID id, int limit) {
 		return filtered(SELECT + """
 				  and (occurred_at, id) > (:at, cast(:id as uuid))
 				order by occurred_at, id
 				limit :limit
-				""", from, action, text, at, id, limit);
+				""", from, action, text, actions, at, id, limit);
 	}
 
 	/** Up to {@code limit} events recorded on one resource, newest first, read by {@code audit_event_resource_idx}. */
@@ -86,11 +89,14 @@ public class AuditEventQueryRepository {
 	}
 
 	private List<AuditEventResponse> filtered(String sql, @Nullable Instant from, @Nullable AuditAction action,
-			@Nullable String text, @Nullable Instant at, @Nullable UUID id, int limit) {
+			@Nullable String text, Collection<AuditAction> actions, @Nullable Instant at, @Nullable UUID id, int limit) {
 		return jdbc.sql(sql)
 			.param("from", time(from), Types.TIMESTAMP_WITH_TIMEZONE)
 			.param("action", action == null ? null : action.value(), Types.VARCHAR)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
+			// A PostgreSQL array literal: an action's value holds no character that needs quoting.
+			.param("actions", actions.stream().map(AuditAction::value).collect(Collectors.joining(",", "{", "}")),
+					Types.VARCHAR)
 			.param("at", time(at), Types.TIMESTAMP_WITH_TIMEZONE)
 			.param("id", id == null ? null : id.toString(), Types.VARCHAR)
 			.param("limit", limit)

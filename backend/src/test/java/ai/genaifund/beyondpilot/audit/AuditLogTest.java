@@ -160,6 +160,28 @@ class AuditLogTest {
 	}
 
 	@Test
+	void theSearchAlsoFindsTheActionsWhoseNamesItMatches() {
+		String marker = marker();
+		Instant since = Instant.now().minusSeconds(1);
+		record(AuditAction.ACCOUNT_DISABLE, new AuditRecord.Actor(UUID.randomUUID(), "Mina", "mina@audit.test"),
+				marker, Map.of());
+		// The reader searched for words such as "Downloaded": their page found the actions named so.
+		record(AuditAction.ACCOUNT_EXPORT, new AuditRecord.Actor(UUID.randomUUID(), "Lan", "lan@audit.test"),
+				"Accounts", Map.of("count", "3"));
+		String recent = "&from=" + since;
+
+		// An event matches by its people or resource, or by an action the search named.
+		assertThat(actions("?q=" + marker + "&actions=account.export" + recent)).contains("account.export",
+				"account.disable");
+		assertThat(actions("?q=" + marker + recent)).containsExactly("account.disable");
+		assertThat(actions("?actions=account.export&actions=audit.export" + recent)).containsOnly("account.export");
+		// The action filter still narrows what the search found.
+		assertThat(actions("?q=" + marker + "&actions=account.export&action=account.disable" + recent))
+			.containsExactly("account.disable");
+		read("?actions=no.such_action").expectStatus().isBadRequest();
+	}
+
+	@Test
 	void theLogIsWalkedTowardsThePastAndBackByItsCursors() {
 		String marker = marker();
 		for (int i = 0; i < 120; i++) {
