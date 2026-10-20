@@ -128,6 +128,7 @@ export const auditActions = [
   "mcp.user_server_disable",
   "mcp.tool_enable",
   "mcp.tool_disable",
+  "mcp.calls_export",
   "matching.run_start",
   "matching.candidate_add",
   "matching.candidate_shortlist",

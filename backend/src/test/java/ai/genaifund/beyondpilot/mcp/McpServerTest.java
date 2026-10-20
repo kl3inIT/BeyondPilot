@@ -17,6 +17,8 @@ import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestAppConnection;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import ai.genaifund.beyondpilot.storage.TestUploads;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
@@ -228,6 +230,47 @@ class McpServerTest {
 				"$.total")).isEqualTo(1);
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=nobody-matches-" + word), "$.total"))
 			.isZero();
+
+		// The download holds the calls the filters select, newest first, and is recorded; nobody else downloads them.
+		String export = "/api/mcp/admin/calls/export?q=watched-" + word;
+		client.post()
+			.uri(export)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, person)
+			.exchange()
+			.expectStatus()
+			.isForbidden();
+		List<List<String>> sheet = Workbooks.rows(client.post()
+			.uri(export)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(0)).startsWith("Called at", "Person", "Email", "App", "Server", "Tool", "Outcome");
+		assertThat(sheet.get(1)).contains(email, "fetch", "Refused");
+		assertThat(sheet.get(2)).contains(email, "search", "Ok");
+		String csv = new String(client.post()
+			.uri(export + "&format=csv&outcome=refused")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.exchange()
+			.expectStatus()
+			.isOk()
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), UTF_8);
+		assertThat(csv).startsWith("\uFEFFCalled at,Person,Email,App,Server,Tool,Outcome,");
+		assertThat(csv.lines().toList()).hasSize(2);
+		assertThat(jdbc.sql("select details ->> 'count' from audit_event where action = 'mcp.calls_export' order by occurred_at")
+			.query(String.class)
+			.list()).containsExactly("2", "1");
 
 		// Operators see the connection and end it; the app is refused at its next call.
 		client.get()

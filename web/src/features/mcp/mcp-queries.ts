@@ -57,19 +57,29 @@ const DAY = 24 * 60 * 60 * 1000;
 const periodLength = { day: DAY, week: 7 * DAY, month: 30 * DAY, all: null };
 
 /**
+ * What narrows the calls as the backend reads them, for the page and for its download. The backend
+ * knows instants, not periods, so the period becomes the instant it starts at, now.
+ */
+export function mcpActivityFilters(search: McpActivitySearch) {
+  const length = periodLength[search.period];
+  return {
+    from: length === null ? undefined : new Date(Date.now() - length).toISOString(),
+    app: search.app ?? undefined,
+    tool: search.tool ?? undefined,
+    outcome: search.outcome ?? undefined,
+    q: search.q.trim().slice(0, 100) || undefined,
+  };
+}
+
+/**
  * One page of the calls AI apps made, for Admin › AI › MCP › Activity. Server only. The backend
  * knows instants, not periods, so the period becomes the instant it starts at.
  */
 export async function readMcpCalls(search: McpActivitySearch): Promise<McpCallList> {
-  const length = periodLength[search.period];
   const { data } = await listMcpCalls({
     ...(await sessionRequest()),
     query: {
-      from: length === null ? undefined : new Date(Date.now() - length).toISOString(),
-      app: search.app ?? undefined,
-      tool: search.tool ?? undefined,
-      outcome: search.outcome ?? undefined,
-      q: search.q.trim().slice(0, 100) || undefined,
+      ...mcpActivityFilters(search),
       page: search.page > 1 ? search.page : undefined,
       size: search.size ?? undefined,
     },

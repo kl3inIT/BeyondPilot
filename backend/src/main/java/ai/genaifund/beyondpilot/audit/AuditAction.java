@@ -410,6 +410,9 @@ public enum AuditAction {
 	/** An operator turned a tool of an MCP server off; the resource is {@code server.tool}. */
 	MCP_TOOL_DISABLE("mcp.tool_disable"),
 
+	/** An operator downloaded the MCP activity as a spreadsheet. {@code count} is how many calls the download holds. */
+	MCP_CALLS_EXPORT("mcp.calls_export", "count"),
+
 	/** Someone started a run of matching for a use case. {@code origin} is {@code operator} or {@code member}. */
 	MATCHING_RUN_START("matching.run_start", "origin"),
 

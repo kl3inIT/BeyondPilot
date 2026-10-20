@@ -49,7 +49,16 @@ type McpTab = "setup" | "tools" | "apps" | "activity";
 type McpCounts = { tools: number; apps: number; operatorApps: number; userApps: number };
 
 /** The head of Admin › AI › MCP: its title and its tabs. */
-async function McpAdminHeader({ current, counts }: { current: McpTab; counts: McpCounts }) {
+async function McpAdminHeader({
+  current,
+  counts,
+  action,
+}: {
+  current: McpTab;
+  counts: McpCounts;
+  /** The screen's own button, beside the title. */
+  action?: React.ReactNode;
+}) {
   const t = await getTranslations("Admin.mcp");
   const tabs = [
     { key: "setup", href: siteRoutes.adminMcp, count: null },
@@ -59,7 +68,7 @@ async function McpAdminHeader({ current, counts }: { current: McpTab; counts: Mc
   ] as const;
 
   return (
-    <AdminPageHeader destination="mcp" title={t("title")}>
+    <AdminPageHeader destination="mcp" title={t("title")} actions={action}>
       <PageTabs
         label={t("tabs.label")}
         current={current}

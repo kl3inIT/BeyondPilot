@@ -1326,7 +1326,8 @@
           "user_server_enable": "Bật server MCP cho người dùng",
           "user_server_disable": "Tắt server MCP cho người dùng",
           "tool_enable": "Bật một công cụ MCP",
-          "tool_disable": "Tắt một công cụ MCP"
+          "tool_disable": "Tắt một công cụ MCP",
+          "calls_export": "Tải hoạt động MCP"
         },
         "matching": {
           "run_start": "Chạy matching cho một use case",
@@ -1490,7 +1491,8 @@
           "user_server_enable": "Bật <resource></resource>",
           "user_server_disable": "Tắt <resource></resource>",
           "tool_enable": "Bật công cụ MCP <resource></resource>",
-          "tool_disable": "Tắt công cụ MCP <resource></resource>"
+          "tool_disable": "Tắt công cụ MCP <resource></resource>",
+          "calls_export": "Tải hoạt động MCP"
         },
         "matching": {
           "run_start": "Chạy matching cho use case <resource></resource>",
