@@ -91,7 +91,7 @@ function EvaluationPanel({
   return (
     <article className="flex flex-col gap-5">
       <header className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
           {!standalone && (
             <div className="flex min-w-0 items-center gap-3">
               <SolutionLogo
@@ -107,14 +107,14 @@ function EvaluationPanel({
                 <h2 className="text-lg font-semibold wrap-break-word">
                   {candidate.organizationName}
                 </h2>
-                <p className="text-sm wrap-break-word text-muted-foreground">
+                <p className="line-clamp-3 text-sm wrap-break-word text-muted-foreground">
                   {candidate.solutionName}
                 </p>
               </div>
             </div>
           )}
           {(onPrevious || onNext || fullPageHref) && (
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1 self-end sm:self-auto">
               {(onPrevious || onNext) && (
                 <>
                   <IconButton
