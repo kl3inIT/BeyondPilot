@@ -18,7 +18,8 @@ export function contentSecurityPolicy(nonce: string, development: boolean): stri
     "font-src 'self' data:",
     "media-src 'self' blob: https:",
     "frame-src 'self' blob: https:",
-    "connect-src 'self' https:",
+    // A file picked but not yet uploaded is read by PDF.js from a blob: address the page made.
+    "connect-src 'self' https: blob: data:",
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",

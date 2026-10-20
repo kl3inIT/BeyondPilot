@@ -10,6 +10,8 @@ describe("contentSecurityPolicy", () => {
     expect(policy).not.toMatch(/script-src[^;]*'unsafe-inline'/);
     expect(policy).toContain("object-src 'none'");
     expect(policy).toContain("frame-ancestors 'none'");
+    // PDF.js reads a file picked but not yet uploaded from a blob: address.
+    expect(policy).toContain("connect-src 'self' https: blob: data:");
   });
 
   it("lets React's debugging use eval in development only", () => {
