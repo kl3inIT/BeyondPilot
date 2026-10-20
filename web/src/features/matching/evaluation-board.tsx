@@ -641,7 +641,7 @@ function Row({
           />
           <span className="flex min-w-0 flex-col">
             <span className="font-medium wrap-break-word">{candidate.organizationName}</span>
-            <span className="text-sm wrap-break-word text-muted-foreground">
+            <span className="line-clamp-2 text-sm wrap-break-word text-muted-foreground">
               {candidate.solutionName}
               {kinds.length > 0 && (
                 <>
