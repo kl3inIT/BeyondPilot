@@ -14,7 +14,13 @@ public enum AiTask {
 	MATCHING(ReasoningEffort.MEDIUM, false),
 
 	/** Copies the text of a page that is only a picture: a slide of a deck, an attached scan. */
-	DOCUMENT_READING(ReasoningEffort.LOW, true);
+	DOCUMENT_READING(ReasoningEffort.LOW, true),
+
+	/**
+	 * Suggests a shortlist tier for each submission to a program, with the evidence behind it. It reads text: pages
+	 * that are only pictures are copied first by {@link #DOCUMENT_READING}.
+	 */
+	EVALUATION(ReasoningEffort.MEDIUM, false);
 
 	private final ReasoningEffort defaultEffort;
 

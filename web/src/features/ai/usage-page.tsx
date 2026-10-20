@@ -37,7 +37,12 @@ import { UsageGroupingSwitch, UsagePeriodSwitch } from "./usage-switches";
 async function taskNames() {
   const t = await getTranslations("Admin.aiUsage.task");
   return (task: string) =>
-    task === "matching" || task === "document_reading" || task === "model_test" ? t(task) : task;
+    task === "matching" ||
+    task === "document_reading" ||
+    task === "evaluation" ||
+    task === "model_test"
+      ? t(task)
+      : task;
 }
 
 /** The head of Admin › AI › Usage: its title, the period it covers and its two tabs, which keep the period. */

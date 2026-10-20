@@ -2372,10 +2372,12 @@
           "heading": "Models by task",
           "lead": "A change is saved once you confirm it.",
           "name": {
-            "matching": "Matching"
+            "matching": "Matching",
+            "evaluation": "Evaluation"
           },
           "about": {
-            "matching": "Judges which solutions fit a use case, need by need, with a quote for each."
+            "matching": "Judges which solutions fit a use case, need by need, with a quote for each.",
+            "evaluation": "Suggests a shortlist tier for each submission to a program, with the evidence behind each finding."
           },
           "unset": "No model chosen; this task does not run until one is.",
           "unavailable": "Its provider is switched off or has no key; this task does not run.",
@@ -2912,6 +2914,7 @@
       "task": {
         "matching": "Matching",
         "document_reading": "Reading documents",
+        "evaluation": "Evaluation",
         "model_test": "Model test"
       },
       "seconds": "{seconds} s",
