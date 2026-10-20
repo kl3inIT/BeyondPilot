@@ -607,6 +607,7 @@
       "searchSolutions": "Tìm các giải pháp đã đăng",
       "readSolution": "Đọc một giải pháp đã đăng",
       "searchPrograms": "Tìm chương trình",
+      "searchUseCases": "Tìm bài toán của doanh nghiệp",
       "limit": "Không thể thay đổi gì. Thu hồi bất cứ lúc nào."
     },
     "operator": {
@@ -627,7 +628,7 @@
     "refusedTitle": "{app} không thể kết nối với BeyondPilot",
     "refusedLead": "Chỉ operator của GenAI Fund mới kết nối được.",
     "signedInAs": "Đang đăng nhập với {person}",
-    "useUserServer": "Hãy dùng server cho người dùng: server này tìm các giải pháp đã đăng.",
+    "useUserServer": "Hãy dùng server cho người dùng: server này tìm giải pháp đã đăng, chương trình và bài toán.",
     "back": "Quay lại {app}",
     "anotherAccount": "Không phải bạn? Đăng nhập bằng tài khoản khác",
     "anyLocalApp": "Một ứng dụng trên máy này",
@@ -659,7 +660,7 @@
   "Mcp": {
     "metaTitle": "Kết nối ứng dụng AI · BeyondPilot",
     "title": "Dùng BeyondPilot trong ứng dụng AI của bạn",
-    "lead": "Kết nối ChatGPT, Claude hoặc Codex qua MCP (Model Context Protocol), rồi hỏi về các giải pháp AI và chương trình đang đăng trên BeyondPilot.",
+    "lead": "Kết nối ChatGPT, Claude hoặc Codex qua MCP (Model Context Protocol), rồi hỏi về các giải pháp AI, chương trình và bài toán của doanh nghiệp đang đăng trên BeyondPilot.",
     "limits": "Ứng dụng đăng nhập bằng tài khoản BeyondPilot của bạn, chỉ tìm và đọc được, và bạn có thể thu hồi bất cứ lúc nào trong mục Ứng dụng đã kết nối.",
     "tabs": {
       "label": "Kết nối ứng dụng AI",
@@ -3087,7 +3088,7 @@
         },
         "user": {
           "title": "Server cho người dùng",
-          "search": "Tìm giải pháp đã niêm yết và chương trình đã công bố.",
+          "search": "Tìm giải pháp đã niêm yết, chương trình và bài toán đã công bố.",
           "fetch": "Đọc đầy đủ một mục theo id mà search trả về."
         }
       },
