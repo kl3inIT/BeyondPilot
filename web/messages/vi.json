@@ -7203,7 +7203,10 @@
     },
     "timeline": {
       "label": "Thời gian",
-      "range": "{min, number}–{max, number} tuần"
+      "range": "{min, number}–{max, number} tuần",
+      "single": "{weeks, number} tuần",
+      "under": "Dưới {weeks, number} tuần",
+      "atLeast": "Từ {weeks, number} tuần trở lên"
     },
     "deadline": {
       "date": "Hạn nộp {date}",

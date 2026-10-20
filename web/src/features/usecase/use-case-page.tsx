@@ -21,6 +21,7 @@ import { siteRoutes } from "@/lib/site";
 import { momentText } from "@/i18n/formats";
 
 import { budgetFigures, budgetText } from "./use-case-budget";
+import { timelineText } from "./use-case-timeline";
 
 type DetailSectionProps = {
   id: string;
@@ -83,7 +84,9 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
         );
   const timeline =
     useCase.timelineMinWeeks != null && useCase.timelineMaxWeeks != null
-      ? t("timeline.range", { min: useCase.timelineMinWeeks, max: useCase.timelineMaxWeeks })
+      ? timelineText(useCase.timelineMinWeeks, useCase.timelineMaxWeeks, (key, values) =>
+          t(`timeline.${key}`, values),
+        )
       : t("detail.notSpecified");
   const deadline = useCase.closesAt
     ? momentText(format, new Date(useCase.closesAt))
