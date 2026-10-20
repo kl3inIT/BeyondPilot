@@ -16,12 +16,13 @@ import { siteRoutes } from "@/lib/site";
  * The frame of the operators' area: the sidebar, a bar with its toggle and the breadcrumb, and the page. It does not
  * decide who gets in: each page does, through `requireRole`, because a layout is not rendered again
  * between its pages. For anyone the page turns away there is no frame to draw, so the page's
- * redirect or not-found answer goes out alone.
+ * redirect or not-found answer goes out alone, without the admin area's words: those would tell a
+ * stranger what the area holds, and the not-found page brings the public frame's own.
  */
 export default async function AdminLayout({ children }: LayoutProps<"/[locale]/admin">) {
   const account = await getCurrentAccount();
   if (account?.role !== "operator") {
-    return <MessageScope area="admin">{children}</MessageScope>;
+    return children;
   }
   const [t, s, cookieStore] = await Promise.all([
     getTranslations("Admin"),

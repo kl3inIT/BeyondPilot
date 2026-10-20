@@ -291,6 +291,8 @@ test.describe("judging applications", () => {
     ).toBeVisible();
     await expect(page.getByRole("button", { name: "Edit criteria" })).toHaveCount(0);
     await expect(page.getByText("thu.pham@tasco.example")).toBeVisible();
+    // A step back for a conflict is done, and named, so it is not read as a score.
+    await expect(page.getByText("2 of 3 applications done · 1 conflict")).toBeVisible();
     await settled(page);
     await expectNoSeriousA11yViolations(page);
 

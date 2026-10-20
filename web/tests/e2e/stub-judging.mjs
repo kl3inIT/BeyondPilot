@@ -266,6 +266,8 @@ export function answerJudging(url, account) {
             invitedAt: new Date(Date.now() - 5 * day).toISOString(),
             expiresAt: new Date(Date.now() + 2 * day).toISOString(),
             assessed: 2,
+            // One of the two is a step back for a conflict.
+            conflicts: 1,
           },
           {
             id: "r0000000-0000-4000-8000-000000000002",
@@ -276,6 +278,7 @@ export function answerJudging(url, account) {
             invitedAt: new Date(Date.now() - day).toISOString(),
             expiresAt: new Date(Date.now() + 6 * day).toISOString(),
             assessed: 0,
+            conflicts: 0,
           },
         ],
         applications: 3,

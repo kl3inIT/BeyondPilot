@@ -5539,9 +5539,13 @@ export type ReviewPrograms = {
  */
 export type Reviewer = {
     /**
-     * How many submitted applications they scored or stepped back from.
+     * How many submitted applications they are done with: scored, or stepped back from for a conflict.
      */
     assessed: number;
+    /**
+     * How many of those they stepped back from for a conflict, without a score.
+     */
+    conflicts: number;
     email: string;
     expiresAt?: string | null;
     /**

@@ -215,6 +215,10 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<List<String>>read(body(get(judge, REVIEW + form.programId() + "/applications")
 			.expectStatus()
 			.isOk()), "$.items[*].mine")).containsExactly("scored", "conflict");
+		// The reviewers list counts the step back as done, and says it is a conflict, not a score.
+		String judges = body(get(operator, REVIEW + form.programId() + "/reviewers").expectStatus().isOk());
+		assertThat(JsonPath.<List<Integer>>read(judges, "$.items[?(@.role == 'reviewer')].assessed")).containsExactly(2);
+		assertThat(JsonPath.<List<Integer>>read(judges, "$.items[?(@.role == 'reviewer')].conflicts")).containsExactly(1);
 
 		// A score made before the applicant submitted again says the version it was made on.
 		resubmit(form, first);

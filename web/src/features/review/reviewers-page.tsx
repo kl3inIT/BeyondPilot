@@ -90,6 +90,8 @@ function ReviewersPage({
                 assessed: t("assessed", {
                   done: reviewer.assessed,
                   total: reviewers.applications,
+                  // A step back for a conflict is done but holds no score, so it is named.
+                  conflicts: reviewer.conflicts,
                 }),
                 actions: reviewer.id && (
                   <ReviewerRowActions
