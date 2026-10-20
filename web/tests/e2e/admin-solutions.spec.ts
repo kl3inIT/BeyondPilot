@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
+import { hydrated } from "./hydration";
 import { answerDecisions, giveReason, refusal } from "./reviews";
 import { signInAs } from "./session";
 import { serveStoredImages } from "./stored-files";
@@ -244,7 +245,9 @@ test.describe("admin solutions", () => {
     await page.goto(`/admin/solutions/${claimsCopilot}`);
     await expect(page.getByText("Keys:")).toHaveCount(0);
 
-    // Keys act from the second second of a page on.
+    // Keys act from the second second after the page has hydrated, which on a slow machine comes
+    // well after it loads: wait for the queue's link, which holds the keys, then for that second.
+    await hydrated(page.getByRole("link", { name: /^Next in review/ }));
     await page.waitForTimeout(1100);
     await page.keyboard.press("a");
     await page.keyboard.press("s");
@@ -327,6 +330,8 @@ test.describe("admin solutions", () => {
       "href",
       "/solutions/policy-chat",
     );
+    // Armed as above, so that the key is refused for what the page is, not for being too early.
+    await hydrated(page.getByRole("button", { name: "Take down" }).first());
     await page.waitForTimeout(1100);
     await page.keyboard.press("s");
     await expect(page.getByRole("dialog")).toHaveCount(0);
