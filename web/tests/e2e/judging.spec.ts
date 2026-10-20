@@ -395,7 +395,7 @@ test.describe("judging applications", () => {
       shortlistedSubject: "Shortlisted: AI for Insurance Challenge",
       notSelectedSubject: "Your application to AI for Insurance Challenge × Tasco",
     });
-    await expect(page.getByRole("status").filter({ hasText: /^Saved \d\d:\d\d$/ })).toBeVisible();
+    await expect(page.getByRole("status").filter({ hasText: /^Saved \d\d:\d\d ICT$/ })).toBeVisible();
     await settled(page);
     await expectNoSeriousA11yViolations(page);
   });

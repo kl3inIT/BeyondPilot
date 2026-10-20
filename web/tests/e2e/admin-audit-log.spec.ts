@@ -58,7 +58,7 @@ test.describe("admin audit log", () => {
     await page.goto("/admin/audit-log");
 
     await expect(page.locator("time:visible").first()).toHaveText(
-      /^(Today|\d{1,2} \w+ \d{4}), \d{2}:\d{2}:\d{2}$/,
+      /^(Today|\d{1,2} \w+ \d{4}), \d{2}:\d{2}:\d{2} ICT$/,
     );
     await expect(page.locator('[data-slot="tooltip-content"]')).toHaveCount(0);
   });

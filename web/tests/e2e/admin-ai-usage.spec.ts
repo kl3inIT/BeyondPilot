@@ -49,7 +49,7 @@ test.describe("admin AI usage", () => {
     }
 
     await expect(page.getByText("Calls by hour")).toBeVisible();
-    await expect(page.getByText("Most at 15:00, 247 calls")).toBeVisible();
+    await expect(page.getByText("Most at 15:00 ICT, 247 calls")).toBeVisible();
 
     // A table at every width: on a phone it scrolls sideways.
     await expect(page.getByRole("table")).toHaveCount(1);
