@@ -17,6 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { UsageChart } from "@/features/ai/usage-chart";
 import { usageOverviewAddress } from "@/features/ai/usage-search";
 import { applyFormatter } from "@/features/apply/apply-format";
+import { vietnamDay } from "@/features/program/program-format";
 import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type {
@@ -69,6 +70,12 @@ async function AdminHomePage({ queues, programs, usage, email, index }: AdminHom
   ]);
   const dates = applyFormatter(locale);
   const count = (value: number) => format.number(value);
+  // "7–20 Oct": the first and the last of the days a queue's line covers, in Vietnam.
+  const trendRange = (first: string, length: number) => {
+    const start = vietnamDay(first);
+    const end = new Date(start.getTime() + (length - 1) * 86_400_000);
+    return format.dateTimeRange(start, end, { day: "numeric", month: "short" });
+  };
 
   const cells: { key: keyof typeof queues; Icon: LucideIcon; href: string }[] = [
     { key: "useCases", Icon: LightbulbIcon, href: `${siteRoutes.adminUseCases}?status=in_review` },
@@ -79,8 +86,12 @@ async function AdminHomePage({ queues, programs, usage, email, index }: AdminHom
       Icon: BuildingIcon,
       href: `${siteRoutes.adminOrganizations}?status=in_review`,
     },
-    // A deployment is reviewed on its solution; the list puts the solutions holding one first.
-    { key: "deployments", Icon: RocketIcon, href: siteRoutes.adminSolutions },
+    // A deployment is reviewed on its solution: the list keeps the solutions holding one.
+    {
+      key: "deployments",
+      Icon: RocketIcon,
+      href: `${siteRoutes.adminSolutions}?deployments=to_review`,
+    },
   ];
   const total = cells.reduce((sum, cell) => sum + queues[cell.key].waiting, 0);
 
@@ -108,7 +119,7 @@ async function AdminHomePage({ queues, programs, usage, email, index }: AdminHom
 
       <StatStrip columns={5} aria-label={t("home.queues")}>
         {cells.map(({ key, Icon, href }, position) => {
-          const { waiting, oldestSince, days } = queues[key];
+          const { waiting, oldestSince, days, from } = queues[key];
           return (
             <StatCell
               key={key}
@@ -119,7 +130,15 @@ async function AdminHomePage({ queues, programs, usage, email, index }: AdminHom
               icon={<Icon aria-hidden="true" strokeWidth={1.75} className="size-4 shrink-0" />}
               quiet={waiting === 0}
               wide={position === cells.length - 1}
-              aside={<Sparkline values={days} quiet={days.every((day) => day === 0)} />}
+              aside={
+                // The days the line covers are written under it: it has no axis and no tooltip.
+                <span className="hidden flex-col items-end gap-1 md:flex">
+                  <Sparkline values={days} quiet={days.every((day) => day === 0)} />
+                  <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">
+                    {trendRange(from, days.length)}
+                  </span>
+                </span>
+              }
             >
               {waiting > 0 && oldestSince
                 ? t("home.oldest", { days: daysSince(oldestSince) })

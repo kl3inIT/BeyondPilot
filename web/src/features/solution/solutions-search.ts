@@ -8,6 +8,7 @@ import {
   industries,
   maturities,
   featuredChoices,
+  deploymentChoices,
   reviewedStatuses,
 } from "./solution-codes";
 
@@ -34,13 +35,14 @@ export const loadCompanySearch = createLoader(companySearch);
 /** The columns the list sorts by, as its API names them. */
 export const adminSolutionSortKeys = ["name", "submitted"] as const;
 
-/** What narrows the operators' list of solutions: `?q=&organizationId=&status=&industry=&featured=&sort=&page=&size=`. */
+/** What narrows the operators' list of solutions: `?q=&organizationId=&status=&industry=&featured=&deployments=&sort=&page=&size=`. */
 export const adminSolutionsSearch = {
   q: parseAsString.withDefault(""),
   organizationId: parseAsString,
   status: parseAsStringLiteral(reviewedStatuses),
   industry: parseAsStringLiteral(industries),
   featured: parseAsStringLiteral(featuredChoices),
+  deployments: parseAsStringLiteral(deploymentChoices),
   sort: parseAsString.withDefault(""),
   page: parseAsInteger.withDefault(1),
   size: pageSize,

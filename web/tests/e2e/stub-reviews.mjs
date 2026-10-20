@@ -513,7 +513,10 @@ const queues = {
 /** A queue that grew to what waits now: one fewer until four days ago. The oldest was sent 3 days ago. */
 function queueOf(waiting) {
   const today = new Date();
-  const from = new Date(today.getTime() - 13 * 86_400_000).toISOString().slice(0, 10);
+  // The first of the days in Vietnam, as the backend counts them; "en-CA" writes a day as 2026-10-07.
+  const from = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }).format(
+    new Date(today.getTime() - 13 * 86_400_000),
+  );
   return {
     waiting,
     oldestSince: waiting > 0 ? new Date(today.getTime() - 3 * 86_400_000).toISOString() : null,

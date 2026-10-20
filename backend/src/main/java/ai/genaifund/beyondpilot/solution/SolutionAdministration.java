@@ -131,7 +131,7 @@ public class SolutionAdministration {
 		int size = request.size() == null ? PAGE_SIZE : request.size();
 		List<UUID> named = text == null ? List.of() : organizations.named(text);
 		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(text, named, request.organizationId(),
-				request.status(), request.industry(), request.featured(), request.sort(), size,
+				request.status(), request.industry(), request.featured(), toReview(request), request.sort(), size,
 				(long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
@@ -152,8 +152,13 @@ public class SolutionAdministration {
 					sender(senders, row.submittedByAccountId())))
 			.toList(), organizationOptions, page, size,
 			solutionList.adminCount(text, named, request.organizationId(), request.status(), request.industry(),
-					request.featured()),
+					request.featured(), toReview(request)),
 			solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview());
+	}
+
+	/** Whether the request keeps only the solutions holding a customer deployment that waits for review. */
+	private static boolean toReview(AdminSolutionListRequest request) {
+		return "to_review".equals(request.deployments());
 	}
 
 	/**
@@ -167,7 +172,8 @@ public class SolutionAdministration {
 		Operator operator = identity.requireOperator(actor);
 		List<AdminSolutionSummaryResponse> rows = Spreadsheet
 			.everyPage(page -> list(actor, new AdminSolutionListRequest(request.q(), request.organizationId(), request.status(),
-					request.industry(), request.featured(), request.sort(), page, Spreadsheet.PAGE_SIZE)).items());
+					request.industry(), request.featured(), request.deployments(), request.sort(), page,
+					Spreadsheet.PAGE_SIZE)).items());
 		Spreadsheet<AdminSolutionSummaryResponse> sheet = Spreadsheet.<AdminSolutionSummaryResponse>of("Solutions")
 			.text("Solution", AdminSolutionSummaryResponse::name)
 			.text("Organization", AdminSolutionSummaryResponse::organizationName)
@@ -192,6 +198,7 @@ public class SolutionAdministration {
 					.narrowedBy("Status", request.status())
 					.narrowedBy("Industry", request.industry())
 					.narrowedBy("Featured", request.featured())
+					.narrowedBy("Customer deployments", request.deployments())
 					.narrowedBy("Order", request.sort()));
 		audit.record(new AuditRecord(AuditAction.SOLUTION_EXPORT,
 				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
@@ -624,7 +631,7 @@ public class SolutionAdministration {
 	public SolutionsAwaitingReview awaitingReview(Actor actor, int limit) {
 		identity.requireOperator(actor);
 		List<SolutionQueryRepository.Row> rows = solutionList.adminPage(null, List.of(), null, "in_review", null, null,
-				null, limit, 0);
+				false, null, limit, 0);
 		Map<UUID, OrganizationName> names = organizations
 			.names(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		return new SolutionsAwaitingReview(solutionList.awaitingReview(), solutionList.deploymentsAwaitingReview(),
@@ -645,7 +652,7 @@ public class SolutionAdministration {
 	public SolutionReviewList reviewList(Actor actor, @Nullable String status, @Nullable String q, int page,
 			int size) {
 		AdminSolutionListResponse found = list(actor,
-				new AdminSolutionListRequest(q, null, status, null, null, null, page, size));
+				new AdminSolutionListRequest(q, null, status, null, null, null, null, page, size));
 		return new SolutionReviewList(found.total(), found.items()
 			.stream()
 			.map(item -> new SolutionReviewList.Item(item.id(), item.name(), item.organizationName(), item.summary(),

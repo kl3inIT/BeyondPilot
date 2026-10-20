@@ -15395,6 +15395,10 @@ export type ListAdminSolutionsData = {
          */
         featured?: boolean | null;
         /**
+         * `to_review`: only the solutions holding a customer deployment that waits for review.
+         */
+        deployments?: 'to_review';
+        /**
          * The order: `name` by the name, `submitted` by when it was last sent for review; `-` before a key turns it round, and one never sent comes last either way. Without it, those with something waiting for review first, the longest wait on top.
          */
         sort?: 'name' | '-name' | 'submitted' | '-submitted';
@@ -15497,6 +15501,10 @@ export type ExportAdminSolutionsData = {
          * Only solutions featured when true, only those not featured when false.
          */
         featured?: boolean | null;
+        /**
+         * `to_review`: only the solutions holding a customer deployment that waits for review.
+         */
+        deployments?: 'to_review';
         /**
          * The order: `name` by the name, `submitted` by when it was last sent for review; `-` before a key turns it round, and one never sent comes last either way. Without it, those with something waiting for review first, the longest wait on top.
          */

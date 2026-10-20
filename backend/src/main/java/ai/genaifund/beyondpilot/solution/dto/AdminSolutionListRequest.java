@@ -24,6 +24,9 @@ public record AdminSolutionListRequest(
 		@Parameter(description = "Only solutions for this industry.") @Pattern(
 				regexp = SolutionCodes.INDUSTRY) @Nullable String industry,
 		@Parameter(description = "Only solutions featured when true, only those not featured when false.") @Nullable Boolean featured,
+		@Parameter(description = "`to_review`: only the solutions holding a customer deployment that waits for review.",
+				schema = @Schema(allowableValues = { "to_review" })) @Pattern(
+						regexp = "to_review") @Nullable String deployments,
 		@Parameter(
 				description = "The order: `name` by the name, `submitted` by when it was last sent for review; `-` "
 						+ "before a key turns it round, and one never sent comes last either way. Without it, those "

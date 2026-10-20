@@ -1119,6 +1119,11 @@ class SolutionTest {
 			.containsExactly("Card enquiries");
 		String queue = body(get(operator, ADMIN + "?q=Wombat").expectStatus().isOk());
 		assertThat(JsonPath.<Integer>read(queue, "$.items[0].deploymentsAwaitingReview")).isEqualTo(1);
+		// The admin home's card opens the list of the solutions holding a deployment to review.
+		String toReview = ADMIN + "?q=Wombat&deployments=to_review";
+		assertThat(JsonPath.<List<String>>read(body(get(operator, toReview).expectStatus().isOk()), "$.items[*].name"))
+			.containsExactly("Wombat Desk");
+		assertProblem(get(operator, ADMIN + "?deployments=all"), 400, "REQUEST_INVALID");
 		// The count of what waits is not narrowed by the search.
 		assertThat(deploymentsWaiting()).isEqualTo(waiting + 1);
 		assertThat(JsonPath.<List<Object>>read(body(client.get().uri(page).exchange().expectStatus().isOk()),
@@ -1130,6 +1135,7 @@ class SolutionTest {
 		post(operator, review + "/approve", null).expectStatus().isNoContent();
 		assertProblem(post(operator, review + "/approve", null), 409, "SOLUTION_DEPLOYMENT_NOT_AWAITING_REVIEW");
 		assertThat(deploymentsWaiting()).isEqualTo(waiting);
+		assertThat(JsonPath.<List<Object>>read(body(get(operator, toReview).expectStatus().isOk()), "$.items")).isEmpty();
 		String shown = body(client.get().uri(page).exchange().expectStatus().isOk());
 		assertThat(JsonPath.<String>read(shown, "$.customerDeployments[0].customer")).isEqualTo("A retail bank");
 		assertThat(JsonPath.<Integer>read(body(client.get().uri(DIRECTORY + "?q=Wombat").exchange().expectStatus().isOk()),

@@ -4875,6 +4875,11 @@
         "yes": "Featured",
         "no": "Not featured"
       },
+      "deployments": {
+        "label": "Customer deployments",
+        "all": "Any customer deployments",
+        "toReview": "Deployments to review"
+      },
       "clear": "Clear filters"
     },
     "view": {

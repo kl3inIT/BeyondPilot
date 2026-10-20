@@ -73,19 +73,28 @@ test.describe("admin", () => {
     await expect(page.getByText("7 records wait for a decision.")).toBeVisible();
     const main = page.getByRole("main");
     const cells = main.locator('[data-slot="stat-cell"]');
+    const day = new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "short",
+      timeZone: "Asia/Ho_Chi_Minh",
+    });
+    const today = new Date();
+    const fourteenDays = day.formatRange(new Date(today.getTime() - 13 * 86_400_000), today);
     for (const [queue, count, href] of [
       // No use case waits; its cell stays, as the way to the list.
       ["Use cases to review", 0, "/admin/use-cases?status=in_review"],
       ["Solutions to review", 2, "/admin/solutions?status=in_review"],
       ["Talent profiles to review", 2, "/admin/talent?status=in_review"],
       ["Organizations to review", 2, "/admin/organizations?status=in_review"],
-      // A deployment is reviewed on its solution, so the whole list opens, those holding one first.
-      ["Customer deployments to review", 1, "/admin/solutions"],
+      // A deployment is reviewed on its solution, so the list of the solutions holding one opens.
+      ["Customer deployments to review", 1, "/admin/solutions?deployments=to_review"],
     ] as const) {
       await expect(main.getByRole("link", { name: queue })).toHaveAttribute("href", href);
       await expect(cells.filter({ hasText: queue }).getByRole("definition")).toContainText(
         count === 0 ? "0Nothing waiting" : `${count}The oldest has waited 3 days`,
       );
+      // The line of the last 14 days says which days it covers, as the cell has no tooltip.
+      await expect(cells.filter({ hasText: queue })).toContainText(fourteenDays);
     }
 
     // A program with applications: how far this operator is, and the way to go on.

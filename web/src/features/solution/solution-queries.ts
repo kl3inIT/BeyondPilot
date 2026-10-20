@@ -198,6 +198,7 @@ export function adminSolutionFilters(search: AdminSolutionsSearch) {
     status: search.status ?? undefined,
     industry: search.industry ?? undefined,
     featured: search.featured === null ? undefined : search.featured === "true",
+    deployments: search.deployments ?? undefined,
     sort: knownSort(search.sort, adminSolutionSortKeys),
   };
 }

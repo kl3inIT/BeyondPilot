@@ -10441,6 +10441,16 @@ paths:
           type:
           - boolean
           - "null"
+      - description: "`to_review`: only the solutions holding a customer deployment\
+          \ that waits for review."
+        in: query
+        name: deployments
+        required: false
+        schema:
+          type: string
+          enum:
+          - to_review
+          pattern: to_review
       - description: "The order: `name` by the name, `submitted` by when it was last\
           \ sent for review; `-` before a key turns it round, and one never sent comes\
           \ last either way. Without it, those with something waiting for review first,\
@@ -10604,6 +10614,16 @@ paths:
           type:
           - boolean
           - "null"
+      - description: "`to_review`: only the solutions holding a customer deployment\
+          \ that waits for review."
+        in: query
+        name: deployments
+        required: false
+        schema:
+          type: string
+          enum:
+          - to_review
+          pattern: to_review
       - description: "The order: `name` by the name, `submitted` by when it was last\
           \ sent for review; `-` before a key turns it round, and one never sent comes\
           \ last either way. Without it, those with something waiting for review first,\

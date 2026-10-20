@@ -39,6 +39,7 @@ export default async function AdminSolutionRoute({
     status: "in_review",
     industry: null,
     featured: null,
+    deployments: null,
     sort: "",
     page: 1,
     size: null,
