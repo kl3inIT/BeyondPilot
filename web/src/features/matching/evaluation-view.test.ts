@@ -182,6 +182,24 @@ describe("what needs a person's eye", () => {
     ).toBe(true);
   });
 
+  it("leaves out a file held twice, read once, and counts one that could not be opened", () => {
+    const clean = assessment({
+      criteria: [{ key: "team", findings: [assessment().criteria[0].findings[0]] }],
+    });
+    const copy = {
+      ...clean.coverage[0],
+      label: "proposal 1",
+      read: 0,
+      pages: 12,
+      note: "application deck",
+    };
+    expect(
+      needsAttention(candidate({ assessment: { ...clean, coverage: [...clean.coverage, copy] } })),
+    ).toBe(false);
+    const broken = { ...copy, pages: 0, note: "could not be opened as a PDF" };
+    expect(needsAttention(candidate({ assessment: { ...clean, coverage: [broken] } }))).toBe(true);
+  });
+
   it("counts the labels of the findings", () => {
     expect(labelCounts(assessment())).toEqual({
       documented: 1,

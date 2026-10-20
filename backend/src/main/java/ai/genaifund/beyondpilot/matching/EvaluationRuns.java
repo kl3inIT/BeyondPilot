@@ -185,6 +185,7 @@ class EvaluationRuns {
 		AtomicInteger calls = new AtomicInteger();
 		AtomicLong input = new AtomicLong();
 		AtomicLong output = new AtomicLong();
+		AtomicInteger skipped = new AtomicInteger();
 		AtomicReference<@Nullable String> refusal = new AtomicReference<>();
 		long assessing = System.nanoTime();
 		Semaphore room = new Semaphore(limits.parallel());
@@ -200,7 +201,10 @@ class EvaluationRuns {
 						}
 						String fingerprint = candidate.fingerprint(EvaluationPrompts.VERSION, briefPrints);
 						Latest previous = before.get(List.of(candidate.organizationId(), candidate.solutionId()));
-						if (!run.assessAll() && previous != null && fingerprint.equals(previous.fingerprint())) {
+						// An unchanged candidate is not asked again; nor, when everything is assessed again, one this
+						// run assessed before it stopped and went on.
+						boolean unchanged = previous != null && fingerprint.equals(previous.fingerprint());
+						if (previous != null && (run.assessAll() ? previous.runId().equals(run.id()) : unchanged)) {
 							evaluations.counted(run.id());
 							return;
 						}
@@ -222,7 +226,21 @@ class EvaluationRuns {
 						assessed.incrementAndGet();
 					}
 					catch (RuntimeException | LinkageError failure) {
-						refusal.compareAndSet(null, kind(failure));
+						if (ownFailure(failure)) {
+							// What fails with this candidate alone leaves the others to be assessed; the next run tries it
+							// again, since it has no assessment of what it holds.
+							skipped.incrementAndGet();
+							LOG.atWarn()
+								.addKeyValue("event", "matching.evaluation_candidate.skipped")
+								.addKeyValue("run_id", run.id())
+								.addKeyValue("organization_id", candidate.organizationId())
+								.addKeyValue("solution_id", candidate.solutionId())
+								.addKeyValue("error_type", failure.getClass().getName())
+								.log("A candidate could not be assessed; the run goes on without it");
+						}
+						else {
+							refusal.compareAndSet(null, kind(failure));
+						}
 					}
 					finally {
 						room.release();
@@ -244,6 +262,7 @@ class EvaluationRuns {
 				.addKeyValue("run_id", run.id())
 				.addKeyValue("candidates", candidates.size())
 				.addKeyValue("assessed", assessed.get())
+				.addKeyValue("skipped", skipped.get())
 				.log("An evaluation run ended");
 		}
 		else {
@@ -382,6 +401,16 @@ class EvaluationRuns {
 			out.put("note", read.note());
 			return out;
 		}).toList();
+	}
+
+	/**
+	 * Whether a failure belongs to one candidate rather than to the provider: its answer never fitted, or code met
+	 * something in it it could not read. A refusal, a limit or a provider in trouble stops the run instead.
+	 */
+	static boolean ownFailure(Throwable failure) {
+		return failure instanceof Asking.UnreadableAnswer || failure instanceof NullPointerException
+				|| failure instanceof IllegalArgumentException || failure instanceof IllegalStateException
+				|| failure instanceof ClassCastException || failure instanceof IndexOutOfBoundsException;
 	}
 
 	private static String kind(Throwable failure) {

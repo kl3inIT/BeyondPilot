@@ -586,8 +586,9 @@ public class UseCaseProposals {
 					edited != null ? edited : Objects.requireNonNull(proposal.getSentAt()), proposal.getApproach(),
 					proposal.getTeamBackground(),
 					file == null ? null
+							// Opened only when it is read, so that a file gone from storage leaves the rest readable.
 							: new SentUseCaseProposal.Deck(file.id(), file.fileName(), file.mediaType(),
-									storage.content(file.id())),
+									() -> storage.content(file.id()).getInputStream()),
 					offered, proposal.getDecision());
 		}).toList();
 	}

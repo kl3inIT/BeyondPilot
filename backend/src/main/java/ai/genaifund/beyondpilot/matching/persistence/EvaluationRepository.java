@@ -64,7 +64,7 @@ public class EvaluationRepository {
 	}
 
 	/** A candidate's current assessment, as the next run compares with it. */
-	public record Latest(String fingerprint, String tier, List<Map<String, Object>> records) {
+	public record Latest(String fingerprint, String tier, List<Map<String, Object>> records, UUID runId) {
 	}
 
 	/**
@@ -276,13 +276,13 @@ public class EvaluationRepository {
 		Map<List<UUID>, Latest> latest = new LinkedHashMap<>();
 		jdbc.sql("""
 				select distinct on (organization_id, solution_id) organization_id, solution_id, fingerprint, tier,
-				    cast(records as text) as records
+				    cast(records as text) as records, run_id
 				from evaluation_assessment where program_id = :programId
 				order by organization_id, solution_id, assessed_at desc, id
 				""").param("programId", programId).query(row -> {
 			latest.put(List.of(row.getObject("organization_id", UUID.class), row.getObject("solution_id", UUID.class)),
 					new Latest(row.getString("fingerprint"), row.getString("tier"),
-							json.readValue(row.getString("records"), RECORDS)));
+							json.readValue(row.getString("records"), RECORDS), row.getObject("run_id", UUID.class)));
 		});
 		return latest;
 	}

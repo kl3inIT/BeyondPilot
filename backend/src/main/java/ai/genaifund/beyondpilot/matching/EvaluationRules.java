@@ -60,18 +60,29 @@ final class EvaluationRules {
 	 */
 	static boolean complete(EvaluationAnswer answer) {
 		List<EvaluationAnswer.Criterion> criteria = answer.criteria();
-		if (criteria == null || answer.alignment() == null || answer.gate() == null
-				|| !TIERS.contains(answer.tier()) || !ALIGNMENTS.contains(answer.alignment().category())
-				|| !GATES.contains(answer.gate().proposal()) || !EARLY_STAGE.contains(answer.gate().earlyStage())) {
+		EvaluationAnswer.Alignment alignment = answer.alignment();
+		EvaluationAnswer.Gate gate = answer.gate();
+		if (criteria == null || alignment == null || gate == null || !known(TIERS, answer.tier())
+				|| !known(ALIGNMENTS, alignment.category()) || !known(GATES, gate.proposal())
+				|| !known(EARLY_STAGE, gate.earlyStage())) {
 			return false;
 		}
-		List<String> keys = criteria.stream().map(EvaluationAnswer.Criterion::key).toList();
+		List<@Nullable String> keys = criteria.stream()
+			.map(criterion -> criterion == null ? null : criterion.key())
+			.toList();
 		if (keys.size() != CRITERIA.size() || !keys.containsAll(CRITERIA)) {
 			return false;
 		}
 		return criteria.stream()
 			.allMatch(criterion -> criterion.findings() != null && !criterion.findings().isEmpty()
-					&& criterion.findings().stream().allMatch(finding -> LABELS.contains(finding.label())));
+					&& criterion.findings()
+						.stream()
+						.allMatch(finding -> finding != null && known(LABELS, finding.label())));
+	}
+
+	/** Whether a value the model gave is one of the known ones; a value it left out is not. */
+	private static boolean known(Set<String> values, @Nullable String value) {
+		return value != null && values.contains(value);
 	}
 
 	/**
@@ -93,8 +104,8 @@ final class EvaluationRules {
 				.stream()
 				.map(finding -> finding(finding, texts, coverage))
 				.toList();
-			String kind = "traction".equals(key) && TRACTION_KINDS.contains(given.tractionKind()) ? given.tractionKind()
-					: null;
+			String kind = "traction".equals(key) && known(TRACTION_KINDS, given.tractionKind())
+					? given.tractionKind() : null;
 			criteria.add(new Criterion(key, kind, findings));
 		}
 		return new Assessed(Objects.requireNonNull(answer.tier()), Boolean.TRUE.equals(answer.provisional()),

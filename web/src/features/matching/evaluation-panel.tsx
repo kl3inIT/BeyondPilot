@@ -30,6 +30,7 @@ import type { Verdict } from "./evaluation-decide";
 import {
   decidable,
   labelTone,
+  NOT_OPENED,
   recordDecision,
   recordHref,
   sourceHref,
@@ -432,8 +433,6 @@ function FindingRow({
 
 /** The words a record's own decision is shown by. */
 const recordWords = ["under_review", "shortlisted", "not_selected", "declined"] as const;
-
-const NOT_OPENED = "could not be opened as a PDF";
 
 /** What was read of one record or file: pages read of pages held, and what was not read. */
 function CoverageLine({ read }: { read: EvaluationCoverage }) {

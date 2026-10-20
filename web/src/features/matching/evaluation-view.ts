@@ -82,10 +82,20 @@ export function differs(candidate: EvaluationCandidate): boolean {
   );
 }
 
-/** Pages of files that held no text, even read from their picture, or that the limits left out. */
+/** The words the backend gives a file it could not open, in the place of the file it repeats. */
+export const NOT_OPENED = "could not be opened as a PDF";
+
+/**
+ * Files with pages that held no text, even read from their picture, or that the limits left out, and
+ * files that could not be opened. A file held twice is read once and is not among them.
+ */
 function unreadOf(coverage: EvaluationCoverage[]): EvaluationCoverage[] {
   return coverage.filter(
-    (read) => read.unread.length > 0 || read.cut || (read.fileId && read.read === 0),
+    (read) =>
+      read.unread.length > 0 ||
+      read.cut ||
+      read.note === NOT_OPENED ||
+      (read.fileId && read.read === 0 && !read.note),
   );
 }
 

@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.matching;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -99,10 +100,9 @@ public class EvaluationBoard {
 		Map<UUID, OrganizationName> names = names(candidates);
 		List<EvaluationBoardResponse.Candidate> shown = candidates.stream()
 			.map(candidate -> candidate(candidate, current.get(key(candidate)), prints, names))
-			.sorted(Comparator
-				.comparing((EvaluationBoardResponse.Candidate shownOne) -> shownOne.assessment() == null ? 1 : 0)
-				.thenComparing(shownOne -> shownOne.assessment() == null ? "" : shownOne.assessment().assessedAt().toString(),
-						Comparator.reverseOrder())
+			.sorted(Comparator.comparing(
+					(EvaluationBoardResponse.Candidate one) -> one.assessment() == null ? null : one.assessment().assessedAt(),
+					Comparator.nullsLast(Comparator.<Instant>reverseOrder()))
 				.thenComparing(EvaluationBoardResponse.Candidate::organizationName))
 			.toList();
 		return new EvaluationBoardResponse(programId, models.available(AiTask.EVALUATION),

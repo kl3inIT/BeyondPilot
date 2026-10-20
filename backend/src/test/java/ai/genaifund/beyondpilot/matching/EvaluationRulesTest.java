@@ -45,6 +45,19 @@ class EvaluationRulesTest {
 	}
 
 	@Test
+	void anAnswerThatLeavesOutAValueIsAskedAgainRatherThanFailing() {
+		assertThat(EvaluationRules.complete(CONVERTER.convert(answer(SIX).replace("\"tier\":\"to_consider\",", ""))))
+			.as("no tier")
+			.isFalse();
+		assertThat(EvaluationRules.complete(CONVERTER.convert(answer(SIX).replace("\"label\":\"documented\",", ""))))
+			.as("a finding without a label")
+			.isFalse();
+		EvaluationAnswer noKind = CONVERTER.convert(answer(SIX).replace(",\"tractionKind\":\"active_pilot\"", ""));
+		assertThat(EvaluationRules.complete(noKind)).isTrue();
+		assertThat(EvaluationRules.assessed(noKind, TEXTS, COVERAGE).criteria().get(1).tractionKind()).isNull();
+	}
+
+	@Test
 	void aQuoteFoundKeepsItsLabelAndAQuoteNotFoundLowersDocumentedToClaimed() {
 		Finding kept = EvaluationRules.finding(new EvaluationAnswer.Finding("a paid pilot with a regional insurer",
 				"form: traction", "Reports a paid pilot.", "", "documented", "Paid pilot with an insurer"), TEXTS,
