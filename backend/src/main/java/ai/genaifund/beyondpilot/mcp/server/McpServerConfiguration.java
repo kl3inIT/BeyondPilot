@@ -272,6 +272,7 @@ class McpServerConfiguration {
 			all.add(log.logged(name, useCaseTools.updateUseCase()));
 			all.add(log.logged(name, useCaseTools.publishUseCase()));
 			all.add(log.logged(name, useCaseTools.sendBackUseCase()));
+			all.add(log.logged(name, useCaseTools.setUseCasePrograms()));
 		}
 		return List.copyOf(all);
 	}
