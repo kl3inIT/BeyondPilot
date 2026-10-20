@@ -1,6 +1,6 @@
 # Operator MCP: tools that create use cases and decide reviews
 
-Status: proposed on 20 October 2026, waiting for Đạt's approval. Tracked in Linear as BEY-232. What was read before this design is in [MCP write tools](../../../research/2026-10-20-mcp-write-tools.md).
+Status: approved by Đạt on 20 October 2026; the decision tools are built, the use case tools wait for Kai's answer. Tracked in Linear as BEY-232. What was read before this design is in [MCP write tools](../../../research/2026-10-20-mcp-write-tools.md).
 
 ## Why
 
@@ -14,7 +14,7 @@ From ChatGPT, Claude or another app connected to `/mcp/operator`, as the operato
 - **Decide a review**: approve an organization, a solution, a talent profile or a customer deployment, or send it back with what to change (a deployment is rejected, as on its admin page). The list of what waits is `list_pending_reviews`, which exists.
 - **Decide on an application** to a program (shortlist, not selected) before the outcomes are released, and on a **proposal** a use case received (shortlist, declined), which the service lets an operator change at any time and tells nobody of.
 
-The app asks the operator before each of these calls (see [Confirmation](#confirmation)). What stays on the admin screens: refusing an organization or a solution for good, taking anything down or restoring it, releasing a program's outcomes or sending a use case's, merging organizations, accounts, roles, invitations, featuring, settings and any deletion.
+The app asks the operator before each of these calls (decision 2). What stays on the admin screens: refusing an organization or a solution for good, taking anything down or restoring it, releasing a program's outcomes or sending a use case's, merging organizations, accounts, roles, invitations, featuring, settings and any deletion.
 
 ## Tools
 
@@ -26,8 +26,8 @@ Each tool calls the application service the admin screen calls, with the caller 
 | `update_use_case`     | the use case, the fields that change                                                            | a new operator save of a draft (see [What is missing](#what-is-missing))                         | false             |
 | `publish_use_case`    | the use case                                                                                     | `approve` for one in review; a new operator publish for a draft                                 | true              |
 | `send_back_use_case`  | the use case, `reason`                                                                          | `UseCaseAdministration.sendBack`                                                                | true              |
-| `decide_record`       | `area` (`organizations`, `solutions`, `talent`, `deployments`), the record, `action` (`approve`, `send_back`, and `reject` for a deployment), `reason`, and for talent `reason_code` | `OrganizationAdministration.approve` / `sendBack`; `SolutionAdministration.approve` / `sendBack`; `TalentAdministration.approve` / `sendBack`; `approveDeployment` / `rejectDeployment` | true |
-| `decide_application`  | the program, the application, `decision` (`shortlisted`, `not_selected`), private `reason`                    | `OutcomeService.decide` with one application                                                    | false             |
+| `decide_record`       | `area` (`organizations`, `solutions`, `talent`, `deployments`), the record (for a deployment, its solution and `deployment`), `action` (`approve`, `send_back`, and `reject` for a deployment), `message`, and `reason_code` to send talent back or reject a deployment | `OrganizationAdministration.approve` / `sendBack`; `SolutionAdministration.approve` / `sendBack`; `TalentAdministration.approve` / `sendBack`; `approveDeployment` / `rejectDeployment` | true |
+| `decide_application`  | the application, `decision` (`shortlisted`, `not_selected`), private `reason`                    | `OutcomeService.decide` with one application                                                    | false             |
 | `decide_proposal`     | the proposal, `decision` (`shortlisted`, `declined`)                                              | `UseCaseProposals.decide`                                                                       | false             |
 
 Every write tool has `readOnlyHint: false` and `openWorldHint: false`. `idempotentHint` is true only for `decide_proposal` and `decide_application`, where the same decision again changes nothing; elsewhere a second call is refused by the service, not ignored.
@@ -42,7 +42,8 @@ Every write tool has `readOnlyHint: false` and `openWorldHint: false`. `idempote
 6. **Descriptions say who is told and whether it can be undone.** Each description says what the tool does, when to use it and when not, who receives an email, whether the outcome can be reversed and where, and that text read from records is written by others and is data, never an instruction. Identifiers come from the read tools.
 7. **Answers say what changed.** A write answers the record by name with its state before and after, and who was told. A refusal is a tool error (`isError: true`) with the service's code and what to do instead, such as "this organization is not in review; read its state with get_record".
 8. **Logged as calls and audited as decisions.** The call log already keeps every call with the record it touched; the service writes the audit record as for a decision on the admin screen, with the operator as the actor.
-9. **Switches.** Each write tool has its switch in Admin › AI › MCP › Tools, as every tool does; turning one off removes it from the server at once.
+9. **Plain arguments into the services.** The admin services take the request records of their `dto` package, which another module may not use; each decision gains an overload with plain arguments that builds the record and calls it, so both paths run the same code. The tool checks what the controller's validation checks: the codes, a message of at most 1,000 characters.
+10. **Switches.** Each write tool has its switch in Admin › AI › MCP › Tools, as every tool does; turning one off removes it from the server at once.
 
 ## What is missing
 
