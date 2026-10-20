@@ -220,7 +220,8 @@ class McpServerTest {
 		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch", "list_applications",
 				"get_application", "read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program",
 				"list_accounts", "list_audit_events", "list_emails", "get_email", "list_matching_runs",
-				"get_matching_run", "get_matches", "decide_record", "decide_application", "decide_proposal");
+				"get_matching_run", "get_matches", "decide_record", "decide_application", "decide_proposal", "create_organization", "create_use_case",
+				"update_use_case", "publish_use_case", "send_back_use_case");
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&outcome=refused"),
 				"$.total")).isEqualTo(1);
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&tool=search"),
@@ -418,7 +419,8 @@ class McpServerTest {
 			.containsExactly("search", "fetch", "list_applications", "get_application",
 					"read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "list_accounts",
 					"list_audit_events", "list_emails", "get_email", "list_matching_runs", "get_matching_run",
-					"get_matches", "decide_record", "decide_application", "decide_proposal");
+					"get_matches", "decide_record", "decide_application", "decide_proposal", "create_organization", "create_use_case",
+				"update_use_case", "publish_use_case", "send_back_use_case");
 
 		String found = text(app.callTool(McpSchema.CallToolRequest.builder("search")
 			.arguments(Map.of("query", "hidden agent " + word))
@@ -607,6 +609,98 @@ class McpServerTest {
 				""").param("id", organization.toString()).query(String.class).list()).containsExactly("organization ok");
 	}
 
+	@Test
+	void anOperatorsAppKeepsAUseCasePrivateFromItsCompanyUntilItPublishesIt() {
+		String owner = TestSignIn.session(client, mail, "private-" + word + "@mcp.test");
+		UUID organization = organization(owner, "Private " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = app(token, "/mcp/operator");
+		app.initialize();
+
+		// A company of the same name is not made twice; a new one is approved and owned by nobody.
+		CallToolResult twice = call(app, "create_organization", Map.of("name", "private " + word, "type", "company"));
+		assertThat(twice.isError()).isTrue();
+		assertThat(((TextContent) twice.content().getFirst()).text()).contains(organization.toString());
+		String created = text(call(app, "create_organization",
+				Map.of("name", "Harbour " + word, "type", "company", "country", "VN", "industries", List.of("logistics"))));
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
+		assertThat(call(app, "create_organization", Map.of("name", "Bad " + word, "type", "company", "country", "Vietnam"))
+			.isError()).isTrue();
+
+		Map<String, Object> brief = new HashMap<>();
+		brief.put("organization", organization.toString());
+		brief.put("title", "Claims triage " + word);
+		brief.put("problem_statement", "Adjusters sort claim files by hand.");
+		brief.put("industry", "insurance");
+		brief.put("expected_outcomes", "Half the sorting time.");
+		brief.put("budget_to_be_determined", true);
+		brief.put("requirements", List.of(Map.of("statement", "Reads scanned PDFs", "required", true)));
+		brief.put("closes_at", "2099-12-31");
+		String draft = text(call(app, "create_use_case", brief));
+		UUID id = UUID.fromString(JsonPath.read(draft, "$.id"));
+		assertThat(JsonPath.<String>read(draft, "$.status")).isEqualTo("draft");
+		assertThat(JsonPath.<Boolean>read(draft, "$.private")).isTrue();
+		Map<String, Object> noProblem = new HashMap<>(brief);
+		noProblem.remove("problem_statement");
+		assertThat(((TextContent) call(app, "create_use_case", noProblem).content().getFirst()).text())
+			.contains("problem_statement");
+
+		// Its company's members neither list, read, change nor send it.
+		assertThat(body(client.get()
+			.uri("/api/usecase/mine")
+			.cookie(TestSignIn.SESSION_COOKIE, owner)
+			.exchange()
+			.expectStatus()
+			.isOk())).doesNotContain(id.toString());
+		client.get()
+			.uri("/api/usecase/mine/" + id)
+			.cookie(TestSignIn.SESSION_COOKIE, owner)
+			.exchange()
+			.expectStatus()
+			.isNotFound();
+		client.post()
+			.uri("/api/usecase/mine/" + id + "/submit")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, owner)
+			.exchange()
+			.expectStatus()
+			.isNotFound();
+
+		// Changed field by field: what is left out stays.
+		String changed = text(call(app, "update_use_case", Map.of("use_case", id.toString(), "title",
+				"Claims sorting " + word, "budget_to_be_determined", false, "budget_min", 10000, "budget_max", 20000)));
+		assertThat(JsonPath.<String>read(changed, "$.title")).isEqualTo("Claims sorting " + word);
+		String record = text(call(app, "get_record", Map.of("area", "use_cases", "id", id.toString(), "detail", true)));
+		assertThat(JsonPath.<String>read(record, "$.problemStatement")).isEqualTo("Adjusters sort claim files by hand.");
+		assertThat(JsonPath.<Integer>read(record, "$.budgetMax")).isEqualTo(20000);
+		assertThat(JsonPath.<Boolean>read(record, "$.operatorsOnly")).isTrue();
+
+		String published = text(call(app, "publish_use_case", Map.of("use_case", id.toString())));
+		assertThat(JsonPath.<String>read(published, "$.before")).isEqualTo("private draft");
+		assertThat(JsonPath.<String>read(published, "$.after")).isEqualTo("approved");
+		assertThat(body(client.get()
+			.uri("/api/usecase/mine/" + id)
+			.cookie(TestSignIn.SESSION_COOKIE, owner)
+			.exchange()
+			.expectStatus()
+			.isOk())).contains("Claims sorting " + word);
+		client.get().uri("/api/usecase/use-cases/" + id).exchange().expectStatus().isOk();
+		// Published, it is no longer GenAI Fund's private draft: its company changes it.
+		assertThat(call(app, "update_use_case", Map.of("use_case", id.toString(), "title", "Again")).isError())
+			.isTrue();
+		assertThat(call(app, "send_back_use_case", Map.of("use_case", id.toString())).isError()).isTrue();
+		String sentBack = text(call(app, "send_back_use_case",
+				Map.of("use_case", id.toString(), "message", "Name the claim types.")));
+		assertThat(JsonPath.<String>read(sentBack, "$.after")).isEqualTo("needs_changes");
+		app.closeGracefully();
+
+		assertThat(jdbc.sql("select action from audit_event where resource_id = :id order by occurred_at")
+			.param("id", id.toString())
+			.query(String.class)
+			.list()).containsSubsequence("use_case.create", "use_case.update", "use_case.publish", "use_case.send_back");
+	}
+
 	private static CallToolResult decide(McpSyncClient app, Map<String, Object> arguments) {
 		return app.callTool(McpSchema.CallToolRequest.builder("decide_record").arguments(arguments).build());
 	}
@@ -635,7 +729,7 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(24);
+			.isEqualTo(29);
 
 		switchTool("user", "fetch", false);
 		try {

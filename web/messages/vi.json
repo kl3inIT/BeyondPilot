@@ -1280,7 +1280,9 @@
           "send_back": "Gửi lại một use case",
           "feature": "Đặt một use case nổi bật",
           "unfeature": "Bỏ nổi bật một use case",
-          "set_programs": "Đặt chương trình cho một use case"
+          "set_programs": "Đặt chương trình cho một use case",
+          "update": "Sửa một use case riêng tư",
+          "publish": "Công bố một use case riêng tư"
         },
         "email": {
           "settings_update": "Đổi cấu hình email",
@@ -1437,7 +1439,9 @@
           "send_back": "Đã gửi lại use case <resource></resource>",
           "feature": "Đã đặt use case <resource></resource> nổi bật",
           "unfeature": "Đã bỏ nổi bật use case <resource></resource>",
-          "set_programs": "Đã đặt chương trình cho use case <resource></resource>"
+          "set_programs": "Đã đặt chương trình cho use case <resource></resource>",
+          "update": "Đã sửa use case riêng tư <resource></resource>",
+          "publish": "Đã công bố use case riêng tư <resource></resource>"
         },
         "email": {
           "settings_update": "Đổi <resource></resource>",
