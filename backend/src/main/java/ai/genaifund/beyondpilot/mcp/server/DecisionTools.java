@@ -80,13 +80,16 @@ class DecisionTools {
 
 	private final UseCaseProposals proposals;
 
+	private final Recipients recipients;
+
 	private final McpCallers callers;
 
 	private final JsonMapper json;
 
 	DecisionTools(OrganizationAdministration organizations, SolutionAdministration solutions,
 			TalentAdministration talent, ReviewService reviews, OutcomeService outcomes, UseCaseProposals proposals,
-			McpCallers callers, JsonMapper json) {
+			Recipients recipients, McpCallers callers, JsonMapper json) {
+		this.recipients = recipients;
 		this.organizations = organizations;
 		this.solutions = solutions;
 		this.talent = talent;
@@ -176,7 +179,7 @@ class DecisionTools {
 						}
 						OrganizationReviewRecord after = organizations.reviewRecord(actor, id);
 						yield decided("organization", id, after.name(), "/admin/organizations/" + id, before,
-								after.status(), "The organization's owners, by email.");
+								after.status(), recipients.owners(actor, id));
 					}
 					case "solutions" -> {
 						String before = solutions.reviewRecord(actor, id).status();
@@ -188,7 +191,7 @@ class DecisionTools {
 						}
 						SolutionReviewRecord after = solutions.reviewRecord(actor, id);
 						yield decided("solution", id, after.name(), "/admin/solutions/" + id, before, after.status(),
-								"The owners of " + after.organizationName() + ", by email.");
+								recipients.members(actor, after.organizationId()));
 					}
 					case "talent" -> {
 						String before = talent.reviewRecord(actor, id).status();

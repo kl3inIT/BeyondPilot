@@ -85,12 +85,15 @@ class UseCaseTools {
 
 	private final ProgramService programs;
 
+	private final Recipients recipients;
+
 	private final McpCallers callers;
 
 	private final JsonMapper json;
 
 	UseCaseTools(UseCaseAdministration useCases, OrganizationAdministration organizations, ProgramService programs,
-			McpCallers callers, JsonMapper json) {
+			Recipients recipients, McpCallers callers, JsonMapper json) {
+		this.recipients = recipients;
 		this.programs = programs;
 		this.useCases = useCases;
 		this.organizations = organizations;
@@ -281,7 +284,7 @@ class UseCaseTools {
 				}
 				else {
 					useCases.approve(actor, id);
-					told = "The members of " + before.organizationName() + ", by email.";
+					told = recipients.members(actor, before.organizationId());
 				}
 				return changed(actor, id, before, told);
 			}
@@ -323,7 +326,7 @@ class UseCaseTools {
 			try {
 				UseCaseReviewRecord before = useCases.reviewRecord(actor, id);
 				useCases.sendBack(actor, id, message);
-				return changed(actor, id, before, "The members of " + before.organizationName() + ", by email.");
+				return changed(actor, id, before, recipients.members(actor, before.organizationId()));
 			}
 			catch (BusinessException refused) {
 				return error(refused.safeMessage() + " (" + refused.code() + "). Read its status with get_record.");
