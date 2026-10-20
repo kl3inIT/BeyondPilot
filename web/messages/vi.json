@@ -1194,7 +1194,8 @@
           "unpublish": "Gỡ chương trình",
           "feature": "Đặt một chương trình nổi bật",
           "unfeature": "Bỏ nổi bật một chương trình",
-          "luma_read": "Đọc lịch trên Luma"
+          "luma_read": "Đọc lịch trên Luma",
+          "export": "Tải danh sách chương trình"
         },
         "organization": {
           "create": "Thêm tổ chức",
@@ -1353,7 +1354,8 @@
           "unpublish": "Đã gỡ chương trình <resource></resource>",
           "feature": "Đã đặt chương trình <resource></resource> nổi bật trên trang chủ",
           "unfeature": "Đã bỏ nổi bật chương trình <resource></resource>",
-          "luma_read": "Đọc <resource></resource> ngay"
+          "luma_read": "Đọc <resource></resource> ngay",
+          "export": "Tải danh sách chương trình"
         },
         "organization": {
           "create": "Thêm tổ chức <resource></resource>",

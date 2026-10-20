@@ -20,7 +20,9 @@ import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramListResponse;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramResponse;
+import ai.genaifund.beyondpilot.program.dto.AdminProgramSummaryResponse;
 import ai.genaifund.beyondpilot.program.dto.CreateProgramRequest;
+import ai.genaifund.beyondpilot.program.dto.ExportProgramsRequest;
 import ai.genaifund.beyondpilot.program.dto.LumaReadResponse;
 import ai.genaifund.beyondpilot.program.dto.ProgramApplications;
 import ai.genaifund.beyondpilot.program.dto.ProgramEventEntry;
@@ -37,11 +39,16 @@ import ai.genaifund.beyondpilot.program.persistence.ProgramQueryRepository;
 import ai.genaifund.beyondpilot.program.persistence.ProgramQuestion;
 import ai.genaifund.beyondpilot.program.persistence.ProgramRepository;
 import ai.genaifund.beyondpilot.program.persistence.ProgramType;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
 import ai.genaifund.beyondpilot.storage.StorageException;
 import ai.genaifund.beyondpilot.storage.StorageService;
 import org.hibernate.exception.ConstraintViolationException;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -55,6 +62,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 @Service
 public class ProgramAdministration {
+
+	private static final Logger LOG = LoggerFactory.getLogger(ProgramAdministration.class);
 
 	private static final String PROGRAM = "program";
 
@@ -125,6 +134,61 @@ public class ProgramAdministration {
 	public AdminProgramListResponse list(Actor actor) {
 		identity.requireOperator(actor);
 		return new AdminProgramListResponse(programList.all(Instant.now()));
+	}
+
+	/**
+	 * Programs as a spreadsheet, for GenAI Fund to work with outside BeyondPilot: those the request names, in its order,
+	 * as the operators' list narrowed them in the browser. A program that does not exist is left out. The download is
+	 * recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, ExportProgramsRequest request, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		Map<UUID, AdminProgramSummaryResponse> all = programList.all(Instant.now())
+			.stream()
+			.collect(Collectors.toMap(AdminProgramSummaryResponse::id, program -> program));
+		List<AdminProgramSummaryResponse> rows = request.ids()
+			.stream()
+			.distinct()
+			.map(all::get)
+			.filter(Objects::nonNull)
+			.toList();
+		Spreadsheet<AdminProgramSummaryResponse> sheet = Spreadsheet.<AdminProgramSummaryResponse>of("Programs")
+			.text("Program", AdminProgramSummaryResponse::name)
+			.label("Type", AdminProgramSummaryResponse::type)
+			.text("Partner", AdminProgramSummaryResponse::partnerName)
+			.label("Status", AdminProgramSummaryResponse::status)
+			.label("Phase", AdminProgramSummaryResponse::phase)
+			.day("Starts on", AdminProgramSummaryResponse::startsOn)
+			.day("Ends on", AdminProgramSummaryResponse::endsOn)
+			.group("Applications")
+			.time("Open at", program -> program.applications() == null ? null : program.applications().opensAt())
+			.time("Close at", program -> program.applications() == null ? null : program.applications().closesAt())
+			.count("Shortlist size",
+					program -> program.applications() == null ? null : program.applications().shortlistSize())
+			.day("Outcomes due on",
+					program -> program.applications() == null ? null : program.applications().outcomesDueOn())
+			.ungrouped()
+			.time("Featured since", AdminProgramSummaryResponse::featuredAt)
+			.text("Luma event", AdminProgramSummaryResponse::lumaEventId)
+			.time("Updated at", AdminProgramSummaryResponse::updatedAt)
+			.text("Address", AdminProgramSummaryResponse::slug);
+		SpreadsheetFile file = sheet.write(format, "programs", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("State", request.state())
+					.narrowedBy("Search", request.q()));
+		audit.record(new AuditRecord(AuditAction.PROGRAM_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("program_list", "programs", "Programs"),
+				Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "program.list.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Programs exported");
+		return file;
 	}
 
 	/**

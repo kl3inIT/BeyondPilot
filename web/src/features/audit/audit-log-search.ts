@@ -17,6 +17,7 @@ export const auditActions = [
   "program.unpublish",
   "program.feature",
   "program.unfeature",
+  "program.export",
   "program.luma_read",
   "organization.create",
   "organization.approve",

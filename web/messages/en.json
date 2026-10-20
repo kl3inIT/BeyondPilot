@@ -1194,7 +1194,8 @@
           "unpublish": "Unpublished a program",
           "feature": "Featured a program",
           "unfeature": "Stopped featuring a program",
-          "luma_read": "Read the calendar on Luma"
+          "luma_read": "Read the calendar on Luma",
+          "export": "Downloaded the programs"
         },
         "organization": {
           "create": "Added an organization",
@@ -1353,7 +1354,8 @@
           "unpublish": "Unpublished the program <resource></resource>",
           "feature": "Featured the program <resource></resource> on the home page",
           "unfeature": "Stopped featuring the program <resource></resource>",
-          "luma_read": "Read <resource></resource> now"
+          "luma_read": "Read <resource></resource> now",
+          "export": "Downloaded the programs"
         },
         "organization": {
           "create": "Added the organization <resource></resource>",

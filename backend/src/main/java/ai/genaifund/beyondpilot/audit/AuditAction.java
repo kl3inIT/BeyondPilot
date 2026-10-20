@@ -48,6 +48,9 @@ public enum AuditAction {
 
 	PROGRAM_UNFEATURE("program.unfeature"),
 
+	/** An operator downloaded the programs as a spreadsheet. {@code count} is how many the download holds. */
+	PROGRAM_EXPORT("program.export", "count"),
+
 	/** An operator created an organization for a company that is not here yet. */
 	ORGANIZATION_CREATE("organization.create"),
 

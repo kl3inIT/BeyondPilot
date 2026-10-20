@@ -1004,6 +1004,7 @@ paths:
           - program.luma_read
           - program.feature
           - program.unfeature
+          - program.export
           - organization.create
           - organization.approve
           - organization.suspend
@@ -1613,6 +1614,7 @@ paths:
           - program.luma_read
           - program.feature
           - program.unfeature
+          - program.export
           - organization.create
           - organization.approve
           - organization.suspend
@@ -6405,6 +6407,64 @@ paths:
       security:
       - session: []
       summary: Create a program as a draft
+      tags:
+      - Program administration
+  /api/program/admin/programs/export:
+    post:
+      operationId: exportAdminPrograms
+      parameters:
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportPrograms"
+        required: true
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "The programs the body names, in its order, one row each. The\
+            \ download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member or the format is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the programs as a spreadsheet
       tags:
       - Program administration
   /api/program/admin/programs/luma/read:
@@ -15667,6 +15727,7 @@ components:
           - program.luma_read
           - program.feature
           - program.unfeature
+          - program.export
           - organization.create
           - organization.approve
           - organization.suspend
@@ -17891,6 +17952,35 @@ components:
             format: uuid
           maxItems: 5000
           minItems: 0
+    ExportPrograms:
+      type: object
+      description: "The programs a download holds, in the order the list shows them."
+      properties:
+        ids:
+          type: array
+          description: "The programs, in the list's order; one that does not exist\
+            \ is left out."
+          items:
+            type: string
+            format: uuid
+          maxItems: 10000
+          minItems: 0
+        q:
+          type:
+          - string
+          - "null"
+          description: "The search the list was narrowed by, said in the file."
+          maxLength: 200
+          minLength: 0
+        state:
+          type:
+          - string
+          - "null"
+          description: "The state the list was narrowed to, said in the file."
+          maxLength: 40
+          minLength: 0
+      required:
+      - ids
     FormQuestion:
       type: object
       description: "One of the program's own questions, as the form asks it."
