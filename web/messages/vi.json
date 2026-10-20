@@ -1042,6 +1042,7 @@
         "edit": "Sửa",
         "editNamed": "Sửa {label}",
         "add": "Thêm câu hỏi",
+        "full": "Mỗi chương trình hỏi tối đa {max} câu. Xóa một câu để thêm câu khác.",
         "save": "Lưu thay đổi",
         "unsaved": "Có thay đổi chưa lưu.",
         "saved": "Đã lưu câu hỏi.",

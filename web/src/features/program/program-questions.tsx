@@ -226,7 +226,7 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
 
       {!initial.fixed && (
         <>
-          <div>
+          <div className="flex flex-col items-start gap-1">
             <Button
               prominence="secondary"
               disabled={questions.length >= MAX_QUESTIONS}
@@ -235,6 +235,10 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
               <PlusIcon aria-hidden="true" />
               {t("add")}
             </Button>
+            {/* A button switched off says why, as the key dates and events of Settings do. */}
+            {questions.length >= MAX_QUESTIONS && (
+              <p className="text-sm text-muted-foreground">{t("full", { max: MAX_QUESTIONS })}</p>
+            )}
           </div>
           {/* A move is said to a screen reader, which does not see the row change place. */}
           <p role="status" className="sr-only">
