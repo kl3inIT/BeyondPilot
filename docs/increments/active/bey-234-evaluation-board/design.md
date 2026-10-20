@@ -66,7 +66,7 @@ Rules the code enforces, whatever the model answers:
 
 ## Data
 
-Migrations `V106` (the `evaluation` task of `ai`, starting on matching's model) and `V107` (the tables below), numbers checked against `main` before the merge:
+Migrations `V107` (the `evaluation` task of `ai`, starting on matching's model) and `V108` (the tables below), numbers checked against `main` before the merge:
 
 - `evaluation_run`: `id`, `program_id`, `state` (`queued`, `running`, `waiting`, `done`, `failed`), `origin` (`change`, `operator`), `started_by_account_id`, `prompt_version`, `model_name`, `stalls`, `resume_at`, `not_before`, `failure`, `assessed`, `total`, timestamps; at most one open run per program.
 - `evaluation_assessment`: `id`, `program_id`, `organization_id`, `solution_id`, `records jsonb` (kind, id, version or sent stamp), `fingerprint`, `tier`, `alignment`, `provisional`, `notes jsonb`, `criteria jsonb`, `gate jsonb`, `coverage jsonb`, `change_note`, `run_id`, `model_name`, `prompt_version`, `assessed_at`; unique on (`program_id`, `organization_id`, `solution_id`, `fingerprint`); the latest per candidate is the current one.
