@@ -13,15 +13,21 @@ function sidebarToggle(page: Page) {
 test.describe("admin", () => {
   test.use({ locale: "en-US" });
 
-  for (const { path, signIn } of [
-    { path: "/admin", signIn: "/sign-in?returnTo=%2Fadmin" },
-    { path: "/vi/admin", signIn: "/vi/sign-in?returnTo=%2Fvi%2Fadmin" },
+  for (const { path, signIn, adminWords } of [
+    { path: "/admin", signIn: "/sign-in?returnTo=%2Fadmin", adminWords: "Gave the operator role" },
+    {
+      path: "/vi/admin",
+      signIn: "/vi/sign-in?returnTo=%2Fvi%2Fadmin",
+      adminWords: "Cấp quyền operator",
+    },
   ]) {
     test(`a visitor to ${path} is sent to sign in and back`, async ({ page }) => {
-      // The answer itself redirects: nothing of the page is sent to someone who is not signed in.
+      // The answer itself redirects: nothing of the page is sent to someone who is not signed in,
+      // not even the words of the admin area's screens.
       const answer = await page.request.get(path, { maxRedirects: 0 });
       expect(answer.status()).toBe(307);
       expect(answer.headers()["location"]).toBe(signIn);
+      expect(await answer.text()).not.toContain(adminWords);
 
       await page.goto(path);
       await expect(page).toHaveURL(signIn);
@@ -37,6 +43,7 @@ test.describe("admin", () => {
 
     const answer = await page.goto("/admin");
     expect(answer?.status()).toBe(404);
+    expect(await answer?.text()).not.toContain("Gave the operator role");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Page not found");
     // Nothing of the admin frame comes with the refusal: no sidebar, no way to the admin home.
     await expect(page.getByRole("button", { name: "Toggle sidebar" })).toHaveCount(0);
