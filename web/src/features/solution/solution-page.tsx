@@ -217,7 +217,8 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
       icon: <CloudIcon aria-hidden="true" />,
       labels: solution.deployment.map(deployment),
     },
-  ];
+    // A group with nothing to show would leave its icon and hidden name standing alone.
+  ].filter((group) => group.labels.length > 0);
 
   return (
     <div className="mx-auto flex w-full max-w-360 flex-1 flex-col gap-5 px-5 pt-4 pb-24 wrap-anywhere md:gap-7 md:px-8 md:pt-6 xl:px-16 desktop:px-20">
