@@ -332,7 +332,8 @@ class UseCaseServiceTest {
 		assertThat(JsonPath.<String>read(sent, "$.status")).isEqualTo("needs_changes");
 		assertThat(JsonPath.<String>read(sent, "$.reviewNote")).isEqualTo("A figure is wrong.");
 		assertThat(JsonPath.<Object>read(sent, "$.publishedAt")).isNull();
-		assertThat(mail.latestSubjectTo("founder@unpublish.test")).contains("Changes needed");
+		// Approved, then sent back: two emails, which the queue may deliver in either order.
+		assertThat(mail.subjectsTo("founder@unpublish.test")).anyMatch(subject -> subject.contains("Changes needed"));
 		assertThat(events(id)).containsExactly("use_case.submit", "use_case.approve", "use_case.send_back");
 	}
 

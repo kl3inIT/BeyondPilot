@@ -353,7 +353,11 @@ test.describe("admin", () => {
     await page.goto("/admin");
     const openMenu = async () => {
       const account = page.getByRole("button", { name: /^(Account menu|Menu tài khoản)/ });
-      // On a phone the sidebar is a sheet, which may still be open from the last choice.
+      // On a phone the sidebar is a sheet, which may still be open from the last choice, or still
+      // closing after an Escape: its account button shows until it has gone, and a menu opened
+      // from it goes with it. Wait until no sheet is closing before looking.
+      // Base UI marks a closing popup with data-ending-style until its animation ends.
+      await expect(page.locator('[role="dialog"][data-ending-style]')).toHaveCount(0);
       if (isMobile && !(await account.isVisible())) {
         await page
           .getByRole("main")
