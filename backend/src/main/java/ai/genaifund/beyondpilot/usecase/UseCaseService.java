@@ -17,6 +17,7 @@ import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
+import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.usecase.dto.MyUseCaseResponse;
 import ai.genaifund.beyondpilot.usecase.dto.MyUseCaseSummaryResponse;
 import ai.genaifund.beyondpilot.usecase.dto.MyUseCasesResponse;
@@ -95,6 +96,19 @@ public class UseCaseService {
 			.filter(found -> found.getOrganizationId().equals(membership.organizationId()))
 			.orElseThrow(() -> notFound(id));
 		return response(actor, membership, useCase);
+	}
+
+	/**
+	 * A file of a use case of the caller's organization.
+	 * @throws UseCaseException when the caller is not a member of such an organization, or its use case names no such file
+	 */
+	@Transactional(readOnly = true)
+	public FileDownload attachment(Actor actor, UUID id, UUID fileId) {
+		Membership membership = writer(actor);
+		UseCase useCase = useCases.findById(id)
+			.filter(found -> found.getOrganizationId().equals(membership.organizationId()))
+			.orElseThrow(() -> notFound(id));
+		return files.open(useCase, fileId);
 	}
 
 	/**

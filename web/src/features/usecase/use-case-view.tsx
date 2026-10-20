@@ -13,6 +13,7 @@ import { siteRoutes } from "@/lib/site";
 
 import { useCaseWords } from "./my-use-case-errors";
 import { draftValuesOf } from "./use-case-draft";
+import { myAttachmentsPath } from "./use-case-attachment-files";
 import { UseCaseSummary } from "./use-case-summary";
 import { UseCaseTabs } from "./use-case-tabs";
 import { WizardShell } from "./wizard-shell";
@@ -68,7 +69,11 @@ function UseCaseView({ useCase }: { useCase: MyUseCase }) {
           {inReview ? t("inReview.lead") : t("closed.lead", { date: closes })}
         </p>
       </div>
-      <UseCaseSummary values={values} hideEmpty={useCase.status === "approved"} />
+      <UseCaseSummary
+        values={values}
+        hideEmpty={useCase.status === "approved"}
+        attachmentsPath={myAttachmentsPath(useCase.id)}
+      />
       <div className="flex items-center justify-between gap-3 border-t pt-6">
         <Button prominence="tertiary" href={siteRoutes.workspaceUseCases}>
           {w("backToList")}

@@ -2,7 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
-import { draftUseCase, draftUseCaseId } from "./stub-wizards.mjs";
+import { serveStoredPdf } from "./stored-files";
+import { attachedPdf, attachedSheet, draftUseCase, draftUseCaseId } from "./stub-wizards.mjs";
 
 const wizardPath = `/workspace/organization/use-cases/${draftUseCaseId}`;
 const listPath = "/workspace/organization/use-cases";
@@ -165,6 +166,42 @@ test.describe("an organization's use case, written in steps", () => {
     // Nothing was changed since the draft was opened again, so sending saved nothing first.
     expect(saves).toHaveLength(before);
   });
+
+  test("the PDFs among a use case's files open in the page, the other kinds are only named", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await context.addCookies([{ name: "STUB_SCENE", value: "attached", url: baseURL! }]);
+    const file = `/api/usecase/mine/${draftUseCaseId}/attachments/${attachedPdf.id}`;
+    await serveStoredPdf(page, `**${file}`, attachedPdf.fileName);
+    await page.goto(wizardPath);
+    await openStep(page, isMobile, "Requirements and data");
+    await expect(page.getByText(attachedSheet.fileName)).toBeVisible();
+    await expect(page.getByRole("button", { name: `Open ${attachedSheet.fileName}` })).toHaveCount(
+      0,
+    );
+    await expectNoSeriousA11yViolations(page);
+
+    const open = page.getByRole("button", { name: `Open ${attachedPdf.fileName}` });
+    await open.click();
+    const viewer = page.getByRole("dialog", { name: attachedPdf.fileName });
+    await expect(viewer.getByRole("group", { name: /^Page \d$/ })).toHaveCount(3);
+    await expect(viewer.getByRole("link", { name: "Download" })).toHaveAttribute("href", file);
+    await expectNoSeriousA11yViolations(page);
+    await page.keyboard.press("Escape");
+    await expect(viewer).toHaveCount(0);
+    await expect(open).toBeFocused();
+
+    // The review step names the same files, and the PDF opens there too.
+    await openStep(page, isMobile, "Review and submit");
+    await page.getByRole("button", { name: `Open ${attachedPdf.fileName}` }).click();
+    await expect(page.getByRole("dialog", { name: attachedPdf.fileName })).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+  });
+
   test("the form stops what the backend would refuse: past 30 requirements, a sign in an amount, a past day", async ({
     page,
     context,

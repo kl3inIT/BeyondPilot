@@ -209,6 +209,20 @@ export function receivedProposal(scene, id) {
   };
 }
 
+/** The files a use case names in the "attached" scene: a PDF, which opens in the page, and a sheet, which does not. */
+export const attachedPdf = {
+  id: "d0c1a2b3-4c5d-4e6f-8a9b-0c1d2e3f4a61",
+  fileName: "invoice-samples.pdf",
+  mediaType: "application/pdf",
+  sizeBytes: 2_400_000,
+};
+export const attachedSheet = {
+  id: "d0c1a2b3-4c5d-4e6f-8a9b-0c1d2e3f4a62",
+  fileName: "purchase-orders.csv",
+  mediaType: "text/csv",
+  sizeBytes: 48_000,
+};
+
 /** A draft that holds everything a use case needs, with one requirement. */
 export const draftUseCase = {
   id: draftUseCaseId,
@@ -279,7 +293,9 @@ export function answerWizards(url, session, scene) {
             submittedAt: "2026-10-11T03:00:00Z",
             submittedBy: draftUseCase.lastEditedBy,
           }
-        : draftUseCase,
+        : scene === "attached"
+          ? { ...draftUseCase, attachments: [attachedPdf, attachedSheet] }
+          : draftUseCase,
     ];
   }
   return undefined;

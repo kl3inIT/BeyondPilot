@@ -22,8 +22,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -173,5 +175,19 @@ class AdminUseCasesController {
 	UseCaseOrganizationListResponse organizations(@CurrentActor Actor actor,
 			@Valid @ParameterObject UseCaseOrganizationListRequest request) {
 		return useCases.organizations(actor, request);
+	}
+
+	@GetMapping("/use-cases/{id}/attachments/{fileId}")
+	@Operation(operationId = "readAdminUseCaseAttachment", summary = "A file of a use case, for an operator",
+			description = "The bytes of the file, saved under its name.",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The bytes of the file.",
+			content = @Content(mediaType = MediaType.ALL_VALUE, schema = @Schema(type = "string", format = "binary")))
+	@ApiResponse(responseCode = "302", description = "The address the object store serves the file at, for a while.",
+			content = @Content)
+	@ApiResponse(responseCode = "404", description = "There is no such use case, or it names no such file.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<Resource> attachment(@CurrentActor Actor actor, @PathVariable UUID id, @PathVariable UUID fileId) {
+		return useCases.attachment(actor, id, fileId).response();
 	}
 }
