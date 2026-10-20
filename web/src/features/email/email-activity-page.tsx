@@ -15,6 +15,8 @@ import { momentText } from "@/i18n/formats";
 
 import { EmailActivityToolbar } from "./email-activity-toolbar";
 import { EmailHeader } from "./email-header";
+import { emailActivityFilters } from "./email-queries";
+import { ExportEmailMessages } from "./export-email-messages";
 import { isEmailKind, KindIcon } from "./email-kinds";
 import { emailActivitySearch, type EmailActivitySearch } from "./email-search";
 import { EmailStatusLabel } from "./email-status";
@@ -67,7 +69,16 @@ async function EmailActivityPage({
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8">
-      <EmailHeader current="activity" ready={ready} />
+      <EmailHeader
+        current="activity"
+        ready={ready}
+        action={
+          <ExportEmailMessages
+            filters={emailActivityFilters(search)}
+            disabled={messages.items.length === 0}
+          />
+        }
+      />
 
       {/* The figures count to their new value when the period changes. */}
       <StatStrip columns={6}>

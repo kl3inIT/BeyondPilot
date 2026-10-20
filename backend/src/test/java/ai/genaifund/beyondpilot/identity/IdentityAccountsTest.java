@@ -11,6 +11,8 @@ import java.util.UUID;
 
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -132,6 +134,44 @@ class IdentityAccountsTest {
 		// A percent sign and an underscore are searched for as written, not as wildcards.
 		assertThat(emails("?q=100%25@find")).containsExactly("100%@find.test");
 		assertThat(emails("?q=_ina")).isEmpty();
+	}
+
+	@Test
+	void anOperatorDownloadsTheAccountsAsTheListNarrowsThemAndTheDownloadIsRecorded() {
+		insert("zed@exported-accounts.test", "Zed Exported", "active", "user");
+		insert("amy@exported-accounts.test", "Amy Exported", "active", "user");
+		insert("gone@exported-accounts.test", "Gone Exported", "disabled", "user");
+		String export = ACCOUNTS + "/export?q=exported-accounts&status=active&sort=name";
+		String user = signIn("plain@exported-accounts.test");
+
+		assertProblem(exported(user, export), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(exported(operator, export).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"accounts-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		// The person who asked signed in with an address of the domain too, and is a user.
+		assertThat(sheet).hasSize(4);
+		assertThat(sheet.get(0)).startsWith("Name", "Email", "Role", "Status", "Last sign-in");
+		assertThat(sheet.get(1)).startsWith("Amy Exported", "amy@exported-accounts.test", "User", "Active");
+		assertThat(sheet.get(3)).startsWith("Zed Exported");
+
+		String csv = new String(exported(operator, export + "&format=csv").expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8")
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), UTF_8);
+		assertThat(csv).startsWith("\uFEFFName,Email,Role,Status,Last sign-in,");
+		assertThat(csv.lines().toList()).hasSize(4).element(1).asString().startsWith("Amy Exported,amy@exported-accounts.test,");
+		assertThat(exportCounts()).containsExactly("3", "3");
 	}
 
 	@Test
@@ -298,6 +338,16 @@ class IdentityAccountsTest {
 		String body = new String(list(query).expectStatus().isOk().expectBody().returnResult().getResponseBody(),
 				UTF_8);
 		return JsonPath.read(body, "$.items[*].email");
+	}
+
+	private RestTestClient.ResponseSpec exported(String session, String uri) {
+		return client.post().uri(uri).header(CSRF_HEADER, "1").cookie(SESSION_COOKIE, session).exchange();
+	}
+
+	private List<String> exportCounts() {
+		return jdbc.sql("select details ->> 'count' from audit_event where action = 'account.export' order by occurred_at")
+			.query(String.class)
+			.list();
 	}
 
 	private RestTestClient.ResponseSpec command(String session, UUID account, String command) {

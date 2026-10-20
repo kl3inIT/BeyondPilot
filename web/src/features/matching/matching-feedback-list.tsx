@@ -8,6 +8,7 @@ import type { MatchingDisagreement, MatchingFeedbackList } from "@/lib/api/gener
 import { adminUseCaseCandidatesRoute, siteRoutes } from "@/lib/site";
 import { momentText } from "@/i18n/formats";
 
+import { ExportMatchingFeedback } from "./export-matching-feedback";
 import { MatchingAdminTabs } from "./matching-admin-tabs";
 import { matchingFeedbackAddress } from "./matching-search";
 import { requirementName } from "./matching-view";
@@ -76,6 +77,7 @@ async function MatchingFeedbackPage({
         destination="aiMatching"
         title={title("title")}
         lead={nobody ? t("empty") : t("agreed", { a: feedback.agreements, n: feedback.answers })}
+        actions={<ExportMatchingFeedback disabled={feedback.total === 0} />}
       >
         <MatchingAdminTabs current="feedback" />
       </AdminPageHeader>

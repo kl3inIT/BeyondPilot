@@ -8,6 +8,7 @@ export const auditPeriods = ["day", "week", "month", "all"] as const;
 export const auditActions = [
   "account.disable",
   "account.enable",
+  "account.export",
   "operator.grant",
   "operator.withdraw",
   "audit.export",
@@ -17,6 +18,7 @@ export const auditActions = [
   "program.unpublish",
   "program.feature",
   "program.unfeature",
+  "program.export",
   "program.luma_read",
   "organization.create",
   "organization.approve",
@@ -55,6 +57,7 @@ export const auditActions = [
   "solution.deployment_restore",
   "solution.enrich",
   "solution.export",
+  "solution.offers_export",
   "use_case.create",
   "use_case.submit",
   "use_case.draft",
@@ -65,6 +68,7 @@ export const auditActions = [
   "use_case.set_programs",
   "use_case.update",
   "use_case.publish",
+  "use_case.export",
   "messaging.request_accept",
   "messaging.program_assign",
   "messaging.request_decline",
@@ -90,6 +94,7 @@ export const auditActions = [
   "proposal.export",
   "proposal.drafts_export",
   "proposal.draft_open",
+  "proposal.reviewers_export",
   "use_case_proposal.decide",
   "use_case_proposal.outcomes_send",
   "use_case_proposal.export",
@@ -101,6 +106,7 @@ export const auditActions = [
   "email.suppression_remove",
   "email.resend",
   "email.test_send",
+  "email.export",
   "ai.provider_create",
   "ai.provider_update",
   "ai.provider_delete",
@@ -123,6 +129,7 @@ export const auditActions = [
   "mcp.user_server_disable",
   "mcp.tool_enable",
   "mcp.tool_disable",
+  "mcp.calls_export",
   "matching.run_start",
   "matching.candidate_add",
   "matching.candidate_shortlist",
@@ -131,6 +138,7 @@ export const auditActions = [
   "matching.candidate_restore",
   "matching.candidate_invite",
   "matching.settings_change",
+  "matching.feedback_export",
 ] as const;
 
 /**

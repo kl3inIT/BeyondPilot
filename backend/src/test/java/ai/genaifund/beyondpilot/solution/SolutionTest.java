@@ -1892,6 +1892,49 @@ class SolutionTest {
 			.longValue();
 	}
 
+	@Test
+	void anOperatorDownloadsTheOffersTheListShowsInItsOrderAndTheDownloadIsRecorded() {
+		String founder = approvedOwner("founder@exported-offers.test", "Quokka Co");
+		UUID organization = organizationOf(founder);
+		UUID first = offer(organization, "Quokka credits", "https://offers.example.test/quokka");
+		UUID second = offer(organization, "Quokka support", "https://offers.example.test/support");
+		// The list shows the support before the credits; an offer that does not exist is left out.
+		Map<String, Object> shown = Map.of("ids", List.of(second, UUID.randomUUID(), first), "q", "quokka");
+
+		assertProblem(post(founder, OFFER_LIST + "/export", shown), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertThat(offerExportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(post(operator, OFFER_LIST + "/export", shown).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"offers-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(0)).startsWith("Offer", "Organization", "Arranged by GenAI Fund", "Closed", "Solutions");
+		assertThat(sheet.get(1)).startsWith("Quokka support", "Quokka Co", "Yes", "No", "0",
+				"https://offers.example.test/support");
+		assertThat(sheet.get(2)).startsWith("Quokka credits");
+
+		String csv = body(post(operator, OFFER_LIST + "/export?format=csv", shown).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("\uFEFFOffer,Organization,Arranged by GenAI Fund,Closed,Solutions,Address,");
+		assertThat(csv.lines().toList()).hasSize(3).element(1).asString().startsWith("Quokka support,Quokka Co,Yes,No,0,");
+		assertThat(offerExportCounts()).containsExactly("2", "2");
+	}
+
+	private List<String> offerExportCounts() {
+		return jdbc
+			.sql("select details ->> 'count' from audit_event where action = 'solution.offers_export' order by occurred_at")
+			.query(String.class)
+			.list();
+	}
+
 	private RestTestClient.ResponseSpec get(String session, String path) {
 		return client.get().uri(path).cookie(TestSignIn.SESSION_COOKIE, session).exchange();
 	}

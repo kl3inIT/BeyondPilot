@@ -18,6 +18,8 @@ import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import ai.genaifund.beyondpilot.storage.StorageProperties;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -523,6 +525,42 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
+	void anOperatorDownloadsTheUseCasesAsTheListNarrowsThemAndTheDownloadIsRecorded() {
+		String tag = UUID.randomUUID().toString().substring(0, 8);
+		UUID organization = organization("Exporting Bank " + tag);
+		post(operator, USE_CASES, useCase(organization, "Exported draft " + tag, false)).expectStatus().isCreated();
+		post(operator, USE_CASES, useCase(organization, "Exported Beta " + tag, true)).expectStatus().isCreated();
+		post(operator, USE_CASES, useCase(organization, "Exported Alpha " + tag, true)).expectStatus().isCreated();
+		String export = USE_CASES + "/export?q=" + tag + "&status=approved&sort=title";
+		String member = TestSignIn.session(client, mail, "member@exported-use-cases.test");
+
+		assertProblem(exported(member, export), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(exported(operator, export).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"use-cases-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(0)).startsWith("Use case", "Organization", "Status", "Proposals close at");
+		assertThat(sheet.get(1)).startsWith("Exported Alpha " + tag, "Exporting Bank " + tag, "Approved");
+		assertThat(sheet.get(2)).startsWith("Exported Beta " + tag);
+
+		String csv = body(exported(operator, export + "&format=csv").expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("\uFEFFUse case,Organization,Status,Proposals close at,");
+		assertThat(csv.lines().toList()).hasSize(3).element(1).asString().startsWith("Exported Alpha " + tag + ",");
+		assertThat(exportCounts()).containsExactly("2", "2");
+	}
+
+	@Test
 	void theListSortsByTheKeyItIsGivenAndRefusesAnUnknownOne() {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		UUID organization = organization("Sorted Bank " + tag);
@@ -829,6 +867,20 @@ class UseCaseAdministrationTest {
 			.cookie(TestSignIn.SESSION_COOKIE, session)
 			.body(body)
 			.exchange();
+	}
+
+	private RestTestClient.ResponseSpec exported(String session, String uri) {
+		return client.post()
+			.uri(uri)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.exchange();
+	}
+
+	private List<String> exportCounts() {
+		return jdbc.sql("select details ->> 'count' from audit_event where action = 'use_case.export' order by occurred_at")
+			.query(String.class)
+			.list();
 	}
 
 	private RestTestClient.ResponseSpec get(String session, String uri) {

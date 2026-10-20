@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.usecase.UseCaseAdministration;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseListResponse;
@@ -15,12 +16,14 @@ import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseOrganizationListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.UseCaseReviewQueueResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -32,6 +35,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -63,6 +67,22 @@ class AdminUseCasesController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	AdminUseCaseListResponse list(@CurrentActor Actor actor, @Valid @ParameterObject AdminUseCaseListRequest request) {
 		return useCases.list(actor, request);
+	}
+
+	@PostMapping(path = "/use-cases/export", produces = { SpreadsheetFormat.XLSX_TYPE, SpreadsheetFormat.CSV_TYPE })
+	@Operation(operationId = "exportAdminUseCases", summary = "Download the use cases as a spreadsheet",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "Every use case the parameters select, in the list's order, one row each. The download is recorded.",
+			content = { @Content(mediaType = SpreadsheetFormat.XLSX_TYPE, schema = @Schema(type = "string", format = "binary")),
+					@Content(mediaType = SpreadsheetFormat.CSV_TYPE, schema = @Schema(type = "string", format = "binary")) })
+	@ApiResponse(responseCode = "400", description = "A parameter is not valid, or the download would hold too many rows.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<byte[]> export(@CurrentActor Actor actor, @Valid @ParameterObject AdminUseCaseListRequest request,
+			@Parameter(description = SpreadsheetFormat.DESCRIPTION,
+					schema = @Schema(allowableValues = { "xlsx", "csv" }, defaultValue = "xlsx")) @RequestParam(
+							defaultValue = "xlsx") @Pattern(regexp = SpreadsheetFormat.PATTERN) String format) {
+		return useCases.export(actor, request, SpreadsheetFormat.of(format)).response();
 	}
 
 	@PostMapping(path = "/use-cases", consumes = MediaType.APPLICATION_JSON_VALUE,

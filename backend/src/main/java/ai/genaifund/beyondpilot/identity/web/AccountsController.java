@@ -7,20 +7,25 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.CurrentActor;
 import ai.genaifund.beyondpilot.identity.dto.AccountListRequest;
 import ai.genaifund.beyondpilot.identity.dto.AccountListResponse;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,6 +59,22 @@ class AccountsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	AccountListResponse list(@CurrentActor Actor actor, @Valid @ParameterObject AccountListRequest request) {
 		return accounts.list(actor, request);
+	}
+
+	@PostMapping(path = "/export", produces = { SpreadsheetFormat.XLSX_TYPE, SpreadsheetFormat.CSV_TYPE })
+	@Operation(operationId = "exportAccounts", summary = "Download the accounts as a spreadsheet",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "Every account the parameters select, in the list's order, one row each. The download is recorded.",
+			content = { @Content(mediaType = SpreadsheetFormat.XLSX_TYPE, schema = @Schema(type = "string", format = "binary")),
+					@Content(mediaType = SpreadsheetFormat.CSV_TYPE, schema = @Schema(type = "string", format = "binary")) })
+	@ApiResponse(responseCode = "400", description = "A parameter is not valid, or the download would hold too many rows.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<byte[]> export(@CurrentActor Actor actor, @Valid @ParameterObject AccountListRequest request,
+			@Parameter(description = SpreadsheetFormat.DESCRIPTION,
+					schema = @Schema(allowableValues = { "xlsx", "csv" }, defaultValue = "xlsx")) @RequestParam(
+							defaultValue = "xlsx") @Pattern(regexp = SpreadsheetFormat.PATTERN) String format) {
+		return accounts.export(actor, request, SpreadsheetFormat.of(format)).response();
 	}
 
 	@PostMapping("/{id}/disable")

@@ -1181,7 +1181,8 @@
       "action": {
         "account": {
           "disable": "Khóa tài khoản",
-          "enable": "Mở khóa tài khoản"
+          "enable": "Mở khóa tài khoản",
+          "export": "Tải danh sách tài khoản"
         },
         "operator": {
           "grant": "Cấp quyền operator",
@@ -1194,7 +1195,8 @@
           "unpublish": "Gỡ chương trình",
           "feature": "Đặt một chương trình nổi bật",
           "unfeature": "Bỏ nổi bật một chương trình",
-          "luma_read": "Đọc lịch trên Luma"
+          "luma_read": "Đọc lịch trên Luma",
+          "export": "Tải danh sách chương trình"
         },
         "organization": {
           "create": "Thêm tổ chức",
@@ -1235,7 +1237,8 @@
           "offer_close": "Đóng ưu đãi với giải pháp mới",
           "offer_reopen": "Mở lại ưu đãi với giải pháp mới",
           "offer_delete": "Xóa ưu đãi",
-          "export": "Tải danh sách giải pháp AI"
+          "export": "Tải danh sách giải pháp AI",
+          "offers_export": "Tải danh sách ưu đãi"
         },
         "messaging": {
           "request_accept": "Chấp nhận một tin đầu tiên",
@@ -1261,6 +1264,7 @@
           "criteria_update": "Đặt tiêu chí chấm",
           "reviewer_invite": "Mời giám khảo",
           "reviewer_remove": "Gỡ giám khảo",
+          "reviewers_export": "Tải danh sách giám khảo",
           "decide": "Quyết định một đơn",
           "release": "Công bố kết quả",
           "file_open": "Mở một tệp của đơn nộp",
@@ -1283,7 +1287,8 @@
           "unfeature": "Bỏ nổi bật một use case",
           "set_programs": "Đặt chương trình cho một use case",
           "update": "Sửa một use case riêng tư",
-          "publish": "Công bố một use case riêng tư"
+          "publish": "Công bố một use case riêng tư",
+          "export": "Tải danh sách use case"
         },
         "email": {
           "settings_update": "Đổi cấu hình email",
@@ -1293,7 +1298,8 @@
           "suppression_add": "Chặn gửi email tới một địa chỉ",
           "suppression_remove": "Bỏ chặn một địa chỉ email",
           "resend": "Gửi lại một email",
-          "test_send": "Gửi email thử"
+          "test_send": "Gửi email thử",
+          "export": "Tải nhật ký email"
         },
         "ai": {
           "provider_create": "Kết nối nhà cung cấp AI",
@@ -1321,7 +1327,8 @@
           "user_server_enable": "Bật server MCP cho người dùng",
           "user_server_disable": "Tắt server MCP cho người dùng",
           "tool_enable": "Bật một công cụ MCP",
-          "tool_disable": "Tắt một công cụ MCP"
+          "tool_disable": "Tắt một công cụ MCP",
+          "calls_export": "Tải hoạt động MCP"
         },
         "matching": {
           "run_start": "Chạy matching cho một use case",
@@ -1331,6 +1338,7 @@
           "candidate_reason": "Nêu lý do đã loại một ứng viên",
           "candidate_restore": "Khôi phục một ứng viên",
           "candidate_invite": "Mời một nhà cung cấp gửi đề xuất",
+          "feedback_export": "Tải phản hồi về ghép nối",
           "settings_change": "Đổi giới hạn của matching"
         },
         "audit": {
@@ -1340,7 +1348,8 @@
       "activity": {
         "account": {
           "disable": "Đã khóa tài khoản của <resource></resource>",
-          "enable": "Đã mở khóa tài khoản của <resource></resource>"
+          "enable": "Đã mở khóa tài khoản của <resource></resource>",
+          "export": "Tải danh sách tài khoản"
         },
         "operator": {
           "grant": "Đã cấp quyền operator cho <resource></resource>",
@@ -1353,7 +1362,8 @@
           "unpublish": "Đã gỡ chương trình <resource></resource>",
           "feature": "Đã đặt chương trình <resource></resource> nổi bật trên trang chủ",
           "unfeature": "Đã bỏ nổi bật chương trình <resource></resource>",
-          "luma_read": "Đọc <resource></resource> ngay"
+          "luma_read": "Đọc <resource></resource> ngay",
+          "export": "Tải danh sách chương trình"
         },
         "organization": {
           "create": "Thêm tổ chức <resource></resource>",
@@ -1394,7 +1404,8 @@
           "offer_close": "Đóng ưu đãi <resource></resource> với giải pháp mới",
           "offer_reopen": "Mở lại ưu đãi <resource></resource> với giải pháp mới",
           "offer_delete": "Xóa ưu đãi <resource></resource>",
-          "export": "Tải danh sách giải pháp AI"
+          "export": "Tải danh sách giải pháp AI",
+          "offers_export": "Tải danh sách ưu đãi"
         },
         "messaging": {
           "request_accept": "Đã chấp nhận một tin đầu tiên về <resource></resource>",
@@ -1420,6 +1431,7 @@
           "criteria_update": "Đặt tiêu chí chấm của <resource></resource>",
           "reviewer_invite": "Mời một giám khảo chấm <resource></resource>",
           "reviewer_remove": "Gỡ một giám khảo khỏi <resource></resource>",
+          "reviewers_export": "Tải danh sách giám khảo của <resource></resource>",
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
           "release": "Công bố kết quả của <resource></resource>",
           "file_open": "Mở một tệp của một đơn nộp vào <resource></resource>",
@@ -1442,7 +1454,8 @@
           "unfeature": "Đã bỏ nổi bật use case <resource></resource>",
           "set_programs": "Đã đặt chương trình cho use case <resource></resource>",
           "update": "Đã sửa use case riêng tư <resource></resource>",
-          "publish": "Đã công bố use case riêng tư <resource></resource>"
+          "publish": "Đã công bố use case riêng tư <resource></resource>",
+          "export": "Tải danh sách use case"
         },
         "email": {
           "settings_update": "Đổi <resource></resource>",
@@ -1452,7 +1465,8 @@
           "suppression_add": "Chặn gửi email tới <resource></resource>",
           "suppression_remove": "Bỏ chặn <resource></resource>",
           "resend": "Gửi lại email <resource></resource>",
-          "test_send": "Gửi email thử tới <resource></resource>"
+          "test_send": "Gửi email thử tới <resource></resource>",
+          "export": "Tải nhật ký email"
         },
         "ai": {
           "provider_create": "Kết nối nhà cung cấp AI <resource></resource>",
@@ -1480,7 +1494,8 @@
           "user_server_enable": "Bật <resource></resource>",
           "user_server_disable": "Tắt <resource></resource>",
           "tool_enable": "Bật công cụ MCP <resource></resource>",
-          "tool_disable": "Tắt công cụ MCP <resource></resource>"
+          "tool_disable": "Tắt công cụ MCP <resource></resource>",
+          "calls_export": "Tải hoạt động MCP"
         },
         "matching": {
           "run_start": "Chạy matching cho use case <resource></resource>",
@@ -1490,6 +1505,7 @@
           "candidate_reason": "Nêu lý do đã loại một ứng viên của use case <resource></resource>",
           "candidate_restore": "Khôi phục một ứng viên của use case <resource></resource>",
           "candidate_invite": "Mời một nhà cung cấp gửi đề xuất cho use case <resource></resource>",
+          "feedback_export": "Tải phản hồi về ghép nối",
           "settings_change": "Đổi giới hạn của matching"
         },
         "audit": {

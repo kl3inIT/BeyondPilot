@@ -8,10 +8,13 @@ import ai.genaifund.beyondpilot.program.ProgramAdministration;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramListResponse;
 import ai.genaifund.beyondpilot.program.dto.AdminProgramResponse;
 import ai.genaifund.beyondpilot.program.dto.CreateProgramRequest;
+import ai.genaifund.beyondpilot.program.dto.ExportProgramsRequest;
 import ai.genaifund.beyondpilot.program.dto.LumaReadResponse;
 import ai.genaifund.beyondpilot.program.dto.ProgramQuestionsResponse;
 import ai.genaifund.beyondpilot.program.dto.SaveProgramQuestionsRequest;
 import ai.genaifund.beyondpilot.program.dto.SaveProgramRequest;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,14 +22,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -56,6 +62,23 @@ class AdminProgramsController {
 	@ApiResponse(responseCode = "200", description = "Every program in any status.")
 	AdminProgramListResponse list(@CurrentActor Actor actor) {
 		return programs.list(actor);
+	}
+
+	@PostMapping(path = "/export", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = { SpreadsheetFormat.XLSX_TYPE, SpreadsheetFormat.CSV_TYPE })
+	@Operation(operationId = "exportAdminPrograms", summary = "Download the programs as a spreadsheet",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "The programs the body names, in its order, one row each. The download is recorded.",
+			content = { @Content(mediaType = SpreadsheetFormat.XLSX_TYPE, schema = @Schema(type = "string", format = "binary")),
+					@Content(mediaType = SpreadsheetFormat.CSV_TYPE, schema = @Schema(type = "string", format = "binary")) })
+	@ApiResponse(responseCode = "400", description = "A member or the format is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<byte[]> export(@CurrentActor Actor actor, @Valid @RequestBody ExportProgramsRequest request,
+			@Parameter(description = SpreadsheetFormat.DESCRIPTION,
+					schema = @Schema(allowableValues = { "xlsx", "csv" }, defaultValue = "xlsx")) @RequestParam(
+							defaultValue = "xlsx") @Pattern(regexp = SpreadsheetFormat.PATTERN) String format) {
+		return programs.export(actor, request, SpreadsheetFormat.of(format)).response();
 	}
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

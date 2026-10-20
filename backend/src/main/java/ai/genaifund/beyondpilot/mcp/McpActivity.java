@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.mcp;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -8,11 +9,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import ai.genaifund.beyondpilot.audit.AuditAction;
+import ai.genaifund.beyondpilot.audit.AuditRecord;
+import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.AccountAdministration;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.AppConnections;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.McpAudience;
+import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.mcp.dto.McpCallListRequest;
 import ai.genaifund.beyondpilot.mcp.dto.McpCallListResponse;
@@ -20,6 +25,11 @@ import ai.genaifund.beyondpilot.mcp.persistence.McpCallRepository;
 import ai.genaifund.beyondpilot.mcp.persistence.McpCallRepository.Filter;
 import ai.genaifund.beyondpilot.mcp.persistence.McpCallRepository.LoggedCall;
 import ai.genaifund.beyondpilot.mcp.server.McpSwitches;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +40,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class McpActivity {
+
+	private static final Logger LOG = LoggerFactory.getLogger(McpActivity.class);
 
 	private static final int PAGE_SIZE = 50;
 
@@ -43,13 +55,16 @@ public class McpActivity {
 
 	private final McpSwitches switches;
 
+	private final AuditTrail audit;
+
 	McpActivity(McpCallRepository calls, IdentityService identity, AccountAdministration accounts,
-			AppConnections apps, McpSwitches switches) {
+			AppConnections apps, McpSwitches switches, AuditTrail audit) {
 		this.calls = calls;
 		this.identity = identity;
 		this.accounts = accounts;
 		this.apps = apps;
 		this.switches = switches;
+		this.audit = audit;
 	}
 
 	@Transactional(readOnly = true)
@@ -94,6 +109,48 @@ public class McpActivity {
 			.toList();
 		return new McpCallListResponse(items, page, size, total, appOptions, tools,
 				new McpCallListResponse.Counts(counts.calls(), counts.refused(), counts.failed()));
+	}
+
+	/**
+	 * The activity as a spreadsheet: every call the request selects, newest first, for GenAI Fund to work with outside
+	 * BeyondPilot. It names people and their addresses, so the download is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, McpCallListRequest request, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		List<McpCallListResponse.Item> rows = Spreadsheet.everyPage(page -> calls(actor,
+				new McpCallListRequest(request.from(), request.app(), request.tool(), request.outcome(), request.q(),
+						page, Spreadsheet.PAGE_SIZE))
+			.items());
+		Spreadsheet<McpCallListResponse.Item> sheet = Spreadsheet.<McpCallListResponse.Item>of("MCP calls")
+			.time("Called at", McpCallListResponse.Item::calledAt)
+			.text("Person", McpCallListResponse.Item::personName)
+			.email("Email", McpCallListResponse.Item::personEmail)
+			.text("App", McpCallListResponse.Item::appName)
+			.label("Server", McpCallListResponse.Item::server)
+			.text("Tool", McpCallListResponse.Item::tool)
+			.label("Outcome", McpCallListResponse.Item::outcome)
+			.count("Duration (ms)", McpCallListResponse.Item::durationMs)
+			.text("Record read", call -> call.target() == null ? null : call.target().label());
+		SpreadsheetFile file = sheet.write(format, "mcp-calls", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("Since", request.from())
+					.narrowedBy("App", request.app())
+					.narrowedBy("Tool", request.tool())
+					.narrowedBy("Outcome", request.outcome())
+					.narrowedBy("Search", request.q()));
+		audit.record(new AuditRecord(AuditAction.MCP_CALLS_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("mcp_activity", "calls", "MCP activity"),
+				Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "mcp.calls.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("MCP activity exported");
+		return file;
 	}
 
 }

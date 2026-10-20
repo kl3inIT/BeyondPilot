@@ -12,20 +12,26 @@ import ai.genaifund.beyondpilot.matching.dto.MatchingRunListResponse;
 import ai.genaifund.beyondpilot.matching.dto.MatchingRunResponse;
 import ai.genaifund.beyondpilot.matching.dto.MatchingSettingsResponse;
 import ai.genaifund.beyondpilot.matching.dto.SaveMatchingSettingsRequest;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** The limits of matching, what people said about its groups, and its runs, for operators. */
@@ -80,6 +86,23 @@ class AdminMatchingController {
 	MatchingFeedbackListResponse feedback(@CurrentActor Actor actor,
 			@Valid @ParameterObject MatchingFeedbackListRequest request) {
 		return administration.feedback(actor, request);
+	}
+
+	@PostMapping(path = "/feedback/export", produces = { SpreadsheetFormat.XLSX_TYPE, SpreadsheetFormat.CSV_TYPE })
+	@Operation(operationId = "exportMatchingFeedback",
+			summary = "Download the answers that say a group is wrong as a spreadsheet",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "Every disagreement, newest first, whenever it was given, one row each. The download is recorded.",
+			content = { @Content(mediaType = SpreadsheetFormat.XLSX_TYPE, schema = @Schema(type = "string", format = "binary")),
+					@Content(mediaType = SpreadsheetFormat.CSV_TYPE, schema = @Schema(type = "string", format = "binary")) })
+	@ApiResponse(responseCode = "400", description = "The format is not valid, or the download would hold too many rows.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<byte[]> exportFeedback(@CurrentActor Actor actor,
+			@Parameter(description = SpreadsheetFormat.DESCRIPTION,
+					schema = @Schema(allowableValues = { "xlsx", "csv" }, defaultValue = "xlsx")) @RequestParam(
+							defaultValue = "xlsx") @Pattern(regexp = SpreadsheetFormat.PATTERN) String format) {
+		return administration.exportFeedback(actor, SpreadsheetFormat.of(format)).response();
 	}
 
 	@GetMapping(path = "/runs", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -38,7 +38,12 @@ import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewer;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewerRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ReviewCriterion;
 import ai.genaifund.beyondpilot.proposal.persistence.ReviewCriterionRepository;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +54,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class ReviewSetup {
+
+	private static final Logger LOG = LoggerFactory.getLogger(ReviewSetup.class);
 
 	/** How long an invitation nobody used stays open. */
 	static final Duration INVITATION = Duration.ofDays(7);
@@ -211,6 +218,38 @@ public class ReviewSetup {
 			}
 		}
 		return new ReviewersResponse(items, submitted.size());
+	}
+
+	/**
+	 * Who scores a program's applications as a spreadsheet, the operators who scored first and then the judges in the
+	 * order they were invited, for GenAI Fund to follow the review outside BeyondPilot. It holds addresses, so the
+	 * download is recorded on the program.
+	 * @throws ProposalException when the program takes no applications
+	 */
+	@Transactional
+	public SpreadsheetFile exportReviewers(Actor actor, UUID programId, SpreadsheetFormat format) {
+		Operator operator = access.operator(actor);
+		ApplicationForm form = form(programId);
+		ReviewersResponse list = reviewers(actor, programId);
+		Spreadsheet<ReviewerResponse> sheet = Spreadsheet.<ReviewerResponse>of("Reviewers")
+			.text("Name", ReviewerResponse::name)
+			.email("Email", ReviewerResponse::email)
+			.label("Role", ReviewerResponse::role)
+			.label("Status", ReviewerResponse::status)
+			.time("Invited at", ReviewerResponse::invitedAt)
+			.time("Invitation expires at", ReviewerResponse::expiresAt)
+			.count("Applications scored", ReviewerResponse::assessed);
+		SpreadsheetFile file = sheet.write(format, form.slug() + "-reviewers", list.items(),
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("Applications to score", String.valueOf(list.applications())));
+		record(AuditAction.PROPOSAL_REVIEWERS_EXPORT, operator, form, Map.of("count", String.valueOf(file.rows())));
+		LOG.atInfo()
+			.addKeyValue("event", "proposal.reviewers.exported")
+			.addKeyValue("program_id", programId)
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Reviewers exported");
+		return file;
 	}
 
 	/**

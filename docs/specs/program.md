@@ -15,8 +15,9 @@ it asks applicants, and whether the public site shows it. It was delivered by
 - **Persistence.** `program.persistence` holds the JPA aggregate `Program` with its value lists `ProgramMilestone`,
   `ProgramEvent` and `ProgramQuestion`, the Spring Data `ProgramRepository`, and `ProgramQueryRepository`, the
   `JdbcClient` reads behind the public list and the operators' list. Enum values are stored as lowercase codes.
-- **Dependencies.** Closed, with `allowedDependencies = { "audit", "identity", "storage" }`: `identity` says whether
-  the caller is an operator, `storage` checks and removes the cover file, and `audit` records each change.
+- **Dependencies.** Closed, with `allowedDependencies = { "audit", "identity", "shared", "storage" }`: `identity` says
+  whether the caller is an operator, `storage` checks and removes the cover file, `shared` writes the list as a
+  spreadsheet for a download, and `audit` records each change and each download.
 - **Readers.** `proposal` reads `ApplicationForm` (through `applicationForm`, `applicationForms` and
   `formsUnderReview`), `usecase` and `messaging` read `ProgramName` (through `names` and `named`), `search` reads
   `IndexedProgram` (through `indexed` and `indexedAll`) and uses `ProgramPhase` for its result cards, and `mcp` reads
@@ -268,6 +269,7 @@ Admin paths need a session, an operator and, for a change, the CSRF header.
 | `GET /api/program/programs/{slug}`                | `Program`; a draft only for an operator; `404` otherwise                                                                                                       |
 | `GET /api/program/admin/programs`                 | `AdminProgramList`: every program with status, phase and window                                                                                                |
 | `POST /api/program/admin/programs`                | `201` with the draft as `AdminProgram`; `409` `PROGRAM_SLUG_TAKEN`                                                                                             |
+| `POST /api/program/admin/programs/export`         | `200` with the programs the body names, in its order, as XLSX or CSV (`?format=`); a program that does not exist is left out; recorded as `program.export`     |
 | `GET /api/program/admin/programs/{id}`            | `AdminProgram`, with `publishIssues`, `slugFixed` and `version`                                                                                                |
 | `PUT /api/program/admin/programs/{id}`            | `AdminProgram` as saved, with its new version                                                                                                                  |
 | `GET /api/program/admin/programs/{id}/questions`  | `ProgramQuestions`: the questions, `fixed`, `opensAt`, `version`                                                                                               |
