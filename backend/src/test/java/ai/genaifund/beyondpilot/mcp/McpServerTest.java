@@ -581,6 +581,7 @@ class McpServerTest {
 		assertThat(JsonPath.<String>read(sentBack, "$.before")).isEqualTo("in_review");
 		assertThat(JsonPath.<String>read(sentBack, "$.after")).isEqualTo("needs_changes");
 		assertThat(JsonPath.<String>read(sentBack, "$.name")).isEqualTo("Decided " + word);
+		assertThat(JsonPath.<String>read(sentBack, "$.told")).isEqualTo("1 owner of Decided " + word + ", by email.");
 		assertThat(JsonPath.<String>read(sentBack, "$.url")).isEqualTo(ISSUER + "/admin/organizations/" + organization);
 		await().atMost(WAIT)
 			.untilAsserted(() -> assertThat(mail.latestTextTo("decided-" + word + "@mcp.test"))
@@ -713,6 +714,7 @@ class McpServerTest {
 		String sentBack = text(call(app, "send_back_use_case",
 				Map.of("use_case", id.toString(), "message", "Name the claim types.")));
 		assertThat(JsonPath.<String>read(sentBack, "$.after")).isEqualTo("needs_changes");
+		assertThat(JsonPath.<String>read(sentBack, "$.told")).isEqualTo("1 member of Private " + word + ", by email.");
 		app.closeGracefully();
 
 		assertThat(jdbc.sql("select action from audit_event where resource_id = :id order by occurred_at")
