@@ -6,7 +6,7 @@
  * identifier through the program module.
  */
 @ApplicationModule(displayName = "Use case", type = ApplicationModule.Type.CLOSED,
-		allowedDependencies = { "audit", "identity", "notification", "organization", "program", "storage" })
+		allowedDependencies = { "audit", "identity", "notification", "organization", "program", "shared", "storage" })
 @NullMarked
 package ai.genaifund.beyondpilot.usecase;
 

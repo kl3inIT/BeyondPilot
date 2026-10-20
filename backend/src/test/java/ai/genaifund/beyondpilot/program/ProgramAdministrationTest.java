@@ -12,6 +12,8 @@ import java.util.UUID;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -278,6 +280,41 @@ class ProgramAdministrationTest {
 			request = request.cookie(TestSignIn.SESSION_COOKIE, session);
 		}
 		return request.exchange();
+	}
+
+	@Test
+	void anOperatorDownloadsTheProgramsTheListShowsInItsOrderAndTheDownloadIsRecorded() {
+		String alpha = created("Exported Alpha", "exported-alpha");
+		String beta = created("Exported Beta", "exported-beta");
+		// The list shows Beta before Alpha; a program that does not exist is left out.
+		List<String> shown = List.of(beta.substring(PROGRAMS.length() + 1), UUID.randomUUID().toString(),
+				alpha.substring(PROGRAMS.length() + 1));
+		String user = TestSignIn.session(client, mail, "exporter@program.test");
+
+		assertProblem(export(user, "", shown), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertThat(exportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(export(operator, "", shown).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"programs-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(4);
+		assertThat(sheet.get(1)).startsWith("Program", "Type", "Partner", "Status", "Phase");
+		assertThat(sheet.get(2)).startsWith("Exported Beta", "Event", "", "Draft");
+		assertThat(sheet.get(3)).startsWith("Exported Alpha");
+
+		String csv = body(export(operator, "?format=csv", shown).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("\uFEFFProgram,Type,Partner,Status,Phase,");
+		assertThat(csv.lines().toList()).hasSize(3).element(1).asString().startsWith("Exported Beta,Event,,Draft,");
+		assertThat(exportCounts()).containsExactly("2", "2");
 	}
 
 	@Test
@@ -782,6 +819,22 @@ class ProgramAdministrationTest {
 			request = request.cookie(TestSignIn.SESSION_COOKIE, session);
 		}
 		return request.body(Map.of("name", name, "slug", slug, "type", type)).exchange();
+	}
+
+	private RestTestClient.ResponseSpec export(String session, String query, List<String> ids) {
+		return client.post()
+			.uri(PROGRAMS + "/export" + query)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, session)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("ids", ids, "state", "draft"))
+			.exchange();
+	}
+
+	private List<String> exportCounts() {
+		return jdbc.sql("select details ->> 'count' from audit_event where action = 'program.export' order by occurred_at")
+			.query(String.class)
+			.list();
 	}
 
 	private RestTestClient.ResponseSpec get(String session, String uri) {

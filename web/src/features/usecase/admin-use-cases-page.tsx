@@ -31,6 +31,8 @@ import {
 } from "./admin-use-cases-search";
 import { AdminUseCasesToolbar } from "./admin-use-cases-toolbar";
 import { LiveRefresh } from "./live-refresh";
+import { adminUseCaseFilters } from "./admin-use-case-queries";
+import { ExportUseCases } from "./export-use-cases";
 
 const address = createSerializer(adminUseCasesSearch);
 
@@ -136,7 +138,12 @@ function AdminUseCasesPage({ useCases, organizations, search }: AdminUseCasesPag
       <AdminPageHeader
         destination="useCases"
         title={t("title")}
-        actions={<Button href={siteRoutes.adminUseCasesNew}>{t("create")}</Button>}
+        actions={
+          <>
+            <ExportUseCases filters={adminUseCaseFilters(search)} disabled={useCases.total === 0} />
+            <Button href={siteRoutes.adminUseCasesNew}>{t("create")}</Button>
+          </>
+        }
       />
       <AdminUseCasesToolbar organizations={organizations} />
 

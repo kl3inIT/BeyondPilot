@@ -18,16 +18,23 @@ import { adminUseCaseSortKeys } from "./admin-use-cases-search";
 /** The longest search the backend takes. */
 const MAX_SEARCH = 100;
 
+/** What narrows the list as the backend reads it, for the page and for its download. */
+export function adminUseCaseFilters(search: AdminUseCasesSearch) {
+  return {
+    q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
+    status: search.status ?? undefined,
+    organizationId: search.organization ?? undefined,
+    featured: search.featured === null ? undefined : search.featured === "true",
+    sort: knownSort(search.sort, adminUseCaseSortKeys),
+  };
+}
+
 /** One page of the operators' list of use cases. Server only. */
 export async function readAdminUseCases(search: AdminUseCasesSearch): Promise<AdminUseCaseList> {
   const { data } = await listAdminUseCases({
     ...(await sessionRequest()),
     query: {
-      q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
-      status: search.status ?? undefined,
-      organizationId: search.organization ?? undefined,
-      featured: search.featured === null ? undefined : search.featured === "true",
-      sort: knownSort(search.sort, adminUseCaseSortKeys),
+      ...adminUseCaseFilters(search),
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },

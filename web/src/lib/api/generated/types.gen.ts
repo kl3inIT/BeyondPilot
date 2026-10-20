@@ -1109,7 +1109,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.settings_change';
+    action: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -2492,6 +2492,42 @@ export type ExportApplicationsRequest = {
      * Only these applications, as the list was narrowed; left out, every submitted application.
      */
     applicationIds?: Array<string> | null;
+};
+
+/**
+ * The offers a download holds, in the order the list shows them.
+ */
+export type ExportOffers = {
+    /**
+     * The offers, in the list's order; one that does not exist is left out.
+     */
+    ids: Array<string>;
+    /**
+     * The search the list was narrowed by, said in the file.
+     */
+    q?: string | null;
+    /**
+     * The state the list was narrowed to, said in the file.
+     */
+    state?: string | null;
+};
+
+/**
+ * The programs a download holds, in the order the list shows them.
+ */
+export type ExportPrograms = {
+    /**
+     * The programs, in the list's order; one that does not exist is left out.
+     */
+    ids: Array<string>;
+    /**
+     * The search the list was narrowed by, said in the file.
+     */
+    q?: string | null;
+    /**
+     * The state the list was narrowed to, said in the file.
+     */
+    state?: string | null;
 };
 
 /**
@@ -8082,7 +8118,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -8186,6 +8222,68 @@ export type ListAccountsResponses = {
 };
 
 export type ListAccountsResponse = ListAccountsResponses[keyof ListAccountsResponses];
+
+export type ExportAccountsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Accounts whose name or address contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only accounts of this status.
+         */
+        status?: 'active' | 'disabled';
+        /**
+         * Only accounts of this role.
+         */
+        role?: 'user' | 'operator';
+        /**
+         * The order: `name` by the name, or the address when there is none, `lastSignIn` by the last sign-in, `created` by when the account was made; `-` before a key turns it round, and an account that never signed in comes last either way. Without it, the latest sign-in first, then the newest account.
+         */
+        sort?: 'name' | '-name' | 'lastSignIn' | '-lastSignIn' | 'created' | '-created';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/identity/accounts/export';
+};
+
+export type ExportAccountsErrors = {
+    /**
+     * A parameter is not valid, or the download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportAccountsError = ExportAccountsErrors[keyof ExportAccountsErrors];
+
+export type ExportAccountsResponses = {
+    /**
+     * Every account the parameters select, in the list's order, one row each. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportAccountsResponse = ExportAccountsResponses[keyof ExportAccountsResponses];
 
 export type DisableAccountData = {
     body?: never;
@@ -8490,7 +8588,7 @@ export type ExportAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -8699,6 +8797,44 @@ export type ListMatchingFeedbackResponses = {
 };
 
 export type ListMatchingFeedbackResponse = ListMatchingFeedbackResponses[keyof ListMatchingFeedbackResponses];
+
+export type ExportMatchingFeedbackData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/matching/admin/feedback/export';
+};
+
+export type ExportMatchingFeedbackErrors = {
+    /**
+     * The format is not valid, or the download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportMatchingFeedbackError = ExportMatchingFeedbackErrors[keyof ExportMatchingFeedbackErrors];
+
+export type ExportMatchingFeedbackResponses = {
+    /**
+     * Every disagreement, newest first, whenever it was given, one row each. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportMatchingFeedbackResponse = ExportMatchingFeedbackResponses[keyof ExportMatchingFeedbackResponses];
 
 export type GetEvaluationBoardData = {
     body?: never;
@@ -9416,6 +9552,68 @@ export type ListMcpCallsResponses = {
 };
 
 export type ListMcpCallsResponse = ListMcpCallsResponses[keyof ListMcpCallsResponses];
+
+export type ExportMcpCallsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only calls made at or after this instant.
+         */
+        from?: string;
+        /**
+         * Only calls of the app with this client id.
+         */
+        app?: string | null;
+        /**
+         * Only calls to this tool.
+         */
+        tool?: string | null;
+        /**
+         * Only calls that ended this way.
+         */
+        outcome?: 'ok' | 'refused' | 'failed';
+        /**
+         * Only calls of people whose name or address contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/mcp/admin/calls/export';
+};
+
+export type ExportMcpCallsErrors = {
+    /**
+     * A filter is not valid, or the download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportMcpCallsError = ExportMcpCallsErrors[keyof ExportMcpCallsErrors];
+
+export type ExportMcpCallsResponses = {
+    /**
+     * Every call the filters select, newest first, one row each. The page and its size are ignored. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportMcpCallsResponse = ExportMcpCallsResponses[keyof ExportMcpCallsResponses];
 
 export type GetMcpSettingsData = {
     body?: never;
@@ -10152,6 +10350,72 @@ export type ListEmailMessagesResponses = {
 };
 
 export type ListEmailMessagesResponse = ListEmailMessagesResponses[keyof ListEmailMessagesResponses];
+
+export type ExportEmailMessagesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Only emails queued at or after this instant; the counts cover the same period.
+         */
+        from?: string | null;
+        /**
+         * Only emails of this kind.
+         */
+        kind?: string | null;
+        /**
+         * Only emails in this state.
+         */
+        status?: string | null;
+        /**
+         * Emails whose recipient or subject contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * The `older` cursor of a page: the emails before it.
+         */
+        before?: string | null;
+        /**
+         * The `newer` cursor of a page: the emails after it.
+         */
+        after?: string | null;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/notification/admin/email/messages/export';
+};
+
+export type ExportEmailMessagesErrors = {
+    /**
+     * A filter is not valid, or the download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportEmailMessagesError = ExportEmailMessagesErrors[keyof ExportEmailMessagesErrors];
+
+export type ExportEmailMessagesResponses = {
+    /**
+     * Every email the filters select, newest first, one row each, a sign-in code's subject withheld. The cursors and the page size are ignored. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportEmailMessagesResponse = ExportEmailMessagesResponses[keyof ExportEmailMessagesResponses];
 
 export type GetEmailMessageData = {
     body?: never;
@@ -12405,6 +12669,44 @@ export type CreateProgramResponses = {
 
 export type CreateProgramResponse = CreateProgramResponses[keyof CreateProgramResponses];
 
+export type ExportAdminProgramsData = {
+    body: ExportPrograms;
+    path?: never;
+    query?: {
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/program/admin/programs/export';
+};
+
+export type ExportAdminProgramsErrors = {
+    /**
+     * A member or the format is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportAdminProgramsError = ExportAdminProgramsErrors[keyof ExportAdminProgramsErrors];
+
+export type ExportAdminProgramsResponses = {
+    /**
+     * The programs the body names, in its order, one row each. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportAdminProgramsResponse = ExportAdminProgramsResponses[keyof ExportAdminProgramsResponses];
+
 export type ReadLumaCalendarData = {
     body?: never;
     path?: never;
@@ -13753,6 +14055,50 @@ export type InviteReviewerResponses = {
 
 export type InviteReviewerResponse = InviteReviewerResponses[keyof InviteReviewerResponses];
 
+export type ExportReviewersData = {
+    body?: never;
+    path: {
+        programId: string;
+    };
+    query?: {
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/proposal/review/programs/{programId}/reviewers/export';
+};
+
+export type ExportReviewersErrors = {
+    /**
+     * The format is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such program taking applications.
+     */
+    404: Problem;
+};
+
+export type ExportReviewersError = ExportReviewersErrors[keyof ExportReviewersErrors];
+
+export type ExportReviewersResponses = {
+    /**
+     * The operators who scored, then the judges in the order they were invited, one row each. The download is recorded on the program.
+     */
+    200: Blob | File;
+};
+
+export type ExportReviewersResponse = ExportReviewersResponses[keyof ExportReviewersResponses];
+
 export type RemoveReviewerData = {
     body?: never;
     path: {
@@ -14829,6 +15175,44 @@ export type CreateOfferResponses = {
 };
 
 export type CreateOfferResponse = CreateOfferResponses[keyof CreateOfferResponses];
+
+export type ExportAdminOffersData = {
+    body: ExportOffers;
+    path?: never;
+    query?: {
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/solution/admin/offers/export';
+};
+
+export type ExportAdminOffersErrors = {
+    /**
+     * A member or the format is not valid.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportAdminOffersError = ExportAdminOffersErrors[keyof ExportAdminOffersErrors];
+
+export type ExportAdminOffersResponses = {
+    /**
+     * The offers the body names, in its order, one row each. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportAdminOffersResponse = ExportAdminOffersResponses[keyof ExportAdminOffersResponses];
 
 export type DeleteOfferData = {
     body?: never;
@@ -17441,6 +17825,72 @@ export type CreateAdminUseCaseResponses = {
 };
 
 export type CreateAdminUseCaseResponse = CreateAdminUseCaseResponses[keyof CreateAdminUseCaseResponses];
+
+export type ExportAdminUseCasesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Use cases whose title or organization name contains this, ignoring case.
+         */
+        q?: string | null;
+        /**
+         * Only use cases in this status, as a reader sees it now.
+         */
+        status?: 'draft' | 'in_review' | 'needs_changes' | 'approved' | 'closed';
+        /**
+         * Only use cases of this organization.
+         */
+        organizationId?: string | null;
+        /**
+         * Only use cases featured when true, only those not featured when false.
+         */
+        featured?: boolean | null;
+        /**
+         * The order: `title` by the title, `closes` by the close date, `updated` by the last change; `-` before a key turns it round, and one without a title or a close date comes last either way. Without it, the newest first.
+         */
+        sort?: 'title' | '-title' | 'closes' | '-closes' | 'updated' | '-updated';
+        /**
+         * The page, counted from 1.
+         */
+        page?: number;
+        /**
+         * How many items a page holds; the list's own page size when absent.
+         */
+        size?: number;
+        /**
+         * The file: xlsx, an Excel workbook to read, or csv for another tool.
+         */
+        format?: 'xlsx' | 'csv';
+    };
+    url: '/api/usecase/admin/use-cases/export';
+};
+
+export type ExportAdminUseCasesErrors = {
+    /**
+     * A parameter is not valid, or the download would hold too many rows.
+     */
+    400: Problem;
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type ExportAdminUseCasesError = ExportAdminUseCasesErrors[keyof ExportAdminUseCasesErrors];
+
+export type ExportAdminUseCasesResponses = {
+    /**
+     * Every use case the parameters select, in the list's order, one row each. The download is recorded.
+     */
+    200: Blob | File;
+};
+
+export type ExportAdminUseCasesResponse = ExportAdminUseCasesResponses[keyof ExportAdminUseCasesResponses];
 
 export type GetUseCaseReviewQueueData = {
     body?: never;

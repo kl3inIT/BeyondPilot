@@ -1186,7 +1186,8 @@
       "action": {
         "account": {
           "disable": "Disabled an account",
-          "enable": "Enabled an account"
+          "enable": "Enabled an account",
+          "export": "Downloaded the accounts"
         },
         "operator": {
           "grant": "Gave the operator role",
@@ -1199,7 +1200,8 @@
           "unpublish": "Unpublished a program",
           "feature": "Featured a program",
           "unfeature": "Stopped featuring a program",
-          "luma_read": "Read the calendar on Luma"
+          "luma_read": "Read the calendar on Luma",
+          "export": "Downloaded the programs"
         },
         "organization": {
           "create": "Added an organization",
@@ -1240,7 +1242,8 @@
           "offer_close": "Closed an offer to new solutions",
           "offer_reopen": "Opened an offer to new solutions again",
           "offer_delete": "Deleted an offer",
-          "export": "Downloaded the solutions"
+          "export": "Downloaded the solutions",
+          "offers_export": "Downloaded the offers"
         },
         "messaging": {
           "request_accept": "Accepted a first message",
@@ -1266,6 +1269,7 @@
           "criteria_update": "Set the judging criteria",
           "reviewer_invite": "Invited a judge",
           "reviewer_remove": "Removed a judge",
+          "reviewers_export": "Downloaded the reviewers",
           "decide": "Decided on an application",
           "release": "Released the outcomes",
           "file_open": "Opened a file of an application",
@@ -1288,7 +1292,8 @@
           "unfeature": "Stopped featuring a use case",
           "set_programs": "Set the programs of a use case",
           "update": "Changed a private use case",
-          "publish": "Published a private use case"
+          "publish": "Published a private use case",
+          "export": "Downloaded the use cases"
         },
         "email": {
           "settings_update": "Changed the email settings",
@@ -1298,7 +1303,8 @@
           "suppression_add": "Stopped email to an address",
           "suppression_remove": "Let email reach an address again",
           "resend": "Sent an email again",
-          "test_send": "Sent a test email"
+          "test_send": "Sent a test email",
+          "export": "Downloaded the email log"
         },
         "ai": {
           "provider_create": "Connected an AI provider",
@@ -1326,7 +1332,8 @@
           "user_server_enable": "Turned the user MCP server on",
           "user_server_disable": "Turned the user MCP server off",
           "tool_enable": "Turned an MCP tool on",
-          "tool_disable": "Turned an MCP tool off"
+          "tool_disable": "Turned an MCP tool off",
+          "calls_export": "Downloaded the MCP activity"
         },
         "matching": {
           "run_start": "Started matching for a use case",
@@ -1337,6 +1344,7 @@
           "candidate_reason": "Said why a candidate was removed",
           "candidate_restore": "Restored a candidate",
           "candidate_invite": "Invited a provider to propose",
+          "feedback_export": "Downloaded the matching feedback",
           "settings_change": "Changed the limits of matching"
         },
         "audit": {
@@ -1346,7 +1354,8 @@
       "activity": {
         "account": {
           "disable": "Disabled the account of <resource></resource>",
-          "enable": "Enabled the account of <resource></resource>"
+          "enable": "Enabled the account of <resource></resource>",
+          "export": "Downloaded the accounts"
         },
         "operator": {
           "grant": "Gave the operator role to <resource></resource>",
@@ -1359,7 +1368,8 @@
           "unpublish": "Unpublished the program <resource></resource>",
           "feature": "Featured the program <resource></resource> on the home page",
           "unfeature": "Stopped featuring the program <resource></resource>",
-          "luma_read": "Read <resource></resource> now"
+          "luma_read": "Read <resource></resource> now",
+          "export": "Downloaded the programs"
         },
         "organization": {
           "create": "Added the organization <resource></resource>",
@@ -1400,7 +1410,8 @@
           "offer_close": "Closed the offer <resource></resource> to new solutions",
           "offer_reopen": "Opened the offer <resource></resource> to new solutions again",
           "offer_delete": "Deleted the offer <resource></resource>",
-          "export": "Downloaded the solutions"
+          "export": "Downloaded the solutions",
+          "offers_export": "Downloaded the offers"
         },
         "messaging": {
           "request_accept": "Accepted a first message about <resource></resource>",
@@ -1426,6 +1437,7 @@
           "criteria_update": "Set the judging criteria of <resource></resource>",
           "reviewer_invite": "Invited a judge to <resource></resource>",
           "reviewer_remove": "Removed a judge from <resource></resource>",
+          "reviewers_export": "Downloaded the reviewers of <resource></resource>",
           "decide": "Decided on an application to <resource></resource>",
           "release": "Released the outcomes of <resource></resource>",
           "file_open": "Opened a file of an application to <resource></resource>",
@@ -1448,7 +1460,8 @@
           "unfeature": "Stopped featuring the use case <resource></resource>",
           "set_programs": "Set the programs of the use case <resource></resource>",
           "update": "Changed the private use case <resource></resource>",
-          "publish": "Published the private use case <resource></resource>"
+          "publish": "Published the private use case <resource></resource>",
+          "export": "Downloaded the use cases"
         },
         "email": {
           "settings_update": "Changed <resource></resource>",
@@ -1458,7 +1471,8 @@
           "suppression_add": "Stopped email to <resource></resource>",
           "suppression_remove": "Let email reach <resource></resource> again",
           "resend": "Sent the email <resource></resource> again",
-          "test_send": "Sent a test email to <resource></resource>"
+          "test_send": "Sent a test email to <resource></resource>",
+          "export": "Downloaded the email log"
         },
         "ai": {
           "provider_create": "Connected the AI provider <resource></resource>",
@@ -1486,7 +1500,8 @@
           "user_server_enable": "Turned on the <resource></resource>",
           "user_server_disable": "Turned off the <resource></resource>",
           "tool_enable": "Turned on the MCP tool <resource></resource>",
-          "tool_disable": "Turned off the MCP tool <resource></resource>"
+          "tool_disable": "Turned off the MCP tool <resource></resource>",
+          "calls_export": "Downloaded the MCP activity"
         },
         "matching": {
           "run_start": "Started matching for the use case <resource></resource>",
@@ -1497,6 +1512,7 @@
           "candidate_reason": "Said why a candidate of the use case <resource></resource> was removed",
           "candidate_restore": "Restored a candidate of the use case <resource></resource>",
           "candidate_invite": "Invited a provider to propose for the use case <resource></resource>",
+          "feedback_export": "Downloaded the matching feedback",
           "settings_change": "Changed the limits of matching"
         },
         "audit": {

@@ -75,18 +75,28 @@ export async function readEmailTemplate(kind: string): Promise<EmailTemplate> {
 }
 
 /**
+ * What narrows the email log as the backend reads it, for the page and for its download. The backend
+ * knows instants, not periods, so the period becomes the instant it starts at, now.
+ */
+export function emailActivityFilters(search: EmailActivitySearch) {
+  const length = periodLength[search.period];
+  return {
+    from: length === null ? undefined : new Date(Date.now() - length).toISOString(),
+    kind: search.kind ?? undefined,
+    status: search.status ?? undefined,
+    q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
+  };
+}
+
+/**
  * One page of the email log with the counts of its period. Server only. The backend knows instants,
  * not periods, so the period becomes the instant it starts at.
  */
 export async function readEmailActivity(search: EmailActivitySearch): Promise<EmailMessageList> {
-  const length = periodLength[search.period];
   const { data } = await listEmailMessages({
     ...(await sessionRequest()),
     query: {
-      from: length === null ? undefined : new Date(Date.now() - length).toISOString(),
-      kind: search.kind ?? undefined,
-      status: search.status ?? undefined,
-      q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
+      ...emailActivityFilters(search),
       before: search.before ?? undefined,
       after: search.after ?? undefined,
       size: search.size ?? undefined,

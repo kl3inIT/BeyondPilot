@@ -18,6 +18,8 @@ import { clockText } from "@/i18n/formats";
 import { McpActivityToolbar } from "./admin-mcp-activity-toolbar";
 import { EveryConnectedApp } from "./admin-mcp-apps";
 import { McpAdminHeader, type McpCounts } from "./admin-mcp-pages";
+import { ExportMcpCalls } from "./export-mcp-calls";
+import { mcpActivityFilters } from "./mcp-queries";
 import { mcpActivitySearch, type McpActivitySearch } from "./admin-mcp-search";
 import { ListFooter } from "@/components/composites/list-footer";
 
@@ -137,7 +139,13 @@ async function McpActivityPage({
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <McpAdminHeader current="activity" counts={counts} />
+      <McpAdminHeader
+        current="activity"
+        counts={counts}
+        action={
+          <ExportMcpCalls filters={mcpActivityFilters(search)} disabled={calls.total === 0} />
+        }
+      />
       {/* A cell lists the calls it counts; the counts keep every outcome, so they stay as one is chosen. */}
       <StatStrip columns={3}>
         {(

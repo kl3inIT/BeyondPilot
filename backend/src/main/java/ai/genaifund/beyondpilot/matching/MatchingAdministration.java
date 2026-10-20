@@ -42,7 +42,12 @@ import ai.genaifund.beyondpilot.search.SolutionEvidence;
 import ai.genaifund.beyondpilot.search.SolutionEvidence.Shown;
 import ai.genaifund.beyondpilot.usecase.IndexedUseCase;
 import ai.genaifund.beyondpilot.usecase.UseCaseDirectory;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,6 +59,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class MatchingAdministration {
+
+	private static final Logger LOG = LoggerFactory.getLogger(MatchingAdministration.class);
 
 	/** How many disagreements a page holds. */
 	static final int FEEDBACK_PAGE_SIZE = 25;
@@ -91,6 +98,53 @@ public class MatchingAdministration {
 		this.evidence = evidence;
 		this.identity = identity;
 		this.audit = audit;
+	}
+
+	/**
+	 * The answers that say a group is wrong as a spreadsheet, every page of them, newest first, for GenAI Fund to study
+	 * the AI's judgments outside BeyondPilot. It names who answered, so the download is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile exportFeedback(Actor actor, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		List<MatchingFeedbackListResponse.Item> rows = Spreadsheet
+			.everyPage(page -> feedback(actor, new MatchingFeedbackListRequest(page, Spreadsheet.PAGE_SIZE)).items());
+		Spreadsheet<MatchingFeedbackListResponse.Item> sheet = Spreadsheet.<MatchingFeedbackListResponse.Item>of(
+				"Matching feedback")
+			.time("Given at", MatchingFeedbackListResponse.Item::createdAt)
+			.text("Use case", MatchingFeedbackListResponse.Item::useCaseTitle)
+			.text("Solution", MatchingFeedbackListResponse.Item::solutionName)
+			.label("AI group", MatchingFeedbackListResponse.Item::aiBucket)
+			.label("Expected group", MatchingFeedbackListResponse.Item::expectedBucket)
+			.text("Requirements judged wrongly", MatchingAdministration::disputed)
+			.text("Note", MatchingFeedbackListResponse.Item::note)
+			.text("By", MatchingFeedbackListResponse.Item::by);
+		SpreadsheetFile file = sheet.write(format, "matching-feedback", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now()));
+		audit.record(new AuditRecord(AuditAction.MATCHING_FEEDBACK_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("matching_feedback", "feedback", "Matching feedback"),
+				Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "matching.feedback.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Matching feedback exported");
+		return file;
+	}
+
+	/** The requirements an answer disputes, by their place and, while they are kept, their words. */
+	private static String disputed(MatchingFeedbackListResponse.Item item) {
+		return item.requirements()
+			.stream()
+			.map(requirement -> {
+				String words = requirement.label() == null || requirement.label().isBlank() ? requirement.statement()
+						: requirement.label();
+				return words == null ? "#" + requirement.position() : requirement.position() + ". " + words;
+			})
+			.collect(Collectors.joining("; "));
 	}
 
 	/**

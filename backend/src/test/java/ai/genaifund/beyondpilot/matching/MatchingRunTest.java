@@ -40,6 +40,8 @@ import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Requirem
 import ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository;
 import ai.genaifund.beyondpilot.search.persistence.SearchPassageRepository.Passage;
 import ai.genaifund.beyondpilot.storage.TestUploads;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -576,6 +578,30 @@ class MatchingRunTest {
 		String past = body(call("GET", operator, said + "?page=2", null).expectStatus().isOk());
 		assertThat(JsonPath.<List<Object>>read(past, "$.items")).isEmpty();
 		assertThat(JsonPath.<Integer>read(past, "$.total")).isEqualTo(1);
+		// The download holds every disagreement, with the requirements by their place and words; it is recorded.
+		assertProblem(call("POST", buyer, said + "/export", null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		List<List<String>> sheet = Workbooks.rows(call("POST", operator, said + "/export", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(2);
+		assertThat(sheet.get(0)).startsWith("Given at", "Use case", "Solution", "AI group", "Expected group",
+				"Requirements judged wrongly", "Note", "By");
+		assertThat(sheet.get(1)).contains("Claims triage " + word, "Claims Desk " + word, "Direct", "Industry",
+				"1. Read forms; 3. Integrates with the claims system.", "Built for banks.",
+				"buyer-" + word + "@matching.test");
+		String csv = body(call("POST", operator, said + "/export?format=csv", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("\uFEFFGiven at,Use case,Solution,AI group,Expected group,");
+		assertThat(csv.lines().toList()).hasSize(2);
+		assertThat(jdbc.sql("select count(*) from audit_event where action = 'matching.feedback_export'")
+			.query(Long.class)
+			.single()).isEqualTo(2);
 
 		// The member shortlists, removes with a reason and restores; a run never undoes it.
 		// The member's page keeps a stream open, as a browser does: it is told at once that it is open, in a response

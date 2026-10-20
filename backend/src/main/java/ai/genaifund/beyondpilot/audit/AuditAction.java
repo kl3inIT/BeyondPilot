@@ -18,6 +18,12 @@ public enum AuditAction {
 
 	ACCOUNT_ENABLE("account.enable"),
 
+	/**
+	 * An operator downloaded the accounts as a spreadsheet, with their email addresses. {@code count} is how many the
+	 * download holds.
+	 */
+	ACCOUNT_EXPORT("account.export", "count"),
+
 	/** {@code source} is {@code operator} or {@code configuration}. */
 	OPERATOR_GRANT("operator.grant", "source"),
 
@@ -47,6 +53,9 @@ public enum AuditAction {
 	PROGRAM_FEATURE("program.feature"),
 
 	PROGRAM_UNFEATURE("program.unfeature"),
+
+	/** An operator downloaded the programs as a spreadsheet. {@code count} is how many the download holds. */
+	PROGRAM_EXPORT("program.export", "count"),
 
 	/** An operator created an organization for a company that is not here yet. */
 	ORGANIZATION_CREATE("organization.create"),
@@ -163,6 +172,9 @@ public enum AuditAction {
 	/** An operator downloaded the solutions as a spreadsheet. {@code count} is how many the download holds. */
 	SOLUTION_EXPORT("solution.export", "count"),
 
+	/** An operator downloaded the offers as a spreadsheet. {@code count} is how many the download holds. */
+	SOLUTION_OFFERS_EXPORT("solution.offers_export", "count"),
+
 	/**
 	 * An operator created a use case for an organization. {@code organization} is that organization's identifier,
 	 * {@code status} is {@code draft}, {@code approved} (published at once), or {@code private} for a draft only operators
@@ -191,6 +203,9 @@ public enum AuditAction {
 
 	/** An operator published a private draft GenAI Fund kept for an organization. */
 	USE_CASE_PUBLISH("use_case.publish", "organization"),
+
+	/** An operator downloaded the use cases as a spreadsheet. {@code count} is how many the download holds. */
+	USE_CASE_EXPORT("use_case.export", "count"),
 
 	/** The side written to accepted a first message, which opened the conversation. */
 	MESSAGING_REQUEST_ACCEPT("messaging.request_accept"),
@@ -252,6 +267,12 @@ public enum AuditAction {
 	PROPOSAL_REVIEWER_INVITE("proposal.reviewer_invite", "email"),
 
 	PROPOSAL_REVIEWER_REMOVE("proposal.reviewer_remove", "email"),
+
+	/**
+	 * An operator downloaded who scores a program's applications as a spreadsheet; the resource is the program.
+	 * {@code count} is how many the download holds.
+	 */
+	PROPOSAL_REVIEWERS_EXPORT("proposal.reviewers_export", "count"),
 
 	/** An operator decided on an application. {@code decision} is {@code shortlisted} or {@code not_selected}. */
 	PROPOSAL_DECIDE("proposal.decide", "decision"),
@@ -323,6 +344,9 @@ public enum AuditAction {
 	 */
 	EMAIL_TEST_SEND("email.test_send", "subject"),
 
+	/** An operator downloaded the email log as a spreadsheet. {@code count} is how many emails the download holds. */
+	EMAIL_EXPORT("email.export", "count"),
+
 	/**
 	 * An operator connected an AI provider. {@code vendor} is the vendor of an embedding provider ({@code openai},
 	 * {@code openrouter}) or the adapter of a chat provider ({@code openai}, {@code anthropic}).
@@ -392,6 +416,9 @@ public enum AuditAction {
 	/** An operator turned a tool of an MCP server off; the resource is {@code server.tool}. */
 	MCP_TOOL_DISABLE("mcp.tool_disable"),
 
+	/** An operator downloaded the MCP activity as a spreadsheet. {@code count} is how many calls the download holds. */
+	MCP_CALLS_EXPORT("mcp.calls_export", "count"),
+
 	/** Someone started a run of matching for a use case. {@code origin} is {@code operator} or {@code member}. */
 	MATCHING_RUN_START("matching.run_start", "origin"),
 
@@ -416,6 +443,12 @@ public enum AuditAction {
 
 	/** Someone invited the provider of a candidate to propose. {@code provider} is the organization emailed. */
 	MATCHING_CANDIDATE_INVITE("matching.candidate_invite", "solution", "provider"),
+
+	/**
+	 * An operator downloaded the answers that say a group is wrong as a spreadsheet. {@code count} is how many the
+	 * download holds.
+	 */
+	MATCHING_FEEDBACK_EXPORT("matching.feedback_export", "count"),
 
 	/** An operator changed the limits of matching. */
 	MATCHING_SETTINGS_CHANGE("matching.settings_change");

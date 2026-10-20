@@ -12,14 +12,18 @@ import ai.genaifund.beyondpilot.proposal.dto.InviteReviewerRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewProgramsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewersResponse;
 import ai.genaifund.beyondpilot.proposal.dto.SaveCriteriaRequest;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +31,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** How a program's review is set up: its judging criteria and the judges GenAI Fund invites. */
@@ -92,6 +97,27 @@ class ReviewSetupController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ReviewersResponse reviewers(@CurrentActor Actor actor, @PathVariable UUID programId) {
 		return setup.reviewers(actor, programId);
+	}
+
+	@PostMapping(path = "/programs/{programId}/reviewers/export",
+			produces = { SpreadsheetFormat.XLSX_TYPE, SpreadsheetFormat.CSV_TYPE })
+	@Operation(operationId = "exportReviewers", summary = "Download who scores a program's applications as a spreadsheet",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "The operators who scored, then the judges in the order they were invited, one row each. The download is recorded on the program.",
+			content = { @Content(mediaType = SpreadsheetFormat.XLSX_TYPE, schema = @Schema(type = "string", format = "binary")),
+					@Content(mediaType = SpreadsheetFormat.CSV_TYPE, schema = @Schema(type = "string", format = "binary")) })
+	@ApiResponse(responseCode = "400", description = "The format is not valid.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such program taking applications.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<byte[]> exportReviewers(@CurrentActor Actor actor, @PathVariable UUID programId,
+			@Parameter(description = SpreadsheetFormat.DESCRIPTION,
+					schema = @Schema(allowableValues = { "xlsx", "csv" }, defaultValue = "xlsx")) @RequestParam(
+							defaultValue = "xlsx") @Pattern(regexp = SpreadsheetFormat.PATTERN) String format) {
+		return setup.exportReviewers(actor, programId, SpreadsheetFormat.of(format)).response();
 	}
 
 	@PostMapping(path = "/programs/{programId}/reviewers", consumes = MediaType.APPLICATION_JSON_VALUE,

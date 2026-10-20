@@ -8,6 +8,16 @@ import { accountSortKeys } from "./accounts-search";
 /** The longest search the backend takes. */
 const MAX_SEARCH = 100;
 
+/** What narrows the list as the backend reads it, for the page and for its download. */
+export function accountFilters(search: AccountsSearch) {
+  return {
+    q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
+    status: search.status ?? undefined,
+    role: search.role ?? undefined,
+    sort: knownSort(search.sort, accountSortKeys),
+  };
+}
+
 /**
  * One page of accounts for the operator behind this request. Server only. A hand-edited address may
  * carry a page below 1 or a search that is too long; both are brought within the backend's bounds
@@ -17,10 +27,7 @@ export async function readAccounts(search: AccountsSearch): Promise<AccountList>
   const { data } = await listAccounts({
     ...(await sessionRequest()),
     query: {
-      q: search.q.trim().slice(0, MAX_SEARCH) || undefined,
-      status: search.status ?? undefined,
-      role: search.role ?? undefined,
-      sort: knownSort(search.sort, accountSortKeys),
+      ...accountFilters(search),
       page: Math.max(1, search.page),
       size: search.size ?? undefined,
     },

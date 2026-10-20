@@ -18,6 +18,7 @@ import { NewProgramDialog } from "./new-program-dialog";
 import { programFormatter } from "./program-format";
 import { programState } from "./program-labels";
 import type { narrowPrograms, ProgramsSearch } from "./programs-search";
+import { ExportPrograms } from "./export-programs";
 import { ProgramsToolbar } from "./programs-toolbar";
 
 /** A program's cover, small, beside its name; an empty frame until it has one. */
@@ -126,6 +127,11 @@ async function ProgramsAdminPage({ list, search }: ProgramsAdminPageProps) {
         title={t("title")}
         actions={
           <>
+            <ExportPrograms
+              ids={list.items.map((program) => program.id)}
+              state={search.state}
+              q={search.q}
+            />
             <LumaReadButton />
             <NewProgramDialog locale={locale} />
           </>

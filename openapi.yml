@@ -998,6 +998,7 @@ paths:
           enum:
           - account.disable
           - account.enable
+          - account.export
           - operator.grant
           - operator.withdraw
           - audit.export
@@ -1008,6 +1009,7 @@ paths:
           - program.luma_read
           - program.feature
           - program.unfeature
+          - program.export
           - organization.create
           - organization.approve
           - organization.suspend
@@ -1045,6 +1047,7 @@ paths:
           - solution.deployment_restore
           - solution.enrich
           - solution.export
+          - solution.offers_export
           - use_case.create
           - use_case.submit
           - use_case.draft
@@ -1055,6 +1058,7 @@ paths:
           - use_case.set_programs
           - use_case.update
           - use_case.publish
+          - use_case.export
           - messaging.request_accept
           - messaging.program_assign
           - messaging.request_decline
@@ -1074,6 +1078,7 @@ paths:
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
+          - proposal.reviewers_export
           - proposal.decide
           - proposal.release
           - proposal.file_open
@@ -1091,6 +1096,7 @@ paths:
           - email.suppression_remove
           - email.resend
           - email.test_send
+          - email.export
           - ai.provider_create
           - ai.provider_update
           - ai.provider_delete
@@ -1113,6 +1119,7 @@ paths:
           - mcp.user_server_disable
           - mcp.tool_enable
           - mcp.tool_disable
+          - mcp.calls_export
           - matching.run_start
           - matching.evaluation_start
           - matching.candidate_add
@@ -1121,6 +1128,7 @@ paths:
           - matching.candidate_reason
           - matching.candidate_restore
           - matching.candidate_invite
+          - matching.feedback_export
           - matching.settings_change
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
@@ -1289,6 +1297,125 @@ paths:
       security:
       - session: []
       summary: "The accounts, latest sign-in first"
+      tags:
+      - Accounts
+  /api/identity/accounts/export:
+    post:
+      operationId: exportAccounts
+      parameters:
+      - description: "Accounts whose name or address contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only accounts of this status.
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - active
+          - disabled
+          pattern: active|disabled
+      - description: Only accounts of this role.
+        in: query
+        name: role
+        required: false
+        schema:
+          type: string
+          enum:
+          - user
+          - operator
+          pattern: user|operator
+      - description: "The order: `name` by the name, or the address when there is\
+          \ none, `lastSignIn` by the last sign-in, `created` by when the account\
+          \ was made; `-` before a key turns it round, and an account that never signed\
+          \ in comes last either way. Without it, the latest sign-in first, then the\
+          \ newest account."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+          enum:
+          - name
+          - -name
+          - lastSignIn
+          - -lastSignIn
+          - created
+          - -created
+          pattern: -?(name|lastSignIn|created)
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every account the parameters select, in the list's order,\
+            \ one row each. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the accounts as a spreadsheet
       tags:
       - Accounts
   /api/identity/accounts/{id}/disable:
@@ -1608,6 +1735,7 @@ paths:
           enum:
           - account.disable
           - account.enable
+          - account.export
           - operator.grant
           - operator.withdraw
           - audit.export
@@ -1618,6 +1746,7 @@ paths:
           - program.luma_read
           - program.feature
           - program.unfeature
+          - program.export
           - organization.create
           - organization.approve
           - organization.suspend
@@ -1655,6 +1784,7 @@ paths:
           - solution.deployment_restore
           - solution.enrich
           - solution.export
+          - solution.offers_export
           - use_case.create
           - use_case.submit
           - use_case.draft
@@ -1665,6 +1795,7 @@ paths:
           - use_case.set_programs
           - use_case.update
           - use_case.publish
+          - use_case.export
           - messaging.request_accept
           - messaging.program_assign
           - messaging.request_decline
@@ -1684,6 +1815,7 @@ paths:
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
+          - proposal.reviewers_export
           - proposal.decide
           - proposal.release
           - proposal.file_open
@@ -1701,6 +1833,7 @@ paths:
           - email.suppression_remove
           - email.resend
           - email.test_send
+          - email.export
           - ai.provider_create
           - ai.provider_update
           - ai.provider_delete
@@ -1723,6 +1856,7 @@ paths:
           - mcp.user_server_disable
           - mcp.tool_enable
           - mcp.tool_disable
+          - mcp.calls_export
           - matching.run_start
           - matching.evaluation_start
           - matching.candidate_add
@@ -1731,6 +1865,7 @@ paths:
           - matching.candidate_reason
           - matching.candidate_restore
           - matching.candidate_invite
+          - matching.feedback_export
           - matching.settings_change
       - description: "Events whose actor's name or address, or whose resource's name,\
           \ contains this, ignoring case."
@@ -1976,6 +2111,59 @@ paths:
       - session: []
       summary: "How often people agreed with the group the AI gave a solution, and\
         \ the answers that say a group is wrong"
+      tags:
+      - Matching administration
+  /api/matching/admin/feedback/export:
+    post:
+      operationId: exportMatchingFeedback
+      parameters:
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every disagreement, newest first, whenever it was given, one\
+            \ row each. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The format is not valid, or the download would hold too many\
+            \ rows."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the answers that say a group is wrong as a spreadsheet
       tags:
       - Matching administration
   /api/matching/admin/programs/{programId}/evaluations:
@@ -2916,6 +3104,120 @@ paths:
       summary: The calls AI apps made to the MCP servers
       tags:
       - MCP
+  /api/mcp/admin/calls/export:
+    post:
+      operationId: exportMcpCalls
+      parameters:
+      - description: Only calls made at or after this instant.
+        in: query
+        name: from
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - description: Only calls of the app with this client id.
+        in: query
+        name: app
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 500
+          minLength: 0
+      - description: Only calls to this tool.
+        in: query
+        name: tool
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: Only calls that ended this way.
+        in: query
+        name: outcome
+        required: false
+        schema:
+          type: string
+          enum:
+          - ok
+          - refused
+          - failed
+          pattern: ok|refused|failed
+      - description: "Only calls of people whose name or address contains this, ignoring\
+          \ case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every call the filters select, newest first, one row each.\
+            \ The page and its size are ignored. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A filter is not valid, or the download would hold too many\
+            \ rows."
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the calls AI apps made as a spreadsheet
+      tags:
+      - MCP
   /api/mcp/admin/settings:
     get:
       operationId: getMcpSettings
@@ -3815,6 +4117,125 @@ paths:
       security:
       - session: []
       summary: "The email log, newest first, a page at a time"
+      tags:
+      - Email administration
+  /api/notification/admin/email/messages/export:
+    post:
+      operationId: exportEmailMessages
+      parameters:
+      - description: Only emails queued at or after this instant; the counts cover
+          the same period.
+        in: query
+        name: from
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: date-time
+      - description: Only emails of this kind.
+        in: query
+        name: kind
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "[a-z_]{1,40}"
+      - description: Only emails in this state.
+        in: query
+        name: status
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: queued|sent|delivered|bounced|complained|failed|skipped
+      - description: "Emails whose recipient or subject contains this, ignoring case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "The `older` cursor of a page: the emails before it."
+        in: query
+        name: before
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "\\d{1,18}_[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+      - description: "The `newer` cursor of a page: the emails after it."
+        in: query
+        name: after
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          pattern: "\\d{1,18}_[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}"
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every email the filters select, newest first, one row each,\
+            \ a sign-in code's subject withheld. The cursors and the page size are\
+            \ ignored. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A filter is not valid, or the download would hold too many\
+            \ rows."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the email log as a spreadsheet
       tags:
       - Email administration
   /api/notification/admin/email/messages/{id}:
@@ -6553,6 +6974,64 @@ paths:
       summary: Create a program as a draft
       tags:
       - Program administration
+  /api/program/admin/programs/export:
+    post:
+      operationId: exportAdminPrograms
+      parameters:
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportPrograms"
+        required: true
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "The programs the body names, in its order, one row each. The\
+            \ download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member or the format is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the programs as a spreadsheet
+      tags:
+      - Program administration
   /api/program/admin/programs/luma/read:
     post:
       description: "Does now what the hourly read does: each event still to come becomes\
@@ -8231,6 +8710,70 @@ paths:
       summary: Invite an address to judge a program
       tags:
       - Review
+  /api/proposal/review/programs/{programId}/reviewers/export:
+    post:
+      operationId: exportReviewers
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "The operators who scored, then the judges in the order they\
+            \ were invited, one row each. The download is recorded on the program."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The format is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: Download who scores a program's applications as a spreadsheet
+      tags:
+      - Review
   /api/proposal/review/programs/{programId}/reviewers/{reviewerId}:
     delete:
       operationId: removeReviewer
@@ -9588,6 +10131,64 @@ paths:
       - session: []
       summary: "Add an offer for the organization that gives it, which only its solutions\
         \ come with"
+      tags:
+      - Solution administration
+  /api/solution/admin/offers/export:
+    post:
+      operationId: exportAdminOffers
+      parameters:
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportOffers"
+        required: true
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "The offers the body names, in its order, one row each. The\
+            \ download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: A member or the format is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the offers as a spreadsheet
       tags:
       - Solution administration
   /api/solution/admin/offers/{id}:
@@ -12930,6 +13531,136 @@ paths:
       summary: "Create a use case for an organization, as a draft or published"
       tags:
       - Use case administration
+  /api/usecase/admin/use-cases/export:
+    post:
+      operationId: exportAdminUseCases
+      parameters:
+      - description: "Use cases whose title or organization name contains this, ignoring\
+          \ case."
+        in: query
+        name: q
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          maxLength: 100
+          minLength: 0
+      - description: "Only use cases in this status, as a reader sees it now."
+        in: query
+        name: status
+        required: false
+        schema:
+          type: string
+          enum:
+          - draft
+          - in_review
+          - needs_changes
+          - approved
+          - closed
+          pattern: draft|in_review|needs_changes|approved|closed
+      - description: Only use cases of this organization.
+        in: query
+        name: organizationId
+        required: false
+        schema:
+          type:
+          - string
+          - "null"
+          format: uuid
+      - description: "Only use cases featured when true, only those not featured when\
+          \ false."
+        in: query
+        name: featured
+        required: false
+        schema:
+          type:
+          - boolean
+          - "null"
+      - description: "The order: `title` by the title, `closes` by the close date,\
+          \ `updated` by the last change; `-` before a key turns it round, and one\
+          \ without a title or a close date comes last either way. Without it, the\
+          \ newest first."
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+          enum:
+          - title
+          - -title
+          - closes
+          - -closes
+          - updated
+          - -updated
+          pattern: -?(title|closes|updated)
+      - description: "The page, counted from 1."
+        in: query
+        name: page
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+          minimum: 1
+      - description: How many items a page holds; the list's own page size when absent.
+        in: query
+        name: size
+        required: false
+        schema:
+          type: integer
+          format: int32
+          maximum: 100
+          minimum: 1
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "Every use case the parameters select, in the list's order,\
+            \ one row each. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "A parameter is not valid, or the download would hold too many\
+            \ rows."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+      security:
+      - session: []
+      summary: Download the use cases as a spreadsheet
+      tags:
+      - Use case administration
   /api/usecase/admin/use-cases/queue:
     get:
       operationId: getUseCaseReviewQueue
@@ -15803,6 +16534,7 @@ components:
           enum:
           - account.disable
           - account.enable
+          - account.export
           - operator.grant
           - operator.withdraw
           - audit.export
@@ -15813,6 +16545,7 @@ components:
           - program.luma_read
           - program.feature
           - program.unfeature
+          - program.export
           - organization.create
           - organization.approve
           - organization.suspend
@@ -15850,6 +16583,7 @@ components:
           - solution.deployment_restore
           - solution.enrich
           - solution.export
+          - solution.offers_export
           - use_case.create
           - use_case.submit
           - use_case.draft
@@ -15860,6 +16594,7 @@ components:
           - use_case.set_programs
           - use_case.update
           - use_case.publish
+          - use_case.export
           - messaging.request_accept
           - messaging.program_assign
           - messaging.request_decline
@@ -15879,6 +16614,7 @@ components:
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
+          - proposal.reviewers_export
           - proposal.decide
           - proposal.release
           - proposal.file_open
@@ -15896,6 +16632,7 @@ components:
           - email.suppression_remove
           - email.resend
           - email.test_send
+          - email.export
           - ai.provider_create
           - ai.provider_update
           - ai.provider_delete
@@ -15918,6 +16655,7 @@ components:
           - mcp.user_server_disable
           - mcp.tool_enable
           - mcp.tool_disable
+          - mcp.calls_export
           - matching.run_start
           - matching.evaluation_start
           - matching.candidate_add
@@ -15926,6 +16664,7 @@ components:
           - matching.candidate_reason
           - matching.candidate_restore
           - matching.candidate_invite
+          - matching.feedback_export
           - matching.settings_change
         actor:
           type:
@@ -18517,6 +19256,64 @@ components:
             format: uuid
           maxItems: 5000
           minItems: 0
+    ExportOffers:
+      type: object
+      description: "The offers a download holds, in the order the list shows them."
+      properties:
+        ids:
+          type: array
+          description: "The offers, in the list's order; one that does not exist is\
+            \ left out."
+          items:
+            type: string
+            format: uuid
+          maxItems: 10000
+          minItems: 0
+        q:
+          type:
+          - string
+          - "null"
+          description: "The search the list was narrowed by, said in the file."
+          maxLength: 200
+          minLength: 0
+        state:
+          type:
+          - string
+          - "null"
+          description: "The state the list was narrowed to, said in the file."
+          maxLength: 40
+          minLength: 0
+      required:
+      - ids
+    ExportPrograms:
+      type: object
+      description: "The programs a download holds, in the order the list shows them."
+      properties:
+        ids:
+          type: array
+          description: "The programs, in the list's order; one that does not exist\
+            \ is left out."
+          items:
+            type: string
+            format: uuid
+          maxItems: 10000
+          minItems: 0
+        q:
+          type:
+          - string
+          - "null"
+          description: "The search the list was narrowed by, said in the file."
+          maxLength: 200
+          minLength: 0
+        state:
+          type:
+          - string
+          - "null"
+          description: "The state the list was narrowed to, said in the file."
+          maxLength: 40
+          minLength: 0
+      required:
+      - ids
     FormQuestion:
       type: object
       description: "One of the program's own questions, as the form asks it."

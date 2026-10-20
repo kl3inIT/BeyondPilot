@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -19,11 +20,15 @@ import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.solution.dto.AdminCreateOfferRequest;
 import ai.genaifund.beyondpilot.solution.dto.AdminOfferDetailResponse;
 import ai.genaifund.beyondpilot.solution.dto.AdminOfferResponse;
 import ai.genaifund.beyondpilot.solution.dto.AdminOfferSolutionResponse;
 import ai.genaifund.beyondpilot.solution.dto.AdminSaveOfferRequest;
+import ai.genaifund.beyondpilot.solution.dto.ExportOffersRequest;
 import ai.genaifund.beyondpilot.solution.dto.OfferResponse;
 import ai.genaifund.beyondpilot.solution.dto.OwnOfferResponse;
 import ai.genaifund.beyondpilot.solution.dto.SaveOfferRequest;
@@ -34,6 +39,8 @@ import ai.genaifund.beyondpilot.solution.persistence.OfferRepository;
 import ai.genaifund.beyondpilot.solution.persistence.Solution;
 import ai.genaifund.beyondpilot.solution.persistence.SolutionRepository;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -50,6 +57,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class SolutionOffers {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SolutionOffers.class);
 
 	private static final String OFFER = "solution_offer";
 
@@ -118,6 +127,48 @@ public class SolutionOffers {
 			.sorted(Comparator.comparing((AdminOfferResponse offer) -> offer.organizationName().toLowerCase())
 				.thenComparing(offer -> offer.title().toLowerCase()))
 			.toList();
+	}
+
+	/**
+	 * Offers as a spreadsheet, for GenAI Fund to work with outside BeyondPilot: those the request names, in its order, as
+	 * the operators' list narrowed them in the browser. An offer that does not exist is left out. The download is
+	 * recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, ExportOffersRequest request, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		Map<UUID, AdminOfferResponse> all = list(actor).stream()
+			.collect(Collectors.toMap(AdminOfferResponse::id, offer -> offer));
+		List<AdminOfferResponse> rows = request.ids()
+			.stream()
+			.distinct()
+			.map(all::get)
+			.filter(Objects::nonNull)
+			.toList();
+		Spreadsheet<AdminOfferResponse> sheet = Spreadsheet.<AdminOfferResponse>of("Offers")
+			.text("Offer", AdminOfferResponse::title)
+			.text("Organization", AdminOfferResponse::organizationName)
+			.yesNo("Arranged by GenAI Fund", AdminOfferResponse::fromGenAiFund)
+			.yesNo("Closed", AdminOfferResponse::closed)
+			.count("Solutions", AdminOfferResponse::solutions)
+			.link("Address", AdminOfferResponse::url)
+			.time("Updated at", AdminOfferResponse::updatedAt);
+		SpreadsheetFile file = sheet.write(format, "offers", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("State", request.state())
+					.narrowedBy("Search", request.q()));
+		audit.record(new AuditRecord(AuditAction.SOLUTION_OFFERS_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("offer_list", "offers", "Offers"),
+				Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "solution.offers.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Offers exported");
+		return file;
 	}
 
 	/**
