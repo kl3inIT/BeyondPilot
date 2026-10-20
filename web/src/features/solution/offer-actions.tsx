@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusIcon } from "lucide-react";
+import { LockIcon, LockOpenIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -142,9 +142,11 @@ function OfferRowMenu({ offer, own = false }: Scope & { offer: ListedOffer }) {
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={() => setAsking("edit")}>
+              <PencilIcon aria-hidden="true" />
               {t("actions.edit")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={toggle}>
+              {offer.closed ? <LockOpenIcon aria-hidden="true" /> : <LockIcon aria-hidden="true" />}
               {offer.closed ? t("actions.reopen") : t("actions.close")}
             </DropdownMenuItem>
           </DropdownMenuGroup>
@@ -155,6 +157,7 @@ function OfferRowMenu({ offer, own = false }: Scope & { offer: ListedOffer }) {
               disabled={offer.solutions > 0}
               onClick={() => setAsking("delete")}
             >
+              <Trash2Icon aria-hidden="true" />
               {t("actions.delete")}
             </DropdownMenuItem>
           </DropdownMenuGroup>
