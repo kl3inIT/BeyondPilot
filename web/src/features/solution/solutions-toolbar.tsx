@@ -6,7 +6,7 @@ import { FilterToolbar } from "@/components/composites/filter-toolbar";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { AdminSolutionList } from "@/lib/api/generated";
 
-import { industries, featuredChoices, reviewedStatuses } from "./solution-codes";
+import { deploymentChoices, industries, featuredChoices, reviewedStatuses } from "./solution-codes";
 import { SolutionsFilters } from "./solutions-filters";
 import { adminSolutionsSearch } from "./solutions-search";
 
@@ -64,6 +64,12 @@ function SolutionsToolbar(props: SolutionsToolbarProps) {
             value,
             label: t(value === "true" ? "featured.yes" : "featured.no"),
           })),
+        },
+        {
+          key: "deployments",
+          label: t("deployments.label"),
+          all: t("deployments.all"),
+          options: deploymentChoices.map((value) => ({ value, label: t("deployments.toReview") })),
         },
       ]}
     />

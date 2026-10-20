@@ -88,14 +88,16 @@ function AdminSolutionsPage({ solutions, search }: AdminSolutionsPageProps) {
     search.organizationId !== null ||
     search.status !== null ||
     search.industry !== null ||
-    search.featured !== null;
+    search.featured !== null ||
+    search.deployments !== null;
   const filtered = search.q.trim() !== "" || narrowed;
   const empty =
     rows.length > 0 ? null : search.q.trim() === "" &&
       search.status === "in_review" &&
       search.organizationId === null &&
       search.industry === null &&
-      search.featured === null ? (
+      search.featured === null &&
+      search.deployments === null ? (
       <DataTableEmpty icon={<BoxesIcon aria-hidden="true" />} title={t("queueEmpty.title")}>
         <Button prominence="secondary" size="sm" href={siteRoutes.admin}>
           {t("queueEmpty.home")}

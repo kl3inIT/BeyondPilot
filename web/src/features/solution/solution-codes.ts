@@ -57,3 +57,6 @@ export const reviewedStatuses = [
 
 /** What the operators' list narrows to: the featured solutions, or those that are not. */
 export const featuredChoices = ["true", "false"] as const;
+
+/** The one choice of the operators' filter on customer deployments: those that wait for review. */
+export const deploymentChoices = ["to_review"] as const;

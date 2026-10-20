@@ -4865,6 +4865,11 @@
         "yes": "Nổi bật",
         "no": "Không nổi bật"
       },
+      "deployments": {
+        "label": "Triển khai thực tế",
+        "all": "Mọi triển khai thực tế",
+        "toReview": "Triển khai chờ duyệt"
+      },
       "clear": "Xóa bộ lọc"
     },
     "view": {

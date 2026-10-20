@@ -43,6 +43,9 @@ public class SolutionQueryRepository {
 			       or (:status not in ('suspended', 'approved') and status = :status))
 			  and (cast(:industry as text) is null or industries @> array[cast(:industry as text)])
 			  and (cast(:featured as boolean) is null or (featured_at is not null) = :featured)
+			  and (cast(:deployments as boolean) is not true or exists (
+			         select 1 from solution_customer_deployment d
+			         where d.solution_id = solution.id and d.status = 'in_review' and d.withdrawn_at is null))
 			""";
 
 	private static final String ROW = """
@@ -112,13 +115,14 @@ public class SolutionQueryRepository {
 	 * one of its customer deployments, the longest wait on top. The text matches the solution's name, or the
 	 * solution belongs to one of {@code organizationIds}, the organizations the caller found by that text. The
 	 * organization filter selects one exact organization. A {@code sort} of {@code name} or {@code submitted}, with
-	 * {@code -} before it for the reverse, orders the page by that instead.
+	 * {@code -} before it for the reverse, orders the page by that instead. With {@code deploymentsToReview} only the
+	 * solutions holding a customer deployment that waits for review are listed.
 	 */
 	public List<Row> adminPage(@Nullable String text, List<UUID> organizationIds, @Nullable UUID organizationId,
-			@Nullable String status, @Nullable String industry, @Nullable Boolean featured, @Nullable String sort,
-			int limit, long offset) {
+			@Nullable String status, @Nullable String industry, @Nullable Boolean featured, boolean deploymentsToReview,
+			@Nullable String sort, int limit, long offset) {
 		return adminFiltered(ROW + ADMIN_FILTER + "order by " + adminOrder(sort) + "\nlimit :limit offset :offset\n",
-				text, organizationIds, organizationId, status, industry, featured)
+				text, organizationIds, organizationId, status, industry, featured, deploymentsToReview)
 			.param("limit", limit)
 			.param("offset", offset)
 			.query(SolutionQueryRepository::row)
@@ -126,9 +130,9 @@ public class SolutionQueryRepository {
 	}
 
 	public long adminCount(@Nullable String text, List<UUID> organizationIds, @Nullable UUID organizationId,
-			@Nullable String status, @Nullable String industry, @Nullable Boolean featured) {
+			@Nullable String status, @Nullable String industry, @Nullable Boolean featured, boolean deploymentsToReview) {
 		return adminFiltered("select count(*) from solution\n" + ADMIN_FILTER, text, organizationIds, organizationId,
-				status, industry, featured)
+				status, industry, featured, deploymentsToReview)
 			.query(Long.class)
 			.single();
 	}
@@ -195,7 +199,7 @@ public class SolutionQueryRepository {
 
 	private JdbcClient.StatementSpec adminFiltered(String sql, @Nullable String text, List<UUID> organizationIds,
 			@Nullable UUID organizationId, @Nullable String status, @Nullable String industry,
-			@Nullable Boolean featured) {
+			@Nullable Boolean featured, boolean deploymentsToReview) {
 		return jdbc.sql(sql)
 			.param("pattern", text == null ? null : containing(text), Types.VARCHAR)
 			// A PostgreSQL array literal: an identifier holds no character that needs quoting.
@@ -205,7 +209,8 @@ public class SolutionQueryRepository {
 			.param("organizationId", organizationId, Types.OTHER)
 			.param("status", status, Types.VARCHAR)
 			.param("industry", industry, Types.VARCHAR)
-			.param("featured", featured, Types.BOOLEAN);
+			.param("featured", featured, Types.BOOLEAN)
+			.param("deployments", deploymentsToReview, Types.BOOLEAN);
 	}
 
 	private static Row row(ResultSet row, int index) throws SQLException {
