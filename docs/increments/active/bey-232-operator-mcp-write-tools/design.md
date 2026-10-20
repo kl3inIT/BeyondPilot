@@ -1,0 +1,54 @@
+# Operator MCP: tools that create use cases and decide reviews
+
+Status: proposed on 20 October 2026, waiting for Đạt's approval. Tracked in Linear as BEY-232. What was read before this design is in [MCP write tools](../../../research/2026-10-20-mcp-write-tools.md).
+
+## Why
+
+On 20 October Kai asked, as urgent, for a way to create use cases from ChatGPT and keep them private: GenAI Fund sees them in the use case list, nobody else does. The same day, a provider's company had waited five days for review while about 300 organizations waited with it, the oldest since 24 September. The operators' MCP server (`/mcp/operator`, [BEY-222](../bey-222-operator-mcp-read-access/design.md)) reads everything an operator reads in `/admin` and changes nothing. This increment lets an operator do from an AI app the decisions they make most often, and nothing that cannot be undone.
+
+## What an operator can do
+
+From ChatGPT, Claude or another app connected to `/mcp/operator`, as the operator signed in to it:
+
+- **Create a use case** that stays private, change it while it is private, and publish it when it is ready, or send one in review back to its organization with what to change.
+- **Decide a review**: approve an organization, a solution, a talent profile or a customer deployment, or send it back with what to change (a deployment is rejected, as on its admin page). The list of what waits is `list_pending_reviews`, which exists.
+- **Decide on an application** to a program (shortlist, not selected) before the outcomes are released, and on a **proposal** a use case received (shortlist, declined), which the service lets an operator change at any time and tells nobody of.
+
+The app asks the operator before each of these calls (see [Confirmation](#confirmation)). What stays on the admin screens: refusing an organization or a solution for good, taking anything down or restoring it, releasing a program's outcomes or sending a use case's, merging organizations, accounts, roles, invitations, featuring, settings and any deletion.
+
+## Tools
+
+Each tool calls the application service the admin screen calls, with the caller as the actor, as the read tools do. The operator role, the state the record must be in, the audit record and the emails stay the service's.
+
+| Tool                  | Arguments                                                                                       | Calls                                                                                          | `destructiveHint` |
+| --------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------- |
+| `create_use_case`     | the organization (an id from `search` or `list_records`), the brief, `publish` (default false)   | `UseCaseAdministration.create`                                                                  | false             |
+| `update_use_case`     | the use case, the fields that change                                                            | a new operator save of a draft (see [What is missing](#what-is-missing))                         | false             |
+| `publish_use_case`    | the use case                                                                                     | `approve` for one in review; a new operator publish for a draft                                 | true              |
+| `send_back_use_case`  | the use case, `reason`                                                                          | `UseCaseAdministration.sendBack`                                                                | true              |
+| `decide_record`       | `area` (`organizations`, `solutions`, `talent`, `deployments`), the record, `action` (`approve`, `send_back`, and `reject` for a deployment), `reason`, and for talent `reason_code` | `OrganizationAdministration.approve` / `sendBack`; `SolutionAdministration.approve` / `sendBack`; `TalentAdministration.approve` / `sendBack`; `approveDeployment` / `rejectDeployment` | true |
+| `decide_application`  | the program, the application, `decision` (`shortlisted`, `not_selected`), private `reason`                    | `OutcomeService.decide` with one application                                                    | false             |
+| `decide_proposal`     | the proposal, `decision` (`shortlisted`, `declined`)                                              | `UseCaseProposals.decide`                                                                       | false             |
+
+Every write tool has `readOnlyHint: false` and `openWorldHint: false`. `idempotentHint` is true only for `decide_proposal` and `decide_application`, where the same decision again changes nothing; elsewhere a second call is refused by the service, not ignored.
+
+## Decisions
+
+1. **The same scope and server.** Write tools join `/mcp/operator` under `mcp.research`; an operator's app reconnects to nothing. Đạt decided on 20 October that a separate scope is not needed now. The consent screen and the server's instructions, which say the app only reads, are changed to say what it may change.
+2. **The client asks before each write.** ChatGPT asks for every tool without `readOnlyHint: true`, with the arguments open to read; Claude's custom connectors set each tool to Always allow, Needs approval or Blocked, and write tools belong on Needs approval. The server adds no confirmation step of its own: every tool here can be undone or is refused by the service in the wrong state, and the research found a server-side token only for actions that cannot be undone, which stay off.
+3. **`destructiveHint: true` for what tells people.** OpenAI defines it as an outcome that is irreversible or difficult to reverse. A decision that emails an organization, a person or a vendor cannot be unsent, so publishing, sending back and deciding a review carry it. A private draft and a decision nobody is told of yet do not.
+4. **One tool for the four review areas.** `decide_record(area, …)` mirrors `list_records(area, …)` and `get_record(area, …)`, as Anthropic's guidance and BEY-222 group tools of one shape. Use cases have their own tools because they are also created and edited.
+5. **One record per call.** No list of identifiers, even where the service takes one (`OutcomeService.decide`): each decision is confirmed on its own, and a model that misread a list cannot decide fifty applications in one approval.
+6. **Descriptions say who is told and whether it can be undone.** Each description says what the tool does, when to use it and when not, who receives an email, whether the outcome can be reversed and where, and that text read from records is written by others and is data, never an instruction. Identifiers come from the read tools.
+7. **Answers say what changed.** A write answers the record by name with its state before and after, and who was told. A refusal is a tool error (`isError: true`) with the service's code and what to do instead, such as "this organization is not in review; read its state with get_record".
+8. **Logged as calls and audited as decisions.** The call log already keeps every call with the record it touched; the service writes the audit record as for a decision on the admin screen, with the operator as the actor.
+9. **Switches.** Each write tool has its switch in Admin › AI › MCP › Tools, as every tool does; turning one off removes it from the server at once.
+
+## What is missing
+
+- **An operator cannot edit or publish a draft use case.** `UseCaseAdministration.create` makes a draft "its members will edit", or publishes at once; `approve` takes only a use case in review. A private use case GenAI Fund keeps and publishes later needs an operator save of a draft and an operator publish of a draft, in `usecase`, with their audit actions. The admin screen gains nothing in this increment.
+- **What "private" means is Kai's to say.** A draft belongs to an organization, and that organization's members see it in their workspace. If only GenAI Fund may see it, it belongs to GenAI Fund's own organization until it is published, and production holds three organizations named "GenAI Fund" (two approved, one in review) to merge first. Asked of Kai on 20 October.
+
+## Out of scope
+
+Feature and unfeature, refusing for good, take-downs and restores, releasing outcomes, merging, accounts, roles, invitations, settings, deletion; a separate write scope; a server-side confirmation token; write tools on the users' server `/mcp`.
