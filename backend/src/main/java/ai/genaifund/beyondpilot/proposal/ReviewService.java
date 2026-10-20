@@ -712,8 +712,10 @@ public class ReviewService {
 	}
 
 	private ProgramSubmission.@Nullable File opened(@Nullable AttachedFileResponse file) {
+		// Opened only when it is read, so that a file gone from storage leaves the rest of the program readable.
 		return file == null ? null
-				: new ProgramSubmission.File(file.fileId(), file.fileName(), storage.content(file.fileId()));
+				: new ProgramSubmission.File(file.fileId(), file.fileName(),
+						() -> storage.content(file.fileId()).getInputStream());
 	}
 
 	ReviewHeadResponse head(ApplicationForm form, Reviewing reviewing) {

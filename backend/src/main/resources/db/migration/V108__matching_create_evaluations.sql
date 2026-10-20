@@ -86,7 +86,9 @@ create table evaluation_assessment (
     model_name      text        not null,
     prompt_version  integer     not null,
     assessed_at     timestamptz not null default now(),
-    constraint evaluation_assessment_once unique (program_id, organization_id, solution_id, fingerprint),
+    -- One assessment of a candidate a run; a run an operator started to assess everything again adds one even
+    -- when what was read did not change.
+    constraint evaluation_assessment_once unique (program_id, organization_id, solution_id, run_id),
     constraint evaluation_assessment_tier
         check (tier in ('strong_match', 'potential_match', 'to_consider', 'strong_no')),
     constraint evaluation_assessment_alignment check (alignment in ('direct', 'industry', 'technology', 'none'))

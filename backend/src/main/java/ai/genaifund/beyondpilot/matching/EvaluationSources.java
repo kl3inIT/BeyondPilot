@@ -16,7 +16,6 @@ import ai.genaifund.beyondpilot.matching.EvaluationCandidates.Entry;
 import ai.genaifund.beyondpilot.proposal.ProgramSubmission;
 import ai.genaifund.beyondpilot.proposal.SentUseCaseProposal;
 import ai.genaifund.beyondpilot.search.SolutionEvidence;
-import ai.genaifund.beyondpilot.shared.PdfPages;
 import ai.genaifund.beyondpilot.solution.IndexedSolution;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import org.jspecify.annotations.Nullable;
@@ -163,8 +162,12 @@ class EvaluationSources {
 			return;
 		}
 		try {
-			int count = PdfPages.pages(file.content(), Integer.MAX_VALUE, 1, 1).count();
-			List<String> pages = new ArrayList<>(documents.text(file.content(), FILE_PAGES));
+			// One page more than is read tells a longer file from one of exactly the limit.
+			List<String> pages = new ArrayList<>(documents.text(file.content(), FILE_PAGES + 1));
+			int count = pages.size();
+			if (count > FILE_PAGES) {
+				pages.subList(FILE_PAGES, count).clear();
+			}
 			List<Integer> pictures = new ArrayList<>();
 			for (int page = 0; page < pages.size() && pictures.size() < PICTURE_PAGES; page++) {
 				if (pages.get(page).isBlank()) {
@@ -204,7 +207,7 @@ class EvaluationSources {
 	 * The pages of one file under their labels, to {@link #FILE_LIMIT} characters, and the pages left unread: those
 	 * with no text even from their picture, and those past {@link #FILE_PAGES}.
 	 * @param pages the text of each page read, in order, an empty string for a page without text
-	 * @param count how many pages the file has
+	 * @param count how many pages the file has, or more than were read
 	 */
 	static Paged paged(String label, List<String> pages, int count) {
 		Map<String, String> texts = new LinkedHashMap<>();
@@ -273,7 +276,7 @@ class EvaluationSources {
 	 * @param record {@code application} or {@code proposal}
 	 * @param label the label its pages are read under; for a record without a file, what was read of it
 	 * @param file the file's name; null for a record without a file
-	 * @param pages how many pages the file has
+	 * @param pages how many pages the file has; {@link #FILE_PAGES} + 1 stands for more than were read
 	 * @param read how many pages were read
 	 * @param unread the pages that held no text, even from their picture
 	 * @param cut whether pages were left out at the limits
