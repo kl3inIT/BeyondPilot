@@ -60,22 +60,22 @@ async function ApplicationTracker({ item, now }: { item: MyApplication; now: num
             className={stage.done ? "h-1 rounded-full bg-primary" : "h-1 rounded-full bg-border"}
           />
           {/*
-            `relative` makes this span the containing block of the hidden words after the label.
-            They are positioned absolutely where the line would have put them, which for a label cut
-            short is past the end of the column; a box that only cuts its overflow does not cut a
-            positioned child it does not contain, so on a phone those words widened the page.
+            A label and its day wrap rather than being cut short: on a phone a column is narrow, and
+            a cut stage could not be read. `relative` makes this span the containing block of the
+            hidden words after the label, which are positioned absolutely; without it they could
+            sit past the column and widen the page on a phone.
           */}
           <span
             className={
               stage.done
-                ? "relative truncate text-xs font-medium text-foreground"
-                : "relative truncate text-xs text-muted-foreground"
+                ? "relative text-xs font-medium wrap-break-word text-foreground"
+                : "relative text-xs wrap-break-word text-muted-foreground"
             }
           >
             {stage.label}
             <span className="sr-only">{stage.done ? t("done") : t("ahead")}</span>
           </span>
-          <span className="truncate text-xs text-muted-foreground">{stage.detail}</span>
+          <span className="text-xs wrap-break-word text-muted-foreground">{stage.detail}</span>
         </li>
       ))}
     </ol>

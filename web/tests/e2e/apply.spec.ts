@@ -680,6 +680,12 @@ test.describe("apply", () => {
         () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
       ),
     ).toBe(true);
+    // No stage is cut short: a label and its day wrap in a narrow column and read in full.
+    expect(
+      await openStages
+        .locator("span:not(.sr-only)")
+        .evaluateAll((spans) => spans.every((span) => span.scrollWidth <= span.clientWidth + 1)),
+    ).toBe(true);
     const released = page
       .getByRole("region", { name: "Past" })
       .getByRole("listitem")

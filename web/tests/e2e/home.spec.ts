@@ -60,6 +60,28 @@ test.describe("home page", () => {
     await expect(announcement).toBeHidden();
   });
 
+  test("on a phone the announcement scrolls on a short screen and the card covers no text", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 560 });
+    await page.goto("/");
+    await page.evaluate(() => window.localStorage.clear());
+    await page.reload();
+
+    // Taller than the screen, it scrolls: its close shows, and its last action can be reached.
+    const announcement = page.getByRole("dialog", { name: "Nestlé Vietnam AI Reinvention" });
+    await expect(announcement.getByRole("button", { name: "Close" })).toBeInViewport();
+    const later = announcement.getByRole("button", { name: "Maybe later" });
+    await later.scrollIntoViewIfNeeded();
+    await expect(later).toBeInViewport();
+    await later.click();
+
+    // Put away, it waits as a round button that keeps the program's name for a screen reader.
+    const card = page.getByRole("button", { name: /Nestlé Vietnam AI Reinvention/ });
+    await expect(card).toBeVisible();
+    expect((await card.boundingBox())?.width).toBeLessThanOrEqual(48);
+  });
+
   test("the featured program goes once its applications have closed", async ({ page }) => {
     // The stub's program closes 33 days after it starts.
     await page.clock.setFixedTime(new Date(Date.now() + 40 * 24 * 60 * 60 * 1000));
