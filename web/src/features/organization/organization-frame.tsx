@@ -128,7 +128,7 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             title={t("inReview.title")}
             description={
               <>
-                <p>{t("inReview.lead", { name: organization.name })}</p>
+                <p>{t("inReview.lead")}</p>
                 <p>
                   {missing.length > 0
                     ? t("inReview.missing", {

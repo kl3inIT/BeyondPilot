@@ -499,7 +499,7 @@
     "SEARCH_ENCRYPTION_KEY_MISSING": "Chưa lưu được key: máy chủ chưa có khóa mã hóa. Hãy báo đội kỹ thuật thêm vào.",
     "SOLUTION_NOT_FOUND": "Giải pháp này không còn tồn tại.",
     "SOLUTION_MEMBER_REQUIRED": "Chỉ thành viên của một tổ chức mới làm được việc này.",
-    "SOLUTION_ORGANIZATION_NOT_APPROVED": "Tổ chức này chưa được duyệt nên chưa thể có giải pháp.",
+    "SOLUTION_ORGANIZATION_NOT_APPROVED": "Hãy duyệt tổ chức trước: giải pháp chỉ được đăng khi tổ chức của nó đã được duyệt.",
     "SOLUTION_INCOMPLETE": "Hãy điền các trường được đánh dấu trước khi gửi duyệt.",
     "SOLUTION_NOT_SUBMITTABLE": "Giải pháp này đang được duyệt, đã duyệt hoặc đã bị từ chối hẳn.",
     "SOLUTION_NOT_EDITABLE": "Giải pháp này đã bị từ chối hẳn nên không sửa được nữa.",
@@ -4123,7 +4123,7 @@
     },
     "inReview": {
       "title": "GenAI Fund đang duyệt tổ chức của bạn",
-      "lead": "Cho tới khi được duyệt, {name} chưa xuất hiện trong các danh mục và chưa thể đăng giải pháp công khai.",
+      "lead": "Bạn đã có thể ứng tuyển vào các chương trình và bài toán, thêm giải pháp và gửi duyệt. Sau khi được duyệt, mọi người sẽ thấy trang tổ chức và các giải pháp của bạn trên BeyondPilot.",
       "foot": "Chúng tôi gửi email cho các chủ sở hữu khi có quyết định.",
       "edit": "Sửa hồ sơ",
       "missing": "Còn {count} mục bắt buộc chưa điền: {facts}. Người duyệt đọc hồ sơ đúng như hiện tại.",
