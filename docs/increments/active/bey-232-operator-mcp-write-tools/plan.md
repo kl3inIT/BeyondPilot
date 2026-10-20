@@ -2,15 +2,15 @@
 
 Design: [design.md](design.md). Tracked in Linear as BEY-232.
 
-| #   | Step                                                                                                                                                          | State   |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| 1   | Research, this design and plan                                                                                                                                | Done    |
-| 2   | Kai says what "private" means for a use case; merge the duplicate GenAI Fund organizations if it is GenAI Fund's own                                          | Waiting |
-| 3   | `usecase`: an operator saves and publishes a draft, audited                                                                                                   | Planned |
-| 4   | `mcp`: `decide_record`, `decide_application`, `decide_proposal`, with annotations, descriptions, answers before and after, errors as tool errors, switches     | Done    |
-| 5   | `mcp`: `create_use_case`, `update_use_case`, `publish_use_case`, `send_back_use_case`                                                                         | Planned |
-| 6   | The consent screen and the server's instructions say what the app may change, in both languages                                                               | Done    |
-| 7   | Documents made true: `docs/specs/identity.md` (the operator server), the matrices of the modules touched                                                      | Planned |
+| #   | Step                                                                                                                                                       | State   |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| 1   | Research, this design and plan                                                                                                                             | Done    |
+| 2   | What "private" means: the real company, seen only by operators until published (Đạt, 20 October)                                                           | Done    |
+| 3   | `usecase`: a private draft its members do not see; an operator saves and publishes it, audited                                                             | Planned |
+| 4   | `mcp`: `decide_record`, `decide_application`, `decide_proposal`, with annotations, descriptions, answers before and after, errors as tool errors, switches | Done    |
+| 5   | `mcp`: `create_use_case`, `update_use_case`, `publish_use_case`, `send_back_use_case`                                                                      | Planned |
+| 6   | The consent screen and the server's instructions say what the app may change, in both languages                                                            | Done    |
+| 7   | Documents made true: `docs/specs/identity.md` (the operator server), the matrices of the modules touched                                                   | Planned |
 
 Step 4 does not wait for Kai's answer and can ship first. Each step is one or more commits on one branch with one pull request.
 
