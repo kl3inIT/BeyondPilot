@@ -1,40 +1,50 @@
 "use client";
 
-import { ChevronDownIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { GiftIcon, MinusIcon, PlusIcon } from "lucide-react";
 import { useId } from "react";
 
-import { TextButton } from "@/components/actions/text-button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 type OfferFoldProps = {
-  /** How many offers the fold keeps out of sight. */
-  hidden: number;
-  /** The offers it keeps, drawn by the page. */
+  title: string;
+  /** The offers, drawn by the page. */
   children: React.ReactNode;
 };
 
-/** The offers of a group past the first few: folded away, and opened by the line under them. */
-function OfferFold({ hidden, children }: OfferFoldProps) {
-  const t = useTranslations("Solution.offers");
+/**
+ * The offers of a solution's page under their heading: open at first, and folded from the heading,
+ * as the parts of the page beside it are.
+ */
+function OfferFold({ title, children }: OfferFoldProps) {
   const contentId = useId();
 
   return (
-    <Collapsible render={<div className="flex flex-col" />}>
-      <CollapsibleContent id={contentId}>{children}</CollapsibleContent>
-      <CollapsibleTrigger
-        aria-controls={contentId}
-        render={<TextButton className="group/offer-fold mt-1 w-fit cursor-pointer" />}
-      >
-        <span className="group-aria-expanded/offer-fold:hidden">
-          {t("showMore", { count: hidden })}
-        </span>
-        <span className="hidden group-aria-expanded/offer-fold:inline">{t("showFewer")}</span>
-        <ChevronDownIcon
-          aria-hidden="true"
-          className="transition-transform group-aria-expanded/offer-fold:rotate-180 motion-reduce:transition-none"
-        />
-      </CollapsibleTrigger>
+    <Collapsible
+      defaultOpen
+      render={<section aria-labelledby="solution-offers" className="flex flex-col" />}
+    >
+      <h2 id="solution-offers" className="w-full">
+        <CollapsibleTrigger aria-controls={contentId} variant="section">
+          <span className="flex min-w-0 items-center gap-2 text-base font-medium">
+            <GiftIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+            {title}
+          </span>
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground group-focus-visible/collapsible-section-trigger:ring-2 group-focus-visible/collapsible-section-trigger:ring-ring group-focus-visible/collapsible-section-trigger:ring-offset-2">
+            <PlusIcon
+              aria-hidden="true"
+              className="size-4 group-aria-expanded/collapsible-section-trigger:hidden"
+            />
+            <MinusIcon
+              aria-hidden="true"
+              className="hidden size-4 group-aria-expanded/collapsible-section-trigger:inline"
+            />
+          </span>
+        </CollapsibleTrigger>
+      </h2>
+      {/* Wider than its rows by the ring of a focused button, which the fold would otherwise cut. */}
+      <CollapsibleContent id={contentId} className="-mx-1">
+        <div className="flex flex-col gap-3 p-1">{children}</div>
+      </CollapsibleContent>
     </Collapsible>
   );
 }

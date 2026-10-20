@@ -172,9 +172,6 @@ function OfferLine({ offers }: { offers: PublicOffer[] }) {
   );
 }
 
-/** How many offers a group shows before the rest fold away under "Show more". */
-const GROUP_VISIBLE = 3;
-
 /** One offer as a row of a group: its name, and the action that claims it. */
 function OfferRow({ offer }: { offer: PublicOffer }) {
   const t = useTranslations("Solution.offers");
@@ -204,8 +201,8 @@ type OfferPanelProps = {
 
 /**
  * The offers on a solution's page, in two groups by where they come from: the ones GenAI Fund
- * arranged, which it stands behind, and the ones the organization wrote alone. A group shows its
- * first few and folds the rest, so a solution with many offers does not push the page down.
+ * arranged, which it stands behind, and the ones the organization wrote alone. Every offer is listed,
+ * one row each, and the heading folds them all away.
  */
 function OfferPanel({ offers, organization }: OfferPanelProps) {
   const t = useTranslations("Solution.offers");
@@ -232,39 +229,23 @@ function OfferPanel({ offers, organization }: OfferPanelProps) {
   }
 
   return (
-    <section aria-labelledby="solution-offers" className="flex flex-col gap-3">
-      <h2 id="solution-offers" className="flex items-center gap-2 text-base font-medium">
-        <GiftIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
-        {t("title")}
-      </h2>
-      {groups.map((group) => {
-        const folded = group.offers.slice(GROUP_VISIBLE);
-        return (
-          <div key={group.key} className="flex flex-col gap-1">
-            <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-              <span className="flex min-w-0 items-center gap-1.5">{group.heading}</span>
-              <span className="ml-auto font-medium tracking-normal normal-case">
-                {group.offers.length}
-              </span>
-            </h3>
-            <ul className="flex flex-col [&>li:first-child]:border-t-0 [&>li:first-child]:pt-1">
-              {group.offers.slice(0, GROUP_VISIBLE).map((offer) => (
-                <OfferRow key={`${offer.url} ${offer.title}`} offer={offer} />
-              ))}
-            </ul>
-            {folded.length > 0 && (
-              <OfferFold hidden={folded.length}>
-                <ul className="flex flex-col">
-                  {folded.map((offer) => (
-                    <OfferRow key={`${offer.url} ${offer.title}`} offer={offer} />
-                  ))}
-                </ul>
-              </OfferFold>
-            )}
-          </div>
-        );
-      })}
-    </section>
+    <OfferFold title={t("title")}>
+      {groups.map((group) => (
+        <div key={group.key} className="flex flex-col gap-1">
+          <h3 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            <span className="flex min-w-0 items-center gap-1.5">{group.heading}</span>
+            <span className="ml-auto font-medium tracking-normal normal-case">
+              {group.offers.length}
+            </span>
+          </h3>
+          <ul className="flex flex-col [&>li:first-child]:border-t-0 [&>li:first-child]:pt-1">
+            {group.offers.map((offer) => (
+              <OfferRow key={`${offer.url} ${offer.title}`} offer={offer} />
+            ))}
+          </ul>
+        </div>
+      ))}
+    </OfferFold>
   );
 }
 

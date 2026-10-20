@@ -4747,8 +4747,6 @@
       "more": "+{count} nữa",
       "moreOffers": "+{count} ưu đãi nữa",
       "newTab": "mở trong tab mới",
-      "showMore": "Xem thêm {count}",
-      "showFewer": "Thu gọn",
       "group": {
         "fund": "Do GenAI Fund sắp xếp",
         "own": "Từ {organization}"

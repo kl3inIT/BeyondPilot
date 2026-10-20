@@ -39,23 +39,28 @@ describe("OfferPanel", () => {
     expect(screen.queryByText(/Arranged by GenAI Fund/)).not.toBeInTheDocument();
   });
 
-  it("folds the offers of a group past the third until they are asked for", async () => {
+  it("lists every offer of a group, however many there are", () => {
     const own = ["One", "Two", "Three", "Four", "Five"].map((title) => offer(title));
-    const { user } = render(<OfferPanel organization="Acme AI" offers={own} />);
+    render(<OfferPanel organization="Acme AI" offers={own} />);
 
-    expect(screen.getAllByRole("link")).toHaveLength(3);
-    const more = screen.getByRole("button", { name: /Show 2 more/ });
-    expect(more).toHaveAttribute("aria-expanded", "false");
+    const list = screen.getByRole("list");
+    expect(within(list).getAllByRole("link")).toHaveLength(5);
+    expect(screen.queryByRole("button", { name: /more/i })).not.toBeInTheDocument();
+  });
 
-    await user.click(more);
-
-    const list = screen.getAllByRole("list");
-    expect(within(list[1]).getByRole("link", { name: /Five/ })).toBeInTheDocument();
-    expect(screen.getAllByRole("link")).toHaveLength(5);
-    expect(screen.getByRole("button", { name: /Show fewer/ })).toHaveAttribute(
-      "aria-expanded",
-      "true",
+  it("opens with the offers in view, and folds them all from its heading", async () => {
+    const { user } = render(
+      <OfferPanel organization="Acme AI" offers={[offer("200$"), offer("Free pilot", true)]} />,
     );
+
+    const heading = screen.getByRole("button", { name: "Offers" });
+    expect(heading).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getAllByRole("link")).toHaveLength(2);
+
+    await user.click(heading);
+
+    expect(heading).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryAllByRole("link")).toHaveLength(0);
   });
 
   it("shows nothing when the solution comes with no offer", () => {
