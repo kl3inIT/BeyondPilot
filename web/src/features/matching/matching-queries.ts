@@ -1,11 +1,15 @@
 import { ApiError } from "@/lib/api/client";
 import {
+  getEvaluationBoard,
+  getEvaluationCandidate,
   getMatching,
   getMatchingRun,
   getMatchingSettings,
   getProposalEvaluations,
   listMatchingFeedback,
   listMatchingRuns,
+  type EvaluationBoard,
+  type EvaluationCandidateDetail,
   type Matching,
   type MatchingFeedbackList,
   type MatchingRunDetail,
@@ -89,6 +93,35 @@ export async function readMatchingRun(runId: string): Promise<MatchingRunDetail 
     return data;
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/** A program's evaluation board, for the operator behind this request. Server only. */
+export async function readEvaluationBoard(programId: string): Promise<EvaluationBoard> {
+  const { data } = await getEvaluationBoard({ ...(await sessionRequest()), path: { programId } });
+  return data;
+}
+
+/**
+ * One candidate of a program's evaluation with its earlier assessments, or `null` when the program
+ * has no such candidate now. Server only.
+ */
+export async function readEvaluationCandidate(
+  programId: string,
+  organizationId: string,
+  solutionId: string,
+): Promise<EvaluationCandidateDetail | null> {
+  try {
+    const { data } = await getEvaluationCandidate({
+      ...(await sessionRequest()),
+      path: { programId, organizationId, solutionId },
+    });
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && [400, 404].includes(error.status ?? 0)) {
       return null;
     }
     throw error;

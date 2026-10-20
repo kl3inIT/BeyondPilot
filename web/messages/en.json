@@ -1022,6 +1022,7 @@
         "settings": "Settings",
         "questions": "Questions",
         "applications": "Applications",
+        "evaluations": "Evaluations",
         "reviewers": "Reviewers"
       },
       "questions": {
@@ -7884,6 +7885,172 @@
       "invitedBy": "Invited by {name} on {date}",
       "genaiFund": "GenAI Fund",
       "received": "Proposal received"
+    },
+    "evaluation": {
+      "metaTitle": "Evaluations",
+      "about": "The AI suggests a shortlist tier from what each candidate submitted. It never decides: your decision is separate.",
+      "run": {
+        "none": "Not assessed yet.",
+        "queued": "Assessment starts at {time}, once submissions stop changing.",
+        "queuedNow": "Assessment is about to start.",
+        "running": "AI is assessing the candidates: {assessed} of {total} done.",
+        "waiting": "Paused: the AI service refused. It goes on at {time}.",
+        "done": "Assessed {when} by {model}.",
+        "failed": "The last assessment stopped: {reason}.",
+        "failures": {
+          "no_use_case": "the program has no approved use case",
+          "no_model": "no AI model is chosen for evaluation",
+          "request_refused": "the AI service refused the request; check the model chosen for evaluation",
+          "other": "something went wrong; try again"
+        },
+        "start": "Assess now",
+        "more": "More ways to assess",
+        "all": "Assess every candidate again",
+        "refresh": "Refresh",
+        "noModel": "Choose a model for evaluation in Admin › AI to assess submissions.",
+        "noUseCase": "Attach an approved use case to this program to assess its submissions.",
+        "started": "Assessment started.",
+        "startedAll": "Every candidate will be assessed again."
+      },
+      "useCases": "Assessed against",
+      "filter": {
+        "search": "Search candidates",
+        "tier": "AI suggestion",
+        "tierAll": "All suggestions",
+        "decision": "Decision",
+        "attention": "Needs attention",
+        "all": "All",
+        "clear": "Clear filters",
+        "showing": "{count} of {total} candidates"
+      },
+      "columns": {
+        "candidate": "Candidate",
+        "suggestion": "AI suggestion",
+        "concern": "Main concern",
+        "decision": "Decision"
+      },
+      "tiers": {
+        "strong_match": "Strong Match",
+        "potential_match": "Potential Match",
+        "to_consider": "To consider",
+        "strong_no": "Strong No"
+      },
+      "provisional": "Provisional",
+      "alignment": {
+        "label": "Alignment",
+        "direct": "Direct",
+        "industry": "Industry",
+        "technology": "Technology",
+        "none": "No connection"
+      },
+      "states": {
+        "waiting": "Not assessed yet",
+        "outdated": "Changed since assessed"
+      },
+      "decisions": {
+        "to_decide": "To decide",
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected",
+        "mixed": "Mixed"
+      },
+      "differs": "Differs from AI",
+      "records": {
+        "label": "Submitted",
+        "application": "Application",
+        "proposal": "Proposal",
+        "draft": "Draft application, not read",
+        "version": "version {version}",
+        "undecided": "To decide",
+        "under_review": "To decide",
+        "shortlisted": "Shortlisted",
+        "not_selected": "Not selected",
+        "declined": "Declined"
+      },
+      "labels": {
+        "documented": "Documented",
+        "claimed": "Claimed",
+        "not_disclosed": "Not disclosed",
+        "contradictory": "Contradictory"
+      },
+      "criteria": {
+        "team": "Team",
+        "traction": "Traction",
+        "readiness": "Readiness",
+        "product": "Product",
+        "funding": "Funding",
+        "proposal": "Proposal"
+      },
+      "traction": {
+        "same_use_case": "Same use case",
+        "adjacent_product": "Adjacent product",
+        "active_pilot": "Active pilot",
+        "prototype_only": "Prototype only",
+        "not_substantiated": "Not substantiated"
+      },
+      "gate": {
+        "passed": "Proposal specific to the use case",
+        "failed": "Proposal not specific to the use case",
+        "earlyStage": {
+          "not_needed": "Has product traction",
+          "team": "Early stage, carried by the team",
+          "prototype": "Early stage, carried by a prototype",
+          "not_substantiated": "Early stage, not substantiated"
+        }
+      },
+      "panel": {
+        "label": "Candidate",
+        "empty": "Choose a candidate to read its assessment.",
+        "close": "Close",
+        "previous": "Previous candidate",
+        "next": "Next candidate",
+        "why": "Why consider",
+        "concern": "Main concern",
+        "nextStep": "Next step",
+        "rationale": "Rationale",
+        "questions": "Questions to ask",
+        "contradictions": "Contradictions",
+        "evidence": "Evidence",
+        "coverage": "What was read",
+        "pages": "{read} of {pages} pages read",
+        "morePages": "{read} pages read; the file is longer",
+        "unreadPages": "Pages {pages} held no text",
+        "cut": "Pages past the limit were left out",
+        "notOpened": "Could not be opened",
+        "sameAs": "Same file as {label}",
+        "gap": "Gap",
+        "lowered": "Lowered to Claimed: the quote is not in what was read.",
+        "instructions": "A source spoke to the AI, such as asking for a tier. The assessment ignored it.",
+        "changed": "What changed",
+        "outdated": "Submissions changed since this assessment. The next run reads them again.",
+        "waiting": "Not assessed yet. The next run reads this candidate.",
+        "assessed": "Assessed {when} by {model}",
+        "fullPage": "Open full page",
+        "earlier": "Earlier assessments",
+        "decide": "Decision",
+        "keys": "J and K move between candidates, S shortlists, N marks not selected.",
+        "shortlist": "Shortlist",
+        "notSelected": "Not selected",
+        "notDecided": "Nothing to decide: this candidate has only a draft."
+      },
+      "compare": {
+        "select": "Compare {name}",
+        "selected": "{count} selected",
+        "open": "Compare",
+        "clear": "Clear",
+        "title": "Compare candidates",
+        "max": "Compare up to four candidates."
+      },
+      "done": {
+        "shortlisted": "Shortlisted {name}.",
+        "not_selected": "{name} marked not selected."
+      },
+      "empty": {
+        "none": "No submissions yet. Candidates appear here once someone applies or sends a proposal to one of the program's use cases.",
+        "filtered": "No candidate matches these filters."
+      },
+      "page": {
+        "back": "Back to Evaluations"
+      }
     }
   },
   "Messaging": {
