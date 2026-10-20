@@ -68,7 +68,7 @@ describe("AssessmentPanel", () => {
     const { user } = render(panel());
 
     // Once in the panel and once in the bar of a narrow screen.
-    expect(screen.getAllByText("Scored 0 of 3")).toHaveLength(2);
+    expect(screen.getAllByText("0 of 3 criteria scored")).toHaveLength(2);
     expect(save()).toBeDisabled();
     expect(save()).toHaveAccessibleDescription(
       "3 criteria still need a score before you can save.",
@@ -80,7 +80,7 @@ describe("AssessmentPanel", () => {
     await user.click(
       within(scale("Feasibility")).getByRole("radio", { name: "6 out of 10, Average" }),
     );
-    await waitFor(() => expect(screen.getAllByText("Scored 2 of 3")).toHaveLength(2));
+    await waitFor(() => expect(screen.getAllByText("2 of 3 criteria scored")).toHaveLength(2));
     expect(screen.getByText("1 criterion still needs a score before you can save.")).toBeVisible();
     expect(screen.queryByText(/^Average \d/)).not.toBeInTheDocument();
 

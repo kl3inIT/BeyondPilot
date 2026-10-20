@@ -6836,7 +6836,7 @@
       "conflictSaved": "Conflict recorded. Your score is left out.",
       "incomplete": "{count, plural, one {# criterion still needs} other {# criteria still need}} a score before you can save.",
       "bar": {
-        "progress": "Scored {scored} of {total}",
+        "progress": "{scored} of {total} criteria scored",
         "score": "Score"
       },
       "more": "More",
@@ -6997,7 +6997,7 @@
         "invited": "Invited",
         "lapsed": "Lapsed"
       },
-      "assessed": "{done} of {total}",
+      "assessed": "{done} of {total} applications",
       "note": "An invitation lasts 7 days. Judges never see each other's scores.",
       "invite": {
         "open": "Invite a judge",
@@ -7059,7 +7059,7 @@
       },
       "released": "Outcomes released",
       "done": "All scored",
-      "progress": "You scored {done} of {total}",
+      "progress": "{done} of {total} applications done",
       "closes": "Applications close {closes}"
     },
     "drafts": {

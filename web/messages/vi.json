@@ -6836,7 +6836,7 @@
       "conflictSaved": "Đã ghi nhận xung đột. Điểm của bạn không được tính.",
       "incomplete": "Còn {count} tiêu chí chưa chấm. Chấm đủ thì mới lưu được.",
       "bar": {
-        "progress": "Đã chấm {scored}/{total}",
+        "progress": "Đã chấm {scored}/{total} tiêu chí",
         "score": "Chấm điểm"
       },
       "more": "Xem thêm",
@@ -6997,7 +6997,7 @@
         "invited": "Đã mời",
         "lapsed": "Lời mời hết hạn"
       },
-      "assessed": "{done} / {total}",
+      "assessed": "{done}/{total} đơn",
       "note": "Lời mời có hiệu lực 7 ngày. Giám khảo không bao giờ thấy điểm của nhau.",
       "invite": {
         "open": "Mời giám khảo",
@@ -7059,7 +7059,7 @@
       },
       "released": "Đã công bố kết quả",
       "done": "Đã chấm hết",
-      "progress": "Bạn đã chấm {done}/{total}",
+      "progress": "Đã xong {done}/{total} đơn",
       "closes": "Hạn nộp {closes}"
     },
     "drafts": {
