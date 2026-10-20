@@ -488,7 +488,8 @@ class McpServerTest {
 		String nothing = text(visitor.callTool(McpSchema.CallToolRequest.builder("search")
 			.arguments(Map.of("query", "hidden agent " + word))
 			.build()));
-		assertThat(JsonPath.<List<Object>>read(nothing, "$.results")).isEmpty();
+		// Other tests' listed solutions may match the words; the hidden one never does.
+		assertThat(JsonPath.<List<String>>read(nothing, "$.results[*].id")).doesNotContain(solutionId);
 		CallToolResult refused = visitor.callTool(
 				McpSchema.CallToolRequest.builder("fetch").arguments(Map.of("id", solutionId)).build());
 		assertThat(refused.isError()).isTrue();
