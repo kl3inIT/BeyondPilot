@@ -7041,7 +7041,7 @@
         "reviewer": "Người chấm",
         "role": "Vai trò",
         "status": "Trạng thái",
-        "assessed": "Đã chấm",
+        "assessed": "Đã xong",
         "actions": "Thao tác"
       },
       "role": {
@@ -7053,7 +7053,7 @@
         "invited": "Đã mời",
         "lapsed": "Lời mời hết hạn"
       },
-      "assessed": "{done}/{total} đơn",
+      "assessed": "{done}/{total} đơn đã xong{conflicts, plural, =0 {} other { · # xung đột}}",
       "note": "Lời mời có hiệu lực 7 ngày. Giám khảo không bao giờ thấy điểm của nhau.",
       "invite": {
         "open": "Mời giám khảo",

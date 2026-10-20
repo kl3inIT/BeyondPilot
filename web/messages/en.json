@@ -7041,7 +7041,7 @@
         "reviewer": "Reviewer",
         "role": "Role",
         "status": "Status",
-        "assessed": "Scored",
+        "assessed": "Done",
         "actions": "Actions"
       },
       "role": {
@@ -7053,7 +7053,7 @@
         "invited": "Invited",
         "lapsed": "Lapsed"
       },
-      "assessed": "{done} of {total} applications",
+      "assessed": "{done} of {total} applications done{conflicts, plural, =0 {} one { · # conflict} other { · # conflicts}}",
       "note": "An invitation lasts 7 days. Judges never see each other's scores.",
       "invite": {
         "open": "Invite a judge",

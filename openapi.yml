@@ -24907,8 +24907,13 @@ components:
         assessed:
           type: integer
           format: int64
-          description: How many submitted applications they scored or stepped back
-            from.
+          description: "How many submitted applications they are done with: scored,\
+            \ or stepped back from for a conflict."
+        conflicts:
+          type: integer
+          format: int64
+          description: "How many of those they stepped back from for a conflict, without\
+            \ a score."
         email:
           type: string
         expiresAt:
@@ -24946,6 +24951,7 @@ components:
           - lapsed
       required:
       - assessed
+      - conflicts
       - email
       - role
       - status

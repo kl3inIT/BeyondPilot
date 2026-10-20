@@ -188,10 +188,14 @@ public class ReviewSetup {
 		form(programId);
 		List<UUID> submitted = readable(programId, true);
 		Map<UUID, Long> assessed = new HashMap<>();
+		Map<UUID, Long> conflicts = new HashMap<>();
 		for (ProposalAssessment assessment : assessments.findByProposalIdIn(submitted)) {
-			// A note or a bookmark alone is not a score; a conflict is a judge's answer.
+			// A note or a bookmark alone is not a score; a conflict is a judge's answer, though not a score.
 			if (assessment.isScored() || assessment.isConflict()) {
 				assessed.merge(assessment.getAccountId(), 1L, Long::sum);
+			}
+			if (assessment.isConflict()) {
+				conflicts.merge(assessment.getAccountId(), 1L, Long::sum);
 			}
 		}
 		List<ProposalReviewer> invited = reviewers.findByProgramIdAndRemovedAtIsNullOrderByInvitedAt(programId);
@@ -210,13 +214,14 @@ public class ReviewSetup {
 			String status = reviewer.hasJoined() ? "active" : reviewer.isActiveAt(now) ? "invited" : "lapsed";
 			items.add(new ReviewerResponse(reviewer.getId(), reviewer.getEmail(),
 					person == null ? null : person.displayName(), "reviewer", status, reviewer.getInvitedAt(),
-					reviewer.getExpiresAt(), accountId == null ? 0 : assessed.getOrDefault(accountId, 0L)));
+					reviewer.getExpiresAt(), accountId == null ? 0 : assessed.getOrDefault(accountId, 0L),
+					accountId == null ? 0 : conflicts.getOrDefault(accountId, 0L)));
 		}
 		for (Map.Entry<UUID, Long> entry : assessed.entrySet()) {
 			Person person = people.get(entry.getKey());
 			if (!judges.contains(entry.getKey()) && person != null) {
 				items.add(0, new ReviewerResponse(null, person.email(), person.displayName(), "operator", "active",
-						null, null, entry.getValue()));
+						null, null, entry.getValue(), conflicts.getOrDefault(entry.getKey(), 0L)));
 			}
 		}
 		return new ReviewersResponse(items, submitted.size());
@@ -240,7 +245,8 @@ public class ReviewSetup {
 			.label("Status", ReviewerResponse::status)
 			.time("Invited at", ReviewerResponse::invitedAt)
 			.time("Invitation expires at", ReviewerResponse::expiresAt)
-			.count("Applications scored", ReviewerResponse::assessed);
+			.count("Applications done", ReviewerResponse::assessed)
+			.count("Of which conflicts", ReviewerResponse::conflicts);
 		SpreadsheetFile file = sheet.write(format, form.slug() + "-reviewers", list.items(),
 				Spreadsheet.About.of(operator.label(), Instant.now())
 					.narrowedBy("Applications to score", String.valueOf(list.applications())));
