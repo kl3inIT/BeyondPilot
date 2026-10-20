@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
+import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
 import ai.genaifund.beyondpilot.storage.StorageException;
 import ai.genaifund.beyondpilot.storage.StorageService;
@@ -64,5 +65,16 @@ class UseCaseAttachments {
 			.filter(Objects::nonNull)
 			.map(file -> new UseCaseAttachmentResponse(file.id(), file.fileName(), file.mediaType(), file.sizeBytes()))
 			.toList();
+	}
+
+	/**
+	 * One file of a use case.
+	 * @throws UseCaseException when the use case does not name the file
+	 */
+	FileDownload open(UseCase useCase, UUID fileId) {
+		if (!useCase.getAttachmentFileIds().contains(fileId)) {
+			throw new UseCaseException(UseCaseErrorCode.NOT_FOUND, "Use case " + useCase.getId() + " has no file " + fileId);
+		}
+		return storage.download(fileId);
 	}
 }

@@ -13636,6 +13636,33 @@ export type SaveUseCaseProposalResponses = {
 
 export type SaveUseCaseProposalResponse = SaveUseCaseProposalResponses[keyof SaveUseCaseProposalResponses];
 
+export type GetOwnUseCaseProposalFileData = {
+    body?: never;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/proposal/use-cases/{useCaseId}/proposal/file';
+};
+
+export type GetOwnUseCaseProposalFileErrors = {
+    /**
+     * The caller's organization has no proposal to this use case, or it holds no PDF.
+     */
+    404: Problem;
+};
+
+export type GetOwnUseCaseProposalFileError = GetOwnUseCaseProposalFileErrors[keyof GetOwnUseCaseProposalFileErrors];
+
+export type GetOwnUseCaseProposalFileResponses = {
+    /**
+     * The bytes of the PDF, saved under its name.
+     */
+    200: Blob | File;
+};
+
+export type GetOwnUseCaseProposalFileResponse = GetOwnUseCaseProposalFileResponses[keyof GetOwnUseCaseProposalFileResponses];
+
 export type ListUseCaseProposalsData = {
     body?: never;
     path: {
@@ -17031,6 +17058,42 @@ export type ApproveAdminUseCaseResponses = {
 
 export type ApproveAdminUseCaseResponse = ApproveAdminUseCaseResponses[keyof ApproveAdminUseCaseResponses];
 
+export type ReadAdminUseCaseAttachmentData = {
+    body?: never;
+    path: {
+        id: string;
+        fileId: string;
+    };
+    query?: never;
+    url: '/api/usecase/admin/use-cases/{id}/attachments/{fileId}';
+};
+
+export type ReadAdminUseCaseAttachmentErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * There is no such use case, or it names no such file.
+     */
+    404: Problem;
+};
+
+export type ReadAdminUseCaseAttachmentError = ReadAdminUseCaseAttachmentErrors[keyof ReadAdminUseCaseAttachmentErrors];
+
+export type ReadAdminUseCaseAttachmentResponses = {
+    /**
+     * The bytes of the file.
+     */
+    200: Blob | File;
+};
+
+export type ReadAdminUseCaseAttachmentResponse = ReadAdminUseCaseAttachmentResponses[keyof ReadAdminUseCaseAttachmentResponses];
+
 export type FeatureAdminUseCaseData = {
     body?: never;
     path: {
@@ -17318,6 +17381,42 @@ export type SaveMyUseCaseResponses = {
 };
 
 export type SaveMyUseCaseResponse = SaveMyUseCaseResponses[keyof SaveMyUseCaseResponses];
+
+export type ReadMyUseCaseAttachmentData = {
+    body?: never;
+    path: {
+        id: string;
+        fileId: string;
+    };
+    query?: never;
+    url: '/api/usecase/mine/{id}/attachments/{fileId}';
+};
+
+export type ReadMyUseCaseAttachmentErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not a member of an approved organization that publishes use cases.
+     */
+    403: Problem;
+    /**
+     * The organization has no such use case, or the use case names no such file.
+     */
+    404: Problem;
+};
+
+export type ReadMyUseCaseAttachmentError = ReadMyUseCaseAttachmentErrors[keyof ReadMyUseCaseAttachmentErrors];
+
+export type ReadMyUseCaseAttachmentResponses = {
+    /**
+     * The bytes of the file.
+     */
+    200: Blob | File;
+};
+
+export type ReadMyUseCaseAttachmentResponse = ReadMyUseCaseAttachmentResponses[keyof ReadMyUseCaseAttachmentResponses];
 
 export type MoveMyUseCaseToDraftData = {
     body?: never;

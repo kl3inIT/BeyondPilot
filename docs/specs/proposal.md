@@ -371,6 +371,14 @@ organization, or an operator; anyone else finds no such use case or proposal).
 - **What the sender reads.** The form's proposal carries `outcome` and `outcomeSentAt`: the decision last told, null
   before. A decision not yet sent is never shown. A shortlisted proposal can still be withdrawn; withdrawing clears the
   decision and the outcome and leaves the history rows.
+- **The PDF.** The proposal's PDF is read, never listed, through the proposal: `GET /api/proposal/use-case-proposals/{id}/file`
+  (`getUseCaseProposalFile`) for the posting side (`posted`: the posting organization's members and operators), and `GET
+  /api/proposal/use-cases/{useCaseId}/proposal/file` (`getOwnUseCaseProposalFile`) for the members of the organization that
+  wrote it, a draft or a sent one; an organization with no proposal to the use case, or none with a PDF, finds
+  `PROPOSAL_NOT_FOUND`. Both answer `StorageService.download`: the bytes saved under the name, or a redirect to the object
+  store. The page opens them in the full-screen `PdfViewer` (the same viewer as an application's files, see
+  [Reviewing](#reviewing)) and keeps the download beside it; the viewer reads the file with the request of the page, so
+  nothing is served inline. A PDF just uploaded and not yet saved opens from the browser's own copy of it.
 
 ## Events
 
@@ -419,6 +427,7 @@ Every endpoint needs a session, except `GET /api/proposal/use-case-proposal-coun
 | `GET /api/proposal/use-cases/{useCaseId}/proposals`                            | The proposals a use case received                                  |
 | `GET /api/proposal/use-case-proposals/{id}`, `…/{id}/file`                     | One received proposal, and its PDF                                 |
 | `GET /api/proposal/use-case-proposal-counts`                                   | How many proposals each use case received; no session needed       |
+| `GET /api/proposal/use-cases/{useCaseId}/proposal/file`                        | The PDF of the caller's own organization's proposal                |
 | `POST /api/proposal/use-case-proposals/{id}/decision`                          | Shortlist or decline a received use-case proposal                  |
 | `POST /api/proposal/use-cases/{useCaseId}/outcomes`                            | E-mail the outcomes not yet told, in one batch                     |
 

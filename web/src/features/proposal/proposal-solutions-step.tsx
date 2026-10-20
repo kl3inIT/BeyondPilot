@@ -12,12 +12,15 @@ import { useFieldValidity } from "@/components/form/form-context";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { listMySolutions, type SolutionSummary } from "@/lib/api/generated";
 
+import { ownProposalFileAddress } from "./received-proposals";
 import { addSolutions, maxApproach, removeSolution } from "./proposal-draft";
 import { ProposalSolutionEditorDialog } from "./proposal-solution-editor-dialog";
 import { ProposalSolutionPicker } from "./proposal-solution-picker";
 import { catalogHref, catalogRowProps, ProposalSolutionRow } from "./proposal-solution-list";
 
 type ProposalSolutionsStepProps = {
+  /** The use case proposed to: its proposal serves the PDF once it is saved. */
+  useCaseId: string;
   /** What the organization offers, as it was last read. */
   catalog: SolutionSummary[];
   /** The organization's logo, shown for a solution that has none of its own. */
@@ -32,7 +35,7 @@ type ProposalSolutionsStepProps = {
  */
 const ProposalSolutionsStep = withFieldGroup({
   defaultValues: { solutionIds: [] as string[], approach: "", deck: null as PdfFile | null },
-  props: { catalog: [], onCatalog: () => undefined } as ProposalSolutionsStepProps,
+  props: { useCaseId: "", catalog: [], onCatalog: () => undefined } as ProposalSolutionsStepProps,
   render: function ProposalSolutionsStepRender({ group, ...solutions }) {
     const t = useTranslations("UseCaseProposal.wizard.solutions");
     return (
@@ -45,14 +48,16 @@ const ProposalSolutionsStep = withFieldGroup({
             <field.TextareaField label={t("approach")} rows={5} maxLength={maxApproach} />
           )}
         </group.AppField>
-        <group.AppField name="deck">{() => <DeckField />}</group.AppField>
+        <group.AppField name="deck">
+          {() => <DeckField useCaseId={solutions.useCaseId} />}
+        </group.AppField>
       </div>
     );
   },
 });
 
 /** The proposal as a PDF. The upload marks no control as the one in error, so its button is found by id. */
-function DeckField() {
+function DeckField({ useCaseId }: { useCaseId: string }) {
   const t = useTranslations("UseCaseProposal.wizard.solutions");
   const { field, invalid, errors, ids } = useFieldValidity<PdfFile | null>();
 
@@ -62,6 +67,7 @@ function DeckField() {
       <PdfUpload
         id="proposal-deck"
         zone
+        savedAddress={ownProposalFileAddress(useCaseId)}
         value={field.state.value}
         invalid={invalid}
         describedBy={invalid ? ids.error : undefined}

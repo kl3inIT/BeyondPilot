@@ -536,6 +536,20 @@ public class UseCaseProposals {
 		return storage.download(deck);
 	}
 
+	/**
+	 * The PDF of the proposal the caller's organization wrote to a use case, a draft or a sent one.
+	 * @throws ProposalException when the organization has no proposal to the use case, or it holds no PDF
+	 */
+	@Transactional(readOnly = true)
+	public FileDownload ownFile(Actor actor, UUID useCaseId) {
+		identity.requireActive(actor);
+		Membership membership = organizations.membershipOf(actor).orElseThrow(() -> notFound(useCaseId));
+		UUID deck = proposals.findByUseCaseIdAndOrganizationId(useCaseId, membership.organizationId())
+			.map(UseCaseProposal::getDeckFileId)
+			.orElseThrow(() -> notFound(useCaseId));
+		return storage.download(deck);
+	}
+
 	/** How many proposals each of these use cases received, for anyone; a use case that received none counts 0. */
 	@Transactional(readOnly = true)
 	public UseCaseProposalCountsResponse counts(List<UUID> useCaseIds) {

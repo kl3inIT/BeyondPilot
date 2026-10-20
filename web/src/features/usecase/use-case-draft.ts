@@ -112,9 +112,10 @@ export function draftValuesOf(useCase: UseCaseContent): DraftValues {
     requirements: useCase.requirements,
     dataReadiness: useCase.dataReadiness ?? "",
     integrationRequirements: useCase.integrationRequirements ?? "",
-    attachments: useCase.attachments.map(({ id, fileName, sizeBytes }) => ({
+    attachments: useCase.attachments.map(({ id, fileName, mediaType, sizeBytes }) => ({
       id,
       fileName,
+      mediaType,
       sizeBytes,
     })),
     currency: isCurrency(useCase.currency) ? useCase.currency : "USD",

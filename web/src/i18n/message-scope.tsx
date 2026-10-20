@@ -43,6 +43,8 @@ const areaPaths = {
     "UseCases",
     // Taking back a proposal, on the page that reads it; the rest of the proposal belongs to the apply area.
     "UseCaseProposal.view.withdraw",
+    // The full-screen reader of the proposal the organization sent.
+    "PdfViewer",
     "UseCaseProposal.errors",
   ],
   auth: ["SignIn"],
@@ -51,6 +53,8 @@ const areaPaths = {
     "EntryList",
     "Organization",
     "PdfUpload",
+    // The full-screen reader of the deck and of the use case files.
+    "PdfViewer",
     "Solution",
     "Talent",
     "UseCaseProposal",
@@ -62,6 +66,7 @@ const areaPaths = {
     "Matching",
     "Messaging",
     "Organization",
+    "PdfViewer",
     "Solution",
     "Talent",
     "UseCaseProposal",

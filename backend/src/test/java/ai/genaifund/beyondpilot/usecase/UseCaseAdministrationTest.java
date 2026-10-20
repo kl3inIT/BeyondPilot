@@ -17,6 +17,7 @@ import java.util.stream.IntStream;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.storage.StorageProperties;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,9 @@ class UseCaseAdministrationTest {
 
 	@Autowired
 	private JdbcClient jdbc;
+
+	@Autowired
+	private StorageProperties storage;
 
 	private RestTestClient client;
 
@@ -649,15 +653,21 @@ class UseCaseAdministrationTest {
 		Map<String, Object> withFile = useCase(organization, "With a file", false);
 		withFile.put("attachmentFileIds", List.of(mine));
 
-		post(operator, USE_CASES, withFile).expectStatus()
-			.isCreated()
-			.expectBody()
-			.jsonPath("$.attachments[0].id")
-			.isEqualTo(mine.toString())
-			.jsonPath("$.attachments[0].fileName")
-			.isEqualTo("samples.pdf")
-			.jsonPath("$.attachments[0].sizeBytes")
-			.isEqualTo(2048);
+		String created = body(post(operator, USE_CASES, withFile).expectStatus().isCreated());
+		assertThat(JsonPath.<String>read(created, "$.attachments[0].id")).isEqualTo(mine.toString());
+		assertThat(JsonPath.<String>read(created, "$.attachments[0].fileName")).isEqualTo("samples.pdf");
+		assertThat(JsonPath.<Integer>read(created, "$.attachments[0].sizeBytes")).isEqualTo(2048);
+
+		// An operator reads the file as its own type; a file the use case does not name,
+		// and a caller who is no operator, get nothing.
+		String path = USE_CASES + "/" + JsonPath.<String>read(created, "$.id") + "/attachments/";
+		get(operator, path + mine).expectHeader()
+			.contentType("application/pdf")
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"samples[.]pdf\".*");
+		assertProblem(get(operator, path + UUID.randomUUID()), 404, "USECASE_NOT_FOUND");
+		assertProblem(get(TestSignIn.session(client, mail, "plain-files@usecase.test"), path + mine), 403,
+				"IDENTITY_OPERATOR_REQUIRED");
 
 		Map<String, Object> again = useCase(organization, "Same file again", false);
 		again.put("attachmentFileIds", List.of(mine));
@@ -730,6 +740,7 @@ class UseCaseAdministrationTest {
 				select ?, 'local', ?, ?, false, 'samples.pdf', 'application/pdf', 2048, ?, id, now()
 				from identity_account where email = ?
 				""").params(id, "test/" + id, purpose, status, uploader).update();
+		StoredPdf.keep(storage, id);
 		return id;
 	}
 

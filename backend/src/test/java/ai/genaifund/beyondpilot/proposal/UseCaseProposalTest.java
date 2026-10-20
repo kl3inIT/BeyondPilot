@@ -142,12 +142,22 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<String>read(one, "$.sentBy.email")).isEqualTo(provider.founderEmail);
 		assertThat(JsonPath.<String>read(one, "$.sentBy.phone")).isEqualTo("+84 912 345 678");
 		assertThat(JsonPath.<String>read(one, "$.deck.fileName")).isEqualTo("proposal.pdf");
-		// An operator reads what any use case received; the PDF is found for them (the test has no bytes behind it).
+		// An operator reads what any use case received; the PDF is theirs to read too.
 		assertThat(JsonPath.<List<String>>read(body(get(operator, path + "s").expectStatus().isOk()),
 				"$.items[*].organizationName")).containsExactly("Team sends.test");
 		assertThat(JsonPath.<String>read(body(get(operator, API + "/use-case-proposals/" + id).expectStatus().isOk()),
 				"$.sentBy.email")).isEqualTo(provider.founderEmail);
-		get(operator, API + "/use-case-proposals/" + id + "/file").expectStatus().value(status -> assertThat(status).isNotEqualTo(404));
+		// The PDF is answered as a PDF, which the viewer reads.
+		get(operator, API + "/use-case-proposals/" + id + "/file").expectStatus().isOk().expectHeader()
+			.contentType("application/pdf")
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"proposal[.]pdf\".*");
+		// The sender's own organization reads its PDF the same way, whoever of its members uploaded it; another one does not.
+		get(provider.colleague, path + "/file").expectStatus().isOk().expectHeader()
+			.contentType("application/pdf")
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"proposal[.]pdf\".*");
+		assertProblem(get(poster.founder, path + "/file"), 404, "PROPOSAL_NOT_FOUND");
 		assertProblem(get(provider.founder, path + "s"), 404, "PROPOSAL_USE_CASE_NOT_FOUND");
 		assertProblem(get(provider.founder, API + "/use-case-proposals/" + id), 404, "PROPOSAL_USE_CASE_NOT_FOUND");
 		assertProblem(get(TestSignIn.session(client, mail, "stranger@nowhere.test"), path + "s"), 404,

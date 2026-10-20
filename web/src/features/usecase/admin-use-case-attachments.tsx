@@ -5,11 +5,15 @@ import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
+import { PdfViewer } from "@/components/composites/pdf-viewer";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 import { useFailureWords } from "@/hooks/use-notify";
 import { useFormatter } from "@/i18n/format";
 import { uploadFile, uploadWords } from "@/lib/storage/upload";
+import { forgetUploaded, keepUploaded } from "@/lib/storage/uploaded-files";
+
+import { openablePdfs } from "./use-case-attachment-files";
 
 /** What the backend accepts as an attachment (storage › FilePurpose.USE_CASE_ATTACHMENT). */
 const accepted = [
@@ -33,6 +37,8 @@ const maxAttachments = 10;
 export type UploadedAttachment = {
   id: string;
   fileName: string;
+  /** What the file is; a PDF opens in the page. */
+  mediaType: string;
   sizeBytes: number;
   /** When it was uploaded, as an instant; unknown for a file saved earlier. */
   uploadedAt?: string;
@@ -44,6 +50,8 @@ type AttachmentsFieldProps = {
   onChange: (value: UploadedAttachment[]) => void;
   /** Lists the files without the means to replace or add one. */
   readOnly?: boolean;
+  /** Where a file the use case names is read, `<path>/<file id>`; none for a use case not saved yet. */
+  filesPath?: string;
   /** What the form refuses about the files, said under them. */
   errors?: { message?: string }[];
 };
@@ -57,6 +65,7 @@ function AttachmentsField({
   value,
   onChange,
   readOnly = false,
+  filesPath,
   errors,
 }: AttachmentsFieldProps) {
   const t = useTranslations("Admin.useCases.form.attachments");
@@ -67,6 +76,7 @@ function AttachmentsField({
   const target = useRef<number | null>(null);
   const [uploading, setUploading] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<number | null>(null);
 
   function choose(index: number | null) {
     target.current = index;
@@ -86,13 +96,19 @@ function AttachmentsField({
     setUploading(true);
     try {
       const stored = await uploadFile(file, "use_case_attachment");
+      keepUploaded(stored.id, file);
       const uploaded = {
         id: stored.id,
         fileName: stored.fileName,
+        mediaType: stored.mediaType,
         sizeBytes: stored.sizeBytes,
         uploadedAt: new Date().toISOString(),
       };
       const index = target.current;
+      const replaced = index === null ? undefined : value[index];
+      if (replaced) {
+        forgetUploaded(replaced.id);
+      }
       onChange(
         index === null
           ? [...value, uploaded]
@@ -125,6 +141,8 @@ function AttachmentsField({
           unit: "megabyte",
           maximumFractionDigits: 1,
         });
+
+  const pdfs = openablePdfs(value, filesPath, size);
 
   // The control a person sees stands for the field: the button that adds a file, or the first that
   // replaces one once the list is full. It carries the id the label names, the error and the hint,
@@ -176,6 +194,14 @@ function AttachmentsField({
                   })}`}
               </span>
             </div>
+            {pdfs.some((pdf) => pdf.id === file.id) && (
+              <TextButton
+                aria-label={t("openFile", { name: file.fileName })}
+                onClick={() => setViewing(pdfs.findIndex((pdf) => pdf.id === file.id))}
+              >
+                {t("open")}
+              </TextButton>
+            )}
             {!readOnly && (
               <TextButton
                 {...(control === index ? shown : {})}
@@ -210,6 +236,7 @@ function AttachmentsField({
           {t("hint", { count: maxAttachments, size: size(maxBytes) })}
         </FieldDescription>
       )}
+      <PdfViewer files={pdfs} index={viewing} onIndexChange={setViewing} />
       {problem && <FieldError>{problem}</FieldError>}
       {errors && <FieldError id={`${id}-error`} errors={errors} />}
     </Field>

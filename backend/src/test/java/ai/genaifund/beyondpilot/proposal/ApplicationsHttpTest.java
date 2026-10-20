@@ -3,6 +3,10 @@ package ai.genaifund.beyondpilot.proposal;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -15,6 +19,7 @@ import java.util.UUID;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.storage.StorageProperties;
 import com.jayway.jsonpath.JsonPath;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +55,9 @@ abstract class ApplicationsHttpTest {
 
 	@Autowired
 	JdbcClient jdbc;
+
+	@Autowired
+	StorageProperties storage;
 
 	RestTestClient client;
 
@@ -236,7 +244,7 @@ abstract class ApplicationsHttpTest {
 				""").params(UUID.fromString(proposal), number, question.toString()).query(String.class).single();
 	}
 
-	/** The record of a stored PDF an applicant uploaded; a save reads the record, never the bytes. */
+	/** A stored PDF an applicant uploaded: its record, and its bytes for a test that reads the file. */
 	UUID file(String uploader) {
 		UUID id = UUID.randomUUID();
 		jdbc.sql("""
@@ -245,7 +253,22 @@ abstract class ApplicationsHttpTest {
 				select ?, 'local', ?, 'application_file', false, 'proposal.pdf', 'application/pdf', 2048, 'stored', id, now()
 				from identity_account where email = ?
 				""").params(id, "test/" + id, uploader).update();
+		keep(id);
 		return id;
+	}
+
+	/** The bytes of a PDF record, 2048 of them as the record says, for a test that reads the file. */
+	void keep(UUID id) {
+		byte[] pdf = new byte[2048];
+		System.arraycopy("%PDF-1.4".getBytes(UTF_8), 0, pdf, 0, 8);
+		try {
+			Path target = storage.local().directory().toAbsolutePath().resolve("test/" + id);
+			Files.createDirectories(target.getParent());
+			Files.write(target, pdf);
+		}
+		catch (IOException exception) {
+			throw new UncheckedIOException(exception);
+		}
 	}
 
 	UUID image() {

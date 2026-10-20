@@ -2147,6 +2147,8 @@
           "label": "Attachments",
           "add": "Add an attachment",
           "replace": "Replace",
+          "open": "Open",
+          "openFile": "Open {name}",
           "uploaded": "Uploaded {time}",
           "uploading": "Uploading…",
           "errors": {
@@ -6566,6 +6568,8 @@
     "empty": "Choose a PDF",
     "limits": "PDF, up to 25 MB.",
     "uploading": "Uploading…",
+    "open": "Open",
+    "openFile": "Open {name}",
     "replace": "Replace",
     "remove": "Remove",
     "errors": {
@@ -8069,6 +8073,8 @@
         },
         "file": {
           "title": "Proposal PDF",
+          "open": "Open",
+          "openFile": "Open {name}",
           "download": "Download PDF",
           "none": "No PDF attached."
         },

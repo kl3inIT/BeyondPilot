@@ -4,6 +4,7 @@ import {
   decisionTone,
   inBatches,
   inTab,
+  ownProposalFileAddress,
   pendingOutcomes,
   proposalFileAddress,
   proposalLine,
@@ -53,6 +54,12 @@ describe("proposalLine", () => {
 describe("proposalFileAddress", () => {
   it("is the file of the proposal under the backend path", () => {
     expect(proposalFileAddress("abc")).toBe("/api/proposal/use-case-proposals/abc/file");
+  });
+});
+
+describe("ownProposalFileAddress", () => {
+  it("is the PDF of the caller's own proposal to the use case", () => {
+    expect(ownProposalFileAddress("abc")).toBe("/api/proposal/use-cases/abc/proposal/file");
   });
 });
 

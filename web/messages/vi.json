@@ -2147,6 +2147,8 @@
           "label": "Tệp đính kèm",
           "add": "Thêm tệp đính kèm",
           "replace": "Thay thế",
+          "open": "Mở",
+          "openFile": "Mở {name}",
           "uploaded": "Tải lên {time}",
           "uploading": "Đang tải lên…",
           "errors": {
@@ -6566,6 +6568,8 @@
     "empty": "Chọn tệp PDF",
     "limits": "PDF, tối đa 25 MB.",
     "uploading": "Đang tải lên…",
+    "open": "Mở",
+    "openFile": "Mở {name}",
     "replace": "Thay",
     "remove": "Gỡ",
     "errors": {
@@ -8069,6 +8073,8 @@
         },
         "file": {
           "title": "Tệp PDF đề xuất",
+          "open": "Mở",
+          "openFile": "Mở {name}",
           "download": "Tải PDF",
           "none": "Chưa đính kèm tệp PDF."
         },

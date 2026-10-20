@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import type { Page } from "@playwright/test";
 
 /** A PNG of one pixel: what stands for any image in these tests. */
@@ -10,6 +13,21 @@ export const pixel = Buffer.from(
 export async function serveStoredImages(page: Page) {
   await page.route("**/api/storage/files/**", (route) =>
     route.fulfill({ status: 200, contentType: "image/png", body: pixel }),
+  );
+}
+
+/** A real PDF of three slides, as the matching and the review specs read it. */
+const deckPdf = readFileSync(join(__dirname, "fixtures", "deck.pdf"));
+
+/** Answers a read of a stored PDF, as the backend serves it to the viewer: the bytes, saved under a name. */
+export async function serveStoredPdf(page: Page, pattern: string, fileName: string) {
+  await page.route(pattern, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/pdf",
+      headers: { "Content-Disposition": `attachment; filename="${fileName}"` },
+      body: deckPdf,
+    }),
   );
 }
 

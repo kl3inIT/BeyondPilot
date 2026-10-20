@@ -1,8 +1,11 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
-import { answerUploads } from "./stored-files";
+import { answerUploads, serveStoredPdf } from "./stored-files";
 import {
   policyChat,
   proposalDeck,
@@ -108,8 +111,30 @@ async function fakeBackend(
 const pdf = {
   name: "deck.pdf",
   mimeType: "application/pdf",
-  buffer: Buffer.from("%PDF-1.4\n%fake\n"),
+  // A real PDF, so that the viewer can read what was just uploaded.
+  buffer: readFileSync(join(__dirname, "fixtures", "deck.pdf")),
 };
+
+/**
+ * Opens a PDF in the full-screen viewer and reads it: every page, the download still at hand, and
+ * Escape gives the focus back to Open.
+ */
+async function openInViewer(page: Page, name: string, download?: string) {
+  const open = page.getByRole("button", { name: `Open ${name}` });
+  await open.click();
+  const viewer = page.getByRole("dialog", { name });
+  await expect(viewer.getByRole("group", { name: /^Page \d$/ })).toHaveCount(3);
+  const link = viewer.getByRole("link", { name: "Download" });
+  if (download) {
+    await expect(link).toHaveAttribute("href", download);
+  } else {
+    await expect(link).toBeVisible();
+  }
+  await expectNoSeriousA11yViolations(page);
+  await page.keyboard.press("Escape");
+  await expect(viewer).toHaveCount(0);
+  await expect(open).toBeFocused();
+}
 
 /** Axe reads the page with the pointer off the buttons: a pressed button's hover colour is not what is checked. */
 async function settled(page: Page) {
@@ -536,6 +561,8 @@ test.describe("a proposal to a use case", () => {
     await expect(page.getByText("Upload the proposal as a PDF.")).toHaveCount(0);
     expect(uploads).toEqual([expect.objectContaining({ fileName: "deck.pdf" })]);
     await expect.poll(() => saves.at(-1)?.deckFileId).toBe(proposalDeck.fileId);
+    // What was just uploaded opens at once, from the browser's own copy.
+    await openInViewer(page, "deck.pdf");
     await page.getByRole("button", { name: "Continue" }).click();
 
     // Step 3: everything once more, then a confirmation before it goes.
@@ -549,6 +576,8 @@ test.describe("a proposal to a use case", () => {
     await expect(
       page.getByText("Policy Chat reads each claim and names the team it belongs to."),
     ).toBeVisible();
+    // The review reads the PDF the same way.
+    await openInViewer(page, "deck.pdf");
     const send = page.getByRole("button", { name: "Send proposal" });
     await expect(send).toBeDisabled();
     await page
@@ -860,6 +889,27 @@ test.describe("the proposals a use case received", () => {
     await settled(page);
   });
 
+  test("the PDF of a proposal opens in the page, and is still downloaded", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await fakeDecisions(page, baseURL!, "received");
+    const id = "7a1d2c3b-0000-4000-8000-000000000061";
+    const file = `/api/proposal/use-case-proposals/${id}/file`;
+    await serveStoredPdf(page, `**${file}`, proposalDeck.fileName);
+    await page.goto(`${receivedPath}/${id}`);
+    await expect(heading(page)).toHaveText("Northwind Analytics");
+    const download = page.getByRole("link", { name: "Download PDF" });
+    await expect(download).toHaveAttribute("href", file);
+    await expectNoSeriousA11yViolations(page);
+
+    await openInViewer(page, proposalDeck.fileName, file);
+    // Opening it left the page as it was, and the download is still there.
+    await expect(download).toBeVisible();
+  });
+
   test("a reviewer decides from the proposal itself, and may change it", async ({
     page,
     context,
@@ -898,6 +948,22 @@ test.describe("what the sender of a proposal is told", () => {
     await expect(page.getByText("shortlisted your proposal on 13 Oct 2026")).toBeVisible();
     await expect(page.getByText("Shortlisted", { exact: true })).toBeVisible();
     await settled(page);
+  });
+
+  test("the sender opens the PDF of a proposal that was sent", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await fakeBackend(page, baseURL!, "sent");
+    const file = `/api/proposal/use-cases/${proposalUseCaseId}/proposal/file`;
+    await serveStoredPdf(page, `**${file}`, proposalDeck.fileName);
+    await page.goto(`${proposePath}/view`);
+    await expect(page.getByText(proposalDeck.fileName)).toBeVisible();
+    await settled(page);
+
+    await openInViewer(page, proposalDeck.fileName, file);
   });
 
   test("a proposal that was not selected is only read", async ({ page, context, baseURL }) => {

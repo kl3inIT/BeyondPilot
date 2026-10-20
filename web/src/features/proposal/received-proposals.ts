@@ -23,6 +23,11 @@ export function proposalFileAddress(id: string): string {
   return `/api/proposal/use-case-proposals/${id}/file`;
 }
 
+/** Where the PDF of the proposal the caller's organization wrote to a use case is read, a draft or a sent one. */
+export function ownProposalFileAddress(useCaseId: string): string {
+  return `/api/proposal/use-cases/${useCaseId}/proposal/file`;
+}
+
 /** The line under an organization in the list: the solutions it offers, then its primary contact. */
 export function proposalLine(solutionNames: string[], contactName: string | null | undefined) {
   return [solutionNames.join(", "), contactName].filter(Boolean).join(" · ");
