@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -8,6 +9,7 @@ import { Analytics } from "@/components/layout/analytics";
 import { Providers } from "@/components/layout/providers";
 import { MessageScope } from "@/i18n/message-scope";
 import { routing } from "@/i18n/routing";
+import { nonceHeader } from "@/lib/content-security-policy";
 import { ownOrigin } from "@/lib/site";
 
 import "../globals.css";
@@ -50,6 +52,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     notFound();
   }
   setRequestLocale(locale);
+  // The scripts the page adds itself, the theme's and Google Analytics', carry this response's nonce.
+  const nonce = (await headers()).get(nonceHeader) ?? undefined;
 
   return (
     <html
@@ -59,8 +63,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     >
       <body className="flex min-h-full flex-col">
         <MessageScope>
-          <Providers>{children}</Providers>
-          <Analytics />
+          <Providers nonce={nonce}>{children}</Providers>
+          <Analytics nonce={nonce} />
         </MessageScope>
       </body>
     </html>

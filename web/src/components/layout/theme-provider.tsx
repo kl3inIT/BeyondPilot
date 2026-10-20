@@ -14,7 +14,7 @@ const scriptProps =
  * Opens in the light theme, the one the design is drawn in; a visitor can pick dark or the system's
  * setting from the footer. tokens.css holds both.
  */
-function ThemeProvider({ children }: { children: React.ReactNode }) {
+function ThemeProvider({ children, nonce }: { children: React.ReactNode; nonce?: string }) {
   return (
     <NextThemesProvider
       attribute="class"
@@ -22,6 +22,7 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
       enableSystem
       disableTransitionOnChange
       scriptProps={scriptProps}
+      nonce={nonce}
     >
       {children}
     </NextThemesProvider>

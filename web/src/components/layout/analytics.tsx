@@ -44,7 +44,7 @@ function reportApplyClick(event: MouseEvent) {
  * of address by itself. A person who walks from a public page into a private one is therefore
  * switched off with Google's own opt-out flag, then given a fresh document without the script.
  */
-function Analytics() {
+function Analytics({ nonce }: { nonce?: string }) {
   const pathname = usePathname();
   const live = usePublicSite();
   const consent = useSyncExternalStore(subscribeConsent, readConsent, () => null);
@@ -72,7 +72,7 @@ function Analytics() {
   }, [tracked]);
 
   if (tracked) {
-    return <GoogleAnalytics gaId={analyticsMeasurementId} />;
+    return <GoogleAnalytics gaId={analyticsMeasurementId} nonce={nonce} />;
   }
 
   return measurable && consent === null ? <CookieConsent /> : null;
