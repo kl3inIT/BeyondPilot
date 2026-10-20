@@ -55,3 +55,33 @@ describe("SearchResult, a solution", () => {
     expect(screen.getByText("Conversational AI · 2 customer cases")).toBeInTheDocument();
   });
 });
+
+/** A use case as the search answers it, with only what its row reads. */
+function useCase(fields: Partial<SearchItem>) {
+  return {
+    kind: "use_case",
+    slug: "4d5ee21e-8cc4-418c-93f4-236a4453d8de",
+    title: "Claims triage",
+    subtitle: "Tasco Insurance",
+    snippet: "",
+    focusAreas: [],
+    industries: [],
+    roles: [],
+    budgetToBeDetermined: true,
+    ...fields,
+  } as SearchItem;
+}
+
+describe("SearchResult, a use case", () => {
+  it("says when proposals close while it is open", () => {
+    render(<SearchResult item={useCase({ closesAt: "2999-10-22T16:59:00Z" })} />);
+
+    expect(screen.getByText("To be determined · Apply by 22 Oct 2999")).toBeInTheDocument();
+  });
+
+  it("says it closed, not to apply by a day gone, once it is closed", () => {
+    render(<SearchResult item={useCase({ closesAt: "2026-10-01T16:59:00Z" })} />);
+
+    expect(screen.getByText("To be determined · Closed on 1 Oct 2026")).toBeInTheDocument();
+  });
+});
