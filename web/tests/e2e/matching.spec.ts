@@ -1056,10 +1056,13 @@ test.describe("solutions matched to a use case", () => {
     await expect(page.getByText(/left today/)).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
 
-    // One visible action, which an operator is not asked about.
+    // One visible action, which an operator is asked about too: they have no limit, but a run is paid.
     await page.getByRole("button", { name: "Look for new solutions" }).click();
+    const run = page.getByRole("alertdialog", { name: "Look for solutions now?" });
+    await expect(run.getByText(/no daily limit, but every run is paid for/)).toBeVisible();
+    expect(sent.runs).toEqual([]);
+    await run.getByRole("button", { name: "Look for new solutions" }).click();
     await expect(page.getByText("Looking for solutions.")).toBeVisible();
-    await expect(page.getByRole("alertdialog")).toHaveCount(0);
     expect(sent.runs).toEqual([{ judgeAll: false }]);
 
     // The operators' two actions are in the More menu.

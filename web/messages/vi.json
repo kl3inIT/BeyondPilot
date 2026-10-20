@@ -1042,6 +1042,7 @@
         "edit": "Sửa",
         "editNamed": "Sửa {label}",
         "add": "Thêm câu hỏi",
+        "full": "Mỗi chương trình hỏi tối đa {max} câu. Xóa một câu để thêm câu khác.",
         "save": "Lưu thay đổi",
         "unsaved": "Có thay đổi chưa lưu.",
         "saved": "Đã lưu câu hỏi.",
@@ -7597,6 +7598,7 @@
         "title": "Tìm giải pháp ngay bây giờ?",
         "description": "Những giải pháp bạn đã lưu và đã loại vẫn giữ nguyên.",
         "note": "{count, plural, =1 {Lần này dùng lượt cuối cùng của hôm nay.} other {Lần này dùng 1 trong # lượt còn lại hôm nay.}}",
+        "operatorNote": "GenAI Fund không bị giới hạn lượt mỗi ngày, nhưng lần chạy nào cũng tốn phí: AI đọc lại bản mô tả và các giải pháp gần nhất.",
         "cancel": "Hủy"
       },
       "reviewAllConfirm": {

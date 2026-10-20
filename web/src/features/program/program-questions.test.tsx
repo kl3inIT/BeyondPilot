@@ -127,4 +127,23 @@ describe("ProgramQuestionsEditor", () => {
     await waitFor(() => expect(choices).toBeValid());
     expect(within(dialog).queryByText("Add at least two choices.")).not.toBeInTheDocument();
   });
+
+  it("says why no question can be added once the program asks twenty", () => {
+    const twenty = Array.from({ length: 20 }, (_, index) =>
+      question(`q${index}`, `Question ${index + 1}`),
+    );
+    render(<ProgramQuestionsEditor programId="p1" initial={{ ...stored, questions: twenty }} />);
+
+    expect(screen.getByRole("button", { name: "Add a question" })).toBeDisabled();
+    expect(
+      screen.getByText("A program asks at most 20 questions. Remove one to add another."),
+    ).toBeInTheDocument();
+  });
+
+  it("says nothing of the limit below it", () => {
+    render(<ProgramQuestionsEditor programId="p1" initial={stored} />);
+
+    expect(screen.getByRole("button", { name: "Add a question" })).toBeEnabled();
+    expect(screen.queryByText(/at most 20 questions/)).not.toBeInTheDocument();
+  });
 });

@@ -37,6 +37,53 @@ async function answer(page: Page, path: string, status: number, body?: object) {
   return sent;
 }
 
+/** Answers the upload of a cover with the stored file `id`, and chooses an image in the file chooser. */
+async function uploadCover(page: Page, id: string) {
+  await page.route("**/api/storage/uploads**", async (route) => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    const json = (body: unknown) => ({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(body),
+    });
+    if (path.endsWith("/confirm")) {
+      return route.fulfill(
+        json({
+          id,
+          fileName: "cover.png",
+          mediaType: "image/png",
+          sizeBytes: 68,
+        }),
+      );
+    }
+    if (request.method() === "POST") {
+      return route.fulfill(
+        json({
+          id,
+          method: "PUT",
+          url: `/api/storage/uploads/${id}/content`,
+          headers: {},
+          expiresAt: new Date(Date.now() + 900_000).toISOString(),
+        }),
+      );
+    }
+    return route.fulfill({ status: 204 });
+  });
+  const chooser = page.waitForEvent("filechooser");
+  await page.getByRole("button", { name: "Upload a cover image" }).click();
+  await (
+    await chooser
+  ).setFiles({
+    name: "cover.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+      "base64",
+    ),
+  });
+}
+
 test.describe("admin programs", () => {
   test.use({ locale: "en-US", timezoneId: "Europe/Paris" });
 
@@ -489,49 +536,7 @@ test.describe("admin programs", () => {
     await page.getByLabel("Ends", { exact: true }).fill("2026-11-01");
     await expect(shown(page, "Save and publish")).toBeDisabled();
     await page.getByLabel("Ends", { exact: true }).fill("2026-11-02");
-    await page.route("**/api/storage/uploads**", async (route) => {
-      const request = route.request();
-      const path = new URL(request.url()).pathname;
-      const json = (body: unknown) => ({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify(body),
-      });
-      if (path.endsWith("/confirm")) {
-        return route.fulfill(
-          json({
-            id: ready.coverFileId,
-            fileName: "cover.png",
-            mediaType: "image/png",
-            sizeBytes: 68,
-          }),
-        );
-      }
-      if (request.method() === "POST") {
-        return route.fulfill(
-          json({
-            id: ready.coverFileId,
-            method: "PUT",
-            url: `/api/storage/uploads/${ready.coverFileId}/content`,
-            headers: {},
-            expiresAt: new Date(Date.now() + 900_000).toISOString(),
-          }),
-        );
-      }
-      return route.fulfill({ status: 204 });
-    });
-    const chooser = page.waitForEvent("filechooser");
-    await page.getByRole("button", { name: "Upload a cover image" }).click();
-    await (
-      await chooser
-    ).setFiles({
-      name: "cover.png",
-      mimeType: "image/png",
-      buffer: Buffer.from(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
-        "base64",
-      ),
-    });
+    await uploadCover(page, ready.coverFileId);
     await expect(page.getByRole("button", { name: "Replace" })).toBeVisible();
     await shown(page, "Save and publish").click();
     const confirm = page.getByRole("alertdialog");
@@ -541,6 +546,50 @@ test.describe("admin programs", () => {
     await expect(page.getByText("GenAI Monthly Meetup is published.")).toBeVisible();
     expect(saved).toHaveLength(1);
     expect(published).toHaveLength(1);
+  });
+
+  test("a cover saved stays shown, and Publish is offered, without a reload", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    const ready = {
+      id: draft,
+      slug: "genai-monthly-meetup",
+      slugFixed: false,
+      publishIssues: [],
+      name: "GenAI Monthly Meetup",
+      type: "event_series",
+      summary: "Builders meet once a month in Hanoi.",
+      startsOn: "2026-11-02",
+      endsOn: "2026-11-02",
+      coverFileId: "4c0d5f9e-2b1a-4e3c-8d7f-6a5b4c3d2e02",
+      status: "draft",
+      pageKind: "standard",
+      keyDates: [],
+      events: [],
+      version: 1,
+      createdAt: "2026-10-05T03:00:00Z",
+      updatedAt: "2026-10-05T04:00:00Z",
+    };
+    await answer(page, `/api/program/admin/programs/${draft}`, 200, ready);
+    await openSettings(page, draft);
+    await page
+      .getByRole("textbox", { name: "Summary" })
+      .fill("Builders meet once a month in Hanoi.");
+    await page.getByLabel("Starts", { exact: true }).fill("2026-11-02");
+    await page.getByLabel("Ends", { exact: true }).fill("2026-11-02");
+    await uploadCover(page, ready.coverFileId);
+    await expect(page.getByRole("button", { name: "Replace" })).toBeVisible();
+
+    await shown(page, "Save changes").click();
+    await expect(page.getByText("Saved.")).toBeVisible();
+    // The program the save answered holds the form until the next read: the one read before the
+    // save, without a cover, does not come back.
+    await expect(page.getByRole("button", { name: "Replace" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Upload a cover image" })).toHaveCount(0);
+    await expect(shown(page, "Publish")).toBeEnabled();
   });
 
   test("an operator sets the questions of the form, until the applications open", async ({

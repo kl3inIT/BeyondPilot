@@ -145,7 +145,17 @@ type Editing = { index: number | null } | null;
  * the field it concerns.
  */
 /** `tabs` are the screens of the program, which the route renders on the server. */
-function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React.ReactNode }) {
+function ProgramSettings({
+  program: read,
+  tabs,
+}: {
+  program: AdminProgram;
+  tabs: React.ReactNode;
+}) {
+  // The program as last read or saved. A save answers the program, and the form starts again from it:
+  // the read that router.refresh() brings comes later, and until then the older read would put the
+  // values before the save back, a new cover shown as none and Publish held back.
+  const [program, setProgram] = useState(read);
   const t = useTranslations("Admin.programs.settings");
   const states = useTranslations("Admin.programs.state");
   const types = useTranslations("Program.type");
@@ -186,6 +196,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
         const { data } = await saveProgram({ path: { id: program.id }, body: saveBodyOf(value) });
         saved.current = data;
         formApi.reset(settingsValuesOf(data));
+        setProgram(data);
         notify.success("Admin.programs.settings.saved");
         router.refresh();
       } catch (error) {
