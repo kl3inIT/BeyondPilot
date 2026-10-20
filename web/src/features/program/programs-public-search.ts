@@ -98,7 +98,10 @@ export function groupPrograms(
     (program) => program.phase === "upcoming" && !listedAsEvent(program),
   );
   const asEvents = ofType.filter(listedAsEvent);
-  const done = ofType.filter((program) => program.phase === "done" && !listedAsEvent(program));
+  // What ended last comes first, as each year of the Done list reads; an undated one goes last.
+  const done = ofType
+    .filter((program) => program.phase === "done" && !listedAsEvent(program))
+    .sort((a, b) => (b.endsOn ?? "").localeCompare(a.endsOn ?? ""));
   const current: Listing[] = [
     ...(shown("open") ? open : []).map((program) => ({ kind: "program" as const, program })),
     ...(shown("upcoming") ? upcoming : []).map((program) => ({
