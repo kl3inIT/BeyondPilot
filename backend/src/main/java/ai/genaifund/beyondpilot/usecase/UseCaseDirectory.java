@@ -149,6 +149,15 @@ public class UseCaseDirectory {
 			});
 	}
 
+	/**
+	 * The approved use cases attached to a program, closed ones included, the oldest published first: what the
+	 * program's submissions are assessed against (BEY-234). Each one's brief is read through {@link #brief(UUID)}.
+	 */
+	@Transactional(readOnly = true)
+	public List<UUID> approvedIn(UUID programId) {
+		return useCases.findIdsByProgram(programId, UseCase.APPROVED);
+	}
+
 	/** Every published use case as search indexes it, for a rebuild of the index. */
 	@Transactional(readOnly = true)
 	public List<IndexedUseCase> indexedAll() {

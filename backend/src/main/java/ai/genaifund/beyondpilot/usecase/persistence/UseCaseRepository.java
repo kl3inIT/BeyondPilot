@@ -41,6 +41,11 @@ public interface UseCaseRepository extends JpaRepository<UseCase, UUID> {
 
 	List<UseCase> findByStatus(String status);
 
+	/** The use cases of this status attached to a program, the oldest published first. */
+	@Query("select u.id from UseCase u join u.programIds p where p = :programId and u.status = :status"
+			+ " order by u.publishedAt, u.id")
+	List<UUID> findIdsByProgram(@Param("programId") UUID programId, @Param("status") String status);
+
 	/** Whether a file is already attached to a use case. */
 	@Query("select count(u) > 0 from UseCase u join u.attachmentFileIds f where f = :fileId")
 	boolean attachmentExists(@Param("fileId") UUID fileId);
