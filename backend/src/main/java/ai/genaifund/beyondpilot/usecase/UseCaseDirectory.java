@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -147,6 +148,24 @@ public class UseCaseDirectory {
 						useCase.getTargetUsers(), useCase.getDataReadiness(), useCase.getIntegrationRequirements(),
 						stated, attachments);
 			});
+	}
+
+	/**
+	 * The approved use cases attached to a program, closed ones included, the oldest published first: what the
+	 * program's submissions are assessed against (BEY-234). Each one's brief is read through {@link #brief(UUID)}.
+	 */
+	@Transactional(readOnly = true)
+	public List<UUID> approvedIn(UUID programId) {
+		return useCases.findIdsByProgram(programId, UseCase.APPROVED);
+	}
+
+	/**
+	 * The programs a use case is attached to, whatever its status, so that a change of it reaches their evaluations
+	 * (BEY-234); none when there is no such use case.
+	 */
+	@Transactional(readOnly = true)
+	public Set<UUID> programsOf(UUID useCaseId) {
+		return useCases.findById(useCaseId).map(UseCase::getProgramIds).orElse(Set.of());
 	}
 
 	/** Every published use case as search indexes it, for a rebuild of the index. */

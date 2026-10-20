@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { PageTabs } from "@/components/composites/page-tabs";
 import {
   adminProgramApplicationsRoute,
+  adminProgramEvaluationsRoute,
   adminProgramQuestionsRoute,
   adminProgramReviewersRoute,
   adminProgramRoute,
@@ -10,7 +11,8 @@ import {
 
 /**
  * The screens of one program in the admin: its Settings and its form's questions, and, for a program
- * that takes applications here, its applications and its judges. One that takes none has neither.
+ * that takes applications here, its applications, the AI's evaluation of them and its judges. One
+ * that takes none has none of these.
  */
 async function ProgramTabs({
   id,
@@ -18,7 +20,7 @@ async function ProgramTabs({
   applications,
 }: {
   id: string;
-  current: "settings" | "questions" | "applications" | "reviewers";
+  current: "settings" | "questions" | "applications" | "evaluations" | "reviewers";
   /** Whether the program takes applications on BeyondPilot. */
   applications: boolean;
 }) {
@@ -29,6 +31,7 @@ async function ProgramTabs({
     ...(applications
       ? ([
           { key: "applications", href: adminProgramApplicationsRoute(id) },
+          { key: "evaluations", href: adminProgramEvaluationsRoute(id) },
           { key: "reviewers", href: adminProgramReviewersRoute(id) },
         ] as const)
       : []),

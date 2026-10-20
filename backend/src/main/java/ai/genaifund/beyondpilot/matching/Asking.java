@@ -1,6 +1,7 @@
 package ai.genaifund.beyondpilot.matching;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import ai.genaifund.beyondpilot.ai.AiChat;
 import org.jspecify.annotations.Nullable;
@@ -47,6 +48,16 @@ final class Asking {
 	 * @throws RuntimeException when the provider refused or failed
 	 */
 	static <T> Answer<T> ask(AiChat chat, String system, String user, Class<T> shape) {
+		return ask(chat, system, user, shape, value -> true);
+	}
+
+	/**
+	 * Asks as {@link #ask(AiChat, String, String, Class)} does, and reads an answer that fits the shape but not the
+	 * check as one that does not fit: it is asked for once more.
+	 * @throws UnreadableAnswer when no attempt gave an answer of the shape that passes the check
+	 * @throws RuntimeException when the provider refused or failed
+	 */
+	static <T> Answer<T> ask(AiChat chat, String system, String user, Class<T> shape, Predicate<T> complete) {
 		BeanOutputConverter<T> converter = new BeanOutputConverter<>(shape);
 		// The texts go as messages, not as templates: a deck or a brief may hold braces a template would read.
 		List<Message> messages = List.of(new SystemMessage(system),
@@ -61,7 +72,7 @@ final class Asking {
 				output += count(usage.getCompletionTokens());
 			}
 			T value = read(converter, response);
-			if (value != null) {
+			if (value != null && complete.test(value)) {
 				return new Answer<>(value, attempt, input, output);
 			}
 		}
