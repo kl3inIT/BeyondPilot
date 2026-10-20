@@ -47,23 +47,21 @@ export async function readProgramSearch(params: ProgramsPublicSearch) {
 
 /**
  * The program the home page announces: the most recently featured one that still takes applications,
- * with its next key date still to come. Read anonymously and kept for a minute, as the list is. Null
- * when none is featured, or when the API cannot be reached: the home page renders without it.
+ * with its next key date still to come. Read anonymously and fresh on every visit, not kept: an
+ * operator who features a program, or stops, sees the home page follow at once. Null when none is
+ * featured, or when the API cannot be reached: the home page renders without it.
  */
 export async function readFeaturedProgram(): Promise<FeaturedProgramView | null> {
   try {
     const now = Date.now();
-    const { data } = await listPrograms({ query: { featured: true }, next: { revalidate: 60 } });
+    const { data } = await listPrograms({ query: { featured: true }, cache: "no-store" });
     const featured = data.items.find(
       (program) => program.applications && Date.parse(program.applications.closesAt) > now,
     );
     if (!featured?.applications) {
       return null;
     }
-    const { data: page } = await getProgram({
-      path: { slug: featured.slug },
-      next: { revalidate: 60 },
-    });
+    const { data: page } = await getProgram({ path: { slug: featured.slug }, cache: "no-store" });
     // A day-long key date is still to come until its day is over.
     const day = 24 * 60 * 60 * 1000;
     const next = page.keyDates
