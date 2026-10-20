@@ -131,7 +131,8 @@ function FeaturedProgram({ program }: { program: FeaturedProgramView }) {
   return (
     <>
       <Dialog open={open} onOpenChange={(opened) => (opened ? setReopened(true) : putAway())}>
-        <DialogContent showCloseButton={false} className="sm:max-w-md">
+        {/* On a short screen it scrolls, so its close and its actions can always be reached. */}
+        <DialogContent showCloseButton={false} className="max-h-dvh overflow-y-auto sm:max-w-md">
           {program.coverFileId && (
             // The cover runs to the edges of the dialog, as its footer bar does, and shows whole.
             <div className="-mx-4 -mt-4 overflow-hidden rounded-t-xl">
@@ -203,13 +204,15 @@ function FeaturedProgram({ program }: { program: FeaturedProgramView }) {
           type="button"
           aria-haspopup="dialog"
           onClick={() => setReopened(true)}
-          className="fixed right-4 bottom-4 z-40 flex max-w-72 flex-col gap-1 rounded-xl border bg-card px-4 py-3 text-left text-card-foreground shadow-raised transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none"
+          // On a phone it is a round button that covers no text; its words stay for a screen reader.
+          className="fixed right-4 bottom-4 z-40 flex size-12 items-center justify-center rounded-full border bg-card text-left text-card-foreground shadow-raised transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none sm:size-auto sm:max-w-72 sm:flex-col sm:items-start sm:gap-1 sm:rounded-xl sm:px-4 sm:py-3"
         >
-          <span className="flex items-center gap-2 text-sm font-semibold">
+          <SparklesIcon className="size-5 text-primary sm:hidden" aria-hidden="true" />
+          <span className="flex items-center gap-2 text-sm font-semibold max-sm:sr-only">
             <SparklesIcon className="size-4 shrink-0 text-primary" aria-hidden="true" />
             {program.name}
           </span>
-          <span className="flex items-center gap-1 text-sm text-primary">
+          <span className="flex items-center gap-1 text-sm text-primary max-sm:sr-only">
             {t("view")}
             <ArrowUpRightIcon className="size-3.5" aria-hidden="true" />
           </span>
