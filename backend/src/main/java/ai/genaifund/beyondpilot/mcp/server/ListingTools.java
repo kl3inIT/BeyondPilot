@@ -35,15 +35,16 @@ import tools.jackson.databind.json.JsonMapper;
  * {@code metadata}), for each server. They read through the owning modules' published services, so each server sees
  * what its callers may see on the site:
  * <ul>
- * <li>{@code /mcp}: listed solutions and published programs, what a visitor finds;</li>
- * <li>{@code /mcp/operator}: also solutions their owners left unlisted, listed talent, use cases and approved
- * companies. Applications are read through a tool of their own, later.</li>
+ * <li>{@code /mcp}: listed solutions, published programs and published use cases, what a visitor finds. Its callers
+ * are signed in, so a use case's budget shown to members only is theirs to read;</li>
+ * <li>{@code /mcp/operator}: also solutions their owners left unlisted, listed talent and approved companies.
+ * Applications are read through a tool of their own.</li>
  * </ul>
  */
 @Component
 class ListingTools {
 
-	private static final List<String> USER_KINDS = List.of("solution", "program");
+	private static final List<String> USER_KINDS = List.of("solution", "program", "use_case");
 
 	private static final List<String> OPERATOR_KINDS = List.of("solution", "program", "talent", "use_case");
 
@@ -97,8 +98,9 @@ class ListingTools {
 							+ "use cases and companies, as far as they are approved or published. Returns results with "
 							+ "an id to read in full with fetch. For what is in review, needs changes, rejected or a "
 							+ "draft, use list_records."
-					: "Search the AI solutions and the programs listed on BeyondPilot, GenAI Fund's network for "
-							+ "enterprises and AI builders. Returns results with an id to read in full with fetch.")
+					: "Search the AI solutions, the programs and the enterprises' use cases listed on BeyondPilot, "
+							+ "GenAI Fund's network for enterprises and AI builders. Returns results with an id to "
+							+ "read in full with fetch.")
 			.annotations(READ_ONLY)
 			.build();
 		return new SyncToolSpecification(tool, (context, request) -> {
@@ -112,7 +114,7 @@ class ListingTools {
 			List<Found> found = operator ? search.findForOperators(words, OPERATOR_KINDS)
 					: search.find(words, USER_KINDS);
 			for (Found item : found) {
-				results.add(result(item.kind() + ":" + item.slug(), item.title(), url(item.kind(), item.slug())));
+				results.add(result(item.kind() + ":" + item.slug(), item.title(), url(item.kind(), item.slug(), operator)));
 			}
 			if (operator) {
 				for (OrganizationName company : organizations.approvedOrganizations(words, COMPANIES)) {
@@ -129,7 +131,7 @@ class ListingTools {
 		Tool tool = Tool.builder("fetch", schema("id", "An id search returned."))
 			.title("Read a BeyondPilot listing")
 			.description(operator ? "Read in full a solution, program, person, use case or company found with search, "
-					+ "by its id." : "Read a solution or a program found with search, by its id.")
+					+ "by its id." : "Read a solution, a program or a use case found with search, by its id.")
 			.annotations(READ_ONLY)
 			.build();
 		return new SyncToolSpecification(tool, (context, request) -> {
@@ -145,8 +147,7 @@ class ListingTools {
 					.map(solution -> solution(id, solution));
 				case "program" -> programs.published(key).map(program -> program(id, program));
 				case "talent" -> operator ? talent.listed(key).map(person -> person(id, person)) : Optional.empty();
-				case "use_case" -> operator ? uuid(key).flatMap(useCases::indexed).map(useCase -> useCase(id, useCase))
-						: Optional.empty();
+				case "use_case" -> uuid(key).flatMap(useCases::indexed).map(useCase -> useCase(id, useCase, operator));
 				case "organization" -> operator ? company(id, key) : Optional.empty();
 				default -> Optional.empty();
 			};
@@ -225,7 +226,7 @@ class ListingTools {
 		return document(id, person.name(), text, url("talent", person.slug()), metadata);
 	}
 
-	private Map<String, Object> useCase(String id, IndexedUseCase useCase) {
+	private Map<String, Object> useCase(String id, IndexedUseCase useCase, boolean operator) {
 		StringBuilder text = new StringBuilder();
 		line(text, null, useCase.title());
 		line(text, "Organization", useCase.organizationName());
@@ -239,7 +240,7 @@ class ListingTools {
 		if (useCase.industry() != null) {
 			metadata.put("industry", useCase.industry());
 		}
-		return document(id, useCase.title(), text, url("use_case", useCase.id().toString()), metadata);
+		return document(id, useCase.title(), text, url("use_case", useCase.id().toString(), operator), metadata);
 	}
 
 	private Optional<Map<String, Object>> company(String id, String slug) {
@@ -301,14 +302,18 @@ class ListingTools {
 		text.append(label == null ? "" : label + ": ").append(value).append("\n\n");
 	}
 
-	/** The page of an item: the public one, or the admin one for a use case, which has none. */
 	private String url(String kind, String key) {
+		return url(kind, key, false);
+	}
+
+	/** The page of an item: the public one, or for an operator the admin page of a use case. */
+	private String url(String kind, String key, boolean operator) {
 		String path = switch (kind) {
 			case "solution" -> "/solutions/";
 			case "program" -> "/programs/";
 			case "talent" -> "/talent/";
 			case "organization" -> "/organizations/";
-			default -> "/admin/use-cases/";
+			default -> operator ? "/admin/use-cases/" : "/use-cases/";
 		};
 		return callers.site() + path + key;
 	}
