@@ -12,9 +12,11 @@ was delivered by [BEY-37](../increments/completed/bey-37-proposal/design.md), re
 
 - **Published API.** The package root: the application services `ProposalService` (applying), `ReviewSetup`
   (criteria and judges), `ReviewService` (reading and scoring), `OutcomeService` (decisions and release) and
-  `UseCaseProposals` (proposals to use cases); the events `ProposalSubmitted` and `OutcomesReleased`; the records
+  `UseCaseProposals` (proposals to use cases); the events `ProposalSubmitted`, `OutcomesReleased` and
+  `UseCaseProposalSent`; `SentUseCaseProposal`, what `UseCaseProposals.sentTo` gives `matching` of each proposal a
+  use case holds now, with its text, its PDF's bytes and its solutions (BEY-229); the records
   `ProgramApplications`, `SubmittedApplication` and `ApplicationFile` that `mcp` reads through `ReviewService`;
-  `ProposalErrorCode` and `ProposalException`. `ReviewAccess`, `ReviewerInvited`, `SubmissionMail`, `ReviewMail` and
+  `ProposalErrorCode` and `ProposalException`. `matching` depends on it for the proposals it judges. `ReviewAccess`, `ReviewerInvited`, `SubmissionMail`, `ReviewMail` and
   `ProposalOrganizationMerge` are package-private.
 - **HTTP.** `proposal.web` holds `ApplicationsController` and `UseCaseProposalsController` (both `/api/proposal`),
   `ReviewSetupController` and `ReviewController` (both `/api/proposal/review`). Request and response records are in
