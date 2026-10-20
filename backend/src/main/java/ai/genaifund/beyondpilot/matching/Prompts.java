@@ -180,12 +180,36 @@ final class Prompts {
 	 * better after long material than before it.
 	 */
 	static String candidate(Map<String, String> sources) {
-		String body = sources.entrySet()
+		return "PRODUCT SOURCES:" + NL + tagged(sources) + NL + NL
+				+ "Judge this product against the use case and each of its requirements, as instructed.";
+	}
+
+	/**
+	 * The wording of {@link #proposal}, part of what a proposal's evaluation was made from (BEY-229). The instructions
+	 * are a candidate's, so a proposal is judged as a solution is and shares the provider's cache with the candidates.
+	 */
+	static final int PROPOSAL_VERSION = 1;
+
+	/**
+	 * One proposal as the model reads it: what the vendor wrote for this use case, then the products it offers, then
+	 * the question again in a line.
+	 */
+	static String proposal(Map<String, String> sources) {
+		return "PROPOSAL SOURCES: a vendor's proposal for this use case. Its approach (`proposal`), its team (`team`) and "
+				+ "its PDF (`proposal deck`) were written for this use case; the products it offers follow, each under "
+				+ "its place (`solution 1`, `solution 2`)." + NL + tagged(sources) + NL + NL
+				+ "Judge this proposal, as one offer, against the use case and each of its requirements, as instructed "
+				+ "for a product.";
+	}
+
+	private static final String NL = "\n";
+
+	/** Each source in a tag that carries its label. */
+	private static String tagged(Map<String, String> sources) {
+		return sources.entrySet()
 			.stream()
-			.map(source -> "<source name=\"" + source.getKey() + "\">\n" + source.getValue() + "\n</source>")
-			.collect(Collectors.joining("\n"));
-		return "PRODUCT SOURCES:\n" + body
-				+ "\n\nJudge this product against the use case and each of its requirements, as instructed.";
+			.map(source -> "<source name=\"" + source.getKey() + "\">" + NL + source.getValue() + NL + "</source>")
+			.collect(Collectors.joining(NL));
 	}
 
 	/** What the enterprise wants solved, in its own words, to a limit. */

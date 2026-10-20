@@ -2577,6 +2577,42 @@ paths:
         \ as the connection stays open"
       tags:
       - Matching
+  /api/matching/use-cases/{useCaseId}/proposals:
+    get:
+      operationId: getProposalEvaluations
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProposalEvaluations"
+          description: The evaluation of each proposal the use case holds now.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "No published use case has the identifier, or the caller is\
+            \ neither an operator nor a member of its organization."
+      security:
+      - session: []
+      summary: "The proposals a use case received, each set against its requirements\
+        \ by the AI"
+      tags:
+      - Matching
   /api/matching/use-cases/{useCaseId}/runs:
     post:
       operationId: startMatchingRun
@@ -18594,12 +18630,13 @@ components:
           description: The model that judged; absent for a caller who is not an operator.
         origin:
           type: string
-          description: "What started it: a change of the use case, an operator or\
-            \ a member."
+          description: "What started it: a change of the use case, an operator, a\
+            \ member, or a proposal sent or edited."
           enum:
           - approved
           - operator
           - member
+          - proposal
         resumesAt:
           type: string
           format: date-time
@@ -18783,6 +18820,7 @@ components:
           - requirements
           - candidates
           - judgment
+          - proposals
         outputTokens:
           type: integer
           format: int64
@@ -18868,11 +18906,12 @@ components:
         origin:
           type: string
           description: "What started it: the use case's approval or a change of it,\
-            \ an operator or a member."
+            \ an operator, a member, or a proposal sent or edited."
           enum:
           - approved
           - operator
           - member
+          - proposal
         outputTokens:
           type: integer
           format: int64
@@ -18990,6 +19029,7 @@ components:
           - requirements
           - candidates
           - judgment
+          - proposals
         outputTokens:
           type: integer
           format: int64
@@ -21094,6 +21134,103 @@ components:
       - slug
       - type
       - upcomingEvents
+    ProposalEvaluation:
+      type: object
+      description: "What the AI found in one proposal, requirement by requirement."
+      properties:
+        findings:
+          type: array
+          description: "One per requirement, in their order; empty while waiting.\
+            \ A source is `proposal`, `team`, `proposal deck p.3`, or a solution's\
+            \ own source after its place, such as `solution 1 profile`, `solution\
+            \ 1 deck p.2`, `solution 1 website 3`, `solution 1 customer case 1`."
+          items:
+            $ref: "#/components/schemas/MatchingFinding"
+        judgedAt:
+          type: string
+          format: date-time
+          description: When the evaluation kept was made; absent while waiting.
+        problem:
+          $ref: "#/components/schemas/MatchingFinding"
+          description: Whether the proposal is made for the job the use case's problem
+            describes; absent while waiting.
+        proposalId:
+          type: string
+          format: uuid
+        requiredMet:
+          type: integer
+          format: int32
+          description: How many required capabilities it meets; 0 while waiting.
+        requiredTotal:
+          type: integer
+          format: int32
+          description: How many required capabilities the use case has; 0 while waiting.
+        solutionNames:
+          type: array
+          description: "The names of the solutions it offers, in its order: a source\
+            \ `solution 2 deck p.4` is the second."
+          items:
+            type: string
+        state:
+          type: string
+          description: "`judged`: the evaluation is of the proposal as it is. `outdated`:\
+            \ it is of the proposal before its last edit, and a run will read it again.\
+            \ `waiting`: no run has read it yet."
+          enum:
+          - judged
+          - outdated
+          - waiting
+        summary:
+          type: string
+          description: "The AI's one sentence: the strongest reason it fits, or the\
+            \ main thing missing."
+        unread:
+          type: array
+          description: "Sources that could not be read at all: `proposal_deck`, the\
+            \ proposal's PDF."
+          items:
+            type: string
+      required:
+      - findings
+      - proposalId
+      - requiredMet
+      - requiredTotal
+      - solutionNames
+      - state
+      - unread
+    ProposalEvaluations:
+      type: object
+      description: "The proposals a use case holds now, each set against the use case's\
+        \ requirements by the AI, with the words that show it."
+      properties:
+        modelChosen:
+          type: boolean
+          description: Whether an AI model is set for matching; without one no proposal
+            is read.
+        proposals:
+          type: array
+          description: "One for each proposal sent to the use case and not withdrawn,\
+            \ the latest first."
+          items:
+            $ref: "#/components/schemas/ProposalEvaluation"
+        requirements:
+          type: array
+          description: "What the use case asks for, as the last run read it, capabilities\
+            \ first."
+          items:
+            $ref: "#/components/schemas/MatchingRequirement"
+        run:
+          $ref: "#/components/schemas/MatchingRun"
+          description: The last run of matching for the use case; absent when there
+            was none.
+        useCaseId:
+          type: string
+          format: uuid
+      required:
+      - modelChosen
+      - proposals
+      - requirements
+      - useCaseId
     ProposalSolution:
       type: object
       description: A solution a proposal offers.

@@ -41,6 +41,9 @@ public class MatchingRepository {
 	/** A run started by a member of the use case's organization. */
 	public static final String BY_MEMBER = "member";
 
+	/** Started because a proposal to the use case was sent or edited (BEY-229). */
+	public static final String BY_PROPOSAL = "proposal";
+
 	public static final String SHORTLISTED = "shortlisted";
 
 	public static final String REMOVED = "removed";
@@ -65,8 +68,11 @@ public class MatchingRepository {
 
 	public static final String JUDGMENT = "judgment";
 
+	/** The step that judges the proposals the use case received (BEY-229). */
+	public static final String PROPOSALS = "proposals";
+
 	/** The steps of a run, in their order. */
-	private static final List<String> STEPS = List.of(REQUIREMENTS, CANDIDATES, JUDGMENT);
+	private static final List<String> STEPS = List.of(REQUIREMENTS, CANDIDATES, JUDGMENT, PROPOSALS);
 
 	private final JdbcClient jdbc;
 
@@ -225,16 +231,18 @@ public class MatchingRepository {
 	}
 
 	/**
-	 * Moves the start of the run a change of the use case queued, because the use case changed again.
+	 * Moves the start of the run a change queued, because the use case, or a proposal to it, changed again.
+	 * @param origin {@link #BY_APPROVAL} or {@link #BY_PROPOSAL}: the change that queued the run
 	 * @return whether such a run was waiting to start
 	 */
-	public boolean postpone(UUID useCaseId, Instant notBefore) {
+	public boolean postpone(UUID useCaseId, String origin, Instant notBefore) {
 		return jdbc.sql("""
 				update matching_run set not_before = :notBefore
-				where use_case_id = :useCaseId and state = 'queued' and origin = 'approved'
+				where use_case_id = :useCaseId and state = 'queued' and origin = :origin
 				""")
 			.param("notBefore", Timestamp.from(notBefore))
 			.param("useCaseId", useCaseId)
+			.param("origin", origin)
 			.update() > 0;
 	}
 
@@ -387,7 +395,7 @@ public class MatchingRepository {
 				values (:runId, :name, :position, :takenIn, :givenOut, :calls, :inputTokens, :outputTokens, :millis)
 				on conflict (run_id, name) do update
 				set taken_in = excluded.taken_in,
-				    given_out = case when excluded.name = 'judgment'
+				    given_out = case when excluded.name in ('judgment', 'proposals')
 				                     then matching_run_step.given_out + excluded.given_out
 				                     else excluded.given_out end,
 				    calls = matching_run_step.calls + excluded.calls,

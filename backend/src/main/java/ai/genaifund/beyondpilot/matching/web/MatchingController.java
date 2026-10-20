@@ -13,6 +13,7 @@ import ai.genaifund.beyondpilot.matching.dto.GiveRemovalReasonRequest;
 import ai.genaifund.beyondpilot.matching.dto.InviteCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange;
 import ai.genaifund.beyondpilot.matching.dto.MatchingResponse;
+import ai.genaifund.beyondpilot.matching.dto.ProposalEvaluationsResponse;
 import ai.genaifund.beyondpilot.matching.dto.RemoveCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.StartRunRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -67,6 +68,18 @@ class MatchingController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	MatchingResponse get(@CurrentActor Actor actor, @PathVariable UUID useCaseId) {
 		return matching.get(actor, useCaseId);
+	}
+
+	@GetMapping(path = "/use-cases/{useCaseId}/proposals", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getProposalEvaluations",
+			summary = "The proposals a use case received, each set against its requirements by the AI",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The evaluation of each proposal the use case holds now.")
+	@ApiResponse(responseCode = "404",
+			description = "No published use case has the identifier, or the caller is neither an operator nor a member of its organization.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ProposalEvaluationsResponse proposals(@CurrentActor Actor actor, @PathVariable UUID useCaseId) {
+		return matching.proposals(actor, useCaseId);
 	}
 
 	@GetMapping(path = "/use-cases/{useCaseId}/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

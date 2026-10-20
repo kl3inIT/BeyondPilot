@@ -2735,9 +2735,9 @@ export type MatchingRun = {
      */
     modelName?: string;
     /**
-     * What started it: a change of the use case, an operator or a member.
+     * What started it: a change of the use case, an operator, a member, or a proposal sent or edited.
      */
-    origin: 'approved' | 'operator' | 'member';
+    origin: 'approved' | 'operator' | 'member' | 'proposal';
     /**
      * When it goes on, while it waits for the AI provider.
      */
@@ -2843,7 +2843,7 @@ export type MatchingRunStep = {
     givenOut: number;
     inputTokens: number;
     millis: number;
-    name: 'requirements' | 'candidates' | 'judgment';
+    name: 'requirements' | 'candidates' | 'judgment' | 'proposals';
     outputTokens: number;
     /**
      * How many the step was given.
@@ -2899,9 +2899,9 @@ export type MatchingRunSummary = {
      */
     modelName?: string | null;
     /**
-     * What started it: the use case's approval or a change of it, an operator or a member.
+     * What started it: the use case's approval or a change of it, an operator, a member, or a proposal sent or edited.
      */
-    origin: 'approved' | 'operator' | 'member';
+    origin: 'approved' | 'operator' | 'member' | 'proposal';
     outputTokens: number;
     /**
      * The version of the judgment's wording it ran with.
@@ -2966,7 +2966,7 @@ export type MatchingStep = {
     givenOut: number;
     inputTokens: number;
     millis: number;
-    name: 'requirements' | 'candidates' | 'judgment';
+    name: 'requirements' | 'candidates' | 'judgment' | 'proposals';
     outputTokens: number;
     takenIn: number;
 };
@@ -4130,6 +4130,72 @@ export type ProgramSummary = {
      * Its events still to come, soonest first, at most three.
      */
     upcomingEvents: Array<ProgramEvent>;
+};
+
+/**
+ * What the AI found in one proposal, requirement by requirement.
+ */
+export type ProposalEvaluation = {
+    /**
+     * One per requirement, in their order; empty while waiting. A source is `proposal`, `team`, `proposal deck p.3`, or a solution's own source after its place, such as `solution 1 profile`, `solution 1 deck p.2`, `solution 1 website 3`, `solution 1 customer case 1`.
+     */
+    findings: Array<MatchingFinding>;
+    /**
+     * When the evaluation kept was made; absent while waiting.
+     */
+    judgedAt?: string;
+    /**
+     * Whether the proposal is made for the job the use case's problem describes; absent while waiting.
+     */
+    problem?: MatchingFinding;
+    proposalId: string;
+    /**
+     * How many required capabilities it meets; 0 while waiting.
+     */
+    requiredMet: number;
+    /**
+     * How many required capabilities the use case has; 0 while waiting.
+     */
+    requiredTotal: number;
+    /**
+     * The names of the solutions it offers, in its order: a source `solution 2 deck p.4` is the second.
+     */
+    solutionNames: Array<string>;
+    /**
+     * `judged`: the evaluation is of the proposal as it is. `outdated`: it is of the proposal before its last edit, and a run will read it again. `waiting`: no run has read it yet.
+     */
+    state: 'judged' | 'outdated' | 'waiting';
+    /**
+     * The AI's one sentence: the strongest reason it fits, or the main thing missing.
+     */
+    summary?: string;
+    /**
+     * Sources that could not be read at all: `proposal_deck`, the proposal's PDF.
+     */
+    unread: Array<string>;
+};
+
+/**
+ * The proposals a use case holds now, each set against the use case's requirements by the AI, with the words that show it.
+ */
+export type ProposalEvaluations = {
+    /**
+     * Whether an AI model is set for matching; without one no proposal is read.
+     */
+    modelChosen: boolean;
+    /**
+     * One for each proposal sent to the use case and not withdrawn, the latest first.
+     */
+    proposals: Array<ProposalEvaluation>;
+    /**
+     * What the use case asks for, as the last run read it, capabilities first.
+     */
+    requirements: Array<MatchingRequirement>;
+    /**
+     * The last run of matching for the use case; absent when there was none.
+     */
+    run?: MatchingRun;
+    useCaseId: string;
 };
 
 /**
@@ -8828,6 +8894,37 @@ export type StreamMatchingChangesResponses = {
 };
 
 export type StreamMatchingChangesResponse = StreamMatchingChangesResponses[keyof StreamMatchingChangesResponses];
+
+export type GetProposalEvaluationsData = {
+    body?: never;
+    path: {
+        useCaseId: string;
+    };
+    query?: never;
+    url: '/api/matching/use-cases/{useCaseId}/proposals';
+};
+
+export type GetProposalEvaluationsErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * No published use case has the identifier, or the caller is neither an operator nor a member of its organization.
+     */
+    404: Problem;
+};
+
+export type GetProposalEvaluationsError = GetProposalEvaluationsErrors[keyof GetProposalEvaluationsErrors];
+
+export type GetProposalEvaluationsResponses = {
+    /**
+     * The evaluation of each proposal the use case holds now.
+     */
+    200: ProposalEvaluations;
+};
+
+export type GetProposalEvaluationsResponse = GetProposalEvaluationsResponses[keyof GetProposalEvaluationsResponses];
 
 export type StartMatchingRunData = {
     body: StartMatchingRun;

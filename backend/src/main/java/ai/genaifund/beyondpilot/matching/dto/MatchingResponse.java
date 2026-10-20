@@ -31,8 +31,8 @@ public record MatchingResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIR
 			@Schema(description = "What a running run is doing: reading the brief, searching the solutions, or reading each solution found. Absent when the run is not running.",
 					allowableValues = { "brief", "search", "reading" }) @Nullable String stage,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-					description = "What started it: a change of the use case, an operator or a member.",
-					allowableValues = { "approved", "operator", "member" }) String origin,
+					description = "What started it: a change of the use case, an operator, a member, or a proposal sent or edited.",
+					allowableValues = { "approved", "operator", "member", "proposal" }) String origin,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) Instant createdAt,
 			@Schema(description = "When it starts, while it waits for the use case to stay unchanged.") @Nullable Instant startsAt,
 			@Nullable Instant startedAt, @Nullable Instant endedAt,
@@ -139,7 +139,7 @@ public record MatchingResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIR
 	@Schema(name = "MatchingStep", description = "What a run did in one step.")
 	public record Step(
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-					allowableValues = { "requirements", "candidates", "judgment" }) String name,
+					allowableValues = { "requirements", "candidates", "judgment", "proposals" }) String name,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int takenIn,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int givenOut,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int calls,

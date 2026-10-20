@@ -21,6 +21,8 @@ import ai.genaifund.beyondpilot.ai.AiSubject;
 import ai.genaifund.beyondpilot.ai.AiTask;
 import ai.genaifund.beyondpilot.ai.ProviderFailures;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange.Kind;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingProposalRepository;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingProposalRepository.Evaluation;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRunHistory;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Judged;
@@ -28,6 +30,8 @@ import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Requirem
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Run;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Settings;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Step;
+import ai.genaifund.beyondpilot.proposal.SentUseCaseProposal;
+import ai.genaifund.beyondpilot.proposal.UseCaseProposals;
 import ai.genaifund.beyondpilot.search.SolutionEvidence;
 import ai.genaifund.beyondpilot.solution.IndexedSolution;
 import ai.genaifund.beyondpilot.solution.SolutionDirectory;
@@ -46,7 +50,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * candidates, and has the model judge each one, a few at a time. A run is not a transaction: each judged candidate is
  * kept when its judgment ends, so a run that stops continues with those not judged yet. When the provider refuses,
  * the run waits and goes on; a run that keeps stopping without judging anything ends as failed. Each thing a run
- * does is told to the pages open on its use case once it is stored ({@link MatchingChanges}).
+ * does is told to the pages open on its use case once it is stored ({@link MatchingChanges}). After the candidates, a
+ * run judges the proposals the use case received against the same requirements (BEY-229); a proposal sent or edited
+ * queues a run.
  */
 @Service
 @EnableConfigurationProperties(MatchingSettings.class)
@@ -95,6 +101,12 @@ class MatchingRuns {
 
 	private final MatchingRunHistory history;
 
+	private final UseCaseProposals proposals;
+
+	private final ProposalSources proposalSources;
+
+	private final MatchingProposalRepository evaluations;
+
 	/** Whether the runs a stopped application left running were queued again. */
 	private volatile boolean recovered;
 
@@ -103,7 +115,8 @@ class MatchingRuns {
 
 	MatchingRuns(MatchingRepository matching, Requirements requirements, UseCaseDirectory useCases,
 			SolutionDirectory solutions, SolutionEvidence evidence, AiModels models, MatchingSettings settings,
-			TransactionTemplate transactions, MatchingChanges changes, MatchingRunHistory history) {
+			TransactionTemplate transactions, MatchingChanges changes, MatchingRunHistory history,
+			UseCaseProposals proposals, ProposalSources proposalSources, MatchingProposalRepository evaluations) {
 		this.matching = matching;
 		this.requirements = requirements;
 		this.useCases = useCases;
@@ -114,6 +127,9 @@ class MatchingRuns {
 		this.transactions = transactions;
 		this.changes = changes;
 		this.history = history;
+		this.proposals = proposals;
+		this.proposalSources = proposalSources;
+		this.evaluations = evaluations;
 	}
 
 	/**
@@ -133,7 +149,7 @@ class MatchingRuns {
 		// The run waits until the use case has stayed unchanged for a while: people save a brief several times.
 		Instant notBefore = limits.settleMinutes() == 0 ? null
 				: Instant.now().plus(Duration.ofMinutes(limits.settleMinutes()));
-		if (notBefore != null && matching.postpone(useCaseId, notBefore)) {
+		if (notBefore != null && matching.postpone(useCaseId, MatchingRepository.BY_APPROVAL, notBefore)) {
 			changes.tell(useCaseId, Kind.RUN);
 			return;
 		}
@@ -153,6 +169,42 @@ class MatchingRuns {
 					.addKeyValue("useCaseId", useCaseId)
 					.log("A run of matching was queued for a use case");
 			});
+	}
+
+	/**
+	 * A proposal to the use case was sent or edited: a run is queued to judge it, once the proposals have stayed
+	 * unchanged for the settle minutes, as after an edit of the brief. A run that has not ended reads the proposals
+	 * when it reaches them, and one that read them before the change queues the next when it ends.
+	 */
+	void proposalSent(UUID useCaseId) {
+		if (useCases.brief(useCaseId).isEmpty() || !models.available(AiTask.MATCHING)) {
+			return;
+		}
+		Settings limits = matching.settings();
+		Instant notBefore = limits.settleMinutes() == 0 ? null
+				: Instant.now().plus(Duration.ofMinutes(limits.settleMinutes()));
+		if (notBefore != null && matching.postpone(useCaseId, MatchingRepository.BY_PROPOSAL, notBefore)) {
+			changes.tell(useCaseId, Kind.RUN);
+			return;
+		}
+		matching.queue(useCaseId, MatchingRepository.BY_PROPOSAL, null, Prompts.VERSION, notBefore, false)
+			.ifPresent(runId -> {
+				changes.tell(useCaseId, Kind.RUN);
+				LOG.atInfo()
+					.addKeyValue("event", "matching.run.queued")
+					.addKeyValue("runId", runId)
+					.addKeyValue("useCaseId", useCaseId)
+					.log("A run of matching was queued for a proposal to a use case");
+			});
+	}
+
+	/** Whether a proposal the use case holds now was sent or edited after the evaluation kept for it, or has none. */
+	private boolean proposalsWaiting(UUID useCaseId) {
+		Map<UUID, Evaluation> kept = evaluations.of(useCaseId);
+		return proposals.sentTo(useCaseId).stream().anyMatch(proposal -> {
+			Evaluation evaluation = kept.get(proposal.id());
+			return evaluation == null || !evaluation.stamp().equals(proposal.stamp());
+		});
 	}
 
 	/**
@@ -246,6 +298,16 @@ class MatchingRuns {
 		}
 
 		Map<UUID, String> judgedBefore = run.judgeAll() ? Map.of() : matching.fingerprints(run.useCaseId());
+		// The proposals the use case holds now, with what each says but its PDF, which is read only to be judged.
+		List<ProposalSources.Material> offers = proposals.sentTo(run.useCaseId())
+			.stream()
+			.map(proposalSources::material)
+			.toList();
+		Map<UUID, Evaluation> evaluatedBefore = run.judgeAll() ? Map.of() : evaluations.of(run.useCaseId());
+		AtomicInteger proposalsJudged = new AtomicInteger();
+		AtomicInteger proposalCalls = new AtomicInteger();
+		AtomicLong proposalInput = new AtomicLong();
+		AtomicLong proposalOutput = new AtomicLong();
 		AtomicInteger judged = new AtomicInteger();
 		AtomicInteger calls = new AtomicInteger();
 		AtomicLong input = new AtomicLong();
@@ -297,25 +359,80 @@ class MatchingRuns {
 					}
 				});
 			}
+			for (ProposalSources.Material offer : offers) {
+				workers.submit(() -> {
+					room.acquireUninterruptibly();
+					try {
+						if (refusal.get() == null) {
+							judge(run, offer, read, instructions, chat, evaluatedBefore, proposalsJudged, proposalCalls,
+									proposalInput, proposalOutput);
+						}
+					}
+					catch (RuntimeException | LinkageError failure) {
+						refusal.compareAndSet(null, kind(failure));
+					}
+					finally {
+						room.release();
+					}
+				});
+			}
 		}
+		long tookMillis = (System.nanoTime() - judging) / 1_000_000;
 		matching.addToStep(run.id(), new Step(MatchingRepository.JUDGMENT, candidates.size(), judged.get(), calls.get(),
-				input.get(), output.get(), (System.nanoTime() - judging) / 1_000_000));
+				input.get(), output.get(), tookMillis));
+		if (!offers.isEmpty()) {
+			matching.addToStep(run.id(), new Step(MatchingRepository.PROPOSALS, offers.size(), proposalsJudged.get(),
+					proposalCalls.get(), proposalInput.get(), proposalOutput.get(), tookMillis));
+		}
 		String refused = refusal.get();
 		if (refused == null) {
 			matching.finish(run.id());
 			changes.tell(run.useCaseId(), Kind.RUN);
-			// A brief that changed while the run worked asks for another.
+			// A brief that changed while the run worked asks for another, and so does a proposal sent or edited after
+			// the run read the proposals.
 			changed(run.useCaseId());
+			if (proposalsWaiting(run.useCaseId())) {
+				proposalSent(run.useCaseId());
+			}
 			LOG.atInfo()
 				.addKeyValue("event", "matching.run.done")
 				.addKeyValue("runId", run.id())
 				.addKeyValue("candidates", candidates.size())
 				.addKeyValue("judged", judged.get())
+				.addKeyValue("proposals", proposalsJudged.get())
 				.log("A run of matching ended");
 		}
 		else {
-			stop(run, judged.get(), refused);
+			stop(run, judged.get() + proposalsJudged.get(), refused);
 		}
+	}
+
+	/**
+	 * Judges one proposal against the requirements the run read, unless it was judged from the same material against
+	 * the same requirements: then its evaluation stands for what it says now. Its PDF is read only here.
+	 */
+	private void judge(Run run, ProposalSources.Material offer, Requirements.Read read, String instructions,
+			AiChat chat, Map<UUID, Evaluation> before, AtomicInteger judged, AtomicInteger calls, AtomicLong input,
+			AtomicLong output) {
+		SentUseCaseProposal proposal = offer.proposal();
+		String fingerprint = Quotes.fingerprint(Integer.toString(Prompts.PROPOSAL_VERSION),
+				Integer.toString(Prompts.VERSION), read.sourceHash(), offer.fingerprint());
+		Evaluation kept = before.get(proposal.id());
+		if (kept != null && fingerprint.equals(kept.fingerprint())) {
+			if (!kept.stamp().equals(proposal.stamp())) {
+				evaluations.unchanged(proposal.id(), proposal.stamp());
+			}
+			return;
+		}
+		Sources sources = proposalSources.read(offer, run.id());
+		Asking.Answer<Judgment> answer = Asking.ask(chat, instructions, Prompts.proposal(sources.texts()),
+				Judgment.class);
+		calls.addAndGet(answer.calls());
+		input.addAndGet(answer.inputTokens());
+		output.addAndGet(answer.outputTokens());
+		Judged settled = Buckets.settle(answer.value(), read.requirements(), sources, fingerprint);
+		evaluations.judged(proposal.id(), run.useCaseId(), proposal.stamp(), run.id(), settled);
+		judged.incrementAndGet();
 	}
 
 	/** The kind of a failed call, as a run keeps it: never a provider's message. */

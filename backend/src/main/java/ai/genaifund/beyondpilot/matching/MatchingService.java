@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import ai.genaifund.beyondpilot.ai.AiModels;
@@ -26,10 +27,13 @@ import ai.genaifund.beyondpilot.matching.dto.InviteCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange;
 import ai.genaifund.beyondpilot.matching.dto.MatchingChange.Kind;
 import ai.genaifund.beyondpilot.matching.dto.MatchingResponse;
+import ai.genaifund.beyondpilot.matching.dto.ProposalEvaluationsResponse;
 import ai.genaifund.beyondpilot.matching.dto.RemoveCandidateRequest;
 import ai.genaifund.beyondpilot.matching.dto.StartRunRequest;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingFeedbackRepository.Answer;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingProposalRepository;
+import ai.genaifund.beyondpilot.matching.persistence.MatchingProposalRepository.Evaluation;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Candidate;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository.Invitation;
@@ -40,6 +44,8 @@ import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.Membership;
 import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
+import ai.genaifund.beyondpilot.proposal.SentUseCaseProposal;
+import ai.genaifund.beyondpilot.proposal.UseCaseProposals;
 import ai.genaifund.beyondpilot.search.SolutionEvidence;
 import ai.genaifund.beyondpilot.search.SolutionEvidence.Shown;
 import ai.genaifund.beyondpilot.solution.IndexedSolution;
@@ -105,9 +111,14 @@ public class MatchingService {
 
 	private final EmailService email;
 
+	private final UseCaseProposals proposals;
+
+	private final MatchingProposalRepository evaluations;
+
 	MatchingService(MatchingRepository matching, MatchingFeedbackRepository feedback, UseCaseDirectory useCases,
 			SolutionDirectory solutions, SolutionEvidence evidence, OrganizationDirectory organizations,
-			IdentityService identity, AiModels models, AuditTrail audit, MatchingChanges changes, EmailService email) {
+			IdentityService identity, AiModels models, AuditTrail audit, MatchingChanges changes, EmailService email,
+			UseCaseProposals proposals, MatchingProposalRepository evaluations) {
 		this.matching = matching;
 		this.feedback = feedback;
 		this.useCases = useCases;
@@ -119,6 +130,8 @@ public class MatchingService {
 		this.audit = audit;
 		this.changes = changes;
 		this.email = email;
+		this.proposals = proposals;
+		this.evaluations = evaluations;
 	}
 
 	/** The caller's right to a use case: its brief, and whether they act as an operator. */
@@ -134,6 +147,57 @@ public class MatchingService {
 	public MatchingResponse get(Actor actor, UUID useCaseId) {
 		return view(actor, access(actor, useCaseId));
 	}
+
+	/**
+	 * The proposals a use case holds now, each with what the AI found in it against the use case's requirements
+	 * (BEY-229). The same callers as {@link #get}; a proposal no run has read yet is answered as waiting, and one
+	 * edited since its evaluation as outdated.
+	 * @throws MatchingException when the use case is not published, or the caller is neither an operator nor a member
+	 * of its organization
+	 */
+	@Transactional(readOnly = true)
+	public ProposalEvaluationsResponse proposals(Actor actor, UUID useCaseId) {
+		Access access = access(actor, useCaseId);
+		List<SentUseCaseProposal> sent = proposals.sentTo(useCaseId);
+		Map<UUID, Evaluation> kept = evaluations.of(useCaseId);
+		Map<UUID, Map<Integer, String>> webPages = evidence.webPages(sent.stream()
+			.flatMap(proposal -> proposal.solutions().stream())
+			.map(SentUseCaseProposal.Solution::id)
+			.distinct()
+			.toList());
+		List<ProposalEvaluationsResponse.Evaluation> items = new ArrayList<>();
+		for (SentUseCaseProposal proposal : sent) {
+			List<UUID> offered = proposal.solutions().stream().map(SentUseCaseProposal.Solution::id).toList();
+			List<String> names = proposal.solutions().stream().map(SentUseCaseProposal.Solution::name).toList();
+			Evaluation evaluation = kept.get(proposal.id());
+			if (evaluation == null) {
+				items.add(new ProposalEvaluationsResponse.Evaluation(proposal.id(), WAITING, names, 0, 0, null, List.of(),
+						List.of(), null, null));
+				continue;
+			}
+			Function<String, @Nullable String> address = label -> ProposalSources.webPage(label, offered, webPages);
+			items.add(new ProposalEvaluationsResponse.Evaluation(proposal.id(),
+					evaluation.stamp().equals(proposal.stamp()) ? JUDGED : OUTDATED, names, evaluation.requiredMet(),
+					evaluation.requiredTotal(), evaluation.summary(),
+					evaluation.unread().stream().filter(ProposalSources.PROPOSAL_DECK::equals).toList(),
+					findings(evaluation.findings().get("requirements"), address),
+					finding(evaluation.findings().get("problem"), address), evaluation.judgedAt()));
+		}
+		List<Candidate> candidates = matching.candidates(useCaseId);
+		return new ProposalEvaluationsResponse(useCaseId, models.available(AiTask.MATCHING),
+				run(matching.lastRun(useCaseId).orElse(null), access.operator(),
+						(int) candidates.stream().filter(Candidate::judged).count(), candidates.size()),
+				requirements(useCaseId), items);
+	}
+
+	/** A proposal's evaluation is of the proposal as it is now. */
+	private static final String JUDGED = "judged";
+
+	/** A proposal's evaluation is of the proposal before its last edit. */
+	private static final String OUTDATED = "outdated";
+
+	/** No run has read the proposal yet. */
+	private static final String WAITING = "waiting";
 
 	/**
 	 * What matching holds for a use case, as an operator reads it, for another module.
@@ -551,6 +615,7 @@ public class MatchingService {
 					? people.get(invitation.accountId()) : null;
 			SolutionMaterial material = materials.get(candidate.solutionId());
 			Map<Integer, String> pages = webPages.getOrDefault(candidate.solutionId(), Map.of());
+			Function<String, @Nullable String> address = label -> Sources.webPage(label, pages);
 			List<Answer> answers = said.getOrDefault(candidate.id(), List.of());
 			MatchingResponse.Feedback mine = answers.stream()
 				.filter(answer -> answer.accountId().equals(actor.accountId()))
@@ -570,37 +635,49 @@ public class MatchingService {
 					candidate.judged(), candidate.summary(),
 					Sources.unread(candidate.unread(), material != null && material.deck(),
 							material != null && material.website()),
-					findings(candidate.findings().get("requirements"), pages),
-					finding(candidate.findings().get("problem"), pages),
-					finding(candidate.findings().get("industry"), pages),
-						finding(candidate.findings().get("technology"), pages), mine,
+					findings(candidate.findings().get("requirements"), address),
+					finding(candidate.findings().get("problem"), address),
+					finding(candidate.findings().get("industry"), address),
+						finding(candidate.findings().get("technology"), address), mine,
 						operator ? answers.size() : null,
 						operator ? (int) answers.stream().filter(answer -> !answer.agrees()).count() : null));
 		}
 		RunState last = matching.lastRun(useCaseId).orElse(null);
-		int total = candidates.size();
-		int done = judged;
-		boolean running = last != null && MatchingRepository.RUNNING.equals(last.state());
-		// The steps say how far a run is, for everyone; what each cost is the operators' to read.
-		List<Step> worked = last != null && (operator || running) ? matching.steps(last.id()) : List.of();
-		MatchingResponse.Run run = last == null ? null
-				: new MatchingResponse.Run(last.id(), last.state(), running ? stage(worked) : null, last.origin(),
-						last.createdAt(), last.notBefore(), last.startedAt(), last.endedAt(), last.resumeAt(),
-						failure(last.failure(), operator), done, total, operator ? last.modelName() : null);
-		List<MatchingResponse.Step> steps = !operator ? List.of()
-				: worked.stream()
+		MatchingResponse.Run run = run(last, operator, judged, candidates.size());
+		List<MatchingResponse.Step> steps = !operator || last == null ? List.of()
+				: matching.steps(last.id())
+					.stream()
 					.map(step -> new MatchingResponse.Step(step.name(), step.takenIn(), step.givenOut(), step.calls(),
 							step.inputTokens(), step.outputTokens(), step.millis()))
 					.toList();
-		List<MatchingResponse.Requirement> requirements = matching.requirements(useCaseId)
+		return new MatchingResponse(useCaseId, operator, models.available(AiTask.MATCHING),
+				operator ? null : runsLeft(useCaseId),
+				operator ? null : Math.max(0, INVITATIONS_PER_DAY - matching.invitedToday(useCaseId, actor.accountId())),
+				run, requirements(useCaseId), candidates, steps);
+	}
+
+	/**
+	 * The last run as the caller may read it.
+	 * @param judged how many candidates are judged, of {@code total}
+	 */
+	private MatchingResponse.@Nullable Run run(@Nullable RunState last, boolean operator, int judged, int total) {
+		if (last == null) {
+			return null;
+		}
+		boolean running = MatchingRepository.RUNNING.equals(last.state());
+		// The steps say how far a run is, for everyone; what each cost is the operators' to read.
+		List<Step> worked = running ? matching.steps(last.id()) : List.of();
+		return new MatchingResponse.Run(last.id(), last.state(), running ? stage(worked) : null, last.origin(),
+				last.createdAt(), last.notBefore(), last.startedAt(), last.endedAt(), last.resumeAt(),
+				failure(last.failure(), operator), judged, total, operator ? last.modelName() : null);
+	}
+
+	private List<MatchingResponse.Requirement> requirements(UUID useCaseId) {
+		return matching.requirements(useCaseId)
 			.stream()
 			.map(requirement -> new MatchingResponse.Requirement(requirement.position(), requirement.kind(),
 					requirement.necessity(), requirement.label(), requirement.statement(), requirement.quote()))
 			.toList();
-		return new MatchingResponse(useCaseId, operator, models.available(AiTask.MATCHING),
-				operator ? null : runsLeft(useCaseId),
-				operator ? null : Math.max(0, INVITATIONS_PER_DAY - matching.invitedToday(useCaseId, actor.accountId())),
-				run, requirements, candidates, steps);
 	}
 
 	/**
@@ -627,11 +704,12 @@ public class MatchingService {
 		return PROVIDER;
 	}
 
-	private static List<MatchingResponse.Finding> findings(@Nullable Object kept, Map<Integer, String> webPages) {
+	private static List<MatchingResponse.Finding> findings(@Nullable Object kept,
+			Function<String, @Nullable String> address) {
 		List<MatchingResponse.Finding> findings = new ArrayList<>();
 		if (kept instanceof List<?> list) {
 			for (Object one : list) {
-				MatchingResponse.Finding finding = finding(one, webPages);
+				MatchingResponse.Finding finding = finding(one, address);
 				if (finding != null) {
 					findings.add(finding);
 				}
@@ -643,16 +721,17 @@ public class MatchingService {
 	/**
 	 * One finding as it was kept, with the address of the web page it quotes when that page is kept; a judgment made
 	 * before reasons were kept has none.
-	 * @param webPages the address of each web page of the solution, by its place among the site's
+	 * @param address the address of the web page a source's label names, if it names one that is kept
 	 */
-	private static MatchingResponse.@Nullable Finding finding(@Nullable Object kept, Map<Integer, String> webPages) {
+	private static MatchingResponse.@Nullable Finding finding(@Nullable Object kept,
+			Function<String, @Nullable String> address) {
 		if (!(kept instanceof Map<?, ?> map)) {
 			return null;
 		}
 		String source = text(map.get("source"), "");
 		return new MatchingResponse.Finding(map.get("requirement") instanceof Number place ? place.intValue() : null,
 				text(map.get("status"), Judgment.NOT_SHOWN), text(map.get("quote"), ""), source,
-				Sources.webPage(source, webPages), text(map.get("reason"), ""),
+				address.apply(source), text(map.get("reason"), ""),
 				text(map.get("quoteState"), Quotes.NONE));
 	}
 

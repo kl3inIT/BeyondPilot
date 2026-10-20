@@ -22,7 +22,7 @@ public record MatchingRunResponse(@Schema(requiredMode = Schema.RequiredMode.REQ
 	@Schema(name = "MatchingRunStep", description = "What a run did in one step.")
 	public record Step(
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-					allowableValues = { "requirements", "candidates", "judgment" }) String name,
+					allowableValues = { "requirements", "candidates", "judgment", "proposals" }) String name,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "How many the step was given.") int takenIn,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "How many it produced.") int givenOut,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) int calls,

@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ai.genaifund.beyondpilot.TestMailbox;
+import ai.genaifund.beyondpilot.TestPdf;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
 import ai.genaifund.beyondpilot.matching.persistence.MatchingRepository;
@@ -133,8 +134,15 @@ class MatchingRunTest {
 	@BeforeEach
 	void setUp() throws IOException {
 		jdbc.sql("delete from matching_candidate").update();
+		jdbc.sql("delete from matching_proposal").update();
 		jdbc.sql("delete from matching_run").update();
 		jdbc.sql("delete from matching_requirement").update();
+		// The solutions another test of this class indexed would be found too: each test reads only its own.
+		jdbc.sql("""
+				delete from search_passage where solution_id in
+				    (select item_id from search_document where kind = 'solution' and title like 'Claims Desk z%')
+				""").update();
+		jdbc.sql("delete from search_document where kind = 'solution' and title like 'Claims Desk z%'").update();
 		jdbc.sql("update ai_task_model set model_id = null, reasoning_effort = null, version = 0").update();
 		// A run starts as soon as the use case is published; the wait after a change has its own test.
 		jdbc.sql("""
@@ -149,6 +157,7 @@ class MatchingRunTest {
 		provider.createContext("/v1/chat/completions", exchange -> {
 			String sent = new String(exchange.getRequestBody().readAllBytes(), UTF_8);
 			boolean requirements = sent.contains("use case brief and list");
+			boolean proposal = sent.contains("PROPOSAL SOURCES");
 			if (refusing.get()) {
 				answer(exchange, 429, "{\"error\":{\"message\":\"limit reached\"}}");
 				return;
@@ -157,7 +166,7 @@ class MatchingRunTest {
 				answer(exchange, 400, "{\"error\":{\"message\":\"not supported\",\"type\":\"invalid_request_error\"}}");
 				return;
 			}
-			asked.add(requirements ? "requirements" : "judgment");
+			asked.add(requirements ? "requirements" : proposal ? "proposal" : "judgment");
 			if (requirements) {
 				answer(exchange, 200, completion(REQUIREMENTS));
 				return;
@@ -170,7 +179,7 @@ class MatchingRunTest {
 			}
 			// The call is counted out before its answer leaves, so the next one the run sends never meets it.
 			answering.decrementAndGet();
-			answer(exchange, 200, completion(JUDGMENT));
+			answer(exchange, 200, completion(proposal ? PROPOSAL : JUDGMENT));
 		});
 		// The provider answers several calls at once, as a real one does.
 		provider.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
@@ -205,6 +214,128 @@ class MatchingRunTest {
 			"industryFit", Map.of("quote", "Answers calls and chats for insurers.", "source", "profile", "status", "met"),
 			"technologyFit", Map.of("quote", "", "source", "", "status", "not_shown"), "summary",
 			"It reads Vietnamese claim forms and gives a first assessment.");
+
+	/**
+	 * What the model finds in a proposal: the first capability in the proposal's PDF, the second in the deck of the
+	 * solution it offers, and the constraint in words that are nowhere.
+	 */
+	private static final Map<String, Object> PROPOSAL = Map.of("findings",
+			List.of(Map.of("requirementId", "R1", "quote", "We read Vietnamese claim forms", "source",
+					"proposal deck p.1", "reason", "The PDF says it reads the forms.", "status", "met"),
+					Map.of("requirementId", "R2", "quote", "a first assessment of every claim", "source",
+							"solution 1 deck p.2", "reason", "The offered product assesses claims.", "status", "met"),
+					Map.of("requirementId", "R3", "quote", "Plugs into every claims system", "source", "proposal",
+							"reason", "It says it integrates.", "status", "met")),
+			"problemFit", Map.of("quote", "We read Vietnamese claim forms", "source", "proposal deck p.1", "status",
+					"met"),
+			"summary", "The proposal reads the forms and assesses each claim.");
+
+	@Test
+	void aProposalSentToAUseCaseIsJudgedAgainstItsRequirementsAndAgainWhenItIsEdited() {
+		String word = "zp" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+		matchingOn("http://127.0.0.1:" + provider.getAddress().getPort() + "/v1");
+		String owner = TestSignIn.session(client, mail, "owner-" + word + "@matching.test");
+		UUID vendor = organization(owner, "Claims Lab " + word);
+		post(operator, "/api/organization/admin/organizations/" + vendor + "/approve", Map.of());
+		String buyer = TestSignIn.session(client, mail, "buyer-" + word + "@matching.test");
+		UUID bank = organization(buyer, "Lotus Bank " + word);
+		post(operator, "/api/organization/admin/organizations/" + bank + "/approve", Map.of());
+		UUID solution = submittedSolution(owner, "Claims Desk " + word);
+		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
+		await().atMost(WAIT)
+			.until(() -> jdbc.sql("select count(*) from search_document where item_id = ?")
+				.param(solution)
+				.query(Long.class)
+				.single() == 1);
+		deck(solution, "Claims Desk reads Vietnamese claim forms, printed or handwritten.");
+		UUID useCase = UUID.fromString(JsonPath.read(body(call("POST", operator, "/api/usecase/admin/use-cases",
+				useCase("Claims triage " + word, bank))
+			.expectStatus()
+			.is2xxSuccessful()), "$.id"));
+		await().atMost(WAIT).until(() -> runsOf(useCase).equals(List.of("queued approved")));
+		runs.work();
+		assertThat(asked).containsExactly("requirements", "judgment");
+		String evaluations = "/api/matching/use-cases/" + useCase + "/proposals";
+		assertThat(JsonPath.<List<Object>>read(body(call("GET", buyer, evaluations, null).expectStatus().isOk()),
+				"$.proposals")).isEmpty();
+
+		// The vendor sends a proposal with a PDF and its solution: a run is queued for it, and it waits to be read.
+		UUID pdf = TestUploads.file(client, owner, "application_file", "proposal.pdf", "application/pdf",
+				TestPdf.of("We read Vietnamese claim forms for insurers in two weeks."));
+		Map<String, Object> draft = new HashMap<>();
+		draft.put("solutionIds", List.of(solution));
+		draft.put("approach", "We adapt Claims Desk to your forms.");
+		draft.put("deckFileId", pdf);
+		draft.put("teamBackground", "Four years of document AI for insurers.");
+		draft.put("version", null);
+		String saved = body(call("PUT", owner, "/api/proposal/use-cases/" + useCase + "/proposal", draft).expectStatus()
+			.isOk());
+		String proposal = JsonPath.read(saved, "$.proposal.id");
+		call("PUT", owner, "/api/identity/me/contact",
+				Map.of("country", "VN", "phone", "+84 912 345 678", "name", "Founder Provider"))
+			.expectStatus()
+			.isOk();
+		String sent = body(call("POST", owner, "/api/proposal/use-case-proposals/" + proposal + "/send", null)
+			.expectStatus()
+			.isOk());
+		await().atMost(WAIT).until(() -> runsOf(useCase).equals(List.of("done approved", "queued proposal")));
+		String waiting = body(call("GET", buyer, evaluations, null).expectStatus().isOk());
+		assertThat(JsonPath.<List<String>>read(waiting, "$.proposals[*].state")).containsExactly("waiting");
+		assertThat(JsonPath.<List<String>>read(waiting, "$.proposals[0].solutionNames"))
+			.containsExactly("Claims Desk " + word);
+
+		// The run reads the PDF and the offered solution: the solution's own judgment is unchanged and asks nothing.
+		runs.work();
+		assertThat(runsOf(useCase)).containsExactly("done approved", "done proposal");
+		assertThat(asked).containsExactly("requirements", "judgment", "proposal");
+		String judged = body(call("GET", buyer, evaluations, null).expectStatus().isOk());
+		assertThat(JsonPath.<String>read(judged, "$.proposals[0].proposalId")).isEqualTo(proposal);
+		assertThat(JsonPath.<String>read(judged, "$.proposals[0].state")).isEqualTo("judged");
+		assertThat(JsonPath.<Integer>read(judged, "$.proposals[0].requiredMet")).isEqualTo(2);
+		assertThat(JsonPath.<Integer>read(judged, "$.proposals[0].requiredTotal")).isEqualTo(2);
+		// Both quotes are where the model says; the constraint's words are nowhere and fall to no evidence.
+		assertThat(JsonPath.<List<String>>read(judged, "$.proposals[0].findings[*].status"))
+			.containsExactly("met", "met", "not_shown");
+		assertThat(JsonPath.<List<String>>read(judged, "$.proposals[0].findings[*].quoteState"))
+			.containsExactly("exact", "exact", "not_found");
+		assertThat(JsonPath.<List<String>>read(judged, "$.proposals[0].findings[*].source"))
+			.containsExactly("proposal deck p.1", "solution 1 deck p.2", "");
+		assertThat(JsonPath.<String>read(judged, "$.proposals[0].problem.status")).isEqualTo("met");
+		assertThat(JsonPath.<List<String>>read(judged, "$.proposals[0].unread")).isEmpty();
+		assertThat(JsonPath.<List<String>>read(judged, "$.requirements[*].kind"))
+			.containsExactly("capability", "capability", "constraint");
+		assertThat(jdbc.sql("""
+				select s.name || ' ' || s.taken_in || ' ' || s.given_out || ' ' || s.calls from matching_run_step s
+				join matching_run r on r.id = s.run_id
+				where r.use_case_id = ? and r.origin = 'proposal' and s.name = 'proposals'
+				""").param(useCase).query(String.class).single()).isEqualTo("proposals 1 1 1");
+		// An operator reads the same; the vendor's own member, and anyone else, is told there is no such use case.
+		assertThat(JsonPath.<String>read(body(call("GET", operator, evaluations, null).expectStatus().isOk()),
+				"$.proposals[0].state")).isEqualTo("judged");
+		assertProblem(call("GET", owner, evaluations, null), 404, "MATCHING_USE_CASE_NOT_FOUND");
+
+		// A run with nothing changed asks nothing.
+		matching.queue(useCase, MatchingRepository.BY_OPERATOR, null, Prompts.VERSION, null, false).orElseThrow();
+		runs.work();
+		assertThat(asked).hasSize(3);
+
+		// The vendor edits what it sent: the evaluation is of the proposal before the edit until a run reads it again.
+		draft.put("approach", "We adapt Claims Desk to your forms and your claims system.");
+		draft.put("version", JsonPath.<Number>read(sent, "$.proposal.version").longValue());
+		call("PUT", owner, "/api/proposal/use-cases/" + useCase + "/proposal", draft).expectStatus().isOk();
+		await().atMost(WAIT).until(() -> runsOf(useCase).getLast().equals("queued proposal"));
+		assertThat(JsonPath.<String>read(body(call("GET", buyer, evaluations, null).expectStatus().isOk()),
+				"$.proposals[0].state")).isEqualTo("outdated");
+		runs.work();
+		assertThat(asked).containsExactly("requirements", "judgment", "proposal", "proposal");
+		assertThat(JsonPath.<String>read(body(call("GET", buyer, evaluations, null).expectStatus().isOk()),
+				"$.proposals[0].state")).isEqualTo("judged");
+
+		// Withdrawn, the proposal is no longer the organization's to read, and its evaluation is not answered.
+		call("POST", owner, "/api/proposal/use-case-proposals/" + proposal + "/withdraw", null).expectStatus().isOk();
+		assertThat(JsonPath.<List<Object>>read(body(call("GET", buyer, evaluations, null).expectStatus().isOk()),
+				"$.proposals")).isEmpty();
+	}
 
 	@Test
 	void aPublishedUseCaseIsMatchedOnceAndARunThatMeetsTheProvidersLimitWaitsAndGoesOn() throws Exception {

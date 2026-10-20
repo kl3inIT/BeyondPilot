@@ -102,8 +102,8 @@ class MatchingRepositoryTest {
 
 		// The use case changed: its run is not taken before it has stayed unchanged long enough.
 		assertThat(matching.claim(null)).isEmpty();
-		assertThat(matching.postpone(useCase, Instant.now().plusSeconds(1200))).isTrue();
-		assertThat(matching.postpone(other, Instant.now())).isFalse();
+		assertThat(matching.postpone(useCase, MatchingRepository.BY_APPROVAL, Instant.now().plusSeconds(1200))).isTrue();
+		assertThat(matching.postpone(other, MatchingRepository.BY_APPROVAL, Instant.now())).isFalse();
 		assertThat(matching.queuedToday(useCase, MatchingRepository.BY_APPROVAL)).isEqualTo(1);
 		assertThat(matching.queuedToday(useCase, MatchingRepository.BY_MEMBER)).isZero();
 

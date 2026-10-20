@@ -51,11 +51,13 @@ import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.storage.FilePurpose;
 import ai.genaifund.beyondpilot.storage.StorageService;
+import ai.genaifund.beyondpilot.storage.StoredFile;
 import ai.genaifund.beyondpilot.usecase.UseCaseDirectory;
 import ai.genaifund.beyondpilot.usecase.UseCaseTarget;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
@@ -96,10 +98,12 @@ public class UseCaseProposals {
 
 	private final AuditTrail audit;
 
+	private final ApplicationEventPublisher events;
+
 	UseCaseProposals(UseCaseProposalRepository proposals, UseCaseProposalSolutionRepository offers,
 			UseCaseDirectory useCases, OrganizationDirectory organizations, SolutionDirectory solutions,
 			IdentityService identity, StorageService storage, JsonMapper json, EmailService email,
-			UseCaseProposalDecisionRepository decisions, AuditTrail audit) {
+			UseCaseProposalDecisionRepository decisions, AuditTrail audit, ApplicationEventPublisher events) {
 		this.proposals = proposals;
 		this.offers = offers;
 		this.useCases = useCases;
@@ -111,6 +115,7 @@ public class UseCaseProposals {
 		this.email = email;
 		this.decisions = decisions;
 		this.audit = audit;
+		this.events = events;
 	}
 
 	/**
@@ -198,6 +203,9 @@ public class UseCaseProposals {
 		proposals.saveAndFlush(proposal);
 		offers.saveAll(offered);
 		offers.flush();
+		if (edit) {
+			events.publishEvent(new UseCaseProposalSent(useCaseId, proposal.getId()));
+		}
 		return form(actor, target, membership, proposal);
 	}
 
@@ -236,6 +244,7 @@ public class UseCaseProposals {
 			.addKeyValue("use_case_id", proposal.getUseCaseId())
 			.addKeyValue("organization_id", proposal.getOrganizationId())
 			.log("Proposal sent to a use case");
+		events.publishEvent(new UseCaseProposalSent(proposal.getUseCaseId(), id));
 		tellSender(actor, proposal, target, membership);
 		return form(actor, target, membership, proposal);
 	}
@@ -548,6 +557,39 @@ public class UseCaseProposals {
 			.map(UseCaseProposal::getDeckFileId)
 			.orElseThrow(() -> notFound(useCaseId));
 		return storage.download(deck);
+	}
+
+	/**
+	 * The proposals a use case holds now, sent and not withdrawn, the latest first, with what each says and the PDF it
+	 * attached, for matching to judge them (BEY-229). Nobody is checked here: it is read by a module, never answered to
+	 * a person as it is.
+	 */
+	@Transactional(readOnly = true)
+	public List<SentUseCaseProposal> sentTo(UUID useCaseId) {
+		List<UseCaseProposal> sent = proposals.findByUseCaseIdAndStatusOrderBySentAtDesc(useCaseId,
+				UseCaseProposal.SENT);
+		Map<UUID, List<UseCaseProposalSolution>> offeredBy = offersOf(sent);
+		Map<UUID, StoredFile> files = storage.describe(sent.stream()
+			.map(UseCaseProposal::getDeckFileId)
+			.filter(Objects::nonNull)
+			.toList());
+		return sent.stream().map(proposal -> {
+			StoredFile file = proposal.getDeckFileId() == null ? null : files.get(proposal.getDeckFileId());
+			List<SentUseCaseProposal.Solution> offered = offeredBy.getOrDefault(proposal.getId(), List.of())
+				.stream()
+				.map(offer -> solutions.offered(offer.getSolutionId()))
+				.flatMap(Optional::stream)
+				.map(solution -> new SentUseCaseProposal.Solution(solution.id(), solution.name(), solution.summary()))
+				.toList();
+			Instant edited = proposal.getEditedAt();
+			return new SentUseCaseProposal(proposal.getId(), proposal.getUseCaseId(), proposal.getOrganizationId(),
+					edited != null ? edited : Objects.requireNonNull(proposal.getSentAt()), proposal.getApproach(),
+					proposal.getTeamBackground(),
+					file == null ? null
+							: new SentUseCaseProposal.Deck(file.id(), file.fileName(), file.mediaType(),
+									storage.content(file.id())),
+					offered);
+		}).toList();
 	}
 
 	/** How many proposals each of these use cases received, for anyone; a use case that received none counts 0. */
