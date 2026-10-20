@@ -4573,6 +4573,9 @@
           "optional": "Optional"
         },
         "addRequirement": "Add a requirement",
+        "maxRequirements": "You can list up to {max} requirements.",
+        "amountInvalid": "Enter 0 or a whole number, without a sign or decimals.",
+        "closesPast": "Choose today or a later date.",
         "dataReadiness": "Data availability and readiness",
         "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
         "integrationRequirements": "Integration, deployment and infrastructure",

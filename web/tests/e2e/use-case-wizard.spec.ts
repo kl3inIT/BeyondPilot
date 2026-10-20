@@ -201,4 +201,48 @@ test.describe("an organization's use case, written in steps", () => {
     await expect(page.getByRole("dialog", { name: attachedPdf.fileName })).toBeVisible();
     await expectNoSeriousA11yViolations(page);
   });
+
+  test("the form stops what the backend would refuse: past 30 requirements, a sign in an amount, a past day", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const { saves } = await fakeBackend(page, baseURL!);
+    await page.goto(wizardPath);
+
+    await openStep(page, isMobile, "Requirements and data");
+    const add = page.getByRole("button", { name: "Add a requirement" });
+    for (let count = 1; count < 30; count += 1) {
+      await add.click();
+    }
+    await expect(page.getByLabel("Requirement 30")).toBeVisible();
+    await expect(add).toHaveCount(0);
+    await expect(page.getByText("You can list up to 30 requirements.")).toBeVisible();
+
+    await openStep(page, isMobile, "Budget and timeline");
+    const known = page.getByRole("checkbox", { name: "Budget to be determined" });
+    if (await known.isChecked()) {
+      await known.click();
+    }
+    const budget = page.getByLabel("Minimum budget (USD)");
+    await budget.fill("-5");
+    await budget.blur();
+    await expect(
+      page.getByText("Enter 0 or a whole number, without a sign or decimals."),
+    ).toBeVisible();
+    await budget.fill("5000");
+    await expect(
+      page.getByText("Enter 0 or a whole number, without a sign or decimals."),
+    ).toHaveCount(0);
+
+    const day = page.locator('input[name="content.closesDay"]');
+    await day.fill("2020-01-01");
+    await day.blur();
+    await expect(page.getByText("Choose today or a later date.")).toBeVisible();
+    await day.fill("2099-01-01");
+    await expect(page.getByText("Choose today or a later date.")).toHaveCount(0);
+    expect(saves.length).toBeGreaterThan(0);
+  });
 });
