@@ -609,6 +609,7 @@
       "searchSolutions": "Search listed solutions",
       "readSolution": "Read a listed solution",
       "searchPrograms": "Search programs",
+      "searchUseCases": "Search enterprises' use cases",
       "limit": "Cannot change anything. Revoke any time."
     },
     "operator": {
@@ -629,7 +630,7 @@
     "refusedTitle": "{app} cannot connect to BeyondPilot",
     "refusedLead": "Only GenAI Fund operators can connect.",
     "signedInAs": "Signed in as {person}",
-    "useUserServer": "Use the user server instead: it searches listed solutions.",
+    "useUserServer": "Use the user server instead: it searches listed solutions, programs and use cases.",
     "back": "Back to {app}",
     "anotherAccount": "Not you? Sign in with another account",
     "anyLocalApp": "An app on this computer",
@@ -661,7 +662,7 @@
   "Mcp": {
     "metaTitle": "Connect an AI app · BeyondPilot",
     "title": "Use BeyondPilot in your AI app",
-    "lead": "Connect ChatGPT, Claude or Codex through MCP (Model Context Protocol), then ask it about the AI solutions and programs listed on BeyondPilot.",
+    "lead": "Connect ChatGPT, Claude or Codex through MCP (Model Context Protocol), then ask it about the AI solutions, programs and enterprises' use cases listed on BeyondPilot.",
     "limits": "The app signs in with your BeyondPilot account, can only search and read, and can be revoked any time under Connected apps.",
     "tabs": {
       "label": "AI app connection",
@@ -3093,7 +3094,7 @@
         },
         "user": {
           "title": "User server",
-          "search": "Finds listed solutions and published programs.",
+          "search": "Finds listed solutions, published programs and published use cases.",
           "fetch": "Reads one of them in full by the id search returned."
         }
       },

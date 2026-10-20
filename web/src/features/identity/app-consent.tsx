@@ -6,6 +6,7 @@ import {
   CornerDownLeftIcon,
   GlobeIcon,
   InfoIcon,
+  LightbulbIcon,
   ScrollTextIcon,
   SearchIcon,
   ShieldCheckIcon,
@@ -82,6 +83,7 @@ function AppConsent({ app, account, scopes, state }: AppConsentProps) {
         { icon: SearchIcon, text: t("user.searchSolutions") },
         { icon: BoxIcon, text: t("user.readSolution") },
         { icon: CalendarRangeIcon, text: t("user.searchPrograms") },
+        { icon: LightbulbIcon, text: t("user.searchUseCases") },
       ];
 
   return (

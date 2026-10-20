@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +40,7 @@ import org.springframework.test.web.servlet.client.RestTestClient;
 
 /**
  * The user MCP server over real HTTP, called by the MCP SDK's own client with a token from a real connection: the
- * tools a person's app sees and what they answer, the way an app is told to sign in, and every token, connection,
+ * tools a person's app sees and what they answer, published use cases included, the way an app is told to sign in, and every token, connection,
  * account, protocol version, origin and rate that is refused. The call log keeps no arguments.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -349,6 +351,51 @@ class McpServerTest {
 			}
 		}
 		assertThat(refused).isPositive();
+	}
+
+	@Test
+	void anAppFindsAndReadsAPublishedUseCaseButNotOneThatIsNot() {
+		String owner = TestSignIn.session(client, mail, "poster-" + word + "@mcp.test");
+		UUID organization = organization(owner, "Fleet " + word);
+		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		UUID published = useCase(organization, "Invoice matcher " + word, true);
+		UUID draft = useCase(organization, "Invoice draft " + word, false);
+		await().atMost(WAIT)
+			.until(() -> jdbc.sql("select count(*) from search_document where item_id = :id")
+				.param("id", published)
+				.query(Long.class)
+				.single() == 1);
+
+		String person = TestSignIn.session(client, mail, "builder-" + word + "@mcp.test");
+		McpSyncClient app = app(TestAppConnection.connect(client, port, person, "mcp.read").access());
+		app.initialize();
+
+		String found = text(app.callTool(McpSchema.CallToolRequest.builder("search")
+			.arguments(Map.of("query", "invoice matcher " + word))
+			.build()));
+		assertThat(JsonPath.<String>read(found, "$.results[0].id")).isEqualTo("use_case:" + published);
+		assertThat(JsonPath.<String>read(found, "$.results[0].url")).isEqualTo(ISSUER + "/use-cases/" + published);
+
+		String read = text(app.callTool(McpSchema.CallToolRequest.builder("fetch")
+			.arguments(Map.of("id", "use_case:" + published))
+			.build()));
+		assertThat(JsonPath.<String>read(read, "$.title")).isEqualTo("Invoice matcher " + word);
+		assertThat(JsonPath.<String>read(read, "$.text")).contains("Fleet " + word, "Cut hotline calls by 40%.")
+			// The problem statement is for members on the site, not for search.
+			.doesNotContain("checks vehicle documents by hand");
+		assertThat(JsonPath.<String>read(read, "$.metadata.kind")).isEqualTo("use_case");
+
+		// A use case not published is no more found or read here than on the site.
+		assertThat(app.callTool(McpSchema.CallToolRequest.builder("fetch")
+			.arguments(Map.of("id", "use_case:" + draft))
+			.build()).isError()).isTrue();
+		app.closeGracefully();
+
+		Map<String, Object> logged = jdbc.sql("""
+				select c.* from mcp_call c join identity_account a on a.id = c.account_id
+				where a.email = :email and c.tool = 'fetch' and c.outcome = 'ok'
+				""").param("email", "builder-" + word + "@mcp.test").query().singleRow();
+		assertThat(logged.get("target_path")).isEqualTo("/use-cases/" + published);
 	}
 
 	@Test
@@ -669,6 +716,41 @@ class McpServerTest {
 			.cookie(TestSignIn.SESSION_COOKIE, session)
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(request)
+			.exchange()
+			.expectStatus()
+			.isCreated()), "$.id"));
+	}
+
+	/** A use case an operator saved for the organization, published or kept a draft. */
+	private UUID useCase(UUID organization, String title, boolean publish) {
+		Map<String, Object> body = new HashMap<>();
+		body.put("organizationId", organization);
+		body.put("publishNow", publish);
+		body.put("title", title);
+		body.put("problemStatement", "Our service team checks vehicle documents by hand.");
+		body.put("industry", "automotive_mobility");
+		body.put("technologies", List.of("document_intelligence"));
+		body.put("expectedOutcomes", "Cut hotline calls by 40%.");
+		body.put("currentProcess", "Agents type dates into a spreadsheet.");
+		body.put("targetUsers", "Vehicle owners and the service team.");
+		body.put("requirements", List.of(Map.of("statement", "Read documents", "necessity", "required")));
+		body.put("dataReadiness", "Scanned documents with labelled fields.");
+		body.put("integrationRequirements", "App SDK and the document store API.");
+		body.put("attachmentFileIds", List.of());
+		body.put("budgetMin", 15000);
+		body.put("budgetMax", 40000);
+		body.put("budgetToBeDetermined", false);
+		body.put("budgetMembersOnly", false);
+		body.put("timelineMinWeeks", 8);
+		body.put("timelineMaxWeeks", 12);
+		body.put("hideOrganizationName", false);
+		body.put("closesAt", Instant.now().plus(60, ChronoUnit.DAYS).toString());
+		return UUID.fromString(JsonPath.read(body(client.post()
+			.uri("/api/usecase/admin/use-cases")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(body)
 			.exchange()
 			.expectStatus()
 			.isCreated()), "$.id"));
