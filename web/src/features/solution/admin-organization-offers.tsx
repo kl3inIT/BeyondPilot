@@ -54,7 +54,7 @@ function AdminOrganizationOffers({
             title: (
               <Link
                 href={`${siteRoutes.adminOffers}/${offer.id}`}
-                className="truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                className="block truncate rounded-sm font-medium outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <OfferTitle offer={offer} />
               </Link>
