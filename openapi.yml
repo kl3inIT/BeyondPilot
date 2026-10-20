@@ -8505,6 +8505,40 @@ paths:
       summary: Keep what the proposal form holds
       tags:
       - Use case proposals
+  /api/proposal/use-cases/{useCaseId}/proposal/file:
+    get:
+      description: "The PDF of the proposal the caller's organization wrote to a use\
+        \ case, a draft or a sent one, for the members of that organization."
+      operationId: getOwnUseCaseProposalFile
+      parameters:
+      - in: path
+        name: useCaseId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+          description: "The bytes of the PDF, saved under its name."
+        "302":
+          description: "The address the object store serves the file at, for a while."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller's organization has no proposal to this use case,\
+            \ or it holds no PDF."
+      security:
+      - session: []
+      summary: The PDF of the caller's own proposal
+      tags:
+      - Use case proposals
   /api/proposal/use-cases/{useCaseId}/proposals:
     get:
       operationId: listUseCaseProposals
@@ -12824,6 +12858,56 @@ paths:
       summary: Approve a use case in review and publish it
       tags:
       - Use case administration
+  /api/usecase/admin/use-cases/{id}/attachments/{fileId}:
+    get:
+      description: "The bytes of the file, saved under its name."
+      operationId: readAdminUseCaseAttachment
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: fileId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+          description: The bytes of the file.
+        "302":
+          description: "The address the object store serves the file at, for a while."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "There is no such use case, or it names no such file."
+      security:
+      - session: []
+      summary: "A file of a use case, for an operator"
+      tags:
+      - Use case administration
   /api/usecase/admin/use-cases/{id}/feature:
     post:
       operationId: featureAdminUseCase
@@ -13162,6 +13246,58 @@ paths:
       security:
       - session: []
       summary: Save what the members have written so far
+      tags:
+      - My organization's use cases
+  /api/usecase/mine/{id}/attachments/{fileId}:
+    get:
+      description: "The bytes of the file, saved under its name."
+      operationId: readMyUseCaseAttachment
+      parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - in: path
+        name: fileId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+          description: The bytes of the file.
+        "302":
+          description: "The address the object store serves the file at, for a while."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not a member of an approved organization that
+            publishes use cases.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The organization has no such use case, or the use case names\
+            \ no such file."
+      security:
+      - session: []
+      summary: A file of a use case of the caller's organization
       tags:
       - My organization's use cases
   /api/usecase/mine/{id}/draft:

@@ -5,6 +5,7 @@ import {
   draftSchema,
   fieldNameOf,
   incompleteSteps,
+  savable,
   timelineOf,
   type DraftValues,
 } from "./use-case-draft";
@@ -113,12 +114,12 @@ describe("timelineOf", () => {
 describe("draftSchema", () => {
   const say = {
     tooLong: (max: number) => `max ${max}`,
-    wholeAmount: "whole",
     budgetOutOfOrder: "order",
     closesInPast: "past",
   };
   // 20 October 2026, 10:00 in Vietnam.
-  const schema = draftSchema(say, () => Date.parse("2026-10-20T03:00:00Z"));
+  const now = () => Date.parse("2026-10-20T03:00:00Z");
+  const schema = draftSchema(say, now);
   const issues = (values: Partial<DraftValues>) =>
     (schema.safeParse({ ...empty, ...values }).error?.issues ?? []).map((issue) => [
       issue.path.join("."),
@@ -136,26 +137,42 @@ describe("draftSchema", () => {
     ]);
   });
 
-  it("refuses an amount below 0 or not whole, and a maximum below the minimum", () => {
-    expect(issues({ budgetMin: "-5", budgetMax: "1.5" })).toEqual([
-      ["budgetMin", "whole"],
-      ["budgetMax", "whole"],
-    ]);
+  it("refuses a maximum below the minimum, unless the budget is to be determined", () => {
     expect(issues({ budgetMin: "100", budgetMax: "50" })).toEqual([["budgetMax", "order"]]);
     expect(issues({ budgetMin: "100", budgetMax: "50", budgetToBeDetermined: true })).toEqual([]);
   });
 
-  it("refuses a close time already gone in Vietnam", () => {
+  it("refuses a close time today that has gone; an earlier day is the field's own check", () => {
     expect(issues({ closesDay: "2026-10-20", closesTime: "09:59" })).toEqual([
       ["closesDay", "past"],
     ]);
     expect(issues({ closesDay: "2026-10-20", closesTime: "10:01" })).toEqual([]);
+    expect(issues({ closesDay: "2026-10-19" })).toEqual([]);
   });
 
   it("refuses a thirty-first requirement", () => {
     const row = { statement: "Reads invoices", necessity: "required" as const };
     expect(issues({ requirements: Array(30).fill(row) })).toEqual([]);
     expect(issues({ requirements: Array(31).fill(row) })).toEqual([["requirements", "max 30"]]);
+  });
+});
+
+describe("savable", () => {
+  const now = () => Date.parse("2026-10-20T03:00:00Z");
+
+  it("sends a draft the backend takes, however incomplete", () => {
+    expect(savable(empty, now)).toBe(true);
+    expect(savable({ ...empty, budgetMin: "0", closesDay: "2026-10-21" }, now)).toBe(true);
+  });
+
+  it("holds back an amount it cannot read, rather than saving it as none", () => {
+    expect(savable({ ...empty, budgetMin: "-5" }, now)).toBe(false);
+    expect(savable({ ...empty, budgetMin: "-5", budgetToBeDetermined: true }, now)).toBe(true);
+  });
+
+  it("holds back a past close day and anything the schema refuses", () => {
+    expect(savable({ ...empty, closesDay: "2026-10-19" }, now)).toBe(false);
+    expect(savable({ ...empty, title: "x".repeat(201) }, now)).toBe(false);
   });
 });
 

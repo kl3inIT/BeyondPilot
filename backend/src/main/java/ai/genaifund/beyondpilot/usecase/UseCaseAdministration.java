@@ -24,6 +24,7 @@ import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.program.ProgramName;
 import ai.genaifund.beyondpilot.program.ProgramService;
+import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseListResponse;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseResponse;
@@ -142,6 +143,19 @@ public class UseCaseAdministration {
 			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No use case " + id));
 		Map<UUID, OrganizationName> names = organizations.names(Set.of(useCase.getOrganizationId()));
 		return response(actor, useCase, organization(useCase.getOrganizationId(), names), Instant.now());
+	}
+
+	/**
+	 * A file of a use case as an operator reads it.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws UseCaseException when the use case does not exist or names no such file
+	 */
+	@Transactional(readOnly = true)
+	public FileDownload attachment(Actor actor, UUID id, UUID fileId) {
+		identity.requireOperator(actor);
+		UseCase useCase = useCases.findById(id)
+			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.NOT_FOUND, "No use case " + id));
+		return files.open(useCase, fileId);
 	}
 
 	/**

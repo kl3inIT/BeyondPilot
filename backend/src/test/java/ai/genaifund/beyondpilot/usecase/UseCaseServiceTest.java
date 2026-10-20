@@ -13,6 +13,7 @@ import java.util.UUID;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.storage.StorageProperties;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,9 @@ class UseCaseServiceTest {
 
 	@Autowired
 	private JdbcClient jdbc;
+
+	@Autowired
+	private StorageProperties storage;
 
 	private RestTestClient client;
 
@@ -237,6 +241,37 @@ class UseCaseServiceTest {
 		assertProblem(put(team.founder, MINE + "/" + id, complete(version)), 409, "USECASE_NOT_EDITABLE");
 		assertProblem(post(team.founder, MINE + "/" + id + "/draft", null), 409, "USECASE_CANNOT_MOVE_TO_DRAFT");
 		assertProblem(post(team.founder, MINE + "/" + id + "/submit", null), 409, "USECASE_NOT_SUBMITTABLE");
+	}
+
+	@Test
+	void theMembersOfAnOrganizationReadTheFilesOfItsUseCaseAndNobodyElseDoes() {
+		Team ours = team("files-ours.test", true);
+		Team theirs = team("files-theirs.test", true);
+		UUID id = create(ours.founder);
+		UUID file = UUID.randomUUID();
+		jdbc.sql("""
+				insert into storage_file (id, provider, object_key, purpose, public_read, file_name, media_type,
+				                          size_bytes, status, uploaded_by_account_id, upload_expires_at)
+				select ?, 'local', ?, 'use_case_attachment', false, 'samples.pdf', 'application/pdf', 2048, 'stored',
+				       id, now()
+				from identity_account where email = 'founder@files-ours.test'
+				""").params(file, "test/" + file).update();
+		StoredPdf.keep(storage, file);
+		Map<String, Object> draft = save(0);
+		draft.put("attachmentFileIds", List.of(file));
+		put(ours.founder, MINE + "/" + id, draft).expectStatus().isOk();
+
+		String path = MINE + "/" + id + "/attachments/";
+		// A colleague reads the PDF as a PDF, which the viewer shows; the file is not theirs to name for another use case.
+		get(ours.colleague, path + file).expectHeader()
+			.contentType("application/pdf")
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"samples[.]pdf\".*");
+		assertProblem(get(ours.colleague, path + UUID.randomUUID()), 404, "USECASE_NOT_FOUND");
+		assertProblem(get(theirs.founder, path + file), 404, "USECASE_NOT_FOUND");
+		get(TestSignIn.session(client, mail, "stranger@files-nowhere.test"), path + file).expectStatus()
+			.value(status -> assertThat(status).isIn(403, 404));
+		client.get().uri(path + file).exchange().expectStatus().isUnauthorized();
 	}
 
 	@Test

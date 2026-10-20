@@ -5,11 +5,13 @@ import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
 import { Button } from "@/components/actions/button";
+import { PdfViewer } from "@/components/composites/pdf-viewer";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "cn";
 import { useFailureWords } from "@/hooks/use-notify";
 import { useFormatter } from "@/i18n/format";
 import { uploadFile, uploadWords } from "@/lib/storage/upload";
+import { forgetUploaded, keepUploaded, readableAddress } from "@/lib/storage/uploaded-files";
 
 /** What the backend accepts as a file of an application (storage › FilePurpose.APPLICATION_FILE). */
 const maxBytes = 25 * 1024 * 1024;
@@ -25,19 +27,30 @@ type PdfUploadProps = {
   describedBy?: string;
   /** Draws the empty state as a roomy dashed zone with a plus in the middle, for a page of one file. */
   zone?: boolean;
+  /** Where the file is read once a record names it, for the file the page did not upload itself. */
+  savedAddress?: string;
 };
 
 /**
  * A private PDF of an application, such as a deck or a proposal: chosen, uploaded at once, then
  * replaced or removed. The record names the file when it is saved.
  */
-function PdfUpload({ id, value, onChange, invalid, describedBy, zone }: PdfUploadProps) {
+function PdfUpload({
+  id,
+  value,
+  onChange,
+  invalid,
+  describedBy,
+  zone,
+  savedAddress,
+}: PdfUploadProps) {
   const t = useTranslations("PdfUpload");
   const words = useFailureWords();
   const format = useFormatter();
   const input = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<number | null>(null);
 
   async function upload(file: File) {
     setProblem(null);
@@ -52,6 +65,10 @@ function PdfUpload({ id, value, onChange, invalid, describedBy, zone }: PdfUploa
     setUploading(true);
     try {
       const stored = await uploadFile(file, "application_file");
+      keepUploaded(stored.id, file);
+      if (value) {
+        forgetUploaded(value.fileId);
+      }
       onChange({ fileId: stored.id, fileName: stored.fileName, sizeBytes: stored.sizeBytes });
     } catch (error) {
       setProblem(
@@ -74,6 +91,8 @@ function PdfUpload({ id, value, onChange, invalid, describedBy, zone }: PdfUploa
 
   const size = (bytes: number) =>
     format.number(bytes / (1024 * 1024), { maximumFractionDigits: 1 }) + " MB";
+
+  const address = value ? readableAddress(value.fileId, savedAddress) : undefined;
 
   return (
     <div className="flex flex-col gap-2">
@@ -100,6 +119,23 @@ function PdfUpload({ id, value, onChange, invalid, describedBy, zone }: PdfUploa
             <span className="truncate text-sm font-medium">{value.fileName}</span>
             <span className="text-xs text-muted-foreground">{size(value.sizeBytes)}</span>
           </span>
+          {value && address && (
+            <>
+              <Button
+                prominence="tertiary"
+                size="sm"
+                aria-label={t("openFile", { name: value.fileName })}
+                onClick={() => setViewing(0)}
+              >
+                {t("open")}
+              </Button>
+              <PdfViewer
+                files={[{ url: address, name: value.fileName, meta: size(value.sizeBytes) }]}
+                index={viewing}
+                onIndexChange={setViewing}
+              />
+            </>
+          )}
           <Button
             prominence="tertiary"
             size="sm"
@@ -113,7 +149,10 @@ function PdfUpload({ id, value, onChange, invalid, describedBy, zone }: PdfUploa
             tone="danger"
             size="sm"
             disabled={uploading}
-            onClick={() => onChange(null)}
+            onClick={() => {
+              forgetUploaded(value.fileId);
+              onChange(null);
+            }}
           >
             {t("remove")}
           </Button>

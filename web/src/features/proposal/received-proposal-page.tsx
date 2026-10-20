@@ -1,6 +1,7 @@
 import { ArrowLeftIcon, DownloadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import { PdfOpenButton } from "@/components/composites/pdf-open-button";
 import { Status } from "@/components/composites/status";
 import { Badge } from "@/components/ui/badge";
 import { TextButton } from "@/components/actions/text-button";
@@ -147,10 +148,19 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
                 <span className="truncate font-medium">{deck.fileName}</span>
                 <span className="text-muted-foreground">{size(deck.sizeBytes)}</span>
               </div>
-              <TextButton href={proposalFileAddress(proposal.id)}>
-                <DownloadIcon aria-hidden="true" />
-                {t("file.download")}
-              </TextButton>
+              <div className="flex items-center gap-4">
+                <PdfOpenButton
+                  url={proposalFileAddress(proposal.id)}
+                  name={deck.fileName}
+                  meta={size(deck.sizeBytes)}
+                  label={t("file.open")}
+                  accessibleLabel={t("file.openFile", { name: deck.fileName })}
+                />
+                <TextButton href={proposalFileAddress(proposal.id)}>
+                  <DownloadIcon aria-hidden="true" />
+                  {t("file.download")}
+                </TextButton>
+              </div>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">{t("file.none")}</p>

@@ -26,10 +26,12 @@ import {
   draftValuesOf,
   fieldNameOf,
   incompleteSteps,
+  savable,
   steps,
   type DraftValues,
   type Step,
 } from "./use-case-draft";
+import { myAttachmentsPath } from "./use-case-attachment-files";
 import { UseCaseStepFields } from "./use-case-step-fields";
 import { UseCaseSummary } from "./use-case-summary";
 import { UseCaseTabs } from "./use-case-tabs";
@@ -86,7 +88,6 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
     () =>
       draftSchema({
         tooLong: (max) => say("tooLong", { max }),
-        wholeAmount: say("wholeAmount"),
         budgetOutOfOrder: e("USECASE_BUDGET_OUT_OF_ORDER"),
         closesInPast: say("closesInPast"),
       }),
@@ -123,7 +124,7 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
 
   async function saveOnce(): Promise<boolean> {
     // What the backend would refuse stays unsent; the field says what is wrong.
-    if (!checks.safeParse(form.state.values.content).success) {
+    if (!savable(form.state.values.content)) {
       setState("failed");
       return false;
     }
@@ -186,8 +187,10 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
   const missing = incompleteSteps(values);
   const unchanged = status === "needs_changes" && !changedSinceReview;
 
+  // Another step opens even while a field is wrong: that field stays marked and unsaved, and the
+  // use case cannot be sent until it is put right.
   async function go(target: Step) {
-    if (await flush()) {
+    if ((await flush()) || !savable(form.state.values.content)) {
       setStep(target);
     }
   }
@@ -299,13 +302,22 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
 
         {step !== "review" && (
           <AllRequired>
-            <UseCaseStepFields form={form} fields="content" step={step} />
+            <UseCaseStepFields
+              form={form}
+              fields="content"
+              step={step}
+              attachmentsPath={myAttachmentsPath(useCase.id)}
+            />
           </AllRequired>
         )}
 
         {step === "review" && (
           <>
-            <UseCaseSummary values={values} onEdit={(target) => void go(target)} />
+            <UseCaseSummary
+              values={values}
+              onEdit={(target) => void go(target)}
+              attachmentsPath={myAttachmentsPath(useCase.id)}
+            />
             {missing.length > 0 && (
               <Alert>
                 <AlertTitle>{t("missing.title")}</AlertTitle>

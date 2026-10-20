@@ -2,7 +2,8 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { expectNoSeriousA11yViolations } from "./axe";
 import { signInAs } from "./session";
-import { draftUseCase, draftUseCaseId } from "./stub-wizards.mjs";
+import { serveStoredPdf } from "./stored-files";
+import { attachedPdf, attachedSheet, draftUseCase, draftUseCaseId } from "./stub-wizards.mjs";
 
 const wizardPath = `/workspace/organization/use-cases/${draftUseCaseId}`;
 const listPath = "/workspace/organization/use-cases";
@@ -166,7 +167,86 @@ test.describe("an organization's use case, written in steps", () => {
     expect(saves).toHaveLength(before);
   });
 
-  test("what the backend would refuse is told at the field and never saved", async ({
+  test("the PDFs among a use case's files open in the page, the other kinds are only named", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    await context.addCookies([{ name: "STUB_SCENE", value: "attached", url: baseURL! }]);
+    const file = `/api/usecase/mine/${draftUseCaseId}/attachments/${attachedPdf.id}`;
+    await serveStoredPdf(page, `**${file}`, attachedPdf.fileName);
+    await page.goto(wizardPath);
+    await openStep(page, isMobile, "Requirements and data");
+    await expect(page.getByText(attachedSheet.fileName)).toBeVisible();
+    await expect(page.getByRole("button", { name: `Open ${attachedSheet.fileName}` })).toHaveCount(
+      0,
+    );
+    await expectNoSeriousA11yViolations(page);
+
+    const open = page.getByRole("button", { name: `Open ${attachedPdf.fileName}` });
+    await open.click();
+    const viewer = page.getByRole("dialog", { name: attachedPdf.fileName });
+    await expect(viewer.getByRole("group", { name: /^Page \d$/ })).toHaveCount(3);
+    await expect(viewer.getByRole("link", { name: "Download" })).toHaveAttribute("href", file);
+    await expectNoSeriousA11yViolations(page);
+    await page.keyboard.press("Escape");
+    await expect(viewer).toHaveCount(0);
+    await expect(open).toBeFocused();
+
+    // The review step names the same files, and the PDF opens there too.
+    await openStep(page, isMobile, "Review and submit");
+    await page.getByRole("button", { name: `Open ${attachedPdf.fileName}` }).click();
+    await expect(page.getByRole("dialog", { name: attachedPdf.fileName })).toBeVisible();
+    await expectNoSeriousA11yViolations(page);
+  });
+
+  test("the form stops what the backend would refuse: past 30 requirements, a sign in an amount, a past day", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const { saves } = await fakeBackend(page, baseURL!);
+    await page.goto(wizardPath);
+
+    await openStep(page, isMobile, "Requirements and data");
+    const add = page.getByRole("button", { name: "Add a requirement" });
+    for (let count = 1; count < 30; count += 1) {
+      await add.click();
+    }
+    await expect(page.getByLabel("Requirement 30")).toBeVisible();
+    await expect(add).toHaveCount(0);
+    await expect(page.getByText("You can list up to 30 requirements.")).toBeVisible();
+
+    await openStep(page, isMobile, "Budget and timeline");
+    const known = page.getByRole("checkbox", { name: "Budget to be determined" });
+    if (await known.isChecked()) {
+      await known.click();
+    }
+    const budget = page.getByLabel("Minimum budget (USD)");
+    await budget.fill("-5");
+    await budget.blur();
+    await expect(
+      page.getByText("Enter 0 or a whole number, without a sign or decimals."),
+    ).toBeVisible();
+    await budget.fill("5000");
+    await expect(
+      page.getByText("Enter 0 or a whole number, without a sign or decimals."),
+    ).toHaveCount(0);
+
+    const day = page.locator('input[name="content.closesDay"]');
+    await day.fill("2020-01-01");
+    await day.blur();
+    await expect(page.getByText("Choose today or a later date.")).toBeVisible();
+    await day.fill("2099-01-01");
+    await expect(page.getByText("Choose today or a later date.")).toHaveCount(0);
+    expect(saves.length).toBeGreaterThan(0);
+  });
+
+  test("a draft the backend would refuse is not saved, and the other steps still open", async ({
     page,
     context,
     baseURL,
@@ -176,21 +256,23 @@ test.describe("an organization's use case, written in steps", () => {
     const { saves } = await fakeBackend(page, baseURL!);
     await page.goto(wizardPath);
     await openStep(page, isMobile, "Budget and timeline");
-    await expect(heading(page)).toHaveText("Budget and timeline");
-
     // The draft's budget is to be determined; giving amounts is a change that saves.
     await page.getByRole("checkbox", { name: "Budget to be determined" }).click();
     await expect.poll(() => saves.length).toBe(1);
-    await expect(page.getByText(/^Saved /)).toBeVisible();
 
-    const minimum = page.getByLabel("Minimum budget (USD)");
-    await minimum.fill("-5");
-    await expect(minimum).toHaveAttribute("aria-invalid", "true");
-    await expect(page.getByText("Enter a whole number, 0 or more.")).toBeVisible();
-    await page.getByLabel("Proposals close").fill("2026-01-01");
-    await expect(page.getByText("Choose a close time later than now.")).toBeVisible();
+    await page.getByLabel("Minimum budget (USD)").fill("100");
+    await page.getByLabel("Maximum budget (USD)").fill("50");
+    await expect(page.getByText("The maximum budget is below the minimum.")).toBeVisible();
     await expect(page.getByText("Not saved", { exact: true })).toBeVisible();
     expect(saves).toHaveLength(1);
+
+    // Another step opens all the same; the wrong amount stays unsaved until it is put right.
+    await openStep(page, isMobile, "The challenge");
+    await expect(heading(page)).toHaveText("The challenge");
+    expect(saves).toHaveLength(1);
+    await openStep(page, isMobile, "Budget and timeline");
+    await page.getByLabel("Maximum budget (USD)").fill("500");
+    await expect.poll(() => saves.length).toBe(2);
     await expectNoSeriousA11yViolations(page);
   });
 });

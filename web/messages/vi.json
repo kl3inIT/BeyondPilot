@@ -2151,6 +2151,8 @@
           "label": "Tệp đính kèm",
           "add": "Thêm tệp đính kèm",
           "replace": "Thay thế",
+          "open": "Mở",
+          "openFile": "Mở {name}",
           "uploaded": "Tải lên {time}",
           "uploading": "Đang tải lên…",
           "errors": {
@@ -4574,8 +4576,10 @@
           "required": "Bắt buộc",
           "optional": "Tùy chọn"
         },
-        "requirementsFull": "Mỗi use case có tối đa {max} yêu cầu.",
         "addRequirement": "Thêm yêu cầu",
+        "maxRequirements": "Bạn có thể nêu tối đa {max} yêu cầu.",
+        "amountInvalid": "Nhập 0 hoặc một số nguyên, không dấu và không số thập phân.",
+        "closesPast": "Chọn hôm nay hoặc một ngày sau đó.",
         "dataReadiness": "Dữ liệu sẵn có và mức sẵn sàng",
         "dataReadinessHint": "Có dữ liệu gì, ở định dạng nào, và nhà cung cấp truy cập bằng cách nào.",
         "integrationRequirements": "Tích hợp, triển khai và hạ tầng",
@@ -5608,7 +5612,6 @@
       "outcomesBeforeClose": "Ngày báo kết quả trước ngày đóng nhận đơn.",
       "webAddress": "Nhập địa chỉ bắt đầu bằng http:// hoặc https://.",
       "positive": "Nhập một số nguyên lớn hơn 0.",
-      "wholeAmount": "Nhập một số nguyên từ 0 trở lên.",
       "closesInPast": "Chọn thời điểm đóng muộn hơn lúc này."
     }
   },
@@ -6573,6 +6576,8 @@
     "empty": "Chọn tệp PDF",
     "limits": "PDF, tối đa 25 MB.",
     "uploading": "Đang tải lên…",
+    "open": "Mở",
+    "openFile": "Mở {name}",
     "replace": "Thay",
     "remove": "Gỡ",
     "errors": {
@@ -8076,6 +8081,8 @@
         },
         "file": {
           "title": "Tệp PDF đề xuất",
+          "open": "Mở",
+          "openFile": "Mở {name}",
           "download": "Tải PDF",
           "none": "Chưa đính kèm tệp PDF."
         },

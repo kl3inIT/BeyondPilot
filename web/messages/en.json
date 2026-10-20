@@ -2151,6 +2151,8 @@
           "label": "Attachments",
           "add": "Add an attachment",
           "replace": "Replace",
+          "open": "Open",
+          "openFile": "Open {name}",
           "uploaded": "Uploaded {time}",
           "uploading": "Uploading…",
           "errors": {
@@ -4574,8 +4576,10 @@
           "required": "Required",
           "optional": "Optional"
         },
-        "requirementsFull": "A use case holds at most {max} requirements.",
         "addRequirement": "Add a requirement",
+        "maxRequirements": "You can list up to {max} requirements.",
+        "amountInvalid": "Enter 0 or a whole number, without a sign or decimals.",
+        "closesPast": "Choose today or a later date.",
         "dataReadiness": "Data availability and readiness",
         "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
         "integrationRequirements": "Integration, deployment and infrastructure",
@@ -5608,7 +5612,6 @@
       "outcomesBeforeClose": "Outcomes are due before applications close.",
       "webAddress": "Enter an address that starts with http:// or https://.",
       "positive": "Enter a whole number above 0.",
-      "wholeAmount": "Enter a whole number, 0 or more.",
       "closesInPast": "Choose a close time later than now."
     }
   },
@@ -6573,6 +6576,8 @@
     "empty": "Choose a PDF",
     "limits": "PDF, up to 25 MB.",
     "uploading": "Uploading…",
+    "open": "Open",
+    "openFile": "Open {name}",
     "replace": "Replace",
     "remove": "Remove",
     "errors": {
@@ -8076,6 +8081,8 @@
         },
         "file": {
           "title": "Proposal PDF",
+          "open": "Open",
+          "openFile": "Open {name}",
           "download": "Download PDF",
           "none": "No PDF attached."
         },

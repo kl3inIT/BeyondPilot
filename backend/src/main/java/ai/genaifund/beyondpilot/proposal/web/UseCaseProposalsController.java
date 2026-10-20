@@ -1,7 +1,5 @@
 package ai.genaifund.beyondpilot.proposal.web;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import ai.genaifund.beyondpilot.identity.Actor;
@@ -19,7 +17,6 @@ import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalCountsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalFormResponse;
 import ai.genaifund.beyondpilot.proposal.dto.UseCaseProposalOutcomesResponse;
 import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
-import ai.genaifund.beyondpilot.storage.FileDownload;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,13 +27,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.InputStreamSource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.CacheControl;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -217,22 +208,23 @@ class UseCaseProposalsController {
 			description = "The proposal was not sent, or the caller is neither of the organization that posted its use case nor an operator.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	ResponseEntity<Resource> file(@CurrentActor Actor actor, @PathVariable UUID id) {
-		FileDownload download = proposals.file(actor, id);
-		URI redirect = download.redirect();
-		if (redirect != null) {
-			return ResponseEntity.status(HttpStatus.FOUND).location(redirect).cacheControl(CacheControl.noStore()).build();
-		}
-		InputStreamSource content = download.content();
-		if (content == null) {
-			throw new IllegalStateException("A download carries a redirect or its content");
-		}
-		return ResponseEntity.ok()
-			.contentType(MediaType.parseMediaType(download.mediaType()))
-			.contentLength(download.sizeBytes())
-			.cacheControl(CacheControl.noStore())
-			.header(HttpHeaders.CONTENT_DISPOSITION,
-					ContentDisposition.attachment().filename(download.fileName(), StandardCharsets.UTF_8).build().toString())
-			.body(new InputStreamResource(content));
+		return proposals.file(actor, id).response();
+	}
+
+	@GetMapping("/use-cases/{useCaseId}/proposal/file")
+	@Operation(operationId = "getOwnUseCaseProposalFile", summary = "The PDF of the caller's own proposal",
+			description = "The PDF of the proposal the caller's organization wrote to a use case, a draft or a sent one, "
+					+ "for the members of that organization.",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200", description = "The bytes of the PDF, saved under its name.",
+			content = @Content(mediaType = MediaType.ALL_VALUE, schema = @Schema(type = "string", format = "binary")))
+	@ApiResponse(responseCode = "302", description = "The address the object store serves the file at, for a while.",
+			content = @Content)
+	@ApiResponse(responseCode = "404",
+			description = "The caller's organization has no proposal to this use case, or it holds no PDF.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<Resource> ownFile(@CurrentActor Actor actor, @PathVariable UUID useCaseId) {
+		return proposals.ownFile(actor, useCaseId).response();
 	}
 
 	@GetMapping(path = "/use-case-proposal-counts", produces = MediaType.APPLICATION_JSON_VALUE)
