@@ -56,6 +56,66 @@ function converter(base: string) {
   return service;
 }
 
+/** Where the element opened just before `from` closes: the index past its closing tag, counting nested ones. */
+function closingIndex(html: string, from: number, open: RegExp, close: string) {
+  const tags = new RegExp(`${open.source}|${close.replace(/[$/]/g, "\\$&")}`, "g");
+  tags.lastIndex = from;
+  let depth = 1;
+  for (let match = tags.exec(html); match; match = tags.exec(html)) {
+    depth += match[0] === close ? -1 : 1;
+    if (depth === 0) {
+      return match.index + match[0].length;
+    }
+  }
+  return -1;
+}
+
+/**
+ * The page as a browser shows it once streaming ends. A page with a `loading.tsx` sends its
+ * fallback in place, then each finished part as `<div hidden id="S:…">` at the end of the body with
+ * a script that moves it in: `$RC("B:…","S:…")` swaps a Suspense fallback for its content and
+ * `$RS("S:…","P:…")` fills a placeholder. Read as sent, `<main>` holds only the skeleton.
+ */
+function revealStreamed(html: string): string {
+  const segments = new Map<string, string>();
+  let page = html;
+  for (let opening = /<div hidden id="(S:[0-9a-z]+)">/.exec(page); opening;) {
+    const start = opening.index + opening[0].length;
+    const end = closingIndex(page, start, /<div\b/, "</div>");
+    if (end < 0) {
+      break;
+    }
+    segments.set(opening[1], page.slice(start, end - "</div>".length));
+    page = page.slice(0, opening.index) + page.slice(end);
+    opening = /<div hidden id="(S:[0-9a-z]+)">/.exec(page);
+  }
+
+  let pending = [...html.matchAll(/\$R([CS])\("([A-Z]:[0-9a-z]+)","([A-Z]:[0-9a-z]+)"\)/g)];
+  while (pending.length > 0) {
+    const waiting: typeof pending = [];
+    for (const call of pending) {
+      const [, kind, first, second] = call;
+      const [segment, target] = kind === "C" ? [second, first] : [first, second];
+      const marker = `<template id="${target}"></template>`;
+      const at = page.indexOf(marker);
+      const content = segments.get(segment!);
+      if (at < 0 || content === undefined) {
+        waiting.push(call);
+        continue;
+      }
+      // A boundary's fallback runs from its template to the comment that closes the boundary.
+      const end =
+        kind === "C" ? closingIndex(page, at, /<!--\$[?!]?-->/, "<!--/$-->") : at + marker.length;
+      page = page.slice(0, at) + content + (end < 0 ? "" : page.slice(end));
+    }
+    if (waiting.length === pending.length) {
+      break;
+    }
+    pending = waiting;
+  }
+  return page;
+}
+
 function attribute(html: string, pattern: RegExp) {
   return pattern.exec(html)?.[1]?.trim();
 }
@@ -73,10 +133,11 @@ function yamlString(value: string) {
 function pageToMarkdown(html: string, url: string): string {
   const title = attribute(html, /<title[^>]*>([^<]*)<\/title>/i);
   const description = attribute(html, /<meta\s+name="description"\s+content="([^"]*)"/i);
+  const shown = revealStreamed(html);
   const main = (
-    /<main[^>]*>([\s\S]*)<\/main>/i.exec(html)?.[1] ??
-    /<body[^>]*>([\s\S]*)<\/body>/i.exec(html)?.[1] ??
-    html
+    /<main[^>]*>([\s\S]*)<\/main>/i.exec(shown)?.[1] ??
+    /<body[^>]*>([\s\S]*)<\/body>/i.exec(shown)?.[1] ??
+    shown
   )
     // Inline pieces set apart only by CSS gaps would run together as text.
     .replace(/<\/(span|time|strong|em|small|b)>(?=<)/gi, "</$1> ");
