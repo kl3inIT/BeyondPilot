@@ -4574,6 +4574,7 @@
           "required": "Required",
           "optional": "Optional"
         },
+        "requirementsFull": "A use case holds at most {max} requirements.",
         "addRequirement": "Add a requirement",
         "dataReadiness": "Data availability and readiness",
         "dataReadinessHint": "What data exists, in what format, and how providers can access it.",
@@ -5606,7 +5607,9 @@
       "closesBeforeOpens": "Applications close before they open.",
       "outcomesBeforeClose": "Outcomes are due before applications close.",
       "webAddress": "Enter an address that starts with http:// or https://.",
-      "positive": "Enter a whole number above 0."
+      "positive": "Enter a whole number above 0.",
+      "wholeAmount": "Enter a whole number, 0 or more.",
+      "closesInPast": "Choose a close time later than now."
     }
   },
   "Program": {

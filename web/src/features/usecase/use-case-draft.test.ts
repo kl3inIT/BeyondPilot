@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { bodyOf, incompleteSteps, timelineOf, type DraftValues } from "./use-case-draft";
+import {
+  bodyOf,
+  draftSchema,
+  fieldNameOf,
+  incompleteSteps,
+  timelineOf,
+  type DraftValues,
+} from "./use-case-draft";
 
 const empty: DraftValues = {
   title: "",
@@ -100,5 +107,61 @@ describe("timelineOf", () => {
     expect(timelineOf({ timelineMinWeeks: 8, timelineMaxWeeks: 12 })).toBe("8_12");
     expect(timelineOf({ timelineMinWeeks: 3, timelineMaxWeeks: 5 })).toBe("");
     expect(timelineOf({ timelineMinWeeks: null, timelineMaxWeeks: null })).toBe("");
+  });
+});
+
+describe("draftSchema", () => {
+  const say = {
+    tooLong: (max: number) => `max ${max}`,
+    wholeAmount: "whole",
+    budgetOutOfOrder: "order",
+    closesInPast: "past",
+  };
+  // 20 October 2026, 10:00 in Vietnam.
+  const schema = draftSchema(say, () => Date.parse("2026-10-20T03:00:00Z"));
+  const issues = (values: Partial<DraftValues>) =>
+    (schema.safeParse({ ...empty, ...values }).error?.issues ?? []).map((issue) => [
+      issue.path.join("."),
+      issue.message,
+    ]);
+
+  it("lets an empty draft through", () => {
+    expect(issues({})).toEqual([]);
+  });
+
+  it("refuses text past its limit", () => {
+    expect(issues({ title: "x".repeat(201), problemStatement: "x".repeat(2001) })).toEqual([
+      ["title", "max 200"],
+      ["problemStatement", "max 2000"],
+    ]);
+  });
+
+  it("refuses an amount below 0 or not whole, and a maximum below the minimum", () => {
+    expect(issues({ budgetMin: "-5", budgetMax: "1.5" })).toEqual([
+      ["budgetMin", "whole"],
+      ["budgetMax", "whole"],
+    ]);
+    expect(issues({ budgetMin: "100", budgetMax: "50" })).toEqual([["budgetMax", "order"]]);
+    expect(issues({ budgetMin: "100", budgetMax: "50", budgetToBeDetermined: true })).toEqual([]);
+  });
+
+  it("refuses a close time already gone in Vietnam", () => {
+    expect(issues({ closesDay: "2026-10-20", closesTime: "09:59" })).toEqual([
+      ["closesDay", "past"],
+    ]);
+    expect(issues({ closesDay: "2026-10-20", closesTime: "10:01" })).toEqual([]);
+  });
+
+  it("refuses a thirty-first requirement", () => {
+    const row = { statement: "Reads invoices", necessity: "required" as const };
+    expect(issues({ requirements: Array(30).fill(row) })).toEqual([]);
+    expect(issues({ requirements: Array(31).fill(row) })).toEqual([["requirements", "max 30"]]);
+  });
+});
+
+describe("fieldNameOf", () => {
+  it("names a field as the form does", () => {
+    expect(fieldNameOf(["title"])).toBe("title");
+    expect(fieldNameOf(["requirements", 3, "statement"])).toBe("requirements[3].statement");
   });
 });

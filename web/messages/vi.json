@@ -4574,6 +4574,7 @@
           "required": "Bắt buộc",
           "optional": "Tùy chọn"
         },
+        "requirementsFull": "Mỗi use case có tối đa {max} yêu cầu.",
         "addRequirement": "Thêm yêu cầu",
         "dataReadiness": "Dữ liệu sẵn có và mức sẵn sàng",
         "dataReadinessHint": "Có dữ liệu gì, ở định dạng nào, và nhà cung cấp truy cập bằng cách nào.",
@@ -5606,7 +5607,9 @@
       "closesBeforeOpens": "Giờ đóng nhận đơn trước giờ mở.",
       "outcomesBeforeClose": "Ngày báo kết quả trước ngày đóng nhận đơn.",
       "webAddress": "Nhập địa chỉ bắt đầu bằng http:// hoặc https://.",
-      "positive": "Nhập một số nguyên lớn hơn 0."
+      "positive": "Nhập một số nguyên lớn hơn 0.",
+      "wholeAmount": "Nhập một số nguyên từ 0 trở lên.",
+      "closesInPast": "Chọn thời điểm đóng muộn hơn lúc này."
     }
   },
   "Program": {

@@ -1,7 +1,10 @@
+import { z } from "zod";
+
 import type { MyUseCase, SaveMyUseCase } from "@/lib/api/generated";
 import { instantInVietnam, partsInVietnam } from "@/lib/vietnam-time";
 
 import { timelinePresets } from "./admin-use-case-codes";
+import { MAX_TEXT } from "./admin-use-case-schema";
 import type { UploadedAttachment } from "./admin-use-case-attachments";
 import { isCurrency, type BudgetCurrency } from "./use-case-budget";
 
@@ -222,4 +225,70 @@ export function incompleteSteps(values: DraftValues): Step[] {
     missing.push("budget");
   }
   return missing;
+}
+
+/** The most requirements a use case holds, as the backend takes it. */
+export const MAX_REQUIREMENTS = 30;
+
+/** The words the draft's checks are written in; the wizard passes its translators. */
+type DraftSay = {
+  tooLong: (max: number) => string;
+  wholeAmount: string;
+  budgetOutOfOrder: string;
+  closesInPast: string;
+};
+
+/**
+ * What a draft may not hold even while parts are missing: text past its limit, an amount that is
+ * not a whole number of 0 or more, a maximum below the minimum, a close time already gone. The
+ * backend refuses each; checked as the person types, the field says so before a save is tried.
+ */
+export function draftSchema(say: DraftSay, now: () => number = Date.now) {
+  const text = (max: number) => z.string().max(max, say.tooLong(max));
+  const money = z.string().refine((value) => value.trim() === "" || amount(value) !== null, {
+    message: say.wholeAmount,
+  });
+  // Loose: the parts it does not check pass as they are.
+  return z
+    .looseObject({
+      title: text(200),
+      problemStatement: text(MAX_TEXT),
+      expectedOutcomes: text(MAX_TEXT),
+      currentProcess: text(MAX_TEXT),
+      currentSolutions: text(MAX_TEXT),
+      targetUsers: text(MAX_TEXT),
+      requirements: z
+        .array(z.looseObject({ statement: text(300) }))
+        .max(MAX_REQUIREMENTS, say.tooLong(MAX_REQUIREMENTS)),
+      dataReadiness: text(MAX_TEXT),
+      integrationRequirements: text(MAX_TEXT),
+      budgetMin: money,
+      budgetMax: money,
+      budgetToBeDetermined: z.boolean(),
+      closesDay: z.string(),
+      closesTime: z.string(),
+    })
+    .superRefine((value, context) => {
+      const min = amount(value.budgetMin);
+      const max = amount(value.budgetMax);
+      if (!value.budgetToBeDetermined && min !== null && max !== null && max < min) {
+        context.addIssue({ code: "custom", path: ["budgetMax"], message: say.budgetOutOfOrder });
+      }
+      if (
+        value.closesDay !== "" &&
+        value.closesTime !== "" &&
+        Date.parse(instantInVietnam(value.closesDay, value.closesTime)) <= now()
+      ) {
+        context.addIssue({ code: "custom", path: ["closesDay"], message: say.closesInPast });
+      }
+    });
+}
+
+/** A schema issue's path as the form names the field: `requirements[3].statement`. */
+export function fieldNameOf(path: readonly PropertyKey[]): string {
+  return path
+    .map((part, index) =>
+      typeof part === "number" ? `[${part}]` : `${index === 0 ? "" : "."}${String(part)}`,
+    )
+    .join("");
 }

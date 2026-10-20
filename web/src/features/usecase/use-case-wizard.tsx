@@ -3,7 +3,7 @@
 import { useStore } from "@tanstack/react-form";
 import { CloudAlertIcon, CloudCheckIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useUnloadWarning } from "@/components/composites/leave-guard";
 import { Button } from "@/components/actions/button";
@@ -22,7 +22,9 @@ import { siteRoutes } from "@/lib/site";
 import { useCaseWords } from "./my-use-case-errors";
 import {
   bodyOf,
+  draftSchema,
   draftValuesOf,
+  fieldNameOf,
   incompleteSteps,
   steps,
   type DraftValues,
@@ -54,6 +56,7 @@ type UseCaseWizardProps = {
 function UseCaseWizard({ useCase }: UseCaseWizardProps) {
   const t = useTranslations("Organization.useCases.wizard");
   const e = useTranslations("Errors");
+  const say = useTranslations("Form.errors");
   const notify = useNotify();
   const router = useRouter();
   const format = useFormatter();
@@ -78,8 +81,32 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const chain = useRef<Promise<boolean>>(Promise.resolve(true));
 
+  // What the backend would refuse is told at the field as it is typed, and never sent over the last good save.
+  const checks = useMemo(
+    () =>
+      draftSchema({
+        tooLong: (max) => say("tooLong", { max }),
+        wholeAmount: say("wholeAmount"),
+        budgetOutOfOrder: e("USECASE_BUDGET_OUT_OF_ORDER"),
+        closesInPast: say("closesInPast"),
+      }),
+    [say, e],
+  );
+
   const form = useAppForm({
     defaultValues: initial,
+    validators: {
+      onChange: ({ value }) => {
+        const issues = checks.safeParse(value.content).error?.issues ?? [];
+        return issues.length === 0
+          ? undefined
+          : {
+              fields: Object.fromEntries(
+                issues.map((issue) => [`content.${fieldNameOf(issue.path)}`, issue.message]),
+              ),
+            };
+      },
+    },
     // Every change to the use case is saved a moment later; the tick is not part of the draft.
     listeners: {
       onChange: ({ fieldApi }) => {
@@ -95,6 +122,11 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
   const sending = useStore(form.store, (held) => held.isSubmitting);
 
   async function saveOnce(): Promise<boolean> {
+    // What the backend would refuse stays unsent; the field says what is wrong.
+    if (!checks.safeParse(form.state.values.content).success) {
+      setState("failed");
+      return false;
+    }
     dirty.current = false;
     setState("saving");
     try {

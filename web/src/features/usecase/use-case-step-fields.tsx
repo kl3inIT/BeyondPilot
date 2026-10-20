@@ -31,7 +31,7 @@ import {
   useCaseTechnologies,
 } from "./admin-use-case-codes";
 import { currencies } from "./use-case-budget";
-import { blankDraft, timelineOf, type Step } from "./use-case-draft";
+import { blankDraft, MAX_REQUIREMENTS, timelineOf, type Step } from "./use-case-draft";
 
 /** The most any text of the use case holds, as the backend takes it. */
 const MAX_TEXT = 2000;
@@ -187,16 +187,21 @@ const UseCaseStepFields = withFieldGroup({
                     </group.AppField>
                   </div>
                 ))}
-                {!readOnly && (
-                  <TextButton
-                    // 24px tall, the least a target may be when another stands right beside it.
-                    className="min-h-6 self-start"
-                    onClick={() => rows.pushValue({ statement: "", necessity: "required" })}
-                  >
-                    <PlusIcon aria-hidden="true" />
-                    {t("addRequirement")}
-                  </TextButton>
-                )}
+                {!readOnly &&
+                  (rows.state.value.length < MAX_REQUIREMENTS ? (
+                    <TextButton
+                      // 24px tall, the least a target may be when another stands right beside it.
+                      className="min-h-6 self-start"
+                      onClick={() => rows.pushValue({ statement: "", necessity: "required" })}
+                    >
+                      <PlusIcon aria-hidden="true" />
+                      {t("addRequirement")}
+                    </TextButton>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {t("requirementsFull", { max: MAX_REQUIREMENTS })}
+                    </p>
+                  ))}
               </div>
             )}
           </group.Field>

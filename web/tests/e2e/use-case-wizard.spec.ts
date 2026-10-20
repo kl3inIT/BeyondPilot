@@ -165,4 +165,27 @@ test.describe("an organization's use case, written in steps", () => {
     // Nothing was changed since the draft was opened again, so sending saved nothing first.
     expect(saves).toHaveLength(before);
   });
+
+  test("what the backend would refuse is told at the field and never saved", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const { saves } = await fakeBackend(page, baseURL!);
+    await page.goto(wizardPath);
+    await openStep(page, isMobile, "Budget and timeline");
+    await expect(heading(page)).toHaveText("Budget and timeline");
+
+    const minimum = page.getByLabel("Minimum budget (USD)");
+    await minimum.fill("-5");
+    await expect(minimum).toHaveAttribute("aria-invalid", "true");
+    await expect(page.getByText("Enter a whole number, 0 or more.")).toBeVisible();
+    await page.getByLabel("Proposals close").fill("2026-01-01");
+    await expect(page.getByText("Choose a close time later than now.")).toBeVisible();
+    await expect(page.getByText("Not saved", { exact: true })).toBeVisible();
+    expect(saves).toHaveLength(0);
+    await expectNoSeriousA11yViolations(page);
+  });
 });
