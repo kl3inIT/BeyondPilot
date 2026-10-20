@@ -178,6 +178,11 @@ test.describe("an organization's use case, written in steps", () => {
     await openStep(page, isMobile, "Budget and timeline");
     await expect(heading(page)).toHaveText("Budget and timeline");
 
+    // The draft's budget is to be determined; giving amounts is a change that saves.
+    await page.getByRole("checkbox", { name: "Budget to be determined" }).click();
+    await expect.poll(() => saves.length).toBe(1);
+    await expect(page.getByText(/^Saved /)).toBeVisible();
+
     const minimum = page.getByLabel("Minimum budget (USD)");
     await minimum.fill("-5");
     await expect(minimum).toHaveAttribute("aria-invalid", "true");
@@ -185,7 +190,7 @@ test.describe("an organization's use case, written in steps", () => {
     await page.getByLabel("Proposals close").fill("2026-01-01");
     await expect(page.getByText("Choose a close time later than now.")).toBeVisible();
     await expect(page.getByText("Not saved", { exact: true })).toBeVisible();
-    expect(saves).toHaveLength(0);
+    expect(saves).toHaveLength(1);
     await expectNoSeriousA11yViolations(page);
   });
 });
