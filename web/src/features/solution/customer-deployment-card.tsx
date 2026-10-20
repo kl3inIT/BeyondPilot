@@ -62,7 +62,7 @@ function CustomerDeploymentCard({ deployment, organization }: CustomerDeployment
       <h3 className="text-lg font-semibold">
         <button
           type="button"
-          className="text-left outline-none after:absolute after:inset-0 after:rounded-2xl"
+          className="cursor-pointer text-left outline-none after:absolute after:inset-0 after:rounded-2xl"
           onClick={() => setOpen(true)}
         >
           {deployment.title}
