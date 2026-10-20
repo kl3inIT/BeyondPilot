@@ -1297,7 +1297,8 @@
           "suppression_add": "Chặn gửi email tới một địa chỉ",
           "suppression_remove": "Bỏ chặn một địa chỉ email",
           "resend": "Gửi lại một email",
-          "test_send": "Gửi email thử"
+          "test_send": "Gửi email thử",
+          "export": "Tải nhật ký email"
         },
         "ai": {
           "provider_create": "Kết nối nhà cung cấp AI",
@@ -1460,7 +1461,8 @@
           "suppression_add": "Chặn gửi email tới <resource></resource>",
           "suppression_remove": "Bỏ chặn <resource></resource>",
           "resend": "Gửi lại email <resource></resource>",
-          "test_send": "Gửi email thử tới <resource></resource>"
+          "test_send": "Gửi email thử tới <resource></resource>",
+          "export": "Tải nhật ký email"
         },
         "ai": {
           "provider_create": "Kết nối nhà cung cấp AI <resource></resource>",

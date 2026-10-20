@@ -22,6 +22,8 @@ import javax.crypto.spec.SecretKeySpec;
 import ai.genaifund.beyondpilot.TestMailbox;
 import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import ai.genaifund.beyondpilot.identity.TestSignIn;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
+import ai.genaifund.beyondpilot.shared.Workbooks;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -322,6 +324,52 @@ class EmailAdministrationTest {
 		String kept = body(get(operator, API + "/messages/" + former).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(kept, "$.kind")).isEqualTo("talent_enquiry");
 		assertThat(JsonPath.<Boolean>read(kept, "$.resendable")).isTrue();
+	}
+
+	@Test
+	void anOperatorDownloadsTheEmailLogAsItIsNarrowedWithCodesWithheldAndTheDownloadIsRecorded() {
+		TestSignIn.session(client, mail, "exported@email.test");
+		String code = mail.latestCodeTo("exported@email.test");
+		jdbc.sql("""
+				insert into email_message (id, kind, recipient, subject, html, text, status)
+				values (?, 'talent_enquiry', 'exported@email.test', 'Hello export', '<p>Hello</p>', 'Hello', 'sent')
+				""").param(UUID.randomUUID()).update();
+		String export = API + "/messages/export?q=exported@email";
+		String member = TestSignIn.session(client, mail, "member@email.test");
+
+		assertProblem(post(member, export, null), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertThat(emailExportCounts()).isEmpty();
+
+		List<List<String>> sheet = Workbooks.rows(post(operator, export, null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition", "attachment; filename=\"emails-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(0)).startsWith("Queued at", "Recipient", "Kind", "Subject", "Status", "Attempts");
+		assertThat(sheet.get(1)).contains("exported@email.test", "Hello export");
+		// A sign-in code never leaves in a file.
+		assertThat(sheet.get(2)).contains("exported@email.test", "A sign-in code");
+		assertThat(sheet.toString()).doesNotContain(code);
+
+		String csv = body(post(operator, export + "&format=csv", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8"));
+		assertThat(csv).startsWith("\uFEFFQueued at,Recipient,Kind,Subject,Status,Attempts,");
+		assertThat(csv).doesNotContain(code);
+		assertThat(csv.lines().toList()).hasSize(3);
+		assertThat(emailExportCounts()).containsExactly("2", "2");
+	}
+
+	private List<String> emailExportCounts() {
+		return jdbc.sql("select details ->> 'count' from audit_event where action = 'email.export' order by occurred_at")
+			.query(String.class)
+			.list();
 	}
 
 	@Test

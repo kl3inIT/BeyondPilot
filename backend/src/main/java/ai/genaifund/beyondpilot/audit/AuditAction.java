@@ -338,6 +338,9 @@ public enum AuditAction {
 	 */
 	EMAIL_TEST_SEND("email.test_send", "subject"),
 
+	/** An operator downloaded the email log as a spreadsheet. {@code count} is how many emails the download holds. */
+	EMAIL_EXPORT("email.export", "count"),
+
 	/**
 	 * An operator connected an AI provider. {@code vendor} is the vendor of an embedding provider ({@code openai},
 	 * {@code openrouter}) or the adapter of a chat provider ({@code openai}, {@code anthropic}).

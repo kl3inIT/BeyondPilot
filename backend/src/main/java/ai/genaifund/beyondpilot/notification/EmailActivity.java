@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.notification;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -24,7 +25,12 @@ import ai.genaifund.beyondpilot.notification.persistence.EmailMessageQueryReposi
 import ai.genaifund.beyondpilot.notification.persistence.EmailMessageRepository;
 import ai.genaifund.beyondpilot.notification.persistence.EmailSuppressionRepository;
 import ai.genaifund.beyondpilot.notification.template.EmailKind;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +41,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class EmailActivity {
+
+	private static final Logger LOG = LoggerFactory.getLogger(EmailActivity.class);
 
 	static final int PAGE_SIZE = 50;
 
@@ -102,6 +110,52 @@ public class EmailActivity {
 				message.kind(), message.subject(), message.html(), message.text(), message.status(), message.attempts(),
 				message.provider(), message.providerMessageId(), message.lastError(), log.events(id), suppression,
 				resendable(message, suppression));
+	}
+
+	/**
+	 * The email log as a spreadsheet: every message the request selects, newest first, for GenAI Fund to work with
+	 * outside BeyondPilot. A sign-in code's subject is withheld, as {@link #messages} withholds it, since a file outlives
+	 * the screen. The download holds addresses, so it is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, EmailMessageListRequest request, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		List<EmailLog.Item> rows = new ArrayList<>();
+		String before = null;
+		do {
+			EmailLog page = messages(actor, request.from(), request.kind(), request.status(), request.q(), before,
+					Spreadsheet.PAGE_SIZE);
+			rows.addAll(page.items());
+			Spreadsheet.bounded(rows.size());
+			before = page.older();
+		}
+		while (before != null);
+		Spreadsheet<EmailLog.Item> sheet = Spreadsheet.<EmailLog.Item>of("Emails")
+			.time("Queued at", EmailLog.Item::createdAt)
+			.email("Recipient", EmailLog.Item::recipient)
+			.label("Kind", EmailLog.Item::kind)
+			.text("Subject", EmailLog.Item::subject)
+			.label("Status", EmailLog.Item::status)
+			.count("Attempts", EmailLog.Item::attempts)
+			.label("Last error", EmailLog.Item::lastError);
+		SpreadsheetFile file = sheet.write(format, "emails", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("Since", request.from())
+					.narrowedBy("Kind", request.kind())
+					.narrowedBy("Status", request.status())
+					.narrowedBy("Search", request.q()));
+		audit.record(new AuditRecord(AuditAction.EMAIL_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("email_log", "emails", "Email activity"),
+				Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "email.log.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Email log exported");
+		return file;
 	}
 
 	/**

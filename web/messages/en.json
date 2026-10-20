@@ -1297,7 +1297,8 @@
           "suppression_add": "Stopped email to an address",
           "suppression_remove": "Let email reach an address again",
           "resend": "Sent an email again",
-          "test_send": "Sent a test email"
+          "test_send": "Sent a test email",
+          "export": "Downloaded the email log"
         },
         "ai": {
           "provider_create": "Connected an AI provider",
@@ -1460,7 +1461,8 @@
           "suppression_add": "Stopped email to <resource></resource>",
           "suppression_remove": "Let email reach <resource></resource> again",
           "resend": "Sent the email <resource></resource> again",
-          "test_send": "Sent a test email to <resource></resource>"
+          "test_send": "Sent a test email to <resource></resource>",
+          "export": "Downloaded the email log"
         },
         "ai": {
           "provider_create": "Connected the AI provider <resource></resource>",
