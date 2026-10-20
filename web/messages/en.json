@@ -617,7 +617,8 @@
       "readRecords": "Read records in review, proposals and their history",
       "readAccounts": "Read accounts, the audit log and emails sent",
       "readMatching": "Read AI matching runs and results",
-      "limit": "Read only: cannot change anything. Revoke any time."
+      "decide": "Approve or send back records in review, and shortlist applications and proposals, when you ask",
+      "limit": "Changes one record at a time, as you. Cannot delete, take down or release outcomes. Revoke any time."
     },
     "deny": "Deny",
     "allow": "Allow",

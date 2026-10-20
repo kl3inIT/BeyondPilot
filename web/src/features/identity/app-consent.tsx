@@ -2,6 +2,7 @@ import {
   ArrowLeftRightIcon,
   BoxIcon,
   BuildingIcon,
+  CheckCheckIcon,
   CalendarRangeIcon,
   CornerDownLeftIcon,
   GlobeIcon,
@@ -78,6 +79,7 @@ function AppConsent({ app, account, scopes, state }: AppConsentProps) {
         { icon: BuildingIcon, text: t("operator.readRecords") },
         { icon: ScrollTextIcon, text: t("operator.readAccounts") },
         { icon: SlidersHorizontalIcon, text: t("operator.readMatching") },
+        { icon: CheckCheckIcon, text: t("operator.decide") },
       ]
     : [
         { icon: SearchIcon, text: t("user.searchSolutions") },

@@ -617,7 +617,8 @@
       "readRecords": "Đọc bản ghi đang duyệt, đề xuất và lịch sử của chúng",
       "readAccounts": "Đọc tài khoản, audit log và email đã gửi",
       "readMatching": "Đọc các lần chạy AI matching và kết quả",
-      "limit": "Chỉ đọc: không thể thay đổi gì. Thu hồi bất cứ lúc nào."
+      "decide": "Duyệt hoặc gửi lại bản ghi đang duyệt, và chọn vào danh sách ngắn hồ sơ và đề xuất, khi bạn yêu cầu",
+      "limit": "Mỗi lần thay đổi một bản ghi, dưới tên bạn. Không thể xoá, gỡ xuống hay công bố kết quả. Thu hồi bất cứ lúc nào."
     },
     "deny": "Từ chối",
     "allow": "Cho phép",
