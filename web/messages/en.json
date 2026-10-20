@@ -7597,6 +7597,7 @@
         "title": "Look for solutions now?",
         "description": "The solutions you saved and the ones you removed stay as they are.",
         "note": "{count, plural, =1 {This uses your last run today.} other {This uses 1 of your # runs left today.}}",
+        "operatorNote": "GenAI Fund has no daily limit, but every run is paid for: the AI reads the brief and the closest solutions again.",
         "cancel": "Cancel"
       },
       "reviewAllConfirm": {

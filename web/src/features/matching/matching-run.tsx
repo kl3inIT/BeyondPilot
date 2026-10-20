@@ -233,7 +233,7 @@ function MatchingRun({
         prominence={run ? "secondary" : "primary"}
         pending={pending === "run"}
         disabled={blocked}
-        onClick={() => (limited ? setAsking("run") : void onStart(false))}
+        onClick={() => setAsking("run")}
       >
         {pending !== "run" && run && <RotateCwIcon aria-hidden="true" />}
         {startLabel}
@@ -382,7 +382,8 @@ function MatchingRun({
         onOpenChange={(next) => setAsking(next ? "run" : null)}
         title={t("runConfirm.title")}
         description={t("runConfirm.description")}
-        note={t("runConfirm.note", { count: left })}
+        // A member spends one of their runs of the day; an operator has none to count, but a run is paid.
+        note={limited ? t("runConfirm.note", { count: left }) : t("runConfirm.operatorNote")}
         confirmLabel={startLabel}
         cancelLabel={t("runConfirm.cancel")}
         pending={pending === "run"}
