@@ -22,6 +22,7 @@ import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { AiUsageOverview } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+import { clockText } from "@/i18n/formats";
 
 import { UsageChart } from "./usage-chart";
 import {
@@ -290,7 +291,9 @@ async function UsageOverviewPage({
             lead={
               busiest &&
               t(byHour ? "chart.mostAtHour" : "chart.mostOnDay", {
-                when: bucketLabel(busiest.start),
+                when: byHour
+                  ? clockText(format, new Date(busiest.start))
+                  : bucketLabel(busiest.start),
                 count: busiest.succeeded + busiest.failed,
               })
             }

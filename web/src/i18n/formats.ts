@@ -15,6 +15,8 @@ const formats = {
     date: { day: "numeric", month: "short", year: "numeric" },
     /** "23:59". */
     time: { hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
+    /** "23:59:07": a time to the second, where events follow one another closely. */
+    seconds: { hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" },
   },
 } as const satisfies Formats;
 
@@ -42,9 +44,47 @@ function formatterOf(locale: string): Formatter {
   return withAppDates(createFormatter({ locale, timeZone, formats }), locale);
 }
 
-/** "15 Oct, 23:59 ICT": a moment the reader must know the zone of, such as a deadline. */
-function deadlineText(format: Formatter, at: Date) {
-  return `${format.dateTime(at, "day")}, ${format.dateTime(at, "time")} ICT`;
+/**
+ * The app writes every time of day with its zone: the times are Vietnam's, whoever reads them, and
+ * a reader elsewhere must not take them for their own. Intl names the zone "GMT+7" or "Indochina
+ * Time", never "ICT" as GenAI Fund writes it, so the name is added here. The day comes first and the
+ * time after it in every locale; Intl's own joined form puts the time first in Vietnamese.
+ */
+type Clock = "time" | "seconds";
+
+/** "23:59 ICT", or "23:59:07 ICT" with `"seconds"`. */
+function clockText(format: Formatter, at: Date, clock: Clock = "time") {
+  return `${format.dateTime(at, clock)} ICT`;
 }
 
-export { deadlineText, formats, formatterOf, timeZone, withAppDates, type Formatter };
+/**
+ * "15 Oct 2026, 23:59 ICT", or "15 Oct, 23:59 ICT" with `"day"`; with `until`, a span within the day:
+ * "7 Oct, 15:30–17:00 ICT".
+ */
+function momentText(
+  format: Formatter,
+  at: Date,
+  day: "day" | "date" = "date",
+  { until, clock = "time" }: { until?: Date; clock?: Clock } = {},
+) {
+  const time = until
+    ? `${format.dateTime(at, clock)}–${format.dateTime(until, clock)}`
+    : format.dateTime(at, clock);
+  return `${format.dateTime(at, day)}, ${time} ICT`;
+}
+
+/** "15 Oct, 23:59 ICT": a deadline, in the year in view. */
+function deadlineText(format: Formatter, at: Date) {
+  return momentText(format, at, "day");
+}
+
+export {
+  clockText,
+  deadlineText,
+  formats,
+  formatterOf,
+  momentText,
+  timeZone,
+  withAppDates,
+  type Formatter,
+};

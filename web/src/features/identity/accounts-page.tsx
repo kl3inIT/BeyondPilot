@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { getFormatter } from "@/i18n/format-server";
 import type { AccountList, AccountSummary, Me } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+import { clockText } from "@/i18n/formats";
 
 import { AccountRowActions } from "./account-row-actions";
 import { accountsSearch, type AccountsSearch, accountSortKeys } from "./accounts-search";
@@ -47,7 +48,7 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
       return t("never");
     }
     const at = new Date(account.lastSignInAt);
-    const time = format.dateTime(at, "time");
+    const time = clockText(format, at);
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
       : t("dayAndTime", { day: format.dateTime(at, "day"), time });

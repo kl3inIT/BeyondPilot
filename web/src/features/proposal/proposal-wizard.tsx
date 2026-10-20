@@ -34,6 +34,7 @@ import {
 import { focusField } from "@/lib/focus-field";
 import { cn } from "@/lib/utils";
 import { proposalViewRoute, proposeToUseCaseRoute as proposeRoute, briefRoute } from "@/lib/site";
+import { clockText } from "@/i18n/formats";
 
 import {
   bodyOf,
@@ -443,7 +444,7 @@ function ProposalWizardContent({
     }
   }
 
-  const time = format.dateTime(savedAt, "time");
+  const time = clockText(format, savedAt);
 
   const saveStatus = editing ? (
     <span role="status" className="text-xs text-muted-foreground">

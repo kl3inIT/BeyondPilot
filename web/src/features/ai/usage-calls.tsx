@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { getFormatter } from "@/i18n/format-server";
 import type { AiUsageCallList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+import { clockText } from "@/i18n/formats";
 
 import { usageNumbers } from "./usage-format";
 import { taskNames, UsageHeader } from "./usage-page";
@@ -43,12 +44,7 @@ async function UsageCallsPage({
 
   /** "Today, 09:41:07" for a call of today in Vietnam time, "3 Oct, 14:32:10" before that. */
   function shortTime(at: Date) {
-    const time = format.dateTime(at, {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hourCycle: "h23",
-    });
+    const time = clockText(format, at, "seconds");
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
       : t("dayAndTime", { day: format.dateTime(at, "day"), time });

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useFormatter } from "@/i18n/format";
 import type { AdminUseCase } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
+import { momentText } from "@/i18n/formats";
 
 import { AdminUseCaseDecision } from "./admin-use-case-decision";
 import { AdminUseCaseFeature } from "./admin-use-case-feature";
@@ -36,8 +37,7 @@ function AdminUseCasePage({ useCase, proposals }: AdminUseCasePageProps) {
   const organization = useCase.organization.name;
   const title = useCase.title ?? t("untitled");
   const status = useCase.status;
-  const when = (instant: string) =>
-    `${format.dateTime(new Date(instant), "date")}, ${format.dateTime(new Date(instant), "time")} ICT`;
+  const when = (instant: string) => momentText(format, new Date(instant));
   const day = (instant: string) => format.dateTime(new Date(instant), "date");
   const closes = useCase.closesAt ? when(useCase.closesAt) : "";
 

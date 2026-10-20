@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { clockText } from "@/i18n/formats";
 
 import type { ProgramFormat } from "../program-format";
 import type { Step } from "../program-parts";
@@ -174,8 +175,7 @@ export async function NestleTimeline({
       <ol className={s.steps} data-count={steps.length}>
         {steps.map((step) => {
           const at = new Date(step.at);
-          const note =
-            step.note ?? (step.at === closesAt ? `${format.dateTime(at, "time")} ICT` : null);
+          const note = step.note ?? (step.at === closesAt ? clockText(format, at) : null);
           return (
             <li key={`${step.at}-${step.title}`} className={s.step}>
               <span className={s.stepDate}>{format.dateTime(at, "day")}</span>

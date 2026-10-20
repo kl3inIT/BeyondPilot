@@ -9,6 +9,7 @@ import type { MyTalent, TalentProfile } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
 import { NoticeCard } from "@/features/organization/notice-card";
+import { momentText } from "@/i18n/formats";
 
 import { DeleteTalentProfile } from "./delete-talent-profile";
 import { TalentCard } from "./talent-card";
@@ -45,10 +46,7 @@ function MyTalentPage({ mine, accountName, editing }: MyTalentPageProps) {
   const state = profile && [
     word(reviewState(profile)),
     t("saved", {
-      when: format.dateTime(new Date(profile.updatedAt), {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }),
+      when: momentText(format, new Date(profile.updatedAt)),
     }),
     // The decision card beside the profile says who sees a profile in review or approved.
     ...(profile.status === "approved" || profile.status === "in_review" ? [] : [t("seen.onlyYou")]),

@@ -20,6 +20,7 @@ import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { getFormatter } from "@/i18n/format-server";
 import type { SearchIndex, SearchIndexKind } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+import { clockText, momentText } from "@/i18n/formats";
 
 import { RebuildIndex, RetryEmbeddings, SemanticSwitch } from "./search-index-actions";
 
@@ -53,16 +54,8 @@ async function SearchIndexPage({ data }: { data: SearchIndex }) {
   const total = sum((kind) => kind.total);
   const embedded = sum((kind) => kind.embedded);
   const semantic = data.semantic;
-  const time = (value: string) => format.dateTime(new Date(value), "time");
-  const dayAndTime = (value: string) =>
-    format.dateTime(new Date(value), {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-      timeZone: "Asia/Ho_Chi_Minh",
-    });
+  const time = (value: string) => clockText(format, new Date(value));
+  const dayAndTime = (value: string) => momentText(format, new Date(value), "day");
 
   const banner = {
     on: {

@@ -11,6 +11,7 @@ import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { EmailMessageList } from "@/lib/api/generated";
 import { adminEmailMessageRoute, siteRoutes } from "@/lib/site";
+import { momentText } from "@/i18n/formats";
 
 import { EmailActivityToolbar } from "./email-activity-toolbar";
 import { EmailHeader } from "./email-header";
@@ -39,14 +40,7 @@ async function EmailActivityPage({
 }) {
   const [t, format] = await Promise.all([getTranslations("Admin.email"), getFormatter()]);
   const kindName = (kind: string) => (isEmailKind(kind) ? t(`kinds.${kind}.name`) : kind);
-  const time = (at: string) =>
-    format.dateTime(new Date(at), {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    });
+  const time = (at: string) => momentText(format, new Date(at), "day");
 
   const counts = [
     { key: "total", value: messages.counts.total },

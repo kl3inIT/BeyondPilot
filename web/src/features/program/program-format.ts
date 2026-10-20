@@ -1,4 +1,9 @@
-import { deadlineText as deadlineAt, formatterOf, type Formatter } from "@/i18n/formats";
+import {
+  deadlineText as deadlineAt,
+  formatterOf,
+  momentText,
+  type Formatter,
+} from "@/i18n/formats";
 import type { ProgramApplications, ProgramEvent, ProgramKeyDate } from "@/lib/api/generated";
 
 export type ProgramFormat = Formatter;
@@ -35,9 +40,9 @@ export function whenText(
   if (entry.allDay) {
     return day;
   }
-  return entry.endsAt
-    ? `${day}, ${format.dateTime(starts, "time")}–${format.dateTime(new Date(entry.endsAt), "time")} ICT`
-    : `${day}, ${format.dateTime(starts, "time")} ICT`;
+  return momentText(format, starts, "day", {
+    until: entry.endsAt ? new Date(entry.endsAt) : undefined,
+  });
 }
 
 /** "23 Sep – 5 Dec 2026", or one day. */

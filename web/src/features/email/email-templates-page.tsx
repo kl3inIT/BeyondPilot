@@ -7,6 +7,7 @@ import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { EmailTemplateList } from "@/lib/api/generated";
 import { adminEmailTemplateRoute, siteRoutes } from "@/lib/site";
+import { momentText } from "@/i18n/formats";
 
 import { EmailHeader } from "./email-header";
 import { isEmailKind, KindIcon } from "./email-kinds";
@@ -87,13 +88,7 @@ async function EmailTemplatesPage({
                       <span className="hidden text-xs text-muted-foreground md:block">
                         {t("templates.editedBy", {
                           name: item.updatedBy,
-                          when: format.dateTime(new Date(item.updatedAt), {
-                            day: "numeric",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hourCycle: "h23",
-                          }),
+                          when: momentText(format, new Date(item.updatedAt), "day"),
                         })}
                       </span>
                     )}

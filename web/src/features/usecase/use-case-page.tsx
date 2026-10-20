@@ -18,6 +18,7 @@ import { Link } from "@/i18n/navigation";
 import { useVocabulary } from "@/i18n/vocabulary";
 import type { PublicUseCase } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+import { momentText } from "@/i18n/formats";
 
 import { budgetFigures, budgetText } from "./use-case-budget";
 
@@ -85,15 +86,7 @@ function UseCasePage({ useCase, proposals }: { useCase: PublicUseCase; proposals
       ? t("timeline.range", { min: useCase.timelineMinWeeks, max: useCase.timelineMaxWeeks })
       : t("detail.notSpecified");
   const deadline = useCase.closesAt
-    ? format.dateTime(new Date(useCase.closesAt), {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hourCycle: "h23",
-        timeZone: "Asia/Ho_Chi_Minh",
-      })
+    ? momentText(format, new Date(useCase.closesAt))
     : t("deadline.none");
   const proposalDeadline = useCase.closesAt
     ? t(closed ? "detail.closed.on" : "detail.open.closes", {
