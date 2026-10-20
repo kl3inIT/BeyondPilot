@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { listSolutions, listTalent, listUseCases } from "@/lib/api/generated";
-import { programRoute, siteOrigin, siteRoutes, solutionRoute, useCaseRoute } from "@/lib/site";
+import { ownOrigin, programRoute, siteRoutes, solutionRoute, useCaseRoute } from "@/lib/site";
 import { readPrograms } from "@/features/program/program-public-queries";
 
 // The lists change as records are approved, so the sitemap is answered at request time (without
@@ -53,11 +53,12 @@ function entry(
   changeFrequency: "daily" | "weekly" | "monthly",
   priority: number,
 ): MetadataRoute.Sitemap[number] {
+  const origin = ownOrigin();
   return {
-    url: `${siteOrigin}${path}`,
+    url: `${origin}${path}`,
     changeFrequency,
     priority,
-    alternates: { languages: { en: `${siteOrigin}${path}`, vi: `${siteOrigin}/vi${path}` } },
+    alternates: { languages: { en: `${origin}${path}`, vi: `${origin}/vi${path}` } },
   };
 }
 

@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
@@ -229,6 +229,17 @@ describe("the shared form controls", () => {
       await user.type(screen.getByLabelText("Summary"), "Rice");
 
       expect(await screen.findByText("4 / 500")).toBeInTheDocument();
+    });
+
+    it("marks text set past the limit at once, which the browser lets a script do", () => {
+      render(<ProfileForm summary={{ maxLength: 5 }} />);
+      const summary = screen.getByLabelText("Summary");
+      expect(summary).not.toHaveAttribute("aria-invalid");
+
+      fireEvent.change(summary, { target: { value: "Rice paddy" } });
+
+      expect(summary).toHaveAttribute("aria-invalid", "true");
+      expect(screen.getByText("10 / 5")).toHaveClass("text-destructive");
     });
 
     it("shows none for a textarea without a limit", () => {

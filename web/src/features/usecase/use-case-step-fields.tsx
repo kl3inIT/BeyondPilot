@@ -33,13 +33,10 @@ import {
   useCaseTechnologies,
 } from "./admin-use-case-codes";
 import { currencies } from "./use-case-budget";
-import { blankDraft, timelineOf, type Step } from "./use-case-draft";
+import { blankDraft, MAX_REQUIREMENTS, timelineOf, type Step } from "./use-case-draft";
 
 /** The most any text of the use case holds, as the backend takes it. */
 const MAX_TEXT = 2000;
-
-/** The most requirements a use case lists, as the backend takes it. */
-const MAX_REQUIREMENTS = 30;
 
 /** The day it is now in Vietnam, as the date input writes it. */
 function today() {

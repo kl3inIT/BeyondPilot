@@ -70,3 +70,23 @@ describe("pageToMarkdown", () => {
     expect(estimateTokens("x".repeat(9))).toBe(3);
   });
 });
+
+// A page with a loading.tsx streams: the skeleton goes out first, the list later at the end of the body.
+describe("pageToMarkdown of a streamed page", () => {
+  const streamed = `<!DOCTYPE html><html><head><title>Use cases</title></head><body>
+<main id="content"><h1>Use cases</h1><!--$?--><template id="B:0"></template><div><p>Loading</p><div class="skeleton"></div></div><!--/$--></main>
+<footer>© 2026 BeyondPilot</footer>
+<script>$RS=function(a,b){}</script><div hidden id="S:0"><ul><template id="P:1"></template><li><a href="/use-cases/b">Second</a></li></ul><!--$--><p>2 use cases</p><!--/$--></div>
+<div hidden id="S:1"><li><a href="/use-cases/a">First</a></li></div><script>$RS("S:1","P:1")</script>
+<script>$RC=function(a,b){};$RC("B:0","S:0")</script></body></html>`;
+  const markdown = pageToMarkdown(streamed, "https://beyondpilot.ai/use-cases");
+
+  it("reads the streamed content in place of the skeleton", () => {
+    expect(markdown).toContain("# Use cases");
+    expect(markdown).toContain("[First](https://beyondpilot.ai/use-cases/a)");
+    expect(markdown).toContain("[Second](https://beyondpilot.ai/use-cases/b)");
+    expect(markdown).toContain("2 use cases");
+    expect(markdown).not.toContain("Loading");
+    expect(markdown.indexOf("First")).toBeLessThan(markdown.indexOf("Second"));
+  });
+});

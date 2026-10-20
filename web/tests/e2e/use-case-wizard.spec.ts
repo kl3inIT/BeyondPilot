@@ -245,4 +245,34 @@ test.describe("an organization's use case, written in steps", () => {
     await expect(page.getByText("Choose today or a later date.")).toHaveCount(0);
     expect(saves.length).toBeGreaterThan(0);
   });
+
+  test("a draft the backend would refuse is not saved, and the other steps still open", async ({
+    page,
+    context,
+    baseURL,
+    isMobile,
+  }) => {
+    await signInAs(context, "owner", baseURL!);
+    const { saves } = await fakeBackend(page, baseURL!);
+    await page.goto(wizardPath);
+    await openStep(page, isMobile, "Budget and timeline");
+    // The draft's budget is to be determined; giving amounts is a change that saves.
+    await page.getByRole("checkbox", { name: "Budget to be determined" }).click();
+    await expect.poll(() => saves.length).toBe(1);
+
+    await page.getByLabel("Minimum budget (USD)").fill("100");
+    await page.getByLabel("Maximum budget (USD)").fill("50");
+    await expect(page.getByText("The maximum budget is below the minimum.")).toBeVisible();
+    await expect(page.getByText("Not saved", { exact: true })).toBeVisible();
+    expect(saves).toHaveLength(1);
+
+    // Another step opens all the same; the wrong amount stays unsaved until it is put right.
+    await openStep(page, isMobile, "The challenge");
+    await expect(heading(page)).toHaveText("The challenge");
+    expect(saves).toHaveLength(1);
+    await openStep(page, isMobile, "Budget and timeline");
+    await page.getByLabel("Maximum budget (USD)").fill("500");
+    await expect.poll(() => saves.length).toBe(2);
+    await expectNoSeriousA11yViolations(page);
+  });
 });

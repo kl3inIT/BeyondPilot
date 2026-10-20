@@ -3,6 +3,7 @@ import createMiddleware from "next-intl/middleware";
 
 import { routing } from "@/i18n/routing";
 import { canonicalUrl } from "@/lib/canonical-host";
+import { contentSecurityPolicy, newNonce, nonceHeader } from "@/lib/content-security-policy";
 import { markdownPathHeader } from "@/lib/markdown-request";
 
 const localeRouting = createMiddleware(routing);
@@ -31,7 +32,15 @@ export default function proxy(request: NextRequest) {
     return NextResponse.rewrite(new URL("/markdown", request.url), { request: { headers } });
   }
   request.headers.set("accept-language", routing.defaultLocale);
-  return localeRouting(request);
+  // Next.js reads the nonce from the request's policy and puts it on its scripts; the page reads it
+  // from x-nonce for the scripts it adds itself. The browser gets the same policy.
+  const nonce = newNonce();
+  const policy = contentSecurityPolicy(nonce, process.env.NODE_ENV === "development");
+  request.headers.set(nonceHeader, nonce);
+  request.headers.set("content-security-policy", policy);
+  const response = localeRouting(request);
+  response.headers.set("content-security-policy", policy);
+  return response;
 }
 
 export const config = {

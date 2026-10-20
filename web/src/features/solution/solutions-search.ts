@@ -1,7 +1,7 @@
 import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
 import { directorySorts } from "@/lib/directory-sort";
-import { pageSize } from "@/lib/page-size";
+import { gridPageSize, pageSize } from "@/lib/page-size";
 
 import {
   focusAreas,
@@ -19,7 +19,7 @@ export const solutionsSearch = {
   maturity: parseAsStringLiteral(maturities),
   sort: parseAsStringLiteral(directorySorts),
   page: parseAsInteger.withDefault(1),
-  size: pageSize,
+  size: gridPageSize,
 };
 
 export const loadSolutionsSearch = createLoader(solutionsSearch);

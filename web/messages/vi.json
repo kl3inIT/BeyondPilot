@@ -299,7 +299,9 @@
   },
   "NotFound": {
     "title": "Không tìm thấy trang",
-    "home": "Về trang chủ"
+    "description": "Có thể địa chỉ bị gõ sai, hoặc trang đã được chuyển đi hay gỡ xuống.",
+    "home": "Về trang chủ",
+    "search": "Tìm trên trang"
   },
   "Error": {
     "title": "Đã có lỗi xảy ra",
@@ -855,13 +857,15 @@
           "fromWindow": "Theo thời gian nhận đơn",
           "locked": "Ngày sửa ở mục Nhận đơn",
           "add": "Thêm mốc",
+          "full": "Mỗi chương trình có tối đa {max} mốc thời gian. Xóa một mốc để thêm mốc khác.",
           "hint": "Giờ Việt Nam (ICT)."
         },
         "events": {
           "title": "Sự kiện",
           "what": "Sự kiện hiện ở mục Sắp diễn ra trên danh sách chương trình.",
           "online": "Trực tuyến",
-          "add": "Thêm sự kiện"
+          "add": "Thêm sự kiện",
+          "full": "Mỗi chương trình có tối đa {max} sự kiện. Xóa một sự kiện để thêm sự kiện khác."
         },
         "edit": "Sửa",
         "editNamed": "Sửa {name}",
@@ -5608,7 +5612,8 @@
       "closesBeforeOpens": "Giờ đóng nhận đơn trước giờ mở.",
       "outcomesBeforeClose": "Ngày báo kết quả trước ngày đóng nhận đơn.",
       "webAddress": "Nhập địa chỉ bắt đầu bằng http:// hoặc https://.",
-      "positive": "Nhập một số nguyên lớn hơn 0."
+      "positive": "Nhập một số nguyên lớn hơn 0.",
+      "closesInPast": "Chọn thời điểm đóng muộn hơn lúc này."
     }
   },
   "Program": {
@@ -6685,6 +6690,10 @@
     }
   },
   "Review": {
+    "notFound": {
+      "description": "Có thể chương trình hoặc đơn đã bị gỡ, hoặc địa chỉ không đúng.",
+      "home": "Về Chấm đơn"
+    },
     "nav": "Chấm đơn",
     "area": "Giám khảo",
     "list": {
@@ -6840,7 +6849,7 @@
       "conflictSaved": "Đã ghi nhận xung đột. Điểm của bạn không được tính.",
       "incomplete": "Còn {count} tiêu chí chưa chấm. Chấm đủ thì mới lưu được.",
       "bar": {
-        "progress": "Đã chấm {scored}/{total}",
+        "progress": "Đã chấm {scored}/{total} tiêu chí",
         "score": "Chấm điểm"
       },
       "more": "Xem thêm",
@@ -7001,7 +7010,7 @@
         "invited": "Đã mời",
         "lapsed": "Lời mời hết hạn"
       },
-      "assessed": "{done} / {total}",
+      "assessed": "{done}/{total} đơn",
       "note": "Lời mời có hiệu lực 7 ngày. Giám khảo không bao giờ thấy điểm của nhau.",
       "invite": {
         "open": "Mời giám khảo",
@@ -7063,7 +7072,7 @@
       },
       "released": "Đã công bố kết quả",
       "done": "Đã chấm hết",
-      "progress": "Bạn đã chấm {done}/{total}",
+      "progress": "Đã xong {done}/{total} đơn",
       "closes": "Hạn nộp {closes}"
     },
     "drafts": {

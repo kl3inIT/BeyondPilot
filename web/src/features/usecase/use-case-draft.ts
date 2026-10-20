@@ -1,7 +1,10 @@
+import { z } from "zod";
+
 import type { MyUseCase, SaveMyUseCase } from "@/lib/api/generated";
 import { instantInVietnam, partsInVietnam } from "@/lib/vietnam-time";
 
 import { timelinePresets } from "./admin-use-case-codes";
+import { MAX_TEXT } from "./admin-use-case-schema";
 import type { UploadedAttachment } from "./admin-use-case-attachments";
 import { isCurrency, type BudgetCurrency } from "./use-case-budget";
 
@@ -223,4 +226,88 @@ export function incompleteSteps(values: DraftValues): Step[] {
     missing.push("budget");
   }
   return missing;
+}
+
+/** The most requirements a use case holds, as the backend takes it. */
+export const MAX_REQUIREMENTS = 30;
+
+/** The words the draft's checks are written in; the wizard passes its translators. */
+type DraftSay = {
+  tooLong: (max: number) => string;
+  budgetOutOfOrder: string;
+  closesInPast: string;
+};
+
+/** The day it is in Vietnam at that instant, as the date input writes it. */
+function dayInVietnam(at: number) {
+  return partsInVietnam(new Date(at).toISOString()).day;
+}
+
+/**
+ * What a draft may not hold even while parts are missing, beyond what each field checks itself
+ * (an amount that is not a whole number, a close day already past): text past its limit, a
+ * maximum below the minimum, a close time today that has already gone. The backend refuses each.
+ */
+export function draftSchema(say: DraftSay, now: () => number = Date.now) {
+  const text = (max: number) => z.string().max(max, say.tooLong(max));
+  // Loose: the parts it does not check pass as they are.
+  return z
+    .looseObject({
+      title: text(200),
+      problemStatement: text(MAX_TEXT),
+      expectedOutcomes: text(MAX_TEXT),
+      currentProcess: text(MAX_TEXT),
+      currentSolutions: text(MAX_TEXT),
+      targetUsers: text(MAX_TEXT),
+      requirements: z
+        .array(z.looseObject({ statement: text(300) }))
+        .max(MAX_REQUIREMENTS, say.tooLong(MAX_REQUIREMENTS)),
+      dataReadiness: text(MAX_TEXT),
+      integrationRequirements: text(MAX_TEXT),
+      budgetMin: z.string(),
+      budgetMax: z.string(),
+      budgetToBeDetermined: z.boolean(),
+      closesDay: z.string(),
+      closesTime: z.string(),
+    })
+    .superRefine((value, context) => {
+      const min = amount(value.budgetMin);
+      const max = amount(value.budgetMax);
+      if (!value.budgetToBeDetermined && min !== null && max !== null && max < min) {
+        context.addIssue({ code: "custom", path: ["budgetMax"], message: say.budgetOutOfOrder });
+      }
+      if (
+        value.closesDay === dayInVietnam(now()) &&
+        value.closesTime !== "" &&
+        Date.parse(instantInVietnam(value.closesDay, value.closesTime)) <= now()
+      ) {
+        context.addIssue({ code: "custom", path: ["closesDay"], message: say.closesInPast });
+      }
+    });
+}
+
+const unspoken: DraftSay = { tooLong: () => "", budgetOutOfOrder: "", closesInPast: "" };
+
+/**
+ * Whether the backend would take the draft as it is: nothing {@link draftSchema} refuses, each
+ * amount empty or a whole number, the close day not past. A draft it would refuse is not sent, so
+ * an amount it cannot read never overwrites the one saved.
+ */
+export function savable(values: DraftValues, now: () => number = Date.now): boolean {
+  const amounts =
+    values.budgetToBeDetermined ||
+    [values.budgetMin, values.budgetMax].every(
+      (text) => text.trim() === "" || amount(text) !== null,
+    );
+  const day = values.closesDay === "" || values.closesDay >= dayInVietnam(now());
+  return amounts && day && draftSchema(unspoken, now).safeParse(values).success;
+}
+
+/** A schema issue's path as the form names the field: `requirements[3].statement`. */
+export function fieldNameOf(path: readonly PropertyKey[]): string {
+  return path
+    .map((part, index) =>
+      typeof part === "number" ? `[${part}]` : `${index === 0 ? "" : "."}${String(part)}`,
+    )
+    .join("");
 }

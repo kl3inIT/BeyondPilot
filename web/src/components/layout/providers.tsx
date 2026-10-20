@@ -12,11 +12,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
  * delay for the whole application (the provider's default, never overridden per tooltip), and the
  * place toasts appear. A provider only some pages need belongs in the layout of those pages.
  */
-function Providers({ children }: { children: React.ReactNode }) {
+function Providers({ children, nonce }: { children: React.ReactNode; nonce?: string }) {
   const t = useTranslations("Site");
 
   return (
-    <ThemeProvider>
+    <ThemeProvider nonce={nonce}>
       <NuqsAdapter>
         <TooltipProvider>{children}</TooltipProvider>
       </NuqsAdapter>

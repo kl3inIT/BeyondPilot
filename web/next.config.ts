@@ -17,6 +17,7 @@ const springPaths = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  poweredByHeader: false,
   reactCompiler: true,
   images: {
     // 75 is the default; 90 is for portraits, whose skin and dark backdrops the default smooths away.
@@ -33,6 +34,8 @@ const nextConfig: NextConfig = {
           // Analytics as the referrer of the public page a person opens next.
           { key: "Referrer-Policy", value: "strict-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "Strict-Transport-Security", value: "max-age=31536000" },
+          // The Content-Security-Policy carries a nonce made per response, so src/proxy.ts sets it.
         ],
       },
     ];

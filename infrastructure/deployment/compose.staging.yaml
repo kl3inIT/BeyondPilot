@@ -41,6 +41,9 @@ services:
   web:
     container_name: beyondpilot-staging-web
     image: ${BEYONDPILOT_WEB_IMAGE:?the web image is named by deploy.sh}
+    environment:
+      # Link previews, the sitemap and Markdown links name this address.
+      BEYONDPILOT_SITE_URL: https://beyondpilot.vadan.app
     networks:
       - internal
       - proxy

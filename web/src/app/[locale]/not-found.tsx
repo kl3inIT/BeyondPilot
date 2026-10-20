@@ -1,16 +1,15 @@
-import { useTranslations } from "next-intl";
+import { NotFoundNotice } from "@/components/layout/not-found-notice";
+import { PublicFrame } from "@/components/layout/public-frame";
 
-import { Link } from "@/i18n/navigation";
-
+/**
+ * A missing page outside the public frame (an application, a workspace, the admin area to anyone
+ * but an operator), drawn in that frame: it reads exactly as an unknown public address does, so a
+ * refusal tells nothing of the area behind it. Public pages answer with `(public)/not-found.tsx`.
+ */
 export default function NotFoundPage() {
-  const t = useTranslations("NotFound");
-
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-6 py-24">
-      <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-      <Link href="/" className="w-fit text-primary underline-offset-4 hover:underline">
-        {t("home")}
-      </Link>
-    </main>
+    <PublicFrame>
+      <NotFoundNotice />
+    </PublicFrame>
   );
 }

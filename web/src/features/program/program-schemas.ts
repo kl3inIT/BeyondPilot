@@ -138,6 +138,9 @@ export type SettingsValues = {
 
 const text = (max: number, say: SaySettings) => z.string().max(max, say("tooLong", { max }));
 
+/** The most key dates, and the most events, a program keeps; the backend refuses more. */
+export const maxScheduleEntries = 30;
+
 export function keyDateSchema(say: SaySettings) {
   return z
     .object({
@@ -240,8 +243,8 @@ export function settingsSchema(say: SaySettings) {
       opensTitle: text(160, say),
       closesTitle: text(160, say),
       outcomesTitle: text(160, say),
-      keyDates: z.array(z.custom<KeyDateValue>()).max(30),
-      events: z.array(z.custom<EventValue>()).max(30),
+      keyDates: z.array(z.custom<KeyDateValue>()).max(maxScheduleEntries),
+      events: z.array(z.custom<EventValue>()).max(maxScheduleEntries),
     })
     .superRefine((value, context) => {
       const issue = (path: string, message: string) =>

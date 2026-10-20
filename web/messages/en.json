@@ -299,7 +299,9 @@
   },
   "NotFound": {
     "title": "Page not found",
-    "home": "Back to home"
+    "description": "The address may be mistyped, or the page has moved or been removed.",
+    "home": "Back to home",
+    "search": "Search the site"
   },
   "Error": {
     "title": "Something went wrong",
@@ -855,13 +857,15 @@
           "fromWindow": "From the application window",
           "locked": "Date edited under Applications",
           "add": "Add a date",
+          "full": "A program keeps at most {max} key dates. Remove one to add another.",
           "hint": "Times are in Vietnam time (ICT)."
         },
         "events": {
           "title": "Events",
           "what": "Events show under Coming up on the programs list.",
           "online": "Online",
-          "add": "Add an event"
+          "add": "Add an event",
+          "full": "A program keeps at most {max} events. Remove one to add another."
         },
         "edit": "Edit",
         "editNamed": "Edit {name}",
@@ -5608,7 +5612,8 @@
       "closesBeforeOpens": "Applications close before they open.",
       "outcomesBeforeClose": "Outcomes are due before applications close.",
       "webAddress": "Enter an address that starts with http:// or https://.",
-      "positive": "Enter a whole number above 0."
+      "positive": "Enter a whole number above 0.",
+      "closesInPast": "Choose a close time later than now."
     }
   },
   "Program": {
@@ -6685,6 +6690,10 @@
     }
   },
   "Review": {
+    "notFound": {
+      "description": "The program or the application may have been removed, or the address may be wrong.",
+      "home": "Back to Reviews"
+    },
     "nav": "Reviews",
     "area": "Judging",
     "list": {
@@ -6840,7 +6849,7 @@
       "conflictSaved": "Conflict recorded. Your score is left out.",
       "incomplete": "{count, plural, one {# criterion still needs} other {# criteria still need}} a score before you can save.",
       "bar": {
-        "progress": "Scored {scored} of {total}",
+        "progress": "{scored} of {total} criteria scored",
         "score": "Score"
       },
       "more": "More",
@@ -7001,7 +7010,7 @@
         "invited": "Invited",
         "lapsed": "Lapsed"
       },
-      "assessed": "{done} of {total}",
+      "assessed": "{done} of {total} applications",
       "note": "An invitation lasts 7 days. Judges never see each other's scores.",
       "invite": {
         "open": "Invite a judge",
@@ -7063,7 +7072,7 @@
       },
       "released": "Outcomes released",
       "done": "All scored",
-      "progress": "You scored {done} of {total}",
+      "progress": "{done} of {total} applications done",
       "closes": "Applications close {closes}"
     },
     "drafts": {

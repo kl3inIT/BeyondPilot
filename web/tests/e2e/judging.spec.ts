@@ -181,7 +181,7 @@ test.describe("judging applications", () => {
     const save = assessment.getByRole("button", { name: "Save and next" }).first();
     await expect(save).toBeDisabled();
     // The save is held until every criterion has a score, and the panel says so beside it.
-    await expect(assessment.getByText("Scored 0 of 2").first()).toBeVisible();
+    await expect(assessment.getByText("0 of 2 criteria scored").first()).toBeVisible();
     await expect(
       assessment.getByText("2 criteria still need a score before you can save."),
     ).toBeVisible();
@@ -201,7 +201,7 @@ test.describe("judging applications", () => {
       .click();
     await expect(assessment.getByText("Average 3.5")).toBeVisible();
     // How far the scoring is stands in the panel at every width; a narrow screen repeats it in its bar.
-    await expect(assessment.getByText("Scored 2 of 2").first()).toBeVisible();
+    await expect(assessment.getByText("2 of 2 criteria scored").first()).toBeVisible();
     await expect(assessment.getByText(/still need/)).toHaveCount(0);
     await page.getByLabel("Private note").fill("Clear on consent.");
     await save.click();
@@ -271,6 +271,10 @@ test.describe("judging applications", () => {
     // A judge has no admin area, and no program they were not invited to.
     await page.goto(`/admin/programs/${judgedProgramId}/applications`);
     await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
+    // A program of Reviews that is not theirs is missing inside their own frame, with the way back.
+    await page.goto("/reviews/9b1e7c2a-0000-4000-8000-000000000000");
+    await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to Reviews" })).toBeVisible();
   });
 
   test("an operator invites a judge and sees the criteria fixed once scored", async ({

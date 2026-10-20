@@ -238,11 +238,8 @@ test.describe("solutions directory", () => {
 
     // Unset values leave their sections and facts off the page entirely.
     await page.goto("/solutions/clinic-triage");
-    for (const label of ["Stage", "Industries", "Deployment"]) {
-      const tag = page.locator('[data-slot="solution-tag"]').filter({ hasText: label });
-      await expect(tag.locator(":scope > svg")).toBeVisible();
-      await expect(tag.locator("span")).toHaveCount(1);
-    }
+    // No stage, industry or deployment: no tag stands under the name, not even its icon.
+    await expect(page.locator('[data-slot="solution-tag"]')).toHaveCount(0);
     for (const title of [
       "Why it is worth it",
       "Problem it solves",

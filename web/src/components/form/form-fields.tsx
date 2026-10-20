@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useFormatter } from "@/i18n/format";
+import { cn } from "@/lib/utils";
 
 /**
  * A field's label and hint, and what it says about having to be filled (`optional`, `requiredMark`,
@@ -135,7 +136,12 @@ function FieldHint({
   return (
     <div className="flex items-start justify-between gap-3">
       {description ? <FieldDescription id={id}>{description}</FieldDescription> : <span />}
-      <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+      <span
+        className={cn(
+          "shrink-0 text-xs tabular-nums",
+          used > limit ? "font-medium text-destructive" : "text-muted-foreground",
+        )}
+      >
         {format.number(used)} / {format.number(limit)}
       </span>
     </div>
@@ -174,8 +180,10 @@ function TextField({
     (input.type === undefined || input.type === "text") &&
     input.maxLength !== undefined &&
     input.maxLength >= COUNTED_FROM;
+  // Text set past the limit by a paste the browser did not cut, or by a script, shows wrong at once.
+  const over = input.maxLength !== undefined && field.state.value.length > input.maxLength;
   return (
-    <Field data-invalid={invalid || undefined}>
+    <Field data-invalid={invalid || over || undefined}>
       <FieldLabelText
         label={label}
         optional={optional}
@@ -187,7 +195,7 @@ function TextField({
         id={controlId}
         name={field.name}
         value={field.state.value}
-        aria-invalid={invalid || undefined}
+        aria-invalid={invalid || over || undefined}
         aria-required={required}
         aria-describedby={describedBy}
         onBlur={field.handleBlur}
@@ -225,8 +233,9 @@ function TextareaField({
       requiredMark,
       required: mustFill,
     });
+  const over = textarea.maxLength !== undefined && field.state.value.length > textarea.maxLength;
   return (
-    <Field data-invalid={invalid || undefined}>
+    <Field data-invalid={invalid || over || undefined}>
       <FieldLabelText
         label={label}
         optional={optional}
@@ -238,7 +247,7 @@ function TextareaField({
         id={controlId}
         name={field.name}
         value={field.state.value}
-        aria-invalid={invalid || undefined}
+        aria-invalid={invalid || over || undefined}
         aria-required={required}
         aria-describedby={describedBy}
         onBlur={field.handleBlur}

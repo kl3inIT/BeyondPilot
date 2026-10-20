@@ -111,4 +111,19 @@ describe("groupPrograms", () => {
     ]);
     expect(groupPrograms([dinner], { ...all, phase: "done" }).done).toHaveLength(0);
   });
+
+  it("lists what ended last first under Done, an undated program last", () => {
+    const ended = (slug: string, endsOn: string | null) => program({ slug, phase: "done", endsOn });
+    const done = groupPrograms(
+      [
+        ended("apr-27", "2026-04-27"),
+        ended("undated", null),
+        ended("apr-21", "2026-04-21"),
+        ended("sep-17", "2026-09-17"),
+        ended("oct-2025", "2025-10-21"),
+      ],
+      all,
+    ).done;
+    expect(done.map((p) => p.slug)).toEqual(["sep-17", "apr-27", "apr-21", "oct-2025", "undated"]);
+  });
 });

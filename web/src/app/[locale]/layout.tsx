@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -8,7 +9,8 @@ import { Analytics } from "@/components/layout/analytics";
 import { Providers } from "@/components/layout/providers";
 import { MessageScope } from "@/i18n/message-scope";
 import { routing } from "@/i18n/routing";
-import { siteOrigin } from "@/lib/site";
+import { nonceHeader } from "@/lib/content-security-policy";
+import { ownOrigin } from "@/lib/site";
 
 import "../globals.css";
 
@@ -33,8 +35,8 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
   const t = await getTranslations({ locale, namespace: "Metadata" });
 
   return {
-    // Link previews name their image by an absolute address; the public one serves it on every host.
-    metadataBase: new URL(siteOrigin),
+    // Link previews name their image by an absolute address, on the host that served the page.
+    metadataBase: new URL(ownOrigin()),
     title: t("title"),
     description: t("description"),
     // The full logo, as on the home page; the small icon is for the browser tab only (DESIGN.md › Logo).
@@ -50,6 +52,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     notFound();
   }
   setRequestLocale(locale);
+  // The scripts the page adds itself, the theme's and Google Analytics', carry this response's nonce.
+  const nonce = (await headers()).get(nonceHeader) ?? undefined;
 
   return (
     <html
@@ -59,8 +63,8 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     >
       <body className="flex min-h-full flex-col">
         <MessageScope>
-          <Providers>{children}</Providers>
-          <Analytics />
+          <Providers nonce={nonce}>{children}</Providers>
+          <Analytics nonce={nonce} />
         </MessageScope>
       </body>
     </html>

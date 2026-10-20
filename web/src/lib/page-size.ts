@@ -23,3 +23,17 @@ export const pageSize = createParser({
   },
   serialize: String,
 });
+
+/** A page size a public list offers, as the URL holds it; any other number reads as absent. */
+function offeredPageSize(sizes: readonly number[]) {
+  return createParser({
+    parse(value) {
+      const size = Number(value);
+      return sizes.includes(size) ? size : null;
+    },
+    serialize: String,
+  });
+}
+
+/** `?size=` of a directory of cards: 12, 24 or 48. */
+export const gridPageSize = offeredPageSize(gridPageSizes);

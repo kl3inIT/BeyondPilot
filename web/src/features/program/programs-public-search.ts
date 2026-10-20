@@ -7,7 +7,7 @@ import {
 } from "nuqs/server";
 
 import type { ProgramSummary } from "@/lib/api/generated";
-import { pageSize } from "@/lib/page-size";
+import { gridPageSize } from "@/lib/page-size";
 
 import { programTypes } from "./program-schemas";
 
@@ -21,7 +21,7 @@ export const openCardEvents = 3;
 export const programsPublicSearch = {
   q: parseAsString.withDefault(""),
   page: parseAsInteger.withDefault(1),
-  size: pageSize,
+  size: gridPageSize,
   sort: parseAsStringLiteral(["relevance", "newest", "name"] as const),
   phase: parseAsStringLiteral(publicPhases),
   type: parseAsStringLiteral(programTypes),
@@ -98,7 +98,10 @@ export function groupPrograms(
     (program) => program.phase === "upcoming" && !listedAsEvent(program),
   );
   const asEvents = ofType.filter(listedAsEvent);
-  const done = ofType.filter((program) => program.phase === "done" && !listedAsEvent(program));
+  // What ended last comes first, as each year of the Done list reads; an undated one goes last.
+  const done = ofType
+    .filter((program) => program.phase === "done" && !listedAsEvent(program))
+    .sort((a, b) => (b.endsOn ?? "").localeCompare(a.endsOn ?? ""));
   const current: Listing[] = [
     ...(shown("open") ? open : []).map((program) => ({ kind: "program" as const, program })),
     ...(shown("upcoming") ? upcoming : []).map((program) => ({
