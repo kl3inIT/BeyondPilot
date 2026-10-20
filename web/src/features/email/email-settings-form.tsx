@@ -36,6 +36,7 @@ import {
   type EmailSettings,
   type SaveEmailSettings,
 } from "@/lib/api/generated";
+import { clockText, momentText } from "@/i18n/formats";
 
 import { testFailures } from "./email-test-failures";
 import { TestSend } from "./test-send";
@@ -744,10 +745,7 @@ function EmailSettingsForm({
             : current.updatedBy && current.updatedAt
               ? t("lastSaved", {
                   name: current.updatedBy,
-                  when: format.dateTime(new Date(current.updatedAt), {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  }),
+                  when: momentText(format, new Date(current.updatedAt)),
                 })
               : t("neverSaved")}
         </p>
@@ -767,7 +765,7 @@ function EmailSettingsForm({
         note={
           tested && tested.values === JSON.stringify(values)
             ? t("confirm.tested", {
-                when: format.dateTime(tested.at, "time"),
+                when: clockText(format, tested.at),
               })
             : t("confirm.untested")
         }

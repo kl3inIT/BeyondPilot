@@ -18,6 +18,7 @@ import { useRouter } from "@/i18n/navigation";
 import { saveMyUseCase, submitMyUseCase, type MyUseCase } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
 import { siteRoutes } from "@/lib/site";
+import { clockText } from "@/i18n/formats";
 
 import { useCaseWords } from "./my-use-case-errors";
 import {
@@ -215,7 +216,7 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
   }
 
   const title = values.title.trim() || t("untitled");
-  const time = format.dateTime(savedAt, "time");
+  const time = clockText(format, savedAt);
 
   const saveStatus = (
     <span

@@ -18,6 +18,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useFormatter } from "@/i18n/format";
 import { checkEmailSetup, type EmailSetup } from "@/lib/api/generated";
 import { cn } from "@/lib/utils";
+import { clockText } from "@/i18n/formats";
 
 type State = EmailSetup["checks"][number]["state"];
 
@@ -106,7 +107,7 @@ function EmailSetupChecklist() {
             <p className="text-sm text-muted-foreground">
               {t("lead", {
                 domain: setup.domain,
-                when: format.dateTime(new Date(setup.checkedAt), "time"),
+                when: clockText(format, new Date(setup.checkedAt)),
               })}
             </p>
           )}

@@ -12,6 +12,7 @@ import { useFailureWords } from "@/hooks/use-notify";
 import { useFormatter } from "@/i18n/format";
 import { uploadFile, uploadWords } from "@/lib/storage/upload";
 import { forgetUploaded, keepUploaded } from "@/lib/storage/uploaded-files";
+import { momentText } from "@/i18n/formats";
 
 import { openablePdfs } from "./use-case-attachment-files";
 
@@ -184,13 +185,7 @@ function AttachmentsField({
                 {size(file.sizeBytes)}
                 {file.uploadedAt &&
                   ` · ${t("uploaded", {
-                    time: format.dateTime(new Date(file.uploadedAt), {
-                      day: "numeric",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      timeZone: "Asia/Ho_Chi_Minh",
-                    }),
+                    time: momentText(format, new Date(file.uploadedAt), "day"),
                   })}`}
               </span>
             </div>

@@ -28,6 +28,7 @@ import {
   type ProgramQuestion,
   type ProgramQuestions as Questions,
 } from "@/lib/api/generated";
+import { momentText } from "@/i18n/formats";
 
 import { programFormatter } from "./program-format";
 import { moved, type Keyed } from "./program-question-order";
@@ -85,14 +86,7 @@ function ProgramQuestionsEditor({ programId, initial }: { programId: string; ini
   const listId = useId();
   const dirty = JSON.stringify(questions) !== JSON.stringify(initial.questions);
   const opens = initial.opensAt ? new Date(initial.opensAt) : null;
-  const when = (date: Date) =>
-    format.dateTime(date, {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    });
+  const when = (date: Date) => momentText(format, date, "day");
 
   function move(index: number, by: number) {
     const row = rows[index];

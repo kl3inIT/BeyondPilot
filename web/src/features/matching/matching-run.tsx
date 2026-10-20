@@ -41,6 +41,7 @@ import { LiveRefresh } from "@/features/usecase/live-refresh";
 import { useFormatter } from "@/i18n/format";
 import type { Matching, MatchingStep } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+import { clockText, momentText } from "@/i18n/formats";
 
 import { describeRunFailure } from "./matching-errors";
 import { matchesOf, needsOf, runStages, stageOf, stageState, type RunStage } from "./matching-view";
@@ -209,7 +210,7 @@ function MatchingRun({
   const [asking, setAsking] = useState<"run" | "judgeAll" | null>(null);
   const { run, operator, modelChosen, runsLeftToday } = matching;
 
-  const time = (instant: string) => format.dateTime(new Date(instant), "time");
+  const time = (instant: string) => clockText(format, new Date(instant));
   const open = run?.state === "queued" || run?.state === "running" || run?.state === "waiting";
   // The stages of a run at work, and of one this screen watched until its end.
   const at = run?.state === "running" || watched ? stageOf(run) : undefined;
@@ -362,11 +363,7 @@ function MatchingRun({
                     those it put in no group, which the list does not show; that number and the model
                     are the operators'. */}
                   {t(!operator ? "doneWhen" : run.modelName ? "doneModel" : "done", {
-                    date: format.dateTime(new Date(run.endedAt ?? run.createdAt), {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                      timeZone: "Asia/Ho_Chi_Minh",
-                    }),
+                    date: momentText(format, new Date(run.endedAt ?? run.createdAt)),
                     judged: run.judged,
                     model: run.modelName ?? "",
                   })}

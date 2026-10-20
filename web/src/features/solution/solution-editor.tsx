@@ -43,6 +43,7 @@ import {
 import { rejectedFields } from "@/lib/api/rejected-fields";
 import { focusField } from "@/lib/focus-field";
 import { siteRoutes } from "@/lib/site";
+import { clockText, momentText } from "@/i18n/formats";
 
 import { deckAddress } from "./solution-deck";
 import { useSolutionForm } from "./solution-editor-form";
@@ -423,14 +424,8 @@ function SolutionEditor({
   const stepLead =
     step !== "review" ? t(`steps.${step}.lead`) : live ? t("steps.review.leadLive") : undefined;
   const savedAt = savedNow
-    ? format.dateTime(savedNow, "time")
-    : format.dateTime(new Date(server.updatedAt), {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-        hourCycle: "h23",
-      });
+    ? clockText(format, savedNow)
+    : momentText(format, new Date(server.updatedAt), "day");
   // A draft that cannot be saved as it stands waits for the person; nothing has failed yet.
   const state = saving
     ? "saving"
