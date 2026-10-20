@@ -18,6 +18,12 @@ public enum AuditAction {
 
 	ACCOUNT_ENABLE("account.enable"),
 
+	/**
+	 * An operator downloaded the accounts as a spreadsheet, with their email addresses. {@code count} is how many the
+	 * download holds.
+	 */
+	ACCOUNT_EXPORT("account.export", "count"),
+
 	/** {@code source} is {@code operator} or {@code configuration}. */
 	OPERATOR_GRANT("operator.grant", "source"),
 

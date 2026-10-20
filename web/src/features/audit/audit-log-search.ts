@@ -8,6 +8,7 @@ export const auditPeriods = ["day", "week", "month", "all"] as const;
 export const auditActions = [
   "account.disable",
   "account.enable",
+  "account.export",
   "operator.grant",
   "operator.withdraw",
   "audit.export",

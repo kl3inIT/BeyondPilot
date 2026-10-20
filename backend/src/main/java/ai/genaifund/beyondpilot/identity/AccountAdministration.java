@@ -1,5 +1,6 @@
 package ai.genaifund.beyondpilot.identity;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -9,10 +10,16 @@ import ai.genaifund.beyondpilot.audit.AuditRecord;
 import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.dto.AccountListRequest;
 import ai.genaifund.beyondpilot.identity.dto.AccountListResponse;
+import ai.genaifund.beyondpilot.identity.dto.AccountSummaryResponse;
 import ai.genaifund.beyondpilot.identity.persistence.Account;
 import ai.genaifund.beyondpilot.identity.persistence.AccountQueryRepository;
 import ai.genaifund.beyondpilot.identity.persistence.AccountRepository;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class AccountAdministration {
+
+	private static final Logger LOG = LoggerFactory.getLogger(AccountAdministration.class);
 
 	static final int PAGE_SIZE = 25;
 
@@ -58,6 +67,45 @@ public class AccountAdministration {
 				accountList.page(text, request.status(), request.role(), request.sort(), properties.operatorEmails(),
 						size, (long) (page - 1) * size),
 				page, size, accountList.count(text, request.status(), request.role()));
+	}
+
+	/**
+	 * Accounts as a spreadsheet: every page of the list as the request narrows it, in its order, for GenAI Fund to work
+	 * with outside BeyondPilot. It holds email addresses, so the download is recorded.
+	 * @throws IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, AccountListRequest request, SpreadsheetFormat format) {
+		Account operator = operator(actor);
+		List<AccountSummaryResponse> rows = Spreadsheet.everyPage(page -> list(actor,
+				new AccountListRequest(request.q(), request.status(), request.role(), request.sort(), page,
+						Spreadsheet.PAGE_SIZE))
+			.items());
+		Spreadsheet<AccountSummaryResponse> sheet = Spreadsheet.<AccountSummaryResponse>of("Accounts")
+			.text("Name", AccountSummaryResponse::displayName)
+			.email("Email", AccountSummaryResponse::email)
+			.label("Role", AccountSummaryResponse::role)
+			.label("Status", AccountSummaryResponse::status)
+			.time("Last sign-in", AccountSummaryResponse::lastSignInAt)
+			.time("Created at", AccountSummaryResponse::createdAt)
+			.yesNo("Operator by configuration", AccountSummaryResponse::configuredOperator);
+		SpreadsheetFile file = sheet.write(format, "accounts", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("Search", request.q())
+					.narrowedBy("Status", request.status())
+					.narrowedBy("Role", request.role())
+					.narrowedBy("Order", request.sort()));
+		audit.record(new AuditRecord(AuditAction.ACCOUNT_EXPORT,
+				new AuditRecord.Actor(operator.getId(), operator.label(), operator.getEmail()),
+				new AuditRecord.Resource("account_list", "accounts", "Accounts"),
+				Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "account.list.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Accounts exported");
+		return file;
 	}
 
 	/**

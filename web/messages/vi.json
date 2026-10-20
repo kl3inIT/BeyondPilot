@@ -1181,7 +1181,8 @@
       "action": {
         "account": {
           "disable": "Khóa tài khoản",
-          "enable": "Mở khóa tài khoản"
+          "enable": "Mở khóa tài khoản",
+          "export": "Tải danh sách tài khoản"
         },
         "operator": {
           "grant": "Cấp quyền operator",
@@ -1342,7 +1343,8 @@
       "activity": {
         "account": {
           "disable": "Đã khóa tài khoản của <resource></resource>",
-          "enable": "Đã mở khóa tài khoản của <resource></resource>"
+          "enable": "Đã mở khóa tài khoản của <resource></resource>",
+          "export": "Tải danh sách tài khoản"
         },
         "operator": {
           "grant": "Đã cấp quyền operator cho <resource></resource>",

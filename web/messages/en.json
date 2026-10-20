@@ -1181,7 +1181,8 @@
       "action": {
         "account": {
           "disable": "Disabled an account",
-          "enable": "Enabled an account"
+          "enable": "Enabled an account",
+          "export": "Downloaded the accounts"
         },
         "operator": {
           "grant": "Gave the operator role",
@@ -1342,7 +1343,8 @@
       "activity": {
         "account": {
           "disable": "Disabled the account of <resource></resource>",
-          "enable": "Enabled the account of <resource></resource>"
+          "enable": "Enabled the account of <resource></resource>",
+          "export": "Downloaded the accounts"
         },
         "operator": {
           "grant": "Gave the operator role to <resource></resource>",

@@ -15,8 +15,10 @@ import { siteRoutes } from "@/lib/site";
 import { clockText } from "@/i18n/formats";
 
 import { AccountRowActions } from "./account-row-actions";
+import { accountFilters } from "./accounts-queries";
 import { accountsSearch, type AccountsSearch, accountSortKeys } from "./accounts-search";
 import { AccountsToolbar } from "./accounts-toolbar";
+import { ExportAccounts } from "./export-accounts";
 import { ListFooter } from "@/components/composites/list-footer";
 
 const address = createSerializer(accountsSearch);
@@ -98,7 +100,13 @@ async function AccountsPage({ accounts, search, me }: AccountsPageProps) {
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <AdminPageHeader destination="accounts" title={t("title")} />
+      <AdminPageHeader
+        destination="accounts"
+        title={t("title")}
+        actions={
+          <ExportAccounts filters={accountFilters(search)} disabled={accounts.total === 0} />
+        }
+      />
       <AccountsToolbar />
 
       {/* The Created column gives way first where the table is made to fit. */}
