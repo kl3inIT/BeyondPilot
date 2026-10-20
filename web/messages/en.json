@@ -4747,6 +4747,12 @@
       "more": "+{count} more",
       "moreOffers": "+{count} more offers",
       "newTab": "opens in a new tab",
+      "showMore": "Show {count} more",
+      "showFewer": "Show fewer",
+      "group": {
+        "fund": "Arranged by GenAI Fund",
+        "own": "From {organization}"
+      },
       "picker": {
         "placeholder": "Choose offers",
         "noMatch": "No offer matches.",
