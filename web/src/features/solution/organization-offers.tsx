@@ -1,4 +1,4 @@
-import { ArrowUpRightIcon, GiftIcon } from "lucide-react";
+import { GiftIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 import { DataTableEmpty } from "@/components/composites/data-table";
@@ -7,6 +7,7 @@ import { OrganizationSection } from "@/features/organization/organization-sectio
 import type { OwnOffer } from "@/lib/api/generated";
 
 import { CreateOffer, OfferRowMenu } from "./offer-actions";
+import { OfferAddress } from "./offer-address";
 import { OfferState } from "./offer-state";
 import { OfferTitle } from "./solution-offers";
 
@@ -24,18 +25,6 @@ type OrganizationOffersProps = {
  */
 function OrganizationOffers({ offers, editable }: OrganizationOffersProps) {
   const t = useTranslations("Solution.offers.manage");
-  const address = (url: string) => (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex min-w-0 items-center gap-1 rounded-sm text-muted-foreground outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-    >
-      <span className="truncate">{url.replace(/^https:\/\//, "")}</span>
-      <ArrowUpRightIcon className="size-3.5 shrink-0" aria-hidden="true" />
-    </a>
-  );
-
   return (
     <OrganizationSection
       id="offers-list"
@@ -73,12 +62,16 @@ function OrganizationOffers({ offers, editable }: OrganizationOffersProps) {
             id: offer.id,
             cells: {
               title: (
-                <span className="truncate font-medium">
+                <span className="block truncate font-medium">
                   <OfferTitle offer={offer} />
                 </span>
               ),
               state: <OfferState closed={offer.closed} />,
-              url: address(offer.url),
+              url: (
+                <div className="w-56">
+                  <OfferAddress url={offer.url} />
+                </div>
+              ),
               solutions: offer.solutions,
               actions: offer.fromGenAiFund ? null : (
                 <div className="flex justify-end">
