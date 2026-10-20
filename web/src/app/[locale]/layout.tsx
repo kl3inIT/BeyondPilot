@@ -8,7 +8,7 @@ import { Analytics } from "@/components/layout/analytics";
 import { Providers } from "@/components/layout/providers";
 import { MessageScope } from "@/i18n/message-scope";
 import { routing } from "@/i18n/routing";
-import { siteOrigin } from "@/lib/site";
+import { ownOrigin } from "@/lib/site";
 
 import "../globals.css";
 
@@ -33,8 +33,8 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
   const t = await getTranslations({ locale, namespace: "Metadata" });
 
   return {
-    // Link previews name their image by an absolute address; the public one serves it on every host.
-    metadataBase: new URL(siteOrigin),
+    // Link previews name their image by an absolute address, on the host that served the page.
+    metadataBase: new URL(ownOrigin()),
     title: t("title"),
     description: t("description"),
     // The full logo, as on the home page; the small icon is for the browser tab only (DESIGN.md › Logo).

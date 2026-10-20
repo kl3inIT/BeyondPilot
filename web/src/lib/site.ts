@@ -184,6 +184,16 @@ export const titleSuffix = " · BeyondPilot";
 export const siteOrigin = "https://beyondpilot.ai";
 
 /**
+ * The address of the deployment serving the page, for what a page writes out about itself: link
+ * previews, the sitemap, the links of its Markdown form. Each deployment sets
+ * `BEYONDPILOT_SITE_URL`, so staging links stay on staging; without it, the public address. Read
+ * on the server while rendering.
+ */
+export function ownOrigin(): string {
+  return process.env.BEYONDPILOT_SITE_URL ?? siteOrigin;
+}
+
+/**
  * The Google Analytics 4 stream of the public address, in the property GenAI Fund keeps. A
  * measurement ID is public: every visitor's browser reads it.
  */

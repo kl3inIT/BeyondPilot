@@ -117,6 +117,7 @@ pnpm --dir web dev
 
 - The application listens on port 3000. English is served at `/`, Vietnamese at `/vi`.
 - During development Next.js forwards `/api`, `/login`, `/logout`, `/oauth2`, `/ott`, `/mcp` and the two OAuth discovery documents under `/.well-known` to `BEYONDPILOT_API_ORIGIN`, set to `http://localhost:8080` in the committed `web/.env.development`. Override it in `web/.env.development.local`, which is not committed. A missing value stops the dev server with an explicit error.
+- `BEYONDPILOT_SITE_URL` is the address the web application writes into link previews, the sitemap and the links of a page's Markdown form. Each deployed environment sets its own in its Compose overlay, so staging names staging; unset, the public address `https://beyondpilot.ai` is used.
 - `pnpm --dir web check` runs lint, formatting, type and catalog checks and knip. `pnpm --dir web test:e2e` builds the app, serves it on port 3100 and runs Playwright with axe.
 
 ### Windows: SWC native cache permissions

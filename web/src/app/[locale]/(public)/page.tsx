@@ -13,7 +13,7 @@ import { GenaiFundBacking } from "@/components/sections/team/genai-fund-backing"
 import { Section } from "@/components/ui/section";
 import { readFeaturedProgram, readUpcomingEvents } from "@/features/program/program-public-queries";
 import { routing } from "@/i18n/routing";
-import { genaiFundLinks, siteOrigin } from "@/lib/site";
+import { genaiFundLinks, ownOrigin } from "@/lib/site";
 
 /**
  * The page is built ahead of time, when the backend cannot be reached, and rendered again at most a
@@ -31,6 +31,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     readFeaturedProgram(),
     readUpcomingEvents(2),
   ]);
+  const siteOrigin = ownOrigin();
 
   return (
     <>

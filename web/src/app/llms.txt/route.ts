@@ -6,7 +6,7 @@ import {
   liveCampaignDeadline,
   liveCampaignSlug,
   programRoute,
-  siteOrigin,
+  ownOrigin,
 } from "@/lib/site";
 
 // The campaign turns to closed at its deadline, so the file is answered at request time.
@@ -25,6 +25,7 @@ export async function GET() {
     getTranslations({ locale: "en", namespace: "Campaign" }),
     getTranslations({ locale: "en", namespace: "Home.faq" }),
   ]);
+  const siteOrigin = ownOrigin();
   const open = Date.now() < Date.parse(liveCampaignDeadline);
 
   const text = [
