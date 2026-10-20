@@ -2314,6 +2314,10 @@ export type EvaluationCoverage = {
      */
     file?: string;
     /**
+     * The file read, which the record's file request opens.
+     */
+    fileId?: string;
+    /**
      * The label its pages were read under, or what was read of a record without a file.
      */
     label: string;
@@ -2327,6 +2331,10 @@ export type EvaluationCoverage = {
     pages: number;
     read: number;
     record: 'application' | 'proposal';
+    /**
+     * The application or the proposal.
+     */
+    recordId: string;
     /**
      * Pages that held no text, even read from their picture.
      */

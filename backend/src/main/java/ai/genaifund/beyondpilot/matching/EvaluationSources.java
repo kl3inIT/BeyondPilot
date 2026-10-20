@@ -80,22 +80,22 @@ class EvaluationSources {
 		int proposalPlace = 0;
 		for (Entry entry : candidate.records()) {
 			if (!entry.read()) {
-				coverage.add(Coverage.listed(entry.kind(), "a draft, listed and not read"));
+				coverage.add(Coverage.listed(entry, "a draft, listed and not read"));
 				continue;
 			}
 			if (EvaluationCandidates.APPLICATION.equals(entry.kind())) {
 				ProgramSubmission.Sent sent = Objects.requireNonNull(entry.requireApplication().sent());
 				applied = sent.solution();
 				form(sent, texts);
-				coverage.add(Coverage.listed(entry.kind(), sent.answers().size() + " answers of the form"));
+				coverage.add(Coverage.listed(entry, sent.answers().size() + " answers of the form"));
 				if (sent.deck() != null) {
-					file(entry.kind(), "application deck", sent.deck(), subject, texts, coverage, seen);
+					file(entry, "application deck", sent.deck(), subject, texts, coverage, seen);
 				}
 				int place = 0;
 				for (ProgramSubmission.Answer answer : sent.answers()) {
 					if (answer.file() != null) {
 						place++;
-						file(entry.kind(), "application file " + place, answer.file(), subject, texts, coverage, seen);
+						file(entry, "application file " + place, answer.file(), subject, texts, coverage, seen);
 					}
 				}
 			}
@@ -108,12 +108,12 @@ class EvaluationSources {
 				if (!text(proposal.teamBackground()).isEmpty()) {
 					texts.put(label + " team", text(proposal.teamBackground()));
 				}
-				coverage.add(Coverage.listed(entry.kind(), "approach and team of " + label));
+				coverage.add(Coverage.listed(entry, "approach and team of " + label));
 				SentUseCaseProposal.Deck deck = proposal.deck();
 				if (deck != null) {
 					ProgramSubmission.File file = new ProgramSubmission.File(deck.fileId(), deck.fileName(),
 							deck.content());
-					file(entry.kind(), label, file, subject, texts, coverage, seen);
+					file(entry, label, file, subject, texts, coverage, seen);
 				}
 			}
 		}
@@ -154,11 +154,12 @@ class EvaluationSources {
 	}
 
 	/** Reads one file's pages into the texts, to the limits, once whatever record holds it. */
-	private void file(String record, String label, ProgramSubmission.File file, AiSubject subject,
+	private void file(Entry entry, String label, ProgramSubmission.File file, AiSubject subject,
 			Map<String, String> texts, List<Coverage> coverage, Map<String, String> seen) {
 		String held = seen.get(file.id().toString());
 		if (held != null) {
-			coverage.add(new Coverage(record, label, file.name(), 0, 0, List.of(), false, held));
+			coverage.add(
+					new Coverage(entry.kind(), entry.id(), label, file.id(), file.name(), 0, 0, List.of(), false, held));
 			return;
 		}
 		try {
@@ -182,7 +183,8 @@ class EvaluationSources {
 			String same = paged.texts().isEmpty() ? null : seen.get(Quotes.fingerprint(paged.texts().values()
 				.toArray(String[]::new)));
 			if (same != null) {
-				coverage.add(new Coverage(record, label, file.name(), count, 0, List.of(), false, same));
+				coverage.add(new Coverage(entry.kind(), entry.id(), label, file.id(), file.name(), count, 0, List.of(),
+						false, same));
 				return;
 			}
 			seen.put(file.id().toString(), label);
@@ -190,8 +192,8 @@ class EvaluationSources {
 				seen.put(Quotes.fingerprint(paged.texts().values().toArray(String[]::new)), label);
 			}
 			texts.putAll(paged.texts());
-			coverage.add(new Coverage(record, label, file.name(), count, paged.texts().size(), paged.unread(),
-					paged.cut(), null));
+			coverage.add(new Coverage(entry.kind(), entry.id(), label, file.id(), file.name(), count,
+					paged.texts().size(), paged.unread(), paged.cut(), null));
 		}
 		catch (IOException | RuntimeException | LinkageError unreadable) {
 			LOG.atInfo()
@@ -199,7 +201,8 @@ class EvaluationSources {
 				.addKeyValue("error_type", unreadable.getClass().getName())
 				.addKeyValue("file_id", file.id())
 				.log("A file of a candidate was not read for its evaluation");
-			coverage.add(new Coverage(record, label, file.name(), 0, 0, List.of(), false, NOT_OPENED));
+			coverage.add(new Coverage(entry.kind(), entry.id(), label, file.id(), file.name(), 0, 0, List.of(), false,
+					NOT_OPENED));
 		}
 	}
 
@@ -274,6 +277,8 @@ class EvaluationSources {
 	/**
 	 * What was read of one record or file.
 	 * @param record {@code application} or {@code proposal}
+	 * @param recordId the application or the proposal
+	 * @param fileId the file read; null for a record without a file
 	 * @param label the label its pages are read under; for a record without a file, what was read of it
 	 * @param file the file's name; null for a record without a file
 	 * @param pages how many pages the file has; {@link #FILE_PAGES} + 1 stands for more than were read
@@ -282,11 +287,11 @@ class EvaluationSources {
 	 * @param cut whether pages were left out at the limits
 	 * @param note the label of the file it repeats, which was read in its place, or why it could not be read
 	 */
-	record Coverage(String record, String label, @Nullable String file, int pages, int read, List<Integer> unread,
-			boolean cut, @Nullable String note) {
+	record Coverage(String record, UUID recordId, String label, @Nullable UUID fileId, @Nullable String file,
+			int pages, int read, List<Integer> unread, boolean cut, @Nullable String note) {
 
-		static Coverage listed(String record, String what) {
-			return new Coverage(record, what, null, 0, 0, List.of(), false, null);
+		static Coverage listed(Entry entry, String what) {
+			return new Coverage(entry.kind(), entry.id(), what, null, null, 0, 0, List.of(), false, null);
 		}
 
 	}

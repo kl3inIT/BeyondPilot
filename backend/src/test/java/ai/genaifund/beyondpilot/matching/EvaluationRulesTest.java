@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.matching;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import ai.genaifund.beyondpilot.matching.EvaluationRules.Assessed;
 import ai.genaifund.beyondpilot.matching.EvaluationRules.Finding;
@@ -27,7 +28,8 @@ class EvaluationRulesTest {
 			"application deck p.3", "Our CTO led claims automation at Bao Viet for six years."));
 
 	private static final List<Coverage> COVERAGE = List.of(
-			new Coverage("application", "application deck", "deck.pdf", 12, 10, List.of(5, 6), false, null));
+			new Coverage("application", UUID.randomUUID(), "application deck", UUID.randomUUID(), "deck.pdf",
+					12, 10, List.of(5, 6), false, null));
 
 	@Test
 	void anAnswerWithTheSixCriteriaIsTakenAndOneMissingACriterionIsNot() {

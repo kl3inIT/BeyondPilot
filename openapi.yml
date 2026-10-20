@@ -18190,6 +18190,10 @@ components:
         file:
           type: string
           description: The file's name.
+        fileId:
+          type: string
+          format: uuid
+          description: "The file read, which the record's file request opens."
         label:
           type: string
           description: "The label its pages were read under, or what was read of a\
@@ -18210,6 +18214,10 @@ components:
           enum:
           - application
           - proposal
+        recordId:
+          type: string
+          format: uuid
+          description: The application or the proposal.
         unread:
           type: array
           description: "Pages that held no text, even read from their picture."
@@ -18222,6 +18230,7 @@ components:
       - pages
       - read
       - record
+      - recordId
       - unread
     EvaluationCriterion:
       type: object

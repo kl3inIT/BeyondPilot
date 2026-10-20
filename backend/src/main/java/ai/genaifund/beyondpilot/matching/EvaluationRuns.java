@@ -371,7 +371,9 @@ class EvaluationRuns {
 		return coverage.stream().map(read -> {
 			Map<String, Object> out = new LinkedHashMap<>();
 			out.put("record", read.record());
+			out.put("recordId", read.recordId().toString());
 			out.put("label", read.label());
+			out.put("fileId", read.fileId() == null ? null : read.fileId().toString());
 			out.put("file", read.file());
 			out.put("pages", read.pages());
 			out.put("read", read.read());

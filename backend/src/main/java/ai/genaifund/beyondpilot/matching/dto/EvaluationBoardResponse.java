@@ -145,8 +145,10 @@ public record EvaluationBoardResponse(@Schema(requiredMode = Schema.RequiredMode
 	public record Coverage(
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 					allowableValues = { "application", "proposal" }) String record,
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The application or the proposal.") UUID recordId,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 					description = "The label its pages were read under, or what was read of a record without a file.") String label,
+			@Schema(description = "The file read, which the record's file request opens.") @Nullable UUID fileId,
 			@Schema(description = "The file's name.") @Nullable String file,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 					description = "Pages the file has; 41 stands for more than the 40 read.") int pages,
