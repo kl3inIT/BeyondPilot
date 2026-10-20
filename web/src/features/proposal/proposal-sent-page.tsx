@@ -5,6 +5,7 @@ import { Button } from "@/components/actions/button";
 import { useFormatter } from "@/i18n/format";
 import type { UseCaseProposal, UseCaseProposalForm } from "@/lib/api/generated";
 import { siteRoutes, useCaseRoute } from "@/lib/site";
+import { momentText } from "@/i18n/formats";
 
 type ProposalSentPageProps = {
   form: UseCaseProposalForm;
@@ -15,9 +16,7 @@ type ProposalSentPageProps = {
 function ProposalSentPage({ form, proposal }: ProposalSentPageProps) {
   const t = useTranslations("UseCaseProposal.wizard.sent");
   const format = useFormatter();
-  const sent = proposal.sentAt
-    ? `${format.dateTime(new Date(proposal.sentAt), "date")}, ${format.dateTime(new Date(proposal.sentAt), "time")} ICT`
-    : "";
+  const sent = proposal.sentAt ? momentText(format, new Date(proposal.sentAt)) : "";
 
   const rows = [
     { key: "useCase", value: form.useCase.title },

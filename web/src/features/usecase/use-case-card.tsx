@@ -12,6 +12,7 @@ import type { PublicUseCaseSummary } from "@/lib/api/generated";
 import { useCaseRoute } from "@/lib/site";
 
 import { budgetFigures, budgetText } from "./use-case-budget";
+import { timelineText } from "./use-case-timeline";
 
 /**
  * One use case of the list. From 768px: the organization's logo, the brief in short, and a side
@@ -106,10 +107,9 @@ function UseCaseCard({
             <div className="flex flex-col gap-0.5">
               <dt className="text-sm text-muted-foreground">{t("timeline.label")}</dt>
               <dd>
-                {t("timeline.range", {
-                  min: useCase.timelineMinWeeks,
-                  max: useCase.timelineMaxWeeks,
-                })}
+                {timelineText(useCase.timelineMinWeeks, useCase.timelineMaxWeeks, (key, values) =>
+                  t(`timeline.${key}`, values),
+                )}
               </dd>
             </div>
           )}

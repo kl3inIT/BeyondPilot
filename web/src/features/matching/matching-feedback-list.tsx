@@ -6,6 +6,7 @@ import { DataTableRows } from "@/components/composites/data-table-view";
 import { getFormatter } from "@/i18n/format-server";
 import type { MatchingDisagreement, MatchingFeedbackList } from "@/lib/api/generated";
 import { adminUseCaseCandidatesRoute, siteRoutes } from "@/lib/site";
+import { momentText } from "@/i18n/formats";
 
 import { MatchingAdminTabs } from "./matching-admin-tabs";
 import { matchingFeedbackAddress } from "./matching-search";
@@ -64,11 +65,7 @@ async function MatchingFeedbackPage({
       note: item.note ?? "",
       by: item.by ?? "—",
       at: item.createdAt,
-      when: format.dateTime(new Date(item.createdAt), {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone: "Asia/Ho_Chi_Minh",
-      }),
+      when: momentText(format, new Date(item.createdAt)),
     };
   });
   const nobody = feedback.answers === 0 && feedback.total === 0;

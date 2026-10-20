@@ -400,7 +400,7 @@ test.describe("admin programs", () => {
     // A key date leads with when it is; one that comes from the application window names its lock.
     await expect(
       page.getByRole("listitem").filter({ hasText: "Briefing with Tasco's business team" }),
-    ).toHaveText(/^7 Oct 2026, 15:30–17:00\s*Briefing with Tasco's business team/);
+    ).toHaveText(/^7 Oct 2026, 15:30–17:00 ICT\s*Briefing with Tasco's business team/);
     await expect(page.getByRole("img", { name: "Date edited under Applications" })).toHaveCount(3);
     await expectNoSeriousA11yViolations(page);
   });

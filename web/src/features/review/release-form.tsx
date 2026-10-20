@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useNotify } from "@/hooks/use-notify";
 import { useFormatter } from "@/i18n/format";
 import { keepReleaseDraft, releaseOutcomes, type ReleaseEmails } from "@/lib/api/generated";
+import { clockText } from "@/i18n/formats";
 
 import { type OutcomeRecipient, unknownPlaceholders } from "./outcome-placeholders";
 import { OutcomeLinkPopover } from "./outcome-link-popover";
@@ -202,7 +203,7 @@ function ReleaseForm({
                 : unsaved || !savedAt
                   ? t("draft.unsaved")
                   : t("draft.saved", {
-                      time: format.dateTime(savedAt, "time"),
+                      time: clockText(format, savedAt),
                     })}
             </span>
           )}

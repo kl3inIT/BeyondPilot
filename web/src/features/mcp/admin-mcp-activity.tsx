@@ -13,6 +13,7 @@ import { Link } from "@/i18n/navigation";
 import type { McpCall, McpCallList, PersonConnectedApp } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 import { cn } from "@/lib/utils";
+import { clockText } from "@/i18n/formats";
 
 import { McpActivityToolbar } from "./admin-mcp-activity-toolbar";
 import { EveryConnectedApp } from "./admin-mcp-apps";
@@ -63,7 +64,7 @@ async function McpActivityPage({
 
   /** "Today, 09:41" for a call of today in Vietnam time, "3 Oct, 14:32" before that. */
   function shortTime(at: Date) {
-    const time = format.dateTime(at, "time");
+    const time = clockText(format, at);
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
       : t("dayAndTime", { day: format.dateTime(at, "day"), time });

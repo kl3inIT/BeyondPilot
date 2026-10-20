@@ -7204,7 +7204,10 @@
     },
     "timeline": {
       "label": "Timeline",
-      "range": "{min, number}–{max, number} weeks"
+      "range": "{min, number}–{max, number} weeks",
+      "single": "{weeks, plural, one {# week} other {# weeks}}",
+      "under": "Under {weeks, number} weeks",
+      "atLeast": "{weeks, number} weeks or more"
     },
     "deadline": {
       "date": "Apply by {date}",

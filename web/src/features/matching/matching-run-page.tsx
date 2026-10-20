@@ -9,6 +9,7 @@ import { usageNumbers } from "@/features/ai/usage-format";
 import { getFormatter } from "@/i18n/format-server";
 import type { MatchingRunDetail, MatchingRunMove } from "@/lib/api/generated";
 import { adminAiMatchingRunRoute, adminUseCaseCandidatesRoute, siteRoutes } from "@/lib/site";
+import { momentText } from "@/i18n/formats";
 
 import { took, tones } from "./matching-runs-page";
 
@@ -37,11 +38,7 @@ async function MatchingRunPage({ detail }: { detail: MatchingRunDetail }) {
         title={run.useCaseTitle ?? "—"}
         badges={<Status tone={tones[run.state]}>{t(`state.${run.state}`)}</Status>}
         lead={t("detailLead", {
-          date: format.dateTime(new Date(run.createdAt), {
-            dateStyle: "medium",
-            timeStyle: "short",
-            timeZone: "Asia/Ho_Chi_Minh",
-          }),
+          date: momentText(format, new Date(run.createdAt)),
           model: run.modelName ?? t("noModel"),
           version: run.promptVersion,
         })}

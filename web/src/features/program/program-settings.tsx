@@ -30,6 +30,7 @@ import { saveProgram, type AdminProgram } from "@/lib/api/generated";
 import { fieldOfPointer } from "@/lib/api/problem-fields";
 import { programRoute, publicSiteHost, siteRoutes } from "@/lib/site";
 import { instantInVietnam, partsInVietnam } from "@/lib/vietnam-time";
+import { momentText } from "@/i18n/formats";
 
 import { CoverUpload } from "./cover-upload";
 import { programFormatter, vietnamDay } from "./program-format";
@@ -217,15 +218,14 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
     return Object.keys(fields).length > 0 ? { fields } : { form: t("errors.unknown"), fields: {} };
   }
 
-  /** "7 Oct 2026, 15:30–17:00", "5 Dec 2026", from an instant and its end. */
+  /** "7 Oct 2026, 15:30–17:00 ICT", "5 Dec 2026", from an instant and its end. */
   function when(startsAt: string, endsAt: string | null | undefined, allDay: boolean) {
     const starts = new Date(startsAt);
     const day = format.dateTime(starts, "date");
     if (allDay) {
       return day;
     }
-    const time = (at: Date) => format.dateTime(at, "time");
-    return endsAt ? `${day}, ${time(starts)}–${time(new Date(endsAt))}` : `${day}, ${time(starts)}`;
+    return momentText(format, starts, "date", { until: endsAt ? new Date(endsAt) : undefined });
   }
 
   /** Saves Settings and answers the program as saved, or null when the form or the backend refused it. */
@@ -258,7 +258,7 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
       ? null
       : "at" in next
         ? t(`phase.${next.kind}`, {
-            when: `${format.dateTime(new Date(next.at), "day")}, ${format.dateTime(new Date(next.at), "time")}`,
+            when: momentText(format, new Date(next.at), "day"),
           })
         : t(`phase.${next.kind}`, { day: format.dateTime(vietnamDay(next.day), "date") });
 

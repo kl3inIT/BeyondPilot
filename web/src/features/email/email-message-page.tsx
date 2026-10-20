@@ -7,6 +7,7 @@ import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { EmailMessage } from "@/lib/api/generated";
 import { adminEmailTemplateRoute, siteRoutes } from "@/lib/site";
+import { momentText } from "@/i18n/formats";
 
 import { isEmailKind, KindIcon } from "./email-kinds";
 import { EmailMessageActions } from "./email-message-actions";
@@ -35,8 +36,7 @@ function isFailure(reason: string): reason is (typeof failures)[number] {
  */
 async function EmailMessagePage({ message }: { message: EmailMessage }) {
   const [t, format] = await Promise.all([getTranslations("Admin.email"), getFormatter()]);
-  const when = (at: string) =>
-    format.dateTime(new Date(at), { dateStyle: "medium", timeStyle: "medium" });
+  const when = (at: string) => momentText(format, new Date(at), "date", { clock: "seconds" });
   const kindName = isEmailKind(message.kind) ? t(`kinds.${message.kind}.name`) : message.kind;
 
   const facts = [

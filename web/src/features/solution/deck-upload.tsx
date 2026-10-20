@@ -10,6 +10,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useFailureWords } from "@/hooks/use-notify";
 import { useFormatter } from "@/i18n/format";
 import { uploadFile, uploadWords } from "@/lib/storage/upload";
+import { momentText } from "@/i18n/formats";
 
 import { useFileSize } from "./solution-deck";
 import { SolutionDeckPreview } from "./solution-deck-preview";
@@ -137,13 +138,7 @@ function DeckUpload({ id, deck, href, onChange }: DeckUploadProps) {
               {deck.attachedAt
                 ? t("uploaded", {
                     size: size(deck.sizeBytes),
-                    when: format.dateTime(new Date(deck.attachedAt), {
-                      day: "numeric",
-                      month: "short",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hourCycle: "h23",
-                    }),
+                    when: momentText(format, new Date(deck.attachedAt), "day"),
                   })
                 : t("waiting", { size: size(deck.sizeBytes) })}
             </span>

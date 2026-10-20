@@ -139,7 +139,7 @@ function TalentResult({ item }: { item: SearchItem }) {
 
 /**
  * A use case, said the way the use cases list says it: who asks (or that they stay anonymous), the
- * industry, the budget when it is shown, and the date proposals close. It leads to the use case's own
+ * industry, the budget when it is shown, and the date proposals close, or closed. It leads to the use case's own
  * page, whose address is the identifier the result carries as its `slug`.
  */
 function UseCaseResult({ item }: { item: SearchItem }) {
@@ -159,7 +159,9 @@ function UseCaseResult({ item }: { item: SearchItem }) {
     item.industries[0] && industryName(item.industries[0]),
     budget,
     item.closesAt &&
-      t("deadline.date", {
+      // Server component: the date is read once per request.
+      // oxlint-disable-next-line react/purity
+      t(Date.parse(item.closesAt) <= Date.now() ? "deadline.closed" : "deadline.date", {
         date: format.dateTime(new Date(item.closesAt), "date"),
       }),
   ].filter(Boolean);

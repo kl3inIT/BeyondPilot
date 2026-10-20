@@ -5,6 +5,7 @@ import { Button } from "@/components/actions/button";
 import { useFormatter } from "@/i18n/format";
 import type { MyUseCase } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+import { momentText } from "@/i18n/formats";
 
 import { PostUseCase } from "./post-use-case";
 import { LiveRefresh } from "./live-refresh";
@@ -15,9 +16,7 @@ function UseCaseSentPage({ useCase }: { useCase: MyUseCase }) {
   const status = useTranslations("Organization.useCases.status");
   const format = useFormatter();
   const when = (instant: string | null | undefined) =>
-    instant
-      ? `${format.dateTime(new Date(instant), "date")}, ${format.dateTime(new Date(instant), "time")} ICT`
-      : "";
+    instant ? momentText(format, new Date(instant)) : "";
 
   const rows: { key: "useCase" | "organization" | "status" | "sent" | "closes"; value: string }[] =
     [

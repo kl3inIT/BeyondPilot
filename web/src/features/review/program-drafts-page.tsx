@@ -13,6 +13,7 @@ import {
   adminProgramDraftRoute,
   adminProgramDraftsRoute,
 } from "@/lib/site";
+import { momentText } from "@/i18n/formats";
 
 import { ExportDrafts } from "./export-drafts";
 import { listApplications } from "./review-search";
@@ -43,14 +44,7 @@ function ProgramDraftsPage({
   );
   const format = useFormatter();
   const country = useCountryName();
-  const time = (at: string) =>
-    format.dateTime(new Date(at), {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      hourCycle: "h23",
-    });
+  const time = (at: string) => momentText(format, new Date(at), "day");
   const total = drafts.requiredQuestions > 0 ? 4 : 3;
 
   return (

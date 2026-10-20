@@ -11,6 +11,7 @@ import { getFormatter } from "@/i18n/format-server";
 import { Link } from "@/i18n/navigation";
 import type { AuditEvent, AuditEventList } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+import { clockText } from "@/i18n/formats";
 
 import { auditLogSearch, type AuditLogSearch } from "./audit-log-search";
 import { auditResourceRoute } from "./audit-resource";
@@ -46,12 +47,7 @@ async function AuditLogPage({ events, search }: AuditLogPageProps) {
 
   /** "Today, 09:41:07" for an event of today in Vietnam time, "3 Oct 2026, 14:32:07" before that. */
   function exactTime(at: Date) {
-    const time = format.dateTime(at, {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hourCycle: "h23",
-    });
+    const time = clockText(format, at, "seconds");
     return format.dateTime(at, { dateStyle: "short" }) === today
       ? t("today", { time })
       : t("dayAndTime", {

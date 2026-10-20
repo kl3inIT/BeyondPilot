@@ -27,6 +27,7 @@ import {
   type EmailTemplate,
 } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
+import { momentText } from "@/i18n/formats";
 
 import { EmailPreview } from "./email-preview";
 import { testFailures } from "./email-test-failures";
@@ -283,10 +284,7 @@ function EmailTemplateEditor({
               <p className="text-xs">
                 {t("lastEdited", {
                   name: current.updatedBy,
-                  when: format.dateTime(new Date(current.updatedAt), {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  }),
+                  when: momentText(format, new Date(current.updatedAt)),
                 })}{" "}
                 <Link
                   href={siteRoutes.adminAuditLog}

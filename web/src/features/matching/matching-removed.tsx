@@ -7,6 +7,7 @@ import { PresenceItem, PresenceList } from "@/components/composites/presence-lis
 import { SolutionLogo } from "@/features/solution/solution-logo";
 import { useFormatter } from "@/i18n/format";
 import type { MatchingCandidate } from "@/lib/api/generated";
+import { momentText } from "@/i18n/formats";
 
 type MatchingRemovedProps = {
   candidates: MatchingCandidate[];
@@ -40,13 +41,7 @@ function MatchingRemoved({ candidates, operator, pendingId, onRestore }: Matchin
           const who = candidate.removedByOperator
             ? t("genaiFund")
             : (candidate.removedBy ?? t("someone"));
-          const when = candidate.removedAt
-            ? format.dateTime(new Date(candidate.removedAt), {
-                dateStyle: "medium",
-                timeStyle: "short",
-                timeZone: "Asia/Ho_Chi_Minh",
-              })
-            : "";
+          const when = candidate.removedAt ? momentText(format, new Date(candidate.removedAt)) : "";
           return (
             <PresenceItem
               key={candidate.id}
