@@ -237,7 +237,7 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 
 - **One per person and application,** overwritten on each save until the outcomes are released
   (`PROPOSAL_RELEASED`). The program must have criteria (`PROPOSAL_NO_CRITERIA`).
-- **Scores.** Every criterion, and only those, from 1 to 5 (`PROPOSAL_ASSESSMENT_INVALID`), with an optional note of
+- **Scores.** Every criterion, and only those, from 1 to 10 (`PROPOSAL_ASSESSMENT_INVALID`), with an optional note of
   at most 2000 characters.
 - **Conflict.** A reviewer who declares a conflict saves no scores; the assessment counts as assessed but is left out
   of the average and of the `scored` count.
