@@ -499,7 +499,7 @@
     "SEARCH_ENCRYPTION_KEY_MISSING": "Keys cannot be saved: the server has no encryption key for them. Ask the team to add it.",
     "SOLUTION_NOT_FOUND": "This solution no longer exists.",
     "SOLUTION_MEMBER_REQUIRED": "Only a member of an organization can do this.",
-    "SOLUTION_ORGANIZATION_NOT_APPROVED": "This organization is not approved yet, so it cannot have a solution.",
+    "SOLUTION_ORGANIZATION_NOT_APPROVED": "Approve the organization first: a solution is listed only when its organization is approved.",
     "SOLUTION_INCOMPLETE": "Fill in the marked fields before sending for review.",
     "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review, approved, or refused for good.",
     "SOLUTION_NOT_EDITABLE": "This solution was refused for good and can no longer be changed.",
@@ -4123,7 +4123,7 @@
     },
     "inReview": {
       "title": "GenAI Fund is reviewing your organization",
-      "lead": "Until it is approved, {name} does not appear in the directories and cannot list a solution publicly.",
+      "lead": "You can already apply to programs and use cases, and add solutions and send them for review. Once it is approved, everyone can see your organization's page and solutions on BeyondPilot.",
       "foot": "We email the owners when it is decided.",
       "edit": "Edit profile",
       "missing": "{count, plural, one {# required field is empty: {facts}.} other {# required fields are empty: {facts}.}} The reviewer reads the profile as it is now.",
