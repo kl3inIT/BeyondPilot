@@ -3,6 +3,7 @@
 import { useStore } from "@tanstack/react-form";
 import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { z } from "zod";
 
 import { TextButton } from "@/components/actions/text-button";
 import { withFieldGroup } from "@/components/form/app-form";
@@ -21,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useVocabulary } from "@/i18n/vocabulary";
+import { partsInVietnam } from "@/lib/vietnam-time";
 
 import { AttachmentsField, type UploadedAttachment } from "./admin-use-case-attachments";
 import {
@@ -35,6 +37,14 @@ import { blankDraft, timelineOf, type Step } from "./use-case-draft";
 
 /** The most any text of the use case holds, as the backend takes it. */
 const MAX_TEXT = 2000;
+
+/** The most requirements a use case lists, as the backend takes it. */
+const MAX_REQUIREMENTS = 30;
+
+/** The day it is now in Vietnam, as the date input writes it. */
+function today() {
+  return partsInVietnam(new Date().toISOString()).day;
+}
 
 type UseCaseStepFieldsProps = {
   /** One of the four steps that hold fields; the review step reads them all instead. */
@@ -57,6 +67,15 @@ const UseCaseStepFields = withFieldGroup({
     const currency = useStore(group.store, (state) => state.values.currency);
     const toBeDetermined = useStore(group.store, (state) => state.values.budgetToBeDetermined);
     const maxWeeks = useStore(group.store, (state) => state.values.timelineMaxWeeks);
+    // The budget is typed as text; an amount is 0 or a whole number, and the day proposals close is not past.
+    const amountSchema = z
+      .string()
+      .refine((value) => toBeDetermined || /^\d{0,13}$/.test(value.trim()), {
+        message: t("amountInvalid"),
+      });
+    const closesSchema = z.string().refine((value) => value === "" || value >= today(), {
+      message: t("closesPast"),
+    });
     const closesIds = fieldIds({ form: group.form, name: group.getFormFieldName("closesDay") });
 
     if (step === "challenge") {
@@ -187,7 +206,12 @@ const UseCaseStepFields = withFieldGroup({
                     </group.AppField>
                   </div>
                 ))}
-                {!readOnly && (
+                {!readOnly && rows.state.value.length >= MAX_REQUIREMENTS && (
+                  <FieldDescription>
+                    {t("maxRequirements", { max: MAX_REQUIREMENTS })}
+                  </FieldDescription>
+                )}
+                {!readOnly && rows.state.value.length < MAX_REQUIREMENTS && (
                   <TextButton
                     // 24px tall, the least a target may be when another stands right beside it.
                     className="min-h-6 self-start"
@@ -242,7 +266,7 @@ const UseCaseStepFields = withFieldGroup({
           )}
         </group.AppField>
         <div className="grid gap-4 sm:grid-cols-2">
-          <group.AppField name="budgetMin">
+          <group.AppField name="budgetMin" validators={{ onChange: amountSchema }}>
             {(field) => (
               <field.TextField
                 label={t("budgetMin", { currency })}
@@ -252,7 +276,7 @@ const UseCaseStepFields = withFieldGroup({
               />
             )}
           </group.AppField>
-          <group.AppField name="budgetMax">
+          <group.AppField name="budgetMax" validators={{ onChange: amountSchema }}>
             {(field) => (
               <field.TextField
                 label={t("budgetMax", { currency })}
@@ -283,7 +307,7 @@ const UseCaseStepFields = withFieldGroup({
           <Field>
             <FieldLabel htmlFor={closesIds.control}>{t("closes")}</FieldLabel>
             <div className="grid grid-cols-2 gap-2">
-              <group.AppField name="closesDay">
+              <group.AppField name="closesDay" validators={{ onChange: closesSchema }}>
                 {() => <ClosesInput type="date" describedBy={closesIds.hint} readOnly={readOnly} />}
               </group.AppField>
               <group.AppField name="closesTime">
