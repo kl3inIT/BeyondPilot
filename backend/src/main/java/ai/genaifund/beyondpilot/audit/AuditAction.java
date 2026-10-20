@@ -172,6 +172,9 @@ public enum AuditAction {
 	/** An operator downloaded the solutions as a spreadsheet. {@code count} is how many the download holds. */
 	SOLUTION_EXPORT("solution.export", "count"),
 
+	/** An operator downloaded the offers as a spreadsheet. {@code count} is how many the download holds. */
+	SOLUTION_OFFERS_EXPORT("solution.offers_export", "count"),
+
 	/**
 	 * An operator created a use case for an organization. {@code organization} is that organization's identifier,
 	 * {@code status} is {@code draft}, {@code approved} (published at once), or {@code private} for a draft only operators

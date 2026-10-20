@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import type { AdminOffer } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
+import { ExportOffers } from "./export-offers";
 import { OfferRowMenu } from "./offer-actions";
 import { OfferAddress } from "./offer-address";
 import { OfferState } from "./offer-state";
@@ -57,7 +58,13 @@ function AdminOffersPage({ offers, search }: { offers: AdminOffer[]; search: Adm
 
   return (
     <div className="flex flex-1 flex-col gap-5 px-4 pt-2 pb-12 md:px-6 lg:px-8" lang={locale}>
-      <AdminPageHeader destination="solutions" title={solutions("title")}>
+      <AdminPageHeader
+        destination="solutions"
+        title={solutions("title")}
+        actions={
+          <ExportOffers ids={shown.map((offer) => offer.id)} state={search.state} q={search.q} />
+        }
+      >
         <SolutionsAdminTabs current="offers" />
       </AdminPageHeader>
       <OffersToolbar />

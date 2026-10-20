@@ -57,6 +57,7 @@ export const auditActions = [
   "solution.deployment_restore",
   "solution.enrich",
   "solution.export",
+  "solution.offers_export",
   "use_case.create",
   "use_case.submit",
   "use_case.draft",

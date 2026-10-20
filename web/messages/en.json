@@ -1237,7 +1237,8 @@
           "offer_close": "Closed an offer to new solutions",
           "offer_reopen": "Opened an offer to new solutions again",
           "offer_delete": "Deleted an offer",
-          "export": "Downloaded the solutions"
+          "export": "Downloaded the solutions",
+          "offers_export": "Downloaded the offers"
         },
         "messaging": {
           "request_accept": "Accepted a first message",
@@ -1399,7 +1400,8 @@
           "offer_close": "Closed the offer <resource></resource> to new solutions",
           "offer_reopen": "Opened the offer <resource></resource> to new solutions again",
           "offer_delete": "Deleted the offer <resource></resource>",
-          "export": "Downloaded the solutions"
+          "export": "Downloaded the solutions",
+          "offers_export": "Downloaded the offers"
         },
         "messaging": {
           "request_accept": "Accepted a first message about <resource></resource>",

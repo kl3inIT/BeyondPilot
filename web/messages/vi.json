@@ -1237,7 +1237,8 @@
           "offer_close": "Đóng ưu đãi với giải pháp mới",
           "offer_reopen": "Mở lại ưu đãi với giải pháp mới",
           "offer_delete": "Xóa ưu đãi",
-          "export": "Tải danh sách giải pháp AI"
+          "export": "Tải danh sách giải pháp AI",
+          "offers_export": "Tải danh sách ưu đãi"
         },
         "messaging": {
           "request_accept": "Chấp nhận một tin đầu tiên",
@@ -1399,7 +1400,8 @@
           "offer_close": "Đóng ưu đãi <resource></resource> với giải pháp mới",
           "offer_reopen": "Mở lại ưu đãi <resource></resource> với giải pháp mới",
           "offer_delete": "Xóa ưu đãi <resource></resource>",
-          "export": "Tải danh sách giải pháp AI"
+          "export": "Tải danh sách giải pháp AI",
+          "offers_export": "Tải danh sách ưu đãi"
         },
         "messaging": {
           "request_accept": "Đã chấp nhận một tin đầu tiên về <resource></resource>",
