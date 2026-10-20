@@ -856,13 +856,15 @@
           "fromWindow": "Theo thời gian nhận đơn",
           "locked": "Ngày sửa ở mục Nhận đơn",
           "add": "Thêm mốc",
+          "full": "Mỗi chương trình có tối đa {max} mốc thời gian. Xóa một mốc để thêm mốc khác.",
           "hint": "Giờ Việt Nam (ICT)."
         },
         "events": {
           "title": "Sự kiện",
           "what": "Sự kiện hiện ở mục Sắp diễn ra trên danh sách chương trình.",
           "online": "Trực tuyến",
-          "add": "Thêm sự kiện"
+          "add": "Thêm sự kiện",
+          "full": "Mỗi chương trình có tối đa {max} sự kiện. Xóa một sự kiện để thêm sự kiện khác."
         },
         "edit": "Sửa",
         "editNamed": "Sửa {name}",

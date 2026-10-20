@@ -41,6 +41,7 @@ import {
   PublishChecklist,
 } from "./program-publishing";
 import {
+  maxScheduleEntries,
   programTypes,
   settingsSchema,
   type EventValue,
@@ -640,17 +641,29 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
               );
             }}
           </form.Subscribe>
-          <div>
-            <Button
-              ref={addKeyDate}
-              prominence="tertiary"
-              size="sm"
-              onClick={() => setKeyDate({ index: null })}
-            >
-              <PlusIcon aria-hidden="true" />
-              {t("keyDates.add")}
-            </Button>
-          </div>
+          <form.Subscribe
+            selector={(formState) => formState.values.keyDates.length >= maxScheduleEntries}
+          >
+            {(full) => (
+              <div className="flex flex-col items-start gap-1">
+                <Button
+                  ref={addKeyDate}
+                  prominence="tertiary"
+                  size="sm"
+                  disabled={full}
+                  onClick={() => setKeyDate({ index: null })}
+                >
+                  <PlusIcon aria-hidden="true" />
+                  {t("keyDates.add")}
+                </Button>
+                {full && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("keyDates.full", { max: maxScheduleEntries })}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Subscribe>
           <p className="text-sm text-muted-foreground">{t("keyDates.hint")}</p>
         </SettingsSection>
 
@@ -689,17 +702,29 @@ function ProgramSettings({ program, tabs }: { program: AdminProgram; tabs: React
               )
             }
           </form.Subscribe>
-          <div>
-            <Button
-              ref={addEvent}
-              prominence="tertiary"
-              size="sm"
-              onClick={() => setEvent({ index: null })}
-            >
-              <PlusIcon aria-hidden="true" />
-              {t("events.add")}
-            </Button>
-          </div>
+          <form.Subscribe
+            selector={(formState) => formState.values.events.length >= maxScheduleEntries}
+          >
+            {(full) => (
+              <div className="flex flex-col items-start gap-1">
+                <Button
+                  ref={addEvent}
+                  prominence="tertiary"
+                  size="sm"
+                  disabled={full}
+                  onClick={() => setEvent({ index: null })}
+                >
+                  <PlusIcon aria-hidden="true" />
+                  {t("events.add")}
+                </Button>
+                {full && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("events.full", { max: maxScheduleEntries })}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Subscribe>
           <p className="text-sm text-muted-foreground">{t("applications.ict")}</p>
         </SettingsSection>
       </div>

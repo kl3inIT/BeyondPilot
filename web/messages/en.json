@@ -856,13 +856,15 @@
           "fromWindow": "From the application window",
           "locked": "Date edited under Applications",
           "add": "Add a date",
+          "full": "A program keeps at most {max} key dates. Remove one to add another.",
           "hint": "Times are in Vietnam time (ICT)."
         },
         "events": {
           "title": "Events",
           "what": "Events show under Coming up on the programs list.",
           "online": "Online",
-          "add": "Add an event"
+          "add": "Add an event",
+          "full": "A program keeps at most {max} events. Remove one to add another."
         },
         "edit": "Edit",
         "editNamed": "Edit {name}",
