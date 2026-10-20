@@ -3,6 +3,7 @@ import {
   getMatching,
   getMatchingRun,
   getMatchingSettings,
+  getProposalEvaluations,
   listMatchingFeedback,
   listMatchingRuns,
   type Matching,
@@ -10,6 +11,7 @@ import {
   type MatchingRunDetail,
   type MatchingRunList,
   type MatchingSettings,
+  type ProposalEvaluations,
 } from "@/lib/api/generated";
 import { sessionRequest } from "@/lib/auth/session";
 
@@ -23,6 +25,27 @@ export async function readMatching(useCaseId: string): Promise<Matching | null> 
     return data;
   } catch (error) {
     if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+/**
+ * The proposals a use case received, each set against its requirements by the AI, or `null` when the
+ * caller may not read them. Server only.
+ */
+export async function readProposalEvaluations(
+  useCaseId: string,
+): Promise<ProposalEvaluations | null> {
+  try {
+    const { data } = await getProposalEvaluations({
+      ...(await sessionRequest()),
+      path: { useCaseId },
+    });
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && [400, 403, 404].includes(error.status ?? 0)) {
       return null;
     }
     throw error;

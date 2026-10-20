@@ -6,19 +6,22 @@ import { useFormatter } from "@/i18n/format";
 import type { ReceivedUseCaseProposals } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
 
-import type { ProposalTab } from "./received-proposals";
+import type { ProposalTab, ReceivedView } from "./received-proposals";
 import { ReceivedProposalsList } from "./received-proposals-list";
 
 type ReceivedProposalsPageProps = {
   proposals: ReceivedUseCaseProposals;
   tab: ProposalTab;
+  view?: ReceivedView;
+  /** The proposals of the tab compared against the use case's requirements, for the Compare view. */
+  compare?: React.ReactNode;
 };
 
 /**
  * The proposals a use case received, as the organization that posted it reads them: the way to send
  * the outcomes, the tabs by decision, and one line each, the latest first, opening the proposal.
  */
-function ReceivedProposalsPage({ proposals, tab }: ReceivedProposalsPageProps) {
+function ReceivedProposalsPage({ proposals, tab, view, compare }: ReceivedProposalsPageProps) {
   const t = useTranslations("UseCaseProposal.received");
   const format = useFormatter();
   const { useCase } = proposals;
@@ -50,6 +53,8 @@ function ReceivedProposalsPage({ proposals, tab }: ReceivedProposalsPageProps) {
           proposals={proposals}
           tab={tab}
           area="workspace"
+          view={view}
+          compare={compare}
         />
       </div>
     </div>

@@ -1,10 +1,14 @@
 import { createLoader, parseAsStringLiteral } from "nuqs/server";
 
-import { proposalTabs } from "./received-proposals";
+import { proposalTabs, receivedViews } from "./received-proposals";
 
-/** The tab of a received list, as the URL holds it: `?tab=shortlisted`; All is the default and leaves no trace. */
+/**
+ * The tab and the view of a received list, as the URL holds them: `?tab=shortlisted&view=compare`;
+ * All and List are the defaults and leave no trace.
+ */
 const receivedSearch = {
   tab: parseAsStringLiteral(proposalTabs).withDefault("all"),
+  view: parseAsStringLiteral(receivedViews).withDefault("list"),
 };
 
 export const loadReceivedSearch = createLoader(receivedSearch);

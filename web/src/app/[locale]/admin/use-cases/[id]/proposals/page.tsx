@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { readProposalEvaluations } from "@/features/matching/matching-queries";
+import { ProposalCompare } from "@/features/matching/proposal-evaluations";
+import { inTab } from "@/features/proposal/received-proposals";
 import { loadReceivedSearch } from "@/features/proposal/received-search";
 import { AdminProposalsPage } from "@/features/proposal/admin-proposals-page";
 import { readReceivedProposals } from "@/features/proposal/received-queries";
@@ -9,7 +12,7 @@ import { readAdminUseCase } from "@/features/usecase/admin-use-case-queries";
 import { getPathname } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api/client";
 import { requireRole } from "@/lib/auth/session";
-import { adminUseCaseProposalsRoute, siteRoutes } from "@/lib/site";
+import { adminUseCaseProposalRoute, adminUseCaseProposalsRoute, siteRoutes } from "@/lib/site";
 
 export async function generateMetadata({
   params,
@@ -42,9 +45,11 @@ export default async function AdminUseCaseProposalsRoute({
   if (!useCase.publishedAt) {
     redirect(getPathname({ href: `${siteRoutes.adminUseCases}/${id}`, locale }));
   }
-  const [proposals, search] = await Promise.all([
+  const [proposals, search, evaluations] = await Promise.all([
     readReceivedProposals(id).catch(gone),
     loadReceivedSearch(searchParams),
+    // The list shows without the comparison when the AI's reading cannot be had.
+    readProposalEvaluations(id).catch(() => null),
   ]);
   if (!proposals) {
     notFound();
@@ -55,6 +60,19 @@ export default async function AdminUseCaseProposalsRoute({
       useCase={{ ...useCase, organizationName: useCase.organization.name }}
       proposals={proposals}
       tab={search.tab}
+      view={search.view}
+      compare={
+        evaluations && (
+          <ProposalCompare
+            evaluations={evaluations}
+            columns={inTab(proposals.items, search.tab).map((item) => ({
+              id: item.id,
+              name: item.organizationName,
+              href: adminUseCaseProposalRoute(id, item.id),
+            }))}
+          />
+        )
+      }
     />
   );
 }

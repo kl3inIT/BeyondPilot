@@ -2821,7 +2821,8 @@
         "origin": {
           "approved": "Brief approved or edited",
           "operator": "GenAI Fund",
-          "member": "A member"
+          "member": "A member",
+          "proposal": "A proposal sent or edited"
         },
         "state": {
           "queued": "Queued",
@@ -2862,7 +2863,8 @@
           "requirements": "Read the brief",
           "candidates": "Searched the solutions",
           "judgment": "Read each solution",
-          "none": "This run did no step yet."
+          "none": "This run did no step yet.",
+          "proposals": "Read each proposal"
         },
         "changes": {
           "title": "Since the run before",
@@ -8124,6 +8126,11 @@
         "confirm": "{count, plural, one {Send # outcome} other {Send # outcomes}}",
         "cancel": "Cancel",
         "done": "{count, plural, one {# outcome was sent.} other {# outcomes were sent.}}"
+      },
+      "view": {
+        "label": "View",
+        "list": "List",
+        "compare": "Compare"
       }
     },
     "actions": {
@@ -8361,5 +8368,40 @@
     "pageOf": "Page {page} / {total}",
     "pageLabel": "Page {page}",
     "meta": "{meta} · File {index} of {count}"
+  },
+  "ProposalEvaluation": {
+    "card": {
+      "title": "How it meets your requirements",
+      "constraints": "Conditions of delivery"
+    },
+    "check": "AI read each proposal and the vendor's own material. Check the quotes before you decide.",
+    "waiting": "AI reads this proposal in a few minutes.",
+    "outdated": "AI read this before the last edit. It reads the new version in a few minutes.",
+    "noModel": "AI is not set up to read proposals yet.",
+    "noBrief": "AI has not read the brief of this use case yet.",
+    "unreadDeck": "The proposal's PDF could not be read; the rest of the proposal was.",
+    "source": {
+      "approach": "From their proposal",
+      "team": "From their team background",
+      "proposalDeck": "From their proposal PDF, page {page}",
+      "websiteAt": "From their website · {host}",
+      "ofSolution": "{solution} · {from}",
+      "found": {
+        "approach": "Found in their proposal",
+        "team": "Found in their team background",
+        "proposalDeck": "Found in their proposal PDF, page {page}",
+        "websiteAt": "Found on their website · {host}"
+      }
+    },
+    "compare": {
+      "requirement": "Requirement",
+      "mustHaves": "Must haves met",
+      "met": "{met} of {total}",
+      "constraint": "Delivery condition",
+      "beingRead": "Being read",
+      "open": "{proposal}: {requirement}",
+      "nothing": "Nothing in the proposal shows this.",
+      "caption": "Proposals compared requirement by requirement"
+    }
   }
 }

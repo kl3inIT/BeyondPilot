@@ -23,8 +23,11 @@ import {
   pendingOutcomes,
   proposalLine,
   proposalTabs,
+  receivedHref,
   type ProposalTab,
+  type ReceivedView,
 } from "./received-proposals";
+import { ReceivedViewSwitch } from "./received-view-switch";
 
 type ReceivedProposalsListProps = {
   useCaseId: string;
@@ -32,6 +35,10 @@ type ReceivedProposalsListProps = {
   tab: ProposalTab;
   /** Whose pages the rows open: the organization's own, or the operators'. */
   area: "workspace" | "admin";
+  /** List, or the proposals of the tab side by side; List when absent. */
+  view?: ReceivedView;
+  /** The proposals of the tab compared, shown in the place of the lines when the view is Compare. */
+  compare?: React.ReactNode;
 };
 
 const tabClass =
@@ -40,9 +47,17 @@ const tabClass =
 /**
  * What the proposals of a use case show for the team that reads them: the way to send the outcomes,
  * the tabs All, Shortlisted and Declined with their counts, and one line for each proposal with its
- * state and its menu. The tab is the `?tab=` of the address.
+ * state and its menu. The tab is the `?tab=` of the address. Given a comparison, a switch beside the
+ * tabs offers it in the place of the lines, as `?view=compare`.
  */
-function ReceivedProposalsList({ useCaseId, proposals, tab, area }: ReceivedProposalsListProps) {
+function ReceivedProposalsList({
+  useCaseId,
+  proposals,
+  tab,
+  area,
+  view = "list",
+  compare,
+}: ReceivedProposalsListProps) {
   const t = useTranslations("UseCaseProposal.received");
   const format = useFormatter();
   const { items } = proposals;
@@ -126,19 +141,32 @@ function ReceivedProposalsList({ useCaseId, proposals, tab, area }: ReceivedProp
         </div>
       )}
 
-      <nav aria-label={t("tabs.label")} className="flex items-end gap-5 border-b">
-        {proposalTabs.map((key) => (
-          <Link
-            key={key}
-            href={key === "all" ? base : `${base}?tab=${key}`}
-            aria-current={key === tab ? "page" : undefined}
-            className={tabClass}
-          >
-            {t(`tabs.${key}`)}
-            <span className="text-xs">{counts[key]}</span>
-          </Link>
-        ))}
-      </nav>
+      <div className="flex flex-wrap items-end justify-between gap-x-5 gap-y-3 border-b">
+        <nav aria-label={t("tabs.label")} className="flex items-end gap-5">
+          {proposalTabs.map((key) => (
+            <Link
+              key={key}
+              href={receivedHref(base, key, compare ? view : "list")}
+              aria-current={key === tab ? "page" : undefined}
+              className={tabClass}
+            >
+              {t(`tabs.${key}`)}
+              <span className="text-xs">{counts[key]}</span>
+            </Link>
+          ))}
+        </nav>
+        {compare && items.length > 0 && (
+          <div className="pb-2">
+            <ReceivedViewSwitch
+              view={view}
+              hrefs={{
+                list: receivedHref(base, tab, "list"),
+                compare: receivedHref(base, tab, "compare"),
+              }}
+            />
+          </div>
+        )}
+      </div>
 
       {rows.length === 0 ? (
         <div className="rounded-lg border bg-background">
@@ -150,6 +178,8 @@ function ReceivedProposalsList({ useCaseId, proposals, tab, area }: ReceivedProp
             )}
           />
         </div>
+      ) : compare && view === "compare" ? (
+        compare
       ) : (
         <DataTableRows
           surface

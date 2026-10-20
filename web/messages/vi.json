@@ -2821,7 +2821,8 @@
         "origin": {
           "approved": "Brief được duyệt hoặc sửa",
           "operator": "GenAI Fund",
-          "member": "Một thành viên"
+          "member": "Một thành viên",
+          "proposal": "Một đề xuất được gửi hoặc sửa"
         },
         "state": {
           "queued": "Đang chờ",
@@ -2862,7 +2863,8 @@
           "requirements": "Đọc brief",
           "candidates": "Tìm giải pháp",
           "judgment": "Đọc từng giải pháp",
-          "none": "Lượt chạy này chưa làm bước nào."
+          "none": "Lượt chạy này chưa làm bước nào.",
+          "proposals": "Đọc từng đề xuất"
         },
         "changes": {
           "title": "So với lượt trước",
@@ -8124,6 +8126,11 @@
         "confirm": "{count, plural, other {Gửi # kết quả}}",
         "cancel": "Hủy",
         "done": "{count, plural, other {Đã gửi # kết quả.}}"
+      },
+      "view": {
+        "label": "Cách xem",
+        "list": "Danh sách",
+        "compare": "So sánh"
       }
     },
     "actions": {
@@ -8361,5 +8368,40 @@
     "pageOf": "Trang {page} / {total}",
     "pageLabel": "Trang {page}",
     "meta": "{meta} · Tệp {index} / {count}"
+  },
+  "ProposalEvaluation": {
+    "card": {
+      "title": "Mức đáp ứng yêu cầu của bạn",
+      "constraints": "Điều kiện triển khai"
+    },
+    "check": "AI đã đọc từng đề xuất và tài liệu của chính nhà cung cấp. Hãy kiểm tra các trích dẫn trước khi quyết định.",
+    "waiting": "AI sẽ đọc đề xuất này trong vài phút.",
+    "outdated": "AI đọc bản này trước lần sửa gần nhất. AI sẽ đọc bản mới trong vài phút.",
+    "noModel": "AI chưa được thiết lập để đọc đề xuất.",
+    "noBrief": "AI chưa đọc mô tả của use case này.",
+    "unreadDeck": "Không đọc được file PDF của đề xuất; phần còn lại đã được đọc.",
+    "source": {
+      "approach": "Trích từ đề xuất của họ",
+      "team": "Trích từ phần giới thiệu đội ngũ",
+      "proposalDeck": "Trích từ PDF đề xuất, trang {page}",
+      "websiteAt": "Trích từ website · {host}",
+      "ofSolution": "{solution} · {from}",
+      "found": {
+        "approach": "Có trong đề xuất của họ",
+        "team": "Có trong phần giới thiệu đội ngũ",
+        "proposalDeck": "Có trong PDF đề xuất, trang {page}",
+        "websiteAt": "Có trên website của họ · {host}"
+      }
+    },
+    "compare": {
+      "requirement": "Yêu cầu",
+      "mustHaves": "Số yêu cầu bắt buộc đáp ứng",
+      "met": "{met}/{total}",
+      "constraint": "Điều kiện triển khai",
+      "beingRead": "Đang đọc",
+      "open": "{proposal}: {requirement}",
+      "nothing": "Đề xuất không có nội dung nào cho thấy điều này.",
+      "caption": "So sánh các đề xuất theo từng yêu cầu"
+    }
   }
 }

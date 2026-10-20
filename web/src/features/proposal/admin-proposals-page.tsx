@@ -5,7 +5,7 @@ import { AdminPageHeader } from "@/components/layout/admin-page-header";
 import { UseCaseTabs } from "@/features/usecase/use-case-tabs";
 import type { MyUseCase, ReceivedUseCaseProposals } from "@/lib/api/generated";
 
-import type { ProposalTab } from "./received-proposals";
+import type { ProposalTab, ReceivedView } from "./received-proposals";
 import { ReceivedProposalsList } from "./received-proposals-list";
 import { ExportProposals } from "./export-proposals";
 
@@ -18,13 +18,16 @@ type AdminProposalsPageProps = {
   };
   proposals: ReceivedUseCaseProposals;
   tab: ProposalTab;
+  view?: ReceivedView;
+  /** The proposals of the tab compared against the use case's requirements, for the Compare view. */
+  compare?: React.ReactNode;
 };
 
 /**
  * The Proposals page of a use case, as GenAI Fund reads it: the same list as the organization that
  * posted the use case has, with the same decisions, menus and way to send the outcomes.
  */
-function AdminProposalsPage({ useCase, proposals, tab }: AdminProposalsPageProps) {
+function AdminProposalsPage({ useCase, proposals, tab, view, compare }: AdminProposalsPageProps) {
   const statusLabel = useTranslations("Admin.useCases.status");
 
   return (
@@ -55,6 +58,8 @@ function AdminProposalsPage({ useCase, proposals, tab }: AdminProposalsPageProps
           proposals={proposals}
           tab={tab}
           area="admin"
+          view={view}
+          compare={compare}
         />
       </div>
     </div>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { readProposalEvaluations } from "@/features/matching/matching-queries";
+import { ProposalEvaluationCard } from "@/features/matching/proposal-evaluations";
 import { ReceivedProposalPage } from "@/features/proposal/received-proposal-page";
 import { readReceivedProposal } from "@/features/proposal/received-queries";
 import { requireRole } from "@/lib/auth/session";
@@ -22,11 +24,23 @@ export default async function AdminUseCaseProposalRoute({
   const { locale, id, proposalId } = await params;
   setRequestLocale(locale);
   await requireRole("operator", adminUseCaseProposalRoute(id, proposalId));
-  const proposal = await readReceivedProposal(proposalId);
+  const [proposal, evaluations] = await Promise.all([
+    readReceivedProposal(proposalId),
+    // The proposal shows without the AI's reading when it cannot be had.
+    readProposalEvaluations(id).catch(() => null),
+  ]);
   // The proposal must belong to the use case in the address.
   if (!proposal || proposal.useCase.id !== id) {
     notFound();
   }
 
-  return <ReceivedProposalPage proposal={proposal} area="admin" />;
+  return (
+    <ReceivedProposalPage
+      proposal={proposal}
+      area="admin"
+      evaluation={
+        evaluations && <ProposalEvaluationCard evaluations={evaluations} proposalId={proposal.id} />
+      }
+    />
+  );
 }

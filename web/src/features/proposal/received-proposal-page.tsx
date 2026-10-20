@@ -21,14 +21,20 @@ type ReceivedProposalPageProps = {
   proposal: ReceivedUseCaseProposal;
   /** Whose page it is: the organization's own, or the operators', who decide for it as well. */
   area?: "workspace" | "admin";
+  /** How the proposal meets the use case's requirements, as the AI read it; shown under the decision. */
+  evaluation?: React.ReactNode;
 };
 
 /**
  * One proposal a use case received: who sent it, the solutions offered and the approach, the
- * sender's name, address, country and number, the team and the PDF; and what the team decided about
- * it, with the buttons that decide.
+ * sender's name, address, country and number, the team and the PDF; what the team decided about it,
+ * with the buttons that decide; and, given one, how it meets the use case's requirements.
  */
-function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposalPageProps) {
+function ReceivedProposalPage({
+  proposal,
+  area = "workspace",
+  evaluation,
+}: ReceivedProposalPageProps) {
   const admin = area === "admin";
   const t = useTranslations("UseCaseProposal.received.detail");
   const r = useTranslations("UseCaseProposal.received");
@@ -118,6 +124,8 @@ function ReceivedProposalPage({ proposal, area = "workspace" }: ReceivedProposal
             ]}
           />
         </Card>
+
+        {evaluation}
 
         <Card id="proposal-solutions" title={t("solutions.title")}>
           <ProposalSolutionList solutions={solutions} />

@@ -40,6 +40,23 @@ export type ProposalDecision = "shortlisted" | "declined";
 export const proposalTabs = ["all", "shortlisted", "declined"] as const;
 export type ProposalTab = (typeof proposalTabs)[number];
 
+/** How the received list is read: one line a proposal, or the proposals side by side against the requirements. */
+export const receivedViews = ["list", "compare"] as const;
+export type ReceivedView = (typeof receivedViews)[number];
+
+/** The address of a tab and a view of the received list; All and List are the defaults and leave no trace. */
+export function receivedHref(base: string, tab: ProposalTab, view: ReceivedView): string {
+  const query = new URLSearchParams();
+  if (tab !== "all") {
+    query.set("tab", tab);
+  }
+  if (view !== "list") {
+    query.set("view", view);
+  }
+  const search = query.toString();
+  return search ? `${base}?${search}` : base;
+}
+
 type Decided = { decision?: ProposalDecision | null; outcomePending?: boolean };
 
 /** The proposals a tab shows, in the order they arrived. */
