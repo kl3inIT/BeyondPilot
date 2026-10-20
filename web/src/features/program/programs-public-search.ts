@@ -7,7 +7,7 @@ import {
 } from "nuqs/server";
 
 import type { ProgramSummary } from "@/lib/api/generated";
-import { pageSize } from "@/lib/page-size";
+import { gridPageSize } from "@/lib/page-size";
 
 import { programTypes } from "./program-schemas";
 
@@ -21,7 +21,7 @@ export const openCardEvents = 3;
 export const programsPublicSearch = {
   q: parseAsString.withDefault(""),
   page: parseAsInteger.withDefault(1),
-  size: pageSize,
+  size: gridPageSize,
   sort: parseAsStringLiteral(["relevance", "newest", "name"] as const),
   phase: parseAsStringLiteral(publicPhases),
   type: parseAsStringLiteral(programTypes),

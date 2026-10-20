@@ -1,7 +1,7 @@
 import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
 import { directorySorts } from "@/lib/directory-sort";
-import { pageSize } from "@/lib/page-size";
+import { gridPageSize, pageSize } from "@/lib/page-size";
 
 import { featuredChoices, reviewedStatuses, talentRoles } from "./talent-codes";
 
@@ -14,7 +14,7 @@ export const talentSearch = {
   role: parseAsStringLiteral(talentRoles),
   sort: parseAsStringLiteral(directorySorts),
   page: parseAsInteger.withDefault(1),
-  size: pageSize,
+  size: gridPageSize,
 };
 
 export const loadTalentSearch = createLoader(talentSearch);
