@@ -221,7 +221,7 @@ class McpServerTest {
 				"get_application", "read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program",
 				"list_accounts", "list_audit_events", "list_emails", "get_email", "list_matching_runs",
 				"get_matching_run", "get_matches", "decide_record", "decide_application", "decide_proposal", "create_organization", "create_use_case",
-				"update_use_case", "publish_use_case", "send_back_use_case");
+				"update_use_case", "publish_use_case", "send_back_use_case", "set_use_case_programs");
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&outcome=refused"),
 				"$.total")).isEqualTo(1);
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&tool=search"),
@@ -420,7 +420,7 @@ class McpServerTest {
 					"read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "list_accounts",
 					"list_audit_events", "list_emails", "get_email", "list_matching_runs", "get_matching_run",
 					"get_matches", "decide_record", "decide_application", "decide_proposal", "create_organization", "create_use_case",
-				"update_use_case", "publish_use_case", "send_back_use_case");
+				"update_use_case", "publish_use_case", "send_back_use_case", "set_use_case_programs");
 
 		String found = text(app.callTool(McpSchema.CallToolRequest.builder("search")
 			.arguments(Map.of("query", "hidden agent " + word))
@@ -667,6 +667,26 @@ class McpServerTest {
 			.expectStatus()
 			.isNotFound();
 
+		// Filed under a program by its slug, then under none; an unknown program is refused.
+		String program = JsonPath.read(body(client.post()
+			.uri("/api/program/admin/programs")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("name", "Claims Challenge " + word, "slug", "claims-" + word, "type", "enterprise_challenge"))
+			.exchange()
+			.expectStatus()
+			.isCreated()), "$.id");
+		String filed = text(call(app, "set_use_case_programs",
+				Map.of("use_case", id.toString(), "programs", List.of("program:claims-" + word))));
+		assertThat(JsonPath.<List<String>>read(filed, "$.before")).isEmpty();
+		assertThat(JsonPath.<List<String>>read(filed, "$.after")).containsExactly("Claims Challenge " + word);
+		assertThat(call(app, "set_use_case_programs",
+				Map.of("use_case", id.toString(), "programs", List.of(UUID.randomUUID().toString()))).isError()).isTrue();
+		String none = text(call(app, "set_use_case_programs", Map.of("use_case", id.toString(), "programs", List.of())));
+		assertThat(JsonPath.<List<String>>read(none, "$.after")).isEmpty();
+		assertThat(program).isNotBlank();
+
 		// Changed field by field: what is left out stays.
 		String changed = text(call(app, "update_use_case", Map.of("use_case", id.toString(), "title",
 				"Claims sorting " + word, "budget_to_be_determined", false, "budget_min", 10000, "budget_max", 20000)));
@@ -729,7 +749,7 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(29);
+			.isEqualTo(30);
 
 		switchTool("user", "fetch", false);
 		try {
