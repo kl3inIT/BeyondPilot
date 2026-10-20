@@ -54,7 +54,7 @@ public class SearchService {
 		int page = request.page() == null ? 1 : request.page();
 		int size = request.size() == null ? PAGE_SIZE : request.size();
 		// By meaning as well as by words, when a model is configured and answers; by words alone otherwise.
-		Meaning meaning = embeddings.of(query).orElse(null);
+		Meaning meaning = embeddings.of(unaccented(query)).orElse(null);
 		SearchRequest criteria = query.equals(request.q()) ? request
 				: new SearchRequest(query, request.kind(), request.page(), request.size(), request.industry(),
 						request.focusArea(), request.maturity(), request.role(), request.type(), request.phase(),
@@ -108,7 +108,7 @@ public class SearchService {
 	 */
 	private List<Found> find(String query, List<String> kinds, boolean listedOnly) {
 		String trimmed = query.strip();
-		Meaning meaning = embeddings.of(trimmed).orElse(null);
+		Meaning meaning = embeddings.of(unaccented(trimmed)).orElse(null);
 		String asked = comparable(trimmed);
 		record Placed(Found found, int match, int place, int kind) {
 		}
@@ -133,11 +133,19 @@ public class SearchService {
 
 	/** Text as a title is compared with the query: without accents or case, words parted by one space. */
 	private static String comparable(String text) {
-		String plain = Normalizer.normalize(text, Normalizer.Form.NFD)
+		return unaccented(text).toLowerCase(Locale.ROOT).replaceAll("[^\\p{L}\\p{N}]+", " ").strip();
+	}
+
+	/**
+	 * The text without its accents, as the index matches words. The query is embedded in this form too, so "Nguyen"
+	 * and "Nguyễn" are one search by meaning as they are by words; embedding models read unaccented Vietnamese, the
+	 * way many people type it.
+	 */
+	private static String unaccented(String text) {
+		return Normalizer.normalize(text, Normalizer.Form.NFD)
 			.replaceAll("\\p{M}", "")
 			.replace('đ', 'd')
 			.replace('Đ', 'D');
-		return plain.toLowerCase(Locale.ROOT).replaceAll("[^\\p{L}\\p{N}]+", " ").strip();
 	}
 
 	private static SearchItem item(Hit hit, Instant now, boolean member) {
