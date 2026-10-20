@@ -21,6 +21,8 @@ import ai.genaifund.beyondpilot.identity.McpCaller;
 import ai.genaifund.beyondpilot.identity.McpCallers;
 import ai.genaifund.beyondpilot.organization.OrganizationAdministration;
 import ai.genaifund.beyondpilot.organization.OrganizationReviewList;
+import ai.genaifund.beyondpilot.program.ProgramName;
+import ai.genaifund.beyondpilot.program.ProgramService;
 import ai.genaifund.beyondpilot.usecase.PrivateUseCase;
 import ai.genaifund.beyondpilot.usecase.UseCaseAdministration;
 import ai.genaifund.beyondpilot.usecase.UseCaseReviewRecord;
@@ -81,12 +83,15 @@ class UseCaseTools {
 
 	private final OrganizationAdministration organizations;
 
+	private final ProgramService programs;
+
 	private final McpCallers callers;
 
 	private final JsonMapper json;
 
-	UseCaseTools(UseCaseAdministration useCases, OrganizationAdministration organizations, McpCallers callers,
-			JsonMapper json) {
+	UseCaseTools(UseCaseAdministration useCases, OrganizationAdministration organizations, ProgramService programs,
+			McpCallers callers, JsonMapper json) {
+		this.programs = programs;
 		this.useCases = useCases;
 		this.organizations = organizations;
 		this.callers = callers;
@@ -327,6 +332,78 @@ class UseCaseTools {
 				return invalid(invalid);
 			}
 		});
+	}
+
+	SyncToolSpecification setUseCasePrograms() {
+		Map<String, Object> properties = new LinkedHashMap<>();
+		properties.put("use_case", Map.of("type", "string", "description",
+				"The use case, in any status: an id list_records, get_record or create_use_case returned."));
+		properties.put("programs", Map.of("type", "array", "maxItems", 10, "items", Map.of("type", "string"),
+				"description", "Every program it belongs to, replacing those it had: ids list_programs returned "
+						+ "(program:<slug> or programId). An empty list takes it out of every program."));
+		Map<String, Object> schema = Map.of("type", "object", "properties", properties, "required",
+				List.of("use_case", "programs"), "additionalProperties", false);
+		Tool tool = Tool.builder("set_use_case_programs", schema)
+			.title("Set the programs of a use case")
+			.description("File one use case under the programs given and no others, as the operator would on its admin "
+					+ "page: a published use case is then shown on those programs' pages, and while one of them takes "
+					+ "applications, providers answer it through that program's application instead of a proposal. "
+					+ "Works in any status, a private draft included. Nobody is told; the same list again changes "
+					+ "nothing. Use it only when the operator asks, with the programs named by list_programs. The "
+					+ "answer gives the programs before and after, by name, and the admin page." + WRITTEN_BY_PEOPLE)
+			.annotations(ToolAnnotations.builder()
+				.readOnlyHint(false)
+				.destructiveHint(false)
+				.idempotentHint(true)
+				.openWorldHint(false)
+				.build())
+			.build();
+		return new SyncToolSpecification(tool, (context, request) -> {
+			Map<String, Object> arguments = arguments(request.arguments());
+			UUID id = uuid(string(arguments, "use_case"));
+			if (id == null) {
+				return error("Name the use case with an id list_records or get_record returned.");
+			}
+			if (!(arguments.get("programs") instanceof List<?> given)) {
+				return error("Give programs as a list of ids from list_programs; an empty list for none.");
+			}
+			List<UUID> ids = new ArrayList<>();
+			for (Object program : given) {
+				UUID found = program instanceof String text ? programId(text) : null;
+				if (found == null) {
+					return error("No program has the id " + program + ". Find it with list_programs.");
+				}
+				ids.add(found);
+			}
+			Actor actor = actor(context.get(CallLog.CALLER));
+			try {
+				UseCaseReviewRecord before = useCases.reviewRecord(actor, id);
+				useCases.setPrograms(actor, id, ids.stream().distinct().toList());
+				UseCaseReviewRecord after = useCases.reviewRecord(actor, id);
+				String path = "/admin/use-cases/" + id;
+				String title = after.title() == null ? "Untitled use case" : after.title();
+				CallLog.read("use_case", id, title, path);
+				return text(fields("id", id.toString(), "title", title, "before", before.programs(), "after",
+						after.programs(), "told", "Nobody.", "url", callers.site() + path));
+			}
+			catch (BusinessException refused) {
+				return error(refused.safeMessage() + " (" + refused.code() + ").");
+			}
+			catch (ConstraintViolationException invalid) {
+				return invalid(invalid);
+			}
+		});
+	}
+
+	/** The program an argument names: {@code program:<slug>}, a slug or an identifier; null when none has it. */
+	private @Nullable UUID programId(String given) {
+		String named = given.strip();
+		UUID id = uuid(named);
+		if (id != null) {
+			return id;
+		}
+		String slug = named.startsWith("program:") ? named.substring("program:".length()) : named;
+		return programs.named(slug).map(ProgramName::id).orElse(null);
 	}
 
 	/** What a use case's brief takes, for create_use_case and update_use_case. */

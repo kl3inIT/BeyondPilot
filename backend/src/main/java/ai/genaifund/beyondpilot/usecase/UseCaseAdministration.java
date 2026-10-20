@@ -430,6 +430,15 @@ public class UseCaseAdministration {
 	}
 
 	/**
+	 * Files a use case under these programs and no others, for a caller that is not the admin screen.
+	 * @see #setPrograms(Actor, UUID, SetUseCaseProgramsRequest)
+	 */
+	@Transactional
+	public void setPrograms(Actor actor, UUID id, List<UUID> programIds) {
+		setPrograms(actor, id, valid(new SetUseCaseProgramsRequest(programIds)));
+	}
+
+	/**
 	 * Features a use case: it comes first in the opening view of the public list, where the reader has searched
 	 * for nothing, chosen no filter and reads the newest first, the earliest featured on top; its card says Featured
 	 * wherever the list shows it. Any use case can be featured, whatever its status; one that is closed or not published stays out of the public list all the same. A use case keeps being featured through every decision, so one
