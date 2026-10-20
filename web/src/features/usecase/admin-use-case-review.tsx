@@ -9,6 +9,7 @@ import { ReviewStatus } from "@/components/composites/review-status";
 import type { AdminUseCase } from "@/lib/api/generated";
 
 import { draftValuesOf, steps, type Step } from "./use-case-draft";
+import { adminAttachmentsPath } from "./use-case-attachment-files";
 import { UseCaseStepFields } from "./use-case-step-fields";
 import { UseCaseSummary } from "./use-case-summary";
 
@@ -50,6 +51,7 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
           viewLabel={t("viewDetails")}
           hideEmpty={useCase.status === "approved"}
           flat
+          attachmentsPath={adminAttachmentsPath(useCase.id)}
         />
         <p className="text-sm text-muted-foreground">
           {t("proposalEditDays", { days: useCase.proposalEditDays })}
@@ -74,7 +76,13 @@ function AdminUseCaseReview({ useCase }: { useCase: AdminUseCase }) {
         </div>
         {status}
       </div>
-      <UseCaseStepFields form={form} fields="content" step={view} readOnly />
+      <UseCaseStepFields
+        form={form}
+        fields="content"
+        step={view}
+        readOnly
+        attachmentsPath={adminAttachmentsPath(useCase.id)}
+      />
       <div className="flex items-center justify-between gap-3 border-t pt-6">
         <Button prominence="tertiary" onClick={() => go(previous)}>
           {previous === "review" ? t("backToReview") : w("back")}

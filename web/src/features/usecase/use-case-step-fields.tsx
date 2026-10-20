@@ -51,6 +51,8 @@ type UseCaseStepFieldsProps = {
   step: Exclude<Step, "review">;
   /** Shows the fields as they are without letting anyone change them, for the people who only review. */
   readOnly?: boolean;
+  /** Where a file the use case names is read, `<path>/<file id>`; none until it is saved. */
+  attachmentsPath?: string;
 };
 
 /**
@@ -61,7 +63,7 @@ type UseCaseStepFieldsProps = {
 const UseCaseStepFields = withFieldGroup({
   defaultValues: blankDraft,
   props: { step: "challenge" } as UseCaseStepFieldsProps,
-  render: function UseCaseStepFieldsRender({ group, step, readOnly = false }) {
+  render: function UseCaseStepFieldsRender({ group, step, readOnly = false, attachmentsPath }) {
     const t = useTranslations("Organization.useCases.wizard");
     const industryName = useVocabulary("industry");
     const currency = useStore(group.store, (state) => state.values.currency);
@@ -247,7 +249,7 @@ const UseCaseStepFields = withFieldGroup({
             )}
           </group.AppField>
           <group.AppField name="attachments">
-            {() => <UseCaseAttachments readOnly={readOnly} />}
+            {() => <UseCaseAttachments readOnly={readOnly} filesPath={attachmentsPath} />}
           </group.AppField>
         </FieldGroup>
       );
@@ -378,12 +380,13 @@ function TechnologiesField({ readOnly }: { readOnly: boolean }) {
 }
 
 /** The files that explain the use case, held by the form. */
-function UseCaseAttachments({ readOnly }: { readOnly: boolean }) {
+function UseCaseAttachments({ readOnly, filesPath }: { readOnly: boolean; filesPath?: string }) {
   const { field, invalid, errors, ids } = useFieldValidity<UploadedAttachment[]>();
   return (
     <AttachmentsField
       id={ids.control}
       readOnly={readOnly}
+      filesPath={filesPath}
       value={field.state.value}
       onChange={field.handleChange}
       errors={invalid ? errors.filter((error) => error !== undefined) : undefined}

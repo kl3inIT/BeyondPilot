@@ -4,14 +4,19 @@ import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
 import { TextButton } from "@/components/actions/text-button";
+import { PdfOpenButton } from "@/components/composites/pdf-open-button";
+import { useFileSize } from "@/features/solution/solution-deck";
 import type { ProposingOrganization, SolutionSummary } from "@/lib/api/generated";
+import { readableAddress } from "@/lib/storage/uploaded-files";
 
 import type { Details, ProposalValues, Step } from "./proposal-draft";
 import { ProposalOrganizationActions } from "./proposal-organization-actions";
 import { SentByRows } from "./proposal-sender-card";
+import { ownProposalFileAddress } from "./received-proposals";
 import { catalogHref, catalogRowProps, ProposalSolutionRow } from "./proposal-solution-list";
 
 type ProposalReviewStepProps = {
+  useCaseId: string;
   organization: ProposingOrganization;
   values: ProposalValues;
   catalog: SolutionSummary[];
@@ -50,6 +55,7 @@ function Section({ step, title, onEdit, children }: SectionProps) {
 
 /** What the proposal holds, step by step, each with the way back to change it. */
 function ProposalReviewStep({
+  useCaseId,
   organization,
   values,
   catalog,
@@ -59,6 +65,8 @@ function ProposalReviewStep({
   onOrganized,
 }: ProposalReviewStepProps) {
   const t = useTranslations("UseCaseProposal.wizard");
+  const upload = useTranslations("PdfUpload");
+  const size = useFileSize();
   const empty = <p className="text-sm text-muted-foreground">{t("review.nothing")}</p>;
   const solutions = values.solutionIds.flatMap(
     (id) => catalog.find((solution) => solution.id === id) ?? [],
@@ -102,7 +110,20 @@ function ProposalReviewStep({
         ) : (
           empty
         )}
-        {values.deck ? <p className="text-sm">{values.deck.fileName}</p> : empty}
+        {values.deck ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="min-w-0 truncate text-sm">{values.deck.fileName}</p>
+            <PdfOpenButton
+              url={readableAddress(values.deck.fileId, ownProposalFileAddress(useCaseId)) ?? ""}
+              name={values.deck.fileName}
+              meta={size(values.deck.sizeBytes)}
+              label={upload("open")}
+              accessibleLabel={upload("openFile", { name: values.deck.fileName })}
+            />
+          </div>
+        ) : (
+          empty
+        )}
       </Section>
     </div>
   );

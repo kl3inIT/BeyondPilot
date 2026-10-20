@@ -82,6 +82,7 @@ export function adminUseCaseSchema(say: Say) {
           z.object({
             id: z.string(),
             fileName: z.string(),
+            mediaType: z.string(),
             sizeBytes: z.number(),
             uploadedAt: z.string().optional(),
           }),

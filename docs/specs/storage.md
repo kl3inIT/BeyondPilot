@@ -141,8 +141,11 @@ answers `404` for a file in S3.
 - **Private files.** `storage` has no address for them. The owning module checks the reader and then calls
   `StorageService.download(id)`, which returns a `FileDownload` marked as an attachment: either a presigned S3 address
   that downloads the file under its name, or, for the local store, the bytes to stream. The module writes the
-  response itself; for example `proposal`'s review (`ReviewController`) and `solution`'s deck
-  (`SolutionDirectoryController`).
+  response itself; for example `proposal`'s review (`ReviewController`), the PDF of a use-case proposal
+  (`UseCaseProposalsController`), `solution`'s deck (`SolutionDirectoryController`) and the attachments of a use case
+  (`MyUseCasesController`, `AdminUseCasesController`). A page shows such a PDF in its full-screen viewer, which reads it with
+  an ordinary request, so the answer is still an attachment; the person's own upload is shown from the copy the browser
+  holds. `FileDownload.response()` turns it into the HTTP answer.
 - **Exactly one way.** A `FileDownload` carries either `redirect` with `redirectLifetime`, or `content`, never both.
 
 ## Claiming a file

@@ -28,6 +28,7 @@ import {
   type DraftValues,
   type Step,
 } from "./use-case-draft";
+import { myAttachmentsPath } from "./use-case-attachment-files";
 import { UseCaseStepFields } from "./use-case-step-fields";
 import { UseCaseSummary } from "./use-case-summary";
 import { UseCaseTabs } from "./use-case-tabs";
@@ -267,13 +268,22 @@ function UseCaseWizard({ useCase }: UseCaseWizardProps) {
 
         {step !== "review" && (
           <AllRequired>
-            <UseCaseStepFields form={form} fields="content" step={step} />
+            <UseCaseStepFields
+              form={form}
+              fields="content"
+              step={step}
+              attachmentsPath={myAttachmentsPath(useCase.id)}
+            />
           </AllRequired>
         )}
 
         {step === "review" && (
           <>
-            <UseCaseSummary values={values} onEdit={(target) => void go(target)} />
+            <UseCaseSummary
+              values={values}
+              onEdit={(target) => void go(target)}
+              attachmentsPath={myAttachmentsPath(useCase.id)}
+            />
             {missing.length > 0 && (
               <Alert>
                 <AlertTitle>{t("missing.title")}</AlertTitle>

@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
+import { PdfOpenButton } from "@/components/composites/pdf-open-button";
 import { useFileSize } from "@/features/solution/solution-deck";
 import { useFormatter } from "@/i18n/format";
 import type { UseCaseProposal, UseCaseProposalForm } from "@/lib/api/generated";
@@ -13,6 +14,7 @@ import { ProposalSentBy } from "./proposal-sender-card";
 import { ProposalSolutionList } from "./proposal-solution-list";
 import { WithdrawProposal } from "./proposal-withdraw";
 import { mayChange, outcomeOf, type EditState } from "./proposal-access";
+import { ownProposalFileAddress } from "./received-proposals";
 
 type ProposalViewPageProps = {
   form: UseCaseProposalForm;
@@ -141,9 +143,18 @@ function ProposalViewPage({ form, proposal, edit }: ProposalViewPageProps) {
 
         <Card id="proposal-file" title={detail("file.title")}>
           {deck ? (
-            <div className="grid min-w-0 text-sm">
-              <span className="truncate font-medium">{deck.fileName}</span>
-              <span className="text-muted-foreground">{size(deck.sizeBytes)}</span>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="grid min-w-0 text-sm">
+                <span className="truncate font-medium">{deck.fileName}</span>
+                <span className="text-muted-foreground">{size(deck.sizeBytes)}</span>
+              </div>
+              <PdfOpenButton
+                url={ownProposalFileAddress(form.useCase.id)}
+                name={deck.fileName}
+                meta={size(deck.sizeBytes)}
+                label={detail("file.open")}
+                accessibleLabel={detail("file.openFile", { name: deck.fileName })}
+              />
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">{detail("file.none")}</p>

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 
 import { timelinePresets } from "./admin-use-case-codes";
 import { budgetFigures, budgetText } from "./use-case-budget";
+import { SummaryAttachments } from "./use-case-summary-attachments";
 import { type DraftValues, type Step, timelineOf } from "./use-case-draft";
 
 type FieldKey =
@@ -44,6 +45,8 @@ type UseCaseSummaryProps = {
   hideEmpty?: boolean;
   /** Draws the sections on one surface, parted by a line, instead of a bordered card for each. */
   flat?: boolean;
+  /** Where a file the use case names is read, `<path>/<file id>`: its PDFs then open in the page. */
+  attachmentsPath?: string;
 };
 
 /**
@@ -56,6 +59,7 @@ function UseCaseSummary({
   viewLabel,
   hideEmpty = false,
   flat = false,
+  attachmentsPath,
 }: UseCaseSummaryProps) {
   const t = useTranslations("Organization.useCases.wizard");
   const r = useTranslations("Organization.useCases.review");
@@ -124,7 +128,9 @@ function UseCaseSummary({
           : [
               {
                 key: "attachments" as const,
-                value: values.attachments.map((file) => file.fileName).join(", "),
+                value: (
+                  <SummaryAttachments files={values.attachments} filesPath={attachmentsPath} />
+                ),
               },
             ]),
       ],

@@ -553,6 +553,7 @@ function ProposalWizardContent({
         {step === "solutions" && organization && (
           <ProposalSolutionsStep
             form={form}
+            useCaseId={useCaseId}
             fields={{ solutionIds: "solutionIds", approach: "approach", deck: "deck" }}
             catalog={catalog}
             organizationLogoFileId={organization.logoFileId}
@@ -563,6 +564,7 @@ function ProposalWizardContent({
         {step === "review" && organization && (
           <>
             <ProposalReviewStep
+              useCaseId={useCaseId}
               organization={organization}
               values={values}
               catalog={catalog}

@@ -160,6 +160,7 @@ Pages (App Router, thin) and the feature folder `web/src/features/proposal`:
 - The use case page: **Send a proposal** links to the wizard (no Save for later); the "Proposals" tile shows the count.
 - The sender's view page and the poster's detail page share the Sent by card, the solution cards and, for a team, its background.
 - `/workspace/organization/use-cases/[id]/proposals` and `.../[proposalId]`: the list with the tabs All, Shortlisted and Declined (the last two empty and inert for now), and one proposal read-only; the Shortlist and Decline buttons are drawn and disabled.
+- The proposal's PDF opens in the full-screen viewer (`PdfViewer`) from the received proposal (workspace and admin; Download stays), from the sender's own page and from the wizard's PDF step and review, instead of only downloading. The sender reads their own PDF at `GET /api/proposal/use-cases/{useCaseId}/proposal/file`; a PDF uploaded and not yet saved opens from the browser's own copy (`lib/storage/uploaded-files.ts`).
 - My organization › Use cases: a Proposals column and **View proposals** in the row menu.
 
 Texts in both catalogs; no raw colours; shadcn components from `components/ui`.
