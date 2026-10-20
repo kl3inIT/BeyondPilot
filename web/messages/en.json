@@ -299,7 +299,9 @@
   },
   "NotFound": {
     "title": "Page not found",
-    "home": "Back to home"
+    "description": "The address may be mistyped, or the page has moved or been removed.",
+    "home": "Back to home",
+    "search": "Search the site"
   },
   "Error": {
     "title": "Something went wrong",

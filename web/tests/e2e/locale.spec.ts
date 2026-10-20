@@ -32,11 +32,13 @@ test.describe("locale routing", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("an unknown path renders the localized not-found page", async ({ page }) => {
+  test("an unknown path renders the localized not-found page inside the site", async ({ page }) => {
     const response = await page.goto("/vi/khong-ton-tai");
 
     expect(response?.status()).toBe(404);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Không tìm thấy trang");
+    await expect(page.getByRole("banner").getByRole("link", { name: "BeyondPilot" })).toBeVisible();
+    await expect(page.getByRole("contentinfo")).toBeVisible();
     await page.getByRole("link", { name: "Về trang chủ" }).click();
     await expect(page).toHaveURL("/vi");
   });

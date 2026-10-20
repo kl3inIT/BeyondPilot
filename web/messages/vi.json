@@ -299,7 +299,9 @@
   },
   "NotFound": {
     "title": "Không tìm thấy trang",
-    "home": "Về trang chủ"
+    "description": "Có thể địa chỉ bị gõ sai, hoặc trang đã được chuyển đi hay gỡ xuống.",
+    "home": "Về trang chủ",
+    "search": "Tìm trên trang"
   },
   "Error": {
     "title": "Đã có lỗi xảy ra",

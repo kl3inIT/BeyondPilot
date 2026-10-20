@@ -1,16 +1,20 @@
-import { useTranslations } from "next-intl";
+import { BrandLockup } from "@/components/layout/brand-lockup";
+import { NotFoundNotice } from "@/components/layout/not-found-notice";
 
-import { Link } from "@/i18n/navigation";
-
+/**
+ * A missing page outside the public frame (an application, a workspace, the admin area to anyone
+ * but an operator): the logo leads home, as on the site. Public pages answer with
+ * `(public)/not-found.tsx`, inside the site's header and footer.
+ */
 export default function NotFoundPage() {
-  const t = useTranslations("NotFound");
-
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-4 px-6 py-24">
-      <h1 className="text-3xl font-semibold tracking-tight">{t("title")}</h1>
-      <Link href="/" className="w-fit text-primary underline-offset-4 hover:underline">
-        {t("home")}
-      </Link>
+    <main className="flex flex-1 flex-col">
+      <header className="border-b">
+        <div className="mx-auto flex h-17 w-full max-w-360 items-center px-5 md:px-8 xl:px-16 desktop:px-20">
+          <BrandLockup showBackedBy={false} />
+        </div>
+      </header>
+      <NotFoundNotice />
     </main>
   );
 }
