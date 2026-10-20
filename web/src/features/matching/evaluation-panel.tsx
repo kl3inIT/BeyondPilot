@@ -1,13 +1,18 @@
 "use client";
 
+import { cn } from "cn";
 import {
+  ArrowRightIcon,
+  CheckIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CircleAlertIcon,
+  EllipsisIcon,
   ExternalLinkIcon,
   FileWarningIcon,
   Maximize2Icon,
+  XIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -26,15 +31,21 @@ import type {
   EvaluationFinding,
 } from "@/lib/api/generated";
 
+import { SolutionLogo } from "../solution/solution-logo";
+
 import type { Verdict } from "./evaluation-decide";
 import {
   decidable,
+  labelCounts,
+  labelDot,
   labelTone,
   NOT_OPENED,
   recordDecision,
   recordHref,
   sourceHref,
+  tierColour,
   tierVariant,
+  tintOf,
 } from "./evaluation-view";
 
 type EvaluationPanelProps = {
@@ -82,13 +93,24 @@ function EvaluationPanel({
       <header className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
           {!standalone && (
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <h2 className="text-lg font-semibold wrap-break-word">
-                {candidate.organizationName}
-              </h2>
-              <p className="text-sm wrap-break-word text-muted-foreground">
-                {candidate.solutionName}
-              </p>
+            <div className="flex min-w-0 items-center gap-3">
+              <SolutionLogo
+                size="card"
+                name={candidate.solutionName || candidate.organizationName}
+                fileId={candidate.logoFileId}
+                className={cn(
+                  !candidate.logoFileId &&
+                    tintOf(candidate.solutionName || candidate.organizationName),
+                )}
+              />
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <h2 className="text-lg font-semibold wrap-break-word">
+                  {candidate.organizationName}
+                </h2>
+                <p className="text-sm wrap-break-word text-muted-foreground">
+                  {candidate.solutionName}
+                </p>
+              </div>
             </div>
           )}
           {(onPrevious || onNext || fullPageHref) && (
@@ -123,13 +145,7 @@ function EvaluationPanel({
           )}
         </div>
         {assessment ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={tierVariant[assessment.tier]}>{t(`tiers.${assessment.tier}`)}</Badge>
-            {assessment.provisional && <Badge variant="outline">{t("provisional")}</Badge>}
-            <span className="text-sm text-muted-foreground">
-              {t("alignment.label")}: {t(`alignment.${assessment.alignment}`)}
-            </span>
-          </div>
+          <TierHead assessment={assessment} />
         ) : (
           <p className="text-sm text-muted-foreground">{t("panel.waiting")}</p>
         )}
@@ -233,8 +249,16 @@ function EvaluationPanel({
           <ul className="flex flex-col divide-y rounded-lg border">
             {assessment.criteria.map((criterion) => (
               <li key={criterion.key} className="flex flex-col gap-2 p-3">
-                <p className="flex flex-wrap items-baseline gap-x-2 text-sm font-medium">
+                <p className="flex flex-wrap items-center gap-x-2 text-sm font-medium">
                   {t(`criteria.${criterion.key}`)}
+                  <span aria-hidden="true" className="flex gap-1">
+                    {criterion.findings.map((finding, index) => (
+                      <span
+                        key={index}
+                        className={cn("size-2 rounded-full", labelDot[finding.label])}
+                      />
+                    ))}
+                  </span>
                   {criterion.tractionKind && (
                     <span className="font-normal text-muted-foreground">
                       {t(`traction.${criterion.tractionKind}`)}
@@ -333,6 +357,65 @@ function EvaluationPanel({
         </section>
       )}
     </article>
+  );
+}
+
+const tierIcon = {
+  strong_match: CheckIcon,
+  potential_match: ArrowRightIcon,
+  to_consider: EllipsisIcon,
+  strong_no: XIcon,
+} as const;
+
+/**
+ * The tier the AI suggests, in its colour, with the alignment, and how the findings behind it split
+ * between documented, claimed, not disclosed and contradictory.
+ */
+function TierHead({ assessment }: { assessment: NonNullable<EvaluationCandidate["assessment"]> }) {
+  const t = useTranslations("Matching.evaluation");
+  const colour = tierColour[assessment.tier];
+  const Icon = tierIcon[assessment.tier];
+  const counts = labelCounts(assessment);
+  const labels = ["documented", "claimed", "not_disclosed", "contradictory"] as const;
+
+  return (
+    <div
+      className={cn("flex items-center gap-3 rounded-lg border-l-4 p-3", colour.edge, colour.wash)}
+    >
+      <span
+        aria-hidden="true"
+        className={cn(
+          "flex size-10 shrink-0 items-center justify-center rounded-full",
+          colour.fill,
+        )}
+      >
+        <Icon className="size-5" />
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="text-xs text-muted-foreground">{t("panel.suggestion")}</span>
+        <span className="text-lg leading-tight font-semibold">{t(`tiers.${assessment.tier}`)}</span>
+        <span className="text-sm text-muted-foreground">
+          {t(`alignment.${assessment.alignment}`)}
+          {assessment.provisional && <> · {t("provisional")}</>}
+        </span>
+      </div>
+      <div className="hidden shrink-0 flex-col items-end gap-1.5 text-xs text-muted-foreground sm:flex">
+        <span>
+          {t("panel.evidenceCount", { documented: counts.documented, claimed: counts.claimed })}
+        </span>
+        <span aria-hidden="true" className="flex h-2 w-28 gap-0.5 overflow-hidden rounded-full">
+          {labels
+            .filter((label) => counts[label] > 0)
+            .map((label) => (
+              <span
+                key={label}
+                style={{ "--share": counts[label] } as React.CSSProperties}
+                className={cn("grow-(--share) basis-0", labelDot[label])}
+              />
+            ))}
+        </span>
+      </div>
+    </div>
   );
 }
 

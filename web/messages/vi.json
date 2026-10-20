@@ -8051,7 +8051,9 @@
         "keys": "J và K để chuyển ứng viên, S để shortlist, N để đánh dấu not selected.",
         "shortlist": "Shortlist",
         "notSelected": "Not selected",
-        "notDecided": "Không có gì để quyết định: ứng viên này chỉ có đơn nháp."
+        "notDecided": "Không có gì để quyết định: ứng viên này chỉ có đơn nháp.",
+        "suggestion": "Gợi ý của AI",
+        "evidenceCount": "{documented} có tài liệu · {claimed} chỉ tự nêu"
       },
       "compare": {
         "select": "So sánh {name}",

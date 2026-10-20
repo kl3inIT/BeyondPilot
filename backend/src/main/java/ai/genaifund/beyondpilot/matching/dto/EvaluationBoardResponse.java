@@ -46,6 +46,7 @@ public record EvaluationBoardResponse(@Schema(requiredMode = Schema.RequiredMode
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String organizationName,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) UUID solutionId,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String solutionName,
+			@Schema(description = "The solution's logo, or its organization's when it has none, read at the public address of stored files.") @Nullable UUID logoFileId,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 					description = "`assessed`: of what it holds now. `outdated`: of what it held before a change, and the next run reads it again. `waiting`: not assessed yet.",
 					allowableValues = { "assessed", "outdated", "waiting" }) String state,

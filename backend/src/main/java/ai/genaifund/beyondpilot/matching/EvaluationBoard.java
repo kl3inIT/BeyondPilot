@@ -31,6 +31,7 @@ import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.proposal.ProgramSubmission;
 import ai.genaifund.beyondpilot.proposal.ReviewService;
 import ai.genaifund.beyondpilot.proposal.SentUseCaseProposal;
+import ai.genaifund.beyondpilot.solution.SolutionDirectory;
 import ai.genaifund.beyondpilot.usecase.UseCaseBrief;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -71,10 +72,13 @@ public class EvaluationBoard {
 
 	private final ReviewService applications;
 
+	private final SolutionDirectory solutions;
+
 	EvaluationBoard(IdentityService identity, EvaluationRepository evaluations, EvaluationRuns runs,
 			OrganizationDirectory organizations, AiModels models, AuditTrail audit, JsonMapper json,
-			ReviewService applications) {
+			ReviewService applications, SolutionDirectory solutions) {
 		this.applications = applications;
+		this.solutions = solutions;
 		this.identity = identity;
 		this.evaluations = evaluations;
 		this.runs = runs;
@@ -98,8 +102,9 @@ public class EvaluationBoard {
 		evaluations.current(programId)
 			.forEach(assessed -> current.put(List.of(assessed.organizationId(), assessed.solutionId()), assessed));
 		Map<UUID, OrganizationName> names = names(candidates);
+		Map<UUID, UUID> logos = logos(candidates);
 		List<EvaluationBoardResponse.Candidate> shown = candidates.stream()
-			.map(candidate -> candidate(candidate, current.get(key(candidate)), prints, names))
+			.map(candidate -> candidate(candidate, current.get(key(candidate)), prints, names, logos))
 			.sorted(Comparator.comparing(
 					(EvaluationBoardResponse.Candidate one) -> one.assessment() == null ? null : one.assessment().assessedAt(),
 					Comparator.nullsLast(Comparator.<Instant>reverseOrder()))
@@ -127,7 +132,8 @@ public class EvaluationBoard {
 					"No candidate " + organizationId + "/" + solutionId + " of program " + programId));
 		List<Assessed> history = evaluations.history(programId, organizationId, solutionId);
 		EvaluationBoardResponse.Candidate shown = candidate(candidate, history.isEmpty() ? null : history.getFirst(),
-				briefs.stream().map(Requirements::fingerprint).toList(), names(List.of(candidate)));
+				briefs.stream().map(Requirements::fingerprint).toList(), names(List.of(candidate)),
+				logos(List.of(candidate)));
 		return new EvaluationCandidateResponse(shown,
 				history.stream()
 					.skip(1)
@@ -170,12 +176,13 @@ public class EvaluationBoard {
 	}
 
 	private EvaluationBoardResponse.Candidate candidate(Candidate candidate, @Nullable Assessed assessed,
-			List<String> prints, Map<UUID, OrganizationName> names) {
+			List<String> prints, Map<UUID, OrganizationName> names, Map<UUID, UUID> logos) {
 		String state = assessed == null ? "waiting"
 				: assessed.fingerprint().equals(candidate.fingerprint(EvaluationPrompts.VERSION, prints)) ? "assessed"
 						: "outdated";
 		return new EvaluationBoardResponse.Candidate(candidate.organizationId(),
-				organizationName(candidate, names), candidate.solutionId(), solutionName(candidate), state,
+				organizationName(candidate, names), candidate.solutionId(), solutionName(candidate),
+				logos.get(candidate.solutionId()), state,
 				candidate.records().stream().map(EvaluationBoard::record).toList(),
 				assessed == null ? null : assessment(assessed));
 	}
@@ -217,6 +224,23 @@ public class EvaluationBoard {
 			.filter(candidate -> sent(candidate) == null)
 			.forEach(candidate -> unnamed.add(candidate.organizationId()));
 		return unnamed.isEmpty() ? Map.of() : organizations.names(unnamed);
+	}
+
+	/**
+	 * The logo of each candidate's solution, or its organization's when the solution has none, as the solution module
+	 * shows it; a solution without either has no entry.
+	 */
+	private Map<UUID, UUID> logos(List<Candidate> candidates) {
+		Set<UUID> wanted = new HashSet<>();
+		candidates.forEach(candidate -> wanted.add(candidate.solutionId()));
+		Map<UUID, UUID> logos = new HashMap<>();
+		candidates.stream()
+			.map(Candidate::organizationId)
+			.distinct()
+			.flatMap(organizationId -> solutions.offeredBy(organizationId).stream())
+			.filter(solution -> wanted.contains(solution.id()) && solution.logoFileId() != null)
+			.forEach(solution -> logos.put(solution.id(), Objects.requireNonNull(solution.logoFileId())));
+		return logos;
 	}
 
 	private static String organizationName(Candidate candidate, Map<UUID, OrganizationName> names) {
