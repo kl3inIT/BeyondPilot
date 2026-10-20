@@ -32,6 +32,60 @@ export const tierVariant = {
   strong_no: "destructive",
 } as const satisfies Record<Tier, string>;
 
+/**
+ * The colour of each tier, and of a candidate not assessed yet: its share of the spread over the
+ * list, the edge of its row, and the head of its panel. Literal classes, so Tailwind keeps them.
+ */
+export const tierColour = {
+  strong_match: {
+    fill: "bg-success text-success-foreground",
+    edge: "border-l-success",
+    wash: "bg-success/10",
+  },
+  potential_match: {
+    fill: "bg-info text-info-foreground",
+    edge: "border-l-info",
+    wash: "bg-info/10",
+  },
+  to_consider: {
+    fill: "bg-warning text-warning-foreground",
+    edge: "border-l-warning",
+    wash: "bg-warning/10",
+  },
+  strong_no: {
+    fill: "bg-destructive text-destructive-foreground",
+    edge: "border-l-destructive",
+    wash: "bg-destructive/10",
+  },
+  waiting: { fill: "bg-input text-foreground", edge: "border-l-border", wash: "bg-muted" },
+} as const satisfies Record<Tier | "waiting", { fill: string; edge: string; wash: string }>;
+
+/** The dot of each evidence label, beside a criterion's name. */
+export const labelDot = {
+  documented: "bg-info",
+  claimed: "bg-warning",
+  not_disclosed: "bg-input",
+  contradictory: "bg-destructive",
+} as const satisfies Record<Label, string>;
+
+/** The tints that stand behind a name's initials where a candidate has no logo. */
+const tints = [
+  "border-transparent bg-sky text-sky-foreground",
+  "border-transparent bg-mint text-mint-foreground",
+  "border-transparent bg-lemon text-lemon-foreground",
+  "border-transparent bg-rose text-rose-foreground",
+  "border-transparent bg-peach text-peach-foreground",
+] as const;
+
+/** The tint of a name, the same each time it is drawn, so a candidate keeps its colour. */
+export function tintOf(name: string): (typeof tints)[number] {
+  let sum = 0;
+  for (const char of name) {
+    sum += char.codePointAt(0) ?? 0;
+  }
+  return tints[sum % tints.length];
+}
+
 /** The pill of each evidence label. */
 export const labelTone = {
   documented: "info",
@@ -143,9 +197,18 @@ export function labelCounts(assessment: EvaluationAssessment): Record<Label, num
   return counts;
 }
 
+/** How many candidates hold each tier, and how many wait for their first assessment. */
+export function tierCounts(candidates: EvaluationCandidate[]): Record<Tier | "waiting", number> {
+  const counts = { strong_match: 0, potential_match: 0, to_consider: 0, strong_no: 0, waiting: 0 };
+  for (const candidate of candidates) {
+    counts[candidate.assessment?.tier ?? "waiting"] += 1;
+  }
+  return counts;
+}
+
 export type Filter = {
   search: string;
-  tier: Tier | "all";
+  tier: Tier | "waiting" | "all";
   decision: (typeof decisions)[number] | "all";
   attention: boolean;
 };
@@ -162,7 +225,7 @@ export function filtered(candidates: EvaluationCandidate[], filter: Filter): Eva
     ) {
       return false;
     }
-    if (filter.tier !== "all" && candidate.assessment?.tier !== filter.tier) {
+    if (filter.tier !== "all" && (candidate.assessment?.tier ?? "waiting") !== filter.tier) {
       return false;
     }
     const decided = decisionOf(candidate);

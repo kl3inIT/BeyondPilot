@@ -15,6 +15,8 @@ import {
   needsAttention,
   noFilter,
   sourceHref,
+  tierCounts,
+  tintOf,
 } from "./evaluation-view";
 
 const application = (more: Partial<EvaluationRecord> = {}): EvaluationRecord => ({
@@ -229,6 +231,25 @@ describe("the filter", () => {
     );
     expect(filtered(all, { ...noFilter, decision: "not_selected" })).toHaveLength(1);
     expect(filtered(all, noFilter)).toHaveLength(2);
+  });
+
+  it("counts each tier and keeps the candidates not assessed yet apart", () => {
+    const waiting = candidate({ organizationId: "org-3", assessment: undefined, state: "waiting" });
+    expect(tierCounts([...all, waiting])).toEqual({
+      strong_match: 0,
+      potential_match: 1,
+      to_consider: 0,
+      strong_no: 1,
+      waiting: 1,
+    });
+    expect(filtered([...all, waiting], { ...noFilter, tier: "waiting" })).toEqual([waiting]);
+  });
+});
+
+describe("the tint behind a name without a logo", () => {
+  it("is the same each time a name is drawn", () => {
+    expect(tintOf("RenewIQ")).toBe(tintOf("RenewIQ"));
+    expect(new Set(["A", "B", "C", "D", "E"].map(tintOf)).size).toBe(5);
   });
 });
 

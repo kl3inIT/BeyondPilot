@@ -18892,6 +18892,11 @@ components:
         assessment:
           $ref: "#/components/schemas/EvaluationAssessment"
           description: The current assessment; absent while waiting.
+        logoFileId:
+          type: string
+          format: uuid
+          description: "The solution's logo, or its organization's when it has none,\
+            \ read at the public address of stored files."
         organizationId:
           type: string
           format: uuid

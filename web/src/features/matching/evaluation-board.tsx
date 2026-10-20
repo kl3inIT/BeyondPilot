@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { ChevronDownIcon, RotateCwIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -26,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetClose, SheetContent } from "@/components/ui/sheet";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useNotify } from "@/hooks/use-notify";
@@ -38,6 +39,8 @@ import {
   type EvaluationCandidate,
 } from "@/lib/api/generated";
 import { adminProgramEvaluationRoute, adminUseCaseCandidatesRoute } from "@/lib/site";
+
+import { SolutionLogo } from "../solution/solution-logo";
 
 import { useEvaluationDecide, type Verdict } from "./evaluation-decide";
 import { EvaluationPanel } from "./evaluation-panel";
@@ -51,8 +54,11 @@ import {
   keyOf,
   labelTone,
   noFilter,
+  tierColour,
+  tierCounts,
   tiers,
   tierVariant,
+  tintOf,
   type Filter,
 } from "./evaluation-view";
 import { ARROWED, FIELDS, OVERLAYS } from "./matching-keys";
@@ -239,6 +245,12 @@ function EvaluationBoard({ board, released }: EvaluationBoardProps) {
         </p>
       ) : (
         <>
+          <TierSpread
+            candidates={board.candidates}
+            value={filter.tier}
+            onChange={(tier) => setFilter({ ...filter, tier })}
+          />
+
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-3 md:flex-row md:items-center">
               <div className="md:w-72">
@@ -253,23 +265,6 @@ function EvaluationBoard({ board, released }: EvaluationBoardProps) {
                   onChange={(event) => setFilter({ ...filter, search: event.target.value })}
                 />
               </div>
-              <NativeSelect
-                aria-label={t("filter.tier")}
-                value={filter.tier}
-                onChange={(event) =>
-                  setFilter({
-                    ...filter,
-                    tier: tiers.find((tier) => tier === event.target.value) ?? "all",
-                  })
-                }
-              >
-                <NativeSelectOption value="all">{t("filter.tierAll")}</NativeSelectOption>
-                {tiers.map((tier) => (
-                  <NativeSelectOption key={tier} value={tier}>
-                    {t(`tiers.${tier}`)}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
               <label className="flex min-h-11 items-center gap-2 text-sm">
                 <Checkbox
                   checked={filter.attention}
@@ -476,6 +471,13 @@ function RunBar({
           {line}
         </p>
         {blocked && <p className="text-sm text-muted-foreground">{blocked}</p>}
+        {run?.state === "running" && run.total > 0 && (
+          <Progress
+            aria-label={line}
+            value={(run.assessed / run.total) * 100}
+            className="max-w-xs"
+          />
+        )}
       </div>
       <div className="flex shrink-0 flex-wrap items-center gap-2">
         {open && (
@@ -521,6 +523,66 @@ function RunBar({
   );
 }
 
+/**
+ * How the candidates spread over the tiers, as one bar of their colours, and the filter by tier: each
+ * share of the bar has its toggle below it, with its count. Choosing the chosen one again shows all.
+ */
+function TierSpread({
+  candidates,
+  value,
+  onChange,
+}: {
+  candidates: EvaluationCandidate[];
+  value: Filter["tier"];
+  onChange: (tier: Filter["tier"]) => void;
+}) {
+  const t = useTranslations("Matching.evaluation");
+  const counts = tierCounts(candidates);
+  const shares = [...tiers, "waiting" as const].filter((tier) => counts[tier] > 0);
+  const label = (tier: (typeof shares)[number]) =>
+    tier === "waiting" ? t("states.waiting") : t(`tiers.${tier}`);
+
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+      <div aria-hidden="true" className="flex h-3 gap-0.5 overflow-hidden rounded-full">
+        {shares.map((tier) => (
+          <span
+            key={tier}
+            style={{ "--share": counts[tier] } as React.CSSProperties}
+            className={cn(
+              "grow-(--share) basis-0 transition-opacity motion-reduce:transition-none",
+              tierColour[tier].fill,
+              value !== "all" && value !== tier && "opacity-25",
+            )}
+          />
+        ))}
+      </div>
+      <ToggleGroup
+        aria-label={t("filter.tier")}
+        size="sm"
+        className="w-full flex-wrap"
+        value={[value]}
+        onValueChange={(next) =>
+          onChange([...tiers, "waiting" as const].find((tier) => tier === next[0]) ?? "all")
+        }
+      >
+        <ToggleGroupItem value="all" className="pointer-coarse:min-h-11">
+          {t("filter.all")} <span className="text-muted-foreground">{candidates.length}</span>
+        </ToggleGroupItem>
+        {shares.map((tier) => (
+          <ToggleGroupItem key={tier} value={tier} className="pointer-coarse:min-h-11">
+            <span
+              aria-hidden="true"
+              className={cn("size-2.5 rounded-full", tierColour[tier].fill)}
+            />
+            {label(tier)} <span className="text-muted-foreground">{counts[tier]}</span>
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+    </div>
+  );
+}
+
 /** One candidate in the list: compare, its names and records, the AI's tier, its main concern, the decision. */
 function Row({
   candidate,
@@ -542,11 +604,15 @@ function Row({
   const decided = decisionOf(candidate);
   const attention = attentionOf(candidate);
   const kinds = candidate.records.filter((record) => record.status !== "draft");
+  const colour = tierColour[assessment?.tier ?? "waiting"];
 
   return (
     <div
       data-selected={selected || undefined}
-      className="flex gap-3 px-3 py-3 md:grid md:grid-cols-12 md:items-center data-selected:bg-accent"
+      className={cn(
+        "flex gap-3 border-l-4 px-3 py-3 md:grid md:grid-cols-12 md:items-center data-selected:bg-accent",
+        colour.edge,
+      )}
     >
       <span className="flex min-h-11 shrink-0 items-start justify-center md:col-span-1 md:items-center">
         <Checkbox
@@ -562,17 +628,28 @@ function Row({
           type="button"
           aria-current={selected || undefined}
           onClick={onSelect}
-          className="flex min-h-11 min-w-0 cursor-pointer flex-col items-start rounded-md text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:col-span-4"
+          className="flex min-h-11 min-w-0 cursor-pointer items-center gap-3 rounded-md text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:col-span-4"
         >
-          <span className="font-medium wrap-break-word">{candidate.organizationName}</span>
-          <span className="text-sm wrap-break-word text-muted-foreground">
-            {candidate.solutionName}
-            {kinds.length > 0 && (
-              <>
-                {" · "}
-                {kinds.map((record) => t(`records.${record.kind}`)).join(", ")}
-              </>
+          <SolutionLogo
+            size="row"
+            name={candidate.solutionName || candidate.organizationName}
+            fileId={candidate.logoFileId}
+            className={cn(
+              "size-9",
+              !candidate.logoFileId && tintOf(candidate.solutionName || candidate.organizationName),
             )}
+          />
+          <span className="flex min-w-0 flex-col">
+            <span className="font-medium wrap-break-word">{candidate.organizationName}</span>
+            <span className="text-sm wrap-break-word text-muted-foreground">
+              {candidate.solutionName}
+              {kinds.length > 0 && (
+                <>
+                  {" · "}
+                  {kinds.map((record) => t(`records.${record.kind}`)).join(", ")}
+                </>
+              )}
+            </span>
           </span>
         </button>
         <span className="flex flex-wrap items-center gap-1.5 md:col-span-2">
