@@ -4572,6 +4572,9 @@
           "optional": "Tùy chọn"
         },
         "addRequirement": "Thêm yêu cầu",
+        "maxRequirements": "Bạn có thể nêu tối đa {max} yêu cầu.",
+        "amountInvalid": "Nhập 0 hoặc một số nguyên, không dấu và không số thập phân.",
+        "closesPast": "Chọn hôm nay hoặc một ngày sau đó.",
         "dataReadiness": "Dữ liệu sẵn có và mức sẵn sàng",
         "dataReadinessHint": "Có dữ liệu gì, ở định dạng nào, và nhà cung cấp truy cập bằng cách nào.",
         "integrationRequirements": "Tích hợp, triển khai và hạ tầng",

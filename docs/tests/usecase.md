@@ -41,4 +41,4 @@ Not covered by a test: reading an attachment back, and the editing of a draft by
 
 ## The organization's screens
 
-The tab, the wizard with its autosave, the read-only page and the sent page are checked by `pnpm check` (types, lint, messages) and by the unit tests of the draft's conversion to the request and of what is still missing (`use-case-draft.test.ts`). Checked by hand on the local stack against the Figma frames before release; no Playwright spec yet.
+The tab, the wizard with its autosave, the read-only page and the sent page are checked by `pnpm check` (types, lint, messages) and by the unit tests of the draft's conversion to the request and of what is still missing (`use-case-draft.test.ts`). The form stops what the backend refuses before it is saved, the same in both places that write a use case: no 31st requirement (the button gives way to a line saying so at 30), an amount that is not 0 or a whole number says so while it is typed instead of being dropped, and a close day in the past says so; `web/tests/e2e/use-case-wizard.spec.ts` checks the three. Checked by hand on the local stack against the Figma frames before release; no Playwright spec yet.
