@@ -115,6 +115,23 @@ class EvaluationRunTest {
 		await().atMost(WAIT).until(() -> notBefore(program).isAfter(first));
 		assertThat(runsOf(program)).containsExactly("queued change");
 
+		// The board is the operators' own: the insurer's member is refused, the operator reads the run that waits.
+		String board = "/api/matching/admin/programs/" + program + "/evaluations";
+		client.get().uri(board).cookie(TestSignIn.SESSION_COOKIE, buyer).exchange().expectStatus().isForbidden();
+		String read = send("GET", board, null);
+		assertThat(JsonPath.<Boolean>read(read, "$.modelChosen")).isTrue();
+		assertThat(JsonPath.<List<String>>read(read, "$.useCases[*].title")).containsExactly("Claims triage " + word);
+		assertThat(JsonPath.<String>read(read, "$.run.state")).isEqualTo("queued");
+		assertThat(JsonPath.<List<Object>>read(read, "$.candidates")).isEmpty();
+		// Started by hand, the run that waits for its moment starts now; nothing else is queued.
+		send("POST", board + "/runs", Map.of("assessAll", true));
+		assertThat(jdbc.sql("select (not_before is null) || ' ' || assess_all from evaluation_run where program_id = ?")
+			.param(program)
+			.query(String.class)
+			.single()).isEqualTo("true true");
+		assertThat(jdbc.sql("select count(*) from audit_event where action = 'matching.evaluation_start'"
+				+ " and resource_id = ?").param(program.toString()).query(Long.class).single()).isEqualTo(1);
+
 		// Its time comes: the program has no submission yet, so the run ends with nothing to assess and asks nothing.
 		jdbc.sql("update evaluation_run set not_before = now() - interval '1 second' where program_id = ?")
 			.param(program)
@@ -137,9 +154,18 @@ class EvaluationRunTest {
 				select state || ' ' || failure from evaluation_run where program_id = ? order by created_at desc limit 1
 				""").param(program).query(String.class).single()).isEqualTo("failed " + EvaluationRuns.NO_USE_CASE);
 
-		// A change to a program with no use case queues nothing.
+		// A change to a program with no use case queues nothing, and an operator is told to attach one.
 		runs.changed(other);
 		assertThat(runsOf(other)).isEmpty();
+		assertThat(JsonPath.<String>read(body(client.post()
+			.uri("/api/matching/admin/programs/" + other + "/evaluations/runs")
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.cookie(TestSignIn.SESSION_COOKIE, operator)
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("assessAll", false))
+			.exchange()
+			.expectStatus()
+			.isEqualTo(409)), "$.code")).isEqualTo("MATCHING_EVALUATION_NO_USE_CASE");
 	}
 
 	@Test

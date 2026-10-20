@@ -1,5 +1,7 @@
 package ai.genaifund.beyondpilot.matching.persistence;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
@@ -77,9 +79,9 @@ public class EvaluationRepository {
 	}
 
 	/** An assessment as the board reads it. */
-	public record Assessed(UUID id, UUID organizationId, UUID solutionId, String records, String tier,
-			String alignment, boolean provisional, String notes, String criteria, String gate, String coverage,
-			@Nullable String changeNote, String modelName, Instant assessedAt) {
+	public record Assessed(UUID id, UUID organizationId, UUID solutionId, String records, String fingerprint,
+			String tier, String alignment, boolean provisional, String notes, String criteria, String gate,
+			String coverage, @Nullable String changeNote, String modelName, Instant assessedAt) {
 	}
 
 	/**
@@ -317,23 +319,43 @@ public class EvaluationRepository {
 
 	/** The current assessment of every candidate of a program, the latest assessed first. */
 	public List<Assessed> current(UUID programId) {
-		return jdbc.sql("""
-				select id, organization_id, solution_id, cast(records as text) as records, tier, alignment, provisional,
-				    cast(notes as text) as notes, cast(criteria as text) as criteria, cast(gate as text) as gate,
-				    cast(coverage as text) as coverage, change_note, model_name, assessed_at
+		return jdbc.sql("select " + COLUMNS + """
 				from (select distinct on (organization_id, solution_id) * from evaluation_assessment
 				      where program_id = :programId
 				      order by organization_id, solution_id, assessed_at desc, id) c
 				order by assessed_at desc, id
 				""")
 			.param("programId", programId)
-			.query((row, number) -> new Assessed(row.getObject("id", UUID.class),
-					row.getObject("organization_id", UUID.class), row.getObject("solution_id", UUID.class),
-					row.getString("records"), row.getString("tier"), row.getString("alignment"),
-					row.getBoolean("provisional"), row.getString("notes"), row.getString("criteria"),
-					row.getString("gate"), row.getString("coverage"), row.getString("change_note"),
-					row.getString("model_name"), row.getTimestamp("assessed_at").toInstant()))
+			.query((row, number) -> assessed(row))
 			.list();
+	}
+
+	/** Every assessment of one candidate, the latest first. */
+	public List<Assessed> history(UUID programId, UUID organizationId, UUID solutionId) {
+		return jdbc.sql("select " + COLUMNS + """
+				from evaluation_assessment
+				where program_id = :programId and organization_id = :organizationId and solution_id = :solutionId
+				order by assessed_at desc, id
+				""")
+			.param("programId", programId)
+			.param("organizationId", organizationId)
+			.param("solutionId", solutionId)
+			.query((row, number) -> assessed(row))
+			.list();
+	}
+
+	private static final String COLUMNS = """
+			id, organization_id, solution_id, cast(records as text) as records, fingerprint, tier, alignment,
+			provisional, cast(notes as text) as notes, cast(criteria as text) as criteria, cast(gate as text) as gate,
+			cast(coverage as text) as coverage, change_note, model_name, assessed_at
+			""";
+
+	private static Assessed assessed(ResultSet row) throws SQLException {
+		return new Assessed(row.getObject("id", UUID.class), row.getObject("organization_id", UUID.class),
+				row.getObject("solution_id", UUID.class), row.getString("records"), row.getString("fingerprint"),
+				row.getString("tier"), row.getString("alignment"), row.getBoolean("provisional"), row.getString("notes"),
+				row.getString("criteria"), row.getString("gate"), row.getString("coverage"), row.getString("change_note"),
+				row.getString("model_name"), row.getTimestamp("assessed_at").toInstant());
 	}
 
 	private static @Nullable Instant instant(@Nullable Timestamp timestamp) {

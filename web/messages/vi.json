@@ -357,6 +357,10 @@
     "MATCHING_OPERATORS_ONLY": "Chỉ GenAI Fund mới làm được việc này.",
     "MATCHING_NO_MODEL": "Chưa thể tìm giải pháp: chưa chọn mô hình AI cho việc này.",
     "MATCHING_RUN_OPEN": "AI đang tìm giải pháp cho use case này rồi.",
+    "MATCHING_EVALUATION_NO_USE_CASE": "Gắn một use case đã duyệt vào chương trình này để đánh giá các bài nộp.",
+    "MATCHING_EVALUATION_NO_MODEL": "Chưa thể đánh giá bài nộp: chưa chọn mô hình AI cho việc đánh giá.",
+    "MATCHING_EVALUATION_RUN_OPEN": "AI đang đánh giá các bài nộp của chương trình này rồi.",
+    "MATCHING_EVALUATION_CANDIDATE_NOT_FOUND": "Ứng viên này không còn trong các bài nộp của chương trình.",
     "MATCHING_RUN_LIMIT": "Hôm nay bạn đã dùng hết lượt cho use case này. Hãy thử lại vào ngày mai.",
     "MATCHING_CANDIDATE_REMOVED": "Giải pháp này đã bị loại. Hãy khôi phục trước.",
     "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund đã loại giải pháp này nên chỉ GenAI Fund khôi phục được.",
@@ -1325,6 +1329,7 @@
         },
         "matching": {
           "run_start": "Chạy matching cho một use case",
+          "evaluation_start": "Chạy đánh giá cho một chương trình",
           "candidate_add": "Thêm ứng viên bằng tay",
           "candidate_shortlist": "Lưu một ứng viên",
           "candidate_remove": "Loại một ứng viên",
@@ -1484,6 +1489,7 @@
         },
         "matching": {
           "run_start": "Chạy matching cho use case <resource></resource>",
+          "evaluation_start": "Chạy đánh giá cho chương trình <resource></resource>",
           "candidate_add": "Thêm ứng viên bằng tay cho use case <resource></resource>",
           "candidate_shortlist": "Lưu một ứng viên của use case <resource></resource>",
           "candidate_remove": "Loại một ứng viên của use case <resource></resource>",

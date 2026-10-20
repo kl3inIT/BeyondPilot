@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.program.ApplicationForm;
+import ai.genaifund.beyondpilot.program.ProgramName;
 import ai.genaifund.beyondpilot.program.ProgramService;
 import ai.genaifund.beyondpilot.proposal.dto.CriteriaResponse;
 import ai.genaifund.beyondpilot.proposal.dto.CriterionResponse;
@@ -296,6 +298,11 @@ public class ReviewSetup {
 					"No program " + programId + " taking applications");
 		}
 		return form;
+	}
+
+	/** The name of a program, drafts included; empty when there is no such program. */
+	Optional<String> programName(UUID programId) {
+		return Optional.ofNullable(programs.names(List.of(programId)).get(programId)).map(ProgramName::name);
 	}
 
 	/** The criteria as the caller reads them: a judge rates quality and never reads the weights. */

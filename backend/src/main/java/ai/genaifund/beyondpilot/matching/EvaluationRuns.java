@@ -252,7 +252,7 @@ class EvaluationRuns {
 	}
 
 	/** The candidates of a program as they are now, with the proposals sent to the use cases read. */
-	private List<Candidate> candidates(UUID programId, List<UseCaseBrief> briefs) {
+	List<Candidate> candidates(UUID programId, List<UseCaseBrief> briefs) {
 		List<SentUseCaseProposal> sent = new ArrayList<>();
 		briefs.forEach(brief -> sent.addAll(proposals.sentTo(brief.id())));
 		return EvaluationCandidates.of(applications.submissionsTo(programId), sent);
@@ -269,7 +269,8 @@ class EvaluationRuns {
 		});
 	}
 
-	private List<UseCaseBrief> briefs(UUID programId) {
+	/** The program's approved use cases as the model reads them, the oldest published first. */
+	List<UseCaseBrief> briefs(UUID programId) {
 		return useCases.approvedIn(programId).stream().map(useCases::brief).flatMap(Optional::stream).toList();
 	}
 

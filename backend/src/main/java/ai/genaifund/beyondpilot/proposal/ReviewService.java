@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.UUID;
@@ -691,6 +692,12 @@ public class ReviewService {
 					Proposal.DRAFT, draft.getSubmissions(), draft.getReviewStatus(), draft.getUpdatedAt(), null));
 		}
 		return List.copyOf(all);
+	}
+
+	/** The name of a program, drafts included, for a module that names it; empty when there is no such program. */
+	@Transactional(readOnly = true)
+	public Optional<String> programName(UUID programId) {
+		return setup.programName(programId);
 	}
 
 	private ProgramSubmission.Sent sent(Snapshot snapshot) {

@@ -588,7 +588,7 @@ public class UseCaseProposals {
 					file == null ? null
 							: new SentUseCaseProposal.Deck(file.id(), file.fileName(), file.mediaType(),
 									storage.content(file.id())),
-					offered);
+					offered, proposal.getDecision());
 		}).toList();
 	}
 

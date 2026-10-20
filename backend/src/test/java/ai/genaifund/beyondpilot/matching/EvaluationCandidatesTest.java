@@ -114,7 +114,7 @@ class EvaluationCandidatesTest {
 			.getFirst()
 			.fingerprint(1, List.of("brief-a", "brief-b"))).as("submitted again").isNotEqualTo(base);
 		SentUseCaseProposal edited = new SentUseCaseProposal(proposal.id(), USE_CASE, org, MONDAY.plusSeconds(3600),
-				"Edited", null, null, proposal.solutions());
+				"Edited", null, null, proposal.solutions(), null);
 		assertThat(EvaluationCandidates.of(List.of(first), List.of(edited))
 			.getFirst()
 			.fingerprint(1, List.of("brief-a", "brief-b"))).as("proposal edited").isNotEqualTo(base);
@@ -143,7 +143,8 @@ class EvaluationCandidatesTest {
 		return new SentUseCaseProposal(UUID.randomUUID(), USE_CASE, org, MONDAY, "How we would answer it", null, null,
 				Arrays.stream(solutions)
 					.map(id -> new SentUseCaseProposal.Solution(id, "Product " + id, null))
-					.toList());
+					.toList(),
+				null);
 	}
 
 }

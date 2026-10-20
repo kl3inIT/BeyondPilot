@@ -74,11 +74,11 @@ Migrations `V107` (the `evaluation` task of `ai`, starting on matching's model) 
 
 ## HTTP
 
-| Request                                                | Who      | Answer                                                                                                                                                                                       |
-| ------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/admin/programs/{id}/evaluations`             | Operator | The run's state, the use cases read against, and for each candidate: organization, solution, records with status and decision, the current assessment (or `assessing`, `failed`, `outdated`) |
-| `GET /api/admin/programs/{id}/evaluations/{candidate}` | Operator | One candidate with its current assessment and the earlier ones                                                                                                                               |
-| `POST /api/admin/programs/{id}/evaluations/runs`       | Operator | Starts a run now; refused while one is open                                                                                                                                                  |
+| Request                                             | Who      | Answer                                                                                                                                                                                       |
+| --------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/matching/admin/programs/{id}/evaluations` | Operator | The run's state, the use cases read against, and for each candidate: organization, solution, records with status and decision, the current assessment (or `assessing`, `failed`, `outdated`) |
+| `GET …/evaluations/{organizationId}/{solutionId}`   | Operator | One candidate with its current assessment and the earlier ones                                                                                                                               |
+| `POST …/evaluations/runs`                           | Operator | Starts a run now, or at once a run a change queued; refused while one is at work or the program has no approved use case                                                                     |
 
 Decisions use the existing endpoints of applications and proposals. A file at a page uses the existing file endpoints.
 

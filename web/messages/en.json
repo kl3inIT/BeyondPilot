@@ -357,6 +357,10 @@
     "MATCHING_OPERATORS_ONLY": "Only GenAI Fund can do this.",
     "MATCHING_NO_MODEL": "We can't look for solutions now: no AI model is chosen for it.",
     "MATCHING_RUN_OPEN": "AI is already looking for solutions for this use case.",
+    "MATCHING_EVALUATION_NO_USE_CASE": "Attach an approved use case to this program to assess its submissions.",
+    "MATCHING_EVALUATION_NO_MODEL": "We can't assess submissions now: no AI model is chosen for evaluation.",
+    "MATCHING_EVALUATION_RUN_OPEN": "AI is already assessing this program's submissions.",
+    "MATCHING_EVALUATION_CANDIDATE_NOT_FOUND": "This candidate is no longer among the program's submissions.",
     "MATCHING_RUN_LIMIT": "You have used every run for this use case today. Try again tomorrow.",
     "MATCHING_CANDIDATE_REMOVED": "This solution was removed. Restore it first.",
     "MATCHING_REMOVED_BY_OPERATOR": "GenAI Fund removed this solution, so only GenAI Fund can restore it.",
@@ -1325,6 +1329,7 @@
         },
         "matching": {
           "run_start": "Started matching for a use case",
+          "evaluation_start": "Started an evaluation of a program",
           "candidate_add": "Added a candidate by hand",
           "candidate_shortlist": "Saved a candidate",
           "candidate_remove": "Removed a candidate",
@@ -1484,6 +1489,7 @@
         },
         "matching": {
           "run_start": "Started matching for the use case <resource></resource>",
+          "evaluation_start": "Started an evaluation of the program <resource></resource>",
           "candidate_add": "Added a candidate by hand to the use case <resource></resource>",
           "candidate_shortlist": "Saved a candidate of the use case <resource></resource>",
           "candidate_remove": "Removed a candidate of the use case <resource></resource>",
