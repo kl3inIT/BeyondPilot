@@ -6689,6 +6689,10 @@
     }
   },
   "Review": {
+    "notFound": {
+      "description": "Có thể chương trình hoặc đơn đã bị gỡ, hoặc địa chỉ không đúng.",
+      "home": "Về Chấm đơn"
+    },
     "nav": "Chấm đơn",
     "area": "Giám khảo",
     "list": {

@@ -6689,6 +6689,10 @@
     }
   },
   "Review": {
+    "notFound": {
+      "description": "The program or the application may have been removed, or the address may be wrong.",
+      "home": "Back to Reviews"
+    },
     "nav": "Reviews",
     "area": "Judging",
     "list": {
