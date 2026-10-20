@@ -1284,7 +1284,8 @@
           "unfeature": "Stopped featuring a use case",
           "set_programs": "Set the programs of a use case",
           "update": "Changed a private use case",
-          "publish": "Published a private use case"
+          "publish": "Published a private use case",
+          "export": "Downloaded the use cases"
         },
         "email": {
           "settings_update": "Changed the email settings",
@@ -1444,7 +1445,8 @@
           "unfeature": "Stopped featuring the use case <resource></resource>",
           "set_programs": "Set the programs of the use case <resource></resource>",
           "update": "Changed the private use case <resource></resource>",
-          "publish": "Published the private use case <resource></resource>"
+          "publish": "Published the private use case <resource></resource>",
+          "export": "Downloaded the use cases"
         },
         "email": {
           "settings_update": "Changed <resource></resource>",

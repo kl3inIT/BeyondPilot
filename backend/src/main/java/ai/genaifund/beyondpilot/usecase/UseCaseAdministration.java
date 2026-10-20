@@ -28,9 +28,13 @@ import ai.genaifund.beyondpilot.organization.OrganizationDirectory;
 import ai.genaifund.beyondpilot.organization.OrganizationName;
 import ai.genaifund.beyondpilot.program.ProgramName;
 import ai.genaifund.beyondpilot.program.ProgramService;
+import ai.genaifund.beyondpilot.shared.Spreadsheet;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFile;
+import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import ai.genaifund.beyondpilot.storage.FileDownload;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseListRequest;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseListResponse;
+import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseSummaryResponse;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseResponse;
 import ai.genaifund.beyondpilot.usecase.dto.AdminUseCaseSummaryResponse;
 import ai.genaifund.beyondpilot.usecase.dto.CreateUseCaseRequest;
@@ -137,6 +141,46 @@ public class UseCaseAdministration {
 		return new AdminUseCaseListResponse(items, page, size,
 				useCaseList.count(text, matching, request.organizationId(), request.status(), request.featured(), now),
 				useCaseList.inReview(now));
+	}
+
+	/**
+	 * Use cases as a spreadsheet: every page of the list as the request narrows it, in its order, for GenAI Fund to work
+	 * with outside BeyondPilot. The download is recorded.
+	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
+	 * @throws ai.genaifund.beyondpilot.shared.SpreadsheetException when the download would hold too many rows
+	 */
+	@Transactional
+	public SpreadsheetFile export(Actor actor, AdminUseCaseListRequest request, SpreadsheetFormat format) {
+		Operator operator = identity.requireOperator(actor);
+		List<AdminUseCaseSummaryResponse> rows = Spreadsheet.everyPage(page -> list(actor,
+				new AdminUseCaseListRequest(request.q(), request.status(), request.organizationId(), request.featured(),
+						request.sort(), page, Spreadsheet.PAGE_SIZE))
+			.items());
+		Spreadsheet<AdminUseCaseSummaryResponse> sheet = Spreadsheet.<AdminUseCaseSummaryResponse>of("Use cases")
+			.text("Use case", AdminUseCaseSummaryResponse::title)
+			.text("Organization", useCase -> useCase.organization().name())
+			.label("Status", AdminUseCaseSummaryResponse::status)
+			.time("Proposals close at", AdminUseCaseSummaryResponse::closesAt)
+			.time("Featured since", AdminUseCaseSummaryResponse::featuredAt)
+			.time("Updated at", AdminUseCaseSummaryResponse::updatedAt)
+			.text("Identifier", AdminUseCaseSummaryResponse::id);
+		SpreadsheetFile file = sheet.write(format, "use-cases", rows,
+				Spreadsheet.About.of(operator.label(), Instant.now())
+					.narrowedBy("Search", request.q())
+					.narrowedBy("Status", request.status())
+					.narrowedBy("Organization", request.organizationId())
+					.narrowedBy("Featured", request.featured())
+					.narrowedBy("Order", request.sort()));
+		audit.record(new AuditRecord(AuditAction.USE_CASE_EXPORT,
+				new AuditRecord.Actor(operator.accountId(), operator.label(), operator.email()),
+				new AuditRecord.Resource("use_case_list", "use-cases", "Use cases"),
+				Map.of("count", String.valueOf(file.rows()))));
+		LOG.atInfo()
+			.addKeyValue("event", "use_case.list.exported")
+			.addKeyValue("format", format.extension())
+			.addKeyValue("count", file.rows())
+			.log("Use cases exported");
+		return file;
 	}
 
 	/**

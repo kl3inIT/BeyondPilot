@@ -66,6 +66,7 @@ export const auditActions = [
   "use_case.set_programs",
   "use_case.update",
   "use_case.publish",
+  "use_case.export",
   "messaging.request_accept",
   "messaging.program_assign",
   "messaging.request_decline",

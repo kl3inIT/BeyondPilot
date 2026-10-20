@@ -195,6 +195,9 @@ public enum AuditAction {
 	/** An operator published a private draft GenAI Fund kept for an organization. */
 	USE_CASE_PUBLISH("use_case.publish", "organization"),
 
+	/** An operator downloaded the use cases as a spreadsheet. {@code count} is how many the download holds. */
+	USE_CASE_EXPORT("use_case.export", "count"),
+
 	/** The side written to accepted a first message, which opened the conversation. */
 	MESSAGING_REQUEST_ACCEPT("messaging.request_accept"),
 
