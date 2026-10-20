@@ -40,13 +40,14 @@ function SolutionCard({
       <div className="relative mb-5">
         <div className="relative flex h-35 items-center justify-center overflow-hidden rounded-xl border bg-muted text-muted-foreground">
           {solution.coverFileId ? (
+            // Whole, whatever its frame: cropped to the box, a wide or tall cover is a blurred slice.
             <Image
               src={publicFileUrl(solution.coverFileId)}
               alt=""
               fill
               sizes="(min-width: 1280px) 400px, (min-width: 768px) 50vw, 100vw"
               preload={preload}
-              className="object-cover"
+              className="object-contain"
             />
           ) : (
             <ImageIcon className="size-6" aria-hidden="true" />

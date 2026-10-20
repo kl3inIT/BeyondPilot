@@ -18,7 +18,8 @@ type SolutionGalleryProps = {
 
 /**
  * What a solution shows of itself: its cover, and under it only the images it has, never an empty
- * place for one it lacks. Any of them opens large, with the others one step away.
+ * place for one it lacks. Every image is shown whole on the muted box, whatever its frame. Any of
+ * them opens large, with the others one step away.
  */
 function SolutionGallery({ name, coverFileId, imageFileIds }: SolutionGalleryProps) {
   const t = useTranslations("Solution.detail.gallery");
@@ -47,7 +48,7 @@ function SolutionGallery({ name, coverFileId, imageFileIds }: SolutionGalleryPro
             fill
             priority
             sizes="(min-width: 1024px) 60vw, 100vw"
-            className="object-cover"
+            className="object-contain"
           />
         </button>
       )}
@@ -67,7 +68,7 @@ function SolutionGallery({ name, coverFileId, imageFileIds }: SolutionGalleryPro
                   alt={t("image", { name, position: index + offset + 1, count })}
                   fill
                   sizes="(min-width: 768px) 15vw, 160px"
-                  className="object-cover"
+                  className="object-contain"
                 />
               </button>
             </li>

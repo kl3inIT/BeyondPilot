@@ -166,7 +166,8 @@ function ImageUpload({
               fill
               sizes="160px"
               unoptimized
-              className={place === "logo" ? "object-contain" : "object-cover"}
+              // Whole, as the directory and the solution's page show it.
+              className="object-contain"
               onLoad={(event) =>
                 setDimensions({
                   fileId: image.fileId,
@@ -339,7 +340,7 @@ function GalleryUpload({ id, solutionName, images, onAdd, onChange }: GalleryUpl
                 fill
                 sizes="140px"
                 unoptimized
-                className="object-cover"
+                className="object-contain"
               />
               <span className="absolute top-1 right-1 z-10 flex size-6 items-center justify-center rounded-md border bg-background/90 text-foreground shadow-sm">
                 <ZoomInIcon className="size-4" aria-hidden="true" />
