@@ -42,7 +42,15 @@ public enum MatchingErrorCode implements ErrorCode {
 	FEEDBACK_GROUP_INVALID("MATCHING_FEEDBACK_GROUP_INVALID", ErrorCategory.VALIDATION,
 			"Agree with the group, or say which other group the candidate belongs in."),
 	FEEDBACK_REQUIREMENT_UNKNOWN("MATCHING_FEEDBACK_REQUIREMENT_UNKNOWN", ErrorCategory.VALIDATION,
-			"This use case has no such requirement.");
+			"This use case has no such requirement."),
+	EVALUATION_NO_USE_CASE("MATCHING_EVALUATION_NO_USE_CASE", ErrorCategory.CONFLICT,
+			"Attach an approved use case to this program to assess its submissions."),
+	EVALUATION_NO_MODEL("MATCHING_EVALUATION_NO_MODEL", ErrorCategory.SERVICE_UNAVAILABLE,
+			"Evaluation cannot run now: no AI model is set for it."),
+	EVALUATION_RUN_OPEN("MATCHING_EVALUATION_RUN_OPEN", ErrorCategory.CONFLICT,
+			"An evaluation is already running for this program."),
+	EVALUATION_CANDIDATE_NOT_FOUND("MATCHING_EVALUATION_CANDIDATE_NOT_FOUND", ErrorCategory.NOT_FOUND,
+			"This program has no such candidate.");
 
 	private final String code;
 

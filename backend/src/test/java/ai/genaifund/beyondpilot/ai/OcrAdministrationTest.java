@@ -367,7 +367,7 @@ class OcrAdministrationTest {
 		assertThat(documents.readsPictures()).isTrue();
 		// The Chat tab no longer lists the task, and counts the model as in use all the same.
 		String chat = body(get(operator, CHAT).expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(chat, "$.tasks[*].task")).containsExactly("matching");
+		assertThat(JsonPath.<List<String>>read(chat, "$.tasks[*].task")).containsExactly("matching", "evaluation");
 		assertThat(JsonPath.<Boolean>read(chat, "$.providers[0].inUse")).isTrue();
 
 		byte[] pdf = TestPdf.of("A slide", "");

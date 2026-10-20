@@ -1109,7 +1109,7 @@ export type AttachedFile = {
  * One recorded change: who did what to what, and when.
  */
 export type AuditEvent = {
-    action: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
+    action: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
     /**
      * Who did it; null when the server configuration did.
      */
@@ -2209,6 +2209,279 @@ export type EmbeddingModelInUse = {
      * Items in the index.
      */
     total: number;
+};
+
+/**
+ * What the AI suggests for a candidate, and the evidence.
+ */
+export type EvaluationAssessment = {
+    /**
+     * How it connects to the use cases, apart from how strong a supplier it is.
+     */
+    alignment: 'direct' | 'industry' | 'technology' | 'none';
+    alignmentReason: string;
+    assessedAt: string;
+    /**
+     * Why the tier differs from the candidate's previous one.
+     */
+    changeNote?: string;
+    /**
+     * Each record and file read: pages read of pages held, pages that held no text.
+     */
+    coverage: Array<EvaluationCoverage>;
+    /**
+     * The six criteria in their order: team, traction, readiness, product, funding, proposal.
+     */
+    criteria: Array<EvaluationCriterion>;
+    gate: EvaluationGate;
+    id: string;
+    /**
+     * The AI said a source addressed it, such as asking for a tier; the assessment ignores it.
+     */
+    instructionsInSources: boolean;
+    modelName: string;
+    notes: EvaluationNotes;
+    /**
+     * The tier waits on a demonstration or a clarification not seen yet.
+     */
+    provisional: boolean;
+    tier: 'strong_match' | 'potential_match' | 'to_consider' | 'strong_no';
+};
+
+/**
+ * Every submission to a program, grouped as candidates, with the shortlist tier the AI suggests and the evidence behind it. The AI never decides: decisions stay on the applications and the proposals.
+ */
+export type EvaluationBoard = {
+    /**
+     * One per organization and solution, whichever routes it used, the latest assessed first.
+     */
+    candidates: Array<EvaluationCandidate>;
+    /**
+     * Whether an AI model is set for evaluation; without one nothing is assessed.
+     */
+    modelChosen: boolean;
+    programId: string;
+    /**
+     * The program's last evaluation run; absent when there was none.
+     */
+    run?: EvaluationRun;
+    /**
+     * The program's approved use cases the candidates are assessed against; empty when it has none, and then nothing is assessed.
+     */
+    useCases: Array<EvaluationUseCase>;
+};
+
+/**
+ * An organization with one solution, and its current assessment.
+ */
+export type EvaluationCandidate = {
+    /**
+     * The current assessment; absent while waiting.
+     */
+    assessment?: EvaluationAssessment;
+    organizationId: string;
+    organizationName: string;
+    /**
+     * Its application to the program and its proposals to the program's use cases, each with its own status and decision; a draft is listed and not read.
+     */
+    records: Array<EvaluationRecord>;
+    solutionId: string;
+    solutionName: string;
+    /**
+     * `assessed`: of what it holds now. `outdated`: of what it held before a change, and the next run reads it again. `waiting`: not assessed yet.
+     */
+    state: 'assessed' | 'outdated' | 'waiting';
+};
+
+/**
+ * One candidate of a program's evaluation with its current assessment and the earlier ones.
+ */
+export type EvaluationCandidateDetail = {
+    candidate: EvaluationCandidate;
+    /**
+     * Earlier assessments, the latest first.
+     */
+    earlier: Array<EvaluationEarlier>;
+};
+
+export type EvaluationCoverage = {
+    /**
+     * Pages were left out at the limits.
+     */
+    cut: boolean;
+    /**
+     * The file's name.
+     */
+    file?: string;
+    /**
+     * The file read, which the record's file request opens.
+     */
+    fileId?: string;
+    /**
+     * The label its pages were read under, or what was read of a record without a file.
+     */
+    label: string;
+    /**
+     * The label of the file it repeats, read in its place, or why it could not be opened.
+     */
+    note?: string;
+    /**
+     * Pages the file has; 41 stands for more than the 40 read.
+     */
+    pages: number;
+    read: number;
+    record: 'application' | 'proposal';
+    /**
+     * The application or the proposal.
+     */
+    recordId: string;
+    /**
+     * Pages that held no text, even read from their picture.
+     */
+    unread: Array<number>;
+};
+
+export type EvaluationCriterion = {
+    findings: Array<EvaluationFinding>;
+    key: 'team' | 'traction' | 'readiness' | 'product' | 'funding' | 'proposal';
+    /**
+     * For traction only.
+     */
+    tractionKind?: 'same_use_case' | 'adjacent_product' | 'active_pilot' | 'prototype_only' | 'not_substantiated';
+};
+
+export type EvaluationEarlier = {
+    assessedAt: string;
+    /**
+     * Why its tier differed from the one before it.
+     */
+    changeNote?: string;
+    id: string;
+    modelName: string;
+    provisional: boolean;
+    tier: 'strong_match' | 'potential_match' | 'to_consider' | 'strong_no';
+};
+
+export type EvaluationFinding = {
+    finding: string;
+    /**
+     * What is missing or must be checked; empty when nothing is.
+     */
+    gap: string;
+    label: 'documented' | 'claimed' | 'not_disclosed' | 'contradictory';
+    /**
+     * The AI labelled it Documented and code made it Claimed: its quote is not in what was read.
+     */
+    lowered: boolean;
+    quote: string;
+    /**
+     * Where code found the quote in what was read.
+     */
+    quoteState: 'exact' | 'other_source' | 'close' | 'not_found' | 'none';
+    /**
+     * The label of the source quoted: `form: <question>`, `application deck p.3`, `application file 1 p.2`, `proposal 1`, `proposal 1 team`, `proposal 1 p.4`, `solution profile`, `solution deck p.2`, `solution website 1`; empty when nothing was quoted.
+     */
+    source: string;
+    /**
+     * About ten words, for a list.
+     */
+    summary: string;
+};
+
+export type EvaluationGate = {
+    /**
+     * What carries a candidate without product traction.
+     */
+    earlyStage: 'not_needed' | 'team' | 'prototype' | 'not_substantiated';
+    /**
+     * Whether the proposal is specific to the use case.
+     */
+    proposal: 'passed' | 'failed';
+    reason: string;
+};
+
+export type EvaluationNotes = {
+    concern: string;
+    contradictions: Array<string>;
+    next: string;
+    /**
+     * What to ask the candidate, the most useful first.
+     */
+    questions: Array<string>;
+    rationale: string;
+    why: string;
+};
+
+/**
+ * An application or a proposal a candidate sent.
+ */
+export type EvaluationRecord = {
+    /**
+     * When what it holds last changed.
+     */
+    changedAt: string;
+    /**
+     * An application: `under_review`, `shortlisted` or `not_selected`. A proposal: `shortlisted` or `declined`; absent while undecided.
+     */
+    decision?: string;
+    id: string;
+    kind: 'application' | 'proposal';
+    /**
+     * An application: `submitted` or `draft`. A proposal: `sent`.
+     */
+    status: 'submitted' | 'draft' | 'sent';
+    /**
+     * The use case a proposal was sent to.
+     */
+    useCaseId?: string;
+    /**
+     * An application's last submission; 0 for a proposal or a draft never submitted.
+     */
+    version: number;
+};
+
+/**
+ * A run of the program's evaluation and how far it got.
+ */
+export type EvaluationRun = {
+    /**
+     * Candidates assessed or found unchanged in this pass.
+     */
+    assessed: number;
+    createdAt: string;
+    endedAt?: string;
+    /**
+     * Why it failed or waits: `no_use_case`, `no_model`, `request_refused`, or the kind of error. Never a provider's message.
+     */
+    failure?: string;
+    id: string;
+    /**
+     * The model that assessed, as its provider names it.
+     */
+    modelName?: string;
+    /**
+     * A run a change queued starts only once the program stays unchanged until then.
+     */
+    notBefore?: string;
+    /**
+     * `change`: a submission or a use case changed. `operator`: someone started it.
+     */
+    origin: 'change' | 'operator';
+    /**
+     * When a run that waits after a refusal goes on.
+     */
+    resumeAt?: string;
+    startedAt?: string;
+    state: 'queued' | 'running' | 'waiting' | 'done' | 'failed';
+    /**
+     * Candidates the pass gathered.
+     */
+    total: number;
+};
+
+export type EvaluationUseCase = {
+    id: string;
+    title: string;
 };
 
 /**
@@ -6660,6 +6933,16 @@ export type StartConversationRequest = {
 };
 
 /**
+ * An evaluation run of a program an operator starts.
+ */
+export type StartEvaluation = {
+    /**
+     * Whether every candidate is assessed again, whatever was assessed before.
+     */
+    assessAll: boolean;
+};
+
+/**
  * A run of matching a person starts.
  */
 export type StartMatchingRun = {
@@ -7835,7 +8118,7 @@ export type ListAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -8305,7 +8588,7 @@ export type ExportAuditEventsData = {
         /**
          * Only events of this action.
          */
-        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
+        action?: 'account.disable' | 'account.enable' | 'account.export' | 'operator.grant' | 'operator.withdraw' | 'audit.export' | 'program.create' | 'program.update' | 'program.publish' | 'program.unpublish' | 'program.luma_read' | 'program.feature' | 'program.unfeature' | 'program.export' | 'organization.create' | 'organization.approve' | 'organization.suspend' | 'organization.restore' | 'organization.update' | 'organization.invite' | 'organization.invitation_revoke' | 'organization.refuse' | 'organization.send_back' | 'organization.claim_approve' | 'organization.claim_decline' | 'organization.member_role' | 'organization.member_remove' | 'organization.merge' | 'organization.export' | 'solution.approve' | 'solution.create' | 'solution.publish' | 'solution.send_back' | 'solution.reject' | 'solution.take_down' | 'solution.restore' | 'solution.back' | 'solution.feature' | 'solution.unfeature' | 'solution.offers_choose' | 'solution.offer_create' | 'solution.offer_update' | 'solution.offer_close' | 'solution.offer_reopen' | 'solution.offer_delete' | 'solution.deployment_approve' | 'solution.deployment_reject' | 'solution.deployment_withdraw' | 'solution.deployment_restore' | 'solution.enrich' | 'solution.export' | 'solution.offers_export' | 'use_case.create' | 'use_case.submit' | 'use_case.draft' | 'use_case.approve' | 'use_case.send_back' | 'use_case.feature' | 'use_case.unfeature' | 'use_case.set_programs' | 'use_case.update' | 'use_case.publish' | 'use_case.export' | 'messaging.request_accept' | 'messaging.program_assign' | 'messaging.request_decline' | 'messaging.request_report' | 'talent.approve' | 'talent.reject' | 'talent.enquiry_accept' | 'talent.enquiry_decline' | 'talent.enquiry_report' | 'talent.request_changes' | 'talent.remove' | 'talent.restore' | 'talent.feature' | 'talent.unfeature' | 'talent.delete' | 'talent.export' | 'proposal.criteria_update' | 'proposal.reviewer_invite' | 'proposal.reviewer_remove' | 'proposal.reviewers_export' | 'proposal.decide' | 'proposal.release' | 'proposal.file_open' | 'proposal.export' | 'proposal.drafts_export' | 'proposal.draft_open' | 'use_case_proposal.decide' | 'use_case_proposal.outcomes_send' | 'use_case_proposal.export' | 'email.settings_update' | 'email.appearance_update' | 'email.template_update' | 'email.template_reset' | 'email.suppression_add' | 'email.suppression_remove' | 'email.resend' | 'email.test_send' | 'email.export' | 'ai.provider_create' | 'ai.provider_update' | 'ai.provider_delete' | 'ai.model_add' | 'ai.model_update' | 'ai.model_remove' | 'ai.task_model_change' | 'ai.usage_export' | 'search.model_change' | 'search.semantic_enable' | 'search.semantic_disable' | 'search.index_rebuild' | 'search.embedding_retry' | 'mcp.app_revoke' | 'mcp.host_add' | 'mcp.host_remove' | 'mcp.other_hosts_allow' | 'mcp.other_hosts_refuse' | 'mcp.user_server_enable' | 'mcp.user_server_disable' | 'mcp.tool_enable' | 'mcp.tool_disable' | 'mcp.calls_export' | 'matching.run_start' | 'matching.evaluation_start' | 'matching.candidate_add' | 'matching.candidate_shortlist' | 'matching.candidate_remove' | 'matching.candidate_reason' | 'matching.candidate_restore' | 'matching.candidate_invite' | 'matching.feedback_export' | 'matching.settings_change';
         /**
          * Events whose actor's name or address, or whose resource's name, contains this, ignoring case.
          */
@@ -8552,6 +8835,113 @@ export type ExportMatchingFeedbackResponses = {
 };
 
 export type ExportMatchingFeedbackResponse = ExportMatchingFeedbackResponses[keyof ExportMatchingFeedbackResponses];
+
+export type GetEvaluationBoardData = {
+    body?: never;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/matching/admin/programs/{programId}/evaluations';
+};
+
+export type GetEvaluationBoardErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+};
+
+export type GetEvaluationBoardError = GetEvaluationBoardErrors[keyof GetEvaluationBoardErrors];
+
+export type GetEvaluationBoardResponses = {
+    /**
+     * The board as it stands.
+     */
+    200: EvaluationBoard;
+};
+
+export type GetEvaluationBoardResponse = GetEvaluationBoardResponses[keyof GetEvaluationBoardResponses];
+
+export type StartEvaluationData = {
+    body: StartEvaluation;
+    path: {
+        programId: string;
+    };
+    query?: never;
+    url: '/api/matching/admin/programs/{programId}/evaluations/runs';
+};
+
+export type StartEvaluationErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The program has no approved use case, or a run of it is at work.
+     */
+    409: Problem;
+    /**
+     * No AI model is set for evaluation.
+     */
+    503: Problem;
+};
+
+export type StartEvaluationError = StartEvaluationErrors[keyof StartEvaluationErrors];
+
+export type StartEvaluationResponses = {
+    /**
+     * The run is queued; the board as it stands.
+     */
+    200: EvaluationBoard;
+};
+
+export type StartEvaluationResponse = StartEvaluationResponses[keyof StartEvaluationResponses];
+
+export type GetEvaluationCandidateData = {
+    body?: never;
+    path: {
+        programId: string;
+        organizationId: string;
+        solutionId: string;
+    };
+    query?: never;
+    url: '/api/matching/admin/programs/{programId}/evaluations/{organizationId}/{solutionId}';
+};
+
+export type GetEvaluationCandidateErrors = {
+    /**
+     * Nobody is signed in.
+     */
+    401: Problem;
+    /**
+     * The caller is not an operator.
+     */
+    403: Problem;
+    /**
+     * The program has no such candidate now.
+     */
+    404: Problem;
+};
+
+export type GetEvaluationCandidateError = GetEvaluationCandidateErrors[keyof GetEvaluationCandidateErrors];
+
+export type GetEvaluationCandidateResponses = {
+    /**
+     * The candidate.
+     */
+    200: EvaluationCandidateDetail;
+};
+
+export type GetEvaluationCandidateResponse = GetEvaluationCandidateResponses[keyof GetEvaluationCandidateResponses];
 
 export type ListMatchingRunsData = {
     body?: never;

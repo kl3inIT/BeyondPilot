@@ -422,6 +422,12 @@ public enum AuditAction {
 	/** Someone started a run of matching for a use case. {@code origin} is {@code operator} or {@code member}. */
 	MATCHING_RUN_START("matching.run_start", "origin"),
 
+	/**
+	 * An operator started an evaluation run of a program's submissions (BEY-234); the resource is the program.
+	 * {@code assess_all} is {@code true} when every candidate is assessed again.
+	 */
+	MATCHING_EVALUATION_START("matching.evaluation_start", "assess_all"),
+
 	/** An operator put a solution among the candidates of a use case by hand. {@code solution} is its name. */
 	MATCHING_CANDIDATE_ADD("matching.candidate_add", "solution"),
 

@@ -131,6 +131,7 @@ export const auditActions = [
   "mcp.tool_disable",
   "mcp.calls_export",
   "matching.run_start",
+  "matching.evaluation_start",
   "matching.candidate_add",
   "matching.candidate_shortlist",
   "matching.candidate_remove",

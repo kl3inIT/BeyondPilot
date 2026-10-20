@@ -1,6 +1,6 @@
 # Evaluation board: an AI-suggested shortlist tier for every submission to a program
 
-Status: proposed on 21 October 2026, waiting for Đạt's approval. Tracked in Linear as BEY-234. The method is Kai's ([shortlisting methodology](../../../brief/tasco-evaluation-board/shortlisting-methodology.md), [detailed methodology](../../../brief/tasco-evaluation-board/evaluation-methodology-detailed.md), received 20 October 2026). What was read before this design is in [Evaluation board research](../../../research/2026-10-20-evaluation-board.md). The screens follow the prototype Đạt approved on 21 October (`.tmp/evaluation-board-prototype.html`, drawn from the live Applications, Matched solutions and application pages); no Figma, by Đạt's decision.
+Status: approved by Đạt on 21 October 2026; being implemented. Tracked in Linear as BEY-234. The method is Kai's ([shortlisting methodology](../../../brief/tasco-evaluation-board/shortlisting-methodology.md), [detailed methodology](../../../brief/tasco-evaluation-board/evaluation-methodology-detailed.md), received 20 October 2026). What was read before this design is in [Evaluation board research](../../../research/2026-10-20-evaluation-board.md). The screens follow the prototype Đạt approved on 21 October (`.tmp/evaluation-board-prototype.html`, drawn from the live Applications, Matched solutions and application pages); no Figma, by Đạt's decision.
 
 ## Why
 
@@ -66,25 +66,32 @@ Rules the code enforces, whatever the model answers:
 
 ## Data
 
-Migration `V106` (number checked against `main` before the merge):
+Migrations `V107` (the `evaluation` task of `ai`, starting on matching's model) and `V108` (the tables below), numbers checked against `main` before the merge:
 
 - `evaluation_run`: `id`, `program_id`, `state` (`queued`, `running`, `waiting`, `done`, `failed`), `origin` (`change`, `operator`), `started_by_account_id`, `prompt_version`, `model_name`, `stalls`, `resume_at`, `not_before`, `failure`, `assessed`, `total`, timestamps; at most one open run per program.
-- `evaluation_assessment`: `id`, `program_id`, `organization_id`, `solution_id`, `records jsonb` (kind, id, version or sent stamp), `fingerprint`, `tier`, `alignment`, `provisional`, `notes jsonb`, `criteria jsonb`, `gate jsonb`, `coverage jsonb`, `change_note`, `run_id`, `model_name`, `prompt_version`, `assessed_at`; unique on (`program_id`, `organization_id`, `solution_id`, `fingerprint`); the latest per candidate is the current one.
+- `evaluation_assessment`: `id`, `program_id`, `organization_id`, `solution_id`, `records jsonb` (kind, id, version or sent stamp), `fingerprint`, `tier`, `alignment`, `provisional`, `notes jsonb`, `criteria jsonb`, `gate jsonb`, `coverage jsonb`, `change_note`, `run_id`, `model_name`, `prompt_version`, `assessed_at`; unique on (`program_id`, `organization_id`, `solution_id`, `run_id`), so an operator's run that assesses everything again adds one even when nothing changed; the latest per candidate is the current one.
 - `evaluation_run_step`, as `matching_run_step`: calls, tokens and cost per candidate, shown with the run.
 
 ## HTTP
 
-| Request                                                | Who      | Answer                                                                                                                                                                                       |
-| ------------------------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/admin/programs/{id}/evaluations`             | Operator | The run's state, the use cases read against, and for each candidate: organization, solution, records with status and decision, the current assessment (or `assessing`, `failed`, `outdated`) |
-| `GET /api/admin/programs/{id}/evaluations/{candidate}` | Operator | One candidate with its current assessment and the earlier ones                                                                                                                               |
-| `POST /api/admin/programs/{id}/evaluations/runs`       | Operator | Starts a run now; refused while one is open                                                                                                                                                  |
+| Request                                             | Who      | Answer                                                                                                                                                                                       |
+| --------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/matching/admin/programs/{id}/evaluations` | Operator | The run's state, the use cases read against, and for each candidate: organization, solution, records with status and decision, the current assessment (or `assessing`, `failed`, `outdated`) |
+| `GET …/evaluations/{organizationId}/{solutionId}`   | Operator | One candidate with its current assessment and the earlier ones                                                                                                                               |
+| `POST …/evaluations/runs`                           | Operator | Starts a run now, or at once a run a change queued; refused while one is at work or the program has no approved use case                                                                     |
 
 Decisions use the existing endpoints of applications and proposals. A file at a page uses the existing file endpoints.
 
 ## Screens
 
 As the approved prototype, in the admin's own components: page tabs, count tabs and filter toolbar of Applications; `data-table`; the tier as `Badge` (`success` Strong Match, `info` Potential Match, `warning` To consider, `destructive` Strong No); labels as `Status` pills (`info` Documented, `warning` Claimed, `neutral` Not disclosed, `destructive` Contradictory); the panel beside the list from 1280px and a sheet below, as `matching-board`; the Decision card of an application; a file opened at its page with the quote marked, as `matching-deck`. At 390 a row becomes a card and the decision bar stays at the foot of the sheet. English and Vietnamese.
+
+## Decided with Đạt on 21 October
+
+- The tier is shown only on this board, to operators; the received proposals page and the judges' screens do not change.
+- Runs start by themselves after a change, once the program has been quiet for the settle time; a candidate whose material did not change is not asked again.
+- Applications are read against all the program's approved use cases; a program with none says "Attach a use case to assess" and runs nothing.
+- A candidate is an organization with one solution: one company that applied with one product and proposed another is two rows.
 
 ## Open questions for Kai
 

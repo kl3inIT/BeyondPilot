@@ -150,6 +150,20 @@ export function adminProgramApplicationsRoute(id: string) {
 }
 
 /** Where GenAI Fund releases a program's outcomes. */
+/** A program's submissions as candidates, with the tier the AI suggests (BEY-234). */
+export function adminProgramEvaluationsRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/evaluations`;
+}
+
+/** One candidate of a program's evaluation on a page of its own. */
+export function adminProgramEvaluationRoute(
+  id: string,
+  organizationId: string,
+  solutionId: string,
+) {
+  return `${adminProgramEvaluationsRoute(id)}/${organizationId}/${solutionId}`;
+}
+
 /** A program's applications not submitted yet, for operators to follow up. */
 export function adminProgramDraftsRoute(id: string) {
   return `${adminProgramApplicationsRoute(id)}/drafts`;

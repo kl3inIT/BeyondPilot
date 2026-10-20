@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
 import java.util.UUID;
@@ -661,6 +662,67 @@ public class ReviewService {
 					"File " + fileId + " of draft " + id + " is not stored");
 		}
 		return new ApplicationFile(fileId, file.fileName(), storage.content(fileId));
+	}
+
+	/**
+	 * A program's applications that are submitted or still drafts, each submitted one with what its last submission
+	 * held and its files, for matching to assess them (BEY-234). Nobody is checked here: it is read by a module, never
+	 * answered to a person as it is. Withdrawn applications are left out.
+	 */
+	@Transactional(readOnly = true)
+	public List<ProgramSubmission> submissionsTo(UUID programId) {
+		List<Proposal> submitted = proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED);
+		Map<VersionKey, Snapshot> snapshots = snapshots(submitted);
+		List<ProgramSubmission> all = new ArrayList<>();
+		for (Proposal proposal : submitted) {
+			Snapshot snapshot = snapshots.get(new VersionKey(proposal.getId(), proposal.getSubmissions()));
+			if (snapshot == null) {
+				LOG.atWarn()
+					.addKeyValue("event", "proposal.application.version_missing")
+					.addKeyValue("proposal_id", proposal.getId())
+					.log("A submitted application has no last version");
+				continue;
+			}
+			all.add(new ProgramSubmission(proposal.getId(), programId, snapshot.organization().id(),
+					snapshot.solution().id(), Proposal.SUBMITTED, proposal.getSubmissions(), proposal.getReviewStatus(),
+					Objects.requireNonNull(proposal.getSubmittedAt()), sent(snapshot)));
+		}
+		for (Proposal draft : proposals.findByProgramIdAndStatusOrderByUpdatedAtDesc(programId, Proposal.DRAFT)) {
+			all.add(new ProgramSubmission(draft.getId(), programId, draft.getOrganizationId(), draft.getSolutionId(),
+					Proposal.DRAFT, draft.getSubmissions(), draft.getReviewStatus(), draft.getUpdatedAt(), null));
+		}
+		return List.copyOf(all);
+	}
+
+	/** The name of a program, drafts included, for a module that names it; empty when there is no such program. */
+	@Transactional(readOnly = true)
+	public Optional<String> programName(UUID programId) {
+		return setup.programName(programId);
+	}
+
+	private ProgramSubmission.Sent sent(Snapshot snapshot) {
+		Snapshot.Organization organization = snapshot.organization();
+		Snapshot.Solution solution = snapshot.solution();
+		Snapshot.Materials materials = snapshot.materials();
+		return new ProgramSubmission.Sent(
+				new ProgramSubmission.Organization(organization.name(), organization.type(), organization.country(),
+						organization.teamSize(), organization.website(), organization.teamBackground()),
+				new ProgramSubmission.Solution(solution.name(), solution.summary(), solution.problemsSolved(),
+						solution.maturity(), solution.demoUrl()),
+				opened(materials.deck()), materials.builtWith() == null ? List.of() : materials.builtWith(),
+				materials.traction(),
+				snapshot.answers()
+					.stream()
+					.map(answer -> new ProgramSubmission.Answer(answer.label(), answer.kind(), answer.value(),
+							opened(answer.file())))
+					.toList());
+	}
+
+	private ProgramSubmission.@Nullable File opened(@Nullable AttachedFileResponse file) {
+		// Opened only when it is read, so that a file gone from storage leaves the rest of the program readable.
+		return file == null ? null
+				: new ProgramSubmission.File(file.fileId(), file.fileName(),
+						() -> storage.content(file.fileId()).getInputStream());
 	}
 
 	ReviewHeadResponse head(ApplicationForm form, Reviewing reviewing) {

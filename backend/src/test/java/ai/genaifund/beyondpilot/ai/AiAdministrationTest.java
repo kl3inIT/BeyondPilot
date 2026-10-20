@@ -406,7 +406,7 @@ class AiAdministrationTest {
 		String settings = body(get(operator, API).expectStatus().isOk());
 
 		// The OCR tab holds it, where an OCR service can read pages in a model's place.
-		assertThat(JsonPath.<List<String>>read(settings, "$.tasks[*].task")).containsExactly("matching");
+		assertThat(JsonPath.<List<String>>read(settings, "$.tasks[*].task")).containsExactly("matching", "evaluation");
 		assertProblem(send("PUT", operator, API + "/tasks/document_reading", task(null, "low", 0)), 404, "AI_TASK_UNKNOWN");
 	}
 

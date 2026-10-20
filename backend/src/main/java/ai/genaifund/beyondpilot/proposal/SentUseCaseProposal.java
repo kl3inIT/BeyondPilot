@@ -14,9 +14,11 @@ import org.springframework.core.io.InputStreamSource;
  * @param approach how the sender would answer the use case, in their words
  * @param deck the PDF attached, with its bytes
  * @param solutions the solutions offered, in the proposal's order
+ * @param decision what the use case's side decided: {@code shortlisted} or {@code declined}; null while undecided
  */
 public record SentUseCaseProposal(UUID id, UUID useCaseId, UUID organizationId, Instant stamp,
-		@Nullable String approach, @Nullable String teamBackground, @Nullable Deck deck, List<Solution> solutions) {
+		@Nullable String approach, @Nullable String teamBackground, @Nullable Deck deck, List<Solution> solutions,
+		@Nullable String decision) {
 
 	/** The PDF of the proposal. */
 	public record Deck(UUID fileId, String fileName, String mediaType, InputStreamSource content) {
