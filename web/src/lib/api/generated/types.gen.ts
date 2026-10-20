@@ -2279,6 +2279,10 @@ export type EvaluationCandidate = {
      * The current assessment; absent while waiting.
      */
     assessment?: EvaluationAssessment;
+    /**
+     * The solution's logo, or its organization's when it has none, read at the public address of stored files.
+     */
+    logoFileId?: string;
     organizationId: string;
     organizationName: string;
     /**

@@ -8051,7 +8051,9 @@
         "keys": "J and K move between candidates, S shortlists, N marks not selected.",
         "shortlist": "Shortlist",
         "notSelected": "Not selected",
-        "notDecided": "Nothing to decide: this candidate has only a draft."
+        "notDecided": "Nothing to decide: this candidate has only a draft.",
+        "suggestion": "AI suggestion",
+        "evidenceCount": "{documented} documented · {claimed} claimed"
       },
       "compare": {
         "select": "Compare {name}",
