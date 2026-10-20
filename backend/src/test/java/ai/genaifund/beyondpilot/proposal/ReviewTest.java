@@ -110,6 +110,50 @@ class ReviewTest extends ApplicationsHttpTest {
 	}
 
 	@Test
+	void anOperatorDownloadsTheReviewersOfAProgramAndTheDownloadIsRecorded() {
+		Form form = program("judged-export", true, Instant.now().plus(Duration.ofDays(10)));
+		String judge = judge(form, "scorer@reviewers-export.test");
+		// A judge is active once they reach the review.
+		get(judge, API + "/review/programs").expectStatus().isOk();
+		post(operator, REVIEW + form.programId() + "/reviewers", Map.of("email", "waiting@reviewers-export.test"))
+			.expectStatus()
+			.isOk();
+		String export = REVIEW + form.programId() + "/reviewers/export";
+
+		post(judge, export, null).expectStatus().isForbidden();
+		assertThat(auditOf(form.programId())).doesNotContain("proposal.reviewers_export");
+
+		List<List<String>> sheet = Workbooks.rows(post(operator, export, null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType(SpreadsheetFormat.XLSX_TYPE)
+			.expectHeader()
+			.valueMatches("Content-Disposition",
+					"attachment; filename=\"judged-export-reviewers-\\d{4}-\\d{2}-\\d{2}\\.xlsx\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody());
+		assertThat(sheet).hasSize(3);
+		assertThat(sheet.get(0)).startsWith("Name", "Email", "Role", "Status", "Invited at");
+		assertThat(sheet.get(1)).contains("scorer@reviewers-export.test", "Reviewer", "Active");
+		assertThat(sheet.get(2)).contains("waiting@reviewers-export.test", "Reviewer", "Invited");
+
+		String csv = new String(post(operator, export + "?format=csv", null).expectStatus()
+			.isOk()
+			.expectHeader()
+			.contentType("text/csv;charset=UTF-8")
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), StandardCharsets.UTF_8);
+		assertThat(csv).startsWith("\uFEFFName,Email,Role,Status,Invited at,");
+		assertThat(csv.lines().toList()).hasSize(3);
+		assertThat(jdbc.sql("""
+				select details ->> 'count' from audit_event where action = 'proposal.reviewers_export' and resource_id = ?
+				order by occurred_at
+				""").params(form.programId().toString()).query(String.class).list()).containsExactly("2", "2");
+	}
+
+	@Test
 	void judgesScoreOnTheCriteriaAndOnlyOperatorsReadEveryScore() {
 		Form form = program("scored-challenge", true, Instant.now().plus(Duration.ofDays(10)));
 		List<String> criteria = criteriaOf(form, "Practical impact", "Credible execution");

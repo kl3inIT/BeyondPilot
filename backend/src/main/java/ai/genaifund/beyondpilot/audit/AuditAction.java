@@ -268,6 +268,12 @@ public enum AuditAction {
 
 	PROPOSAL_REVIEWER_REMOVE("proposal.reviewer_remove", "email"),
 
+	/**
+	 * An operator downloaded who scores a program's applications as a spreadsheet; the resource is the program.
+	 * {@code count} is how many the download holds.
+	 */
+	PROPOSAL_REVIEWERS_EXPORT("proposal.reviewers_export", "count"),
+
 	/** An operator decided on an application. {@code decision} is {@code shortlisted} or {@code not_selected}. */
 	PROPOSAL_DECIDE("proposal.decide", "decision"),
 

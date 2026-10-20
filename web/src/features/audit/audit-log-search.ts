@@ -94,6 +94,7 @@ export const auditActions = [
   "proposal.export",
   "proposal.drafts_export",
   "proposal.draft_open",
+  "proposal.reviewers_export",
   "use_case_proposal.decide",
   "use_case_proposal.outcomes_send",
   "use_case_proposal.export",

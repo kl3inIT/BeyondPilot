@@ -7,6 +7,7 @@ import { Person } from "@/components/composites/person";
 import { Badge } from "@/components/ui/badge";
 import type { ReviewCriteria, Reviewers } from "@/lib/api/generated";
 
+import { ExportReviewers } from "./export-reviewers";
 import { CriteriaEditor, InviteReviewer, ReviewerRowActions } from "./reviewer-actions";
 import { sortReviewers, type ReviewersSearch } from "./reviewers-search";
 
@@ -46,7 +47,10 @@ function ReviewersPage({
             </h2>
             <p className="text-sm text-muted-foreground">{t("lead")}</p>
           </div>
-          <InviteReviewer programId={programId} programName={programName} />
+          <div className="flex flex-wrap items-center gap-2">
+            <ExportReviewers programId={programId} disabled={reviewers.items.length === 0} />
+            <InviteReviewer programId={programId} programName={programName} />
+          </div>
         </div>
         {reviewers.items.length === 0 ? (
           <DataTableEmpty icon={<UsersIcon aria-hidden="true" />} title={t("empty.title")} />

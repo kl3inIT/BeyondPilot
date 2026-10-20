@@ -1074,6 +1074,7 @@ paths:
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
+          - proposal.reviewers_export
           - proposal.decide
           - proposal.release
           - proposal.file_open
@@ -1808,6 +1809,7 @@ paths:
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
+          - proposal.reviewers_export
           - proposal.decide
           - proposal.release
           - proposal.file_open
@@ -8505,6 +8507,70 @@ paths:
       security:
       - session: []
       summary: Invite an address to judge a program
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/reviewers/export:
+    post:
+      operationId: exportReviewers
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "The operators who scored, then the judges in the order they\
+            \ were invited, one row each. The download is recorded on the program."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The format is not valid.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The caller is not an operator.
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: Download who scores a program's applications as a spreadsheet
       tags:
       - Review
   /api/proposal/review/programs/{programId}/reviewers/{reviewerId}:
@@ -16347,6 +16413,7 @@ components:
           - proposal.criteria_update
           - proposal.reviewer_invite
           - proposal.reviewer_remove
+          - proposal.reviewers_export
           - proposal.decide
           - proposal.release
           - proposal.file_open
