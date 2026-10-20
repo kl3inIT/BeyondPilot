@@ -241,6 +241,16 @@ public class OrganizationAdministration {
 	}
 
 	/**
+	 * Approves an organization that waits for review without vouching for a domain, for a caller that is not the admin
+	 * screen, such as an operator's MCP tool.
+	 * @see #approve(Actor, UUID, ApproveOrganizationRequest)
+	 */
+	@Transactional
+	public void approve(Actor actor, UUID id) {
+		approve(actor, id, new ApproveOrganizationRequest(null));
+	}
+
+	/**
 	 * Refuses an organization that waits for review for good, with a reason its owners read, and tells them. Missing
 	 * information is a send back instead.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
@@ -272,6 +282,15 @@ public class OrganizationAdministration {
 		events.publishEvent(new OrganizationChanged(organization.getId()));
 		owners(organization)
 			.forEach(owner -> email.sendOrganizationSentBack(owner.email(), organization.getName(), reason));
+	}
+
+	/**
+	 * Sends an organization back with what to change, for a caller that is not the admin screen.
+	 * @see #sendBack(Actor, UUID, SendBackOrganizationRequest)
+	 */
+	@Transactional
+	public void sendBack(Actor actor, UUID id, String reason) {
+		sendBack(actor, id, new SendBackOrganizationRequest(reason));
 	}
 
 	/**

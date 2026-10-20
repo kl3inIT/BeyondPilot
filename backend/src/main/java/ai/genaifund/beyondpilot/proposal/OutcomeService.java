@@ -33,6 +33,7 @@ import ai.genaifund.beyondpilot.proposal.persistence.ProposalReleaseRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalRepository;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecision;
 import ai.genaifund.beyondpilot.proposal.persistence.ProposalReviewDecisionRepository;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -120,6 +121,16 @@ public class OutcomeService {
 			.addKeyValue("count", request.applicationIds().size())
 			.log("Decision recorded");
 		return review.applications(actor, programId);
+	}
+
+	/**
+	 * Decides on one application of a program, for a caller that is not the admin screen.
+	 * @param decision {@code shortlisted} or {@code not_selected}
+	 * @see #decide(Actor, UUID, DecideRequest)
+	 */
+	@Transactional
+	public void decide(Actor actor, UUID programId, UUID applicationId, String decision, @Nullable String reason) {
+		decide(actor, programId, new DecideRequest(List.of(applicationId), decision, reason));
 	}
 
 	/**

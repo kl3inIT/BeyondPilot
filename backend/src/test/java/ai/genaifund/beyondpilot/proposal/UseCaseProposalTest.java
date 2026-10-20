@@ -541,7 +541,26 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.arguments(Map.of("proposal", UUID.randomUUID().toString()))
 			.build());
 		assertThat(unknown.isError()).isTrue();
+
+		// The app decides it too, as the organization would; the same decision again changes nothing.
+		String declined = text(app.callTool(McpSchema.CallToolRequest.builder("decide_proposal")
+			.arguments(Map.of("proposal", id, "decision", "declined"))
+			.build()));
+		assertThat(JsonPath.<String>read(declined, "$.before")).isEqualTo("shortlisted");
+		assertThat(JsonPath.<String>read(declined, "$.after")).isEqualTo("declined");
+		assertThat(JsonPath.<String>read(declined, "$.url")).endsWith("/admin/use-cases/" + useCase + "/proposals/" + id);
+		String again = text(app.callTool(McpSchema.CallToolRequest.builder("decide_proposal")
+			.arguments(Map.of("proposal", id, "decision", "declined"))
+			.build()));
+		assertThat(JsonPath.<String>read(again, "$.before")).isEqualTo("declined");
+		assertThat(app.callTool(McpSchema.CallToolRequest.builder("decide_proposal")
+			.arguments(Map.of("proposal", id, "decision", "accepted"))
+			.build()).isError()).isTrue();
 		app.closeGracefully();
+		assertThat(jdbc.sql("select count(*) from use_case_proposal_decision where proposal_id = ?::uuid")
+			.params(id)
+			.query(Integer.class)
+			.single()).isEqualTo(2);
 
 		// The activity names what was read and links to it.
 		assertThat(jdbc.sql("""

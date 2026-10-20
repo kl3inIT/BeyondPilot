@@ -220,7 +220,7 @@ class McpServerTest {
 		assertThat(JsonPath.<List<String>>read(all, "$.tools")).containsExactly("search", "fetch", "list_applications",
 				"get_application", "read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program",
 				"list_accounts", "list_audit_events", "list_emails", "get_email", "list_matching_runs",
-				"get_matching_run", "get_matches");
+				"get_matching_run", "get_matches", "decide_record", "decide_application", "decide_proposal");
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&outcome=refused"),
 				"$.total")).isEqualTo(1);
 		assertThat(JsonPath.<Integer>read(adminGet("/api/mcp/admin/calls?q=watched-" + word + "&tool=search"),
@@ -418,7 +418,7 @@ class McpServerTest {
 			.containsExactly("search", "fetch", "list_applications", "get_application",
 					"read_application_file", "list_pending_reviews", "list_records", "get_record", "list_proposals", "get_proposal", "list_programs", "get_program", "list_accounts",
 					"list_audit_events", "list_emails", "get_email", "list_matching_runs", "get_matching_run",
-					"get_matches");
+					"get_matches", "decide_record", "decide_application", "decide_proposal");
 
 		String found = text(app.callTool(McpSchema.CallToolRequest.builder("search")
 			.arguments(Map.of("query", "hidden agent " + word))
@@ -556,6 +556,62 @@ class McpServerTest {
 	}
 
 	@Test
+	void anOperatorsAppApprovesAndSendsBackWhatWaitsForReviewAsTheAdminScreenDoes() {
+		String owner = TestSignIn.session(client, mail, "decided-" + word + "@mcp.test");
+		UUID organization = organization(owner, "Decided " + word);
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = app(token, "/mcp/operator");
+		app.initialize();
+
+		List<McpSchema.Tool> tools = app.listTools().tools();
+		McpSchema.Tool decide = tools.stream().filter(tool -> tool.name().equals("decide_record")).findFirst().orElseThrow();
+		assertThat(decide.annotations().readOnlyHint()).isFalse();
+		assertThat(decide.annotations().destructiveHint()).isTrue();
+		McpSchema.Tool quiet = tools.stream().filter(tool -> tool.name().equals("decide_proposal")).findFirst().orElseThrow();
+		assertThat(quiet.annotations().readOnlyHint()).isFalse();
+		assertThat(quiet.annotations().destructiveHint()).isFalse();
+
+		// A send back needs the words the owners read.
+		assertThat(decide(app, Map.of("area", "organizations", "id", organization.toString(), "action", "send_back"))
+			.isError()).isTrue();
+		String sentBack = text(decide(app, Map.of("area", "organizations", "id", organization.toString(), "action",
+				"send_back", "message", "Add the website of your company.")));
+		assertThat(JsonPath.<String>read(sentBack, "$.before")).isEqualTo("in_review");
+		assertThat(JsonPath.<String>read(sentBack, "$.after")).isEqualTo("needs_changes");
+		assertThat(JsonPath.<String>read(sentBack, "$.name")).isEqualTo("Decided " + word);
+		assertThat(JsonPath.<String>read(sentBack, "$.url")).isEqualTo(ISSUER + "/admin/organizations/" + organization);
+		await().atMost(WAIT)
+			.untilAsserted(() -> assertThat(mail.latestTextTo("decided-" + word + "@mcp.test"))
+				.contains("Add the website of your company."));
+
+		// Not in review: refused with what to do instead.
+		CallToolResult refused = decide(app,
+				Map.of("area", "organizations", "id", organization.toString(), "action", "approve"));
+		assertThat(refused.isError()).isTrue();
+		assertThat(((TextContent) refused.content().getFirst()).text()).contains("get_record");
+
+		String other = TestSignIn.session(client, mail, "approved-" + word + "@mcp.test");
+		UUID approved = organization(other, "Approved " + word);
+		String approval = text(decide(app, Map.of("area", "organizations", "id", approved.toString(), "action", "approve")));
+		assertThat(JsonPath.<String>read(approval, "$.after")).isEqualTo("approved");
+		UUID solution = submittedSolution(other, "Decided Agent " + word);
+		assertThat(decide(app, Map.of("area", "solutions", "id", solution.toString(), "action", "reject")).isError())
+			.isTrue();
+		String listed = text(decide(app, Map.of("area", "solutions", "id", solution.toString(), "action", "approve")));
+		assertThat(JsonPath.<String>read(listed, "$.before")).isEqualTo("in_review");
+		assertThat(JsonPath.<String>read(listed, "$.after")).isEqualTo("approved");
+		app.closeGracefully();
+
+		assertThat(jdbc.sql("""
+				select target_kind || ' ' || outcome from mcp_call where tool = 'decide_record' and target_id = :id
+				""").param("id", organization.toString()).query(String.class).list()).containsExactly("organization ok");
+	}
+
+	private static CallToolResult decide(McpSyncClient app, Map<String, Object> arguments) {
+		return app.callTool(McpSchema.CallToolRequest.builder("decide_record").arguments(arguments).build());
+	}
+
+	@Test
 	void operatorsSwitchAToolOffAndTheUserServerOffAndEachChangeIsAudited() {
 		String person = TestSignIn.session(client, mail, "switched-" + word + "@mcp.test");
 		String token = TestAppConnection.connect(client, port, person, "mcp.read").access();
@@ -579,7 +635,7 @@ class McpServerTest {
 			.jsonPath("$.userServerAddress")
 			.isEqualTo(ISSUER + "/mcp")
 			.jsonPath("$.tools.length()")
-			.isEqualTo(21);
+			.isEqualTo(24);
 
 		switchTool("user", "fetch", false);
 		try {
