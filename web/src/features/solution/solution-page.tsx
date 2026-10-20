@@ -670,7 +670,7 @@ function SolutionPage({ solution, editHref, contactHref }: SolutionPageProps) {
           {solution.offers.length > 0 && (
             <>
               <Separator />
-              <OfferPanel offers={solution.offers} />
+              <OfferPanel offers={solution.offers} organization={solution.organizationName} />
             </>
           )}
           <Separator />

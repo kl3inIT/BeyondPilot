@@ -4747,6 +4747,10 @@
       "more": "+{count} nữa",
       "moreOffers": "+{count} ưu đãi nữa",
       "newTab": "mở trong tab mới",
+      "group": {
+        "fund": "Do GenAI Fund sắp xếp",
+        "own": "Từ {organization}"
+      },
       "picker": {
         "placeholder": "Chọn ưu đãi",
         "noMatch": "Không có ưu đãi nào khớp.",
