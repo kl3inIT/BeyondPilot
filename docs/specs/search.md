@@ -166,9 +166,6 @@ Without a query vector the third ranking is empty and search goes by words alone
 in Admin › AI. It uses Spring AI's `OpenAiEmbeddingModel` at 1,536 dimensions, a 5-second timeout and one retry;
 Spring AI configures no model of its own (`spring.ai.model.embedding: none`).
 
-The search page and the MCP `search` tool embed the query without its accents, as the words are matched, so "Nguyen"
-and "Nguyễn" find the same items; matching's evidence queries are embedded as written.
-
 Configuration, `beyondpilot.search.embedding` in `application.yaml`:
 
 | Property         | Value  | Meaning                                                                |

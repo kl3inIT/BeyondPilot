@@ -126,17 +126,6 @@ class SearchMeaningTest {
 	}
 
 	@Test
-	void aQueryMeansTheSameWithOrWithoutAccents() {
-		save("Hotline Assist", "Answers inbound customer calls and hands the rest to an agent.");
-		save("ShopSense", "Demand forecasting for retail stores.");
-		embeddings.embedPending();
-
-		assertThat(search.search(SearchRequest.builder("cham soc khach hang").build(), false))
-			.isEqualTo(search.search(SearchRequest.builder("chăm sóc khách hàng").build(), false));
-		assertThat(titles("Dự báo bán lẻ")).isEqualTo(titles("du bao ban le")).containsExactly("ShopSense");
-	}
-
-	@Test
 	void directoriesScopeMeaningBeforeThePoolAndKeepFilteredCountsAndPageBoundaries() {
 		// Closer ineligible items must never consume the selected directory's two semantic candidate slots.
 		for (String kind : List.of("solution", "talent", "program", "use_case")) {
@@ -327,10 +316,7 @@ class SearchMeaningTest {
 				Map.entry("khách", 0), Map.entry("hàng", 0), Map.entry("chăm", 0), Map.entry("sóc", 0),
 				Map.entry("retail", 1), Map.entry("stores", 1), Map.entry("forecasting", 1), Map.entry("bán", 1),
 				Map.entry("lẻ", 1), Map.entry("dự", 1), Map.entry("báo", 1), Map.entry("insurance", 2),
-				Map.entry("bảo", 2), Map.entry("hiểm", 2),
-				// Unaccented Vietnamese, as a real model reads it too; "bao" is both "báo" and "bảo", so it means nothing.
-				Map.entry("khach", 0), Map.entry("hang", 0), Map.entry("cham", 0), Map.entry("soc", 0),
-				Map.entry("ban", 1), Map.entry("le", 1), Map.entry("du", 1), Map.entry("hiem", 2));
+				Map.entry("bảo", 2), Map.entry("hiểm", 2));
 
 		final AtomicBoolean failing = new AtomicBoolean();
 
