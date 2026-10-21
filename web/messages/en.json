@@ -4400,7 +4400,7 @@
     "suspended": {
       "title": "GenAI Fund took {name} down",
       "reason": "Reason: {reason}.",
-      "foot": "Its public page and solutions are hidden; write to GenAI Fund to have it restored."
+      "foot": "Its public page and solutions are hidden; write to GenAI Fund to have it restored. An owner can also leave it, on the Members tab, to create or join another organization."
     },
     "merged": {
       "title": "{name} is now part of {kept}",

@@ -143,7 +143,7 @@ public class OrganizationService {
 		return new MyOrganizationResponse(null, null, null, invitations, request, declined, suggestion, null);
 	}
 
-	/** The approved organizations whose name contains the text, with what asking to get in does for the caller. */
+	/** The organizations, not taken down, whose name contains the text, with what asking to get in does for the caller. */
 	@Transactional(readOnly = true)
 	public OrganizationSearchResponse search(Actor actor, @Nullable String q) {
 		Person person = identity.person(actor);
@@ -274,7 +274,7 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Asks to get into an approved organization. An address on its verified domain joins at once while its owners
+	 * Asks to get into an organization that is not taken down. An address on its verified domain joins at once while its owners
 	 * allow it; anyone else asks its owners. An organization nobody owns is claimed, and GenAI Fund decides the claim
 	 * whatever the address.
 	 * @throws OrganizationException when the organization does not exist or is not approved, or the caller already
@@ -795,7 +795,7 @@ public class OrganizationService {
 
 	private static OrganizationException notFound(UUID organizationId) {
 		return new OrganizationException(OrganizationErrorCode.ORGANIZATION_NOT_FOUND,
-				"No approved organization " + organizationId);
+				"No active organization " + organizationId);
 	}
 
 	private static OrganizationException alreadyMember(Person person) {

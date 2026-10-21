@@ -68,7 +68,7 @@ public class OrganizationQueryRepository {
 	}
 
 	/**
-	 * The approved organizations a person may ask to join whose name contains the text, by name; at most
+	 * The organizations, not taken down, a person may ask to join whose name contains the text, by name; at most
 	 * {@code limit}. A builder on their own is one person, so nobody asks to join it.
 	 */
 	public List<Match> search(String text, int limit) {
@@ -81,7 +81,7 @@ public class OrganizationQueryRepository {
 	}
 
 	/**
-	 * The approved organizations, the ones that can have use cases, by name; at most {@code limit}.
+	 * The organizations not taken down, the ones that can have use cases, by name; at most {@code limit}.
 	 * @param text only those whose name contains it, ignoring case; every one when null
 	 */
 	public List<Name> approvedOrganizations(@Nullable String text, int limit) {

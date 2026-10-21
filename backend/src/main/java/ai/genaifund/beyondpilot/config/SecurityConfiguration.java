@@ -67,7 +67,7 @@ class SecurityConfiguration {
 				// The programs and their pages are for visitors; an operator's session only adds the drafts.
 				.requestMatchers(HttpMethod.GET, "/api/program/programs", "/api/program/programs/*")
 				.permitAll()
-				// The directories of approved solutions and talent, and the page of an approved organization, are read
+				// The directories of approved solutions and talent, and the page of an organization that is not taken down, are read
 				// without a session. So is the deck of an approved solution; a session only adds the deck of one that
 				// is not approved, for those who may read it.
 				.requestMatchers(HttpMethod.GET, "/api/solution/solutions", "/api/solution/solutions/*",

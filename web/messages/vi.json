@@ -4400,7 +4400,7 @@
     "suspended": {
       "title": "GenAI Fund đã gỡ {name} xuống",
       "reason": "Lý do: {reason}.",
-      "foot": "Trang công khai và các giải pháp đang bị ẩn; hãy liên hệ GenAI Fund để được khôi phục."
+      "foot": "Trang công khai và các giải pháp đang bị ẩn; hãy liên hệ GenAI Fund để được khôi phục. Chủ sở hữu cũng có thể rời tổ chức này, ở tab Thành viên, để tạo hoặc tham gia một tổ chức khác."
     },
     "merged": {
       "title": "{name} giờ là một phần của {kept}",

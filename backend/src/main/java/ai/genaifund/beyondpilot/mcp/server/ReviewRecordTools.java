@@ -144,8 +144,9 @@ class ReviewRecordTools {
 				"additionalProperties", false);
 		Tool tool = Tool.builder("list_records", schema)
 			.title("List records operators review")
-			.description("List one area of BeyondPilot's admin as a GenAI Fund operator sees it, in any status (in "
-					+ "review, needs changes, approved, rejected, suspended...): organizations, solutions, talent "
+			.description("List one area of BeyondPilot's admin as a GenAI Fund operator sees it, in any status (a "
+					+ "solution or talent profile may be in review, need changes or be rejected; an organization is "
+					+ "active, suspended or merged): organizations, solutions, talent "
 					+ "profiles, use cases or the offers solutions come with, a page at a time. Each record gives its "
 					+ "id, name, status, what an operator scans (organization, country, submitted and updated dates, "
 					+ "featured) and its admin page; read one with get_record. search and fetch cover only what is "

@@ -56,7 +56,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * What operators do with organizations: read them, approve or refuse a new one, create one for a company that is not
+ * What operators do with organizations: read them, take one down or restore it, create one for a company that is not
  * here yet, and decide who may own one nobody owns. Every operation first checks that the caller is an operator now,
  * and every change is recorded in the audit trail in the transaction of the change.
  */

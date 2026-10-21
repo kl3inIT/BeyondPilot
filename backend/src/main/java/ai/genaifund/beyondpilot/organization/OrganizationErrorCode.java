@@ -60,7 +60,7 @@ public enum OrganizationErrorCode implements ErrorCode {
 			"Another organization already has this email domain."),
 
 	DOMAIN_NOT_VERIFIED("ORGANIZATION_DOMAIN_NOT_VERIFIED", ErrorCategory.CONFLICT,
-			"People join at once only on a domain GenAI Fund verified for an approved organization."),
+			"People join at once only on a domain GenAI Fund verified for an organization that is not taken down."),
 
 	NOT_APPROVED("ORGANIZATION_NOT_APPROVED", ErrorCategory.CONFLICT,
 			"An organization that is taken down does not invite people. Ask GenAI Fund to restore it."),
