@@ -141,7 +141,7 @@ function MergeDialog({ organization, members, invitations, onClose }: MergeDialo
 
 /**
  * The organizations a duplicate may merge into, asked of the operators' list as the name is typed:
- * the approved ones that are shown, but the duplicate itself.
+ * the active ones that are shown, but the duplicate itself.
  */
 function useCandidates(duplicateId: string) {
   const [query, setQuery] = useState("");
@@ -152,7 +152,7 @@ function useCandidates(duplicateId: string) {
     const timer = setTimeout(async () => {
       try {
         const { data } = await listAdminOrganizations({
-          query: { q: query.trim() || undefined, status: "approved" },
+          query: { q: query.trim() || undefined, status: "active" },
         });
         if (current) {
           setFound(data.items.filter((item) => item.id !== duplicateId));

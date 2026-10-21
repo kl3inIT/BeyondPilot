@@ -79,7 +79,7 @@ function ReceivedProposalPage({
               <h1 className="min-w-0 text-2xl font-semibold tracking-tight break-words">
                 {proposal.organizationName}
               </h1>
-              {admin && !proposal.organizationApproved && (
+              {admin && !proposal.organizationActive && (
                 <ReviewStatus state="suspended" appearance="pill">
                   {t("takenDown")}
                 </ReviewStatus>

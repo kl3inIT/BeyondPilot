@@ -11,6 +11,7 @@ describe("ReviewStatus", () => {
     ["in_review", "warning"],
     ["needs_changes", "warning"],
     ["approved", "success"],
+    ["active", "success"],
     ["rejected", "destructive"],
     ["suspended", "destructive"],
     ["closed", "neutral"],
@@ -33,6 +34,10 @@ describe("ReviewStatus", () => {
 });
 
 describe("reviewState", () => {
+  it("reads an active organization that was taken down as suspended", () => {
+    expect(reviewState({ status: "active", suspendedAt: "2026-10-01T00:00:00Z" })).toBe("suspended");
+  });
+
   it("reads an approved record that was taken down as suspended", () => {
     expect(reviewState({ status: "approved", suspendedAt: "2026-10-01T00:00:00Z" })).toBe(
       "suspended",

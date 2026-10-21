@@ -61,7 +61,7 @@ const organizations = [
     },
   },
   {
-    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01", "Lumen Health", "approved", {
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01", "Lumen Health", "active", {
       description: "Triage assistants for clinics.",
     }),
     createdBy: "Linh Nguyễn",
@@ -79,7 +79,7 @@ const organizations = [
     claims: [],
   },
   {
-    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c02", "Open Kitchen", "approved", {
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c02", "Open Kitchen", "active", {
       type: "builder_team",
     }),
     createdBy: "Đạt Phan",
@@ -107,7 +107,7 @@ const organizations = [
     organization: organization(
       "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
       "Pocket Policy",
-      "approved",
+      "active",
       {
         country: "SG",
       },
@@ -133,7 +133,7 @@ const organizations = [
   },
   {
     // Nobody owns it, and one person asks to.
-    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04", "Firstcall", "approved"),
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04", "Firstcall", "active"),
     createdBy: "Quang Vũ",
     createdByEmail: "quang.vu@firstcall.example",
     members: [],
@@ -149,7 +149,7 @@ const organizations = [
     ],
   },
   {
-    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06", "Quiet Mill", "approved", {
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06", "Quiet Mill", "active", {
       suspensionReason: "misleading_information",
       suspensionMessage: "Send us the contract or remove the customer.",
       suspendedAt: "2026-10-06T03:00:00Z",
@@ -172,7 +172,7 @@ const organizations = [
     organization: organization(
       "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c07",
       "Harbor Bank",
-      "approved",
+      "active",
       {},
     ),
     createdBy: "Bao Tran",
@@ -408,7 +408,7 @@ const lists = {
     ),
     idOf: (record) => record.organization.id,
     countryOf: (record) => record.organization.country,
-    // An open claim is filtered as `claimed` and one taken down as `suspended`, not as approved.
+    // An open claim is filtered as `claimed` and one taken down as `suspended`, not as active.
     statusOf: (record) =>
       record.claims.length > 0
         ? "claimed"

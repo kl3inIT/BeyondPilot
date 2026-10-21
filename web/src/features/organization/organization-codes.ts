@@ -82,8 +82,8 @@ export const takeDownReasons = [
 ] as const;
 
 /**
- * What the operators' list filters by: `approved` for every organization that is not down, `claimed`
+ * What the operators' list filters by: `active` for every organization that is not down, `claimed`
  * for those with an open ownership claim, `suspended` for those taken down, and `merged` for
  * duplicates, which no other filter lists.
  */
-export const organizationStatuses = ["approved", "claimed", "suspended", "merged"] as const;
+export const organizationStatuses = ["active", "claimed", "suspended", "merged"] as const;

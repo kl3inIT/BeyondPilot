@@ -170,7 +170,7 @@ function OrganizationSummary({
         <AvatarFallback>{initials(organization.name, "")}</AvatarFallback>
       </Avatar>
       <span className="min-w-32 flex-1 truncate text-base font-medium">{organization.name}</span>
-      {!organization.approved && (
+      {!organization.active && (
         <ReviewStatus state="suspended" appearance="pill">
           {t("takenDown")}
         </ReviewStatus>

@@ -779,7 +779,7 @@ function StepYou({
             <div className="flex flex-col gap-1">
               <span className="flex flex-wrap items-center gap-2">
                 <span className="font-medium">{organization.name}</span>
-                {!organization.approved && <TakenDown />}
+                {!organization.active && <TakenDown />}
               </span>
               <span className="text-sm text-muted-foreground">
                 {[
@@ -806,7 +806,7 @@ function StepYou({
           <div className="flex flex-col gap-1 rounded-xl border p-4">
             <span className="flex flex-wrap items-center gap-2">
               <span className="font-medium">{organization.name}</span>
-              {!organization.approved && <TakenDown />}
+              {!organization.active && <TakenDown />}
             </span>
             <span className="text-sm text-muted-foreground">
               {[

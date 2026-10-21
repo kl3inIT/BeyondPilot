@@ -23,7 +23,7 @@ export default async function EmailAppearanceRoute({
   await requireRole("operator", siteRoutes.adminEmailAppearance);
   const [settings, sample] = await Promise.all([
     readEmailSettings(),
-    readEmailTemplate("organization_activated"),
+    readEmailTemplate("organization_invitation"),
   ]);
 
   return (

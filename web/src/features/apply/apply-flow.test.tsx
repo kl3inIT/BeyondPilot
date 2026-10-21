@@ -33,7 +33,7 @@ function draft(
       type: "independent_builder",
       country: "VN",
       teamSize: "just_me",
-      approved: true,
+      active: true,
       changeable: true,
     },
     solutions: [
@@ -154,7 +154,7 @@ describe("ApplyFlow", () => {
     unmount();
 
     for (const type of ["independent_builder", "company"] as const) {
-      const organization = { ...view.organization!, type, approved: false, changeable: false };
+      const organization = { ...view.organization!, type, active: false, changeable: false };
       const { unmount } = render(
         <ApplyFlow initial={{ ...view, organization }} account={account} />,
         { searchParams: "?step=1" },

@@ -1561,7 +1561,7 @@
         }
       },
       "status": {
-        "approved": "Active",
+        "active": "Active",
         "claimed": "Claim open",
         "suspended": "Taken down",
         "merged": "Merged"
@@ -1741,7 +1741,7 @@
         "organization": "Organization",
         "organizationPlaceholder": "Search or select an organization",
         "organizationRequired": "Choose an organization.",
-        "noOrganizations": "No organization is approved yet.",
+        "noOrganizations": "No organization is active yet.",
         "name": "Solution name",
         "nameRequired": "Enter the solution's name.",
         "cancel": "Cancel",
@@ -2116,7 +2116,7 @@
         "title": "Create a use case",
         "organization": "Create this use case for",
         "organizationPlaceholder": "Choose an organization",
-        "organizationHint": "Only approved organizations are listed.",
+        "organizationHint": "Only active organizations are listed.",
         "thisOrganization": "the organization",
         "publishSubmit": "Publish use case",
         "review": {
@@ -3210,10 +3210,6 @@
           "name": "Organization invitation",
           "description": "Sent when an owner, or GenAI Fund, invites an address to join an organization or to own it."
         },
-        "organization_activated": {
-          "name": "Organization active",
-          "description": "Sent to the owners of an organization that was waiting for review before reviews ended, to tell them it is active."
-        },
         "organization_approved": {
           "name": "Organization approved",
           "description": "Sent to the owners when GenAI Fund approves their organization."
@@ -4099,7 +4095,7 @@
     },
     "status": {
       "suspended": "Taken down",
-      "approved": "Active",
+      "active": "Active",
       "merged": "Merged"
     },
     "done": {

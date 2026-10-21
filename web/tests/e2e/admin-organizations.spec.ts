@@ -332,7 +332,7 @@ test.describe("admin organizations", () => {
     await expect(page.getByText("Reason: Misleading or false information.")).toBeVisible();
     await expect(page.getByText("Send us the contract or remove the customer.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
-    // Taking down is for an approved organization; this one is back only by a restore.
+    // Taking down is for an active organization; this one is back only by a restore.
     await page.getByRole("button", { name: "Actions for Quiet Mill" }).click();
     await expect(page.getByRole("menuitem", { name: "Merge into another…" })).toBeVisible();
     await expect(page.getByRole("menuitem", { name: "Take down" })).toHaveCount(0);
@@ -347,7 +347,7 @@ test.describe("admin organizations", () => {
     ]);
   });
 
-  test("an approved organization is taken down with a reason its owners read", async ({
+  test("an active organization is taken down with a reason its owners read", async ({
     page,
     context,
     baseURL,
@@ -419,9 +419,9 @@ test.describe("admin organizations", () => {
     ).toBeVisible();
     await expect(dialog.getByRole("button", { name: "Continue" })).toBeDisabled();
     await dialog.getByRole("combobox", { name: "Keep" }).fill("Pocket");
-    // Only an approved organization is asked for, and the duplicate itself is never offered.
+    // Only an active organization is asked for, and the duplicate itself is never offered.
     await expect(page.getByRole("option")).toHaveText(["Pocket Policy"]);
-    await expect.poll(() => searches).toContain("?q=Pocket&status=approved");
+    await expect.poll(() => searches).toContain("?q=Pocket&status=active");
     await page.getByRole("option", { name: "Pocket Policy" }).click();
     await expectNoSeriousA11yViolations(page);
     await dialog.getByRole("button", { name: "Continue" }).click();

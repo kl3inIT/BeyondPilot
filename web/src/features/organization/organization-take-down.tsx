@@ -23,7 +23,7 @@ type TakeDownProps = {
 };
 
 /**
- * Takes an approved organization down with a reason its owners read. The page and its solutions
+ * Takes an active organization down with a reason its owners read. The page and its solutions
  * leave the directories at once; the people keep their workspace. It stays open while the decision
  * is sent; whoever opened it closes it.
  */

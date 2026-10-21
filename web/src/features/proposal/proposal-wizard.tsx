@@ -68,7 +68,7 @@ type ProposalFormValues = ProposalValues & {
 type ProposalWizardProps = {
   useCaseId: string;
   form: UseCaseProposalForm;
-  /** The caller's organization, approved or waiting for review; none for a person who belongs to none yet. */
+  /** The caller's organization; none for a person who belongs to none yet. */
   organization: ProposingOrganization | null;
   /** The organization of the caller's email domain, offered when they look for theirs. */
   suggestion: OrganizationMatch | null;

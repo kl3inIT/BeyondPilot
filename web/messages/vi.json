@@ -1561,7 +1561,7 @@
         }
       },
       "status": {
-        "approved": "Đang hoạt động",
+        "active": "Đang hoạt động",
         "claimed": "Có yêu cầu nhận",
         "suspended": "Đã gỡ xuống",
         "merged": "Đã gộp"
@@ -1741,7 +1741,7 @@
         "organization": "Tổ chức",
         "organizationPlaceholder": "Tìm hoặc chọn tổ chức",
         "organizationRequired": "Hãy chọn một tổ chức.",
-        "noOrganizations": "Chưa có tổ chức nào được duyệt.",
+        "noOrganizations": "Chưa có tổ chức nào đang hoạt động.",
         "name": "Tên giải pháp",
         "nameRequired": "Hãy nhập tên giải pháp.",
         "cancel": "Hủy",
@@ -2116,7 +2116,7 @@
         "title": "Tạo use case",
         "organization": "Tạo use case này cho",
         "organizationPlaceholder": "Chọn một tổ chức",
-        "organizationHint": "Chỉ liệt kê các tổ chức đã được duyệt.",
+        "organizationHint": "Chỉ liệt kê các tổ chức đang hoạt động.",
         "thisOrganization": "tổ chức",
         "publishSubmit": "Đăng use case",
         "review": {
@@ -3210,10 +3210,6 @@
           "name": "Lời mời vào tổ chức",
           "description": "Gửi khi chủ sở hữu, hoặc GenAI Fund, mời một địa chỉ tham gia hoặc sở hữu một tổ chức."
         },
-        "organization_activated": {
-          "name": "Tổ chức đã hoạt động",
-          "description": "Gửi cho chủ sở hữu của những tổ chức còn chờ duyệt lúc GenAI Fund bỏ bước duyệt, để báo rằng tổ chức của họ đã hoạt động."
-        },
         "organization_approved": {
           "name": "Tổ chức được duyệt",
           "description": "Gửi cho các chủ sở hữu khi GenAI Fund duyệt tổ chức của họ."
@@ -4099,7 +4095,7 @@
     },
     "status": {
       "suspended": "Đã gỡ xuống",
-      "approved": "Đang hoạt động",
+      "active": "Đang hoạt động",
       "merged": "Đã gộp"
     },
     "done": {
