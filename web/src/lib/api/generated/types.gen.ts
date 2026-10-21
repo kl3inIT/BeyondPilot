@@ -1603,7 +1603,7 @@ export type ConversationSubject = {
 };
 
 /**
- * A new organization. Its creator owns it, and it waits for GenAI Fund's review.
+ * A new organization. Its creator owns it, and it is active at once.
  */
 export type CreateOrganization = {
     /**
@@ -12359,7 +12359,7 @@ export type CreateOrganizationError = CreateOrganizationErrors[keyof CreateOrgan
 
 export type CreateOrganizationResponses = {
     /**
-     * The organization, waiting for GenAI Fund's review.
+     * The organization, active at once.
      */
     201: Organization;
 };
@@ -12392,7 +12392,7 @@ export type CreateOrganizationFromBasicsError = CreateOrganizationFromBasicsErro
 
 export type CreateOrganizationFromBasicsResponses = {
     /**
-     * The organization, waiting for GenAI Fund's review.
+     * The organization, active at once.
      */
     201: Organization;
 };

@@ -83,7 +83,7 @@ class OrganizationsController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(operationId = "createOrganization", summary = "Create an organization the caller owns",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "201", description = "The organization, waiting for GenAI Fund's review.")
+	@ApiResponse(responseCode = "201", description = "The organization, active at once.")
 	@ApiResponse(responseCode = "400", description = "A member is not valid.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409",
@@ -99,7 +99,7 @@ class OrganizationsController {
 	@Operation(operationId = "createOrganizationFromBasics",
 			summary = "Create an organization from the required facts of its selected type",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "201", description = "The organization, waiting for GenAI Fund's review.")
+	@ApiResponse(responseCode = "201", description = "The organization, active at once.")
 	@ApiResponse(responseCode = "400", description = "A member is not valid, or a company names no industry.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409",

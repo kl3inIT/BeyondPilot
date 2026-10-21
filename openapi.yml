@@ -6885,7 +6885,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Organization"
-          description: "The organization, waiting for GenAI Fund's review."
+          description: "The organization, active at once."
         "400":
           content:
             application/problem+json:
@@ -6925,7 +6925,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Organization"
-          description: "The organization, waiting for GenAI Fund's review."
+          description: "The organization, active at once."
         "400":
           content:
             application/problem+json:
@@ -17635,8 +17635,7 @@ components:
       - skills
     CreateOrganization:
       type: object
-      description: "A new organization. Its creator owns it, and it waits for GenAI\
-        \ Fund's review."
+      description: "A new organization. Its creator owns it, and it is active at once."
       properties:
         country:
           type: string

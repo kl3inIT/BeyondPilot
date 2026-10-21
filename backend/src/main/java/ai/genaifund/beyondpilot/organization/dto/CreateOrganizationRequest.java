@@ -13,7 +13,7 @@ import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 
 @Schema(name = "CreateOrganization",
-		description = "A new organization. Its creator owns it, and it waits for GenAI Fund's review.")
+		description = "A new organization. Its creator owns it, and it is active at once.")
 @RequiredOfCompany
 public record CreateOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,
