@@ -145,6 +145,25 @@ describe("ApplyFlow", () => {
     expect(heading()).toHaveTextContent("You and your team");
   });
 
+  it("marks the organization taken down, and only then", () => {
+    const view = draft();
+    const { unmount } = render(<ApplyFlow initial={view} account={account} />, {
+      searchParams: "?step=1",
+    });
+    expect(screen.queryByText("Taken down")).not.toBeInTheDocument();
+    unmount();
+
+    for (const type of ["independent_builder", "company"] as const) {
+      const organization = { ...view.organization!, type, approved: false, changeable: false };
+      const { unmount } = render(
+        <ApplyFlow initial={{ ...view, organization }} account={account} />,
+        { searchParams: "?step=1" },
+      );
+      expect(screen.getByText("Taken down")).toBeVisible();
+      unmount();
+    }
+  });
+
   it("starts someone who has not applied yet at step 1", () => {
     render(<ApplyFlow initial={{ ...complete, application: null }} account={account} />);
 

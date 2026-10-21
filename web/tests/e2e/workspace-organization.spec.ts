@@ -579,7 +579,7 @@ test.describe("workspace organization", () => {
     await expect(page).toHaveURL("/workspace/organization/members");
   });
 
-  test("a new company invites at once, with no review in the way", async ({
+  test("a new company shows no review notice and does not ask to complete the profile", async ({
     page,
     context,
     baseURL,

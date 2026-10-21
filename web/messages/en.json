@@ -420,13 +420,13 @@
     "ORGANIZATION_INVITEE_IS_MEMBER": "This person already belongs to an organization.",
     "ORGANIZATION_LAST_OWNER": "An organization needs an owner. Make someone else an owner first.",
     "ORGANIZATION_CHANGED_MEANWHILE": "Someone else changed this profile. Reload the page and try again.",
-    "ORGANIZATION_CANNOT_TAKE_DOWN": "Only an organization that is not taken down can be taken down. Reload the page to see where it stands.",
+    "ORGANIZATION_CANNOT_TAKE_DOWN": "This organization is already taken down or merged. Reload the page to see where it stands.",
     "ORGANIZATION_NOT_TAKEN_DOWN": "This organization is not taken down any more. Reload the page.",
     "ORGANIZATION_MERGED": "This organization was merged into another and can no longer be changed.",
     "ORGANIZATION_CANNOT_MERGE": "An organization merges only into another one that is not taken down and is shown.",
     "ORGANIZATION_DOMAIN_TAKEN": "Another organization already uses this email domain.",
     "ORGANIZATION_DOMAIN_NOT_VERIFIED": "People join at once only on a domain GenAI Fund verified for an organization that is not taken down.",
-    "ORGANIZATION_NOT_APPROVED": "You cannot invite people while GenAI Fund has the organization taken down.",
+    "ORGANIZATION_NOT_APPROVED": "You cannot invite people while the organization is taken down.",
     "ORGANIZATION_INVITATION_DAILY_LIMIT": "The organization has sent the most invitations it can in a day. Invite more people tomorrow.",
     "ORGANIZATION_INVITATION_OPEN_LIMIT": "The organization has the most invitations it can keep open. Revoke some, or wait for people to answer.",
     "PROGRAM_NOT_FOUND": "This program no longer exists. Reload the page.",
@@ -1562,7 +1562,7 @@
       },
       "status": {
         "approved": "Active",
-        "claimed": "Claimed",
+        "claimed": "Claim open",
         "suspended": "Taken down",
         "merged": "Merged"
       },
@@ -4962,7 +4962,7 @@
         "cancel": "Cancel",
         "submit": "Add solution"
       },
-      "takenDown": "You cannot add solutions while GenAI Fund has your organization taken down.",
+      "takenDown": "You cannot add solutions while your organization is taken down.",
       "empty": {
         "title": "No solutions yet",
         "member": "An owner of the organization adds its solutions."
@@ -6423,6 +6423,7 @@
     },
     "you": {
       "applyingFor": "Applying for",
+      "takenDown": "Taken down",
       "applyingAs": "Applying as",
       "applyingAsHint": "This is kept with your account when you continue. As an individual, you can change it until you send something under your name.",
       "change": "Change",

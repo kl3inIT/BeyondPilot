@@ -122,7 +122,7 @@ test.describe("admin organizations", () => {
     await page.goto("/admin/organizations");
 
     await page.getByRole("combobox", { name: "Status" }).click();
-    await page.getByRole("option", { name: "Claimed" }).click();
+    await page.getByRole("option", { name: "Claim open" }).click();
     await expect(page).toHaveURL(/status=claimed/);
     await expect(shownOrganizations(page)).toHaveText(["Open Kitchen", "Firstcall"]);
     await expect(page.getByText("2 claims are open")).toBeVisible();
@@ -132,7 +132,7 @@ test.describe("admin organizations", () => {
     await expect(shownOrganizations(page)).toHaveCount(6);
     await expect(page.getByRole("combobox", { name: "Status" })).toContainText("All statuses");
     await page.getByRole("combobox", { name: "Status" }).click();
-    await page.getByRole("option", { name: "Claimed" }).click();
+    await page.getByRole("option", { name: "Claim open" }).click();
 
     await page.getByRole("searchbox", { name: "Search by name or email domain" }).fill("pocket");
     await expect(page).toHaveURL(/[?&]q=pocket/);
