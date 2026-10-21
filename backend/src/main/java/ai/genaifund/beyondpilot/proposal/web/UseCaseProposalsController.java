@@ -95,7 +95,7 @@ class UseCaseProposalsController {
 	@ApiResponse(responseCode = "200", description = "The form with the proposal as sent.")
 	@ApiResponse(responseCode = "400", description = "The proposal lacks what sending needs; its code says what.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "403", description = "The caller's organization is not approved.",
+	@ApiResponse(responseCode = "403", description = "The caller's organization is taken down.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "The caller's organization has no such proposal.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))

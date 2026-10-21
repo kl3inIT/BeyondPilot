@@ -11,6 +11,6 @@ import jakarta.validation.constraints.Size;
 		description = "What an operator needs to start a solution for an organization. It is created as a draft.")
 public record AdminCreateSolutionRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The approved organization the solution belongs to.") @NotNull UUID organizationId,
+				description = "The organization the solution belongs to.") @NotNull UUID organizationId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name) {
 }

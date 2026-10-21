@@ -10,7 +10,7 @@ public record ProposingOrganizationResponse(@Schema(requiredMode = Schema.Requir
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
 		@Schema(types = { "string", "null" }, format = "uuid", description = "Read at /api/storage/files/{id}.") @Nullable UUID logoFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Whether GenAI Fund approved it; one that is not still sends proposals, which the organization that posted the use case sees marked as pending.") boolean approved,
+				description = "Whether it is not taken down.") boolean approved,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "company", "builder_team",
 				"independent_builder", "other" }, description = "What kind of organization it is; a team writes what it has done.") String type,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

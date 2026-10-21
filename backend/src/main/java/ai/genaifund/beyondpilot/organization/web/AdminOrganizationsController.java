@@ -203,7 +203,7 @@ class AdminOrganizationsController {
 
 	@PostMapping(path = "/organizations/{id}/take-down", consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "takeDownOrganization", summary = "Take an approved organization down, with a reason",
+	@Operation(operationId = "takeDownOrganization", summary = "Take an organization down, with a reason",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "204", description = "The organization is taken down.", content = @Content)
 	@ApiResponse(responseCode = "400", description = "A member is not valid.",
