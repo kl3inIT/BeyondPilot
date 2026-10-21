@@ -83,7 +83,7 @@ class UseCaseServiceTest {
 	}
 
 	@Test
-	void aPersonOnTheirOwnWritesUseCasesLikeAnyApprovedOrganization() {
+	void aPersonOnTheirOwnWritesUseCasesLikeAnyOtherOrganization() {
 		String alone = TestSignIn.session(client, mail, "solo@use-cases.test");
 		post(alone, ORGANIZATION + "/organizations/basics", Map.of("name", "Solo Writer", "type", "independent_builder",
 				"teamSize", "just_me", "industries", List.of(), "country", "VN"))

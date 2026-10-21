@@ -621,7 +621,7 @@
       "readRecords": "Đọc bản ghi đang duyệt, đề xuất và lịch sử của chúng",
       "readAccounts": "Đọc tài khoản, audit log và email đã gửi",
       "readMatching": "Đọc các lần chạy AI matching và kết quả",
-      "decide": "Duyệt hoặc gửi lại bản ghi đang duyệt, và chọn vào danh sách ngắn hồ sơ và đề xuất, khi bạn yêu cầu",
+      "decide": "Duyệt hoặc gửi lại giải pháp và hồ sơ talent đang duyệt, và chọn vào danh sách ngắn hồ sơ và đề xuất, khi bạn yêu cầu",
       "limit": "Mỗi lần thay đổi một bản ghi, dưới tên bạn. Không thể xoá, gỡ xuống hay công bố kết quả. Thu hồi bất cứ lúc nào."
     },
     "deny": "Từ chối",
@@ -3111,7 +3111,7 @@
           "list_applications": "Liệt kê hồ sơ ứng tuyển của một chương trình, kèm quyết định của GenAI Fund và điểm trung bình của người chấm.",
           "get_application": "Đọc đầy đủ một hồ sơ: những gì người ứng tuyển gửi, mọi điểm chấm và các file đính kèm.",
           "read_application_file": "Hiện các trang của một file PDF trong hồ sơ, như deck, dưới dạng ảnh kèm chữ của trang.",
-          "list_pending_reviews": "Liệt kê những gì đang chờ duyệt: tổ chức, giải pháp, talent, use case và customer deployment.",
+          "list_pending_reviews": "Liệt kê những gì đang chờ duyệt: giải pháp, talent, use case và customer deployment.",
           "list_records": "Liệt kê tổ chức, giải pháp, talent, use case hoặc offer ở mọi trạng thái, như các danh sách admin.",
           "get_record": "Đọc một bản ghi trong số đó, kèm trạng thái, quyết định gần nhất và lịch sử duyệt.",
           "list_proposals": "Liệt kê các đề xuất nhà cung cấp AI gửi cho một use case, kèm quyết định cho từng đề xuất.",

@@ -82,8 +82,7 @@ class McpServerTest {
 	@Test
 	void anAppSearchesAndReadsWhatBeyondPilotListsAndTheLogKeepsNoArguments() {
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@mcp.test");
-		UUID organization = organization(owner, "Revve " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		organization(owner, "Revve " + word);
 		UUID solution = submittedSolution(owner, "Voice Agent " + word);
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 		await().atMost(WAIT).until(() -> searchTotal("voice agent " + word) == 1);
@@ -132,8 +131,9 @@ class McpServerTest {
 	void anOperatorsAppReadsAccountsTheAuditLogEmailAndMatchingAndTheLogNamesTheEmailRead() {
 		String email = "mailed-" + word + "@mcp.test";
 		String owner = TestSignIn.session(client, mail, email);
-		UUID organization = organization(owner, "Mailed " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		organization(owner, "Mailed " + word);
+		UUID solution = submittedSolution(owner, "Mailed Agent " + word);
+		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 
 		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
 		McpSyncClient app = app(token, "/mcp/operator");
@@ -145,12 +145,12 @@ class McpServerTest {
 		assertThat(JsonPath.<String>read(accounts, "$.accounts[0].role")).isEqualTo("user");
 		assertThat(call(app, "list_accounts", Map.of("role", "owner")).isError()).isTrue();
 
-		String audit = text(call(app, "list_audit_events", Map.of("action", "organization.approve", "q", word)));
-		assertThat(JsonPath.<List<String>>read(audit, "$.events[*].resource.name")).containsExactly("Mailed " + word);
+		String audit = text(call(app, "list_audit_events", Map.of("action", "solution.approve", "q", word)));
+		assertThat(JsonPath.<List<String>>read(audit, "$.events[*].resource.name")).containsExactly("Mailed Agent " + word);
 		assertThat(JsonPath.<String>read(audit, "$.events[0].actor")).contains("operator@mcp.test");
 		assertThat(call(app, "list_audit_events", Map.of("before", "not-a-cursor")).isError()).isTrue();
 
-		String sent = text(call(app, "list_emails", Map.of("q", email, "kind", "organization_approved")));
+		String sent = text(call(app, "list_emails", Map.of("q", email, "kind", "solution_approved")));
 		assertThat(JsonPath.<List<Object>>read(sent, "$.emails")).hasSize(1);
 		assertThat(JsonPath.<Integer>read(sent, "$.counts.total")).isPositive();
 		String id = JsonPath.read(sent, "$.emails[0].id");
@@ -158,7 +158,7 @@ class McpServerTest {
 
 		String read = text(call(app, "get_email", Map.of("email", id)));
 		assertThat(JsonPath.<String>read(read, "$.recipient")).isEqualTo(email);
-		assertThat(JsonPath.<String>read(read, "$.text")).contains("Mailed " + word);
+		assertThat(JsonPath.<String>read(read, "$.text")).contains("Mailed Agent " + word);
 		assertThat(JsonPath.<Map<String, Object>>read(read, "$")).doesNotContainKey("html");
 		String withHtml = text(call(app, "get_email", Map.of("email", id, "detail", true)));
 		assertThat(JsonPath.<String>read(withHtml, "$.html")).contains("<");
@@ -401,7 +401,6 @@ class McpServerTest {
 	void anAppFindsAndReadsAPublishedUseCaseButNotOneThatIsNot() {
 		String owner = TestSignIn.session(client, mail, "poster-" + word + "@mcp.test");
 		UUID organization = organization(owner, "Fleet " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
 		UUID published = useCase(organization, "Invoice matcher " + word, true);
 		UUID draft = useCase(organization, "Invoice draft " + word, false);
 		await().atMost(WAIT)
@@ -445,8 +444,7 @@ class McpServerTest {
 	@Test
 	void anOperatorsAppSearchesEveryAreaIncludingWhatIsUnlistedAndAUserTokenIsRefused() {
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@mcp.test");
-		UUID organization = organization(owner, "Quiet " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		organization(owner, "Quiet " + word);
 		UUID solution = submittedSolution(owner, "Hidden Agent " + word, false);
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 		await().atMost(WAIT)
@@ -502,11 +500,8 @@ class McpServerTest {
 	@Test
 	void anOperatorsAppListsWhatWaitsForReviewWithThePageToReviewItOn() {
 		String owner = TestSignIn.session(client, mail, "waiting-" + word + "@mcp.test");
-		UUID organization = organization(owner, "Waiting " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
+		organization(owner, "Waiting " + word);
 		UUID solution = submittedSolution(owner, "Pending Agent " + word);
-		String other = TestSignIn.session(client, mail, "unreviewed-" + word + "@mcp.test");
-		UUID unreviewed = organization(other, "Unreviewed " + word);
 
 		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
 		McpSyncClient app = app(token, "/mcp/operator");
@@ -515,8 +510,6 @@ class McpServerTest {
 		assertThat(JsonPath.<List<String>>read(all, "$.solutions.items[*].name")).contains("Pending Agent " + word);
 		assertThat(JsonPath.<List<String>>read(all, "$.solutions.items[*].url"))
 			.contains(ISSUER + "/admin/solutions/" + solution);
-		assertThat(JsonPath.<List<String>>read(all, "$.organizations.items[*].url"))
-			.contains(ISSUER + "/admin/organizations/" + unreviewed);
 		assertThat(JsonPath.<Integer>read(all, "$.waiting")).isPositive();
 		assertThat(JsonPath.<Map<String, Object>>read(all, "$")).containsKeys("talent", "use_cases", "deployments");
 
@@ -531,10 +524,26 @@ class McpServerTest {
 	}
 
 	@Test
+	void listPendingReviewsListsNoOrganizations() {
+		organization(TestSignIn.session(client, mail, "active-" + word + "@mcp.test"), "Active " + word);
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = app(token, "/mcp/operator");
+		app.initialize();
+
+		String all = text(app.callTool(McpSchema.CallToolRequest.builder("list_pending_reviews").build()));
+		assertThat(JsonPath.<Map<String, Object>>read(all, "$")).doesNotContainKey("organizations");
+		CallToolResult organizations = app.callTool(McpSchema.CallToolRequest.builder("list_pending_reviews")
+			.arguments(Map.of("area", "organizations"))
+			.build());
+		assertThat(organizations.isError()).isTrue();
+		assertThat(((TextContent) organizations.content().getFirst()).text()).contains("solutions, talent");
+		app.closeGracefully();
+	}
+
+	@Test
 	void anOperatorsAppListsRecordsOfAnyStatusAndReadsOneWithItsHistory() {
 		String owner = TestSignIn.session(client, mail, "records-" + word + "@mcp.test");
 		UUID organization = organization(owner, "Records " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
 		UUID sentBack = submittedSolution(owner, "Claims Agent " + word);
 		UUID waiting = submittedSolution(owner, "Quotes Agent " + word);
 		post(operator, "/api/solution/admin/solutions/" + sentBack + "/send-back",
@@ -587,7 +596,6 @@ class McpServerTest {
 			.arguments(Map.of("area", "organizations", "id", organization.toString()))
 			.build()));
 		assertThat(JsonPath.<String>read(company, "$.status")).isEqualTo("approved");
-		assertThat(JsonPath.<List<String>>read(company, "$.history[*].action")).contains("organization.approve");
 		assertThat(app.callTool(McpSchema.CallToolRequest.builder("get_record")
 			.arguments(Map.of("area", "talent", "id", sentBack.toString()))
 			.build()).isError()).isTrue();
@@ -603,8 +611,6 @@ class McpServerTest {
 
 	@Test
 	void anOperatorsAppApprovesAndSendsBackWhatWaitsForReviewAsTheAdminScreenDoes() {
-		String owner = TestSignIn.session(client, mail, "decided-" + word + "@mcp.test");
-		UUID organization = organization(owner, "Decided " + word);
 		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
 		McpSyncClient app = app(token, "/mcp/operator");
 		app.initialize();
@@ -617,30 +623,8 @@ class McpServerTest {
 		assertThat(quiet.annotations().readOnlyHint()).isFalse();
 		assertThat(quiet.annotations().destructiveHint()).isFalse();
 
-		// A send back needs the words the owners read.
-		assertThat(decide(app, Map.of("area", "organizations", "id", organization.toString(), "action", "send_back"))
-			.isError()).isTrue();
-		String sentBack = text(decide(app, Map.of("area", "organizations", "id", organization.toString(), "action",
-				"send_back", "message", "Add the website of your company.")));
-		assertThat(JsonPath.<String>read(sentBack, "$.before")).isEqualTo("in_review");
-		assertThat(JsonPath.<String>read(sentBack, "$.after")).isEqualTo("needs_changes");
-		assertThat(JsonPath.<String>read(sentBack, "$.name")).isEqualTo("Decided " + word);
-		assertThat(JsonPath.<String>read(sentBack, "$.told")).isEqualTo("1 owner of Decided " + word + ", by email.");
-		assertThat(JsonPath.<String>read(sentBack, "$.url")).isEqualTo(ISSUER + "/admin/organizations/" + organization);
-		await().atMost(WAIT)
-			.untilAsserted(() -> assertThat(mail.latestTextTo("decided-" + word + "@mcp.test"))
-				.contains("Add the website of your company."));
-
-		// Not in review: refused with what to do instead.
-		CallToolResult refused = decide(app,
-				Map.of("area", "organizations", "id", organization.toString(), "action", "approve"));
-		assertThat(refused.isError()).isTrue();
-		assertThat(((TextContent) refused.content().getFirst()).text()).contains("get_record");
-
 		String other = TestSignIn.session(client, mail, "approved-" + word + "@mcp.test");
-		UUID approved = organization(other, "Approved " + word);
-		String approval = text(decide(app, Map.of("area", "organizations", "id", approved.toString(), "action", "approve")));
-		assertThat(JsonPath.<String>read(approval, "$.after")).isEqualTo("approved");
+		organization(other, "Approved " + word);
 		UUID solution = submittedSolution(other, "Decided Agent " + word);
 		assertThat(decide(app, Map.of("area", "solutions", "id", solution.toString(), "action", "reject")).isError())
 			.isTrue();
@@ -648,17 +632,37 @@ class McpServerTest {
 		assertThat(JsonPath.<String>read(listed, "$.before")).isEqualTo("in_review");
 		assertThat(JsonPath.<String>read(listed, "$.after")).isEqualTo("approved");
 		app.closeGracefully();
+	}
 
-		assertThat(jdbc.sql("""
-				select target_kind || ' ' || outcome from mcp_call where tool = 'decide_record' and target_id = :id
-				""").param("id", organization.toString()).query(String.class).list()).containsExactly("organization ok");
+	@Test
+	void decideRecordRefusesAnOrganization() {
+		UUID organization = organization(TestSignIn.session(client, mail, "decided-" + word + "@mcp.test"),
+				"Decided " + word);
+		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
+		McpSyncClient app = app(token, "/mcp/operator");
+		app.initialize();
+
+		McpSchema.Tool decide = app.listTools()
+			.tools()
+			.stream()
+			.filter(tool -> tool.name().equals("decide_record"))
+			.findFirst()
+			.orElseThrow();
+		assertThat(JsonPath.<List<String>>read(decide.inputSchema().properties().get("area"), "$.enum"))
+			.containsExactly("solutions", "talent", "deployments");
+		for (String action : List.of("approve", "send_back")) {
+			CallToolResult refused = decide(app,
+					Map.of("area", "organizations", "id", organization.toString(), "action", action));
+			assertThat(refused.isError()).isTrue();
+			assertThat(((TextContent) refused.content().getFirst()).text()).contains("solutions, talent, deployments");
+		}
+		app.closeGracefully();
 	}
 
 	@Test
 	void anOperatorsAppKeepsAUseCasePrivateFromItsCompanyUntilItPublishesIt() {
 		String owner = TestSignIn.session(client, mail, "private-" + word + "@mcp.test");
 		UUID organization = organization(owner, "Private " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
 		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
 		McpSyncClient app = app(token, "/mcp/operator");
 		app.initialize();

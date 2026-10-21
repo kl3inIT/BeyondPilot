@@ -916,13 +916,13 @@ class OrganizationTest {
 
 	@Test
 	void anOrganizationTakenDownIsNeitherFoundNorJoined() {
-		UUID id = create(signIn("founder@waiting.test"), "Waiting Co");
+		UUID id = create(signIn("founder@taken-down.test"), "Taken Down Co");
 		takeDown(id);
-		String colleague = signIn("colleague@waiting.test");
+		String colleague = signIn("colleague@taken-down.test");
 
 		assertThat(JsonPath.<Object>read(mine(colleague), "$.suggestion")).isNull();
 		assertThat(JsonPath.<List<Object>>read(
-				body(get(colleague, API + "/organizations?q=waiting").expectStatus().isOk()), "$.items"))
+				body(get(colleague, API + "/organizations?q=taken").expectStatus().isOk()), "$.items"))
 			.isEmpty();
 		assertProblem(post(colleague, API + "/organizations/" + id + "/join", Map.of()), 404,
 				"ORGANIZATION_NOT_FOUND");
