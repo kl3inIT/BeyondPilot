@@ -17,7 +17,6 @@ import ai.genaifund.beyondpilot.identity.Person;
 import ai.genaifund.beyondpilot.notification.EmailService;
 import ai.genaifund.beyondpilot.organization.dto.CreateOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.DeclinedRequestResponse;
-import ai.genaifund.beyondpilot.organization.dto.InvitationAllowanceResponse;
 import ai.genaifund.beyondpilot.organization.dto.InvitationResponse;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.JoinOutcomeResponse;
@@ -64,12 +63,6 @@ public class OrganizationService {
 	private static final int MEMBERS_PAGE_SIZE = 10;
 
 	private static final int MIN_SEARCH_LENGTH = 2;
-
-	/** The most invitations an organization's owners send in 24 hours. */
-	private static final int DAILY_INVITATIONS = 20;
-
-	/** The most invitations of an organization's owners that wait for an answer at once. */
-	private static final int OPEN_INVITATIONS = 50;
 
 	/** How long an invitation waits for its answer before it lapses. */
 	static final Duration INVITATION_LIFETIME = Duration.ofDays(7);
@@ -461,15 +454,14 @@ public class OrganizationService {
 					.filter(request -> people.containsKey(request.accountId()))
 					.map(request -> OrganizationViews.joinRequest(request, organization,
 							people.get(request.accountId())))
-					.toList(),
-				caller.isOwner() ? allowance(organization) : null);
+					.toList());
 	}
 
 	/**
 	 * Asks an address to join the caller's organization and tells it by email. Only an organization that is not taken
-	 * down invites, and within its limits: so many in 24 hours, and so many open at once.
-	 * @throws OrganizationException when the caller is not an owner, the organization is taken down or reached a
-	 * limit, the address already belongs to the organization, or it already holds an open invitation
+	 * down invites, and it invites as many people as it wants.
+	 * @throws OrganizationException when the caller is not an owner, the organization is taken down, the address
+	 * already belongs to the organization, or it already holds an open invitation
 	 */
 	@Transactional
 	public void invite(Actor actor, InviteMemberRequest request) {
@@ -482,15 +474,6 @@ public class OrganizationService {
 		if (!organization.isActive()) {
 			throw new OrganizationException(OrganizationErrorCode.NOT_APPROVED,
 					"Invitation by organization " + organization.getId() + ", which is " + organization.getStatus());
-		}
-		InvitationAllowanceResponse allowance = allowance(organization);
-		if (allowance.leftToday() == 0) {
-			throw new OrganizationException(OrganizationErrorCode.INVITATION_DAILY_LIMIT,
-					"Organization " + organization.getId() + " sent " + DAILY_INVITATIONS + " invitations in a day");
-		}
-		if (allowance.leftOpen() == 0) {
-			throw new OrganizationException(OrganizationErrorCode.INVITATION_OPEN_LIMIT,
-					"Organization " + organization.getId() + " keeps " + OPEN_INVITATIONS + " invitations open");
 		}
 		String address = request.email().strip();
 		List<UUID> accounts = memberships.members(organization.getId()).stream().map(Member::accountId).toList();
@@ -693,13 +676,6 @@ public class OrganizationService {
 	private static OrganizationException individual(Organization organization, String what) {
 		return new OrganizationException(OrganizationErrorCode.INDIVIDUAL,
 				"Refused " + what + " for individual " + organization.getId());
-	}
-
-	private InvitationAllowanceResponse allowance(Organization organization) {
-		int leftToday = Math.max(0, DAILY_INVITATIONS - memberships.invitationsSentInTheLastDay(organization.getId()));
-		int leftOpen = Math.max(0, OPEN_INVITATIONS - memberships.openInvitationsByOwners(organization.getId()));
-		return new InvitationAllowanceResponse(organization.isActive(), leftToday, DAILY_INVITATIONS, leftOpen,
-				OPEN_INVITATIONS);
 	}
 
 	private List<InvitationResponse> invitationsTo(Person person) {

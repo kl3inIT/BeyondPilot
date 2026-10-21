@@ -173,22 +173,6 @@ public class MembershipRepository {
 				""").params(id, organizationId, email, role, invitedBy, byOperator, lifetime.toSeconds()).update() == 1;
 	}
 
-	/** How many invitations the organization's owners sent in the last 24 hours, whatever became of them. */
-	public int invitationsSentInTheLastDay(UUID organizationId) {
-		return jdbc.sql("""
-				select count(*) from organization_invitation
-				where organization_id = ? and not sent_by_operator and created_at > now() - interval '24 hours'
-				""").param(organizationId).query(Integer.class).single();
-	}
-
-	/** How many invitations of the organization's owners are open. */
-	public int openInvitationsByOwners(UUID organizationId) {
-		return jdbc.sql("""
-				select count(*) from organization_invitation
-				where organization_id = ? and not sent_by_operator and status = 'pending' and expires_at > now()
-				""").param(organizationId).query(Integer.class).single();
-	}
-
 	public Optional<Invitation> openInvitation(UUID id) {
 		return jdbc.sql(INVITATIONS + "where id = ? and status = 'pending' and expires_at > now()")
 			.param(id)
