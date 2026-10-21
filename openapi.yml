@@ -19568,36 +19568,6 @@ components:
           pattern: does_not_solve|wrong_industry_or_size|closed_or_wrong_website|duplicate|other
       required:
       - reason
-    InvitationAllowance:
-      type: object
-      description: How many more people an organization's owners may invite now.
-      properties:
-        dailyLimit:
-          type: integer
-          format: int32
-          description: The most invitations it sends in 24 hours.
-        leftOpen:
-          type: integer
-          format: int32
-          description: How many more invitations may wait for an answer at once.
-        leftToday:
-          type: integer
-          format: int32
-          description: How many invitations may still be sent in the current 24 hours.
-        open:
-          type: boolean
-          description: Whether the organization may invite at all; one that is not
-            active may not.
-        openLimit:
-          type: integer
-          format: int32
-          description: The most invitations that wait for an answer at once.
-      required:
-      - dailyLimit
-      - leftOpen
-      - leftToday
-      - open
-      - openLimit
     InviteMatchingCandidate:
       type: object
       description: Invites the provider of a candidate to propose for the use case.
@@ -21844,14 +21814,8 @@ components:
     OrganizationMembers:
       type: object
       description: "One page of who belongs to an organization, owners first. Invitations\
-        \ and requests, all of them, are empty, and the allowance null, for a caller\
-        \ who is not an owner."
+        \ and requests, all of them, are empty for a caller who is not an owner."
       properties:
-        allowance:
-          type:
-          - object
-          - "null"
-          $ref: "#/components/schemas/InvitationAllowance"
         invitations:
           type: array
           items:

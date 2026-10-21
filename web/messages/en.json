@@ -427,8 +427,6 @@
     "ORGANIZATION_DOMAIN_TAKEN": "Another organization already uses this email domain.",
     "ORGANIZATION_DOMAIN_NOT_VERIFIED": "People join at once only on a domain GenAI Fund verified for an organization that is not taken down.",
     "ORGANIZATION_NOT_APPROVED": "You cannot invite people while the organization is taken down.",
-    "ORGANIZATION_INVITATION_DAILY_LIMIT": "The organization has sent the most invitations it can in a day. Invite more people tomorrow.",
-    "ORGANIZATION_INVITATION_OPEN_LIMIT": "The organization has the most invitations it can keep open. Revoke some, or wait for people to answer.",
     "PROGRAM_NOT_FOUND": "This program no longer exists. Reload the page.",
     "PROGRAM_SLUG_TAKEN": "Another program already has this address.",
     "PROGRAM_SLUG_FIXED": "The address cannot change once the program has been published.",
@@ -4365,24 +4363,12 @@
       "invite": {
         "open": "Invite people",
         "title": "Invite people to {name}",
-        "lead": "{leftToday} of {dailyLimit} invitations left in 24 hours; {leftOpen} of {openLimit} can be open at once.",
         "emails": "Email addresses",
         "emailsInvalid": "Enter full email addresses, separated by commas.",
         "role": "Role",
         "note": "Members are shown on the team and can edit their own job title. Only owners edit the profile and the solutions, invite people and remove members.",
         "cancel": "Cancel",
         "send": "Send invitations",
-        "limit": {
-          "daily": {
-            "lead": "{name} has sent {limit} invitations in the last 24 hours, the most an organization can send.",
-            "note": "Write to GenAI Fund if you are bringing a larger team."
-          },
-          "open": {
-            "lead": "{name} has {limit} unanswered invitations, the most it can keep open; revoke some, or wait for people to answer.",
-            "note": "Write to GenAI Fund if you are bringing a larger team."
-          },
-          "close": "Close"
-        },
         "emailsHint": "Full email addresses, separated by commas.",
         "roleHelp": "What each role can do"
       }

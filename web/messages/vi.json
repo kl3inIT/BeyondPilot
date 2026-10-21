@@ -427,8 +427,6 @@
     "ORGANIZATION_DOMAIN_TAKEN": "Một tổ chức khác đã dùng tên miền email này.",
     "ORGANIZATION_DOMAIN_NOT_VERIFIED": "Chỉ tham gia ngay được trên tên miền mà GenAI Fund đã xác minh cho một tổ chức chưa bị gỡ xuống.",
     "ORGANIZATION_NOT_APPROVED": "Bạn không mời được người khác khi tổ chức đang bị GenAI Fund gỡ xuống.",
-    "ORGANIZATION_INVITATION_DAILY_LIMIT": "Tổ chức đã gửi hết số lời mời của một ngày. Hãy mời thêm vào ngày mai.",
-    "ORGANIZATION_INVITATION_OPEN_LIMIT": "Tổ chức đã có số lời mời đang mở tối đa. Hãy thu hồi bớt, hoặc chờ mọi người trả lời.",
     "PROGRAM_NOT_FOUND": "Chương trình này không còn tồn tại. Hãy tải lại trang.",
     "PROGRAM_SLUG_TAKEN": "Địa chỉ này đã thuộc về một chương trình khác.",
     "PROGRAM_SLUG_FIXED": "Không đổi được địa chỉ sau khi chương trình đã công bố.",
@@ -4365,24 +4363,12 @@
       "invite": {
         "open": "Mời mọi người",
         "title": "Mời mọi người vào {name}",
-        "lead": "Còn {leftToday}/{dailyLimit} lời mời trong 24 giờ; có thể mở cùng lúc {leftOpen}/{openLimit} lời mời.",
         "emails": "Địa chỉ email",
         "emailsInvalid": "Hãy nhập các địa chỉ email đầy đủ, cách nhau bằng dấu phẩy.",
         "role": "Vai trò",
         "note": "Thành viên được hiển thị trong đội ngũ và tự sửa được chức danh của mình. Chỉ chủ sở hữu mới sửa hồ sơ và giải pháp, mời người và xóa thành viên.",
         "cancel": "Hủy",
         "send": "Gửi lời mời",
-        "limit": {
-          "daily": {
-            "lead": "{name} đã gửi {limit} lời mời trong 24 giờ qua, mức tối đa một tổ chức được gửi.",
-            "note": "Hãy viết cho GenAI Fund nếu bạn đưa vào một đội lớn hơn."
-          },
-          "open": {
-            "lead": "{name} đang có {limit} lời mời chưa ai trả lời, mức tối đa được giữ mở; hãy thu hồi bớt, hoặc chờ mọi người trả lời.",
-            "note": "Hãy viết cho GenAI Fund nếu bạn đưa vào một đội lớn hơn."
-          },
-          "close": "Đóng"
-        },
         "emailsHint": "Các địa chỉ email đầy đủ, cách nhau bằng dấu phẩy.",
         "roleHelp": "Mỗi vai trò làm được gì"
       }

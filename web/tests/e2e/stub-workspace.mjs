@@ -81,9 +81,6 @@ const request = {
 /** The answer to a request the owners declined. */
 const declined = { claim: false, decidedAt: day, ...aboutPocketPolicy };
 
-/** What the owners may still send: one invitation went out today and waits for its answer. */
-const allowance = { open: true, leftToday: 19, dailyLimit: 20, leftOpen: 49, openLimit: 50 };
-
 const members = [
   {
     accountId: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a04",
@@ -392,7 +389,6 @@ export function answerWorkspace(url, session) {
         total: everyone.length,
         invitations: [invitation],
         requests: [request],
-        allowance: role === "owner" ? allowance : null,
       },
     ];
   }

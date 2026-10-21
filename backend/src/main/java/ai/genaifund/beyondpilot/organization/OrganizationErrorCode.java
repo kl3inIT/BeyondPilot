@@ -65,12 +65,6 @@ public enum OrganizationErrorCode implements ErrorCode {
 	NOT_APPROVED("ORGANIZATION_NOT_APPROVED", ErrorCategory.CONFLICT,
 			"An organization that is taken down does not invite people. Ask GenAI Fund to restore it."),
 
-	INVITATION_DAILY_LIMIT("ORGANIZATION_INVITATION_DAILY_LIMIT", ErrorCategory.LIMIT_EXCEEDED,
-			"The organization has sent the most invitations it can in a day. Invite more people tomorrow."),
-
-	INVITATION_OPEN_LIMIT("ORGANIZATION_INVITATION_OPEN_LIMIT", ErrorCategory.LIMIT_EXCEEDED,
-			"The organization has the most invitations it can keep open. Revoke some, or wait for people to answer."),
-
 	INDIVIDUAL("ORGANIZATION_INDIVIDUAL", ErrorCategory.CONFLICT,
 			"A person on their own has no other members, invitations or email domain; make it a team or a company first."),
 
