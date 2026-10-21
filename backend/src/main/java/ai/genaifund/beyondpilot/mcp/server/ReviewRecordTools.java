@@ -132,7 +132,7 @@ class ReviewRecordTools {
 		properties.put("area", Map.of("type", "string", "enum", List.copyOf(STATUSES.keySet()), "description",
 				"The admin list to read."));
 		properties.put("status", Map.of("type", "string", "description", "Only records of this status; leave it out "
-				+ "for every status. The values each area takes: organizations: in_review, needs_changes, approved, rejected, suspended, merged. "
+				+ "for every status. The values each area takes: organizations: approved, claimed, suspended, merged. "
 				+ "solutions: in_review, needs_changes, approved, rejected, suspended. talent: in_review, "
 				+ "needs_changes, approved, suspended. use_cases: draft, in_review, needs_changes, approved, closed. "
 				+ "offers: open, closed."));
@@ -395,7 +395,7 @@ class ReviewRecordTools {
 	private static Map<String, List<String>> statuses() {
 		Map<String, List<String>> statuses = new LinkedHashMap<>();
 		statuses.put("organizations",
-				List.of("in_review", "needs_changes", "approved", "rejected", "suspended", "merged"));
+				List.of("approved", "claimed", "suspended", "merged"));
 		statuses.put("solutions", List.of("in_review", "needs_changes", "approved", "rejected", "suspended"));
 		statuses.put("talent", List.of("in_review", "needs_changes", "approved", "suspended"));
 		statuses.put("use_cases", List.of("draft", "in_review", "needs_changes", "approved", "closed"));

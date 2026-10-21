@@ -10,7 +10,6 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.McpCaller;
 import ai.genaifund.beyondpilot.identity.McpCallers;
 import ai.genaifund.beyondpilot.organization.OrganizationAdministration;
-import ai.genaifund.beyondpilot.organization.OrganizationReviewRecord;
 import ai.genaifund.beyondpilot.proposal.OutcomeService;
 import ai.genaifund.beyondpilot.proposal.ReceivedProposal;
 import ai.genaifund.beyondpilot.proposal.ReviewService;
@@ -169,18 +168,8 @@ class DecisionTools {
 			Actor actor = actor(context.get(CallLog.CALLER));
 			try {
 				return switch (area) {
-					case "organizations" -> {
-						String before = organizations.reviewRecord(actor, id).status();
-						if (sendsBack) {
-							organizations.sendBack(actor, id, message);
-						}
-						else {
-							organizations.approve(actor, id);
-						}
-						OrganizationReviewRecord after = organizations.reviewRecord(actor, id);
-						yield decided("organization", id, after.name(), "/admin/organizations/" + id, before,
-								after.status(), recipients.owners(actor, id));
-					}
+					// Task 6 of BEY-236 removes the organization branch: nobody reviews an organization any more.
+					case "organizations" -> error("Organizations are not reviewed: they are active when created.");
 					case "solutions" -> {
 						String before = solutions.reviewRecord(actor, id).status();
 						if (sendsBack) {

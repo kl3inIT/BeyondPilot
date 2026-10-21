@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * What other modules and visitors ask about organizations: which one a person acts for, what one is called, and the
- * public page of an approved one.
+ * public page of one that is not taken down.
  */
 @Service
 public class OrganizationDirectory {
@@ -85,13 +85,13 @@ public class OrganizationDirectory {
 					organization.getCompanySizeLabel(), organization.getLogoFileId(), organization.isApproved(), organization.getTeamBackground()));
 	}
 
-	/** Whether GenAI Fund has approved this organization, read now. */
+	/** Whether this organization is active, meaning not taken down and not merged, read now. */
 	@Transactional(readOnly = true)
 	public boolean isApproved(UUID organizationId) {
 		return organizations.findById(organizationId).filter(Organization::isApproved).isPresent();
 	}
 
-	/** The approved organization at this address, as another module shows it; empty when there is none. */
+	/** The active organization at this address, as another module shows it; empty when there is none. */
 	@Transactional(readOnly = true)
 	public Optional<OrganizationName> approvedAt(String slug) {
 		return organizations.findBySlug(slug)
@@ -101,8 +101,8 @@ public class OrganizationDirectory {
 	}
 
 	/**
-	 * The approved organization with this identifier, the kind that can have use cases; empty for one that is
-	 * unknown, waits for review or was refused.
+	 * The active organization with this identifier, the kind that can have use cases; empty for one that is
+	 * unknown, taken down or merged.
 	 */
 	@Transactional(readOnly = true)
 	public Optional<OrganizationName> approvedOrganization(UUID id) {
@@ -113,7 +113,7 @@ public class OrganizationDirectory {
 	}
 
 	/**
-	 * The approved organizations, by name, at most {@code limit}.
+	 * The active organizations, by name, at most {@code limit}.
 	 * @param text only those whose name contains it, ignoring case; every one when blank or null
 	 */
 	@Transactional(readOnly = true)
@@ -125,10 +125,10 @@ public class OrganizationDirectory {
 	}
 
 	/**
-	 * The public page of an approved organization. The address of a merged one answers with the organization it was
+	 * The public page of an active organization. The address of a merged one answers with the organization it was
 	 * merged into, whose own address the page then shows.
-	 * @throws OrganizationException when no approved organization has the address; one that waits for review or
-	 * was refused answers the same, so the address does not reveal that it exists
+	 * @throws OrganizationException when no active organization has the address; one that is taken down
+	 * answers the same, so the address does not reveal that it exists
 	 */
 	@Transactional(readOnly = true)
 	public PublicOrganizationResponse publicPage(String slug) {
@@ -143,7 +143,7 @@ public class OrganizationDirectory {
 				organization.getDescription(), organization.getLogoFileId());
 	}
 
-	/** The names of the approved ones of these organizations by identifier; one taken down or in review is left out. */
+	/** The names of the active ones of these organizations by identifier; one taken down is left out. */
 	@Transactional(readOnly = true)
 	public Map<UUID, OrganizationName> approvedNames(Collection<UUID> organizationIds) {
 		return organizationList.approvedNames(organizationIds)
@@ -153,7 +153,7 @@ public class OrganizationDirectory {
 	}
 
 	/**
-	 * The organizations whose name contains the text, ignoring case and whatever their review says, for a module that
+	 * The organizations whose name contains the text, ignoring case and whether they are taken down, for a module that
 	 * searches its own records by who they belong to.
 	 */
 	@Transactional(readOnly = true)

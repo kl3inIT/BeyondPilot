@@ -70,7 +70,6 @@ class SearchDirectoriesTest {
 	void anApprovedSolutionIsFoundUnderItsOrganizationAndLeavesTheResultsWhenUnlistedOrTakenDown() {
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@directories.test");
 		UUID organization = organization(owner, "Revve " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
 		UUID solution = submittedSolution(owner, "Voice Agent " + word);
 		assertThat(total("voice agent " + word)).isZero();
 
@@ -120,7 +119,6 @@ class SearchDirectoriesTest {
 	void theSolutionsOfAnOrganizationTakenDownLeaveTheIndexUntilItIsRestored() {
 		String owner = TestSignIn.session(client, mail, "down-" + word + "@directories.test");
 		UUID organization = organization(owner, "Down " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
 		UUID solution = submittedSolution(owner, "Claims Desk " + word);
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 		await().atMost(WAIT).until(() -> total("claims desk " + word) == 1);
@@ -139,7 +137,6 @@ class SearchDirectoriesTest {
 	void aSolutionWithoutItsOwnLogoIsFoundWithItsOrganizationsOnceTheOrganizationHasOne() {
 		String owner = TestSignIn.session(client, mail, "logo-" + word + "@directories.test");
 		UUID organization = organization(owner, "Logo " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
 		UUID solution = submittedSolution(owner, "Lead Scorer " + word);
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 		await().atMost(WAIT).until(() -> total("lead scorer " + word) == 1);
@@ -167,7 +164,6 @@ class SearchDirectoriesTest {
 	void aSolutionIsFoundByAnOfferItComesWithAndItsCardSaysWhereTheOfferIsClaimed() {
 		String owner = TestSignIn.session(client, mail, "offer-" + word + "@directories.test");
 		UUID organization = organization(owner, "Offer " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
 		UUID solution = submittedSolution(owner, "Claims Reader " + word);
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 		await().atMost(WAIT).until(() -> total("claims reader " + word) == 1);
@@ -248,7 +244,6 @@ class SearchDirectoriesTest {
 	void aPublishedUseCaseIsFoundUntilItIsSentBackAndNeverByTheNameOfAnOrganizationThatHidesIt() {
 		String owner = TestSignIn.session(client, mail, "bank-" + word + "@directories.test");
 		UUID organization = organization(owner, "Bank " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
 		String created = body(client.post()
 			.uri("/api/usecase/admin/use-cases")
 			.header(TestSignIn.CSRF_HEADER, "1")
@@ -302,7 +297,6 @@ class SearchDirectoriesTest {
 	void aBudgetForMembersOnlyIsFoundWithItsAmountsBySignedInMembersAlone() {
 		String owner = TestSignIn.session(client, mail, "quiet-" + word + "@directories.test");
 		UUID organization = organization(owner, "Quiet " + word);
-		post(operator, "/api/organization/admin/organizations/" + organization + "/approve", Map.of());
 		Map<String, Object> membersOnly = useCase("Fraud review " + word, organization);
 		membersOnly.put("budgetMembersOnly", true);
 		client.post()

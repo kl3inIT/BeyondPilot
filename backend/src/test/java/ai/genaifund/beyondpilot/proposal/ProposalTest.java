@@ -317,8 +317,12 @@ class ProposalTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isCreated());
 		String organizationId = JsonPath.read(company, "$.id");
-		post(operator, "/api/organization/admin/organizations/" + organizationId + "/approve", Map.of("emailDomain", "company.test")).expectStatus()
-			.isNoContent();
+		String detail = "/api/organization/admin/organizations/" + organizationId;
+		int version = JsonPath.<Integer>read(body(get(operator, detail).expectStatus().isOk()), "$.organization.version");
+		Map<String, Object> profile = Map.of("name", "Company Co", "type", "company", "country", "VN", "teamSize",
+				"10_49", "industries", List.of("insurance"), "website", "https://example.test", "description",
+				"Assistants for insurers.", "foundedYear", 2021, "version", version);
+		put(operator, detail, Map.of("profile", profile, "emailDomain", "company.test")).expectStatus().isOk();
 		UUID solution = completeSolution(founder, founderEmail, "Company Desk");
 		submitted(founder, founderEmail, form, solution);
 

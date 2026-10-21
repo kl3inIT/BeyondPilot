@@ -951,8 +951,6 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		String colleague = TestSignIn.session(client, mail, "colleague@" + domain);
 		UUID solution = null;
 		if (approved) {
-			post(operator, ORGANIZATION + "/admin/organizations/" + organization + "/approve", Map.of()).expectStatus()
-				.isNoContent();
 			post(founder, ORGANIZATION + "/mine/invitations", Map.of("email", "colleague@" + domain, "role", "member"))
 				.expectStatus()
 				.isNoContent();

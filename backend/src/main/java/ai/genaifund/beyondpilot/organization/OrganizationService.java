@@ -1,7 +1,6 @@
 package ai.genaifund.beyondpilot.organization;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -158,8 +157,8 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Creates an organization the caller owns. It waits for GenAI Fund's review; until then it lists nothing. It has no
-	 * email domain: an operator verifies one with the review.
+	 * Creates an organization the caller owns. It is active at once. It has no email domain: only an operator verifies
+	 * one.
 	 * @throws OrganizationException when the caller already belongs to an organization or waits on a request
 	 */
 	@Transactional
@@ -171,8 +170,8 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Creates an organization the caller owns from its type's required facts. Teams and companies wait for review;
-	 * individuals are approved at once. Review decides listing, not whether an organization sends a proposal.
+	 * Creates an organization the caller owns from its type's required facts. It is active at once. Review decides
+	 * what an organization lists, not whether it exists or sends a proposal.
 	 * @throws OrganizationException when the caller already belongs to an organization or waits on a request, or a
 	 * company names no industry
 	 */
@@ -189,8 +188,8 @@ public class OrganizationService {
 
 	/**
 	 * Makes the organization a person applies through when they belong to none (BEY-37): a builder on their own or a
-	 * team, which provides AI solutions. A team waits for GenAI Fund's review, which decides whether it is listed, not
-	 * whether it applies; a builder on their own is approved at once and named as given, after the person.
+	 * team, which provides AI solutions. It is active at once, and a builder on their own is named as given, after the
+	 * person.
 	 * @return the new organization's identifier
 	 * @throws OrganizationException when the caller already belongs to an organization or waits on a request
 	 */
@@ -241,8 +240,7 @@ public class OrganizationService {
 	private OrganizationResponse createOwned(Actor actor, Profile profile, @Nullable String creatorJobTitle) {
 		Person person = identity.person(actor);
 		requireFree(person);
-		// A builder on their own is approved at once, as nothing about one person waits for GenAI Fund. What they list
-		// is reviewed as everyone's is.
+		// Every organization is active at once. What it lists is reviewed.
 		boolean individual = Organization.INDIVIDUAL.equals(profile.type());
 		String name = profile.name().strip();
 		if ("company".equals(profile.type()) && profile.industries().isEmpty()) {
@@ -254,14 +252,11 @@ public class OrganizationService {
 			logos.requireUsable(actor, profile.logoFileId());
 		}
 		Organization organization = new Organization(UUID.randomUUID(), freeSlug(name), name, profile.type(),
-				Organization.IN_REVIEW, person.accountId());
+				person.accountId());
 		organization.describe(name, profile.type(), OrganizationViews.text(profile.website()),
 				profile.country(), profile.teamSize(), OrganizationViews.codes(profile.industries()),
 				OrganizationViews.text(profile.description()), profile.foundedYear(), profile.logoFileId());
 		organization.describeTeam(OrganizationViews.text(profile.teamBackground()));
-		if (individual) {
-			organization.approve(Instant.now());
-		}
 		organizations.saveAndFlush(organization);
 		if (!memberships.add(organization.getId(), person.accountId(), MembershipRepository.OWNER)) {
 			throw alreadyMember(person);
@@ -271,10 +266,10 @@ public class OrganizationService {
 			memberships.changeJobTitle(person.accountId(), jobTitle);
 		}
 		LOG.atInfo()
-			.addKeyValue("event", individual ? "organization.individual.created" : "organization.creation.submitted")
+			.addKeyValue("event", individual ? "organization.individual.created" : "organization.created")
 			.addKeyValue("organization_id", organization.getId())
 			.addKeyValue("account_id", person.accountId())
-			.log(individual ? "Individual created" : "Organization created, waiting for review");
+			.log(individual ? "Individual created" : "Organization created");
 		return OrganizationViews.organization(organization);
 	}
 
@@ -369,8 +364,7 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Saves the profile. An organization sent back that its owner saves waits for review again; a refused one stays
-	 * refused.
+	 * Saves the profile.
 	 * @throws OrganizationException when the caller is not an owner, or the organization changed since it was read
 	 */
 	@Transactional
@@ -399,10 +393,7 @@ public class OrganizationService {
 				OrganizationViews.codes(request.industries()), OrganizationViews.text(request.description()),
 				request.foundedYear(), logo);
 		organization.describeTeam(OrganizationViews.text(request.teamBackground()));
-		organization.settleTypeChange(formerType, Instant.now());
-		if (organization.isSentBack()) {
-			organization.resubmit();
-		}
+		organization.settleTypeChange(formerType);
 		organizations.flush();
 		events.publishEvent(new OrganizationChanged(organization.getId()));
 		logos.discardReplaced(formerLogo, logo);
@@ -411,8 +402,6 @@ public class OrganizationService {
 
 	/**
 	 * Saves the selected type's required facts, preserving optional facts the popup cannot edit.
-	 * An organization sent back that its owner saves waits for review
-	 * again.
 	 * @throws OrganizationException when the caller is not an owner, or a company names no industry
 	 */
 	@Transactional
@@ -437,10 +426,7 @@ public class OrganizationService {
 				company ? OrganizationViews.codes(request.industries()) : organization.getIndustries(),
 				alone ? organization.getDescription() : OrganizationViews.text(request.description()),
 				company ? request.foundedYear() : organization.getFoundedYear(), organization.getLogoFileId());
-		organization.settleTypeChange(formerType, Instant.now());
-		if (organization.isSentBack()) {
-			organization.resubmit();
-		}
+		organization.settleTypeChange(formerType);
 		organizations.flush();
 		events.publishEvent(new OrganizationChanged(organization.getId()));
 		return OrganizationViews.organization(organization);
@@ -480,9 +466,9 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Asks an address to join the caller's organization and tells it by email. Only an approved organization invites,
+	 * Asks an address to join the caller's organization and tells it by email. Only an organization that is not taken down invites,
 	 * and within its limits: so many in 24 hours, and so many open at once.
-	 * @throws OrganizationException when the caller is not an owner, the organization is not approved or reached a
+	 * @throws OrganizationException when the caller is not an owner, the organization is taken down or reached a
 	 * limit, the address already belongs to the organization, or it already holds an open invitation
 	 */
 	@Transactional
@@ -588,7 +574,7 @@ public class OrganizationService {
 	 * leaving. A refused organization lets its last owner go: nothing is decided about it any more, and staying would
 	 * keep the person out of every other organization.
 	 * @throws OrganizationException when the caller may not, the person does not belong to the organization, or the
-	 * removal would leave an organization that was not refused without an owner
+	 * removal would leave an organization that is not taken down without an owner
 	 */
 	@Transactional
 	public void remove(Actor actor, UUID accountId) {
@@ -599,7 +585,7 @@ public class OrganizationService {
 		}
 		Organization organization = organizations.findForUpdate(caller.organizationId()).orElseThrow();
 		Member target = memberOf(organization, accountId);
-		if (target.isOwner() && !organization.isRejected()) {
+		if (target.isOwner() && !organization.isSuspended()) {
 			requireAnotherOwner(organization);
 		}
 		memberships.remove(organization.getId(), accountId);
@@ -642,8 +628,7 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Turns the caller's individual into their team, which waits for GenAI Fund's review like any team a person
-	 * makes. Whether it may still change is for the caller to decide, from what was sent under it.
+	 * Turns the caller's individual into their team, which stays active. Whether it may still change is for the caller to decide, from what was sent under it.
 	 * @return the team's identifier
 	 * @throws OrganizationException when the caller does not own an individual
 	 */
@@ -656,7 +641,7 @@ public class OrganizationService {
 		LOG.atInfo()
 			.addKeyValue("event", "organization.individual.became_team")
 			.addKeyValue("organization_id", organization.getId())
-			.log("Individual became a team, waiting for review");
+			.log("Individual became a team");
 		return organization.getId();
 	}
 

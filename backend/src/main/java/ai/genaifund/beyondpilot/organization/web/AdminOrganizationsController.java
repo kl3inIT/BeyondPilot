@@ -15,8 +15,6 @@ import ai.genaifund.beyondpilot.organization.dto.ChangeMemberRoleRequest;
 import ai.genaifund.beyondpilot.organization.dto.InviteMemberRequest;
 import ai.genaifund.beyondpilot.organization.dto.MergeOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationReviewQueueResponse;
-import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
-import ai.genaifund.beyondpilot.organization.dto.SendBackOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.TakeDownOrganizationRequest;
 import ai.genaifund.beyondpilot.shared.SpreadsheetFormat;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,10 +40,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** The operators' work on organizations: the review of new ones, and who may own one nobody owns. */
+/** The operators' work on organizations: taking down, merging, and who may own one nobody owns. */
 @RestController
 @RequestMapping("/api/organization/admin")
-@Tag(name = "Organization administration", description = "The organizations operators review.")
+@Tag(name = "Organization administration", description = "The organizations operators look after.")
 @ApiResponse(responseCode = "401", description = "Nobody is signed in.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 				schema = @Schema(ref = AdminOrganizationsController.PROBLEM)))
@@ -58,8 +56,6 @@ class AdminOrganizationsController {
 
 	private static final String NOT_FOUND = "There is no such organization.";
 
-	private static final String NOT_AWAITING = "The organization is not waiting for review.";
-
 	private final OrganizationAdministration organizations;
 
 	AdminOrganizationsController(OrganizationAdministration organizations) {
@@ -68,7 +64,7 @@ class AdminOrganizationsController {
 
 	@GetMapping(path = "/organizations", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listAdminOrganizations",
-			summary = "The organizations, those waiting for review first",
+			summary = "The organizations, those with an open claim first",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "One page of the organizations the parameters select.")
 	@ApiResponse(responseCode = "400", description = "A parameter is not valid.",
@@ -114,7 +110,7 @@ class AdminOrganizationsController {
 
 	@GetMapping(path = "/organizations/queue", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "getOrganizationReviewQueue",
-			summary = "How many organizations wait for review, and how many waited each of the last 14 days",
+			summary = "How many ownership claims are open, and how many were open each of the last 14 days",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The queue now and its last 14 days.")
 	OrganizationReviewQueueResponse queue(@CurrentActor Actor actor) {
@@ -122,66 +118,13 @@ class AdminOrganizationsController {
 	}
 
 	@GetMapping(path = "/organizations/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getAdminOrganization", summary = "One organization as an operator reviews it",
+	@Operation(operationId = "getAdminOrganization", summary = "One organization as an operator sees it",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The organization, its people and the requests to own it.")
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	AdminOrganizationResponse get(@CurrentActor Actor actor, @PathVariable UUID id) {
 		return organizations.get(actor, id);
-	}
-
-	@PostMapping(path = "/organizations/{id}/approve", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "approveOrganization",
-			summary = "Approve an organization that waits for review, and verify its email domain",
-			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "The organization is approved.", content = @Content)
-	@ApiResponse(responseCode = "400", description = "The domain is not valid.",
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "404", description = NOT_FOUND,
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409",
-			description = "The organization is not waiting for review, or another organization has the domain.",
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void approve(@CurrentActor Actor actor, @PathVariable UUID id,
-			@Valid @RequestBody ApproveOrganizationRequest request) {
-		organizations.approve(actor, id, request);
-	}
-
-	@PostMapping(path = "/organizations/{id}/refuse", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "refuseOrganization", summary = "Refuse an organization that waits for review for good",
-			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "The organization is refused, with the reason.",
-			content = @Content)
-	@ApiResponse(responseCode = "400", description = "A member is not valid.",
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "404", description = NOT_FOUND,
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = NOT_AWAITING,
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void refuse(@CurrentActor Actor actor, @PathVariable UUID id,
-			@Valid @RequestBody RefuseOrganizationRequest request) {
-		organizations.refuse(actor, id, request);
-	}
-
-	@PostMapping(path = "/organizations/{id}/send-back", consumes = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseStatus(HttpStatus.NO_CONTENT)
-	@Operation(operationId = "sendBackOrganization",
-			summary = "Send an organization that waits for review back to its owners with what to change",
-			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "204", description = "The organization needs changes; its owners are told why.",
-			content = @Content)
-	@ApiResponse(responseCode = "400", description = "The reason is blank or over 1000 characters.",
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "404", description = NOT_FOUND,
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = NOT_AWAITING,
-			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	void sendBack(@CurrentActor Actor actor, @PathVariable UUID id,
-			@Valid @RequestBody SendBackOrganizationRequest request) {
-		organizations.sendBack(actor, id, request);
 	}
 
 	@PutMapping(path = "/organizations/{id}", consumes = MediaType.APPLICATION_JSON_VALUE,

@@ -1830,8 +1830,6 @@ class SolutionTest {
 	}
 
 	private void approve(UUID organization) {
-		post(operator, ORGANIZATION + "/admin/organizations/" + organization + "/approve", Map.of()).expectStatus()
-			.isNoContent();
 	}
 
 	/** The session of an owner of an approved organization. */

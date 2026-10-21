@@ -266,18 +266,14 @@ class MessagingTest {
 	void aConversationWithAProviderIsPrivateToOwnersUntilTheyAddMembers() {
 		String owner = signIn("owner@org-provider.test");
 		UUID providerId = organization(owner, "Org Provider");
-		post(operator, ORGANIZATION + "/admin/organizations/" + providerId + "/approve",
-				Map.of("emailDomain", "org-provider.test"))
-			.expectStatus()
-			.isNoContent();
+		verifyDomain(providerId, "Org Provider", "org-provider.test");
 		put(owner, ORGANIZATION + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
 		String solution = listedSolution(owner, "Org Triage");
 		String member = signIn("member@org-provider.test");
 		post(member, ORGANIZATION + "/organizations/" + providerId + "/join", Map.of()).expectStatus().is2xxSuccessful();
 		String buyer = signIn("buyer@org-buyer.test");
 		UUID buyerId = organization(buyer, "Org Buyer");
-		post(operator, ORGANIZATION + "/admin/organizations/" + buyerId + "/approve",
-				Map.of("emailDomain", "org-buyer.test")).expectStatus().isNoContent();
+		verifyDomain(buyerId, "Org Buyer", "org-buyer.test");
 		put(buyer, ORGANIZATION + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
 		String buyerMember = signIn("colleague@org-buyer.test");
 		post(buyerMember, ORGANIZATION + "/organizations/" + buyerId + "/join", Map.of()).expectStatus()
@@ -660,6 +656,17 @@ class MessagingTest {
 		return request;
 	}
 
+	/** Saves the email domain on an organization made by {@link #organization}, as an operator does. */
+	private void verifyDomain(UUID id, String name, String domain) {
+		String detail = ORGANIZATION + "/admin/organizations/" + id;
+		int version = JsonPath.<Integer>read(body(get(operator, detail).expectStatus().isOk()),
+				"$.organization.version");
+		Map<String, Object> profile = Map.of("name", name, "type", "company", "country", "VN", "teamSize", "2_9",
+				"industries", List.of("insurance"), "website", "https://example.test", "description",
+				"Assistants for insurers.", "foundedYear", 2021, "version", version);
+		put(operator, detail, Map.of("profile", profile, "emailDomain", domain)).expectStatus().isOk();
+	}
+
 	private UUID organization(String session, String name) {
 		return UUID.fromString(JsonPath.read(body(post(session, ORGANIZATION + "/organizations",
 				Map.of("name", name, "type", "company", "country", "VN", "teamSize", "2_9", "industries",
@@ -673,8 +680,6 @@ class MessagingTest {
 	private String organizationOwner(String email, String name) {
 		String session = signIn(email);
 		UUID organization = organization(session, name);
-		post(operator, ORGANIZATION + "/admin/organizations/" + organization + "/approve", Map.of()).expectStatus()
-			.isNoContent();
 		return session;
 	}
 

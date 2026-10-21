@@ -26,18 +26,13 @@ import org.jspecify.annotations.Nullable;
 @Table(name = "organization")
 public class Organization {
 
-	public static final String IN_REVIEW = "in_review";
-
-	public static final String NEEDS_CHANGES = "needs_changes";
-
+	/** Active: every organization is, from its creation, until an operator merges it. Taking it down is {@code suspendedAt}. */
 	public static final String APPROVED = "approved";
-
-	public static final String REJECTED = "rejected";
 
 	/** Merged into another organization by an operator: a record of where it went, which nobody changes. */
 	public static final String MERGED = "merged";
 
-	/** The type of a builder on their own: the organization stands for its one person, so nobody reviews it. */
+	/** The type of a builder on their own: the organization stands for its one person. */
 	public static final String INDIVIDUAL = Membership.INDIVIDUAL;
 
 	@Id
@@ -115,17 +110,14 @@ public class Organization {
 	protected Organization() {
 	}
 
-	/**
-	 * @param status {@link #APPROVED}: the database allows no other value for an organization that is not merged
-	 */
+	/** A new organization is {@link #APPROVED}: nobody reviews it. */
 	@SuppressWarnings("NullAway.Init")
-	public Organization(UUID id, String slug, String name, String type, String status,
-			UUID createdByAccountId) {
+	public Organization(UUID id, String slug, String name, String type, UUID createdByAccountId) {
 		this.id = id;
 		this.slug = slug;
 		this.name = name;
 		this.type = type;
-		this.status = status;
+		this.status = APPROVED;
 		this.createdByAccountId = createdByAccountId;
 	}
 
@@ -165,35 +157,8 @@ public class Organization {
 		this.autoJoin = autoJoin;
 	}
 
-	public void approve(Instant at) {
-		status = APPROVED;
-		decisionReason = null;
-		decisionMessage = null;
-		decidedAt = at;
-	}
-
-	public void refuse(String reason, @Nullable String message, Instant at) {
-		status = REJECTED;
-		decisionReason = reason;
-		decisionMessage = message;
-		decidedAt = at;
-	}
-
-	/** Sends an organization back to its owners with what to change; they correct it and it waits for review again. */
-	public void sendBack(String message, Instant at) {
-		status = NEEDS_CHANGES;
-		decisionReason = null;
-		decisionMessage = message;
-		decidedAt = at;
-	}
-
-	/** An organization sent back that its owner corrected waits for review again; the message stays readable. */
-	public void resubmit() {
-		status = IN_REVIEW;
-	}
-
 	/**
-	 * Takes an approved organization down. Its review stays approved, so restoring needs no new review; while it is
+	 * Takes an organization down. Its status stays {@link #APPROVED}, so restoring changes nothing else; while it is
 	 * down {@link #isApproved()} is false.
 	 */
 	public void suspend(String reason, @Nullable String message, Instant at) {
@@ -219,36 +184,19 @@ public class Organization {
 		verifyDomain(null);
 	}
 
-	/**
-	 * Settles the review after the profile changed from one type to another. A person on their own is approved
-	 * without review, so one that waited is approved; an approved individual that becomes a team, a company or
-	 * another organization waits for GenAI Fund's review like any it makes. A refused or taken-down organization
-	 * keeps that decision whichever way its type goes, and a person on their own has no domain.
-	 */
-	public void settleTypeChange(String formerType, Instant at) {
-		boolean wasIndividual = INDIVIDUAL.equals(formerType);
-		if (isIndividual() && !wasIndividual) {
-			if (isInReview() || isSentBack()) {
-				approve(at);
-			}
+	/** Settles the profile after its type changed: a person on their own has no domain. */
+	public void settleTypeChange(String formerType) {
+		if (isIndividual() && !INDIVIDUAL.equals(formerType)) {
 			verifyDomain(null);
-		}
-		else if (!isIndividual() && wasIndividual && isApproved()) {
-			status = IN_REVIEW;
-			decidedAt = null;
 		}
 	}
 
-	/**
-	 * Turns an individual into a team of the same person, which waits for GenAI Fund's review like any team.
-	 */
+	/** Turns an individual into a team of the same person. It stays approved. */
 	public void becomeTeam(String name, String teamSize, @Nullable String website) {
 		this.name = name;
 		this.type = "builder_team";
 		this.teamSize = teamSize;
 		this.website = website;
-		this.status = IN_REVIEW;
-		this.decidedAt = null;
 	}
 
 	/** A builder on their own: it is shown as its person, and it has no members, domain or page of its own. */
@@ -264,22 +212,9 @@ public class Organization {
 		return suspendedAt != null;
 	}
 
-	/** Approved by GenAI Fund and not taken down: what lets it have members, solutions and use cases. */
+	/** Active, meaning not taken down and not merged: what lets it have members, solutions and use cases. */
 	public boolean isApproved() {
 		return APPROVED.equals(status) && suspendedAt == null;
-	}
-
-	public boolean isInReview() {
-		return IN_REVIEW.equals(status);
-	}
-
-	/** Refused for good: nothing is decided about it any more, and it lets nobody in. */
-	public boolean isRejected() {
-		return REJECTED.equals(status);
-	}
-
-	public boolean isSentBack() {
-		return NEEDS_CHANGES.equals(status);
 	}
 
 	public UUID getId() {

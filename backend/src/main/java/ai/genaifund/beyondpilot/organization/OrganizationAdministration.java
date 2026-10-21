@@ -35,9 +35,7 @@ import ai.genaifund.beyondpilot.organization.dto.MergedOrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.MergeOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationResponse;
 import ai.genaifund.beyondpilot.organization.dto.OrganizationReviewQueueResponse;
-import ai.genaifund.beyondpilot.organization.dto.RefuseOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.SaveOrganizationRequest;
-import ai.genaifund.beyondpilot.organization.dto.SendBackOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.dto.TakeDownOrganizationRequest;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository;
 import ai.genaifund.beyondpilot.organization.persistence.MembershipRepository.Invitation;
@@ -120,7 +118,7 @@ public class OrganizationAdministration {
 		List<AdminRow> rows = organizationList.adminPage(text, request.status(), request.country(), request.sort(),
 				size, (long) (page - 1) * size);
 		Map<UUID, Person> askers = identity.people(rows.stream()
-			.map(OrganizationAdministration::asker)
+			.map(AdminRow::claimantAccountId)
 			.filter(Objects::nonNull)
 			.distinct()
 			.toList());
@@ -211,14 +209,13 @@ public class OrganizationAdministration {
 			slug = base + "-" + suffix;
 		}
 		Organization organization = new Organization(UUID.randomUUID(), slug, request.name().strip(),
-				request.type(), Organization.APPROVED, operator.accountId());
+				request.type(), operator.accountId());
 		List<String> industries = request.industries() == null ? List.of() : request.industries();
 		organization.describe(request.name().strip(), request.type(), OrganizationViews.text(request.website()),
 				request.country(), request.teamSize(), industries, OrganizationViews.text(request.description()),
 				request.foundedYear(), logo);
 		organization.describeTeam(OrganizationViews.text(request.teamBackground()));
 		organization.verifyDomain(domain);
-		organization.approve(Instant.now());
 		organizations.saveAndFlush(organization);
 		record(AuditAction.ORGANIZATION_CREATE, operator, organization, Map.of());
 		String ownerEmail = OrganizationViews.text(request.ownerEmail());
@@ -247,77 +244,6 @@ public class OrganizationAdministration {
 			throw new ConstraintViolationException(violations);
 		}
 		return create(actor, request).organization().id();
-	}
-
-	/**
-	 * Approves an organization that waits for review, with the email domain the operator verified for it when they
-	 * did, and tells its owners.
-	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws OrganizationException when the organization does not exist or does not wait for review, or another
-	 * organization has the domain
-	 */
-	@Transactional
-	public void approve(Actor actor, UUID id, ApproveOrganizationRequest request) {
-		Operator operator = identity.requireOperator(actor);
-		Organization organization = awaitingReview(id);
-		verifyDomain(organization, request.emailDomain());
-		organization.approve(Instant.now());
-		record(AuditAction.ORGANIZATION_APPROVE, operator, organization, Map.of());
-		events.publishEvent(new OrganizationChanged(organization.getId()));
-		tellOwners(organization, true);
-	}
-
-	/**
-	 * Approves an organization that waits for review without vouching for a domain, for a caller that is not the admin
-	 * screen, such as an operator's MCP tool.
-	 * @see #approve(Actor, UUID, ApproveOrganizationRequest)
-	 */
-	@Transactional
-	public void approve(Actor actor, UUID id) {
-		approve(actor, id, new ApproveOrganizationRequest(null));
-	}
-
-	/**
-	 * Refuses an organization that waits for review for good, with a reason its owners read, and tells them. Missing
-	 * information is a send back instead.
-	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws OrganizationException when the organization does not exist or does not wait for review
-	 */
-	@Transactional
-	public void refuse(Actor actor, UUID id, RefuseOrganizationRequest request) {
-		Operator operator = identity.requireOperator(actor);
-		Organization organization = awaitingReview(id);
-		organization.refuse(request.reason(), OrganizationViews.text(request.message()), Instant.now());
-		record(AuditAction.ORGANIZATION_REFUSE, operator, organization, Map.of("reason", request.reason()));
-		events.publishEvent(new OrganizationChanged(organization.getId()));
-		tellOwners(organization, false);
-	}
-
-	/**
-	 * Sends an organization that waits for review back to its owners with what to change, and tells them. They
-	 * correct it and it waits for review again.
-	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws OrganizationException when the organization does not exist or does not wait for review
-	 */
-	@Transactional
-	public void sendBack(Actor actor, UUID id, SendBackOrganizationRequest request) {
-		Operator operator = identity.requireOperator(actor);
-		Organization organization = awaitingReview(id);
-		String reason = request.reason().strip();
-		organization.sendBack(reason, Instant.now());
-		record(AuditAction.ORGANIZATION_SEND_BACK, operator, organization, Map.of());
-		events.publishEvent(new OrganizationChanged(organization.getId()));
-		owners(organization)
-			.forEach(owner -> email.sendOrganizationSentBack(owner.email(), organization.getName(), reason));
-	}
-
-	/**
-	 * Sends an organization back with what to change, for a caller that is not the admin screen.
-	 * @see #sendBack(Actor, UUID, SendBackOrganizationRequest)
-	 */
-	@Transactional
-	public void sendBack(Actor actor, UUID id, String reason) {
-		sendBack(actor, id, new SendBackOrganizationRequest(reason));
 	}
 
 	/**
@@ -650,21 +576,6 @@ public class OrganizationAdministration {
 		return organization;
 	}
 
-	private Organization awaitingReview(UUID id) {
-		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
-		if (!organization.isInReview()) {
-			throw new OrganizationException(OrganizationErrorCode.NOT_AWAITING_REVIEW,
-					"Decision on organization " + id + ", which is " + organization.getStatus());
-		}
-		return organization;
-	}
-
-	private void tellOwners(Organization organization, boolean approved) {
-		owners(organization)
-			.forEach(owner -> email.sendOrganizationDecision(owner.email(), organization.getName(),
-					organization.getSlug(), approved));
-	}
-
 	private void tellOwnersOfSuspension(Organization organization, boolean takenDown) {
 		owners(organization)
 			.forEach(owner -> email.sendOrganizationSuspension(owner.email(), organization.getName(),
@@ -723,8 +634,8 @@ public class OrganizationAdministration {
 	}
 
 	/**
-	 * A domain the operator only has to confirm: the one the organization has, else its creator's work domain while
-	 * it waits for review, else its website's. None for an individual, or when another organization holds it.
+	 * A domain the operator only has to confirm: the one the organization has, else its creator's work domain, else its
+	 * website's. None for an individual, or when another organization holds it.
 	 */
 	private @Nullable String suggestedDomain(Organization organization, @Nullable Person creator) {
 		if (organization.getEmailDomain() != null) {
@@ -734,35 +645,20 @@ public class OrganizationAdministration {
 			// A person on their own stands for nobody else at their address.
 			return null;
 		}
-		String fromCreator = organization.isInReview() && creator != null
+		String fromCreator = creator != null
 				? OrganizationViews.workDomain(creator.email()) : null;
 		String candidate = fromCreator != null ? fromCreator
 				: OrganizationViews.websiteDomain(organization.getWebsite());
 		return candidate == null || organizations.findByEmailDomain(candidate).isPresent() ? null : candidate;
 	}
 
-	/** Who asked for what waits on the row: the claimant of its open claim, else its creator while it is reviewed. */
-	private static @Nullable UUID asker(AdminRow row) {
-		if (row.claimantAccountId() != null) {
-			return row.claimantAccountId();
-		}
-		return Organization.IN_REVIEW.equals(row.status()) ? row.createdByAccountId() : null;
-	}
-
 	private static AdminOrganizationSummaryResponse summary(AdminRow row, Map<UUID, Person> askers) {
-		UUID askerId = asker(row);
+		UUID askerId = row.claimantAccountId();
 		Person asker = askerId == null ? null : askers.get(askerId);
-		String request = null;
-		if (Organization.IN_REVIEW.equals(row.status())) {
-			request = "new";
-		}
-		else if (row.claimId() != null) {
-			request = "claim";
-		}
+		String request = row.claimId() != null ? "claim" : null;
 		return new AdminOrganizationSummaryResponse(row.id(), row.slug(), row.name(), row.logoFileId(), row.type(),
 				row.country(), row.status(), row.suspendedAt(), row.members(), row.owned(), request, row.claimId(),
-				asker == null ? null : asker.label(), row.claimedAt() != null ? row.claimedAt()
-						: request == null ? null : row.createdAt(),
+				asker == null ? null : asker.label(), row.claimedAt(),
 				row.createdAt(), row.mergedIntoName());
 	}
 
@@ -780,21 +676,6 @@ public class OrganizationAdministration {
 
 	private static OrganizationException requestNotFound(UUID requestId) {
 		return new OrganizationException(OrganizationErrorCode.REQUEST_NOT_FOUND, "No open claim " + requestId);
-	}
-
-	/**
-	 * The organizations waiting for an operator's review, at most this many, for the MCP server.
-	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 */
-	@Transactional(readOnly = true)
-	public OrganizationsAwaitingReview awaitingReview(Actor actor, int limit) {
-		identity.requireOperator(actor);
-		return new OrganizationsAwaitingReview(organizationList.adminCount(null, "in_review", null),
-				organizationList.adminPage(null, "in_review", null, null, limit, 0)
-					.stream()
-					.map(row -> new OrganizationsAwaitingReview.Item(row.id(), row.name(), row.type(), row.country(),
-							row.createdAt()))
-					.toList());
 	}
 
 	/**
@@ -854,8 +735,8 @@ public class OrganizationAdministration {
 	}
 
 	/**
-	 * How many organizations wait for review now, since when the oldest has waited, and how many
-	 * waited at the end of each of the last 14 days, for the admin home.
+	 * How many ownership claims are open now, since when the oldest has waited, and how many were open at the end of
+	 * each of the last 14 days, for the admin home.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 */
 	@Transactional(readOnly = true)

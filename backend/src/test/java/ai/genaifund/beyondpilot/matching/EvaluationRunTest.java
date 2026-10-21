@@ -100,7 +100,6 @@ class EvaluationRunTest {
 		UUID other = program(word + "-other");
 		String buyer = TestSignIn.session(client, mail, "buyer-" + word + "@evaluation.test");
 		UUID insurer = organization(buyer, "Lotus Insurance " + word);
-		send("POST", "/api/organization/admin/organizations/" + insurer + "/approve", Map.of());
 
 		Instant before = Instant.now();
 		UUID useCase = UUID.fromString(JsonPath.read(send("POST", "/api/usecase/admin/use-cases",
@@ -174,7 +173,6 @@ class EvaluationRunTest {
 		UUID program = program(word);
 		String buyer = TestSignIn.session(client, mail, "buyer-" + word + "@evaluation.test");
 		UUID insurer = organization(buyer, "Lotus Insurance " + word);
-		send("POST", "/api/organization/admin/organizations/" + insurer + "/approve", Map.of());
 		send("POST", "/api/usecase/admin/use-cases", useCase("Claims triage " + word, insurer, List.of(program)));
 
 		runs.changed(program);

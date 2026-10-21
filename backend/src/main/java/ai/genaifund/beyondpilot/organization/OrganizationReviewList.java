@@ -15,9 +15,8 @@ public record OrganizationReviewList(long total, List<Item> items) {
 
 	/**
 	 * One organization in the list.
-	 * @param status GenAI Fund's review: {@code in_review}, {@code needs_changes}, {@code approved}, {@code rejected}
-	 * or {@code merged}; one taken down stays approved and has {@code suspendedAt}
-	 * @param request what waits for an operator: {@code new} or {@code claim}; null when nothing does
+	 * @param status {@code approved} or {@code merged}; one taken down stays approved and has {@code suspendedAt}
+	 * @param request what waits for an operator: {@code claim}; null when nothing does
 	 */
 	public record Item(UUID id, String name, String type, @Nullable String country, String status,
 			@Nullable Instant suspendedAt, int members, boolean owned, @Nullable String request,

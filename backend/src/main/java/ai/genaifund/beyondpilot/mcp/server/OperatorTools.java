@@ -13,7 +13,6 @@ import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.McpCaller;
 import ai.genaifund.beyondpilot.identity.McpCallers;
 import ai.genaifund.beyondpilot.organization.OrganizationAdministration;
-import ai.genaifund.beyondpilot.organization.OrganizationsAwaitingReview;
 import ai.genaifund.beyondpilot.program.ProgramName;
 import ai.genaifund.beyondpilot.program.ProgramService;
 import ai.genaifund.beyondpilot.proposal.ApplicationFile;
@@ -581,15 +580,6 @@ class OperatorTools {
 			Map<String, Object> result = new LinkedHashMap<>();
 			long total = 0;
 			SolutionsAwaitingReview solutionQueue = null;
-			if (area == null || area.equals("organizations")) {
-				OrganizationsAwaitingReview queue = organizations.awaitingReview(actor, PER_AREA);
-				total += queue.total();
-				result.put("organizations", area(queue.total(), queue.items()
-					.stream()
-					.map(item -> entry(item.name(), site + "/admin/organizations/" + item.id(), "type", item.type(),
-							"country", item.country(), "createdAt", item.createdAt().toString()))
-					.toList()));
-			}
 			if (area == null || area.equals("solutions") || area.equals("deployments")) {
 				solutionQueue = solutions.awaitingReview(actor, PER_AREA);
 			}
