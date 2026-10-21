@@ -15,7 +15,8 @@ import { ApiError } from "@/lib/api/client";
 import { failedWith } from "@/lib/api/failure";
 import { createProgram } from "@/lib/api/generated";
 import { fieldOfPointer } from "@/lib/api/problem-fields";
-import { adminProgramRoute, publicSiteHost, siteRoutes } from "@/lib/site";
+import { useSiteHost } from "@/components/layout/use-public-site";
+import { adminProgramRoute, siteRoutes } from "@/lib/site";
 
 import { createProgramSchema, programTypes, slugify } from "./program-schemas";
 
@@ -26,6 +27,7 @@ import { createProgramSchema, programTypes, slugify } from "./program-schemas";
  */
 function NewProgramDialog({ locale }: { locale: string }) {
   const t = useTranslations("Admin.programs.create");
+  const host = useSiteHost();
   const types = useTranslations("Program.type");
   const say = useTranslations("Form.errors");
   const notify = useNotify();
@@ -109,7 +111,7 @@ function NewProgramDialog({ locale }: { locale: string }) {
               spellCheck={false}
               maxLength={60}
               description={t("slugHint", {
-                address: `${publicSiteHost}${siteRoutes.programs}/${field.state.value || "…"}`,
+                address: `${host}${siteRoutes.programs}/${field.state.value || "…"}`,
               })}
             />
           )}

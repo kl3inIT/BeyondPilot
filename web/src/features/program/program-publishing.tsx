@@ -32,13 +32,14 @@ import {
   unpublishProgram,
   type AdminProgram,
 } from "@/lib/api/generated";
-import { publicSiteHost, siteRoutes } from "@/lib/site";
+import { useSiteHost } from "@/components/layout/use-public-site";
+import { siteRoutes } from "@/lib/site";
 
 import type { SettingsValues } from "./program-schemas";
 
 /** Where a program is read, written out as an operator shares it. */
-function addressOf(slug: string) {
-  return `${publicSiteHost}${siteRoutes.programs}/${slug}`;
+function addressOf(host: string, slug: string) {
+  return `${host}${siteRoutes.programs}/${slug}`;
 }
 
 type PublishIssue = AdminProgram["publishIssues"][number];
@@ -209,6 +210,7 @@ function PublishButton({ program, dirty, blocked, save, className }: PublishButt
  * once and its toast offers Undo (docs/conventions.md › Actions).
  */
 function ProgramMenu({ program }: { program: AdminProgram }) {
+  const host = useSiteHost();
   const t = useTranslations("Admin.programs.settings");
   const notify = useNotify();
   const router = useRouter();
@@ -270,7 +272,7 @@ function ProgramMenu({ program }: { program: AdminProgram }) {
             <DropdownMenuItem
               onClick={() => {
                 // A menu item ends in a toast either way: a refused clipboard is said too.
-                navigator.clipboard.writeText(`https://${addressOf(program.slug)}`).then(
+                navigator.clipboard.writeText(`https://${addressOf(host, program.slug)}`).then(
                   () => notify.success("Admin.programs.settings.copied"),
                   () => notify.error("Actions.copyFailed"),
                 );
@@ -318,10 +320,11 @@ function ProgramMenu({ program }: { program: AdminProgram }) {
 }
 
 function AddressBox({ slug }: { slug: string }) {
+  const host = useSiteHost();
   return (
     <div className="flex items-start gap-2 rounded-lg border bg-muted p-3">
       <GlobeIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-      <span className="text-sm font-medium break-all">{addressOf(slug)}</span>
+      <span className="text-sm font-medium break-all">{addressOf(host, slug)}</span>
     </div>
   );
 }

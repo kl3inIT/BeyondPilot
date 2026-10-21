@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-import { siteOrigin } from "@/lib/site";
+import { publicSiteHost, siteOrigin } from "@/lib/site";
 
 const subscribe = () => () => {};
 
@@ -16,4 +16,17 @@ function usePublicSite(): boolean {
   );
 }
 
-export { usePublicSite };
+/**
+ * The host the page is served from, for an address an operator reads or copies: staging writes
+ * its own, the public site beyondpilot.ai. The server, which serves every deployment the same
+ * build, answers the public host until the browser hydrates.
+ */
+function useSiteHost(): string {
+  return useSyncExternalStore(
+    subscribe,
+    () => window.location.host,
+    () => publicSiteHost,
+  );
+}
+
+export { usePublicSite, useSiteHost };
