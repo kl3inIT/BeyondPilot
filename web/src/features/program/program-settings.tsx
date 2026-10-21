@@ -28,7 +28,8 @@ import { ApiError } from "@/lib/api/client";
 import { failedWith, type ErrorCode } from "@/lib/api/failure";
 import { saveProgram, type AdminProgram } from "@/lib/api/generated";
 import { fieldOfPointer } from "@/lib/api/problem-fields";
-import { programRoute, publicSiteHost, siteRoutes } from "@/lib/site";
+import { useSiteHost } from "@/components/layout/use-public-site";
+import { programRoute, siteRoutes } from "@/lib/site";
 import { instantInVietnam, partsInVietnam } from "@/lib/vietnam-time";
 import { momentText } from "@/i18n/formats";
 
@@ -157,6 +158,7 @@ function ProgramSettings({
   // values before the save back, a new cover shown as none and Publish held back.
   const [program, setProgram] = useState(read);
   const t = useTranslations("Admin.programs.settings");
+  const host = useSiteHost();
   const states = useTranslations("Admin.programs.state");
   const types = useTranslations("Program.type");
   // The words a date of the window shows on the program's page until the operator gives it a title.
@@ -386,7 +388,7 @@ function ProgramSettings({
                 spellCheck={false}
                 disabled={program.slugFixed}
                 description={t(program.slugFixed ? "basics.slugFixed" : "basics.slugHint", {
-                  address: `${publicSiteHost}${siteRoutes.programs}/${field.state.value}`,
+                  address: `${host}${siteRoutes.programs}/${field.state.value}`,
                 })}
               />
             )}

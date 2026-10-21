@@ -464,7 +464,8 @@ test.describe("admin programs", () => {
     await page.getByRole("button", { name: "More actions" }).click();
     await page.getByRole("menuitem", { name: "Unpublish…" }).click();
     const confirm = page.getByRole("alertdialog");
-    await expect(confirm).toContainText("beyondpilot.ai/programs/insurance-ai-tasco");
+    // The address is the deployment's own, so staging writes its host, not the public site's.
+    await expect(confirm).toContainText(`${new URL(baseURL!).host}/programs/insurance-ai-tasco`);
     await expectNoSeriousA11yViolations(page);
     await confirm.getByRole("button", { name: "Unpublish" }).click();
 

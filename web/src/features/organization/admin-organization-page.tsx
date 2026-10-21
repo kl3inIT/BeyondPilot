@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useFormatter } from "@/i18n/format";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { AdminOrganization } from "@/lib/api/generated";
-import { publicSiteHost, siteRoutes } from "@/lib/site";
+import { ownOrigin, siteRoutes } from "@/lib/site";
 
 import { AdminInvite } from "./admin-invite";
 import { AdminInvitationActions, AdminMemberActions } from "./admin-member-actions";
@@ -180,7 +180,7 @@ function AdminOrganizationPage({
           })}
           description={<p>{t("merged.lead", { kept: merged.intoName })}</p>}
           foot={t("merged.address", {
-            address: `${publicSiteHost}${siteRoutes.organizations}/${organization.slug}`,
+            address: `${new URL(ownOrigin()).host}${siteRoutes.organizations}/${organization.slug}`,
             kept: merged.intoName,
           })}
           actions={
