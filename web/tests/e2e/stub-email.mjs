@@ -66,7 +66,8 @@ const invitation = {
   subject: "You are invited to {{organizationName}} on BeyondPilot",
   body: "# You are invited to {{organizationName}}\n\n{{organizationName}} invites you to BeyondPilot. Sign in to manage it.",
   defaultSubject: "You are invited to {{organizationName}} on BeyondPilot",
-  defaultBody: "# You are invited to {{organizationName}}\n\n{{organizationName}} invites you to BeyondPilot.",
+  defaultBody:
+    "# You are invited to {{organizationName}}\n\n{{organizationName}} invites you to BeyondPilot.",
   edited: true,
   updatedBy: "Hà Lê",
   updatedAt: ago(30),

@@ -202,7 +202,7 @@ class ProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Boolean>read(team, "$.organization.active")).isTrue();
 		assertThat(jdbc.sql("select status from organization where name = 'Lan Stays Team'")
 			.query(String.class)
-			.single()).isEqualTo("approved");
+			.single()).isEqualTo("active");
 		assertThat(jdbc.sql("""
 				select o.name from proposal p join organization o on o.id = p.organization_id
 				where p.account_id = (select id from identity_account where email = 'lan@stays.test')

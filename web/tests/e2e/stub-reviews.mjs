@@ -104,14 +104,9 @@ const organizations = [
     ],
   },
   {
-    organization: organization(
-      "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
-      "Pocket Policy",
-      "active",
-      {
-        country: "SG",
-      },
-    ),
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03", "Pocket Policy", "active", {
+      country: "SG",
+    }),
     createdBy: "Minh Trần",
     createdByEmail: "minh.tran@pocketpolicy.example",
     members: [
@@ -169,12 +164,7 @@ const organizations = [
   },
   {
     // Twelve people and an open invitation: the Members tab pages ten at a time.
-    organization: organization(
-      "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c07",
-      "Harbor Bank",
-      "active",
-      {},
-    ),
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c07", "Harbor Bank", "active", {}),
     createdBy: "Bao Tran",
     createdByEmail: "bao.tran@harborbank.example",
     members: Array.from({ length: 12 }, (_, index) =>

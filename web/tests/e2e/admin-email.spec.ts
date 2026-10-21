@@ -54,7 +54,9 @@ test.describe("admin email", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Email");
     await expect(page.getByRole("status")).toContainText("No email can leave yet");
     await expect(page.getByRole("heading", { level: 2, name: "Organizations" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Organization invitation/ })).toContainText("Edited");
+    await expect(page.getByRole("link", { name: /Organization invitation/ })).toContainText(
+      "Edited",
+    );
     await expectNoSeriousA11yViolations(page);
   });
 

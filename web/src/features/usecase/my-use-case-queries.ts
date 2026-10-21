@@ -1,4 +1,4 @@
-import { isApproved } from "@/features/organization/organization-format";
+import { isActive } from "@/features/organization/organization-format";
 import { ApiError } from "@/lib/api/client";
 import {
   getMyUseCase,
@@ -31,7 +31,7 @@ export async function readMyUseCase(id: string): Promise<MyUseCase | null> {
 
 /** Whether an organization has use cases at all: one that is not taken down does. */
 export function hasUseCases(organization: Organization): boolean {
-  return isApproved(organization);
+  return isActive(organization);
 }
 
 /** How many use cases the organization has for its tab, or `null` when it has no such tab. Server only. */
