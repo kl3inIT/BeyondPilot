@@ -116,7 +116,7 @@ public class Organization {
 	}
 
 	/**
-	 * @param status {@link #IN_REVIEW} for one a person creates, {@link #APPROVED} for one an operator creates
+	 * @param status {@link #APPROVED}: the database allows no other value for an organization that is not merged
 	 */
 	@SuppressWarnings("NullAway.Init")
 	public Organization(UUID id, String slug, String name, String type, String status,

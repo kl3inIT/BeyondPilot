@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.organization;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -27,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -1636,6 +1638,23 @@ class OrganizationTest {
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(body)
 			.exchange();
+	}
+
+	@Test
+	void theStatusAllowsOnlyApprovedAndMerged() {
+		signIn("status@allowed.test");
+		UUID creator = idOf("status@allowed.test");
+
+		assertThatThrownBy(() -> insertOrganization("in-review-co", "in_review", creator))
+			.isInstanceOf(DataIntegrityViolationException.class);
+		assertThat(insertOrganization("approved-co", "approved", creator)).isEqualTo(1);
+	}
+
+	private int insertOrganization(String slug, String status, UUID creator) {
+		return jdbc.sql("""
+				insert into organization (id, slug, name, roles, type, status, created_by_account_id)
+				values (?, ?, ?, array['enterprise'], 'company', ?, ?)
+				""").params(UUID.randomUUID(), slug, slug, status, creator).update();
 	}
 
 	private static String body(RestTestClient.ResponseSpec response) {
