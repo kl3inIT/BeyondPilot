@@ -137,11 +137,20 @@ function ProposalFindingItem({
 }
 
 /**
+ * Whether a run of the use case is queued, at work or waiting to go on, so that a proposal not read yet
+ * will be. Without one, the page says it is not read rather than promising it soon.
+ */
+function readSoon(evaluations: Pick<ProposalEvaluations, "run">): boolean {
+  const state = evaluations.run?.state;
+  return state === "queued" || state === "running" || state === "waiting";
+}
+
+/**
  * What the page says in the place of the evidence when there is none to show: no model chosen, the
  * brief not read yet, or the proposal not read yet. Nothing when there is evidence.
  */
 function useMissing(
-  evaluations: Pick<ProposalEvaluations, "modelChosen" | "requirements">,
+  evaluations: Pick<ProposalEvaluations, "modelChosen" | "requirements" | "run">,
   evaluation: Pick<ProposalEvaluation, "state"> | undefined,
 ): string | null {
   const t = useTranslations("ProposalEvaluation");
@@ -154,7 +163,7 @@ function useMissing(
   if (evaluations.requirements.length === 0) {
     return t("noBrief");
   }
-  return t("waiting");
+  return readSoon(evaluations) ? t("waiting") : t("notRead");
 }
 
 type ProposalEvaluationCardProps = {
@@ -183,7 +192,9 @@ function ProposalEvaluationCard({ evaluations, proposalId }: ProposalEvaluationC
       ) : (
         <>
           {evaluation.state === "outdated" && (
-            <p className="text-sm text-muted-foreground">{t("outdated")}</p>
+            <p className="text-sm text-muted-foreground">
+              {readSoon(evaluations) ? t("outdated") : t("outdatedNotRead")}
+            </p>
           )}
           {evaluation.unread.includes("proposal_deck") && (
             <p className="text-sm text-muted-foreground">{t("unreadDeck")}</p>
@@ -262,7 +273,7 @@ function ProposalCompare({ evaluations, columns }: ProposalCompareProps) {
           return [
             column.id,
             !evaluation || evaluation.state === "waiting" ? (
-              <BeingRead key={column.id} />
+              <BeingRead key={column.id} soon={readSoon(evaluations)} />
             ) : (
               t("compare.met", { met: evaluation.requiredMet, total: evaluation.requiredTotal })
             ),
@@ -298,6 +309,7 @@ function ProposalCompare({ evaluations, columns }: ProposalCompareProps) {
             evaluation={byId.get(column.id)}
             requirement={requirement}
             proposalName={column.name}
+            soon={readSoon(evaluations)}
           />,
         ]),
       ),
@@ -331,12 +343,13 @@ function ProposalCompare({ evaluations, columns }: ProposalCompareProps) {
   );
 }
 
-function BeingRead() {
+/** A proposal not read yet: being read while a run is pending, otherwise not read. */
+function BeingRead({ soon }: { soon: boolean }) {
   const t = useTranslations("ProposalEvaluation");
   return (
     <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-      <LoaderIcon aria-hidden="true" className="size-4 shrink-0" />
-      {t("compare.beingRead")}
+      {soon && <LoaderIcon aria-hidden="true" className="size-4 shrink-0" />}
+      {soon ? t("compare.beingRead") : t("compare.notRead")}
     </span>
   );
 }
@@ -346,14 +359,16 @@ function CompareCell({
   evaluation,
   requirement,
   proposalName,
+  soon,
 }: {
   evaluation: ProposalEvaluation | undefined;
   requirement: MatchingRequirement;
   proposalName: string;
+  soon: boolean;
 }) {
   const t = useTranslations("ProposalEvaluation");
   if (!evaluation || evaluation.state === "waiting") {
-    return <BeingRead />;
+    return <BeingRead soon={soon} />;
   }
   const finding = proposalFindingOf(evaluation, requirement.position);
   const status = finding?.status ?? "not_shown";
@@ -371,7 +386,9 @@ function CompareCell({
       <PopoverContent align="start" className="w-80">
         <p className="text-sm font-semibold">{requirement.statement}</p>
         {evaluation.state === "outdated" && (
-          <p className="text-xs text-muted-foreground">{t("outdated")}</p>
+          <p className="text-xs text-muted-foreground">
+            {soon ? t("outdated") : t("outdatedNotRead")}
+          </p>
         )}
         {finding?.reason.trim() && <p className="text-sm">{finding.reason}</p>}
         {finding && <ProposalQuote finding={finding} solutionNames={evaluation.solutionNames} />}

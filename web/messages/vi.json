@@ -8614,7 +8614,10 @@
       "beingRead": "Đang đọc",
       "open": "{proposal}: {requirement}",
       "nothing": "Đề xuất không có nội dung nào cho thấy điều này.",
-      "caption": "So sánh các đề xuất theo từng yêu cầu"
-    }
+      "caption": "So sánh các đề xuất theo từng yêu cầu",
+      "notRead": "Chưa đọc"
+    },
+    "notRead": "AI chưa đọc đề xuất này. Lần chạy matching tiếp theo của use case này sẽ đọc nó.",
+    "outdatedNotRead": "AI đọc bản này trước lần sửa gần nhất. Lần chạy matching tiếp theo của use case này sẽ đọc bản mới."
   }
 }
