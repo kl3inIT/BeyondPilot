@@ -8614,7 +8614,10 @@
       "beingRead": "Being read",
       "open": "{proposal}: {requirement}",
       "nothing": "Nothing in the proposal shows this.",
-      "caption": "Proposals compared requirement by requirement"
-    }
+      "caption": "Proposals compared requirement by requirement",
+      "notRead": "Not read yet"
+    },
+    "notRead": "AI has not read this proposal yet. The next matching run of this use case reads it.",
+    "outdatedNotRead": "AI read this before the last edit. The next matching run of this use case reads the new version."
   }
 }

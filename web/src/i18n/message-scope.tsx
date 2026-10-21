@@ -67,6 +67,8 @@ const areaPaths = {
     "Messaging",
     "Organization",
     "PdfViewer",
+    // What the AI found in the proposals the organization's use case received.
+    "ProposalEvaluation",
     "Solution",
     "Talent",
     "UseCaseProposal",
@@ -84,6 +86,8 @@ const areaPaths = {
     // The full-screen reader of an application's files.
     "PdfViewer",
     "Program",
+    // What the AI found in the proposals a use case received.
+    "ProposalEvaluation",
     "Review",
     "Solution",
     "Talent",
