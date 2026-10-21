@@ -28,10 +28,6 @@ public enum EmailKind {
 			Variable.optional("owner", Boolean.FALSE),
 			Variable.optional("organizationUrl", "https://beyondpilot.example/workspace/organization")),
 
-	ORGANIZATION_ACTIVATED("organization_activated", EmailGroup.ORGANIZATIONS, true, null,
-			Variable.required("organizationName", "Plain Cover"),
-			Variable.optional("organizationUrl", "https://beyondpilot.example/workspace/organization")),
-
 	ORGANIZATION_APPROVED("organization_approved", EmailGroup.ORGANIZATIONS, true, null,
 			Variable.required("organizationName", "Plain Cover"),
 			Variable.optional("organizationUrl", "https://beyondpilot.example/organizations/plain-cover")),

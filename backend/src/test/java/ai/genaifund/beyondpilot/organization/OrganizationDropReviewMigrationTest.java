@@ -14,8 +14,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
- * What {@code V109__organization_drop_review.sql} does to the organizations that exist when it runs: the database is
- * migrated to V108, filled with organizations in every state of the old review, and migrated on.
+ * What {@code V109__organization_drop_review.sql} and {@code V110__organization_active_status.sql} do to the
+ * organizations that exist when they run: the database is migrated to V108, filled with organizations in every state of
+ * the old review and with one really taken down, and migrated on. Together they leave every organization active, and
+ * taken down only where an operator took it down.
  */
 @Testcontainers
 class OrganizationDropReviewMigrationTest {
@@ -27,7 +29,7 @@ class OrganizationDropReviewMigrationTest {
 			TestcontainersConfiguration.POSTGRES_IMAGE);
 
 	@Test
-	void organizationsWaitingBecomeActiveAndMarkedAndRefusedOnesBecomeTakenDown() {
+	void everyOrganizationEndsActiveAndOnlyARealTakeDownStaysDown() {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource(POSTGRES.getJdbcUrl(),
 				POSTGRES.getUsername(), POSTGRES.getPassword());
 		Flyway.configure().dataSource(dataSource).target(BEFORE).load().migrate();
@@ -40,23 +42,32 @@ class OrganizationDropReviewMigrationTest {
 		insert(jdbc, creator, "refused-fake", "rejected", "not_a_real_organization");
 		insert(jdbc, creator, "refused-duplicate", "rejected", "duplicate");
 		insert(jdbc, creator, "refused-scope", "rejected", "out_of_scope");
+		insertTakenDown(jdbc, creator, "taken-down");
 
 		Flyway.configure().dataSource(dataSource).load().migrate();
 
-		assertThat(status(jdbc, "waiting")).isEqualTo("approved|true|false");
-		assertThat(status(jdbc, "sent-back")).isEqualTo("approved|true|false");
-		assertThat(status(jdbc, "approved")).isEqualTo("approved|false|false");
-		assertThat(taken(jdbc, "refused-fake")).isEqualTo("approved|false|true|not_a_real_organization|not_a_real_organization");
-		assertThat(taken(jdbc, "refused-duplicate")).isEqualTo("approved|false|true|other|duplicate");
-		assertThat(taken(jdbc, "refused-scope")).isEqualTo("approved|false|true|other|out_of_scope");
-		// The take-down keeps when the refusal was made and what the operator wrote.
-		assertThat(jdbc.sql("""
-				select suspended_at = decided_at and suspension_message = decision_message
-				from organization where slug = 'refused-fake'
-				""").query(Boolean.class).single()).isTrue();
-		assertThat(jdbc.sql("select suspension_message from organization where slug = 'refused-fake'")
+		assertThat(state(jdbc, "waiting")).isEqualTo("active|false");
+		assertThat(state(jdbc, "sent-back")).isEqualTo("active|false");
+		assertThat(state(jdbc, "approved")).isEqualTo("active|false");
+		// A refused organization is active like the others, with nothing left of a take-down; the refusal stays recorded.
+		for (String slug : new String[] { "refused-fake", "refused-duplicate", "refused-scope" }) {
+			assertThat(state(jdbc, slug)).as(slug).isEqualTo("active|false");
+			assertThat(jdbc.sql("""
+					select suspension_reason is null and suspension_message is null
+					from organization where slug = ?
+					""").param(slug).query(Boolean.class).single()).as(slug).isTrue();
+		}
+		assertThat(jdbc.sql("select decision_reason from organization where slug = 'refused-fake'")
 			.query(String.class)
-			.single()).isEqualTo("A note.");
+			.single()).isEqualTo("not_a_real_organization");
+		// What an operator took down stays down, with its reason and message.
+		assertThat(state(jdbc, "taken-down")).isEqualTo("active|true");
+		assertThat(jdbc.sql("select suspension_reason || '|' || suspension_message from organization where slug = 'taken-down'")
+			.query(String.class)
+			.single()).isEqualTo("breaks_the_rules|Taken down by an operator.");
+		assertThat(jdbc.sql("select count(*) from information_schema.columns where table_name = 'organization' and column_name = 'activation_notice_pending'")
+			.query(Long.class)
+			.single()).isZero();
 	}
 
 	private static void insert(JdbcClient jdbc, UUID creator, String slug, String status, String decisionReason) {
@@ -67,21 +78,22 @@ class OrganizationDropReviewMigrationTest {
 				""").params(UUID.randomUUID(), slug, slug, status, decisionReason, creator).update();
 	}
 
-	/** Status, whether the activation notice is pending, and whether it is taken down. */
-	private static String status(JdbcClient jdbc, String slug) {
-		return jdbc.sql("""
-				select status || '|' || activation_notice_pending || '|' || (suspended_at is not null)
-				from organization where slug = ?
-				""").param(slug).query(String.class).single();
+	/** An approved organization an operator took down later: approving cleared the decision, so it carries none. */
+	private static void insertTakenDown(JdbcClient jdbc, UUID creator, String slug) {
+		jdbc.sql("""
+				insert into organization (id, slug, name, type, status, suspension_reason, suspension_message,
+				                          suspended_at, created_by_account_id)
+				values (?, ?, ?, 'company', 'approved', 'breaks_the_rules', 'Taken down by an operator.',
+				        timestamptz '2026-10-01 10:00:00+00', ?)
+				""").params(UUID.randomUUID(), slug, slug, creator).update();
 	}
 
-	/** Status, notice, taken down, the reason it was taken down and the reason it was refused, which stays. */
-	private static String taken(JdbcClient jdbc, String slug) {
-		return jdbc.sql("""
-				select status || '|' || activation_notice_pending || '|' || (suspended_at is not null) || '|'
-				       || suspension_reason || '|' || decision_reason
-				from organization where slug = ?
-				""").param(slug).query(String.class).single();
+	/** Status and whether it is taken down. */
+	private static String state(JdbcClient jdbc, String slug) {
+		return jdbc.sql("select status || '|' || (suspended_at is not null) from organization where slug = ?")
+			.param(slug)
+			.query(String.class)
+			.single();
 	}
 
 }

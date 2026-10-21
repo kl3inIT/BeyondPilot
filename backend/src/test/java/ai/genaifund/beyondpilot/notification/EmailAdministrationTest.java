@@ -272,7 +272,7 @@ class EmailAdministrationTest {
 	void theReviewEmailsAreNotInTheTemplateList() {
 		String list = body(get(operator, API + "/templates").expectStatus().isOk());
 
-		assertThat(JsonPath.<List<String>>read(list, "$.items[*].kind")).contains("organization_activated")
+		assertThat(JsonPath.<List<String>>read(list, "$.items[*].kind")).contains("organization_invitation")
 			.doesNotContain("organization_approved", "organization_refused", "organization_sent_back");
 		assertProblem(get(operator, API + "/templates/organization_approved"), 409,
 				"NOTIFICATION_TEMPLATE_NOT_EDITABLE");
