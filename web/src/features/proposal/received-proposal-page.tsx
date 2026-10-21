@@ -80,7 +80,7 @@ function ReceivedProposalPage({
                 {proposal.organizationName}
               </h1>
               {admin && !proposal.organizationApproved && (
-                <Badge variant="secondary">{t("pending")}</Badge>
+                <Badge variant="secondary">{t("takenDown")}</Badge>
               )}
             </div>
             <div className="flex flex-wrap items-center gap-3">

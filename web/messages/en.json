@@ -420,7 +420,6 @@
     "ORGANIZATION_INVITEE_IS_MEMBER": "This person already belongs to an organization.",
     "ORGANIZATION_LAST_OWNER": "An organization needs an owner. Make someone else an owner first.",
     "ORGANIZATION_CHANGED_MEANWHILE": "Someone else changed this profile. Reload the page and try again.",
-    "ORGANIZATION_NOT_AWAITING_REVIEW": "This organization has already been reviewed.",
     "ORGANIZATION_CANNOT_TAKE_DOWN": "Only an approved organization can be taken down. Reload the page to see where it stands.",
     "ORGANIZATION_NOT_TAKEN_DOWN": "This organization is not taken down any more. Reload the page.",
     "ORGANIZATION_MERGED": "This organization was merged into another and can no longer be changed.",
@@ -1562,10 +1561,8 @@
         }
       },
       "status": {
-        "in_review": "Needs review",
-        "needs_changes": "Sent back",
         "approved": "Approved",
-        "rejected": "Not approved",
+        "claimed": "Ownership claim",
         "suspended": "Taken down",
         "merged": "Merged"
       },
@@ -1578,7 +1575,6 @@
         "askedBy": "Asked by"
       },
       "request": {
-        "new": "New organization",
         "claim": "Claim",
         "none": "—"
       },
@@ -1586,12 +1582,10 @@
       "mergedInto": "Merged into {name}",
       "actions": {
         "open": "Actions for {name}",
-        "review": "Review",
-        "reviewNamed": "Review {name}",
         "record": "Open record",
         "claim": "Decide claim"
       },
-      "needReview": "{count, plural, one {# needs review} other {# need review}}",
+      "claimsOpen": "{count, plural, one {# claim is open} other {# claims are open}}",
       "empty": {
         "title": "No organizations yet"
       },
@@ -1621,8 +1615,6 @@
       "detail": {
         "back": "All organizations",
         "createdByOn": "Created by {name} on {day}",
-        "refused": "Not approved: {reason}.",
-        "sentBack": "Sent back to its owners:",
         "claims": "Claims to own it",
         "tabs": {
           "label": "Sections of this organization",
@@ -1641,49 +1633,11 @@
           "lead": "Its members, open invitations, solutions and use cases moved to {kept}.",
           "address": "{address} now leads to the page of {kept}.",
           "open": "Open {kept}"
-        },
-        "review": "Review"
-      },
-      "review": {
-        "title": "Review {name}",
-        "lead": "Created by {creator} on {day}.",
-        "leadUnknown": "Created on {day}.",
-        "approve": "Approve",
-        "refuse": "Refuse",
-        "refuseTitle": "Refuse {name}",
-        "refuseLead": "The owners see the reason, and a refusal is final.",
-        "refuseConfirm": "Send decision",
-        "sendBack": "Send back",
-        "sendBackTitle": "Send {name} back",
-        "sendBackLead": "Once the owners correct the organization and save it, it waits for review again.",
-        "sendBackLabel": "What should the owners change?",
-        "sendBackConfirm": "Send back",
-        "reason": "Reason",
-        "message": "Message to the owners",
-        "back": "Back",
-        "reasonPlaceholder": "Choose a reason",
-        "domain": "Email domain to verify (optional)",
-        "domainHint": "Only the company's own domain, since colleagues on it can then join at once.",
-        "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
-        "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate.",
-        "facts": {
-          "description": "Description",
-          "website": "Website",
-          "teamSize": "Team size",
-          "foundedYear": "Year founded",
-          "industries": "Industries",
-          "creatorEmail": "Creator's email",
-          "members": "Members",
-          "membersMore": "{names} and {count} more",
-          "none": "Not stated"
-        },
-        "record": "Open record",
-        "more": "{count, plural, one {# more waits on this page} other {# more wait on this page}}",
-        "queueDone": "No other organization on this page waits for review."
+        }
       },
       "clear": "Clear filters",
       "queueEmpty": {
-        "title": "Nothing waits for review",
+        "title": "No ownership claim is open",
         "home": "Back to Admin home"
       },
       "claim": {
@@ -2072,7 +2026,7 @@
     },
     "home": {
       "lead": "{count, plural, =0 {Nothing waits for a decision.} one {# record waits for a decision.} other {# records wait for a decision.}}",
-      "organizations": "Organizations to review",
+      "claims": "Ownership claims",
       "solutions": "Solutions to review",
       "talent": "Talent profiles to review",
       "deployments": "Customer deployments to review",
@@ -3255,6 +3209,10 @@
         "organization_invitation": {
           "name": "Organization invitation",
           "description": "Sent when an owner, or GenAI Fund, invites an address to join an organization or to own it."
+        },
+        "organization_activated": {
+          "name": "Organization active",
+          "description": "Sent to the owners of an organization that was waiting for review before reviews ended, to tell them it is active."
         },
         "organization_approved": {
           "name": "Organization approved",
@@ -8310,7 +8268,7 @@
         "sent": "Sent {date}",
         "crumbs": "Where you are",
         "useCases": "Use cases",
-        "pending": "Pending review",
+        "takenDown": "Taken down",
         "sentBy": "Sent by",
         "assessment": {
           "title": "Your assessment",

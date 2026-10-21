@@ -38,7 +38,7 @@ const person = (accountId, name, email, role) => ({
   self: false,
 });
 
-/** Every organization as an operator's record page reads it, those waiting for review first. */
+/** Every organization as an operator's record page reads it. */
 const organizations = [
   {
     // A duplicate merged into Pocket Policy: it only says where it went.
@@ -61,14 +61,9 @@ const organizations = [
     },
   },
   {
-    organization: organization(
-      "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01",
-      "Lumen Health",
-      "in_review",
-      {
-        description: "Triage assistants for clinics.",
-      },
-    ),
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01", "Lumen Health", "approved", {
+      description: "Triage assistants for clinics.",
+    }),
     createdBy: "Linh Nguyễn",
     createdByEmail: "linh.nguyen@lumenhealth.example",
     suggestedDomain: "lumenhealth.example",
@@ -137,22 +132,21 @@ const organizations = [
     claims: [],
   },
   {
-    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04", "Firstcall", "rejected", {
-      decisionReason: "duplicate",
-      decisionMessage: "Say what the company builds.",
-    }),
+    // Nobody owns it, and one person asks to.
+    organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04", "Firstcall", "approved"),
     createdBy: "Quang Vũ",
     createdByEmail: "quang.vu@firstcall.example",
-    members: [
-      person(
-        "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a05",
-        "Quang Vũ",
-        "quang.vu@firstcall.example",
-        "owner",
-      ),
-    ],
+    members: [],
     invitations: [],
-    claims: [],
+    claims: [
+      {
+        id: "9c4f6d85-3c31-4d86-8d88-3a6c9c9e0d02",
+        name: "Quang Vũ",
+        email: "quang.vu@firstcall.example",
+        message: "I run Firstcall.",
+        createdAt: day,
+      },
+    ],
   },
   {
     organization: organization("8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06", "Quiet Mill", "approved", {
@@ -408,14 +402,16 @@ function page(url, records, statusOf, textOf, summaryOf, countryOf) {
 
 const lists = {
   "/api/organization/admin/organizations": {
-    records: organizations,
+    // Those with an open claim come first, as the backend lists them.
+    records: organizations.toSorted(
+      (a, b) => Number(b.claims.length > 0) - Number(a.claims.length > 0),
+    ),
     idOf: (record) => record.organization.id,
     countryOf: (record) => record.organization.country,
-    // An open claim waits for a decision as a new organization does, whatever the review status; one
-    // taken down is filtered as `suspended`, not as approved.
+    // An open claim is filtered as `claimed` and one taken down as `suspended`, not as approved.
     statusOf: (record) =>
       record.claims.length > 0
-        ? "in_review"
+        ? "claimed"
         : record.organization.suspendedAt
           ? "suspended"
           : record.organization.status,
@@ -434,10 +430,10 @@ const lists = {
       createdAt: day,
       members: record.members.length,
       owned: record.members.some((member) => member.role === "owner"),
-      request: status === "in_review" ? "new" : record.claims.length > 0 ? "claim" : null,
+      request: record.claims.length > 0 ? "claim" : null,
       claimId: record.claims[0]?.id ?? null,
-      askedBy: status === "in_review" ? record.createdBy : (record.claims[0]?.name ?? null),
-      requestedAt: status === "in_review" || record.claims.length > 0 ? day : null,
+      askedBy: record.claims[0]?.name ?? null,
+      requestedAt: record.claims.length > 0 ? day : null,
       mergedInto: record.merged?.intoName ?? null,
     }),
   },
@@ -505,9 +501,7 @@ const queues = {
   "/api/talent/admin/profiles/queue": () =>
     talent.filter((record) => record.profile.status === "in_review").length,
   "/api/organization/admin/organizations/queue": () =>
-    organizations.filter(
-      (record) => record.organization.status === "in_review" || record.claims.length > 0,
-    ).length,
+    organizations.filter((record) => record.claims.length > 0).length,
 };
 
 /** A queue that grew to what waits now: one fewer until four days ago. The oldest was sent 3 days ago. */

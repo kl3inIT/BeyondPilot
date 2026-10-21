@@ -17,8 +17,8 @@ async function answerPreview(page: Page) {
       contentType: "application/json",
       body: JSON.stringify({
         subject: draft.subject.replaceAll("{{organizationName}}", "Plain Cover"),
-        html: "<!doctype html><html><body><h1>Plain Cover is approved</h1></body></html>",
-        text: "Plain Cover is approved",
+        html: "<!doctype html><html><body><h1>Plain Cover is active</h1></body></html>",
+        text: "Plain Cover is active",
         problems: unknown
           ? [{ field: "body", type: "unknown_variable", variable: "organisation" }]
           : unwritten
@@ -54,7 +54,7 @@ test.describe("admin email", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Email");
     await expect(page.getByRole("status")).toContainText("No email can leave yet");
     await expect(page.getByRole("heading", { level: 2, name: "Organizations" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Organization approved/ })).toContainText("Edited");
+    await expect(page.getByRole("link", { name: /Organization active/ })).toContainText("Edited");
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -78,10 +78,10 @@ test.describe("admin email", () => {
   }) => {
     await signInAs(context, "operator", baseURL!);
     const drafts = await answerPreview(page);
-    await page.goto("/admin/email/templates/organization_approved");
+    await page.goto("/admin/email/templates/organization_activated");
 
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Organization approved");
-    await expect(page.getByTitle("Preview of Organization approved")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Organization active");
+    await expect(page.getByTitle("Preview of Organization active")).toBeVisible();
 
     // Each variable is listed with what a reader would see in its place, and whether it must appear.
     const variables = page.getByRole("region", { name: "Variables" });
@@ -125,7 +125,7 @@ test.describe("admin email", () => {
   }) => {
     await signInAs(context, "operator", baseURL!);
     await answerPreview(page);
-    await page.goto("/admin/email/templates/organization_approved");
+    await page.goto("/admin/email/templates/organization_activated");
 
     const body = page.getByRole("textbox", { name: "Body" });
     await body.click();

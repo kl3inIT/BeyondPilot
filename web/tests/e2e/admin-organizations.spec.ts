@@ -7,7 +7,6 @@ import { signInAs } from "./session";
 const lumen = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c01";
 const openKitchen = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c02";
 const pocketPolicy = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03";
-const firstcall = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04";
 const quietMill = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c06";
 const harborBank = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c07";
 const pocketPolicyLtd = "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c08";
@@ -28,41 +27,6 @@ function shownOrganizations(page: Page) {
 /** The people of an organization's members tab, by their names. */
 function shownPeople(page: Page) {
   return page.locator('[data-slot="person"]:visible >> span.font-medium');
-}
-
-/**
- * Opens the review of the organization that waits, from the Review button of its row. The dialog
- * reads the record from the browser, which the test answers.
- */
-async function openReview(page: Page) {
-  await page.route(`**/api/organization/admin/organizations/${lumen}`, (route) =>
-    route.fulfill({
-      json: {
-        createdBy: "Linh Nguyễn",
-        createdByEmail: "linh.nguyen@lumenhealth.example",
-        suggestedDomain: "lumenhealth.example",
-        organization: {
-          website: "https://lumenhealth.example",
-          description: "Triage assistants for clinics.",
-          teamSize: "2_9",
-          industries: ["healthcare"],
-          foundedYear: null,
-        },
-        members: [{ name: "Linh Nguyễn", email: "linh.nguyen@lumenhealth.example", role: "owner" }],
-        invitations: [],
-        claims: [],
-      },
-    }),
-  );
-  await page.goto("/admin/organizations");
-  // Review stands on the row that waits, and is no longer an entry of its menu.
-  await page.getByRole("button", { name: "Actions for Lumen Health" }).click();
-  await expect(page.getByRole("menuitem", { name: "Review" })).toHaveCount(0);
-  await expect(page.getByRole("menuitem", { name: "Open record" })).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("button", { name: /^Review / })).toHaveCount(1);
-  await page.getByRole("button", { name: "Review Lumen Health" }).click();
-  return page.getByRole("dialog");
 }
 
 /** Answers the record the claim's dialog reads from the browser: who asks, and the domain to confirm. */
@@ -98,7 +62,7 @@ test.describe("admin organizations", () => {
     expect((await page.goto(`/admin/organizations/${lumen}`))?.status()).toBe(404);
   });
 
-  test("an operator sees every organization, the one that waits first, with what it asks", async ({
+  test("an operator sees every organization, those with a claim first, and what each asks", async ({
     page,
     context,
     baseURL,
@@ -108,10 +72,10 @@ test.describe("admin organizations", () => {
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Organizations");
     await expect(shownOrganizations(page)).toHaveText([
-      "Lumen Health",
       "Open Kitchen",
-      "Pocket Policy",
       "Firstcall",
+      "Lumen Health",
+      "Pocket Policy",
       "Quiet Mill",
       "Harbor Bank",
     ]);
@@ -119,8 +83,8 @@ test.describe("admin organizations", () => {
     const shown = page.locator(":visible");
     await expect(page.getByText("Company · Singapore · 2 members").and(shown)).toHaveCount(1);
     await expect(page.getByText("Builder team · Vietnam · No owner").and(shown)).toHaveCount(1);
-    await expect(page.getByText("New organization", { exact: true }).and(shown)).toHaveCount(1);
-    await expect(page.getByText("Claim", { exact: true }).and(shown)).toHaveCount(1);
+    await expect(page.getByText("Claim", { exact: true }).and(shown)).toHaveCount(2);
+    await expect(page.getByText("New organization").and(shown)).toHaveCount(0);
     // Who asked is a column where the table has the room, and on a phone, where it scrolls.
     await expect(page.getByRole("cell", { name: "Arif Hidayat" })).toBeVisible();
     // A table at every width: on a phone it scrolls sideways.
@@ -128,7 +92,24 @@ test.describe("admin organizations", () => {
     await expectNoSeriousA11yViolations(page);
   });
 
-  test("search and the status are the address, and the queue counts what needs review", async ({
+  test("a row offers its claim and its record, and no review", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "operator", baseURL!);
+    await page.goto("/admin/organizations");
+
+    await page.getByRole("button", { name: "Actions for Open Kitchen" }).click();
+    await expect(page.getByRole("menuitem")).toHaveText(["Decide claim", "Open record"]);
+    for (const name of ["Approve", "Send back", "Refuse", "Review"]) {
+      await expect(page.getByRole("menuitem", { name })).toHaveCount(0);
+    }
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("button", { name: /^Review / })).toHaveCount(0);
+  });
+
+  test("search and the status are the address, and the queue counts the open claims", async ({
     page,
     context,
     baseURL,
@@ -137,11 +118,16 @@ test.describe("admin organizations", () => {
     await page.goto("/admin/organizations");
 
     await page.getByRole("combobox", { name: "Status" }).click();
-    await page.getByRole("option", { name: "Needs review" }).click();
-    await expect(page).toHaveURL(/status=in_review/);
-    // A claim waits for a decision as a new organization does.
-    await expect(shownOrganizations(page)).toHaveText(["Lumen Health", "Open Kitchen"]);
-    await expect(page.getByText("2 need review")).toBeVisible();
+    await page.getByRole("option", { name: "Ownership claim" }).click();
+    await expect(page).toHaveURL(/status=claimed/);
+    await expect(shownOrganizations(page)).toHaveText(["Open Kitchen", "Firstcall"]);
+    await expect(page.getByText("2 claims are open")).toBeVisible();
+
+    // A bookmark of the retired review queue shows every organization, not an error.
+    await page.goto("/admin/organizations?status=in_review");
+    await expect(shownOrganizations(page)).toHaveCount(6);
+    await page.getByRole("combobox", { name: "Status" }).click();
+    await page.getByRole("option", { name: "Ownership claim" }).click();
 
     await page.getByRole("searchbox", { name: "Search by name or email domain" }).fill("pocket");
     await expect(page).toHaveURL(/[?&]q=pocket/);
@@ -171,7 +157,7 @@ test.describe("admin organizations", () => {
         body: "PK",
       });
     });
-    await page.goto("/admin/organizations?status=in_review&q=lumen");
+    await page.goto("/admin/organizations?status=claimed&q=open");
 
     const download = page.waitForEvent("download");
     await page.getByRole("button", { name: "Export" }).click();
@@ -181,8 +167,8 @@ test.describe("admin organizations", () => {
     expect(asked).toHaveLength(1);
     const query = new URL(asked[0]).searchParams;
     expect(query.get("format")).toBe("xlsx");
-    expect(query.get("status")).toBe("in_review");
-    expect(query.get("q")).toBe("lumen");
+    expect(query.get("status")).toBe("claimed");
+    expect(query.get("q")).toBe("open");
     // Every page of the list goes into the file, so the page it shows is not sent.
     expect(query.has("page")).toBe(false);
   });
@@ -221,58 +207,6 @@ test.describe("admin organizations", () => {
     await expect(page).toHaveURL(/[?&]size=25/);
   });
 
-  test("an organization that waits is approved from its row", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "operator", baseURL!);
-    const decisions = await answerDecisions(page, decisionsPath, 204);
-    const dialog = await openReview(page);
-
-    await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
-    // Who created it and its website are read when the dialog opens.
-    await expect(dialog.getByText(/Created by Linh Nguyễn on 1 Oct 2026/)).toBeVisible();
-    await expect(dialog.getByText("Company · Vietnam · lumenhealth.example")).toBeVisible();
-    // What the profile says is there to decide on, and what it leaves out is said.
-    await expect(dialog.getByText("Triage assistants for clinics.")).toBeVisible();
-    await expect(dialog.getByRole("link", { name: "lumenhealth.example" })).toHaveAttribute(
-      "href",
-      "https://lumenhealth.example",
-    );
-    const fact = (name: string) =>
-      dialog.locator("dl > div").filter({ has: page.getByText(name, { exact: true }) });
-    await expect(fact("Team size")).toContainText("2–9 people");
-    await expect(fact("Year founded")).toContainText("Not stated");
-    await expect(fact("Creator's email")).toContainText("linh.nguyen@lumenhealth.example");
-    await expect(fact("Members")).toContainText("Linh Nguyễn");
-    await expect(dialog.getByRole("link", { name: "Open record" })).toHaveAttribute(
-      "href",
-      `/admin/organizations/${lumen}`,
-    );
-    // The creator's work domain is proposed, for the operator to confirm.
-    await expect(dialog.getByLabel("Email domain to verify (optional)")).toHaveValue(
-      "lumenhealth.example",
-    );
-    expect(decisions).toEqual([]);
-    await expectNoSeriousA11yViolations(page);
-
-    await dialog.getByRole("button", { name: "Approve", exact: true }).click();
-
-    await expect(page.getByText("Organization approved.")).toBeVisible();
-    // It was the only one of the page that waited, so the review closes and says so.
-    await expect(
-      page.getByText("No other organization on this page waits for review."),
-    ).toBeVisible();
-    await expect(dialog).toHaveCount(0);
-    expect(decisions).toEqual([
-      {
-        call: `POST /api/organization/admin/organizations/${lumen}/approve`,
-        body: { emailDomain: "lumenhealth.example" },
-      },
-    ]);
-  });
-
   test("a domain that names none is not sent, and one another organization has is said at the field", async ({
     page,
     context,
@@ -285,18 +219,22 @@ test.describe("admin organizations", () => {
       409,
       refusal("ORGANIZATION_DOMAIN_TAKEN"),
     );
-    const dialog = await openReview(page);
+    await answerClaimRecord(page);
+    await page.goto("/admin/organizations");
+    await page.getByRole("button", { name: "Actions for Open Kitchen" }).click();
+    await page.getByRole("menuitem", { name: "Decide claim" }).click();
+    const dialog = page.getByRole("dialog");
     const domain = dialog.getByLabel("Email domain to verify (optional)");
 
     await domain.fill("not a domain");
-    await dialog.getByRole("button", { name: "Approve", exact: true }).click();
+    await dialog.getByRole("button", { name: "Make owner" }).click();
     await expect(
       dialog.getByText("Enter a domain such as example.com, or leave it empty."),
     ).toBeVisible();
     expect(decisions).toEqual([]);
 
     await domain.fill("Taken.Example");
-    await dialog.getByRole("button", { name: "Approve", exact: true }).click();
+    await dialog.getByRole("button", { name: "Make owner" }).click();
     await expect(
       dialog.getByText("Another organization already has this domain.", { exact: false }),
     ).toBeVisible();
@@ -334,92 +272,6 @@ test.describe("admin organizations", () => {
     ]);
   });
 
-  test("a refusal is not sent without a reason, and carries the note to the owners", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "operator", baseURL!);
-    const decisions = await answerDecisions(page, decisionsPath, 204);
-    const dialog = await openReview(page);
-
-    await dialog.getByRole("button", { name: "Refuse" }).click();
-    await expect(dialog.getByRole("heading")).toHaveText("Refuse Lumen Health");
-    await expect(dialog.getByRole("button", { name: "Send decision" })).toBeDisabled();
-
-    // Leaving the reason goes back to the review, where the organization can still be approved.
-    await dialog.getByRole("button", { name: "Back" }).click();
-    await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
-    await dialog.getByRole("button", { name: "Refuse" }).click();
-
-    await giveReason(page, "Already on BeyondPilot", "  It is listed as Lumen Clinics.  ");
-    await dialog.getByRole("button", { name: "Send decision" }).click();
-
-    await expect(
-      page.getByText("Organization refused. Its owners can read the reason."),
-    ).toBeVisible();
-    await expect(dialog).toHaveCount(0);
-    expect(decisions).toEqual([
-      {
-        call: `POST /api/organization/admin/organizations/${lumen}/refuse`,
-        body: { reason: "duplicate", message: "It is listed as Lumen Clinics." },
-      },
-    ]);
-  });
-
-  test("a send back is not sent without what to change, and goes back to the review", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "operator", baseURL!);
-    const decisions = await answerDecisions(page, decisionsPath, 204);
-    const dialog = await openReview(page);
-
-    await dialog.getByRole("button", { name: "Send back" }).click();
-    await expect(dialog.getByRole("heading")).toHaveText("Send Lumen Health back");
-    const send = dialog.getByRole("button", { name: "Send back", exact: true });
-    await expect(send).toBeDisabled();
-
-    await dialog.getByRole("button", { name: "Back", exact: true }).click();
-    await expect(dialog.getByRole("heading")).toHaveText("Review Lumen Health");
-    await dialog.getByRole("button", { name: "Send back" }).click();
-
-    await dialog
-      .getByRole("textbox", { name: "What should the owners change?" })
-      .fill("  Say what you build.  ");
-    await expectNoSeriousA11yViolations(page);
-    await send.click();
-
-    await expect(
-      page.getByText("Organization sent back. Its owners were told what to change."),
-    ).toBeVisible();
-    await expect(dialog).toHaveCount(0);
-    expect(decisions).toEqual([
-      {
-        call: `POST /api/organization/admin/organizations/${lumen}/send-back`,
-        body: { reason: "Say what you build." },
-      },
-    ]);
-  });
-
-  test("a decision the backend refuses is told in the words of its code", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "operator", baseURL!);
-    await answerDecisions(page, decisionsPath, 409, refusal("ORGANIZATION_NOT_AWAITING_REVIEW"));
-    const dialog = await openReview(page);
-
-    await dialog.getByRole("button", { name: "Approve", exact: true }).click();
-
-    await expect(page.getByText("This organization has already been reviewed.")).toBeVisible();
-    await expect(page.getByText("text of the backend that must not be shown")).toHaveCount(0);
-    // The review stays open, so the operator can decide again or leave.
-    await expect(dialog.getByRole("button", { name: "Approve", exact: true })).toBeEnabled();
-  });
-
   test("a record shows what its people wrote, and a claim on it is decided there", async ({
     page,
     context,
@@ -431,14 +283,17 @@ test.describe("admin organizations", () => {
     await page.goto("/admin/organizations");
 
     await page.getByRole("button", { name: "Actions for Open Kitchen" }).click();
-    // An approved organization has no review; its claim is decided from the menu or on the record.
-    await expect(page.getByRole("menuitem", { name: "Review" })).toHaveCount(0);
+    // Its claim is decided from the menu or on the record.
     await page.getByRole("menuitem", { name: "Open record" }).click();
 
     await expect(page).toHaveURL(`/admin/organizations/${openKitchen}`);
     await expect(page).toHaveTitle("Open Kitchen · BeyondPilot");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Open Kitchen");
     await expect(page.getByText("Created by Đạt Phan on 1 Oct 2026")).toBeVisible();
+    // No review panel stands on a record: nothing waits for one.
+    for (const name of ["Review", "Approve", "Send back", "Refuse"]) {
+      await expect(page.getByRole("button", { name, exact: true })).toHaveCount(0);
+    }
     const claims = page.getByRole("region", { name: "Claims to own it" });
     await expect(claims.getByText("I founded the team.")).toBeVisible();
     await expectNoSeriousA11yViolations(page);
@@ -761,21 +616,6 @@ test.describe("admin organizations", () => {
       },
       { call: `POST ${record}/invitations/${invitation}/revoke`, body: null },
     ]);
-  });
-
-  test("a refused organization's record says why, and offers no review", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "operator", baseURL!);
-    await page.goto(`/admin/organizations/${firstcall}`);
-
-    await expect(page.getByText("Not approved: Already on BeyondPilot.")).toBeVisible();
-    await expect(page.getByText("Say what the company builds.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Review" })).toHaveCount(0);
-
-    expect((await page.goto("/admin/organizations/no-such-record"))?.status()).toBe(404);
   });
 
   test("an operator adds an organization, which needs a name and a type", async ({

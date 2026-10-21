@@ -420,7 +420,6 @@
     "ORGANIZATION_INVITEE_IS_MEMBER": "Người này đã thuộc một tổ chức.",
     "ORGANIZATION_LAST_OWNER": "Tổ chức cần có chủ sở hữu. Hãy trao quyền chủ sở hữu cho người khác trước.",
     "ORGANIZATION_CHANGED_MEANWHILE": "Có người vừa sửa hồ sơ này. Hãy tải lại trang rồi thử lại.",
-    "ORGANIZATION_NOT_AWAITING_REVIEW": "Tổ chức này đã được duyệt xong.",
     "ORGANIZATION_CANNOT_TAKE_DOWN": "Chỉ gỡ được tổ chức đã duyệt. Hãy tải lại trang để xem trạng thái hiện tại.",
     "ORGANIZATION_NOT_TAKEN_DOWN": "Tổ chức này không còn bị gỡ nữa. Hãy tải lại trang.",
     "ORGANIZATION_MERGED": "Tổ chức này đã được gộp vào tổ chức khác và không thể thay đổi nữa.",
@@ -1562,10 +1561,8 @@
         }
       },
       "status": {
-        "in_review": "Cần duyệt",
-        "needs_changes": "Đã trả lại",
         "approved": "Đã duyệt",
-        "rejected": "Không được duyệt",
+        "claimed": "Yêu cầu quyền sở hữu",
         "suspended": "Đã gỡ xuống",
         "merged": "Đã gộp"
       },
@@ -1578,7 +1575,6 @@
         "askedBy": "Người yêu cầu"
       },
       "request": {
-        "new": "Tổ chức mới",
         "claim": "Yêu cầu nhận",
         "none": "—"
       },
@@ -1586,12 +1582,10 @@
       "mergedInto": "Đã gộp vào {name}",
       "actions": {
         "open": "Thao tác với {name}",
-        "review": "Xem xét",
-        "reviewNamed": "Xem xét {name}",
         "record": "Mở hồ sơ",
         "claim": "Quyết định yêu cầu nhận"
       },
-      "needReview": "{count} cần duyệt",
+      "claimsOpen": "{count, plural, other {# yêu cầu đang mở}}",
       "empty": {
         "title": "Chưa có tổ chức nào"
       },
@@ -1621,8 +1615,6 @@
       "detail": {
         "back": "Tất cả tổ chức",
         "createdByOn": "{name} tạo ngày {day}",
-        "refused": "Không được duyệt: {reason}.",
-        "sentBack": "Đã trả lại cho các chủ sở hữu:",
         "claims": "Yêu cầu nhận tổ chức",
         "tabs": {
           "label": "Các phần của tổ chức này",
@@ -1641,49 +1633,11 @@
           "lead": "Thành viên, lời mời đang mở, giải pháp và bài toán của nó đã chuyển sang {kept}.",
           "address": "{address} giờ dẫn đến trang của {kept}.",
           "open": "Mở {kept}"
-        },
-        "review": "Xem xét"
-      },
-      "review": {
-        "title": "Xem xét {name}",
-        "lead": "Do {creator} tạo ngày {day}.",
-        "leadUnknown": "Tạo ngày {day}.",
-        "approve": "Duyệt",
-        "refuse": "Từ chối",
-        "refuseTitle": "Từ chối {name}",
-        "refuseLead": "Các chủ sở hữu đọc được lý do, và từ chối là quyết định cuối cùng.",
-        "refuseConfirm": "Gửi quyết định",
-        "sendBack": "Trả lại",
-        "sendBackTitle": "Trả lại {name}",
-        "sendBackLead": "Khi các chủ sở hữu sửa và lưu tổ chức, tổ chức được gửi duyệt lại.",
-        "sendBackLabel": "Các chủ sở hữu cần sửa gì?",
-        "sendBackConfirm": "Trả lại",
-        "reason": "Lý do",
-        "message": "Lời nhắn cho các chủ sở hữu",
-        "back": "Quay lại",
-        "reasonPlaceholder": "Chọn lý do",
-        "domain": "Tên miền email cần xác minh (không bắt buộc)",
-        "domainHint": "Chỉ nhập tên miền của chính công ty, vì đồng nghiệp dùng tên miền này sẽ tham gia được ngay.",
-        "domainInvalid": "Nhập một tên miền như example.com, hoặc để trống.",
-        "domainTaken": "Một tổ chức khác đã có tên miền này. Hãy để trống, hoặc xác định tổ chức nào là bản trùng.",
-        "facts": {
-          "description": "Mô tả",
-          "website": "Website",
-          "teamSize": "Quy mô",
-          "foundedYear": "Năm thành lập",
-          "industries": "Ngành",
-          "creatorEmail": "Email người tạo",
-          "members": "Thành viên",
-          "membersMore": "{names} và {count} người nữa",
-          "none": "Chưa nêu"
-        },
-        "record": "Mở hồ sơ",
-        "more": "Còn {count} tổ chức chờ duyệt trên trang này",
-        "queueDone": "Không còn tổ chức nào trên trang này chờ duyệt."
+        }
       },
       "clear": "Xóa bộ lọc",
       "queueEmpty": {
-        "title": "Không có gì đang chờ duyệt",
+        "title": "Không có yêu cầu quyền sở hữu nào đang mở",
         "home": "Về trang chủ Admin"
       },
       "claim": {
@@ -2072,7 +2026,7 @@
     },
     "home": {
       "lead": "{count, plural, =0 {Không có gì đang chờ quyết định.} other {# hồ sơ đang chờ quyết định.}}",
-      "organizations": "Tổ chức chờ duyệt",
+      "claims": "Yêu cầu quyền sở hữu",
       "solutions": "Giải pháp chờ duyệt",
       "talent": "Hồ sơ nhân lực chờ duyệt",
       "deployments": "Triển khai khách hàng chờ duyệt",
@@ -3255,6 +3209,10 @@
         "organization_invitation": {
           "name": "Lời mời vào tổ chức",
           "description": "Gửi khi chủ sở hữu, hoặc GenAI Fund, mời một địa chỉ tham gia hoặc sở hữu một tổ chức."
+        },
+        "organization_activated": {
+          "name": "Tổ chức đã hoạt động",
+          "description": "Gửi cho chủ sở hữu của tổ chức từng chờ duyệt trước khi bước duyệt không còn, để báo rằng tổ chức đã hoạt động."
         },
         "organization_approved": {
           "name": "Tổ chức được duyệt",
@@ -8310,7 +8268,7 @@
         "sent": "Gửi {date}",
         "crumbs": "Vị trí",
         "useCases": "Bài toán",
-        "pending": "Chờ duyệt",
+        "takenDown": "Đã gỡ xuống",
         "sentBy": "Người gửi",
         "assessment": {
           "title": "Đánh giá của bạn",

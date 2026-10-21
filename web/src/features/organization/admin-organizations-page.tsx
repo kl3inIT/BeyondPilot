@@ -26,22 +26,15 @@ import { AdminOrganizationsToolbar } from "./admin-organizations-toolbar";
 import { ExportOrganizations } from "./export-organizations";
 import { adminOrganizationFilters } from "./organization-queries";
 import { OrganizationMark } from "./organization-mark";
-import { OrganizationReviewQueue } from "./organization-review-queue";
 
 const address = createSerializer(adminOrganizationsSearch);
 
-/** How each state of the review reads to the operator who decides it. */
+/** How each state of an organization reads to the operator. */
 const tones = {
-  in_review: "warning",
-  needs_changes: "warning",
   approved: "success",
-  rejected: "destructive",
   suspended: "destructive",
   merged: "neutral",
 } as const;
-
-/** The tone of what waits for the operator: a first review, or a claim to own an organization. */
-const requestTones = { new: "info", claim: "warning" } as const;
 
 type AdminOrganizationsPageProps = {
   organizations: AdminOrganizationList;
@@ -49,9 +42,8 @@ type AdminOrganizationsPageProps = {
 };
 
 /**
- * Admin › Organisations: every organization, those waiting for review first. The list arrives
- * already read; search, the filter and paging are the URL. A row that waits carries Review, and a
- * decision made in its dialog opens the next one that waits on the page.
+ * Admin › Organisations: every organization, those with an open ownership claim first. The list
+ * arrives already read; search, the filter and paging are the URL. A claim is decided from its row.
  */
 function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPageProps) {
   const t = useTranslations("Admin.organizations");
@@ -87,7 +79,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       </div>
     ),
     request: organization.request ? (
-      <Status appearance="pill" tone={requestTones[organization.request]}>
+      <Status appearance="pill" tone="warning">
         {t(`request.${organization.request}`)}
       </Status>
     ) : null,
@@ -109,7 +101,7 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
     actions: <AdminOrganizationRowActions organization={organization} />,
   }));
 
-  const queue = search.q.trim() === "" && search.status === "in_review" && search.country === null;
+  const queue = search.q.trim() === "" && search.status === "claimed" && search.country === null;
   const filtered = search.q.trim() !== "" || search.status !== null || search.country !== null;
   const empty =
     rows.length > 0 ? null : queue ? (
@@ -146,58 +138,46 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       <AdminOrganizationsToolbar countries={organizations.countries} />
 
       {/* Who asked and when give way first where the table is made to fit, so the name keeps its room. */}
-      <OrganizationReviewQueue
-        waiting={organizations.items
-          .filter((organization) => organization.status === "in_review")
-          .map(({ id, name, type, country, createdAt }) => ({
-            id,
-            name,
-            type,
-            country,
-            createdAt,
-          }))}
-      >
-        <DataTableRows
-          sortKeys={adminOrganizationSortKeys}
-          columns={[
-            { id: "name", header: t("columns.organization"), layout: { fill: true } },
-            { id: "request", header: t("columns.request"), layout: { width: "md" } },
-            { id: "status", header: t("columns.status"), layout: { width: "md" } },
-            {
-              id: "askedBy",
-              header: t("columns.askedBy"),
-              layout: { width: "lg", from: "xl" },
-            },
-            {
-              id: "received",
-              header: t("columns.received"),
-              layout: { width: "sm", from: "2xl", descFirst: true },
-            },
-            {
-              id: "actions",
-              header: <span className="sr-only">{t("columns.actions")}</span>,
-              layout: { width: "action" },
-            },
-          ]}
-          rows={rows.map((row) => ({
-            id: row.id,
-            cells: {
-              name: row.organization,
-              request: row.request ?? (
-                <span className="text-muted-foreground">{t("request.none")}</span>
-              ),
-              status: row.status,
-              askedBy: row.askedBy,
-              received: row.received,
-              actions: <div className="flex items-center justify-end gap-1">{row.actions}</div>,
-            },
-          }))}
-          empty={empty}
-        />
-      </OrganizationReviewQueue>
+      <DataTableRows
+        sortKeys={adminOrganizationSortKeys}
+        columns={[
+          { id: "name", header: t("columns.organization"), layout: { fill: true } },
+          { id: "request", header: t("columns.request"), layout: { width: "md" } },
+          { id: "status", header: t("columns.status"), layout: { width: "md" } },
+          {
+            id: "askedBy",
+            header: t("columns.askedBy"),
+            layout: { width: "lg", from: "xl" },
+          },
+          {
+            id: "received",
+            header: t("columns.received"),
+            layout: { width: "sm", from: "2xl", descFirst: true },
+          },
+          {
+            id: "actions",
+            header: <span className="sr-only">{t("columns.actions")}</span>,
+            layout: { width: "action" },
+          },
+        ]}
+        rows={rows.map((row) => ({
+          id: row.id,
+          cells: {
+            name: row.organization,
+            request: row.request ?? (
+              <span className="text-muted-foreground">{t("request.none")}</span>
+            ),
+            status: row.status,
+            askedBy: row.askedBy,
+            received: row.received,
+            actions: <div className="flex items-center justify-end gap-1">{row.actions}</div>,
+          },
+        }))}
+        empty={empty}
+      />
 
       <ListFooter
-        count={t(queue ? "needReview" : "count", { count: organizations.total })}
+        count={t(queue ? "claimsOpen" : "count", { count: organizations.total })}
         page={organizations.page}
         pageSize={organizations.pageSize}
         total={organizations.total}

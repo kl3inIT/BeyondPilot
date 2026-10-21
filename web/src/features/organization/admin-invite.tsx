@@ -7,7 +7,7 @@ import { MailPlusIcon } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 
-import { Button, type ButtonProps } from "@/components/actions/button";
+import { Button } from "@/components/actions/button";
 import { FormDialog } from "@/components/composites/form-dialog";
 import { setServerErrors, useAppForm } from "@/components/form/app-form";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -19,15 +19,13 @@ import { inviteAdminOrganizationMember, type InviteMember } from "@/lib/api/gene
 
 type AdminInviteProps = {
   organization: { id: string; name: string };
-  /** How the opener stands on its page: secondary where the page already has its primary action. */
-  prominence?: ButtonProps["prominence"];
 };
 
 /**
  * Asks one address to own or join any organization. An operator's invitations stay out of the
  * organization's daily and open limits, so the dialog shows none.
  */
-function AdminInvite({ organization, prominence }: AdminInviteProps) {
+function AdminInvite({ organization }: AdminInviteProps) {
   const t = useTranslations("Admin.organizations.people.invite");
   const roleName = useVocabulary("memberRole");
   const notify = useNotify();
@@ -65,9 +63,7 @@ function AdminInvite({ organization, prominence }: AdminInviteProps) {
 
   return (
     <>
-      <Button prominence={prominence} onClick={() => setOpen(true)}>
-        {t("open")}
-      </Button>
+      <Button onClick={() => setOpen(true)}>{t("open")}</Button>
       <FormDialog
         open={open}
         onOpenChange={setOpen}

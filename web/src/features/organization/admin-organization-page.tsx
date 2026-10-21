@@ -31,7 +31,6 @@ import { OrganizationMark } from "./organization-mark";
 import { defaultMemberSort, organizationMemberSortKeys } from "./organization-members-search";
 import { OrganizationProfileEditor } from "./organization-profile-editor";
 import { OrganizationProfileView } from "./organization-profile-view";
-import { OrganizationReviewButton } from "./organization-review";
 import { RestoreButton } from "./organization-take-down";
 import { tablePageSizes } from "@/lib/page-size";
 
@@ -57,9 +56,9 @@ type AdminOrganizationPageProps = {
 
 /**
  * Admin › Organisations › one organization: its profile and verified domain, which an operator
- * changes as its owners do, and its people. An operator also decides what waits (the review of a new
- * organization, a claim on one nobody owns), takes an approved organization down or restores it, and
- * merges a duplicate into the one to keep, and writes the offers it gives. A merged one only says
+ * changes as its owners do, and its people. An operator also decides a claim on one nobody owns,
+ * takes an organization down or restores it, merges a duplicate into the one to keep, and writes
+ * the offers it gives. A merged one only says
  * where it went.
  */
 function AdminOrganizationPage({
@@ -74,7 +73,6 @@ function AdminOrganizationPage({
   const t = useTranslations("Admin.organizations.detail");
   const s = useTranslations("Organization.status");
   const typeName = useVocabulary("organizationType");
-  const reasonName = useVocabulary("organizationRefusal");
   const takeDownReasonName = useVocabulary("organizationTakeDown");
   const countryName = useCountryName();
   const format = useFormatter();
@@ -119,7 +117,6 @@ function AdminOrganizationPage({
                 {t("viewPage")}
               </Button>
             )}
-            {state === "in_review" && <OrganizationReviewButton organization={organization} />}
             {!merged && (
               <AdminOrganizationMenu
                 organization={organization}
@@ -143,20 +140,6 @@ function AdminOrganizationPage({
         />
       </AdminPageHeader>
 
-      {state === "rejected" && (
-        <p className="rounded-lg border bg-muted p-3 text-sm">
-          <span className="font-medium">
-            {t("refused", { reason: reasonName(organization.decisionReason ?? "other") })}
-          </span>
-          {organization.decisionMessage && <> {organization.decisionMessage}</>}
-        </p>
-      )}
-      {state === "needs_changes" && (
-        <p className="rounded-lg border bg-muted p-3 text-sm">
-          <span className="font-medium">{t("sentBack")}</span>
-          {organization.decisionMessage && <> {organization.decisionMessage}</>}
-        </p>
-      )}
       {suspended && organization.suspensionReason && organization.suspendedAt && (
         <NoticeCard
           titleAs="h2"
@@ -317,13 +300,7 @@ function AdminMembers({
           </h2>
           <p className="text-sm text-muted-foreground">{summary}</p>
         </div>
-        {!detail.merged && (
-          // A record that waits for review has its primary action in the header: Review.
-          <AdminInvite
-            organization={organization}
-            prominence={reviewState(organization) === "in_review" ? "secondary" : "primary"}
-          />
-        )}
+        {!detail.merged && <AdminInvite organization={organization} />}
       </div>
       {rows.length === 0 ? (
         // Nobody is invited to a merged organization: its people went to the one kept.

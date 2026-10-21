@@ -74,13 +74,6 @@ export const industries = [
   "other",
 ] as const;
 
-export const refusalReasons = [
-  "duplicate",
-  "not_a_real_organization",
-  "out_of_scope",
-  "other",
-] as const;
-
 export const takeDownReasons = [
   "misleading_information",
   "not_a_real_organization",
@@ -89,14 +82,8 @@ export const takeDownReasons = [
 ] as const;
 
 /**
- * What the operators' list filters by: each review status, `suspended` for those taken down, and
- * `merged` for duplicates, which no other filter lists.
+ * What the operators' list filters by: `approved` for every organization that is not down, `claimed`
+ * for those with an open ownership claim, `suspended` for those taken down, and `merged` for
+ * duplicates, which no other filter lists.
  */
-export const organizationStatuses = [
-  "in_review",
-  "needs_changes",
-  "approved",
-  "rejected",
-  "suspended",
-  "merged",
-] as const;
+export const organizationStatuses = ["approved", "claimed", "suspended", "merged"] as const;

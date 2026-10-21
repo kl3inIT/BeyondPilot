@@ -85,7 +85,7 @@ export async function readAdminOrganization(id: string): Promise<AdminOrganizati
   }
 }
 
-/** How many organizations, new or claimed, wait for review now, and each of the last 14 days. Server only. */
+/** How many ownership claims are open now, and each of the last 14 days. Server only. */
 export async function readOrganizationQueue(): Promise<OrganizationReviewQueue> {
   const { data } = await getOrganizationReviewQueue(await sessionRequest());
   return data;
