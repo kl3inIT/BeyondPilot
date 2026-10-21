@@ -206,7 +206,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 				proposalVersion(withApproach))).expectStatus().isOk();
 
 		// A member of another organization cannot send it.
-		assertProblem(post(waiting.founder, send, null), 404, "PROPOSAL_NOT_FOUND");
+		assertProblem(post(takenDown.founder, send, null), 404, "PROPOSAL_NOT_FOUND");
 		reachable(provider.founder);
 		post(provider.founder, send, null).expectStatus().isOk();
 	}
