@@ -131,6 +131,7 @@ class DecisionTools {
 		return new SyncToolSpecification(tool, (context, request) -> {
 			Map<String, Object> arguments = request.arguments() == null ? Map.of() : request.arguments();
 			String area = string(arguments, "area");
+			// A guard: the SDK already refuses an area outside the schema enum, unless input validation is switched off.
 			if (area == null || !AREAS.contains(area)) {
 				return error("Name the area: one of " + String.join(", ", AREAS) + ".");
 			}

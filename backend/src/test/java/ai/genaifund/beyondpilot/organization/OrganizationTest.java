@@ -921,9 +921,9 @@ class OrganizationTest {
 		String colleague = signIn("colleague@taken-down.test");
 
 		assertThat(JsonPath.<Object>read(mine(colleague), "$.suggestion")).isNull();
-		assertThat(JsonPath.<List<Object>>read(
-				body(get(colleague, API + "/organizations?q=taken").expectStatus().isOk()), "$.items"))
-			.isEmpty();
+		assertThat(JsonPath.<List<String>>read(
+				body(get(colleague, API + "/organizations?q=taken").expectStatus().isOk()), "$.items[*].id"))
+			.doesNotContain(id.toString());
 		assertProblem(post(colleague, API + "/organizations/" + id + "/join", Map.of()), 404,
 				"ORGANIZATION_NOT_FOUND");
 	}

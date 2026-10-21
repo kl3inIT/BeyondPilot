@@ -567,6 +567,7 @@ class OperatorTools {
 			.build();
 		return new SyncToolSpecification(tool, (context, request) -> {
 			String area = string(request.arguments(), "area");
+			// A guard: the SDK already refuses an area outside the schema enum, unless input validation is switched off.
 			if (area != null && !AREAS.contains(area)) {
 				return error("Use one of: " + String.join(", ", AREAS) + ".");
 			}

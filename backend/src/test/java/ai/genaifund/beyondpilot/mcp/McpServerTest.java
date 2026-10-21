@@ -525,7 +525,6 @@ class McpServerTest {
 
 	@Test
 	void listPendingReviewsListsNoOrganizations() {
-		organization(TestSignIn.session(client, mail, "active-" + word + "@mcp.test"), "Active " + word);
 		String token = TestAppConnection.connect(client, port, operator, "mcp.research").access();
 		McpSyncClient app = app(token, "/mcp/operator");
 		app.initialize();
@@ -536,7 +535,9 @@ class McpServerTest {
 			.arguments(Map.of("area", "organizations"))
 			.build());
 		assertThat(organizations.isError()).isTrue();
-		assertThat(((TextContent) organizations.content().getFirst()).text()).contains("solutions, talent");
+		assertThat(JsonPath.<List<String>>read(operatorTool(app, "list_pending_reviews").inputSchema(),
+				"$.properties.area.enum"))
+			.containsExactly("solutions", "talent", "use_cases", "deployments");
 		app.closeGracefully();
 	}
 
@@ -623,8 +624,28 @@ class McpServerTest {
 		assertThat(quiet.annotations().readOnlyHint()).isFalse();
 		assertThat(quiet.annotations().destructiveHint()).isFalse();
 
-		String other = TestSignIn.session(client, mail, "approved-" + word + "@mcp.test");
+		String ownerMail = "approved-" + word + "@mcp.test";
+		String other = TestSignIn.session(client, mail, ownerMail);
 		organization(other, "Approved " + word);
+
+		// A send back needs the words the owners read.
+		UUID sentBack = submittedSolution(other, "Sent Back Agent " + word);
+		assertThat(decide(app, Map.of("area", "solutions", "id", sentBack.toString(), "action", "send_back")).isError())
+			.isTrue();
+		String returned = text(decide(app, Map.of("area", "solutions", "id", sentBack.toString(), "action",
+				"send_back", "message", "Name a customer it serves.")));
+		assertThat(JsonPath.<String>read(returned, "$.before")).isEqualTo("in_review");
+		assertThat(JsonPath.<String>read(returned, "$.after")).isEqualTo("needs_changes");
+		assertThat(JsonPath.<String>read(returned, "$.told")).isEqualTo("1 member of Approved " + word + ", by email.");
+		await().atMost(WAIT)
+			.untilAsserted(() -> assertThat(mail.latestTextTo(ownerMail)).contains("Name a customer it serves."));
+
+		// Not in review: refused with what to do instead.
+		CallToolResult refused = decide(app,
+				Map.of("area", "solutions", "id", sentBack.toString(), "action", "approve"));
+		assertThat(refused.isError()).isTrue();
+		assertThat(((TextContent) refused.content().getFirst()).text()).contains("get_record");
+
 		UUID solution = submittedSolution(other, "Decided Agent " + word);
 		assertThat(decide(app, Map.of("area", "solutions", "id", solution.toString(), "action", "reject")).isError())
 			.isTrue();
@@ -632,6 +653,10 @@ class McpServerTest {
 		assertThat(JsonPath.<String>read(listed, "$.before")).isEqualTo("in_review");
 		assertThat(JsonPath.<String>read(listed, "$.after")).isEqualTo("approved");
 		app.closeGracefully();
+
+		assertThat(jdbc.sql("""
+				select target_kind || ' ' || outcome from mcp_call where tool = 'decide_record' and target_id = :id
+				""").param("id", sentBack.toString()).query(String.class).list()).containsExactly("solution ok");
 	}
 
 	@Test
@@ -642,19 +667,12 @@ class McpServerTest {
 		McpSyncClient app = app(token, "/mcp/operator");
 		app.initialize();
 
-		McpSchema.Tool decide = app.listTools()
-			.tools()
-			.stream()
-			.filter(tool -> tool.name().equals("decide_record"))
-			.findFirst()
-			.orElseThrow();
-		assertThat(JsonPath.<List<String>>read(decide.inputSchema().properties().get("area"), "$.enum"))
+		assertThat(JsonPath.<List<String>>read(operatorTool(app, "decide_record").inputSchema(), "$.properties.area.enum"))
 			.containsExactly("solutions", "talent", "deployments");
 		for (String action : List.of("approve", "send_back")) {
 			CallToolResult refused = decide(app,
 					Map.of("area", "organizations", "id", organization.toString(), "action", action));
 			assertThat(refused.isError()).isTrue();
-			assertThat(((TextContent) refused.content().getFirst()).text()).contains("solutions, talent, deployments");
 		}
 		app.closeGracefully();
 	}
@@ -769,6 +787,10 @@ class McpServerTest {
 			.param("id", id.toString())
 			.query(String.class)
 			.list()).containsSubsequence("use_case.create", "use_case.update", "use_case.publish", "use_case.send_back");
+	}
+
+	private static McpSchema.Tool operatorTool(McpSyncClient app, String name) {
+		return app.listTools().tools().stream().filter(tool -> tool.name().equals(name)).findFirst().orElseThrow();
 	}
 
 	private static CallToolResult decide(McpSyncClient app, Map<String, Object> arguments) {
