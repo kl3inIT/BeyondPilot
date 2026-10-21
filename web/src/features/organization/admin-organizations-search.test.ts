@@ -4,9 +4,7 @@ import { loadAdminOrganizationsSearch } from "./admin-organizations-search";
 
 describe("loadAdminOrganizationsSearch", () => {
   it("reads a status the list still filters by", () => {
-    it("reads the active status", () => {
-      expect(loadAdminOrganizationsSearch("?status=active").status).toBe("active");
-    });
+    expect(loadAdminOrganizationsSearch("?status=active").status).toBe("active");
     expect(loadAdminOrganizationsSearch("?status=claimed").status).toBe("claimed");
   });
 
