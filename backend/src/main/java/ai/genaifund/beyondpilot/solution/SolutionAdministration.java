@@ -252,7 +252,7 @@ public class SolutionAdministration {
 	}
 
 	/**
-	 * The approved organizations a solution can be started for, by name; at most {@value #ORGANIZATION_LIMIT}.
+	 * The organizations not taken down a solution can be started for, by name; at most {@value #ORGANIZATION_LIMIT}.
 	 * @param text only those whose name contains it, ignoring case; every one when blank or null
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 */
@@ -354,7 +354,7 @@ public class SolutionAdministration {
 
 	private static SolutionException organizationNotApproved(UUID organizationId) {
 		return new SolutionException(SolutionErrorCode.ORGANIZATION_NOT_APPROVED,
-				"Solution of organization " + organizationId + ", which is taken down");
+				"Organization " + organizationId + " does not exist or is taken down");
 	}
 
 	/**
@@ -584,7 +584,7 @@ public class SolutionAdministration {
 	private void tell(Solution solution, EmailService.SolutionDecision decision, @Nullable String reason) {
 		UUID organizationId = solution.getOrganizationId();
 		String organization = name(organizations.names(List.of(organizationId)), organizationId);
-		// The public page answers only for an approved solution of an approved organization.
+		// The public page answers only for an approved solution of an organization that is not taken down.
 		@Nullable String publicSlug = solution.isApproved()
 				&& organizations.profile(organizationId).filter(OrganizationProfile::approved).isPresent()
 						? solution.getSlug() : null;

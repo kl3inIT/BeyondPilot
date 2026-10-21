@@ -63,7 +63,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * What an organization does with its proposal to a use case. The members of an approved organization keep one working
+ * What an organization does with its proposal to a use case. The members of an organization that is not taken down keep one working
  * copy of it, which a save changes until it is sent; sending checks everything again and keeps the sender's talent
  * profile as it was. The members of the organization that posted the use case read what was sent. Nothing here is a
  * program application: that is {@link ProposalService}.
@@ -146,7 +146,7 @@ public class UseCaseProposals {
 
 	/**
 	 * Keeps what the form holds, making the proposal on the first save. A draft may be partial; it may offer solutions of the organization, whatever their review says, each once.
-	 * @throws ProposalException when the use case no longer takes proposals, the caller has no approved organization
+	 * @throws ProposalException when the use case no longer takes proposals, the caller has no organization that is not taken down
 	 * or it posted the use case, the proposal was sent or changed since the form read it, or something does not fit
 	 */
 	@Transactional

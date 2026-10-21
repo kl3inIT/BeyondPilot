@@ -311,7 +311,7 @@ public class UseCaseAdministration {
 		Instant now = Instant.now();
 		OrganizationName organization = organizations.approvedOrganization(request.organizationId())
 			.orElseThrow(() -> refused(UseCaseErrorCode.ORGANIZATION_NOT_ELIGIBLE,
-					"Organization " + request.organizationId() + " is not an organization that is not taken down"));
+					"Organization " + request.organizationId() + " does not exist or is taken down"));
 		check(request, now);
 		UseCase useCase = new UseCase(organization.id(), operator.accountId(), request.closesAt());
 		write(useCase, request);

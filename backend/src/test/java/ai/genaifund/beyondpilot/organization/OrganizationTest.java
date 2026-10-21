@@ -855,9 +855,10 @@ class OrganizationTest {
 		assertProblem(post(duplicateOwner, merge, Map.of("intoId", kept)), 403, "IDENTITY_OPERATOR_REQUIRED");
 		assertProblem(post(operator, merge, Map.of()), 400, "REQUEST_INVALID");
 		assertProblem(post(operator, merge, Map.of("intoId", duplicate)), 409, "ORGANIZATION_CANNOT_MERGE");
-		// Only an approved organization is kept.
-		UUID waiting = create(signIn("founder@keeper-waiting.test"), "Keeper Waiting");
-		assertProblem(post(operator, merge, Map.of("intoId", waiting)), 409, "ORGANIZATION_CANNOT_MERGE");
+		// Only an organization that is not taken down is kept.
+		UUID keeperDown = create(signIn("founder@keeper-down.test"), "Keeper Down");
+		takeDown(keeperDown);
+		assertProblem(post(operator, merge, Map.of("intoId", keeperDown)), 409, "ORGANIZATION_CANNOT_MERGE");
 		assertProblem(post(operator, merge, Map.of("intoId", UUID.randomUUID())), 404, "ORGANIZATION_NOT_FOUND");
 
 		post(operator, merge, Map.of("intoId", kept)).expectStatus().isNoContent();
