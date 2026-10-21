@@ -173,7 +173,7 @@ const pocketPolicy = {
   type: "builder_team",
   country: "VN",
   teamSize: "2_9",
-  approved: true,
+  active: true,
   changeable: false,
 };
 
@@ -183,7 +183,7 @@ const anTran = {
   type: "independent_builder",
   country: "VN",
   teamSize: "just_me",
-  approved: true,
+  active: true,
   changeable: true,
 };
 

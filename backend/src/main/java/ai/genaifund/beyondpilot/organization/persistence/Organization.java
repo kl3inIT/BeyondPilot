@@ -30,7 +30,7 @@ public class Organization {
 	 * Active: every organization is, from its creation, until an operator merges it. Taking it down is
 	 * {@code suspendedAt}.
 	 */
-	public static final String APPROVED = "approved";
+	public static final String ACTIVE = "active";
 
 	/** Merged into another organization by an operator: a record of where it went, which nobody changes. */
 	public static final String MERGED = "merged";
@@ -113,14 +113,14 @@ public class Organization {
 	protected Organization() {
 	}
 
-	/** A new organization is {@link #APPROVED}: nobody reviews it. */
+	/** A new organization is {@link #ACTIVE}: nobody reviews it. */
 	@SuppressWarnings("NullAway.Init")
 	public Organization(UUID id, String slug, String name, String type, UUID createdByAccountId) {
 		this.id = id;
 		this.slug = slug;
 		this.name = name;
 		this.type = type;
-		this.status = APPROVED;
+		this.status = ACTIVE;
 		this.createdByAccountId = createdByAccountId;
 	}
 
@@ -161,8 +161,8 @@ public class Organization {
 	}
 
 	/**
-	 * Takes an organization down. Its status stays {@link #APPROVED}, so restoring changes nothing else; while it is
-	 * down {@link #isApproved()} is false.
+	 * Takes an organization down. Its status stays {@link #ACTIVE}, so restoring changes nothing else; while it is
+	 * down {@link #isActive()} is false.
 	 */
 	public void suspend(String reason, @Nullable String message, Instant at) {
 		suspensionReason = reason;
@@ -194,7 +194,7 @@ public class Organization {
 		}
 	}
 
-	/** Turns an individual into a team of the same person. It stays approved. */
+	/** Turns an individual into a team of the same person. It stays active. */
 	public void becomeTeam(String name, String teamSize, @Nullable String website) {
 		this.name = name;
 		this.type = "builder_team";
@@ -216,8 +216,8 @@ public class Organization {
 	}
 
 	/** Active, meaning not taken down and not merged: what lets it have members, solutions and use cases. */
-	public boolean isApproved() {
-		return APPROVED.equals(status) && suspendedAt == null;
+	public boolean isActive() {
+		return ACTIVE.equals(status) && suspendedAt == null;
 	}
 
 	public UUID getId() {

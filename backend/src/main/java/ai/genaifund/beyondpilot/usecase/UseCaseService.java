@@ -241,7 +241,7 @@ public class UseCaseService {
 	private Membership writer(Actor actor) {
 		identity.requireActive(actor);
 		return organizations.membershipOf(actor)
-			.filter(Membership::approved)
+			.filter(Membership::active)
 			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.ENTERPRISE_REQUIRED,
 					"Account " + actor.accountId() + " is not a member of an organization that is not taken down"));
 	}

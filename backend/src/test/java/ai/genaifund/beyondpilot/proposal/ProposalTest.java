@@ -61,7 +61,7 @@ class ProposalTest extends ApplicationsHttpTest {
 			.isOk());
 		assertThat(JsonPath.<String>read(organized, "$.organization.name")).isEqualTo("Dat Phan");
 		assertThat(JsonPath.<String>read(organized, "$.organization.type")).isEqualTo("independent_builder");
-		assertThat(JsonPath.<Boolean>read(organized, "$.organization.approved")).isTrue();
+		assertThat(JsonPath.<Boolean>read(organized, "$.organization.active")).isTrue();
 		UUID solution = completeSolution(applicant, email, "Claim Copilot");
 
 		String saved = body(put(applicant, form.path(),
@@ -143,7 +143,7 @@ class ProposalTest extends ApplicationsHttpTest {
 			.isOk());
 		assertThat(JsonPath.<String>read(team, "$.organization.name")).isEqualTo("Lan and Friends");
 		assertThat(JsonPath.<String>read(team, "$.organization.type")).isEqualTo("builder_team");
-		assertThat(JsonPath.<Boolean>read(team, "$.organization.approved")).isTrue();
+		assertThat(JsonPath.<Boolean>read(team, "$.organization.active")).isTrue();
 		assertThat(JsonPath.<Boolean>read(team, "$.organization.changeable")).isFalse();
 		// A team stays one here: it may have members by now.
 		assertProblem(post(lan, form.path() + "/organization/leave", null), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
@@ -199,10 +199,10 @@ class ProposalTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isOk());
 
-		assertThat(JsonPath.<Boolean>read(team, "$.organization.approved")).isTrue();
+		assertThat(JsonPath.<Boolean>read(team, "$.organization.active")).isTrue();
 		assertThat(jdbc.sql("select status from organization where name = 'Lan Stays Team'")
 			.query(String.class)
-			.single()).isEqualTo("approved");
+			.single()).isEqualTo("active");
 		assertThat(jdbc.sql("""
 				select o.name from proposal p join organization o on o.id = p.organization_id
 				where p.account_id = (select id from identity_account where email = 'lan@stays.test')

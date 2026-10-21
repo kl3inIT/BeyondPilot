@@ -31,7 +31,7 @@ const address = createSerializer(adminOrganizationsSearch);
 
 /** How each state of an organization reads to the operator. */
 const tones = {
-  approved: "success",
+  active: "success",
   suspended: "destructive",
   merged: "neutral",
 } as const;

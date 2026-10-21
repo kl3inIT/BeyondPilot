@@ -95,7 +95,7 @@ public class UseCaseDirectory {
 			.map(useCase -> new UseCaseTarget(useCase.getId(), useCase.getOrganizationId(),
 					Objects.requireNonNull(useCase.getTitle()), useCase.getClosesAt(), useCase.getProposalEditDays(),
 					!UseCase.CLOSED.equals(useCase.statusAt(now)) && organizations
-						.approvedNames(List.of(useCase.getOrganizationId()))
+						.activeNames(List.of(useCase.getOrganizationId()))
 						.containsKey(useCase.getOrganizationId()),
 					challenge(useCase, now).map(ApplicationForm::slug).orElse(null)));
 	}
@@ -125,7 +125,7 @@ public class UseCaseDirectory {
 	public Optional<UseCaseBrief> brief(UUID useCaseId) {
 		return useCases.findById(useCaseId)
 			.filter(useCase -> UseCase.APPROVED.equals(useCase.getStatus()) && useCase.getTitle() != null)
-			.filter(useCase -> organizations.approvedNames(List.of(useCase.getOrganizationId()))
+			.filter(useCase -> organizations.activeNames(List.of(useCase.getOrganizationId()))
 				.containsKey(useCase.getOrganizationId()))
 			.map(useCase -> {
 				Map<UUID, StoredFile> files = storage.describe(useCase.getAttachmentFileIds());
@@ -201,7 +201,7 @@ public class UseCaseDirectory {
 	/** Those of these published use cases whose organization is not taken down. */
 	private List<IndexedUseCase> indexed(List<UseCase> published) {
 		Map<UUID, OrganizationName> names = organizations
-			.approvedNames(published.stream().map(UseCase::getOrganizationId).collect(Collectors.toSet()));
+			.activeNames(published.stream().map(UseCase::getOrganizationId).collect(Collectors.toSet()));
 		return published.stream().filter(useCase -> names.containsKey(useCase.getOrganizationId())).map(useCase -> {
 			OrganizationName organization = useCase.isHideOrganizationName() ? null
 					: names.get(useCase.getOrganizationId());
@@ -243,7 +243,7 @@ public class UseCaseDirectory {
 			program = named.get().id();
 		}
 		List<UUID> matching = text == null ? List.of()
-				: organizations.approvedOrganizations(text, ORGANIZATION_LIMIT)
+				: organizations.activeOrganizations(text, ORGANIZATION_LIMIT)
 					.stream()
 					.map(OrganizationName::id)
 					.toList();
@@ -276,7 +276,7 @@ public class UseCaseDirectory {
 		if (title == null || industry == null || publishedAt == null) {
 			throw notFound(id);
 		}
-		OrganizationName organization = organizations.approvedNames(List.of(useCase.getOrganizationId()))
+		OrganizationName organization = organizations.activeNames(List.of(useCase.getOrganizationId()))
 			.get(useCase.getOrganizationId());
 		if (organization == null) {
 			throw notFound(id);

@@ -116,7 +116,7 @@ class UseCaseTools {
 				List.of("name", "type"), "additionalProperties", false);
 		Tool tool = Tool.builder("create_organization", schema)
 			.title("Add a company not on BeyondPilot yet")
-			.description("Create an organization for a company that is not on BeyondPilot yet, approved from the start "
+			.description("Create an organization for a company that is not on BeyondPilot yet, active from the start "
 					+ "and owned by nobody, as Admin › Organizations › New does, so that GenAI Fund can write use "
 					+ "cases for it. Nobody is invited or emailed; someone from the company can claim it later. Use it "
 					+ "only when the operator asks, after search found no such company: an organization of the same "
@@ -149,7 +149,7 @@ class UseCaseTools {
 						text(string(arguments, "description")));
 				String path = "/admin/organizations/" + id;
 				CallLog.read("organization", id, name, path);
-				return text(fields("id", id.toString(), "name", name, "status", "approved", "told", "Nobody.", "url",
+				return text(fields("id", id.toString(), "name", name, "status", "active", "told", "Nobody.", "url",
 						callers.site() + path));
 			}
 			catch (IllegalArgumentException wrong) {

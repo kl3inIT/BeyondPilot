@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { OrganizationFrame } from "@/features/organization/organization-frame";
-import { isApproved } from "@/features/organization/organization-format";
+import { isActive } from "@/features/organization/organization-format";
 import { OrganizationSection } from "@/features/organization/organization-section";
 import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
@@ -48,7 +48,7 @@ function OrganizationSolutionsPage({
 }: OrganizationSolutionsPageProps) {
   const t = useTranslations("Solution.mine");
   const format = useFormatter();
-  const takenDown = mine.role === "owner" && !isApproved(mine.organization);
+  const takenDown = mine.role === "owner" && !isActive(mine.organization);
   const day = (instant: string) => format.dateTime(new Date(instant), "date");
 
   const sorted = sortOrganizationSolutions(solutions.items, search);

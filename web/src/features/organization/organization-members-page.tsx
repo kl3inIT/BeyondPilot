@@ -16,7 +16,7 @@ import { JoinRequestCard } from "./join-request-card";
 import { MemberActions } from "./member-actions";
 import { MemberRole } from "./member-role";
 import { OrganizationFrame } from "./organization-frame";
-import { isApproved } from "./organization-format";
+import { isActive } from "./organization-format";
 import {
   defaultMemberSort,
   organizationMemberSortKeys,
@@ -189,7 +189,7 @@ function OrganizationMembersPage({
         )}
       </OrganizationSection>
 
-      {owner && isApproved(organization) && (
+      {owner && isActive(organization) && (
         <OrganizationSection id="members-access" title={t("access.title")}>
           <JoinAccess emailDomain={emailDomain} autoJoin={organization.autoJoin} />
         </OrganizationSection>

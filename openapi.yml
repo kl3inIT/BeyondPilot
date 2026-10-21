@@ -5485,7 +5485,7 @@ paths:
           - "null"
           maxLength: 100
           minLength: 0
-      - description: "Only organizations in this state: `approved` leaves out those\
+      - description: "Only organizations in this state: `active` leaves out those\
           \ taken down, `claimed` selects those with an open ownership claim, and\
           \ `suspended` selects those taken down. Merged organizations are listed\
           \ only under `merged`."
@@ -5495,11 +5495,11 @@ paths:
         schema:
           type: string
           enum:
-          - approved
+          - active
           - claimed
           - suspended
           - merged
-          pattern: approved|claimed|suspended|merged
+          pattern: active|claimed|suspended|merged
       - description: "Only organizations in this country, ISO 3166-1 alpha-2."
         in: query
         name: country
@@ -5588,7 +5588,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AdminOrganization"
-          description: "The organization, approved and without an owner."
+          description: "The organization, active and without an owner."
         "400":
           content:
             application/problem+json:
@@ -5632,7 +5632,7 @@ paths:
           - "null"
           maxLength: 100
           minLength: 0
-      - description: "Only organizations in this state: `approved` leaves out those\
+      - description: "Only organizations in this state: `active` leaves out those\
           \ taken down, `claimed` selects those with an open ownership claim, and\
           \ `suspended` selects those taken down. Merged organizations are listed\
           \ only under `merged`."
@@ -5642,11 +5642,11 @@ paths:
         schema:
           type: string
           enum:
-          - approved
+          - active
           - claimed
           - suspended
           - merged
-          pattern: approved|claimed|suspended|merged
+          pattern: active|claimed|suspended|merged
       - description: "Only organizations in this country, ISO 3166-1 alpha-2."
         in: query
         name: country
@@ -6111,7 +6111,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Problem"
           description: "The organizations are the same, the duplicate was merged,\
-            \ or the one to keep is not approved and shown."
+            \ or the one to keep is not active and shown."
       security:
       - session: []
       summary: "Merge a duplicate organization into the one to keep, with its people\
@@ -6208,7 +6208,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: The organization is not approved.
+          description: The organization is not active.
       security:
       - session: []
       summary: "Take an organization down, with a reason"
@@ -6399,7 +6399,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: Turned on for an organization that is not approved or has no
+          description: Turned on for an organization that is not active or has no
             verified domain.
       security:
       - session: []
@@ -6484,7 +6484,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-          description: "The organization is not approved, or the address already belongs\
+          description: "The organization is not active, or the address already belongs\
             \ to it or already holds an open invitation."
         "429":
           content:
@@ -14739,8 +14739,8 @@ components:
     AdminCreateOrganization:
       type: object
       description: "An organization an operator creates for a company that is not\
-        \ here yet. It is approved from the start and has no member until someone\
-        \ accepts the invitation to own it, or claims it."
+        \ here yet. It is active from the start and has no member until someone accepts\
+        \ the invitation to own it, or claims it."
       properties:
         country:
           type:
@@ -15095,10 +15095,10 @@ components:
           type: string
         status:
           type: string
-          description: '`approved` for every organization that was not merged; `suspendedAt`
+          description: '`active` for every organization that was not merged; `suspendedAt`
             says it is taken down.'
           enum:
-          - approved
+          - active
           - merged
         suspendedAt:
           type:
@@ -16570,9 +16570,9 @@ components:
       type: object
       description: The organization a person applies for.
       properties:
-        approved:
+        active:
           type: boolean
-          description: Whether it is not taken down.
+          description: "Whether it is active, meaning not taken down."
         changeable:
           type: boolean
           description: "Whether the person applies as themselves and may still apply\
@@ -16598,7 +16598,7 @@ components:
           - independent_builder
           - other
       required:
-      - approved
+      - active
       - changeable
       - id
       - name
@@ -19587,7 +19587,7 @@ components:
         open:
           type: boolean
           description: Whether the organization may invite at all; one that is not
-            approved may not.
+            active may not.
         openLimit:
           type: integer
           format: int32
@@ -20901,8 +20901,8 @@ components:
         intoId:
           type: string
           format: uuid
-          description: "The organization kept, approved and shown; it receives the\
-            \ duplicate's people and records."
+          description: "The organization kept, active and shown; it receives the duplicate's\
+            \ people and records."
       required:
       - intoId
     MergedOrganization:
@@ -21594,11 +21594,11 @@ components:
           type: string
         status:
           type: string
-          description: "`approved` for every organization that was not merged. One\
-            \ taken down stays `approved`; `suspendedAt` says it is down. `merged`\
-            \ is a duplicate merged into another, which nobody changes."
+          description: "`active` for every organization that was not merged. One taken\
+            \ down stays `active`; `suspendedAt` says it is down. `merged` is a duplicate\
+            \ merged into another, which nobody changes."
           enum:
-          - approved
+          - active
           - merged
         suspendedAt:
           type:
@@ -22871,9 +22871,9 @@ components:
       type: object
       description: The organization the caller sends a proposal for.
       properties:
-        approved:
+        active:
           type: boolean
-          description: Whether it is not taken down.
+          description: "Whether it is active, meaning not taken down."
         id:
           type: string
           format: uuid
@@ -22903,7 +22903,7 @@ components:
           - independent_builder
           - other
       required:
-      - approved
+      - active
       - id
       - name
       - owner
@@ -23818,9 +23818,10 @@ components:
         id:
           type: string
           format: uuid
-        organizationApproved:
+        organizationActive:
           type: boolean
-          description: Whether the sending organization is not taken down.
+          description: "Whether the sending organization is active, meaning not taken\
+            \ down."
         organizationLogoFileId:
           type:
           - string
@@ -23863,7 +23864,7 @@ components:
           $ref: "#/components/schemas/ProposalUseCase"
       required:
       - id
-      - organizationApproved
+      - organizationActive
       - organizationName
       - outcomePending
       - sentAt
@@ -23907,9 +23908,10 @@ components:
         id:
           type: string
           format: uuid
-        organizationApproved:
+        organizationActive:
           type: boolean
-          description: Whether the sending organization is not taken down.
+          description: "Whether the sending organization is active, meaning not taken\
+            \ down."
         organizationId:
           type: string
           format: uuid
@@ -23942,7 +23944,7 @@ components:
             type: string
       required:
       - id
-      - organizationApproved
+      - organizationActive
       - organizationId
       - organizationName
       - outcomePending

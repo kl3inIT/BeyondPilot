@@ -17,7 +17,7 @@ const pocketPolicy = {
   type: "company",
   country: "SG",
   teamSize: "10_49",
-  approved: true,
+  active: true,
 };
 const routeCopilot = {
   id: "5a0b7c1d-0000-4000-8000-000000000011",
@@ -94,7 +94,7 @@ async function fakeBackend(page: Page, joining: "joined" | "requested" = "joined
         type: body.kind === "individual" ? "independent_builder" : "builder_team",
         country: body.country,
         teamSize: body.kind === "individual" ? "just_me" : body.teamSize,
-        approved: true,
+        active: true,
       };
       return route.fulfill(fulfil(view));
     }

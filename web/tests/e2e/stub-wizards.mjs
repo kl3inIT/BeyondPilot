@@ -106,7 +106,7 @@ export function proposalForm(session, scene) {
           id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
           name: alone ? "An Tr?n" : "Pocket Policy",
           logoFileId: null,
-          approved: true,
+          active: true,
           owner: session === "owner" || alone,
           type: alone ? "independent_builder" : "company",
         }
@@ -170,7 +170,7 @@ function receivedSummary(scene, id, sentAt) {
     organizationName: receivedNames[id],
     organizationLogoFileId: null,
     solutionNames: ["Policy Chat"],
-    organizationApproved: id !== receivedIds.orbit,
+    organizationActive: id !== receivedIds.orbit,
     contactName: minh.name,
     sentAt,
     editedAt: null,

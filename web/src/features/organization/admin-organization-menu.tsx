@@ -18,7 +18,7 @@ import { TakeDownDialog } from "./organization-take-down";
 
 type AdminOrganizationMenuProps = {
   organization: Pick<Organization, "id" | "name">;
-  /** Whether it is approved and shown, so it can be taken down. */
+  /** Whether it is active and shown, so it can be taken down. */
   canTakeDown: boolean;
   members: number;
   invitations: number;
@@ -26,7 +26,7 @@ type AdminOrganizationMenuProps = {
 
 /**
  * What an operator does to an organization from its record, in a menu: merge a duplicate into the
- * one to keep, and take an approved one down.
+ * one to keep, and take an active one down.
  */
 function AdminOrganizationMenu({
   organization,

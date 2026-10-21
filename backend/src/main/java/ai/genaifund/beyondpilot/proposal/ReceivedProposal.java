@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
  * @param deck the PDF attached, if any
  */
 public record ReceivedProposal(UUID id, UUID useCaseId, String useCaseTitle, String organizationName,
-		boolean organizationApproved, List<Solution> solutions, @Nullable String approach,
+		boolean organizationActive, List<Solution> solutions, @Nullable String approach,
 		@Nullable String teamBackground, Contact sentBy, @Nullable Sender sender, @Nullable Deck deck, Instant sentAt,
 		@Nullable Instant editedAt, @Nullable String decision, @Nullable Instant decidedAt, @Nullable String decidedBy,
 		@Nullable Instant outcomeSentAt) {

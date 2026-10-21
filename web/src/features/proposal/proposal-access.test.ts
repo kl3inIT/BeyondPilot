@@ -15,7 +15,7 @@ const useCase = { id: "u", title: "T" };
 const organization = {
   id: "o",
   name: "Org",
-  approved: true,
+  active: true,
   owner: true,
   type: "company" as const,
 };
@@ -34,7 +34,7 @@ function form(parts: Partial<UseCaseProposalForm>): UseCaseProposalForm {
 describe("accessOfForm", () => {
   it("lets a person without an organization, or with one waiting for review, start", () => {
     expect(accessOfForm(form({ organization: null }))).toEqual({ kind: "open", draft: false });
-    expect(accessOfForm(form({ organization: { ...organization, approved: false } }))).toEqual({
+    expect(accessOfForm(form({ organization: { ...organization, active: false } }))).toEqual({
       kind: "open",
       draft: false,
     });

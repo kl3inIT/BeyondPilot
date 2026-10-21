@@ -164,7 +164,7 @@ class EmailRendererTest {
 			RenderedEmail kept = renderer.render(kind, saved, values, APPEARANCE);
 			assertThat(kept.text()).as(kind.value()).startsWith("Saved wording.").doesNotContain(url);
 		}
-		assertThat(linked).containsExactlyInAnyOrder("organization_invitation", "organization_activated",
+		assertThat(linked).containsExactlyInAnyOrder("organization_invitation",
 				"organization_request_approved", "organization_restored",
 				"application_received", "reviewer_invitation", "application_outcome", "solution_approved",
 				"solution_sent_back", "solution_restored", "use_case_approved", "use_case_sent_back",
@@ -236,21 +236,6 @@ class EmailRendererTest {
 	void aSubjectIsOneLine() {
 		assertThat(renderer.problems(EmailKind.SIGN_IN_CODE, new EmailTemplate("One\nTwo", "{{code}} {{minutes}}")))
 			.contains(new TemplateProblem(TemplateProblem.Type.SUBJECT_LINE, "subject", null));
-	}
-
-	@Test
-	void theActivationEmailRendersItsDefault() {
-		String url = "https://beyondpilot.test/workspace/organization";
-		Map<String, Object> values = new HashMap<>();
-		values.put("organizationName", "Plain Cover");
-		values.put("organizationUrl", url);
-
-		RenderedEmail email = renderer.render(EmailKind.ORGANIZATION_ACTIVATED,
-				defaults.template(EmailKind.ORGANIZATION_ACTIVATED), values, APPEARANCE);
-
-		assertThat(email.subject()).isEqualTo("Plain Cover is active on BeyondPilot");
-		assertThat(email.text()).contains("Plain Cover is active on BeyondPilot now").contains(url);
-		assertThat(email.html()).contains("href=\"" + url + "\"");
 	}
 
 	private static List<EmailKind> sentKinds() {

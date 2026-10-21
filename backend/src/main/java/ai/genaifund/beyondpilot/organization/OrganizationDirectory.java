@@ -43,7 +43,7 @@ public class OrganizationDirectory {
 		return memberships.memberOf(actor.accountId())
 			.flatMap(member -> organizations.findById(member.organizationId())
 				.map(organization -> new Membership(organization.getId(), organization.getName(), organization.getType(),
-						member.isOwner(), organization.isApproved())));
+						member.isOwner(), organization.isActive())));
 	}
 
 	/** The accounts of everyone who belongs to the organization, owners and members alike. */
@@ -82,20 +82,20 @@ public class OrganizationDirectory {
 			.map(organization -> new OrganizationProfile(organization.getId(), organization.getSlug(),
 					organization.getName(), organization.getType(), organization.getCountry(),
 					organization.getTeamSize(), organization.getWebsite(), organization.getFoundedYear(),
-					organization.getCompanySizeLabel(), organization.getLogoFileId(), organization.isApproved(), organization.getTeamBackground()));
+					organization.getCompanySizeLabel(), organization.getLogoFileId(), organization.isActive(), organization.getTeamBackground()));
 	}
 
 	/** Whether this organization is active, meaning not taken down and not merged, read now. */
 	@Transactional(readOnly = true)
-	public boolean isApproved(UUID organizationId) {
-		return organizations.findById(organizationId).filter(Organization::isApproved).isPresent();
+	public boolean isActive(UUID organizationId) {
+		return organizations.findById(organizationId).filter(Organization::isActive).isPresent();
 	}
 
 	/** The active organization at this address, as another module shows it; empty when there is none. */
 	@Transactional(readOnly = true)
-	public Optional<OrganizationName> approvedAt(String slug) {
+	public Optional<OrganizationName> activeAt(String slug) {
 		return organizations.findBySlug(slug)
-			.filter(Organization::isApproved)
+			.filter(Organization::isActive)
 			.map(organization -> new OrganizationName(organization.getId(), organization.getSlug(),
 					organization.getName(), organization.getCountry(), organization.getLogoFileId()));
 	}
@@ -105,9 +105,9 @@ public class OrganizationDirectory {
 	 * unknown, taken down or merged.
 	 */
 	@Transactional(readOnly = true)
-	public Optional<OrganizationName> approvedOrganization(UUID id) {
+	public Optional<OrganizationName> activeOrganization(UUID id) {
 		return organizations.findById(id)
-			.filter(Organization::isApproved)
+			.filter(Organization::isActive)
 			.map(organization -> new OrganizationName(organization.getId(), organization.getSlug(),
 					organization.getName(), organization.getCountry(), organization.getLogoFileId()));
 	}
@@ -117,8 +117,8 @@ public class OrganizationDirectory {
 	 * @param text only those whose name contains it, ignoring case; every one when blank or null
 	 */
 	@Transactional(readOnly = true)
-	public List<OrganizationName> approvedOrganizations(@Nullable String text, int limit) {
-		return organizationList.approvedOrganizations(OrganizationViews.text(text), limit)
+	public List<OrganizationName> activeOrganizations(@Nullable String text, int limit) {
+		return organizationList.activeOrganizations(OrganizationViews.text(text), limit)
 			.stream()
 			.map(name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country(), name.logoFileId()))
 			.toList();
@@ -135,9 +135,9 @@ public class OrganizationDirectory {
 		Organization organization = organizations.findBySlug(slug)
 			.flatMap(found -> found.isMerged()
 					? Optional.ofNullable(found.getMergedIntoId()).flatMap(organizations::findById) : Optional.of(found))
-			.filter(Organization::isApproved)
+			.filter(Organization::isActive)
 			.orElseThrow(() -> new OrganizationException(OrganizationErrorCode.ORGANIZATION_NOT_FOUND,
-					"No approved organization at " + slug));
+					"No active organization at " + slug));
 		return new PublicOrganizationResponse(organization.getSlug(), organization.getName(), organization.getType(),
 				organization.getCountry(), organization.getIndustries(), organization.getWebsite(),
 				organization.getDescription(), organization.getLogoFileId());
@@ -145,8 +145,8 @@ public class OrganizationDirectory {
 
 	/** The names of the active ones of these organizations by identifier; one taken down is left out. */
 	@Transactional(readOnly = true)
-	public Map<UUID, OrganizationName> approvedNames(Collection<UUID> organizationIds) {
-		return organizationList.approvedNames(organizationIds)
+	public Map<UUID, OrganizationName> activeNames(Collection<UUID> organizationIds) {
+		return organizationList.activeNames(organizationIds)
 			.stream()
 			.collect(Collectors.toMap(OrganizationQueryRepository.Name::id,
 					name -> new OrganizationName(name.id(), name.slug(), name.name(), name.country(), name.logoFileId())));

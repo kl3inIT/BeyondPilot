@@ -14,7 +14,7 @@ public record ReceivedUseCaseProposalResponse(@Schema(requiredMode = Schema.Requ
 		@Schema(types = { "string", "null" }, format = "uuid", description = "Read at /api/storage/files/{id}.") @Nullable UUID organizationLogoFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<ProposalSolutionResponse> solutions,
 		@Schema(types = { "string", "null" }) @Nullable String approach,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Whether the sending organization is not taken down.") boolean organizationApproved,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Whether the sending organization is active, meaning not taken down.") boolean organizationActive,
 		@Schema(types = { "object", "null" }, description = "The sender's talent profile, when it went with the proposal.") @Nullable SenderProfileResponse sender,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) SentByResponse sentBy,
 		@Schema(types = { "string", "null" }, description = "What the sending team has done.") @Nullable String teamBackground,

@@ -54,7 +54,9 @@ test.describe("admin email", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Email");
     await expect(page.getByRole("status")).toContainText("No email can leave yet");
     await expect(page.getByRole("heading", { level: 2, name: "Organizations" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Organization active/ })).toContainText("Edited");
+    await expect(page.getByRole("link", { name: /Organization invitation/ })).toContainText(
+      "Edited",
+    );
     await expectNoSeriousA11yViolations(page);
   });
 
@@ -78,10 +80,10 @@ test.describe("admin email", () => {
   }) => {
     await signInAs(context, "operator", baseURL!);
     const drafts = await answerPreview(page);
-    await page.goto("/admin/email/templates/organization_activated");
+    await page.goto("/admin/email/templates/organization_invitation");
 
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Organization active");
-    await expect(page.getByTitle("Preview of Organization active")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Organization invitation");
+    await expect(page.getByTitle("Preview of Organization invitation")).toBeVisible();
 
     // Each variable is listed with what a reader would see in its place, and whether it must appear.
     const variables = page.getByRole("region", { name: "Variables" });
@@ -125,7 +127,7 @@ test.describe("admin email", () => {
   }) => {
     await signInAs(context, "operator", baseURL!);
     await answerPreview(page);
-    await page.goto("/admin/email/templates/organization_activated");
+    await page.goto("/admin/email/templates/organization_invitation");
 
     const body = page.getByRole("textbox", { name: "Body" });
     await body.click();

@@ -95,7 +95,7 @@ describe("OrganizationForm, changing a saved organization of one person", () => 
     slug: "an-tran",
     name: "An Tran",
     type: "independent_builder",
-    status: "approved",
+    status: "active",
     country: "VN",
     teamSize: "just_me",
     industries: [],

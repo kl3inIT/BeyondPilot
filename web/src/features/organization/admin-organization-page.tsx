@@ -108,7 +108,7 @@ function AdminOrganizationPage({
         lead={kind.join(" · ")}
         actions={
           <>
-            {state === "approved" && (
+            {state === "active" && (
               <Button
                 prominence="secondary"
                 href={`${siteRoutes.organizations}/${organization.slug}`}
@@ -119,7 +119,7 @@ function AdminOrganizationPage({
             {!merged && (
               <AdminOrganizationMenu
                 organization={organization}
-                canTakeDown={state === "approved"}
+                canTakeDown={state === "active"}
                 members={detail.members.length}
                 invitations={detail.invitations.length}
               />

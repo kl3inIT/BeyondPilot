@@ -184,7 +184,7 @@ public class OrganizationAdministration {
 	}
 
 	/**
-	 * Creates an approved organization nobody owns yet, and invites its owner when an address is given.
+	 * Creates an active organization nobody owns yet, and invites its owner when an address is given.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws OrganizationException when another organization has the email domain
 	 */
@@ -228,7 +228,7 @@ public class OrganizationAdministration {
 	}
 
 	/**
-	 * Creates an approved organization nobody owns yet and invites nobody, for a caller that is not the admin screen,
+	 * Creates an active organization nobody owns yet and invites nobody, for a caller that is not the admin screen,
 	 * such as an operator's MCP tool. It is checked as the admin screen's form is.
 	 * @return the organization's identifier
 	 * @throws ConstraintViolationException when a field breaks what the form allows
@@ -376,16 +376,16 @@ public class OrganizationAdministration {
 	}
 
 	/**
-	 * Takes an approved organization down, with a reason its owners read, and tells them. Its members keep their
+	 * Takes an active organization down, with a reason its owners read, and tells them. Its members keep their
 	 * workspace; it leaves the directories until it is restored.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws OrganizationException when the organization does not exist, is not approved or is down already
+	 * @throws OrganizationException when the organization does not exist, is not active or is down already
 	 */
 	@Transactional
 	public void takeDown(Actor actor, UUID id, TakeDownOrganizationRequest request) {
 		Operator operator = identity.requireOperator(actor);
 		Organization organization = organizations.findForUpdate(id).orElseThrow(() -> notFound(id));
-		if (!organization.isApproved()) {
+		if (!organization.isActive()) {
 			throw new OrganizationException(OrganizationErrorCode.CANNOT_TAKE_DOWN,
 					"Take-down of organization " + id + ", which is " + organization.getStatus()
 							+ (organization.isSuspended() ? " and down" : ""));
@@ -422,7 +422,7 @@ public class OrganizationAdministration {
 	 * none. The duplicate stays as a record of where it went, which nobody changes.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws OrganizationException when either organization does not exist, they are the same, the duplicate was
-	 * merged, or the one to keep is not approved and shown
+	 * merged, or the one to keep is not active and shown
 	 */
 	@Transactional
 	public void merge(Actor actor, UUID id, MergeOrganizationRequest request) {
@@ -439,7 +439,7 @@ public class OrganizationAdministration {
 			.orElseThrow(() -> notFound(duplicateFirst ? intoId : id));
 		Organization duplicate = duplicateFirst ? first : second;
 		Organization kept = duplicateFirst ? second : first;
-		if (duplicate.isMerged() || !kept.isApproved()) {
+		if (duplicate.isMerged() || !kept.isActive()) {
 			throw new OrganizationException(OrganizationErrorCode.CANNOT_MERGE, "Merge of organization " + id + " into "
 					+ intoId + ", which is " + kept.getStatus() + (kept.isSuspended() ? " and down" : ""));
 		}

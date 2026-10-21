@@ -37,7 +37,7 @@ import tools.jackson.databind.json.JsonMapper;
  * <ul>
  * <li>{@code /mcp}: listed solutions, published programs and published use cases, what a visitor finds. Its callers
  * are signed in, so a use case's budget shown to members only is theirs to read;</li>
- * <li>{@code /mcp/operator}: also solutions their owners left unlisted, listed talent and approved companies.
+ * <li>{@code /mcp/operator}: also solutions their owners left unlisted, listed talent and active companies.
  * Applications are read through a tool of their own.</li>
  * </ul>
  */
@@ -117,7 +117,7 @@ class ListingTools {
 				results.add(result(item.kind() + ":" + item.slug(), item.title(), url(item.kind(), item.slug(), operator)));
 			}
 			if (operator) {
-				for (OrganizationName company : organizations.approvedOrganizations(words, COMPANIES)) {
+				for (OrganizationName company : organizations.activeOrganizations(words, COMPANIES)) {
 					results.add(result("organization:" + company.slug(), company.name(),
 							url("organization", company.slug())));
 				}
@@ -244,7 +244,7 @@ class ListingTools {
 	}
 
 	private Optional<Map<String, Object>> company(String id, String slug) {
-		return organizations.approvedAt(slug).flatMap(name -> organizations.profile(name.id())).map(profile -> {
+		return organizations.activeAt(slug).flatMap(name -> organizations.profile(name.id())).map(profile -> {
 			StringBuilder text = new StringBuilder();
 			line(text, null, profile.name());
 			line(text, "Type", profile.type());

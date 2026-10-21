@@ -135,7 +135,7 @@ public class OrganizationService {
 		String domain = OrganizationViews.workDomain(person.email());
 		OrganizationMatchResponse suggestion = domain == null ? null
 				: organizations.findByEmailDomain(domain)
-					.filter(Organization::isApproved)
+					.filter(Organization::isActive)
 					.map(organization -> match(new Match(organization.getId(), organization.getName(),
 							organization.getType(), organization.getCountry(), organization.getEmailDomain(),
 							organization.getLogoFileId(), organization.isAutoJoin(), memberships.owners(organization.getId()) > 0), domain))
@@ -277,7 +277,7 @@ public class OrganizationService {
 	 * Asks to get into an organization that is not taken down. An address on its verified domain joins at once while its owners
 	 * allow it; anyone else asks its owners. An organization nobody owns is claimed, and GenAI Fund decides the claim
 	 * whatever the address.
-	 * @throws OrganizationException when the organization does not exist or is not approved, or the caller already
+	 * @throws OrganizationException when the organization does not exist or is not active, or the caller already
 	 * belongs to one or waits on a request
 	 */
 	@Transactional
@@ -285,7 +285,7 @@ public class OrganizationService {
 		Person person = identity.person(actor);
 		requireFree(person);
 		Organization organization = organizations.findForUpdate(organizationId)
-			.filter(Organization::isApproved)
+			.filter(Organization::isActive)
 			.filter(found -> !found.isIndividual())
 			.orElseThrow(() -> notFound(organizationId));
 		boolean owned = memberships.owners(organizationId) > 0;
@@ -479,7 +479,7 @@ public class OrganizationService {
 		if (organization.isIndividual()) {
 			throw individual(organization, "invitation");
 		}
-		if (!organization.isApproved()) {
+		if (!organization.isActive()) {
 			throw new OrganizationException(OrganizationErrorCode.NOT_APPROVED,
 					"Invitation by organization " + organization.getId() + ", which is " + organization.getStatus());
 		}
@@ -611,7 +611,7 @@ public class OrganizationService {
 	/**
 	 * Lets addresses on the organization's verified domain join without asking, or stops that.
 	 * @throws OrganizationException when the caller is not an owner, or turns it on for an organization that is not
-	 * approved or has no verified domain
+	 * active or has no verified domain
 	 */
 	@Transactional
 	public void letDomainJoin(Actor actor, boolean autoJoin) {
@@ -620,7 +620,7 @@ public class OrganizationService {
 		if (autoJoin && organization.isIndividual()) {
 			throw individual(organization, "joining by domain");
 		}
-		if (autoJoin && !(organization.isApproved() && organization.getEmailDomain() != null)) {
+		if (autoJoin && !(organization.isActive() && organization.getEmailDomain() != null)) {
 			throw new OrganizationException(OrganizationErrorCode.DOMAIN_NOT_VERIFIED,
 					"Joining at once turned on for organization " + organization.getId() + " without a verified domain");
 		}
@@ -698,7 +698,7 @@ public class OrganizationService {
 	private InvitationAllowanceResponse allowance(Organization organization) {
 		int leftToday = Math.max(0, DAILY_INVITATIONS - memberships.invitationsSentInTheLastDay(organization.getId()));
 		int leftOpen = Math.max(0, OPEN_INVITATIONS - memberships.openInvitationsByOwners(organization.getId()));
-		return new InvitationAllowanceResponse(organization.isApproved(), leftToday, DAILY_INVITATIONS, leftOpen,
+		return new InvitationAllowanceResponse(organization.isActive(), leftToday, DAILY_INVITATIONS, leftOpen,
 				OPEN_INVITATIONS);
 	}
 

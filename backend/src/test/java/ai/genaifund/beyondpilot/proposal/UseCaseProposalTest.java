@@ -45,7 +45,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		String path = path(useCase);
 
 		String empty = body(get(provider.founder, path).expectStatus().isOk());
-		assertThat(JsonPath.<Boolean>read(empty, "$.organization.approved")).isTrue();
+		assertThat(JsonPath.<Boolean>read(empty, "$.organization.active")).isTrue();
 		assertThat(JsonPath.<String>read(empty, "$.useCase.title")).isEqualTo("Voice-enabled navigation");
 		assertThat(JsonPath.<Object>read(empty, "$.proposal")).isNull();
 
@@ -178,11 +178,11 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Object>read(lonerForm, "$.organization")).isNull();
 		assertProblem(put(loner, path, draft(null, null, null, null, null)), 403, "PROPOSAL_NO_ORGANIZATION");
 
-		// An organization GenAI Fund took down works on a proposal like any other, and is shown as not approved.
+		// An organization GenAI Fund took down works on a proposal like any other, and is shown as not active.
 		Provider takenDown = provider("taken-down.test");
 		jdbc.sql("update organization set suspended_at = now() where id = ?").params(takenDown.organization).update();
 		assertThat(JsonPath.<Boolean>read(body(get(takenDown.founder, path).expectStatus().isOk()),
-				"$.organization.approved")).isFalse();
+				"$.organization.active")).isFalse();
 		put(takenDown.founder, path, draft(null, null, null, null, null)).expectStatus().isOk();
 
 		assertProblem(get(poster.founder, path), 403, "PROPOSAL_OWN_USE_CASE");
@@ -603,7 +603,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.returnResult()
 			.getResponseBody());
 		assertThat(sheet).hasSize(3);
-		assertThat(sheet.get(1)).startsWith("Proposal", "Organization", "Organization approved", "Contact", "Solutions");
+		assertThat(sheet.get(1)).startsWith("Proposal", "Organization", "Organization active", "Contact", "Solutions");
 		assertThat(sheet.get(2)).startsWith(id, "Team exports.test", "Yes")
 			.contains("Claim Copilot", "Shortlisted")
 			.doesNotContain("Team exports-elsewhere.test");
@@ -612,7 +612,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.isOk()
 			.expectHeader()
 			.contentType("text/csv;charset=UTF-8"));
-		assertThat(csv).startsWith("\uFEFFProposal,Organization,Organization approved,Contact,Solutions,Sent at,");
+		assertThat(csv).startsWith("\uFEFFProposal,Organization,Organization active,Contact,Solutions,Sent at,");
 		assertThat(csv.lines().toList()).hasSize(2).last().asString().startsWith(id + ",Team exports.test,Yes,");
 		assertThat(exportCounts(useCase)).containsExactly("1", "1");
 	}
@@ -807,7 +807,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.isCreated());
 		assertThat(JsonPath.<String>read(made, "$.name")).isEqualTo("Alone Builder");
 		String form = body(get(loner, path).expectStatus().isOk());
-		assertThat(JsonPath.<Boolean>read(form, "$.organization.approved")).isTrue();
+		assertThat(JsonPath.<Boolean>read(form, "$.organization.active")).isTrue();
 		assertThat(JsonPath.<String>read(form, "$.organization.type")).isEqualTo("independent_builder");
 		UUID solution = completeSolution(loner, "alone@waiting-send.test", "Lone Solver");
 		String saved = body(put(loner, path, draft(solution, "Our approach.", file("alone@waiting-send.test"), null, null))
@@ -821,10 +821,10 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Object>read(sent, "$.proposal.sender")).isNull();
 		assertThat(JsonPath.<String>read(sent, "$.proposal.sentBy.email")).isEqualTo("alone@waiting-send.test");
 		String list = body(get(poster.founder, path + "s").expectStatus().isOk());
-		assertThat(JsonPath.<List<Boolean>>read(list, "$.items[*].organizationApproved")).containsExactly(true);
+		assertThat(JsonPath.<List<Boolean>>read(list, "$.items[*].organizationActive")).containsExactly(true);
 		assertThat(JsonPath.<List<String>>read(list, "$.items[*].contactName")).containsExactly("Founder Provider");
 		String one = body(get(poster.founder, API + "/use-case-proposals/" + id).expectStatus().isOk());
-		assertThat(JsonPath.<Boolean>read(one, "$.organizationApproved")).isTrue();
+		assertThat(JsonPath.<Boolean>read(one, "$.organizationActive")).isTrue();
 		assertThat(JsonPath.<String>read(one, "$.sentBy.email")).isEqualTo("alone@waiting-send.test");
 		assertThat(JsonPath.<Object>read(one, "$.teamBackground")).isNull();
 	}

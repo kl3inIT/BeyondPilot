@@ -61,7 +61,7 @@ was delivered by [BEY-37](../increments/completed/bey-37-proposal/design.md), re
   works outside the window and reports `program.open`.
 - **What the form returns.** `ApplicationViewResponse`: the program (window, `outcomesDueOn`,
   `allowUpdatesUntilClose`, questions), the caller's application or null, the caller's email, their organization (with
-  `approved`) and its solutions, each marked `complete`.
+  `active`) and its solutions, each marked `complete`.
 - **Starting from the last one.** When the caller has no application to this program yet, `previous` carries the
   contact details, deck, built-with and traction of their most recently changed application.
 

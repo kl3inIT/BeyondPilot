@@ -99,7 +99,7 @@ export type AdminCreateOffer = {
 };
 
 /**
- * An organization an operator creates for a company that is not here yet. It is approved from the start and has no member until someone accepts the invitation to own it, or claims it.
+ * An organization an operator creates for a company that is not here yet. It is active from the start and has no member until someone accepts the invitation to own it, or claims it.
  */
 export type AdminCreateOrganization = {
     /**
@@ -301,9 +301,9 @@ export type AdminOrganizationSummary = {
     requestedAt?: string | null;
     slug: string;
     /**
-     * `approved` for every organization that was not merged; `suspendedAt` says it is taken down.
+     * `active` for every organization that was not merged; `suspendedAt` says it is taken down.
      */
-    status: 'approved' | 'merged';
+    status: 'active' | 'merged';
     /**
      * When it was taken down; null while it is not.
      */
@@ -1049,9 +1049,9 @@ export type ApplicationView = {
  */
 export type ApplyingOrganization = {
     /**
-     * Whether it is not taken down.
+     * Whether it is active, meaning not taken down.
      */
-    approved: boolean;
+    active: boolean;
     /**
      * Whether the person applies as themselves and may still apply as a team or a company instead: nothing was sent under their name yet.
      */
@@ -2600,7 +2600,7 @@ export type InvitationAllowance = {
      */
     leftToday: number;
     /**
-     * Whether the organization may invite at all; one that is not approved may not.
+     * Whether the organization may invite at all; one that is not active may not.
      */
     open: boolean;
     /**
@@ -3448,7 +3448,7 @@ export type MergeNotice = {
  */
 export type MergeOrganization = {
     /**
-     * The organization kept, approved and shown; it receives the duplicate's people and records.
+     * The organization kept, active and shown; it receives the duplicate's people and records.
      */
     intoId: string;
 };
@@ -3838,9 +3838,9 @@ export type Organization = {
     name: string;
     slug: string;
     /**
-     * `approved` for every organization that was not merged. One taken down stays `approved`; `suspendedAt` says it is down. `merged` is a duplicate merged into another, which nobody changes.
+     * `active` for every organization that was not merged. One taken down stays `active`; `suspendedAt` says it is down. `merged` is a duplicate merged into another, which nobody changes.
      */
-    status: 'approved' | 'merged';
+    status: 'active' | 'merged';
     /**
      * When it was taken down; null while it is not.
      */
@@ -4546,9 +4546,9 @@ export type ProposalUseCase = {
  */
 export type ProposingOrganization = {
     /**
-     * Whether it is not taken down.
+     * Whether it is active, meaning not taken down.
      */
-    approved: boolean;
+    active: boolean;
     id: string;
     /**
      * Read at /api/storage/files/{id}.
@@ -5041,9 +5041,9 @@ export type ReceivedUseCaseProposal = {
     editedAt?: string | null;
     id: string;
     /**
-     * Whether the sending organization is not taken down.
+     * Whether the sending organization is active, meaning not taken down.
      */
-    organizationApproved: boolean;
+    organizationActive: boolean;
     /**
      * Read at /api/storage/files/{id}.
      */
@@ -5094,9 +5094,9 @@ export type ReceivedUseCaseProposalSummary = {
     editedAt?: string | null;
     id: string;
     /**
-     * Whether the sending organization is not taken down.
+     * Whether the sending organization is active, meaning not taken down.
      */
-    organizationApproved: boolean;
+    organizationActive: boolean;
     /**
      * The sending organization.
      */
@@ -11205,9 +11205,9 @@ export type ListAdminOrganizationsData = {
          */
         q?: string | null;
         /**
-         * Only organizations in this state: `approved` leaves out those taken down, `claimed` selects those with an open ownership claim, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.
+         * Only organizations in this state: `active` leaves out those taken down, `claimed` selects those with an open ownership claim, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.
          */
-        status?: 'approved' | 'claimed' | 'suspended' | 'merged';
+        status?: 'active' | 'claimed' | 'suspended' | 'merged';
         /**
          * Only organizations in this country, ISO 3166-1 alpha-2.
          */
@@ -11284,7 +11284,7 @@ export type CreateAdminOrganizationError = CreateAdminOrganizationErrors[keyof C
 
 export type CreateAdminOrganizationResponses = {
     /**
-     * The organization, approved and without an owner.
+     * The organization, active and without an owner.
      */
     201: AdminOrganization;
 };
@@ -11300,9 +11300,9 @@ export type ExportAdminOrganizationsData = {
          */
         q?: string | null;
         /**
-         * Only organizations in this state: `approved` leaves out those taken down, `claimed` selects those with an open ownership claim, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.
+         * Only organizations in this state: `active` leaves out those taken down, `claimed` selects those with an open ownership claim, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.
          */
-        status?: 'approved' | 'claimed' | 'suspended' | 'merged';
+        status?: 'active' | 'claimed' | 'suspended' | 'merged';
         /**
          * Only organizations in this country, ISO 3166-1 alpha-2.
          */
@@ -11642,7 +11642,7 @@ export type MergeOrganizationErrors = {
      */
     404: Problem;
     /**
-     * The organizations are the same, the duplicate was merged, or the one to keep is not approved and shown.
+     * The organizations are the same, the duplicate was merged, or the one to keep is not active and shown.
      */
     409: Problem;
 };
@@ -11724,7 +11724,7 @@ export type TakeDownOrganizationErrors = {
      */
     404: Problem;
     /**
-     * The organization is not approved.
+     * The organization is not active.
      */
     409: Problem;
 };
@@ -11914,7 +11914,7 @@ export type ChangeOrganizationAutoJoinErrors = {
      */
     403: Problem;
     /**
-     * Turned on for an organization that is not approved or has no verified domain.
+     * Turned on for an organization that is not active or has no verified domain.
      */
     409: Problem;
 };
@@ -11984,7 +11984,7 @@ export type InviteOrganizationMemberErrors = {
      */
     403: Problem;
     /**
-     * The organization is not approved, or the address already belongs to it or already holds an open invitation.
+     * The organization is not active, or the address already belongs to it or already holds an open invitation.
      */
     409: Problem;
     /**

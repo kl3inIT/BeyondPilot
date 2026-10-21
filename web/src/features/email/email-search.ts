@@ -19,7 +19,6 @@ export const emailStatuses = [
 export const emailKinds = [
   "sign_in_code",
   "organization_invitation",
-  "organization_activated",
   "organization_approved",
   "organization_refused",
   "organization_sent_back",

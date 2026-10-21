@@ -332,7 +332,7 @@ public class UseCaseProposals {
 			.text("Proposal", ReceivedUseCaseProposalSummaryResponse::id)
 			.group("Sender")
 			.text("Organization", ReceivedUseCaseProposalSummaryResponse::organizationName)
-			.yesNo("Organization approved", ReceivedUseCaseProposalSummaryResponse::organizationApproved)
+			.yesNo("Organization active", ReceivedUseCaseProposalSummaryResponse::organizationActive)
 			.text("Contact", ReceivedUseCaseProposalSummaryResponse::contactName)
 			.text("Solutions", proposal -> String.join(", ", proposal.solutionNames()))
 			.time("Sent at", ReceivedUseCaseProposalSummaryResponse::sentAt)
@@ -370,7 +370,7 @@ public class UseCaseProposals {
 		return new ReceivedUseCaseProposalSummaryResponse(proposal.getId(), proposal.getOrganizationId(),
 				organization == null ? "" : organization.name(),
 				organization == null ? null : organization.logoFileId(), solutionNames,
-				organizations.isApproved(proposal.getOrganizationId()),
+				organizations.isActive(proposal.getOrganizationId()),
 				sentBy == null ? null : label(sentBy.name(), sentBy.email()),
 				Objects.requireNonNull(proposal.getSentAt()), proposal.getEditedAt(), proposal.getDecision(),
 				proposal.getDecidedAt(), decidedBy == null ? null : decidedBy.label(), proposal.outcomePending(),
@@ -479,7 +479,7 @@ public class UseCaseProposals {
 		return new ReceivedUseCaseProposalResponse(proposal.getId(), useCase(target),
 				organization == null ? "" : organization.name(), organization == null ? null : organization.logoFileId(),
 				solutions(proposal),
-				proposal.getApproach(), organizations.isApproved(proposal.getOrganizationId()), sender,
+				proposal.getApproach(), organizations.isActive(proposal.getOrganizationId()), sender,
 				Objects.requireNonNull(sentBy(proposal)), proposal.getTeamBackground(), deck(proposal),
 				Objects.requireNonNull(proposal.getSentAt()), proposal.getEditedAt(), proposal.getDecision(),
 				proposal.getDecidedAt(), decidedBy == null ? null : decidedBy.label(), proposal.outcomePending(),
@@ -517,7 +517,7 @@ public class UseCaseProposals {
 		SenderProfileResponse sender = one.sender();
 		AttachedFileResponse deck = one.deck();
 		return new ReceivedProposal(one.id(), one.useCase().id(), one.useCase().title(), one.organizationName(),
-				one.organizationApproved(), one.solutions()
+				one.organizationActive(), one.solutions()
 					.stream()
 					.map(solution -> new ReceivedProposal.Solution(solution.id(), solution.name(), solution.summary(),
 							solution.slug()))
@@ -735,7 +735,7 @@ public class UseCaseProposals {
 		OrganizationName name = organizations.names(List.of(organizationId)).get(organizationId);
 		return new UseCaseProposalFormResponse(useCase(target),
 				new ProposingOrganizationResponse(organizationId, membership.organizationName(),
-						name == null ? null : name.logoFileId(), membership.approved(), membership.type(),
+						name == null ? null : name.logoFileId(), membership.active(), membership.type(),
 						membership.owner(), organizations.profile(organizationId).map(profile -> profile.teamBackground()).orElse(null)),
 				proposal == null ? null : response(proposal, target));
 	}

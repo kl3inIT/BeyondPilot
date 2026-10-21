@@ -2,14 +2,15 @@ import { Status } from "@/components/composites/status";
 
 /**
  * What GenAI Fund's review made of a record, from a draft to a decision, `suspended` for an
- * approved record GenAI Fund took down, `closed` for a use case whose deadline has passed, and
- * `merged` for an organization merged into another.
+ * approved record GenAI Fund took down, `closed` for a use case whose deadline has passed, `active`
+ * for an organization nobody has taken down, and `merged` for one merged into another.
  */
 type ReviewState =
   | "draft"
   | "in_review"
   | "needs_changes"
   | "approved"
+  | "active"
   | "rejected"
   | "suspended"
   | "closed"
@@ -20,6 +21,7 @@ const tones = {
   in_review: "warning",
   needs_changes: "warning",
   approved: "success",
+  active: "success",
   rejected: "destructive",
   suspended: "destructive",
   closed: "neutral",
@@ -27,14 +29,16 @@ const tones = {
 } as const;
 
 /**
- * How the review of a record reads: its status, or `suspended` while GenAI Fund has an approved
- * record taken down. A record taken down and sent again reads as the review it waits for.
+ * How the review of a record reads: its status, or `suspended` while GenAI Fund has an approved or
+ * active record taken down. A record taken down and sent again reads as the review it waits for.
  */
 function reviewState<Status extends string>(record: {
   status: Status;
   suspendedAt?: string | null;
 }): Status | "suspended" {
-  return record.suspendedAt && record.status === "approved" ? "suspended" : record.status;
+  return record.suspendedAt && (record.status === "approved" || record.status === "active")
+    ? "suspended"
+    : record.status;
 }
 
 type ReviewStatusProps = {

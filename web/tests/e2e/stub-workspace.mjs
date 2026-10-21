@@ -1,6 +1,6 @@
 // What the stub backend holds of a signed-in person's own records: their organization and its
 // members, its solutions, and their talent profile. The account behind the request decides what it
-// reads: an owner and a member of the same approved organization, a person invited to it, a person who
+// reads: an owner and a member of the same active organization, a person invited to it, a person who
 // asked to join it, a person its owners declined, and people who belong to no organization.
 
 const day = "2026-10-01T03:00:00Z";
@@ -9,7 +9,7 @@ const pocketPolicy = {
   id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c03",
   name: "Pocket Policy",
   slug: "pocket-policy",
-  status: "approved",
+  status: "active",
   type: "company",
   country: "SG",
   teamSize: "10_49",
@@ -34,7 +34,7 @@ const newCo = {
   emailDomain: "newco.example",
 };
 
-/** An organization of one person: Just me, approved when it was made. */
+/** An organization of one person: Just me, active when it was made. */
 const justMe = {
   ...pocketPolicy,
   id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c05",
@@ -397,7 +397,7 @@ export function answerWorkspace(url, session) {
     ];
   }
   if (pathname === "/api/usecase/mine") {
-    // Anyone who belongs to an approved organization may read its use cases; the stub has none.
+    // Anyone who belongs to an active organization may read its use cases; the stub has none.
     return role ? [200, { items: [] }] : refused(403, "USECASE_ENTERPRISE_REQUIRED");
   }
   if (pathname === "/api/solution/offers/mine") {

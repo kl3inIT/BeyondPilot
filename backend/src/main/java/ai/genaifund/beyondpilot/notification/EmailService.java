@@ -119,16 +119,6 @@ public class EmailService {
 						"organizationUrl", url(MY_ORGANIZATION)));
 	}
 
-	/**
-	 * Tells an owner that their organization is active, because GenAI Fund no longer reviews organizations. The link
-	 * opens My organization.
-	 */
-	@Transactional
-	public void sendOrganizationActivated(String recipient, String organizationName) {
-		queue(EmailKind.ORGANIZATION_ACTIVATED, recipient,
-				values("organizationName", organizationName, "organizationUrl", url(MY_ORGANIZATION)));
-	}
-
 	/** What GenAI Fund decided about a talent profile. */
 	public enum TalentDecision {
 

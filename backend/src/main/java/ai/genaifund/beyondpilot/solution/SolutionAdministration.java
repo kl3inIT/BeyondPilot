@@ -240,7 +240,7 @@ public class SolutionAdministration {
 		if (!solution.isInReview()) {
 			throw notAwaiting(solution);
 		}
-		if (!organizations.isApproved(solution.getOrganizationId())) {
+		if (!organizations.isActive(solution.getOrganizationId())) {
 			// The directory lists a solution only when who offers it is not taken down.
 			throw new SolutionException(SolutionErrorCode.ORGANIZATION_NOT_APPROVED,
 					"Approval of solution " + id + " whose organization is taken down");
@@ -259,7 +259,7 @@ public class SolutionAdministration {
 	@Transactional(readOnly = true)
 	public List<AdminSolutionOrganizationOptionResponse> organizationsToStartFor(Actor actor, @Nullable String text) {
 		identity.requireOperator(actor);
-		return organizations.approvedOrganizations(text, ORGANIZATION_LIMIT)
+		return organizations.activeOrganizations(text, ORGANIZATION_LIMIT)
 			.stream()
 			.map(organization -> new AdminSolutionOrganizationOptionResponse(organization.id(), organization.name()))
 			.toList();
@@ -273,7 +273,7 @@ public class SolutionAdministration {
 	@Transactional
 	public SolutionResponse create(Actor actor, AdminCreateSolutionRequest request) {
 		Operator operator = identity.requireOperator(actor);
-		OrganizationName organization = organizations.approvedOrganization(request.organizationId())
+		OrganizationName organization = organizations.activeOrganization(request.organizationId())
 			.orElseThrow(() -> organizationNotApproved(request.organizationId()));
 		Solution solution = service.start(actor, organization.id(), request.name());
 		record(AuditAction.SOLUTION_CREATE, operator, solution, Map.of());
@@ -324,7 +324,7 @@ public class SolutionAdministration {
 			throw new SolutionException(SolutionErrorCode.INCOMPLETE,
 					"Publication of solution " + id + ", which lacks what a submission needs");
 		}
-		if (!organizations.isApproved(solution.getOrganizationId())) {
+		if (!organizations.isActive(solution.getOrganizationId())) {
 			throw organizationNotApproved(solution.getOrganizationId());
 		}
 		Instant now = Instant.now();
@@ -471,7 +471,7 @@ public class SolutionAdministration {
 			throw new SolutionException(SolutionErrorCode.NOT_TAKEN_DOWN,
 					"Restore of solution " + id + ", which is " + solution.getStatus() + " and not taken down");
 		}
-		if (!organizations.isApproved(solution.getOrganizationId())) {
+		if (!organizations.isActive(solution.getOrganizationId())) {
 			// Back in the directory means its organization is shown too.
 			throw new SolutionException(SolutionErrorCode.ORGANIZATION_NOT_APPROVED,
 					"Restore of solution " + id + " whose organization is taken down");
@@ -586,7 +586,7 @@ public class SolutionAdministration {
 		String organization = name(organizations.names(List.of(organizationId)), organizationId);
 		// The public page answers only for an approved solution of an organization that is not taken down.
 		@Nullable String publicSlug = solution.isApproved()
-				&& organizations.profile(organizationId).filter(OrganizationProfile::approved).isPresent()
+				&& organizations.profile(organizationId).filter(OrganizationProfile::active).isPresent()
 						? solution.getSlug() : null;
 		for (Person member : identity.people(organizations.memberAccountIds(organizationId)).values()) {
 			email.sendSolutionDecision(member.email(), organization, solution.getName(), decision, reason,

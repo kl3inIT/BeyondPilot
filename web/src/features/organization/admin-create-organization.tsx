@@ -38,7 +38,7 @@ const blank = {
 };
 
 /**
- * Creates an organization on behalf of its people, already approved: GenAI Fund lists a company
+ * Creates an organization on behalf of its people, already active: GenAI Fund lists a company
  * before anyone from it signs in. Only the name and the type are needed; whatever else the operator
  * knows is filled in now, and the rest is left to the owner. With an owner's address, that person is
  * invited to own it; without one, the first person on its email domain owns it, or someone claims it.

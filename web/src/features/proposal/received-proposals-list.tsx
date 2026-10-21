@@ -97,7 +97,7 @@ function ReceivedProposalsList({
               >
                 {proposal.organizationName}
               </Link>
-              {admin && !proposal.organizationApproved && (
+              {admin && !proposal.organizationActive && (
                 <ReviewStatus state="suspended" appearance="pill">
                   {t("detail.takenDown")}
                 </ReviewStatus>

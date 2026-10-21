@@ -53,11 +53,6 @@ const templates = [
     "organization_invitation",
     "organizations",
     "You are invited to {{organizationName}} on BeyondPilot",
-  ),
-  template(
-    "organization_activated",
-    "organizations",
-    "{{organizationName}} is active on BeyondPilot",
     true,
   ),
   template("application_received", "applications", "Application submitted: {{programName}}"),
@@ -65,13 +60,14 @@ const templates = [
   template("message_request", "messages", "A first message for you on BeyondPilot"),
 ];
 
-const activated = {
-  kind: "organization_activated",
+const invitation = {
+  kind: "organization_invitation",
   group: "organizations",
-  subject: "{{organizationName}} is active on BeyondPilot",
-  body: "# {{organizationName}} is active\n\n{{organizationName}} is active on BeyondPilot. Sign in to manage it.",
-  defaultSubject: "{{organizationName}} is active on BeyondPilot",
-  defaultBody: "# {{organizationName}} is active\n\n{{organizationName}} is active on BeyondPilot.",
+  subject: "You are invited to {{organizationName}} on BeyondPilot",
+  body: "# You are invited to {{organizationName}}\n\n{{organizationName}} invites you to BeyondPilot. Sign in to manage it.",
+  defaultSubject: "You are invited to {{organizationName}} on BeyondPilot",
+  defaultBody:
+    "# You are invited to {{organizationName}}\n\n{{organizationName}} invites you to BeyondPilot.",
   edited: true,
   updatedBy: "Hà Lê",
   updatedAt: ago(30),
@@ -167,7 +163,7 @@ export function answerEmail(url, account) {
     if (path === "/templates/application_outcome") {
       return [409, { status: 409, code: "NOTIFICATION_TEMPLATE_NOT_EDITABLE" }];
     }
-    return path === "/templates/organization_activated" ? [200, activated] : [404, {}];
+    return path === "/templates/organization_invitation" ? [200, invitation] : [404, {}];
   }
   if (path === "/messages") {
     const status = url.searchParams.get("status");

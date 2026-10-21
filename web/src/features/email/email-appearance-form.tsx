@@ -28,8 +28,8 @@ const HEX = /^#[0-9A-Fa-f]{6}$/;
 /** How long typing pauses before the preview is rendered again. */
 const PREVIEW_DELAY = 300;
 
-/** The email the preview shows: one every organization owner receives. */
-const SAMPLE = "organization_activated";
+/** The email the preview shows: an invitation to an organization. */
+const SAMPLE = "organization_invitation";
 
 /**
  * What every email shares: the colour of its links and buttons, and the note at its foot. The

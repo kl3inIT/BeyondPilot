@@ -62,7 +62,7 @@ public enum AuditAction {
 
 	ORGANIZATION_APPROVE("organization.approve"),
 
-	/** An operator took an approved organization down. {@code reason} is the code of the reason given. */
+	/** An operator took an active organization down. {@code reason} is the code of the reason given. */
 	ORGANIZATION_SUSPEND("organization.suspend", "reason"),
 
 	ORGANIZATION_RESTORE("organization.restore"),

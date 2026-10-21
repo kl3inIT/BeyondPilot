@@ -14,7 +14,7 @@ import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 
 @Schema(name = "AdminCreateOrganization", description = """
-		An organization an operator creates for a company that is not here yet. It is approved from the start and \
+		An organization an operator creates for a company that is not here yet. It is active from the start and \
 		has no member until someone accepts the invitation to own it, or claims it.""")
 public record AdminCreateOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 120) String name,

@@ -596,7 +596,7 @@ class McpServerTest {
 		String company = text(app.callTool(McpSchema.CallToolRequest.builder("get_record")
 			.arguments(Map.of("area", "organizations", "id", organization.toString()))
 			.build()));
-		assertThat(JsonPath.<String>read(company, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<String>read(company, "$.status")).isEqualTo("active");
 		assertThat(app.callTool(McpSchema.CallToolRequest.builder("get_record")
 			.arguments(Map.of("area", "talent", "id", sentBack.toString()))
 			.build()).isError()).isTrue();
@@ -685,13 +685,13 @@ class McpServerTest {
 		McpSyncClient app = app(token, "/mcp/operator");
 		app.initialize();
 
-		// A company of the same name is not made twice; a new one is approved and owned by nobody.
+		// A company of the same name is not made twice; a new one is active and owned by nobody.
 		CallToolResult twice = call(app, "create_organization", Map.of("name", "private " + word, "type", "company"));
 		assertThat(twice.isError()).isTrue();
 		assertThat(((TextContent) twice.content().getFirst()).text()).contains(organization.toString());
 		String created = text(call(app, "create_organization",
 				Map.of("name", "Harbour " + word, "type", "company", "country", "VN", "industries", List.of("logistics"))));
-		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("active");
 		assertThat(call(app, "create_organization", Map.of("name", "Bad " + word, "type", "company", "country", "Vietnam"))
 			.isError()).isTrue();
 

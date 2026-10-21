@@ -11,7 +11,7 @@ const complete = {
   slug: "pocket-policy",
   name: "Pocket Policy",
   type: "company",
-  status: "approved",
+  status: "active",
   country: "SG",
   teamSize: "10_49",
   industries: ["insurance"],

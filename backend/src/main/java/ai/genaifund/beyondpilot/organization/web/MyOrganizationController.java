@@ -112,7 +112,7 @@ class MyOrganizationController {
 	@ApiResponse(responseCode = "403", description = NOT_OWNER,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409",
-			description = "The organization is not approved, or the address already belongs to it or already holds an open invitation.",
+			description = "The organization is not active, or the address already belongs to it or already holds an open invitation.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "429",
 			description = "The organization sent the most invitations it can in a day, or keeps the most it can open.",
@@ -233,7 +233,7 @@ class MyOrganizationController {
 	@ApiResponse(responseCode = "403", description = NOT_OWNER,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409",
-			description = "Turned on for an organization that is not approved or has no verified domain.",
+			description = "Turned on for an organization that is not active or has no verified domain.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void changeAutoJoin(@CurrentActor Actor actor, @Valid @RequestBody AutoJoinRequest request) {
 		organizations.letDomainJoin(actor, request.autoJoin());

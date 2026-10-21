@@ -100,3 +100,13 @@ Figma is drawn first for Admin home, Admin › Organizations, an organization's 
 - **About 309 emails are queued at one start.** The notification queue sends them at its own pace, and a failure retries as any email does.
 - **The index is stale until rebuilt** after the deploy, as the migration sends no events.
 - **The migration number** may clash with another branch and is checked before landing.
+
+## Follow-up, 21 October 2026
+
+The client decided three things after this design, before anything was deployed. This document keeps the earlier wording; where it differs, this section wins.
+
+- **The status is `active`, not `approved`.** The values are `active` and `merged`, with `active` the default. `Organization.APPROVED` and `isApproved()` became `ACTIVE` and `isActive()`, the published API of the `organization` module and the HTTP contract say `active` for an organization's state, and the operators' list filters by `active`. Fields about solutions, talent and use cases keep their review wording. The error codes `ORGANIZATION_NOT_APPROVED`, `SOLUTION_ORGANIZATION_NOT_APPROVED` and `MESSAGING_ORGANIZATION_NOT_APPROVED` keep their names, as published codes.
+- **No activation email.** `ActivationNotices`, the `organization_activated` email kind with its template and copy, and the `organization.activation_notice_pending` column are removed outright; nothing had sent them. The three old review kinds stay retired.
+- **Nobody refuses an organization.** One that GenAI Fund refused before is `active` like the others. V110 undoes the take-down that V109 made of them, recognising those rows by what V109 wrote (`decision_reason` set, `suspended_at` equal to `decided_at`, `suspension_message` equal to `decision_message`); an organization an operator took down stays down.
+
+[V110](../../../../backend/src/main/resources/db/migration/V110__organization_active_status.sql) does all of it: it undoes those take-downs, moves `approved` to `active`, re-creates the status check, drops the column and deletes the template row. V109 stays as merged.

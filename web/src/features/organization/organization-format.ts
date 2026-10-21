@@ -11,8 +11,8 @@ export function websiteHost(website: string | null | undefined): string | null {
 }
 
 /** Whether an organization is not taken down, so it can invite members and publish. */
-export function isApproved(organization: { status: string; suspendedAt?: string | null }): boolean {
-  return organization.status === "approved" && !organization.suspendedAt;
+export function isActive(organization: { status: string; suspendedAt?: string | null }): boolean {
+  return organization.status === "active" && !organization.suspendedAt;
 }
 
 /** The longest description the backend takes. */
