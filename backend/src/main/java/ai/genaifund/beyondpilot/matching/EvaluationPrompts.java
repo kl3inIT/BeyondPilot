@@ -14,8 +14,13 @@ import org.jspecify.annotations.Nullable;
  */
 final class EvaluationPrompts {
 
-	/** Version 1: the methodology as received, the evidence asked for before the tier. */
-	static final int VERSION = 1;
+	/**
+	 * Version 2: calibrated on the first production run against Kai's own assessments. A proposal for a workflow next
+	 * to the use case passes the gate and is tiered within its alignment; a substantive component of the use case is
+	 * direct; without product traction only a named team or a working prototype with people to deliver it keeps a
+	 * candidate from Strong No; specific adoption of an adjacent product supports Potential Match.
+	 */
+	static final int VERSION = 2;
 
 	static final String ASSESSMENT = """
 			You review one candidate's submission to an enterprise AI challenge against the enterprise's use cases, \
@@ -68,29 +73,52 @@ final class EvaluationPrompts {
 			- `summary`: about ten words for a list.
 
 			2. Alignment, separate from how strong a supplier the candidate is. `category`:
-			- `direct`: it directly addresses a priority use case or a substantive component of it.
-			- `industry`: relevant to the industry or adjacent operations, but not the priority use case.
+			- `direct`: it directly addresses a priority use case or a substantive component needed to deliver it: one \
+			step of the journey (such as reminders and outreach, purchase or renewal, payment, proof of cover, support), \
+			one group of customers, or a control the enterprise needs (such as compliant wording). Covering only part \
+			of the use case, or more than it, is still direct.
+			- `industry`: relevant to the industry or adjacent operations of the enterprise, such as another of its \
+			workflows, but not the priority use case.
 			- `technology`: outside the use case and the industry, but its demonstrated capabilities could support an \
 			adaptation.
 			- `none`: no credible connection. Do not force a technology connection.
-			A mature company can fit weakly; an early team can fit strongly.
+			A mature company can fit weakly; an early team can fit strongly. The alignment says where the candidate \
+			fits; it is not a grade, and it is shown beside the tier.
 
-			3. Gate. `proposal` is `passed` when the proposal is substantive and specific to the use case, `failed` \
-			otherwise. `earlyStage`: `not_needed` when there is product traction; otherwise `team` when strong relevant \
-			team experience supports it, `prototype` when a demonstrable prototype with a credible delivery plan does, \
-			or `not_substantiated`.
+			3. Gate. `proposal` is `passed` when the proposal is substantive and specific to this enterprise: a \
+			concrete problem and workflow, how the solution works, what exists versus what must be built, a delivery \
+			or test route and measures of success. It is judged for the workflow the candidate proposes, the priority \
+			use case or an adjacent one: a substantive proposal for another workflow of the enterprise passes, and \
+			its distance from the use case is the alignment, not a failed gate. `failed` only for generic content: AI \
+			benefits, capability lists, standard project phases or merely naming the enterprise.
+			`earlyStage`: `not_needed` when there is product traction or specific adoption of an adjacent product; \
+			otherwise one of these routes, or `not_substantiated`:
+			- `team`: named delivery members with concrete careers, prior technical delivery or relevant industry \
+			experience. An unnamed team, a generic company or studio description, or counts of years, clients or \
+			experts without the people and projects behind them do not qualify.
+			- `prototype`: working core functionality shown by evidence beyond screenshots, static mock-ups, scripted \
+			or synthetic demos, tests by friends or a build of a day or two, with a credible plan and identified \
+			people to deliver it.
 
-			4. Tier, after the evidence:
-			- `strong_match`: a strong opportunity within its alignment, supported by relevant deployment or customer \
-			evidence and a credible proposal.
+			4. Tier, after the evidence. Apply it to the quality of the opportunity and of the supplier's evidence \
+			within its alignment: `industry` or `technology` alignment never lowers a tier by itself, and only \
+			`none` makes the fit insufficient.
+			- `strong_match`: a strong opportunity within its alignment: relevant customer or deployment evidence, \
+			such as named enterprise or industry cases described in substance, credible capability and a substantive \
+			proposal. Gaps such as a pilot still to be priced or scoped do not prevent it.
 			- `potential_match`: credible, supported by pilots, adjacent deployments or substantive delivery evidence; \
-			important gaps remain.
-			- `to_consider`: a specific proposal with promising but early evidence, including the early-stage routes.
-			- `strong_no`: insufficient fit, a non-substantive proposal, or no credible capability or delivery route.
-			Set `provisional` when the tier depends on a demonstration or a clarification not seen yet. Never raise a \
-			tier for funding, many customers or a detailed deck; never lower it only for missing funding, an unnamed \
-			customer under NDA or the lack of customers in this industry when credible adjacent capability exists. No \
-			tier approves a deployment.
+			important adaptation, validation or execution gaps remain. Specific reported adoption of an adjacent \
+			product or of the base platform (named customers, paying users, revenue, sites or users in figures) \
+			supports it even when it is only claimed: label it `claimed` and name the verification in `next`.
+			- `to_consider`: a specific proposal with promising but early evidence, through the `team` or `prototype` \
+			route.
+			- `strong_no`: no credible alignment, a failed gate, or no product traction, no adjacent adoption and no \
+			early-stage route. Say it holds for the current submission and what would change it.
+			In `rationale`, say whether the fit is to the priority use case or only adjacent work. Set `provisional` \
+			when the tier depends on a demonstration or a clarification not seen yet. Never raise a tier for funding, \
+			a customer count without detail or a detailed deck; never lower it only for missing funding or pricing, an \
+			unnamed customer under NDA or the lack of customers in this industry when credible adjacent capability \
+			exists. No tier approves a deployment.
 
 			5. Notes, each about 18 words or fewer: `why` (why consider it), `concern` (the one material gap), `next` \
 			(the specific validation to ask for). `rationale`: two to four sentences on the tier. `contradictions`: \

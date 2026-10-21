@@ -93,6 +93,17 @@ As the approved prototype, in the admin's own components: page tabs, count tabs 
 - Applications are read against all the program's approved use cases; a program with none says "Attach a use case to assess" and runs nothing.
 - A candidate is an organization with one solution: one company that applied with one product and proposed another is two rows.
 
+## Prompt version 2, after the first production run (21 October)
+
+The first run on the Tasco program (52 candidates, claude-sonnet-5-5) was compared offline with Kai's own assessments of the same companies (32 overlap): 15 tiers matched, 10 came out lower and 7 higher. Reading Kai's reasons against ours showed four places where version 1 read the methodology differently from how Kai applies it:
+
+- **A proposal for an adjacent workflow failed the gate.** Version 1 asked for a proposal "specific to the use case", so a substantive claims proposal under the renewal use case failed and became Strong No (14 of 23 industry candidates). Kai tiers such a candidate within its alignment: a motor-claims supplier with named insurer deployments is Strong Match with Industry Alignment. Version 2 judges the gate for the workflow proposed and leaves the distance to the alignment.
+- **Direct was read narrowly.** Kai counts one step of the journey, one customer group or a needed control (reminders, wording compliance, EV owners) as a substantive component, hence Direct.
+- **The early-stage routes were too easy.** Kai returns Strong No when there is no product traction and no named team with concrete careers: a synthetic or scripted demo, tests by friends, a day's build or an unnamed team do not carry the prototype route. Version 1 gave these To consider.
+- **Adjacent adoption was under-weighted.** Kai gives Potential Match on specific reported adoption of an adjacent product or base platform (paying customers, revenue, sites), even when only claimed. Version 1 gave To consider.
+
+The version is kept with each assessment and is part of its fingerprint, so the next run reassesses every candidate. Kai's assessments stay out of the repository.
+
 ## Open questions for Kai
 
 1. A program application names no use case. Is it read against all the program's approved use cases (this design), or against one the applicant picks?
