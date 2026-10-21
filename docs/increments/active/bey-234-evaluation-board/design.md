@@ -104,6 +104,11 @@ The first run on the Tasco program (52 candidates, claude-sonnet-5-5) was compar
 
 The version is kept with each assessment and is part of its fingerprint, so the next run reassesses every candidate. Kai's assessments stay out of the repository.
 
+Version 3, after version 2 ran on staging. Version 2 still let a synthetic prototype from one person carry the prototype route, and kept a candidate with paying customers of its base platform at To consider. Hard floors would have fixed those two cases but cut against Kai's "use qualitative judgement" and over-correct elsewhere. Version 3 instead follows Anthropic's prompting guidance:
+
+- It says why the tier and the alignment are kept apart, and why each early-stage route gives confidence, so the model can apply the reason rather than a rule.
+- It adds five worked examples, anonymised from Kai's practice, marked as illustrations rather than rules.
+
 ## Open questions for Kai
 
 1. A program application names no use case. Is it read against all the program's approved use cases (this design), or against one the applicant picks?
