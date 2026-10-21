@@ -10,7 +10,7 @@ import { organizationStatuses } from "./organization-codes";
 import { pageSize } from "@/lib/page-size";
 
 /** The columns the list sorts by, as its API names them. */
-export const adminOrganizationSortKeys = ["name", "received"] as const;
+export const adminOrganizationSortKeys = ["name", "created"] as const;
 
 /** A country as the API takes it: ISO 3166-1 alpha-2. */
 const COUNTRY = /^[A-Z]{2}$/;

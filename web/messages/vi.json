@@ -1566,15 +1566,9 @@
       },
       "columns": {
         "organization": "Tổ chức",
-        "request": "Yêu cầu",
         "status": "Trạng thái",
-        "received": "Ngày nhận",
-        "actions": "Thao tác",
-        "askedBy": "Người yêu cầu"
-      },
-      "request": {
-        "claim": "Yêu cầu nhận",
-        "none": "—"
+        "created": "Ngày tạo",
+        "actions": "Thao tác"
       },
       "unowned": "Chưa có chủ",
       "mergedInto": "Đã gộp vào {name}",

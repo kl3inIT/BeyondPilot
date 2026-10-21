@@ -83,10 +83,11 @@ test.describe("admin organizations", () => {
     const shown = page.locator(":visible");
     await expect(page.getByText("Company · Singapore · 2 members").and(shown)).toHaveCount(1);
     await expect(page.getByText("Builder team · Vietnam · No owner").and(shown)).toHaveCount(1);
-    await expect(page.getByText("Claim", { exact: true }).and(shown)).toHaveCount(2);
     await expect(page.getByText("New organization").and(shown)).toHaveCount(0);
-    // Who asked is a column where the table has the room, and on a phone, where it scrolls.
-    await expect(page.getByRole("cell", { name: "Arif Hidayat" })).toBeVisible();
+    // The claim is read from the status; the list has no request or asked-by column.
+    for (const name of ["Request", "Asked by", "Received"]) {
+      await expect(page.getByRole("columnheader", { name })).toHaveCount(0);
+    }
     // A table at every width: on a phone it scrolls sideways.
     await expect(page.getByRole("table")).toHaveCount(1);
     await expectNoSeriousA11yViolations(page);

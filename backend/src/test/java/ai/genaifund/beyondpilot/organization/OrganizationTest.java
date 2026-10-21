@@ -1429,13 +1429,14 @@ class OrganizationTest {
 
 		assertThat(adminNames("&sort=name")).containsExactly("Sorted Alpha", "Sorted Beta", "Sorted Gamma");
 		assertThat(adminNames("&sort=-name")).containsExactly("Sorted Gamma", "Sorted Beta", "Sorted Alpha");
-		assertThat(adminNames("&sort=received")).containsExactly("Sorted Alpha", "Sorted Gamma", "Sorted Beta");
-		assertThat(adminNames("&sort=-received")).containsExactly("Sorted Beta", "Sorted Gamma", "Sorted Alpha");
+		assertThat(adminNames("&sort=created")).containsExactly("Sorted Alpha", "Sorted Gamma", "Sorted Beta");
+		assertThat(adminNames("&sort=-created")).containsExactly("Sorted Beta", "Sorted Gamma", "Sorted Alpha");
 		// Equal counts keep the order of the name.
 		assertThat(adminNames("&sort=-members")).containsExactly("Sorted Beta", "Sorted Alpha", "Sorted Gamma");
-		// Without a key, open claims first, then the most recently received.
+		// Without a key, open claims first, then the most recent by its claim or its creation.
 		assertThat(adminNames("")).containsExactly("Sorted Beta", "Sorted Gamma", "Sorted Alpha");
 		assertProblem(get(operator, API + "/admin/organizations?sort=newest"), 400, "REQUEST_INVALID");
+		assertProblem(get(operator, API + "/admin/organizations?sort=received"), 400, "REQUEST_INVALID");
 	}
 
 	@Test

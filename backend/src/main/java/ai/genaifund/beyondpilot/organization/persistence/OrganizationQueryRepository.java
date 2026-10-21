@@ -129,10 +129,10 @@ public class OrganizationQueryRepository {
 
 	/**
 	 * One page for operators in the order {@code sort} names; without one, those with an open claim first, then the
-	 * newest.
+	 * most recent by its claim or, with none open, by its creation.
 	 * @param status {@code active} for those not taken down, {@code claimed} for those with an open claim,
 	 * {@code suspended} for those taken down or {@code merged}; none selects every one but the merged
-	 * @param sort {@code name}, {@code received} or {@code members}, with {@code -} before it for the reverse
+	 * @param sort {@code name}, {@code created} or {@code members}, with {@code -} before it for the reverse
 	 */
 	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, @Nullable String country,
 			@Nullable String sort, int limit, long offset) {
@@ -171,7 +171,7 @@ public class OrganizationQueryRepository {
 		String direction = descending ? " desc" : "";
 		return switch (key) {
 			case "name" -> "lower(o.name)" + direction + ", o.id";
-			case "received" -> "coalesce(c.created_at, o.created_at)" + direction + ", o.id";
+			case "created" -> "o.created_at" + direction + ", o.id";
 			case "members" -> "members" + direction + ", lower(o.name), o.id";
 			default -> "case when c.id is not null then 0 else 1 end, "
 					+ "coalesce(c.created_at, o.created_at) desc, o.id";

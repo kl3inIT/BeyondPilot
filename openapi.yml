@@ -5509,10 +5509,10 @@ paths:
           - string
           - "null"
           pattern: "[A-Z]{2}"
-      - description: "The order: `name` by the name, `received` by when its open claim\
-          \ arrived, or when the organization was created when none is open, `members`\
-          \ by how many people belong to it; `-` before a key turns it round. Without\
-          \ it, those with an open claim first, then the most recently received."
+      - description: "The order: `name` by the name, `created` by when the organization\
+          \ was created, `members` by how many people belong to it; `-` before a key\
+          \ turns it round. Without it, those with an open claim first, then the most\
+          \ recent by its claim or, with none open, by its creation."
         in: query
         name: sort
         required: false
@@ -5521,11 +5521,11 @@ paths:
           enum:
           - name
           - -name
-          - received
-          - -received
+          - created
+          - -created
           - members
           - -members
-          pattern: -?(name|received|members)
+          pattern: -?(name|created|members)
       - description: "The page, counted from 1."
         in: query
         name: page
@@ -5656,10 +5656,10 @@ paths:
           - string
           - "null"
           pattern: "[A-Z]{2}"
-      - description: "The order: `name` by the name, `received` by when its open claim\
-          \ arrived, or when the organization was created when none is open, `members`\
-          \ by how many people belong to it; `-` before a key turns it round. Without\
-          \ it, those with an open claim first, then the most recently received."
+      - description: "The order: `name` by the name, `created` by when the organization\
+          \ was created, `members` by how many people belong to it; `-` before a key\
+          \ turns it round. Without it, those with an open claim first, then the most\
+          \ recent by its claim or, with none open, by its creation."
         in: query
         name: sort
         required: false
@@ -5668,11 +5668,11 @@ paths:
           enum:
           - name
           - -name
-          - received
-          - -received
+          - created
+          - -created
           - members
           - -members
-          pattern: -?(name|received|members)
+          pattern: -?(name|created|members)
       - description: "The page, counted from 1."
         in: query
         name: page
