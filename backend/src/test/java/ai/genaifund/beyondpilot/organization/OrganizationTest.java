@@ -641,7 +641,6 @@ class OrganizationTest {
 		// A member reads who belongs, and none of what only owners decide.
 		String forMember = members(colleague);
 		assertThat(JsonPath.<List<Object>>read(forMember, "$.requests")).isEmpty();
-		assertThat(JsonPath.<Object>read(forMember, "$.allowance")).isNull();
 		String forOwner = members(founder);
 		assertThat(JsonPath.<String>read(forOwner, "$.requests[0].message")).isEqualTo("I work here");
 		String request = JsonPath.read(forOwner, "$.requests[0].id");
@@ -948,7 +947,6 @@ class OrganizationTest {
 				"ORGANIZATION_INVITATION_NOT_FOUND");
 		String lapsed = members(founder);
 		assertThat(JsonPath.<List<String>>read(lapsed, "$.invitations")).isEmpty();
-		assertThat(JsonPath.<Integer>read(lapsed, "$.allowance.leftOpen")).isEqualTo(50);
 		post(founder, API + "/mine/invitations", Map.of("email", "late@gmail.com", "role", "member")).expectStatus()
 			.isNoContent();
 		assertThat(JsonPath.<List<String>>read(mine(late), "$.invitations[*].organizationName"))
@@ -974,9 +972,6 @@ class OrganizationTest {
 				409, "ORGANIZATION_INVITEE_IS_MEMBER");
 		String forOwner = members(founder);
 		assertThat(JsonPath.<List<String>>read(forOwner, "$.invitations[*].email")).containsExactly("Guest@gmail.com");
-		assertThat(JsonPath.<Boolean>read(forOwner, "$.allowance.open")).isTrue();
-		assertThat(JsonPath.<Integer>read(forOwner, "$.allowance.leftToday")).isEqualTo(19);
-		assertThat(JsonPath.<Integer>read(forOwner, "$.allowance.leftOpen")).isEqualTo(49);
 
 		String guest = signIn("guest@gmail.com");
 		String invited = mine(guest);
@@ -1021,55 +1016,32 @@ class OrganizationTest {
 	}
 
 	@Test
-	void anOrganizationTakenDownDoesNotInviteAndNoneInvitesPastItsDailyLimit() {
+	void anOrganizationTakenDownDoesNotInvite() {
 		String founder = signIn("founder@limited.test");
 		UUID id = create(founder, "Limited Co");
 		takeDown(id);
+
 		assertProblem(post(founder, API + "/mine/invitations", Map.of("email", "early@gmail.com", "role", "member")),
 				409, "ORGANIZATION_NOT_APPROVED");
-		assertThat(JsonPath.<Boolean>read(members(founder), "$.allowance.open")).isFalse();
-		post(operator, API + "/admin/organizations/" + id + "/restore", null).expectStatus().isNoContent();
 
-		for (int sent = 1; sent <= 20; sent++) {
+		post(operator, API + "/admin/organizations/" + id + "/restore", null).expectStatus().isNoContent();
+		post(founder, API + "/mine/invitations", Map.of("email", "early@gmail.com", "role", "member")).expectStatus()
+			.isNoContent();
+	}
+
+	@Test
+	void anOrganizationInvitesAsManyPeopleAsItWants() {
+		String founder = signIn("founder@unlimited.test");
+		create(founder, "Unlimited Co");
+		int invited = 60;
+
+		for (int sent = 1; sent <= invited; sent++) {
 			post(founder, API + "/mine/invitations", Map.of("email", "guest" + sent + "@gmail.com", "role", "member"))
 				.expectStatus()
 				.isNoContent();
 		}
 
-		Map<String, Object> oneMore = Map.of("email", "guest21@gmail.com", "role", "member");
-		assertProblem(post(founder, API + "/mine/invitations", oneMore), 429, "ORGANIZATION_INVITATION_DAILY_LIMIT");
-		// Taking an invitation back does not give the day's count back.
-		String sent = members(founder);
-		assertThat(JsonPath.<Integer>read(sent, "$.allowance.leftToday")).isZero();
-		post(founder, API + "/mine/invitations/" + JsonPath.<String>read(sent, "$.invitations[0].id") + "/revoke", null)
-			.expectStatus()
-			.isNoContent();
-		assertProblem(post(founder, API + "/mine/invitations", oneMore), 429, "ORGANIZATION_INVITATION_DAILY_LIMIT");
-	}
-
-	@Test
-	void anOrganizationKeepsNoMoreOpenInvitationsThanItsLimit() {
-		String founder = signIn("founder@open-limit.test");
-		UUID id = create(founder, "Open Limit Co");
-		UUID founderId = idOf("founder@open-limit.test");
-		for (int open = 1; open <= 50; open++) {
-			jdbc.sql("""
-					insert into organization_invitation (id, organization_id, email, role, invited_by_account_id, created_at, expires_at)
-					values (?, ?, ?, 'member', ?, now() - interval '2 days', now() + interval '5 days')
-					""").params(UUID.randomUUID(), id, "waiting" + open + "@gmail.com", founderId).update();
-		}
-
-		String full = members(founder);
-		assertThat(JsonPath.<Integer>read(full, "$.allowance.leftToday")).isEqualTo(20);
-		assertThat(JsonPath.<Integer>read(full, "$.allowance.leftOpen")).isZero();
-		Map<String, Object> oneMore = Map.of("email", "waiting51@gmail.com", "role", "member");
-		assertProblem(post(founder, API + "/mine/invitations", oneMore), 429, "ORGANIZATION_INVITATION_OPEN_LIMIT");
-
-		// An invitation taken back makes room for another.
-		post(founder, API + "/mine/invitations/" + JsonPath.<String>read(full, "$.invitations[0].id") + "/revoke", null)
-			.expectStatus()
-			.isNoContent();
-		post(founder, API + "/mine/invitations", oneMore).expectStatus().isNoContent();
+		assertThat(JsonPath.<List<Object>>read(members(founder), "$.invitations")).hasSize(invited);
 	}
 
 	@Test
@@ -1193,8 +1165,6 @@ class OrganizationTest {
 
 		String mine = mine(chief);
 		assertThat(JsonPath.<String>read(mine, "$.role")).isEqualTo("owner");
-		// What GenAI Fund sent does not count against what the organization may send.
-		assertThat(JsonPath.<Integer>read(members(chief), "$.allowance.leftToday")).isEqualTo(20);
 	}
 
 	@Test
