@@ -107,6 +107,27 @@ public class OrganizationQueryRepository {
 			.list();
 	}
 
+	/**
+	 * Locks up to {@code limit} organizations that V109 marked to be told they are active, oldest first. A row another
+	 * transaction holds is skipped, so two instances never take the same one.
+	 */
+	public List<UUID> lockMarked(int limit) {
+		return jdbc.sql("""
+				select id from organization where activation_notice_pending
+				order by created_at, id
+				limit :limit
+				for update skip locked
+				""").param("limit", limit).query(UUID.class).list();
+	}
+
+	public void clearMarks(Collection<UUID> ids) {
+		if (!ids.isEmpty()) {
+			jdbc.sql("update organization set activation_notice_pending = false where id in (:ids)")
+				.param("ids", ids)
+				.update();
+		}
+	}
+
 	public List<Name> names(Collection<UUID> ids) {
 		return names(ids, "");
 	}

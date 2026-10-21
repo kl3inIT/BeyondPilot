@@ -13,6 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import ai.genaifund.beyondpilot.TestMailbox;
@@ -54,6 +59,9 @@ class OrganizationTest {
 
 	@Autowired
 	private JdbcClient jdbc;
+
+	@Autowired
+	private ActivationNotices activationNotices;
 
 	private RestTestClient client;
 
@@ -1552,6 +1560,100 @@ class OrganizationTest {
 		Map<String, Object> request = new HashMap<>(profile(name));
 		request.put("jobTitle", " Founder ");
 		return request;
+	}
+
+	@Test
+	void theOwnersOfAMarkedOrganizationAreToldOnceItIsActive() {
+		UUID id = create(signIn("first@activated.test"), "Activated Co");
+		signIn("second@activated.test");
+		addMember(id, "second@activated.test", "owner");
+		signIn("plain@activated.test");
+		addMember(id, "plain@activated.test", "member");
+		mark(id);
+
+		assertThat(activationNotices.sendBatch()).isEqualTo(1);
+
+		assertThat(activatedEmails("first@activated.test")).isEqualTo(1);
+		assertThat(activatedEmails("second@activated.test")).isEqualTo(1);
+		assertThat(activatedEmails("plain@activated.test")).isZero();
+		assertThat(isMarked(id)).isFalse();
+		assertThat(activationNotices.sendBatch()).isZero();
+		assertThat(activatedEmails("first@activated.test")).isEqualTo(1);
+	}
+
+	@Test
+	void anOrganizationWithoutAnOwnerIsClearedWithoutAnEmail() {
+		UUID id = create(signIn("gone@ownerless.test"), "Ownerless Co");
+		jdbc.sql("delete from organization_member where organization_id = ?").param(id).update();
+		mark(id);
+
+		assertThat(activationNotices.sendBatch()).isEqualTo(1);
+
+		assertThat(isMarked(id)).isFalse();
+		assertThat(activatedEmails("gone@ownerless.test")).isZero();
+	}
+
+	@Test
+	void aMarkedOrganizationTakenDownIsClearedWithoutAnEmail() {
+		UUID id = create(signIn("owner@taken-down.test"), "Taken Down Co");
+		jdbc.sql("update organization set suspended_at = now() where id = ?").param(id).update();
+		mark(id);
+
+		assertThat(activationNotices.sendBatch()).isEqualTo(1);
+
+		assertThat(isMarked(id)).isFalse();
+		assertThat(activatedEmails("owner@taken-down.test")).isZero();
+	}
+
+	@Test
+	void theActivationNoticesOfTwoRunsAtOnceSendEachEmailOnce() throws Exception {
+		List<String> owners = IntStream.range(0, 6).mapToObj(index -> "owner" + index + "@twice.test").toList();
+		for (String owner : owners) {
+			mark(create(signIn(owner), "Twice " + owner));
+		}
+		ExecutorService runs = Executors.newFixedThreadPool(2);
+		CountDownLatch start = new CountDownLatch(1);
+		try {
+			List<Future<Integer>> batches = IntStream.range(0, 2).mapToObj(run -> runs.submit(() -> {
+				start.await();
+				return activationNotices.sendBatch();
+			})).toList();
+			start.countDown();
+			int taken = 0;
+			for (Future<Integer> batch : batches) {
+				taken += batch.get(30, TimeUnit.SECONDS);
+			}
+			assertThat(taken).isEqualTo(owners.size());
+		}
+		finally {
+			runs.shutdownNow();
+		}
+
+		assertThat(owners).allSatisfy(owner -> assertThat(activatedEmails(owner)).isEqualTo(1));
+	}
+
+	private void mark(UUID organization) {
+		jdbc.sql("update organization set activation_notice_pending = true where id = ?").param(organization).update();
+	}
+
+	private boolean isMarked(UUID organization) {
+		return jdbc.sql("select activation_notice_pending from organization where id = ?")
+			.param(organization)
+			.query(Boolean.class)
+			.single();
+	}
+
+	private void addMember(UUID organization, String email, String role) {
+		jdbc.sql("insert into organization_member (organization_id, account_id, role) values (?, ?, ?)")
+			.params(organization, idOf(email), role)
+			.update();
+	}
+
+	private long activatedEmails(String recipient) {
+		return jdbc.sql("select count(*) from email_message where kind = 'organization_activated' and recipient = ?")
+			.param(recipient)
+			.query(Long.class)
+			.single();
 	}
 
 	private static Map<String, Object> save(Map<String, Object> profile, int version) {

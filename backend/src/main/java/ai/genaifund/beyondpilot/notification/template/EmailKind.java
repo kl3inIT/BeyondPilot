@@ -226,7 +226,7 @@ public enum EmailKind {
 	}
 
 	/** Whether nothing sends it any more; it keeps its value for the messages already in the log. */
-	public boolean retired() {
+	boolean retired() {
 		return RETIRED.contains(this);
 	}
 
