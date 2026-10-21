@@ -608,7 +608,7 @@ public class OrganizationAdministration {
 		Person creator = people.get(organization.getCreatedByAccountId());
 		return new AdminOrganizationResponse(OrganizationViews.organization(organization),
 				creator == null ? "" : creator.label(), creator == null ? "" : creator.email(),
-				suggestedDomain(organization, creator), OrganizationViews.members(members, people, null),
+				suggestedDomain(organization, creator, members), OrganizationViews.members(members, people, null),
 				invitations.stream()
 					.map(invitation -> OrganizationViews.invitation(invitation, organization.getName(), people))
 					.toList(),
@@ -634,10 +634,12 @@ public class OrganizationAdministration {
 	}
 
 	/**
-	 * A domain the operator only has to confirm: the one the organization has, else its creator's work domain, else its
-	 * website's. None for an individual, or when another organization holds it.
+	 * A domain the operator only has to confirm: the one the organization has, else its creator's work domain when the
+	 * creator belongs to it, else its website's. None for an individual, or when another organization holds it. An
+	 * organization an operator made or imported is never offered the operator's own domain.
 	 */
-	private @Nullable String suggestedDomain(Organization organization, @Nullable Person creator) {
+	private @Nullable String suggestedDomain(Organization organization, @Nullable Person creator,
+			List<Member> members) {
 		if (organization.getEmailDomain() != null) {
 			return organization.getEmailDomain();
 		}
@@ -645,8 +647,9 @@ public class OrganizationAdministration {
 			// A person on their own stands for nobody else at their address.
 			return null;
 		}
-		String fromCreator = creator != null
-				? OrganizationViews.workDomain(creator.email()) : null;
+		boolean creatorBelongs = members.stream()
+			.anyMatch(member -> member.accountId().equals(organization.getCreatedByAccountId()));
+		String fromCreator = creator != null && creatorBelongs ? OrganizationViews.workDomain(creator.email()) : null;
 		String candidate = fromCreator != null ? fromCreator
 				: OrganizationViews.websiteDomain(organization.getWebsite());
 		return candidate == null || organizations.findByEmailDomain(candidate).isPresent() ? null : candidate;

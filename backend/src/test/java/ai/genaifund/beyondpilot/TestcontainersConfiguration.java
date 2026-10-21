@@ -9,12 +9,15 @@ import org.testcontainers.utility.DockerImageName;
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
 
+	/** The database staging runs: the official postgres:18.6 with pgvector. */
+	public static final DockerImageName POSTGRES_IMAGE = DockerImageName
+		.parse("pgvector/pgvector:0.8.7-pg18-trixie")
+		.asCompatibleSubstituteFor("postgres");
+
 	@Bean
 	@ServiceConnection
 	PostgreSQLContainer postgresContainer() {
-		// The database staging runs: the official postgres:18.6 with pgvector.
-		return new PostgreSQLContainer(
-				DockerImageName.parse("pgvector/pgvector:0.8.7-pg18-trixie").asCompatibleSubstituteFor("postgres"));
+		return new PostgreSQLContainer(POSTGRES_IMAGE);
 	}
 
 }

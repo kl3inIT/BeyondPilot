@@ -168,7 +168,7 @@ class DecisionTools {
 			Actor actor = actor(context.get(CallLog.CALLER));
 			try {
 				return switch (area) {
-					// Task 6 of BEY-236 removes the organization branch: nobody reviews an organization any more.
+					// Nobody reviews an organization any more.
 					case "organizations" -> error("Organizations are not reviewed: they are active when created.");
 					case "solutions" -> {
 						String before = solutions.reviewRecord(actor, id).status();

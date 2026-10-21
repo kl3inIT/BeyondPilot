@@ -684,7 +684,7 @@ class OrganizationTest {
 
 	@Test
 	void anAddressElsewhereAsksAndMayWithdraw() {
-		UUID id = create(, );
+		UUID id = create(signIn("founder@asked.test"), "Asked Co");
 		String outsider = signIn("outsider@elsewhere.test");
 
 		String asked = body(get(outsider, API + "/organizations?q=asked").expectStatus().isOk());
@@ -724,7 +724,7 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(saved, "$.organization.name")).isEqualTo("Managed Company");
 		assertThat(JsonPath.<String>read(saved, "$.organization.emailDomain")).isEqualTo("managed.test");
 		assertProblem(put(operator, detail, edit), 409, "ORGANIZATION_CHANGED_MEANWHILE");
-		UUID other = create(, );
+		UUID other = create(signIn("other@other-managed.test"), "Other Managed Co");
 		assertProblem(put(operator, API + "/admin/organizations/" + other,
 				Map.of("profile", save(profile("Other Managed Co"),
 						JsonPath.<Integer>read(body(get(operator, API + "/admin/organizations/" + other)
@@ -1265,6 +1265,16 @@ class OrganizationTest {
 	}
 
 	@Test
+	void anOrganizationAnOperatorMadeIsNeverOfferedTheOperatorsDomain() {
+		String unowned = JsonPath.read(body(post(operator, API + "/admin/organizations",
+				Map.of("name", "Imported Co", "type", "company")).expectStatus().isCreated()), "$.organization.id");
+
+		String record = body(get(operator, API + "/admin/organizations/" + unowned).expectStatus().isOk());
+
+		assertThat(JsonPath.<Object>read(record, "$.suggestedDomain")).isNull();
+	}
+
+	@Test
 	void anApprovedClaimMakesItsOwnerAndVerifiesTheDomain() {
 		approved(signIn("founder@claimed-taken.test"), "Claimed Taken", "claimed-taken.test");
 		String unowned = JsonPath.read(body(post(operator, API + "/admin/organizations",
@@ -1376,7 +1386,7 @@ class OrganizationTest {
 
 	@Test
 	void theOperatorsListIsNarrowedBySearchAndStatusAndPutsOpenClaimsFirst() {
-		create(, );
+		create(signIn("founder@listed-done.test"), "Listed Done");
 		create(signIn("founder@listed-wait.test"), "Listed Waiting");
 		String claimed = JsonPath.read(body(post(operator, API + "/admin/organizations",
 				Map.of("name", "Listed Claimed", "type", "company")).expectStatus().isCreated()), "$.organization.id");
@@ -1423,8 +1433,8 @@ class OrganizationTest {
 
 	@Test
 	void theOperatorsListSortsByTheKeyItIsGivenAndRefusesAnUnknownOne() {
-		UUID beta = create(, );
-		create(, );
+		UUID beta = create(signIn("founder@sorted-beta.test"), "Sorted Beta");
+		create(signIn("founder@sorted-alpha.test"), "Sorted Alpha");
 		create(signIn("founder@sorted-gamma.test"), "Sorted Gamma");
 		signIn("second@sorted-beta.test");
 		jdbc.sql("insert into organization_member (organization_id, account_id, role) values (?, ?, 'member')")

@@ -26,7 +26,10 @@ import org.jspecify.annotations.Nullable;
 @Table(name = "organization")
 public class Organization {
 
-	/** Active: every organization is, from its creation, until an operator merges it. Taking it down is {@code suspendedAt}. */
+	/**
+	 * Active: every organization is, from its creation, until an operator merges it. Taking it down is
+	 * {@code suspendedAt}.
+	 */
 	public static final String APPROVED = "approved";
 
 	/** Merged into another organization by an operator: a record of where it went, which nobody changes. */

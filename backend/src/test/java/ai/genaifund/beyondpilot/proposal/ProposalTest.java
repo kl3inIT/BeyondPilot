@@ -143,7 +143,7 @@ class ProposalTest extends ApplicationsHttpTest {
 			.isOk());
 		assertThat(JsonPath.<String>read(team, "$.organization.name")).isEqualTo("Lan and Friends");
 		assertThat(JsonPath.<String>read(team, "$.organization.type")).isEqualTo("builder_team");
-		assertThat(JsonPath.<Boolean>read(team, "$.organization.approved")).isFalse();
+		assertThat(JsonPath.<Boolean>read(team, "$.organization.approved")).isTrue();
 		assertThat(JsonPath.<Boolean>read(team, "$.organization.changeable")).isFalse();
 		// A team stays one here: it may have members by now.
 		assertProblem(post(lan, form.path() + "/organization/leave", null), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
@@ -173,16 +173,40 @@ class ProposalTest extends ApplicationsHttpTest {
 				Map.of("kind", "team", "name", "Hoa Team", "country", "VN", "teamSize", "2_9")), 409,
 				"PROPOSAL_INDIVIDUAL_LOCKED");
 
-		// One GenAI Fund refused keeps that decision: neither a team nor a fresh start undoes it.
+		// One GenAI Fund took down keeps that decision: neither a team nor a fresh start undoes it.
 		String khanh = TestSignIn.session(client, mail, "khanh@alone.test");
 		post(khanh, form.path() + "/organization", Map.of("kind", "individual", "name", "Khanh Vo", "country", "VN"))
 			.expectStatus()
 			.isOk();
-		jdbc.sql("update organization set status = 'rejected' where name = 'Khanh Vo'").update();
+		jdbc.sql("update organization set suspended_at = now() where name = 'Khanh Vo'").update();
 		assertProblem(post(khanh, form.path() + "/organization/leave", null), 409, "PROPOSAL_INDIVIDUAL_LOCKED");
 		assertProblem(post(khanh, form.path() + "/organization",
 				Map.of("kind", "team", "name", "Khanh Team", "country", "VN", "teamSize", "2_9")), 409,
 				"PROPOSAL_INDIVIDUAL_LOCKED");
+	}
+
+	@Test
+	void someoneOnTheirOwnWhoBecomesATeamStaysApprovedAndKeepsTheirApplication() {
+		Form form = program("stays-challenge", true, Instant.now().plus(Duration.ofDays(10)));
+		String lan = TestSignIn.session(client, mail, "lan@stays.test");
+		post(lan, form.path() + "/organization", Map.of("kind", "individual", "name", "Lan Stays", "country", "VN"))
+			.expectStatus()
+			.isOk();
+		put(lan, form.path(), application(contact(), null, Map.of(), null)).expectStatus().isOk();
+
+		String team = body(post(lan, form.path() + "/organization",
+				Map.of("kind", "team", "name", "Lan Stays Team", "country", "VN", "teamSize", "2_9"))
+			.expectStatus()
+			.isOk());
+
+		assertThat(JsonPath.<Boolean>read(team, "$.organization.approved")).isTrue();
+		assertThat(jdbc.sql("select status from organization where name = 'Lan Stays Team'")
+			.query(String.class)
+			.single()).isEqualTo("approved");
+		assertThat(jdbc.sql("""
+				select o.name from proposal p join organization o on o.id = p.organization_id
+				where p.account_id = (select id from identity_account where email = 'lan@stays.test')
+				""").query(String.class).single()).isEqualTo("Lan Stays Team");
 	}
 
 	@Test

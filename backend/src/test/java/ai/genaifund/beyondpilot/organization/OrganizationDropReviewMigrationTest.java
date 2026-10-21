@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.TestcontainersConfiguration;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -11,7 +12,6 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 /**
  * What {@code V109__organization_drop_review.sql} does to the organizations that exist when it runs: the database is
@@ -24,7 +24,7 @@ class OrganizationDropReviewMigrationTest {
 
 	@Container
 	private static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(
-			DockerImageName.parse("pgvector/pgvector:0.8.7-pg18-trixie").asCompatibleSubstituteFor("postgres"));
+			TestcontainersConfiguration.POSTGRES_IMAGE);
 
 	@Test
 	void organizationsWaitingBecomeActiveAndMarkedAndRefusedOnesBecomeTakenDown() {
@@ -49,13 +49,21 @@ class OrganizationDropReviewMigrationTest {
 		assertThat(taken(jdbc, "refused-fake")).isEqualTo("approved|false|true|not_a_real_organization|not_a_real_organization");
 		assertThat(taken(jdbc, "refused-duplicate")).isEqualTo("approved|false|true|other|duplicate");
 		assertThat(taken(jdbc, "refused-scope")).isEqualTo("approved|false|true|other|out_of_scope");
+		// The take-down keeps when the refusal was made and what the operator wrote.
+		assertThat(jdbc.sql("""
+				select suspended_at = decided_at and suspension_message = decision_message
+				from organization where slug = 'refused-fake'
+				""").query(Boolean.class).single()).isTrue();
+		assertThat(jdbc.sql("select suspension_message from organization where slug = 'refused-fake'")
+			.query(String.class)
+			.single()).isEqualTo("A note.");
 	}
 
 	private static void insert(JdbcClient jdbc, UUID creator, String slug, String status, String decisionReason) {
 		jdbc.sql("""
 				insert into organization (id, slug, name, type, status, decision_reason, decision_message, decided_at,
 				                          created_by_account_id)
-				values (?, ?, ?, 'company', ?, ?, 'A note.', now(), ?)
+				values (?, ?, ?, 'company', ?, ?, 'A note.', timestamptz '2026-10-01 10:00:00+00', ?)
 				""").params(UUID.randomUUID(), slug, slug, status, decisionReason, creator).update();
 	}
 

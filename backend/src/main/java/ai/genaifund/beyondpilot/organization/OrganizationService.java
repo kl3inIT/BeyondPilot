@@ -466,8 +466,8 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Asks an address to join the caller's organization and tells it by email. Only an organization that is not taken down invites,
-	 * and within its limits: so many in 24 hours, and so many open at once.
+	 * Asks an address to join the caller's organization and tells it by email. Only an organization that is not taken
+	 * down invites, and within its limits: so many in 24 hours, and so many open at once.
 	 * @throws OrganizationException when the caller is not an owner, the organization is taken down or reached a
 	 * limit, the address already belongs to the organization, or it already holds an open invitation
 	 */
@@ -571,8 +571,8 @@ public class OrganizationService {
 
 	/**
 	 * Takes a person out of the organization. An owner removes anyone; a member removes only themselves, which is
-	 * leaving. A refused organization lets its last owner go: nothing is decided about it any more, and staying would
-	 * keep the person out of every other organization.
+	 * leaving. A taken-down organization lets its last owner go: staying would keep the person out of every other
+	 * organization.
 	 * @throws OrganizationException when the caller may not, the person does not belong to the organization, or the
 	 * removal would leave an organization that is not taken down without an owner
 	 */
@@ -628,7 +628,8 @@ public class OrganizationService {
 	}
 
 	/**
-	 * Turns the caller's individual into their team, which stays active. Whether it may still change is for the caller to decide, from what was sent under it.
+	 * Turns the caller's individual into their team, which stays active. Whether it may still change is for the
+	 * caller to decide, from what was sent under it.
 	 * @return the team's identifier
 	 * @throws OrganizationException when the caller does not own an individual
 	 */
