@@ -69,7 +69,7 @@ class SearchDirectoriesTest {
 	@Test
 	void anApprovedSolutionIsFoundUnderItsOrganizationAndLeavesTheResultsWhenUnlistedOrTakenDown() {
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@directories.test");
-		UUID organization = organization(owner, "Revve " + word);
+		organization(owner, "Revve " + word);
 		UUID solution = submittedSolution(owner, "Voice Agent " + word);
 		assertThat(total("voice agent " + word)).isZero();
 
@@ -136,7 +136,7 @@ class SearchDirectoriesTest {
 	@Test
 	void aSolutionWithoutItsOwnLogoIsFoundWithItsOrganizationsOnceTheOrganizationHasOne() {
 		String owner = TestSignIn.session(client, mail, "logo-" + word + "@directories.test");
-		UUID organization = organization(owner, "Logo " + word);
+		organization(owner, "Logo " + word);
 		UUID solution = submittedSolution(owner, "Lead Scorer " + word);
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 		await().atMost(WAIT).until(() -> total("lead scorer " + word) == 1);

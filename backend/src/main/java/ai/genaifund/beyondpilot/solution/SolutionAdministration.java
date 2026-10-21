@@ -241,9 +241,9 @@ public class SolutionAdministration {
 			throw notAwaiting(solution);
 		}
 		if (!organizations.isApproved(solution.getOrganizationId())) {
-			// The directory lists a solution only when GenAI Fund has approved who offers it too.
+			// The directory lists a solution only when who offers it is not taken down.
 			throw new SolutionException(SolutionErrorCode.ORGANIZATION_NOT_APPROVED,
-					"Approval of solution " + id + " whose organization is not approved");
+					"Approval of solution " + id + " whose organization is taken down");
 		}
 		solution.approve(Instant.now());
 		record(AuditAction.SOLUTION_APPROVE, operator, solution, Map.of());
@@ -266,9 +266,9 @@ public class SolutionAdministration {
 	}
 
 	/**
-	 * Starts a solution as a draft of an approved organization, for an operator to write in the editor and publish.
+	 * Starts a solution as a draft of an organization that is not taken down, for an operator to write in the editor and publish.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws SolutionException when the organization is not approved
+	 * @throws SolutionException when the organization is taken down
 	 */
 	@Transactional
 	public SolutionResponse create(Actor actor, AdminCreateSolutionRequest request) {
@@ -313,7 +313,7 @@ public class SolutionAdministration {
 	 * told as it is of any approved solution.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 * @throws SolutionException when the solution does not exist, is not a draft, lacks what a submission needs, or
-	 * belongs to an organization that is not approved
+	 * belongs to an organization that is taken down
 	 */
 	@Transactional
 	public void publish(Actor actor, UUID id) {
@@ -354,7 +354,7 @@ public class SolutionAdministration {
 
 	private static SolutionException organizationNotApproved(UUID organizationId) {
 		return new SolutionException(SolutionErrorCode.ORGANIZATION_NOT_APPROVED,
-				"Solution of organization " + organizationId + ", which is not approved");
+				"Solution of organization " + organizationId + ", which is taken down");
 	}
 
 	/**
@@ -474,7 +474,7 @@ public class SolutionAdministration {
 		if (!organizations.isApproved(solution.getOrganizationId())) {
 			// Back in the directory means its organization is shown too.
 			throw new SolutionException(SolutionErrorCode.ORGANIZATION_NOT_APPROVED,
-					"Restore of solution " + id + " whose organization is not approved");
+					"Restore of solution " + id + " whose organization is taken down");
 		}
 		solution.restore();
 		record(AuditAction.SOLUTION_RESTORE, operator, solution, Map.of());

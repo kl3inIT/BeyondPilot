@@ -17,7 +17,7 @@ public enum MessagingErrorCode implements ErrorCode {
 			"Create or join an organization before you write to a solution provider."),
 
 	ORGANIZATION_NOT_APPROVED("MESSAGING_ORGANIZATION_NOT_APPROVED", ErrorCategory.NOT_PERMITTED,
-			"Your organization has not been approved yet, so it cannot write to a solution provider."),
+			"Your organization is taken down, so it cannot write to a solution provider."),
 
 	ALREADY_WAITING("MESSAGING_ALREADY_WAITING", ErrorCategory.CONFLICT,
 			"Your first message still waits for an answer. You can write again once it is accepted."),

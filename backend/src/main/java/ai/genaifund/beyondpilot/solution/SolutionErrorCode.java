@@ -11,7 +11,7 @@ public enum SolutionErrorCode implements ErrorCode {
 			"Only a member of an organization can do this."),
 
 	ORGANIZATION_NOT_APPROVED("SOLUTION_ORGANIZATION_NOT_APPROVED", ErrorCategory.CONFLICT,
-			"Approve the organization first: a solution is listed only when its organization is."),
+			"This organization is taken down: a solution is listed only when its organization is not."),
 
 	INCOMPLETE("SOLUTION_INCOMPLETE", ErrorCategory.VALIDATION,
 			"A solution needs a summary, a maturity, a focus area, an industry, a logo and a cover image before it "

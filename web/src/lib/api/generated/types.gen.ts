@@ -1699,7 +1699,7 @@ export type CreateUseCase = {
     industry: string;
     integrationRequirements?: string | null;
     /**
-     * An approved organization.
+     * An organization that is not taken down.
      */
     organizationId: string;
     problemStatement: string;
@@ -7278,7 +7278,7 @@ export type UseCaseOrganization = {
 };
 
 /**
- * The approved organizations that can have use cases, by name; at most 50.
+ * The organizations not taken down that can have use cases, by name; at most 50.
  */
 export type UseCaseOrganizationList = {
     items: Array<UseCaseOrganization>;

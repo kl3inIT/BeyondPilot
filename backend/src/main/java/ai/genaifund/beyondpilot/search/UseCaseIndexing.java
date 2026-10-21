@@ -46,7 +46,7 @@ class UseCaseIndexing {
 		});
 	}
 
-	/** Writes again what the organization's use cases show of it, and takes them out while it is not approved. */
+	/** Writes again what the organization's use cases show of it, and takes them out while it is taken down. */
 	@ApplicationModuleListener
 	void on(OrganizationChanged changed) {
 		lock.run(() -> {

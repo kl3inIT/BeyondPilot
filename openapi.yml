@@ -18016,7 +18016,7 @@ components:
         organizationId:
           type: string
           format: uuid
-          description: An approved organization.
+          description: An organization that is not taken down.
         problemStatement:
           type: string
           maxLength: 2000
@@ -28331,8 +28331,8 @@ components:
       - name
     UseCaseOrganizationList:
       type: object
-      description: "The approved organizations that can have use cases, by name; at\
-        \ most 50."
+      description: "The organizations not taken down that can have use cases, by name;\
+        \ at most 50."
       properties:
         items:
           type: array

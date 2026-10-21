@@ -237,7 +237,7 @@ class MatchingRunTest {
 		String word = "zp" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
 		matchingOn("http://127.0.0.1:" + provider.getAddress().getPort() + "/v1");
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@matching.test");
-		UUID vendor = organization(owner, "Claims Lab " + word);
+		organization(owner, "Claims Lab " + word);
 		String buyer = TestSignIn.session(client, mail, "buyer-" + word + "@matching.test");
 		UUID bank = organization(buyer, "Lotus Bank " + word);
 		UUID solution = submittedSolution(owner, "Claims Desk " + word);

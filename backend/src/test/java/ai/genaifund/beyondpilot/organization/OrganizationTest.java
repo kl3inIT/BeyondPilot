@@ -1394,8 +1394,8 @@ class OrganizationTest {
 
 	@Test
 	void theOperatorsListIsNarrowedBySearchAndStatusAndPutsOpenClaimsFirst() {
-		create(signIn("founder@listed-done.test"), "Listed Done");
-		create(signIn("founder@listed-wait.test"), "Listed Waiting");
+		create(signIn("founder@listed-older.test"), "Listed Older");
+		create(signIn("founder@listed-newer.test"), "Listed Newer");
 		String claimed = JsonPath.read(body(post(operator, API + "/admin/organizations",
 				Map.of("name", "Listed Claimed", "type", "company")).expectStatus().isCreated()), "$.organization.id");
 		post(signIn("claimant@listed-claim.test"), API + "/organizations/" + claimed + "/join", Map.of())
@@ -1404,9 +1404,10 @@ class OrganizationTest {
 
 		assertProblem(get(signIn("plain@gmail.com"), API + "/admin/organizations"), 403,
 				"IDENTITY_OPERATOR_REQUIRED");
+		// The open claim comes first, then the others, the newest on top.
 		String all = body(get(operator, API + "/admin/organizations?q=listed").expectStatus().isOk());
 		assertThat(JsonPath.<List<String>>read(all, "$.items[*].name")).containsExactly("Listed Claimed",
-				"Listed Waiting", "Listed Done");
+				"Listed Newer", "Listed Older");
 		assertThat(JsonPath.<Integer>read(all, "$.total")).isEqualTo(3);
 		assertThat(JsonPath.<Integer>read(all, "$.items[1].members")).isEqualTo(1);
 		assertThat(JsonPath.<Boolean>read(all, "$.items[1].owned")).isTrue();
@@ -1417,7 +1418,7 @@ class OrganizationTest {
 		assertThat(JsonPath.<List<String>>read(
 				body(get(operator, API + "/admin/organizations?q=listed&status=approved").expectStatus().isOk()),
 				"$.items[*].name"))
-			.containsExactlyInAnyOrder("Listed Done", "Listed Waiting", "Listed Claimed");
+			.containsExactlyInAnyOrder("Listed Older", "Listed Newer", "Listed Claimed");
 		assertProblem(get(operator, API + "/admin/organizations/" + UUID.randomUUID()), 404,
 				"ORGANIZATION_NOT_FOUND");
 	}
@@ -1658,6 +1659,8 @@ class OrganizationTest {
 
 		transaction.executeWithoutResult(status -> {
 			jdbc.sql("select id from organization where id = ? for update").param(held).query(UUID.class).single();
+			// assertTimeoutPreemptively runs sendAll on another thread, which cannot join this transaction and so
+			// meets the held row lock as a second instance would.
 			assertTimeoutPreemptively(Duration.ofSeconds(30), activationNotices::sendAll);
 		});
 

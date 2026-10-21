@@ -75,17 +75,16 @@ class SolutionTest {
 	}
 
 	@Test
-	void everyMemberWritesWhetherOrNotGenAiFundHasReviewedTheOrganization() {
+	void everyMemberWritesAsSoonAsTheOrganizationExists() {
 		String founder = signIn("founder@writers.test");
-		UUID organization = organization(founder, "Writers Co");
+		organization(founder, "Writers Co");
 
-		// Review decides what is listed, not who takes part: an organization that waits for review writes already.
+		// Review decides what is listed, not who takes part: a new organization writes at once.
 		UUID solution = create(founder, "Writers Desk");
 		submitted(founder, "Writers Draft");
 		String forFounder = body(get(founder, MINE).expectStatus().isOk());
 		assertThat(JsonPath.<Boolean>read(forFounder, "$.editable")).isTrue();
 
-		approve(organization);
 		String colleague = signIn("colleague@writers.test");
 		post(founder, ORGANIZATION + "/mine/invitations", Map.of("email", "colleague@writers.test", "role", "member"))
 			.expectStatus()
@@ -101,7 +100,7 @@ class SolutionTest {
 		create(colleague, "By A Member");
 
 		String buyer = signIn("buyer@other-company.test");
-		approve(organization(buyer, "Other Company"));
+		organization(buyer, "Other Company");
 		// Another organization does not see it at all.
 		assertProblem(get(buyer, MINE + "/" + solution), 404, "SOLUTION_NOT_FOUND");
 
@@ -113,16 +112,28 @@ class SolutionTest {
 	}
 
 	@Test
-	void aSolutionIsListedOnlyOnceItsOrganizationIsApprovedToo() {
-		String founder = signIn("founder@unreviewed.test");
-		UUID organization = organization(founder, "Unreviewed Co");
-		UUID solution = submitted(founder, "Unreviewed Desk");
+	void aSolutionOfANewOrganizationIsListedOnceApproved() {
+		String founder = signIn("founder@newcomer.test");
+		organization(founder, "Newcomer Co");
+		UUID solution = submitted(founder, "Newcomer Desk");
 
+		assertThat(names(DIRECTORY)).doesNotContain("Newcomer Desk");
+		post(operator, ADMIN + "/" + solution + "/approve", null).expectStatus().isNoContent();
+		assertThat(names(DIRECTORY)).contains("Newcomer Desk");
+	}
+
+	@Test
+	void aSolutionIsApprovedOnlyWhileItsOrganizationIsNotTakenDown() {
+		String founder = signIn("founder@taken-down.test");
+		UUID organization = organization(founder, "Taken Down Co");
+		UUID solution = submitted(founder, "Taken Down Desk");
+
+		takeDown(organization);
 		assertProblem(post(operator, ADMIN + "/" + solution + "/approve", null), 409,
 				"SOLUTION_ORGANIZATION_NOT_APPROVED");
-		approve(organization);
+		restore(organization);
 		post(operator, ADMIN + "/" + solution + "/approve", null).expectStatus().isNoContent();
-		assertThat(names(DIRECTORY)).contains("Unreviewed Desk");
+		assertThat(names(DIRECTORY)).contains("Taken Down Desk");
 	}
 
 	@Test
@@ -1368,22 +1379,23 @@ class SolutionTest {
 	void anOperatorWritesADraftForAnApprovedOrganizationAndPublishesItWithNoReview() {
 		String founder = approvedOwner("founder@published.test", "Published Co");
 		UUID organization = organizationOf(founder);
-		UUID unreviewed = organization(signIn("waiting@unreviewed.test"), "Operator Waiting Inc");
+		UUID takenDown = organization(signIn("down@taken-down.test"), "Operator Down Inc");
+		takeDown(takenDown);
 
-		// The operator picks among the approved organizations: one that waits for review is not offered.
+		// The operator picks among the organizations not taken down: one that is taken down is not offered.
 		assertProblem(get(founder, ADMIN + "/organizations"), 403, "IDENTITY_OPERATOR_REQUIRED");
 		// The list is cut at 50 by name, so the test asks by name rather than reading all of it.
 		assertThat(JsonPath.<List<String>>read(
 				body(get(operator, ADMIN + "/organizations?q=Published Co").expectStatus().isOk()), "$[*].name"))
 			.containsExactly("Published Co");
 		assertThat(JsonPath.<List<String>>read(
-				body(get(operator, ADMIN + "/organizations?q=Operator Waiting Inc").expectStatus().isOk()), "$[*].name"))
+				body(get(operator, ADMIN + "/organizations?q=Operator Down Inc").expectStatus().isOk()), "$[*].name"))
 			.isEmpty();
 
-		// Only an operator starts one, and only for an organization GenAI Fund approved.
+		// Only an operator starts one, and only for an organization that is not taken down.
 		assertProblem(post(founder, ADMIN, Map.of("organizationId", organization, "name", "Operator Desk")), 403,
 				"IDENTITY_OPERATOR_REQUIRED");
-		assertProblem(post(operator, ADMIN, Map.of("organizationId", unreviewed, "name", "Operator Desk")), 409,
+		assertProblem(post(operator, ADMIN, Map.of("organizationId", takenDown, "name", "Operator Desk")), 409,
 				"SOLUTION_ORGANIZATION_NOT_APPROVED");
 		assertProblem(post(operator, ADMIN, Map.of("organizationId", organization, "name", " ")), 400,
 				"REQUEST_INVALID");
@@ -1829,13 +1841,18 @@ class SolutionTest {
 			.isCreated()), "$.id"));
 	}
 
-	private void approve(UUID organization) {
+	private void takeDown(UUID organization) {
+		jdbc.sql("update organization set suspended_at = now() where id = ?").param(organization).update();
 	}
 
-	/** The session of an owner of an approved organization. */
+	private void restore(UUID organization) {
+		jdbc.sql("update organization set suspended_at = null where id = ?").param(organization).update();
+	}
+
+	/** The session of an owner of an organization. */
 	private String approvedOwner(String email, String name) {
 		String session = signIn(email);
-		approve(organization(session, name));
+		organization(session, name);
 		return session;
 	}
 

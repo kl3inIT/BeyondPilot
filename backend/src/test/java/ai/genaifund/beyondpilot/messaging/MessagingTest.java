@@ -255,9 +255,10 @@ class MessagingTest {
 		start(loner, "person", slug, "Hello.").expectStatus().isBadRequest();
 		// A provider reads which organization asks.
 		assertProblem(start(loner, "solution", solution, "Hello."), 403, "MESSAGING_NEEDS_ORGANIZATION");
-		String waiting = signIn("waiting@refuse-chat-waiting.test");
-		organization(waiting, "Refuse Chat Waiting");
-		assertProblem(start(waiting, "solution", solution, "Hello."), 403, "MESSAGING_ORGANIZATION_NOT_APPROVED");
+		String takenDown = signIn("down@refuse-chat-down.test");
+		UUID takenDownId = organization(takenDown, "Refuse Chat Down");
+		jdbc.sql("update organization set suspended_at = now() where id = ?").param(takenDownId).update();
+		assertProblem(start(takenDown, "solution", solution, "Hello."), 403, "MESSAGING_ORGANIZATION_NOT_APPROVED");
 		assertProblem(start(provider, "solution", solution, "Hello us."), 409, "MESSAGING_OWN_SUBJECT");
 		assertProblem(start(operator, "program", "no-such-program", "Hello."), 404, "MESSAGING_SUBJECT_NOT_FOUND");
 	}

@@ -72,8 +72,8 @@ public class UseCaseDirectory {
 	}
 
 	/**
-	 * A published use case as search indexes it; empty for any other, or when its organization is not approved or is
-	 * taken down. One past its close date is still returned, and search leaves it out by that date.
+	 * A published use case as search indexes it; empty for any other, or when its organization is taken
+	 * down. One past its close date is still returned, and search leaves it out by that date.
 	 */
 	@Transactional(readOnly = true)
 	public Optional<IndexedUseCase> indexed(UUID useCaseId) {
@@ -84,7 +84,7 @@ public class UseCaseDirectory {
 
 	/**
 	 * A published use case, for the module that keeps the proposals sent to it; empty for one that is not published.
-	 * It is open while it has not closed and its organization is approved: a closed one stays known, so those who posted
+	 * It is open while it has not closed and its organization is not taken down: a closed one stays known, so those who posted
 	 * it still read what it received.
 	 */
 	@Transactional(readOnly = true)
@@ -118,7 +118,7 @@ public class UseCaseDirectory {
 
 	/**
 	 * Everything a published use case says, with its attached files, for matching; empty for a use case that is not
-	 * published, or whose organization is not approved or is taken down. One past its close date is still returned:
+	 * published, or whose organization is taken down. One past its close date is still returned:
 	 * its candidates stay readable.
 	 */
 	@Transactional(readOnly = true)
@@ -179,7 +179,7 @@ public class UseCaseDirectory {
 
 	/**
 	 * The published use cases of an organization as search indexes them, when what is shown of it changed; none while
-	 * the organization is not approved or is taken down.
+	 * the organization is taken down.
 	 */
 	@Transactional(readOnly = true)
 	public List<IndexedUseCase> indexedOf(UUID organizationId) {
@@ -198,7 +198,7 @@ public class UseCaseDirectory {
 			.toList();
 	}
 
-	/** Those of these published use cases whose organization is approved and not taken down. */
+	/** Those of these published use cases whose organization is not taken down. */
 	private List<IndexedUseCase> indexed(List<UseCase> published) {
 		Map<UUID, OrganizationName> names = organizations
 			.approvedNames(published.stream().map(UseCase::getOrganizationId).collect(Collectors.toSet()));

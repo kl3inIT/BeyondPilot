@@ -227,7 +227,7 @@ public class SolutionDirectory {
 
 	/**
 	 * An approved solution as search indexes it, listed or not; empty for any other, when it is taken down, or when its
-	 * organization is not approved or is taken down.
+	 * organization is taken down.
 	 */
 	@Transactional(readOnly = true)
 	public Optional<IndexedSolution> indexed(UUID solutionId) {
@@ -311,7 +311,7 @@ public class SolutionDirectory {
 
 	/**
 	 * The approved solutions of an organization as search indexes them, when what is shown of it changed; none while
-	 * the organization is not approved or is taken down.
+	 * the organization is taken down.
 	 */
 	@Transactional(readOnly = true)
 	public List<IndexedSolution> indexedOf(UUID organizationId) {

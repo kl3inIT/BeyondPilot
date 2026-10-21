@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 		required; the rest may be left out when the brief does not say.""")
 public record CreateUseCaseRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "An approved organization.") @NotNull UUID organizationId,
+				description = "An organization that is not taken down.") @NotNull UUID organizationId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 200) String title,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 2000) String problemStatement,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull @Pattern(

@@ -79,7 +79,6 @@ class ActivationNotices {
 			LOG.atError()
 				.addKeyValue("event", "organization.activation.failed")
 				.addKeyValue("error_type", failure.getClass().getName())
-				.addKeyValue("error_code", "ACTIVATION_NOTICE_FAILED")
 				.log("The organizations still marked will be told at the next start");
 		}
 		if (organizationsTaken > 0) {
