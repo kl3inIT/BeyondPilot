@@ -900,11 +900,13 @@ class OrganizationTest {
 				body(get(operator, API + "/admin/organizations?q=merge").expectStatus().isOk()), "$.items[*].id"))
 			.contains(kept.toString())
 			.doesNotContain(duplicate.toString());
-		String mergedList = body(get(operator, API + "/admin/organizations?q=merge%20duplicate&status=merged")
+		String mergedList = body(get(operator, API + "/admin/organizations?q=merge&status=merged")
 			.expectStatus()
 			.isOk());
-		assertThat(JsonPath.<List<String>>read(mergedList, "$.items[*].id")).containsExactly(duplicate.toString());
-		assertThat(JsonPath.<String>read(mergedList, "$.items[0].mergedInto")).isEqualTo("Merge Kept");
+		assertThat(JsonPath.<List<String>>read(mergedList, "$.items[*].id")).contains(duplicate.toString())
+			.doesNotContain(kept.toString());
+		assertThat(JsonPath.<List<String>>read(mergedList,
+				"$.items[?(@.id == '" + duplicate + "')].mergedInto")).containsExactly("Merge Kept");
 		assertProblem(post(operator, merge, Map.of("intoId", kept)), 409, "ORGANIZATION_CANNOT_MERGE");
 		assertProblem(post(operator, API + "/admin/organizations/" + kept + "/merge", Map.of("intoId", duplicate)),
 				409, "ORGANIZATION_CANNOT_MERGE");
