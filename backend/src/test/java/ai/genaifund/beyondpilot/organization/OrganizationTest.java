@@ -895,10 +895,13 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(merged, "$.merged.intoId")).isEqualTo(kept.toString());
 		assertThat(JsonPath.<String>read(merged, "$.merged.intoName")).isEqualTo("Merge Kept");
 		assertThat(JsonPath.<List<Object>>read(merged, "$.members")).isEmpty();
+		// Other tests share the database, so the search names this pair and the duplicate is shown absent by id.
 		assertThat(JsonPath.<List<String>>read(
 				body(get(operator, API + "/admin/organizations?q=merge").expectStatus().isOk()), "$.items[*].id"))
-			.containsExactly(kept.toString());
-		String mergedList = body(get(operator, API + "/admin/organizations?q=merge&status=merged").expectStatus()
+			.contains(kept.toString())
+			.doesNotContain(duplicate.toString());
+		String mergedList = body(get(operator, API + "/admin/organizations?q=merge%20duplicate&status=merged")
+			.expectStatus()
 			.isOk());
 		assertThat(JsonPath.<List<String>>read(mergedList, "$.items[*].id")).containsExactly(duplicate.toString());
 		assertThat(JsonPath.<String>read(mergedList, "$.items[0].mergedInto")).isEqualTo("Merge Kept");
@@ -1079,6 +1082,8 @@ class OrganizationTest {
 	void anOrganizationKeepsAnOwnerAndAMemberOnlyTakesThemselvesOut() {
 		String founder = signIn("founder@owners.test");
 		UUID id = approved(founder, "Owners Co", "owners.test");
+		// Seeding the domain is audited; the assertion below is about what the members do.
+		int setupEvents = events(id).size();
 		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
 		String colleague = signIn("colleague@owners.test");
 		post(colleague, API + "/organizations/" + id + "/join", Map.of()).expectStatus().isOk();
@@ -1105,7 +1110,8 @@ class OrganizationTest {
 		assertThat(JsonPath.<List<String>>read(remaining, "$.members[*].role")).containsExactly("owner");
 		assertThat(JsonPath.<String>read(remaining, "$.members[0].jobTitle")).isEqualTo("Head of Sales");
 		assertThat(JsonPath.<Boolean>read(remaining, "$.members[0].self")).isTrue();
-		assertThat(events(id)).containsExactly("organization.member_role", "organization.member_remove");
+		assertThat(events(id).subList(setupEvents, events(id).size()))
+			.containsExactly("organization.member_role", "organization.member_remove");
 		assertProblem(post(colleague, API + "/mine/members/" + UUID.randomUUID() + "/remove", null), 404,
 				"ORGANIZATION_MEMBER_NOT_FOUND");
 	}
@@ -1810,10 +1816,11 @@ class OrganizationTest {
 	void theStatusAllowsOnlyApprovedAndMerged() {
 		signIn("status@allowed.test");
 		UUID creator = idOf("status@allowed.test");
+		String suffix = UUID.randomUUID().toString().substring(0, 8);
 
-		assertThatThrownBy(() -> insertOrganization("in-review-co", "in_review", creator))
+		assertThatThrownBy(() -> insertOrganization("in-review-co-" + suffix, "in_review", creator))
 			.isInstanceOf(DataIntegrityViolationException.class);
-		assertThat(insertOrganization("approved-co", "approved", creator)).isEqualTo(1);
+		assertThat(insertOrganization("approved-co-" + suffix, "approved", creator)).isEqualTo(1);
 	}
 
 	private int insertOrganization(String slug, String status, UUID creator) {
