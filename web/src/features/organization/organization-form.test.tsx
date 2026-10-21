@@ -45,13 +45,13 @@ describe("OrganizationForm, creating", () => {
     expect(screen.queryByRole("combobox", { name: /^Team size/ })).not.toBeInTheDocument();
 
     // Without a country nothing is sent, and the country says what it lacks.
-    await user.click(screen.getByRole("button", { name: "Send for review" }));
+    await user.click(screen.getByRole("button", { name: "Create organization" }));
     expect(await screen.findByText("Select a country.")).toBeInTheDocument();
     expect(createOrganizationFromBasics).not.toHaveBeenCalled();
 
     await user.click(screen.getByRole("combobox", { name: /^Country/ }));
     await user.click(await screen.findByRole("option", { name: "Vietnam" }));
-    await user.click(screen.getByRole("button", { name: "Send for review" }));
+    await user.click(screen.getByRole("button", { name: "Create organization" }));
 
     await waitFor(() =>
       expect(createOrganizationFromBasics).toHaveBeenCalledWith({

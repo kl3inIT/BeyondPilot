@@ -10,7 +10,7 @@ export function websiteHost(website: string | null | undefined): string | null {
   }
 }
 
-/** Whether an organization is approved and not taken down, so it can have members and publish. */
+/** Whether an organization is not taken down, so it can invite members and publish. */
 export function isApproved(organization: { status: string; suspendedAt?: string | null }): boolean {
   return organization.status === "approved" && !organization.suspendedAt;
 }

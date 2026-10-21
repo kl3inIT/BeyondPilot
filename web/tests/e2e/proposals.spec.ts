@@ -177,9 +177,7 @@ async function watchQuickCreate(page: Page) {
       contentType: "application/json",
       body: JSON.stringify({
         ...proposalForm("invited"),
-        organization: organization
-          ? { ...organization, approved: organization.type === "independent_builder", owner: true }
-          : null,
+        organization: organization ? { ...organization, approved: true, owner: true } : null,
       }),
     }),
   );

@@ -107,6 +107,10 @@ test.describe("admin organizations", () => {
     }
     await page.keyboard.press("Escape");
     await expect(page.getByRole("button", { name: /^Review / })).toHaveCount(0);
+
+    // A row without a claim offers its record only.
+    await page.getByRole("button", { name: "Actions for Lumen Health" }).click();
+    await expect(page.getByRole("menuitem")).toHaveText(["Open record"]);
   });
 
   test("search and the status are the address, and the queue counts the open claims", async ({
@@ -118,7 +122,7 @@ test.describe("admin organizations", () => {
     await page.goto("/admin/organizations");
 
     await page.getByRole("combobox", { name: "Status" }).click();
-    await page.getByRole("option", { name: "Ownership claim" }).click();
+    await page.getByRole("option", { name: "Claimed" }).click();
     await expect(page).toHaveURL(/status=claimed/);
     await expect(shownOrganizations(page)).toHaveText(["Open Kitchen", "Firstcall"]);
     await expect(page.getByText("2 claims are open")).toBeVisible();
@@ -126,8 +130,9 @@ test.describe("admin organizations", () => {
     // A bookmark of the retired review queue shows every organization, not an error.
     await page.goto("/admin/organizations?status=in_review");
     await expect(shownOrganizations(page)).toHaveCount(6);
+    await expect(page.getByRole("combobox", { name: "Status" })).toContainText("All statuses");
     await page.getByRole("combobox", { name: "Status" }).click();
-    await page.getByRole("option", { name: "Ownership claim" }).click();
+    await page.getByRole("option", { name: "Claimed" }).click();
 
     await page.getByRole("searchbox", { name: "Search by name or email domain" }).fill("pocket");
     await expect(page).toHaveURL(/[?&]q=pocket/);

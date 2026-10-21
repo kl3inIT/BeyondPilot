@@ -15,7 +15,7 @@ export async function signInAs(
     | "invited"
     | "asked"
     | "declined"
-    | "waiting"
+    | "fresh"
     | "alone"
     | "moved",
   baseURL: string,

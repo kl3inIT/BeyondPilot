@@ -58,8 +58,7 @@ type AdminOrganizationPageProps = {
  * Admin › Organisations › one organization: its profile and verified domain, which an operator
  * changes as its owners do, and its people. An operator also decides a claim on one nobody owns,
  * takes an organization down or restores it, merges a duplicate into the one to keep, and writes
- * the offers it gives. A merged one only says
- * where it went.
+ * the offers it gives. A merged one only says where it went.
  */
 function AdminOrganizationPage({
   detail,

@@ -32,7 +32,7 @@ type OrganizationMembersPageProps = {
   members: OrganizationMembers;
   /** How many solutions the organization has, when it is a provider. */
   solutions: number | null;
-  /** How many use cases it has, when it is an approved enterprise. */
+  /** How many use cases it has, when it is an enterprise that is not taken down. */
   useCases: number | null;
   /** The page size the URL holds; none is the list's own. */
   size: number | null;
@@ -108,7 +108,7 @@ function OrganizationMembersPage({
     allowance &&
       (allowance.open
         ? t("summary.left", { left: allowance.leftToday, limit: allowance.dailyLimit })
-        : t("summary.notApproved")),
+        : t("summary.takenDown")),
   ]
     .filter(Boolean)
     .join(" · ");

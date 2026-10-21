@@ -13,7 +13,6 @@ import { EntryList } from "@/components/composites/entry-list";
 import { StepsNav } from "@/components/composites/steps-nav";
 import { useAppForm } from "@/components/form/app-form";
 import { AllRequired, ChoiceCardsField } from "@/components/form/form-fields";
-import { Badge } from "@/components/ui/badge";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -791,10 +790,7 @@ function StepYou({
         <section className="flex flex-col gap-2">
           <h2 className="text-sm font-medium">{t("applyingFor")}</h2>
           <div className="flex flex-col gap-1 rounded-xl border p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium">{organization.name}</span>
-              {!organization.approved && <Badge variant="outline">{t("notListedYet")}</Badge>}
-            </div>
+            <span className="font-medium">{organization.name}</span>
             <span className="text-sm text-muted-foreground">
               {[
                 typeName(organization.type),
@@ -805,9 +801,6 @@ function StepYou({
                 .join(" · ")}
             </span>
           </div>
-          {!organization.approved && (
-            <p className="text-xs text-muted-foreground">{t("applyingForHint")}</p>
-          )}
         </section>
       ) : (
         <form.AppField name="who">

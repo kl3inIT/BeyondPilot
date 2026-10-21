@@ -171,8 +171,8 @@ function OrganizationSummary({
       </Avatar>
       <span className="min-w-32 flex-1 truncate text-base font-medium">{organization.name}</span>
       {!organization.approved && (
-        <ReviewStatus state="in_review" appearance="pill">
-          {t("pending")}
+        <ReviewStatus state="suspended" appearance="pill">
+          {t("takenDown")}
         </ReviewStatus>
       )}
       <ProposalOrganizationActions organization={organization} onSaved={onSaved} />

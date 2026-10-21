@@ -380,7 +380,7 @@
     "MESSAGING_SUBJECT_NOT_FOUND": "Không có ai để viết tới ở địa chỉ này.",
     "MESSAGING_OWN_SUBJECT": "Bạn không thể trò chuyện với chính mình.",
     "MESSAGING_NEEDS_ORGANIZATION": "Hãy tạo hoặc tham gia một tổ chức trước khi viết cho nhà cung cấp giải pháp.",
-    "MESSAGING_ORGANIZATION_NOT_APPROVED": "Tổ chức của bạn chưa được duyệt nên chưa viết được cho nhà cung cấp giải pháp.",
+    "MESSAGING_ORGANIZATION_NOT_APPROVED": "Tổ chức của bạn đang bị gỡ xuống nên chưa viết được cho nhà cung cấp giải pháp.",
     "MESSAGING_ALREADY_WAITING": "Tin đầu tiên của bạn vẫn đang chờ trả lời. Bạn viết tiếp được sau khi nó được chấp nhận.",
     "MESSAGING_TOO_MANY_REQUESTS": "Bạn đã bắt đầu đủ số hội thoại cho phép trong một ngày. Hãy thử lại vào ngày mai.",
     "MESSAGING_TOO_MANY_MESSAGES": "Bạn viết quá nhanh. Hãy chờ một chút rồi gửi lại.",
@@ -420,13 +420,13 @@
     "ORGANIZATION_INVITEE_IS_MEMBER": "Người này đã thuộc một tổ chức.",
     "ORGANIZATION_LAST_OWNER": "Tổ chức cần có chủ sở hữu. Hãy trao quyền chủ sở hữu cho người khác trước.",
     "ORGANIZATION_CHANGED_MEANWHILE": "Có người vừa sửa hồ sơ này. Hãy tải lại trang rồi thử lại.",
-    "ORGANIZATION_CANNOT_TAKE_DOWN": "Chỉ gỡ được tổ chức đã duyệt. Hãy tải lại trang để xem trạng thái hiện tại.",
+    "ORGANIZATION_CANNOT_TAKE_DOWN": "Chỉ gỡ được tổ chức chưa bị gỡ xuống. Hãy tải lại trang để xem trạng thái hiện tại.",
     "ORGANIZATION_NOT_TAKEN_DOWN": "Tổ chức này không còn bị gỡ nữa. Hãy tải lại trang.",
     "ORGANIZATION_MERGED": "Tổ chức này đã được gộp vào tổ chức khác và không thể thay đổi nữa.",
-    "ORGANIZATION_CANNOT_MERGE": "Chỉ có thể gộp vào một tổ chức khác đã được duyệt và đang hiển thị.",
+    "ORGANIZATION_CANNOT_MERGE": "Chỉ có thể gộp vào một tổ chức khác chưa bị gỡ xuống và đang hiển thị.",
     "ORGANIZATION_DOMAIN_TAKEN": "Một tổ chức khác đã dùng tên miền email này.",
-    "ORGANIZATION_DOMAIN_NOT_VERIFIED": "Chỉ tham gia ngay được trên tên miền mà GenAI Fund đã xác minh cho một tổ chức đã duyệt.",
-    "ORGANIZATION_NOT_APPROVED": "Bạn có thể mời người khác sau khi GenAI Fund duyệt tổ chức.",
+    "ORGANIZATION_DOMAIN_NOT_VERIFIED": "Chỉ tham gia ngay được trên tên miền mà GenAI Fund đã xác minh cho một tổ chức chưa bị gỡ xuống.",
+    "ORGANIZATION_NOT_APPROVED": "Bạn không mời được người khác trong lúc GenAI Fund gỡ tổ chức xuống.",
     "ORGANIZATION_INVITATION_DAILY_LIMIT": "Tổ chức đã gửi hết số lời mời của một ngày. Hãy mời thêm vào ngày mai.",
     "ORGANIZATION_INVITATION_OPEN_LIMIT": "Tổ chức đã có số lời mời đang mở tối đa. Hãy thu hồi bớt, hoặc chờ mọi người trả lời.",
     "PROGRAM_NOT_FOUND": "Chương trình này không còn tồn tại. Hãy tải lại trang.",
@@ -502,7 +502,7 @@
     "SEARCH_ENCRYPTION_KEY_MISSING": "Chưa lưu được key: máy chủ chưa có khóa mã hóa. Hãy báo đội kỹ thuật thêm vào.",
     "SOLUTION_NOT_FOUND": "Giải pháp này không còn tồn tại.",
     "SOLUTION_MEMBER_REQUIRED": "Chỉ thành viên của một tổ chức mới làm được việc này.",
-    "SOLUTION_ORGANIZATION_NOT_APPROVED": "Hãy duyệt tổ chức trước: giải pháp chỉ được đăng khi tổ chức của nó đã được duyệt.",
+    "SOLUTION_ORGANIZATION_NOT_APPROVED": "Hãy khôi phục tổ chức trước: giải pháp chỉ được đăng khi tổ chức của nó chưa bị gỡ xuống.",
     "SOLUTION_INCOMPLETE": "Hãy điền các trường được đánh dấu trước khi gửi duyệt.",
     "SOLUTION_NOT_SUBMITTABLE": "Giải pháp này đang được duyệt, đã duyệt hoặc đã bị từ chối hẳn.",
     "SOLUTION_NOT_EDITABLE": "Giải pháp này đã bị từ chối hẳn nên không sửa được nữa.",
@@ -1561,8 +1561,8 @@
         }
       },
       "status": {
-        "approved": "Đã duyệt",
-        "claimed": "Yêu cầu quyền sở hữu",
+        "approved": "Đang hoạt động",
+        "claimed": "Yêu cầu nhận tổ chức",
         "suspended": "Đã gỡ xuống",
         "merged": "Đã gộp"
       },
@@ -1585,7 +1585,7 @@
         "record": "Mở hồ sơ",
         "claim": "Quyết định yêu cầu nhận"
       },
-      "claimsOpen": "{count, plural, other {# yêu cầu đang mở}}",
+      "claimsOpen": "{count, plural, other {# yêu cầu nhận đang mở}}",
       "empty": {
         "title": "Chưa có tổ chức nào"
       },
@@ -1637,7 +1637,7 @@
       },
       "clear": "Xóa bộ lọc",
       "queueEmpty": {
-        "title": "Không có yêu cầu quyền sở hữu nào đang mở",
+        "title": "Không có yêu cầu nhận tổ chức nào đang mở",
         "home": "Về trang chủ Admin"
       },
       "claim": {
@@ -2026,7 +2026,7 @@
     },
     "home": {
       "lead": "{count, plural, =0 {Không có gì đang chờ quyết định.} other {# hồ sơ đang chờ quyết định.}}",
-      "claims": "Yêu cầu quyền sở hữu",
+      "claims": "Yêu cầu nhận tổ chức",
       "solutions": "Giải pháp chờ duyệt",
       "talent": "Hồ sơ nhân lực chờ duyệt",
       "deployments": "Triển khai khách hàng chờ duyệt",
@@ -3212,7 +3212,7 @@
         },
         "organization_activated": {
           "name": "Tổ chức đã hoạt động",
-          "description": "Gửi cho chủ sở hữu của tổ chức từng chờ duyệt trước khi bước duyệt không còn, để báo rằng tổ chức đã hoạt động."
+          "description": "Gửi cho chủ sở hữu của tổ chức từng chờ duyệt, trước khi GenAI Fund bỏ bước duyệt, để báo rằng tổ chức đã hoạt động."
         },
         "organization_approved": {
           "name": "Tổ chức được duyệt",
@@ -3893,12 +3893,6 @@
       "1000_4999": "1.000–4.999 người",
       "5000_plus": "Từ 5.000 người"
     },
-    "organizationRefusal": {
-      "duplicate": "Đã có trên BeyondPilot",
-      "not_a_real_organization": "Không xác minh được là một tổ chức",
-      "out_of_scope": "Ngoài phạm vi của BeyondPilot",
-      "other": "Lý do khác"
-    },
     "memberRole": {
       "owner": "Chủ sở hữu",
       "member": "Thành viên"
@@ -4104,31 +4098,9 @@
       "useCases": "Use case"
     },
     "status": {
-      "in_review": "Đang duyệt",
-      "needs_changes": "Cần sửa",
-      "approved": "Đã duyệt",
-      "rejected": "Không được duyệt",
       "suspended": "Đã gỡ xuống",
+      "approved": "Đang hoạt động",
       "merged": "Đã gộp"
-    },
-    "inReview": {
-      "title": "GenAI Fund đang duyệt tổ chức của bạn",
-      "lead": "Bạn đã có thể ứng tuyển vào các chương trình và bài toán, thêm giải pháp và gửi duyệt. Sau khi được duyệt, mọi người sẽ thấy trang tổ chức và các giải pháp của bạn trên BeyondPilot.",
-      "foot": "Chúng tôi gửi email cho các chủ sở hữu khi có quyết định.",
-      "edit": "Sửa hồ sơ",
-      "missing": "Còn {count} mục bắt buộc chưa điền: {facts}. Người duyệt đọc hồ sơ đúng như hiện tại.",
-      "complete": "Hồ sơ đã đủ các mục bắt buộc."
-    },
-    "needsChanges": {
-      "title": "GenAI Fund yêu cầu sửa {name}",
-      "owner": "Hãy chỉnh sửa hồ sơ rồi lưu để gửi duyệt lại.",
-      "member": "Chủ sở hữu có thể chỉnh sửa hồ sơ và gửi duyệt lại.",
-      "edit": "Sửa và gửi lại"
-    },
-    "rejected": {
-      "title": "GenAI Fund không duyệt {name}",
-      "reason": "Lý do: {reason}.",
-      "foot": "Đây là quyết định cuối cùng. Hãy viết cho GenAI Fund nếu bạn cho rằng có nhầm lẫn. Để tạo hoặc tham gia tổ chức khác, hãy rời tổ chức này ở tab Thành viên."
     },
     "done": {
       "invitationAccepted": "Bạn đã tham gia tổ chức.",
@@ -4137,13 +4109,10 @@
       "requestApproved": "Đã chấp nhận. Người này đã là thành viên.",
       "requestDeclined": "Đã từ chối yêu cầu.",
       "requestWithdrawn": "Đã rút yêu cầu.",
-      "organizationApproved": "Đã duyệt tổ chức.",
-      "organizationRefused": "Đã từ chối tổ chức. Chủ sở hữu sẽ đọc được lý do.",
-      "organizationSentBack": "Đã trả lại tổ chức. Chủ sở hữu đã được báo cần sửa gì.",
       "claimApproved": "Đã chấp nhận. Người này đã là chủ sở hữu tổ chức.",
       "claimDeclined": "Đã từ chối yêu cầu nhận tổ chức.",
       "saved": "Đã lưu hồ sơ.",
-      "created": "Đã tạo tổ chức và gửi duyệt.",
+      "created": "Đã tạo tổ chức.",
       "adminCreated": "Đã tạo {name}.",
       "joined": "Bạn đã tham gia {name}.",
       "requested": "Đã gửi yêu cầu tới {name}.",
@@ -4165,7 +4134,6 @@
       "createTitle": "Tạo tổ chức của bạn",
       "createLead": "Mọi người tham gia qua một tổ chức. Nếu bạn đi một mình, tổ chức đó chỉ có bạn.",
       "edit": "Sửa hồ sơ",
-      "complete": "Hoàn thiện hồ sơ",
       "profileTitle": "Hồ sơ tổ chức",
       "basics": "Thông tin cơ bản",
       "about": "Giới thiệu",
@@ -4188,7 +4156,7 @@
       "teamBackgroundRequired": "Mô tả kinh nghiệm của team trong tối đa 2.000 ký tự.",
       "save": "Lưu thay đổi",
       "unchanged": "Chưa có gì thay đổi.",
-      "create": "Gửi duyệt",
+      "create": "Tạo tổ chức",
       "cancel": "Hủy",
       "emailDomain": "Tên miền email đã xác minh",
       "emailDomainHint": "Ai được tham gia bằng tên miền này được đặt trong mục Thành viên.",
@@ -4332,7 +4300,7 @@
         "members": "{count} thành viên",
         "invitations": "{count} lời mời đang chờ",
         "left": "còn {left} trên {limit} lời mời trong 24 giờ",
-        "notApproved": "bạn có thể mời người khác sau khi tổ chức được duyệt"
+        "takenDown": "lời mời bị đóng trong lúc tổ chức bị gỡ xuống"
       },
       "columns": {
         "member": "Thành viên",
@@ -4994,7 +4962,7 @@
         "cancel": "Hủy",
         "submit": "Thêm giải pháp"
       },
-      "afterApproval": "Bạn thêm được giải pháp sau khi GenAI Fund duyệt tổ chức.",
+      "takenDown": "Bạn không thêm được giải pháp trong lúc GenAI Fund gỡ tổ chức của bạn xuống.",
       "empty": {
         "title": "Chưa có giải pháp nào",
         "member": "Chủ sở hữu tổ chức là người thêm giải pháp."
@@ -6455,8 +6423,6 @@
     },
     "you": {
       "applyingFor": "Nộp cho",
-      "notListedYet": "Chưa có trên danh mục",
-      "applyingForHint": "GenAI Fund kiểm tra tổ chức mới trước khi đưa lên danh mục; đơn của bạn không bị chậm lại.",
       "applyingAs": "Nộp với tư cách",
       "applyingAsHint": "Lựa chọn này được lưu với tài khoản của bạn khi bạn tiếp tục. Nếu nộp với tư cách cá nhân, bạn có thể đổi cho đến khi gửi một thứ gì đó dưới tên mình.",
       "change": "Đổi",
@@ -8455,7 +8421,7 @@
         "saved": "Đã lưu các thay đổi của đề xuất."
       },
       "organization": {
-        "pending": "Đang chờ duyệt",
+        "takenDown": "Đã gỡ xuống",
         "edit": "Sửa",
         "dialog": {
           "title": "Sửa tổ chức",
