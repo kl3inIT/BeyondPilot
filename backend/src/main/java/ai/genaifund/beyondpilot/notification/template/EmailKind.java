@@ -1,15 +1,17 @@
 package ai.genaifund.beyondpilot.notification.template;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
 /**
  * What an email is for. The values are stored with every message and with every operator's wording, so a value keeps
- * its meaning; adding a kind is an ordinary change. A kind that is no longer sent leaves this catalog, and the log
- * keeps the messages of it under the value they were stored with.
+ * its meaning; adding a kind is an ordinary change. A kind that is no longer sent leaves this catalog or, when the
+ * code still names it, is retired; the log keeps the messages of it under the value they were stored with.
  *
  * <p>
  * Each kind declares the variables its templates may use. A template that names any other is refused, and one that
@@ -24,6 +26,10 @@ public enum EmailKind {
 	ORGANIZATION_INVITATION("organization_invitation", EmailGroup.ORGANIZATIONS, true, null,
 			Variable.required("organizationName", "Plain Cover"), Variable.required("inviterName", "Hà Lê"),
 			Variable.optional("owner", Boolean.FALSE),
+			Variable.optional("organizationUrl", "https://beyondpilot.example/workspace/organization")),
+
+	ORGANIZATION_ACTIVATED("organization_activated", EmailGroup.ORGANIZATIONS, true, null,
+			Variable.required("organizationName", "Plain Cover"),
 			Variable.optional("organizationUrl", "https://beyondpilot.example/workspace/organization")),
 
 	ORGANIZATION_APPROVED("organization_approved", EmailGroup.ORGANIZATIONS, true, null,
@@ -169,6 +175,13 @@ public enum EmailKind {
 	MESSAGE_UNREAD("message_unread", EmailGroup.MESSAGES, true, null, Variable.optional("senderName", "Mei Tan"),
 			Variable.optional("messagesUrl", "https://beyondpilot.example/workspace/messages"));
 
+	/**
+	 * Kinds that are no longer sent. They stay in the catalog so the log still names them, but they have no template
+	 * for operators to word.
+	 */
+	private static final Set<EmailKind> RETIRED = EnumSet.of(ORGANIZATION_APPROVED, ORGANIZATION_REFUSED,
+			ORGANIZATION_SENT_BACK);
+
 	private final String value;
 
 	private final EmailGroup group;
@@ -209,7 +222,12 @@ public enum EmailKind {
 
 	/** Whether operators edit its wording; an email written in full by an operator each time has nothing to edit. */
 	public boolean editable() {
-		return editable;
+		return editable && !retired();
+	}
+
+	/** Whether nothing sends it any more; it keeps its value for the messages already in the log. */
+	public boolean retired() {
+		return RETIRED.contains(this);
 	}
 
 	public static Optional<EmailKind> of(String value) {

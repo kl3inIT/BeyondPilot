@@ -26,6 +26,9 @@ public class DefaultTemplates {
 
 	DefaultTemplates() throws IOException {
 		for (EmailKind kind : EmailKind.values()) {
+			if (kind.retired()) {
+				continue;
+			}
 			EmailTemplate template = read(kind);
 			List<TemplateProblem> problems = TemplateSyntax.problems(kind, template);
 			if (!problems.isEmpty()) {

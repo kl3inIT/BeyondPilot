@@ -269,6 +269,16 @@ class EmailAdministrationTest {
 	}
 
 	@Test
+	void theReviewEmailsAreNotInTheTemplateList() {
+		String list = body(get(operator, API + "/templates").expectStatus().isOk());
+
+		assertThat(JsonPath.<List<String>>read(list, "$.items[*].kind")).contains("organization_activated")
+			.doesNotContain("organization_approved", "organization_refused", "organization_sent_back");
+		assertProblem(get(operator, API + "/templates/organization_approved"), 409,
+				"NOTIFICATION_TEMPLATE_NOT_EDITABLE");
+	}
+
+	@Test
 	void anAppearanceBeingEditedIsPreviewedWithoutBeingSaved() {
 		Map<String, Object> draft = Map.of("subject", "{{code}} opens BeyondPilot", "body",
 				"**{{code}}** for {{minutes}} minutes. [Open BeyondPilot](https://beyondpilot.test)");
@@ -324,6 +334,20 @@ class EmailAdministrationTest {
 		String kept = body(get(operator, API + "/messages/" + former).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(kept, "$.kind")).isEqualTo("talent_enquiry");
 		assertThat(JsonPath.<Boolean>read(kept, "$.resendable")).isTrue();
+	}
+
+	@Test
+	void theEmailLogStillNamesAPastApproval() {
+		UUID past = UUID.randomUUID();
+		jdbc.sql("""
+				insert into email_message (id, kind, recipient, subject, html, text, status)
+				values (?, 'organization_approved', 'past@email.test', 'Plain Cover on BeyondPilot', '<p>Hi</p>', 'Hi', 'sent')
+				""").param(past).update();
+
+		String log = body(get(operator, API + "/messages?kind=organization_approved").expectStatus().isOk());
+
+		assertThat(JsonPath.<List<String>>read(log, "$.items[*].id")).contains(past.toString());
+		assertThat(JsonPath.<List<String>>read(log, "$.items[*].kind")).containsOnly("organization_approved");
 	}
 
 	@Test
