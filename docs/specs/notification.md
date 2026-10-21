@@ -47,7 +47,7 @@ meaning.
 | Group           | Kinds                                                                                                                                                                                            | Sent through `EmailService`                                                                                                                                      |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `sign_in`       | `sign_in_code`                                                                                                                                                                                   | `sendSignInCode`, package-private, called by `SignInCodeMail`                                                                                                    |
-| `organizations` | `organization_invitation`, `organization_activated`, `organization_request_approved`, `organization_request_declined`, `organization_taken_down`, `organization_restored`, `organization_merged` | `sendOrganizationInvitation`, `sendOrganizationActivated`, `sendOrganizationRequestDecision`, `sendOrganizationSuspension`, `sendOrganizationMerged`             |
+| `organizations` | `organization_invitation`, `organization_request_approved`, `organization_request_declined`, `organization_taken_down`, `organization_restored`, `organization_merged` | `sendOrganizationInvitation`, `sendOrganizationRequestDecision`, `sendOrganizationSuspension`, `sendOrganizationMerged`             |
 | `applications`  | `application_received`, `reviewer_invitation`, `application_outcome`                                                                                                                             | `sendApplicationReceived`, `sendReviewerInvitation`, `sendApplicationOutcome`                                                                                    |
 | `solutions`     | `solution_approved`, `solution_sent_back`, `solution_rejected`, `solution_taken_down`, `solution_restored`                                                                                       | `sendSolutionDecision`                                                                                                                                           |
 | `use_cases`     | `use_case_approved`, `use_case_sent_back`, `proposal_sent`, `proposal_shortlisted`, `proposal_declined`, `matching_invitation`                                                                   | `sendUseCaseDecision`, `sendProposalSent`, `sendProposalOutcome`, `sendMatchingInvitation`                                                                       |
@@ -84,7 +84,7 @@ The message is plain text, and its line breaks are kept. The button "View your a
   | `application_received`, `application_outcome`             | `applicationUrl`  | View your application  | `/applications/<application id>`                                                                               |
   | `reviewer_invitation`                                     | `reviewsUrl`      | Open Reviews           | `/reviews/<program id>`, the program's applications as the judge scores them                                   |
   | `organization_invitation`                                 | `organizationUrl` | Open the invitation    | `/workspace/organization`, which shows the invitation to a person who belongs to no organization               |
-  | `organization_activated`, `organization_request_approved` | `organizationUrl` | Open your organization | `/workspace/organization`                                                                                      |
+  | `organization_request_approved` | `organizationUrl` | Open your organization | `/workspace/organization`                                                                                      |
   | `organization_restored`                                   | `organizationUrl` | View your organization | `/organizations/<slug>`, its public page                                                                       |
   | `solution_sent_back`                                      | `solutionUrl`     | Edit your solution     | `/workspace/organization/solutions/<solution id>`                                                              |
   | `solution_approved`, `solution_restored`                  | `solutionUrl`     | View your solution     | `/solutions/<slug>`, its public page; the page in My organization while its organization is taken down         |
@@ -116,10 +116,10 @@ The message is plain text, and its line breaks are kept. The button "View your a
 - **Retired kinds.** `organization_approved`, `organization_refused` and `organization_sent_back` were sent while
   GenAI Fund reviewed organizations (BEY-236 ended that). They stay in `EmailKind` so the log still names the emails
   sent, but nothing sends them, they have no default template (`DefaultTemplates` skips them and refuses to render
-  one), they are not editable, and they are not in the template list. `organization_activated` replaces them: it is
-  sent once to the owners of each organization that [V109](../../backend/src/main/resources/db/migration/V109__organization_drop_review.sql)
-  made active, by `ActivationNotices` in the `organization` module, and the migration deletes the three kinds'
-  `email_template` rows.
+  one), they are not editable, and they are not in the template list. No email replaces them: an organization is
+  active when it is created and nobody is told, by the client's decision, and the
+  [V109](../../backend/src/main/resources/db/migration/V109__organization_drop_review.sql) migration deletes the three
+  kinds' `email_template` rows.
 - **Dates.** Dates are written in Vietnam time (`Asia/Ho_Chi_Minh`):
   - `editableUntil` is written as `d MMM yyyy, HH:mm` followed by ` ICT`;
   - a reviewer invitation's `expiresOn` is written as `d MMM yyyy`.
