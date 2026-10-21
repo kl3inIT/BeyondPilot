@@ -25,3 +25,6 @@ overrides:
   # (GHSA-52cp-r559-cp3m, GHSA-5p4m-2wfm-xmqj, GHSA-2883-xcg3-v3hh). Drop this once Hey API
   # releases a parser on js-yaml 4.3.2 or later.
   "@hey-api/json-schema-ref-parser>js-yaml": 4.3.2
+  # vite 8.3.0 to 8.3.2, pulled in by vitest, has a high advisory (GHSA-587h-7wmj-h5pm). Drop this
+  # once vitest resolves vite 8.3.3 or later on its own.
+  "vite@>=8.3.0 <8.3.3": 8.3.4
