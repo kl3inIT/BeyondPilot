@@ -87,7 +87,7 @@ public class SolutionDirectory {
 		if (request.organization() != null) {
 			Optional<OrganizationName> organization = organizations.approvedAt(request.organization());
 			if (organization.isEmpty()) {
-				// An address no approved organization has selects nothing.
+				// An address no organization that is not taken down has selects nothing.
 				return new PublicSolutionListResponse(List.of(), page, size, 0);
 			}
 			organizationId = organization.get().id();
@@ -227,7 +227,7 @@ public class SolutionDirectory {
 
 	/**
 	 * An approved solution as search indexes it, listed or not; empty for any other, when it is taken down, or when its
-	 * organization is not approved or is taken down.
+	 * organization is taken down.
 	 */
 	@Transactional(readOnly = true)
 	public Optional<IndexedSolution> indexed(UUID solutionId) {
@@ -238,7 +238,7 @@ public class SolutionDirectory {
 
 	/**
 	 * A solution a visitor can find, by its address: approved, listed and not taken down, with an organization that is
-	 * approved; empty for any other. For the MCP server's {@code fetch}.
+	 * not taken down; empty for any other. For the MCP server's {@code fetch}.
 	 */
 	@Transactional(readOnly = true)
 	public Optional<IndexedSolution> listed(String slug) {
@@ -249,7 +249,7 @@ public class SolutionDirectory {
 	}
 
 	/**
-	 * An approved solution by its address, listed or not, not taken down, with an approved organization; empty for any
+	 * An approved solution by its address, listed or not, not taken down, with an organization that is not taken down; empty for any
 	 * other. For the operators' MCP server's {@code fetch}.
 	 */
 	@Transactional(readOnly = true)
@@ -311,7 +311,7 @@ public class SolutionDirectory {
 
 	/**
 	 * The approved solutions of an organization as search indexes them, when what is shown of it changed; none while
-	 * the organization is not approved or is taken down.
+	 * the organization is taken down.
 	 */
 	@Transactional(readOnly = true)
 	public List<IndexedSolution> indexedOf(UUID organizationId) {
@@ -346,7 +346,7 @@ public class SolutionDirectory {
 					.toList();
 	}
 
-	/** Those of these approved solutions whose organization is approved and not taken down. */
+	/** Those of these approved solutions whose organization is not taken down. */
 	private List<IndexedSolution> indexed(List<Solution> approved) {
 		Map<UUID, OrganizationName> names = organizations
 			.approvedNames(approved.stream().map(Solution::getOrganizationId).distinct().toList());
@@ -383,7 +383,7 @@ public class SolutionDirectory {
 
 	/**
 	 * One page of the approved customer deployments of an organization's listed solutions, the most recently approved
-	 * first. An address no approved organization has selects nothing.
+	 * first. An address no organization that is not taken down has selects nothing.
 	 */
 	@Transactional(readOnly = true)
 	public PublicCustomerDeploymentListResponse deployments(PublicCustomerDeploymentListRequest request) {

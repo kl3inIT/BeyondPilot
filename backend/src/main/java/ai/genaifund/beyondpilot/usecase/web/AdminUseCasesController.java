@@ -189,7 +189,7 @@ class AdminUseCasesController {
 	@Operation(operationId = "listUseCaseOrganizations",
 			summary = "The organizations a use case can be written for",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "200", description = "The approved organizations, by name.")
+	@ApiResponse(responseCode = "200", description = "The organizations that are not taken down, by name.")
 	@ApiResponse(responseCode = "400", description = "A parameter is not valid.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	UseCaseOrganizationListResponse organizations(@CurrentActor Actor actor,

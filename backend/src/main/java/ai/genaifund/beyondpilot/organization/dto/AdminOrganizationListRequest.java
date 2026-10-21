@@ -12,17 +12,16 @@ import org.jspecify.annotations.Nullable;
 public record AdminOrganizationListRequest(
 		@Parameter(description = "Organizations whose name or domain contains this, ignoring case.") @Size(
 				max = 100) @Nullable String q,
-		@Parameter(description = "Only organizations of this review status; `in_review` also selects an approved one with an open claim, `approved` leaves out those taken down, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.",
-				schema = @Schema(allowableValues = { "in_review", "needs_changes", "approved", "rejected", "suspended",
-						"merged" })) @Pattern(
-								regexp = "in_review|needs_changes|approved|rejected|suspended|merged") @Nullable String status,
+		@Parameter(description = "Only organizations in this state: `approved` leaves out those taken down, `claimed` selects those with an open ownership claim, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.",
+				schema = @Schema(allowableValues = { "approved", "claimed", "suspended", "merged" })) @Pattern(
+						regexp = "approved|claimed|suspended|merged") @Nullable String status,
 		@Parameter(description = "Only organizations in this country, ISO 3166-1 alpha-2.") @Pattern(
 				regexp = OrganizationCodes.COUNTRY) @Nullable String country,
 		@Parameter(
 				description = "The order: `name` by the name, `received` by when its open claim arrived, or when the "
 						+ "organization was created when none is open, `members` by how many people belong to it; `-` "
-						+ "before a key turns it round. Without it, those a decision waits on first, then the most "
-						+ "recently received.",
+						+ "before a key turns it round. Without it, those with an open claim first, then the "
+						+ "most recently received.",
 				schema = @Schema(type = "string", allowableValues = { "name", "-name", "received", "-received",
 						"members", "-members" })) @Pattern(regexp = "-?(name|received|members)") @Nullable String sort,
 		@Parameter(description = "The page, counted from 1.",

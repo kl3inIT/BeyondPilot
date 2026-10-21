@@ -178,11 +178,12 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Object>read(lonerForm, "$.organization")).isNull();
 		assertProblem(put(loner, path, draft(null, null, null, null, null)), 403, "PROPOSAL_NO_ORGANIZATION");
 
-		// An organization that waits for GenAI Fund's review works on a proposal like any other.
-		Provider waiting = provider("waiting.test", false);
-		assertThat(JsonPath.<Boolean>read(body(get(waiting.founder, path).expectStatus().isOk()),
+		// An organization GenAI Fund took down works on a proposal like any other, and is shown as not approved.
+		Provider takenDown = provider("taken-down.test");
+		jdbc.sql("update organization set suspended_at = now() where id = ?").params(takenDown.organization).update();
+		assertThat(JsonPath.<Boolean>read(body(get(takenDown.founder, path).expectStatus().isOk()),
 				"$.organization.approved")).isFalse();
-		put(waiting.founder, path, draft(null, null, null, null, null)).expectStatus().isOk();
+		put(takenDown.founder, path, draft(null, null, null, null, null)).expectStatus().isOk();
 
 		assertProblem(get(poster.founder, path), 403, "PROPOSAL_OWN_USE_CASE");
 		assertProblem(put(poster.founder, path, draft(null, null, null, null, null)), 403, "PROPOSAL_OWN_USE_CASE");
@@ -205,7 +206,7 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 				proposalVersion(withApproach))).expectStatus().isOk();
 
 		// A member of another organization cannot send it.
-		assertProblem(post(waiting.founder, send, null), 404, "PROPOSAL_NOT_FOUND");
+		assertProblem(post(takenDown.founder, send, null), 404, "PROPOSAL_NOT_FOUND");
 		reachable(provider.founder);
 		post(provider.founder, send, null).expectStatus().isOk();
 	}
@@ -935,12 +936,8 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertProblem(put(provider.founder, path, twice), 400, "PROPOSAL_SOLUTION_NOT_FOUND");
 	}
 
-	/** An organization, approved or not, with a founder, a colleague and a complete solution. */
+	/** An organization with a founder, a colleague and a complete solution. */
 	private Provider provider(String domain) {
-		return provider(domain, true);
-	}
-
-	private Provider provider(String domain, boolean approved) {
 		String founder = TestSignIn.session(client, mail, "founder@" + domain);
 		UUID organization = UUID.fromString(JsonPath.read(body(post(founder, ORGANIZATION + "/organizations",
 				Map.of("name", "Team " + domain, "type", "company", "country", "VN", "teamSize", "2_9", "industries",
@@ -949,18 +946,13 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isCreated()), "$.id"));
 		String colleague = TestSignIn.session(client, mail, "colleague@" + domain);
-		UUID solution = null;
-		if (approved) {
-			post(operator, ORGANIZATION + "/admin/organizations/" + organization + "/approve", Map.of()).expectStatus()
-				.isNoContent();
-			post(founder, ORGANIZATION + "/mine/invitations", Map.of("email", "colleague@" + domain, "role", "member"))
-				.expectStatus()
-				.isNoContent();
-			String invitation = JsonPath.read(body(get(colleague, ORGANIZATION + "/mine").expectStatus().isOk()),
-					"$.invitations[0].id");
-			post(colleague, ORGANIZATION + "/invitations/" + invitation + "/accept", null).expectStatus().isNoContent();
-			solution = completeSolution(founder, "founder@" + domain, "Claim Copilot");
-		}
+		post(founder, ORGANIZATION + "/mine/invitations", Map.of("email", "colleague@" + domain, "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		String invitation = JsonPath.read(body(get(colleague, ORGANIZATION + "/mine").expectStatus().isOk()),
+				"$.invitations[0].id");
+		post(colleague, ORGANIZATION + "/invitations/" + invitation + "/accept", null).expectStatus().isNoContent();
+		UUID solution = completeSolution(founder, "founder@" + domain, "Claim Copilot");
 		return new Provider(organization, founder, colleague, "founder@" + domain, "colleague@" + domain,
 				accountOf("founder@" + domain), accountOf("colleague@" + domain), solution);
 	}

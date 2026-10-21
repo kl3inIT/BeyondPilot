@@ -11,7 +11,7 @@ const complete = {
   slug: "pocket-policy",
   name: "Pocket Policy",
   type: "company",
-  status: "in_review",
+  status: "approved",
   country: "SG",
   teamSize: "10_49",
   industries: ["insurance"],
@@ -36,72 +36,41 @@ function frame(organization: Organization, current: "profile" | "members", role 
 
 describe("OrganizationFrame, for a person on their own", () => {
   it("is an ordinary organization: its type is named and it has the profile and members tabs", () => {
-    render(frame({ ...complete, type: "independent_builder", status: "approved" }, "members"));
+    render(frame({ ...complete, type: "independent_builder" }, "members"));
 
     expect(screen.getByText("Just me")).toBeVisible();
     expect(screen.getByRole("link", { name: /Profile/ })).toBeVisible();
     expect(screen.getByRole("link", { name: /Members/ })).toBeVisible();
-    expect(screen.queryByRole("link", { name: "Complete profile" })).not.toBeInTheDocument();
-  });
-
-  it("waits for review like any organization once it became a team or a company", () => {
-    render(
-      frame(
-        { ...complete, type: "independent_builder", status: "in_review", description: "" },
-        "members",
-      ),
-    );
-
-    expect(screen.getByRole("link", { name: "Complete profile" })).toBeVisible();
   });
 });
 
-describe("OrganizationFrame, while the organization is in review", () => {
-  it("counts and names what the profile lacks, and leads its owner to complete it", () => {
+describe("OrganizationFrame, for a new organization", () => {
+  it("shows no review banner and asks for nothing more, however little the profile holds", () => {
     render(frame({ ...complete, website: null, foundedYear: null, description: "" }, "members"));
 
-    expect(
-      screen.getByText(
-        "3 required fields are empty: Website, Year founded, and Short description. The reviewer reads the profile as it is now.",
-      ),
-    ).toBeVisible();
-    const action = screen.getByRole("link", { name: "Complete profile" });
-    expect(action).toHaveAttribute("data-prominence", "primary");
-    expect(screen.queryByRole("link", { name: "Edit profile" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 2 })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Complete profile" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/required field/)).not.toBeInTheDocument();
   });
+});
 
-  it("does not ask a team for what only a company must give", () => {
+describe("OrganizationFrame, once the organization is taken down", () => {
+  it("shows the taken-down banner with the reason its owners read", () => {
     render(
       frame(
         {
           ...complete,
-          type: "builder_team",
-          website: null,
-          foundedYear: null,
-          teamBackground: "Built claims assistants.",
-        },
+          suspendedAt: "2026-10-01T00:00:00Z",
+          suspensionReason: "breaks_the_rules",
+          suspensionMessage: "Repeated spam.",
+        } as unknown as Organization,
         "members",
       ),
     );
 
-    expect(screen.getByText("The profile has every required field.")).toBeVisible();
-    expect(screen.getByRole("link", { name: "Edit profile" })).toHaveAttribute(
-      "data-prominence",
-      "secondary",
-    );
-  });
-
-  it("tells a member what is missing without an action they cannot take", () => {
-    render(frame({ ...complete, website: null }, "members", "member"));
-
-    expect(screen.getByText(/^1 required field is empty: Website\./)).toBeVisible();
-    expect(screen.queryByRole("link", { name: "Complete profile" })).not.toBeInTheDocument();
-  });
-
-  it("leaves the action to the profile itself on the Profile tab", () => {
-    render(frame({ ...complete, website: null }, "profile"));
-
-    expect(screen.getByText(/^1 required field is empty/)).toBeVisible();
-    expect(screen.queryByRole("link", { name: "Complete profile" })).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "GenAI Fund took Pocket Policy down" }),
+    ).toBeVisible();
+    expect(screen.getByText("Repeated spam.")).toBeVisible();
   });
 });

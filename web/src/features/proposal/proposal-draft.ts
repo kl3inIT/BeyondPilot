@@ -80,7 +80,7 @@ export function detailsComplete(details: Details): boolean {
 
 /**
  * Whether the first step holds what a proposal needs: an organization, the details, and for a team
- * what it has done. The organization may still be waiting for GenAI Fund's review.
+ * what it has done.
  */
 export function youComplete(
   values: ProposalValues,

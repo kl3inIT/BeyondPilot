@@ -38,7 +38,7 @@ type AdminHomePageProps = {
     useCases: ReviewQueue;
     solutions: ReviewQueue;
     talent: ReviewQueue;
-    organizations: ReviewQueue;
+    claims: ReviewQueue;
     deployments: ReviewQueue;
   };
   /** Every program with a submitted application, as the operator reviews it. */
@@ -82,9 +82,9 @@ async function AdminHomePage({ queues, programs, usage, email, index }: AdminHom
     { key: "solutions", Icon: BoxesIcon, href: `${siteRoutes.adminSolutions}?status=in_review` },
     { key: "talent", Icon: UsersIcon, href: `${siteRoutes.adminTalent}?status=in_review` },
     {
-      key: "organizations",
+      key: "claims",
       Icon: BuildingIcon,
-      href: `${siteRoutes.adminOrganizations}?status=in_review`,
+      href: `${siteRoutes.adminOrganizations}?status=claimed`,
     },
     // A deployment is reviewed on its solution: the list keeps the solutions holding one.
     {

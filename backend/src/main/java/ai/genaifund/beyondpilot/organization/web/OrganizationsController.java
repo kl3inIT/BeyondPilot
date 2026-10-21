@@ -57,16 +57,16 @@ class OrganizationsController {
 	}
 
 	@GetMapping(path = "/organizations/{slug}", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "getOrganization", summary = "The public page of an approved organization, read without a session")
+	@Operation(operationId = "getOrganization", summary = "The public page of an organization, read without a session")
 	@ApiResponse(responseCode = "200", description = "The organization.")
-	@ApiResponse(responseCode = "404", description = "No approved organization has this address.",
+	@ApiResponse(responseCode = "404", description = "No organization has this address.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	PublicOrganizationResponse get(@PathVariable String slug) {
 		return directory.publicPage(slug);
 	}
 
 	@GetMapping(path = "/organizations", produces = MediaType.APPLICATION_JSON_VALUE)
-	@Operation(operationId = "searchOrganizations", summary = "The approved organizations whose name contains a text",
+	@Operation(operationId = "searchOrganizations", summary = "The organizations, not taken down, whose name contains a text",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200",
 			description = "Ten organizations at most, by name; none for a text shorter than two characters.")
@@ -83,7 +83,7 @@ class OrganizationsController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@Operation(operationId = "createOrganization", summary = "Create an organization the caller owns",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "201", description = "The organization, waiting for GenAI Fund's review.")
+	@ApiResponse(responseCode = "201", description = "The organization, active at once.")
 	@ApiResponse(responseCode = "400", description = "A member is not valid.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409",
@@ -99,7 +99,7 @@ class OrganizationsController {
 	@Operation(operationId = "createOrganizationFromBasics",
 			summary = "Create an organization from the required facts of its selected type",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "201", description = "The organization, waiting for GenAI Fund's review.")
+	@ApiResponse(responseCode = "201", description = "The organization, active at once.")
 	@ApiResponse(responseCode = "400", description = "A member is not valid, or a company names no industry.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409",
@@ -117,7 +117,7 @@ class OrganizationsController {
 	@ApiResponse(responseCode = "200", description = "What asking did: joined, or a request that waits.")
 	@ApiResponse(responseCode = "400", description = "The message is too long.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "404", description = "There is no such approved organization.",
+	@ApiResponse(responseCode = "404", description = "There is no such organization.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409",
 			description = "The caller already belongs to an organization, or waits on a request.",

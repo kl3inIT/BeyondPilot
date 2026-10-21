@@ -29,7 +29,7 @@ const HEX = /^#[0-9A-Fa-f]{6}$/;
 const PREVIEW_DELAY = 300;
 
 /** The email the preview shows: one every organization owner receives. */
-const SAMPLE = "organization_approved";
+const SAMPLE = "organization_activated";
 
 /**
  * What every email shares: the colour of its links and buttons, and the note at its foot. The

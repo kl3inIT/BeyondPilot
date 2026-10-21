@@ -228,8 +228,8 @@ public class ProposalService {
 	}
 
 	/**
-	 * Makes the organization the caller applies through when they belong to none: themselves, or their team. A team
-	 * waits for GenAI Fund's review, which does not hold up the application. Someone applying as themselves may still
+	 * Makes the organization the caller applies through when they belong to none: themselves, or their team. Both are
+	 * active at once. Someone applying as themselves may still
 	 * become a team while nothing was sent under their name.
 	 * @throws ProposalException when the program takes no applications now, the caller already belongs to an
 	 * organization other than themselves, or sent something as themselves
@@ -289,10 +289,10 @@ public class ProposalService {
 
 	/**
 	 * Someone applying as themselves keeps doing so once something went out under their name (an application, a
-	 * proposal for a use case or a solution sent for review), or once GenAI Fund refused or took them down.
+	 * proposal for a use case or a solution sent for review), or once GenAI Fund took them down.
 	 */
 	private void requireSwitchable(Membership membership) {
-		// One that GenAI Fund refused or took down keeps that decision: neither a team nor a fresh start undoes it.
+		// One that GenAI Fund took down keeps that decision: neither a team nor a fresh start undoes it.
 		if (!membership.approved() || sentAnything(membership.organizationId())) {
 			throw new ProposalException(ProposalErrorCode.INDIVIDUAL_LOCKED,
 					"Individual " + membership.organizationId() + " already sent something");

@@ -9,9 +9,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * One organization as an operator reviews it on its admin page, for the operators' MCP server: its profile, GenAI
  * Fund's last decision on it, its people and the open requests to own it.
- * @param status GenAI Fund's review: {@code in_review}, {@code needs_changes}, {@code approved}, {@code rejected} or
- * {@code merged}; one taken down stays approved and has {@code suspendedAt}
- * @param decisionMessage what the operator wrote to the owners when refusing it or sending it back
+ * @param status {@code approved} or {@code merged}; one taken down stays approved and has {@code suspendedAt}
+ * @param decisionMessage what an operator wrote to the owners in a past review
  */
 public record OrganizationReviewRecord(UUID id, String slug, String name, String type, @Nullable String website,
 		@Nullable String country, @Nullable String teamSize, List<String> industries, @Nullable String description,

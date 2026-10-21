@@ -20,8 +20,9 @@ application module, `backend/src/main/java/ai/genaifund/beyondpilot/notification
   - `persistence`: SQL and the two JPA entities.
   - `web` and `dto`: the HTTP contract.
 - **Persistence.** `V41__notification_create_email.sql` creates every table, and `V73__notification_add_brevo.sql`
-  adds Brevo to the providers and its two secrets to the settings. `V87__introduction_drop_requests.sql` and
-  `V91__messaging_move_enquiries.sql` delete operators' wording of the kinds those changes stopped sending:
+  adds Brevo to the providers and its two secrets to the settings. `V87__introduction_drop_requests.sql`,
+  `V91__messaging_move_enquiries.sql` and `V109__organization_drop_review.sql` delete operators' wording of the kinds
+  those changes stopped sending:
   - `email_settings`: one row, `id = 1`.
   - `email_template`: an operator's wording of a kind.
   - `email_message`: the queue and the log.
@@ -43,15 +44,15 @@ meaning.
   - a quote: the layout shows it after the text, as written, and templates do not use it.
 - **Groups.** Each kind belongs to an `EmailGroup`, which is where the screen lists it.
 
-| Group           | Kinds                                                                                                                                                                                                                                             | Sent through `EmailService`                                                                                                                                                     |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sign_in`       | `sign_in_code`                                                                                                                                                                                                                                    | `sendSignInCode`, package-private, called by `SignInCodeMail`                                                                                                                   |
-| `organizations` | `organization_invitation`, `organization_approved`, `organization_refused`, `organization_sent_back`, `organization_request_approved`, `organization_request_declined`, `organization_taken_down`, `organization_restored`, `organization_merged` | `sendOrganizationInvitation`, `sendOrganizationDecision`, `sendOrganizationSentBack`, `sendOrganizationRequestDecision`, `sendOrganizationSuspension`, `sendOrganizationMerged` |
-| `applications`  | `application_received`, `reviewer_invitation`, `application_outcome`                                                                                                                                                                              | `sendApplicationReceived`, `sendReviewerInvitation`, `sendApplicationOutcome`                                                                                                   |
-| `solutions`     | `solution_approved`, `solution_sent_back`, `solution_rejected`, `solution_taken_down`, `solution_restored`                                                                                                                                        | `sendSolutionDecision`                                                                                                                                                          |
-| `use_cases`     | `use_case_approved`, `use_case_sent_back`, `proposal_sent`, `proposal_shortlisted`, `proposal_declined`, `matching_invitation`                                                                                                                    | `sendUseCaseDecision`, `sendProposalSent`, `sendProposalOutcome`, `sendMatchingInvitation`                                                                                      |
-| `talent`        | `talent_approved`, `talent_changes_requested`, `talent_removed`, `talent_restored`                                                                                                                                                                | `sendTalentDecision`                                                                                                                                                            |
-| `messages`      | `message_request`, `message_request_reminder`, `message_request_accepted`, `message_request_declined`, `message_request_closed`, `message_unread`                                                                                                 | `sendMessageRequest`, `sendMessageRequestReminder`, `sendMessageRequestAccepted`, `sendMessageRequestDeclined`, `sendMessageRequestClosed`, `sendUnreadMessages`                |
+| Group           | Kinds                                                                                                                                                                                            | Sent through `EmailService`                                                                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sign_in`       | `sign_in_code`                                                                                                                                                                                   | `sendSignInCode`, package-private, called by `SignInCodeMail`                                                                                                    |
+| `organizations` | `organization_invitation`, `organization_activated`, `organization_request_approved`, `organization_request_declined`, `organization_taken_down`, `organization_restored`, `organization_merged` | `sendOrganizationInvitation`, `sendOrganizationActivated`, `sendOrganizationRequestDecision`, `sendOrganizationSuspension`, `sendOrganizationMerged`             |
+| `applications`  | `application_received`, `reviewer_invitation`, `application_outcome`                                                                                                                             | `sendApplicationReceived`, `sendReviewerInvitation`, `sendApplicationOutcome`                                                                                    |
+| `solutions`     | `solution_approved`, `solution_sent_back`, `solution_rejected`, `solution_taken_down`, `solution_restored`                                                                                       | `sendSolutionDecision`                                                                                                                                           |
+| `use_cases`     | `use_case_approved`, `use_case_sent_back`, `proposal_sent`, `proposal_shortlisted`, `proposal_declined`, `matching_invitation`                                                                   | `sendUseCaseDecision`, `sendProposalSent`, `sendProposalOutcome`, `sendMatchingInvitation`                                                                       |
+| `talent`        | `talent_approved`, `talent_changes_requested`, `talent_removed`, `talent_restored`                                                                                                               | `sendTalentDecision`                                                                                                                                             |
+| `messages`      | `message_request`, `message_request_reminder`, `message_request_accepted`, `message_request_declined`, `message_request_closed`, `message_unread`                                                | `sendMessageRequest`, `sendMessageRequestReminder`, `sendMessageRequestAccepted`, `sendMessageRequestDeclined`, `sendMessageRequestClosed`, `sendUnreadMessages` |
 
 **`proposal_shortlisted` and `proposal_declined`** are editable and are sent by `sendProposalOutcome`, once for each
 proposal whose decision the posting organization has not yet told its sender. Variables: `recipientName` (optional),
@@ -75,31 +76,30 @@ The message is plain text, and its line breaks are kept. The button "View your a
   nothing. A page that needs an account sends a signed-out visitor to sign in and returns them to it (`returnTo`,
   `requireAccount` in `web/src/lib/auth/session.ts`).
 
-  | Kind                                                 | Variable          | Button                 | Opens                                                                                                          |
-  | ---------------------------------------------------- | ----------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------- |
-  | `proposal_sent`                                      | `proposalUrl`     | View proposal          | `/use-cases/<use case id>/propose/view`                                                                        |
-  | `proposal_shortlisted`, `proposal_declined`          | `proposalUrl`     | View proposal          | `/use-cases/<use case id>/propose/view`                                                                        |
-  | `matching_invitation`                                | `useCaseUrl`      | Read the use case      | `/use-cases/<use case id>`, the public page where the provider chooses Send a proposal                         |
-  | `application_received`, `application_outcome`        | `applicationUrl`  | View your application  | `/applications/<application id>`                                                                               |
-  | `reviewer_invitation`                                | `reviewsUrl`      | Open Reviews           | `/reviews/<program id>`, the program's applications as the judge scores them                                   |
-  | `organization_invitation`                            | `organizationUrl` | Open the invitation    | `/workspace/organization`, which shows the invitation to a person who belongs to no organization               |
-  | `organization_sent_back`                             | `organizationUrl` | Edit your organization | `/workspace/organization`                                                                                      |
-  | `organization_request_approved`                      | `organizationUrl` | Open your organization | `/workspace/organization`                                                                                      |
-  | `organization_approved`, `organization_restored`     | `organizationUrl` | View your organization | `/organizations/<slug>`, its public page                                                                       |
-  | `solution_sent_back`                                 | `solutionUrl`     | Edit your solution     | `/workspace/organization/solutions/<solution id>`                                                              |
-  | `solution_approved`, `solution_restored`             | `solutionUrl`     | View your solution     | `/solutions/<slug>`, its public page; the page in My organization while its organization is not approved       |
-  | `use_case_sent_back`                                 | `useCaseUrl`      | Edit your use case     | `/workspace/organization/use-cases/<use case id>`                                                              |
-  | `use_case_approved`                                  | `useCaseUrl`      | View your use case     | `/use-cases/<use case id>`, the published brief                                                                |
-  | `talent_changes_requested`                           | `profileUrl`      | Edit your profile      | `/workspace/talent`                                                                                            |
-  | `talent_approved`, `talent_restored`                 | `profileUrl`      | View your profile      | `/talent/<slug>`, its public page; `/workspace/talent` while the person keeps the profile out of the directory |
-  | `message_request`, `message_request_reminder`        | `messagesUrl`     | Read and answer        | `/workspace/messages`, where the request is answered                                                           |
-  | `message_request_accepted`                           | `messagesUrl`     | Open the conversation  | `/workspace/messages`                                                                                          |
-  | `message_request_declined`, `message_request_closed` | `messagesUrl`     | View your messages     | `/workspace/messages`                                                                                          |
-  | `message_unread`                                     | `messagesUrl`     | Read it                | `/workspace/messages`                                                                                          |
+  | Kind                                                      | Variable          | Button                 | Opens                                                                                                          |
+  | --------------------------------------------------------- | ----------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------- |
+  | `proposal_sent`                                           | `proposalUrl`     | View proposal          | `/use-cases/<use case id>/propose/view`                                                                        |
+  | `proposal_shortlisted`, `proposal_declined`               | `proposalUrl`     | View proposal          | `/use-cases/<use case id>/propose/view`                                                                        |
+  | `matching_invitation`                                     | `useCaseUrl`      | Read the use case      | `/use-cases/<use case id>`, the public page where the provider chooses Send a proposal                         |
+  | `application_received`, `application_outcome`             | `applicationUrl`  | View your application  | `/applications/<application id>`                                                                               |
+  | `reviewer_invitation`                                     | `reviewsUrl`      | Open Reviews           | `/reviews/<program id>`, the program's applications as the judge scores them                                   |
+  | `organization_invitation`                                 | `organizationUrl` | Open the invitation    | `/workspace/organization`, which shows the invitation to a person who belongs to no organization               |
+  | `organization_activated`, `organization_request_approved` | `organizationUrl` | Open your organization | `/workspace/organization`                                                                                      |
+  | `organization_restored`                                   | `organizationUrl` | View your organization | `/organizations/<slug>`, its public page                                                                       |
+  | `solution_sent_back`                                      | `solutionUrl`     | Edit your solution     | `/workspace/organization/solutions/<solution id>`                                                              |
+  | `solution_approved`, `solution_restored`                  | `solutionUrl`     | View your solution     | `/solutions/<slug>`, its public page; the page in My organization while its organization is taken down         |
+  | `use_case_sent_back`                                      | `useCaseUrl`      | Edit your use case     | `/workspace/organization/use-cases/<use case id>`                                                              |
+  | `use_case_approved`                                       | `useCaseUrl`      | View your use case     | `/use-cases/<use case id>`, the published brief                                                                |
+  | `talent_changes_requested`                                | `profileUrl`      | Edit your profile      | `/workspace/talent`                                                                                            |
+  | `talent_approved`, `talent_restored`                      | `profileUrl`      | View your profile      | `/talent/<slug>`, its public page; `/workspace/talent` while the person keeps the profile out of the directory |
+  | `message_request`, `message_request_reminder`             | `messagesUrl`     | Read and answer        | `/workspace/messages`, where the request is answered                                                           |
+  | `message_request_accepted`                                | `messagesUrl`     | Open the conversation  | `/workspace/messages`                                                                                          |
+  | `message_request_declined`, `message_request_closed`      | `messagesUrl`     | View your messages     | `/workspace/messages`                                                                                          |
+  | `message_unread`                                          | `messagesUrl`     | Read it                | `/workspace/messages`                                                                                          |
 
 - **Kinds without a link.**
   - `sign_in_code`: the code is what the person needs, and a link would teach them to follow sign-in links.
-  - `organization_refused`, `organization_request_declined`, `organization_taken_down`, `organization_merged`,
+  - `organization_request_declined`, `organization_taken_down`, `organization_merged`,
     `solution_rejected`, `solution_taken_down`, `talent_removed`: they tell the person to sign in and read why.
 - **Every link variable but `proposalUrl` is optional.** A wording an operator saved before the kind offered the
   link stays valid and is sent as it is, without the link, until the operator adds the button, for example
@@ -113,6 +113,13 @@ The message is plain text, and its line breaks are kept. The button "View your a
 - **Kinds no longer sent.** A kind that is removed leaves `EmailKind`, its default wording and any wording an
   operator saved for it. The log keeps every email of it under the value it was stored with: it is listed, filtered
   by that value, read and sent again like any other, because the log reads `kind` as text.
+- **Retired kinds.** `organization_approved`, `organization_refused` and `organization_sent_back` were sent while
+  GenAI Fund reviewed organizations (BEY-236 ended that). They stay in `EmailKind` so the log still names the emails
+  sent, but nothing sends them, they have no default template (`DefaultTemplates` skips them and refuses to render
+  one), they are not editable, and they are not in the template list. `organization_activated` replaces them: it is
+  sent once to the owners of each organization that [V109](../../backend/src/main/resources/db/migration/V109__organization_drop_review.sql)
+  made active, by `ActivationNotices` in the `organization` module, and the migration deletes the three kinds'
+  `email_template` rows.
 - **Dates.** Dates are written in Vietnam time (`Asia/Ho_Chi_Minh`):
   - `editableUntil` is written as `d MMM yyyy, HH:mm` followed by ` ICT`;
   - a reviewer invitation's `expiresOn` is written as `d MMM yyyy`.
@@ -443,7 +450,7 @@ Every path below requires a session and an operator: `IdentityService.requireOpe
 | `DELETE /suppressions/{address}`  | `204`; records `email.suppression_remove` with the earlier `reason`                                                                                                                            |
 
 **Templates.** A kind that does not exist fails with `NOTIFICATION_TEMPLATE_NOT_FOUND`, and `application_outcome`
-fails with `NOTIFICATION_TEMPLATE_NOT_EDITABLE`.
+and a retired kind fail with `NOTIFICATION_TEMPLATE_NOT_EDITABLE`.
 
 - **Saving.** A save sends the `version` it read, or null when the default was in use.
 - **Conflicts.** A mismatch fails with `NOTIFICATION_TEMPLATE_CHANGED`. So does a save that loses a race on the row's

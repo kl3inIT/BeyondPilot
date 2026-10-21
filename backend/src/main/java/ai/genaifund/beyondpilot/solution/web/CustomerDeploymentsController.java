@@ -40,7 +40,7 @@ class CustomerDeploymentsController {
 
 	static final String PROBLEM = "#/components/schemas/Problem";
 
-	private static final String NOT_WRITER = "The caller is not an owner of an approved organization.";
+	private static final String NOT_WRITER = "The caller is not an owner of an organization that is not taken down.";
 
 	private static final String NOT_FOUND = "There is no such customer deployment for this caller.";
 

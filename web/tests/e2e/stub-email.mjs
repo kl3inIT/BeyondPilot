@@ -54,20 +54,24 @@ const templates = [
     "organizations",
     "You are invited to {{organizationName}} on BeyondPilot",
   ),
-  template("organization_approved", "organizations", "{{organizationName}} on BeyondPilot", true),
+  template(
+    "organization_activated",
+    "organizations",
+    "{{organizationName}} is active on BeyondPilot",
+    true,
+  ),
   template("application_received", "applications", "Application submitted: {{programName}}"),
   template("talent_approved", "talent", "Your BeyondPilot talent profile is approved"),
   template("message_request", "messages", "A first message for you on BeyondPilot"),
 ];
 
-const approved = {
-  kind: "organization_approved",
+const activated = {
+  kind: "organization_activated",
   group: "organizations",
-  subject: "{{organizationName}} on BeyondPilot",
-  body: "# {{organizationName}} is approved\n\nGenAI Fund approved {{organizationName}} on BeyondPilot. Sign in to manage it.",
-  defaultSubject: "{{organizationName}} on BeyondPilot",
-  defaultBody:
-    "# {{organizationName}} is approved\n\nGenAI Fund approved {{organizationName}} on BeyondPilot.",
+  subject: "{{organizationName}} is active on BeyondPilot",
+  body: "# {{organizationName}} is active\n\n{{organizationName}} is active on BeyondPilot. Sign in to manage it.",
+  defaultSubject: "{{organizationName}} is active on BeyondPilot",
+  defaultBody: "# {{organizationName}} is active\n\n{{organizationName}} is active on BeyondPilot.",
   edited: true,
   updatedBy: "Hà Lê",
   updatedAt: ago(30),
@@ -114,7 +118,7 @@ const messages = [
 ];
 
 const html = (title) =>
-  `<!doctype html><html><body style="font-family:sans-serif;padding:24px"><h1>${title}</h1><p>GenAI Fund approved it.</p></body></html>`;
+  `<!doctype html><html><body style="font-family:sans-serif;padding:24px"><h1>${title}</h1><p>It is active.</p></body></html>`;
 
 const suppressions = [
   {
@@ -163,7 +167,7 @@ export function answerEmail(url, account) {
     if (path === "/templates/application_outcome") {
       return [409, { status: 409, code: "NOTIFICATION_TEMPLATE_NOT_EDITABLE" }];
     }
-    return path === "/templates/organization_approved" ? [200, approved] : [404, {}];
+    return path === "/templates/organization_activated" ? [200, activated] : [404, {}];
   }
   if (path === "/messages") {
     const status = url.searchParams.get("status");

@@ -30,7 +30,7 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
   const { locale } = await params;
   setRequestLocale(locale);
   await requireRole("operator", siteRoutes.admin);
-  const [useCases, solutions, talent, organizations, deployments, programs, usage, email, index] =
+  const [useCases, solutions, talent, claims, deployments, programs, usage, email, index] =
     await Promise.all([
       readUseCaseQueue(),
       readSolutionQueue(),
@@ -54,7 +54,7 @@ export default async function AdminHomeRoute({ params }: PageProps<"/[locale]/ad
 
   return (
     <AdminHomePage
-      queues={{ useCases, solutions, talent, organizations, deployments }}
+      queues={{ useCases, solutions, talent, claims, deployments }}
       programs={programs.items}
       usage={usage}
       email={email.counts}

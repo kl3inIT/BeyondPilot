@@ -24,13 +24,12 @@ const pocketPolicy = {
   createdAt: day,
 };
 
-/** An organization that waits for GenAI Fund's approval, with its owner. */
+/** An organization made a moment ago: active from the start, with its owner. */
 const newCo = {
   ...pocketPolicy,
   id: "8b3e5c74-2b20-4c75-9c77-2f5b8b8d9c04",
   name: "Newco",
   slug: "newco",
-  status: "in_review",
   roles: ["enterprise"],
   emailDomain: "newco.example",
 };
@@ -128,7 +127,7 @@ const standing = {
   invited: { invitations: [invitation] },
   asked: { request },
   declined: { declined },
-  waiting: { role: "owner", organization: newCo },
+  fresh: { role: "owner", organization: newCo },
   alone: { role: "owner", organization: justMe },
   moved: {
     role: "member",

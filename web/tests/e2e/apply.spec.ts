@@ -94,7 +94,7 @@ async function fakeBackend(page: Page, joining: "joined" | "requested" = "joined
         type: body.kind === "individual" ? "independent_builder" : "builder_team",
         country: body.country,
         teamSize: body.kind === "individual" ? "just_me" : body.teamSize,
-        approved: false,
+        approved: true,
       };
       return route.fulfill(fulfil(view));
     }
@@ -481,6 +481,9 @@ test.describe("apply", () => {
     // The step turns to the company at once: it is no longer asked who applies.
     await expect(page.getByRole("heading", { name: "Applying for" })).toBeVisible();
     await expect(page.getByText("Company · 10–49 people · Singapore")).toBeVisible();
+    // An organization is active from the start: nothing says it is not listed yet.
+    await expect(page.getByText("Not in the directory yet")).toHaveCount(0);
+    await expect(page.getByText(/GenAI Fund checks a new organization/)).toHaveCount(0);
     await expect(page.getByRole("radio")).toHaveCount(0);
     await expect(page.getByRole("searchbox")).toHaveCount(0);
     await expect(page.getByLabel("First name")).toHaveValue("An");

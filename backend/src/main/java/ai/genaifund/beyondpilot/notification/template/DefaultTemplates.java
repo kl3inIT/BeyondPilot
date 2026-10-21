@@ -26,6 +26,9 @@ public class DefaultTemplates {
 
 	DefaultTemplates() throws IOException {
 		for (EmailKind kind : EmailKind.values()) {
+			if (kind.retired()) {
+				continue;
+			}
 			EmailTemplate template = read(kind);
 			List<TemplateProblem> problems = TemplateSyntax.problems(kind, template);
 			if (!problems.isEmpty()) {
@@ -36,7 +39,11 @@ public class DefaultTemplates {
 	}
 
 	public EmailTemplate template(EmailKind kind) {
-		return templates.get(kind);
+		EmailTemplate template = templates.get(kind);
+		if (template == null) {
+			throw new IllegalStateException("The email " + kind.value() + " is retired and has no default template");
+		}
+		return template;
 	}
 
 	private static EmailTemplate read(EmailKind kind) throws IOException {

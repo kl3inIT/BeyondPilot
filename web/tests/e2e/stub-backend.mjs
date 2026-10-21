@@ -93,14 +93,14 @@ const accounts = {
     displayName: "An Võ",
     role: "user",
   },
-  // The owner of an organization that GenAI Fund has not approved yet (stub-workspace.mjs).
-  waiting: {
+  // The owner of an organization made a moment ago, active from the start (stub-workspace.mjs).
+  fresh: {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a16",
     email: "lan.pham@newco.example",
     displayName: "Lan Phạm",
     role: "user",
   },
-  // The only person of an organization of type Just me, approved when it was made (stub-workspace.mjs).
+  // The only person of an organization of type Just me, active from the start (stub-workspace.mjs).
   alone: {
     id: "6f1c3a52-0f0e-4a53-9a55-0d3f6f6b7a18",
     email: "an.tran@example.com",

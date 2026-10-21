@@ -56,12 +56,12 @@ Each kind has a listener class. On the owner's event it reads the item again thr
 the item is now, or removes the row when the owner returns nothing, so a late or repeated delivery is harmless. The
 events are delivered after commit through Spring Modulith's event publication registry.
 
-| Kind       | Event                                    | Read through                             | Indexed while                                                                                                   |
-| ---------- | ---------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `program`  | `ProgramChanged`                         | `ProgramService.indexed`                 | the program is published                                                                                        |
-| `solution` | `SolutionChanged`, `OrganizationChanged` | `SolutionDirectory.indexed`, `indexedOf` | the solution is approved and not taken down, and its organization is approved and not taken down; listed or not |
-| `talent`   | `TalentProfileChanged`                   | `TalentDirectory.indexed`                | the profile is approved, not taken down, and listed                                                             |
-| `use_case` | `UseCaseChanged`, `OrganizationChanged`  | `UseCaseDirectory.indexed`, `indexedOf`  | the use case is approved (published) and has a title, and its organization is approved and not taken down       |
+| Kind       | Event                                    | Read through                             | Indexed while                                                                                      |
+| ---------- | ---------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `program`  | `ProgramChanged`                         | `ProgramService.indexed`                 | the program is published                                                                           |
+| `solution` | `SolutionChanged`, `OrganizationChanged` | `SolutionDirectory.indexed`, `indexedOf` | the solution is approved and not taken down, and its organization is not taken down; listed or not |
+| `talent`   | `TalentProfileChanged`                   | `TalentDirectory.indexed`                | the profile is approved, not taken down, and listed                                                |
+| `use_case` | `UseCaseChanged`, `OrganizationChanged`  | `UseCaseDirectory.indexed`, `indexedOf`  | the use case is approved (published) and has a title, and its organization is not taken down       |
 
 On `OrganizationChanged`, the solution and use case listeners save the organization's items that are still shown
 (they carry its name) and remove every other item of that organization.
@@ -100,6 +100,11 @@ its change is also kept and done again at the end of the rebuild, in the rebuild
 rebuild never commits an item as it was before a take-down. A write to a row the rebuild has written still waits for
 the rebuild's commit, so a take-down during a rebuild leaves search when the rebuild ends (about a minute). One rebuild runs at a time. It logs `search.index.repaired` with
 the counts, and keeps the last run (when, items saved, rows removed) in memory until the application stops.
+
+**After V109.** A migration publishes no `OrganizationChanged`, so `V109__organization_drop_review.sql`, which made every
+organization waiting for review active, left the index as it was: the solutions and use cases of those organizations,
+and solutions already approved under a team that had gone back to review, were not indexed. The nightly repair brings
+them in; after the deploy an operator rebuilds from Admin (`POST /index/rebuild`) so they appear at once.
 
 ## Public search
 

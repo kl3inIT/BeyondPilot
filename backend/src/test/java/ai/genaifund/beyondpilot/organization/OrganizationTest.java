@@ -2,6 +2,8 @@ package ai.genaifund.beyondpilot.organization;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -27,10 +29,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Organizations over real HTTP against PostgreSQL: how a person gets into one, what owners and members may do inside,
@@ -53,6 +57,12 @@ class OrganizationTest {
 	@Autowired
 	private JdbcClient jdbc;
 
+	@Autowired
+	private ActivationNotices activationNotices;
+
+	@Autowired
+	private TransactionTemplate transaction;
+
 	private RestTestClient client;
 
 	private String operator;
@@ -64,15 +74,15 @@ class OrganizationTest {
 	}
 
 	@Test
-	void aCreatedOrganizationWaitsForReviewAndItsCreatorOwnsIt() {
+	void aCreatedOrganizationIsApprovedAtOnceAndItsCreatorOwnsIt() {
 		String founder = signIn("founder@created.test");
 
 		String created = body(post(founder, API + "/organizations", creation("Created Co")).expectStatus()
 			.isCreated());
 
-		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
 		assertThat(JsonPath.<String>read(created, "$.slug")).isEqualTo("created-co");
-		// A work address vouches for nothing: an operator verifies the domain.
+		// A work address vouches for nothing: only an operator verifies the domain.
 		assertThat(JsonPath.<String>read(created, "$.emailDomain")).isNull();
 		assertThat(JsonPath.<Boolean>read(created, "$.autoJoin")).isFalse();
 		assertThat(JsonPath.<List<String>>read(created, "$.industries")).containsExactly("insurance",
@@ -147,7 +157,7 @@ class OrganizationTest {
 		// Approved at once, it waits in no queue and is offered no domain, not even the person's employer's.
 		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
 		assertThat(JsonPath.<List<String>>read(
-				body(get(operator, API + "/admin/organizations?status=in_review").expectStatus().isOk()),
+				body(get(operator, API + "/admin/organizations?status=claimed").expectStatus().isOk()),
 				"$.items[*].id"))
 			.doesNotContain(id);
 		String record = body(get(operator, API + "/admin/organizations/" + id).expectStatus().isOk());
@@ -186,15 +196,12 @@ class OrganizationTest {
 		assertProblem(put(builder, API + "/mine", save(team, versionOf(mine(builder)))), 400,
 				"ORGANIZATION_TEAM_SIZE_REQUIRED");
 
-		// As a team it waits for GenAI Fund's review like any team, and an owner invites once it is approved.
+		// As a team it stays approved, and its owner invites at once.
 		team.put("teamSize", "2_9");
 		put(builder, API + "/mine", save(team, versionOf(mine(builder)))).expectStatus().isOk();
 		String asTeam = mine(builder);
 		assertThat(JsonPath.<String>read(asTeam, "$.organization.type")).isEqualTo("builder_team");
-		assertThat(JsonPath.<String>read(asTeam, "$.organization.status")).isEqualTo("in_review");
-		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of("emailDomain", "solo-team.test"))
-			.expectStatus()
-			.isNoContent();
+		assertThat(JsonPath.<String>read(asTeam, "$.organization.status")).isEqualTo("approved");
 		post(builder, API + "/mine/invitations", Map.of("email", "friend@else.test", "role", "member")).expectStatus()
 			.isNoContent();
 
@@ -209,12 +216,10 @@ class OrganizationTest {
 	}
 
 	@Test
-	void aTeamBecomesAPersonOnTheirOwnOnlyWithoutOtherMembersAndAnApprovedOneStaysApproved() {
+	void aTeamBecomesAPersonOnTheirOwnOnlyWithoutOtherMembers() {
 		String founder = signIn("founder@alone.test");
 		UUID id = create(founder, "Alone Co");
-		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of("emailDomain", "alone.test"))
-			.expectStatus()
-			.isNoContent();
+		verifyDomain(id, "alone.test");
 		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
 		assertThat(outcome(post(signIn("colleague@alone.test"), API + "/organizations/" + id + "/join", Map.of())))
 			.isEqualTo("joined");
@@ -231,9 +236,7 @@ class OrganizationTest {
 		// Alone again, it may become a person on their own: just me is the size, and the domain goes.
 		String loner = signIn("loner@alone.test");
 		UUID lonerId = create(loner, "Loner Co");
-		post(operator, API + "/admin/organizations/" + lonerId + "/approve", Map.of("emailDomain", "loner.test"))
-			.expectStatus()
-			.isNoContent();
+		verifyDomain(lonerId, "loner.test");
 		Map<String, Object> single = new HashMap<>(profile("Loner Co"));
 		single.put("type", "independent_builder");
 		single.put("teamSize", "2_9");
@@ -369,28 +372,36 @@ class OrganizationTest {
 	}
 
 	@Test
-	void anOperatorApprovesAnOrganizationWithItsDomainAndItsOwnerIsTold() {
+	void aPersonCreatesACompanyThatIsApprovedAtOnceAndInvites() {
 		String founder = signIn("founder@approved.test");
 		UUID id = create(founder, "Approved Co");
-		String approval = API + "/admin/organizations/" + id + "/approve";
 
-		assertProblem(post(founder, approval, Map.of()), 403, "IDENTITY_OPERATOR_REQUIRED");
+		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("approved");
 		// The creator's work domain is proposed, for the operator to confirm.
 		assertThat(JsonPath.<String>read(body(get(operator, API + "/admin/organizations/" + id).expectStatus().isOk()),
 				"$.suggestedDomain"))
 			.isEqualTo("approved.test");
-		post(operator, approval, Map.of("emailDomain", "approved.test")).expectStatus().isNoContent();
+		post(founder, API + "/mine/invitations", Map.of("email", "friend@else.test", "role", "member")).expectStatus()
+			.isNoContent();
+		// Nobody reviewed it, so nobody is told it was approved.
+		assertThat(jdbc.sql("select count(*) from email_message where kind = 'organization_approved' and recipient = ?")
+			.param("founder@approved.test")
+			.query(Long.class)
+			.single()).isZero();
+		assertThat(events(id)).doesNotContain("organization.approve");
+	}
 
-		String mine = mine(founder);
-		assertThat(JsonPath.<String>read(mine, "$.organization.status")).isEqualTo("approved");
-		assertThat(JsonPath.<String>read(mine, "$.organization.emailDomain")).isEqualTo("approved.test");
-		assertThat(mail.latestSubjectTo("founder@approved.test")).isEqualTo("Approved Co on BeyondPilot");
-		// The email leads to the page the approval made public.
-		assertThat(mail.latestTextTo("founder@approved.test"))
-			.containsPattern("https?://[^/ ]+/organizations/approved-co(?![\\w/-])");
-		assertThat(events(id)).containsExactly("organization.approve");
-		// A decision is made once.
-		assertProblem(post(operator, approval, Map.of()), 409, "ORGANIZATION_NOT_AWAITING_REVIEW");
+	@Test
+	void theReviewEndpointsAreGone() {
+		UUID id = create(signIn("founder@nomore.test"), "No More Co");
+
+		for (String path : List.of("/approve", "/refuse", "/send-back")) {
+			int status = post(operator, API + "/admin/organizations/" + id + path, Map.of("reason", "other"))
+				.returnResult()
+				.getStatus()
+				.value();
+			assertThat(status).isIn(404, 405);
+		}
 	}
 
 	@Test
@@ -402,47 +413,17 @@ class OrganizationTest {
 		assertThat(JsonPath.<Object>read(body(get(operator, API + "/admin/organizations/" + id).expectStatus().isOk()),
 				"$.suggestedDomain"))
 			.isNull();
-		assertProblem(post(operator, API + "/admin/organizations/" + id + "/approve",
-				Map.of("emailDomain", "taken.test")), 409, "ORGANIZATION_DOMAIN_TAKEN");
-		assertProblem(post(operator, API + "/admin/organizations/" + id + "/approve",
-				Map.of("emailDomain", "Not A Domain")), 400, "REQUEST_INVALID");
+		int version = JsonPath.<Integer>read(body(get(operator, API + "/admin/organizations/" + id).expectStatus().isOk()),
+				"$.organization.version");
+		assertProblem(put(operator, API + "/admin/organizations/" + id,
+				Map.of("profile", save(profile("Taken Twice"), version), "emailDomain", "taken.test")), 409,
+				"ORGANIZATION_DOMAIN_TAKEN");
+		assertProblem(put(operator, API + "/admin/organizations/" + id,
+				Map.of("profile", save(profile("Taken Twice"), version), "emailDomain", "Not A Domain")), 400,
+				"REQUEST_INVALID");
 
-		// Nothing was decided.
-		assertThat(JsonPath.<String>read(mine(second), "$.organization.status")).isEqualTo("in_review");
-	}
-
-	@Test
-	void anOrganizationSentBackShowsWhyAndWaitsAgainOnceItsOwnerSavesIt() {
-		String founder = signIn("founder@sentback.test");
-		UUID id = create(founder, "Sent Back Co");
-		String sendBack = API + "/admin/organizations/" + id + "/send-back";
-
-		assertProblem(post(founder, sendBack, Map.of("reason", "Tell us what you build.")), 403,
-				"IDENTITY_OPERATOR_REQUIRED");
-		assertProblem(post(operator, sendBack, Map.of("reason", " ")), 400, "REQUEST_INVALID");
-		post(operator, sendBack, Map.of("reason", "Tell us what you build.")).expectStatus().isNoContent();
-		assertThat(mail.latestSubjectTo("founder@sentback.test")).isEqualTo("Changes needed: Sent Back Co");
-		// The email leads to where the owner corrects it.
-		assertThat(mail.latestTextTo("founder@sentback.test"))
-			.containsPattern("https?://[^/ ]+/workspace/organization(?![\\w/-])");
-		// It no longer waits for review, so it is not decided twice.
-		assertProblem(post(operator, sendBack, Map.of("reason", "Again.")), 409, "ORGANIZATION_NOT_AWAITING_REVIEW");
-		assertProblem(post(operator, API + "/admin/organizations/" + id + "/approve", Map.of()), 409,
-				"ORGANIZATION_NOT_AWAITING_REVIEW");
-
-		String sentBack = mine(founder);
-		assertThat(JsonPath.<String>read(sentBack, "$.organization.status")).isEqualTo("needs_changes");
-		assertThat(JsonPath.<Object>read(sentBack, "$.organization.decisionReason")).isNull();
-		assertThat(JsonPath.<String>read(sentBack, "$.organization.decisionMessage"))
-			.isEqualTo("Tell us what you build.");
-		assertThat(events(id)).containsExactly("organization.send_back");
-
-		Map<String, Object> corrected = save(profile("Sent Back Co"),
-				JsonPath.<Integer>read(sentBack, "$.organization.version"));
-		put(founder, API + "/mine", corrected).expectStatus().isOk();
-		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("in_review");
-		// The screen that read the older version is told, instead of overwriting.
-		assertProblem(put(founder, API + "/mine", corrected), 409, "ORGANIZATION_CHANGED_MEANWHILE");
+		// Nothing was saved.
+		assertThat(JsonPath.<Object>read(mine(second), "$.organization.emailDomain")).isNull();
 	}
 
 	@Test
@@ -471,10 +452,10 @@ class OrganizationTest {
         assertThat(JsonPath.<String>read(saved, "$.organization.logoFileId")).isEqualTo(logo.toString());
         assertProblem(put(founder, basics, request), 409, "ORGANIZATION_CHANGED_MEANWHILE");
         request.put("version", JsonPath.<Integer>read(saved, "$.organization.version"));
-		// What the request does not carry stays, and the organization still waits for review.
+		// What the request does not carry stays, and the organization stays approved.
 		assertThat(JsonPath.<String>read(saved, "$.organization.website")).isEqualTo("https://example.test");
 		assertThat(JsonPath.<Integer>read(saved, "$.organization.foundedYear")).isEqualTo(2021);
-		assertThat(JsonPath.<String>read(saved, "$.organization.status")).isEqualTo("in_review");
+		assertThat(JsonPath.<String>read(saved, "$.organization.status")).isEqualTo("approved");
 
 		// A company names an industry; the other kinds may leave them out.
 		request.put("type", "company");
@@ -520,7 +501,7 @@ class OrganizationTest {
         assertThat(JsonPath.<Object>read(created, "$.teamBackground")).isNull();
         assertThat(JsonPath.<Object>read(created, "$.website")).isNull();
         assertThat(JsonPath.<Object>read(created, "$.foundedYear")).isNull();
-		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("in_review");
+		assertThat(JsonPath.<String>read(created, "$.status")).isEqualTo("approved");
 		assertThat(JsonPath.<String>read(mine(founder), "$.role")).isEqualTo("owner");
 		// One organization for one person.
 		assertProblem(post(founder, path, request), 409, "ORGANIZATION_ALREADY_MEMBER");
@@ -557,48 +538,56 @@ class OrganizationTest {
     }
 
 	@Test
-	void aRefusedOrganizationIsRefusedForGoodAndOnlyWhileItWaitsForReview() {
+	void theLastOwnerLeavesAnOrganizationThatIsTakenDown() {
 		String founder = signIn("founder@refused.test");
 		UUID id = create(founder, "Refused Co");
-		String refuse = API + "/admin/organizations/" + id + "/refuse";
 		String leave = API + "/mine/members/" + idOf("founder@refused.test") + "/remove";
-		// While a decision is still coming the organization keeps its owner.
+		// An active organization keeps its owner.
 		assertProblem(post(founder, leave, null), 409, "ORGANIZATION_LAST_OWNER");
 
-		// Missing information is a send back, not a refusal.
-		assertProblem(post(operator, refuse, Map.of("reason", "incomplete")), 400, "REQUEST_INVALID");
-		post(operator, refuse, Map.of("reason", "not_a_real_organization", "message", "We found no such company."))
-			.expectStatus()
-			.isNoContent();
-		assertProblem(post(operator, refuse, Map.of("reason", "duplicate")), 409, "ORGANIZATION_NOT_AWAITING_REVIEW");
+		takeDown(id);
 
-		String refused = mine(founder);
-		assertThat(JsonPath.<String>read(refused, "$.organization.status")).isEqualTo("rejected");
-		assertThat(JsonPath.<String>read(refused, "$.organization.decisionReason")).isEqualTo("not_a_real_organization");
-		assertThat(JsonPath.<String>read(refused, "$.organization.decisionMessage"))
-			.isEqualTo("We found no such company.");
-		assertThat(events(id)).containsExactly("organization.refuse");
-
-		// Its owner may still correct the profile, but it is not reviewed again.
-		put(founder, API + "/mine",
-				save(profile("Refused Co"), JsonPath.<Integer>read(refused, "$.organization.version")))
-			.expectStatus()
-			.isOk();
-		assertThat(JsonPath.<String>read(mine(founder), "$.organization.status")).isEqualTo("rejected");
-
-		// Nothing is decided about it any more, so its last owner may leave it and start again elsewhere.
+		// Nothing is asked of a taken-down organization, so its last owner may leave it and start again elsewhere.
 		post(founder, leave, null).expectStatus().isNoContent();
 		assertThat(JsonPath.<Object>read(mine(founder), "$.organization")).isNull();
 		post(founder, API + "/organizations", creation("Refused Co Again")).expectStatus().isCreated();
 	}
 
 	@Test
+	void aPersonOnTheirOwnWhoBecomesATeamStaysApproved() {
+		String builder = signIn("solo@stays.test");
+		Map<String, Object> request = new HashMap<>(creation("Stays Solo"));
+		request.put("type", "independent_builder");
+		request.put("teamSize", "just_me");
+		request.put("industries", List.of());
+		post(builder, API + "/organizations", request).expectStatus().isCreated();
+		Map<String, Object> team = new HashMap<>(profile("Stays Team"));
+		team.put("type", "builder_team");
+
+		put(builder, API + "/mine", save(team, versionOf(mine(builder)))).expectStatus().isOk();
+
+		assertThat(JsonPath.<String>read(mine(builder), "$.organization.status")).isEqualTo("approved");
+	}
+
+	@Test
+	void aTeamThatBecomesACompanyStaysApproved() {
+		String founder = signIn("founder@teamtocompany.test");
+		Map<String, Object> team = new HashMap<>(creation("Team To Company"));
+		team.put("type", "builder_team");
+		post(founder, API + "/organizations", team).expectStatus().isCreated();
+
+		put(founder, API + "/mine", save(profile("Team To Company"), versionOf(mine(founder)))).expectStatus().isOk();
+
+		String saved = mine(founder);
+		assertThat(JsonPath.<String>read(saved, "$.organization.type")).isEqualTo("company");
+		assertThat(JsonPath.<String>read(saved, "$.organization.status")).isEqualTo("approved");
+	}
+
+	@Test
 	void theMembersAreReadOnePageAtATimeOwnersFirstWithAllInvitationsAndTheTotal() {
 		String founder = signIn("founder@paging.test");
 		UUID id = create(founder, "Paging Co");
-		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of("emailDomain", "paging.test"))
-			.expectStatus()
-			.isNoContent();
+		verifyDomain(id, "paging.test");
 		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
 		for (int person = 1; person <= 11; person++) {
 			String joiner = signIn("person" + person + "@paging.test");
@@ -627,12 +616,10 @@ class OrganizationTest {
 	void anAddressOnTheVerifiedDomainJoinsAtOnceOnlyWhileItsOwnersAllowIt() {
 		String founder = signIn("founder@domain.test");
 		UUID id = create(founder, "Domain Co");
-		// Joining at once needs an approved organization with a verified domain.
+		// Joining at once needs a verified domain, which only an operator gives.
 		assertProblem(put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)), 409,
 				"ORGANIZATION_DOMAIN_NOT_VERIFIED");
-		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of("emailDomain", "domain.test"))
-			.expectStatus()
-			.isNoContent();
+		verifyDomain(id, "domain.test");
 		String colleague = signIn("colleague@domain.test");
 
 		// It is off until an owner turns it on; the colleague is still told the domain is theirs.
@@ -678,7 +665,7 @@ class OrganizationTest {
 	@Test
 	void aDeclinedRequestIsShownUntilThePersonAsksAgain() {
 		String founder = signIn("founder@declining.test");
-		UUID id = approved(founder, "Declining Co");
+		UUID id = create(founder, "Declining Co");
 		String outsider = signIn("outsider@declined.test");
 		post(outsider, API + "/organizations/" + id + "/join", Map.of()).expectStatus().isOk();
 		assertThat(JsonPath.<Object>read(mine(outsider), "$.declined")).isNull();
@@ -705,7 +692,7 @@ class OrganizationTest {
 
 	@Test
 	void anAddressElsewhereAsksAndMayWithdraw() {
-		UUID id = approved(signIn("founder@asked.test"), "Asked Co");
+		UUID id = create(signIn("founder@asked.test"), "Asked Co");
 		String outsider = signIn("outsider@elsewhere.test");
 
 		String asked = body(get(outsider, API + "/organizations?q=asked").expectStatus().isOk());
@@ -724,7 +711,7 @@ class OrganizationTest {
 	@Test
 	void anOperatorEditsTheProfileAndTheDomainAndManagesThePeopleOfAnyOrganization() {
 		String founder = signIn("founder@managed.test");
-		UUID id = approved(founder, "Managed Co");
+		UUID id = create(founder, "Managed Co");
 		String colleague = signIn("colleague@managed.test");
 		String detail = API + "/admin/organizations/" + id;
 		post(operator, detail + "/invitations", Map.of("email", "colleague@managed.test", "role", "member"))
@@ -745,7 +732,7 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(saved, "$.organization.name")).isEqualTo("Managed Company");
 		assertThat(JsonPath.<String>read(saved, "$.organization.emailDomain")).isEqualTo("managed.test");
 		assertProblem(put(operator, detail, edit), 409, "ORGANIZATION_CHANGED_MEANWHILE");
-		UUID other = approved(signIn("other@other-managed.test"), "Other Managed Co");
+		UUID other = create(signIn("other@other-managed.test"), "Other Managed Co");
 		assertProblem(put(operator, API + "/admin/organizations/" + other,
 				Map.of("profile", save(profile("Other Managed Co"),
 						JsonPath.<Integer>read(body(get(operator, API + "/admin/organizations/" + other)
@@ -791,7 +778,7 @@ class OrganizationTest {
 	@Test
 	void anOperatorTakesAnApprovedOrganizationDownWithAReasonAndRestoresItKeepingTheMembersWorkspace() {
 		String founder = signIn("founder@takedown.test");
-		UUID id = approved(founder, "Takedown Co");
+		UUID id = create(founder, "Takedown Co");
 		String takeDown = API + "/admin/organizations/" + id + "/take-down";
 
 		assertProblem(post(founder, takeDown, Map.of("reason", "other")), 403, "IDENTITY_OPERATOR_REQUIRED");
@@ -848,7 +835,7 @@ class OrganizationTest {
 		String duplicateOwner = signIn("founder@merge-duplicate.test");
 		UUID duplicate = approved(duplicateOwner, "Merge Duplicate", "merge-duplicate.test");
 		String keptOwner = signIn("founder@merge-kept.test");
-		UUID kept = approved(keptOwner, "Merge Kept");
+		UUID kept = create(keptOwner, "Merge Kept");
 		String merge = API + "/admin/organizations/" + duplicate + "/merge";
 		post(duplicateOwner, API + "/mine/invitations", Map.of("email", "both@merge.test", "role", "member"))
 			.expectStatus()
@@ -868,9 +855,10 @@ class OrganizationTest {
 		assertProblem(post(duplicateOwner, merge, Map.of("intoId", kept)), 403, "IDENTITY_OPERATOR_REQUIRED");
 		assertProblem(post(operator, merge, Map.of()), 400, "REQUEST_INVALID");
 		assertProblem(post(operator, merge, Map.of("intoId", duplicate)), 409, "ORGANIZATION_CANNOT_MERGE");
-		// Only an approved organization is kept.
-		UUID waiting = create(signIn("founder@keeper-waiting.test"), "Keeper Waiting");
-		assertProblem(post(operator, merge, Map.of("intoId", waiting)), 409, "ORGANIZATION_CANNOT_MERGE");
+		// Only an organization that is not taken down is kept.
+		UUID keeperDown = create(signIn("founder@keeper-down.test"), "Keeper Down");
+		takeDown(keeperDown);
+		assertProblem(post(operator, merge, Map.of("intoId", keeperDown)), 409, "ORGANIZATION_CANNOT_MERGE");
 		assertProblem(post(operator, merge, Map.of("intoId", UUID.randomUUID())), 404, "ORGANIZATION_NOT_FOUND");
 
 		post(operator, merge, Map.of("intoId", kept)).expectStatus().isNoContent();
@@ -907,13 +895,18 @@ class OrganizationTest {
 		assertThat(JsonPath.<String>read(merged, "$.merged.intoId")).isEqualTo(kept.toString());
 		assertThat(JsonPath.<String>read(merged, "$.merged.intoName")).isEqualTo("Merge Kept");
 		assertThat(JsonPath.<List<Object>>read(merged, "$.members")).isEmpty();
+		// Other tests share the database, so the search names this pair and the duplicate is shown absent by id.
 		assertThat(JsonPath.<List<String>>read(
 				body(get(operator, API + "/admin/organizations?q=merge").expectStatus().isOk()), "$.items[*].id"))
-			.containsExactly(kept.toString());
-		String mergedList = body(get(operator, API + "/admin/organizations?q=merge&status=merged").expectStatus()
+			.contains(kept.toString())
+			.doesNotContain(duplicate.toString());
+		String mergedList = body(get(operator, API + "/admin/organizations?q=merge&status=merged")
+			.expectStatus()
 			.isOk());
-		assertThat(JsonPath.<List<String>>read(mergedList, "$.items[*].id")).containsExactly(duplicate.toString());
-		assertThat(JsonPath.<String>read(mergedList, "$.items[0].mergedInto")).isEqualTo("Merge Kept");
+		assertThat(JsonPath.<List<String>>read(mergedList, "$.items[*].id")).contains(duplicate.toString())
+			.doesNotContain(kept.toString());
+		assertThat(JsonPath.<List<String>>read(mergedList,
+				"$.items[?(@.id == '" + duplicate + "')].mergedInto")).containsExactly("Merge Kept");
 		assertProblem(post(operator, merge, Map.of("intoId", kept)), 409, "ORGANIZATION_CANNOT_MERGE");
 		assertProblem(post(operator, API + "/admin/organizations/" + kept + "/merge", Map.of("intoId", duplicate)),
 				409, "ORGANIZATION_CANNOT_MERGE");
@@ -927,14 +920,15 @@ class OrganizationTest {
 	}
 
 	@Test
-	void anOrganizationThatIsNotApprovedIsNeitherFoundNorJoined() {
-		UUID id = create(signIn("founder@waiting.test"), "Waiting Co");
-		String colleague = signIn("colleague@waiting.test");
+	void anOrganizationTakenDownIsNeitherFoundNorJoined() {
+		UUID id = create(signIn("founder@taken-down.test"), "Taken Down Co");
+		takeDown(id);
+		String colleague = signIn("colleague@taken-down.test");
 
 		assertThat(JsonPath.<Object>read(mine(colleague), "$.suggestion")).isNull();
-		assertThat(JsonPath.<List<Object>>read(
-				body(get(colleague, API + "/organizations?q=waiting").expectStatus().isOk()), "$.items"))
-			.isEmpty();
+		assertThat(JsonPath.<List<String>>read(
+				body(get(colleague, API + "/organizations?q=taken").expectStatus().isOk()), "$.items[*].id"))
+			.doesNotContain(id.toString());
 		assertProblem(post(colleague, API + "/organizations/" + id + "/join", Map.of()), 404,
 				"ORGANIZATION_NOT_FOUND");
 	}
@@ -942,7 +936,7 @@ class OrganizationTest {
 	@Test
 	void anInvitationLapsesAfterSevenDaysAndTheAddressMayBeInvitedAgain() {
 		String founder = signIn("founder@lapsing.test");
-		UUID organization = approved(founder, "Lapsing Co");
+		UUID organization = create(founder, "Lapsing Co");
 		post(founder, API + "/mine/invitations", Map.of("email", "late@gmail.com", "role", "member")).expectStatus()
 			.isNoContent();
 		String open = members(founder);
@@ -972,7 +966,7 @@ class OrganizationTest {
 	@Test
 	void anOwnerInvitesAnAddressWhichAcceptsAfterSigningIn() {
 		String founder = signIn("founder@inviting.test");
-		approved(founder, "Inviting Co");
+		create(founder, "Inviting Co");
 
 		post(founder, API + "/mine/invitations", Map.of("email", "Guest@gmail.com", "role", "member")).expectStatus()
 			.isNoContent();
@@ -1013,7 +1007,7 @@ class OrganizationTest {
 	@Test
 	void anInvitationIsDeclinedOrTakenBack() {
 		String founder = signIn("founder@closing.test");
-		approved(founder, "Closing Co");
+		create(founder, "Closing Co");
 		post(founder, API + "/mine/invitations", Map.of("email", "declines@gmail.com", "role", "member"))
 			.expectStatus()
 			.isNoContent();
@@ -1035,13 +1029,14 @@ class OrganizationTest {
 	}
 
 	@Test
-	void onlyAnApprovedOrganizationInvitesAndNoMoreThanItsDailyLimit() {
+	void anOrganizationTakenDownDoesNotInviteAndNoneInvitesPastItsDailyLimit() {
 		String founder = signIn("founder@limited.test");
 		UUID id = create(founder, "Limited Co");
+		takeDown(id);
 		assertProblem(post(founder, API + "/mine/invitations", Map.of("email", "early@gmail.com", "role", "member")),
 				409, "ORGANIZATION_NOT_APPROVED");
 		assertThat(JsonPath.<Boolean>read(members(founder), "$.allowance.open")).isFalse();
-		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of()).expectStatus().isNoContent();
+		post(operator, API + "/admin/organizations/" + id + "/restore", null).expectStatus().isNoContent();
 
 		for (int sent = 1; sent <= 20; sent++) {
 			post(founder, API + "/mine/invitations", Map.of("email", "guest" + sent + "@gmail.com", "role", "member"))
@@ -1063,7 +1058,7 @@ class OrganizationTest {
 	@Test
 	void anOrganizationKeepsNoMoreOpenInvitationsThanItsLimit() {
 		String founder = signIn("founder@open-limit.test");
-		UUID id = approved(founder, "Open Limit Co");
+		UUID id = create(founder, "Open Limit Co");
 		UUID founderId = idOf("founder@open-limit.test");
 		for (int open = 1; open <= 50; open++) {
 			jdbc.sql("""
@@ -1089,6 +1084,8 @@ class OrganizationTest {
 	void anOrganizationKeepsAnOwnerAndAMemberOnlyTakesThemselvesOut() {
 		String founder = signIn("founder@owners.test");
 		UUID id = approved(founder, "Owners Co", "owners.test");
+		// Seeding the domain is audited; the assertion below is about what the members do.
+		int setupEvents = events(id).size();
 		put(founder, API + "/mine/auto-join", Map.of("autoJoin", true)).expectStatus().isNoContent();
 		String colleague = signIn("colleague@owners.test");
 		post(colleague, API + "/organizations/" + id + "/join", Map.of()).expectStatus().isOk();
@@ -1115,8 +1112,8 @@ class OrganizationTest {
 		assertThat(JsonPath.<List<String>>read(remaining, "$.members[*].role")).containsExactly("owner");
 		assertThat(JsonPath.<String>read(remaining, "$.members[0].jobTitle")).isEqualTo("Head of Sales");
 		assertThat(JsonPath.<Boolean>read(remaining, "$.members[0].self")).isTrue();
-		assertThat(events(id)).containsExactly("organization.approve", "organization.member_role",
-				"organization.member_remove");
+		assertThat(events(id).subList(setupEvents, events(id).size()))
+			.containsExactly("organization.member_role", "organization.member_remove");
 		assertProblem(post(colleague, API + "/mine/members/" + UUID.randomUUID() + "/remove", null), 404,
 				"ORGANIZATION_MEMBER_NOT_FOUND");
 	}
@@ -1260,7 +1257,7 @@ class OrganizationTest {
 		assertThat(JsonPath.<Boolean>read(mine(insider), "$.request.claim")).isTrue();
 
 		String waiting = body(
-				get(operator, API + "/admin/organizations?q=unowned one&status=in_review").expectStatus().isOk());
+				get(operator, API + "/admin/organizations?q=unowned one&status=claimed").expectStatus().isOk());
 		assertThat(JsonPath.<String>read(waiting, "$.items[0].request")).isEqualTo("claim");
 		assertThat(JsonPath.<String>read(waiting, "$.items[0].status")).isEqualTo("approved");
 		assertThat(JsonPath.<String>read(waiting, "$.items[0].askedBy")).isEqualTo("first@unowned-one.test");
@@ -1282,6 +1279,16 @@ class OrganizationTest {
 				body(get(operator, API + "/admin/organizations?q=unowned one").expectStatus().isOk()),
 				"$.items[0].request"))
 			.isNull();
+	}
+
+	@Test
+	void anOrganizationAnOperatorMadeIsNeverOfferedTheOperatorsDomain() {
+		String unowned = JsonPath.read(body(post(operator, API + "/admin/organizations",
+				Map.of("name", "Imported Co", "type", "company")).expectStatus().isCreated()), "$.organization.id");
+
+		String record = body(get(operator, API + "/admin/organizations/" + unowned).expectStatus().isOk());
+
+		assertThat(JsonPath.<Object>read(record, "$.suggestedDomain")).isNull();
 	}
 
 	@Test
@@ -1374,9 +1381,9 @@ class OrganizationTest {
 	@Test
 	void aMergeKeepsTheLiveInvitationOfAnAddressWhoseInvitationToTheKeptOrganizationLapsed() {
 		String duplicateOwner = signIn("founder@lapse-duplicate.test");
-		UUID duplicate = approved(duplicateOwner, "Lapse Duplicate");
+		UUID duplicate = create(duplicateOwner, "Lapse Duplicate");
 		String keptOwner = signIn("founder@lapse-kept.test");
-		UUID kept = approved(keptOwner, "Lapse Kept");
+		UUID kept = create(keptOwner, "Lapse Kept");
 		post(keptOwner, API + "/mine/invitations", Map.of("email", "waiting@gmail.com", "role", "member"))
 			.expectStatus()
 			.isNoContent();
@@ -1395,34 +1402,57 @@ class OrganizationTest {
 	}
 
 	@Test
-	void theOperatorsListPutsThoseWaitingFirstAndIsNarrowedBySearchAndStatus() {
-		approved(signIn("founder@listed-done.test"), "Listed Done");
-		create(signIn("founder@listed-wait.test"), "Listed Waiting");
+	void theOperatorsListIsNarrowedBySearchAndStatusAndPutsOpenClaimsFirst() {
+		create(signIn("founder@listed-older.test"), "Listed Older");
+		create(signIn("founder@listed-newer.test"), "Listed Newer");
+		String claimed = JsonPath.read(body(post(operator, API + "/admin/organizations",
+				Map.of("name", "Listed Claimed", "type", "company")).expectStatus().isCreated()), "$.organization.id");
+		post(signIn("claimant@listed-claim.test"), API + "/organizations/" + claimed + "/join", Map.of())
+			.expectStatus()
+			.isOk();
 
 		assertProblem(get(signIn("plain@gmail.com"), API + "/admin/organizations"), 403,
 				"IDENTITY_OPERATOR_REQUIRED");
+		// The open claim comes first, then the others, the newest on top.
 		String all = body(get(operator, API + "/admin/organizations?q=listed").expectStatus().isOk());
-		assertThat(JsonPath.<List<String>>read(all, "$.items[*].name")).containsExactly("Listed Waiting",
-				"Listed Done");
-		assertThat(JsonPath.<Integer>read(all, "$.total")).isEqualTo(2);
-		assertThat(JsonPath.<Integer>read(all, "$.items[0].members")).isEqualTo(1);
-		assertThat(JsonPath.<Boolean>read(all, "$.items[0].owned")).isTrue();
-		assertThat(JsonPath.<String>read(all, "$.items[0].request")).isEqualTo("new");
-		assertThat(JsonPath.<String>read(all, "$.items[0].askedBy")).isEqualTo("founder@listed-wait.test");
+		assertThat(JsonPath.<List<String>>read(all, "$.items[*].name")).containsExactly("Listed Claimed",
+				"Listed Newer", "Listed Older");
+		assertThat(JsonPath.<Integer>read(all, "$.total")).isEqualTo(3);
+		assertThat(JsonPath.<Integer>read(all, "$.items[1].members")).isEqualTo(1);
+		assertThat(JsonPath.<Boolean>read(all, "$.items[1].owned")).isTrue();
+		assertThat(JsonPath.<String>read(all, "$.items[0].request")).isEqualTo("claim");
+		assertThat(JsonPath.<String>read(all, "$.items[0].askedBy")).isEqualTo("claimant@listed-claim.test");
 		assertThat(JsonPath.<Object>read(all, "$.items[1].request")).isNull();
 		assertThat(JsonPath.<Object>read(all, "$.items[1].askedBy")).isNull();
 		assertThat(JsonPath.<List<String>>read(
 				body(get(operator, API + "/admin/organizations?q=listed&status=approved").expectStatus().isOk()),
 				"$.items[*].name"))
-			.containsExactly("Listed Done");
+			.containsExactlyInAnyOrder("Listed Older", "Listed Newer", "Listed Claimed");
 		assertProblem(get(operator, API + "/admin/organizations/" + UUID.randomUUID()), 404,
 				"ORGANIZATION_NOT_FOUND");
 	}
 
 	@Test
+	void theClaimedFilterListsOrganizationsWithAnOpenClaim() {
+		create(signIn("founder@claimfilter-plain.test"), "Claim Filter Plain");
+		String claimed = JsonPath.read(body(post(operator, API + "/admin/organizations",
+				Map.of("name", "Claim Filter Claimed", "type", "company")).expectStatus().isCreated()),
+				"$.organization.id");
+		post(signIn("claimant@claimfilter.test"), API + "/organizations/" + claimed + "/join", Map.of())
+			.expectStatus()
+			.isOk();
+
+		assertThat(JsonPath.<List<String>>read(
+				body(get(operator, API + "/admin/organizations?q=claim filter&status=claimed").expectStatus().isOk()),
+				"$.items[*].name"))
+			.containsExactly("Claim Filter Claimed");
+		assertProblem(get(operator, API + "/admin/organizations?status=in_review"), 400, "REQUEST_INVALID");
+	}
+
+	@Test
 	void theOperatorsListSortsByTheKeyItIsGivenAndRefusesAnUnknownOne() {
-		UUID beta = approved(signIn("founder@sorted-beta.test"), "Sorted Beta");
-		approved(signIn("founder@sorted-alpha.test"), "Sorted Alpha");
+		UUID beta = create(signIn("founder@sorted-beta.test"), "Sorted Beta");
+		create(signIn("founder@sorted-alpha.test"), "Sorted Alpha");
 		create(signIn("founder@sorted-gamma.test"), "Sorted Gamma");
 		signIn("second@sorted-beta.test");
 		jdbc.sql("insert into organization_member (organization_id, account_id, role) values (?, ?, 'member')")
@@ -1441,8 +1471,8 @@ class OrganizationTest {
 		assertThat(adminNames("&sort=-received")).containsExactly("Sorted Beta", "Sorted Gamma", "Sorted Alpha");
 		// Equal counts keep the order of the name.
 		assertThat(adminNames("&sort=-members")).containsExactly("Sorted Beta", "Sorted Alpha", "Sorted Gamma");
-		// Without a key, the one waiting for review first, then the most recently received.
-		assertThat(adminNames("")).containsExactly("Sorted Gamma", "Sorted Beta", "Sorted Alpha");
+		// Without a key, open claims first, then the most recently received.
+		assertThat(adminNames("")).containsExactly("Sorted Beta", "Sorted Gamma", "Sorted Alpha");
 		assertProblem(get(operator, API + "/admin/organizations?sort=newest"), 400, "REQUEST_INVALID");
 	}
 
@@ -1492,27 +1522,27 @@ class OrganizationTest {
 	}
 
 	@Test
-	void theQueueCountsWhatWaitedAtTheEndOfEachOfTheLast14Days() {
+	void theQueueCountsOnlyOpenClaims() {
 		assertProblem(get(signIn("queue-member@organization.test"), API + "/admin/organizations/queue"), 403,
 				"IDENTITY_OPERATOR_REQUIRED");
 		List<Long> before = queueDays(body(get(operator, API + "/admin/organizations/queue").expectStatus().isOk()));
-		UUID waiting = create(signIn("queue-waiting@organization.test"), "Queue Waiting Org");
-		UUID decided = approved(signIn("queue-decided@organization.test"), "Queue Decided Org");
-		// One has waited since three days ago; the other waited from six days ago until it was decided two days ago.
-		jdbc.sql("update organization set created_at = now() - interval '3 days' where id = ?")
-			.param(waiting)
-			.update();
-		jdbc.sql("update organization set created_at = now() - interval '6 days', "
-				+ "decided_at = now() - interval '2 days' where id = ?")
-			.param(decided)
-			.update();
+
+		// A new organization waits for nobody.
+		create(signIn("queue-new@organization.test"), "Queue New Org");
+		assertThat(queueDays(body(get(operator, API + "/admin/organizations/queue").expectStatus().isOk())))
+			.isEqualTo(before);
+
+		// An open claim waits from today.
+		String unowned = JsonPath.read(body(post(operator, API + "/admin/organizations",
+				Map.of("name", "Queue Unowned", "type", "company")).expectStatus().isCreated()), "$.organization.id");
+		post(signIn("queue-claimant@organization.test"), API + "/organizations/" + unowned + "/join",
+				Map.of("message", "I run it"))
+			.expectStatus()
+			.isOk();
 
 		String queue = body(get(operator, API + "/admin/organizations/queue").expectStatus().isOk());
-
-		// Days run from 13 days ago to today: the first counts on the last four, the second on the four before its
-		// decision, so both on the day three days ago.
-		assertThat(difference(queueDays(queue), before)).containsExactly(0L, 0L, 0L, 0L, 0L, 0L, 0L, 1L, 1L, 1L, 2L, 1L,
-				1L, 1L);
+		assertThat(difference(queueDays(queue), before)).containsExactly(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
+				0L, 1L);
 		assertThat(JsonPath.<Number>read(queue, "$.waiting").longValue()).isEqualTo(queueDays(queue).getLast());
 		assertThat(JsonPath.<String>read(queue, "$.from"))
 			.isEqualTo(LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).minusDays(13).toString());
@@ -1542,6 +1572,143 @@ class OrganizationTest {
 		return request;
 	}
 
+	@Test
+	void theOwnersOfAMarkedOrganizationAreToldOnceItIsActive() {
+		UUID id = create(signIn("first@activated.test"), "Activated Co");
+		signIn("second@activated.test");
+		addMember(id, "second@activated.test", "owner");
+		signIn("plain@activated.test");
+		addMember(id, "plain@activated.test", "member");
+		mark(id);
+
+		activationNotices.sendAll();
+
+		assertThat(activatedEmails("first@activated.test")).isEqualTo(1);
+		assertThat(activatedEmails("second@activated.test")).isEqualTo(1);
+		assertThat(activatedEmails("plain@activated.test")).isZero();
+		assertThat(isMarked(id)).isFalse();
+		activationNotices.sendAll();
+		assertThat(activatedEmails("first@activated.test")).isEqualTo(1);
+	}
+
+	@Test
+	void anOrganizationWithoutAnOwnerIsClearedWithoutAnEmail() {
+		UUID id = create(signIn("gone@ownerless.test"), "Ownerless Co");
+		jdbc.sql("delete from organization_member where organization_id = ?").param(id).update();
+		mark(id);
+
+		activationNotices.sendAll();
+
+		assertThat(isMarked(id)).isFalse();
+		assertThat(activatedEmails("gone@ownerless.test")).isZero();
+	}
+
+	@Test
+	void aMarkedOrganizationTakenDownIsClearedWithoutAnEmail() {
+		UUID id = create(signIn("owner@taken-down.test"), "Taken Down Co");
+		jdbc.sql("update organization set suspended_at = now() where id = ?").param(id).update();
+		mark(id);
+
+		activationNotices.sendAll();
+
+		assertThat(isMarked(id)).isFalse();
+		assertThat(activatedEmails("owner@taken-down.test")).isZero();
+	}
+
+	@Test
+	void aMarkedOrganizationMergedIsClearedWithoutAnEmail() {
+		UUID id = create(signIn("owner@merged-away.test"), "Merged Away Co");
+		UUID into = create(signIn("owner@merged-into.test"), "Merged Into Co");
+		jdbc.sql("""
+				update organization set status = 'merged', merged_into_id = ?, merged_at = now(),
+				  merged_by_account_id = ? where id = ?
+				""").params(into, idOf("operator@genaifund.test"), id).update();
+		mark(id);
+
+		activationNotices.sendAll();
+
+		assertThat(isMarked(id)).isFalse();
+		assertThat(activatedEmails("owner@merged-away.test")).isZero();
+	}
+
+	@Test
+	void aBatchThatFailsKeepsItsMarksAndQueuesNoEmail() {
+		UUID id = create(signIn("owner@failing.test"), "Failing Co");
+		mark(id);
+		jdbc.sql("""
+				create function fail_clear() returns trigger language plpgsql as
+				$$ begin raise exception 'clearing refused'; end $$
+				""").update();
+		jdbc.sql("""
+				create trigger fail_clear before update of activation_notice_pending on organization
+				for each row when (old.id = '%s' and new.activation_notice_pending = false) execute function fail_clear()
+				""".formatted(id)).update();
+		try {
+			activationNotices.sendAll();
+		}
+		finally {
+			jdbc.sql("drop trigger fail_clear on organization").update();
+			jdbc.sql("drop function fail_clear()").update();
+		}
+
+		assertThat(isMarked(id)).isTrue();
+		assertThat(activatedEmails("owner@failing.test")).isZero();
+		activationNotices.sendAll();
+		assertThat(isMarked(id)).isFalse();
+		assertThat(activatedEmails("owner@failing.test")).isEqualTo(1);
+	}
+
+	/** Another instance holds one row: this run does not wait for it, and tells the row once it is released. */
+	@Test
+	void theActivationNoticesOfTwoRunsAtOnceSendEachEmailOnce() {
+		UUID held = create(signIn("held@twice.test"), "Twice Held");
+		UUID free = create(signIn("free@twice.test"), "Twice Free");
+		mark(held);
+		mark(free);
+
+		transaction.executeWithoutResult(status -> {
+			jdbc.sql("select id from organization where id = ? for update").param(held).query(UUID.class).single();
+			// assertTimeoutPreemptively runs sendAll on another thread, which cannot join this transaction and so
+			// meets the held row lock as a second instance would.
+			assertTimeoutPreemptively(Duration.ofSeconds(30), activationNotices::sendAll);
+		});
+
+		assertThat(activatedEmails("free@twice.test")).isEqualTo(1);
+		assertThat(activatedEmails("held@twice.test")).isZero();
+		assertThat(isMarked(held)).isTrue();
+		assertThat(isMarked(free)).isFalse();
+
+		activationNotices.sendAll();
+
+		assertThat(activatedEmails("held@twice.test")).isEqualTo(1);
+		assertThat(activatedEmails("free@twice.test")).isEqualTo(1);
+		assertThat(isMarked(held)).isFalse();
+	}
+
+	private void mark(UUID organization) {
+		jdbc.sql("update organization set activation_notice_pending = true where id = ?").param(organization).update();
+	}
+
+	private boolean isMarked(UUID organization) {
+		return jdbc.sql("select activation_notice_pending from organization where id = ?")
+			.param(organization)
+			.query(Boolean.class)
+			.single();
+	}
+
+	private void addMember(UUID organization, String email, String role) {
+		jdbc.sql("insert into organization_member (organization_id, account_id, role) values (?, ?, ?)")
+			.params(organization, idOf(email), role)
+			.update();
+	}
+
+	private long activatedEmails(String recipient) {
+		return jdbc.sql("select count(*) from email_message where kind = 'organization_activated' and recipient = ?")
+			.param(recipient)
+			.query(Long.class)
+			.single();
+	}
+
 	private static Map<String, Object> save(Map<String, Object> profile, int version) {
 		Map<String, Object> request = new HashMap<>(profile);
 		request.put("version", version);
@@ -1554,18 +1721,27 @@ class OrganizationTest {
 				"$.id"));
 	}
 
-	private UUID approved(String session, String name) {
+	/** An organization whose email domain the operator verified. */
+	private UUID approved(String session, String name, String domain) {
 		UUID id = create(session, name);
-		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of()).expectStatus().isNoContent();
+		verifyDomain(id, domain);
 		return id;
 	}
 
-	/** An approved organization whose email domain the operator verified. */
-	private UUID approved(String session, String name, String domain) {
-		UUID id = create(session, name);
-		post(operator, API + "/admin/organizations/" + id + "/approve", Map.of("emailDomain", domain)).expectStatus()
+	/** Saves the domain on the record of a company made with {@link #profile}, as an operator does. */
+	private void verifyDomain(UUID id, String domain) {
+		String detail = API + "/admin/organizations/" + id;
+		String record = body(get(operator, detail).expectStatus().isOk());
+		Map<String, Object> request = Map.of(
+				"profile", save(profile(JsonPath.read(record, "$.organization.name")),
+						JsonPath.<Integer>read(record, "$.organization.version")),
+				"emailDomain", domain);
+		put(operator, detail, request).expectStatus().isOk();
+	}
+
+	private void takeDown(UUID id) {
+		post(operator, API + "/admin/organizations/" + id + "/take-down", Map.of("reason", "other")).expectStatus()
 			.isNoContent();
-		return id;
 	}
 
 	private String mine(String session) {
@@ -1636,6 +1812,24 @@ class OrganizationTest {
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(body)
 			.exchange();
+	}
+
+	@Test
+	void theStatusAllowsOnlyApprovedAndMerged() {
+		signIn("status@allowed.test");
+		UUID creator = idOf("status@allowed.test");
+		String suffix = UUID.randomUUID().toString().substring(0, 8);
+
+		assertThatThrownBy(() -> insertOrganization("in-review-co-" + suffix, "in_review", creator))
+			.isInstanceOf(DataIntegrityViolationException.class);
+		assertThat(insertOrganization("approved-co-" + suffix, "approved", creator)).isEqualTo(1);
+	}
+
+	private int insertOrganization(String slug, String status, UUID creator) {
+		return jdbc.sql("""
+				insert into organization (id, slug, name, type, status, created_by_account_id)
+				values (?, ?, ?, 'company', ?, ?)
+				""").params(UUID.randomUUID(), slug, slug, status, creator).update();
 	}
 
 	private static String body(RestTestClient.ResponseSpec response) {

@@ -6,7 +6,7 @@ import java.util.UUID;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jspecify.annotations.Nullable;
 
-@Schema(name = "PublicOrganization", description = "An approved organization as anyone reads it.")
+@Schema(name = "PublicOrganization", description = "An organization as anyone reads it.")
 public record PublicOrganizationResponse(@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String slug,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String name,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,

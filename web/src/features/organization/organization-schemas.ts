@@ -142,9 +142,6 @@ export function aloneBodyOf(values: ProfileValues): SaveOrganizationBasics {
   };
 }
 
-/** A fact of the profile the form may ask for, by its field. */
-export type ProfileFact = keyof typeof profileRefusals;
-
 /** The required-only popup keeps inactive values locally so changing type does not lose input. */
 export type BasicsValues = Pick<
   ProfileValues,
@@ -214,20 +211,6 @@ export function basicsBodyOf(values: BasicsValues, version?: number): SaveOrgani
     description: alone ? null : values.description.trim(),
     version: version ?? null,
   };
-}
-
-/**
- * The facts a saved organization still lacks, in the order of the form: what `profileSchema` would
- * refuse of it, so nothing is called missing that the form does not ask of an organization of its
- * type.
- */
-export function missingProfileFacts(organization: Organization): ProfileFact[] {
-  const result = profileSchema((key) => key).safeParse(profileValuesOf(organization));
-  if (result.success) {
-    return [];
-  }
-  const refused = new Set(result.error.issues.map((issue) => issue.path[0]));
-  return (Object.keys(profileRefusals) as ProfileFact[]).filter((fact) => refused.has(fact));
 }
 
 /** The profile the backend takes, from values the schema passed. */

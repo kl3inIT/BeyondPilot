@@ -66,14 +66,15 @@ class UseCaseServiceTest {
 	}
 
 	@Test
-	void onlyTheMembersOfAnApprovedOrganizationWriteItsUseCases() {
-		Team team = team("gate.test", true);
+	void onlyTheMembersOfAnOrganizationNotTakenDownWriteItsUseCases() {
+		Team team = team("gate.test");
 		UUID mine = create(team.founder);
 		String stranger = TestSignIn.session(client, mail, "stranger@elsewhere.test");
-		Team pending = team("pending.test", false);
+		Team takenDown = team("taken-down.test");
+		jdbc.sql("update organization set suspended_at = now() where id = ?").param(takenDown.organization).update();
 
 		client.get().uri(MINE).exchange().expectStatus().isUnauthorized();
-		for (String session : List.of(stranger, pending.founder)) {
+		for (String session : List.of(stranger, takenDown.founder)) {
 			assertProblem(get(session, MINE), 403, "USECASE_ENTERPRISE_REQUIRED");
 			assertProblem(post(session, MINE, null), 403, "USECASE_ENTERPRISE_REQUIRED");
 			assertProblem(get(session, MINE + "/" + mine), 403, "USECASE_ENTERPRISE_REQUIRED");
@@ -82,7 +83,7 @@ class UseCaseServiceTest {
 	}
 
 	@Test
-	void aPersonOnTheirOwnWritesUseCasesLikeAnyApprovedOrganization() {
+	void aPersonOnTheirOwnWritesUseCasesLikeAnyOtherOrganization() {
 		String alone = TestSignIn.session(client, mail, "solo@use-cases.test");
 		post(alone, ORGANIZATION + "/organizations/basics", Map.of("name", "Solo Writer", "type", "independent_builder",
 				"teamSize", "just_me", "industries", List.of(), "country", "VN"))
@@ -95,7 +96,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void aDraftIsWrittenInPartsAndSavedByAnyMember() {
-		Team team = team("parts.test", true);
+		Team team = team("parts.test");
 		UUID id = create(team.founder);
 		String empty = body(get(team.founder, MINE + "/" + id).expectStatus().isOk());
 		assertThat(JsonPath.<String>read(empty, "$.status")).isEqualTo("draft");
@@ -128,7 +129,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void aBudgetKeepsItsCurrencyWhenASaveNamesNone() {
-		Team team = team("currency.test", true);
+		Team team = team("currency.test");
 		UUID id = create(team.founder);
 		Map<String, Object> inDong = save(0);
 		inDong.put("currency", "VND");
@@ -148,7 +149,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void aPartThatCannotStandIsRefusedWhateverIsMissing() {
-		Team team = team("refuse.test", true);
+		Team team = team("refuse.test");
 		UUID id = create(team.founder);
 
 		Map<String, Object> upsideDown = save(0);
@@ -185,7 +186,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void aUseCaseIsSentForReviewWhenComplete_andThenItsMembersCannotEditIt() {
-		Team team = team("review.test", true);
+		Team team = team("review.test");
 		UUID id = create(team.founder);
 
 		assertProblem(post(team.founder, MINE + "/" + id + "/submit", null), 400, "USECASE_INCOMPLETE");
@@ -211,7 +212,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void aPublishedUseCaseBecomesADraftWhenItsMembersEditItOrTakeItBack() {
-		Team team = team("published.test", true);
+		Team team = team("published.test");
 		UUID first = adminPublished(team.organization, "Published one");
 		UUID second = adminPublished(team.organization, "Published two");
 
@@ -230,7 +231,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void aClosedUseCaseIsLockedForItsMembers() {
-		Team team = team("closed.test", true);
+		Team team = team("closed.test");
 		UUID id = adminPublished(team.organization, "Closing soon");
 		jdbc.sql("update use_case set closes_at = now() - interval '1 day' where id = ?").param(id).update();
 
@@ -245,8 +246,8 @@ class UseCaseServiceTest {
 
 	@Test
 	void theMembersOfAnOrganizationReadTheFilesOfItsUseCaseAndNobodyElseDoes() {
-		Team ours = team("files-ours.test", true);
-		Team theirs = team("files-theirs.test", true);
+		Team ours = team("files-ours.test");
+		Team theirs = team("files-theirs.test");
 		UUID id = create(ours.founder);
 		UUID file = UUID.randomUUID();
 		jdbc.sql("""
@@ -276,8 +277,8 @@ class UseCaseServiceTest {
 
 	@Test
 	void aUseCaseOfAnotherOrganizationIsNotFound() {
-		Team ours = team("ours.test", true);
-		Team theirs = team("theirs.test", true);
+		Team ours = team("ours.test");
+		Team theirs = team("theirs.test");
 		UUID id = create(theirs.founder);
 
 		assertProblem(get(ours.founder, MINE + "/" + id), 404, "USECASE_NOT_FOUND");
@@ -290,7 +291,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void anOperatorApprovesAUseCaseInReviewAndItsMembersAreTold() {
-		Team team = team("approve.test", true);
+		Team team = team("approve.test");
 		UUID id = create(team.founder);
 		put(team.founder, MINE + "/" + id, complete(0)).expectStatus().isOk();
 		post(team.colleague, MINE + "/" + id + "/submit", null).expectStatus().isOk();
@@ -319,7 +320,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void anOperatorTakesAPublishedUseCaseOutOfTheDirectoryBySendingItBackWithAReason() {
-		Team team = team("unpublish.test", true);
+		Team team = team("unpublish.test");
 		UUID id = create(team.founder);
 		put(team.founder, MINE + "/" + id, complete(0)).expectStatus().isOk();
 		post(team.founder, MINE + "/" + id + "/submit", null).expectStatus().isOk();
@@ -339,7 +340,7 @@ class UseCaseServiceTest {
 
 	@Test
 	void anOperatorSendsAUseCaseBackWithAReasonThatItsMembersReadUntilTheySendItAgain() {
-		Team team = team("sendback.test", true);
+		Team team = team("sendback.test");
 		UUID id = create(team.founder);
 		put(team.founder, MINE + "/" + id, complete(0)).expectStatus().isOk();
 		post(team.founder, MINE + "/" + id + "/submit", null).expectStatus().isOk();
@@ -426,8 +427,8 @@ class UseCaseServiceTest {
 		return body;
 	}
 
-	/** An approved or pending organization with a founder, and a colleague the founder invites. */
-	private Team team(String domain, boolean approved) {
+	/** An organization with a founder, and a colleague the founder invites. */
+	private Team team(String domain) {
 		String founder = TestSignIn.session(client, mail, "founder@" + domain);
 		UUID organization = UUID.fromString(JsonPath.read(body(post(founder, ORGANIZATION + "/organizations",
 				Map.of("name", "Team " + domain, "type", "company", "country", "VN", "teamSize", "2_9", "industries",
@@ -436,16 +437,12 @@ class UseCaseServiceTest {
 			.expectStatus()
 			.isCreated()), "$.id"));
 		String colleague = TestSignIn.session(client, mail, "colleague@" + domain);
-		if (approved) {
-			post(operator, ORGANIZATION + "/admin/organizations/" + organization + "/approve", Map.of()).expectStatus()
-				.isNoContent();
-			post(founder, ORGANIZATION + "/mine/invitations", Map.of("email", "colleague@" + domain, "role", "member"))
-				.expectStatus()
-				.isNoContent();
-			String invitation = JsonPath.read(body(get(colleague, ORGANIZATION + "/mine").expectStatus().isOk()),
-					"$.invitations[0].id");
-			post(colleague, ORGANIZATION + "/invitations/" + invitation + "/accept", null).expectStatus().isNoContent();
-		}
+		post(founder, ORGANIZATION + "/mine/invitations", Map.of("email", "colleague@" + domain, "role", "member"))
+			.expectStatus()
+			.isNoContent();
+		String invitation = JsonPath.read(body(get(colleague, ORGANIZATION + "/mine").expectStatus().isOk()),
+				"$.invitations[0].id");
+		post(colleague, ORGANIZATION + "/invitations/" + invitation + "/accept", null).expectStatus().isNoContent();
 		return new Team(organization, founder, colleague);
 	}
 

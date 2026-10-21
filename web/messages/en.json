@@ -380,7 +380,7 @@
     "MESSAGING_SUBJECT_NOT_FOUND": "There is nobody to write to at this address.",
     "MESSAGING_OWN_SUBJECT": "You cannot start a conversation with yourself.",
     "MESSAGING_NEEDS_ORGANIZATION": "Create or join an organization before you write to a solution provider.",
-    "MESSAGING_ORGANIZATION_NOT_APPROVED": "Your organization has not been approved yet, so it cannot write to a solution provider.",
+    "MESSAGING_ORGANIZATION_NOT_APPROVED": "Your organization is taken down, so it cannot write to a solution provider.",
     "MESSAGING_ALREADY_WAITING": "Your first message still waits for an answer. You can write again once it is accepted.",
     "MESSAGING_TOO_MANY_REQUESTS": "You started as many conversations as a day allows. Try again tomorrow.",
     "MESSAGING_TOO_MANY_MESSAGES": "You are writing too fast. Wait a moment and send again.",
@@ -420,14 +420,13 @@
     "ORGANIZATION_INVITEE_IS_MEMBER": "This person already belongs to an organization.",
     "ORGANIZATION_LAST_OWNER": "An organization needs an owner. Make someone else an owner first.",
     "ORGANIZATION_CHANGED_MEANWHILE": "Someone else changed this profile. Reload the page and try again.",
-    "ORGANIZATION_NOT_AWAITING_REVIEW": "This organization has already been reviewed.",
-    "ORGANIZATION_CANNOT_TAKE_DOWN": "Only an approved organization can be taken down. Reload the page to see where it stands.",
+    "ORGANIZATION_CANNOT_TAKE_DOWN": "This organization is already taken down or merged. Reload the page to see where it stands.",
     "ORGANIZATION_NOT_TAKEN_DOWN": "This organization is not taken down any more. Reload the page.",
     "ORGANIZATION_MERGED": "This organization was merged into another and can no longer be changed.",
-    "ORGANIZATION_CANNOT_MERGE": "An organization merges only into another one that is approved and shown.",
+    "ORGANIZATION_CANNOT_MERGE": "An organization merges only into another one that is not taken down and is shown.",
     "ORGANIZATION_DOMAIN_TAKEN": "Another organization already uses this email domain.",
-    "ORGANIZATION_DOMAIN_NOT_VERIFIED": "People join at once only on a domain GenAI Fund verified for an approved organization.",
-    "ORGANIZATION_NOT_APPROVED": "You can invite people once GenAI Fund has approved the organization.",
+    "ORGANIZATION_DOMAIN_NOT_VERIFIED": "People join at once only on a domain GenAI Fund verified for an organization that is not taken down.",
+    "ORGANIZATION_NOT_APPROVED": "You cannot invite people while the organization is taken down.",
     "ORGANIZATION_INVITATION_DAILY_LIMIT": "The organization has sent the most invitations it can in a day. Invite more people tomorrow.",
     "ORGANIZATION_INVITATION_OPEN_LIMIT": "The organization has the most invitations it can keep open. Revoke some, or wait for people to answer.",
     "PROGRAM_NOT_FOUND": "This program no longer exists. Reload the page.",
@@ -503,7 +502,7 @@
     "SEARCH_ENCRYPTION_KEY_MISSING": "Keys cannot be saved: the server has no encryption key for them. Ask the team to add it.",
     "SOLUTION_NOT_FOUND": "This solution no longer exists.",
     "SOLUTION_MEMBER_REQUIRED": "Only a member of an organization can do this.",
-    "SOLUTION_ORGANIZATION_NOT_APPROVED": "Approve the organization first: a solution is listed only when its organization is approved.",
+    "SOLUTION_ORGANIZATION_NOT_APPROVED": "Restore the organization first: a solution is listed only when its organization is not taken down.",
     "SOLUTION_INCOMPLETE": "Fill in the marked fields before sending for review.",
     "SOLUTION_NOT_SUBMITTABLE": "This solution is already in review, approved, or refused for good.",
     "SOLUTION_NOT_EDITABLE": "This solution was refused for good and can no longer be changed.",
@@ -621,7 +620,7 @@
       "readRecords": "Read records in review, proposals and their history",
       "readAccounts": "Read accounts, the audit log and emails sent",
       "readMatching": "Read AI matching runs and results",
-      "decide": "Approve or send back records in review, and shortlist applications and proposals, when you ask",
+      "decide": "Approve or send back solutions and talent profiles in review, and shortlist applications and proposals, when you ask",
       "limit": "Changes one record at a time, as you. Cannot delete, take down or release outcomes. Revoke any time."
     },
     "deny": "Deny",
@@ -1562,10 +1561,8 @@
         }
       },
       "status": {
-        "in_review": "Needs review",
-        "needs_changes": "Sent back",
-        "approved": "Approved",
-        "rejected": "Not approved",
+        "approved": "Active",
+        "claimed": "Claim open",
         "suspended": "Taken down",
         "merged": "Merged"
       },
@@ -1578,7 +1575,6 @@
         "askedBy": "Asked by"
       },
       "request": {
-        "new": "New organization",
         "claim": "Claim",
         "none": "—"
       },
@@ -1586,12 +1582,10 @@
       "mergedInto": "Merged into {name}",
       "actions": {
         "open": "Actions for {name}",
-        "review": "Review",
-        "reviewNamed": "Review {name}",
         "record": "Open record",
         "claim": "Decide claim"
       },
-      "needReview": "{count, plural, one {# needs review} other {# need review}}",
+      "claimsOpen": "{count, plural, one {# claim is open} other {# claims are open}}",
       "empty": {
         "title": "No organizations yet"
       },
@@ -1621,8 +1615,6 @@
       "detail": {
         "back": "All organizations",
         "createdByOn": "Created by {name} on {day}",
-        "refused": "Not approved: {reason}.",
-        "sentBack": "Sent back to its owners:",
         "claims": "Claims to own it",
         "tabs": {
           "label": "Sections of this organization",
@@ -1641,49 +1633,11 @@
           "lead": "Its members, open invitations, solutions and use cases moved to {kept}.",
           "address": "{address} now leads to the page of {kept}.",
           "open": "Open {kept}"
-        },
-        "review": "Review"
-      },
-      "review": {
-        "title": "Review {name}",
-        "lead": "Created by {creator} on {day}.",
-        "leadUnknown": "Created on {day}.",
-        "approve": "Approve",
-        "refuse": "Refuse",
-        "refuseTitle": "Refuse {name}",
-        "refuseLead": "The owners see the reason, and a refusal is final.",
-        "refuseConfirm": "Send decision",
-        "sendBack": "Send back",
-        "sendBackTitle": "Send {name} back",
-        "sendBackLead": "Once the owners correct the organization and save it, it waits for review again.",
-        "sendBackLabel": "What should the owners change?",
-        "sendBackConfirm": "Send back",
-        "reason": "Reason",
-        "message": "Message to the owners",
-        "back": "Back",
-        "reasonPlaceholder": "Choose a reason",
-        "domain": "Email domain to verify (optional)",
-        "domainHint": "Only the company's own domain, since colleagues on it can then join at once.",
-        "domainInvalid": "Enter a domain such as example.com, or leave it empty.",
-        "domainTaken": "Another organization already has this domain. Leave it empty, or settle which one is the duplicate.",
-        "facts": {
-          "description": "Description",
-          "website": "Website",
-          "teamSize": "Team size",
-          "foundedYear": "Year founded",
-          "industries": "Industries",
-          "creatorEmail": "Creator's email",
-          "members": "Members",
-          "membersMore": "{names} and {count} more",
-          "none": "Not stated"
-        },
-        "record": "Open record",
-        "more": "{count, plural, one {# more waits on this page} other {# more wait on this page}}",
-        "queueDone": "No other organization on this page waits for review."
+        }
       },
       "clear": "Clear filters",
       "queueEmpty": {
-        "title": "Nothing waits for review",
+        "title": "No ownership claim is open",
         "home": "Back to Admin home"
       },
       "claim": {
@@ -2072,7 +2026,7 @@
     },
     "home": {
       "lead": "{count, plural, =0 {Nothing waits for a decision.} one {# record waits for a decision.} other {# records wait for a decision.}}",
-      "organizations": "Organizations to review",
+      "claims": "Ownership claims",
       "solutions": "Solutions to review",
       "talent": "Talent profiles to review",
       "deployments": "Customer deployments to review",
@@ -3111,7 +3065,7 @@
           "list_applications": "Lists a program's applications with GenAI Fund's decision and the judges' mean score.",
           "get_application": "Reads one application in full: what the applicant sent, every score and the files it holds.",
           "read_application_file": "Shows the pages of an application's PDF, such as its deck, as pictures with their text.",
-          "list_pending_reviews": "Lists what waits for review: organizations, solutions, talent, use cases and customer deployments.",
+          "list_pending_reviews": "Lists what waits for review: solutions, talent, use cases and customer deployments.",
           "list_records": "Lists organizations, solutions, talent, use cases or offers in any status, as the admin lists do.",
           "get_record": "Reads one of them with its status, latest decision and review history.",
           "list_proposals": "Lists the proposals AI providers sent to a use case, with the decision on each.",
@@ -3255,6 +3209,10 @@
         "organization_invitation": {
           "name": "Organization invitation",
           "description": "Sent when an owner, or GenAI Fund, invites an address to join an organization or to own it."
+        },
+        "organization_activated": {
+          "name": "Organization active",
+          "description": "Sent to the owners of an organization that was waiting for review before reviews ended, to tell them it is active."
         },
         "organization_approved": {
           "name": "Organization approved",
@@ -3935,12 +3893,6 @@
       "1000_4999": "1,000–4,999 people",
       "5000_plus": "5,000 people or more"
     },
-    "organizationRefusal": {
-      "duplicate": "Already on BeyondPilot",
-      "not_a_real_organization": "Could not be verified as an organization",
-      "out_of_scope": "Outside what BeyondPilot covers",
-      "other": "Other reason"
-    },
     "memberRole": {
       "owner": "Owner",
       "member": "Member"
@@ -4146,31 +4098,9 @@
       "useCases": "Use cases"
     },
     "status": {
-      "in_review": "In review",
-      "needs_changes": "Changes needed",
-      "approved": "Approved",
-      "rejected": "Not approved",
       "suspended": "Taken down",
+      "approved": "Active",
       "merged": "Merged"
-    },
-    "inReview": {
-      "title": "GenAI Fund is reviewing your organization",
-      "lead": "You can already apply to programs and use cases, and add solutions and send them for review. Once it is approved, everyone can see your organization's page and solutions on BeyondPilot.",
-      "foot": "We email the owners when it is decided.",
-      "edit": "Edit profile",
-      "missing": "{count, plural, one {# required field is empty: {facts}.} other {# required fields are empty: {facts}.}} The reviewer reads the profile as it is now.",
-      "complete": "The profile has every required field."
-    },
-    "needsChanges": {
-      "title": "GenAI Fund asked for changes to {name}",
-      "owner": "Change the profile and save it to send it for review again.",
-      "member": "An owner can change the profile and send it for review again.",
-      "edit": "Edit and send again"
-    },
-    "rejected": {
-      "title": "GenAI Fund did not approve {name}",
-      "reason": "Reason: {reason}.",
-      "foot": "This decision is final. Write to GenAI Fund if you think it is wrong. To create or join another organization, leave this one on the Members tab."
     },
     "done": {
       "invitationAccepted": "You joined the organization.",
@@ -4179,13 +4109,10 @@
       "requestApproved": "Request approved. They are now a member.",
       "requestDeclined": "Request declined.",
       "requestWithdrawn": "Request withdrawn.",
-      "organizationApproved": "Organization approved.",
-      "organizationRefused": "Organization refused. Its owners can read the reason.",
-      "organizationSentBack": "Organization sent back. Its owners were told what to change.",
       "claimApproved": "Claim approved. They now own the organization.",
       "claimDeclined": "Claim declined.",
       "saved": "Profile saved.",
-      "created": "Organization created and sent for review.",
+      "created": "Organization created.",
       "adminCreated": "{name} created.",
       "joined": "You joined {name}.",
       "requested": "Request sent to {name}.",
@@ -4208,7 +4135,6 @@
       "createLead": "Everyone takes part through an organization. On your own, yours is just you.",
       "profileTitle": "Organization profile",
       "edit": "Edit profile",
-      "complete": "Complete profile",
       "basics": "Basics",
       "about": "About",
       "name": "Organization name",
@@ -4230,7 +4156,7 @@
       "teamBackgroundRequired": "Describe the team’s experience in up to 2,000 characters.",
       "save": "Save changes",
       "unchanged": "Nothing has changed yet.",
-      "create": "Send for review",
+      "create": "Create organization",
       "cancel": "Cancel",
       "emailDomain": "Verified email domain",
       "emailDomainHint": "Who can join with it is set in Members.",
@@ -4374,7 +4300,7 @@
         "members": "{count, plural, one {# member} other {# members}}",
         "invitations": "{count, plural, one {# invitation pending} other {# invitations pending}}",
         "left": "{left} of {limit} invitations left in 24 hours",
-        "notApproved": "you can invite people once the organization is approved"
+        "takenDown": "invitations are closed while the organization is taken down"
       },
       "columns": {
         "member": "Member",
@@ -4474,7 +4400,7 @@
     "suspended": {
       "title": "GenAI Fund took {name} down",
       "reason": "Reason: {reason}.",
-      "foot": "Its public page and solutions are hidden; write to GenAI Fund to have it restored."
+      "foot": "Its public page and solutions are hidden; write to GenAI Fund to have it restored. An owner can also leave it, on the Members tab, to create or join another organization."
     },
     "merged": {
       "title": "{name} is now part of {kept}",
@@ -5036,7 +4962,7 @@
         "cancel": "Cancel",
         "submit": "Add solution"
       },
-      "afterApproval": "You can add solutions once GenAI Fund approves your organization.",
+      "takenDown": "You cannot add solutions while your organization is taken down.",
       "empty": {
         "title": "No solutions yet",
         "member": "An owner of the organization adds its solutions."
@@ -6497,8 +6423,7 @@
     },
     "you": {
       "applyingFor": "Applying for",
-      "notListedYet": "Not in the directory yet",
-      "applyingForHint": "GenAI Fund checks a new organization before listing it; your application is not held up.",
+      "takenDown": "Taken down",
       "applyingAs": "Applying as",
       "applyingAsHint": "This is kept with your account when you continue. As an individual, you can change it until you send something under your name.",
       "change": "Change",
@@ -8310,7 +8235,7 @@
         "sent": "Sent {date}",
         "crumbs": "Where you are",
         "useCases": "Use cases",
-        "pending": "Pending review",
+        "takenDown": "Taken down",
         "sentBy": "Sent by",
         "assessment": {
           "title": "Your assessment",
@@ -8497,7 +8422,7 @@
         "saved": "Your changes to the proposal were saved."
       },
       "organization": {
-        "pending": "Pending review",
+        "takenDown": "Taken down",
         "edit": "Edit",
         "dialog": {
           "title": "Edit organization",

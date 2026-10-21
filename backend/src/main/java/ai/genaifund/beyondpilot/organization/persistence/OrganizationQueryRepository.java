@@ -37,8 +37,8 @@ public class OrganizationQueryRepository {
 			  and ((cast(:status as text) is null and o.status <> 'merged')
 			       or (:status = 'suspended' and o.suspended_at is not null and o.status <> 'merged')
 			       or (:status = 'approved' and o.status = 'approved' and o.suspended_at is null)
-			       or (:status not in ('suspended', 'approved') and o.status = :status)
-			       or (:status = 'in_review' and c.id is not null))
+			       or (:status = 'claimed' and c.id is not null and o.status <> 'merged')
+			       or (:status = 'merged' and o.status = 'merged'))
 			  and (cast(:country as text) is null or o.country = :country)
 			""";
 
@@ -68,7 +68,7 @@ public class OrganizationQueryRepository {
 	}
 
 	/**
-	 * The approved organizations a person may ask to join whose name contains the text, by name; at most
+	 * The organizations, not taken down, a person may ask to join whose name contains the text, by name; at most
 	 * {@code limit}. A builder on their own is one person, so nobody asks to join it.
 	 */
 	public List<Match> search(String text, int limit) {
@@ -81,7 +81,7 @@ public class OrganizationQueryRepository {
 	}
 
 	/**
-	 * The approved organizations, the ones that can have use cases, by name; at most {@code limit}.
+	 * The organizations not taken down, the ones that can have use cases, by name; at most {@code limit}.
 	 * @param text only those whose name contains it, ignoring case; every one when null
 	 */
 	public List<Name> approvedOrganizations(@Nullable String text, int limit) {
@@ -107,6 +107,27 @@ public class OrganizationQueryRepository {
 			.list();
 	}
 
+	/**
+	 * Locks up to {@code limit} organizations that V109 marked to be told they are active, oldest first. A row another
+	 * transaction holds is skipped, so two instances never take the same one.
+	 */
+	public List<UUID> lockMarked(int limit) {
+		return jdbc.sql("""
+				select id from organization where activation_notice_pending
+				order by created_at, id
+				limit :limit
+				for update skip locked
+				""").param("limit", limit).query(UUID.class).list();
+	}
+
+	public void clearMarks(Collection<UUID> ids) {
+		if (!ids.isEmpty()) {
+			jdbc.sql("update organization set activation_notice_pending = false where id in (:ids)")
+				.param("ids", ids)
+				.update();
+		}
+	}
+
 	public List<Name> names(Collection<UUID> ids) {
 		return names(ids, "");
 	}
@@ -128,10 +149,10 @@ public class OrganizationQueryRepository {
 	}
 
 	/**
-	 * One page for operators in the order {@code sort} names; without one, those a decision waits on first, a new
-	 * organization or a claim, then the newest.
-	 * @param status a review status, or {@code suspended} for those taken down; {@code in_review} also selects an
-	 * organization with an open claim; none selects every one but the merged
+	 * One page for operators in the order {@code sort} names; without one, those with an open claim first, then the
+	 * newest.
+	 * @param status {@code approved} for those not taken down, {@code claimed} for those with an open claim,
+	 * {@code suspended} for those taken down or {@code merged}; none selects every one but the merged
 	 * @param sort {@code name}, {@code received} or {@code members}, with {@code -} before it for the reverse
 	 */
 	public List<AdminRow> adminPage(@Nullable String text, @Nullable String status, @Nullable String country,
@@ -173,7 +194,7 @@ public class OrganizationQueryRepository {
 			case "name" -> "lower(o.name)" + direction + ", o.id";
 			case "received" -> "coalesce(c.created_at, o.created_at)" + direction + ", o.id";
 			case "members" -> "members" + direction + ", lower(o.name), o.id";
-			default -> "case when o.status = 'in_review' or c.id is not null then 0 else 1 end, "
+			default -> "case when c.id is not null then 0 else 1 end, "
 					+ "coalesce(c.created_at, o.created_at) desc, o.id";
 		};
 	}
@@ -220,19 +241,15 @@ public class OrganizationQueryRepository {
 	}
 
 	/**
-	 * How many organizations waited for review at the end of each of the 14 days up to {@code today} in Vietnam, oldest
-	 * first: sent by then and not decided by then. A row keeps only its last sending and its last decision, so a day
-	 * behind today is an approximation, good for a direction.
+	 * How many ownership claims were open at the end of each of the 14 days up to {@code today} in Vietnam, oldest
+	 * first: made by then and not decided by then.
 	 */
 	public List<Long> organizationsWaitingByDay(LocalDate today) {
 		return jdbc.sql("""
-				select (select count(distinct w.organization_id)
-				        from (select o.id as organization_id from organization o
-				              where o.created_at < day.ends and (o.status = 'in_review' or o.decided_at >= day.ends)
-				              union all
-				              select r.organization_id from organization_join_request r
-				              where r.claim and r.created_at < day.ends
-				                and (r.status = 'pending' or r.decided_at >= day.ends)) as w)
+				select (select count(distinct r.organization_id)
+				        from organization_join_request r
+				        where r.claim and r.created_at < day.ends
+				          and (r.status = 'pending' or r.decided_at >= day.ends))
 				from (select (d + interval '1 day') at time zone 'Asia/Ho_Chi_Minh' as ends
 				      from generate_series(cast(:today as timestamp) - interval '13 days', cast(:today as timestamp),
 				                           interval '1 day') as d) as day
@@ -243,13 +260,10 @@ public class OrganizationQueryRepository {
 			.list();
 	}
 
-	/** When the organization that has waited longest was sent; null when none waits. */
+	/** When the claim that has waited longest was made; null when none waits. */
 	public @Nullable Instant organizationsOldestWaiting() {
 		return jdbc.sql("""
-				select min(since)
-				from (select created_at as since from organization where status = 'in_review'
-				      union all
-				      select created_at from organization_join_request where claim and status = 'pending') as w
+				select min(created_at) from organization_join_request where claim and status = 'pending'
 				""")
 			.query(Timestamp.class)
 			.optional()

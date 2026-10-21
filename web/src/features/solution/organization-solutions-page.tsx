@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { DataTableEmpty } from "@/components/composites/data-table";
 import { DataTableRows } from "@/components/composites/data-table-view";
 import { OrganizationFrame } from "@/features/organization/organization-frame";
+import { isApproved } from "@/features/organization/organization-format";
 import { OrganizationSection } from "@/features/organization/organization-section";
 import { useFormatter } from "@/i18n/format";
 import { Link } from "@/i18n/navigation";
@@ -26,7 +27,7 @@ type OrganizationSolutionsPageProps = {
   offers: OwnOffer[];
   /** How many members the organization has, for the tab beside this one. */
   members: number;
-  /** How many use cases it has, when it is an approved enterprise. */
+  /** How many use cases it has, when it is an enterprise that is not taken down. */
   useCases: number | null;
   /** The order of the solutions, from the URL. */
   search: OrganizationSolutionsSearch;
@@ -47,9 +48,7 @@ function OrganizationSolutionsPage({
 }: OrganizationSolutionsPageProps) {
   const t = useTranslations("Solution.mine");
   const format = useFormatter();
-  const waiting =
-    mine.role === "owner" &&
-    (mine.organization.status !== "approved" || !!mine.organization.suspendedAt);
+  const takenDown = mine.role === "owner" && !isApproved(mine.organization);
   const day = (instant: string) => format.dateTime(new Date(instant), "date");
 
   const sorted = sortOrganizationSolutions(solutions.items, search);
@@ -101,7 +100,7 @@ function OrganizationSolutionsPage({
               icon={<BoxesIcon aria-hidden="true" />}
               title={t("empty.title")}
               description={
-                solutions.editable ? undefined : t(waiting ? "afterApproval" : "empty.member")
+                solutions.editable ? undefined : t(takenDown ? "takenDown" : "empty.member")
               }
             />
           </div>

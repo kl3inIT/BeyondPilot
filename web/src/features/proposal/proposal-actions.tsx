@@ -105,8 +105,8 @@ function SentProposal({ useCaseId, editable, outcome, text }: SentProposalProps)
 /**
  * Send a proposal, in the card of a public use case. An expired brief keeps a non-interactive
  * deadline control in its place. Existing senders read their proposal, and the posting organization
- * sees a way to the proposals it received instead; an organization still waiting for GenAI Fund's review, or
- * none yet, sends all the same. Reading what the caller may do never stops the page from showing.
+ * sees a way to the proposals it received instead; someone in no organization yet sends
+ * all the same. Reading what the caller may do never stops the page from showing.
  */
 async function ProposalActions({
   useCaseId,

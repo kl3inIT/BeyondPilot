@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * What the members of an organization do with its use cases: read them, write a draft step by step, send it to GenAI
- * Fund, and take it back. Every member of an approved organization that publishes use cases may do all of it; nobody
+ * Fund, and take it back. Every member of an organization that is not taken down and publishes use cases may do all of it; nobody
  * outside the organization may do any of it, and a use case of another organization is answered as not found.
  */
 @Service
@@ -69,7 +69,7 @@ public class UseCaseService {
 
 	/**
 	 * The use cases of the caller's organization, the most recently touched first.
-	 * @throws UseCaseException when the caller is not a member of an approved organization that publishes use cases
+	 * @throws UseCaseException when the caller is not a member of an organization that is not taken down and publishes use cases
 	 */
 	@Transactional(readOnly = true)
 	public MyUseCasesResponse mine(Actor actor) {
@@ -118,7 +118,7 @@ public class UseCaseService {
 
 	/**
 	 * Starts an empty draft for the caller's organization. It is named and filled in by saving it.
-	 * @throws UseCaseException when the caller is not a member of an approved organization that publishes use cases
+	 * @throws UseCaseException when the caller is not a member of an organization that is not taken down and publishes use cases
 	 */
 	@Transactional
 	public MyUseCaseResponse create(Actor actor) {
@@ -237,13 +237,13 @@ public class UseCaseService {
 		return response(actor, membership, useCase);
 	}
 
-	/** The caller's organization, which must be approved. */
+	/** The caller's organization, which must not be taken down. */
 	private Membership writer(Actor actor) {
 		identity.requireActive(actor);
 		return organizations.membershipOf(actor)
 			.filter(Membership::approved)
 			.orElseThrow(() -> new UseCaseException(UseCaseErrorCode.ENTERPRISE_REQUIRED,
-					"Account " + actor.accountId() + " is not a member of an approved organization"));
+					"Account " + actor.accountId() + " is not a member of an organization that is not taken down"));
 	}
 
 	/** One use case of the caller's organization, locked for the change about to be made. */

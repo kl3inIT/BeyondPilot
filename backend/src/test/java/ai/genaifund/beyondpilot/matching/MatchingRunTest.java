@@ -237,11 +237,9 @@ class MatchingRunTest {
 		String word = "zp" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
 		matchingOn("http://127.0.0.1:" + provider.getAddress().getPort() + "/v1");
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@matching.test");
-		UUID vendor = organization(owner, "Claims Lab " + word);
-		post(operator, "/api/organization/admin/organizations/" + vendor + "/approve", Map.of());
+		organization(owner, "Claims Lab " + word);
 		String buyer = TestSignIn.session(client, mail, "buyer-" + word + "@matching.test");
 		UUID bank = organization(buyer, "Lotus Bank " + word);
-		post(operator, "/api/organization/admin/organizations/" + bank + "/approve", Map.of());
 		UUID solution = submittedSolution(owner, "Claims Desk " + word);
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 		await().atMost(WAIT)
@@ -345,10 +343,8 @@ class MatchingRunTest {
 		matchingOn("http://127.0.0.1:" + provider.getAddress().getPort() + "/v1");
 		String owner = TestSignIn.session(client, mail, "owner-" + word + "@matching.test");
 		UUID vendor = organization(owner, "Claims Lab " + word);
-		post(operator, "/api/organization/admin/organizations/" + vendor + "/approve", Map.of());
 		String buyer = TestSignIn.session(client, mail, "buyer-" + word + "@matching.test");
 		UUID bank = organization(buyer, "Lotus Bank " + word);
-		post(operator, "/api/organization/admin/organizations/" + bank + "/approve", Map.of());
 		UUID solution = submittedSolution(owner, "Claims Desk " + word);
 		post(operator, "/api/solution/admin/solutions/" + solution + "/approve", null);
 		await().atMost(WAIT)

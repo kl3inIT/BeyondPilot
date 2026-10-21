@@ -7,10 +7,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Button } from "@/components/actions/button";
 import { TextButton } from "@/components/actions/text-button";
 import { ReviewStatus } from "@/components/composites/review-status";
-import { useFormatter } from "@/i18n/format";
 import { useCountryName, useVocabulary } from "@/i18n/vocabulary";
 import type { MyOrganization, Organization } from "@/lib/api/generated";
 import { siteRoutes } from "@/lib/site";
@@ -19,7 +17,6 @@ import { NoticeCard } from "./notice-card";
 import { OrganizationAction } from "./organization-action";
 import { websiteHost } from "./organization-format";
 import { OrganizationMark } from "./organization-mark";
-import { missingProfileFacts } from "./organization-schemas";
 import { OrganizationTabs } from "./organization-tabs";
 
 type OrganizationTab = "profile" | "members" | "solutions" | "useCases";
@@ -30,26 +27,23 @@ type OrganizationFrameProps = {
   current: OrganizationTab;
   /**
    * How many members the organization has, how many solutions when it is a provider and how many
-   * use cases when it is an approved enterprise.
+   * use cases when it is an enterprise that is not taken down.
    */
   counts: { members: number; solutions: number | null; useCases: number | null };
   children: React.ReactNode;
 };
 
 /**
- * What every page of My organization shares: the organization's name and what it is, where its
- * review stands, and the tabs. The tabs follow the organization's role: only a provider has
- * solutions, only an approved enterprise has use cases.
+ * What every page of My organization shares: the organization's name and what it is, the notices
+ * about it, and the tabs. The tabs follow the organization's role: only a provider has solutions,
+ * only an enterprise that is not taken down has use cases.
  */
 function OrganizationFrame({ mine, current, counts, children }: OrganizationFrameProps) {
   const t = useTranslations("Organization");
   const typeName = useVocabulary("organizationType");
-  const reasonName = useVocabulary("organizationRefusal");
   const takeDownReasonName = useVocabulary("organizationTakeDown");
   const countryName = useCountryName();
-  const format = useFormatter();
   const { organization, mergedFrom } = mine;
-  const owner = mine.role === "owner";
 
   const tabs: { key: OrganizationTab; href: string; label: string; count?: number }[] = [
     { key: "profile", href: siteRoutes.workspaceOrganization, label: t("tabs.profile") },
@@ -82,10 +76,6 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
   ];
   const host = websiteHost(organization.website);
   const country = organization.country && countryName(organization.country);
-  // The way to the profile is offered from the other tabs, to the people who can change it.
-  const toProfile = owner && current !== "profile";
-  // What the form would still ask of this organization: the reviewer reads the profile without it.
-  const missing = missingProfileFacts(organization);
 
   return (
     <div className="flex flex-1 flex-col bg-muted pt-10 pb-16 md:pt-14 md:pb-24">
@@ -121,91 +111,6 @@ function OrganizationFrame({ mine, current, counts, children }: OrganizationFram
             )}
           </ul>
         </div>
-
-        {organization.status === "in_review" && (
-          <NoticeCard
-            titleAs="h2"
-            title={t("inReview.title")}
-            description={
-              <>
-                <p>{t("inReview.lead")}</p>
-                <p>
-                  {missing.length > 0
-                    ? t("inReview.missing", {
-                        count: missing.length,
-                        facts: format.list(missing.map((fact) => t(`form.${fact}`))),
-                      })
-                    : t("inReview.complete")}
-                </p>
-              </>
-            }
-            badge={
-              <ReviewStatus state="in_review" appearance="pill">
-                {t("status.in_review")}
-              </ReviewStatus>
-            }
-            foot={t("inReview.foot")}
-            actions={
-              // On the Profile tab the action is the profile's own, under the notice.
-              toProfile &&
-              (missing.length > 0 ? (
-                <Button href={siteRoutes.workspaceOrganization}>{t("form.complete")}</Button>
-              ) : (
-                <Button prominence="secondary" href={siteRoutes.workspaceOrganization}>
-                  {t("inReview.edit")}
-                </Button>
-              ))
-            }
-          />
-        )}
-        {organization.status === "needs_changes" && (
-          <NoticeCard
-            titleAs="h2"
-            title={t("needsChanges.title", { name: organization.name })}
-            description={
-              organization.decisionMessage && (
-                <p className="whitespace-pre-line">{organization.decisionMessage}</p>
-              )
-            }
-            badge={
-              <ReviewStatus state="needs_changes" appearance="pill">
-                {t("status.needs_changes")}
-              </ReviewStatus>
-            }
-            foot={t(owner ? "needsChanges.owner" : "needsChanges.member")}
-            actions={
-              toProfile && (
-                <Button prominence="secondary" href={siteRoutes.workspaceOrganization}>
-                  {t("needsChanges.edit")}
-                </Button>
-              )
-            }
-          />
-        )}
-        {organization.status === "rejected" && (
-          <NoticeCard
-            titleAs="h2"
-            title={t("rejected.title", { name: organization.name })}
-            description={
-              <>
-                <p>
-                  {t("rejected.reason", {
-                    reason: reasonName(organization.decisionReason ?? "other"),
-                  })}
-                </p>
-                {organization.decisionMessage && (
-                  <p className="whitespace-pre-line">{organization.decisionMessage}</p>
-                )}
-              </>
-            }
-            badge={
-              <ReviewStatus state="rejected" appearance="pill">
-                {t("status.rejected")}
-              </ReviewStatus>
-            }
-            foot={t("rejected.foot")}
-          />
-        )}
 
         {organization.suspendedAt && organization.suspensionReason && (
           <NoticeCard

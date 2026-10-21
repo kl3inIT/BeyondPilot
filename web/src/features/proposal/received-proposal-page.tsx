@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 
 import { PdfOpenButton } from "@/components/composites/pdf-open-button";
 import { Status } from "@/components/composites/status";
-import { Badge } from "@/components/ui/badge";
+import { ReviewStatus } from "@/components/composites/review-status";
 import { TextButton } from "@/components/actions/text-button";
 import { useFileSize } from "@/features/solution/solution-deck";
 import { useFormatter } from "@/i18n/format";
@@ -80,7 +80,9 @@ function ReceivedProposalPage({
                 {proposal.organizationName}
               </h1>
               {admin && !proposal.organizationApproved && (
-                <Badge variant="secondary">{t("pending")}</Badge>
+                <ReviewStatus state="suspended" appearance="pill">
+                  {t("takenDown")}
+                </ReviewStatus>
               )}
             </div>
             <div className="flex flex-wrap items-center gap-3">

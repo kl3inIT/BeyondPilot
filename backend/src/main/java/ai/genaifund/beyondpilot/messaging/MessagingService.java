@@ -673,7 +673,8 @@ public class MessagingService {
 				}
 				if (!membership.approved()) {
 					throw new MessagingException(MessagingErrorCode.ORGANIZATION_NOT_APPROVED,
-							"A solution provider written to by the unapproved organization " + membership.organizationId());
+							"A solution provider written to by organization " + membership.organizationId()
+									+ ", which is taken down");
 				}
 				if (!membership.owner()) {
 					throw new MessagingException(MessagingErrorCode.OWNERS_ONLY,

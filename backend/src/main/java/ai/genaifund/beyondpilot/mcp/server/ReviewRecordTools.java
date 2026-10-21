@@ -132,7 +132,7 @@ class ReviewRecordTools {
 		properties.put("area", Map.of("type", "string", "enum", List.copyOf(STATUSES.keySet()), "description",
 				"The admin list to read."));
 		properties.put("status", Map.of("type", "string", "description", "Only records of this status; leave it out "
-				+ "for every status. The values each area takes: organizations: in_review, needs_changes, approved, rejected, suspended, merged. "
+				+ "for every status. The values each area takes: organizations: approved, claimed, suspended, merged. "
 				+ "solutions: in_review, needs_changes, approved, rejected, suspended. talent: in_review, "
 				+ "needs_changes, approved, suspended. use_cases: draft, in_review, needs_changes, approved, closed. "
 				+ "offers: open, closed."));
@@ -144,8 +144,9 @@ class ReviewRecordTools {
 				"additionalProperties", false);
 		Tool tool = Tool.builder("list_records", schema)
 			.title("List records operators review")
-			.description("List one area of BeyondPilot's admin as a GenAI Fund operator sees it, in any status (in "
-					+ "review, needs changes, approved, rejected, suspended...): organizations, solutions, talent "
+			.description("List one area of BeyondPilot's admin as a GenAI Fund operator sees it, in any status (a "
+					+ "solution or talent profile may be in review, need changes or be rejected; an organization is "
+					+ "active, suspended or merged): organizations, solutions, talent "
 					+ "profiles, use cases or the offers solutions come with, a page at a time. Each record gives its "
 					+ "id, name, status, what an operator scans (organization, country, submitted and updated dates, "
 					+ "featured) and its admin page; read one with get_record. search and fetch cover only what is "
@@ -395,7 +396,7 @@ class ReviewRecordTools {
 	private static Map<String, List<String>> statuses() {
 		Map<String, List<String>> statuses = new LinkedHashMap<>();
 		statuses.put("organizations",
-				List.of("in_review", "needs_changes", "approved", "rejected", "suspended", "merged"));
+				List.of("approved", "claimed", "suspended", "merged"));
 		statuses.put("solutions", List.of("in_review", "needs_changes", "approved", "rejected", "suspended"));
 		statuses.put("talent", List.of("in_review", "needs_changes", "approved", "suspended"));
 		statuses.put("use_cases", List.of("draft", "in_review", "needs_changes", "approved", "closed"));

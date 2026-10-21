@@ -166,7 +166,7 @@ class UseCaseTools {
 
 	SyncToolSpecification createUseCase() {
 		Map<String, Object> properties = new LinkedHashMap<>();
-		properties.put("organization", Map.of("type", "string", "description", "The approved organization it is for: "
+		properties.put("organization", Map.of("type", "string", "description", "The organization it is for, one that is not taken down: "
 				+ "an id from list_records (area organizations), get_record or create_organization."));
 		properties.putAll(briefProperties());
 		Map<String, Object> schema = Map.of("type", "object", "properties", properties, "required",
@@ -174,7 +174,7 @@ class UseCaseTools {
 				"additionalProperties", false);
 		Tool tool = Tool.builder("create_use_case", schema)
 			.title("Write a private use case")
-			.description("Create a use case for an approved organization as a private draft: it belongs to that "
+			.description("Create a use case for an organization that is not taken down, as a private draft: it belongs to that "
 					+ "company, but only GenAI Fund's operators see it, in /admin, until one publishes it with "
 					+ "publish_use_case. The company's members do not see it, nothing is public, and nobody is told. "
 					+ "Write what the operator gave, in their words: the title, the problem, the industry and the "

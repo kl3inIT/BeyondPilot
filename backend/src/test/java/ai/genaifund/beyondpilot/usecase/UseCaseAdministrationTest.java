@@ -364,14 +364,14 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
-	void onlyAnApprovedOrganizationCanHaveAUseCase() {
-		UUID pending = pendingOrganization("pending-owner@usecase.test");
+	void onlyAnOrganizationNotTakenDownCanHaveAUseCase() {
+		UUID takenDown = takenDownOrganization("down-owner@usecase.test", "Taken Down " + UUID.randomUUID());
 
-		assertProblem(post(operator, USE_CASES, useCase(pending, "For a pending one", false)), 400,
+		assertProblem(post(operator, USE_CASES, useCase(takenDown, "For a taken-down one", false)), 400,
 				"USECASE_ORGANIZATION_NOT_ELIGIBLE");
 		assertProblem(post(operator, USE_CASES, useCase(UUID.randomUUID(), "For nobody", false)), 400,
 				"USECASE_ORGANIZATION_NOT_ELIGIBLE");
-		assertThat(titles()).doesNotContain("For a pending one", "For nobody");
+		assertThat(titles()).doesNotContain("For a taken-down one", "For nobody");
 	}
 
 	@Test
@@ -672,11 +672,11 @@ class UseCaseAdministrationTest {
 	}
 
 	@Test
-	void theFormOffersOnlyApprovedOrganizations() {
+	void theFormOffersOnlyOrganizationsNotTakenDown() {
 		String tag = UUID.randomUUID().toString().substring(0, 8);
 		organization("Offered First " + tag);
 		organization("Offered Second " + tag);
-		pendingOrganization("pending-offer@usecase.test");
+		takenDownOrganization("down-offer@usecase.test", "Offered Down " + tag);
 
 		String offered = body(get(operator, ORGANIZATIONS + "?q=" + tag.toUpperCase()).expectStatus().isOk());
 
@@ -809,15 +809,17 @@ class UseCaseAdministrationTest {
 			.isCreated()), "$.id"));
 	}
 
-	/** An organization a person created and nobody has approved yet. */
-	private UUID pendingOrganization(String email) {
+	/** An organization a person created and GenAI Fund then took down. */
+	private UUID takenDownOrganization(String email, String name) {
 		String owner = TestSignIn.session(client, mail, email);
-		return UUID.fromString(JsonPath.read(body(post(owner, "/api/organization/organizations",
-				Map.of("name", "Pending " + UUID.randomUUID(), "type", "company", "country", "VN", "teamSize", "2_9",
+		UUID id = UUID.fromString(JsonPath.read(body(post(owner, "/api/organization/organizations",
+				Map.of("name", name, "type", "company", "country", "VN", "teamSize", "2_9",
 						"industries", List.of("insurance"), "website", "https://example.test", "description",
 						"Assistants for insurers.", "foundedYear", 2021, "jobTitle", "Founder"))
 			.expectStatus()
 			.isCreated()), "$.id"));
+		jdbc.sql("update organization set suspended_at = now() where id = ?").param(id).update();
+		return id;
 	}
 
 	/** The brief of a use case, complete and valid. */

@@ -95,17 +95,16 @@ was delivered by [BEY-37](../increments/completed/bey-37-proposal/design.md), re
 The four steps of the web form are who applies, the solution, the program's questions (left out when the program has
 none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
 
-- **A person in an organization** applies for it, whether or not GenAI Fund has approved it.
+- **A person in an organization** applies for it; no review of the organization comes first, and a team waits for nothing.
 - **Alone or as a team.** `POST …/application/organization` makes an organization for a person in none, through
   `OrganizationService.createForApplicant`: `kind = individual` makes an `independent_builder` with team size
   `just_me`; `kind = team` makes a `builder_team` with the given team size (`2_9`, `10_49`, `50_99`; `2_9` when
-  absent). A team waits for GenAI Fund's review like any new organization; an `independent_builder` is approved at once
-  ([BEY-189](../increments/completed/bey-189-solo-applicant/design.md)). Either is attached to the caller's application if
+  absent). Either is active at once, as every organization is since [BEY-236](../increments/active/bey-236-drop-organization-review/design.md);
+  an `independent_builder` was already ([BEY-189](../increments/completed/bey-189-solo-applicant/design.md)). It is attached to the caller's application if
   one exists. A caller already in an organization is refused with `PROPOSAL_ALREADY_IN_ORGANIZATION`.
 - **Applying as oneself.** The `independent_builder` keeps the name it was given, which its owner may change like any
   organization's ([this increment](../increments/completed/just-me-is-an-organization/design.md)). While nothing of it was sent (no submitted application, no use-case proposal out of draft, no solution out of
-  draft), the application form's `organization.changeable` is true: `kind = team` turns it into that team, which waits
-  for review, and `POST …/application/organization/leave` takes the person out of it, leaving the application with no
+  draft), the application form's `organization.changeable` is true: `kind = team` turns it into that team, which stays active, and `POST …/application/organization/leave` takes the person out of it, leaving the application with no
   organization so that they join or add a company. Once something was sent, both answer
   `PROPOSAL_INDIVIDUAL_LOCKED`.
 - **As a company.** The person joins or creates the company through the `organization` module; the proposal module
@@ -315,8 +314,8 @@ Applicants' acts, joining as a judge and assessments are not audited; they are l
 ## Use-case proposals: sending
 
 An organization proposes to a use case another organization posted (BEY-133). The code is `UseCaseProposals`; a member
-of any organization other than the one that posted the use case proposes for it, and GenAI Fund's review of that
-organization does not hold the proposal up.
+of any organization other than the one that posted the use case proposes for it, and nothing about that
+organization holds the proposal up unless GenAI Fund has taken it down.
 
 - **One working copy per organization and use case,** shared by its members. The first save makes it. A save keeps what
   the form holds, under the `version` it read (`PROPOSAL_CHANGED_MEANWHILE`): the solutions offered, each of the
@@ -375,7 +374,7 @@ organization, or an operator; anyone else finds no such use case or proposal).
   decision and the outcome and leaves the history rows.
 - **The PDF.** The proposal's PDF is read, never listed, through the proposal: `GET /api/proposal/use-case-proposals/{id}/file`
   (`getUseCaseProposalFile`) for the posting side (`posted`: the posting organization's members and operators), and `GET
-  /api/proposal/use-cases/{useCaseId}/proposal/file` (`getOwnUseCaseProposalFile`) for the members of the organization that
+/api/proposal/use-cases/{useCaseId}/proposal/file` (`getOwnUseCaseProposalFile`) for the members of the organization that
   wrote it, a draft or a sent one; an organization with no proposal to the use case, or none with a PDF, finds
   `PROPOSAL_NOT_FOUND`. Both answer `StorageService.download`: the bytes saved under the name, or a redirect to the object
   store. The page opens them in the full-screen `PdfViewer` (the same viewer as an application's files, see

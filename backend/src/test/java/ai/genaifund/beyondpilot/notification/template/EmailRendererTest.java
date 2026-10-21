@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ class EmailRendererTest {
 
 	@Test
 	void everyDefaultTemplateRendersWithItsSampleValues() {
-		for (EmailKind kind : EmailKind.values()) {
+		for (EmailKind kind : sentKinds()) {
 			Map<String, Object> samples = new HashMap<>();
 			kind.variables().forEach(variable -> samples.put(variable.name(), variable.sample()));
 
@@ -133,7 +134,7 @@ class EmailRendererTest {
 	@Test
 	void everyLinkAKindOffersIsAButtonInItsDefaultWordingAndAWordingWithoutItStillRenders() {
 		List<String> linked = new ArrayList<>();
-		for (EmailKind kind : EmailKind.values()) {
+		for (EmailKind kind : sentKinds()) {
 			List<String> links = kind.variables()
 				.stream()
 				.filter(variable -> !variable.required() && variable.name().endsWith("Url"))
@@ -163,8 +164,8 @@ class EmailRendererTest {
 			RenderedEmail kept = renderer.render(kind, saved, values, APPEARANCE);
 			assertThat(kept.text()).as(kind.value()).startsWith("Saved wording.").doesNotContain(url);
 		}
-		assertThat(linked).containsExactlyInAnyOrder("organization_invitation", "organization_approved",
-				"organization_sent_back", "organization_request_approved", "organization_restored",
+		assertThat(linked).containsExactlyInAnyOrder("organization_invitation", "organization_activated",
+				"organization_request_approved", "organization_restored",
 				"application_received", "reviewer_invitation", "application_outcome", "solution_approved",
 				"solution_sent_back", "solution_restored", "use_case_approved", "use_case_sent_back",
 				"proposal_shortlisted", "proposal_declined", "matching_invitation",
@@ -190,10 +191,11 @@ class EmailRendererTest {
 
 		// A text a person wrote is quoted with its lines kept and its markup shown as text.
 		Map<String, Object> sentBack = new HashMap<>();
+		sentBack.put("solutionName", "ClaimLens");
 		sentBack.put("organizationName", "Plain Cover");
 		sentBack.put("reason", "line one\nline two <script>");
-		RenderedEmail quoted = renderer.render(EmailKind.ORGANIZATION_SENT_BACK,
-				defaults.template(EmailKind.ORGANIZATION_SENT_BACK), sentBack, APPEARANCE);
+		RenderedEmail quoted = renderer.render(EmailKind.SOLUTION_SENT_BACK,
+				defaults.template(EmailKind.SOLUTION_SENT_BACK), sentBack, APPEARANCE);
 		assertThat(quoted.html()).contains("line one<br>line two &lt;script&gt;").doesNotContain("<script>");
 		assertThat(quoted.text()).contains("line one\nline two <script>");
 	}
@@ -234,6 +236,25 @@ class EmailRendererTest {
 	void aSubjectIsOneLine() {
 		assertThat(renderer.problems(EmailKind.SIGN_IN_CODE, new EmailTemplate("One\nTwo", "{{code}} {{minutes}}")))
 			.contains(new TemplateProblem(TemplateProblem.Type.SUBJECT_LINE, "subject", null));
+	}
+
+	@Test
+	void theActivationEmailRendersItsDefault() {
+		String url = "https://beyondpilot.test/workspace/organization";
+		Map<String, Object> values = new HashMap<>();
+		values.put("organizationName", "Plain Cover");
+		values.put("organizationUrl", url);
+
+		RenderedEmail email = renderer.render(EmailKind.ORGANIZATION_ACTIVATED,
+				defaults.template(EmailKind.ORGANIZATION_ACTIVATED), values, APPEARANCE);
+
+		assertThat(email.subject()).isEqualTo("Plain Cover is active on BeyondPilot");
+		assertThat(email.text()).contains("Plain Cover is active on BeyondPilot now").contains(url);
+		assertThat(email.html()).contains("href=\"" + url + "\"");
+	}
+
+	private static List<EmailKind> sentKinds() {
+		return Arrays.stream(EmailKind.values()).filter(kind -> !kind.retired()).toList();
 	}
 
 	private static EmailRenderer renderer() {

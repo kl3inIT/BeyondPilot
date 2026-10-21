@@ -83,7 +83,7 @@ type ProposalWizardProps = {
 };
 
 /**
- * The three steps in which a member of an organization, one still waiting for GenAI Fund's review included, writes a
+ * The three steps in which a member of an organization writes a
  * proposal to a use case; a person in none makes theirs in the first. What is
  * written is saved as it changes, so nothing is lost and anyone of the organization can pick the draft
  * up; the last step reviews it and sends it.

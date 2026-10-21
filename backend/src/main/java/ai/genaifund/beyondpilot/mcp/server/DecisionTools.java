@@ -9,8 +9,6 @@ import ai.genaifund.beyondpilot.BusinessException;
 import ai.genaifund.beyondpilot.identity.Actor;
 import ai.genaifund.beyondpilot.identity.McpCaller;
 import ai.genaifund.beyondpilot.identity.McpCallers;
-import ai.genaifund.beyondpilot.organization.OrganizationAdministration;
-import ai.genaifund.beyondpilot.organization.OrganizationReviewRecord;
 import ai.genaifund.beyondpilot.proposal.OutcomeService;
 import ai.genaifund.beyondpilot.proposal.ReceivedProposal;
 import ai.genaifund.beyondpilot.proposal.ReviewService;
@@ -41,7 +39,7 @@ class DecisionTools {
 	/** The longest message a person reads with a decision, as the admin screen takes it. */
 	private static final int MAX_MESSAGE = 1000;
 
-	private static final List<String> AREAS = List.of("organizations", "solutions", "talent", "deployments");
+	private static final List<String> AREAS = List.of("solutions", "talent", "deployments");
 
 	private static final List<String> ACTIONS = List.of("approve", "send_back", "reject");
 
@@ -68,8 +66,6 @@ class DecisionTools {
 		.openWorldHint(false)
 		.build();
 
-	private final OrganizationAdministration organizations;
-
 	private final SolutionAdministration solutions;
 
 	private final TalentAdministration talent;
@@ -86,11 +82,10 @@ class DecisionTools {
 
 	private final JsonMapper json;
 
-	DecisionTools(OrganizationAdministration organizations, SolutionAdministration solutions,
-			TalentAdministration talent, ReviewService reviews, OutcomeService outcomes, UseCaseProposals proposals,
-			Recipients recipients, McpCallers callers, JsonMapper json) {
+	DecisionTools(SolutionAdministration solutions, TalentAdministration talent, ReviewService reviews,
+			OutcomeService outcomes, UseCaseProposals proposals, Recipients recipients, McpCallers callers,
+			JsonMapper json) {
 		this.recipients = recipients;
-		this.organizations = organizations;
 		this.solutions = solutions;
 		this.talent = talent;
 		this.reviews = reviews;
@@ -103,40 +98,40 @@ class DecisionTools {
 	SyncToolSpecification decideRecord() {
 		Map<String, Object> properties = new LinkedHashMap<>();
 		properties.put("area", Map.of("type", "string", "enum", AREAS, "description",
-				"What is decided: an organization, a solution, a talent profile, or a customer deployment of a solution."));
+				"What is decided: a solution, a talent profile, or a customer deployment of a solution."));
 		properties.put("id", Map.of("type", "string", "description", "The record, an id list_records, get_record or "
 				+ "list_pending_reviews returned. For a deployment, the id of its solution."));
 		properties.put("deployment", Map.of("type", "string", "description",
 				"Only for area deployments: the deployment's id, from get_record of its solution (customerDeployments)."));
 		properties.put("action", Map.of("type", "string", "enum", ACTIONS, "description", "approve: for every area. "
-				+ "send_back: organizations, solutions and talent, which their owners correct and send again. reject: "
+				+ "send_back: solutions and talent, which their owners correct and send again. reject: "
 				+ "deployments only, which keeps it off its solution's page."));
 		properties.put("reason_code", Map.of("type", "string", "enum", TALENT_REASONS, "description",
 				"Required to send talent back (incomplete, unverifiable, inappropriate, other) and to reject a "
 						+ "deployment (incomplete, unverifiable, other); not used otherwise."));
 		properties.put("message", Map.of("type", "string", "maxLength", MAX_MESSAGE, "description",
-				"What the people concerned read with the decision, in the operator's words: required to send back an "
-						+ "organization or a solution, optional for talent and deployments, not used to approve. It is "
+				"What the people concerned read with the decision, in the operator's words: required to send back a "
+						+ "solution, optional for talent and deployments, not used to approve. It is "
 						+ "emailed to them, so write it to them, not about them."));
 		Map<String, Object> schema = Map.of("type", "object", "properties", properties, "required",
 				List.of("area", "id", "action"), "additionalProperties", false);
 		Tool tool = Tool.builder("decide_record", schema)
 			.title("Approve or send back a record in review")
 			.description("Decide on one record that waits for GenAI Fund's review, as the operator would on its admin "
-					+ "page: approve it, or send it back with what to change. Approving an organization lets it post "
-					+ "use cases and puts its approved solutions in the directory; approving a solution or a talent "
-					+ "profile lists it in the directory. The owners of an organization or a solution, or the person of "
+					+ "page: approve it, or send it back with what to change. Approving a solution or a talent "
+					+ "profile lists it in the directory. The owners of a solution, or the person of "
 					+ "a talent profile, are emailed the decision with the message, which cannot be unsent; a "
 					+ "deployment's decision is shown on its solution and emails nobody. Use it only for a decision the "
 					+ "operator asked for in this conversation, one record per call; read the record with get_record "
-					+ "first. A record that does not wait for review is refused; refusing an organization or a solution "
-					+ "for good, taking one down or restoring it stay on the admin screens. The answer gives the status "
+					+ "first. A record that does not wait for review is refused; refusing a solution for "
+					+ "good, taking one down or restoring it stay on the admin screens. The answer gives the status "
 					+ "before and after, who was told and the admin page." + WRITTEN_BY_PEOPLE)
 			.annotations(TELLS)
 			.build();
 		return new SyncToolSpecification(tool, (context, request) -> {
 			Map<String, Object> arguments = request.arguments() == null ? Map.of() : request.arguments();
 			String area = string(arguments, "area");
+			// A guard: the SDK already refuses an area outside the schema enum, unless input validation is switched off.
 			if (area == null || !AREAS.contains(area)) {
 				return error("Name the area: one of " + String.join(", ", AREAS) + ".");
 			}
@@ -157,7 +152,7 @@ class DecisionTools {
 			}
 			String code = string(arguments, "reason_code");
 			boolean sendsBack = !action.equals("approve");
-			if (sendsBack && (area.equals("organizations") || area.equals("solutions")) && message == null) {
+			if (sendsBack && area.equals("solutions") && message == null) {
 				return error("Write the message: what the owners should change. They read it and receive it by email.");
 			}
 			if (sendsBack && area.equals("talent") && (code == null || !TALENT_REASONS.contains(code))) {
@@ -169,18 +164,6 @@ class DecisionTools {
 			Actor actor = actor(context.get(CallLog.CALLER));
 			try {
 				return switch (area) {
-					case "organizations" -> {
-						String before = organizations.reviewRecord(actor, id).status();
-						if (sendsBack) {
-							organizations.sendBack(actor, id, message);
-						}
-						else {
-							organizations.approve(actor, id);
-						}
-						OrganizationReviewRecord after = organizations.reviewRecord(actor, id);
-						yield decided("organization", id, after.name(), "/admin/organizations/" + id, before,
-								after.status(), recipients.owners(actor, id));
-					}
 					case "solutions" -> {
 						String before = solutions.reviewRecord(actor, id).status();
 						if (sendsBack) {

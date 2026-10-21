@@ -5,7 +5,7 @@ import java.util.List;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(name = "AdminOrganizationList",
-		description = "One page of organizations: those waiting for review first, then the newest.")
+		description = "One page of organizations: those with an open ownership claim first, then the newest.")
 public record AdminOrganizationListResponse(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<AdminOrganizationSummaryResponse> items,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The page returned, counted from 1.") int page,

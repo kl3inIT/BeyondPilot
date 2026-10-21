@@ -116,7 +116,7 @@ class AdminSolutionsController {
 
 	@GetMapping(path = "/organizations", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Operation(operationId = "listAdminSolutionOrganizations",
-			summary = "The approved organizations a solution can be started for, by name; at most 50",
+			summary = "The organizations, not taken down, a solution can be started for, by name; at most 50",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "200", description = "The organizations, by name.")
 	List<AdminSolutionOrganizationOptionResponse> organizationsToStartFor(@CurrentActor Actor actor,
@@ -126,7 +126,7 @@ class AdminSolutionsController {
 
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	@Operation(operationId = "createAdminSolution", summary = "Start a solution as a draft of an approved organization",
+	@Operation(operationId = "createAdminSolution", summary = "Start a solution as a draft of an organization",
 			security = @SecurityRequirement(name = "session"))
 	@ApiResponse(responseCode = "201", description = "The draft.")
 	@ApiResponse(responseCode = "400", description = "The name is not valid.",

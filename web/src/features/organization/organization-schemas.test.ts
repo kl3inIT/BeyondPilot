@@ -8,7 +8,6 @@ import {
   basicsSchema,
   basicsValuesOf,
   creationSchema,
-  missingProfileFacts,
   profileBodyOf,
   profileSchema,
   profileValuesOf,
@@ -286,58 +285,6 @@ describe("profileValuesOf and profileBodyOf", () => {
     expect(profileBodyOf({ ...filled, type: "company" }).teamBackground).toBe(
       "Built two products.",
     );
-  });
-});
-
-describe("missingProfileFacts", () => {
-  const company = {
-    name: "Pocket Policy",
-    type: "company",
-    country: "SG",
-    teamSize: "10_49",
-    industries: ["insurance"],
-    website: "https://pocketpolicy.example",
-    description: "Assistants for insurers across Southeast Asia.",
-    foundedYear: 2021,
-    logoFileId: null,
-  } as Organization;
-
-  it("finds nothing missing in a profile with every fact", () => {
-    expect(missingProfileFacts(company)).toEqual([]);
-  });
-
-  it("names what a company lacks, in the order of the form", () => {
-    expect(
-      missingProfileFacts({
-        ...company,
-        description: " ",
-        foundedYear: null,
-        industries: [],
-        website: null,
-      }),
-    ).toEqual(["website", "industries", "foundedYear", "description"]);
-  });
-
-  it("does not ask a team or a builder for what only a company must give", () => {
-    const without = { ...company, website: null, industries: [], foundedYear: null };
-    expect(
-      missingProfileFacts({
-        ...without,
-        type: "builder_team",
-        teamBackground: "Built two products.",
-      }),
-    ).toEqual([]);
-    expect(missingProfileFacts({ ...without, type: "independent_builder" })).toEqual([]);
-  });
-
-  it("names every fact an organization created by an operator still lacks", () => {
-    expect(
-      missingProfileFacts({
-        name: "Mekong AI",
-        type: "builder_team",
-        industries: [],
-      } as unknown as Organization),
-    ).toEqual(["teamSize", "country", "description"]);
   });
 });
 

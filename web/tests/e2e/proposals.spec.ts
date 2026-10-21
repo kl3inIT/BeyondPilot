@@ -177,9 +177,7 @@ async function watchQuickCreate(page: Page) {
       contentType: "application/json",
       body: JSON.stringify({
         ...proposalForm("invited"),
-        organization: organization
-          ? { ...organization, approved: organization.type === "independent_builder", owner: true }
-          : null,
+        organization: organization ? { ...organization, approved: true, owner: true } : null,
       }),
     }),
   );
@@ -808,7 +806,7 @@ test.describe("the proposals a use case received", () => {
       has: page.getByRole("link", { name: "Orbit Claims", exact: true }),
     });
     const name = row.getByRole("link", { name: "Orbit Claims", exact: true });
-    await expect(page.getByText("Pending review", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Taken down", { exact: true })).toHaveCount(0);
     await expect(row.getByText("Not decided", { exact: true })).toBeVisible();
     expect(await name.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0);
     const nameBox = await name.boundingBox();
@@ -831,7 +829,7 @@ test.describe("the proposals a use case received", () => {
     await page.screenshot({ path: testInfo.outputPath("received-proposals.png"), fullPage: true });
     await page.goto((await name.getAttribute("href"))!);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Orbit Claims");
-    await expect(page.getByText("Pending review", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Taken down", { exact: true })).toHaveCount(0);
     await expect(page.getByText("Not decided", { exact: true })).toBeVisible();
     await settled(page);
   });

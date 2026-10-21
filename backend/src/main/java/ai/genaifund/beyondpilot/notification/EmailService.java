@@ -120,15 +120,13 @@ public class EmailService {
 	}
 
 	/**
-	 * Tells an owner what GenAI Fund decided about their organization. An approval links to the organization's public
-	 * page.
-	 * @param slug the organization's address on the site, which the link of an approval opens
-	 * @param approved whether the organization was approved; a refusal's reason is read after signing in
+	 * Tells an owner that their organization is active, because GenAI Fund no longer reviews organizations. The link
+	 * opens My organization.
 	 */
 	@Transactional
-	public void sendOrganizationDecision(String recipient, String organizationName, String slug, boolean approved) {
-		queue(approved ? EmailKind.ORGANIZATION_APPROVED : EmailKind.ORGANIZATION_REFUSED, recipient,
-				values("organizationName", organizationName, "organizationUrl", url("/organizations/" + slug)));
+	public void sendOrganizationActivated(String recipient, String organizationName) {
+		queue(EmailKind.ORGANIZATION_ACTIVATED, recipient,
+				values("organizationName", organizationName, "organizationUrl", url(MY_ORGANIZATION)));
 	}
 
 	/** What GenAI Fund decided about a talent profile. */
@@ -136,18 +134,6 @@ public class EmailService {
 
 		APPROVED, CHANGES_REQUESTED, REMOVED, RESTORED
 
-	}
-
-	/**
-	 * Tells an owner that GenAI Fund sent their organization back with what to change. The link opens My organization,
-	 * where they correct it.
-	 * @param reason what GenAI Fund asks them to change
-	 */
-	@Transactional
-	public void sendOrganizationSentBack(String recipient, String organizationName, String reason) {
-		queue(EmailKind.ORGANIZATION_SENT_BACK, recipient,
-				values("organizationName", organizationName, "reason", reason, "organizationUrl",
-						url(MY_ORGANIZATION)));
 	}
 
 	/**

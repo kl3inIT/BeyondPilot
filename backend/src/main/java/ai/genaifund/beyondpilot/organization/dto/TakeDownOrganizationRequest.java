@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 
 @Schema(name = "TakeDownOrganization",
-		description = "Why an approved organization is taken down, and what its owners are told.")
+		description = "Why an organization is taken down, and what its owners are told.")
 public record TakeDownOrganizationRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				allowableValues = { "misleading_information", "not_a_real_organization", "breaks_the_rules",

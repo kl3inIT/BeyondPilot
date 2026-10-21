@@ -211,7 +211,7 @@ public class UseCaseAdministration {
 	}
 
 	/**
-	 * The approved organizations that can have use cases, by name; at most 50.
+	 * The organizations not taken down that can have use cases, by name; at most 50.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
 	 */
 	@Transactional(readOnly = true)
@@ -228,7 +228,7 @@ public class UseCaseAdministration {
 	 * Creates a use case for an organization: a draft its members will edit, or a published one when the operator
 	 * asks. An operator's own work needs no review, so nothing is created in review.
 	 * @throws ai.genaifund.beyondpilot.identity.IdentityException when the caller is not an operator
-	 * @throws UseCaseException when the organization is not approved, the close date is not in the
+	 * @throws UseCaseException when the organization is taken down, the close date is not in the
 	 * future, or the budget or the timeline is out of order
 	 */
 	@Transactional
@@ -311,7 +311,7 @@ public class UseCaseAdministration {
 		Instant now = Instant.now();
 		OrganizationName organization = organizations.approvedOrganization(request.organizationId())
 			.orElseThrow(() -> refused(UseCaseErrorCode.ORGANIZATION_NOT_ELIGIBLE,
-					"Organization " + request.organizationId() + " is not an approved organization"));
+					"Organization " + request.organizationId() + " does not exist or is taken down"));
 		check(request, now);
 		UseCase useCase = new UseCase(organization.id(), operator.accountId(), request.closesAt());
 		write(useCase, request);

@@ -45,11 +45,8 @@ public enum OrganizationErrorCode implements ErrorCode {
 	CHANGED_MEANWHILE("ORGANIZATION_CHANGED_MEANWHILE", ErrorCategory.CONFLICT,
 			"Someone else saved this organization in the meantime. Reload it and make your changes again."),
 
-	NOT_AWAITING_REVIEW("ORGANIZATION_NOT_AWAITING_REVIEW", ErrorCategory.CONFLICT,
-			"This organization is not waiting for review."),
-
 	CANNOT_TAKE_DOWN("ORGANIZATION_CANNOT_TAKE_DOWN", ErrorCategory.CONFLICT,
-			"Only an approved organization can be taken down."),
+			"Only an active organization can be taken down."),
 
 	NOT_TAKEN_DOWN("ORGANIZATION_NOT_TAKEN_DOWN", ErrorCategory.CONFLICT, "This organization is not taken down."),
 
@@ -63,10 +60,10 @@ public enum OrganizationErrorCode implements ErrorCode {
 			"Another organization already has this email domain."),
 
 	DOMAIN_NOT_VERIFIED("ORGANIZATION_DOMAIN_NOT_VERIFIED", ErrorCategory.CONFLICT,
-			"People join at once only on a domain GenAI Fund verified for an approved organization."),
+			"People join at once only on a domain GenAI Fund verified for an organization that is not taken down."),
 
 	NOT_APPROVED("ORGANIZATION_NOT_APPROVED", ErrorCategory.CONFLICT,
-			"An organization invites people once GenAI Fund has approved it."),
+			"An organization that is taken down does not invite people. Ask GenAI Fund to restore it."),
 
 	INVITATION_DAILY_LIMIT("ORGANIZATION_INVITATION_DAILY_LIMIT", ErrorCategory.LIMIT_EXCEEDED,
 			"The organization has sent the most invitations it can in a day. Invite more people tomorrow."),

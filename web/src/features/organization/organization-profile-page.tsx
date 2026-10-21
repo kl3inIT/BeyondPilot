@@ -10,8 +10,7 @@ type OrganizationProfilePageProps = {
 };
 
 /**
- * My organization › Profile. An owner changes it; a member reads it. Saving a refused organization
- * sends it to review again, which the frame's notice says.
+ * My organization › Profile. An owner changes it; a member reads it.
  */
 function OrganizationProfilePage({ mine, counts }: OrganizationProfilePageProps) {
   const { organization } = mine;

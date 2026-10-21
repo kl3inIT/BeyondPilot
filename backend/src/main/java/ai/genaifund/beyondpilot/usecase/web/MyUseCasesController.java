@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 				schema = @Schema(ref = MyUseCasesController.PROBLEM)))
 @ApiResponse(responseCode = "403",
-		description = "The caller is not a member of an approved organization that publishes use cases.",
+		description = "The caller is not a member of an organization, not taken down, that publishes use cases.",
 		content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
 				schema = @Schema(ref = MyUseCasesController.PROBLEM)))
 class MyUseCasesController {

@@ -228,7 +228,7 @@ test.describe("workspace organization", () => {
     expect(asked.filter((text) => text === "Pocket Policy Pte Ltd")).toHaveLength(1);
     expect(once).toBeGreaterThan(0);
     // A warning, not a block: the form can still be sent.
-    await expect(page.getByRole("button", { name: "Send for review" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "Create organization" })).toBeEnabled();
     await expectNoSeriousA11yViolations(page);
 
     await notice.getByRole("button", { name: "Request to join" }).click();
@@ -244,7 +244,7 @@ test.describe("workspace organization", () => {
     ]);
   });
 
-  test("a new organization needs its facts, and goes to review", async ({
+  test("a new organization needs its facts, and is created at once", async ({
     page,
     context,
     baseURL,
@@ -253,7 +253,7 @@ test.describe("workspace organization", () => {
     const changes = await answerDecisions(page, changesPath, 201, {});
     await page.goto("/workspace/organization/new");
 
-    await page.getByRole("button", { name: "Send for review" }).click();
+    await page.getByRole("button", { name: "Create organization" }).click();
     await expect(page.getByText("Enter the organization's name.")).toBeVisible();
     await expect(page.getByText("Select a team size.")).toBeVisible();
     await expect(page.getByText("Choose at least one industry.")).toBeVisible();
@@ -279,9 +279,9 @@ test.describe("workspace organization", () => {
     await page.getByRole("option", { name: "Vietnam" }).click();
     await page.getByLabel("Year founded").fill("2019");
     await page.getByLabel("Short description").fill("Route planning for fleets.");
-    await page.getByRole("button", { name: "Send for review" }).click();
+    await page.getByRole("button", { name: "Create organization" }).click();
 
-    await expect(page.getByText("Organization created and sent for review.")).toBeVisible();
+    await expect(page.getByText("Organization created.")).toBeVisible();
     await expect(page).toHaveURL("/workspace/organization");
     expect(changes).toEqual([
       {
@@ -577,6 +577,21 @@ test.describe("workspace organization", () => {
 
     await pages.getByRole("link", { name: "Go to the previous page" }).click();
     await expect(page).toHaveURL("/workspace/organization/members");
+  });
+
+  test("a new company shows no review notice and does not ask to complete the profile", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await signInAs(context, "fresh", baseURL!);
+    await page.goto("/workspace/organization/members");
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Newco");
+    await expect(page.getByText(/invitations left in 24 hours/)).toBeVisible();
+    await expect(page.getByText(/reviewing|in review/i)).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Complete profile" })).toHaveCount(0);
+    await expectNoSeriousA11yViolations(page);
   });
 
   test("an owner sees members, requests and invitations, and decides a request", async ({

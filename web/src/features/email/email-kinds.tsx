@@ -18,6 +18,7 @@ import {
   MessageSquareDotIcon,
   MessageSquareIcon,
   MessageSquareXIcon,
+  PartyPopperIcon,
   TimerIcon,
   TimerOffIcon,
   UserPlusIcon,
@@ -29,6 +30,8 @@ import type { EmailKind } from "./email-search";
 const kindIcons: Record<EmailKind, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   sign_in_code: KeyRoundIcon,
   organization_invitation: UserPlusIcon,
+  organization_activated: PartyPopperIcon,
+  // The three kinds of the retired organization review stay for the rows of the log.
   organization_approved: BadgeCheckIcon,
   organization_refused: BadgeXIcon,
   organization_sent_back: FilePenIcon,

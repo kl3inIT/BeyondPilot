@@ -93,7 +93,7 @@ class MessagingController {
 	@ApiResponse(responseCode = "400", description = "A parameter is not valid.",
 			content = @Content(mediaType = PROBLEM_JSON, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "403",
-			description = "The caller belongs to no approved organization and means to write to a solution provider.",
+			description = "The caller belongs to no organization that is not taken down and means to write to a solution provider.",
 			content = @Content(mediaType = PROBLEM_JSON, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "No profile, solution or program is at the address.",
 			content = @Content(mediaType = PROBLEM_JSON, schema = @Schema(ref = PROBLEM)))
@@ -113,7 +113,7 @@ class MessagingController {
 	@ApiResponse(responseCode = "400", description = "The request is not valid.",
 			content = @Content(mediaType = PROBLEM_JSON, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "403",
-			description = "The caller belongs to no approved organization and writes to a solution provider.",
+			description = "The caller belongs to no organization that is not taken down and writes to a solution provider.",
 			content = @Content(mediaType = PROBLEM_JSON, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "No profile, solution or program is at the address.",
 			content = @Content(mediaType = PROBLEM_JSON, schema = @Schema(ref = PROBLEM)))

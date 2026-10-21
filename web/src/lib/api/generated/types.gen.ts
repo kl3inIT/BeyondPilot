@@ -146,7 +146,7 @@ export type AdminCreateOrganization = {
 export type AdminCreateSolution = {
     name: string;
     /**
-     * The approved organization the solution belongs to.
+     * The organization the solution belongs to.
      */
     organizationId: string;
 };
@@ -217,7 +217,7 @@ export type AdminOfferSolution = {
 };
 
 /**
- * One organization as an operator reviews it.
+ * One organization as an operator reads it.
  */
 export type AdminOrganization = {
     /**
@@ -237,13 +237,13 @@ export type AdminOrganization = {
     merged?: MergedOrganization | null;
     organization: Organization;
     /**
-     * A domain the operator may verify with a decision: the one it has, else the creator's work domain while it waits for review, else its website's. Null for an individual, or when another organization holds it.
+     * A domain the operator may verify: the one it has, else the creator's work domain when the creator belongs to the organization, else its website's. Null for an individual, or when another organization holds it.
      */
     suggestedDomain?: string | null;
 };
 
 /**
- * One page of organizations: those waiting for review first, then the newest.
+ * One page of organizations: those with an open ownership claim first, then the newest.
  */
 export type AdminOrganizationList = {
     /**
@@ -292,18 +292,18 @@ export type AdminOrganizationSummary = {
      */
     owned: boolean;
     /**
-     * What waits for an operator: `new` for an organization to review, `claim` for a request to own one; null when nothing does.
+     * What waits for an operator: `claim` for a request to own the organization; null when nothing does.
      */
-    request?: 'new' | 'claim';
+    request?: 'claim';
     /**
      * When they asked.
      */
     requestedAt?: string | null;
     slug: string;
     /**
-     * GenAI Fund's review of the organization.
+     * `approved` for every organization that was not merged; `suspendedAt` says it is taken down.
      */
-    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'merged';
+    status: 'approved' | 'merged';
     /**
      * When it was taken down; null while it is not.
      */
@@ -1049,7 +1049,7 @@ export type ApplicationView = {
  */
 export type ApplyingOrganization = {
     /**
-     * Whether GenAI Fund has reviewed and approved it; it applies either way.
+     * Whether it is not taken down.
      */
     approved: boolean;
     /**
@@ -1064,7 +1064,7 @@ export type ApplyingOrganization = {
 };
 
 /**
- * What an operator vouches for with an approval, of a new organization or of a claim to own one: the domain of the organization's work addresses, or none.
+ * What an operator vouches for when it approves a claim to own an organization: the domain of the organization's work addresses, or none.
  */
 export type ApproveOrganization = {
     /**
@@ -1603,7 +1603,7 @@ export type ConversationSubject = {
 };
 
 /**
- * A new organization. Its creator owns it, and it waits for GenAI Fund's review.
+ * A new organization. Its creator owns it, and it is active at once.
  */
 export type CreateOrganization = {
     /**
@@ -1699,7 +1699,7 @@ export type CreateUseCase = {
     industry: string;
     integrationRequirements?: string | null;
     /**
-     * An approved organization.
+     * An organization that is not taken down.
      */
     organizationId: string;
     problemStatement: string;
@@ -3609,7 +3609,7 @@ export type MyOrganization = {
  */
 export type MySolutions = {
     /**
-     * Whether the caller may add and change solutions: an owner of an approved organization.
+     * Whether the caller may add and change solutions: an owner of an organization that is not taken down.
      */
     editable: boolean;
     items: Array<SolutionSummary>;
@@ -3810,11 +3810,11 @@ export type Organization = {
     country?: string | null;
     createdAt: string;
     /**
-     * What the operator wrote to the owners when refusing it or sending it back.
+     * What an operator wrote to the owners in a past review; nothing writes it any more.
      */
     decisionMessage?: string | null;
     /**
-     * Why it was refused; null when it was sent back.
+     * Why a past review refused it; nothing writes it any more.
      */
     decisionReason?: 'duplicate' | 'not_a_real_organization' | 'out_of_scope' | 'other';
     description?: string | null;
@@ -3838,9 +3838,9 @@ export type Organization = {
     name: string;
     slug: string;
     /**
-     * GenAI Fund's review of the organization. One taken down stays `approved`; `suspendedAt` says it is down. `merged` is a duplicate merged into another, which nobody changes.
+     * `approved` for every organization that was not merged. One taken down stays `approved`; `suspendedAt` says it is down. `merged` is a duplicate merged into another, which nobody changes.
      */
-    status: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'merged';
+    status: 'approved' | 'merged';
     /**
      * When it was taken down; null while it is not.
      */
@@ -3974,11 +3974,11 @@ export type OrganizationMembers = {
 };
 
 /**
- * How many organizations (new, or claimed by someone who asks to own one) wait for review now, since when, and how many waited at the end of each of the last 14 days.
+ * How many ownership claims on organizations are open now, since when, and how many were open at the end of each of the last 14 days.
  */
 export type OrganizationReviewQueue = {
     /**
-     * How many waited at the end of each day from `from` to today, oldest first; today's is `waiting`. A day behind today is an approximation: a record keeps only its last sending and its last decision.
+     * How many claims were open at the end of each day from `from` to today, oldest first; today's is `waiting`.
      */
     days: Array<number>;
     /**
@@ -3986,17 +3986,17 @@ export type OrganizationReviewQueue = {
      */
     from: string;
     /**
-     * When the one that has waited longest was sent; null when none waits.
+     * When the claim that has waited longest was made; null when none is open.
      */
     oldestSince?: string;
     /**
-     * How many wait now.
+     * How many ownership claims are open now.
      */
     waiting: number;
 };
 
 /**
- * The approved organizations a search finds, by name; ten at most.
+ * The organizations, not taken down, a search finds, by name; ten at most.
  */
 export type OrganizationSearch = {
     items: Array<OrganizationMatch>;
@@ -4546,7 +4546,7 @@ export type ProposalUseCase = {
  */
 export type ProposingOrganization = {
     /**
-     * Whether GenAI Fund approved it; one that is not still sends proposals, which the organization that posted the use case sees marked as pending.
+     * Whether it is not taken down.
      */
     approved: boolean;
     id: string;
@@ -4617,7 +4617,7 @@ export type PublicOffer = {
 };
 
 /**
- * An approved organization as anyone reads it.
+ * An organization as anyone reads it.
  */
 export type PublicOrganization = {
     /**
@@ -5041,7 +5041,7 @@ export type ReceivedUseCaseProposal = {
     editedAt?: string | null;
     id: string;
     /**
-     * Whether GenAI Fund approved the sending organization; a proposal from one that is not is marked as pending.
+     * Whether the sending organization is not taken down.
      */
     organizationApproved: boolean;
     /**
@@ -5094,7 +5094,7 @@ export type ReceivedUseCaseProposalSummary = {
     editedAt?: string | null;
     id: string;
     /**
-     * Whether GenAI Fund approved the sending organization.
+     * Whether the sending organization is not taken down.
      */
     organizationApproved: boolean;
     /**
@@ -5139,17 +5139,6 @@ export type ReceivedUseCaseProposals = {
      */
     shortlisted: number;
     useCase: ProposalUseCase;
-};
-
-/**
- * Why an organization is refused for good, and what its owners are told. Missing information is a send back instead.
- */
-export type RefuseOrganization = {
-    /**
-     * Shown to the owners with the refusal.
-     */
-    message?: string | null;
-    reason: 'duplicate' | 'not_a_real_organization' | 'out_of_scope' | 'other';
 };
 
 /**
@@ -6493,16 +6482,6 @@ export type SemanticSearchState = {
 };
 
 /**
- * Why GenAI Fund sends an organization back to its owners.
- */
-export type SendBackOrganization = {
-    /**
-     * What the owners should change. They read it and receive it by email.
-     */
-    reason: string;
-};
-
-/**
  * Why GenAI Fund sends a solution back to its owners.
  */
 export type SendBackSolution = {
@@ -7011,7 +6990,7 @@ export type SubmittedApplication = {
 };
 
 /**
- * Why an approved organization is taken down, and what its owners are told.
+ * Why an organization is taken down, and what its owners are told.
  */
 export type TakeDownOrganization = {
     /**
@@ -7278,7 +7257,7 @@ export type UseCaseOrganization = {
 };
 
 /**
- * The approved organizations that can have use cases, by name; at most 50.
+ * The organizations not taken down that can have use cases, by name; at most 50.
  */
 export type UseCaseOrganizationList = {
     items: Array<UseCaseOrganization>;
@@ -9807,7 +9786,7 @@ export type StartConversationErrors = {
      */
     401: Problem;
     /**
-     * The caller belongs to no approved organization and writes to a solution provider.
+     * The caller belongs to no organization that is not taken down and writes to a solution provider.
      */
     403: Problem;
     /**
@@ -10256,7 +10235,7 @@ export type GetConversationProspectErrors = {
      */
     401: Problem;
     /**
-     * The caller belongs to no approved organization and means to write to a solution provider.
+     * The caller belongs to no organization that is not taken down and means to write to a solution provider.
      */
     403: Problem;
     /**
@@ -11226,15 +11205,15 @@ export type ListAdminOrganizationsData = {
          */
         q?: string | null;
         /**
-         * Only organizations of this review status; `in_review` also selects an approved one with an open claim, `approved` leaves out those taken down, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.
+         * Only organizations in this state: `approved` leaves out those taken down, `claimed` selects those with an open ownership claim, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.
          */
-        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended' | 'merged';
+        status?: 'approved' | 'claimed' | 'suspended' | 'merged';
         /**
          * Only organizations in this country, ISO 3166-1 alpha-2.
          */
         country?: string | null;
         /**
-         * The order: `name` by the name, `received` by when its open claim arrived, or when the organization was created when none is open, `members` by how many people belong to it; `-` before a key turns it round. Without it, those a decision waits on first, then the most recently received.
+         * The order: `name` by the name, `received` by when its open claim arrived, or when the organization was created when none is open, `members` by how many people belong to it; `-` before a key turns it round. Without it, those with an open claim first, then the most recently received.
          */
         sort?: 'name' | '-name' | 'received' | '-received' | 'members' | '-members';
         /**
@@ -11321,15 +11300,15 @@ export type ExportAdminOrganizationsData = {
          */
         q?: string | null;
         /**
-         * Only organizations of this review status; `in_review` also selects an approved one with an open claim, `approved` leaves out those taken down, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.
+         * Only organizations in this state: `approved` leaves out those taken down, `claimed` selects those with an open ownership claim, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.
          */
-        status?: 'in_review' | 'needs_changes' | 'approved' | 'rejected' | 'suspended' | 'merged';
+        status?: 'approved' | 'claimed' | 'suspended' | 'merged';
         /**
          * Only organizations in this country, ISO 3166-1 alpha-2.
          */
         country?: string | null;
         /**
-         * The order: `name` by the name, `received` by when its open claim arrived, or when the organization was created when none is open, `members` by how many people belong to it; `-` before a key turns it round. Without it, those a decision waits on first, then the most recently received.
+         * The order: `name` by the name, `received` by when its open claim arrived, or when the organization was created when none is open, `members` by how many people belong to it; `-` before a key turns it round. Without it, those with an open claim first, then the most recently received.
          */
         sort?: 'name' | '-name' | 'received' | '-received' | 'members' | '-members';
         /**
@@ -11480,49 +11459,6 @@ export type SaveAdminOrganizationResponses = {
 };
 
 export type SaveAdminOrganizationResponse = SaveAdminOrganizationResponses[keyof SaveAdminOrganizationResponses];
-
-export type ApproveOrganizationData = {
-    body: ApproveOrganization;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/organization/admin/organizations/{id}/approve';
-};
-
-export type ApproveOrganizationErrors = {
-    /**
-     * The domain is not valid.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-    /**
-     * There is no such organization.
-     */
-    404: Problem;
-    /**
-     * The organization is not waiting for review, or another organization has the domain.
-     */
-    409: Problem;
-};
-
-export type ApproveOrganizationError = ApproveOrganizationErrors[keyof ApproveOrganizationErrors];
-
-export type ApproveOrganizationResponses = {
-    /**
-     * The organization is approved.
-     */
-    204: void;
-};
-
-export type ApproveOrganizationResponse = ApproveOrganizationResponses[keyof ApproveOrganizationResponses];
 
 export type InviteAdminOrganizationMemberData = {
     body: InviteMember;
@@ -11722,49 +11658,6 @@ export type MergeOrganizationResponses = {
 
 export type MergeOrganizationResponse = MergeOrganizationResponses[keyof MergeOrganizationResponses];
 
-export type RefuseOrganizationData = {
-    body: RefuseOrganization;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/organization/admin/organizations/{id}/refuse';
-};
-
-export type RefuseOrganizationErrors = {
-    /**
-     * A member is not valid.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-    /**
-     * There is no such organization.
-     */
-    404: Problem;
-    /**
-     * The organization is not waiting for review.
-     */
-    409: Problem;
-};
-
-export type RefuseOrganizationError = RefuseOrganizationErrors[keyof RefuseOrganizationErrors];
-
-export type RefuseOrganizationResponses = {
-    /**
-     * The organization is refused, with the reason.
-     */
-    204: void;
-};
-
-export type RefuseOrganizationResponse = RefuseOrganizationResponses[keyof RefuseOrganizationResponses];
-
 export type RestoreOrganizationData = {
     body?: never;
     path: {
@@ -11803,49 +11696,6 @@ export type RestoreOrganizationResponses = {
 };
 
 export type RestoreOrganizationResponse = RestoreOrganizationResponses[keyof RestoreOrganizationResponses];
-
-export type SendBackOrganizationData = {
-    body: SendBackOrganization;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/organization/admin/organizations/{id}/send-back';
-};
-
-export type SendBackOrganizationErrors = {
-    /**
-     * The reason is blank or over 1000 characters.
-     */
-    400: Problem;
-    /**
-     * Nobody is signed in.
-     */
-    401: Problem;
-    /**
-     * The caller is not an operator.
-     */
-    403: Problem;
-    /**
-     * There is no such organization.
-     */
-    404: Problem;
-    /**
-     * The organization is not waiting for review.
-     */
-    409: Problem;
-};
-
-export type SendBackOrganizationError = SendBackOrganizationErrors[keyof SendBackOrganizationErrors];
-
-export type SendBackOrganizationResponses = {
-    /**
-     * The organization needs changes; its owners are told why.
-     */
-    204: void;
-};
-
-export type SendBackOrganizationResponse = SendBackOrganizationResponses[keyof SendBackOrganizationResponses];
 
 export type TakeDownOrganizationData = {
     body: TakeDownOrganization;
@@ -12509,7 +12359,7 @@ export type CreateOrganizationError = CreateOrganizationErrors[keyof CreateOrgan
 
 export type CreateOrganizationResponses = {
     /**
-     * The organization, waiting for GenAI Fund's review.
+     * The organization, active at once.
      */
     201: Organization;
 };
@@ -12542,7 +12392,7 @@ export type CreateOrganizationFromBasicsError = CreateOrganizationFromBasicsErro
 
 export type CreateOrganizationFromBasicsResponses = {
     /**
-     * The organization, waiting for GenAI Fund's review.
+     * The organization, active at once.
      */
     201: Organization;
 };
@@ -12568,7 +12418,7 @@ export type JoinOrganizationErrors = {
      */
     401: Problem;
     /**
-     * There is no such approved organization.
+     * There is no such organization.
      */
     404: Problem;
     /**
@@ -12603,7 +12453,7 @@ export type GetOrganizationErrors = {
      */
     401: Problem;
     /**
-     * No approved organization has this address.
+     * No organization has this address.
      */
     404: Problem;
 };
@@ -14321,7 +14171,7 @@ export type SendUseCaseProposalErrors = {
      */
     400: Problem;
     /**
-     * The caller's organization is not approved.
+     * The caller's organization is taken down.
      */
     403: Problem;
     /**
@@ -16222,7 +16072,7 @@ export type CreateSolutionErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization.
+     * The caller is not an owner of an organization that is not taken down.
      */
     403: Problem;
 };
@@ -16253,7 +16103,7 @@ export type DeleteSolutionDraftErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization.
+     * The caller is not an owner of an organization that is not taken down.
      */
     403: Problem;
     /**
@@ -16327,7 +16177,7 @@ export type SaveSolutionErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization.
+     * The caller is not an owner of an organization that is not taken down.
      */
     403: Problem;
     /**
@@ -16370,7 +16220,7 @@ export type SubmitSolutionErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization.
+     * The caller is not an owner of an organization that is not taken down.
      */
     403: Problem;
     /**
@@ -16413,7 +16263,7 @@ export type AddCustomerDeploymentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization.
+     * The caller is not an owner of an organization that is not taken down.
      */
     403: Problem;
     /**
@@ -16453,7 +16303,7 @@ export type DeleteCustomerDeploymentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization.
+     * The caller is not an owner of an organization that is not taken down.
      */
     403: Problem;
     /**
@@ -16497,7 +16347,7 @@ export type SaveCustomerDeploymentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization.
+     * The caller is not an owner of an organization that is not taken down.
      */
     403: Problem;
     /**
@@ -16537,7 +16387,7 @@ export type RestoreCustomerDeploymentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization.
+     * The caller is not an owner of an organization that is not taken down.
      */
     403: Problem;
     /**
@@ -16577,7 +16427,7 @@ export type WithdrawCustomerDeploymentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not an owner of an approved organization.
+     * The caller is not an owner of an organization that is not taken down.
      */
     403: Problem;
     /**
@@ -17748,7 +17598,7 @@ export type ListUseCaseOrganizationsError = ListUseCaseOrganizationsErrors[keyof
 
 export type ListUseCaseOrganizationsResponses = {
     /**
-     * The approved organizations, by name.
+     * The organizations that are not taken down, by name.
      */
     200: UseCaseOrganizationList;
 };
@@ -18220,7 +18070,7 @@ export type ListMyUseCasesErrors = {
      */
     401: Problem;
     /**
-     * The caller is not a member of an approved organization that publishes use cases.
+     * The caller is not a member of an organization, not taken down, that publishes use cases.
      */
     403: Problem;
 };
@@ -18249,7 +18099,7 @@ export type CreateMyUseCaseErrors = {
      */
     401: Problem;
     /**
-     * The caller is not a member of an approved organization that publishes use cases.
+     * The caller is not a member of an organization, not taken down, that publishes use cases.
      */
     403: Problem;
 };
@@ -18280,7 +18130,7 @@ export type GetMyUseCaseErrors = {
      */
     401: Problem;
     /**
-     * The caller is not a member of an approved organization that publishes use cases.
+     * The caller is not a member of an organization, not taken down, that publishes use cases.
      */
     403: Problem;
     /**
@@ -18319,7 +18169,7 @@ export type SaveMyUseCaseErrors = {
      */
     401: Problem;
     /**
-     * The caller is not a member of an approved organization that publishes use cases.
+     * The caller is not a member of an organization, not taken down, that publishes use cases.
      */
     403: Problem;
     /**
@@ -18359,7 +18209,7 @@ export type ReadMyUseCaseAttachmentErrors = {
      */
     401: Problem;
     /**
-     * The caller is not a member of an approved organization that publishes use cases.
+     * The caller is not a member of an organization, not taken down, that publishes use cases.
      */
     403: Problem;
     /**
@@ -18394,7 +18244,7 @@ export type MoveMyUseCaseToDraftErrors = {
      */
     401: Problem;
     /**
-     * The caller is not a member of an approved organization that publishes use cases.
+     * The caller is not a member of an organization, not taken down, that publishes use cases.
      */
     403: Problem;
     /**
@@ -18437,7 +18287,7 @@ export type SubmitMyUseCaseErrors = {
      */
     401: Problem;
     /**
-     * The caller is not a member of an approved organization that publishes use cases.
+     * The caller is not a member of an organization, not taken down, that publishes use cases.
      */
     403: Problem;
     /**
