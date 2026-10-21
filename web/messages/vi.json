@@ -4375,17 +4375,6 @@
         "note": "Thành viên được hiển thị trong đội ngũ và tự sửa được chức danh của mình. Chỉ chủ sở hữu mới sửa hồ sơ và giải pháp, mời người và xóa thành viên.",
         "cancel": "Hủy",
         "send": "Gửi lời mời",
-        "limit": {
-          "daily": {
-            "lead": "{name} đã gửi {limit} lời mời trong 24 giờ qua, mức tối đa một tổ chức được gửi.",
-            "note": "Hãy viết cho GenAI Fund nếu bạn đưa vào một đội lớn hơn."
-          },
-          "open": {
-            "lead": "{name} đang có {limit} lời mời chưa ai trả lời, mức tối đa được giữ mở; hãy thu hồi bớt, hoặc chờ mọi người trả lời.",
-            "note": "Hãy viết cho GenAI Fund nếu bạn đưa vào một đội lớn hơn."
-          },
-          "close": "Đóng"
-        },
         "emailsHint": "Các địa chỉ email đầy đủ, cách nhau bằng dấu phẩy.",
         "roleHelp": "Mỗi vai trò làm được gì"
       }
