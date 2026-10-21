@@ -3,6 +3,7 @@ package ai.genaifund.beyondpilot.organization;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -13,11 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import ai.genaifund.beyondpilot.TestMailbox;
@@ -38,6 +34,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.web.servlet.client.RestTestClient;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Organizations over real HTTP against PostgreSQL: how a person gets into one, what owners and members may do inside,
@@ -62,6 +59,9 @@ class OrganizationTest {
 
 	@Autowired
 	private ActivationNotices activationNotices;
+
+	@Autowired
+	private TransactionTemplate transaction;
 
 	private RestTestClient client;
 
@@ -1571,13 +1571,13 @@ class OrganizationTest {
 		addMember(id, "plain@activated.test", "member");
 		mark(id);
 
-		assertThat(activationNotices.sendBatch()).isEqualTo(1);
+		activationNotices.sendAll();
 
 		assertThat(activatedEmails("first@activated.test")).isEqualTo(1);
 		assertThat(activatedEmails("second@activated.test")).isEqualTo(1);
 		assertThat(activatedEmails("plain@activated.test")).isZero();
 		assertThat(isMarked(id)).isFalse();
-		assertThat(activationNotices.sendBatch()).isZero();
+		activationNotices.sendAll();
 		assertThat(activatedEmails("first@activated.test")).isEqualTo(1);
 	}
 
@@ -1587,7 +1587,7 @@ class OrganizationTest {
 		jdbc.sql("delete from organization_member where organization_id = ?").param(id).update();
 		mark(id);
 
-		assertThat(activationNotices.sendBatch()).isEqualTo(1);
+		activationNotices.sendAll();
 
 		assertThat(isMarked(id)).isFalse();
 		assertThat(activatedEmails("gone@ownerless.test")).isZero();
@@ -1599,37 +1599,78 @@ class OrganizationTest {
 		jdbc.sql("update organization set suspended_at = now() where id = ?").param(id).update();
 		mark(id);
 
-		assertThat(activationNotices.sendBatch()).isEqualTo(1);
+		activationNotices.sendAll();
 
 		assertThat(isMarked(id)).isFalse();
 		assertThat(activatedEmails("owner@taken-down.test")).isZero();
 	}
 
 	@Test
-	void theActivationNoticesOfTwoRunsAtOnceSendEachEmailOnce() throws Exception {
-		List<String> owners = IntStream.range(0, 6).mapToObj(index -> "owner" + index + "@twice.test").toList();
-		for (String owner : owners) {
-			mark(create(signIn(owner), "Twice " + owner));
-		}
-		ExecutorService runs = Executors.newFixedThreadPool(2);
-		CountDownLatch start = new CountDownLatch(1);
+	void aMarkedOrganizationMergedIsClearedWithoutAnEmail() {
+		UUID id = create(signIn("owner@merged-away.test"), "Merged Away Co");
+		UUID into = create(signIn("owner@merged-into.test"), "Merged Into Co");
+		jdbc.sql("""
+				update organization set status = 'merged', merged_into_id = ?, merged_at = now(),
+				  merged_by_account_id = ? where id = ?
+				""").params(into, idOf("operator@genaifund.test"), id).update();
+		mark(id);
+
+		activationNotices.sendAll();
+
+		assertThat(isMarked(id)).isFalse();
+		assertThat(activatedEmails("owner@merged-away.test")).isZero();
+	}
+
+	@Test
+	void aBatchThatFailsKeepsItsMarksAndQueuesNoEmail() {
+		UUID id = create(signIn("owner@failing.test"), "Failing Co");
+		mark(id);
+		jdbc.sql("""
+				create function fail_clear() returns trigger language plpgsql as
+				$$ begin raise exception 'clearing refused'; end $$
+				""").update();
+		jdbc.sql("""
+				create trigger fail_clear before update of activation_notice_pending on organization
+				for each row when (old.id = '%s' and new.activation_notice_pending = false) execute function fail_clear()
+				""".formatted(id)).update();
 		try {
-			List<Future<Integer>> batches = IntStream.range(0, 2).mapToObj(run -> runs.submit(() -> {
-				start.await();
-				return activationNotices.sendBatch();
-			})).toList();
-			start.countDown();
-			int taken = 0;
-			for (Future<Integer> batch : batches) {
-				taken += batch.get(30, TimeUnit.SECONDS);
-			}
-			assertThat(taken).isEqualTo(owners.size());
+			activationNotices.sendAll();
 		}
 		finally {
-			runs.shutdownNow();
+			jdbc.sql("drop trigger fail_clear on organization").update();
+			jdbc.sql("drop function fail_clear()").update();
 		}
 
-		assertThat(owners).allSatisfy(owner -> assertThat(activatedEmails(owner)).isEqualTo(1));
+		assertThat(isMarked(id)).isTrue();
+		assertThat(activatedEmails("owner@failing.test")).isZero();
+		activationNotices.sendAll();
+		assertThat(isMarked(id)).isFalse();
+		assertThat(activatedEmails("owner@failing.test")).isEqualTo(1);
+	}
+
+	/** Another instance holds one row: this run does not wait for it, and tells the row once it is released. */
+	@Test
+	void theActivationNoticesOfTwoRunsAtOnceSendEachEmailOnce() {
+		UUID held = create(signIn("held@twice.test"), "Twice Held");
+		UUID free = create(signIn("free@twice.test"), "Twice Free");
+		mark(held);
+		mark(free);
+
+		transaction.executeWithoutResult(status -> {
+			jdbc.sql("select id from organization where id = ? for update").param(held).query(UUID.class).single();
+			assertTimeoutPreemptively(Duration.ofSeconds(30), activationNotices::sendAll);
+		});
+
+		assertThat(activatedEmails("free@twice.test")).isEqualTo(1);
+		assertThat(activatedEmails("held@twice.test")).isZero();
+		assertThat(isMarked(held)).isTrue();
+		assertThat(isMarked(free)).isFalse();
+
+		activationNotices.sendAll();
+
+		assertThat(activatedEmails("held@twice.test")).isEqualTo(1);
+		assertThat(activatedEmails("free@twice.test")).isEqualTo(1);
+		assertThat(isMarked(held)).isFalse();
 	}
 
 	private void mark(UUID organization) {
