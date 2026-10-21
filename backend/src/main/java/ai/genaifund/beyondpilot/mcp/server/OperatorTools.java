@@ -517,7 +517,7 @@ class OperatorTools {
 			ReceivedProposal.Sender sender = proposal.sender();
 			Map<String, Object> result = fields("id", proposal.id().toString(), "useCase",
 					fields("id", "use_case:" + proposal.useCaseId(), "title", proposal.useCaseTitle()), "organization",
-					proposal.organizationName(), "organizationApproved", proposal.organizationApproved(), "sentAt",
+					proposal.organizationName(), "organizationActive", proposal.organizationActive(), "sentAt",
 					proposal.sentAt().toString(), "editedAt",
 					proposal.editedAt() == null ? null : proposal.editedAt().toString(), "decision",
 					proposal.decision(), "decidedAt",

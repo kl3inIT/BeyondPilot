@@ -12,9 +12,9 @@ import org.jspecify.annotations.Nullable;
 public record AdminOrganizationListRequest(
 		@Parameter(description = "Organizations whose name or domain contains this, ignoring case.") @Size(
 				max = 100) @Nullable String q,
-		@Parameter(description = "Only organizations in this state: `approved` leaves out those taken down, `claimed` selects those with an open ownership claim, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.",
-				schema = @Schema(allowableValues = { "approved", "claimed", "suspended", "merged" })) @Pattern(
-						regexp = "approved|claimed|suspended|merged") @Nullable String status,
+		@Parameter(description = "Only organizations in this state: `active` leaves out those taken down, `claimed` selects those with an open ownership claim, and `suspended` selects those taken down. Merged organizations are listed only under `merged`.",
+				schema = @Schema(allowableValues = { "active", "claimed", "suspended", "merged" })) @Pattern(
+						regexp = "active|claimed|suspended|merged") @Nullable String status,
 		@Parameter(description = "Only organizations in this country, ISO 3166-1 alpha-2.") @Pattern(
 				regexp = OrganizationCodes.COUNTRY) @Nullable String country,
 		@Parameter(

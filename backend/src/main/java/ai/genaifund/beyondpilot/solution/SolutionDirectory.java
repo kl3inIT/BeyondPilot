@@ -85,7 +85,7 @@ public class SolutionDirectory {
 		int size = request.size() == null ? PAGE_SIZE : request.size();
 		UUID organizationId = null;
 		if (request.organization() != null) {
-			Optional<OrganizationName> organization = organizations.approvedAt(request.organization());
+			Optional<OrganizationName> organization = organizations.activeAt(request.organization());
 			if (organization.isEmpty()) {
 				// An address no organization that is not taken down has selects nothing.
 				return new PublicSolutionListResponse(List.of(), page, size, 0);
@@ -98,7 +98,7 @@ public class SolutionDirectory {
 				request.focusArea(), request.maturity(), organizationId, request.sort(), opening, size,
 				(long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
-			.approvedNames(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
+			.activeNames(rows.stream().map(SolutionQueryRepository.Row::organizationId).distinct().toList());
 		Map<UUID, List<OfferResponse>> offered = offers.of(rows.stream().map(SolutionQueryRepository.Row::id).toList());
 		return new PublicSolutionListResponse(rows.stream().filter(row -> names.containsKey(row.organizationId())).map(row -> {
 			OrganizationName organization = names.get(row.organizationId());
@@ -122,7 +122,7 @@ public class SolutionDirectory {
 			.filter(Solution::isApproved)
 			.orElseThrow(() -> notFound(slug));
 		OrganizationProfile organization = organizations.profile(solution.getOrganizationId())
-			.filter(OrganizationProfile::approved)
+			.filter(OrganizationProfile::active)
 			.orElseThrow(() -> notFound(slug));
 		return shown(solution, organization);
 	}
@@ -349,7 +349,7 @@ public class SolutionDirectory {
 	/** Those of these approved solutions whose organization is not taken down. */
 	private List<IndexedSolution> indexed(List<Solution> approved) {
 		Map<UUID, OrganizationName> names = organizations
-			.approvedNames(approved.stream().map(Solution::getOrganizationId).distinct().toList());
+			.activeNames(approved.stream().map(Solution::getOrganizationId).distinct().toList());
 		Map<UUID, List<OfferResponse>> offered = offers.of(approved.stream().map(Solution::getId).toList());
 		return approved.stream().filter(solution -> names.containsKey(solution.getOrganizationId())).map(solution -> {
 			OrganizationName organization = names.get(solution.getOrganizationId());
@@ -389,7 +389,7 @@ public class SolutionDirectory {
 	public PublicCustomerDeploymentListResponse deployments(PublicCustomerDeploymentListRequest request) {
 		int page = request.page() == null ? 1 : request.page();
 		int size = request.size() == null ? PAGE_SIZE : request.size();
-		Optional<OrganizationName> organization = organizations.approvedAt(request.organization());
+		Optional<OrganizationName> organization = organizations.activeAt(request.organization());
 		if (organization.isEmpty()) {
 			return new PublicCustomerDeploymentListResponse(List.of(), page, size, 0);
 		}

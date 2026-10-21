@@ -821,10 +821,10 @@ class UseCaseProposalTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Object>read(sent, "$.proposal.sender")).isNull();
 		assertThat(JsonPath.<String>read(sent, "$.proposal.sentBy.email")).isEqualTo("alone@waiting-send.test");
 		String list = body(get(poster.founder, path + "s").expectStatus().isOk());
-		assertThat(JsonPath.<List<Boolean>>read(list, "$.items[*].organizationApproved")).containsExactly(true);
+		assertThat(JsonPath.<List<Boolean>>read(list, "$.items[*].organizationActive")).containsExactly(true);
 		assertThat(JsonPath.<List<String>>read(list, "$.items[*].contactName")).containsExactly("Founder Provider");
 		String one = body(get(poster.founder, API + "/use-case-proposals/" + id).expectStatus().isOk());
-		assertThat(JsonPath.<Boolean>read(one, "$.organizationApproved")).isTrue();
+		assertThat(JsonPath.<Boolean>read(one, "$.organizationActive")).isTrue();
 		assertThat(JsonPath.<String>read(one, "$.sentBy.email")).isEqualTo("alone@waiting-send.test");
 		assertThat(JsonPath.<Object>read(one, "$.teamBackground")).isNull();
 	}

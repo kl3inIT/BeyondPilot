@@ -98,7 +98,7 @@ class AdminOrganizationsController {
 	@Operation(operationId = "createAdminOrganization",
 			summary = "Create an organization for a company that is not here yet",
 			security = @SecurityRequirement(name = "session"))
-	@ApiResponse(responseCode = "201", description = "The organization, approved and without an owner.")
+	@ApiResponse(responseCode = "201", description = "The organization, active and without an owner.")
 	@ApiResponse(responseCode = "400", description = "A member is not valid.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "409", description = "Another organization has the email domain.",
@@ -210,7 +210,7 @@ class AdminOrganizationsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = NOT_FOUND,
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The organization is not approved.",
+	@ApiResponse(responseCode = "409", description = "The organization is not active.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void takeDown(@CurrentActor Actor actor, @PathVariable UUID id,
 			@Valid @RequestBody TakeDownOrganizationRequest request) {
@@ -241,7 +241,7 @@ class AdminOrganizationsController {
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	@ApiResponse(responseCode = "404", description = "One of the two organizations does not exist.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
-	@ApiResponse(responseCode = "409", description = "The organizations are the same, the duplicate was merged, or the one to keep is not approved and shown.",
+	@ApiResponse(responseCode = "409", description = "The organizations are the same, the duplicate was merged, or the one to keep is not active and shown.",
 			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
 	void merge(@CurrentActor Actor actor, @PathVariable UUID id, @Valid @RequestBody MergeOrganizationRequest request) {
 		organizations.merge(actor, id, request);

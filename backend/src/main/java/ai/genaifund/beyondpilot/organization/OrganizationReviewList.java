@@ -15,7 +15,7 @@ public record OrganizationReviewList(long total, List<Item> items) {
 
 	/**
 	 * One organization in the list.
-	 * @param status {@code approved} or {@code merged}; one taken down stays approved and has {@code suspendedAt}
+	 * @param status {@code active} or {@code merged}; one taken down stays active and has {@code suspendedAt}
 	 * @param request what waits for an operator: {@code claim}; null when nothing does
 	 */
 	public record Item(UUID id, String name, String type, @Nullable String country, String status,

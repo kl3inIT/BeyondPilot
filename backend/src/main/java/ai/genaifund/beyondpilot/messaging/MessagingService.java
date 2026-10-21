@@ -252,7 +252,7 @@ public class MessagingService {
 		boolean waits = !MessagingRepository.PROGRAM.equals(target.kind());
 		UUID id = UUID.randomUUID();
 		Membership membership = caller.membership();
-		UUID starterOrganizationId = membership != null && membership.approved() ? membership.organizationId() : null;
+		UUID starterOrganizationId = membership != null && membership.active() ? membership.organizationId() : null;
 		if (!conversations.create(id, target.kind(), target.subjectId(), target.subjectName(), caller.accountId(),
 				starterOrganizationId, target.recipientAccountId(), target.recipientOrganizationId(),
 				waits ? MessagingRepository.PENDING : MessagingRepository.ACCEPTED)) {
@@ -671,7 +671,7 @@ public class MessagingService {
 					throw new MessagingException(MessagingErrorCode.NEEDS_ORGANIZATION,
 							"A solution provider written to by a person without an organization");
 				}
-				if (!membership.approved()) {
+				if (!membership.active()) {
 					throw new MessagingException(MessagingErrorCode.ORGANIZATION_NOT_APPROVED,
 							"A solution provider written to by organization " + membership.organizationId()
 									+ ", which is taken down");

@@ -540,7 +540,7 @@ public class MatchingService {
 		boolean operator = identity.isOperator(actor);
 		if (!operator) {
 			organizations.membershipOf(actor)
-				.filter(Membership::approved)
+				.filter(Membership::active)
 				.filter(membership -> membership.organizationId().equals(brief.organizationId()))
 				.orElseThrow(() -> notFound(useCaseId));
 		}

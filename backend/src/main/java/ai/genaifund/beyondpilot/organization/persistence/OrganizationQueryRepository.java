@@ -36,7 +36,7 @@ public class OrganizationQueryRepository {
 			       or lower(o.email_domain) like :pattern escape '\\')
 			  and ((cast(:status as text) is null and o.status <> 'merged')
 			       or (:status = 'suspended' and o.suspended_at is not null and o.status <> 'merged')
-			       or (:status = 'approved' and o.status = 'approved' and o.suspended_at is null)
+			       or (:status = 'active' and o.status = 'active' and o.suspended_at is null)
 			       or (:status = 'claimed' and c.id is not null and o.status <> 'merged')
 			       or (:status = 'merged' and o.status = 'merged'))
 			  and (cast(:country as text) is null or o.country = :country)
@@ -73,7 +73,7 @@ public class OrganizationQueryRepository {
 	 */
 	public List<Match> search(String text, int limit) {
 		return jdbc.sql(MATCHES + """
-				where o.status = 'approved' and o.suspended_at is null and o.type <> 'independent_builder'
+				where o.status = 'active' and o.suspended_at is null and o.type <> 'independent_builder'
 				  and lower(o.name) like :pattern escape '\\'
 				order by lower(o.name), o.id
 				limit :limit
@@ -84,10 +84,10 @@ public class OrganizationQueryRepository {
 	 * The organizations not taken down, the ones that can have use cases, by name; at most {@code limit}.
 	 * @param text only those whose name contains it, ignoring case; every one when null
 	 */
-	public List<Name> approvedOrganizations(@Nullable String text, int limit) {
+	public List<Name> activeOrganizations(@Nullable String text, int limit) {
 		return jdbc.sql("""
 				select id, slug, name, country, logo_file_id from organization
-				where status = 'approved' and suspended_at is null
+				where status = 'active' and suspended_at is null
 				  and (cast(:pattern as text) is null or lower(name) like :pattern escape '\\')
 				order by lower(name), id
 				limit :limit
@@ -107,34 +107,13 @@ public class OrganizationQueryRepository {
 			.list();
 	}
 
-	/**
-	 * Locks up to {@code limit} organizations that V109 marked to be told they are active, oldest first. A row another
-	 * transaction holds is skipped, so two instances never take the same one.
-	 */
-	public List<UUID> lockMarked(int limit) {
-		return jdbc.sql("""
-				select id from organization where activation_notice_pending
-				order by created_at, id
-				limit :limit
-				for update skip locked
-				""").param("limit", limit).query(UUID.class).list();
-	}
-
-	public void clearMarks(Collection<UUID> ids) {
-		if (!ids.isEmpty()) {
-			jdbc.sql("update organization set activation_notice_pending = false where id in (:ids)")
-				.param("ids", ids)
-				.update();
-		}
-	}
-
 	public List<Name> names(Collection<UUID> ids) {
 		return names(ids, "");
 	}
 
-	/** The names of those of these organizations that are approved; one taken down or in review is left out. */
-	public List<Name> approvedNames(Collection<UUID> ids) {
-		return names(ids, " and status = 'approved' and suspended_at is null");
+	/** The names of those of these organizations that are active; one taken down or merged is left out. */
+	public List<Name> activeNames(Collection<UUID> ids) {
+		return names(ids, " and status = 'active' and suspended_at is null");
 	}
 
 	private List<Name> names(Collection<UUID> ids, String condition) {
@@ -151,7 +130,7 @@ public class OrganizationQueryRepository {
 	/**
 	 * One page for operators in the order {@code sort} names; without one, those with an open claim first, then the
 	 * newest.
-	 * @param status {@code approved} for those not taken down, {@code claimed} for those with an open claim,
+	 * @param status {@code active} for those not taken down, {@code claimed} for those with an open claim,
 	 * {@code suspended} for those taken down or {@code merged}; none selects every one but the merged
 	 * @param sort {@code name}, {@code received} or {@code members}, with {@code -} before it for the reverse
 	 */

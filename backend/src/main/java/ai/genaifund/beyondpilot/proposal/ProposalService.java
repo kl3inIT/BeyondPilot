@@ -293,7 +293,7 @@ public class ProposalService {
 	 */
 	private void requireSwitchable(Membership membership) {
 		// One that GenAI Fund took down keeps that decision: neither a team nor a fresh start undoes it.
-		if (!membership.approved() || sentAnything(membership.organizationId())) {
+		if (!membership.active() || sentAnything(membership.organizationId())) {
 			throw new ProposalException(ProposalErrorCode.INDIVIDUAL_LOCKED,
 					"Individual " + membership.organizationId() + " already sent something");
 		}
@@ -497,8 +497,8 @@ public class ProposalService {
 				person.email(), previous,
 				organization == null ? null
 						: new ApplyingOrganizationResponse(organization.id(), organization.name(), organization.type(),
-								organization.country(), organization.teamSize(), organization.approved(),
-								Membership.INDIVIDUAL.equals(organization.type()) && organization.approved()
+								organization.country(), organization.teamSize(), organization.active(),
+								Membership.INDIVIDUAL.equals(organization.type()) && organization.active()
 										&& !sentAnything(organization.id())),
 				offered);
 	}

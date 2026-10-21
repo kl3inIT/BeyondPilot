@@ -13,7 +13,7 @@ public record ReceivedUseCaseProposalSummaryResponse(@Schema(requiredMode = Sche
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED) String organizationName,
 		@Schema(types = { "string", "null" }, format = "uuid", description = "Read at /api/storage/files/{id}.") @Nullable UUID organizationLogoFileId,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The names of the solutions offered.") List<String> solutionNames,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Whether the sending organization is not taken down.") boolean organizationApproved,
+		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Whether the sending organization is active, meaning not taken down.") boolean organizationActive,
 		@Schema(types = { "string", "null" }, description = "Who sent it.") @Nullable String contactName,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED, format = "date-time") Instant sentAt,
 		@Schema(types = { "string", "null" }, format = "date-time",

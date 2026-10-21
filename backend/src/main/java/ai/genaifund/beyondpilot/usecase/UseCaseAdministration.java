@@ -129,7 +129,7 @@ public class UseCaseAdministration {
 		int size = request.size() == null ? PAGE_SIZE : request.size();
 		Instant now = Instant.now();
 		List<UUID> matching = text == null ? List.of()
-				: organizations.approvedOrganizations(text, ORGANIZATION_LIMIT).stream().map(OrganizationName::id).toList();
+				: organizations.activeOrganizations(text, ORGANIZATION_LIMIT).stream().map(OrganizationName::id).toList();
 		List<UseCaseQueryRepository.Row> rows = useCaseList.page(text, matching, request.organizationId(),
 				request.status(), request.featured(), request.sort(), now, size, (long) (page - 1) * size);
 		Map<UUID, OrganizationName> names = organizations
@@ -217,7 +217,7 @@ public class UseCaseAdministration {
 	@Transactional(readOnly = true)
 	public UseCaseOrganizationListResponse organizations(Actor actor, UseCaseOrganizationListRequest request) {
 		identity.requireOperator(actor);
-		return new UseCaseOrganizationListResponse(organizations.approvedOrganizations(request.q(), ORGANIZATION_LIMIT)
+		return new UseCaseOrganizationListResponse(organizations.activeOrganizations(request.q(), ORGANIZATION_LIMIT)
 			.stream()
 			.map(organization -> new UseCaseOrganizationResponse(organization.id(), organization.name(),
 					organization.logoFileId()))
@@ -309,7 +309,7 @@ public class UseCaseAdministration {
 	private Created created(Actor actor, CreateUseCaseRequest request, boolean operatorsOnly) {
 		Operator operator = identity.requireOperator(actor);
 		Instant now = Instant.now();
-		OrganizationName organization = organizations.approvedOrganization(request.organizationId())
+		OrganizationName organization = organizations.activeOrganization(request.organizationId())
 			.orElseThrow(() -> refused(UseCaseErrorCode.ORGANIZATION_NOT_ELIGIBLE,
 					"Organization " + request.organizationId() + " does not exist or is taken down"));
 		check(request, now);

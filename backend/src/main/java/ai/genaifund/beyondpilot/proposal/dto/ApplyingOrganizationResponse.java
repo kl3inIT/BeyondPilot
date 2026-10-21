@@ -13,7 +13,7 @@ public record ApplyingOrganizationResponse(@Schema(requiredMode = Schema.Require
 		@Schema(types = { "string", "null" }) @Nullable String country,
 		@Schema(types = { "string", "null" }) @Nullable String teamSize,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "Whether it is not taken down.") boolean approved,
+				description = "Whether it is active, meaning not taken down.") boolean active,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "Whether the person applies as themselves and may still apply as a team or a company instead: nothing was sent under their name yet.") boolean changeable) {
 }
