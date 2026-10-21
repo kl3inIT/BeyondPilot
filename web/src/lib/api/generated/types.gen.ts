@@ -11213,9 +11213,9 @@ export type ListAdminOrganizationsData = {
          */
         country?: string | null;
         /**
-         * The order: `name` by the name, `received` by when its open claim arrived, or when the organization was created when none is open, `members` by how many people belong to it; `-` before a key turns it round. Without it, those with an open claim first, then the most recently received.
+         * The order: `name` by the name, `created` by when the organization was created, `members` by how many people belong to it; `-` before a key turns it round. Without it, those with an open claim first, then the most recent by its claim or, with none open, by its creation.
          */
-        sort?: 'name' | '-name' | 'received' | '-received' | 'members' | '-members';
+        sort?: 'name' | '-name' | 'created' | '-created' | 'members' | '-members';
         /**
          * The page, counted from 1.
          */
@@ -11308,9 +11308,9 @@ export type ExportAdminOrganizationsData = {
          */
         country?: string | null;
         /**
-         * The order: `name` by the name, `received` by when its open claim arrived, or when the organization was created when none is open, `members` by how many people belong to it; `-` before a key turns it round. Without it, those with an open claim first, then the most recently received.
+         * The order: `name` by the name, `created` by when the organization was created, `members` by how many people belong to it; `-` before a key turns it round. Without it, those with an open claim first, then the most recent by its claim or, with none open, by its creation.
          */
-        sort?: 'name' | '-name' | 'received' | '-received' | 'members' | '-members';
+        sort?: 'name' | '-name' | 'created' | '-created' | 'members' | '-members';
         /**
          * The page, counted from 1.
          */

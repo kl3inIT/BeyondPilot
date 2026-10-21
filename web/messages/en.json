@@ -1568,15 +1568,9 @@
       },
       "columns": {
         "organization": "Organization",
-        "request": "Request",
         "status": "Status",
-        "received": "Received",
-        "actions": "Actions",
-        "askedBy": "Asked by"
-      },
-      "request": {
-        "claim": "Claim",
-        "none": "—"
+        "created": "Created",
+        "actions": "Actions"
       },
       "unowned": "No owner",
       "mergedInto": "Merged into {name}",

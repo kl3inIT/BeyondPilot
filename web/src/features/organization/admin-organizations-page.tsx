@@ -78,24 +78,14 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
         </div>
       </div>
     ),
-    request: organization.request ? (
-      <Status appearance="pill" tone="warning">
-        {t(`request.${organization.request}`)}
-      </Status>
-    ) : null,
     status: (
       <Status appearance="pill" tone={tones[reviewState(organization)]}>
         {t(`status.${reviewState(organization)}`)}
       </Status>
     ),
-    askedBy: (
-      <span className="block truncate text-muted-foreground">
-        {organization.askedBy ?? t("request.none")}
-      </span>
-    ),
-    received: (
+    created: (
       <span className="text-muted-foreground">
-        {format.dateTime(new Date(organization.requestedAt ?? organization.createdAt), "date")}
+        {format.dateTime(new Date(organization.createdAt), "date")}
       </span>
     ),
     actions: <AdminOrganizationRowActions organization={organization} />,
@@ -137,21 +127,15 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
       />
       <AdminOrganizationsToolbar countries={organizations.countries} />
 
-      {/* Who asked and when give way first where the table is made to fit, so the name keeps its room. */}
+      {/* The creation date gives way first where the table is made to fit, so the name keeps its room. */}
       <DataTableRows
         sortKeys={adminOrganizationSortKeys}
         columns={[
           { id: "name", header: t("columns.organization"), layout: { fill: true } },
-          { id: "request", header: t("columns.request"), layout: { width: "md" } },
           { id: "status", header: t("columns.status"), layout: { width: "md" } },
           {
-            id: "askedBy",
-            header: t("columns.askedBy"),
-            layout: { width: "lg", from: "xl" },
-          },
-          {
-            id: "received",
-            header: t("columns.received"),
+            id: "created",
+            header: t("columns.created"),
             layout: { width: "sm", from: "2xl", descFirst: true },
           },
           {
@@ -164,12 +148,8 @@ function AdminOrganizationsPage({ organizations, search }: AdminOrganizationsPag
           id: row.id,
           cells: {
             name: row.organization,
-            request: row.request ?? (
-              <span className="text-muted-foreground">{t("request.none")}</span>
-            ),
             status: row.status,
-            askedBy: row.askedBy,
-            received: row.received,
+            created: row.created,
             actions: <div className="flex items-center justify-end gap-1">{row.actions}</div>,
           },
         }))}
