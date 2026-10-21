@@ -41,8 +41,8 @@ type OrganizationMembersPageProps = {
 };
 
 /**
- * My organization › Members: who asked to join, who belongs and who was invited, and for owners how
- * many more people they may invite and who may join by email domain. Everything an owner decides here, the backend decides again on each
+ * My organization › Members: who asked to join, who belongs and who was invited, and for owners who
+ * may join by email domain. Everything an owner decides here, the backend decides again on each
  * request.
  */
 function OrganizationMembersPage({
@@ -100,15 +100,10 @@ function OrganizationMembersPage({
   }));
   const rows = [...people, ...invited];
 
-  const allowance = owner ? (members.allowance ?? null) : null;
   const summary = [
     t("summary.members", { count: members.total }),
     members.invitations.length > 0 &&
       t("summary.invitations", { count: members.invitations.length }),
-    allowance &&
-      (allowance.open
-        ? t("summary.left", { left: allowance.leftToday, limit: allowance.dailyLimit })
-        : t("summary.takenDown")),
   ]
     .filter(Boolean)
     .join(" · ");
@@ -145,9 +140,8 @@ function OrganizationMembersPage({
         title={t("title")}
         summary={summary}
         action={
-          allowance?.open && (
-            <InvitePeople organizationName={organization.name} allowance={allowance} />
-          )
+          owner &&
+          !organization.suspendedAt && <InvitePeople organizationName={organization.name} />
         }
       >
         <DataTableRows

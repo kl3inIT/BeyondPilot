@@ -2584,32 +2584,6 @@ export type GiveMatchingRemovalReason = {
 };
 
 /**
- * How many more people an organization's owners may invite now.
- */
-export type InvitationAllowance = {
-    /**
-     * The most invitations it sends in 24 hours.
-     */
-    dailyLimit: number;
-    /**
-     * How many more invitations may wait for an answer at once.
-     */
-    leftOpen: number;
-    /**
-     * How many invitations may still be sent in the current 24 hours.
-     */
-    leftToday: number;
-    /**
-     * Whether the organization may invite at all; one that is not active may not.
-     */
-    open: boolean;
-    /**
-     * The most invitations that wait for an answer at once.
-     */
-    openLimit: number;
-};
-
-/**
  * Invites the provider of a candidate to propose for the use case.
  */
 export type InviteMatchingCandidate = {
@@ -3955,10 +3929,9 @@ export type OrganizationMember = {
 };
 
 /**
- * One page of who belongs to an organization, owners first. Invitations and requests, all of them, are empty, and the allowance null, for a caller who is not an owner.
+ * One page of who belongs to an organization, owners first. Invitations and requests, all of them, are empty for a caller who is not an owner.
  */
 export type OrganizationMembers = {
-    allowance?: InvitationAllowance | null;
     invitations: Array<OrganizationInvitation>;
     members: Array<OrganizationMember>;
     /**

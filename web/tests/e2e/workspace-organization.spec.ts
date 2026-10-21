@@ -588,7 +588,7 @@ test.describe("workspace organization", () => {
     await page.goto("/workspace/organization/members");
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Newco");
-    await expect(page.getByText(/invitations left in 24 hours/)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Invite people" })).toBeVisible();
     await expect(page.getByText(/reviewing|in review/i)).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Complete profile" })).toHaveCount(0);
     await expectNoSeriousA11yViolations(page);
@@ -604,9 +604,7 @@ test.describe("workspace organization", () => {
     await page.goto("/workspace/organization/members");
 
     await expect(shownPeople(page)).toHaveText(["Minh Trần", "Siti Rahma", "hoa.le@example.com"]);
-    await expect(
-      page.getByText("2 members · 1 invitation pending · 19 of 20 invitations left in 24 hours"),
-    ).toBeVisible();
+    await expect(page.getByText("2 members · 1 invitation pending")).toBeVisible();
     await expect(
       page.getByText("Invited 1 Oct 2026 · expires 8 Oct 2026").filter({ visible: true }),
     ).toHaveCount(1);
@@ -641,11 +639,6 @@ test.describe("workspace organization", () => {
     await page.getByRole("button", { name: "Invite people" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("heading")).toHaveText("Invite people to Pocket Policy");
-    await expect(
-      dialog.getByText("19 of 20 invitations left in 24 hours; 49 of 50 can be open at once.", {
-        exact: false,
-      }),
-    ).toBeVisible();
     await dialog.getByRole("button", { name: "Send invitations" }).click();
     await expect(
       dialog.getByText("Enter full email addresses, separated by commas."),
@@ -670,37 +663,6 @@ test.describe("workspace organization", () => {
         body: { email: "binh@example.com", role: "owner" },
       },
     ]);
-  });
-
-  test("an owner who reached the day's limit is told, and the rest of the addresses wait", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await signInAs(context, "owner", baseURL!);
-    const changes = await answerDecisions(
-      page,
-      changesPath,
-      429,
-      refusal("ORGANIZATION_INVITATION_DAILY_LIMIT"),
-    );
-    await page.goto("/workspace/organization/members");
-
-    await page.getByRole("button", { name: "Invite people" }).click();
-    const dialog = page.getByRole("dialog");
-    await dialog.getByLabel("Email addresses").fill("an@example.com, binh@example.com");
-    await dialog.getByRole("button", { name: "Send invitations" }).click();
-
-    await expect(
-      page.getByText("The organization has sent the most invitations it can in a day.", {
-        exact: false,
-      }),
-    ).toBeVisible();
-    // The second address is not tried once the limit is said, and both stay to send tomorrow.
-    expect(changes).toHaveLength(1);
-    await expect(dialog.getByLabel("Email addresses")).toHaveValue(
-      "an@example.com, binh@example.com",
-    );
   });
 
   test("an owner changes a role, removes a member, withdraws an invitation and opens the domain", async ({
