@@ -126,6 +126,38 @@ class SearchMeaningTest {
 	}
 
 	@Test
+	void anItemWhosePersonDeclinedAiLosesItsVectorAndIsNotEmbeddedUntilTheyAgree() {
+		UUID person = UUID.randomUUID();
+		index.save(new Document("talent", person, "slug-" + person, "Support Specialist", null,
+				"Answers inbound customer calls and hands the rest to an agent.", "",
+				"Answers inbound customer calls and hands the rest to an agent.", Map.of(), true, null, null));
+		embeddings.embedPending();
+		assertThat(vectorOf(person)).isTrue();
+
+		index.embeddable("talent", person, false);
+		assertThat(vectorOf(person)).isFalse();
+		embeddings.embedPending();
+		assertThat(vectorOf(person)).isFalse();
+		assertThat(index.pendingEmbeddings("text-embedding-3-large", 10)).isEmpty();
+		// Its words still find it.
+		assertThat(search.search(SearchRequest.builder("Support Specialist").page(1).build(), false)
+			.items()
+			.stream()
+			.map(SearchItem::title)).contains("Support Specialist");
+
+		index.embeddable("talent", person, true);
+		embeddings.embedPending();
+		assertThat(vectorOf(person)).isTrue();
+	}
+
+	private boolean vectorOf(UUID itemId) {
+		return jdbc.sql("select embedding is not null from search_document where kind = 'talent' and item_id = ?")
+			.param(itemId)
+			.query(Boolean.class)
+			.single();
+	}
+
+	@Test
 	void directoriesScopeMeaningBeforeThePoolAndKeepFilteredCountsAndPageBoundaries() {
 		// Closer ineligible items must never consume the selected directory's two semantic candidate slots.
 		for (String kind : List.of("solution", "talent", "program", "use_case")) {

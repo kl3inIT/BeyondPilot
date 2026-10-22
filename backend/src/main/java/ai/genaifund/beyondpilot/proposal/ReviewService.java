@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.identity.Actor;
+import ai.genaifund.beyondpilot.identity.ConsentPurpose;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
@@ -848,11 +849,15 @@ public class ReviewService {
 	/**
 	 * A program's applications that are submitted or still drafts, each submitted one with what its last submission
 	 * held and its files, for matching to assess them (BEY-234). Nobody is checked here: it is read by a module, never
-	 * answered to a person as it is. Withdrawn applications are left out.
+	 * answered to a person as it is. Withdrawn applications are left out, and so are those of an applicant who declined
+	 * AI processing of their data (BEY-240).
 	 */
 	@Transactional(readOnly = true)
 	public List<ProgramSubmission> submissionsTo(UUID programId) {
-		List<Proposal> submitted = proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED);
+		List<Proposal> submitted = proposals.findByProgramIdAndStatusOrderBySubmittedAt(programId, Proposal.SUBMITTED)
+			.stream()
+			.filter(proposal -> !identity.declined(proposal.getAccountId(), ConsentPurpose.AI))
+			.toList();
 		Map<VersionKey, Snapshot> snapshots = snapshots(submitted);
 		List<ProgramSubmission> all = new ArrayList<>();
 		for (Proposal proposal : submitted) {
@@ -869,6 +874,9 @@ public class ReviewService {
 					Objects.requireNonNull(proposal.getSubmittedAt()), sent(snapshot)));
 		}
 		for (Proposal draft : proposals.findByProgramIdAndStatusOrderByUpdatedAtDesc(programId, Proposal.DRAFT)) {
+			if (identity.declined(draft.getAccountId(), ConsentPurpose.AI)) {
+				continue;
+			}
 			all.add(new ProgramSubmission(draft.getId(), programId, draft.getOrganizationId(), draft.getSolutionId(),
 					Proposal.DRAFT, draft.getSubmissions(), draft.getReviewStatus(), draft.getUpdatedAt(), null));
 		}

@@ -16,6 +16,7 @@ import ai.genaifund.beyondpilot.audit.AuditAction;
 import ai.genaifund.beyondpilot.audit.AuditRecord;
 import ai.genaifund.beyondpilot.audit.AuditTrail;
 import ai.genaifund.beyondpilot.identity.Actor;
+import ai.genaifund.beyondpilot.identity.ConsentPurpose;
 import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.identity.Operator;
 import ai.genaifund.beyondpilot.identity.Person;
@@ -567,12 +568,16 @@ public class UseCaseProposals {
 	/**
 	 * The proposals a use case holds now, sent and not withdrawn, the latest first, with what each says and the PDF it
 	 * attached, for matching to judge them (BEY-229). Nobody is checked here: it is read by a module, never answered to
-	 * a person as it is.
+	 * a person as it is. A proposal whose sender declined AI processing of their data is left out (BEY-240).
 	 */
 	@Transactional(readOnly = true)
 	public List<SentUseCaseProposal> sentTo(UUID useCaseId) {
-		List<UseCaseProposal> sent = proposals.findByUseCaseIdAndStatusOrderBySentAtDesc(useCaseId,
-				UseCaseProposal.SENT);
+		List<UseCaseProposal> sent = proposals
+			.findByUseCaseIdAndStatusOrderBySentAtDesc(useCaseId, UseCaseProposal.SENT)
+			.stream()
+			.filter(proposal -> proposal.getSentByAccountId() == null
+					|| !identity.declined(proposal.getSentByAccountId(), ConsentPurpose.AI))
+			.toList();
 		Map<UUID, List<UseCaseProposalSolution>> offeredBy = offersOf(sent);
 		Map<UUID, StoredFile> files = storage.describe(sent.stream()
 			.map(UseCaseProposal::getDeckFileId)

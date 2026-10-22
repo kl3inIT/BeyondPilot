@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import ai.genaifund.beyondpilot.identity.ConsentPurpose;
+import ai.genaifund.beyondpilot.identity.IdentityService;
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentListRequest;
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentListResponse;
 import ai.genaifund.beyondpilot.talent.dto.PublicTalentResponse;
@@ -31,11 +33,14 @@ public class TalentDirectory {
 
 	private final TalentDetailRepository details;
 
+	private final IdentityService identity;
+
 	TalentDirectory(TalentProfileRepository profiles, TalentQueryRepository profileList,
-			TalentDetailRepository details) {
+			TalentDetailRepository details, IdentityService identity) {
 		this.profiles = profiles;
 		this.profileList = profileList;
 		this.details = details;
+		this.identity = identity;
 	}
 
 	/**
@@ -103,7 +108,7 @@ public class TalentDirectory {
 				profile.getBio(), profile.getRoles(), profile.getSkills(), profile.getIndustries(), profile.getCountry(),
 				profile.getCity(), profile.getWorksAt(), profile.getPhotoFileId(), profile.getDecidedAt(),
 				projects.size(), lead == null ? null : lead.title(), lead == null ? null : lead.stage(),
-				profile.getFeaturedAt() != null);
+				profile.getFeaturedAt() != null, identity.declined(profile.getAccountId(), ConsentPurpose.AI));
 	}
 
 	/**
