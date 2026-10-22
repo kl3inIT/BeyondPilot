@@ -9,13 +9,11 @@ import jakarta.validation.constraints.Size;
 import org.jspecify.annotations.Nullable;
 
 @Schema(name = "SaveAssessment",
-		description = "The caller's assessment: a score from 1 to 10 for every criterion or none yet, a private note and a bookmark, or a conflict of interest without scores.")
+		description = "The caller's assessment: a score from 1 to 10 for every criterion or none yet, and a private note and a bookmark.")
 public record SaveAssessmentRequest(
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "By criterion identifier: every criterion, or none to keep only the note and the bookmark.") @NotNull Map<UUID, Integer> scores,
 		@Schema(types = { "string", "null" }) @Size(max = 2000) @Nullable String note,
-		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
-				description = "The caller knows the applicant, so their score is left out.") boolean conflict,
 		@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 				description = "The caller marks the application to come back to.") boolean bookmarked) {
 }

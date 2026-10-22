@@ -9089,7 +9089,7 @@ paths:
                 type: string
                 format: binary
           description: "One row for each scorer and application, with each criterion's\
-            \ score, the note and whether it was a conflict. The download is recorded."
+            \ score and the note. The download is recorded."
         "400":
           content:
             application/problem+json:
@@ -16745,8 +16745,6 @@ components:
           format: double
         bookmarked:
           type: boolean
-        conflict:
-          type: boolean
         note:
           type:
           - string
@@ -16767,7 +16765,7 @@ components:
             type: integer
             format: int32
           description: "The score of each criterion, by its identifier; empty for\
-            \ a conflict or a note without scores."
+            \ a note without scores."
         version:
           type: integer
           format: int32
@@ -16775,7 +16773,6 @@ components:
             when it was submitted again since.
       required:
       - bookmarked
-      - conflict
       - reviewer
       - role
       - savedAt
@@ -22770,16 +22767,12 @@ components:
         accountId:
           type: string
           format: uuid
-        conflict:
-          type: boolean
         score:
-          type:
-          - number
-          - "null"
+          type: number
           format: double
       required:
       - accountId
-      - conflict
+      - score
     ProgramScoresRow:
       type: object
       properties:
@@ -22807,8 +22800,7 @@ components:
           description: How many scored it.
         scores:
           type: array
-          description: Each scorer who scored it or stepped back from it; a scorer
-            missing here has not.
+          description: Each scorer who scored it; a scorer missing here has not.
           items:
             $ref: "#/components/schemas/ProgramScoresCell"
         solution:
@@ -24604,7 +24596,6 @@ components:
           - none
           - noted
           - scored
-          - conflict
         organizationName:
           type: string
         organizationType:
@@ -24904,13 +24895,7 @@ components:
         assessed:
           type: integer
           format: int64
-          description: "How many submitted applications they are done with: scored,\
-            \ or stepped back from for a conflict."
-        conflicts:
-          type: integer
-          format: int64
-          description: "How many of those they stepped back from for a conflict, without\
-            \ a score."
+          description: How many submitted applications they scored.
         email:
           type: string
         expiresAt:
@@ -24948,7 +24933,6 @@ components:
           - lapsed
       required:
       - assessed
-      - conflicts
       - email
       - role
       - status
@@ -25078,15 +25062,11 @@ components:
     SaveAssessment:
       type: object
       description: "The caller's assessment: a score from 1 to 10 for every criterion\
-        \ or none yet, a private note and a bookmark, or a conflict of interest without\
-        \ scores."
+        \ or none yet, and a private note and a bookmark."
       properties:
         bookmarked:
           type: boolean
           description: The caller marks the application to come back to.
-        conflict:
-          type: boolean
-          description: "The caller knows the applicant, so their score is left out."
         note:
           type:
           - string
@@ -25102,7 +25082,6 @@ components:
             \ only the note and the bookmark."
       required:
       - bookmarked
-      - conflict
       - scores
     SaveChatModel:
       type: object

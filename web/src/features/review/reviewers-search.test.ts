@@ -9,7 +9,7 @@ const reviewer = (
   role: Reviewer["role"],
   assessed: number,
   name: string | null = null,
-): Reviewer => ({ email, role, assessed, conflicts: 0, name, status: "active" });
+): Reviewer => ({ email, role, assessed, name, status: "active" });
 
 const judges = [
   reviewer("op@genaifund.ai", "operator", 2, "Zoe"),

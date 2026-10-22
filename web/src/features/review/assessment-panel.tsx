@@ -33,13 +33,12 @@ type AssessmentPanelProps = {
   nextHref: string | null;
 };
 
-type Pending = "save" | "note" | "bookmark" | "conflict";
+type Pending = "save" | "note" | "bookmark";
 
 /**
  * The caller's assessment of an application: each criterion scored from 1 to 10 with what the
- * numbers mean above the scale, a private note and a bookmark, or a conflict of interest that
- * leaves their score out. The note and the bookmark keep without scores, for a judge who scores
- * after hearing every pitch. Weights stay with GenAI Fund. It changes until the outcomes are
+ * numbers mean above the scale, a private note and a bookmark. The note and the bookmark keep
+ * without scores, for a judge who scores after hearing every pitch. Weights stay with GenAI Fund. It changes until the outcomes are
  * released.
  */
 function AssessmentPanel({
@@ -96,23 +95,19 @@ function AssessmentPanel({
         path: { id: applicationId },
         body: {
           // A note or a bookmark keeps the scores already saved, or none.
-          scores: kind === "conflict" || mine?.conflict ? {} : kept,
+          scores: kept,
           note: note.trim() === "" ? null : note,
-          // Only a save of the scores takes a declared conflict back; a note or a bookmark keeps it.
-          conflict: kind === "conflict" || (kind !== "save" && (mine?.conflict ?? false)),
           bookmarked: kind === "bookmark" ? !bookmarked : bookmarked,
         },
       });
       notify.success(
-        kind === "conflict"
-          ? "Review.assessment.conflictSaved"
-          : kind === "note"
-            ? "Review.assessment.noteSaved"
-            : kind === "bookmark"
-              ? bookmarked
-                ? "Review.assessment.bookmarkRemoved"
-                : "Review.assessment.bookmarkSaved"
-              : "Review.assessment.saved",
+        kind === "note"
+          ? "Review.assessment.noteSaved"
+          : kind === "bookmark"
+            ? bookmarked
+              ? "Review.assessment.bookmarkRemoved"
+              : "Review.assessment.bookmarkSaved"
+            : "Review.assessment.saved",
       );
       if (nextHref && kind === "save") {
         const next = getPathname({ href: nextHref, locale });
@@ -164,10 +159,6 @@ function AssessmentPanel({
         )}
       </div>
 
-      {/* A conflict leaves the scores out; scoring it after all takes the conflict back. */}
-      {mine?.conflict && (
-        <p className="rounded-lg border bg-muted p-3 text-sm">{t("conflictDeclared")}</p>
-      )}
       {criteria.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("noCriteria")}</p>
       ) : (
@@ -327,18 +318,6 @@ function AssessmentPanel({
             <p id="assessment-incomplete" className="text-xs text-muted-foreground">
               {t("incomplete", { count: criteria.length - scored.length })}
             </p>
-          )}
-          {!mine?.conflict && (
-            <Button
-              className="h-auto min-h-8 py-1 whitespace-normal"
-              prominence="tertiary"
-              size="sm"
-              pending={pending === "conflict"}
-              disabled={pending !== null}
-              onClick={() => save("conflict")}
-            >
-              {t("conflict")}
-            </Button>
           )}
         </div>
       )}

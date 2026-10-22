@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * One person's assessment of an application: a score for each criterion, as JSON by criterion identifier, and a
- * private note, on the version they read. A conflict of interest holds no scores.
+ * private note, on the version they read.
  */
 @Entity
 @Table(name = "proposal_assessment")
@@ -39,9 +39,6 @@ public class ProposalAssessment {
 	private @Nullable String note;
 
 	@Column(nullable = false)
-	private boolean conflict;
-
-	@Column(nullable = false)
 	private boolean bookmarked;
 
 	@Column(nullable = false)
@@ -57,19 +54,17 @@ public class ProposalAssessment {
 		this.accountId = accountId;
 	}
 
-	public void write(int versionNumber, String scores, @Nullable String note, boolean conflict, boolean bookmarked,
-			Instant at) {
+	public void write(int versionNumber, String scores, @Nullable String note, boolean bookmarked, Instant at) {
 		this.versionNumber = versionNumber;
 		this.scores = scores;
 		this.note = note;
-		this.conflict = conflict;
 		this.bookmarked = bookmarked;
 		this.savedAt = at;
 	}
 
 	/** Whether every criterion was scored; a note or a bookmark alone holds no scores. */
 	public boolean isScored() {
-		return !conflict && !"{}".equals(scores);
+		return !"{}".equals(scores);
 	}
 
 	public boolean isBookmarked() {
@@ -94,10 +89,6 @@ public class ProposalAssessment {
 
 	public @Nullable String getNote() {
 		return note;
-	}
-
-	public boolean isConflict() {
-		return conflict;
 	}
 
 	public Instant getSavedAt() {

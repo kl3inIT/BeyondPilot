@@ -1079,13 +1079,12 @@ export type ApproveOrganization = {
 export type Assessment = {
     average?: number | null;
     bookmarked: boolean;
-    conflict: boolean;
     note?: string | null;
     reviewer: string;
     role: 'operator' | 'reviewer';
     savedAt: string;
     /**
-     * The score of each criterion, by its identifier; empty for a conflict or a note without scores.
+     * The score of each criterion, by its identifier; empty for a note without scores.
      */
     scores: {
         [key: string]: number;
@@ -4408,8 +4407,7 @@ export type ProgramScores = {
 
 export type ProgramScoresCell = {
     accountId: string;
-    conflict: boolean;
-    score?: number | null;
+    score: number;
 };
 
 export type ProgramScoresRow = {
@@ -4425,7 +4423,7 @@ export type ProgramScoresRow = {
      */
     scored: number;
     /**
-     * Each scorer who scored it or stepped back from it; a scorer missing here has not.
+     * Each scorer who scored it; a scorer missing here has not.
      */
     scores: Array<ProgramScoresCell>;
     solution: string;
@@ -5387,7 +5385,7 @@ export type ReviewApplicationItem = {
     /**
      * What the caller did with it: noted is a note or a bookmark without scores.
      */
-    mine: 'none' | 'noted' | 'scored' | 'conflict';
+    mine: 'none' | 'noted' | 'scored';
     organizationName: string;
     /**
      * The organization's type, such as independent_builder, builder_team or company.
@@ -5555,13 +5553,9 @@ export type ReviewPrograms = {
  */
 export type Reviewer = {
     /**
-     * How many submitted applications they are done with: scored, or stepped back from for a conflict.
+     * How many submitted applications they scored.
      */
     assessed: number;
-    /**
-     * How many of those they stepped back from for a conflict, without a score.
-     */
-    conflicts: number;
     email: string;
     expiresAt?: string | null;
     /**
@@ -5647,17 +5641,13 @@ export type SaveApplication = {
 };
 
 /**
- * The caller's assessment: a score from 1 to 10 for every criterion or none yet, a private note and a bookmark, or a conflict of interest without scores.
+ * The caller's assessment: a score from 1 to 10 for every criterion or none yet, and a private note and a bookmark.
  */
 export type SaveAssessment = {
     /**
      * The caller marks the application to come back to.
      */
     bookmarked: boolean;
-    /**
-     * The caller knows the applicant, so their score is left out.
-     */
-    conflict: boolean;
     note?: string | null;
     /**
      * By criterion identifier: every criterion, or none to keep only the note and the bookmark.
@@ -14140,7 +14130,7 @@ export type ExportProgramScoresError = ExportProgramScoresErrors[keyof ExportPro
 
 export type ExportProgramScoresResponses = {
     /**
-     * One row for each scorer and application, with each criterion's score, the note and whether it was a conflict. The download is recorded.
+     * One row for each scorer and application, with each criterion's score and the note. The download is recorded.
      */
     200: Blob | File;
 };

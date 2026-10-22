@@ -36,7 +36,7 @@ public record ReviewApplicationsResponse(@Schema(requiredMode = Schema.RequiredM
 					description = "For an operator the mean of every judge's score; for a judge their own. In points when the criteria have points, otherwise from 1 to 10.") @Nullable Double average,
 			@Schema(types = { "integer", "null" },
 					description = "How many scored it; null for a judge.") @Nullable Integer scored,
-			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "none", "noted", "scored", "conflict" },
+			@Schema(requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = { "none", "noted", "scored" },
 					description = "What the caller did with it: noted is a note or a bookmark without scores.") String mine,
 			@Schema(requiredMode = Schema.RequiredMode.REQUIRED,
 					description = "Whether the caller bookmarked it.") boolean bookmarked,

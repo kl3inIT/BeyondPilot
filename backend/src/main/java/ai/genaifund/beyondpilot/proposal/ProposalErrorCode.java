@@ -96,7 +96,7 @@ public enum ProposalErrorCode implements ErrorCode {
 			"This judge has already signed in; there is no invitation to send again."),
 
 	ASSESSMENT_INVALID("PROPOSAL_ASSESSMENT_INVALID", ErrorCategory.VALIDATION,
-			"Score every criterion from 1 to 10, or none to keep only a note, or declare a conflict."),
+			"Score every criterion from 1 to 10, or none to keep only a note."),
 
 	RELEASED("PROPOSAL_RELEASED", ErrorCategory.CONFLICT,
 			"The outcomes of this program have been released, so the review can no longer change."),

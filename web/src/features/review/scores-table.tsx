@@ -35,8 +35,7 @@ type ScoresByApplicationProps = {
 /**
  * The shortlist against every scorer. The application, the mean across scorers, the spread, marked
  * when the judges are far apart, and how many scored lead and stay in view; then each scorer is a
- * column with their mean over the criteria, Conflict where they stepped back and a dash where they
- * have not scored. On a marked row the highest score and the lowest are tinted, so the judge who
+ * column with their mean over the criteria, or a dash where they have not scored. On a marked row the highest score and the lowest are tinted, so the judge who
  * pulls it up or down shows. Every column sorts; a row opens the application, where the scores by
  * criterion and the notes are.
  */
@@ -116,15 +115,10 @@ function ScoresByApplication({
         meta: { numeric: true, nowrap: true, descFirst: true },
         cell: ({ row }) => {
           const cell = row.original.scores.find((item) => item.accountId === scorer.accountId);
-          if (cell?.conflict) {
-            return <span className="text-muted-foreground">{t("conflict")}</span>;
-          }
-          if (cell?.score == null) {
+          if (!cell) {
             return <span className="text-muted-foreground">—</span>;
           }
-          const given = row.original.scores.flatMap((item) =>
-            item.score == null ? [] : [item.score],
-          );
+          const given = row.original.scores.map((item) => item.score);
           const marked = (row.original.spread ?? 0) >= wide;
           const highest = marked && cell.score === Math.max(...given);
           const lowest = marked && cell.score === Math.min(...given);
@@ -159,9 +153,8 @@ function ScoresByApplication({
 }
 
 /**
- * Each scorer's work over the applications the search keeps: how many they scored and stepped back
- * from, how many of the shortlist still wait for a judge, and their mean, which shows a strict or a
- * generous judge beside the others.
+ * Each scorer's work over the shortlist the search keeps: how many they scored, how many still wait
+ * for a judge, and their mean, which shows a strict or a generous judge beside the others.
  */
 function ScoresByJudge({ judges }: { judges: ScorerSummary[] }) {
   const t = useTranslations("Review.scores");
@@ -185,10 +178,6 @@ function ScoresByJudge({ judges }: { judges: ScorerSummary[] }) {
     }),
     judgeColumn.accessor("scored", {
       header: t("columns.scored"),
-      meta: { numeric: true, nowrap: true },
-    }),
-    judgeColumn.accessor("conflicts", {
-      header: t("columns.conflicts"),
       meta: { numeric: true, nowrap: true },
     }),
     judgeColumn.accessor("waiting", {

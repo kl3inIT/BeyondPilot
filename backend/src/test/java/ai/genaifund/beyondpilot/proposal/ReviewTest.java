@@ -208,17 +208,17 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertProblem(put(operator, REVIEW + form.programId() + "/criteria", criteria("Anything")), 409,
 				"PROPOSAL_CRITERIA_FIXED");
 
-		// A judge who knows the applicant steps back, and their score is left out.
-		body(put(judge, two + "/assessment", Map.of("scores", Map.of(), "conflict", true, "bookmarked", false)).expectStatus().isOk());
+		// A note alone is no score: it is not counted, and the reviewers list does not count it as done.
+		body(put(judge, two + "/assessment", Map.of("scores", Map.of(), "note", "Ask about consent.", "bookmarked", false))
+			.expectStatus()
+			.isOk());
 		String counted = body(get(operator, REVIEW + form.programId() + "/applications").expectStatus().isOk());
 		assertThat(JsonPath.<List<Integer>>read(counted, "$.items[*].scored")).containsExactly(2, 0);
 		assertThat(JsonPath.<List<String>>read(body(get(judge, REVIEW + form.programId() + "/applications")
 			.expectStatus()
-			.isOk()), "$.items[*].mine")).containsExactly("scored", "conflict");
-		// The reviewers list counts the step back as done, and says it is a conflict, not a score.
+			.isOk()), "$.items[*].mine")).containsExactly("scored", "noted");
 		String judges = body(get(operator, REVIEW + form.programId() + "/reviewers").expectStatus().isOk());
-		assertThat(JsonPath.<List<Integer>>read(judges, "$.items[?(@.role == 'reviewer')].assessed")).containsExactly(2);
-		assertThat(JsonPath.<List<Integer>>read(judges, "$.items[?(@.role == 'reviewer')].conflicts")).containsExactly(1);
+		assertThat(JsonPath.<List<Integer>>read(judges, "$.items[?(@.role == 'reviewer')].assessed")).containsExactly(1);
 
 		// A score made before the applicant submitted again says the version it was made on.
 		resubmit(form, first);
@@ -411,7 +411,7 @@ class ReviewTest extends ApplicationsHttpTest {
 		shortlist(form, applicant.id());
 		String one = API + "/review/applications/" + applicant.id();
 		// A judge who scores after every pitch keeps a note and a bookmark first; it is still theirs to score.
-		put(judge, one + "/assessment", Map.of("scores", Map.of(), "note", "Strong demo.", "conflict", false,
+		put(judge, one + "/assessment", Map.of("scores", Map.of(), "note", "Strong demo.",
 				"bookmarked", true))
 			.expectStatus()
 			.isOk();
@@ -578,7 +578,7 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Boolean>read(body(get(applicant.session(), own).expectStatus().isOk()), "$.own")).isTrue();
 		assertProblem(put(applicant.session(), own + "/assessment", scores(Map.of(criteria.get(0), 5))), 403,
 				"PROPOSAL_OWN_APPLICATION");
-		assertProblem(put(applicant.session(), own + "/assessment", Map.of("scores", Map.of(), "conflict", true, "bookmarked", false)), 403,
+		assertProblem(put(applicant.session(), own + "/assessment", Map.of("scores", Map.of(), "bookmarked", false)), 403,
 				"PROPOSAL_OWN_APPLICATION");
 		put(applicant.session(), API + "/review/applications/" + other.id() + "/assessment",
 				scores(Map.of(criteria.get(0), 4)))
@@ -869,7 +869,7 @@ class ReviewTest extends ApplicationsHttpTest {
 		Applicant other = applicant(form, "other@scored-mcp.test", "Other Builder");
 		McpSyncClient app = operatorApp();
 		String one = API + "/review/applications/" + applicant.id();
-		put(operator, one + "/assessment", Map.of("scores", Map.of(), "note", "Strong demo.", "conflict", false,
+		put(operator, one + "/assessment", Map.of("scores", Map.of(), "note", "Strong demo.",
 				"bookmarked", true)).expectStatus().isOk();
 
 		// Every criterion by its name, in any case; the note and the bookmark the operator had stay.
@@ -898,13 +898,12 @@ class ReviewTest extends ApplicationsHttpTest {
 			.expectStatus()
 			.isOk()), "$.mine")).isNull();
 
-		// A conflict keeps no score, and counts the application as done without counting it as a score.
-		String stepped = call(app, "score_application",
-				Map.of("application", other.id().toString(), "conflict", true, "note", "I advised them."));
-		assertThat(JsonPath.<Boolean>read(stepped, "$.conflict")).isTrue();
-		assertThat(JsonPath.<Boolean>read(body(get(operator, API + "/review/applications/" + other.id())
+		// A call without scores saves nothing: the tool scores, and a note alone is saved on the review page.
+		assertThat(toolError(app, Map.of("application", other.id().toString(), "note", "I advised them.")))
+			.isNotBlank();
+		assertThat(JsonPath.<Object>read(body(get(operator, API + "/review/applications/" + other.id())
 			.expectStatus()
-			.isOk()), "$.mine.conflict")).isTrue();
+			.isOk()), "$.mine")).isNull();
 
 		// Once the outcomes are released, only the shortlist is still scored.
 		shortlist(form, applicant.id());
@@ -977,7 +976,6 @@ class ReviewTest extends ApplicationsHttpTest {
 		put(generous, first, scores(Map.of(ids.get(0), 9, ids.get(1), 9))).expectStatus().isOk();
 		put(generous, second, scores(Map.of(ids.get(0), 6, ids.get(1), 6))).expectStatus().isOk();
 		put(strict, first, scores(Map.of(ids.get(0), 5, ids.get(1), 5))).expectStatus().isOk();
-		put(strict, second, Map.of("scores", Map.of(), "conflict", true, "bookmarked", false)).expectStatus().isOk();
 
 		// Only GenAI Fund reads who gave what.
 		String path = REVIEW + form.programId() + "/scores";
@@ -1001,9 +999,8 @@ class ReviewTest extends ApplicationsHttpTest {
 		assertThat(JsonPath.<Double>read(read, "$.applications[0].spread")).isEqualTo(4.0);
 		assertThat(JsonPath.<List<Double>>read(read, "$.applications[0].scores[*].score")).containsExactlyInAnyOrder(8.0,
 				9.0, 5.0);
-		// A step back is answered without a score, and one score has no spread.
-		assertThat(JsonPath.<List<Boolean>>read(read, "$.applications[1].scores[*].conflict"))
-			.containsExactlyInAnyOrder(false, true);
+		// One score has no spread.
+		assertThat(JsonPath.<List<Double>>read(read, "$.applications[1].scores[*].score")).containsExactly(6.0);
 		assertThat(JsonPath.<Double>read(read, "$.applications[1].average")).isEqualTo(6.0);
 		assertThat(JsonPath.<Object>read(read, "$.applications[1].spread")).isNull();
 		assertThat(JsonPath.<List<Object>>read(read, "$.applications[2].scores")).isEmpty();
@@ -1020,19 +1017,18 @@ class ReviewTest extends ApplicationsHttpTest {
 			.getResponseBody(), StandardCharsets.UTF_8);
 		List<String> lines = csv.lines().toList();
 		assertThat(lines.getFirst()).isEqualTo("﻿Application,Organization,Solution,Review status,Name,Email,Role,"
-				+ "Practical impact,Credible execution,Score,Conflict,Note,Version scored,Saved at");
-		assertThat(lines).hasSize(6);
+				+ "Practical impact,Credible execution,Score,Note,Version scored,Saved at");
+		assertThat(lines).hasSize(5);
 		assertThat(lines.get(1)).startsWith(one.id() + ",First Scored,").contains(",operator@proposal.test,");
-		assertThat(lines.get(2)).contains(",strict@scores-side.test,Judge,5,5,5.00,No,Clear on consent.,1,");
-		assertThat(lines.get(5)).startsWith(two.id() + ",").contains(",generous@scores-side.test,Judge,6,6,6.00,No,");
-		assertThat(lines.get(4)).contains(",strict@scores-side.test,Judge,,,,Yes,,1,");
+		assertThat(lines.get(2)).contains(",strict@scores-side.test,Judge,5,5,5.00,Clear on consent.,1,");
+		assertThat(lines.get(4)).startsWith(two.id() + ",").contains(",generous@scores-side.test,Judge,6,6,6.00,");
 		String narrowed = new String(post(operator, path + "/export?format=csv",
 				Map.of("applicationIds", List.of(two.id()))).expectStatus()
 			.isOk()
 			.expectBody()
 			.returnResult()
 			.getResponseBody(), StandardCharsets.UTF_8);
-		assertThat(narrowed.lines().toList()).hasSize(3);
+		assertThat(narrowed.lines().toList()).hasSize(2);
 		assertThat(auditOf(form.programId())).contains("proposal.scores_export");
 	}
 
@@ -1079,7 +1075,7 @@ class ReviewTest extends ApplicationsHttpTest {
 	}
 
 	private static Map<String, Object> scores(Map<String, Integer> scores) {
-		return Map.of("scores", scores, "note", "Clear on consent.", "conflict", false, "bookmarked", false);
+		return Map.of("scores", scores, "note", "Clear on consent.", "bookmarked", false);
 	}
 
 	private static Map<String, Object> decision(List<UUID> ids, String decision) {

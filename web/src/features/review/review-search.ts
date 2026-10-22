@@ -78,7 +78,7 @@ function inTab(item: ReviewApplicationItem, tab: Tab, released: boolean) {
     case "to_score":
       return waits(item, released);
     case "scored":
-      return item.mine === "scored" || item.mine === "conflict";
+      return item.mine === "scored";
     default:
       return true;
   }
