@@ -179,6 +179,10 @@ export function adminProgramReleaseRoute(id: string) {
 }
 
 /** A program's judges and judging criteria. */
+export function adminProgramScoresRoute(id: string) {
+  return `${siteRoutes.adminPrograms}/${id}/scores`;
+}
+
 export function adminProgramReviewersRoute(id: string) {
   return `${siteRoutes.adminPrograms}/${id}/reviewers`;
 }

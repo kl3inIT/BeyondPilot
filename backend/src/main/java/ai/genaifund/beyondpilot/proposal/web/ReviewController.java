@@ -12,6 +12,7 @@ import ai.genaifund.beyondpilot.proposal.OutcomeService;
 import ai.genaifund.beyondpilot.proposal.ReviewService;
 import ai.genaifund.beyondpilot.proposal.dto.DecideRequest;
 import ai.genaifund.beyondpilot.proposal.dto.ExportApplicationsRequest;
+import ai.genaifund.beyondpilot.proposal.dto.ProgramScoresResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ProgramDraftsResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReviewDraftResponse;
 import ai.genaifund.beyondpilot.proposal.dto.ReleaseDraftRequest;
@@ -98,6 +99,41 @@ class ReviewController {
 							defaultValue = "xlsx") @Pattern(regexp = SpreadsheetFormat.PATTERN) String format,
 			@Valid @RequestBody ExportApplicationsRequest request) {
 		return review.export(actor, programId, request, SpreadsheetFormat.of(format)).response();
+	}
+
+	@GetMapping(path = "/programs/{programId}/scores", produces = MediaType.APPLICATION_JSON_VALUE)
+	@Operation(operationId = "getProgramScores", summary = "Every scorer's score of a program's applications",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "The scorers, and each submitted application with every scorer's score, the average, the count and the spread.")
+	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such program taking applications.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ProgramScoresResponse scores(@CurrentActor Actor actor, @PathVariable UUID programId) {
+		return review.scores(actor, programId);
+	}
+
+	@PostMapping(path = "/programs/{programId}/scores/export", consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = { SpreadsheetFormat.XLSX_TYPE, SpreadsheetFormat.CSV_TYPE })
+	@Operation(operationId = "exportProgramScores", summary = "Download every scorer's scores of a program's applications",
+			security = @SecurityRequirement(name = "session"))
+	@ApiResponse(responseCode = "200",
+			description = "One row for each scorer and application, with each criterion's score, the note and whether it was a conflict. The download is recorded.",
+			content = { @Content(mediaType = SpreadsheetFormat.XLSX_TYPE, schema = @Schema(type = "string", format = "binary")),
+					@Content(mediaType = SpreadsheetFormat.CSV_TYPE, schema = @Schema(type = "string", format = "binary")) })
+	@ApiResponse(responseCode = "400", description = "The download would hold too many rows.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "403", description = "The caller is not an operator.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	@ApiResponse(responseCode = "404", description = "There is no such program taking applications.",
+			content = @Content(mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE, schema = @Schema(ref = PROBLEM)))
+	ResponseEntity<byte[]> exportScores(@CurrentActor Actor actor, @PathVariable UUID programId,
+			@Parameter(description = SpreadsheetFormat.DESCRIPTION,
+					schema = @Schema(allowableValues = { "xlsx", "csv" }, defaultValue = "xlsx")) @RequestParam(
+							defaultValue = "xlsx") @Pattern(regexp = SpreadsheetFormat.PATTERN) String format,
+			@Valid @RequestBody ExportApplicationsRequest request) {
+		return review.exportScores(actor, programId, request, SpreadsheetFormat.of(format)).response();
 	}
 
 	@GetMapping(path = "/programs/{programId}/drafts", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -61,7 +61,7 @@ export function listQuery(search: ReviewSearch) {
 type Tab = (typeof tabs)[number];
 
 /** A name as a search compares it: lowercase, without Vietnamese or other accents. */
-function folded(text: string) {
+export function folded(text: string) {
   return text.normalize("NFD").replace(/\p{M}/gu, "").replace(/[đĐ]/g, "d").toLowerCase();
 }
 
