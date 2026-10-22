@@ -958,6 +958,84 @@ class ReviewTest extends ApplicationsHttpTest {
 		return JsonPath.read(body(get(session, API + "/applications").expectStatus().isOk()), "$.items[0].id");
 	}
 
+	@Test
+	void anOperatorReadsEveryScorersScoresSideBySideAndDownloadsThemOneLineEach() {
+		Form form = program("scores-side", true, Instant.now().plus(Duration.ofDays(10)));
+		List<String> ids = criteriaOf(form, "Practical impact", "Credible execution");
+		Applicant one = applicant(form, "one@scores-side.test", "First Scored");
+		Applicant two = applicant(form, "two@scores-side.test", "Second Scored");
+		Applicant three = applicant(form, "three@scores-side.test", "Never Scored");
+		shortlist(form, one.id(), two.id());
+		String strict = judge(form, "strict@scores-side.test");
+		String generous = judge(form, "generous@scores-side.test");
+		String idle = judge(form, "idle@scores-side.test");
+		String applications = REVIEW + form.programId() + "/applications";
+		get(idle, applications).expectStatus().isOk();
+		String first = API + "/review/applications/" + one.id() + "/assessment";
+		String second = API + "/review/applications/" + two.id() + "/assessment";
+		put(operator, first, scores(Map.of(ids.get(0), 8, ids.get(1), 8))).expectStatus().isOk();
+		put(generous, first, scores(Map.of(ids.get(0), 9, ids.get(1), 9))).expectStatus().isOk();
+		put(generous, second, scores(Map.of(ids.get(0), 6, ids.get(1), 6))).expectStatus().isOk();
+		put(strict, first, scores(Map.of(ids.get(0), 5, ids.get(1), 5))).expectStatus().isOk();
+		put(strict, second, Map.of("scores", Map.of(), "conflict", true, "bookmarked", false)).expectStatus().isOk();
+
+		// Only GenAI Fund reads who gave what.
+		String path = REVIEW + form.programId() + "/scores";
+		get(strict, path).expectStatus().isForbidden();
+		post(strict, path + "/export", Map.of()).expectStatus().isForbidden();
+
+		// GenAI Fund who scored first, then the judges as invited, the one who has scored nothing too.
+		String read = body(get(operator, path).expectStatus().isOk());
+		assertThat(JsonPath.<Double>read(read, "$.scale")).isEqualTo(10.0);
+		assertThat(JsonPath.<List<String>>read(read, "$.scorers[*].email")).containsExactly("operator@proposal.test",
+				"strict@scores-side.test", "generous@scores-side.test", "idle@scores-side.test");
+		assertThat(JsonPath.<List<String>>read(read, "$.scorers[*].role")).containsExactly("operator", "reviewer",
+				"reviewer", "reviewer");
+		assertThat(JsonPath.<List<String>>read(read, "$.applications[*].id")).containsExactly(one.id().toString(),
+				two.id().toString(), three.id().toString());
+		// The average is the one the applications list reads; the spread is the highest less the lowest.
+		assertThat(JsonPath.<Double>read(body(get(operator, applications).expectStatus().isOk()),
+				"$.items[0].average")).isEqualTo(JsonPath.read(read, "$.applications[0].average"));
+		assertThat(JsonPath.<Double>read(read, "$.applications[0].average")).isEqualTo(7.3);
+		assertThat(JsonPath.<Integer>read(read, "$.applications[0].scored")).isEqualTo(3);
+		assertThat(JsonPath.<Double>read(read, "$.applications[0].spread")).isEqualTo(4.0);
+		assertThat(JsonPath.<List<Double>>read(read, "$.applications[0].scores[*].score")).containsExactlyInAnyOrder(8.0,
+				9.0, 5.0);
+		// A step back is answered without a score, and one score has no spread.
+		assertThat(JsonPath.<List<Boolean>>read(read, "$.applications[1].scores[*].conflict"))
+			.containsExactlyInAnyOrder(false, true);
+		assertThat(JsonPath.<Double>read(read, "$.applications[1].average")).isEqualTo(6.0);
+		assertThat(JsonPath.<Object>read(read, "$.applications[1].spread")).isNull();
+		assertThat(JsonPath.<List<Object>>read(read, "$.applications[2].scores")).isEmpty();
+		assertThat(JsonPath.<Object>read(read, "$.applications[2].average")).isNull();
+
+		// One line for each scorer and application, every criterion its own column.
+		String csv = new String(post(operator, path + "/export?format=csv", Map.of()).expectStatus()
+			.isOk()
+			.expectHeader()
+			.valueMatches("Content-Disposition",
+					"attachment; filename=\"scores-side-scores-\\d{4}-\\d{2}-\\d{2}\\.csv\".*")
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), StandardCharsets.UTF_8);
+		List<String> lines = csv.lines().toList();
+		assertThat(lines.getFirst()).isEqualTo("﻿Application,Organization,Solution,Review status,Name,Email,Role,"
+				+ "Practical impact,Credible execution,Score,Conflict,Note,Version scored,Saved at");
+		assertThat(lines).hasSize(6);
+		assertThat(lines.get(1)).startsWith(one.id() + ",First Scored,").contains(",operator@proposal.test,");
+		assertThat(lines.get(2)).contains(",strict@scores-side.test,Judge,5,5,5.00,No,Clear on consent.,1,");
+		assertThat(lines.get(5)).startsWith(two.id() + ",").contains(",generous@scores-side.test,Judge,6,6,6.00,No,");
+		assertThat(lines.get(4)).contains(",strict@scores-side.test,Judge,,,,Yes,,1,");
+		String narrowed = new String(post(operator, path + "/export?format=csv",
+				Map.of("applicationIds", List.of(two.id()))).expectStatus()
+			.isOk()
+			.expectBody()
+			.returnResult()
+			.getResponseBody(), StandardCharsets.UTF_8);
+		assertThat(narrowed.lines().toList()).hasSize(3);
+		assertThat(auditOf(form.programId())).contains("proposal.scores_export");
+	}
+
 	/** Sets a program's criteria and answers their identifiers in order. */
 	private List<String> criteriaOf(Form form, String... names) {
 		return JsonPath.read(body(put(operator, REVIEW + form.programId() + "/criteria", criteria(names))

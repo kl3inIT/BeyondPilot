@@ -95,6 +95,7 @@ export const auditActions = [
   "proposal.drafts_export",
   "proposal.draft_open",
   "proposal.reviewers_export",
+  "proposal.scores_export",
   "use_case_proposal.decide",
   "use_case_proposal.outcomes_send",
   "use_case_proposal.export",

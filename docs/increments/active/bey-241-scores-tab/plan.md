@@ -2,14 +2,14 @@
 
 Design: [design.md](design.md). Tracked in Linear as [BEY-241](https://linear.app/beyondpilot/issue/BEY-241).
 
-| #   | Step                                                                                                                  | State   |
-| --- | --------------------------------------------------------------------------------------------------------------------- | ------- |
-| 1   | Research, this design and plan                                                                                        | Done    |
-| 2   | Approval of the design                                                                                                | Waiting |
-| 3   | `proposal`: `GET …/scores` and `POST …/scores/export`, operator only, with the scorers, the means, counts and spreads | To do   |
-| 4   | `openapi.yml` and the generated web client                                                                            | To do   |
-| 5   | Web: the Scores tab, By application and By judge, the filter, sort and export                                         | To do   |
-| 6   | Documents made true: `docs/specs/program.md`, `docs/tests/proposal.md`                                                | To do   |
+| #   | Step                                                                                                                  | State |
+| --- | --------------------------------------------------------------------------------------------------------------------- | ----- |
+| 1   | Research, this design and plan                                                                                        | Done  |
+| 2   | Approval of the design (Đạt, 22 October)                                                                              | Done  |
+| 3   | `proposal`: `GET …/scores` and `POST …/scores/export`, operator only, with the scorers, the means, counts and spreads | Done  |
+| 4   | `openapi.yml` and the generated web client                                                                            | Done  |
+| 5   | Web: the Scores tab, By application and By judge, the filter, sort and export                                         | Done  |
+| 6   | Documents made true: `docs/specs/proposal.md`, `docs/specs/audit.md`, `docs/tests/proposal.md`                        | Done  |
 
 One branch, one pull request, after BEY-239 is merged.
 

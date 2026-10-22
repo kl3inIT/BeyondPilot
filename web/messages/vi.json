@@ -1019,6 +1019,7 @@
         "settings": "Cài đặt",
         "questions": "Câu hỏi",
         "applications": "Đơn nộp",
+        "scores": "Bảng điểm",
         "evaluations": "Đánh giá",
         "reviewers": "Giám khảo"
       },
@@ -1267,6 +1268,7 @@
           "reviewer_invite": "Mời giám khảo",
           "reviewer_remove": "Gỡ giám khảo",
           "reviewers_export": "Tải danh sách giám khảo",
+          "scores_export": "Tải bảng điểm",
           "decide": "Quyết định một đơn",
           "release": "Công bố kết quả",
           "file_open": "Mở một tệp của đơn nộp",
@@ -1435,6 +1437,7 @@
           "reviewer_invite": "Mời một giám khảo chấm <resource></resource>",
           "reviewer_remove": "Gỡ một giám khảo khỏi <resource></resource>",
           "reviewers_export": "Tải danh sách giám khảo của <resource></resource>",
+          "scores_export": "Tải bảng điểm của <resource></resource>",
           "decide": "Quyết định một đơn nộp vào <resource></resource>",
           "release": "Công bố kết quả của <resource></resource>",
           "file_open": "Mở một tệp của một đơn nộp vào <resource></resource>",
@@ -7052,6 +7055,43 @@
         "lead": "Chưa nộp vào {program} · bắt đầu {started} · lưu lần cuối {saved}",
         "note": "Đơn chưa nộp nên vẫn có thể thay đổi. Giám khảo không bao giờ thấy đơn nháp."
       }
+    },
+    "scores": {
+      "metaTitle": "Bảng điểm",
+      "lead": "Điểm của mỗi giám khảo là trung bình các tiêu chí, trên thang {scale}. Chênh lệch từ {wide} điểm trở lên giữa giám khảo cao nhất và thấp nhất được đánh dấu: nên bàn những đơn đó trước.",
+      "search": "Tìm theo giải pháp hoặc tổ chức",
+      "view": {
+        "label": "So sánh",
+        "applications": "Theo đơn",
+        "judges": "Theo giám khảo"
+      },
+      "columns": {
+        "application": "Đơn",
+        "decision": "Quyết định",
+        "average": "Trung bình",
+        "scored": "Lượt chấm",
+        "spread": "Chênh lệch",
+        "judge": "Giám khảo",
+        "role": "Vai trò",
+        "conflicts": "Xung đột",
+        "waiting": "Chưa chấm",
+        "mean": "Trung bình của họ"
+      },
+      "role": {
+        "operator": "GenAI Fund",
+        "reviewer": "Giám khảo"
+      },
+      "conflict": "Xung đột",
+      "wide": "Giám khảo chấm vênh nhau",
+      "noMatch": {
+        "title": "Không có đơn nào khớp",
+        "all": "Xem tất cả đơn"
+      },
+      "empty": {
+        "title": "Chưa có đơn nào",
+        "description": "Điểm hiện ở đây khi có đơn được nộp và chấm."
+      },
+      "footer": "{shown} đơn · {scorers} người chấm · {scored} đơn đã có điểm"
     }
   },
   "Search": {

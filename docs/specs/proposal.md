@@ -244,6 +244,13 @@ none) and a review before submitting (`web/src/features/apply/apply-flow.tsx`).
   again shows the earlier version.
 - **Averages.** An assessment's mean is the mean of its scores; an application's average is the mean of those means,
   conflicts left out. Both are rounded to one decimal.
+- **Every scorer side by side.** `GET …/scores`, for operators only, lists the scorers (the operators who scored, then
+  the judges who joined in the order they were invited, and a removed judge whose score still counts) and each
+  submitted application with every scorer's mean or conflict, the average, the `scored` count and the `spread`: the
+  highest scorer's mean less the lowest, with two scores or more. `scale` is 10, or the criteria's points together. The
+  Scores tab marks a spread of a fifth of the scale or more. `POST …/scores/export` writes one line for each scorer
+  and application they scored, stepped back from or wrote a note on, with each criterion's score, recorded as
+  `proposal.scores_export` (BEY-241).
 
 ### Decisions
 
@@ -413,6 +420,8 @@ Every endpoint needs a session, except `GET /api/proposal/use-case-proposal-coun
 | `DELETE /api/proposal/review/programs/{programId}/reviewers/{reviewerId}`      | Remove a judge                                                     |
 | `GET /api/proposal/review/programs/{programId}/applications`                   | The submitted applications as the caller reviews them              |
 | `POST /api/proposal/review/programs/{programId}/applications/export`           | The submitted applications as XLSX or CSV, for operators; recorded |
+| `GET /api/proposal/review/programs/{programId}/scores`                         | Every scorer's score of each application, for operators            |
+| `POST /api/proposal/review/programs/{programId}/scores/export`                 | Every scorer's scores as XLSX or CSV, for operators; recorded      |
 | `GET /api/proposal/review/programs/{programId}/drafts`                         | The drafts not submitted, for operators                            |
 | `POST /api/proposal/review/programs/{programId}/drafts/export`                 | The drafts as XLSX or CSV, for operators; recorded                 |
 | `GET /api/proposal/review/drafts/{id}`, `…/drafts/{id}/files/{fileId}`         | One draft as it stands, and its files, for operators               |

@@ -1,6 +1,6 @@
 # Scores: a program's judging read side by side
 
-Status: proposed by Đạt on 22 October 2026, waiting for approval before it is built. Tracked in Linear as [BEY-241](https://linear.app/beyondpilot/issue/BEY-241). What was read before this design is in [Judging consolidation](../../../research/2026-10-22-judging-consolidation.md).
+Status: approved by Đạt on 22 October 2026; built. Tracked in Linear as [BEY-241](https://linear.app/beyondpilot/issue/BEY-241). What was read before this design is in [Judging consolidation](../../../research/2026-10-22-judging-consolidation.md).
 
 ## Why
 

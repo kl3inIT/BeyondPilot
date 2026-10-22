@@ -1079,6 +1079,7 @@ paths:
           - proposal.reviewer_invite
           - proposal.reviewer_remove
           - proposal.reviewers_export
+          - proposal.scores_export
           - proposal.decide
           - proposal.release
           - proposal.file_open
@@ -1238,6 +1239,7 @@ paths:
             - proposal.reviewer_invite
             - proposal.reviewer_remove
             - proposal.reviewers_export
+            - proposal.scores_export
             - proposal.decide
             - proposal.release
             - proposal.file_open
@@ -1966,6 +1968,7 @@ paths:
           - proposal.reviewer_invite
           - proposal.reviewer_remove
           - proposal.reviewers_export
+          - proposal.scores_export
           - proposal.decide
           - proposal.release
           - proposal.file_open
@@ -2125,6 +2128,7 @@ paths:
             - proposal.reviewer_invite
             - proposal.reviewer_remove
             - proposal.reviewers_export
+            - proposal.scores_export
             - proposal.decide
             - proposal.release
             - proposal.file_open
@@ -9001,6 +9005,119 @@ paths:
       security:
       - session: []
       summary: Send an unused invitation again
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/scores:
+    get:
+      operationId: getProgramScores
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgramScores"
+          description: "The scorers, and each submitted application with every scorer's\
+            \ score, the average, the count and the spread."
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: Every scorer's score of a program's applications
+      tags:
+      - Review
+  /api/proposal/review/programs/{programId}/scores/export:
+    post:
+      operationId: exportProgramScores
+      parameters:
+      - in: path
+        name: programId
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - description: "The file: xlsx, an Excel workbook to read, or csv for another\
+          \ tool."
+        in: query
+        name: format
+        required: false
+        schema:
+          type: string
+          default: xlsx
+          enum:
+          - xlsx
+          - csv
+          pattern: xlsx|csv
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportApplicationsRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          description: "One row for each scorer and application, with each criterion's\
+            \ score, the note and whether it was a conflict. The download is recorded."
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: The download would hold too many rows.
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Nobody is signed in.
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: "The caller does not review this program, or the action is\
+            \ an operator's."
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: There is no such program taking applications.
+      security:
+      - session: []
+      summary: Download every scorer's scores of a program's applications
       tags:
       - Review
   /api/proposal/use-case-proposal-counts:
@@ -16770,6 +16887,7 @@ components:
           - proposal.reviewer_invite
           - proposal.reviewer_remove
           - proposal.reviewers_export
+          - proposal.scores_export
           - proposal.decide
           - proposal.release
           - proposal.file_open
@@ -22601,6 +22719,114 @@ components:
       - fixed
       - questions
       - version
+    ProgramScorer:
+      type: object
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum:
+          - reviewer
+          - operator
+      required:
+      - accountId
+      - email
+      - name
+      - role
+    ProgramScores:
+      type: object
+      description: "Every scorer's score of each submitted application of a program,\
+        \ side by side, for an operator."
+      properties:
+        applications:
+          type: array
+          description: "The submitted applications, the earliest submitted first."
+          items:
+            $ref: "#/components/schemas/ProgramScoresRow"
+        scale:
+          type: number
+          format: double
+          description: "The most an application can score: 10, or the sum of the criteria's\
+            \ points."
+        scorers:
+          type: array
+          description: "The operators who scored first, then the judges in the order\
+            \ they were invited."
+          items:
+            $ref: "#/components/schemas/ProgramScorer"
+      required:
+      - applications
+      - scale
+      - scorers
+    ProgramScoresCell:
+      type: object
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        conflict:
+          type: boolean
+        score:
+          type:
+          - number
+          - "null"
+          format: double
+      required:
+      - accountId
+      - conflict
+    ProgramScoresRow:
+      type: object
+      properties:
+        average:
+          type:
+          - number
+          - "null"
+          format: double
+          description: "The mean of every scorer's score, as the applications list\
+            \ reads it; null until one scores it."
+        id:
+          type: string
+          format: uuid
+        organization:
+          type: string
+        reviewStatus:
+          type: string
+          enum:
+          - under_review
+          - shortlisted
+          - not_selected
+        scored:
+          type: integer
+          format: int32
+          description: How many scored it.
+        scores:
+          type: array
+          description: Each scorer who scored it or stepped back from it; a scorer
+            missing here has not.
+          items:
+            $ref: "#/components/schemas/ProgramScoresCell"
+        solution:
+          type: string
+        spread:
+          type:
+          - number
+          - "null"
+          format: double
+          description: The highest scorer's score less the lowest; null under two
+            scores.
+      required:
+      - id
+      - organization
+      - reviewStatus
+      - scored
+      - scores
+      - solution
     ProgramSummary:
       type: object
       description: A published program as the public list shows it.
