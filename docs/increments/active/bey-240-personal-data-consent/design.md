@@ -15,12 +15,12 @@ Two parts are separate issues: anonymising a person's data when they ask for del
 
 ## The purposes
 
-| Key        | Box text (GenAI Fund's)                                                                                                          | Required                     |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `platform` | I have read and agree to BeyondPilot processing my personal data to use the platform and take part in its programs.            | To use the platform          |
-| `partners` | I agree to BeyondPilot sharing my information with program partners for matching and evaluation.                                | To submit to a program or use case |
-| `ai`       | I agree to BeyondPilot using AI to suggest my profile for relevant opportunities and to help evaluate my applications.         | No                           |
-| `updates`  | I agree to receive updates, newsletters and event invitations from BeyondPilot.                                                  | No                           |
+| Key        | Box text (GenAI Fund's)                                                                                                | Required                           |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `platform` | I have read and agree to BeyondPilot processing my personal data to use the platform and take part in its programs.    | To use the platform                |
+| `partners` | I agree to BeyondPilot sharing my information with program partners for matching and evaluation.                       | To submit to a program or use case |
+| `ai`       | I agree to BeyondPilot using AI to suggest my profile for relevant opportunities and to help evaluate my applications. | No                                 |
+| `updates`  | I agree to receive updates, newsletters and event invitations from BeyondPilot.                                        | No                                 |
 
 The `ai` box is ours, added with GenAI Fund's agreement on 22 October 2026 because Decree 356/2025 art. 10(3) asks for notice of automated processing and a way not to take part. BeyondPilot sends no newsletter today; `updates` is recorded so that one sent later goes only to those who agreed.
 
@@ -54,23 +54,23 @@ The modules that act on a choice (`proposal` for `partners`; `talent`, `search` 
 
 ## HTTP
 
-| Path                              | Use                                                                                         |
-| --------------------------------- | ------------------------------------------------------------------------------------------- |
-| `GET /api/identity/consent`       | The current version, its text in the caller's language, the purposes and the caller's choices |
-| `PUT /api/identity/consent`       | Record the caller's choices with how they were made; answers the new state                  |
-| `GET /api/identity/me`            | Gains `consentNeeded`                                                                       |
+| Path                        | Use                                                                                           |
+| --------------------------- | --------------------------------------------------------------------------------------------- |
+| `GET /api/identity/consent` | The current version, its text in the caller's language, the purposes and the caller's choices |
+| `PUT /api/identity/consent` | Record the caller's choices with how they were made; answers the new state                    |
+| `GET /api/identity/me`      | Gains `consentNeeded`                                                                         |
 
 The exact contract is `openapi.yml`.
 
 ## Web
 
-| Where                    | What                                                                                                         |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `/consent`               | The step: summary, Accept all, Choose one by one (dialog with the full text and boxes), Sign out. `?returnTo=` |
-| `/account`               | The section "Privacy and consent" under the contact details                                                  |
-| Every signed-in page     | Redirects to `/consent?returnTo=` while `consentNeeded`, except `/consent`, `/privacy` and `/terms`: on the server for a page that needs an account (`requireAccount`), and from the site header on every other page (`ConsentRedirect`) |
-| Application and proposal forms | Without `partners`, the refusal `IDENTITY_PARTNERS_CONSENT_REQUIRED` says to turn it on in Settings |
-| `/privacy`, sign-in form | The privacy text updated; the sign-in line removed                                                           |
+| Where                          | What                                                                                                                                                                                                                                     |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/consent`                     | The step: summary, Accept all, Choose one by one (dialog with the full text and boxes), Sign out. `?returnTo=`                                                                                                                           |
+| `/account`                     | The section "Privacy and consent" under the contact details                                                                                                                                                                              |
+| Every signed-in page           | Redirects to `/consent?returnTo=` while `consentNeeded`, except `/consent`, `/privacy` and `/terms`: on the server for a page that needs an account (`requireAccount`), and from the site header on every other page (`ConsentRedirect`) |
+| Application and proposal forms | Without `partners`, the refusal `IDENTITY_PARTNERS_CONSENT_REQUIRED` says to turn it on in Settings                                                                                                                                      |
+| `/privacy`, sign-in form       | The privacy text updated; the sign-in line removed                                                                                                                                                                                       |
 
 Composed from `Button` and `TextButton` (actions), `Badge`, `Checkbox`, `Field`, `Switch`, `Dialog`, `ConfirmDialog` and the toast with Undo. The dialog renders the served Markdown with `react-markdown` and takes each box's words from the text's own list of boxes, so a person ticks the words of the version recorded with their choice.
 

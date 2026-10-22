@@ -12,17 +12,17 @@ Read on 22 October 2026 for [BEY-240](https://linear.app/beyondpilot/issue/BEY-2
 
 ## What a valid consent is
 
-| Requirement                                                                                              | Where                       |
-| -------------------------------------------------------------------------------------------------------- | --------------------------- |
-| Given freely, knowing the kinds of data and the purpose, the controller, and the data subject's rights   | Law art. 9(2)               |
-| Expressed clearly and specifically, in a form that can be printed or copied, electronic forms included   | Law art. 9(3)               |
-| One consent per purpose; no purpose may be made a condition of another                                    | Law art. 9(4)(a), (b)       |
-| Silence or no answer is not consent; no default consent and no wording that blurs agree and disagree     | Law art. 9(4)(d); Decree art. 6(3) |
-| Obtained before the data is collected                                                                     | Law art. 11(1)              |
-| Verifiable: who consented, when, and to which content; a website or app control counts                   | Decree art. 6(1)            |
-| Stored by the controller, who carries the burden of proof in a dispute                                    | Decree art. 6(2)            |
-| When the data is sensitive, the person is told that it is                                                 | Decree art. 6(4)            |
-| When data is processed automatically, the person is told, the principle of the algorithm and its effect on them are explained, and they are offered a way not to take part | Decree art. 10(3) |
+| Requirement                                                                                                                                                                | Where                              |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Given freely, knowing the kinds of data and the purpose, the controller, and the data subject's rights                                                                     | Law art. 9(2)                      |
+| Expressed clearly and specifically, in a form that can be printed or copied, electronic forms included                                                                     | Law art. 9(3)                      |
+| One consent per purpose; no purpose may be made a condition of another                                                                                                     | Law art. 9(4)(a), (b)              |
+| Silence or no answer is not consent; no default consent and no wording that blurs agree and disagree                                                                       | Law art. 9(4)(d); Decree art. 6(3) |
+| Obtained before the data is collected                                                                                                                                      | Law art. 11(1)                     |
+| Verifiable: who consented, when, and to which content; a website or app control counts                                                                                     | Decree art. 6(1)                   |
+| Stored by the controller, who carries the burden of proof in a dispute                                                                                                     | Decree art. 6(2)                   |
+| When the data is sensitive, the person is told that it is                                                                                                                  | Decree art. 6(4)                   |
+| When data is processed automatically, the person is told, the principle of the algorithm and its effect on them are explained, and they are offered a way not to take part | Decree art. 10(3)                  |
 
 Not every purpose needs consent. Processing to perform an agreement with the data subject is one of the cases the law exempts (Law art. 19(1)(d)), so the data needed to run an account can rest on the terms of use. GenAI Fund nevertheless asked for an explicit consent to use the platform; that is stricter than the law and costs nothing.
 
@@ -36,11 +36,11 @@ The data subject may know about the processing, consent or withdraw, see and cor
 
 Every request is acknowledged within 2 working days with the procedure that follows (Decree art. 5). The time to carry it out depends on the request:
 
-| Request                            | Carried out within | With a processor or third party | One extension, with reasons |
-| ---------------------------------- | ------------------ | ------------------------------- | --------------------------- |
-| Withdraw, restrict, object         | 15 days            | 20 days                         | up to 15 days               |
-| See, correct, receive a copy       | 10 days            | 15 days                         | up to 10 days               |
-| Delete                             | 20 days            | 30 days                         | up to 20 days               |
+| Request                      | Carried out within | With a processor or third party | One extension, with reasons |
+| ---------------------------- | ------------------ | ------------------------------- | --------------------------- |
+| Withdraw, restrict, object   | 15 days            | 20 days                         | up to 15 days               |
+| See, correct, receive a copy | 10 days            | 15 days                         | up to 10 days               |
+| Delete                       | 20 days            | 30 days                         | up to 20 days               |
 
 GenAI Fund's message gave the 2-day and 15-day figures; they are correct for withdrawal. Deletion has 20 days.
 
