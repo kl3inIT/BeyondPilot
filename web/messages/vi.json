@@ -7067,7 +7067,6 @@
       },
       "columns": {
         "application": "Đơn",
-        "decision": "Quyết định",
         "average": "Trung bình",
         "scored": "Lượt chấm",
         "spread": "Chênh lệch",
@@ -7084,14 +7083,16 @@
       "conflict": "Xung đột",
       "wide": "Giám khảo chấm vênh nhau",
       "noMatch": {
-        "title": "Không có đơn nào khớp",
-        "all": "Xem tất cả đơn"
+        "title": "Không có đơn shortlist nào khớp",
+        "clear": "Xóa tìm kiếm"
       },
       "empty": {
-        "title": "Chưa có đơn nào",
-        "description": "Điểm hiện ở đây khi có đơn được nộp và chấm."
+        "title": "Chưa có đơn nào được shortlist",
+        "description": "Giám khảo chấm các đơn shortlist: điểm hiện ở đây khi GenAI Fund shortlist đơn."
       },
-      "footer": "{shown} đơn · {scorers} người chấm · {scored} đơn đã có điểm"
+      "footer": "{shown} đơn shortlist · {scorers} người chấm · {scored} đơn đã có điểm",
+      "highest": "cao nhất của đơn này",
+      "lowest": "thấp nhất của đơn này"
     }
   },
   "Search": {

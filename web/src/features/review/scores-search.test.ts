@@ -17,10 +17,11 @@ const generous = {
   role: "reviewer",
 } as const;
 const fund = { accountId: "a3", name: "Minh", email: "minh@x.test", role: "operator" } as const;
+const screener = { accountId: "a4", name: "Uyen", email: "uyen@x.test", role: "operator" } as const;
 
 const data: ProgramScores = {
   scale: 10,
-  scorers: [fund, strict, generous],
+  scorers: [fund, screener, strict, generous],
   applications: [
     {
       id: "p1",
@@ -54,9 +55,10 @@ const data: ProgramScores = {
       solution: "DocuFlow",
       organization: "Flow",
       reviewStatus: "not_selected",
-      scores: [],
-      average: null,
-      scored: 0,
+      // GenAI Fund's own screening of an application it did not shortlist.
+      scores: [{ accountId: "a4", score: 4, conflict: false }],
+      average: 4,
+      scored: 1,
       spread: null,
     },
   ],
@@ -64,18 +66,25 @@ const data: ProgramScores = {
 
 const search = (change: Partial<ScoresSearch> = {}): ScoresSearch => ({
   view: "applications",
-  tab: "shortlisted",
   q: "",
   sort: "",
   ...change,
 });
 
 describe("scoresTable", () => {
-  it("lists the shortlist by default, the highest mean first, and counts every tab", () => {
+  it("lists only the shortlist, which judges score, the highest mean first", () => {
     const table = scoresTable(data, search());
     expect(table.rows.map((row) => row.id)).toEqual(["p2", "p1"]);
-    expect(table.counts).toEqual({ all: 3, undecided: 0, shortlisted: 2, not_selected: 1 });
+    expect(table.shortlisted).toBe(2);
     expect(table.defaultSort).toBe("-average");
+  });
+
+  it("leaves out an operator who scored nothing shortlisted, never a judge", () => {
+    expect(scoresTable(data, search()).scorers.map((scorer) => scorer.accountId)).toEqual([
+      "a3",
+      "a1",
+      "a2",
+    ]);
   });
 
   it("sorts by the spread or by one scorer, an application they have not scored last", () => {
@@ -83,16 +92,17 @@ describe("scoresTable", () => {
       "p1",
       "p2",
     ]);
-    expect(
-      scoresTable(data, search({ tab: "all", sort: scorerKey("a2") })).rows.map((row) => row.id),
-    ).toEqual(["p2", "p1", "p3"]);
+    expect(scoresTable(data, search({ sort: scorerKey("a3") })).rows.map((row) => row.id)).toEqual([
+      "p2",
+      "p1",
+    ]);
   });
 
   it("finds an application by its solution or organization, without accents", () => {
     expect(scoresTable(data, search({ q: "lens" })).rows.map((row) => row.id)).toEqual(["p2"]);
   });
 
-  it("sums up each scorer's work over the applications kept", () => {
+  it("sums up each scorer's work over the shortlist", () => {
     const [minh, first, second] = scoresTable(data, search()).judges;
     expect(minh).toMatchObject({ scored: 1, conflicts: 0, waiting: null, mean: 8.4 });
     expect(first).toMatchObject({ scored: 1, conflicts: 1, waiting: 0, mean: 5 });

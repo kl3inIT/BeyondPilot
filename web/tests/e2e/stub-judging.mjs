@@ -288,11 +288,12 @@ export function answerJudging(url, account) {
   if (pathname === `${base}/scores`) {
     const lan = "b0000000-0000-4000-8000-000000000001";
     const minh = "b0000000-0000-4000-8000-000000000002";
-    const row = (item, scores, average, scored, spread) => ({
+    // Renew in a Minute is shortlisted here too, so that the shortlist holds two applications.
+    const row = (item, scores, average, scored, spread, reviewStatus = item.reviewStatus) => ({
       id: item.id,
       solution: item.solutionName,
       organization: item.organizationName,
-      reviewStatus: item.reviewStatus,
+      reviewStatus,
       scores,
       average,
       scored,
@@ -328,6 +329,7 @@ export function answerJudging(url, account) {
             2.5,
             1,
             null,
+            "shortlisted",
           ),
         ],
       },

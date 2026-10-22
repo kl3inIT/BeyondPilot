@@ -7067,7 +7067,6 @@
       },
       "columns": {
         "application": "Application",
-        "decision": "Decision",
         "average": "Average",
         "scored": "Scored",
         "spread": "Spread",
@@ -7084,14 +7083,16 @@
       "conflict": "Conflict",
       "wide": "Judges far apart",
       "noMatch": {
-        "title": "No application matches",
-        "all": "Show every application"
+        "title": "No shortlisted application matches",
+        "clear": "Clear the search"
       },
       "empty": {
-        "title": "No application yet",
-        "description": "Scores show here once applications are submitted and judged."
+        "title": "Nothing is shortlisted yet",
+        "description": "Judges score the shortlist: their scores show here once GenAI Fund shortlists applications."
       },
-      "footer": "{shown, plural, one {# application} other {# applications}} · {scorers, plural, one {# scorer} other {# scorers}} · {scored} with a score"
+      "footer": "{shown} shortlisted · {scorers, plural, one {# scorer} other {# scorers}} · {scored} with a score",
+      "highest": "highest on this application",
+      "lowest": "lowest on this application"
     }
   },
   "Search": {

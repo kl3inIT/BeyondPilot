@@ -7,6 +7,7 @@ import { DataTableView, dataTableColumns } from "@/components/composites/data-ta
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import type { ProgramScorer, ProgramScoresRow } from "@/lib/api/generated";
+import { cn } from "@/lib/utils";
 
 import { scorerKey, type ScorerSummary } from "./scores-search";
 
@@ -18,18 +19,12 @@ function shown(value: number | null | undefined) {
   return value == null ? "—" : value.toFixed(1);
 }
 
-const decisionVariant = {
-  shortlisted: "success",
-  not_selected: "outline",
-  under_review: "warning",
-} as const;
-
 type ScoresByApplicationProps = {
   rows: ProgramScoresRow[];
   scorers: ProgramScorer[];
   /** Where the applications open, each under it with `query`. */
   base: string;
-  /** The tab and search an application keeps, as the query of its address. */
+  /** The search an application keeps, as the query of its address. */
   query: string;
   sortKeys: readonly string[];
   defaultSort: string;
@@ -38,10 +33,12 @@ type ScoresByApplicationProps = {
 };
 
 /**
- * A program's applications against every scorer: each scorer a column with their mean over the
- * criteria, Conflict where they stepped back and a dash where they have not scored; then the mean
- * across them, how many scored and the spread, marked when the judges are far apart. Every column
- * sorts; a row opens the application, where the scores by criterion and the notes are.
+ * The shortlist against every scorer. The application, the mean across scorers, the spread, marked
+ * when the judges are far apart, and how many scored lead and stay in view; then each scorer is a
+ * column with their mean over the criteria, Conflict where they stepped back and a dash where they
+ * have not scored. On a marked row the highest score and the lowest are tinted, so the judge who
+ * pulls it up or down shows. Every column sorts; a row opens the application, where the scores by
+ * criterion and the notes are.
  */
 function ScoresByApplication({
   rows,
@@ -53,13 +50,14 @@ function ScoresByApplication({
   wide,
 }: ScoresByApplicationProps) {
   const t = useTranslations("Review.scores");
-  const decisions = useTranslations("Review.list.decision");
 
   const columns = applicationColumn.columns([
     applicationColumn.accessor("solution", {
       id: "applicant",
       header: t("columns.application"),
-      meta: { fill: true },
+      // The application and the three numbers a deliberation reads stay in view while the
+      // judges scroll under them.
+      meta: { pin: 0 },
       cell: ({ row }) => (
         <div className="flex min-w-0 flex-col">
           <Link
@@ -75,48 +73,14 @@ function ScoresByApplication({
         </div>
       ),
     }),
-    applicationColumn.accessor("reviewStatus", {
-      id: "decision",
-      header: t("columns.decision"),
-      meta: { from: "lg" },
-      cell: ({ getValue }) => (
-        <Badge variant={decisionVariant[getValue()]}>{decisions(getValue())}</Badge>
-      ),
-    }),
-    ...scorers.map((scorer) =>
-      applicationColumn.display({
-        id: scorerKey(scorer.accountId),
-        header: () => (
-          <span title={scorer.email} className="flex flex-col">
-            <span>{scorer.name}</span>
-            {scorer.role === "operator" && (
-              <span className="font-normal text-muted-foreground">{t("role.operator")}</span>
-            )}
-          </span>
-        ),
-        meta: { numeric: true, nowrap: true, descFirst: true },
-        cell: ({ row }) => {
-          const cell = row.original.scores.find((item) => item.accountId === scorer.accountId);
-          return cell?.conflict ? (
-            <span className="text-muted-foreground">{t("conflict")}</span>
-          ) : (
-            <span className={cell ? undefined : "text-muted-foreground"}>{shown(cell?.score)}</span>
-          );
-        },
-      }),
-    ),
     applicationColumn.accessor("average", {
       header: t("columns.average"),
-      meta: { numeric: true, nowrap: true, descFirst: true },
+      meta: { numeric: true, nowrap: true, descFirst: true, pin: 1 },
       cell: ({ getValue }) => <span className="font-medium">{shown(getValue())}</span>,
-    }),
-    applicationColumn.accessor("scored", {
-      header: t("columns.scored"),
-      meta: { numeric: true, nowrap: true, descFirst: true, from: "xl" },
     }),
     applicationColumn.accessor("spread", {
       header: t("columns.spread"),
-      meta: { numeric: true, nowrap: true, descFirst: true },
+      meta: { numeric: true, nowrap: true, descFirst: true, pin: 2 },
       cell: ({ getValue }) => {
         const spread = getValue();
         return spread != null && spread >= wide ? (
@@ -130,6 +94,57 @@ function ScoresByApplication({
         );
       },
     }),
+    applicationColumn.accessor("scored", {
+      header: t("columns.scored"),
+      meta: { numeric: true, nowrap: true, descFirst: true, pin: 3 },
+    }),
+    ...scorers.map((scorer) =>
+      applicationColumn.display({
+        id: scorerKey(scorer.accountId),
+        // A long name is cut short; the whole of it and the address are in its title.
+        header: () => (
+          <span
+            title={`${scorer.name} · ${scorer.email}`}
+            className="flex max-w-28 flex-col items-end"
+          >
+            <span className="max-w-full truncate">{scorer.name}</span>
+            {scorer.role === "operator" && (
+              <span className="font-normal text-muted-foreground">{t("role.operator")}</span>
+            )}
+          </span>
+        ),
+        meta: { numeric: true, nowrap: true, descFirst: true },
+        cell: ({ row }) => {
+          const cell = row.original.scores.find((item) => item.accountId === scorer.accountId);
+          if (cell?.conflict) {
+            return <span className="text-muted-foreground">{t("conflict")}</span>;
+          }
+          if (cell?.score == null) {
+            return <span className="text-muted-foreground">—</span>;
+          }
+          const given = row.original.scores.flatMap((item) =>
+            item.score == null ? [] : [item.score],
+          );
+          const marked = (row.original.spread ?? 0) >= wide;
+          const highest = marked && cell.score === Math.max(...given);
+          const lowest = marked && cell.score === Math.min(...given);
+          return (
+            <span
+              className={cn(
+                "rounded-md px-1.5 py-0.5",
+                highest && "bg-success/10 font-medium",
+                lowest && "bg-destructive/10 font-medium",
+              )}
+            >
+              {shown(cell.score)}
+              {(highest || lowest) && (
+                <span className="sr-only">{t(highest ? "highest" : "lowest")}</span>
+              )}
+            </span>
+          );
+        },
+      }),
+    ),
   ]);
 
   return (

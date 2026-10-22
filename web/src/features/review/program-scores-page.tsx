@@ -18,17 +18,16 @@ type ProgramScoresPageProps = {
 };
 
 /**
- * Every judge's scores of a program's applications side by side, for GenAI Fund to deliberate: By
+ * Every judge's scores of a program's shortlist side by side, for GenAI Fund to deliberate: By
  * application, each scorer a column, the highest mean first, and By judge, each scorer's work and
  * mean. It only compares: an application opens from its row, where it is scored, and Previous and
- * Next there follow the same tab and search.
+ * Next there go through the shortlist.
  */
 function ProgramScoresPage({ programId, data, search }: ProgramScoresPageProps) {
   const t = useTranslations("Review.scores");
   const table = scoresTable(data, search);
-  const narrowed = search.tab !== "all" || search.q.trim() !== "";
-  // The application page goes on in the Applications list's order, the highest mean first.
-  const query = reviewAddress({ tab: search.tab, q: search.q, sort: "-score", page: 1 });
+  // The application page goes on through the shortlist, the highest mean first.
+  const query = reviewAddress({ tab: "shortlisted", q: search.q, sort: "-score", page: 1 });
   const applications = adminProgramApplicationsRoute(programId);
 
   return (
@@ -39,20 +38,16 @@ function ProgramScoresPage({ programId, data, search }: ProgramScoresPageProps) 
         </p>
         <ExportScores
           programId={programId}
-          applicationIds={narrowed ? table.rows.map((row) => row.id) : null}
+          applicationIds={table.rows.map((row) => row.id)}
           disabled={table.rows.length === 0}
         />
       </div>
-      <ScoresToolbar counts={table.counts} />
+      <ScoresToolbar />
       {table.rows.length === 0 ? (
-        data.applications.length > 0 ? (
+        table.shortlisted > 0 ? (
           <DataTableEmpty icon={<SearchXIcon aria-hidden="true" />} title={t("noMatch.title")}>
-            <Button
-              prominence="secondary"
-              size="sm"
-              href={`${adminProgramScoresRoute(programId)}?tab=all`}
-            >
-              {t("noMatch.all")}
+            <Button prominence="secondary" size="sm" href={adminProgramScoresRoute(programId)}>
+              {t("noMatch.clear")}
             </Button>
           </DataTableEmpty>
         ) : (
@@ -67,7 +62,7 @@ function ProgramScoresPage({ programId, data, search }: ProgramScoresPageProps) 
       ) : (
         <ScoresByApplication
           rows={table.rows}
-          scorers={data.scorers}
+          scorers={table.scorers}
           base={applications}
           query={query}
           sortKeys={table.sortKeys}
@@ -79,7 +74,7 @@ function ProgramScoresPage({ programId, data, search }: ProgramScoresPageProps) 
       <p className="text-sm text-muted-foreground tabular-nums">
         {t("footer", {
           shown: table.rows.length,
-          scorers: data.scorers.length,
+          scorers: table.scorers.length,
           scored: table.rows.filter((row) => row.scored > 0).length,
         })}
       </p>
