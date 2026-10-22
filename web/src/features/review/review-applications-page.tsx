@@ -1,6 +1,5 @@
 import { CircleCheckIcon, FileTextIcon, SearchXIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { createSerializer } from "nuqs/server";
 
 import { Button } from "@/components/actions/button";
 import { DataTableEmpty, DataTableFooter } from "@/components/composites/data-table";
@@ -13,12 +12,15 @@ import { adminProgramDraftsRoute, adminProgramReleaseRoute } from "@/lib/site";
 
 import { ExportApplications } from "./export-applications";
 import { maxTotal, scoreText } from "./review-points";
-import { listApplications, reviewSearch, type ReviewSearch } from "./review-search";
+import {
+  listApplications,
+  listQuery,
+  reviewAddress as address,
+  type ReviewSearch,
+} from "./review-search";
 import { PageLeadingAction, ReviewSelection } from "./review-selection";
 import { ReviewTable, type ReviewRow } from "./review-table";
 import { ReviewToolbar } from "./review-toolbar";
-
-const address = createSerializer(reviewSearch);
 
 type ReviewApplicationsPageProps = {
   data: ReviewApplications;
@@ -76,9 +78,11 @@ function ReviewApplicationsPage({ data, search, base, tabs }: ReviewApplications
       : { label: t("average", { value: scoreText(item.average, total) }), variant: "info" };
   }
 
+  // An application opened from this list goes on to the next one of the same tab and order.
+  const query = listQuery(search);
   const rows: ReviewRow[] = list.rows.map((item) => ({
     id: item.id,
-    href: `${base}/${item.id}`,
+    href: `${base}/${item.id}${query}`,
     solution: item.solutionName,
     applicant: [
       item.organizationName,

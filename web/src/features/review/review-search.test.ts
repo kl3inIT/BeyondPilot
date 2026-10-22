@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import type { ReviewApplicationItem } from "@/lib/api/generated";
 
-import { listApplications, REVIEW_PAGE_SIZE, type ReviewSearch } from "./review-search";
+import {
+  listApplications,
+  listQuery,
+  neighbours,
+  REVIEW_PAGE_SIZE,
+  type ReviewSearch,
+} from "./review-search";
 
 const item = (id: string, submittedAt: string, average: number | null = null) =>
   ({
@@ -82,5 +88,60 @@ describe("listApplications", () => {
     expect(second.rows).toHaveLength(3);
     expect(second.ordered).toHaveLength(REVIEW_PAGE_SIZE + 3);
     expect(listApplications(many, search({ page: 9 }), true).page).toBe(2);
+  });
+});
+
+describe("neighbours", () => {
+  const decided = (
+    id: string,
+    submittedAt: string,
+    reviewStatus: ReviewApplicationItem["reviewStatus"],
+    average: number | null = null,
+  ) =>
+    ({
+      ...item(id, submittedAt, average),
+      reviewStatus,
+      shortlisted: reviewStatus === "shortlisted",
+    }) as ReviewApplicationItem;
+
+  // Submitted in this order: a shortlisted, b not selected, c shortlisted, d not selected.
+  const items = [
+    decided("a", "2026-10-01T00:00:00Z", "shortlisted", 8),
+    decided("b", "2026-10-02T00:00:00Z", "not_selected", 4),
+    decided("c", "2026-10-03T00:00:00Z", "shortlisted", 7),
+    decided("d", "2026-10-04T00:00:00Z", "not_selected", 3),
+  ];
+
+  it("goes on within the shortlist, never to an application not selected", () => {
+    const place = neighbours(items, search({ tab: "shortlisted" }), true, false, "a");
+    expect(place).toEqual({ position: 1, total: 2, previousId: null, nextId: "c" });
+    expect(neighbours(items, search({ tab: "shortlisted" }), true, false, "c").nextId).toBeNull();
+  });
+
+  it("follows the order the list shows, the highest mean first by default", () => {
+    expect(neighbours(items, search(), true, false, "c")).toEqual({
+      position: 2,
+      total: 4,
+      previousId: "a",
+      nextId: "b",
+    });
+  });
+
+  it("keeps the application on show in its place when a decision moved it out of the tab", () => {
+    // b was just shortlisted from the Not selected tab: it is no longer in that tab.
+    const moved = items.map((one) =>
+      one.id === "b" ? decided("b", "2026-10-02T00:00:00Z", "shortlisted", 4) : one,
+    );
+    expect(neighbours(moved, search({ tab: "not_selected" }), true, false, "b")).toEqual({
+      position: 1,
+      total: 2,
+      previousId: null,
+      nextId: "d",
+    });
+  });
+
+  it("writes the list's search into the address without its page", () => {
+    expect(listQuery(search({ tab: "shortlisted", page: 3 }))).toBe("?tab=shortlisted");
+    expect(listQuery(search())).toBe("");
   });
 });

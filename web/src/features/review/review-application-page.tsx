@@ -10,14 +10,17 @@ import { AssessmentPanel } from "./assessment-panel";
 import { DecisionPanel } from "./decision-panel";
 import { maxTotal, scoreText } from "./review-points";
 import { judgeQueue } from "./review-queue";
+import { listQuery, neighbours, type ReviewSearch } from "./review-search";
 import { SubmittedRecord } from "./submitted-record";
 
 type ReviewApplicationPageProps = {
   review: ReviewApplication;
   /** The list this application belongs to; the others open under it. */
   base: string;
-  /** The program's applications in the order of that list, as the caller reviews them. */
+  /** The program's applications, as the caller reviews them. */
   queue: ReviewApplicationItem[];
+  /** The tab, filters and order of the list it was opened from. */
+  search: ReviewSearch;
 };
 
 /**
@@ -27,17 +30,27 @@ type ReviewApplicationPageProps = {
  * application comes first, so that it is read before anyone's scores, and the assessment keeps a
  * bar at the bottom of the screen with its progress.
  */
-async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationPageProps) {
+async function ReviewApplicationPage({ review, base, queue, search }: ReviewApplicationPageProps) {
   const [t, locale] = await Promise.all([getTranslations("Review.application"), getLocale()]);
   const format = applyFormatter(locale);
   const { head, submitted } = review;
   const total = maxTotal(head.criteria);
   const released = Boolean(head.releasedAt);
   // A judge goes on to the next application they have yet to score; an operator, who reads them
-  // all to decide, to the next in the list.
+  // all to decide, to the next in the list they opened it from: its tab, filters and order, so
+  // that going on from the shortlist stays in the shortlist.
   const judging = head.operator ? null : judgeQueue(queue, review.id, released);
-  const nextId = judging ? judging.nextId : review.nextId;
-  const nextHref = nextId ? `${base}/${nextId}` : null;
+  const place = head.operator
+    ? neighbours(queue, search, true, released, review.id)
+    : {
+        position: review.position,
+        total: review.total,
+        previousId: review.previousId,
+        nextId: review.nextId,
+      };
+  const nextId = judging ? judging.nextId : place.nextId;
+  const query = listQuery(search);
+  const nextHref = nextId ? `${base}/${nextId}${query}` : null;
 
   return (
     <div
@@ -45,7 +58,7 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
       lang={locale}
     >
       <AdminPageHeader
-        back={{ href: base, label: t("back", { program: head.name }) }}
+        back={{ href: `${base}${query}`, label: t("back", { program: head.name }) }}
         title={submitted.solutionName}
         badges={
           head.operator &&
@@ -73,15 +86,15 @@ async function ReviewApplicationPage({ review, base, queue }: ReviewApplicationP
             position={
               judging
                 ? t("positionLeft", {
-                    place: review.position,
-                    total: review.total,
+                    place: place.position,
+                    total: place.total,
                     left: judging.left,
                   })
-                : t("position", { place: review.position, total: review.total })
+                : t("position", { place: place.position, total: place.total })
             }
             previous={
-              review.previousId
-                ? { href: `${base}/${review.previousId}`, label: t("previous") }
+              place.previousId
+                ? { href: `${base}/${place.previousId}${query}`, label: t("previous") }
                 : null
             }
             next={nextHref ? { href: nextHref, label: t(judging ? "nextToScore" : "next") } : null}
