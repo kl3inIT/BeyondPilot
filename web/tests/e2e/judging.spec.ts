@@ -292,10 +292,9 @@ test.describe("judging applications", () => {
     await page.goto(`${admin}/scores`);
 
     // The shortlist leads, each scorer a column; judges 3.5 apart on one application are marked.
-    await expect(page.getByRole("tab", { name: /Scores/ })).toHaveAttribute(
-      "aria-selected",
-      "true",
-    );
+    await expect(
+      page.getByRole("navigation", { name: "Program" }).getByRole("link", { name: "Scores" }),
+    ).toHaveAttribute("aria-current", "page");
     const table = page.getByRole("table");
     await expect(table.getByRole("columnheader", { name: /Minh Tran/ })).toBeVisible();
     await expect(table.getByRole("columnheader", { name: /Lan Vu/ })).toBeVisible();
