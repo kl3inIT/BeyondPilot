@@ -38,13 +38,16 @@ public class IdentityService {
 	private final ExternalIdentityRepository externalIdentities;
 	private final IdentityProperties properties;
 
+	private final ConsentChoices consents;
+
 	private final AuditTrail audit;
 
 	IdentityService(AccountRepository accounts, ExternalIdentityRepository externalIdentities,
-			IdentityProperties properties, AuditTrail audit) {
+			IdentityProperties properties, ConsentChoices consents, AuditTrail audit) {
 		this.accounts = accounts;
 		this.externalIdentities = externalIdentities;
 		this.properties = properties;
+		this.consents = consents;
 		this.audit = audit;
 	}
 
@@ -162,9 +165,10 @@ public class IdentityService {
 			.collect(Collectors.toMap(Account::getId, IdentityService::person));
 	}
 
-	private static MeResponse me(Account account) {
+	private MeResponse me(Account account) {
 		return new MeResponse(account.getId(), account.getEmail(), account.getDisplayName(),
-				account.getPlatformRole().name().toLowerCase(Locale.ROOT), account.getCountry(), account.getPhone());
+				account.getPlatformRole().name().toLowerCase(Locale.ROOT), account.getCountry(), account.getPhone(),
+				consents.needed(account.getId()));
 	}
 
 	private static Person person(Account account) {

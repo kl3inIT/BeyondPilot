@@ -26,7 +26,7 @@ The `ai` box is ours, added with GenAI Fund's agreement on 22 October 2026 becau
 
 ## Where it lives
 
-No new module. Consent belongs to the account: it starts at sign-in, the account's status and the gate read it together, and it ends with the account. It lives in `identity` as the feature package `identity.consent`, with its published API in the `identity` root.
+No new module. Consent belongs to the account: it starts at sign-in, the account's status and the gate read it together, and it ends with the account. It lives in `identity`: `Consents` and `ConsentPurpose` in its root as the published API, the record in its `persistence` package.
 
 The modules that act on a choice (`proposal` for `partners`; `talent`, `search`, `matching` for `ai`) already depend on `identity`, so no dependency edge is added. A separate `consent` module would have needed a new edge from each of them and from `config`, for one table and one rule.
 
@@ -47,7 +47,7 @@ The emails go through an event: `identity` cannot depend on `notification`, whic
 11. **What was processed before stays.** Withdrawal does not reach back (Law 91/2025 art. 10(4)). An application already submitted stays with its program and judges when `partners` is turned off; a new submission needs it. AI evaluations already made stay; no new one is made.
 12. **AI off means the person's data leaves AI processing, not that they lose AI features.** Their talent profile leaves the meaning search index and matching candidates; their applications get no AI evaluation, shown to operators as "Applicant declined AI". A person with AI off still runs matching on their own use case, which reads organizations and solutions, not their data.
 13. **Everyone answers, from their next sign-in.** Existing accounts, operators and judges included, have no consent recorded and meet `/consent` once. Accounts created by the Agentic AI Build Week import meet it at their first sign-in.
-14. **Until a person answers, they are treated as not agreeing.** A talent profile whose person has not agreed to `ai` is not offered by matching nor indexed for meaning search. On release, profiles leave AI matching and meaning search until their people sign in and agree; they stay listed and found by their words.
+14. **AI stops only for a person who declined it.** A person's data leaves AI processing when their latest `ai` choice is a decline. An existing account that has not answered yet keeps today's processing until it answers at its next sign-in; a new account answers before it holds any data. Decided on 22 October 2026 by the member who directs BEY-240, accepting that silence is not consent for the short time before an existing account signs in again.
 15. **The sign-in line goes.** "By continuing, you accept the Terms of Service and the Privacy Policy" recorded nothing and claimed an acceptance the law does not count. `/consent` replaces it.
 16. **The privacy page matches the consent text.** It names GenAI Technology Development Pte. Ltd., drops the promise to delete within 30 days, says requests are acknowledged within 2 working days and lists the purposes as the consent does.
 17. **English first.** Version 1 is GenAI Fund's English text. A Vietnamese text, once GenAI Fund provides one, is the same version in a second file; the row records which language was shown.
