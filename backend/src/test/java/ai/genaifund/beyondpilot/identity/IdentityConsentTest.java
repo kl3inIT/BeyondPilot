@@ -51,7 +51,7 @@ class IdentityConsentTest {
 
 	@Test
 	void aNewAccountHasAnsweredNothingAndMustAgree() {
-		String session = TestSignIn.session(client, mail, "new@consent.test");
+		String session = TestSignIn.sessionWithoutConsent(client, mail, "new@consent.test");
 
 		client.get()
 			.uri("/api/identity/me")
@@ -87,7 +87,7 @@ class IdentityConsentTest {
 
 	@Test
 	void theFirstAnswerRecordsEveryPurposeARefusalIncluded() {
-		String session = TestSignIn.session(client, mail, "chooser@consent.test");
+		String session = TestSignIn.sessionWithoutConsent(client, mail, "chooser@consent.test");
 
 		put(session, Map.of("platform", true, "partners", false, "ai", true, "updates", false, "source", "choose"))
 			.expectStatus()
@@ -115,7 +115,7 @@ class IdentityConsentTest {
 
 	@Test
 	void aLaterChangeRecordsOnlyWhatChanged() {
-		String session = TestSignIn.session(client, mail, "changer@consent.test");
+		String session = TestSignIn.sessionWithoutConsent(client, mail, "changer@consent.test");
 		put(session, Map.of("platform", true, "partners", true, "ai", true, "updates", true, "source", "accept_all"))
 			.expectStatus()
 			.isOk();
@@ -135,7 +135,7 @@ class IdentityConsentTest {
 
 	@Test
 	void withdrawingThePlatformPurposeMakesItNeededAgain() {
-		String session = TestSignIn.session(client, mail, "leaver@consent.test");
+		String session = TestSignIn.sessionWithoutConsent(client, mail, "leaver@consent.test");
 		put(session, Map.of("platform", true, "partners", true, "ai", false, "updates", false, "source", "accept_all"))
 			.expectStatus()
 			.isOk();
@@ -150,7 +150,7 @@ class IdentityConsentTest {
 
 	@Test
 	void anIncompleteAnswerOrAnUnknownSourceIsRefused() {
-		String session = TestSignIn.session(client, mail, "sloppy@consent.test");
+		String session = TestSignIn.sessionWithoutConsent(client, mail, "sloppy@consent.test");
 
 		put(session, Map.of("platform", true, "source", "choose")).expectStatus().isBadRequest();
 		put(session, Map.of("platform", true, "partners", true, "ai", true, "updates", true, "source", "silence"))
@@ -162,7 +162,7 @@ class IdentityConsentTest {
 
 	@Test
 	void theRecordCannotBeRewritten() {
-		String session = TestSignIn.session(client, mail, "proof@consent.test");
+		String session = TestSignIn.sessionWithoutConsent(client, mail, "proof@consent.test");
 		put(session, Map.of("platform", true, "partners", true, "ai", true, "updates", true, "source", "accept_all"))
 			.expectStatus()
 			.isOk();

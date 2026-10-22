@@ -379,6 +379,39 @@ class McpServerTest {
 	}
 
 	@Test
+	void anAccountWithoutThePlatformConsentIsRefusedAndToldWhereToAgree() {
+		String person = TestSignIn.session(client, mail, "withdrawn-" + word + "@mcp.test");
+		String token = TestAppConnection.connect(client, port, person, "mcp.read").access();
+		assertThat(initialize(token, null, null)).isEqualTo(200);
+
+		client.put()
+			.uri("/api/identity/consent")
+			.cookie(TestSignIn.SESSION_COOKIE, person)
+			.header(TestSignIn.CSRF_HEADER, "1")
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("platform", false, "partners", true, "ai", true, "updates", true, "source", "settings"))
+			.exchange()
+			.expectStatus()
+			.isOk();
+
+		client.post()
+			.uri("/mcp")
+			.header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+			.header(HttpHeaders.ACCEPT, "application/json, text/event-stream")
+			.contentType(MediaType.APPLICATION_JSON)
+			.body("""
+					{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25",
+					 "capabilities":{},"clientInfo":{"name":"test","version":"1"}}}
+					""")
+			.exchange()
+			.expectStatus()
+			.isUnauthorized()
+			.expectHeader()
+			.value(HttpHeaders.WWW_AUTHENTICATE,
+					header -> assertThat(header).contains("invalid_token").contains(ISSUER + "/consent"));
+	}
+
+	@Test
 	void anUnknownProtocolVersionAForeignPageOrTooManyCallsAreRefused() {
 		String person = TestSignIn.session(client, mail, "limited-" + word + "@mcp.test");
 		String token = TestAppConnection.connect(client, port, person, "mcp.read").access();

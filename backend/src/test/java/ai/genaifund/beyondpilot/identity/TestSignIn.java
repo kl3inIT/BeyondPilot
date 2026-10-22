@@ -2,6 +2,7 @@ package ai.genaifund.beyondpilot.identity;
 
 import ai.genaifund.beyondpilot.TestMailbox;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,8 +18,26 @@ public final class TestSignIn {
 	private TestSignIn() {
 	}
 
-	/** The session of the address after it asked for a code and typed it. */
+	/**
+	 * The session of the address after it asked for a code, typed it and accepted every consent purpose, as a person
+	 * does before using the platform.
+	 */
 	public static String session(RestTestClient client, TestMailbox mail, String email) {
+		String session = sessionWithoutConsent(client, mail, email);
+		client.put()
+			.uri("/api/identity/consent")
+			.cookie(SESSION_COOKIE, session)
+			.header(CSRF_HEADER, "1")
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of("platform", true, "partners", true, "ai", true, "updates", true, "source", "accept_all"))
+			.exchange()
+			.expectStatus()
+			.isOk();
+		return session;
+	}
+
+	/** The session of the address after it asked for a code and typed it, before it answered the consent. */
+	public static String sessionWithoutConsent(RestTestClient client, TestMailbox mail, String email) {
 		String browser = sessionOf(client.post()
 			.uri("/ott/generate")
 			.header(CSRF_HEADER, "1")
